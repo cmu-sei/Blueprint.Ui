@@ -1,0 +1,104 @@
+<!--
+Copyright 2022 Carnegie Mellon University. All Rights Reserved.
+ Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
+-->
+<div *ngIf="msel" class="scrolling-region">
+  <div class="scenario-event-detail" (click)="$event.stopPropagation();">
+    <div class="edit-buttons">
+      <span>
+        <button
+          mat-icon-button
+          (click)="isEditEnabled = true; $event.stopPropagation()"
+          style="outline: none;"
+          title="Enable Editing"
+          *ngIf="!isEditEnabled"
+        >
+          <mat-icon class="mdi-24px self-center" fontIcon="mdi-square-edit-outline"></mat-icon>
+        </button>
+        <button
+          mat-icon-button
+          (click)="saveChanges(); $event.stopPropagation()"
+          style="outline: none;"
+          title="Save Changes"
+          *ngIf="isEditEnabled"
+        >
+          <mat-icon class="mdi-24px self-center" fontIcon="mdi-check"></mat-icon>
+        </button>
+        <button
+          mat-icon-button
+          (click)="cancelChanges(); $event.stopPropagation()"
+          style="outline: none;"
+          title="Cancel Changes"
+          *ngIf="isEditEnabled"
+        >
+          <mat-icon class="mdi-24px self-center" fontIcon="mdi-close"></mat-icon>
+        </button>
+      </span>
+    </div>
+    <div class="single-detail">
+      <mat-form-field class="full-width">
+        <input
+          type="text"
+          matInput
+          placeholder="Description"
+          [(ngModel)]="msel.description"
+          [disabled]="!isEditEnabled"
+        />
+      </mat-form-field>
+    </div>
+    <div class="single-detail">
+      <mat-form-field class="full-width">
+        <input
+          type="text"
+          matInput
+          placeholder="Template"
+          [(ngModel)]="msel.isTemplate"
+          [disabled]="!isEditEnabled"
+        />
+      </mat-form-field>
+    </div>
+    <div class="single-detail">
+      <mat-form-field class="full-width">
+        <input
+          type="text"
+          matInput
+          placeholder="Status"
+          [(ngModel)]="msel.status"
+          [disabled]="!isEditEnabled"
+        />
+      </mat-form-field>
+    </div>
+    <div class="single-detail">
+      <mat-form-field>
+        <mat-select placeholder="Team" [(ngModel)]="msel.teamId" [disabled]="!isEditEnabled">
+          <mat-option value="" matTooltip="Public" matTooltipPosition="right">Public</mat-option>
+          <mat-option *ngFor="let team of teamList" [value]="team.id" [matTooltip]="team.id" matTooltipPosition="right">
+            {{team.name}}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+    <div class="single-detail">
+      <mat-form-field class="full-width">
+        <input
+          type="text"
+          matInput
+          placeholder="Date Created"
+          value="{{ msel.dateCreated | date: 'MM/dd/yyyy' }}"
+          disabled
+        />
+      </mat-form-field>
+    </div>
+    <div class="single-detail">
+      <mat-form-field class="full-width">
+        <input
+          type="text"
+          matInput
+          placeholder="Created By"
+          value="{{ getUserName(msel.createdBy) }}"
+          disabled
+        />
+      </mat-form-field>
+    </div>
+  </div>
+</div>

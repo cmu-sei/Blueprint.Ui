@@ -1,0 +1,227 @@
+<!--
+Copyright 2022 Carnegie Mellon University. All Rights Reserved.
+ Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
+-->
+<div *ngIf="msel" style="height: 100%;">
+
+  <div style="height: 100%">
+    <section
+      matSort
+      (matSortChange)="sortChanged($event)"
+      class="mat-elevation-z2 mat-header-row background-alt"
+    >
+      <span class="mat-header-cell two-cell" mat-sort-header="controlnumber">
+        <button
+          mat-icon-button
+          (click)="addScenarioEvent(); $event.stopPropagation()"
+          style="outline: none; margin-right: 15px;"
+          title="Add new inject"
+        >
+          <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
+        </button>
+        Control Number
+      </span>
+      <span class="mat-header-cell one-cell" mat-sort-header="assignedto">Assigned To</span>
+      <span class="mat-header-cell one-cell" mat-sort-header="status">Status</span>
+      <span class="mat-header-cell one-cell" mat-sort-header="fromorg">From Org</span>
+      <span class="mat-header-cell one-cell" mat-sort-header="toorg">To Org</span>
+      <span class="mat-header-cell one-cell" mat-sort-header="description">Description</span>
+      <span class="mat-header-cell three-cell search-cell">
+        <mat-form-field class="search-control">
+          <input matInput [formControl]="filterControl" placeholder="Search" />
+        </mat-form-field>
+        <div style="width: 30px;">
+          <button
+            mat-icon-button
+            (click)="filterControl.setValue(''); $event.stopPropagation()"
+            style="outline: none;"
+            title="Clear Search"
+            [disabled]="!filterString"
+          >
+            <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
+          </button>
+        </div>
+
+
+
+      </span>
+    </section>
+
+    <section class="scrolling-region">
+      <!-- new scenario event fields -->
+      <mat-expansion-panel
+        *ngIf="isAddingScenarioEvent"
+        [expanded]="true"
+        (click)="$event.stopPropagation()"
+      >
+        <mat-expansion-panel-header
+          class="mat-row"
+        >
+          <div class="mat-cell flex-row-cell five-cell">
+            <span class="edit-buttons">
+              <button
+                mat-icon-button
+                (click)="saveNewScenarioEvent(); $event.stopPropagation()"
+                style="outline: none;"
+                title="Save new scenario event"
+              >
+                <mat-icon class="mdi-24px self-center" fontIcon="mdi-check"></mat-icon>
+              </button>
+              <button
+                mat-icon-button
+                (click)="cancelNewScenarioEvent(); $event.stopPropagation()"
+                style="outline: none;"
+                title="Cancel new scenario event"
+              >
+                <mat-icon class="mdi-24px self-center" fontIcon="mdi-close"></mat-icon>
+              </button>
+            </span>
+            <b>Creating New Scenario Event</b>
+          </div>
+          <div class="mat-cell flex-row-cell five-cell">&nbsp;</div>
+        </mat-expansion-panel-header>
+        <ng-template matExpansionPanelContent>
+          <div class="scrolling-details" (click)="$event.stopPropagation()">
+            <div class="scenario-event-detail" (click)="$event.stopPropagation();">
+              <div *ngFor="let df of moreDataFields" class="single-detail">
+                <mat-form-field class="full-width">
+                  <input
+                    type="text"
+                    matInput
+                    placeholder="{{ df.name }}"
+                    [(ngModel)]="dataValueList[newScenarioEvent.id][df.id]"
+                  />
+                </mat-form-field>
+              </div>
+            </div>
+            <div class="scenario-event-detail" (click)="$event.stopPropagation();">
+              <div class="single-detail">
+                <mat-form-field class="full-width">
+                  <textarea
+                    matInput
+                    rows="8"
+                    placeholder="Details"
+                    [(ngModel)]="dataValueList[newScenarioEvent.id][getDataFieldIdByName(newScenarioEvent, 'details')]"
+                  ></textarea>
+                </mat-form-field>
+              </div>
+            </div>
+          </div>
+        </ng-template>
+      </mat-expansion-panel>
+      <!-- existing scenario events -->
+      <mat-expansion-panel
+        *ngFor="
+          let item of sortedScenarioEvents;
+          trackBy: trackByFn
+        "
+        [expanded]="isExpandedScenarioEvent(item.id)"
+        (click)="selectScenarioEvent(item.id)"
+      >
+        <mat-expansion-panel-header
+          class="mat-row"
+          (contextmenu)="onContextMenu($event, item)"
+        >
+          <div class="mat-cell flex-row-cell two-cell">
+            <button
+              mat-icon-button
+              class="scenario-event-button"
+              (click)="copyScenarioEvent(item); $event.stopPropagation()"
+              title="Duplicate this inject"
+            >
+              <mat-icon class="mdi-18px up-12" fontIcon="mdi-content-copy"></mat-icon>
+            </button>
+            <button
+              mat-icon-button
+              class="scenario-event-button"
+              (click)="deleteScenarioEvent(item); $event.stopPropagation()"
+              title="Delete this inject"
+            >
+              <mat-icon class="mdi-18px up-12" fontIcon="mdi-delete"></mat-icon>
+            </button>
+            {{ getScenarioEventValue(item, 'controlnumber') }}
+          </div>
+          <div class="mat-cell one-cell center-self">{{ getScenarioEventValue(item, 'assignedto') }}</div>
+          <div class="mat-cell one-cell center-self">{{ item.status }}</div>
+          <div class="mat-cell one-cell center-self">{{ getScenarioEventValue(item, 'fromorg') }}</div>
+          <div class="mat-cell one-cell center-self">{{ getScenarioEventValue(item, 'toorg') }}</div>
+          <div class="mat-cell four-cell center-self">{{ getScenarioEventValue(item, 'description') }}</div>
+        </mat-expansion-panel-header>
+        <ng-template matExpansionPanelContent>
+          <div class="full-width" (click)="$event.stopPropagation();">
+            <span class="more-or-less">
+              <button
+                mat-icon-button
+                (click)="enableEditing(item); $event.stopPropagation()"
+                style="outline: none;"
+                title="Enable Editing"
+                *ngIf="isViewOnly(item)"
+              >
+                <mat-icon class="mdi-24px self-center" fontIcon="mdi-square-edit-outline"></mat-icon>
+              </button>
+              <button
+                mat-icon-button
+                (click)="saveUpdate(item); $event.stopPropagation()"
+                style="outline: none;"
+                title="Save Changes"
+                *ngIf="!isViewOnly(item)"
+              >
+                <mat-icon class="mdi-24px self-center" fontIcon="mdi-check"></mat-icon>
+              </button>
+              <button
+                mat-icon-button
+                (click)="resetUpdate(item); $event.stopPropagation()"
+                style="outline: none;"
+                title="Cancel Changes"
+                *ngIf="!isViewOnly(item)"
+              >
+                <mat-icon class="mdi-24px self-center" fontIcon="mdi-close"></mat-icon>
+              </button>
+            </span>
+            <span class="edit-buttons">&nbsp;</span>
+          </div>
+          <div class="scrolling-details" (click)="$event.stopPropagation()">
+            <div class="scenario-event-detail" (click)="$event.stopPropagation();">
+              <div class="single-detail">
+                <mat-form-field class="full-width">
+                  <textarea
+                    matInput
+                    rows="8"
+                    placeholder="Details"
+                    [(ngModel)]="dataValueList[item.id][getDataFieldIdByName(item, 'details')]"
+                    [disabled]="isViewOnly(item)"
+                  ></textarea>
+                </mat-form-field>
+              </div>
+            </div>
+            <div class="full-width" (click)="$event.stopPropagation();">
+              <span class="more-or-less">
+                <button mat-button color="primary" title="More" (click)="selectMoreScenarioEvent(item.id)" *ngIf="!isExpandedMoreScenarioEvent(item.id)">
+                  <mat-icon style="margin-bottom: 12px;" fontIcon="mdi-chevron-double-down" alt="More"></mat-icon> More
+                </button>
+                <button mat-button color="primary" title="Less" (click)="selectMoreScenarioEvent(item.id)" *ngIf="isExpandedMoreScenarioEvent(item.id)">
+                  <mat-icon style="margin-bottom: 12px;" fontIcon="mdi-chevron-double-up" alt="Less"></mat-icon> Less
+                </button>
+              </span>
+              <span class="edit-buttons">&nbsp;</span>
+            </div>
+            <div class="scenario-event-detail" (click)="$event.stopPropagation();" *ngIf="isExpandedMoreScenarioEvent(item.id)">
+              <div *ngFor="let df of moreDataFields" class="single-detail">
+                <mat-form-field class="full-width">
+                  <input
+                    type="text"
+                    matInput
+                    placeholder="{{ df.name }}"
+                    [(ngModel)]="dataValueList[item.id][df.id]"
+                    [disabled]="isDisabled(item, df.name)"
+                  />
+                </mat-form-field>
+              </div>
+            </div>
+          </div>
+        </ng-template>
+      </mat-expansion-panel>
+    </section>
+  </div>
+</div>
+

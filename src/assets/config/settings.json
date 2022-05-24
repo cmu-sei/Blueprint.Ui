@@ -1,0 +1,20 @@
+{
+    "ApiUrl": "http://localhost:4724",
+    "GalleryApiUrl": "http://localhost:4722",
+    "OIDCSettings": {
+        "authority": "http://localhost:5000/",
+        "client_id": "blueprint.ui",
+        "redirect_uri": "http://localhost:4725/auth-callback",
+        "post_logout_redirect_uri": "http://localhost:4725",
+        "response_type": "code",
+        "scope": "openid profile blueprint-api gallery-api",
+        "automaticSilentRenew": true,
+        "silent_redirect_uri": "http://localhost:4725/auth-callback-silent"
+    },
+    "AppTitle": "Blueprint",
+    "AppTopBarHexColor": "#2d69b4",
+    "AppTopBarHexTextColor": "#FFFFFF",
+    "AppTopBarText": "Blueprint - Collaborative MSEL Creation",
+    "AppTopBarImage": "/assets/img/pencil-ruler-white.png",
+    "UseLocalAuthStorage": false
+}

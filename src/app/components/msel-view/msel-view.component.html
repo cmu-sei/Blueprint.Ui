@@ -1,0 +1,36 @@
+<!--
+Copyright 2022 Carnegie Mellon University. All Rights Reserved.
+ Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
+-->
+<div *ngIf="msel" style="height: 100%;">
+  <div style="height: 100%">
+    <section
+      class="mat-elevation-z2 mat-header-row background-alt"
+    >
+      <span class="mat-header-cell one-cell time-cell">Actual Time</span>
+      <span class="mat-header-cell one-cell">Control Number</span>
+      <span class="mat-header-cell one-cell">From Org</span>
+      <span class="mat-header-cell one-cell">To Org</span>
+      <span class="mat-header-cell two-cell">Description</span>
+      <span class="mat-header-cell four-cell">Details</span>
+    </section>
+
+    <section [ngStyle]="{ 'height': getScrollingHeight(), 'overflow': 'auto'}">
+      <mat-expansion-panel
+        *ngFor="let item of sortedScenarioEvents"
+        disabled
+      >
+        <mat-expansion-panel-header
+          class="mat-row wrap-me"
+        >
+          <div class="mat-cell one-cell time-cell center-self">{{ getScenarioEventValue(item, 'time') }}</div>
+          <div class="mat-cell one-cell center-self">{{ getScenarioEventValue(item, 'controlnumber') }}</div>
+          <div class="mat-cell one-cell center-self">{{ getScenarioEventValue(item, 'fromorg') }}</div>
+          <div class="mat-cell one-cell center-self">{{ getScenarioEventValue(item, 'toorg') }}</div>
+          <div class="mat-cell two-cell center-self">{{ getScenarioEventValue(item, 'description') }}</div>
+          <div class="mat-cell four-cell wrap-me">{{ getScenarioEventValue(item, 'details').substr(0, 400) }} <span *ngIf="moreToShow(item, 'details')"> ... </span></div>
+        </mat-expansion-panel-header>
+      </mat-expansion-panel>
+    </section>
+  </div>
+</div>

@@ -1,0 +1,34 @@
+// Copyright 2022 Carnegie Mellon University. All Rights Reserved.
+// Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
+
+.icon-text {
+  margin-left: 10px;
+  font-family: open_sansbold;
+}
+
+.blueprint-logo {
+  position: absolute;
+  bottom: 0;
+}
+
+.showhand {
+  cursor: pointer;
+}
+
+.lefticon {
+  padding: 0.5em;
+}
+
+.righticon {
+  align-self: flex-end;
+}
+
+.application-name {
+  width: 160px;
+}
+
+.blueprint-icon {
+  transform: scale(2);
+  width: 60px;
+}
+

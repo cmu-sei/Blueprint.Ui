@@ -1,0 +1,144 @@
+<!--
+Copyright 2022 Carnegie Mellon University. All Rights Reserved.
+ Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
+-->
+
+<div class="background text app-content-container">
+  <app-topbar
+    *ngIf="!hideTopbar"
+    [title]="topbarText"
+    [topbarView]="TopbarView.STEAMFITTER_ADMIN"
+    [topbarColor]="topbarColor"
+    [topbarTextColor]="topbarTextColor"
+    [imageFilePath]="topbarImage"
+  ></app-topbar>
+
+  <mat-sidenav-container fxFlex autosize>
+    <mat-sidenav
+      class="appbarmenu-container"
+      #sidenav
+      mode="side"
+      [(opened)]="isSidebarOpen"
+    >
+      <mat-list>
+        <mat-list-item class="appslist" title="Exit Administration">
+          <button
+            aria-label="Exit Administration"
+            fxLayoutAlign="start center"
+            mat-icon-button
+            [routerLink]="['/']"
+            style="outline: none"
+          >
+            <mat-icon
+              class="mdi-24px"
+              fontIcon="mdi-close-circle-outline"
+            ></mat-icon>
+          </button>
+          <a class="nolink" [routerLink]="['/']">
+            <div fxLayout="row" fxLayoutAlign="middle center">
+              <h2 class="icon-text">Administration</h2>
+            </div>
+          </a>
+          <mat-divider></mat-divider>
+        </mat-list-item>
+        <mat-list-item
+          *ngIf="isSuperUser"
+          class="showhand highlight"
+          [ngClass]="getSelectedClass(teamsText)"
+          id="wrapper"
+          (click)="gotoSection(teamsText)"
+        >
+          <div class="lefticon">
+            <mat-icon
+              class="mdi-36px"
+              fontIcon="mdi-account-multiple"
+              [ngStyle]="{ color: topbarColor }"
+            ></mat-icon>
+          </div>
+
+          <div id="teamsText" class="application-name">
+            {{ teamsText }}
+          </div>
+
+          <div>
+            <button aria-labelledby="teamsText" mat-icon-button>
+              <mat-icon
+                class="icon-color"
+                fontIcon="mdi-chevron-right"
+              ></mat-icon>
+            </button>
+          </div>
+        </mat-list-item>
+        <mat-list-item
+          *ngIf="isSuperUser"
+          class="showhand highlight"
+          [ngClass]="getSelectedClass(usersText)"
+          id="wrapper"
+          (click)="gotoSection(usersText)"
+        >
+          <div class="lefticon">
+            <mat-icon
+              class="mdi-36px"
+              fontIcon="mdi-account"
+              [ngStyle]="{ color: topbarColor }"
+            ></mat-icon>
+          </div>
+
+          <div id="usersText" class="application-name">
+            {{ usersText }}
+          </div>
+
+          <div>
+            <button aria-labelledby="usersText" mat-icon-button>
+              <mat-icon
+                class="icon-color"
+                fontIcon="mdi-chevron-right"
+              ></mat-icon>
+            </button>
+          </div>
+        </mat-list-item>
+      </mat-list>
+      <img
+        class="cmu-logo"
+        [src]="
+          (theme$ | async) === 'light-theme'
+            ? '/assets/img/cmu-red-gray.png'
+            : '/assets/img/cmu-red-gray.png'
+        "
+      />
+    </mat-sidenav>
+    <mat-sidenav-content>
+      <span *ngIf="isSuperUser && ((showSection | async) === teamsText)">
+        <app-admin-teams
+          [teamList]="teamList | async"
+          [userList]="userList | async"
+          [filterControl]="filterControl"
+          [pageSize]="pageSize | async"
+          [pageIndex]="pageIndex | async"
+          [filterString]="filterString | async"
+          (deleteUser)="deleteUserHandler($event)"
+          (sortChange)="sortChangeHandler($event)"
+          (pageChange)="pageChangeHandler($event)"
+        >
+        </app-admin-teams>
+      </span>
+      <span *ngIf="isSuperUser && ((showSection | async) === usersText)">
+        <app-admin-users
+          [userList]="userList | async"
+          [permissionList]="permissionList | async"
+          [filterControl]="filterControl"
+          [pageSize]="pageSize | async"
+          [pageIndex]="pageIndex | async"
+          [filterString]="filterString | async"
+          (removeUserPermission)="removeUserPermissionHandler($event)"
+          (addUserPermission)="addUserPermissionHandler($event)"
+          (addUser)="addUserHandler($event)"
+          (deleteUser)="deleteUserHandler($event)"
+          (sortChange)="sortChangeHandler($event)"
+          (pageChange)="pageChangeHandler($event)"
+        >
+        </app-admin-users>
+      </span>
+    </mat-sidenav-content>
+  </mat-sidenav-container>
+</div>

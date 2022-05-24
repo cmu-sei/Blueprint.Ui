@@ -1,0 +1,56 @@
+// Copyright 2022 Carnegie Mellon University. All Rights Reserved.
+// Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
+
+.cards {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.card {
+  flex: 1 0 500px;
+  box-sizing: border-box;
+  margin: 1rem .25em;
+  cursor: pointer;
+}
+
+@media screen and (min-width: 40em) {
+  .card {
+     max-width: calc(50% -  1em);
+  }
+}
+
+@media screen and (min-width: 60em) {
+  .card {
+      max-width: calc(33.3% - 1em);
+  }
+}
+
+@media screen and (min-width: 80em) {
+  .card {
+      max-width: calc(25% - 1em);
+  }
+}
+
+.centered {
+  margin: 0 auto;
+  padding: 0 1em;
+}
+
+.action-buttons {
+  text-align: center;
+}
+
+.article-title {
+  margin-top: 8px;
+  font-size: 16pt;
+  font-weight: bold;
+}
+
+.article-text {
+  margin-top: 8px;
+  font-size: 16px;
+  white-space: pre-wrap;
+  text-align: left !important;
+}
+
