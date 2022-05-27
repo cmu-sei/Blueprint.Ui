@@ -33,11 +33,6 @@ import { MatDialog } from '@angular/material/dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { v4 as uuidv4 } from 'uuid';
 
-export enum Section {
-  dashboard = 'dashboard',
-  scoresheet = 'scoresheet'
-}
-
 @Component({
   selector: 'app-data-field-list',
   templateUrl: './data-field-list.component.html',
@@ -118,9 +113,10 @@ export class DataFieldListComponent implements OnDestroy {
   }
 
   editDataField(dataField: DataField) {
-    if (this.editingId === dataField.id) {
+    if (this.isAddingDataField) {
       return;
     }
+    // previous edit has not been saved, so prompt
     if (this.valuesHaveBeenChanged()) {
       this.dialogService
       .confirm(
@@ -133,19 +129,23 @@ export class DataFieldListComponent implements OnDestroy {
         }
         this.setEditing(dataField);
       });
-      return false;
     } else {
       this.setEditing(dataField);
     }
   }
 
   setEditing(dataField) {
-    this.changedDataField = {... dataField};
-    this.changedDataField.dataOptions = [];
-    dataField.dataOptions.forEach(datOp => {
-      this.changedDataField.dataOptions.push(datOp);
-    });
-    this.editingId = dataField.id;
+    if (dataField.id === this.editingId) {
+      this.editingId = '';
+      this.changedDataField = {};
+    } else {
+      this.editingId = dataField.id;
+      this.changedDataField = {... dataField};
+      this.changedDataField.dataOptions = [];
+      dataField.dataOptions.forEach(datOp => {
+        this.changedDataField.dataOptions.push(datOp);
+      });
+    }
   }
 
   valuesHaveBeenChanged() {

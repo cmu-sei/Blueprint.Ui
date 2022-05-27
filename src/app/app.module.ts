@@ -64,6 +64,7 @@ import { AdminUsersComponent } from './components/admin/admin-users/admin-users.
 import { DataFieldListComponent } from './components/data-field-list/data-field-list.component';
 import { DataOptionEditDialogComponent } from './components/data-option-edit-dialog/data-option-edit-dialog.component';
 import { HomeAppComponent } from './components/home-app/home-app.component';
+import { MoveListComponent } from './components/move-list/move-list.component';
 import { MselComponent } from './components/msel/msel.component';
 import { MselInfoComponent } from './components/msel-info/msel-info.component';
 import { MselListComponent } from './components/msel-list/msel-list.component';
@@ -95,6 +96,7 @@ export function getBasePath(settingsSvc: ComnSettingsService) {
     DataFieldListComponent,
     DataOptionEditDialogComponent,
     HomeAppComponent,
+    MoveListComponent,
     MselComponent,
     MselInfoComponent,
     MselListComponent,

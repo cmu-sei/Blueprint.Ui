@@ -1,0 +1,182 @@
+<!--
+Copyright 2022 Carnegie Mellon University. All Rights Reserved.
+ Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
+-->
+<div *ngIf="msel" style="height: 100%;">
+
+  <div style="height: 100%">
+    <section
+      matSort
+      (matSortChange)="sortChanged($event)"
+      class="mat-elevation-z2 mat-header-row background-alt"
+    >
+      <span class="mat-header-cell two-cell" mat-sort-header="moveNumber">
+        <button
+          mat-icon-button
+          (click)="addMove(); $event.stopPropagation()"
+          style="outline: none; margin-right: 15px;"
+          title="Add new move"
+          [disabled]="isAddingMove || valuesHaveBeenChanged()"
+        >
+          <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
+        </button>
+        Move Number
+      </span>
+      <span class="mat-header-cell five-cell" mat-sort-header="description">Description</span>
+      <span class="mat-header-cell three-cell search-cell">
+        <mat-form-field class="search-control">
+          <input matInput [formControl]="filterControl" placeholder="Search" />
+        </mat-form-field>
+        <div style="width: 30px;">
+          <button
+            mat-icon-button
+            (click)="filterControl.setValue(''); $event.stopPropagation()"
+            style="outline: none;"
+            title="Clear Search"
+            [disabled]="!filterString"
+          >
+            <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
+          </button>
+        </div>
+      </span>
+    </section>
+
+    <section class="scrolling-region">
+      <!-- new move -->
+      <mat-expansion-panel *ngIf="isAddingMove" expanded="true">
+        <mat-expansion-panel-header
+          class="mat-row"
+          (click)="$event.stopPropagation();"
+        >
+          <div class="mat-cell flex-row-cell five-cell" (click)="$event.stopPropagation();">
+            <span class="edit-buttons">
+              <button
+                mat-icon-button
+                (click)="saveNewMove(); $event.stopPropagation()"
+                style="outline: none;"
+                title="Save new move"
+              >
+                <mat-icon class="mdi-24px self-center" fontIcon="mdi-check"></mat-icon>
+              </button>
+              <button
+                mat-icon-button
+                (click)="cancelNewMove(); $event.stopPropagation()"
+                style="outline: none;"
+                title="Cancel new move"
+              >
+                <mat-icon class="mdi-24px self-center" fontIcon="mdi-close"></mat-icon>
+              </button>
+            </span>
+            <b>Creating New Move</b>
+          </div>
+          <div class="mat-cell flex-row-cell five-cell">&nbsp;</div>
+        </mat-expansion-panel-header>
+        <ng-template matExpansionPanelContent>
+          <div class="move-detail" (click)="$event.stopPropagation();">
+            <div class="single-detail">
+              <mat-form-field class="full-width">
+                <input
+                  type="text"
+                  matInput
+                  placeholder="Move Number"
+                  [(ngModel)]="changedMove.moveNumber"
+                />
+              </mat-form-field>
+            </div>
+          </div>
+          <div class="move-detail" (click)="$event.stopPropagation();">
+            <div class="single-detail">
+              <mat-form-field class="full-width">
+                <input
+                  type="text"
+                  matInput
+                  placeholder="description"
+                  [(ngModel)]="changedMove.description"
+                />
+              </mat-form-field>
+            </div>
+          </div>
+        </ng-template>
+      </mat-expansion-panel>
+
+
+      <!-- existing moves -->
+      <mat-expansion-panel
+        *ngFor="let item of sortedMoves;"
+        [expanded]="editingId === item.id"
+        [disabled]="noExpansionChangeAllowed()"
+      >
+        <mat-expansion-panel-header
+          class="mat-row"
+          (click)="editMove(item); $event.stopPropagation();"
+        >
+          <div class="mat-cell flex-row-cell two-cell">
+            <button
+              mat-icon-button
+              class="move-button"
+              title="Edit this move"
+            >
+              <mat-icon class="mdi-18px up-12" fontIcon="mdi-square-edit-outline"></mat-icon>
+            </button>
+            <button
+              mat-icon-button
+              class="move-button"
+              (click)="deleteMove(item); $event.stopPropagation()"
+              title="Delete this move"
+            >
+              <mat-icon class="mdi-18px up-12" fontIcon="mdi-delete"></mat-icon>
+            </button>
+            &nbsp;{{ item.moveNumber }}
+          </div>
+          <div class="mat-cell eight-cell center-self">{{ item.description }}</div>
+        </mat-expansion-panel-header>
+        <ng-template matExpansionPanelContent>
+          <div class="move-detail" (click)="$event.stopPropagation();">
+            <div class="single-detail">
+              <mat-form-field class="full-width">
+                <input
+                  type="text"
+                  matInput
+                  placeholder="Display Order"
+                  [(ngModel)]="changedMove.moveNumber"
+                />
+              </mat-form-field>
+            </div>
+          </div>
+          <div class="move-detail" (click)="$event.stopPropagation();">
+            <div class="single-detail">
+              <mat-form-field class="full-width">
+                <mat-label>description</mat-label>
+                <input
+                  type="text"
+                  matInput
+                  [(ngModel)]="changedMove.description"
+                />
+              </mat-form-field>
+            </div>
+          </div>
+          <div *ngIf="valuesHaveBeenChanged()" (click)="$event.stopPropagation();">
+            <span class="edit-buttons">
+              <button
+                mat-icon-button
+                (click)="saveMove();"
+                style="outline: none;"
+                title="Save new move"
+              >
+                <mat-icon class="mdi-24px self-center" fontIcon="mdi-check"></mat-icon>
+              </button>
+              <button
+                mat-icon-button
+                (click)="resetMove();"
+                style="outline: none;"
+                title="Cancel new move"
+              >
+                <mat-icon class="mdi-24px self-center" fontIcon="mdi-close"></mat-icon>
+              </button>
+            </span>
+          </div>
+        </ng-template>
+      </mat-expansion-panel>
+    </section>
+  </div>
+</div>
