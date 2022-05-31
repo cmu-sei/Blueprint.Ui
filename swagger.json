@@ -1664,19 +1664,19 @@
               "text/plain": {
                 "schema": {
                   "type": "string",
-                  "format": "binary"
+                  "format": "uuid"
                 }
               },
               "application/json": {
                 "schema": {
                   "type": "string",
-                  "format": "binary"
+                  "format": "uuid"
                 }
               },
               "text/json": {
                 "schema": {
                   "type": "string",
-                  "format": "binary"
+                  "format": "uuid"
                 }
               }
             }
@@ -1731,6 +1731,292 @@
                 "schema": {
                   "type": "string",
                   "format": "binary"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/msels/{mselId}/organizations": {
+      "get": {
+        "tags": [
+          "Organization"
+        ],
+        "summary": "Gets Organizations by msel",
+        "description": "Returns a list of Organizations for the msel.",
+        "operationId": "getByMsel",
+        "parameters": [
+          {
+            "name": "mselId",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Organization"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Organization"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Organization"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/organizations/{id}": {
+      "get": {
+        "tags": [
+          "Organization"
+        ],
+        "summary": "Gets a specific Organization by id",
+        "description": "Returns the Organization with the id specified",
+        "operationId": "getOrganization",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The id of the Organization",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Organization"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Organization"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Organization"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Organization"
+        ],
+        "summary": "Updates a  Organization",
+        "description": "Updates a Organization with the attributes specified.\r\nThe ID from the route MUST MATCH the ID contained in the organization parameter\r\n<para />\r\nAccessible only to a ContentDeveloper or an Administrator",
+        "operationId": "updateOrganization",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The Id of the Organization to update",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "The updated Organization values",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Organization"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Organization"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Organization"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Organization"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Organization"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Organization"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Organization"
+        ],
+        "summary": "Deletes a  Organization",
+        "description": "Deletes a  Organization with the specified id\r\n<para />\r\nAccessible only to a ContentDeveloper or an Administrator",
+        "operationId": "deleteOrganization",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The id of the Organization to delete",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Success"
+          },
+          "default": {
+            "description": "Problem response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/organizations": {
+      "post": {
+        "tags": [
+          "Organization"
+        ],
+        "summary": "Creates a new Organization",
+        "description": "Creates a new Organization with the attributes specified\r\n<para />\r\nAccessible only to a ContentDeveloper or an Administrator",
+        "operationId": "createOrganization",
+        "requestBody": {
+          "description": "The data used to create the Organization",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Organization"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Organization"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Organization"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Organization"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Organization"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Organization"
                 }
               }
             }
@@ -5913,6 +6199,46 @@
         },
         "additionalProperties": false
       },
+      "Organization": {
+        "type": "object",
+        "properties": {
+          "dateCreated": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "dateModified": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "createdBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "modifiedBy": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "mselId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "additionalProperties": false
+      },
       "ParameterAttributes": {
         "enum": [
           "None",
@@ -6202,6 +6528,10 @@
             "type": "integer",
             "format": "int32"
           },
+          "group": {
+            "type": "string",
+            "nullable": true
+          },
           "scenarioEventNumber": {
             "type": "integer",
             "format": "int32"
@@ -6209,6 +6539,9 @@
           "mselId": {
             "type": "string",
             "format": "uuid"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ItemStatus"
           },
           "dataValues": {
             "type": "array",
