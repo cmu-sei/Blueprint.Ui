@@ -1,5 +1,5 @@
 /*
-Copyright 2022 Carnegie Mellon University. All Rights Reserved. 
+Copyright 2022 Carnegie Mellon University. All Rights Reserved.
  Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 */
 
@@ -51,6 +51,7 @@ export * from './move';
 export * from './msel';
 export * from './mselRole';
 export * from './numberFormatInfo';
+export * from './organization';
 export * from './parameterAttributes';
 export * from './parameterInfo';
 export * from './permission';
