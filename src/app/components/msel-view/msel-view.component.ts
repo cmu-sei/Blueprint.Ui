@@ -24,11 +24,6 @@ import { MoveDataService } from 'src/app/data/move/move-data.service';
 import { Sort } from '@angular/material/sort';
 import { MatMenuTrigger } from '@angular/material/menu';
 
-export enum Section {
-  dashboard = 'dashboard',
-  scoresheet = 'scoresheet'
-}
-
 @Component({
   selector: 'app-msel-view',
   templateUrl: './msel-view.component.html',

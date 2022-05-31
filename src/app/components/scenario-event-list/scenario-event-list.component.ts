@@ -31,11 +31,6 @@ import { DataValueDataService } from  'src/app/data/data-value/data-value-data.s
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { v4 as uuidv4 } from 'uuid';
 
-export enum Section {
-  dashboard = 'dashboard',
-  scoresheet = 'scoresheet'
-}
-
 @Component({
   selector: 'app-scenario-event-list',
   templateUrl: './scenario-event-list.component.html',

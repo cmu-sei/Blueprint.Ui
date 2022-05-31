@@ -24,11 +24,6 @@ import { MoveDataService } from 'src/app/data/move/move-data.service';
 import { MatDialog } from '@angular/material/dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 
-export enum Section {
-  dashboard = 'dashboard',
-  scoresheet = 'scoresheet'
-}
-
 @Component({
   selector: 'app-msel-list',
   templateUrl: './msel-list.component.html',
