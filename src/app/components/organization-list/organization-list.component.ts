@@ -43,7 +43,11 @@ export class OrganizationListComponent implements OnDestroy {
   sortedOrganizations: Organization[] = [];
   isAddingOrganization = false;
   editingId = '';
-
+  editorStyle = {
+    'min-height': '100px',
+    'max-height': '400px',
+    'overflow': 'auto'
+  };
   private unsubscribe$ = new Subject();
   // context menu
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;

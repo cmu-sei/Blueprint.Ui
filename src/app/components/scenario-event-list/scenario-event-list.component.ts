@@ -53,8 +53,12 @@ export class ScenarioEventListComponent implements OnDestroy {
   editingValueList = new Map<string, string>();
   newScenarioEvent: ScenarioEvent;
   isAddingScenarioEvent = false;
-
   private unsubscribe$ = new Subject();
+  editorStyle = {
+    'min-height': '100px',
+    'max-height': '400px',
+    'overflow': 'auto'
+  };
   // context menu
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
   contextMenuPosition = { x: '0px', y: '0px' };

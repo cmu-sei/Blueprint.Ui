@@ -86,7 +86,7 @@
 .single-detail {
   display: flex;
   flex: 10;
-  flex-flow: row;
+  flex-flow: column;
   align-items: flex-start;
   width: 60%;
 }
@@ -117,7 +117,8 @@
 }
 
 .scrolling-details {
-  max-height: calc(100vh - 293px);
+  min-height: 80px;
+  max-height: calc(100vh - 250px);
   overflow: auto;
 }
 
@@ -131,6 +132,15 @@ textarea {
   width: 30px;
   height: 30px;
   align-self: center;
+}
+
+.description-in-list {
+  flex: 7;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  align-self: center;
+  text-align: left;
 }
 
 .up-12 {
