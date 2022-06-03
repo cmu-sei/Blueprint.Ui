@@ -3,12 +3,61 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
  Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
 
+<section
+  class="mat-elevation-z2 background-alt header-row"
+>
+  <div class="header-cell one-cell">
+    <button
+      mat-icon-button
+      (click)="addMsel(); $event.stopPropagation()"
+      style="outline: none; margin-right: 15px;"
+      title="Add blank MSEL"
+    >
+      <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
+      Blank MSEL
+    </button>
+  </div>
+  <div class="header-cell one-cell">
+    <button
+      mat-icon-button
+      (click)="uploadFile('', ''); fileInput.click(); $event.stopPropagation();"
+      style="outline: none; margin-right: 15px;"
+      title="Add MSEL from .xlsx file"
+    >
+      <mat-icon class="mdi-24px self-center" fontIcon="mdi-upload"></mat-icon>
+      Upload .xlsx
+    </button>
+  </div>
+  <div class="header-cell four-cell" matSort (matSortChange)="sortChanged($event)">
+    <div class="one-cell">&nbsp;</div>
+    <div class="two-cell">Sort by:</div>
+    <div class="two-cell" mat-sort-header="description">Description</div>
+    <div class="two-cell" mat-sort-header="dateCreated">Created</div>
+    <div class="one-cell">&nbsp;</div>
+  </div>
+  <div class="header-cell four-cell">
+    <mat-form-field class="search-control">
+      <input matInput [formControl]="filterControl" placeholder="Search" />
+    </mat-form-field>
+    <div class="clear-search-button">
+      <button
+        mat-icon-button
+        (click)="filterControl.setValue(''); $event.stopPropagation()"
+        style="outline: none;"
+        title="Clear Search"
+        [disabled]="!filterString"
+      >
+        <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
+      </button>
+    </div>
+  </div>
+</section>
 <section class="cards">
-  <mat-card class="card highlight" *ngFor="let msel of mselList" (click)="openMsel(msel.id, '')">
+  <mat-card class="card highlight" *ngFor="let msel of filteredMselList" (click)="openMsel(msel.id, '')">
     <mat-card-header>
-      <mat-card-title class="article-title">{{msel.description}}</mat-card-title>
+      <mat-card-title class="msel-title">{{msel.description}}</mat-card-title>
     </mat-card-header>
-    <mat-card-content class="article-text" contenteditable="false">
+    <mat-card-content class="msel-text" contenteditable="false">
       <span>Status: {{ msel.status }}</span> <span *ngIf="msel.isTemplate"> - Template </span><br />
       <span *ngIf="msel.teamId">Team Access</span>
       <span *ngIf="!msel.teamId">Public Access</span><br />
@@ -17,31 +66,17 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
       <span *ngIf="msel.dateModified">Modified: {{ msel.dateModified | date: 'MM/dd/yyyy' }}</span><br />
     </mat-card-content>
     <mat-card-actions class="action-buttons">
-      <button mat-button class="article-action" (click)="downloadFile(msel); $event.stopPropagation();" title="Download .xlsx file">
+      <button mat-button class="msel-action" (click)="downloadFile(msel); $event.stopPropagation();" title="Download .xlsx file">
         <mat-icon style="margin-bottom: 12px;" fontIcon="mdi-download" alt="Download .xlsx file"></mat-icon> Download
       </button>
-      <button mat-button class="article-action" (click)="uploadFile(msel.id, msel.teamId); fileInput.click(); $event.stopPropagation();" title="Upload .xlsx file">
+      <button mat-button class="msel-action" (click)="uploadFile(msel.id, msel.teamId); fileInput.click(); $event.stopPropagation();" title="Upload .xlsx file">
         <mat-icon style="margin-bottom: 12px;" fontIcon="mdi-upload" alt="Upload .xlsx file"></mat-icon> Upload
       </button>
-      <button mat-button class="article-action" (click)="delete(msel); $event.stopPropagation();" title="Delete">
+      <button mat-button class="msel-action" (click)="delete(msel); $event.stopPropagation();" title="Delete">
         <mat-icon style="margin-bottom: 12px;" fontIcon="mdi-delete" alt="Delete"></mat-icon> Delete
       </button>
-      <button mat-button class="article-action" (click)="copy(msel); $event.stopPropagation();" title="Copy" disabled>
+      <button mat-button class="msel-action" (click)="copyMsel(msel); $event.stopPropagation();" title="Copy" disabled>
         <mat-icon style="margin-bottom: 12px;" fontIcon="mdi-content-copy" alt="Copy"></mat-icon> Copy
-      </button>
-    </mat-card-actions>
-  </mat-card>
-  <mat-card class="card highlight">
-    <mat-card-header>
-      <mat-card-title class="article-title">New MSEL</mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
-      <span>Create a new MSEL from an .xlsx file.</span>
-      <h4 *ngIf="uploading">{{ uploadProgress }}% complete</h4>
-    </mat-card-content>
-    <mat-card-actions class="action-buttons">
-      <button mat-button class="article-action" (click)="uploadFile('', ''); fileInput.click(); $event.stopPropagation();" title="Upload .xlsx file">
-        <mat-icon style="margin-bottom: 12px;" fontIcon="mdi-upload" alt="Upload .xlsx file"></mat-icon> Upload
       </button>
     </mat-card-actions>
   </mat-card>

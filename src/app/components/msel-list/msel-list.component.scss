@@ -32,25 +32,76 @@
   }
 }
 
-.centered {
-  margin: 0 auto;
-  padding: 0 1em;
+.search-control {
+  width: 100%;
+}
+
+.clear-search-button {
+  align-self: center;
+  width: 30px;
 }
 
 .action-buttons {
   text-align: center;
 }
 
-.article-title {
+.msel-title {
   margin-top: 8px;
   font-size: 16pt;
   font-weight: bold;
 }
 
-.article-text {
+.msel-text {
   margin-top: 8px;
   font-size: 16px;
   white-space: pre-wrap;
   text-align: left !important;
 }
 
+.header-row {
+  display: flex;
+  flex-direction: row;
+  border-bottom-width: 1px;
+  border-bottom-style: solid;
+  align-items: center;
+  box-sizing: border-box;
+  height: 65px;
+  padding-left:30px;
+  padding-right: 50px;
+}
+
+.header-cell {
+  display: flex;
+  flex-direction: row;
+  overflow: hidden;
+  word-wrap: break-word;
+  font-weight: bold;
+}
+
+.eight-cell {
+  flex: 8;
+}
+
+.five-cell {
+  flex: 5;
+}
+
+.four-cell {
+  flex: 4;
+}
+
+.three-cell {
+  flex: 3;
+}
+
+.two-cell {
+  flex: 2;
+}
+
+.one-cell {
+  flex: 1;
+}
+
+.center-self {
+  align-self: center;
+}

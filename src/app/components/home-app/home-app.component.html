@@ -31,9 +31,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
     </button>
   </div>
   <section *ngIf="!selectedMselId">
-    <app-msel-list
-      [mselList]="mselList | async"
-    ></app-msel-list>
+    <app-msel-list></app-msel-list>
   </section>
   <section *ngIf="selectedMselId">
     <app-msel></app-msel>

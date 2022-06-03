@@ -2,8 +2,10 @@
 // Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
 import { Component, Input, OnDestroy, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { HttpEventType, HttpResponse } from '@angular/common/http';
+import { FormControl } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSidenav } from '@angular/material/sidenav';
+import { Sort } from '@angular/material/sort';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, Observable, BehaviorSubject } from 'rxjs';
 import { take, takeUntil } from 'rxjs/operators';
@@ -20,7 +22,6 @@ import {
 } from 'src/app/generated/blueprint.api';
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
-import { MoveDataService } from 'src/app/data/move/move-data.service';
 import { MatDialog } from '@angular/material/dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 
@@ -30,7 +31,7 @@ import { DialogService } from 'src/app/services/dialog/dialog.service';
   styleUrls: ['./msel-list.component.scss'],
 })
 export class MselListComponent implements OnDestroy, OnInit {
-  @Input() mselList: Msel[];
+  mselList: Msel[] = [];
   private unsubscribe$ = new Subject();
   isReady = false;
   uploadProgress = 0;
@@ -38,6 +39,11 @@ export class MselListComponent implements OnDestroy, OnInit {
   uploadMselId = '';
   uploadTeamId = '';
   @ViewChild('fileInput') fileInput: ElementRef<HTMLInputElement>;
+  filteredMselList: Msel[] = [];
+  filterControl = new FormControl();
+  filterString = '';
+  sort: Sort = {active: 'dateCreated', direction: 'desc'};
+  sortedMselList: Msel[] = [];
 
   constructor(
     activatedRoute: ActivatedRoute,
@@ -51,11 +57,17 @@ export class MselListComponent implements OnDestroy, OnInit {
     private mselQuery: MselQuery
   ) {
     // subscribe to MSELs loading
-    this.mselQuery.selectLoading()
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe((isLoading) => {
-        this.isReady = !isLoading;
-      });
+    this.mselQuery.selectLoading().pipe(takeUntil(this.unsubscribe$)).subscribe((isLoading) => {
+      this.isReady = !isLoading;
+    });
+    this.mselQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe((msels) => {
+      this.mselList = msels;
+      this.getFilteredMsels();
+    });
+    this.filterControl.valueChanges.pipe(takeUntil(this.unsubscribe$)).subscribe((term) => {
+      this.filterString = term;
+      this.getFilteredMsels();
+    });
   }
 
   ngOnInit() {
@@ -123,7 +135,15 @@ export class MselListComponent implements OnDestroy, OnInit {
     );
   }
 
-  copy(msel: Msel): void {
+  addMsel() {
+    const current = new Date();
+    this.mselDataService.add({
+      description: 'A new MSEL ' + current.toLocaleString(),
+      status: 'Pending'
+    });
+  }
+
+  copyMsel(msel: Msel): void {
     // not implemented
   }
 
@@ -138,6 +158,55 @@ export class MselListComponent implements OnDestroy, OnInit {
           this.mselDataService.delete(msel.id);
         }
       });
+  }
+
+  getFilteredMsels() {
+    let filteredMsels: Msel[] = [];
+    if (this.mselList) {
+      this.mselList.forEach(m => {
+        filteredMsels.push({... m});
+      });
+      if (filteredMsels && filteredMsels.length > 0 && this.filterString) {
+        var filterString = this.filterString.toLowerCase();
+        filteredMsels = filteredMsels
+          .filter((a) =>
+            a.description.toLowerCase().includes(filterString) ||
+            a.status.toLowerCase().includes(filterString)
+          );
+      }
+    }
+    this.filteredMselList = filteredMsels;
+    this.getSortedMsels();
+  }
+
+  sortChanged(sort: Sort) {
+    if (!sort.direction) {
+      this.sort = {active: 'dateCreated', direction: 'desc'};
+    } else {
+      this.sort = sort;
+    }
+    this.getSortedMsels();
+  }
+
+  getSortedMsels() {
+    this.sortedMselList = this.filteredMselList.sort((a, b) => this.sortMsels(a, b));
+  }
+
+  private sortMsels(
+    a: Msel,
+    b: Msel
+  ) {
+    const isAsc = this.sort.direction !== 'desc';
+    switch (this.sort.active) {
+      case 'dateCreated':
+        return ( (a.dateCreated < b.dateCreated ? -1 : 1) * (isAsc ? 1 : -1) );
+        break;
+      case "description":
+        return ( (a.description < b.description ? -1 : 1) * (isAsc ? 1 : -1) );
+        break;
+      default:
+        return 0;
+    }
   }
 
   ngOnDestroy() {
