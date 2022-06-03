@@ -96,19 +96,24 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
             </div>
             <div class="scenario-event-detail" (click)="$event.stopPropagation();">
               <div class="single-detail">
-                <mat-form-field class="full-width">
-                  <textarea
-                    matInput
-                    rows="8"
-                    placeholder="Details"
+                <div class="editor-label">
+                  Details
+                </div>
+                <div class="quill-edit">
+                  <quill-editor
+                    [styles]="editorStyle"
+                    placeholder="Enter details ..."
                     [(ngModel)]="dataValueList[newScenarioEvent.id][getDataFieldIdByName(newScenarioEvent, 'details')]"
-                  ></textarea>
-                </mat-form-field>
+                  >
+                  </quill-editor>
+                </div>
+                &nbsp;
               </div>
             </div>
           </div>
         </ng-template>
       </mat-expansion-panel>
+
       <!-- existing scenario events -->
       <mat-expansion-panel
         *ngFor="
@@ -120,7 +125,6 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
       >
         <mat-expansion-panel-header
           class="mat-row"
-          (contextmenu)="onContextMenu($event, item)"
         >
           <div class="mat-cell flex-row-cell two-cell">
             <button
@@ -183,15 +187,20 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
           <div class="scrolling-details" (click)="$event.stopPropagation()">
             <div class="scenario-event-detail" (click)="$event.stopPropagation();">
               <div class="single-detail">
-                <mat-form-field class="full-width">
-                  <textarea
-                    matInput
-                    rows="8"
-                    placeholder="Details"
+                <div class="editor-label">
+                  Details
+                </div>
+                <div class="quill-view" *ngIf="isViewOnly(item)">
+                  <quill-view-html [content]="dataValueList[item.id][getDataFieldIdByName(item, 'details')]" theme="snow"></quill-view-html>&nbsp;
+                </div>
+                <div class="quill-edit" *ngIf="!isViewOnly(item)">
+                  <quill-editor
+                    [styles]="editorStyle"
+                    placeholder="Enter details ..."
                     [(ngModel)]="dataValueList[item.id][getDataFieldIdByName(item, 'details')]"
-                    [disabled]="isViewOnly(item)"
-                  ></textarea>
-                </mat-form-field>
+                  >
+                  </quill-editor>
+                </div>
               </div>
             </div>
             <div class="full-width" (click)="$event.stopPropagation();">

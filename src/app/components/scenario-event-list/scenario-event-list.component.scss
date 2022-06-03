@@ -72,6 +72,7 @@
 
 .single-detail {
   display: flex;
+  flex-direction: column;
   width: 60%;
 }
 
@@ -93,8 +94,25 @@
 }
 
 .scrolling-details {
-  max-height: calc(100vh - 293px);
+  min-height: 80px;
+  max-height: calc(100vh - 263px);
   overflow: auto;
+}
+
+.quill-view {
+  border-style: solid;
+  border-width: 1px;
+  border-color: lightgray;
+}
+
+.editor-label {
+  width: 100%;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.125;
+  font-family: Open Sans, sans-serif;
+  letter-spacing: normal;
+  text-align: left;
 }
 
 textarea {
