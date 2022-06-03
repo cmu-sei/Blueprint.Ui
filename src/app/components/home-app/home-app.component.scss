@@ -32,3 +32,18 @@
   width: 60px;
 }
 
+.admin-cog-div {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  align-items: flex-end;
+  justify-items: center;
+}
+
+.admin-cog-icon {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  align-items: center;
+  justify-items: center;
+}

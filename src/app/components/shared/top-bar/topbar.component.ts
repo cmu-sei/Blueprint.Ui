@@ -10,6 +10,7 @@ import {
   OnInit,
   Output,
 } from '@angular/core';
+import { Router } from '@angular/router';
 import { ComnAuthQuery, ComnAuthService, Theme } from '@cmusei/crucible-common';
 import { User as AuthUser } from 'oidc-client';
 import { Observable, Subject } from 'rxjs';
@@ -42,7 +43,8 @@ export class TopbarComponent implements OnInit, OnDestroy {
   constructor(
     private authService: ComnAuthService,
     private loggedInUserService: UserDataService,
-    private authQuery: ComnAuthQuery
+    private authQuery: ComnAuthQuery,
+    private router: Router
   ) {}
 
   ngOnInit() {
@@ -73,6 +75,10 @@ export class TopbarComponent implements OnInit, OnDestroy {
 
   logout(): void {
     this.authService.logout();
+  }
+
+  goToUrl(url): void {
+    this.router.navigate([url]);
   }
 
   ngOnDestroy(): void {
