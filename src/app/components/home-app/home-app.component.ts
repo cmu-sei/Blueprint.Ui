@@ -166,6 +166,10 @@ export class HomeAppComponent implements OnDestroy, OnInit {
       );
   }
 
+  goToUrl(url): void {
+    this.router.navigate([url]);
+  }
+
   ngOnDestroy() {
     this.unsubscribe$.next(null);
     this.unsubscribe$.complete();
