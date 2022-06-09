@@ -6528,13 +6528,9 @@
             "type": "integer",
             "format": "int32"
           },
-          "group": {
+          "time": {
             "type": "string",
             "nullable": true
-          },
-          "scenarioEventNumber": {
-            "type": "integer",
-            "format": "int32"
           },
           "mselId": {
             "type": "string",

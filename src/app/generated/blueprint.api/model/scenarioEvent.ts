@@ -1,5 +1,5 @@
 /*
-Copyright 2022 Carnegie Mellon University. All Rights Reserved. 
+Copyright 2022 Carnegie Mellon University. All Rights Reserved.
  Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 */
 
@@ -25,8 +25,7 @@ export interface ScenarioEvent {
     modifiedBy?: string;
     id?: string;
     moveNumber?: number;
-    group?: string;
-    scenarioEventNumber?: number;
+    time?: string;
     mselId?: string;
     status?: ItemStatus;
     dataValues?: Array<DataValue>;

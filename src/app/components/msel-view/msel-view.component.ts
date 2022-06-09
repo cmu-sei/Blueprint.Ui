@@ -70,9 +70,7 @@ export class MselViewComponent implements OnDestroy {
       });
       sortedScenarioEvents.sort((a, b) => {
         if (a.moveNumber > b.moveNumber) return 1;
-        if (a.moveNumber === b.moveNumber && a.group > b.group) return 1;
-        if (a.moveNumber === b.moveNumber && a.group === b.group && a.scenarioEventNumber > b.scenarioEventNumber) return 1;
-        if (a.moveNumber === b.moveNumber && a.group === b.group && a.scenarioEventNumber === b.scenarioEventNumber && +this.getScenarioEventValue(a, 'time') > +this.getScenarioEventValue(b, 'time')) return 1;
+        if (a.moveNumber === b.moveNumber && a.time > b.time) return 1;
         return -1;
       });
     }
