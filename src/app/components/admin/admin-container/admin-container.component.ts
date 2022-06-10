@@ -35,7 +35,6 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
   usersText = 'Users';
   scoringModelsText = 'Scoring Models';
   rolesText = 'Roles';
-  groupsText = 'Groups';
   teamsText = 'Teams';
   topbarText = 'Set AppTopBarText in Settings';
   showSection: Observable<string>;
