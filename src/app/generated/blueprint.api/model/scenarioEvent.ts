@@ -24,10 +24,9 @@ export interface ScenarioEvent {
     createdBy?: string;
     modifiedBy?: string;
     id?: string;
-    moveNumber?: number;
-    time?: string;
     mselId?: string;
     status?: ItemStatus;
     dataValues?: Array<DataValue>;
     rowIndex?: string;
+    rowMetadata?: string;
 }

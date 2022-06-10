@@ -155,7 +155,9 @@ export class DataFieldListComponent implements OnDestroy {
       isChanged = this.changedDataField.dataType !== original.dataType ||
                   this.changedDataField.displayOrder !== original.displayOrder ||
                   this.changedDataField.isChosenFromList !== original.isChosenFromList ||
-                  this.changedDataField.name !== original.name;
+                  this.changedDataField.name !== original.name ||
+                  this.changedDataField.cellMetadata != original.cellMetadata ||
+                  this.changedDataField.columnMetadata != original.columnMetadata;
     }
     return isChanged;
   }

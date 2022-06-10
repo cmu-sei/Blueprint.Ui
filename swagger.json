@@ -4760,6 +4760,14 @@
               "$ref": "#/components/schemas/DataOption"
             },
             "nullable": true
+          },
+          "cellMetadata": {
+            "type": "string",
+            "nullable": true
+          },
+          "columnMetadata": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -6042,6 +6050,10 @@
             },
             "nullable": true
           },
+          "headerRowMetadata": {
+            "type": "string",
+            "nullable": true
+          },
           "dataFields": {
             "type": "array",
             "items": {
@@ -6524,20 +6536,20 @@
             "type": "string",
             "format": "uuid"
           },
-          "moveNumber": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "time": {
-            "type": "string",
-            "nullable": true
-          },
           "mselId": {
             "type": "string",
             "format": "uuid"
           },
           "status": {
             "$ref": "#/components/schemas/ItemStatus"
+          },
+          "rowIndex": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "rowMetadata": {
+            "type": "string",
+            "nullable": true
           },
           "dataValues": {
             "type": "array",

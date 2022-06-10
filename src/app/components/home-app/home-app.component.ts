@@ -58,7 +58,6 @@ export class HomeAppComponent implements OnDestroy, OnInit {
   theme$: Observable<Theme>;
   teamList: Team[] = [];
   isReady = false;
-  currentMoveNumber = -1;
   mselList = this.mselQuery.selectAll();
   selectedMselId = '';
 

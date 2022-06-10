@@ -83,6 +83,17 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
         <input
           type="text"
           matInput
+          placeholder="Header Row Metadata (Height)"
+          [(ngModel)]="msel.headerRowMetadata"
+          [disabled]="!isEditEnabled"
+        />
+      </mat-form-field>
+    </div>
+    <div class="single-detail">
+      <mat-form-field class="full-width">
+        <input
+          type="text"
+          matInput
           placeholder="Date Created"
           value="{{ msel.dateCreated | date: 'MM/dd/yyyy' }}"
           disabled

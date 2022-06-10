@@ -132,6 +132,30 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
               </span>
             </div>
           </div>
+          <div class="data-field-detail" (click)="$event.stopPropagation();">
+            <div class="single-detail">
+              <mat-form-field class="full-width">
+                <input
+                  type="text"
+                  matInput
+                  placeholder="Column Metadata (Width)"
+                  [(ngModel)]="changedDataField.columnMetadata"
+                />
+              </mat-form-field>
+            </div>
+          </div>
+          <div class="data-field-detail" (click)="$event.stopPropagation();">
+            <div class="single-detail">
+              <mat-form-field class="full-width">
+                <input
+                  type="text"
+                  matInput
+                  placeholder="Cell Metadata (Color, Tint, Font-Weight)"
+                  [(ngModel)]="changedDataField.cellMetadata"
+                />
+              </mat-form-field>
+            </div>
+          </div>
         </ng-template>
       </mat-expansion-panel>
 
@@ -248,6 +272,30 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
                   </button>
                 </div>
               </div>
+            </div>
+          </div>
+          <div class="data-field-detail" (click)="$event.stopPropagation();">
+            <div class="single-detail">
+              <mat-form-field class="full-width">
+                <input
+                  type="text"
+                  matInput
+                  placeholder="Column Metadata (Width)"
+                  [(ngModel)]="changedDataField.columnMetadata"
+                />
+              </mat-form-field>
+            </div>
+          </div>
+          <div class="data-field-detail" (click)="$event.stopPropagation();">
+            <div class="single-detail">
+              <mat-form-field class="full-width">
+                <input
+                  type="text"
+                  matInput
+                  placeholder="Cell Metadata (Color, Tint, Font-Weight)"
+                  [(ngModel)]="changedDataField.cellMetadata"
+                />
+              </mat-form-field>
             </div>
           </div>
           <div *ngIf="valuesHaveBeenChanged()" (click)="$event.stopPropagation();">

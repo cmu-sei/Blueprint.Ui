@@ -68,11 +68,7 @@ export class MselViewComponent implements OnDestroy {
       scenarioEvents.forEach(se => {
         sortedScenarioEvents.push({... se});
       });
-      sortedScenarioEvents.sort((a, b) => {
-        if (a.moveNumber > b.moveNumber) return 1;
-        if (a.moveNumber === b.moveNumber && a.time > b.time) return 1;
-        return -1;
-      });
+      sortedScenarioEvents.sort((a, b) => +a.rowIndex > +b.rowIndex ? 1 : -1);
     }
     return sortedScenarioEvents;
   }

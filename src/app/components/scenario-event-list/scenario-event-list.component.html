@@ -215,6 +215,17 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
               <span class="edit-buttons">&nbsp;</span>
             </div>
             <div class="scenario-event-detail" (click)="$event.stopPropagation();" *ngIf="isExpandedMoreScenarioEvent(item.id)">
+              <div class="single-detail">
+                <mat-form-field class="full-width">
+                  <input
+                    type="text"
+                    matInput
+                    placeholder="Row Index"
+                    [(ngModel)]="item.rowIndex"
+                    [disabled]="isDisabled(item, item.id + 'ri')"
+                  />
+                </mat-form-field>
+              </div>
               <div *ngFor="let df of moreDataFields" class="single-detail">
                 <mat-form-field class="full-width">
                   <input
@@ -223,6 +234,17 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
                     placeholder="{{ df.name }}"
                     [(ngModel)]="dataValueList[item.id][df.id]"
                     [disabled]="isDisabled(item, df.name)"
+                  />
+                </mat-form-field>
+              </div>
+              <div class="single-detail">
+                <mat-form-field class="full-width">
+                  <input
+                    type="text"
+                    matInput
+                    placeholder="Row Metadata (Height)"
+                    [(ngModel)]="item.rowMetadata"
+                    [disabled]="isDisabled(item, item.id + 'rm')"
                   />
                 </mat-form-field>
               </div>

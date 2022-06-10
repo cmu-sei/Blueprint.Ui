@@ -109,11 +109,7 @@ export class ScenarioEventListComponent implements OnDestroy {
         this.filteredScenarioEventList = sortedScenarioEvents
           .sort((a: ScenarioEvent, b: ScenarioEvent) => this.sortScenarioEvents(a, b, this.sort.active, this.sort.direction));
       } else {
-        sortedScenarioEvents.sort((a, b) => {
-          if (a.moveNumber > b.moveNumber) return 1;
-          if (a.moveNumber === b.moveNumber && a.time > b.time) return 1;
-          return -1;
-        });
+        sortedScenarioEvents.sort((a, b) => +a.rowIndex > +b.rowIndex ? 1 : -1);
       }
     }
     return sortedScenarioEvents;
@@ -140,6 +136,8 @@ export class ScenarioEventListComponent implements OnDestroy {
   populateDataValueList() {
     this.mselScenarioEvents.forEach(se => {
       const seDataValues = new Map<string, string>();
+      seDataValues[se.id + 'ri'] = se.rowIndex;
+      seDataValues[se.id + 'rm'] = se.rowMetadata;
       se.dataValues.forEach(dv => {
         seDataValues[dv.dataFieldId] = dv.value;
       });
@@ -199,24 +197,18 @@ export class ScenarioEventListComponent implements OnDestroy {
     return dataField ? dataField.id : 'no data value found';
   }
 
-  markForEdit(scenarioEvent: ScenarioEvent, dataFieldName: string) {
-    this.editingValueList.set(this.getDataValue(scenarioEvent, dataFieldName).id, this.getScenarioEventValue(scenarioEvent, dataFieldName));
-  }
-
   enableEditing(scenarioEvent: ScenarioEvent) {
+    this.editingValueList.set(scenarioEvent.id + 'ri', scenarioEvent.rowIndex);
+    this.editingValueList.set(scenarioEvent.id + 'rm', scenarioEvent.rowMetadata);
     scenarioEvent.dataValues.forEach(dv => {
       this.editingValueList.set(dv.id, dv.value);
     });
   }
 
-  saveDataValue(scenarioEvent: ScenarioEvent, dataField: DataField) {
-    const dataValue = {... this.getDataValue(scenarioEvent, dataField.name)};
-    dataValue.value = this.dataValueList[scenarioEvent.id][dataField.id];
-    this.dataValueDataService.updateDataValue(dataValue);
-    this.editingValueList.delete(dataValue.id);
-  }
-
   saveUpdate(scenarioEvent: ScenarioEvent) {
+    this.scenarioEventDataService.updateScenarioEvent(scenarioEvent);
+    this.editingValueList.delete(scenarioEvent.id + 'ri');
+    this.editingValueList.delete(scenarioEvent.id + 'rm');
     scenarioEvent.dataValues.forEach(dv => {
       const dataValue = {... dv};
       const newValue = this.dataValueList[scenarioEvent.id][dv.dataFieldId];
@@ -228,13 +220,9 @@ export class ScenarioEventListComponent implements OnDestroy {
     });
   }
 
-  resetDataValue(scenarioEvent: ScenarioEvent, dataField: DataField) {
-    const dataValue = this.getDataValue(scenarioEvent, dataField.name);
-    this.dataValueList[scenarioEvent.id][dataField.id] = this.editingValueList.get(dataValue.id);
-    this.editingValueList.delete(dataValue.id);
-  }
-
   resetUpdate(scenarioEvent: ScenarioEvent) {
+    this.editingValueList.delete(scenarioEvent.id + 'ri');
+    this.editingValueList.delete(scenarioEvent.id + 'rm');
     scenarioEvent.dataValues.forEach(dv => {
       this.dataValueList[scenarioEvent.id][dv.dataFieldId] = dv.value;
       this.editingValueList.delete(dv.id);
@@ -242,7 +230,9 @@ export class ScenarioEventListComponent implements OnDestroy {
   }
 
   isDisabled(scenarioEvent: ScenarioEvent, dataFieldName: string): boolean {
-    return !this.editingValueList.has(this.getDataValue(scenarioEvent, dataFieldName).id);
+    const hasTheValue = this.editingValueList.has(this.getDataValue(scenarioEvent, dataFieldName).id) ||
+      this.editingValueList.has(dataFieldName);
+    return !hasTheValue;
   }
 
   isViewOnly(scenarioEvent: ScenarioEvent): boolean {
@@ -311,12 +301,15 @@ export class ScenarioEventListComponent implements OnDestroy {
   }
 
   addScenarioEvent() {
+    const seId = uuidv4();
     this.newScenarioEvent = {
-      id: uuidv4(),
+      id: seId,
       mselId: this.msel.id,
       dataValues: []
     };
     const seDataValues = new Map<string, string>();
+    seDataValues[seId + 'ri'] = '';
+    seDataValues[seId + 'rm'] = '';
     this.msel.dataFields.forEach(df => {
       this.newScenarioEvent.dataValues.push({
         dataFieldId: df.id,
@@ -335,6 +328,8 @@ export class ScenarioEventListComponent implements OnDestroy {
     this.newScenarioEvent.id = uuidv4();
     this.newScenarioEvent.dataValues = [];
     const seDataValues = new Map<string, string>();
+    seDataValues[scenarioEvent.id + 'ri'] = scenarioEvent.rowIndex;
+    seDataValues[scenarioEvent.id + 'rm'] = scenarioEvent.rowMetadata;
     scenarioEvent.dataValues.forEach(dv => {
       this.newScenarioEvent.dataValues.push({
         id: uuidv4(),
