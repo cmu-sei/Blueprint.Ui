@@ -136,6 +136,7 @@ export class MselDataService {
         },
         (error) => {
           this.mselStore.set([]);
+          this.mselStore.setLoading(false);
         }
       );
   }
@@ -156,6 +157,7 @@ export class MselDataService {
         },
         (error) => {
           this.mselStore.set([]);
+          this.mselStore.setLoading(false);
         }
       );
   }
@@ -172,6 +174,9 @@ export class MselDataService {
       )
       .subscribe((s) => {
         this.mselStore.upsert(s.id, { ...s });
+      },
+      (error) => {
+        this.mselStore.setLoading(false);
       });
   }
 
@@ -191,6 +196,9 @@ export class MselDataService {
       )
       .subscribe((s) => {
         this.mselStore.add(s);
+      },
+      (error) => {
+        this.mselStore.setLoading(false);
       });
   }
 
@@ -206,6 +214,9 @@ export class MselDataService {
       )
       .subscribe((n) => {
         this.updateStore(n);
+      },
+      (error) => {
+        this.mselStore.setLoading(false);
       });
   }
 

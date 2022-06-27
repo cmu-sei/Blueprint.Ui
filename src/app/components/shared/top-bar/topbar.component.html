@@ -90,6 +90,10 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
         style="outline: none;"
         (click)="goToUrl('/admin')"
         title="Admin Pages"
+        *ngIf="
+            currentUser.profile.isSystemAdmin !== null &&
+            currentUser.profile.isSystemAdmin
+          "
       >
         <mat-icon aria-hidden="false" class="icon-color admin-cog-icon " fontIcon="mdi-cog-outline"></mat-icon>
       </button>

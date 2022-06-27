@@ -57,7 +57,7 @@ export class HomeAppComponent implements OnDestroy, OnInit {
   TopbarView = TopbarView;
   theme$: Observable<Theme>;
   teamList: Team[] = [];
-  isReady = false;
+  isLoading = this.mselQuery.selectLoading();
   mselList = this.mselQuery.selectAll();
   selectedMselId = '';
 
@@ -106,12 +106,6 @@ export class HomeAppComponent implements OnDestroy, OnInit {
         this.mselDataService.loadById(this.selectedMselId);
       }
     });
-    // subscribe to MSELs loading
-    this.mselQuery.selectLoading()
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe((isLoading) => {
-        this.isReady = !isLoading;
-      });
     // Set the display settings from config file
     this.topbarColor = this.settingsService.settings.AppTopBarHexColor
       ? this.settingsService.settings.AppTopBarHexColor
