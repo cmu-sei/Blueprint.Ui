@@ -98,12 +98,12 @@ export class MselViewComponent implements OnDestroy {
     const dataField = this.msel.dataFields.find(df => df.name.toLowerCase().replace(/ /gi,'') === columnName.toLowerCase().replace(/ /gi,''));
     if (!dataField) return '';
     const dataValue = scenarioEvent.dataValues.find(dv => dv.dataFieldId === dataField.id);
-    return dataValue ? dataValue.value : ' ';
+    return dataValue && dataValue.value != null ? dataValue.value : ' ';
   }
 
   moreToShow(scenarioEvent: ScenarioEvent, columnName: string): boolean {
     const details = this.getScenarioEventValue(scenarioEvent, columnName);
-    return details.length > 400;
+    return details ? details.length > 400 : false;
   }
 
   ngOnDestroy() {
