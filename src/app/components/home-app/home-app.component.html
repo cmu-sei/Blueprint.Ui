@@ -36,7 +36,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
   <section *ngIf="selectedMselId">
     <app-msel></app-msel>
   </section>
-  <div *ngIf="!apiIsSick && !isReady">
+  <div *ngIf="isLoading | async">
     <mat-progress-bar color="primary" mode="indeterminate" style="width: 90%; margin: 20px;"></mat-progress-bar>
   </div>
 </div>
