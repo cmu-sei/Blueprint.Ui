@@ -57,7 +57,7 @@ export class HomeAppComponent implements OnDestroy, OnInit {
   TopbarView = TopbarView;
   theme$: Observable<Theme>;
   teamList: Team[] = [];
-  isLoading = this.mselQuery.selectLoading();
+  isLoading$ = this.mselQuery.selectLoading();
   mselList = this.mselQuery.selectAll();
   selectedMselId = '';
 
