@@ -30,6 +30,7 @@ import { ScenarioEventQuery } from 'src/app/data/scenario-event/scenario-event.q
 import { DataValueDataService } from  'src/app/data/data-value/data-value-data.service';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { v4 as uuidv4 } from 'uuid';
+import { deepCopy } from "deep-copy-ts";
 
 @Component({
   selector: 'app-scenario-event-list',
@@ -206,18 +207,21 @@ export class ScenarioEventListComponent implements OnDestroy {
   }
 
   saveUpdate(scenarioEvent: ScenarioEvent) {
-    this.scenarioEventDataService.updateScenarioEvent(scenarioEvent);
-    this.editingValueList.delete(scenarioEvent.id + 'ri');
-    this.editingValueList.delete(scenarioEvent.id + 'rm');
-    scenarioEvent.dataValues.forEach(dv => {
-      const dataValue = {... dv};
+    const scenarioEventToUpdate = deepCopy(scenarioEvent);
+    const originalDataValues = deepCopy(scenarioEvent.dataValues);
+    scenarioEventToUpdate.dataValues = [];
+    originalDataValues.forEach(dv => {
+      const dataValue = deepCopy(dv);
       const newValue = this.dataValueList[scenarioEvent.id][dv.dataFieldId];
       if (dataValue.value !== newValue) {
         dataValue.value = newValue;
-        this.dataValueDataService.updateDataValue(dataValue);
+        scenarioEventToUpdate.dataValues.push(dataValue);
       }
       this.editingValueList.delete(dataValue.id);
     });
+    this.scenarioEventDataService.updateScenarioEvent(scenarioEventToUpdate);
+    this.editingValueList.delete(scenarioEvent.id + 'ri');
+    this.editingValueList.delete(scenarioEvent.id + 'rm');
   }
 
   resetUpdate(scenarioEvent: ScenarioEvent) {
