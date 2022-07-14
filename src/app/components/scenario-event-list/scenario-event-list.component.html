@@ -258,11 +258,10 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
                   />
                 </mat-form-field>
               </div>
-
               <!-- More DataFields -->
               <div *ngFor="let df of moreDataFields" class="single-detail">
-                <!-- string input -->
-                <mat-form-field *ngIf="!df.isChosenFromList && df.dataType === dataType.String" class="full-width">
+                <!-- string data input -->
+                <mat-form-field *ngIf="df.dataType === dataType.String" class="full-width">
                   <input
                     type="text"
                     matInput
