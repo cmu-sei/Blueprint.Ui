@@ -84,13 +84,45 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
           <div class="scrolling-details" (click)="$event.stopPropagation()">
             <div class="scenario-event-detail" (click)="$event.stopPropagation();">
               <div *ngFor="let df of moreDataFields" class="single-detail">
-                <mat-form-field class="full-width">
+                <!-- string input -->
+                <mat-form-field *ngIf="!df.isChosenFromList && df.dataType === dataType.String" class="full-width">
                   <input
                     type="text"
                     matInput
                     placeholder="{{ df.name }}"
                     [(ngModel)]="dataValueList[newScenarioEvent.id][df.id]"
                   />
+                </mat-form-field>
+                <!-- Numeric input -->
+                <mat-form-field *ngIf="!df.isChosenFromList && df.dataType === dataType.Integer || df.dataType === dataType.Double" class="full-width">
+                  <input
+                    type="number"
+                    matInput
+                    placeholder="{{ df.name }}"
+                    [(ngModel)]="dataValueList[newScenarioEvent.id][df.id]"
+                  />
+                </mat-form-field>
+                <!-- date input -->
+                <mat-form-field *ngIf="!df.isChosenFromList && df.dataType === dataType.DateTime" class="full-width">
+                  <mat-label class="error-text" *ngIf="notValidDateFormat(dataValueList[newScenarioEvent.id][df.id])">Not a valid date format.  Use M/d/yyyy.</mat-label>
+                  <input
+                    type="datetime"
+                    matInput
+                    placeholder="{{ df.name }}"
+                    [(ngModel)]="dataValueList[newScenarioEvent.id][df.id]"
+                  />
+                </mat-form-field>
+                <!-- dropdown input -->
+                <mat-form-field *ngIf="df.isChosenFromList" class="full-width">
+                  <mat-label>{{ df.name }}</mat-label>
+                  <mat-select
+                    placeholder="{{ df.name }}"
+                    [(ngModel)]="dataValueList[newScenarioEvent.id][df.id]"
+                  >
+                    <mat-option *ngFor="let dataOption of df.dataOptions" [value]="dataOption.optionValue">
+                      {{ dataOption.optionName }}
+                    </mat-option>
+                  </mat-select>
                 </mat-form-field>
               </div>
             </div>
@@ -226,10 +258,11 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
                   />
                 </mat-form-field>
               </div>
+
               <!-- More DataFields -->
               <div *ngFor="let df of moreDataFields" class="single-detail">
-                <!-- string data input -->
-                <mat-form-field *ngIf="df.dataType === dataType.String" class="full-width">
+                <!-- string input -->
+                <mat-form-field *ngIf="!df.isChosenFromList && df.dataType === dataType.String" class="full-width">
                   <input
                     type="text"
                     matInput
@@ -238,8 +271,8 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
                     [disabled]="isDisabled(item, df.name)"
                   />
                 </mat-form-field>
-                <!-- Numeric data input -->
-                <mat-form-field *ngIf="df.dataType === dataType.Integer || df.dataType === dataType.Double" class="full-width">
+                <!-- Numeric input -->
+                <mat-form-field *ngIf="!df.isChosenFromList && df.dataType === dataType.Integer || df.dataType === dataType.Double" class="full-width">
                   <input
                     type="number"
                     matInput
@@ -248,8 +281,8 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
                     [disabled]="isDisabled(item, df.name)"
                   />
                 </mat-form-field>
-                <!-- date data input -->
-                <mat-form-field *ngIf="df.dataType === dataType.DateTime" class="full-width">
+                <!-- date input -->
+                <mat-form-field *ngIf="!df.isChosenFromList && df.dataType === dataType.DateTime" class="full-width">
                   <mat-label class="error-text" *ngIf="notValidDateFormat(dataValueList[item.id][df.id])">Not a valid date format.  Use M/d/yyyy.</mat-label>
                   <input
                     type="datetime"
@@ -258,6 +291,19 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
                     [(ngModel)]="dataValueList[item.id][df.id]"
                     [disabled]="isDisabled(item, df.name)"
                   />
+                </mat-form-field>
+                <!-- dropdown input -->
+                <mat-form-field *ngIf="df.isChosenFromList" class="full-width">
+                  <mat-label>{{ df.name }}</mat-label>
+                  <mat-select
+                    placeholder="{{ df.name }}"
+                    [(ngModel)]="dataValueList[item.id][df.id]"
+                    [disabled]="isDisabled(item, df.name)"
+                  >
+                    <mat-option *ngFor="let dataOption of df.dataOptions" [value]="dataOption.optionValue">
+                      {{ dataOption.optionName }}
+                    </mat-option>
+                  </mat-select>
                 </mat-form-field>
               </div>
               <div class="single-detail">

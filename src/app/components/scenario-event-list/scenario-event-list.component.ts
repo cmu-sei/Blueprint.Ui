@@ -382,6 +382,11 @@ export class ScenarioEventListComponent implements OnDestroy {
   }
 
   notValidDateFormat(dateString: string) {
+    // only check if there is a value
+    if (dateString.length === 0) {
+      return false;
+    }
+    // check for month/day/year format
     const regexPattern: RegExp = /^(0?[1-9]|1[012])[- /.](0?[1-9]|[12][0-9]|3[01])[- /.](19|20)\d\d$/;
     return !regexPattern.test(dateString);
   }
