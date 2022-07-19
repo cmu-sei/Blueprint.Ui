@@ -208,7 +208,7 @@ export class ScenarioEventListComponent implements OnDestroy {
   }
 
   enableEditing(scenarioEvent: ScenarioEvent) {
-    this.editingValueList.set(scenarioEvent.id + 'ri', scenarioEvent.rowIndex);
+    this.editingValueList.set(scenarioEvent.id + 'ri', scenarioEvent.rowIndex.toString());
     this.editingValueList.set(scenarioEvent.id + 'rm', scenarioEvent.rowMetadata);
     scenarioEvent.dataValues.forEach(dv => {
       this.editingValueList.set(dv.id, dv.value);

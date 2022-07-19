@@ -28,11 +28,11 @@ import { Sort } from '@angular/material/sort';
 import { MatMenuTrigger } from '@angular/material/menu';
 
 @Component({
-  selector: 'app-msel-info',
-  templateUrl: './msel-info.component.html',
-  styleUrls: ['./msel-info.component.scss'],
+  selector: 'app-msel-roles',
+  templateUrl: './msel-roles.component.html',
+  styleUrls: ['./msel-roles.component.scss'],
 })
-export class MselInfoComponent implements OnDestroy {
+export class MselRolesComponent implements OnDestroy {
   msel: Msel = {};
   originalMsel: Msel = {};
   expandedScenarioEventIds: string[] = [];
@@ -89,6 +89,14 @@ export class MselInfoComponent implements OnDestroy {
       sortedDataFields.sort((a, b) => +a.displayOrder > +b.displayOrder ? 1 : -1);
     }
     return sortedDataFields;
+  }
+
+  addTeamToMsel(teamId: string) {
+    this.mselDataService.addTeamToMsel(this.msel.id, teamId);
+  }
+
+  removeTeamFromMsel(teamId: string) {
+    this.mselDataService.removeTeamFromMsel(this.msel.id, teamId);
   }
 
   saveChanges() {

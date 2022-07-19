@@ -56,7 +56,6 @@ import { NgxMaterialTimepickerModule } from 'ngx-material-timepicker';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { AdminContainerComponent } from './components/admin/admin-container/admin-container.component';
-import { AdminMovesComponent } from './components/admin/admin-moves/admin-moves.component';
 import { AdminTeamsComponent } from './components/admin/admin-teams/admin-teams.component';
 import { AdminTeamEditDialogComponent } from './components/admin/admin-team-edit-dialog/admin-team-edit-dialog.component';
 import { AdminTeamUsersComponent } from './components/admin/admin-team-users/admin-team-users.component';
@@ -68,6 +67,7 @@ import { MoveListComponent } from './components/move-list/move-list.component';
 import { MselComponent } from './components/msel/msel.component';
 import { MselInfoComponent } from './components/msel-info/msel-info.component';
 import { MselListComponent } from './components/msel-list/msel-list.component';
+import { MselRolesComponent } from './components/msel-roles/msel-roles.component';
 import { MselViewComponent } from './components/msel-view/msel-view.component';
 import { OrganizationListComponent } from './components/organization-list/organization-list.component';
 import { ScenarioEventListComponent } from './components/scenario-event-list/scenario-event-list.component';
@@ -103,13 +103,13 @@ export function getBasePath(settingsSvc: ComnSettingsService) {
     MselComponent,
     MselInfoComponent,
     MselListComponent,
+    MselRolesComponent,
     MselViewComponent,
     OrganizationListComponent,
     ScenarioEventListComponent,
     SystemMessageComponent,
     ConfirmDialogComponent,
     AdminContainerComponent,
-    AdminMovesComponent,
     AdminTeamsComponent,
     AdminTeamEditDialogComponent,
     AdminTeamUsersComponent,
