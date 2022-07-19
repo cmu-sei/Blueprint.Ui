@@ -29,8 +29,6 @@ export interface Msel {
     id?: string;
     description?: string;
     status?: ItemStatus;
-    teamId?: string;
-    team?: Team;
     galleryExhibitId?: string;
     citeEvaluationId?: string;
     steamfitterScenarioId?: string;
@@ -38,5 +36,6 @@ export interface Msel {
     moves?: Array<Move>;
     dataFields?: Array<DataField>;
     scenarioEvents?: Array<ScenarioEvent>;
+    teams?: Array<Team>;
     headerRowMetadata?: string;
 }

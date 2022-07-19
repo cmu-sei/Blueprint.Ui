@@ -118,7 +118,7 @@ export class HomeAppComponent implements OnDestroy, OnInit {
     // load the users
     this.userDataService.getUsersFromApi();
     // load the teams
-    this.teamDataService.loadMine();
+    this.teamDataService.load();
   }
 
   ngOnInit() {

@@ -1531,6 +1531,137 @@
         }
       }
     },
+    "/api/msels/{mselId}/addteam/{teamId}": {
+      "put": {
+        "tags": [
+          "Msel"
+        ],
+        "summary": "Adds a Team to a Msel",
+        "description": "Adds the team specified to the MSEL specified\r\n<para />\r\nAccessible only to a ContentDeveloper or a MSEL owner",
+        "operationId": "AddTeamToMsel",
+        "parameters": [
+          {
+            "name": "mselId",
+            "in": "path",
+            "description": "The ID of the Msel to update",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "teamId",
+            "in": "path",
+            "description": "The ID of the Team",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/msels/{mselId}/removeteam/{teamId}": {
+      "put": {
+        "tags": [
+          "Msel"
+        ],
+        "summary": "Removes a Team from a Msel",
+        "description": "Removes the team specified from the MSEL specified\r\n<para />\r\nAccessible only to a ContentDeveloper or a MSEL owner",
+        "operationId": "RemoveTeamFromMsel",
+        "parameters": [
+          {
+            "name": "mselId",
+            "in": "path",
+            "description": "The ID of the Msel to update",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "teamId",
+            "in": "path",
+            "description": "The ID of the Team",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "boolean"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/msels/xlsx": {
       "post": {
         "tags": [
@@ -2703,6 +2834,137 @@
         "responses": {
           "204": {
             "description": "Success"
+          },
+          "default": {
+            "description": "Problem response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/scenarioevents/{scenarioEventId}/assignteam/{teamId}": {
+      "put": {
+        "tags": [
+          "ScenarioEvent"
+        ],
+        "summary": "Assigns a ScenarioEvent to a Team",
+        "description": "Assigns the specified Team to the specified ScenarioEvent\r\n<para />\r\nAccessible only to a Content Developer or a MSEL owner",
+        "operationId": "assignTeamToScenarioEvent",
+        "parameters": [
+          {
+            "name": "scenarioEventId",
+            "in": "path",
+            "description": "The ID of the ScenarioEvent",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "teamId",
+            "in": "path",
+            "description": "The ID of the Team",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/scenarioevents/{scenarioEventId}/unassignteam/{teamId}": {
+      "put": {
+        "tags": [
+          "ScenarioEvent"
+        ],
+        "summary": "Unassigns a ScenarioEvent from a Team",
+        "description": "Unassigns the specified Team from the specified ScenarioEvent\r\n<para />\r\nAccessible only to a Content Developer or a MSEL owner",
+        "operationId": "unassignTeamToScenarioEvent",
+        "parameters": [
+          {
+            "name": "scenarioEventId",
+            "in": "path",
+            "description": "The ID of the ScenarioEvent",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "teamId",
+            "in": "path",
+            "description": "The ID of the Team",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "boolean"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
           },
           "default": {
             "description": "Problem response",
@@ -6017,14 +6279,6 @@
           "status": {
             "$ref": "#/components/schemas/ItemStatus"
           },
-          "teamId": {
-            "type": "string",
-            "format": "uuid",
-            "nullable": true
-          },
-          "team": {
-            "$ref": "#/components/schemas/Team"
-          },
           "galleryExhibitId": {
             "type": "string",
             "format": "uuid",
@@ -6050,10 +6304,6 @@
             },
             "nullable": true
           },
-          "headerRowMetadata": {
-            "type": "string",
-            "nullable": true
-          },
           "dataFields": {
             "type": "array",
             "items": {
@@ -6066,6 +6316,17 @@
             "items": {
               "$ref": "#/components/schemas/ScenarioEvent"
             },
+            "nullable": true
+          },
+          "teams": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Team"
+            },
+            "nullable": true
+          },
+          "headerRowMetadata": {
+            "type": "string",
             "nullable": true
           }
         },
@@ -6543,19 +6804,19 @@
           "status": {
             "$ref": "#/components/schemas/ItemStatus"
           },
+          "dataValues": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DataValue"
+            },
+            "nullable": true
+          },
           "rowIndex": {
             "type": "integer",
             "format": "int32"
           },
           "rowMetadata": {
             "type": "string",
-            "nullable": true
-          },
-          "dataValues": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/DataValue"
-            },
             "nullable": true
           }
         },
@@ -6647,6 +6908,13 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/User"
+            },
+            "nullable": true
+          },
+          "msels": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Msel"
             },
             "nullable": true
           }

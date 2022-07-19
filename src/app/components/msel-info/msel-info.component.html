@@ -69,16 +69,6 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
       </mat-form-field>
     </div>
     <div class="single-detail">
-      <mat-form-field>
-        <mat-select placeholder="Team" [(ngModel)]="msel.teamId" [disabled]="!isEditEnabled">
-          <mat-option value="" matTooltip="Public" matTooltipPosition="right">Public</mat-option>
-          <mat-option *ngFor="let team of teamList" [value]="team.id" [matTooltip]="team.id" matTooltipPosition="right">
-            {{team.name}}
-          </mat-option>
-        </mat-select>
-      </mat-form-field>
-    </div>
-    <div class="single-detail">
       <mat-form-field class="full-width">
         <input
           type="text"

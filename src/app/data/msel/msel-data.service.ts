@@ -229,6 +229,40 @@ export class MselDataService {
       });
   }
 
+  addTeamToMsel(mselId: string, teamId: string) {
+    this.mselStore.setLoading(true);
+    this.mselService.addTeamToMsel(mselId, teamId)
+    .pipe(
+      tap(() => {
+        this.mselStore.setLoading(false);
+      }),
+      take(1)
+    )
+    .subscribe((n) => {
+      // this.updateStore(n);
+    },
+    (error) => {
+      this.mselStore.setLoading(false);
+    });
+  }
+
+  removeTeamFromMsel(mselId: string, teamId: string) {
+    this.mselStore.setLoading(true);
+    this.mselService.removeTeamFromMsel(mselId, teamId)
+    .pipe(
+      tap(() => {
+        this.mselStore.setLoading(false);
+      }),
+      take(1)
+    )
+    .subscribe((n) => {
+      // this.updateStore(n);
+    },
+    (error) => {
+      this.mselStore.setLoading(false);
+    });
+  }
+
   downloadXlsx(id: string) {
     return this.mselService.download(id);
   }
