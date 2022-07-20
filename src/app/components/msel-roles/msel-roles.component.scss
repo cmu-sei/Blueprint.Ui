@@ -4,121 +4,62 @@
 // Copyright 2021 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
 
-.mat-header-row {
-  min-height: 40px;
-}
-
-.mat-row {
-  min-height: 30px;
-}
-
-.mat-row,
-.mat-header-row {
-  display: flex;
-  border-bottom-width: 1px;
-  border-bottom-style: solid;
-  align-items: center;
-  box-sizing: border-box;
-}
-
-.mat-cell,
-.mat-header-cell {
-  flex: 1;
-  overflow: hidden;
-  word-wrap: break-word;
-}
-
-.mat-accordion .mat-header-row {
-  padding-left: 1.5rem;
-  padding-right: 2rem;
-  border-bottom: none;
-}
-
-.mat-expansion-panel-header.mat-row {
-  border-bottom: none;
-}
-
-.flex-row-cell {
-  display: flex;
-  flex-flow: row;
-  justify-content: flex-start;
-  align-items: center;
-  text-align: left;
-}
-
-.scenario-event-detail {
-  display: flex;
-  flex-flow: column;
-  justify-content: space-center;
-  align-items: center;
-}
-
 .scrolling-region {
-  height: calc(100vh - 107px);
+  height: calc(100vh - 87px);
   overflow: auto;
-  padding-top: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-.single-detail {
+.section-container {
   display: flex;
-  width: 60%;
+  flex-direction: column;
+  align-items: center;
+  margin: 20px;
+  width:70%;
 }
 
-.edit-buttons {
-  display: flex;
-  flex-flow: row;
-  align-items:flex-start;
-  width: 70%;
+.section-content {
+  width: 100%;
+}
+
+.mat-expansion-panel {
+  width: calc(100% - 1-px);
+  margin: 5px;
+}
+
+.team-users-div {
+  text-align: left;
+  margin-left:50px;
+  margin-bottom: 10px;
+  width: calc(100% - 50px);
+}
+
+.other-teams-div {
+  text-align: left;
+  margin-left:50px;
+  width: calc(100% - 50px);
+}
+
+.user-name {
+  display: inline-block;
+  width: 50%;
+}
+
+.msel-role {
+  display: inline-block;
+  margin-right: 20px;
+}
+
+.no-users {
+  width: 100%;
+  text-align: left;
+  padding-left: 100px;
 }
 
 .full-width {
   width: 100%;
-}
-
-.copy-button {
-  width: 24px;
-  height: 24px;
-}
-
-.menu-button {
-  width: 36px;
-  height: 36px;
-  margin-right: 20px;
-}
-
-.copy-icon {
-  margin-top: -8px;
-}
-
-.button-end {
-  margin-left: 100px;
-}
-
-.sp-icon {
-  margin-left: 10px;
-  margin-right: 20px;
-}
-
-.search-icon {
-  margin-left: 50px;
-  transform: scale(0.85);
-  margin-right: 5px;
-}
-
-.scale-85 {
-  transform: scale(0.85);
-}
-
-.search-field {
-  width: 320px;
-}
-
-.clear-search {
-  width: 50px;
-}
-
-.copy-icon {
-  margin-top: -8px;
 }
 
 .five-cell {

@@ -1567,20 +1567,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "type": "string",
-                  "format": "uuid"
+                  "$ref": "#/components/schemas/Msel"
                 }
               },
               "application/json": {
                 "schema": {
-                  "type": "string",
-                  "format": "uuid"
+                  "$ref": "#/components/schemas/Msel"
                 }
               },
               "text/json": {
                 "schema": {
-                  "type": "string",
-                  "format": "uuid"
+                  "$ref": "#/components/schemas/Msel"
                 }
               }
             }
@@ -1634,17 +1631,163 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "type": "boolean"
+                  "$ref": "#/components/schemas/Msel"
                 }
               },
               "application/json": {
                 "schema": {
-                  "type": "boolean"
+                  "$ref": "#/components/schemas/Msel"
                 }
               },
               "text/json": {
                 "schema": {
-                  "type": "boolean"
+                  "$ref": "#/components/schemas/Msel"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/msels/{mselId}/user/{userId}/role/{mselRole}/add": {
+      "put": {
+        "tags": [
+          "Msel"
+        ],
+        "summary": "Adds a User Role to a Msel",
+        "description": "Adds the User Role specified to the MSEL specified\r\n<para />\r\nAccessible only to a ContentDeveloper or a MSEL owner",
+        "operationId": "AddUserMselRole",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "description": "The ID of the User",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "mselId",
+            "in": "path",
+            "description": "The ID of the Msel to update",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "mselRole",
+            "in": "path",
+            "description": "The MSEL Role to add",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/MselRole"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Msel"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Msel"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Msel"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/msels/{mselId}/user/{userId}/role/{mselRole}/remove": {
+      "put": {
+        "tags": [
+          "Msel"
+        ],
+        "summary": "Removes a User Role from a Msel",
+        "description": "Removes the User Role specified from the MSEL specified\r\n<para />\r\nAccessible only to a ContentDeveloper or a MSEL owner",
+        "operationId": "RemoveUserMselRole",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "description": "The ID of the User",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "mselId",
+            "in": "path",
+            "description": "The ID of the Msel to update",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "mselRole",
+            "in": "path",
+            "description": "The MSEL Role to add",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/MselRole"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Msel"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Msel"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Msel"
                 }
               }
             }
@@ -6325,6 +6468,13 @@
             },
             "nullable": true
           },
+          "userMselRoles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserMselRole"
+            },
+            "nullable": true
+          },
           "headerRowMetadata": {
             "type": "string",
             "nullable": true
@@ -7766,23 +7916,9 @@
             "type": "string",
             "format": "uuid"
           },
-          "msel": {
-            "$ref": "#/components/schemas/Msel"
-          },
-          "scenarioEventId": {
-            "type": "string",
-            "format": "uuid",
-            "nullable": true
-          },
-          "scenarioEvent": {
-            "$ref": "#/components/schemas/ScenarioEvent"
-          },
           "userId": {
             "type": "string",
             "format": "uuid"
-          },
-          "user": {
-            "$ref": "#/components/schemas/User"
           },
           "role": {
             "$ref": "#/components/schemas/MselRole"
