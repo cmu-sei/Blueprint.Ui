@@ -10,6 +10,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import {
   DataValue,
   Msel,
+  MselRole,
   MselService,
   ScenarioEvent
 } from 'src/app/generated/blueprint.api';
@@ -239,7 +240,7 @@ export class MselDataService {
       take(1)
     )
     .subscribe((n) => {
-      // this.updateStore(n);
+      this.updateStore(n);
     },
     (error) => {
       this.mselStore.setLoading(false);
@@ -256,7 +257,41 @@ export class MselDataService {
       take(1)
     )
     .subscribe((n) => {
-      // this.updateStore(n);
+      this.updateStore(n);
+    },
+    (error) => {
+      this.mselStore.setLoading(false);
+    });
+  }
+
+  addUserMselRole(userId: string, mselId: string, mselRole: MselRole) {
+    this.mselStore.setLoading(true);
+    this.mselService.addUserMselRole(userId, mselId, mselRole)
+    .pipe(
+      tap(() => {
+        this.mselStore.setLoading(false);
+      }),
+      take(1)
+    )
+    .subscribe((n) => {
+      this.updateStore(n);
+    },
+    (error) => {
+      this.mselStore.setLoading(false);
+    });
+  }
+
+  removeUserMselRole(userId: string, mselId: string, mselRole: MselRole) {
+    this.mselStore.setLoading(true);
+    this.mselService.removeUserMselRole(userId, mselId, mselRole)
+    .pipe(
+      tap(() => {
+        this.mselStore.setLoading(false);
+      }),
+      take(1)
+    )
+    .subscribe((n) => {
+      this.updateStore(n);
     },
     (error) => {
       this.mselStore.setLoading(false);

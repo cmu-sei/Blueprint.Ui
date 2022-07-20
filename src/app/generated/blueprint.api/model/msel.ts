@@ -19,6 +19,7 @@ import { ItemStatus } from './itemStatus';
 import { Move } from './move';
 import { ScenarioEvent } from './scenarioEvent';
 import { Team } from './team';
+import { UserMselRole } from './userMselRole';
 
 
 export interface Msel {
@@ -37,5 +38,6 @@ export interface Msel {
     dataFields?: Array<DataField>;
     scenarioEvents?: Array<ScenarioEvent>;
     teams?: Array<Team>;
+    userMselRoles?: Array<UserMselRole>;
     headerRowMetadata?: string;
 }

@@ -3,24 +3,58 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
  Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
 <div *ngIf="msel" class="scrolling-region">
-  Msel Teams
-  <div *ngFor="let team of msel.teams">
-    {{ team.shortName }} - {{ team.name }}
-    <div *ngFor="let user of team.users">
-      {{ user.name }}
+  <div class="mat-elevation-z2 section-container">
+    <div class="section-content">
+      <mat-expansion-panel
+        *ngFor="let team of msel.teams; trackBy: trackByFn"
+      >
+        <mat-expansion-panel-header
+          (click)="$event.stopPropagation();"
+        >
+          <button
+            mat-icon-button
+            (click)="removeTeamFromMsel(team.id); $event.stopPropagation();"
+            title="Remove team from MSEL"
+          >
+            <mat-icon class="mdi-24px self-center" fontIcon="mdi-minus-circle-outline"></mat-icon>
+          </button>
+          <span class="center-self">{{ team.shortName }} - {{ team.name }}</span>
+        </mat-expansion-panel-header>
+        <div class="team-users-div" *ngFor="let user of team.users">
+          <span class="user-name">{{ user.name }}</span>
+          <span class="msel-role" *ngFor="let mselRole of mselRoles">
+            <mat-checkbox
+              [checked]="hasMselRole(user.id, mselRole)"
+              (change)="toggleMselRole(user.id, mselRole, $event.checked)"
+              (click)="$event.stopPropagation();"
+              style="margin-right: 20px;"
+              >{{ mselRole }}</mat-checkbox
+            >
+          </span>
+        </div>
+        <div class="no-users" *ngIf="!team.users || team.users.length === 0">This team has no users.</div>
+      </mat-expansion-panel>
     </div>
   </div>
-  <hr />
-  All Teams
-  <div *ngFor="let team of teamList">
-    <button
-      mat-icon-button
-      (click)="addTeamToMsel(team.id)"
-      style="outline: none; margin-right: 15px;"
-      title="Add team to MSEL"
-    >
-      <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
-    </button>
-    {{ team.shortName }} - {{ team.name }}
+  <div class="mat-elevation-z2 section-container">
+    <div class="section-content">
+      <mat-expansion-panel>
+        <mat-expansion-panel-header
+          (click)="$event.stopPropagation();"
+        >
+          Add a Team
+          </mat-expansion-panel-header>
+          <div class="other-teams-div" *ngFor="let team of getTeamList()">
+            <button
+              mat-icon-button
+              (click)="addTeamToMsel(team.id); $event.stopPropagation();"
+              title="Add team to MSEL"
+            >
+              <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
+            </button>
+            {{ team.shortName }} - {{ team.name }}
+          </div>
+      </mat-expansion-panel>
+    </div>
   </div>
 </div>

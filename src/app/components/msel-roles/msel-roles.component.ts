@@ -17,15 +17,18 @@ import {
   ItemStatus,
   DataField,
   Msel,
+  MselRole,
   ScenarioEvent,
   Team,
-  User
+  User,
+  UserMselRoleService
 } from 'src/app/generated/blueprint.api';
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { MoveDataService } from 'src/app/data/move/move-data.service';
 import { Sort } from '@angular/material/sort';
 import { MatMenuTrigger } from '@angular/material/menu';
+import { utimes } from 'fs';
 
 @Component({
   selector: 'app-msel-roles',
@@ -35,7 +38,7 @@ import { MatMenuTrigger } from '@angular/material/menu';
 export class MselRolesComponent implements OnDestroy {
   msel: Msel = {};
   originalMsel: Msel = {};
-  expandedScenarioEventIds: string[] = [];
+  expandedSectionIds: string[] = [];
   sortedScenarioEvents: ScenarioEvent[];
   sortedDataFields: DataField[];
   private unsubscribe$ = new Subject();
@@ -44,7 +47,8 @@ export class MselRolesComponent implements OnDestroy {
   contextMenuPosition = { x: '0px', y: '0px' };
   isEditEnabled = false;
   userList: User[] = [];
-  teamList: Team[] = [];
+  private allTeams: Team[] = [];
+  mselRoles: MselRole[] = [MselRole.Approver, MselRole.Editor, MselRole.Owner];
 
   constructor(
     activatedRoute: ActivatedRoute,
@@ -71,7 +75,7 @@ export class MselRolesComponent implements OnDestroy {
     });
     // subscribe to teams
     this.teamQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(teams => {
-      this.teamList = teams;
+      this.allTeams = teams;
     });
   }
 
@@ -91,12 +95,38 @@ export class MselRolesComponent implements OnDestroy {
     return sortedDataFields;
   }
 
+  getTeamList() {
+    let teamList = this.allTeams;
+    if (this.msel && this.msel.teams && this.msel.teams.length > 0 && teamList.length > 0) {
+      const mselTeamIds = new Set(this.msel.teams
+        .map(({ id }) => id));
+      teamList = this.allTeams
+        .filter(({ id }) => !mselTeamIds.has(id));
+    }
+
+    return teamList;
+  }
+
   addTeamToMsel(teamId: string) {
     this.mselDataService.addTeamToMsel(this.msel.id, teamId);
   }
 
   removeTeamFromMsel(teamId: string) {
     this.mselDataService.removeTeamFromMsel(this.msel.id, teamId);
+  }
+
+  hasMselRole(userId: string, mselRole: MselRole): boolean {
+    const hasRole = this.msel.userMselRoles.some(umr =>
+      umr.userId === userId && umr.role === mselRole);
+    return hasRole;
+  }
+
+  toggleMselRole(userId: string, mselRole: MselRole, addIt: boolean) {
+    if (addIt) {
+      this.mselDataService.addUserMselRole(userId, this.msel.id, mselRole)
+    } else {
+      this.mselDataService.removeUserMselRole(userId, this.msel.id, mselRole)
+    }
   }
 
   saveChanges() {
@@ -107,6 +137,10 @@ export class MselRolesComponent implements OnDestroy {
   cancelChanges() {
     this.isEditEnabled = false;
     this.msel = {... this.originalMsel};
+  }
+
+  trackByFn(index, item) {
+    return item.id;
   }
 
   ngOnDestroy() {
