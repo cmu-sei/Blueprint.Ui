@@ -17,6 +17,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
           style="outline: none; margin-right: 15px;"
           title="Add new data field"
           [disabled]="isAddingDataField || valuesHaveBeenChanged()"
+          *ngIf="msel.hasRole(loggedInUserId, null).owner"
         >
           <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
         </button>
@@ -175,6 +176,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
               mat-icon-button
               class="data-field-button"
               title="Edit this data field"
+              *ngIf="msel.hasRole(loggedInUserId, null).owner"
             >
               <mat-icon class="mdi-18px up-12" fontIcon="mdi-square-edit-outline"></mat-icon>
             </button>
@@ -183,6 +185,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
               class="data-field-button"
               (click)="deleteDataField(item); $event.stopPropagation()"
               title="Delete this data field"
+              *ngIf="msel.hasRole(loggedInUserId, null).owner"
             >
               <mat-icon class="mdi-18px up-12" fontIcon="mdi-delete"></mat-icon>
             </button>
@@ -203,6 +206,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
                   matInput
                   placeholder="Display Order"
                   [(ngModel)]="changedDataField.displayOrder"
+                  [disabled]="!msel.hasRole(loggedInUserId, null).owner"
                 />
               </mat-form-field>
             </div>
@@ -215,6 +219,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
                   type="text"
                   matInput
                   [(ngModel)]="changedDataField.name"
+                  [disabled]="!msel.hasRole(loggedInUserId, null).owner"
                 />
               </mat-form-field>
             </div>
@@ -222,7 +227,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
           <div class="data-field-detail" (click)="$event.stopPropagation();">
             <div class="single-detail">
               <mat-form-field class="full-width">
-                <mat-select placeholder="Data Type" [(ngModel)]="changedDataField.dataType">
+                <mat-select placeholder="Data Type" [(ngModel)]="changedDataField.dataType" [disabled]="!msel.hasRole(loggedInUserId, null).owner">
                   <mat-option value="String">String</mat-option>
                   <mat-option value="Integer">Integer</mat-option>
                   <mat-option value="Double">Double</mat-option>
@@ -235,11 +240,16 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
           <div class="data-field-detail" (click)="$event.stopPropagation();">
             <div class="single-detail">
               <div class="partial-detail">
-                <mat-checkbox [(ngModel)]="changedDataField.isChosenFromList">Use Option List</mat-checkbox><br />
+                <mat-checkbox
+                  [(ngModel)]="changedDataField.isChosenFromList"
+                  [disabled]="!msel.hasRole(loggedInUserId, null).owner"
+                >
+                  Use Option List
+                </mat-checkbox><br />
               </div>
               <div class="data-options" *ngIf="changedDataField.isChosenFromList">
                 <div class="data-option" *ngFor="let dataOption of getDataFieldOptions(changedDataField.id)">
-                  <div>
+                  <div *ngIf="msel.hasRole(loggedInUserId, null).owner">
                     <button
                       mat-icon-button
                       class="data-field-button"
@@ -261,7 +271,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
                     &nbsp;{{ dataOption.displayOrder }} &nbsp;&nbsp; {{dataOption.optionName }}
                   </div>
                 </div>
-                <div class="data-option">
+                <div class="data-option" *ngIf="msel.hasRole(loggedInUserId, null).owner">
                   <button
                     mat-icon-button
                     (click)="addDataOption(changedDataField)"
@@ -282,6 +292,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
                   matInput
                   placeholder="Column Metadata (Width)"
                   [(ngModel)]="changedDataField.columnMetadata"
+                  [disabled]="!msel.hasRole(loggedInUserId, null).owner"
                 />
               </mat-form-field>
             </div>
@@ -294,6 +305,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
                   matInput
                   placeholder="Cell Metadata (Color, Tint, Font-Weight)"
                   [(ngModel)]="changedDataField.cellMetadata"
+                  [disabled]="!msel.hasRole(loggedInUserId, null).owner"
                 />
               </mat-form-field>
             </div>

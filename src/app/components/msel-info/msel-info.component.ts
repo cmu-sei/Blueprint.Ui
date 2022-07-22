@@ -16,12 +16,11 @@ import { TopbarView } from './../shared/top-bar/topbar.models';
 import {
   ItemStatus,
   DataField,
-  Msel,
   ScenarioEvent,
   Team,
   User
 } from 'src/app/generated/blueprint.api';
-import { MselDataService } from 'src/app/data/msel/msel-data.service';
+import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { MoveDataService } from 'src/app/data/move/move-data.service';
 import { Sort } from '@angular/material/sort';
@@ -33,8 +32,9 @@ import { MatMenuTrigger } from '@angular/material/menu';
   styleUrls: ['./msel-info.component.scss'],
 })
 export class MselInfoComponent implements OnDestroy {
-  msel: Msel = {};
-  originalMsel: Msel = {};
+  @Input() loggedInUserId: string;
+  msel = new MselPlus();
+  originalMsel = new MselPlus();
   expandedScenarioEventIds: string[] = [];
   sortedScenarioEvents: ScenarioEvent[];
   sortedDataFields: DataField[];
@@ -58,10 +58,10 @@ export class MselInfoComponent implements OnDestroy {
     private mselQuery: MselQuery
   ) {
     // subscribe to the active MSEL
-    (this.mselQuery.selectActive() as Observable<Msel>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
+    (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
       if (msel) {
-        this.originalMsel = {... msel};
-        this.msel = {... this.originalMsel};
+        Object.assign(this.originalMsel, msel);
+        Object.assign(this.msel, msel);
         this.sortedDataFields = this.getSortedDataFields(msel.dataFields);
       }
     });
@@ -98,7 +98,7 @@ export class MselInfoComponent implements OnDestroy {
 
   cancelChanges() {
     this.isEditEnabled = false;
-    this.msel = {... this.originalMsel};
+    Object.assign(this.msel, this.originalMsel);
   }
 
   ngOnDestroy() {
