@@ -1,9 +1,6 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
 
-// Copyright 2021 Carnegie Mellon University. All Rights Reserved.
-// Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
-
 .mat-header-row {
   min-height: 40px;
   padding-left:30px;
@@ -164,6 +161,10 @@ textarea {
 
 .copy-icon {
   margin-top: -8px;
+}
+
+.error-text {
+  color: red;
 }
 
 .five-cell {

@@ -16,6 +16,7 @@ import { TopbarView } from './../shared/top-bar/topbar.models';
 import {
   ItemStatus,
   DataField,
+  DataFieldType,
   DataValue,
   Msel,
   ScenarioEvent
@@ -60,6 +61,8 @@ export class ScenarioEventListComponent implements OnDestroy {
     'max-height': '400px',
     'overflow': 'auto'
   };
+  dataType: typeof DataFieldType = DataFieldType;
+  dateFormControls = new Map<string, FormControl>();
   // context menu
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
   contextMenuPosition = { x: '0px', y: '0px' };
@@ -130,6 +133,12 @@ export class ScenarioEventListComponent implements OnDestroy {
       moreDataFields.sort((a, b) => +a.displayOrder > +b.displayOrder ? 1 : -1);
       lessDataFields.sort((a, b) => +a.displayOrder > +b.displayOrder ? 1 : -1);
     }
+    // create date form controls
+    moreDataFields.forEach(df => {
+      if (df.dataType === DataFieldType.DateTime) {
+        this.dateFormControls[df.id] = new FormControl();
+      }
+    });
     this.moreDataFields = moreDataFields;
     this.lessDataFields = lessDataFields;
   }
@@ -370,6 +379,16 @@ export class ScenarioEventListComponent implements OnDestroy {
         this.scenarioEventDataService.delete(scenarioEvent.id);
       }
     });
+  }
+
+  notValidDateFormat(dateString: string) {
+    // only check if there is a value
+    if (dateString.length === 0) {
+      return false;
+    }
+    // check for month/day/year format
+    const regexPattern: RegExp = /^(0?[1-9]|1[012])[- /.](0?[1-9]|[12][0-9]|3[01])[- /.](19|20)\d\d$/;
+    return !regexPattern.test(dateString);
   }
 
   ngOnDestroy() {

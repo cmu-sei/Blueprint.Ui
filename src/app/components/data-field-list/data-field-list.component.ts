@@ -193,7 +193,7 @@ export class DataFieldListComponent implements OnDestroy {
   }
 
   deleteDataField(dataField: DataField): void {
-    if (this.isAddingDataField || this.editingId !== dataField.id) {
+    if (this.isAddingDataField || (this.editingId && this.editingId !== dataField.id)) {
       return;
     }
     this.dialogService
