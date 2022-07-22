@@ -16,6 +16,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
           (click)="addScenarioEvent(); $event.stopPropagation()"
           style="outline: none; margin-right: 15px;"
           title="Add new inject"
+          *ngIf="hasMselRole(mselRole.Owner, null)"
         >
           <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
         </button>
@@ -41,9 +42,6 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
             <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
           </button>
         </div>
-
-
-
       </span>
     </section>
 
@@ -164,6 +162,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
               class="scenario-event-button"
               (click)="copyScenarioEvent(item); $event.stopPropagation()"
               title="Duplicate this inject"
+              *ngIf="hasMselRole(mselRole.Owner, null)"
             >
               <mat-icon class="mdi-18px up-12" fontIcon="mdi-content-copy"></mat-icon>
             </button>
@@ -172,13 +171,42 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
               class="scenario-event-button"
               (click)="deleteScenarioEvent(item); $event.stopPropagation()"
               title="Delete this inject"
+              *ngIf="hasMselRole(mselRole.Owner, null)"
             >
               <mat-icon class="mdi-18px up-12" fontIcon="mdi-delete"></mat-icon>
             </button>
             {{ getScenarioEventValue(item, 'controlnumber') }}
           </div>
-          <div class="mat-cell one-cell center-self">{{ getScenarioEventValue(item, 'assignedto') }}</div>
-          <div class="mat-cell one-cell center-self">{{ item.status }}</div>
+          <div class="mat-cell one-cell center-self">
+            <mat-select
+              *ngIf="hasMselRole(mselRole.Owner, item)"
+              [(ngModel)]="item.assignedTeamId"
+              (click)="$event.stopPropagation()"
+              (valueChange)="saveAssignedTeam(item, $event)"
+              class="header-dropdown"
+              placeholder="None"
+            >
+              <mat-option *ngFor="let team of msel.teams" [value]="team.id">
+                {{ team.shortName }}
+              </mat-option>
+            </mat-select>
+            <span *ngIf="!hasMselRole(mselRole.Owner, item)">{{ getTeamShortName(item.assignedTeamId) }}</span>
+          </div>
+          <div class="mat-cell one-cell center-self">
+            <mat-select
+              *ngIf="hasMselRole(mselRole.Approver, item)"
+              [(ngModel)]="item.status"
+              (click)="$event.stopPropagation()"
+              (valueChange)="saveStatus(item, $event)"
+              class="header-dropdown"
+              placeholder="None"
+            >
+              <mat-option *ngFor="let status of itemStatus" [value]="status">
+                {{ status }}
+              </mat-option>
+            </mat-select>
+            <span *ngIf="!hasMselRole(mselRole.Approver, item)">{{ item.status }}</span>
+          </div>
           <div class="mat-cell one-cell center-self">{{ getScenarioEventValue(item, 'fromorg') }}</div>
           <div class="mat-cell one-cell center-self">{{ getScenarioEventValue(item, 'toorg') }}</div>
           <div class="mat-cell four-cell center-self">{{ getScenarioEventValue(item, 'description') }}</div>
@@ -191,7 +219,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
                 (click)="enableEditing(item); $event.stopPropagation()"
                 style="outline: none;"
                 title="Enable Editing"
-                *ngIf="isViewOnly(item)"
+                *ngIf="isViewOnly(item) && hasMselRole(mselRole.Editor, item)"
               >
                 <mat-icon class="mdi-24px self-center" fontIcon="mdi-square-edit-outline"></mat-icon>
               </button>

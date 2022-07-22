@@ -2991,137 +2991,6 @@
         }
       }
     },
-    "/api/scenarioevents/{scenarioEventId}/assignteam/{teamId}": {
-      "put": {
-        "tags": [
-          "ScenarioEvent"
-        ],
-        "summary": "Assigns a ScenarioEvent to a Team",
-        "description": "Assigns the specified Team to the specified ScenarioEvent\r\n<para />\r\nAccessible only to a Content Developer or a MSEL owner",
-        "operationId": "assignTeamToScenarioEvent",
-        "parameters": [
-          {
-            "name": "scenarioEventId",
-            "in": "path",
-            "description": "The ID of the ScenarioEvent",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          },
-          {
-            "name": "teamId",
-            "in": "path",
-            "description": "The ID of the Team",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "string",
-                  "format": "uuid"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "type": "string",
-                  "format": "uuid"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "type": "string",
-                  "format": "uuid"
-                }
-              }
-            }
-          },
-          "default": {
-            "description": "Problem response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/scenarioevents/{scenarioEventId}/unassignteam/{teamId}": {
-      "put": {
-        "tags": [
-          "ScenarioEvent"
-        ],
-        "summary": "Unassigns a ScenarioEvent from a Team",
-        "description": "Unassigns the specified Team from the specified ScenarioEvent\r\n<para />\r\nAccessible only to a Content Developer or a MSEL owner",
-        "operationId": "unassignTeamToScenarioEvent",
-        "parameters": [
-          {
-            "name": "scenarioEventId",
-            "in": "path",
-            "description": "The ID of the ScenarioEvent",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          },
-          {
-            "name": "teamId",
-            "in": "path",
-            "description": "The ID of the Team",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "boolean"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "type": "boolean"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "type": "boolean"
-                }
-              }
-            }
-          },
-          "default": {
-            "description": "Problem response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/teams": {
       "get": {
         "tags": [
@@ -5890,12 +5759,9 @@
       "ItemStatus": {
         "enum": [
           "Pending",
-          "Active",
-          "Cancelled",
-          "Complete",
-          "Archived",
+          "Entered",
           "Approved",
-          "Rejected"
+          "Complete"
         ],
         "type": "string"
       },
@@ -5922,16 +5788,16 @@
           "memberType": {
             "$ref": "#/components/schemas/MemberTypes"
           },
+          "name": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
           "declaringType": {
             "$ref": "#/components/schemas/Type"
           },
           "reflectedType": {
             "$ref": "#/components/schemas/Type"
-          },
-          "name": {
-            "type": "string",
-            "nullable": true,
-            "readOnly": true
           },
           "module": {
             "$ref": "#/components/schemas/Module"
@@ -6953,6 +6819,14 @@
           },
           "status": {
             "$ref": "#/components/schemas/ItemStatus"
+          },
+          "assignedTeamId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "assignedTeam": {
+            "$ref": "#/components/schemas/Team"
           },
           "dataValues": {
             "type": "array",
