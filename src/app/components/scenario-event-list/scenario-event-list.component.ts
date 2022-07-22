@@ -18,11 +18,10 @@ import {
   DataField,
   DataFieldType,
   DataValue,
-  Msel,
   ScenarioEvent,
   MselRole
 } from 'src/app/generated/blueprint.api';
-import { MselDataService } from 'src/app/data/msel/msel-data.service';
+import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { MoveDataService } from 'src/app/data/move/move-data.service';
 import { Sort } from '@angular/material/sort';
@@ -40,7 +39,8 @@ import { deepCopy } from "deep-copy-ts";
   styleUrls: ['./scenario-event-list.component.scss'],
 })
 export class ScenarioEventListComponent implements OnDestroy {
-  msel: Msel = {};
+  @Input() loggedInUserId: string;
+  msel = new MselPlus();
   mselScenarioEvents: ScenarioEvent[] = [];
   expandedScenarioEventIds: string[] = [];
   expandedMoreScenarioEventIds: string[] = [];
@@ -57,7 +57,6 @@ export class ScenarioEventListComponent implements OnDestroy {
   newScenarioEvent: ScenarioEvent;
   isAddingScenarioEvent = false;
   canDoAnything = false;
-  userId = '';
   private unsubscribe$ = new Subject();
   editorStyle = {
     'min-height': '100px',
@@ -87,9 +86,9 @@ export class ScenarioEventListComponent implements OnDestroy {
     public dialogService: DialogService
   ) {
     // subscribe to the active MSEL
-    (this.mselQuery.selectActive() as Observable<Msel>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
+    (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
       if (msel) {
-        this.msel = {... msel};
+        Object.assign(this.msel, msel);
         this.scenarioEventDataService.loadByMsel(msel.id);
       }
     });
@@ -102,10 +101,6 @@ export class ScenarioEventListComponent implements OnDestroy {
     this.filterControl.valueChanges.pipe(takeUntil(this.unsubscribe$)).subscribe((term) => {
       this.filterString = term;
       this.sortedScenarioEvents = this.getSortedScenarioEvents(this.getFilteredScenarioEvents(this.mselScenarioEvents));
-    });
-    // get user id
-    this.userDataService.loggedInUser.pipe(takeUntil(this.unsubscribe$)).subscribe((user) => {
-      this.userId = user && user.profile ? user.profile.sub : '';
     });
     // is user a contentdeveloper or system admin?
     this.userDataService.isContentDeveloper.pipe(takeUntil(this.unsubscribe$)).subscribe((isOne) => {
@@ -269,38 +264,6 @@ export class ScenarioEventListComponent implements OnDestroy {
     if (!teamId) return '';
     const team = this.msel.teams.find(t => t.id === teamId);
     return team ? team.shortName : '';
-  }
-
-  hasMselRole(mselRole: MselRole, scenarioEvent: ScenarioEvent): boolean {
-    if (mselRole === MselRole.Editor) {
-      const x = 100;
-    }
-    let hasIt = false;
-    // content developers and system admins can do anything with this MSEL
-    if (this.canDoAnything) {
-      hasIt = true;
-    } else if (this.msel && this.msel.userMselRoles && this.msel.userMselRoles.length > 0) {
-      // get the userMselRoles
-      let userMselRoles = this.msel.userMselRoles.filter(umr => umr.userId === this.userId);
-      // an Owner can edit everything on this MSEL
-      if (userMselRoles.some(umr => umr.role === MselRole.Owner)) {
-        hasIt = true;
-      }
-      // if this scenario event has been assigned to a team and the requested role is not Owner, check for other roles
-      if (mselRole !== MselRole.Owner && scenarioEvent && scenarioEvent.assignedTeamId) {
-        const team = this.msel.teams.find(t => t.id === scenarioEvent.assignedTeamId);
-        if (team && team .users.find(u => u.id === this.userId)) {
-          if (userMselRoles.some(umr => umr.role === MselRole.Approver)) {
-            hasIt = true;
-          } else if (mselRole === MselRole.Editor && userMselRoles.some(umr => umr.role === MselRole.Editor)) {
-            hasIt = true;
-          }
-        }
-      }
-
-    }
-
-    return hasIt;
   }
 
   isDisabled(scenarioEvent: ScenarioEvent, dataFieldName: string): boolean {

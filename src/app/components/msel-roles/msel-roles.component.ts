@@ -16,14 +16,13 @@ import { TopbarView } from './../shared/top-bar/topbar.models';
 import {
   ItemStatus,
   DataField,
-  Msel,
   MselRole,
   ScenarioEvent,
   Team,
   User,
   UserMselRoleService
 } from 'src/app/generated/blueprint.api';
-import { MselDataService } from 'src/app/data/msel/msel-data.service';
+import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { MoveDataService } from 'src/app/data/move/move-data.service';
 import { Sort } from '@angular/material/sort';
@@ -36,8 +35,9 @@ import { utimes } from 'fs';
   styleUrls: ['./msel-roles.component.scss'],
 })
 export class MselRolesComponent implements OnDestroy {
-  msel: Msel = {};
-  originalMsel: Msel = {};
+  @Input() loggedInUserId: string;
+  msel = new MselPlus();
+  originalMsel = new MselPlus();
   expandedSectionIds: string[] = [];
   sortedScenarioEvents: ScenarioEvent[];
   sortedDataFields: DataField[];
@@ -48,7 +48,7 @@ export class MselRolesComponent implements OnDestroy {
   isEditEnabled = false;
   userList: User[] = [];
   private allTeams: Team[] = [];
-  mselRoles: MselRole[] = [MselRole.Approver, MselRole.Editor, MselRole.Owner];
+  mselRoles: MselRole[] = [MselRole.Editor, MselRole.Approver, MselRole.Owner];
 
   constructor(
     activatedRoute: ActivatedRoute,
@@ -62,10 +62,10 @@ export class MselRolesComponent implements OnDestroy {
     private mselQuery: MselQuery
   ) {
     // subscribe to the active MSEL
-    (this.mselQuery.selectActive() as Observable<Msel>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
+    (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
       if (msel) {
-        this.originalMsel = {... msel};
-        this.msel = {... this.originalMsel};
+        Object.assign(this.originalMsel, msel);
+        Object.assign(this.msel, msel);
         this.sortedDataFields = this.getSortedDataFields(msel.dataFields);
       }
     });
@@ -136,7 +136,7 @@ export class MselRolesComponent implements OnDestroy {
 
   cancelChanges() {
     this.isEditEnabled = false;
-    this.msel = {... this.originalMsel};
+    Object.assign(this.msel, this.originalMsel);
   }
 
   trackByFn(index, item) {
