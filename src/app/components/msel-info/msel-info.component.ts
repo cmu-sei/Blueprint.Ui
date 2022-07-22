@@ -33,6 +33,7 @@ import { MatMenuTrigger } from '@angular/material/menu';
 })
 export class MselInfoComponent implements OnDestroy {
   @Input() loggedInUserId: string;
+  @Input() isContentDeveloper: boolean;
   msel = new MselPlus();
   originalMsel = new MselPlus();
   expandedScenarioEventIds: string[] = [];

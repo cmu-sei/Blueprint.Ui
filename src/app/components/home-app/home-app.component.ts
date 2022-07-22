@@ -48,6 +48,7 @@ export class HomeAppComponent implements OnDestroy, OnInit {
   loggedInUserId = '';
   canAccessAdminSection$ = this.userDataService.canAccessAdminSection;
   isAuthorizedUser = false;
+  isContentDeveloper$ = this.userDataService.isContentDeveloper;
   isSidebarOpen = true;
   private unsubscribe$ = new Subject();
   hideTopbar = false;

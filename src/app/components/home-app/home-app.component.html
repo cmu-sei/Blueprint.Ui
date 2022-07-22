@@ -36,6 +36,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
   <section *ngIf="selectedMselId">
     <app-msel
       [loggedInUserId]="loggedInUserId"
+      [isContentDeveloper]="isContentDeveloper$ | async"
     ></app-msel>
   </section>
   <div *ngIf="isLoading$ | async">

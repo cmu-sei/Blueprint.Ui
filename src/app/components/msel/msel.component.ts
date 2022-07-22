@@ -31,6 +31,7 @@ import { ScenarioEventQuery } from 'src/app/data/scenario-event/scenario-event.q
 })
 export class MselComponent implements OnDestroy {
   @Input() loggedInUserId: string;
+  @Input() isContentDeveloper: boolean;
   private unsubscribe$ = new Subject();
   msel = this.mselQuery.selectActive()as Observable<Msel>;
   selectedTab = new FormControl(1);

@@ -15,7 +15,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
             mat-icon-button
             (click)="removeTeamFromMsel(team.id); $event.stopPropagation();"
             title="Remove team from MSEL"
-            *ngIf="msel.hasRole(loggedInUserId, null).owner"
+            *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
           >
             <mat-icon class="mdi-24px self-center" fontIcon="mdi-minus-circle-outline"></mat-icon>
           </button>
@@ -29,7 +29,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
               (change)="toggleMselRole(user.id, mselRole, $event.checked)"
               (click)="$event.stopPropagation();"
               style="margin-right: 20px;"
-              [disabled]="!msel.hasRole(loggedInUserId, null).owner"
+              [disabled]="!isContentDeveloper && !msel.hasRole(loggedInUserId, null).owner"
               >{{ mselRole }}</mat-checkbox
             >
           </span>
@@ -38,7 +38,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
       </mat-expansion-panel>
     </div>
   </div>
-  <div class="mat-elevation-z2 section-container" *ngIf="msel.hasRole(loggedInUserId, null).owner">
+  <div class="mat-elevation-z2 section-container" *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner">
     <div class="section-content">
       <mat-expansion-panel>
         <mat-expansion-panel-header

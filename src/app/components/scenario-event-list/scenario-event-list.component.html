@@ -16,7 +16,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
           (click)="addScenarioEvent(); $event.stopPropagation()"
           style="outline: none; margin-right: 15px;"
           title="Add new inject"
-          *ngIf="msel.hasRole(loggedInUserId, null).owner"
+          *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
         >
           <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
         </button>
@@ -162,7 +162,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
               class="scenario-event-button"
               (click)="copyScenarioEvent(item); $event.stopPropagation()"
               title="Duplicate this inject"
-              *ngIf="msel.hasRole(loggedInUserId, null).owner"
+              *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
             >
               <mat-icon class="mdi-18px up-12" fontIcon="mdi-content-copy"></mat-icon>
             </button>
@@ -171,7 +171,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
               class="scenario-event-button"
               (click)="deleteScenarioEvent(item); $event.stopPropagation()"
               title="Delete this inject"
-              *ngIf="msel.hasRole(loggedInUserId, null).owner"
+              *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
             >
               <mat-icon class="mdi-18px up-12" fontIcon="mdi-delete"></mat-icon>
             </button>
@@ -179,7 +179,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
           </div>
           <div class="mat-cell one-cell center-self">
             <mat-select
-              *ngIf="msel.hasRole(loggedInUserId, item.id).owner"
+              *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, item.id).owner"
               [(ngModel)]="item.assignedTeamId"
               (click)="$event.stopPropagation()"
               (valueChange)="saveAssignedTeam(item, $event)"
@@ -190,11 +190,11 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
                 {{ team.shortName }}
               </mat-option>
             </mat-select>
-            <span *ngIf="!msel.hasRole(loggedInUserId, item.id).owner">{{ getTeamShortName(item.assignedTeamId) }}</span>
+            <span *ngIf="!isContentDeveloper && !msel.hasRole(loggedInUserId, item.id).owner">{{ getTeamShortName(item.assignedTeamId) }}</span>
           </div>
           <div class="mat-cell one-cell center-self">
             <mat-select
-              *ngIf="msel.hasRole(loggedInUserId, item.id).approver"
+              *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, item.id).approver"
               [(ngModel)]="item.status"
               (click)="$event.stopPropagation()"
               (valueChange)="saveStatus(item, $event)"
@@ -205,7 +205,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
                 {{ status }}
               </mat-option>
             </mat-select>
-            <span *ngIf="!msel.hasRole(loggedInUserId, item.id).approver">{{ item.status }}</span>
+            <span *ngIf="!isContentDeveloper && !msel.hasRole(loggedInUserId, item.id).approver">{{ item.status }}</span>
           </div>
           <div class="mat-cell one-cell center-self">{{ getScenarioEventValue(item, 'fromorg') }}</div>
           <div class="mat-cell one-cell center-self">{{ getScenarioEventValue(item, 'toorg') }}</div>
@@ -219,7 +219,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
                 (click)="enableEditing(item); $event.stopPropagation()"
                 style="outline: none;"
                 title="Enable Editing"
-                *ngIf="isViewOnly(item) && msel.hasRole(loggedInUserId, item.id).editor"
+                *ngIf="isViewOnly(item) && (isContentDeveloper || msel.hasRole(loggedInUserId, item.id).editor)"
               >
                 <mat-icon class="mdi-24px self-center" fontIcon="mdi-square-edit-outline"></mat-icon>
               </button>

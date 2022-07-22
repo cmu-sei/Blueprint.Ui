@@ -40,6 +40,7 @@ import { deepCopy } from "deep-copy-ts";
 })
 export class ScenarioEventListComponent implements OnDestroy {
   @Input() loggedInUserId: string;
+  @Input() isContentDeveloper: boolean;
   msel = new MselPlus();
   mselScenarioEvents: ScenarioEvent[] = [];
   expandedScenarioEventIds: string[] = [];
