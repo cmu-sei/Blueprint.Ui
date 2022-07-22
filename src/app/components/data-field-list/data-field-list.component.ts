@@ -39,6 +39,7 @@ import { v4 as uuidv4 } from 'uuid';
 })
 export class DataFieldListComponent implements OnDestroy {
   @Input() loggedInUserId: string;
+  @Input() isContentDeveloper: boolean;
   msel = new MselPlus();
   dataFieldList: DataField[] = [];
   changedDataField: DataField = {};

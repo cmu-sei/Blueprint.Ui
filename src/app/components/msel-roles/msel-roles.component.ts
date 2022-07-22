@@ -36,6 +36,7 @@ import { utimes } from 'fs';
 })
 export class MselRolesComponent implements OnDestroy {
   @Input() loggedInUserId: string;
+  @Input() isContentDeveloper: boolean;
   msel = new MselPlus();
   originalMsel = new MselPlus();
   expandedSectionIds: string[] = [];

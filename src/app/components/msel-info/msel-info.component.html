@@ -11,7 +11,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
           (click)="isEditEnabled = true; $event.stopPropagation()"
           style="outline: none;"
           title="Enable Editing"
-          *ngIf="!isEditEnabled && msel.hasRole(loggedInUserId, null).owner"
+          *ngIf="!isEditEnabled && (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)"
         >
           <mat-icon class="mdi-24px self-center" fontIcon="mdi-square-edit-outline"></mat-icon>
         </button>
