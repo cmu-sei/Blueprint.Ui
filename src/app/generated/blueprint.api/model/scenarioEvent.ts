@@ -16,6 +16,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
  */
 import { DataValue } from './dataValue';
 import { ItemStatus } from './itemStatus';
+import { Team } from './team';
 
 
 export interface ScenarioEvent {
@@ -26,6 +27,8 @@ export interface ScenarioEvent {
     id?: string;
     mselId?: string;
     status?: ItemStatus;
+    assignedTeamId?: string;
+    assignedTeam?: Team;
     dataValues?: Array<DataValue>;
     rowIndex?: number;
     rowMetadata?: string;
