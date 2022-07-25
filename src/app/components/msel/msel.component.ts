@@ -1,6 +1,6 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
-import { Component, OnDestroy, ViewChild } from '@angular/core';
+import { Component, Input, OnDestroy, ViewChild } from '@angular/core';
 import { MatSidenav } from '@angular/material/sidenav';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormControl } from '@angular/forms';
@@ -30,6 +30,8 @@ import { ScenarioEventQuery } from 'src/app/data/scenario-event/scenario-event.q
   styleUrls: ['./msel.component.scss'],
 })
 export class MselComponent implements OnDestroy {
+  @Input() loggedInUserId: string;
+  @Input() isContentDeveloper: boolean;
   private unsubscribe$ = new Subject();
   msel = this.mselQuery.selectActive()as Observable<Msel>;
   selectedTab = new FormControl(1);

@@ -11,10 +11,22 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
   <mat-tab label="<<  Back">
   </mat-tab>
   <mat-tab label="Info">
-    <app-msel-info></app-msel-info>
+    <app-msel-info
+    [loggedInUserId]="loggedInUserId"
+    [isContentDeveloper]="isContentDeveloper"
+  ></app-msel-info>
+  </mat-tab>
+  <mat-tab label="Roles">
+    <app-msel-roles
+    [loggedInUserId]="loggedInUserId"
+    [isContentDeveloper]="isContentDeveloper"
+  ></app-msel-roles>
   </mat-tab>
   <mat-tab label="Data Fields">
-    <app-data-field-list></app-data-field-list>
+    <app-data-field-list
+    [loggedInUserId]="loggedInUserId"
+    [isContentDeveloper]="isContentDeveloper"
+  ></app-data-field-list>
   </mat-tab>
   <mat-tab label="Organizations">
     <app-organization-list>Organizations</app-organization-list>
@@ -23,7 +35,10 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
     <app-move-list></app-move-list>
   </mat-tab>
   <mat-tab label="Injects">
-    <app-scenario-event-list></app-scenario-event-list>
+    <app-scenario-event-list
+    [loggedInUserId]="loggedInUserId"
+    [isContentDeveloper]="isContentDeveloper"
+  ></app-scenario-event-list>
   </mat-tab>
   <mat-tab label="Exercise View">
     <app-msel-view [tabHeight]="48"></app-msel-view>

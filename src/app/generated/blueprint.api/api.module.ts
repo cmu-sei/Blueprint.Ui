@@ -1,5 +1,5 @@
 /*
-Copyright 2022 Carnegie Mellon University. All Rights Reserved. 
+Copyright 2022 Carnegie Mellon University. All Rights Reserved.
  Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 */
 
@@ -14,6 +14,7 @@ import { DataValueService } from './api/dataValue.service';
 import { HealthCheckService } from './api/healthCheck.service';
 import { MoveService } from './api/move.service';
 import { MselService } from './api/msel.service';
+import { OrganizationService } from './api/organization.service';
 import { PermissionService } from './api/permission.service';
 import { ScenarioEventService } from './api/scenarioEvent.service';
 import { TeamService } from './api/team.service';
@@ -33,6 +34,7 @@ import { UserPermissionService } from './api/userPermission.service';
     HealthCheckService,
     MoveService,
     MselService,
+    OrganizationService,
     PermissionService,
     ScenarioEventService,
     TeamService,

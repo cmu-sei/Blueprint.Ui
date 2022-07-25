@@ -59,8 +59,6 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
     </mat-card-header>
     <mat-card-content class="msel-text" contenteditable="false">
       <span>Status: {{ msel.status }}</span> <span *ngIf="msel.isTemplate"> - Template </span><br />
-      <span *ngIf="msel.teamId">Team Access</span>
-      <span *ngIf="!msel.teamId">Public Access</span><br />
       <span>Created: {{ msel.dateCreated | date: 'MM/dd/yyyy' }}</span><br />
       <span *ngIf="!msel.dateModified">Modified: {{ msel.dateCreated | date: 'MM/dd/yyyy' }}</span>
       <span *ngIf="msel.dateModified">Modified: {{ msel.dateModified | date: 'MM/dd/yyyy' }}</span><br />
@@ -69,7 +67,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
       <button mat-button class="msel-action" (click)="downloadFile(msel); $event.stopPropagation();" title="Download .xlsx file">
         <mat-icon style="margin-bottom: 12px;" fontIcon="mdi-download" alt="Download .xlsx file"></mat-icon> Download
       </button>
-      <button mat-button class="msel-action" (click)="uploadFile(msel.id, msel.teamId); fileInput.click(); $event.stopPropagation();" title="Upload .xlsx file">
+      <button mat-button class="msel-action" (click)="uploadFile(msel.id, null); fileInput.click(); $event.stopPropagation();" title="Upload .xlsx file">
         <mat-icon style="margin-bottom: 12px;" fontIcon="mdi-upload" alt="Upload .xlsx file"></mat-icon> Upload
       </button>
       <button mat-button class="msel-action" (click)="delete(msel); $event.stopPropagation();" title="Delete">

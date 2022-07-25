@@ -11,7 +11,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
           (click)="isEditEnabled = true; $event.stopPropagation()"
           style="outline: none;"
           title="Enable Editing"
-          *ngIf="!isEditEnabled"
+          *ngIf="!isEditEnabled && (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)"
         >
           <mat-icon class="mdi-24px self-center" fontIcon="mdi-square-edit-outline"></mat-icon>
         </button>
@@ -66,16 +66,6 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
           [(ngModel)]="msel.status"
           [disabled]="!isEditEnabled"
         />
-      </mat-form-field>
-    </div>
-    <div class="single-detail">
-      <mat-form-field>
-        <mat-select placeholder="Team" [(ngModel)]="msel.teamId" [disabled]="!isEditEnabled">
-          <mat-option value="" matTooltip="Public" matTooltipPosition="right">Public</mat-option>
-          <mat-option *ngFor="let team of teamList" [value]="team.id" [matTooltip]="team.id" matTooltipPosition="right">
-            {{team.name}}
-          </mat-option>
-        </mat-select>
       </mat-form-field>
     </div>
     <div class="single-detail">

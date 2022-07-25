@@ -18,10 +18,10 @@ import {
   DataField,
   DataFieldType,
   DataValue,
-  Msel,
-  ScenarioEvent
+  ScenarioEvent,
+  MselRole
 } from 'src/app/generated/blueprint.api';
-import { MselDataService } from 'src/app/data/msel/msel-data.service';
+import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { MoveDataService } from 'src/app/data/move/move-data.service';
 import { Sort } from '@angular/material/sort';
@@ -39,7 +39,9 @@ import { deepCopy } from "deep-copy-ts";
   styleUrls: ['./scenario-event-list.component.scss'],
 })
 export class ScenarioEventListComponent implements OnDestroy {
-  msel: Msel = {};
+  @Input() loggedInUserId: string;
+  @Input() isContentDeveloper: boolean;
+  msel = new MselPlus();
   mselScenarioEvents: ScenarioEvent[] = [];
   expandedScenarioEventIds: string[] = [];
   expandedMoreScenarioEventIds: string[] = [];
@@ -55,6 +57,7 @@ export class ScenarioEventListComponent implements OnDestroy {
   editingValueList = new Map<string, string>();
   newScenarioEvent: ScenarioEvent;
   isAddingScenarioEvent = false;
+  canDoAnything = false;
   private unsubscribe$ = new Subject();
   editorStyle = {
     'min-height': '100px',
@@ -63,6 +66,8 @@ export class ScenarioEventListComponent implements OnDestroy {
   };
   dataType: typeof DataFieldType = DataFieldType;
   dateFormControls = new Map<string, FormControl>();
+  itemStatus: ItemStatus[] = [ItemStatus.Pending, ItemStatus.Entered, ItemStatus.Approved, ItemStatus.Complete];
+  mselRole = { Owner: MselRole.Owner, Approver: MselRole.Approver, Editor: MselRole.Editor};
   // context menu
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
   contextMenuPosition = { x: '0px', y: '0px' };
@@ -82,9 +87,9 @@ export class ScenarioEventListComponent implements OnDestroy {
     public dialogService: DialogService
   ) {
     // subscribe to the active MSEL
-    (this.mselQuery.selectActive() as Observable<Msel>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
+    (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
       if (msel) {
-        this.msel = {... msel};
+        Object.assign(this.msel, msel);
         this.scenarioEventDataService.loadByMsel(msel.id);
       }
     });
@@ -93,13 +98,15 @@ export class ScenarioEventListComponent implements OnDestroy {
       this.sortedScenarioEvents = this.getSortedScenarioEvents(this.getFilteredScenarioEvents(this.mselScenarioEvents));
       this.getSortedDataFields(this.msel.dataFields);
       this.populateDataValueList();
-  });
-    this.filterControl.valueChanges
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe((term) => {
-        this.filterString = term;
-        this.sortedScenarioEvents = this.getSortedScenarioEvents(this.getFilteredScenarioEvents(this.mselScenarioEvents));
-      });
+    });
+    this.filterControl.valueChanges.pipe(takeUntil(this.unsubscribe$)).subscribe((term) => {
+      this.filterString = term;
+      this.sortedScenarioEvents = this.getSortedScenarioEvents(this.getFilteredScenarioEvents(this.mselScenarioEvents));
+    });
+    // is user a contentdeveloper or system admin?
+    this.userDataService.isContentDeveloper.pipe(takeUntil(this.unsubscribe$)).subscribe((isOne) => {
+      this.canDoAnything = isOne;
+    });
   }
 
   getSortedScenarioEvents(scenarioEvents: ScenarioEvent[]): ScenarioEvent[] {
@@ -208,7 +215,7 @@ export class ScenarioEventListComponent implements OnDestroy {
   }
 
   enableEditing(scenarioEvent: ScenarioEvent) {
-    this.editingValueList.set(scenarioEvent.id + 'ri', scenarioEvent.rowIndex);
+    this.editingValueList.set(scenarioEvent.id + 'ri', scenarioEvent.rowIndex.toString());
     this.editingValueList.set(scenarioEvent.id + 'rm', scenarioEvent.rowMetadata);
     scenarioEvent.dataValues.forEach(dv => {
       this.editingValueList.set(dv.id, dv.value);
@@ -240,6 +247,24 @@ export class ScenarioEventListComponent implements OnDestroy {
       this.dataValueList[scenarioEvent.id][dv.dataFieldId] = dv.value;
       this.editingValueList.delete(dv.id);
     });
+  }
+
+  saveAssignedTeam(scenarioEvent: ScenarioEvent, teamId: string) {
+    const {dataValues, ...saveScenarioEvent} = scenarioEvent;
+    saveScenarioEvent.assignedTeamId = teamId;
+    this.scenarioEventDataService.updateScenarioEvent(saveScenarioEvent);
+  }
+
+  saveStatus(scenarioEvent: ScenarioEvent, status: ItemStatus) {
+    const {dataValues, ...saveScenarioEvent} = scenarioEvent;
+    saveScenarioEvent.status = status;
+    this.scenarioEventDataService.updateScenarioEvent(saveScenarioEvent);
+  }
+
+  getTeamShortName(teamId: string) {
+    if (!teamId) return '';
+    const team = this.msel.teams.find(t => t.id === teamId);
+    return team ? team.shortName : '';
   }
 
   isDisabled(scenarioEvent: ScenarioEvent, dataFieldName: string): boolean {
@@ -275,8 +300,6 @@ export class ScenarioEventListComponent implements OnDestroy {
     const isAsc = direction !== 'desc';
     switch (column) {
       case 'controlnumber':
-      case "assignedto":
-      case "status":
       case 'fromorg':
       case "toorg":
       case "description":
@@ -284,6 +307,10 @@ export class ScenarioEventListComponent implements OnDestroy {
           (this.getScenarioEventValue(a, column) < this.getScenarioEventValue(b, column) ? -1 : 1) *
           (isAsc ? 1 : -1)
         );
+      case "assignedto":
+        return (this.getTeamShortName(a.assignedTeamId).toLowerCase() < this.getTeamShortName(b.assignedTeamId).toLowerCase() ? -1 : 1) * (isAsc ? 1 : -1);
+      case "status":
+        return (a.status < b.status ? -1 : 1) * (isAsc ? 1 : -1);
       default:
         return 0;
     }

@@ -155,16 +155,10 @@ export class UserDataService implements OnDestroy {
         this.isAuthorizedUser.next(authUser.profile.sub.length === 36);
         const isSuperUser = permissions.some((p) => p.key === 'SystemAdmin');
         const isContentDeveloper = permissions.some((p) => p.key === 'ContentDeveloper');
-        const canIncrementMove = permissions.some((p) => p.key === 'CanIncrementMove');
-        const canSubmit = permissions.some((p) => p.key === 'CanSubmit');
-        const canModify = permissions.some((p) => p.key === 'CanModify');
         authUser.profile.isSystemAdmin = isSuperUser;
         this.isSuperUser.next(isSuperUser);
         this.isContentDeveloper.next(isContentDeveloper || isSuperUser);
-        this.canIncrementMove.next(canIncrementMove || isSuperUser || isContentDeveloper);
-        this.canSubmit.next(canSubmit || isSuperUser || isContentDeveloper || canIncrementMove);
-        this.canModify.next(canModify || isSuperUser || isContentDeveloper || canIncrementMove || canSubmit);
-        this.canAccessAdminSection.next(isSuperUser || isContentDeveloper || canIncrementMove || canSubmit);
+        this.canAccessAdminSection.next(isSuperUser);
         // Emit the modified user.
         this.loggedInUser.next(authUser);
       });

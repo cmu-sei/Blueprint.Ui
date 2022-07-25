@@ -8,13 +8,69 @@ import { FormControl } from '@angular/forms';
 import { PageEvent } from '@angular/material/paginator';
 import { Router, ActivatedRoute } from '@angular/router';
 import {
+  DataField,
   DataValue,
+  ItemStatus,
+  Move,
   Msel,
+  MselRole,
   MselService,
-  ScenarioEvent
+  ScenarioEvent,
+  Team,
+  UserMselRole
 } from 'src/app/generated/blueprint.api';
 import { map, take, tap } from 'rxjs/operators';
 import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class MselPlus implements Msel {
+  dateCreated?: Date;
+  dateModified?: Date;
+  createdBy?: string;
+  modifiedBy?: string;
+  id?: string;
+  description?: string;
+  status?: ItemStatus;
+  galleryExhibitId?: string;
+  citeEvaluationId?: string;
+  steamfitterScenarioId?: string;
+  isTemplate?: boolean;
+  moves?: Array<Move>;
+  dataFields?: Array<DataField>;
+  scenarioEvents?: Array<ScenarioEvent>;
+  teams?: Array<Team>;
+  userMselRoles?: Array<UserMselRole>;
+  headerRowMetadata?: string;
+
+  hasRole(userId: string, scenarioEventId: string) {
+    const mselRole = { owner: false, approver: false, editor: false };
+    mselRole.owner = !this.userMselRoles ? false : this.userMselRoles.some(umr =>
+      umr.userId === userId &&
+      umr.role === MselRole.Owner);
+    if (mselRole.owner) {
+      mselRole.approver = true;
+      mselRole.editor = true;
+    } else if (this.scenarioEvents && this.scenarioEvents.length > 0) {
+      const scenarioEvent = this.scenarioEvents.find(se => se.id === scenarioEventId);
+      if (scenarioEvent && scenarioEvent.assignedTeamId) {
+        const team = this.teams.find(t => t.id === scenarioEvent.assignedTeamId);
+        const isOnTeam = team && team.users && team.users.some(u => u.id === userId);
+        if (isOnTeam && this.userMselRoles) {
+          mselRole.approver = this.userMselRoles.some(umr =>
+            umr.userId === userId &&
+            umr.role === MselRole.Approver);
+          mselRole.editor = mselRole.approver || this.userMselRoles.some(umr =>
+            umr.userId === userId &&
+            umr.role === MselRole.Editor);
+        }
+      }
+    }
+
+    return mselRole;
+  }
+}
 
 @Injectable({
   providedIn: 'root',
@@ -227,6 +283,74 @@ export class MselDataService {
       .subscribe((r) => {
         this.deleteFromStore(id);
       });
+  }
+
+  addTeamToMsel(mselId: string, teamId: string) {
+    this.mselStore.setLoading(true);
+    this.mselService.addTeamToMsel(mselId, teamId)
+    .pipe(
+      tap(() => {
+        this.mselStore.setLoading(false);
+      }),
+      take(1)
+    )
+    .subscribe((n) => {
+      this.updateStore(n);
+    },
+    (error) => {
+      this.mselStore.setLoading(false);
+    });
+  }
+
+  removeTeamFromMsel(mselId: string, teamId: string) {
+    this.mselStore.setLoading(true);
+    this.mselService.removeTeamFromMsel(mselId, teamId)
+    .pipe(
+      tap(() => {
+        this.mselStore.setLoading(false);
+      }),
+      take(1)
+    )
+    .subscribe((n) => {
+      this.updateStore(n);
+    },
+    (error) => {
+      this.mselStore.setLoading(false);
+    });
+  }
+
+  addUserMselRole(userId: string, mselId: string, mselRole: MselRole) {
+    this.mselStore.setLoading(true);
+    this.mselService.addUserMselRole(userId, mselId, mselRole)
+    .pipe(
+      tap(() => {
+        this.mselStore.setLoading(false);
+      }),
+      take(1)
+    )
+    .subscribe((n) => {
+      this.updateStore(n);
+    },
+    (error) => {
+      this.mselStore.setLoading(false);
+    });
+  }
+
+  removeUserMselRole(userId: string, mselId: string, mselRole: MselRole) {
+    this.mselStore.setLoading(true);
+    this.mselService.removeUserMselRole(userId, mselId, mselRole)
+    .pipe(
+      tap(() => {
+        this.mselStore.setLoading(false);
+      }),
+      take(1)
+    )
+    .subscribe((n) => {
+      this.updateStore(n);
+    },
+    (error) => {
+      this.mselStore.setLoading(false);
+    });
   }
 
   downloadXlsx(id: string) {

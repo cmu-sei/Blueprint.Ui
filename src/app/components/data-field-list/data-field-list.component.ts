@@ -14,12 +14,11 @@ import {
 import { UserDataService } from 'src/app/data/user/user-data.service';
 import { TopbarView } from './../shared/top-bar/topbar.models';
 import {
-  Msel,
   DataField,
   DataFieldType,
   DataOption
 } from 'src/app/generated/blueprint.api';
-import { MselDataService } from 'src/app/data/msel/msel-data.service';
+import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { MoveDataService } from 'src/app/data/move/move-data.service';
 import { Sort } from '@angular/material/sort';
@@ -39,7 +38,9 @@ import { v4 as uuidv4 } from 'uuid';
   styleUrls: ['./data-field-list.component.scss'],
 })
 export class DataFieldListComponent implements OnDestroy {
-  msel: Msel = {};
+  @Input() loggedInUserId: string;
+  @Input() isContentDeveloper: boolean;
+  msel = new MselPlus();
   dataFieldList: DataField[] = [];
   changedDataField: DataField = {};
   filteredDataFieldList: DataField[] = [];
@@ -87,9 +88,9 @@ export class DataFieldListComponent implements OnDestroy {
       });
     });
     // subscribe to the active MSEL
-    (this.mselQuery.selectActive() as Observable<Msel>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
+    (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
       if (msel) {
-        this.msel = {... msel};
+        Object.assign(this.msel, msel);
         this.dataFieldDataService.loadByMsel(msel.id);
       }
     });

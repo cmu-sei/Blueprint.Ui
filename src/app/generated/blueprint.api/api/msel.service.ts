@@ -1,5 +1,5 @@
 /*
-Copyright 2022 Carnegie Mellon University. All Rights Reserved. 
+Copyright 2022 Carnegie Mellon University. All Rights Reserved.
  Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 */
 
@@ -25,6 +25,7 @@ import { Observable }                                        from 'rxjs';
 
 import { DataTable } from '../model/dataTable';
 import { Msel } from '../model/msel';
+import { MselRole } from '../model/mselRole';
 import { ProblemDetails } from '../model/problemDetails';
 
 import { BASE_PATH, COLLECTION_FORMATS }                     from '../variables';
@@ -65,6 +66,120 @@ export class MselService {
         return false;
     }
 
+
+    /**
+     * Adds a Team to a Msel
+     * Adds the team specified to the MSEL specified  &lt;para /&gt;  Accessible only to a ContentDeveloper or a MSEL owner
+     * @param mselId The ID of the Msel to update
+     * @param teamId The ID of the Team
+     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+     * @param reportProgress flag to report request and response progress.
+     */
+    public addTeamToMsel(mselId: string, teamId: string, observe?: 'body', reportProgress?: boolean): Observable<Msel>;
+    public addTeamToMsel(mselId: string, teamId: string, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Msel>>;
+    public addTeamToMsel(mselId: string, teamId: string, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Msel>>;
+    public addTeamToMsel(mselId: string, teamId: string, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+        if (mselId === null || mselId === undefined) {
+            throw new Error('Required parameter mselId was null or undefined when calling addTeamToMsel.');
+        }
+        if (teamId === null || teamId === undefined) {
+            throw new Error('Required parameter teamId was null or undefined when calling addTeamToMsel.');
+        }
+
+        let headers = this.defaultHeaders;
+
+        // authentication (oauth2) required
+        if (this.configuration.accessToken) {
+            const accessToken = typeof this.configuration.accessToken === 'function'
+                ? this.configuration.accessToken()
+                : this.configuration.accessToken;
+            headers = headers.set('Authorization', 'Bearer ' + accessToken);
+        }
+
+        // to determine the Accept header
+        let httpHeaderAccepts: string[] = [
+            'text/plain',
+            'application/json',
+            'text/json'
+        ];
+        const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
+        if (httpHeaderAcceptSelected !== undefined) {
+            headers = headers.set('Accept', httpHeaderAcceptSelected);
+        }
+
+        // to determine the Content-Type header
+        const consumes: string[] = [
+        ];
+
+        return this.httpClient.put<Msel>(`${this.configuration.basePath}/api/msels/${encodeURIComponent(String(mselId))}/addteam/${encodeURIComponent(String(teamId))}`,
+            null,
+            {
+                withCredentials: this.configuration.withCredentials,
+                headers: headers,
+                observe: observe,
+                reportProgress: reportProgress
+            }
+        );
+    }
+
+    /**
+     * Adds a User Role to a Msel
+     * Adds the User Role specified to the MSEL specified  &lt;para /&gt;  Accessible only to a ContentDeveloper or a MSEL owner
+     * @param userId The ID of the User
+     * @param mselId The ID of the Msel to update
+     * @param mselRole The MSEL Role to add
+     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+     * @param reportProgress flag to report request and response progress.
+     */
+    public addUserMselRole(userId: string, mselId: string, mselRole: MselRole, observe?: 'body', reportProgress?: boolean): Observable<Msel>;
+    public addUserMselRole(userId: string, mselId: string, mselRole: MselRole, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Msel>>;
+    public addUserMselRole(userId: string, mselId: string, mselRole: MselRole, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Msel>>;
+    public addUserMselRole(userId: string, mselId: string, mselRole: MselRole, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+        if (userId === null || userId === undefined) {
+            throw new Error('Required parameter userId was null or undefined when calling addUserMselRole.');
+        }
+        if (mselId === null || mselId === undefined) {
+            throw new Error('Required parameter mselId was null or undefined when calling addUserMselRole.');
+        }
+        if (mselRole === null || mselRole === undefined) {
+            throw new Error('Required parameter mselRole was null or undefined when calling addUserMselRole.');
+        }
+
+        let headers = this.defaultHeaders;
+
+        // authentication (oauth2) required
+        if (this.configuration.accessToken) {
+            const accessToken = typeof this.configuration.accessToken === 'function'
+                ? this.configuration.accessToken()
+                : this.configuration.accessToken;
+            headers = headers.set('Authorization', 'Bearer ' + accessToken);
+        }
+
+        // to determine the Accept header
+        let httpHeaderAccepts: string[] = [
+            'text/plain',
+            'application/json',
+            'text/json'
+        ];
+        const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
+        if (httpHeaderAcceptSelected !== undefined) {
+            headers = headers.set('Accept', httpHeaderAcceptSelected);
+        }
+
+        // to determine the Content-Type header
+        const consumes: string[] = [
+        ];
+
+        return this.httpClient.put<Msel>(`${this.configuration.basePath}/api/msels/${encodeURIComponent(String(mselId))}/user/${encodeURIComponent(String(userId))}/role/${encodeURIComponent(String(mselRole))}/add`,
+            null,
+            {
+                withCredentials: this.configuration.withCredentials,
+                headers: headers,
+                observe: observe,
+                reportProgress: reportProgress
+            }
+        );
+    }
 
     /**
      * Creates a new Msel
@@ -428,6 +543,120 @@ export class MselService {
     }
 
     /**
+     * Removes a Team from a Msel
+     * Removes the team specified from the MSEL specified  &lt;para /&gt;  Accessible only to a ContentDeveloper or a MSEL owner
+     * @param mselId The ID of the Msel to update
+     * @param teamId The ID of the Team
+     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+     * @param reportProgress flag to report request and response progress.
+     */
+    public removeTeamFromMsel(mselId: string, teamId: string, observe?: 'body', reportProgress?: boolean): Observable<Msel>;
+    public removeTeamFromMsel(mselId: string, teamId: string, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Msel>>;
+    public removeTeamFromMsel(mselId: string, teamId: string, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Msel>>;
+    public removeTeamFromMsel(mselId: string, teamId: string, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+        if (mselId === null || mselId === undefined) {
+            throw new Error('Required parameter mselId was null or undefined when calling removeTeamFromMsel.');
+        }
+        if (teamId === null || teamId === undefined) {
+            throw new Error('Required parameter teamId was null or undefined when calling removeTeamFromMsel.');
+        }
+
+        let headers = this.defaultHeaders;
+
+        // authentication (oauth2) required
+        if (this.configuration.accessToken) {
+            const accessToken = typeof this.configuration.accessToken === 'function'
+                ? this.configuration.accessToken()
+                : this.configuration.accessToken;
+            headers = headers.set('Authorization', 'Bearer ' + accessToken);
+        }
+
+        // to determine the Accept header
+        let httpHeaderAccepts: string[] = [
+            'text/plain',
+            'application/json',
+            'text/json'
+        ];
+        const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
+        if (httpHeaderAcceptSelected !== undefined) {
+            headers = headers.set('Accept', httpHeaderAcceptSelected);
+        }
+
+        // to determine the Content-Type header
+        const consumes: string[] = [
+        ];
+
+        return this.httpClient.put<Msel>(`${this.configuration.basePath}/api/msels/${encodeURIComponent(String(mselId))}/removeteam/${encodeURIComponent(String(teamId))}`,
+            null,
+            {
+                withCredentials: this.configuration.withCredentials,
+                headers: headers,
+                observe: observe,
+                reportProgress: reportProgress
+            }
+        );
+    }
+
+    /**
+     * Removes a User Role from a Msel
+     * Removes the User Role specified from the MSEL specified  &lt;para /&gt;  Accessible only to a ContentDeveloper or a MSEL owner
+     * @param userId The ID of the User
+     * @param mselId The ID of the Msel to update
+     * @param mselRole The MSEL Role to add
+     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+     * @param reportProgress flag to report request and response progress.
+     */
+    public removeUserMselRole(userId: string, mselId: string, mselRole: MselRole, observe?: 'body', reportProgress?: boolean): Observable<Msel>;
+    public removeUserMselRole(userId: string, mselId: string, mselRole: MselRole, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Msel>>;
+    public removeUserMselRole(userId: string, mselId: string, mselRole: MselRole, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Msel>>;
+    public removeUserMselRole(userId: string, mselId: string, mselRole: MselRole, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+        if (userId === null || userId === undefined) {
+            throw new Error('Required parameter userId was null or undefined when calling removeUserMselRole.');
+        }
+        if (mselId === null || mselId === undefined) {
+            throw new Error('Required parameter mselId was null or undefined when calling removeUserMselRole.');
+        }
+        if (mselRole === null || mselRole === undefined) {
+            throw new Error('Required parameter mselRole was null or undefined when calling removeUserMselRole.');
+        }
+
+        let headers = this.defaultHeaders;
+
+        // authentication (oauth2) required
+        if (this.configuration.accessToken) {
+            const accessToken = typeof this.configuration.accessToken === 'function'
+                ? this.configuration.accessToken()
+                : this.configuration.accessToken;
+            headers = headers.set('Authorization', 'Bearer ' + accessToken);
+        }
+
+        // to determine the Accept header
+        let httpHeaderAccepts: string[] = [
+            'text/plain',
+            'application/json',
+            'text/json'
+        ];
+        const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
+        if (httpHeaderAcceptSelected !== undefined) {
+            headers = headers.set('Accept', httpHeaderAcceptSelected);
+        }
+
+        // to determine the Content-Type header
+        const consumes: string[] = [
+        ];
+
+        return this.httpClient.put<Msel>(`${this.configuration.basePath}/api/msels/${encodeURIComponent(String(mselId))}/user/${encodeURIComponent(String(userId))}/role/${encodeURIComponent(String(mselRole))}/remove`,
+            null,
+            {
+                withCredentials: this.configuration.withCredentials,
+                headers: headers,
+                observe: observe,
+                reportProgress: reportProgress
+            }
+        );
+    }
+
+    /**
      * Replace a msel by id with data in xlsx file
      *
      * @param id The id of the msel
@@ -438,9 +667,9 @@ export class MselService {
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public replaceWithXlsxFile(id: string, MselId?: string, MselTemplateId?: string, TeamId?: string, ToUpload?: Blob, observe?: 'body', reportProgress?: boolean): Observable<any>;
-    public replaceWithXlsxFile(id: string, MselId?: string, MselTemplateId?: string, TeamId?: string, ToUpload?: Blob, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<any>>;
-    public replaceWithXlsxFile(id: string, MselId?: string, MselTemplateId?: string, TeamId?: string, ToUpload?: Blob, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<any>>;
+    public replaceWithXlsxFile(id: string, MselId?: string, MselTemplateId?: string, TeamId?: string, ToUpload?: Blob, observe?: 'body', reportProgress?: boolean): Observable<string>;
+    public replaceWithXlsxFile(id: string, MselId?: string, MselTemplateId?: string, TeamId?: string, ToUpload?: Blob, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<string>>;
+    public replaceWithXlsxFile(id: string, MselId?: string, MselTemplateId?: string, TeamId?: string, ToUpload?: Blob, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<string>>;
     public replaceWithXlsxFile(id: string, MselId?: string, MselTemplateId?: string, TeamId?: string, ToUpload?: Blob, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
         if (id === null || id === undefined) {
             throw new Error('Required parameter id was null or undefined when calling replaceWithXlsxFile.');
@@ -499,7 +728,7 @@ export class MselService {
             formParams.append('ToUpload', <any>ToUpload);
         }
 
-        return this.httpClient.put(`${this.configuration.basePath}/api/msels/${encodeURIComponent(String(id))}/xlsx`,
+        return this.httpClient.put<string>(`${this.configuration.basePath}/api/msels/${encodeURIComponent(String(id))}/xlsx`,
             convertFormParamsToString ? formParams.toString() : formParams,
             {
                 withCredentials: this.configuration.withCredentials,

@@ -34,7 +34,10 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
     <app-msel-list></app-msel-list>
   </section>
   <section *ngIf="selectedMselId">
-    <app-msel></app-msel>
+    <app-msel
+      [loggedInUserId]="loggedInUserId"
+      [isContentDeveloper]="isContentDeveloper$ | async"
+    ></app-msel>
   </section>
   <div *ngIf="isLoading$ | async">
     <mat-progress-bar color="primary" mode="indeterminate" style="width: 90%; margin: 20px;"></mat-progress-bar>

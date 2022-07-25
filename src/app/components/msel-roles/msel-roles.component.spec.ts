@@ -3,21 +3,21 @@
 
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
-import { AdminMovesComponent } from './admin-moves.component';
+import { MselRolesComponent } from './msel.component';
 
-describe('AdminMovesComponent', () => {
-  let component: AdminMovesComponent;
-  let fixture: ComponentFixture<AdminMovesComponent>;
+describe('MselRolesComponent', () => {
+  let component: MselRolesComponent;
+  let fixture: ComponentFixture<MselRolesComponent>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ AdminMovesComponent ]
+      declarations: [ MselRolesComponent ]
     })
     .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(AdminMovesComponent);
+    fixture = TestBed.createComponent(MselRolesComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
