@@ -47,20 +47,23 @@ export class MselComponent implements OnDestroy {
     activatedRoute.queryParamMap.pipe(takeUntil(this.unsubscribe$)).subscribe(params => {
       const section = params.get('section')
       switch (section) {
-        case 'fields':
+        case 'roles':
           this.selectedTab.setValue(2);
           break;
-        case 'orgs':
+        case 'fields':
           this.selectedTab.setValue(3);
           break;
-        case 'moves':
+        case 'orgs':
           this.selectedTab.setValue(4);
           break;
-        case 'injects':
+        case 'moves':
           this.selectedTab.setValue(5);
           break;
-        case 'view':
+        case 'injects':
           this.selectedTab.setValue(6);
+          break;
+        case 'view':
+          this.selectedTab.setValue(7);
           break;
         default:
           this.selectedTab.setValue(1);
@@ -93,29 +96,35 @@ export class MselComponent implements OnDestroy {
         break;
       case 2:
         this.router.navigate([], {
-          queryParams: { section: 'fields' },
+          queryParams: { section: 'roles' },
           queryParamsHandling: 'merge'
         });
         break;
       case 3:
         this.router.navigate([], {
-          queryParams: { section: 'orgs' },
+          queryParams: { section: 'fields' },
           queryParamsHandling: 'merge'
         });
         break;
       case 4:
         this.router.navigate([], {
-          queryParams: { section: 'moves' },
+          queryParams: { section: 'orgs' },
           queryParamsHandling: 'merge'
         });
         break;
       case 5:
         this.router.navigate([], {
-          queryParams: { section: 'injects' },
+          queryParams: { section: 'moves' },
           queryParamsHandling: 'merge'
         });
         break;
       case 6:
+        this.router.navigate([], {
+          queryParams: { section: 'injects' },
+          queryParamsHandling: 'merge'
+        });
+        break;
+      case 7:
         this.router.navigate([], {
           queryParams: { section: 'view' },
           queryParamsHandling: 'merge'

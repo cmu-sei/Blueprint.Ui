@@ -17,7 +17,7 @@ import {
   Msel,
   Move
 } from 'src/app/generated/blueprint.api';
-import { MselDataService } from 'src/app/data/msel/msel-data.service';
+import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { Sort } from '@angular/material/sort';
 import { MatMenuTrigger } from '@angular/material/menu';
@@ -33,7 +33,9 @@ import { v4 as uuidv4 } from 'uuid';
   styleUrls: ['./move-list.component.scss'],
 })
 export class MoveListComponent implements OnDestroy {
-  msel: Msel = {};
+  @Input() loggedInUserId: string;
+  @Input() isContentDeveloper: boolean;
+  msel = new MselPlus();
   moveList: Move[] = [];
   changedMove: Move = {};
   filteredMoveList: Move[] = [];
@@ -68,9 +70,9 @@ export class MoveListComponent implements OnDestroy {
       this.sortedMoves = this.getSortedMoves(this.getFilteredMoves(this.moveList));
     });
     // subscribe to the active MSEL
-    (this.mselQuery.selectActive() as Observable<Msel>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
+    (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
       if (msel) {
-        this.msel = {... msel};
+        Object.assign(this.msel, msel);
         this.moveDataService.loadByMsel(msel.id);
       }
     });
@@ -150,7 +152,7 @@ export class MoveListComponent implements OnDestroy {
     this.changedMove = {
       id: uuidv4(),
       mselId: this.msel.id,
-      moveNumber: this.moveList.length + 1
+      moveNumber: this.moveList.length
     };
     this.isAddingMove = true;
   }

@@ -17,7 +17,7 @@ import {
   Msel,
   Organization
 } from 'src/app/generated/blueprint.api';
-import { MselDataService } from 'src/app/data/msel/msel-data.service';
+import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { Sort } from '@angular/material/sort';
 import { MatMenuTrigger } from '@angular/material/menu';
@@ -33,7 +33,9 @@ import { v4 as uuidv4 } from 'uuid';
   styleUrls: ['./organization-list.component.scss'],
 })
 export class OrganizationListComponent implements OnDestroy {
-  msel: Msel = {};
+  @Input() loggedInUserId: string;
+  @Input() isContentDeveloper: boolean;
+  msel = new MselPlus();
   organizationList: Organization[] = [];
   changedOrganization: Organization = {};
   filteredOrganizationList: Organization[] = [];
@@ -72,9 +74,9 @@ export class OrganizationListComponent implements OnDestroy {
       this.sortedOrganizations = this.getSortedOrganizations(this.getFilteredOrganizations(this.organizationList));
     });
     // subscribe to the active MSEL
-    (this.mselQuery.selectActive() as Observable<Msel>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
+    (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
       if (msel) {
-        this.msel = {... msel};
+        Object.assign(this.msel, msel);
         this.organizationDataService.loadByMsel(msel.id);
       }
     });

@@ -31,6 +31,8 @@ import { DialogService } from 'src/app/services/dialog/dialog.service';
   styleUrls: ['./msel-list.component.scss'],
 })
 export class MselListComponent implements OnDestroy, OnInit {
+  @Input() loggedInUserId: string;
+  @Input() isContentDeveloper: boolean;
   mselList: Msel[] = [];
   private unsubscribe$ = new Subject();
   isReady = false;
