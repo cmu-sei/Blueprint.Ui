@@ -12,6 +12,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
       (click)="addMsel(); $event.stopPropagation()"
       style="outline: none; margin-right: 15px;"
       title="Add blank MSEL"
+      [disabled]="!isContentDeveloper"
     >
       <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
       Blank MSEL
@@ -23,6 +24,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
       (click)="uploadFile('', ''); fileInput.click(); $event.stopPropagation();"
       style="outline: none; margin-right: 15px;"
       title="Add MSEL from .xlsx file"
+      [disabled]="!isContentDeveloper"
     >
       <mat-icon class="mdi-24px self-center" fontIcon="mdi-upload"></mat-icon>
       Upload .xlsx

@@ -10,7 +10,11 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
       (matSortChange)="sortChanged($event)"
       class="mat-elevation-z2 mat-header-row background-alt"
     >
-      <span class="mat-header-cell three-cell" mat-sort-header="name">
+      <span
+        class="mat-header-cell three-cell"
+        mat-sort-header="name"
+        *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
+      >
         <button
           mat-icon-button
           (click)="addOrganization(); $event.stopPropagation()"
@@ -114,7 +118,9 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
           class="mat-row"
           (click)="editOrganization(item); $event.stopPropagation();"
         >
-          <div class="mat-cell flex-row-cell three-cell">
+          <div
+            class="mat-cell flex-row-cell three-cell"
+            *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner">
             <button
               mat-icon-button
               class="organization-button"
@@ -165,6 +171,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
                   matInput
                   placeholder="Name"
                   [(ngModel)]="changedOrganization.name"
+                  [disabled]="!isContentDeveloper && !msel.hasRole(loggedInUserId, null).owner"
                 />
               </mat-form-field>
             </div>
@@ -179,8 +186,12 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
                   [styles]="editorStyle"
                   placeholder="Enter description ..."
                   [(ngModel)]="changedOrganization.description"
-                >
-                </quill-editor>
+                  *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
+                ></quill-editor>
+                <quill-view-html
+                  *ngIf="!(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)"
+                  [content]="changedOrganization.description"
+                  theme="snow"></quill-view-html>&nbsp;
               </div>
             </div>
           </div>
