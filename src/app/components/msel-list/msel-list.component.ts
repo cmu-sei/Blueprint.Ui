@@ -20,7 +20,7 @@ import {
   ItemStatus,
   Msel
 } from 'src/app/generated/blueprint.api';
-import { MselDataService } from 'src/app/data/msel/msel-data.service';
+import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { MatDialog } from '@angular/material/dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
@@ -33,19 +33,18 @@ import { DialogService } from 'src/app/services/dialog/dialog.service';
 export class MselListComponent implements OnDestroy, OnInit {
   @Input() loggedInUserId: string;
   @Input() isContentDeveloper: boolean;
-  mselList: Msel[] = [];
+  mselList: MselPlus[] = [];
   private unsubscribe$ = new Subject();
   isReady = false;
   uploadProgress = 0;
-  uploading = false;
   uploadMselId = '';
   uploadTeamId = '';
   @ViewChild('fileInput') fileInput: ElementRef<HTMLInputElement>;
-  filteredMselList: Msel[] = [];
+  filteredMselList: MselPlus[] = [];
   filterControl = new FormControl();
   filterString = '';
   sort: Sort = {active: 'dateCreated', direction: 'desc'};
-  sortedMselList: Msel[] = [];
+  sortedMselList: MselPlus[] = [];
 
   constructor(
     activatedRoute: ActivatedRoute,
@@ -62,9 +61,15 @@ export class MselListComponent implements OnDestroy, OnInit {
     this.mselQuery.selectLoading().pipe(takeUntil(this.unsubscribe$)).subscribe((isLoading) => {
       this.isReady = !isLoading;
     });
-    this.mselQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe((msels) => {
-      this.mselList = msels;
-      this.getFilteredMsels();
+    (this.mselQuery.selectAll() as Observable<MselPlus[]>).pipe(takeUntil(this.unsubscribe$)).subscribe((msels) => {
+      this.mselList.length = 0;
+      if (msels) {
+        msels.forEach(msel => {
+          this.mselList.push(msel);
+        });
+        this.mselList = msels;
+        this.getFilteredMsels();
+      }
     });
     this.filterControl.valueChanges.pipe(takeUntil(this.unsubscribe$)).subscribe((term) => {
       this.filterString = term;
@@ -93,7 +98,7 @@ export class MselListComponent implements OnDestroy, OnInit {
    selectFile(file: File) {
     if (!file) return;
     this.uploadProgress = 0;
-    this.uploading = true;
+    this.isReady = false;
     this.mselDataService
       .uploadXlsx(this.uploadMselId, this.uploadTeamId, file, 'events', true)
       .subscribe((event) => {
@@ -101,7 +106,7 @@ export class MselListComponent implements OnDestroy, OnInit {
           this.uploadProgress = Math.round((100 * event.loaded) / event.total);
           console.log(this.uploadProgress);
         } else if (event instanceof HttpResponse) {
-          this.uploading = false;
+          this.isReady = true;
           if (event.status === 200) {
             this.mselDataService.loadById(event.body);
           } else {
@@ -118,7 +123,8 @@ export class MselListComponent implements OnDestroy, OnInit {
    * @param mselId: The GUID of the file to download
    * @param name: The name to use when triggering the download
    */
-   downloadFile(msel: Msel) {
+   downloadFile(msel: MselPlus) {
+    this.isReady = false;
     this.mselDataService.downloadXlsx(msel.id).subscribe(
       (data) => {
         const url = window.URL.createObjectURL(data);
@@ -127,11 +133,14 @@ export class MselListComponent implements OnDestroy, OnInit {
         link.target = '_blank';
         link.download = msel.description.endsWith('.xlsx') ? msel.description : msel.description + '.xlsx';
         link.click();
+        this.isReady = true;
       },
       (err) => {
+        this.isReady = true;
         window.alert('Error downloading file');
       },
       () => {
+        this.isReady = true;
         console.log('Got a next value');
       }
     );
@@ -145,11 +154,11 @@ export class MselListComponent implements OnDestroy, OnInit {
     });
   }
 
-  copyMsel(msel: Msel): void {
+  copyMsel(msel: MselPlus): void {
     // not implemented
   }
 
-  delete(msel: Msel): void {
+  delete(msel: MselPlus): void {
     this.dialogService
       .confirm(
         'Delete MSEL',
@@ -163,10 +172,12 @@ export class MselListComponent implements OnDestroy, OnInit {
   }
 
   getFilteredMsels() {
-    let filteredMsels: Msel[] = [];
+    let filteredMsels: MselPlus[] = [];
     if (this.mselList) {
       this.mselList.forEach(m => {
-        filteredMsels.push({... m});
+        let mselPlus = new MselPlus();
+        Object.assign(mselPlus, m);
+        filteredMsels.push(mselPlus);
       });
       if (filteredMsels && filteredMsels.length > 0 && this.filterString) {
         var filterString = this.filterString.toLowerCase();
@@ -195,8 +206,8 @@ export class MselListComponent implements OnDestroy, OnInit {
   }
 
   private sortMsels(
-    a: Msel,
-    b: Msel
+    a: MselPlus,
+    b: MselPlus
   ) {
     const isAsc = this.sort.direction !== 'desc';
     switch (this.sort.active) {
