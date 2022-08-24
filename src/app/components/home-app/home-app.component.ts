@@ -22,6 +22,7 @@ import {
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { MoveDataService } from 'src/app/data/move/move-data.service';
+import { OrganizationDataService } from 'src/app/data/organization/organization-data.service';
 import { TeamDataService } from 'src/app/data/team/team-data.service';
 import { TeamQuery } from 'src/app/data/team/team.query';
 import { ApplicationArea, SignalRService } from 'src/app/services/signalr.service';
@@ -69,6 +70,7 @@ export class HomeAppComponent implements OnDestroy, OnInit {
     private settingsService: ComnSettingsService,
     private authQuery: ComnAuthQuery,
     private moveDataService: MoveDataService,
+    private organizationDataService: OrganizationDataService,
     private teamDataService: TeamDataService,
     private teamQuery: TeamQuery,
     private mselDataService: MselDataService,
@@ -120,6 +122,8 @@ export class HomeAppComponent implements OnDestroy, OnInit {
     this.userDataService.getUsersFromApi();
     // load the teams
     this.teamDataService.load();
+    // load the organization templates
+    this.organizationDataService.loadTemplates();
   }
 
   ngOnInit() {

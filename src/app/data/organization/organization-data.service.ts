@@ -119,6 +119,24 @@ export class OrganizationDataService {
     }
   }
 
+  loadTemplates() {
+    this.organizationStore.setLoading(true);
+    this.organizationService
+      .getOrganizationTemplates()
+      .pipe(
+        tap(() => {
+          this.organizationStore.setLoading(false);
+        }),
+        take(1)
+      )
+      .subscribe(
+        (templates) => {
+          this.organizationStore.upsertMany(templates);
+        },
+        (error) => {}
+      );
+  }
+
   loadByMsel(mselId: string) {
     this.organizationStore.setLoading(true);
     this.organizationService
@@ -131,11 +149,9 @@ export class OrganizationDataService {
       )
       .subscribe(
         (organizations) => {
-          this.organizationStore.set(organizations);
+          this.organizationStore.upsertMany(organizations);
         },
-        (error) => {
-          this.organizationStore.set([]);
-        }
+        (error) => {}
       );
   }
 

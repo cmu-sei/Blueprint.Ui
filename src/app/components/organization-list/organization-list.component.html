@@ -6,27 +6,30 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 
   <div style="height: 100%">
     <section
-      matSort
-      (matSortChange)="sortChanged($event)"
       class="mat-elevation-z2 mat-header-row background-alt"
     >
       <span
         class="mat-header-cell three-cell"
-        mat-sort-header="name"
-        *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
       >
-        <button
-          mat-icon-button
-          (click)="addOrganization(); $event.stopPropagation()"
-          style="outline: none; margin-right: 15px;"
-          title="Add new organization"
-          [disabled]="isAddingOrganization || valuesHaveBeenChanged()"
-        >
-          <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
-        </button>
-        Name
+        <span *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner">
+          <button
+            mat-icon-button
+            (click)="addOrEditOrganization(null); $event.stopPropagation()"
+            style="outline: none; margin-right: 15px;"
+            title="Add organization"
+          >
+            <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
+          </button>
+          Add Organization
+        </span> &nbsp;
       </span>
-      <span class="mat-header-cell four-cell" mat-sort-header="description">Description</span>
+      <span
+        class="mat-header-cell three-cell"
+      >
+        <span *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner">
+          <mat-checkbox [(ngModel)]="showTemplates">Show Templates</mat-checkbox>
+        </span> &nbsp;
+      </span>
       <span class="mat-header-cell three-cell search-cell">
         <mat-form-field class="search-control">
           <input matInput [formControl]="filterControl" placeholder="Search" />
@@ -46,157 +49,65 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
     </section>
 
     <section class="scrolling-region">
-      <!-- new organization -->
-      <mat-expansion-panel *ngIf="isAddingOrganization" expanded="true">
-        <mat-expansion-panel-header
-          class="mat-row"
-          (click)="$event.stopPropagation();"
-        >
-          <div class="mat-cell flex-row-cell five-cell" (click)="$event.stopPropagation();">
-            <span class="edit-buttons">
-              <button
-                mat-icon-button
-                (click)="saveNewOrganization(); $event.stopPropagation()"
-                style="outline: none;"
-                title="Save new organization"
-              >
-                <mat-icon class="mdi-24px self-center" fontIcon="mdi-check"></mat-icon>
-              </button>
-              <button
-                mat-icon-button
-                (click)="cancelNewOrganization(); $event.stopPropagation()"
-                style="outline: none;"
-                title="Cancel new organization"
-              >
-                <mat-icon class="mdi-24px self-center" fontIcon="mdi-close"></mat-icon>
-              </button>
-            </span>
-            <b>Creating New Organization</b>
-          </div>
-          <div class="mat-cell flex-row-cell five-cell">&nbsp;</div>
-        </mat-expansion-panel-header>
-        <ng-template matExpansionPanelContent>
-          <div class="scrolling-details" (click)="$event.stopPropagation()">
-            <div class="organization-detail" (click)="$event.stopPropagation();">
-              <div class="single-detail">
-                <mat-form-field class="full-width">
-                  <input
-                    type="text"
-                    matInput
-                    placeholder="Name"
-                    [(ngModel)]="changedOrganization.name"
-                  />
-                </mat-form-field>
-              </div>
-            </div>
-            <div class="organization-detail" (click)="$event.stopPropagation();">
-              <div class="single-detail">
-                <div class="editor-label">
-                  Description
-                </div>
-                <div id="quill">
-                  <quill-editor
-                    [styles]="editorStyle"
-                    placeholder="Enter description ..."
-                    [(ngModel)]="changedOrganization.description"
-                  >
-                  </quill-editor>
-                </div>
-              </div>
-            </div>
-          </div>
-        </ng-template>
-      </mat-expansion-panel>
-
-      <!-- existing organizations -->
-      <mat-expansion-panel
-        *ngFor="let item of sortedOrganizations;"
-        [expanded]="editingId === item.id"
-        [disabled]="noExpansionChangeAllowed()"
-      >
-        <mat-expansion-panel-header
-          class="mat-row"
-          (click)="editOrganization(item); $event.stopPropagation();"
-        >
-          <div
-            class="mat-cell flex-row-cell three-cell"
-            *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner">
+      <section class="cards">
+        <mat-card class="card" *ngFor="let org of sortedOrganizations">
+          <mat-card-header>
+            <mat-card-title class="org-title">{{org.name}}</mat-card-title>
+            <mat-card-subtitle class="org-title">{{org.summary}}</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-actions
+            class="action-buttons"
+            *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
+          >
             <button
               mat-icon-button
               class="organization-button"
               title="Edit this organization"
+              (click)="addOrEditOrganization(org)"
             >
-              <mat-icon class="mdi-18px up-12" fontIcon="mdi-square-edit-outline"></mat-icon>
+              <mat-icon class="mdi-24px" fontIcon="mdi-square-edit-outline"></mat-icon>
             </button>
             <button
               mat-icon-button
               class="organization-button"
-              (click)="deleteOrganization(item); $event.stopPropagation()"
+              (click)="deleteOrganization(org); $event.stopPropagation()"
               title="Delete this organization"
             >
-              <mat-icon class="mdi-18px up-12" fontIcon="mdi-delete"></mat-icon>
+              <mat-icon class="mdi-24px" fontIcon="mdi-delete"></mat-icon>
             </button>
-            &nbsp;{{ item.name }}
-          </div>
-          <div class="description-in-list">
-            {{ item.description | plainText }}
-          </div>
-        </mat-expansion-panel-header>
-        <ng-template matExpansionPanelContent>
-          <div *ngIf="valuesHaveBeenChanged()" (click)="$event.stopPropagation();">
-            <span class="edit-buttons">
+          </mat-card-actions>
+          <mat-card-content class="org-text" contenteditable="false">
+            <quill-view-html [content]="org.description" theme="snow"></quill-view-html>
+          </mat-card-content>
+        </mat-card>
+      </section>
+      <span *ngIf="showTemplates">
+        <hr />
+        <h1>Templates</h1>
+        <section class="cards">
+          <mat-card class="card" *ngFor="let org of templateOrganizations">
+            <mat-card-header>
+              <mat-card-title class="org-title">{{org.name}}</mat-card-title>
+              <mat-card-subtitle class="org-title">{{org.summary}}</mat-card-subtitle>
+            </mat-card-header>
+            <mat-card-actions
+              class="action-buttons"
+              *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
+            >
               <button
                 mat-icon-button
-                (click)="saveOrganization();"
-                style="outline: none;"
-                title="Save new organization"
+                title="Add to MSEL"
+                (click)="addOrEditOrganization(org)"
               >
-                <mat-icon class="mdi-24px self-center" fontIcon="mdi-check"></mat-icon>
+                <mat-icon class="mdi-24px" fontIcon="mdi-plus-circle-outline"></mat-icon>
               </button>
-              <button
-                mat-icon-button
-                (click)="resetOrganization();"
-                style="outline: none;"
-                title="Cancel new organization"
-              >
-                <mat-icon class="mdi-24px self-center" fontIcon="mdi-close"></mat-icon>
-              </button>
-            </span>
-          </div>
-          <div class="organization-detail" (click)="$event.stopPropagation();">
-            <div class="single-detail">
-              <mat-form-field class="full-width">
-                <input
-                  type="text"
-                  matInput
-                  placeholder="Name"
-                  [(ngModel)]="changedOrganization.name"
-                  [disabled]="!isContentDeveloper && !msel.hasRole(loggedInUserId, null).owner"
-                />
-              </mat-form-field>
-            </div>
-          </div>
-          <div class="organization-detail" (click)="$event.stopPropagation();">
-            <div class="single-detail">
-              <div class="editor-label">
-                Description
-              </div>
-              <div id="quill">
-                <quill-editor
-                  [styles]="editorStyle"
-                  placeholder="Enter description ..."
-                  [(ngModel)]="changedOrganization.description"
-                  *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
-                ></quill-editor>
-                <quill-view-html
-                  *ngIf="!(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)"
-                  [content]="changedOrganization.description"
-                  theme="snow"></quill-view-html>&nbsp;
-              </div>
-            </div>
-          </div>
-        </ng-template>
-      </mat-expansion-panel>
+            </mat-card-actions>
+            <mat-card-content class="org-text" contenteditable="false">
+              <quill-view-html [content]="org.description" theme="snow"></quill-view-html>
+            </mat-card-content>
+          </mat-card>
+        </section>
+      </span>
     </section>
   </div>
 </div>

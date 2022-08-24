@@ -25,6 +25,7 @@ import { OrganizationDataService } from 'src/app/data/organization/organization-
 import { OrganizationQuery } from 'src/app/data/organization/organization.query';
 import { MatDialog } from '@angular/material/dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
+import { OrganizationEditDialogComponent } from '../organization-edit-dialog/organization-edit-dialog.component';
 import { v4 as uuidv4 } from 'uuid';
 
 @Component({
@@ -43,13 +44,9 @@ export class OrganizationListComponent implements OnDestroy {
   filterString = '';
   sort: Sort = {active: 'name', direction: 'asc'};
   sortedOrganizations: Organization[] = [];
-  isAddingOrganization = false;
+  templateOrganizations: Organization[] = [];
+  showTemplates = false;
   editingId = '';
-  editorStyle = {
-    'min-height': '100px',
-    'max-height': '400px',
-    'overflow': 'auto'
-  };
   private unsubscribe$ = new Subject();
   // context menu
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
@@ -71,7 +68,7 @@ export class OrganizationListComponent implements OnDestroy {
     // subscribe to organizations
     this.organizationQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(organizations => {
       this.organizationList = organizations;
-      this.sortedOrganizations = this.getSortedOrganizations(this.getFilteredOrganizations(this.organizationList));
+      this.sortChanged(this.sort);
     });
     // subscribe to the active MSEL
     (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
@@ -84,7 +81,7 @@ export class OrganizationListComponent implements OnDestroy {
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((term) => {
         this.filterString = term;
-        this.sortedOrganizations = this.getSortedOrganizations(this.getFilteredOrganizations(this.organizationList));
+        this.sortChanged(this.sort);
       });
   }
 
@@ -95,84 +92,39 @@ export class OrganizationListComponent implements OnDestroy {
     return organizations;
   }
 
-  noExpansionChangeAllowed() {
-    return this.isAddingOrganization || this.valuesHaveBeenChanged();
-  }
-
-  editOrganization(organization: Organization) {
-    if (this.isAddingOrganization) {
-      return;
-    }
-    // previous edit has not been saved, so prompt
-    if (this.valuesHaveBeenChanged()) {
-      this.dialogService
-      .confirm(
-        'Changes have been made!',
-        'Do you want to save them?'
-      )
-      .subscribe((result) => {
-        if (result['confirm']) {
-          this.organizationDataService.updateOrganization(this.changedOrganization);
-        }
-        this.setEditing(organization);
-      });
-    // if adding a new organization, don't start editing another one
+  addOrEditOrganization(organization: Organization) {
+    if (!organization) {
+      organization = {
+        name: '',
+        summary: '',
+        mselId: this.msel.id
+      };
     } else {
-      this.setEditing(organization);
+      organization = {... organization};
     }
+    const dialogRef = this.dialog.open(OrganizationEditDialogComponent, {
+      width: '800px',
+      data: {
+        organization: organization
+      },
+    });
+    dialogRef.componentInstance.editComplete.subscribe((result) => {
+      if (result.saveChanges && result.organization) {
+        this.saveOrganization(result.organization);
+      }
+      dialogRef.close();
+    });
   }
 
-  setEditing(organization) {
-    if (organization.id === this.editingId) {
-      this.editingId = '';
-      this.changedOrganization = {};
+  saveOrganization(organization: Organization) {
+    if (organization.id) {
+      this.organizationDataService.updateOrganization(organization);
     } else {
-      this.editingId = organization.id;
-      this.changedOrganization = {... organization};
+      this.organizationDataService.add(organization);
     }
-  }
-
-  valuesHaveBeenChanged() {
-    let isChanged = false;
-    const original = this.organizationList.find(df => df.id === this.editingId);
-    if (original) {
-      isChanged = this.changedOrganization.name !== original.name ||
-                  this.changedOrganization.description !== original.description;
-    }
-    return isChanged;
-  }
-
-  saveOrganization() {
-    this.organizationDataService.updateOrganization(this.changedOrganization);
-    this.editingId = '';
-  }
-
-  resetOrganization() {
-    this.changedOrganization = {};
-    this.editingId = '';
-  }
-
-  addOrganization() {
-    this.changedOrganization = {
-      id: uuidv4(),
-      mselId: this.msel.id
-    };
-    this.isAddingOrganization = true;
-  }
-
-  saveNewOrganization() {
-    this.isAddingOrganization = false;
-    this.organizationDataService.add(this.changedOrganization);
-  }
-
-  cancelNewOrganization() {
-    this.isAddingOrganization = false;
   }
 
   deleteOrganization(organization: Organization): void {
-    if (this.isAddingOrganization || (this.editingId && this.editingId !== organization.id)) {
-      return;
-    }
     this.dialogService
       .confirm(
         'Delete Organization',
@@ -188,7 +140,8 @@ export class OrganizationListComponent implements OnDestroy {
 
   sortChanged(sort: Sort) {
     this.sort = sort;
-    this.sortedOrganizations = this.getSortedOrganizations(this.getFilteredOrganizations(this.organizationList));
+    this.sortedOrganizations = this.getSortedOrganizations(this.getFilteredOrganizations(this.msel.id, this.organizationList));
+    this.templateOrganizations = this.getSortedOrganizations(this.getFilteredOrganizations(null, this.organizationList));
   }
 
   private sortOrganizations(
@@ -210,11 +163,11 @@ export class OrganizationListComponent implements OnDestroy {
     }
   }
 
-  getFilteredOrganizations(organizations: Organization[]): Organization[] {
+  getFilteredOrganizations(mselId: string, organizations: Organization[]): Organization[] {
     let filteredOrganizations: Organization[] = [];
     if (organizations) {
       organizations.forEach(se => {
-        if (se.mselId === this.msel.id) {
+        if (se.mselId === mselId) {
           filteredOrganizations.push({... se});
         }
       });
