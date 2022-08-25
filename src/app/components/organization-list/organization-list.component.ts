@@ -92,15 +92,24 @@ export class OrganizationListComponent implements OnDestroy {
     return organizations;
   }
 
-  addOrEditOrganization(organization: Organization) {
+  addOrEditOrganization(organization: Organization, makeTemplate: boolean) {
     if (!organization) {
       organization = {
         name: '',
         summary: '',
-        mselId: this.msel.id
+        description: '',
+        mselId: this.msel.id,
+        isTemplate: makeTemplate
       };
     } else {
-      organization = {... organization};
+      organization = {
+        id: makeTemplate == organization.isTemplate ? organization.id : null,
+        name: organization.name,
+        summary: organization.summary,
+        description: organization.description,
+        mselId: makeTemplate ? null : this.msel.id,
+        isTemplate: makeTemplate
+      }
     }
     const dialogRef = this.dialog.open(OrganizationEditDialogComponent, {
       width: '800px',
@@ -120,6 +129,7 @@ export class OrganizationListComponent implements OnDestroy {
     if (organization.id) {
       this.organizationDataService.updateOrganization(organization);
     } else {
+      organization.id = uuidv4();
       this.organizationDataService.add(organization);
     }
   }
@@ -153,10 +163,13 @@ export class OrganizationListComponent implements OnDestroy {
     const isAsc = direction !== 'desc';
     switch (column) {
       case 'name':
-        return ( (a.name < b.name ? -1 : 1) * (isAsc ? 1 : -1) );
+        return ( (a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1) * (isAsc ? 1 : -1) );
         break;
       case "description":
-        return ( (a.description < b.description ? -1 : 1) * (isAsc ? 1 : -1) );
+        return ( (a.description.toLowerCase() < b.description.toLowerCase() ? -1 : 1) * (isAsc ? 1 : -1) );
+        break;
+      case "summary":
+        return ( (a.summary.toLowerCase() < b.summary.toLowerCase() ? -1 : 1) * (isAsc ? 1 : -1) );
         break;
       default:
         return 0;
@@ -176,6 +189,7 @@ export class OrganizationListComponent implements OnDestroy {
         filteredOrganizations = filteredOrganizations
           .filter((a) =>
             a.description.toLowerCase().includes(filterString) ||
+            a.summary.toLowerCase().includes(filterString) ||
             a.name.toLowerCase().includes(filterString)
           );
       }
