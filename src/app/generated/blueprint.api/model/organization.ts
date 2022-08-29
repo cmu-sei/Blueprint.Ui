@@ -24,5 +24,7 @@ export interface Organization {
     id?: string;
     name?: string;
     description?: string;
+    summary?: string;
+    isTemplate?: boolean;
     mselId?: string;
 }

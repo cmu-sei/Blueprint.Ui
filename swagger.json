@@ -2022,6 +2022,57 @@
         }
       }
     },
+    "/api/organizations/templates": {
+      "get": {
+        "tags": [
+          "Organization"
+        ],
+        "summary": "Gets Organization Templates",
+        "description": "Returns a list of Organization Templates",
+        "operationId": "getOrganizationTemplates",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Organization"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Organization"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Organization"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/msels/{mselId}/organizations": {
       "get": {
         "tags": [
@@ -5788,16 +5839,16 @@
           "memberType": {
             "$ref": "#/components/schemas/MemberTypes"
           },
-          "name": {
-            "type": "string",
-            "nullable": true,
-            "readOnly": true
-          },
           "declaringType": {
             "$ref": "#/components/schemas/Type"
           },
           "reflectedType": {
             "$ref": "#/components/schemas/Type"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
           },
           "module": {
             "$ref": "#/components/schemas/Module"
@@ -6521,9 +6572,17 @@
             "type": "string",
             "nullable": true
           },
+          "summary": {
+            "type": "string",
+            "nullable": true
+          },
+          "isTemplate": {
+            "type": "boolean"
+          },
           "mselId": {
             "type": "string",
-            "format": "uuid"
+            "format": "uuid",
+            "nullable": true
           }
         },
         "additionalProperties": false

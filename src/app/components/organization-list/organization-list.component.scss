@@ -1,9 +1,6 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
 
-// Copyright 2021 Carnegie Mellon University. All Rights Reserved.
-// Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
-
 .mat-header-row {
   min-height: 40px;
   padding-left:30px;
@@ -35,16 +32,6 @@
   text-align: left;
 }
 
-.mat-accordion .mat-header-row {
-  padding-left: 1.5rem;
-  padding-right: 2rem;
-  border-bottom: none;
-}
-
-.mat-expansion-panel-header.mat-row {
-  border-bottom: none;
-}
-
 .flex-row-cell {
   display: flex;
   flex-flow: row;
@@ -61,19 +48,6 @@
   align-items: center;
 }
 
-.data-options {
-  display: flex;
-  flex: 7;
-  flex-flow: column;
-  align-items: flex-start;
-  text-align: left;;
-}
-
-.data-option {
-  display: flex;
-  flex-flow: row;
-}
-
 .search-cell {
   display: flex;
   flex-flow: row;
@@ -83,42 +57,8 @@
   width: calc(100% - 32px);
 }
 
-.single-detail {
-  display: flex;
-  flex: 10;
-  flex-flow: column;
-  align-items: flex-start;
-  width: 60%;
-}
-
-.partial-detail {
-  display: flex;
-  flex: 3;
-}
-
-.more-or-less {
-  padding-right: 40%;
-}
-
-.edit-buttons {
-  display: flex;
-  flex-flow: row;
-  align-items: flex-start;
-  padding-left: 12%;
-}
-
-.full-width {
-  width: 100%;
-}
-
 .scrolling-region {
   height: calc(100vh - 144px);
-  overflow: auto;
-}
-
-.scrolling-details {
-  min-height: 80px;
-  max-height: calc(100vh - 250px);
   overflow: auto;
 }
 
@@ -129,61 +69,60 @@ textarea {
 }
 
 .organization-button {
-  width: 30px;
-  height: 30px;
+  margin-left: 40px;
+  margin-right: 40px;
   align-self: center;
 }
 
-.description-in-list {
-  flex: 7;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  align-self: center;
-  text-align: left;
+.cards {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
 }
 
-.up-12 {
-  margin-top: -12px;
+.card {
+  flex: 1 0 500px;
+  box-sizing: border-box;
+  margin: 1rem .25em;
 }
 
-.copy-icon {
-  margin-top: -8px;
+@media screen and (min-width: 40em) {
+  .card {
+     max-width: calc(50% -  1em);
+  }
 }
 
-.button-end {
-  margin-left: 100px;
+@media screen and (min-width: 60em) {
+  .card {
+      max-width: calc(33.3% - 1em);
+  }
 }
 
-.sp-icon {
-  margin-left: 10px;
-  margin-right: 20px;
+@media screen and (min-width: 80em) {
+  .card {
+      max-width: calc(25% - 1em);
+  }
 }
 
-.search-icon {
-  margin-left: 50px;
-  transform: scale(0.85);
-  margin-right: 5px;
+.action-buttons {
+  text-align: center;
 }
 
-.scale-85 {
-  transform: scale(0.85);
+.org-title {
+  margin-top: 8px;
+  font-size: 16pt;
+  font-weight: bold;
 }
 
-.search-field {
-  width: 320px;
+.org-text {
+  margin-top: 8px;
+  font-size: 16px;
+  white-space: pre-wrap;
+  text-align: left !important;
 }
 
-.clear-search {
-  width: 50px;
-}
-
-.copy-icon {
-  margin-top: -8px;
-}
-
-.seven-cell {
-  flex: 7;
+.eight-cell {
+  flex: 8;
 }
 
 .five-cell {
