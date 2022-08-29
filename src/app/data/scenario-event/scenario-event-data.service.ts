@@ -8,12 +8,21 @@ import { FormControl } from '@angular/forms';
 import { PageEvent } from '@angular/material/paginator';
 import { Router, ActivatedRoute } from '@angular/router';
 import {
+  DataValue,
   ScenarioEvent,
   ScenarioEventService,
   ItemStatus
 } from 'src/app/generated/blueprint.api';
 import { map, take, tap } from 'rxjs/operators';
 import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
+
+export interface DataValuePlus extends DataValue {
+  valueArray: string[];
+}
+
+export interface ScenarioEventPlus extends ScenarioEvent {
+  plusDataValues: DataValuePlus[];
+}
 
 @Injectable({
   providedIn: 'root',

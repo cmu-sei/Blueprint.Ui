@@ -10,7 +10,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
       (matSortChange)="sortChanged($event)"
       class="mat-elevation-z2 mat-header-row background-alt"
     >
-      <span class="mat-header-cell two-cell" mat-sort-header="controlnumber">
+      <span class="mat-header-cell two-cell" mat-sort-header="control number">
         <button
           mat-icon-button
           (click)="addScenarioEvent(); $event.stopPropagation()"
@@ -22,10 +22,10 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
         </button>
         Control Number
       </span>
-      <span class="mat-header-cell one-cell" mat-sort-header="assignedto">Assigned To</span>
+      <span class="mat-header-cell one-cell" mat-sort-header="assigned to">Assigned To</span>
       <span class="mat-header-cell one-cell" mat-sort-header="status">Status</span>
-      <span class="mat-header-cell one-cell" mat-sort-header="fromorg">From Org</span>
-      <span class="mat-header-cell one-cell" mat-sort-header="toorg">To Org</span>
+      <span class="mat-header-cell one-cell" mat-sort-header="from org">From Org</span>
+      <span class="mat-header-cell one-cell" mat-sort-header="to org">To Org</span>
       <span class="mat-header-cell one-cell" mat-sort-header="description">Description</span>
       <span class="mat-header-cell three-cell search-cell">
         <mat-form-field class="search-control">
@@ -88,34 +88,34 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
                     type="text"
                     matInput
                     placeholder="{{ df.name }}"
-                    [(ngModel)]="dataValueList[newScenarioEvent.id][df.id]"
+                    [(ngModel)]="getDataValue(newScenarioEvent, df.name).value"
                   />
                 </mat-form-field>
-                <!-- Numeric input -->
+                <!-- numeric input -->
                 <mat-form-field *ngIf="!df.isChosenFromList && df.dataType === dataType.Integer || df.dataType === dataType.Double" class="full-width">
                   <input
-                    type="number"
                     matInput
                     placeholder="{{ df.name }}"
-                    [(ngModel)]="dataValueList[newScenarioEvent.id][df.id]"
+                    (change)="verifyNumber(getDataValue(newScenarioEvent, df.name))"
+                    [(ngModel)]="getDataValue(newScenarioEvent, df.name).value"
                   />
                 </mat-form-field>
-                <!-- date input -->
+                <!-- date time input -->
                 <mat-form-field *ngIf="!df.isChosenFromList && df.dataType === dataType.DateTime" class="full-width">
-                  <mat-label class="error-text" *ngIf="notValidDateFormat(dataValueList[newScenarioEvent.id][df.id])">Not a valid date format.  Use M/d/yyyy.</mat-label>
+                  <mat-label class="error-text" *ngIf="notValidDateFormat(getDataValue(newScenarioEvent, df.name).value)">Not a valid date format.  Use M/d/yyyy.</mat-label>
                   <input
                     type="datetime"
                     matInput
                     placeholder="{{ df.name }}"
-                    [(ngModel)]="dataValueList[newScenarioEvent.id][df.id]"
+                    [(ngModel)]="getDataValue(newScenarioEvent, df.name).value"
                   />
                 </mat-form-field>
-                <!-- dropdown input -->
+                <!-- chosen from list -->
                 <mat-form-field *ngIf="df.isChosenFromList" class="full-width">
                   <mat-label>{{ df.name }}</mat-label>
                   <mat-select
                     placeholder="{{ df.name }}"
-                    [(ngModel)]="dataValueList[newScenarioEvent.id][df.id]"
+                    [(ngModel)]="getDataValue(newScenarioEvent, df.name).value"
                   >
                     <mat-option *ngFor="let dataOption of df.dataOptions" [value]="dataOption.optionValue">
                       {{ dataOption.optionName }}
@@ -133,7 +133,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
                   <quill-editor
                     [styles]="editorStyle"
                     placeholder="Enter details ..."
-                    [(ngModel)]="dataValueList[newScenarioEvent.id][getDataFieldIdByName(newScenarioEvent, 'details')]"
+                    [(ngModel)]="getDataValue(newScenarioEvent, 'details').value"
                   >
                   </quill-editor>
                 </div>
@@ -175,7 +175,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
             >
               <mat-icon class="mdi-18px up-12" fontIcon="mdi-delete"></mat-icon>
             </button>
-            {{ getScenarioEventValue(item, 'controlnumber') }}
+            {{ getDataValue(item, 'Control Number').value }}
           </div>
           <div class="mat-cell one-cell center-self">
             <mat-select
@@ -207,9 +207,49 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
             </mat-select>
             <span *ngIf="!isContentDeveloper && !msel.hasRole(loggedInUserId, item.id).approver">{{ item.status }}</span>
           </div>
-          <div class="mat-cell one-cell center-self">{{ getScenarioEventValue(item, 'fromorg') }}</div>
-          <div class="mat-cell one-cell center-self">{{ getScenarioEventValue(item, 'toorg') }}</div>
-          <div class="mat-cell four-cell center-self">{{ getScenarioEventValue(item, 'description') }}</div>
+          <div class="mat-cell one-cell center-self">
+            <!-- From Org -->
+            <mat-select
+              *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, item.id).owner"
+              (click)="$event.stopPropagation()"
+              (valueChange)="saveScenarioEvent(item, 'From Org', $event)"
+              class="header-dropdown"
+              placeholder="None"
+              [(ngModel)]="getDataValue(item, 'From Org').value"
+            >
+              <mat-option value="">None</mat-option>
+              <mat-option *ngFor="let org of organizationList" [value]="org.name">
+                {{ org.name }}
+              </mat-option>
+              <mat-option *ngFor="let team of msel.teams" [value]="team.shortName">
+                {{ team.shortName }}
+              </mat-option>
+            </mat-select>
+            <span *ngIf="!isContentDeveloper && !msel.hasRole(loggedInUserId, item.id).owner">{{ getDataValue(item, 'From Org').value }}</span>
+          </div>
+          <div class="mat-cell one-cell center-self">
+            <!-- To Org -->
+            <mat-select
+              multiple
+              *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, item.id).owner"
+              (click)="$event.stopPropagation()"
+              (valueChange)="saveScenarioEventArray(item, 'To Org', $event)"
+              class="header-dropdown"
+              placeholder="None"
+              [(ngModel)]="getDataValue(item, 'To Org').valueArray"
+            >
+              <mat-option value="ALL">ALL</mat-option>
+              <mat-option value="">None</mat-option>
+              <mat-option *ngFor="let org of organizationList" [value]="org.name">
+                {{ org.name }}
+              </mat-option>
+              <mat-option *ngFor="let team of msel.teams" [value]="team.shortName">
+                {{ team.shortName }}
+              </mat-option>
+            </mat-select>
+            <span *ngIf="!isContentDeveloper && !msel.hasRole(loggedInUserId, item.id).owner">{{ getDataValue(item, 'To Org').value }}</span>
+          </div>
+          <div class="mat-cell four-cell center-self">{{ getDataValue(item, 'Description').value }}</div>
         </mat-expansion-panel-header>
         <ng-template matExpansionPanelContent>
           <div class="full-width" (click)="$event.stopPropagation();">
@@ -251,13 +291,13 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
                   Details
                 </div>
                 <div class="quill-view" *ngIf="isViewOnly(item)">
-                  <quill-view-html [content]="dataValueList[item.id][getDataFieldIdByName(item, 'details')]" theme="snow"></quill-view-html>&nbsp;
+                  <quill-view-html [content]="getDataValue(item, 'Details').value" theme="snow"></quill-view-html>&nbsp;
                 </div>
                 <div class="quill-edit" *ngIf="!isViewOnly(item)">
                   <quill-editor
                     [styles]="editorStyle"
                     placeholder="Enter details ..."
-                    [(ngModel)]="dataValueList[item.id][getDataFieldIdByName(item, 'details')]"
+                    [(ngModel)]="getDataValue(item, 'Details').value"
                   >
                   </quill-editor>
                 </div>
@@ -295,28 +335,28 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
                     type="text"
                     matInput
                     placeholder="{{ df.name }}"
-                    [(ngModel)]="dataValueList[item.id][df.id]"
+                    [(ngModel)]="getDataValue(item, df.name).value"
                     [disabled]="isDisabled(item, df.name)"
                   />
                 </mat-form-field>
                 <!-- Numeric input -->
                 <mat-form-field *ngIf="!df.isChosenFromList && df.dataType === dataType.Integer || df.dataType === dataType.Double" class="full-width">
                   <input
-                    type="number"
                     matInput
                     placeholder="{{ df.name }}"
-                    [(ngModel)]="dataValueList[item.id][df.id]"
+                    (change)="verifyNumber(getDataValue(item, df.name))"
+                    [(ngModel)]="getDataValue(item, df.name).value"
                     [disabled]="isDisabled(item, df.name)"
                   />
                 </mat-form-field>
                 <!-- date input -->
                 <mat-form-field *ngIf="!df.isChosenFromList && df.dataType === dataType.DateTime" class="full-width">
-                  <mat-label class="error-text" *ngIf="notValidDateFormat(dataValueList[item.id][df.id])">Not a valid date format.  Use M/d/yyyy.</mat-label>
+                  <mat-label class="error-text" *ngIf="notValidDateFormat(getDataValue(item, df.name).value)">Not a valid date format.  Use M/d/yyyy.</mat-label>
                   <input
                     type="datetime"
                     matInput
                     placeholder="{{ df.name }}"
-                    [(ngModel)]="dataValueList[item.id][df.id]"
+                    [(ngModel)]="getDataValue(item, df.name).value"
                     [disabled]="isDisabled(item, df.name)"
                   />
                 </mat-form-field>
@@ -325,7 +365,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
                   <mat-label>{{ df.name }}</mat-label>
                   <mat-select
                     placeholder="{{ df.name }}"
-                    [(ngModel)]="dataValueList[item.id][df.id]"
+                    [(ngModel)]="getDataValue(item, df.name).value"
                     [disabled]="isDisabled(item, df.name)"
                   >
                     <mat-option *ngFor="let dataOption of df.dataOptions" [value]="dataOption.optionValue">
