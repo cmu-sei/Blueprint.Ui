@@ -76,7 +76,7 @@ export class MselListComponent implements OnDestroy {
     });
   }
 
-    openMsel(mselId, section) {
+  openMsel(mselId, section) {
     this.router.navigate([], {
       queryParams: { msel: mselId, section: section },
       queryParamsHandling: 'merge',
