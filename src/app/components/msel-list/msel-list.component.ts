@@ -20,6 +20,7 @@ import {
   ItemStatus,
   Msel
 } from 'src/app/generated/blueprint.api';
+import { DataFieldDataService } from 'src/app/data/data-field/data-field-data.service';
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { MatDialog } from '@angular/material/dialog';
@@ -30,7 +31,7 @@ import { DialogService } from 'src/app/services/dialog/dialog.service';
   templateUrl: './msel-list.component.html',
   styleUrls: ['./msel-list.component.scss'],
 })
-export class MselListComponent implements OnDestroy, OnInit {
+export class MselListComponent implements OnDestroy {
   @Input() loggedInUserId: string;
   @Input() isContentDeveloper: boolean;
   mselList: MselPlus[] = [];
@@ -54,6 +55,7 @@ export class MselListComponent implements OnDestroy, OnInit {
     private userDataService: UserDataService,
     private settingsService: ComnSettingsService,
     private authQuery: ComnAuthQuery,
+    private dataFieldDataService: DataFieldDataService,
     private mselDataService: MselDataService,
     private mselQuery: MselQuery
   ) {
@@ -64,9 +66,6 @@ export class MselListComponent implements OnDestroy, OnInit {
     (this.mselQuery.selectAll() as Observable<MselPlus[]>).pipe(takeUntil(this.unsubscribe$)).subscribe((msels) => {
       this.mselList.length = 0;
       if (msels) {
-        msels.forEach(msel => {
-          this.mselList.push(msel);
-        });
         this.mselList = msels;
         this.getFilteredMsels();
       }
@@ -77,10 +76,7 @@ export class MselListComponent implements OnDestroy, OnInit {
     });
   }
 
-  ngOnInit() {
-  }
-
-  openMsel(mselId, section) {
+    openMsel(mselId, section) {
     this.router.navigate([], {
       queryParams: { msel: mselId, section: section },
       queryParamsHandling: 'merge',
@@ -150,7 +146,8 @@ export class MselListComponent implements OnDestroy, OnInit {
     const current = new Date();
     this.mselDataService.add({
       description: 'A new MSEL ' + current.toLocaleString(),
-      status: 'Pending'
+      status: 'Pending',
+      dataFields: this.settingsService.settings.DefaultDataFields
     });
   }
 
