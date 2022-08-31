@@ -151,8 +151,8 @@ export class MselListComponent implements OnDestroy {
     });
   }
 
-  copyMsel(msel: MselPlus): void {
-    // not implemented
+  copyMsel(id: string): void {
+    this.mselDataService.copy(id);
   }
 
   delete(msel: MselPlus): void {

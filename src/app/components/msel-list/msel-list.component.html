@@ -92,9 +92,9 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
       </button>
       <button
         mat-button class="msel-action"
-        (click)="copyMsel(msel); $event.stopPropagation();"
+        (click)="copyMsel(msel.id); $event.stopPropagation();"
         title="Copy"
-        disabled
+        [disabled]="!isReady || !isContentDeveloper"
       >
         <mat-icon style="margin-bottom: 12px;" fontIcon="mdi-content-copy" alt="Copy"></mat-icon> Copy
       </button>

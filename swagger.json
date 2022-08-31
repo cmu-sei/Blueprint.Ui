@@ -1531,6 +1531,60 @@
         }
       }
     },
+    "/api/msels/{id}/copy": {
+      "post": {
+        "tags": [
+          "Msel"
+        ],
+        "summary": "Creates a new MSEL by copying an existing MSEL",
+        "description": "Creates a new MSEL from the specified existing MSEL\r\n<para />\r\nAccessible only to a ContentDeveloper or an Administrator",
+        "operationId": "copyMsel",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The ID of the MSEL to be copied",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Msel"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Msel"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Msel"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/msels/{mselId}/addteam/{teamId}": {
       "put": {
         "tags": [
@@ -5103,7 +5157,8 @@
           "Integer",
           "Double",
           "Boolean",
-          "DateTime"
+          "DateTime",
+          "Organization"
         ],
         "type": "string"
       },
