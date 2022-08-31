@@ -258,6 +258,24 @@ export class MselDataService {
       });
   }
 
+  copy(id: string) {
+    this.mselStore.setLoading(true);
+    this.mselService
+      .copyMsel(id)
+      .pipe(
+        tap(() => {
+          this.mselStore.setLoading(false);
+        }),
+        take(1)
+      )
+      .subscribe((s) => {
+        this.mselStore.add(s);
+      },
+      (error) => {
+        this.mselStore.setLoading(false);
+      });
+  }
+
   updateMsel(msel: Msel) {
     this.mselStore.setLoading(true);
     this.mselService

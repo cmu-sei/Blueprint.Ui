@@ -182,6 +182,57 @@ export class MselService {
     }
 
     /**
+     * Creates a new MSEL by copying an existing MSEL
+     * Creates a new MSEL from the specified existing MSEL  &lt;para /&gt;  Accessible only to a ContentDeveloper or an Administrator
+     * @param id The ID of the MSEL to be copied
+     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+     * @param reportProgress flag to report request and response progress.
+     */
+    public copyMsel(id: string, observe?: 'body', reportProgress?: boolean): Observable<Msel>;
+    public copyMsel(id: string, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Msel>>;
+    public copyMsel(id: string, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Msel>>;
+    public copyMsel(id: string, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+        if (id === null || id === undefined) {
+            throw new Error('Required parameter id was null or undefined when calling copyMsel.');
+        }
+
+        let headers = this.defaultHeaders;
+
+        // authentication (oauth2) required
+        if (this.configuration.accessToken) {
+            const accessToken = typeof this.configuration.accessToken === 'function'
+                ? this.configuration.accessToken()
+                : this.configuration.accessToken;
+            headers = headers.set('Authorization', 'Bearer ' + accessToken);
+        }
+
+        // to determine the Accept header
+        let httpHeaderAccepts: string[] = [
+            'text/plain',
+            'application/json',
+            'text/json'
+        ];
+        const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
+        if (httpHeaderAcceptSelected !== undefined) {
+            headers = headers.set('Accept', httpHeaderAcceptSelected);
+        }
+
+        // to determine the Content-Type header
+        const consumes: string[] = [
+        ];
+
+        return this.httpClient.post<Msel>(`${this.configuration.basePath}/api/msels/${encodeURIComponent(String(id))}/copy`,
+            null,
+            {
+                withCredentials: this.configuration.withCredentials,
+                headers: headers,
+                observe: observe,
+                reportProgress: reportProgress
+            }
+        );
+    }
+
+    /**
      * Creates a new Msel
      * Creates a new Msel with the attributes specified  &lt;para /&gt;  Accessible only to a ContentDeveloper or an Administrator
      * @param Msel The data used to create the Msel
