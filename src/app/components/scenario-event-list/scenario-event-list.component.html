@@ -162,7 +162,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
               class="scenario-event-button"
               (click)="copyScenarioEvent(item); $event.stopPropagation()"
               title="Duplicate this inject"
-              *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
+              *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, item.id).owner"
             >
               <mat-icon class="mdi-18px up-12" fontIcon="mdi-content-copy"></mat-icon>
             </button>
@@ -171,7 +171,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
               class="scenario-event-button"
               (click)="deleteScenarioEvent(item); $event.stopPropagation()"
               title="Delete this inject"
-              *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
+              *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, item.id).owner"
             >
               <mat-icon class="mdi-18px up-12" fontIcon="mdi-delete"></mat-icon>
             </button>

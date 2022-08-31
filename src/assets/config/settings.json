@@ -16,5 +16,32 @@
     "AppTopBarHexTextColor": "#FFFFFF",
     "AppTopBarText": "Blueprint - Collaborative MSEL Creation",
     "AppTopBarImage": "/assets/img/pencil-ruler-white.png",
-    "UseLocalAuthStorage": false
+    "UseLocalAuthStorage": false,
+    "DefaultDataFields": [
+      {
+        "name": "Control Number",
+        "dataType": "String",
+        "displayOrder": "-5"
+      },
+      {
+        "name": "From Org",
+        "dataType": "Organization",
+        "displayOrder": "-4"
+      },
+      {
+        "name": "To Org",
+        "dataType": "Organization",
+        "displayOrder": "-3"
+      },
+      {
+        "name": "Description",
+        "dataType": "String",
+        "displayOrder": "-2"
+      },
+      {
+        "name": "Details",
+        "dataType": "String",
+        "displayOrder": "-1"
+      }
+    ]
 }

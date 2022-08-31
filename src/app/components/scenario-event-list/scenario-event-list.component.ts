@@ -58,7 +58,7 @@ export class ScenarioEventListComponent implements OnDestroy {
   lessDataFields: DataField[];
   moreDataFields: DataField[];
   editingValueList = new Map<string, string>();
-  newScenarioEvent: ScenarioEventPlus;
+  newScenarioEvent: ScenarioEvent;
   isAddingScenarioEvent = false;
   canDoAnything = false;
   private unsubscribe$ = new Subject();
@@ -74,6 +74,11 @@ export class ScenarioEventListComponent implements OnDestroy {
   organizationList: Organization[] = [];
   toOrgList: string[] = [];
   sortedMselTeams: Team[] = [];
+  blankDataValue = {
+    id: '',
+    value: '',
+    valueArray: []
+  } as DataValuePlus;
   // context menu
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
   contextMenuPosition = { x: '0px', y: '0px' };
@@ -220,12 +225,11 @@ export class ScenarioEventListComponent implements OnDestroy {
   }
 
   getDataValue(scenarioEvent: ScenarioEventPlus, dataFieldName: string): DataValuePlus {
-    if (!(this.msel && scenarioEvent && scenarioEvent.id)) return {} as DataValuePlus;
+    if (!(this.msel && scenarioEvent && scenarioEvent.id)) return this.blankDataValue;
     const dataFieldId = this.getDataFieldIdByName(scenarioEvent, dataFieldName);
-    if (!dataFieldId) return {} as DataValuePlus;
+    if (!dataFieldId) return this.blankDataValue;
     const dataValue = scenarioEvent.dataValues.find(dv => dv.dataFieldId === dataFieldId);
-    const dataValuePlus = dataValue as DataValuePlus;
-    return dataValuePlus;
+    return dataValue ? dataValue as DataValuePlus : this.blankDataValue;
   }
 
   getDataFieldIdByName(scenarioEvent: ScenarioEventPlus, name: string): string {
@@ -368,15 +372,14 @@ export class ScenarioEventListComponent implements OnDestroy {
       id: seId,
       mselId: this.msel.id,
       status: ItemStatus.Pending,
-      plusDataValues: []
+      dataValues: []
     };
     this.msel.dataFields.forEach(df => {
-      this.newScenarioEvent.plusDataValues.push({
+      this.newScenarioEvent.dataValues.push({
         dataFieldId: df.id,
         id: uuidv4(),
         scenarioEventId:this.newScenarioEvent.id,
-        value: '',
-        valueArray: []
+        value: ''
       });
     });
     this.isAddingScenarioEvent = true;
