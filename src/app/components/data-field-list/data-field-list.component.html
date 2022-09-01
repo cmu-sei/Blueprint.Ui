@@ -135,7 +135,11 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
               </span>
             </div>
           </div>
-          <div class="data-field-detail" (click)="$event.stopPropagation();">
+          <div
+            class="data-field-detail"
+            (click)="$event.stopPropagation();"
+            *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
+          >
             <div class="single-detail">
               <mat-form-field class="full-width">
                 <input
@@ -147,7 +151,11 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
               </mat-form-field>
             </div>
           </div>
-          <div class="data-field-detail" (click)="$event.stopPropagation();">
+          <div
+            class="data-field-detail"
+            (click)="$event.stopPropagation();"
+            *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
+          >
             <div class="single-detail">
               <mat-form-field class="full-width">
                 <input
@@ -287,7 +295,11 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
               </div>
             </div>
           </div>
-          <div class="data-field-detail" (click)="$event.stopPropagation();">
+          <div
+            class="data-field-detail"
+            (click)="$event.stopPropagation();"
+            *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
+          >
             <div class="single-detail">
               <mat-form-field class="full-width">
                 <input
@@ -295,12 +307,15 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
                   matInput
                   placeholder="Column Metadata (Width)"
                   [(ngModel)]="changedDataField.columnMetadata"
-                  [disabled]="!isContentDeveloper && !msel.hasRole(loggedInUserId, null).owner"
                 />
               </mat-form-field>
             </div>
           </div>
-          <div class="data-field-detail" (click)="$event.stopPropagation();">
+          <div
+            class="data-field-detail"
+            (click)="$event.stopPropagation();"
+            *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
+          >
             <div class="single-detail">
               <mat-form-field class="full-width">
                 <input
@@ -308,7 +323,6 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
                   matInput
                   placeholder="Cell Metadata (Color, Tint, Font-Weight)"
                   [(ngModel)]="changedDataField.cellMetadata"
-                  [disabled]="!isContentDeveloper && !msel.hasRole(loggedInUserId, null).owner"
                 />
               </mat-form-field>
             </div>
