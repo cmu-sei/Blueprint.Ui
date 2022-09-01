@@ -1,3 +1,8 @@
+/*
+ Copyright 2022 Carnegie Mellon University. All Rights Reserved. 
+ Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
+*/
+
 import { OverlayContainer } from '@angular/cdk/overlay';
 import { Component, HostBinding, HostListener, OnDestroy } from '@angular/core';
 import { MatIconRegistry } from '@angular/material/icon';
