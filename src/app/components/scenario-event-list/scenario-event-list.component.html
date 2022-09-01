@@ -374,7 +374,10 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
                   </mat-select>
                 </mat-form-field>
               </div>
-              <div class="single-detail">
+              <div
+                class="single-detail"
+                *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
+              >
                 <mat-form-field class="full-width">
                   <input
                     type="text"
