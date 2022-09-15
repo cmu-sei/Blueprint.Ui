@@ -81,6 +81,18 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
         <ng-template matExpansionPanelContent>
           <div class="scrolling-details" (click)="$event.stopPropagation()">
             <div class="scenario-event-detail" (click)="$event.stopPropagation();">
+              <div class="single-detail">
+                <mat-form-field class="full-width">
+                  <input
+                    type="text"
+                    matInput
+                    placeholder="Display Order"
+                    [(ngModel)]="newScenarioEvent.rowIndex"
+                  />
+                </mat-form-field>
+              </div>
+            </div>
+            <div class="scenario-event-detail" (click)="$event.stopPropagation();">
               <div *ngFor="let df of moreDataFields" class="single-detail">
                 <!-- string input -->
                 <mat-form-field *ngIf="!df.isChosenFromList && df.dataType === dataType.String" class="full-width">
@@ -320,7 +332,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
                   <input
                     type="text"
                     matInput
-                    placeholder="Row Index"
+                    placeholder="Display Order"
                     [(ngModel)]="item.rowIndex"
                     [disabled]="isDisabled(item, item.id + 'ri')"
                   />

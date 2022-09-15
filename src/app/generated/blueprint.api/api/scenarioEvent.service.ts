@@ -72,9 +72,9 @@ export class ScenarioEventService {
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public createScenarioEvent(ScenarioEvent?: ScenarioEvent, observe?: 'body', reportProgress?: boolean): Observable<ScenarioEvent>;
-    public createScenarioEvent(ScenarioEvent?: ScenarioEvent, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<ScenarioEvent>>;
-    public createScenarioEvent(ScenarioEvent?: ScenarioEvent, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<ScenarioEvent>>;
+    public createScenarioEvent(ScenarioEvent?: ScenarioEvent, observe?: 'body', reportProgress?: boolean): Observable<Array<ScenarioEvent>>;
+    public createScenarioEvent(ScenarioEvent?: ScenarioEvent, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Array<ScenarioEvent>>>;
+    public createScenarioEvent(ScenarioEvent?: ScenarioEvent, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Array<ScenarioEvent>>>;
     public createScenarioEvent(ScenarioEvent?: ScenarioEvent, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
 
         let headers = this.defaultHeaders;
@@ -287,9 +287,9 @@ export class ScenarioEventService {
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public updateScenarioEvent(id: string, ScenarioEvent?: ScenarioEvent, observe?: 'body', reportProgress?: boolean): Observable<ScenarioEvent>;
-    public updateScenarioEvent(id: string, ScenarioEvent?: ScenarioEvent, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<ScenarioEvent>>;
-    public updateScenarioEvent(id: string, ScenarioEvent?: ScenarioEvent, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<ScenarioEvent>>;
+    public updateScenarioEvent(id: string, ScenarioEvent?: ScenarioEvent, observe?: 'body', reportProgress?: boolean): Observable<Array<ScenarioEvent>>;
+    public updateScenarioEvent(id: string, ScenarioEvent?: ScenarioEvent, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Array<ScenarioEvent>>>;
+    public updateScenarioEvent(id: string, ScenarioEvent?: ScenarioEvent, observe?: 'events', reportProgress?: boolean): Observable<HttpResponse<Array<ScenarioEvent>>>;
     public updateScenarioEvent(id: string, ScenarioEvent?: ScenarioEvent, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
         if (id === null || id === undefined) {
             throw new Error('Required parameter id was null or undefined when calling updateScenarioEvent.');
