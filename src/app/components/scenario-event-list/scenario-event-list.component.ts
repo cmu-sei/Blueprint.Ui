@@ -44,6 +44,7 @@ import { deepCopy } from "deep-copy-ts";
 export class ScenarioEventListComponent implements OnDestroy {
   @Input() loggedInUserId: string;
   @Input() isContentDeveloper: boolean;
+  @Input() userTheme: Theme;
   msel = new MselPlus();
   mselScenarioEvents: ScenarioEventPlus[] = [];
   expandedScenarioEventIds: string[] = [];
@@ -82,6 +83,9 @@ export class ScenarioEventListComponent implements OnDestroy {
   // context menu
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
   contextMenuPosition = { x: '0px', y: '0px' };
+  private scenarioEventBackgroundColors: Array<string>;
+  darkThemeTint = 0.8;
+  lightThemeTint = 0.4;
 
   constructor(
     activatedRoute: ActivatedRoute,
@@ -98,6 +102,7 @@ export class ScenarioEventListComponent implements OnDestroy {
     private dataValueDataService: DataValueDataService,
     public dialogService: DialogService
   ) {
+    this.scenarioEventBackgroundColors = this.settingsService.settings.ScenarioEventBackgroundColors;
     // subscribe to the active MSEL
     (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
       if (msel) {
@@ -436,6 +441,17 @@ export class ScenarioEventListComponent implements OnDestroy {
     if (!newValue || !newValue.value) return;
     // remove non numeric characters, but allow "." and "-"
     newValue.value = newValue.value.replace(/[^\d.-]/g, '');
+  }
+
+  getRowStyle(scenarioEvent: ScenarioEventPlus) {
+    if (!scenarioEvent || !scenarioEvent.rowMetadata) {
+      return '';
+    }
+    const rowMetadata = scenarioEvent.rowMetadata.split(',');
+    const color = rowMetadata.length >= 4 ? rowMetadata[1] + ', ' + rowMetadata[2] + ', ' + rowMetadata[3] : '';
+    const tint = this.userTheme === 'dark-theme' ? this.darkThemeTint : this .lightThemeTint;
+    const style = color ? {'background-color': 'rgba(' + color + ', ' + tint + ')'} : {};
+    return style;
   }
 
   ngOnDestroy() {

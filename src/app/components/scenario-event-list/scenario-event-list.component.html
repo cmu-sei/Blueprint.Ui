@@ -164,6 +164,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
         "
         [expanded]="isExpandedScenarioEvent(item.id)"
         (click)="selectScenarioEvent(item.id)"
+        [style]="getRowStyle(item)"
       >
         <mat-expansion-panel-header
           class="mat-row"
