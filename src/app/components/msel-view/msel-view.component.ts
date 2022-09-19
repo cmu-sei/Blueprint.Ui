@@ -31,6 +31,7 @@ import { MatMenuTrigger } from '@angular/material/menu';
 })
 export class MselViewComponent implements OnDestroy {
   @Input() tabHeight: number;
+  @Input() userTheme: Theme;
   myTopHeight = 79;
   msel: Msel = {};
   expandedScenarioEventIds: string[] = [];
@@ -41,6 +42,9 @@ export class MselViewComponent implements OnDestroy {
   // context menu
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
   contextMenuPosition = { x: '0px', y: '0px' };
+  private scenarioEventBackgroundColors: Array<string>;
+  darkThemeTint = 0.8;
+  lightThemeTint = 0.4;
 
   constructor(
     activatedRoute: ActivatedRoute,
@@ -104,6 +108,17 @@ export class MselViewComponent implements OnDestroy {
   moreToShow(scenarioEvent: ScenarioEvent, columnName: string): boolean {
     const details = this.getScenarioEventValue(scenarioEvent, columnName);
     return details ? details.length > 400 : false;
+  }
+
+  getRowStyle(scenarioEvent: ScenarioEvent) {
+    if (!scenarioEvent || !scenarioEvent.rowMetadata) {
+      return '';
+    }
+    const rowMetadata = scenarioEvent.rowMetadata.split(',');
+    const color = rowMetadata.length >= 4 ? rowMetadata[1] + ', ' + rowMetadata[2] + ', ' + rowMetadata[3] : '';
+    const tint = this.userTheme === 'dark-theme' ? this.darkThemeTint : this .lightThemeTint;
+    const style = color ? {'background-color': 'rgba(' + color + ', ' + tint + ')'} : {};
+    return style;
   }
 
   ngOnDestroy() {

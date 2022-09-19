@@ -19,6 +19,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
       <mat-expansion-panel
         *ngFor="let item of sortedScenarioEvents"
         disabled
+        [style]="getRowStyle(item)"
       >
         <mat-expansion-panel-header
           class="mat-row wrap-me"
