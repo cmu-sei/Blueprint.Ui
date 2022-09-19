@@ -59,7 +59,7 @@ export class ScenarioEventListComponent implements OnDestroy {
   lessDataFields: DataField[];
   moreDataFields: DataField[];
   editingValueList = new Map<string, string>();
-  newScenarioEvent: ScenarioEvent;
+  newScenarioEvent: ScenarioEventPlus;
   isAddingScenarioEvent = false;
   canDoAnything = false;
   private unsubscribe$ = new Subject();
@@ -377,7 +377,8 @@ export class ScenarioEventListComponent implements OnDestroy {
       id: seId,
       mselId: this.msel.id,
       status: ItemStatus.Pending,
-      dataValues: []
+      dataValues: [],
+      plusDataValues: []
     };
     this.msel.dataFields.forEach(df => {
       this.newScenarioEvent.dataValues.push({
