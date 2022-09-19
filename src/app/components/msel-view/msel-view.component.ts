@@ -42,9 +42,8 @@ export class MselViewComponent implements OnDestroy {
   // context menu
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
   contextMenuPosition = { x: '0px', y: '0px' };
-  private scenarioEventBackgroundColors: Array<string>;
-  darkThemeTint = 0.8;
-  lightThemeTint = 0.4;
+  darkThemeTint = this.settingsService.settings.DarkThemeTint ? this.settingsService.settings.DarkThemeTint : 0.7;
+  lightThemeTint = this.settingsService.settings.LightThemeTint ? this.settingsService.settings.LightThemeTint : 0.4;
 
   constructor(
     activatedRoute: ActivatedRoute,

@@ -56,5 +56,7 @@
       "0, 128, 128",
       "139, 69, 19"
     ],
+    "DarkThemeTint": 0.7,
+    "LightThemeTint": 0.4,
     "DefaultXlsxRowHeight": 15
 }

@@ -83,9 +83,9 @@ export class ScenarioEventListComponent implements OnDestroy {
   // context menu
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
   contextMenuPosition = { x: '0px', y: '0px' };
-  private scenarioEventBackgroundColors: Array<string>;
-  darkThemeTint = 0.8;
-  lightThemeTint = 0.4;
+  scenarioEventBackgroundColors: Array<string>;
+  darkThemeTint = this.settingsService.settings.DarkThemeTint ? this.settingsService.settings.DarkThemeTint : 0.7;
+  lightThemeTint = this.settingsService.settings.LightThemeTint ? this.settingsService.settings.LightThemeTint : 0.4;
 
   constructor(
     activatedRoute: ActivatedRoute,
@@ -443,15 +443,34 @@ export class ScenarioEventListComponent implements OnDestroy {
     newValue.value = newValue.value.replace(/[^\d.-]/g, '');
   }
 
+  getRgbValues(rowMetadata: string) {
+    const parts = rowMetadata.split(',');
+    const rgbValues = parts.length >= 4 ? parts[1] + ', ' + parts[2] + ', ' + parts[3] : '';
+    return rgbValues;
+  }
+
+  getStyleFromColor(color: string) {
+    const tint = this.userTheme === 'dark-theme' ? this.darkThemeTint : this .lightThemeTint;
+    return color ? {'background-color': 'rgba(' + color + ', ' + tint + ')'} : {};
+  }
+
   getRowStyle(scenarioEvent: ScenarioEventPlus) {
     if (!scenarioEvent || !scenarioEvent.rowMetadata) {
       return '';
     }
-    const rowMetadata = scenarioEvent.rowMetadata.split(',');
-    const color = rowMetadata.length >= 4 ? rowMetadata[1] + ', ' + rowMetadata[2] + ', ' + rowMetadata[3] : '';
-    const tint = this.userTheme === 'dark-theme' ? this.darkThemeTint : this .lightThemeTint;
-    const style = color ? {'background-color': 'rgba(' + color + ', ' + tint + ')'} : {};
-    return style;
+    const color = this.getRgbValues(scenarioEvent.rowMetadata);
+    return this.getStyleFromColor(color);
+  }
+
+  selectNewColor(color: string, scenarioEvent: ScenarioEventPlus) {
+    const parts = scenarioEvent.rowMetadata.split(',');
+    if (parts.length === 0) {
+      const rowHeight = this.settingsService.settings.DefaultXlsxRowHeight ? this.settingsService.settings.DefaultXlsxRowHeight : 15;
+      scenarioEvent.rowMetadata = rowHeight + ',' + color;
+    } else {
+      scenarioEvent.rowMetadata = parts[0] + ',' + color;
+    }
+    this.scenarioEventDataService.updateScenarioEvent(scenarioEvent);
   }
 
   ngOnDestroy() {

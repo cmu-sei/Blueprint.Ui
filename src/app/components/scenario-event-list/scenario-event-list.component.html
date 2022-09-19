@@ -173,6 +173,28 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
             <button
               mat-icon-button
               class="scenario-event-button"
+              [matMenuTriggerFor]="menu"
+              (click)="$event.stopPropagation()"
+              title="Change highlight color"
+              *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, item.id).owner"
+            >
+              <mat-icon class="mdi-18px up-12" fontIcon="mdi-format-color-fill"></mat-icon>
+            </button>
+
+            <mat-menu #menu="matMenu" [overlapTrigger]="false">
+              <button
+                mat-menu-item
+                *ngFor="let color of scenarioEventBackgroundColors"
+                (click)="selectNewColor(color, item)"
+                class="color-option-button"
+              >
+                <div class="color-option" [style]="getStyleFromColor(color)">&nbsp;</div>
+              </button>
+            </mat-menu>
+
+            <button
+              mat-icon-button
+              class="scenario-event-button"
               (click)="copyScenarioEvent(item); $event.stopPropagation()"
               title="Duplicate this inject"
               *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, item.id).owner"
@@ -318,10 +340,10 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
             </div>
             <div class="full-width" (click)="$event.stopPropagation();">
               <span class="more-or-less">
-                <button mat-button color="primary" title="More" (click)="selectMoreScenarioEvent(item.id)" *ngIf="!isExpandedMoreScenarioEvent(item.id)">
+                <button mat-button title="More" (click)="selectMoreScenarioEvent(item.id)" *ngIf="!isExpandedMoreScenarioEvent(item.id)">
                   <mat-icon style="margin-bottom: 12px;" fontIcon="mdi-chevron-double-down" alt="More"></mat-icon> More
                 </button>
-                <button mat-button color="primary" title="Less" (click)="selectMoreScenarioEvent(item.id)" *ngIf="isExpandedMoreScenarioEvent(item.id)">
+                <button mat-button title="Less" (click)="selectMoreScenarioEvent(item.id)" *ngIf="isExpandedMoreScenarioEvent(item.id)">
                   <mat-icon style="margin-bottom: 12px;" fontIcon="mdi-chevron-double-up" alt="Less"></mat-icon> Less
                 </button>
               </span>
