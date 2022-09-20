@@ -44,6 +44,7 @@ import { deepCopy } from "deep-copy-ts";
 export class ScenarioEventListComponent implements OnDestroy {
   @Input() loggedInUserId: string;
   @Input() isContentDeveloper: boolean;
+  @Input() userTheme: Theme;
   msel = new MselPlus();
   mselScenarioEvents: ScenarioEventPlus[] = [];
   expandedScenarioEventIds: string[] = [];
@@ -58,7 +59,7 @@ export class ScenarioEventListComponent implements OnDestroy {
   lessDataFields: DataField[];
   moreDataFields: DataField[];
   editingValueList = new Map<string, string>();
-  newScenarioEvent: ScenarioEvent;
+  newScenarioEvent: ScenarioEventPlus;
   isAddingScenarioEvent = false;
   canDoAnything = false;
   private unsubscribe$ = new Subject();
@@ -82,6 +83,9 @@ export class ScenarioEventListComponent implements OnDestroy {
   // context menu
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
   contextMenuPosition = { x: '0px', y: '0px' };
+  scenarioEventBackgroundColors: Array<string>;
+  darkThemeTint = this.settingsService.settings.DarkThemeTint ? this.settingsService.settings.DarkThemeTint : 0.7;
+  lightThemeTint = this.settingsService.settings.LightThemeTint ? this.settingsService.settings.LightThemeTint : 0.4;
 
   constructor(
     activatedRoute: ActivatedRoute,
@@ -98,6 +102,7 @@ export class ScenarioEventListComponent implements OnDestroy {
     private dataValueDataService: DataValueDataService,
     public dialogService: DialogService
   ) {
+    this.scenarioEventBackgroundColors = this.settingsService.settings.ScenarioEventBackgroundColors;
     // subscribe to the active MSEL
     (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
       if (msel) {
@@ -372,7 +377,8 @@ export class ScenarioEventListComponent implements OnDestroy {
       id: seId,
       mselId: this.msel.id,
       status: ItemStatus.Pending,
-      dataValues: []
+      dataValues: [],
+      plusDataValues: []
     };
     this.msel.dataFields.forEach(df => {
       this.newScenarioEvent.dataValues.push({
@@ -436,6 +442,50 @@ export class ScenarioEventListComponent implements OnDestroy {
     if (!newValue || !newValue.value) return;
     // remove non numeric characters, but allow "." and "-"
     newValue.value = newValue.value.replace(/[^\d.-]/g, '');
+  }
+
+  getRgbValues(rowMetadata: string) {
+    const parts = rowMetadata.split(',');
+    const rgbValues = parts.length >= 4 ? parts[1] + ', ' + parts[2] + ', ' + parts[3] : '';
+    return rgbValues;
+  }
+
+  getStyleFromColor(color: string) {
+    const tint = this.userTheme === 'dark-theme' ? this.darkThemeTint : this .lightThemeTint;
+    return color ? {'background-color': 'rgba(' + color + ', ' + tint + ')'} : {};
+  }
+
+  getRowStyle(scenarioEvent: ScenarioEventPlus) {
+    if (!scenarioEvent || !scenarioEvent.rowMetadata) {
+      return '';
+    }
+    const color = this.getRgbValues(scenarioEvent.rowMetadata);
+    return this.getStyleFromColor(color);
+  }
+
+  selectNewColor(color: string, scenarioEvent: ScenarioEventPlus) {
+    let parts = scenarioEvent.rowMetadata ? scenarioEvent.rowMetadata.split(',') : [];
+    // update the scenario event row metadata
+    if (parts.length === 0) {
+      const rowHeight = this.settingsService.settings.DefaultXlsxRowHeight ? this.settingsService.settings.DefaultXlsxRowHeight : 15;
+      scenarioEvent.rowMetadata = rowHeight + ',' + color;
+    } else {
+      scenarioEvent.rowMetadata = parts[0] + ',' + color;
+    }
+    // update the data values cell metadata
+    scenarioEvent.dataValues.forEach(dv => {
+      parts = dv.cellMetadata ? dv.cellMetadata.split(',') : ['', '', 'normal', '0'];
+      const colorParts = color.split(',');
+      // convert decimal value to hex
+      for (let i = 0; i < colorParts.length; i++) {
+        colorParts[i] = (+colorParts[i]).toString(16).trim();
+        colorParts[i] = colorParts[i].length < 2 ? '0' + colorParts[i] : colorParts[i];
+      }
+      parts[0] = colorParts.join('');
+      parts[1] = this.darkThemeTint;
+      dv.cellMetadata = parts.join(',');
+    });
+    this.scenarioEventDataService.updateScenarioEvent(scenarioEvent);
   }
 
   ngOnDestroy() {
