@@ -184,6 +184,13 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
             <mat-menu #menu="matMenu" [overlapTrigger]="false">
               <button
                 mat-menu-item
+                (click)="selectNewColor('', item)"
+                class="color-option-button"
+              >
+              <div class="color-option" [style]="getStyleFromColor('')"></div>
+              </button>
+              <button
+                mat-menu-item
                 *ngFor="let color of scenarioEventBackgroundColors"
                 (click)="selectNewColor(color, item)"
                 class="color-option-button"

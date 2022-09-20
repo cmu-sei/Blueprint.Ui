@@ -464,13 +464,27 @@ export class ScenarioEventListComponent implements OnDestroy {
   }
 
   selectNewColor(color: string, scenarioEvent: ScenarioEventPlus) {
-    const parts = scenarioEvent.rowMetadata.split(',');
+    let parts = scenarioEvent.rowMetadata ? scenarioEvent.rowMetadata.split(',') : [];
+    // update the scenario event row metadata
     if (parts.length === 0) {
       const rowHeight = this.settingsService.settings.DefaultXlsxRowHeight ? this.settingsService.settings.DefaultXlsxRowHeight : 15;
       scenarioEvent.rowMetadata = rowHeight + ',' + color;
     } else {
       scenarioEvent.rowMetadata = parts[0] + ',' + color;
     }
+    // update the data values cell metadata
+    scenarioEvent.dataValues.forEach(dv => {
+      parts = dv.cellMetadata ? dv.cellMetadata.split(',') : ['', '', 'normal', '0'];
+      const colorParts = color.split(',');
+      // convert decimal value to hex
+      for (let i = 0; i < colorParts.length; i++) {
+        colorParts[i] = (+colorParts[i]).toString(16).trim();
+        colorParts[i] = colorParts[i].length < 2 ? '0' + colorParts[i] : colorParts[i];
+      }
+      parts[0] = colorParts.join('');
+      parts[1] = this.darkThemeTint;
+      dv.cellMetadata = parts.join(',');
+    });
     this.scenarioEventDataService.updateScenarioEvent(scenarioEvent);
   }
 
