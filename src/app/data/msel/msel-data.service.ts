@@ -33,8 +33,12 @@ export class MselPlus implements Msel {
   id?: string;
   description?: string;
   status?: ItemStatus;
+  useGallery?: boolean;
+  galleryCollectionId?: string;
   galleryExhibitId?: string;
+  useCite?: boolean;
   citeEvaluationId?: string;
+  useSteamfitter?: boolean;
   steamfitterScenarioId?: string;
   isTemplate?: boolean;
   moves?: Array<Move>;
