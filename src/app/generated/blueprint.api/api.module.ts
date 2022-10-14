@@ -8,6 +8,7 @@ import { Configuration } from './configuration';
 import { HttpClient } from '@angular/common/http';
 
 
+import { CardService } from './api/card.service';
 import { DataFieldService } from './api/dataField.service';
 import { DataOptionService } from './api/dataOption.service';
 import { DataValueService } from './api/dataValue.service';
@@ -28,6 +29,7 @@ import { UserPermissionService } from './api/userPermission.service';
   declarations: [],
   exports:      [],
   providers: [
+    CardService,
     DataFieldService,
     DataOptionService,
     DataValueService,
