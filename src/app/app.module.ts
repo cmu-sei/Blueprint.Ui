@@ -60,6 +60,7 @@ import { AdminTeamsComponent } from './components/admin/admin-teams/admin-teams.
 import { AdminTeamEditDialogComponent } from './components/admin/admin-team-edit-dialog/admin-team-edit-dialog.component';
 import { AdminTeamUsersComponent } from './components/admin/admin-team-users/admin-team-users.component';
 import { AdminUsersComponent } from './components/admin/admin-users/admin-users.component';
+import { CardListComponent } from './components/card-list/card-list.component';
 import { DataFieldListComponent } from './components/data-field-list/data-field-list.component';
 import { DataOptionEditDialogComponent } from './components/data-option-edit-dialog/data-option-edit-dialog.component';
 import { HomeAppComponent } from './components/home-app/home-app.component';
@@ -82,7 +83,7 @@ import { SystemMessageService } from './services/system-message/system-message.s
 import { BASE_PATH } from './generated/blueprint.api';
 import { ApiModule as SwaggerCodegenApiModule } from './generated/blueprint.api/api.module';
 import { DisplayOrderPipe, SortByPipe } from 'src/app/utilities/sort-by-pipe';
-import { QuillModule } from 'ngx-quill'
+import { QuillModule } from 'ngx-quill';
 import { PlainTextPipe } from './utilities/plain-text-pipe';
 
 const settings: ComnSettingsConfig = {
@@ -97,6 +98,7 @@ export function getBasePath(settingsSvc: ComnSettingsService) {
 @NgModule({
   declarations: [
     AppComponent,
+    CardListComponent,
     DataFieldListComponent,
     DataOptionEditDialogComponent,
     HomeAppComponent,

@@ -8,6 +8,7 @@ export * from './calendar';
 export * from './calendarAlgorithmType';
 export * from './calendarWeekRule';
 export * from './callingConventions';
+export * from './card';
 export * from './compareInfo';
 export * from './constructorInfo';
 export * from './cultureInfo';
