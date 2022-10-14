@@ -5,6 +5,292 @@
     "version": "v1"
   },
   "paths": {
+    "/api/msels/{mselId}/cards": {
+      "get": {
+        "tags": [
+          "Card"
+        ],
+        "summary": "Gets Cards by msel",
+        "description": "Returns a list of Cards for the msel.",
+        "operationId": "getByMsel",
+        "parameters": [
+          {
+            "name": "mselId",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Card"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Card"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Card"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/cards/{id}": {
+      "get": {
+        "tags": [
+          "Card"
+        ],
+        "summary": "Gets a specific Card by id",
+        "description": "Returns the Card with the id specified",
+        "operationId": "getCard",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The id of the Card",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Card"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Card"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Card"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Card"
+        ],
+        "summary": "Updates a  Card",
+        "description": "Updates a Card with the attributes specified.\r\nThe ID from the route MUST MATCH the ID contained in the card parameter\r\n<para />\r\nAccessible only to a ContentDeveloper or an Administrator",
+        "operationId": "updateCard",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The Id of the Card to update",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "The updated Card values",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Card"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Card"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Card"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Card"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Card"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Card"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Card"
+        ],
+        "summary": "Deletes a  Card",
+        "description": "Deletes a  Card with the specified id\r\n<para />\r\nAccessible only to a ContentDeveloper or an Administrator",
+        "operationId": "deleteCard",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The id of the Card to delete",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Success"
+          },
+          "default": {
+            "description": "Problem response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/cards": {
+      "post": {
+        "tags": [
+          "Card"
+        ],
+        "summary": "Creates a new Card",
+        "description": "Creates a new Card with the attributes specified\r\n<para />\r\nAccessible only to a ContentDeveloper or an Administrator",
+        "operationId": "createCard",
+        "requestBody": {
+          "description": "The data used to create the Card",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Card"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Card"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Card"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Card"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Card"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Card"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/msels/{mselId}/datafields": {
       "get": {
         "tags": [
@@ -2907,17 +3193,26 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/ScenarioEvent"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ScenarioEvent"
+                  }
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ScenarioEvent"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ScenarioEvent"
+                  }
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ScenarioEvent"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ScenarioEvent"
+                  }
                 }
               }
             }
@@ -3033,17 +3328,26 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/ScenarioEvent"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ScenarioEvent"
+                  }
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ScenarioEvent"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ScenarioEvent"
+                  }
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ScenarioEvent"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ScenarioEvent"
+                  }
                 }
               }
             }
@@ -4674,6 +4978,54 @@
         ],
         "type": "string"
       },
+      "Card": {
+        "type": "object",
+        "properties": {
+          "dateCreated": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "dateModified": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "createdBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "modifiedBy": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "mselId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "move": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "inject": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
       "CompareInfo": {
         "type": "object",
         "properties": {
@@ -5440,6 +5792,10 @@
           "dataFieldId": {
             "type": "string",
             "format": "uuid"
+          },
+          "cellMetadata": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -6394,15 +6750,29 @@
           "status": {
             "$ref": "#/components/schemas/ItemStatus"
           },
+          "useGallery": {
+            "type": "boolean"
+          },
+          "galleryCollectionId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
           "galleryExhibitId": {
             "type": "string",
             "format": "uuid",
             "nullable": true
           },
+          "useCite": {
+            "type": "boolean"
+          },
           "citeEvaluationId": {
             "type": "string",
             "format": "uuid",
             "nullable": true
+          },
+          "useSteamfitter": {
+            "type": "boolean"
           },
           "steamfitterScenarioId": {
             "type": "string",
@@ -6449,6 +6819,13 @@
           },
           "headerRowMetadata": {
             "type": "string",
+            "nullable": true
+          },
+          "cards": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Card"
+            },
             "nullable": true
           }
         },
