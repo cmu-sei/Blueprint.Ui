@@ -93,6 +93,64 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
               </div>
             </div>
             <div class="scenario-event-detail" (click)="$event.stopPropagation();">
+              <div *ngFor="let df of lessDataFields" class="single-detail">
+                <!-- string input -->
+                <mat-form-field *ngIf="!df.isChosenFromList && df.dataType === dataType.String" class="full-width">
+                  <input
+                    type="text"
+                    matInput
+                    placeholder="{{ df.name }}"
+                    [(ngModel)]="getDataValue(newScenarioEvent, df.name).value"
+                  />
+                </mat-form-field>
+                <!-- numeric input -->
+                <mat-form-field *ngIf="!df.isChosenFromList && df.dataType === dataType.Integer || df.dataType === dataType.Double" class="full-width">
+                  <input
+                    matInput
+                    placeholder="{{ df.name }}"
+                    (change)="verifyNumber(getDataValue(newScenarioEvent, df.name))"
+                    [(ngModel)]="getDataValue(newScenarioEvent, df.name).value"
+                  />
+                </mat-form-field>
+                <!-- date time input -->
+                <mat-form-field *ngIf="!df.isChosenFromList && df.dataType === dataType.DateTime" class="full-width">
+                  <mat-label class="error-text" *ngIf="notValidDateFormat(getDataValue(newScenarioEvent, df.name).value)">Not a valid date format.  Use M/d/yyyy.</mat-label>
+                  <input
+                    type="datetime"
+                    matInput
+                    placeholder="{{ df.name }}"
+                    [(ngModel)]="getDataValue(newScenarioEvent, df.name).value"
+                  />
+                </mat-form-field>
+                <!-- chosen from list -->
+                <mat-form-field *ngIf="df.isChosenFromList" class="full-width">
+                  <mat-label>{{ df.name }}</mat-label>
+                  <mat-select
+                    placeholder="{{ df.name }}"
+                    [(ngModel)]="getDataValue(newScenarioEvent, df.name).value"
+                  >
+                    <mat-option *ngFor="let dataOption of df.dataOptions" [value]="dataOption.optionValue">
+                      {{ dataOption.optionName }}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+                <div *ngIf="df.dataType === dataType.Html" class="scenario-event-detail" (click)="$event.stopPropagation();">
+                  <div class="full-width">
+                    <div class="editor-label">
+                      Details
+                    </div>
+                    <div class="quill-edit">
+                      <quill-editor
+                        [styles]="editorStyle"
+                        placeholder="Enter details ..."
+                        [(ngModel)]="getDataValue(newScenarioEvent, 'details').value"
+                      >
+                      </quill-editor>
+                    </div>
+                    &nbsp;
+                  </div>
+                </div>
+              </div>
               <div *ngFor="let df of moreDataFields" class="single-detail">
                 <!-- string input -->
                 <mat-form-field *ngIf="!df.isChosenFromList && df.dataType === dataType.String" class="full-width">
@@ -134,22 +192,22 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
                     </mat-option>
                   </mat-select>
                 </mat-form-field>
-              </div>
-            </div>
-            <div class="scenario-event-detail" (click)="$event.stopPropagation();">
-              <div class="single-detail">
-                <div class="editor-label">
-                  Details
+                <div *ngIf="df.dataType === dataType.Html" class="scenario-event-detail" (click)="$event.stopPropagation();">
+                  <div class="full-width">
+                    <div class="editor-label">
+                      Details
+                    </div>
+                    <div class="quill-edit">
+                      <quill-editor
+                        [styles]="editorStyle"
+                        placeholder="Enter details ..."
+                        [(ngModel)]="getDataValue(newScenarioEvent, 'details').value"
+                      >
+                      </quill-editor>
+                    </div>
+                    &nbsp;
+                  </div>
                 </div>
-                <div class="quill-edit">
-                  <quill-editor
-                    [styles]="editorStyle"
-                    placeholder="Enter details ..."
-                    [(ngModel)]="getDataValue(newScenarioEvent, 'details').value"
-                  >
-                  </quill-editor>
-                </div>
-                &nbsp;
               </div>
             </div>
           </div>
@@ -328,33 +386,84 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
           </div>
           <div class="scrolling-details" (click)="$event.stopPropagation()">
             <div class="scenario-event-detail" (click)="$event.stopPropagation();">
-              <div class="single-detail">
-                <div class="editor-label">
-                  Details
+              <!-- Less DataFields -->
+              <div *ngFor="let df of lessDataFields" class="single-detail">
+                <!-- string input -->
+                <mat-form-field *ngIf="!df.isChosenFromList && df.dataType === dataType.String" class="full-width">
+                  <input
+                    type="text"
+                    matInput
+                    placeholder="{{ df.name }}"
+                    [(ngModel)]="getDataValue(item, df.name).value"
+                    [disabled]="isDisabled(item, df.name)"
+                  />
+                </mat-form-field>
+                <!-- Numeric input -->
+                <mat-form-field *ngIf="!df.isChosenFromList && df.dataType === dataType.Integer || df.dataType === dataType.Double" class="full-width">
+                  <input
+                    matInput
+                    placeholder="{{ df.name }}"
+                    (change)="verifyNumber(getDataValue(item, df.name))"
+                    [(ngModel)]="getDataValue(item, df.name).value"
+                    [disabled]="isDisabled(item, df.name)"
+                  />
+                </mat-form-field>
+                <!-- date input -->
+                <mat-form-field *ngIf="!df.isChosenFromList && df.dataType === dataType.DateTime" class="full-width">
+                  <mat-label class="error-text" *ngIf="notValidDateFormat(getDataValue(item, df.name).value)">Not a valid date format.  Use M/d/yyyy.</mat-label>
+                  <input
+                    type="datetime"
+                    matInput
+                    placeholder="{{ df.name }}"
+                    [(ngModel)]="getDataValue(item, df.name).value"
+                    [disabled]="isDisabled(item, df.name)"
+                  />
+                </mat-form-field>
+                <!-- html input -->
+                <div *ngIf="!df.isChosenFromList && df.dataType === dataType.Html">
+                  <div class="full-width">
+                    <div class="editor-label">
+                      {{ df.name }}
+                    </div>
+                    <div class="quill-view" *ngIf="isViewOnly(item)">
+                      <quill-view-html [content]="getDataValue(item, 'Details').value" theme="snow"></quill-view-html>&nbsp;
+                    </div>
+                    <div class="quill-edit" *ngIf="!isViewOnly(item)">
+                      <quill-editor
+                        [styles]="editorStyle"
+                        placeholder="Enter value ..."
+                        [(ngModel)]="getDataValue(item, df.name).value"
+                      >
+                      </quill-editor>
+                    </div>
+                    &nbsp;
+                  </div>
                 </div>
-                <div class="quill-view" *ngIf="isViewOnly(item)">
-                  <quill-view-html [content]="getDataValue(item, 'Details').value" theme="snow"></quill-view-html>&nbsp;
-                </div>
-                <div class="quill-edit" *ngIf="!isViewOnly(item)">
-                  <quill-editor
-                    [styles]="editorStyle"
-                    placeholder="Enter details ..."
-                    [(ngModel)]="getDataValue(item, 'Details').value"
+                <!-- dropdown input -->
+                <mat-form-field *ngIf="df.isChosenFromList" class="full-width">
+                  <mat-label>{{ df.name }}</mat-label>
+                  <mat-select
+                    placeholder="{{ df.name }}"
+                    [(ngModel)]="getDataValue(item, df.name).value"
+                    [disabled]="isDisabled(item, df.name)"
                   >
-                  </quill-editor>
-                </div>
+                    <mat-option *ngFor="let dataOption of df.dataOptions" [value]="dataOption.optionValue">
+                      {{ dataOption.optionName }}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
               </div>
-            </div>
-            <div class="full-width" (click)="$event.stopPropagation();">
-              <span class="more-or-less">
-                <button mat-button title="More" (click)="selectMoreScenarioEvent(item.id)" *ngIf="!isExpandedMoreScenarioEvent(item.id)">
-                  <mat-icon style="margin-bottom: 12px;" fontIcon="mdi-chevron-double-down" alt="More"></mat-icon> More
-                </button>
-                <button mat-button title="Less" (click)="selectMoreScenarioEvent(item.id)" *ngIf="isExpandedMoreScenarioEvent(item.id)">
-                  <mat-icon style="margin-bottom: 12px;" fontIcon="mdi-chevron-double-up" alt="Less"></mat-icon> Less
-                </button>
-              </span>
-              <span class="edit-buttons">&nbsp;</span>
+              <div class="full-width" (click)="$event.stopPropagation();">
+                <span class="more-or-less">
+                  <button mat-button title="More Fields" (click)="selectMoreScenarioEvent(item.id)" *ngIf="!isExpandedMoreScenarioEvent(item.id)">
+                    <mat-icon style="margin-bottom: 12px;" fontIcon="mdi-chevron-double-down" alt="More"></mat-icon> More Fields
+                  </button>
+                  <button mat-button title="Less Fields" (click)="selectMoreScenarioEvent(item.id)" *ngIf="isExpandedMoreScenarioEvent(item.id)">
+                    <mat-icon style="margin-bottom: 12px;" fontIcon="mdi-chevron-double-up" alt="Less"></mat-icon> Less Fields
+                  </button>
+                </span>
+                <span class="edit-buttons">&nbsp;</span>
+              </div>
             </div>
             <div class="scenario-event-detail" (click)="$event.stopPropagation();" *ngIf="isExpandedMoreScenarioEvent(item.id)">
               <div class="single-detail">
@@ -368,7 +477,6 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
                   />
                 </mat-form-field>
               </div>
-
               <!-- More DataFields -->
               <div *ngFor="let df of moreDataFields" class="single-detail">
                 <!-- string input -->
@@ -402,6 +510,26 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
                     [disabled]="isDisabled(item, df.name)"
                   />
                 </mat-form-field>
+                <!-- html input -->
+                <div *ngIf="!df.isChosenFromList && df.dataType === dataType.Html">
+                  <div class="full-width">
+                    <div class="editor-label">
+                      {{ df.name }}
+                    </div>
+                    <div class="quill-view" *ngIf="isViewOnly(item)">
+                      <quill-view-html [content]="getDataValue(item, 'Details').value" theme="snow"></quill-view-html>&nbsp;
+                    </div>
+                    <div class="quill-edit" *ngIf="!isViewOnly(item)">
+                      <quill-editor
+                        [styles]="editorStyle"
+                        placeholder="Enter value ..."
+                        [(ngModel)]="getDataValue(item, df.name).value"
+                      >
+                      </quill-editor>
+                    </div>
+                    &nbsp;
+                  </div>
+                </div>
                 <!-- dropdown input -->
                 <mat-form-field *ngIf="df.isChosenFromList" class="full-width">
                   <mat-label>{{ df.name }}</mat-label>

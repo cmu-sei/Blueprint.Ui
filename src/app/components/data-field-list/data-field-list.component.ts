@@ -2,7 +2,6 @@
 // Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
 import { Component, Input, OnDestroy, ViewChild } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { MatSidenav } from '@angular/material/sidenav';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, Observable, BehaviorSubject } from 'rxjs';
 import { take, takeUntil } from 'rxjs/operators';
@@ -12,7 +11,6 @@ import {
   ComnAuthQuery,
 } from '@cmusei/crucible-common';
 import { UserDataService } from 'src/app/data/user/user-data.service';
-import { TopbarView } from './../shared/top-bar/topbar.models';
 import {
   DataField,
   DataFieldType,
@@ -156,6 +154,9 @@ export class DataFieldListComponent implements OnDestroy {
       isChanged = this.changedDataField.dataType !== original.dataType ||
                   this.changedDataField.displayOrder !== original.displayOrder ||
                   this.changedDataField.isChosenFromList !== original.isChosenFromList ||
+                  this.changedDataField.isInitiallyHidden !== original.isInitiallyHidden ||
+                  this.changedDataField.isOnlyShownToOwners !== original.isOnlyShownToOwners ||
+                  this.changedDataField.galleryArticleParameter !== original.galleryArticleParameter ||
                   this.changedDataField.name !== original.name ||
                   this.changedDataField.cellMetadata != original.cellMetadata ||
                   this.changedDataField.columnMetadata != original.columnMetadata;
@@ -226,10 +227,10 @@ export class DataFieldListComponent implements OnDestroy {
       case 'displayOrder':
         return ( (a.displayOrder < b.displayOrder ? -1 : 1) * (isAsc ? 1 : -1) );
         break;
-      case "name":
+      case 'name':
         return ( (a.name < b.name ? -1 : 1) * (isAsc ? 1 : -1) );
         break;
-      case "isChosenFromList":
+      case 'isChosenFromList':
         return ( (a.isChosenFromList < b.isChosenFromList ? -1 : 1) * (isAsc ? 1 : -1) );
         break;
       default:
@@ -246,7 +247,7 @@ export class DataFieldListComponent implements OnDestroy {
         }
       });
       if (filteredDataFields && filteredDataFields.length > 0 && this.filterString) {
-        var filterString = this.filterString.toLowerCase();
+        const filterString = this.filterString.toLowerCase();
         filteredDataFields = filteredDataFields
           .filter((a) =>
             a.name.toLowerCase().includes(filterString) ||
@@ -260,7 +261,7 @@ export class DataFieldListComponent implements OnDestroy {
   getDataFieldOptions(dataFieldId: string) {
     return this.dataOptionList
             .filter(x => x.dataFieldId === dataFieldId)
-            .sort((a,b) => a.displayOrder < b.displayOrder ? -1 : 1);
+            .sort((a, b) => a.displayOrder < b.displayOrder ? -1 : 1);
   }
 
   addOrEditDataOption(dataOption: DataOption) {
