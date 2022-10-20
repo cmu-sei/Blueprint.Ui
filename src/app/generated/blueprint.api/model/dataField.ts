@@ -32,4 +32,7 @@ export interface DataField {
     dataOptions?: Array<DataOption>;
     cellMetadata?: string;
     columnMetadata?: string;
+    isInitiallyHidden?: boolean;
+    isOnlyShownToOwners?: boolean;
+    galleryArticleParameter?: string;
 }

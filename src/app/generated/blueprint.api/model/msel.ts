@@ -46,4 +46,5 @@ export interface Msel {
     userMselRoles?: Array<UserMselRole>;
     headerRowMetadata?: string;
     cards?: Array<Card>;
+    galleryArticleParameters?: Array<string>;
 }

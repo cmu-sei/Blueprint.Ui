@@ -47,6 +47,7 @@ export class MselPlus implements Msel {
   teams?: Array<Team>;
   userMselRoles?: Array<UserMselRole>;
   headerRowMetadata?: string;
+  galleryArticleParameters?: Array<string>;
 
   hasRole(userId: string, scenarioEventId: string) {
     const mselRole = { owner: false, approver: false, editor: false };
@@ -420,9 +421,9 @@ export class MselDataService {
             updatedScenarioEvent.dataValues.push(dv);
           }
         });
-        updatedMsel.scenarioEvents.push(updatedScenarioEvent)
+        updatedMsel.scenarioEvents.push(updatedScenarioEvent);
       } else {
-        updatedMsel.scenarioEvents.push(se)
+        updatedMsel.scenarioEvents.push(se);
       }
     });
     this.mselStore.upsert(updatedMsel.id, updatedMsel);

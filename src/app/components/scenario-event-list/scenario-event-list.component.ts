@@ -12,7 +12,6 @@ import {
   ComnAuthQuery,
 } from '@cmusei/crucible-common';
 import { UserDataService } from 'src/app/data/user/user-data.service';
-import { TopbarView } from './../shared/top-bar/topbar.models';
 import {
   DataField,
   DataFieldType,
@@ -31,10 +30,9 @@ import { MatMenuTrigger } from '@angular/material/menu';
 import { OrganizationQuery } from 'src/app/data/organization/organization.query';
 import { ScenarioEventDataService, ScenarioEventPlus, DataValuePlus } from 'src/app/data/scenario-event/scenario-event-data.service';
 import { ScenarioEventQuery } from 'src/app/data/scenario-event/scenario-event.query';
-import { DataValueDataService } from  'src/app/data/data-value/data-value-data.service';
+import { DataValueDataService } from 'src/app/data/data-value/data-value-data.service';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { v4 as uuidv4 } from 'uuid';
-import { deepCopy } from "deep-copy-ts";
 
 @Component({
   selector: 'app-scenario-event-list',
@@ -132,7 +130,7 @@ export class ScenarioEventListComponent implements OnDestroy {
   }
 
   getEditableMsel (msel: MselPlus): MselPlus {
-    let editableMsel = new MselPlus();
+    const editableMsel = new MselPlus();
     Object.assign(editableMsel, msel);
     editableMsel.dataFields = editableMsel.dataFields.slice(0).sort((a, b) => a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1);
     editableMsel.teams = editableMsel.teams.slice(0).sort((a, b) => a.shortName.toLowerCase() < b.shortName.toLowerCase() ? -1 : 1);
@@ -176,10 +174,10 @@ export class ScenarioEventListComponent implements OnDestroy {
     const lessDataFields: DataField[] = [];
     if (dataFields) {
       dataFields.forEach(df => {
-        if (this.lessDataFieldNames.some(n => n === df.name.toLowerCase())) {
-          lessDataFields.push(df);
-        } else {
+        if (df.isInitiallyHidden) {
           moreDataFields.push(df);
+        } else {
+          lessDataFields.push(df);
         }
       });
       moreDataFields.sort((a, b) => +a.displayOrder > +b.displayOrder ? 1 : -1);
@@ -230,9 +228,13 @@ export class ScenarioEventListComponent implements OnDestroy {
   }
 
   getDataValue(scenarioEvent: ScenarioEventPlus, dataFieldName: string): DataValuePlus {
-    if (!(this.msel && scenarioEvent && scenarioEvent.id)) return this.blankDataValue;
+    if (!(this.msel && scenarioEvent && scenarioEvent.id)) {
+      return this.blankDataValue;
+    }
     const dataFieldId = this.getDataFieldIdByName(scenarioEvent, dataFieldName);
-    if (!dataFieldId) return this.blankDataValue;
+    if (!dataFieldId) {
+      return this.blankDataValue;
+    }
     const dataValue = scenarioEvent.dataValues.find(dv => dv.dataFieldId === dataFieldId);
     return dataValue ? dataValue as DataValuePlus : this.blankDataValue;
   }
@@ -302,7 +304,9 @@ export class ScenarioEventListComponent implements OnDestroy {
   }
 
   getTeamShortName(teamId: string) {
-    if (!teamId) return '';
+    if (!teamId) {
+      return '';
+    }
     const team = this.msel.teams.find(t => t.id === teamId);
     return team ? team.shortName : '';
   }
@@ -332,15 +336,17 @@ export class ScenarioEventListComponent implements OnDestroy {
     switch (column) {
       case 'control number':
       case 'from org':
-      case "to org":
-      case "description":
+      case 'to org':
+      case 'description':
         return (
           (this.getDataValue(a, column).value.toLowerCase() < this.getDataValue(b, column).value.toLowerCase() ? -1 : 1) *
           (isAsc ? 1 : -1)
         );
-      case "assigned to":
-        return (this.getTeamShortName(a.assignedTeamId).toLowerCase() < this.getTeamShortName(b.assignedTeamId).toLowerCase() ? -1 : 1) * (isAsc ? 1 : -1);
-      case "status":
+      case 'assigned to':
+        return (this.getTeamShortName(a.assignedTeamId).toLowerCase()
+                 < this.getTeamShortName(b.assignedTeamId).toLowerCase() ? -1 : 1
+               ) * (isAsc ? 1 : -1);
+      case 'status':
         return (a.status < b.status ? -1 : 1) * (isAsc ? 1 : -1);
       default:
         return 0;
@@ -356,7 +362,7 @@ export class ScenarioEventListComponent implements OnDestroy {
         }
       });
       if (filteredScenarioEvents && filteredScenarioEvents.length > 0 && this.filterString) {
-        var filterString = this.filterString.toLowerCase();
+        const filterString = this.filterString.toLowerCase();
         filteredScenarioEvents = filteredScenarioEvents
           .filter((a) =>
             this.getDataValue(a, 'control number').value.toLowerCase().includes(filterString) ||
@@ -384,7 +390,7 @@ export class ScenarioEventListComponent implements OnDestroy {
       this.newScenarioEvent.dataValues.push({
         dataFieldId: df.id,
         id: uuidv4(),
-        scenarioEventId:this.newScenarioEvent.id,
+        scenarioEventId: this.newScenarioEvent.id,
         value: ''
       });
     });
@@ -399,7 +405,7 @@ export class ScenarioEventListComponent implements OnDestroy {
       this.newScenarioEvent.dataValues.push({
         id: uuidv4(),
         dataFieldId: dv.dataFieldId,
-        scenarioEventId:this.newScenarioEvent.id,
+        scenarioEventId: this.newScenarioEvent.id,
         value: dv.value
       });
     });
@@ -439,8 +445,10 @@ export class ScenarioEventListComponent implements OnDestroy {
   }
 
   verifyNumber(newValue: DataValuePlus) {
-    if (!newValue || !newValue.value) return;
-    // remove non numeric characters, but allow "." and "-"
+    if (!newValue || !newValue.value) {
+      return;
+    }
+    // remove non numeric characters, but allow '.' and '-'
     newValue.value = newValue.value.replace(/[^\d.-]/g, '');
   }
 

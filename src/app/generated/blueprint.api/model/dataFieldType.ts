@@ -16,7 +16,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
  */
 
 
-export type DataFieldType = 'String' | 'Integer' | 'Double' | 'Boolean' | 'DateTime' | 'Organization';
+export type DataFieldType = 'String' | 'Integer' | 'Double' | 'Boolean' | 'DateTime' | 'Organization' | 'Html';
 
 export const DataFieldType = {
     String: 'String' as DataFieldType,
@@ -24,5 +24,6 @@ export const DataFieldType = {
     Double: 'Double' as DataFieldType,
     Boolean: 'Boolean' as DataFieldType,
     DateTime: 'DateTime' as DataFieldType,
-    Organization: 'Organization' as DataFieldType
+    Organization: 'Organization' as DataFieldType,
+    Html: 'Html' as DataFieldType
 };
