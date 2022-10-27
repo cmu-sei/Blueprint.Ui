@@ -13,9 +13,10 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
       <span class="mat-header-cell two-cell" mat-sort-header="control number">
         <button
           mat-icon-button
-          (click)="addScenarioEvent(); $event.stopPropagation()"
+          (click)="scrollingRegion.scrollTop = 0; addScenarioEvent(); $event.stopPropagation()"
           style="outline: none; margin-right: 15px;"
           title="Add new inject"
+          [disabled]="noExpansionChangeAllowed()"
           *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
         >
           <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
@@ -45,7 +46,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
       </span>
     </section>
 
-    <section class="scrolling-region">
+    <section class="scrolling-region" #scrollingRegion>
       <!-- new scenario event fields -->
       <mat-expansion-panel
         *ngIf="isAddingScenarioEvent"
@@ -220,12 +221,14 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
           let item of sortedScenarioEvents;
           trackBy: trackByFn
         "
-        [expanded]="isExpandedScenarioEvent(item.id)"
-        (click)="selectScenarioEvent(item.id)"
+        [expanded]="expandedScenarioEventId === item.id"
+        [disabled]="noExpansionChangeAllowed()"
         [style]="getRowStyle(item)"
+        id="{{ item.id }}"
       >
         <mat-expansion-panel-header
           class="mat-row"
+          (click)="selectScenarioEvent(item.id); $event.stopPropagation();"
         >
           <div class="mat-cell flex-row-cell two-cell">
             <button
@@ -312,7 +315,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
             <mat-select
               *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, item.id).owner"
               (click)="$event.stopPropagation()"
-              (valueChange)="saveScenarioEvent(item, 'From Org', $event)"
+              (valueChange)="saveScenarioEventValue(item, 'From Org', $event)"
               class="header-dropdown"
               placeholder="None"
               [(ngModel)]="getDataValue(item, 'From Org').value"
@@ -352,214 +355,52 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
           <div class="mat-cell four-cell center-self">{{ getDataValue(item, 'Description').value }}</div>
         </mat-expansion-panel-header>
         <ng-template matExpansionPanelContent>
-          <div class="full-width" (click)="$event.stopPropagation();">
-            <span class="more-or-less">
-              <button
-                mat-icon-button
-                (click)="enableEditing(item); $event.stopPropagation()"
-                style="outline: none;"
-                title="Enable Editing"
-                *ngIf="isViewOnly(item) && (isContentDeveloper || msel.hasRole(loggedInUserId, item.id).editor)"
-              >
-                <mat-icon class="mdi-24px self-center" fontIcon="mdi-square-edit-outline"></mat-icon>
-              </button>
-              <button
-                mat-icon-button
-                (click)="saveUpdate(item); $event.stopPropagation()"
-                style="outline: none;"
-                title="Save Changes"
-                *ngIf="!isViewOnly(item)"
-              >
-                <mat-icon class="mdi-24px self-center" fontIcon="mdi-check"></mat-icon>
-              </button>
-              <button
-                mat-icon-button
-                (click)="resetUpdate(item); $event.stopPropagation()"
-                style="outline: none;"
-                title="Cancel Changes"
-                *ngIf="!isViewOnly(item)"
-              >
-                <mat-icon class="mdi-24px self-center" fontIcon="mdi-close"></mat-icon>
-              </button>
-            </span>
-            <span class="edit-buttons">&nbsp;</span>
-          </div>
-          <div class="scrolling-details" (click)="$event.stopPropagation()">
-            <div class="scenario-event-detail" (click)="$event.stopPropagation();">
-              <!-- Less DataFields -->
-              <div *ngFor="let df of lessDataFields" class="single-detail">
-                <!-- string input -->
-                <mat-form-field *ngIf="!df.isChosenFromList && df.dataType === dataType.String" class="full-width">
-                  <input
-                    type="text"
-                    matInput
-                    placeholder="{{ df.name }}"
-                    [(ngModel)]="getDataValue(item, df.name).value"
-                    [disabled]="isDisabled(item, df.name)"
-                  />
-                </mat-form-field>
-                <!-- Numeric input -->
-                <mat-form-field *ngIf="!df.isChosenFromList && df.dataType === dataType.Integer || df.dataType === dataType.Double" class="full-width">
-                  <input
-                    matInput
-                    placeholder="{{ df.name }}"
-                    (change)="verifyNumber(getDataValue(item, df.name))"
-                    [(ngModel)]="getDataValue(item, df.name).value"
-                    [disabled]="isDisabled(item, df.name)"
-                  />
-                </mat-form-field>
-                <!-- date input -->
-                <mat-form-field *ngIf="!df.isChosenFromList && df.dataType === dataType.DateTime" class="full-width">
-                  <mat-label class="error-text" *ngIf="notValidDateFormat(getDataValue(item, df.name).value)">Not a valid date format.  Use M/d/yyyy.</mat-label>
-                  <input
-                    type="datetime"
-                    matInput
-                    placeholder="{{ df.name }}"
-                    [(ngModel)]="getDataValue(item, df.name).value"
-                    [disabled]="isDisabled(item, df.name)"
-                  />
-                </mat-form-field>
-                <!-- html input -->
-                <div *ngIf="!df.isChosenFromList && df.dataType === dataType.Html">
-                  <div class="full-width">
-                    <div class="editor-label">
-                      {{ df.name }}
-                    </div>
-                    <div class="quill-view" *ngIf="isViewOnly(item)">
-                      <quill-view-html [content]="getDataValue(item, 'Details').value" theme="snow"></quill-view-html>&nbsp;
-                    </div>
-                    <div class="quill-edit" *ngIf="!isViewOnly(item)">
-                      <quill-editor
-                        [styles]="editorStyle"
-                        placeholder="Enter value ..."
-                        [(ngModel)]="getDataValue(item, df.name).value"
-                      >
-                      </quill-editor>
-                    </div>
-                    &nbsp;
-                  </div>
-                </div>
-                <!-- dropdown input -->
-                <mat-form-field *ngIf="df.isChosenFromList" class="full-width">
-                  <mat-label>{{ df.name }}</mat-label>
-                  <mat-select
-                    placeholder="{{ df.name }}"
-                    [(ngModel)]="getDataValue(item, df.name).value"
-                    [disabled]="isDisabled(item, df.name)"
-                  >
-                    <mat-option *ngFor="let dataOption of df.dataOptions" [value]="dataOption.optionValue">
-                      {{ dataOption.optionName }}
-                    </mat-option>
-                  </mat-select>
-                </mat-form-field>
-              </div>
-              <div class="full-width" (click)="$event.stopPropagation();">
-                <span class="more-or-less">
-                  <button mat-button title="More Fields" (click)="selectMoreScenarioEvent(item.id)" *ngIf="!isExpandedMoreScenarioEvent(item.id)">
-                    <mat-icon style="margin-bottom: 12px;" fontIcon="mdi-chevron-double-down" alt="More"></mat-icon> More Fields
-                  </button>
-                  <button mat-button title="Less Fields" (click)="selectMoreScenarioEvent(item.id)" *ngIf="isExpandedMoreScenarioEvent(item.id)">
-                    <mat-icon style="margin-bottom: 12px;" fontIcon="mdi-chevron-double-up" alt="Less"></mat-icon> Less Fields
-                  </button>
-                </span>
-                <span class="edit-buttons">&nbsp;</span>
-              </div>
-            </div>
-            <div class="scenario-event-detail" (click)="$event.stopPropagation();" *ngIf="isExpandedMoreScenarioEvent(item.id)">
-              <div class="single-detail">
-                <mat-form-field class="full-width">
-                  <input
-                    type="text"
-                    matInput
-                    placeholder="Display Order"
-                    [(ngModel)]="item.rowIndex"
-                    [disabled]="isDisabled(item, item.id + 'ri')"
-                  />
-                </mat-form-field>
-              </div>
-              <!-- More DataFields -->
-              <div *ngFor="let df of moreDataFields" class="single-detail">
-                <!-- string input -->
-                <mat-form-field *ngIf="!df.isChosenFromList && df.dataType === dataType.String" class="full-width">
-                  <input
-                    type="text"
-                    matInput
-                    placeholder="{{ df.name }}"
-                    [(ngModel)]="getDataValue(item, df.name).value"
-                    [disabled]="isDisabled(item, df.name)"
-                  />
-                </mat-form-field>
-                <!-- Numeric input -->
-                <mat-form-field *ngIf="!df.isChosenFromList && df.dataType === dataType.Integer || df.dataType === dataType.Double" class="full-width">
-                  <input
-                    matInput
-                    placeholder="{{ df.name }}"
-                    (change)="verifyNumber(getDataValue(item, df.name))"
-                    [(ngModel)]="getDataValue(item, df.name).value"
-                    [disabled]="isDisabled(item, df.name)"
-                  />
-                </mat-form-field>
-                <!-- date input -->
-                <mat-form-field *ngIf="!df.isChosenFromList && df.dataType === dataType.DateTime" class="full-width">
-                  <mat-label class="error-text" *ngIf="notValidDateFormat(getDataValue(item, df.name).value)">Not a valid date format.  Use M/d/yyyy.</mat-label>
-                  <input
-                    type="datetime"
-                    matInput
-                    placeholder="{{ df.name }}"
-                    [(ngModel)]="getDataValue(item, df.name).value"
-                    [disabled]="isDisabled(item, df.name)"
-                  />
-                </mat-form-field>
-                <!-- html input -->
-                <div *ngIf="!df.isChosenFromList && df.dataType === dataType.Html">
-                  <div class="full-width">
-                    <div class="editor-label">
-                      {{ df.name }}
-                    </div>
-                    <div class="quill-view" *ngIf="isViewOnly(item)">
-                      <quill-view-html [content]="getDataValue(item, 'Details').value" theme="snow"></quill-view-html>&nbsp;
-                    </div>
-                    <div class="quill-edit" *ngIf="!isViewOnly(item)">
-                      <quill-editor
-                        [styles]="editorStyle"
-                        placeholder="Enter value ..."
-                        [(ngModel)]="getDataValue(item, df.name).value"
-                      >
-                      </quill-editor>
-                    </div>
-                    &nbsp;
-                  </div>
-                </div>
-                <!-- dropdown input -->
-                <mat-form-field *ngIf="df.isChosenFromList" class="full-width">
-                  <mat-label>{{ df.name }}</mat-label>
-                  <mat-select
-                    placeholder="{{ df.name }}"
-                    [(ngModel)]="getDataValue(item, df.name).value"
-                    [disabled]="isDisabled(item, df.name)"
-                  >
-                    <mat-option *ngFor="let dataOption of df.dataOptions" [value]="dataOption.optionValue">
-                      {{ dataOption.optionName }}
-                    </mat-option>
-                  </mat-select>
-                </mat-form-field>
-              </div>
-              <div
-                class="single-detail"
-                *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
-              >
-                <mat-form-field class="full-width">
-                  <input
-                    type="text"
-                    matInput
-                    placeholder="Row Metadata (Height)"
-                    [(ngModel)]="item.rowMetadata"
-                    [disabled]="isDisabled(item, item.id + 'rm')"
-                  />
-                </mat-form-field>
-              </div>
-            </div>
-          </div>
+          <mat-tab-group mat-stretch-tabs
+            class="data-values-tab"
+            mat-align-tabs="start"
+            [selectedIndex]="selectedTab"
+            (selectedTabChange)="tabChange($event)">
+            <mat-tab label="Default">
+              <app-scenario-event-detail
+                [dataFields]="getFilteredDataFields('Default')"
+                [scenarioEvent]="item"
+                [canEdit]="(isContentDeveloper || msel.hasRole(loggedInUserId, item.id).editor)"
+                (saveScenarioEvent)="saveScenarioEvent(item)"
+              ></app-scenario-event-detail>
+            </mat-tab>
+            <mat-tab label="All">
+              <app-scenario-event-detail
+                [dataFields]="msel.dataFields"
+                [scenarioEvent]="item"
+                [canEdit]="(isContentDeveloper || msel.hasRole(loggedInUserId, item.id).editor)"
+                (saveScenarioEvent)="saveScenarioEvent(item)"
+              ></app-scenario-event-detail>
+            </mat-tab>
+            <mat-tab label="CITE" *ngIf="msel.useCite">
+              <app-scenario-event-detail
+                [dataFields]="getFilteredDataFields('CITE')"
+                [scenarioEvent]="item"
+                [canEdit]="(isContentDeveloper || msel.hasRole(loggedInUserId, item.id).editor)"
+                (saveScenarioEvent)="saveScenarioEvent(item)"
+              ></app-scenario-event-detail>
+            </mat-tab>
+            <mat-tab label="Gallery" *ngIf="msel.useGallery">
+              <app-scenario-event-detail
+                [dataFields]="getFilteredDataFields('Gallery')"
+                [scenarioEvent]="item"
+                [canEdit]="(isContentDeveloper || msel.hasRole(loggedInUserId, item.id).editor)"
+                (saveScenarioEvent)="saveScenarioEvent(item)"
+              ></app-scenario-event-detail>
+            </mat-tab>
+            <mat-tab label="Steamfitter" *ngIf="msel.useSteamfitter">
+              <app-scenario-event-detail
+                [dataFields]="getFilteredDataFields('Steamfitter')"
+                [scenarioEvent]="item"
+                [canEdit]="(isContentDeveloper || msel.hasRole(loggedInUserId, item.id).editor)"
+                (saveScenarioEvent)="saveScenarioEvent(item)"
+              ></app-scenario-event-detail>
+            </mat-tab>
+          </mat-tab-group>
         </ng-template>
       </mat-expansion-panel>
     </section>
