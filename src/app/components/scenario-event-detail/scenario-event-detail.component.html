@@ -1,0 +1,107 @@
+<!--
+Copyright 2022 Carnegie Mellon University. All Rights Reserved.
+ Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
+-->
+<div style="height: 100%">
+  <div class="edit-buttons">
+    <button
+      mat-icon-button
+      (click)="enableEditing(); $event.stopPropagation()"
+      style="outline: none;"
+      title="Enable Editing"
+      *ngIf="isViewOnly() && canEdit"
+    >
+      <mat-icon class="mdi-24px self-center" fontIcon="mdi-square-edit-outline"></mat-icon>
+    </button>
+    <button
+      mat-icon-button
+      (click)="saveUpdate(); $event.stopPropagation()"
+      style="outline: none;"
+      title="Save Changes"
+      *ngIf="!isViewOnly()"
+    >
+      <mat-icon class="mdi-24px self-center" fontIcon="mdi-check"></mat-icon>
+    </button>
+    <button
+      mat-icon-button
+      (click)="resetEditing(); $event.stopPropagation()"
+      style="outline: none;"
+      title="Cancel Changes"
+      *ngIf="!isViewOnly()"
+    >
+      <mat-icon class="mdi-24px self-center" fontIcon="mdi-close"></mat-icon>
+    </button>
+  </div>
+  <div class="edit-buttons">&nbsp;</div>
+  <div class="scrolling-details" (click)="$event.stopPropagation()">
+    <div class="scenario-event-detail" (click)="$event.stopPropagation();">
+      <!-- data values for each data field -->
+      <div *ngFor="let df of dataFields" class="single-detail">
+        <!-- string input -->
+        <mat-form-field *ngIf="!df.isChosenFromList && df.dataType === dataType.String" class="full-width">
+          <input
+            type="text"
+            matInput
+            placeholder="{{ df.name }}"
+            [(ngModel)]="getDataValue(df.name).value"
+            [disabled]="isDisabled(df.name)"
+          />
+        </mat-form-field>
+        <!-- Numeric input -->
+        <mat-form-field *ngIf="!df.isChosenFromList && df.dataType === dataType.Integer || df.dataType === dataType.Double" class="full-width">
+          <input
+            matInput
+            placeholder="{{ df.name }}"
+            (change)="verifyNumber(getDataValue(df.name))"
+            [(ngModel)]="getDataValue(df.name).value"
+            [disabled]="isDisabled(df.name)"
+          />
+        </mat-form-field>
+        <!-- date input -->
+        <mat-form-field *ngIf="!df.isChosenFromList && df.dataType === dataType.DateTime" class="full-width">
+          <mat-label class="error-text" *ngIf="notValidDateFormat(getDataValue(df.name).value)">Not a valid date format.  Use M/d/yyyy.</mat-label>
+          <input
+            type="datetime"
+            matInput
+            placeholder="{{ df.name }}"
+            [(ngModel)]="getDataValue(df.name).value"
+            [disabled]="isDisabled(df.name)"
+          />
+        </mat-form-field>
+        <!-- html input -->
+        <div *ngIf="!df.isChosenFromList && df.dataType === dataType.Html">
+          <div class="full-width">
+            <div class="editor-label">
+              {{ df.name }}
+            </div>
+            <div class="quill-view" *ngIf="isViewOnly()">
+              <quill-view-html [content]="getDataValue('Details').value" theme="snow"></quill-view-html>&nbsp;
+            </div>
+            <div class="quill-edit" *ngIf="!isViewOnly()">
+              <quill-editor
+                [styles]="editorStyle"
+                placeholder="Enter value ..."
+                [(ngModel)]="getDataValue(df.name).value"
+              >
+              </quill-editor>
+            </div>
+            &nbsp;
+          </div>
+        </div>
+        <!-- dropdown input -->
+        <mat-form-field *ngIf="df.isChosenFromList" class="full-width">
+          <mat-label>{{ df.name }}</mat-label>
+          <mat-select
+            placeholder="{{ df.name }}"
+            [(ngModel)]="getDataValue(df.name).value"
+            [disabled]="isDisabled(df.name)"
+          >
+            <mat-option *ngFor="let dataOption of df.dataOptions" [value]="dataOption.optionValue">
+              {{ dataOption.optionName }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </div>
+  </div>
+</div>

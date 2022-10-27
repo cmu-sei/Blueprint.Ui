@@ -72,6 +72,7 @@ import { MselRolesComponent } from './components/msel-roles/msel-roles.component
 import { MselViewComponent } from './components/msel-view/msel-view.component';
 import { OrganizationEditDialogComponent } from './components/organization-edit-dialog/organization-edit-dialog.component';
 import { OrganizationListComponent } from './components/organization-list/organization-list.component';
+import { ScenarioEventDetailComponent } from './components/scenario-event-detail/scenario-event-detail.component';
 import { ScenarioEventListComponent } from './components/scenario-event-list/scenario-event-list.component';
 import { ConfirmDialogComponent } from './components/shared/confirm-dialog/confirm-dialog.component';
 import { SystemMessageComponent } from './components/shared/system-message/system-message.component';
@@ -110,6 +111,7 @@ export function getBasePath(settingsSvc: ComnSettingsService) {
     MselViewComponent,
     OrganizationEditDialogComponent,
     OrganizationListComponent,
+    ScenarioEventDetailComponent,
     ScenarioEventListComponent,
     SystemMessageComponent,
     ConfirmDialogComponent,
