@@ -76,11 +76,17 @@ export class MselComponent implements OnDestroy {
   }
 
   tabChange(event) {
-    const section = event.tab.textLabel.toLowerCase().replace(' ', '');
-    this.router.navigate([], {
-      queryParams: { section: section },
-      queryParamsHandling: 'merge'
-    });
+    const section = event.tab.textLabel.toLowerCase().replaceAll(' ', '');
+    if (section === '<<back') {
+      this.router.navigate([], {
+        queryParams: { }
+      });
+    } else {
+      this.router.navigate([], {
+        queryParams: { section: section },
+        queryParamsHandling: 'merge'
+      });
+    }
   }
 
   ngOnDestroy() {

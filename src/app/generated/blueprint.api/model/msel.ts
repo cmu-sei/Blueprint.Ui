@@ -29,6 +29,7 @@ export interface Msel {
     createdBy?: string;
     modifiedBy?: string;
     id?: string;
+    name?: string;
     description?: string;
     status?: ItemStatus;
     useGallery?: boolean;

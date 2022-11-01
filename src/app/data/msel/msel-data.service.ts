@@ -31,6 +31,7 @@ export class MselPlus implements Msel {
   createdBy?: string;
   modifiedBy?: string;
   id?: string;
+  name?: string;
   description?: string;
   status?: ItemStatus;
   useGallery?: boolean;
@@ -285,6 +286,42 @@ export class MselDataService {
     this.mselStore.setLoading(true);
     this.mselService
       .updateMsel(msel.id, msel)
+      .pipe(
+        tap(() => {
+          this.mselStore.setLoading(false);
+        }),
+        take(1)
+      )
+      .subscribe((n) => {
+        this.updateStore(n);
+      },
+      (error) => {
+        this.mselStore.setLoading(false);
+      });
+  }
+
+  pushToGallery(mselId: string) {
+    this.mselStore.setLoading(true);
+    this.mselService
+      .pushToGallery(mselId)
+      .pipe(
+        tap(() => {
+          this.mselStore.setLoading(false);
+        }),
+        take(1)
+      )
+      .subscribe((n) => {
+        this.updateStore(n);
+      },
+      (error) => {
+        this.mselStore.setLoading(false);
+      });
+  }
+
+  pullFromGallery(mselId: string) {
+    this.mselStore.setLoading(true);
+    this.mselService
+      .pullFromGallery(mselId)
       .pipe(
         tap(() => {
           this.mselStore.setLoading(false);

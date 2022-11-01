@@ -40,6 +40,17 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
         <input
           type="text"
           matInput
+          placeholder="Name"
+          [(ngModel)]="msel.name"
+          [disabled]="!isEditEnabled"
+        />
+      </mat-form-field>
+    </div>
+    <div class="single-detail">
+      <mat-form-field class="full-width">
+        <input
+          type="text"
+          matInput
           placeholder="Description"
           [(ngModel)]="msel.description"
           [disabled]="!isEditEnabled"
@@ -52,25 +63,39 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
     <div *ngIf="!msel.isTemplate" class="single-detail">
       <mat-checkbox [disabled]="!isEditEnabled" [(ngModel)]="msel.useGallery">Integrate Gallery</mat-checkbox>
     </div>
+    <div class="sub-detail bottom-space">
+      <button
+        (click)="pushToGallery()"
+        title="push to Gallery"
+        *ngIf="!msel.galleryCollectionId"
+        [disabled]="!(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)"
+      >Push to Gallery</button>
+      <button
+        (click)="pullFromGallery()"
+        title="Remove from Gallery"
+        *ngIf="!!msel.galleryCollectionId"
+        [disabled]="!(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)"
+      >Remove from Gallery</button>
+    </div>
     <div class="sub-detail">
-      <mat-form-field *ngIf="msel.useGallery" class="full-width">
+      <mat-form-field *ngIf="msel.useGallery && msel.galleryCollectionId" class="full-width">
         <input
           type="text"
           matInput
           placeholder="Collection"
           [(ngModel)]="msel.galleryCollectionId"
-          [disabled]="!isEditEnabled"
+          disabled
         />
       </mat-form-field>
     </div>
     <div class="sub-detail">
-      <mat-form-field *ngIf="msel.useGallery" class="full-width">
+      <mat-form-field *ngIf="msel.useGallery && msel.galleryExhibitId" class="full-width">
         <input
           type="text"
           matInput
           placeholder="Exhibit"
           [(ngModel)]="msel.galleryExhibitId"
-          [disabled]="!isEditEnabled"
+          disabled
         />
       </mat-form-field>
     </div>
