@@ -370,7 +370,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
             </mat-tab>
             <mat-tab label="All">
               <app-scenario-event-detail
-                [dataFields]="msel.dataFields"
+                [dataFields]="getFilteredDataFields('')"
                 [scenarioEvent]="item"
                 [canEdit]="(isContentDeveloper || msel.hasRole(loggedInUserId, item.id).editor)"
                 (saveScenarioEvent)="saveScenarioEvent(item)"

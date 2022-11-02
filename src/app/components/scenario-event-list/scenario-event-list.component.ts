@@ -170,7 +170,7 @@ export class ScenarioEventListComponent implements OnDestroy {
       const newDataValues: DataValuePlus[] = [];
       scenarioEvent.dataValues.forEach(dataValue => {
         const newDataValue = { ...dataValue} as DataValuePlus;
-        newDataValue.valueArray = newDataValue.value.split(', ');
+        newDataValue.valueArray = newDataValue.value ? newDataValue.value.split(', ') : [];
         newDataValues.push(newDataValue);
       });
       newScenarioEvent.dataValues = newDataValues;
@@ -352,14 +352,19 @@ export class ScenarioEventListComponent implements OnDestroy {
   }
 
   getFilteredDataFields(filter: string): DataField[] {
+    let filteredList = [];
     switch (filter) {
       case 'Default':
-        return this.msel.dataFields.filter(x => !x.isInitiallyHidden);
+        filteredList = this.msel.dataFields.filter(x => !x.isInitiallyHidden);
+        break;
       case 'Gallery':
-        return this.msel.dataFields.filter(x => !!x.galleryArticleParameter);
+        filteredList = this.msel.dataFields.filter(x => !!x.galleryArticleParameter);
+        break;
       default:
-        return [];
+        filteredList = this.msel.dataFields;
     }
+    filteredList =  filteredList.sort((a, b) => +a.displayOrder < +b.displayOrder ? -1 : 1);
+    return filteredList;
   }
 
   getTeamShortName(teamId: string) {
@@ -530,7 +535,7 @@ export class ScenarioEventListComponent implements OnDestroy {
   }
 
   getRgbValues(rowMetadata: string) {
-    const parts = rowMetadata.split(',');
+    const parts = rowMetadata ? rowMetadata.split(',') : [];
     const rgbValues = parts.length >= 4 ? parts[1] + ', ' + parts[2] + ', ' + parts[3] : '';
     return rgbValues;
   }
