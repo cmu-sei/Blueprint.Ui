@@ -63,7 +63,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
     <div *ngIf="!msel.isTemplate" class="single-detail">
       <mat-checkbox [disabled]="!isEditEnabled" [(ngModel)]="msel.useGallery">Integrate Gallery</mat-checkbox>
     </div>
-    <div class="sub-detail bottom-space">
+    <div class="sub-detail bottom-space" *ngIf="msel.useGallery">
       <button
         (click)="pushToGallery()"
         title="push to Gallery"

@@ -166,6 +166,26 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
           <div class="mat-cell five-cell center-self">{{ item.description }}</div>
         </mat-expansion-panel-header>
         <ng-template matExpansionPanelContent>
+          <div *ngIf="valuesHaveBeenChanged()" (click)="$event.stopPropagation();">
+            <span class="edit-buttons">
+              <button
+                mat-icon-button
+                (click)="saveCard();"
+                style="outline: none;"
+                title="Save new card"
+              >
+                <mat-icon class="mdi-24px self-center" fontIcon="mdi-check"></mat-icon>
+              </button>
+              <button
+                mat-icon-button
+                (click)="resetCard();"
+                style="outline: none;"
+                title="Cancel new card"
+              >
+                <mat-icon class="mdi-24px self-center" fontIcon="mdi-close"></mat-icon>
+              </button>
+            </span>
+          </div>
           <div class="card-detail" (click)="$event.stopPropagation();">
             <div class="single-detail">
               <mat-form-field class="full-width">
@@ -218,25 +238,18 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
               </mat-form-field>
             </div>
           </div>
-          <div *ngIf="valuesHaveBeenChanged()" (click)="$event.stopPropagation();">
-            <span class="edit-buttons">
-              <button
-                mat-icon-button
-                (click)="saveCard();"
-                style="outline: none;"
-                title="Save new card"
-              >
-                <mat-icon class="mdi-24px self-center" fontIcon="mdi-check"></mat-icon>
-              </button>
-              <button
-                mat-icon-button
-                (click)="resetCard();"
-                style="outline: none;"
-                title="Cancel new card"
-              >
-                <mat-icon class="mdi-24px self-center" fontIcon="mdi-close"></mat-icon>
-              </button>
-            </span>
+          <div class="card-detail" (click)="$event.stopPropagation();">
+            <div class="single-detail">
+              <mat-form-field class="full-width">
+                <mat-label>Gallery Card (Populated after pushing to Gallery)</mat-label>
+                <input
+                  type="text"
+                  matInput
+                  [(ngModel)]="changedCard.galleryId"
+                  disabled
+                />
+              </mat-form-field>
+            </div>
           </div>
         </ng-template>
       </mat-expansion-panel>

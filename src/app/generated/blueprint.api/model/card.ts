@@ -27,4 +27,5 @@ export interface Card {
     description?: string;
     move?: number;
     inject?: number;
+    galleryId?: string;
 }
