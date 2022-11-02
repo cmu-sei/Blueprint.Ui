@@ -131,7 +131,9 @@ export class CardListComponent implements OnDestroy {
     const original = this.cardList.find(df => df.id === this.editingId);
     if (original) {
       isChanged = this.changedCard.move !== original.move ||
-                  this.changedCard.description !== original.description;
+      this.changedCard.inject !== original.inject ||
+      this.changedCard.name !== original.name ||
+      this.changedCard.description !== original.description;
     }
     return isChanged;
   }
