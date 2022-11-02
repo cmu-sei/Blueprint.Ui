@@ -108,7 +108,7 @@ export class MselViewComponent implements OnDestroy {
     if (!scenarioEvent || !scenarioEvent.rowMetadata) {
       return '';
     }
-    const rowMetadata = scenarioEvent.rowMetadata.split(',');
+    const rowMetadata = scenarioEvent.rowMetadata ? scenarioEvent.rowMetadata.split(',') : [];
     const color = rowMetadata.length >= 4 ? rowMetadata[1] + ', ' + rowMetadata[2] + ', ' + rowMetadata[3] : '';
     const tint = this.userTheme === 'dark-theme' ? this.darkThemeTint : this .lightThemeTint;
     const style = color ? {'background-color': 'rgba(' + color + ', ' + tint + ')'} : {};
