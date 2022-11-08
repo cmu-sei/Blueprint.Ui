@@ -49,6 +49,7 @@ export class DataFieldListComponent implements OnDestroy {
   isAddingDataField = false;
   editingId = '';
   dataOptionList: DataOption[] = [];
+  dataFieldTypes = DataFieldType.keys;
 
   private unsubscribe$ = new Subject();
   // context menu
