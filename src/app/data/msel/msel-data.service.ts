@@ -51,6 +51,7 @@ export class MselPlus implements Msel {
   headerRowMetadata?: string;
   cards?: Array<Card>;
   galleryArticleParameters?: Array<string>;
+  gallerySourceTypes?: Array<string>;
 
   hasRole(userId: string, scenarioEventId: string) {
     const mselRole = { owner: false, approver: false, editor: false };

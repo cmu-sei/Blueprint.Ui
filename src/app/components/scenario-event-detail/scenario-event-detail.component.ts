@@ -41,6 +41,7 @@ export class ScenarioEventDetailComponent implements OnDestroy {
   @Input() dataFields: DataField[];
   @Input() organizationList: string[];
   @Input() cardList: Card[];
+  @Input() gallerySourceTypes: string[];
   @Input() canEdit: boolean;
   @Output() saveScenarioEvent = new EventEmitter<any>();
   sort: Sort = {active: '', direction: ''};

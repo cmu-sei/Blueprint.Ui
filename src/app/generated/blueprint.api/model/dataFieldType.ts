@@ -16,7 +16,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
  */
 
 
-export type DataFieldType = 'String' | 'Integer' | 'Double' | 'Boolean' | 'DateTime' | 'Html' | 'Organization' | 'Card';
+export type DataFieldType = 'String' | 'Integer' | 'Double' | 'Boolean' | 'DateTime' | 'Html' | 'Organization' | 'Card' | 'SourceType';
 
 export const DataFieldType = {
     String: 'String' as DataFieldType,
@@ -27,5 +27,6 @@ export const DataFieldType = {
     Html: 'Html' as DataFieldType,
     Organization: 'Organization' as DataFieldType,
     Card: 'Card' as DataFieldType,
-    keys: ['Card', 'Boolean', 'DateTime', 'Double', 'Html', 'Integer', 'Organization', 'String']
+    SourceType: 'SourceType' as DataFieldType,
+    keys: ['Card', 'Boolean', 'DateTime', 'Double', 'Html', 'Integer', 'Organization', 'SourceType', 'String']
 };
