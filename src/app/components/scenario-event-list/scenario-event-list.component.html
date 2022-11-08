@@ -321,11 +321,8 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
               [(ngModel)]="getDataValue(item, 'From Org').value"
             >
               <mat-option value="">None</mat-option>
-              <mat-option *ngFor="let org of organizationList" [value]="org.name">
-                {{ org.name }}
-              </mat-option>
-              <mat-option *ngFor="let team of msel.teams" [value]="team.shortName">
-                {{ team.shortName }}
+              <mat-option *ngFor="let org of getSortedOrganizationOptions()" [value]="org">
+                {{ org }}
               </mat-option>
             </mat-select>
             <span *ngIf="!isContentDeveloper && !msel.hasRole(loggedInUserId, item.id).owner">{{ getDataValue(item, 'From Org').value }}</span>
@@ -343,11 +340,8 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
             >
               <mat-option value="ALL">ALL</mat-option>
               <mat-option value="">None</mat-option>
-              <mat-option *ngFor="let org of organizationList" [value]="org.name">
-                {{ org.name }}
-              </mat-option>
-              <mat-option *ngFor="let team of msel.teams" [value]="team.shortName">
-                {{ team.shortName }}
+              <mat-option *ngFor="let org of getSortedOrganizationOptions()" [value]="org">
+                {{ org }}
               </mat-option>
             </mat-select>
             <span *ngIf="!isContentDeveloper && !msel.hasRole(loggedInUserId, item.id).owner">{{ getDataValue(item, 'To Org').value }}</span>
@@ -364,6 +358,8 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
               <app-scenario-event-detail
                 [dataFields]="getFilteredDataFields('Default')"
                 [scenarioEvent]="item"
+                [organizationList]="getSortedOrganizationOptions()"
+                [cardList]="msel.cards"
                 [canEdit]="(isContentDeveloper || msel.hasRole(loggedInUserId, item.id).editor)"
                 (saveScenarioEvent)="saveScenarioEvent(item)"
               ></app-scenario-event-detail>
@@ -372,6 +368,8 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
               <app-scenario-event-detail
                 [dataFields]="getFilteredDataFields('')"
                 [scenarioEvent]="item"
+                [organizationList]="getSortedOrganizationOptions()"
+                [cardList]="msel.cards"
                 [canEdit]="(isContentDeveloper || msel.hasRole(loggedInUserId, item.id).editor)"
                 (saveScenarioEvent)="saveScenarioEvent(item)"
               ></app-scenario-event-detail>
@@ -380,6 +378,8 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
               <app-scenario-event-detail
                 [dataFields]="getFilteredDataFields('CITE')"
                 [scenarioEvent]="item"
+                [organizationList]="getSortedOrganizationOptions()"
+                [cardList]="msel.cards"
                 [canEdit]="(isContentDeveloper || msel.hasRole(loggedInUserId, item.id).editor)"
                 (saveScenarioEvent)="saveScenarioEvent(item)"
               ></app-scenario-event-detail>
@@ -388,6 +388,8 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
               <app-scenario-event-detail
                 [dataFields]="getFilteredDataFields('Gallery')"
                 [scenarioEvent]="item"
+                [organizationList]="getSortedOrganizationOptions()"
+                [cardList]="msel.cards"
                 [canEdit]="(isContentDeveloper || msel.hasRole(loggedInUserId, item.id).editor)"
                 (saveScenarioEvent)="saveScenarioEvent(item)"
               ></app-scenario-event-detail>
@@ -396,6 +398,8 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
               <app-scenario-event-detail
                 [dataFields]="getFilteredDataFields('Steamfitter')"
                 [scenarioEvent]="item"
+                [organizationList]="getSortedOrganizationOptions()"
+                [cardList]="msel.cards"
                 [canEdit]="(isContentDeveloper || msel.hasRole(loggedInUserId, item.id).editor)"
                 (saveScenarioEvent)="saveScenarioEvent(item)"
               ></app-scenario-event-detail>

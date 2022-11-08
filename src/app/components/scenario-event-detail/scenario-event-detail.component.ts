@@ -13,11 +13,10 @@ import { UserDataService } from 'src/app/data/user/user-data.service';
 import {
   DataField,
   DataFieldType,
-  DataValue,
+  Card,
   ItemStatus,
   MselRole,
   Organization,
-  ScenarioEvent,
   Team
 } from 'src/app/generated/blueprint.api';
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
@@ -40,6 +39,8 @@ import { v4 as uuidv4 } from 'uuid';
 export class ScenarioEventDetailComponent implements OnDestroy {
   @Input() scenarioEvent: ScenarioEventPlus;
   @Input() dataFields: DataField[];
+  @Input() organizationList: string[];
+  @Input() cardList: Card[];
   @Input() canEdit: boolean;
   @Output() saveScenarioEvent = new EventEmitter<any>();
   sort: Sort = {active: '', direction: ''};
@@ -58,7 +59,6 @@ export class ScenarioEventDetailComponent implements OnDestroy {
   dateFormControls = new Map<string, FormControl>();
   itemStatus: ItemStatus[] = [ItemStatus.Pending, ItemStatus.Entered, ItemStatus.Approved, ItemStatus.Complete];
   mselRole = { Owner: MselRole.Owner, Approver: MselRole.Approver, Editor: MselRole.Editor};
-  organizationList: Organization[] = [];
   toOrgList: string[] = [];
   sortedMselTeams: Team[] = [];
   blankDataValue = {
@@ -72,6 +72,7 @@ export class ScenarioEventDetailComponent implements OnDestroy {
   scenarioEventBackgroundColors: Array<string>;
   darkThemeTint = this.settingsService.settings.DarkThemeTint ? this.settingsService.settings.DarkThemeTint : 0.7;
   lightThemeTint = this.settingsService.settings.LightThemeTint ? this.settingsService.settings.LightThemeTint : 0.4;
+  dataFieldTypes = DataFieldType.keys;
 
   constructor(
     private userDataService: UserDataService,

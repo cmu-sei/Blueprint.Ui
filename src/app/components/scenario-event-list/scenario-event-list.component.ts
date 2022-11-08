@@ -70,8 +70,6 @@ export class ScenarioEventListComponent implements OnDestroy {
   itemStatus: ItemStatus[] = [ItemStatus.Pending, ItemStatus.Entered, ItemStatus.Approved, ItemStatus.Complete];
   mselRole = { Owner: MselRole.Owner, Approver: MselRole.Approver, Editor: MselRole.Editor};
   organizationList: Organization[] = [];
-  toOrgList: string[] = [];
-  sortedMselTeams: Team[] = [];
   blankDataValue = {
     id: '',
     value: '',
@@ -220,6 +218,18 @@ export class ScenarioEventListComponent implements OnDestroy {
 
   trackByFn(index, item) {
     return item.id;
+  }
+
+  getSortedOrganizationOptions() {
+    let orgs: string[] = [];
+    this.organizationList.forEach(o => {
+      orgs.push(o.name);
+    });
+    this.msel.teams.forEach(t => {
+      orgs.push(t.shortName);
+    });
+    orgs = orgs.sort((a, b) => a < b ? -1 : 1);
+    return orgs;
   }
 
   selectScenarioEvent(id: string) {

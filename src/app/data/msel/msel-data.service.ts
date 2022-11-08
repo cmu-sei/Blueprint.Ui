@@ -8,6 +8,7 @@ import { FormControl } from '@angular/forms';
 import { PageEvent } from '@angular/material/paginator';
 import { Router, ActivatedRoute } from '@angular/router';
 import {
+  Card,
   DataField,
   DataValue,
   ItemStatus,
@@ -48,6 +49,7 @@ export class MselPlus implements Msel {
   teams?: Array<Team>;
   userMselRoles?: Array<UserMselRole>;
   headerRowMetadata?: string;
+  cards?: Array<Card>;
   galleryArticleParameters?: Array<string>;
 
   hasRole(userId: string, scenarioEventId: string) {
