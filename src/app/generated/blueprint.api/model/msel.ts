@@ -48,4 +48,5 @@ export interface Msel {
     headerRowMetadata?: string;
     cards?: Array<Card>;
     galleryArticleParameters?: Array<string>;
+    gallerySourceTypes?: Array<string>;
 }

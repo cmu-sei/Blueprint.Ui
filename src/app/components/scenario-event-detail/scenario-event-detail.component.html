@@ -112,6 +112,18 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
             <mat-option *ngFor="let card of cardList" [value]="card.id">{{ card.name }}</mat-option>
           </mat-select>
         </mat-form-field>
+        <!-- SourceType input -->
+        <mat-form-field *ngIf="!df.isChosenFromList && df.dataType === dataType.SourceType" class="full-width">
+          <mat-label>{{ df.name }}</mat-label>
+          <mat-select
+            placeholder="{{ df.name }}"
+            [(ngModel)]="getDataValue(df.name).value"
+            [disabled]="isDisabled(df.name)"
+          >
+            <mat-option value="''"> </mat-option>
+            <mat-option *ngFor="let sourceType of gallerySourceTypes" [value]="sourceType">{{ sourceType }}</mat-option>
+          </mat-select>
+        </mat-form-field>
         <!-- dropdown input -->
         <mat-form-field *ngIf="df.isChosenFromList" class="full-width">
           <mat-label>{{ df.name }}</mat-label>
