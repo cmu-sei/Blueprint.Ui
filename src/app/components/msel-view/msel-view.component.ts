@@ -104,11 +104,6 @@ export class MselViewComponent implements OnDestroy {
     return dataValue && dataValue.value != null ? dataValue.value : ' ';
   }
 
-  moreToShow(scenarioEvent: ScenarioEvent, columnName: string): boolean {
-    const details = this.getScenarioEventValue(scenarioEvent, columnName);
-    return details ? details.length > 400 : false;
-  }
-
   getRowStyle(scenarioEvent: ScenarioEvent) {
     if (!scenarioEvent || !scenarioEvent.rowMetadata) {
       return '';
