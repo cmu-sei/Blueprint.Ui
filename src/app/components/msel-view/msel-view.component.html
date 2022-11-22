@@ -29,7 +29,9 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
           <div class="mat-cell one-cell center-self">{{ getScenarioEventValue(item, 'fromorg') }}</div>
           <div class="mat-cell one-cell center-self">{{ getScenarioEventValue(item, 'toorg') }}</div>
           <div class="mat-cell two-cell center-self">{{ getScenarioEventValue(item, 'description') }}</div>
-          <div class="mat-cell four-cell wrap-me">{{ getScenarioEventValue(item, 'details').substr(0, 400) }} <span *ngIf="moreToShow(item, 'details')"> ... </span></div>
+          <div class="mat-cell four-cell detail-cell">
+            <quill-view-html [content]="getScenarioEventValue(item, 'details')" theme="snow"></quill-view-html>
+          </div>
         </mat-expansion-panel-header>
       </mat-expansion-panel>
     </section>
