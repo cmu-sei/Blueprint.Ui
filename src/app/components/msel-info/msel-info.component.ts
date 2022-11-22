@@ -1,13 +1,13 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
 import { Component, Input, OnDestroy, ViewChild } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { TeamQuery } from 'src/app/data/team/team.query';
 import { UserDataService } from 'src/app/data/user/user-data.service';
 import {
   DataField,
+  ItemStatus,
   ScenarioEvent,
   Team,
   User
@@ -37,6 +37,7 @@ export class MselInfoComponent implements OnDestroy {
   isEditEnabled = false;
   userList: User[] = [];
   teamList: Team[] = [];
+  itemStatus: ItemStatus[] = [ItemStatus.Pending, ItemStatus.Entered, ItemStatus.Approved, ItemStatus.Complete];
 
   constructor(
     private teamQuery: TeamQuery,

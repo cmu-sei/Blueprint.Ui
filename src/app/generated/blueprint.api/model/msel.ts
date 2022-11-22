@@ -32,6 +32,7 @@ export interface Msel {
     name?: string;
     description?: string;
     status?: ItemStatus;
+    playerViewId?: string;
     useGallery?: boolean;
     galleryCollectionId?: string;
     galleryExhibitId?: string;
