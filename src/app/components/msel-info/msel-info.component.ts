@@ -10,12 +10,14 @@ import {
   ItemStatus,
   ScenarioEvent,
   Team,
-  User
+  User,
+  PlayerApiClientView
 } from 'src/app/generated/blueprint.api';
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { MatMenuTrigger } from '@angular/material/menu';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
+import { PlayerService } from 'src/app/generated/blueprint.api';
 
 @Component({
   selector: 'app-msel-info',
@@ -37,6 +39,7 @@ export class MselInfoComponent implements OnDestroy {
   isEditEnabled = false;
   userList: User[] = [];
   teamList: Team[] = [];
+  viewList: PlayerApiClientView[] = [];
   itemStatus: ItemStatus[] = [ItemStatus.Pending, ItemStatus.Entered, ItemStatus.Approved, ItemStatus.Complete];
 
   constructor(
@@ -44,7 +47,8 @@ export class MselInfoComponent implements OnDestroy {
     private userDataService: UserDataService,
     private mselDataService: MselDataService,
     private mselQuery: MselQuery,
-    public dialogService: DialogService
+    public dialogService: DialogService,
+    private playerService: PlayerService
   ) {
     // subscribe to the active MSEL
     (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
@@ -61,6 +65,9 @@ export class MselInfoComponent implements OnDestroy {
     // subscribe to teams
     this.teamQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(teams => {
       this.teamList = teams;
+    });
+    this.playerService.getViews().subscribe(views => {
+      this.viewList = views;
     });
   }
 
@@ -88,6 +95,10 @@ export class MselInfoComponent implements OnDestroy {
   cancelChanges() {
     this.isEditEnabled = false;
     Object.assign(this.msel, this.originalMsel);
+  }
+
+  addViewTeamsToMsel() {
+    this.playerService.addViewTeamsToMsel(this.msel.id).subscribe();
   }
 
   pushToGallery() {

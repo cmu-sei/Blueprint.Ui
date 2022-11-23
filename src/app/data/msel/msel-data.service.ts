@@ -35,6 +35,7 @@ export class MselPlus implements Msel {
   name?: string;
   description?: string;
   status?: ItemStatus;
+  playerViewId?: string;
   useGallery?: boolean;
   galleryCollectionId?: string;
   galleryExhibitId?: string;
@@ -42,7 +43,7 @@ export class MselPlus implements Msel {
   citeEvaluationId?: string;
   useSteamfitter?: boolean;
   steamfitterScenarioId?: string;
-  isTemplate?: boolean;
+isTemplate?: boolean;
   moves?: Array<Move>;
   dataFields?: Array<DataField>;
   scenarioEvents?: Array<ScenarioEvent>;
