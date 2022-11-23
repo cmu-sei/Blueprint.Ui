@@ -1,27 +1,20 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
 import { Component, Input, OnDestroy, ViewChild } from '@angular/core';
-import { MatSidenav } from '@angular/material/sidenav';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, Observable, BehaviorSubject } from 'rxjs';
 import { take, takeUntil } from 'rxjs/operators';
 import {
   ComnSettingsService,
   Theme,
-  ComnAuthQuery,
 } from '@cmusei/crucible-common';
-import { UserDataService } from 'src/app/data/user/user-data.service';
-import { TopbarView } from './../shared/top-bar/topbar.models';
 import {
-  ItemStatus,
   DataField,
   Msel,
   ScenarioEvent
 } from 'src/app/generated/blueprint.api';
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
-import { MoveDataService } from 'src/app/data/move/move-data.service';
-import { Sort } from '@angular/material/sort';
 import { MatMenuTrigger } from '@angular/material/menu';
 
 @Component({
@@ -46,15 +39,18 @@ export class MselViewComponent implements OnDestroy {
   lightThemeTint = this.settingsService.settings.LightThemeTint ? this.settingsService.settings.LightThemeTint : 0.4;
 
   constructor(
-    activatedRoute: ActivatedRoute,
-    private router: Router,
-    private userDataService: UserDataService,
+    private activatedRoute: ActivatedRoute,
     private settingsService: ComnSettingsService,
-    private authQuery: ComnAuthQuery,
-    private moveDataService: MoveDataService,
     private mselDataService: MselDataService,
     private mselQuery: MselQuery
   ) {
+    this.activatedRoute.params.pipe(takeUntil(this.unsubscribe$)).subscribe(params => {
+      const mselId = params['mselid'];
+      if (mselId) {
+        this.mselDataService.loadById(mselId);
+        this.mselDataService.setActive(mselId);
+      }
+    });
     // subscribe to the active MSEL
     (this.mselQuery.selectActive() as Observable<Msel>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
       if (msel) {
