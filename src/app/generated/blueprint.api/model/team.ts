@@ -26,6 +26,7 @@ export interface Team {
     id?: string;
     name?: string;
     shortName?: string;
+    isParticipantTeam?: boolean;
     users?: Array<User>;
     msels?: Array<Msel>;
 }
