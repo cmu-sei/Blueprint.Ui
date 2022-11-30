@@ -5,6 +5,8 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 
 export * from './card.service';
 import { CardService } from './card.service';
+export * from './cardTeam.service';
+import { CardTeamService } from './cardTeam.service';
 export * from './dataField.service';
 import { DataFieldService } from './dataField.service';
 export * from './dataOption.service';
@@ -35,4 +37,4 @@ export * from './userMselRole.service';
 import { UserMselRoleService } from './userMselRole.service';
 export * from './userPermission.service';
 import { UserPermissionService } from './userPermission.service';
-export const APIS = [CardService, DataFieldService, DataOptionService, DataValueService, HealthCheckService, MoveService, MselService, OrganizationService, PermissionService, PlayerService, ScenarioEventService, TeamService, TeamUserService, UserService, UserMselRoleService, UserPermissionService];
+export const APIS = [CardService, CardTeamService, DataFieldService, DataOptionService, DataValueService, HealthCheckService, MoveService, MselService, OrganizationService, PermissionService, PlayerService, ScenarioEventService, TeamService, TeamUserService, UserService, UserMselRoleService, UserPermissionService];

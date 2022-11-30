@@ -1,0 +1,118 @@
+<!--
+Copyright 2022 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
+-->
+
+<div class="enchilada">
+  <div class="team-list-container mat-elevation-z8">
+    <div class="sp-icon">
+      <div>
+        <img height="35" src="./assets/svg-icons/account-multiple.svg" alt="Teams" />
+        All Teams
+      </div>
+      <div class="search-div">
+        <div>
+          <mat-form-field style="width: 80%; margin-left:15%;">
+            <input
+              matInput
+              [(ngModel)]="filterString"
+              (keyup)="applyFilter($event.target.value)"
+              placeholder="Search"
+            />
+          </mat-form-field>
+        </div>
+        <div>
+          <button
+            *ngIf="filterString != ''"
+            fxLayoutAlign="start center"
+            mat-icon-button
+            (click)="clearFilter()"
+            style="outline: none;"
+            title="Clear Search"
+          >
+            <mat-icon
+              style="transform: scale(0.85);"
+              fontIcon="mdi-close-circle-outline"
+            ></mat-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+    <hr />
+
+    <mat-table
+      class="mat-table-all-teams"
+      #table
+      [dataSource]="teamDataSource"
+      matSort
+    >
+      <ng-container matColumnDef="name">
+        <mat-cell *matCellDef="let element">
+          <div *ngIf="element.name !== null">{{ element.name }}</div>
+          <div *ngIf="element.name === null">{{ element.id }}</div>
+        </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="id">
+        <mat-cell *matCellDef="let element">
+          <div>
+            <button mat-stroked-button (click)="addTeamToCard(element)">
+              Add Team
+            </button>
+          </div>
+        </mat-cell>
+      </ng-container>
+
+      <mat-row *matRowDef="let row; columns: displayedTeamColumns"></mat-row>
+    </mat-table>
+
+    <div *ngIf="teamDataSource.filteredData.length === 0">No results found</div>
+  </div>
+
+  <div class="card-list-container mat-elevation-z8">
+    <div class="sp-icon">
+      <img
+        height="35"
+        src="./assets/svg-icons/account-group.svg"
+        alt="Teams"
+      />
+      Card Teams
+    </div>
+    <hr />
+
+    <mat-card
+      *ngIf="false"
+      style="display: flex; justify-content: center; align-items: center;"
+    >
+      <mat-progress-spinner color="primary" mode="indeterminate">
+      </mat-progress-spinner>
+    </mat-card>
+
+    <mat-table
+      class="mat-table-card-teams"
+      #table
+      [dataSource]="cardTeamDataSource"
+      matSort
+    >
+      <ng-container matColumnDef="name">
+        <mat-cell *matCellDef="let element">
+          <div *ngIf="element.name !== null">{{ element.name }}</div>
+          <div *ngIf="element.name === null">{{ element.id }}</div>
+        </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="id">
+        <mat-cell *matCellDef="let element">
+          <div>
+            <button mat-stroked-button (click)="removeTeamFromCard(element)">
+              Remove
+            </button>
+          </div>
+        </mat-cell>
+      </ng-container>
+
+      <mat-row *matRowDef="let row; columns: displayedTeamColumns"></mat-row>
+    </mat-table>
+
+  </div>
+</div>

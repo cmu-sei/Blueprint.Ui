@@ -240,15 +240,10 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
           </div>
           <div class="card-detail" (click)="$event.stopPropagation();">
             <div class="single-detail">
-              <mat-form-field class="full-width">
-                <mat-label>Gallery Card (Populated after pushing to Gallery)</mat-label>
-                <input
-                  type="text"
-                  matInput
-                  [(ngModel)]="changedCard.galleryId"
-                  disabled
-                />
-              </mat-form-field>
+              <app-card-teams
+                [cardId]="changedCard.id"
+                [teamList]="teamList">
+              </app-card-teams>
             </div>
           </div>
         </ng-template>

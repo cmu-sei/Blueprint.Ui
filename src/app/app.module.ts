@@ -61,6 +61,7 @@ import { AdminTeamEditDialogComponent } from './components/admin/admin-team-edit
 import { AdminTeamUsersComponent } from './components/admin/admin-team-users/admin-team-users.component';
 import { AdminUsersComponent } from './components/admin/admin-users/admin-users.component';
 import { CardListComponent } from './components/card-list/card-list.component';
+import { CardTeamsComponent } from './components/card-teams/card-teams.component';
 import { DataFieldListComponent } from './components/data-field-list/data-field-list.component';
 import { DataOptionEditDialogComponent } from './components/data-option-edit-dialog/data-option-edit-dialog.component';
 import { HomeAppComponent } from './components/home-app/home-app.component';
@@ -100,6 +101,7 @@ export function getBasePath(settingsSvc: ComnSettingsService) {
   declarations: [
     AppComponent,
     CardListComponent,
+    CardTeamsComponent,
     DataFieldListComponent,
     DataOptionEditDialogComponent,
     HomeAppComponent,

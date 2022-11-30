@@ -2,20 +2,13 @@
 // Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
 import { Component, Input, OnDestroy, ViewChild } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
-import { Subject, Observable, BehaviorSubject } from 'rxjs';
-import { take, takeUntil } from 'rxjs/operators';
+import { Subject, Observable } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import {
-  ComnSettingsService,
-  Theme,
-  ComnAuthQuery,
-} from '@cmusei/crucible-common';
-import { UserDataService } from 'src/app/data/user/user-data.service';
-import {
-  Msel,
-  Card
+  Card,
+  Team
 } from 'src/app/generated/blueprint.api';
-import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
+import { MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { Sort } from '@angular/material/sort';
 import { MatMenuTrigger } from '@angular/material/menu';
@@ -33,6 +26,7 @@ import { v4 as uuidv4 } from 'uuid';
 export class CardListComponent implements OnDestroy {
   @Input() loggedInUserId: string;
   @Input() isContentDeveloper: boolean;
+  @Input() teamList: Team[];
   msel = new MselPlus();
   cardList: Card[] = [];
   changedCard: Card = {};
@@ -50,12 +44,6 @@ export class CardListComponent implements OnDestroy {
   contextMenuPosition = { x: '0px', y: '0px' };
 
   constructor(
-    activatedRoute: ActivatedRoute,
-    private router: Router,
-    private userDataService: UserDataService,
-    private settingsService: ComnSettingsService,
-    private authQuery: ComnAuthQuery,
-    private mselDataService: MselDataService,
     private mselQuery: MselQuery,
     private cardDataService: CardDataService,
     private cardQuery: CardQuery,
