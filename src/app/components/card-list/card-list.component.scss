@@ -58,6 +58,14 @@
   align-items: center;
 }
 
+.team-label {
+  display: flex;
+  flex-flow: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  text-align: left;
+}
+
 .data-options {
   display: flex;
   flex: 7;

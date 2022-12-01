@@ -240,10 +240,13 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
           </div>
           <div class="card-detail" (click)="$event.stopPropagation();">
             <div class="single-detail">
-              <app-card-teams
-                [cardId]="changedCard.id"
-                [teamList]="teamList">
-              </app-card-teams>
+              <div class="team-label">
+                <h4>Select Teams</h4>
+                <app-card-teams
+                  [cardId]="changedCard.id"
+                  [teamList]="msel.teams">
+                </app-card-teams>
+              </div>
             </div>
           </div>
         </ng-template>

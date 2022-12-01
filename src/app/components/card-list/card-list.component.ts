@@ -14,6 +14,7 @@ import { Sort } from '@angular/material/sort';
 import { MatMenuTrigger } from '@angular/material/menu';
 import { CardDataService } from 'src/app/data/card/card-data.service';
 import { CardQuery } from 'src/app/data/card/card.query';
+import { CardTeamDataService } from 'src/app/data/team/card-team-data.service';
 import { MatDialog } from '@angular/material/dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { v4 as uuidv4 } from 'uuid';
@@ -26,7 +27,6 @@ import { v4 as uuidv4 } from 'uuid';
 export class CardListComponent implements OnDestroy {
   @Input() loggedInUserId: string;
   @Input() isContentDeveloper: boolean;
-  @Input() teamList: Team[];
   msel = new MselPlus();
   cardList: Card[] = [];
   changedCard: Card = {};
@@ -47,6 +47,7 @@ export class CardListComponent implements OnDestroy {
     private mselQuery: MselQuery,
     private cardDataService: CardDataService,
     private cardQuery: CardQuery,
+    private cardTeamDataService: CardTeamDataService,
     public dialog: MatDialog,
     public dialogService: DialogService
   ) {
@@ -60,6 +61,7 @@ export class CardListComponent implements OnDestroy {
       if (msel) {
         Object.assign(this.msel, msel);
         this.cardDataService.loadByMsel(msel.id);
+        this.cardTeamDataService.getCardTeamsFromApi(msel.id);
       }
     });
     this.filterControl.valueChanges

@@ -61,7 +61,6 @@ export class CardTeamsComponent implements OnDestroy, OnInit {
       });
       this.setDataSources(teams);
     });
-    this.cardTeamDataService.getCardTeamsFromApi(this.cardId);
   }
 
   applyFilter(filterValue: string) {
