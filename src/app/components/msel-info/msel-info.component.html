@@ -40,6 +40,17 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
         <input
           type="text"
           matInput
+          placeholder="Name"
+          [(ngModel)]="msel.name"
+          [disabled]="!isEditEnabled"
+        />
+      </mat-form-field>
+    </div>
+    <div class="single-detail">
+      <mat-form-field class="full-width">
+        <input
+          type="text"
+          matInput
           placeholder="Description"
           [(ngModel)]="msel.description"
           [disabled]="!isEditEnabled"
@@ -47,27 +58,111 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
       </mat-form-field>
     </div>
     <div class="single-detail">
-      <mat-form-field class="full-width">
+      <mat-checkbox [disabled]="!isEditEnabled" [(ngModel)]="msel.isTemplate">Is a Template</mat-checkbox>
+    </div>
+    <div *ngIf="!msel.isTemplate" class="single-detail top-margin">
+      <mat-form-field class="half-width">
+        <mat-label>Link Player View</mat-label>
+        <mat-select
+          [(ngModel)]="msel.playerViewId"
+          [disabled]="!isEditEnabled"
+        >
+        <mat-option [value]=""></mat-option>
+        <mat-option *ngFor="let view of viewList" [value]="view.id">
+            {{ view.name }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+      <button
+        class="half-button"
+        (click)="addViewTeamsToMsel()"
+        title="Add Player Teams"
+        *ngIf="msel.playerViewId"
+        [disabled]="!(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)"
+      >Add View Teams</button>
+    </div>
+    <div *ngIf="!msel.isTemplate" class="single-detail">
+      <mat-checkbox [disabled]="!isEditEnabled" [(ngModel)]="msel.useGallery">Integrate Gallery</mat-checkbox>
+    </div>
+    <div class="sub-detail bottom-space" *ngIf="msel.useGallery">
+      <button
+        (click)="pushToGallery()"
+        title="push to Gallery"
+        *ngIf="!msel.galleryCollectionId"
+        [disabled]="!(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)"
+      >Push to Gallery</button>
+      <button
+        (click)="pullFromGallery()"
+        title="Remove from Gallery"
+        *ngIf="!!msel.galleryCollectionId"
+        [disabled]="!(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)"
+      >Remove from Gallery</button>
+    </div>
+    <div class="sub-detail">
+      <mat-form-field *ngIf="msel.useGallery && msel.galleryCollectionId" class="full-width">
         <input
           type="text"
           matInput
-          placeholder="Template"
-          [(ngModel)]="msel.isTemplate"
+          placeholder="Collection"
+          [(ngModel)]="msel.galleryCollectionId"
+          disabled
+        />
+      </mat-form-field>
+    </div>
+    <div class="sub-detail">
+      <mat-form-field *ngIf="msel.useGallery && msel.galleryExhibitId" class="full-width">
+        <input
+          type="text"
+          matInput
+          placeholder="Exhibit"
+          [(ngModel)]="msel.galleryExhibitId"
+          disabled
+        />
+      </mat-form-field>
+    </div>
+    <div *ngIf="!msel.isTemplate" class="single-detail">
+      <mat-checkbox [disabled]="!isEditEnabled" [(ngModel)]="msel.useCite">Integrate CITE</mat-checkbox>
+    </div>
+    <div class="sub-detail">
+      <mat-form-field *ngIf="msel.useCite" class="full-width">
+        <input
+          type="text"
+          matInput
+          placeholder="Evaluation"
+          [(ngModel)]="msel.citeEvaluationId"
           [disabled]="!isEditEnabled"
         />
       </mat-form-field>
     </div>
-    <div class="single-detail">
-      <mat-form-field class="full-width">
+    <div *ngIf="!msel.isTemplate" class="single-detail">
+      <mat-checkbox [disabled]="!isEditEnabled" [(ngModel)]="msel.useSteamfitter">Integrate Steamfitter</mat-checkbox>
+    </div>
+    <div class="sub-detail">
+      <mat-form-field *ngIf="msel.useSteamfitter" class="full-width">
         <input
           type="text"
           matInput
-          placeholder="Status"
+          placeholder="Scenario"
+          [(ngModel)]="msel.steamfitterScenarioId"
+          [disabled]="!isEditEnabled"
+        />
+      </mat-form-field>
+    </div>
+
+    <div class="single-detail top-margin">
+      <mat-form-field class="full-width">
+        <mat-label>MSEL Status</mat-label>
+        <mat-select
           [(ngModel)]="msel.status"
           [disabled]="!isEditEnabled"
-        />
+        >
+          <mat-option *ngFor="let item of itemStatus" [value]="item">
+            {{ item }}
+          </mat-option>
+        </mat-select>
       </mat-form-field>
     </div>
+
     <div
       class="single-detail"
       *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"

@@ -14,19 +14,18 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-import { Msel } from './msel';
-import { User } from './user';
 
 
-export interface Team {
+export interface Card {
     dateCreated?: Date;
     dateModified?: Date;
     createdBy?: string;
     modifiedBy?: string;
     id?: string;
+    mselId?: string;
     name?: string;
-    shortName?: string;
-    isParticipantTeam?: boolean;
-    users?: Array<User>;
-    msels?: Array<Msel>;
+    description?: string;
+    move?: number;
+    inject?: number;
+    galleryId?: string;
 }

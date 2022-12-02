@@ -70,7 +70,7 @@
 .single-detail {
   display: flex;
   flex-direction: column;
-  width: 60%;
+  width: 80%;
 }
 
 .more-or-less {
@@ -78,15 +78,9 @@
 }
 
 .edit-buttons {
-  padding-left: 30%;
-}
-
-.data-values-tab {
-  margin-left: 40px;
-}
-
-.data-values-tab-header {
-  height: 30px;
+  display: flex;
+  flex-flow: row;
+  padding-left: 5%;
 }
 
 .full-width {

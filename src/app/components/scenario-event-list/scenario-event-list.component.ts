@@ -12,7 +12,6 @@ import {
   ComnAuthQuery,
 } from '@cmusei/crucible-common';
 import { UserDataService } from 'src/app/data/user/user-data.service';
-import { TopbarView } from './../shared/top-bar/topbar.models';
 import {
   DataField,
   DataFieldType,
@@ -31,10 +30,9 @@ import { MatMenuTrigger } from '@angular/material/menu';
 import { OrganizationQuery } from 'src/app/data/organization/organization.query';
 import { ScenarioEventDataService, ScenarioEventPlus, DataValuePlus } from 'src/app/data/scenario-event/scenario-event-data.service';
 import { ScenarioEventQuery } from 'src/app/data/scenario-event/scenario-event.query';
-import { DataValueDataService } from  'src/app/data/data-value/data-value-data.service';
+import { DataValueDataService } from 'src/app/data/data-value/data-value-data.service';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { v4 as uuidv4 } from 'uuid';
-import { deepCopy } from "deep-copy-ts";
 
 @Component({
   selector: 'app-scenario-event-list',
@@ -47,9 +45,8 @@ export class ScenarioEventListComponent implements OnDestroy {
   @Input() userTheme: Theme;
   msel = new MselPlus();
   mselScenarioEvents: ScenarioEventPlus[] = [];
-  expandedScenarioEventIds: string[] = [];
+  expandedScenarioEventId = '';
   expandedMoreScenarioEventIds: string[] = [];
-  editingScenarioEventIds: string[] = [];
   filteredScenarioEventList: ScenarioEventPlus[] = [];
   filterControl = new FormControl();
   filterString = '';
@@ -73,8 +70,6 @@ export class ScenarioEventListComponent implements OnDestroy {
   itemStatus: ItemStatus[] = [ItemStatus.Pending, ItemStatus.Entered, ItemStatus.Approved, ItemStatus.Complete];
   mselRole = { Owner: MselRole.Owner, Approver: MselRole.Approver, Editor: MselRole.Editor};
   organizationList: Organization[] = [];
-  toOrgList: string[] = [];
-  sortedMselTeams: Team[] = [];
   blankDataValue = {
     id: '',
     value: '',
@@ -86,6 +81,14 @@ export class ScenarioEventListComponent implements OnDestroy {
   scenarioEventBackgroundColors: Array<string>;
   darkThemeTint = this.settingsService.settings.DarkThemeTint ? this.settingsService.settings.DarkThemeTint : 0.7;
   lightThemeTint = this.settingsService.settings.LightThemeTint ? this.settingsService.settings.LightThemeTint : 0.4;
+  selectedTab = 0;
+  tabSections = new Map([
+    ['default', 0],
+    ['all', 1],
+    ['gallery', 2],
+    ['cite', 3],
+    ['steamfitter', 4]
+  ]);
 
   constructor(
     activatedRoute: ActivatedRoute,
@@ -102,6 +105,16 @@ export class ScenarioEventListComponent implements OnDestroy {
     private dataValueDataService: DataValueDataService,
     public dialogService: DialogService
   ) {
+    // subscribe to route changes
+    activatedRoute.queryParamMap.pipe(takeUntil(this.unsubscribe$)).subscribe(params => {
+      // set the selected tab based on the injectData
+      const injectData = params.get('injectData');
+      if (this.tabSections.has(injectData)) {
+        this.selectedTab = this.tabSections.get(injectData);
+      } else {
+        this.selectedTab = 0;
+      }
+    });
     this.scenarioEventBackgroundColors = this.settingsService.settings.ScenarioEventBackgroundColors;
     // subscribe to the active MSEL
     (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
@@ -131,8 +144,16 @@ export class ScenarioEventListComponent implements OnDestroy {
     });
   }
 
+  tabChange(event) {
+    const injectData = event.tab.textLabel.toLowerCase().replace(' ', '');
+    this.router.navigate([], {
+      queryParams: { injectData: injectData },
+      queryParamsHandling: 'merge'
+    });
+  }
+
   getEditableMsel (msel: MselPlus): MselPlus {
-    let editableMsel = new MselPlus();
+    const editableMsel = new MselPlus();
     Object.assign(editableMsel, msel);
     editableMsel.dataFields = editableMsel.dataFields.slice(0).sort((a, b) => a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1);
     editableMsel.teams = editableMsel.teams.slice(0).sort((a, b) => a.shortName.toLowerCase() < b.shortName.toLowerCase() ? -1 : 1);
@@ -147,7 +168,7 @@ export class ScenarioEventListComponent implements OnDestroy {
       const newDataValues: DataValuePlus[] = [];
       scenarioEvent.dataValues.forEach(dataValue => {
         const newDataValue = { ...dataValue} as DataValuePlus;
-        newDataValue.valueArray = newDataValue.value.split(', ');
+        newDataValue.valueArray = newDataValue.value ? newDataValue.value.split(', ') : [];
         newDataValues.push(newDataValue);
       });
       newScenarioEvent.dataValues = newDataValues;
@@ -176,10 +197,10 @@ export class ScenarioEventListComponent implements OnDestroy {
     const lessDataFields: DataField[] = [];
     if (dataFields) {
       dataFields.forEach(df => {
-        if (this.lessDataFieldNames.some(n => n === df.name.toLowerCase())) {
-          lessDataFields.push(df);
-        } else {
+        if (df.isInitiallyHidden) {
           moreDataFields.push(df);
+        } else {
+          lessDataFields.push(df);
         }
       });
       moreDataFields.sort((a, b) => +a.displayOrder > +b.displayOrder ? 1 : -1);
@@ -199,17 +220,48 @@ export class ScenarioEventListComponent implements OnDestroy {
     return item.id;
   }
 
+  getSortedOrganizationOptions() {
+    let orgs: string[] = [];
+    this.organizationList.forEach(o => {
+      orgs.push(o.name);
+    });
+    this.msel.teams.forEach(t => {
+      orgs.push(t.shortName);
+    });
+    orgs = orgs.sort((a, b) => a < b ? -1 : 1);
+    return orgs;
+  }
+
   selectScenarioEvent(id: string) {
-    let expandedIndex = this.expandedScenarioEventIds.findIndex(seId => seId === id);
-    if (expandedIndex === -1) {
-      this.expandedScenarioEventIds.push(id);
+    // previous edit has not been saved, so prompt
+    if (this.editingValueList.size > 0) {
+      const scenarioEvent = this.mselScenarioEvents.find(x => x.id === this.expandedScenarioEventId);
+      this.dialogService
+      .confirm(
+        'You are editing values!',
+        'Do you want to save your changes?'
+      )
+      .subscribe((result) => {
+        if (result['confirm']) {
+          this.saveUpdate(scenarioEvent);
+        } else {
+          this.resetUpdate(scenarioEvent);
+        }
+      });
     } else {
-      this.expandedScenarioEventIds.splice(expandedIndex, 1);
-      expandedIndex = this.expandedMoreScenarioEventIds.findIndex(seId => seId === id);
-      if (expandedIndex > -1) {
-        this.expandedMoreScenarioEventIds.splice(expandedIndex, 1);
+      if (id === this.expandedScenarioEventId) {
+        this.expandedScenarioEventId = '';
+      } else {
+        this.expandedScenarioEventId = id;
+        this.scroll(id);
       }
     }
+  }
+
+  scroll(id) {
+    console.log(`scrolling to ${id}`);
+    const el = document.getElementById(id);
+    el.scrollIntoView();
   }
 
   selectMoreScenarioEvent(id: string) {
@@ -221,8 +273,8 @@ export class ScenarioEventListComponent implements OnDestroy {
     }
   }
 
-  isExpandedScenarioEvent(id: string) {
-    return this.expandedScenarioEventIds.findIndex(seId => seId === id) > -1;
+  noExpansionChangeAllowed() {
+    return this.editingValueList.size > 0;
   }
 
   isExpandedMoreScenarioEvent(id: string) {
@@ -230,9 +282,13 @@ export class ScenarioEventListComponent implements OnDestroy {
   }
 
   getDataValue(scenarioEvent: ScenarioEventPlus, dataFieldName: string): DataValuePlus {
-    if (!(this.msel && scenarioEvent && scenarioEvent.id)) return this.blankDataValue;
+    if (!(this.msel && scenarioEvent && scenarioEvent.id)) {
+      return this.blankDataValue;
+    }
     const dataFieldId = this.getDataFieldIdByName(scenarioEvent, dataFieldName);
-    if (!dataFieldId) return this.blankDataValue;
+    if (!dataFieldId) {
+      return this.blankDataValue;
+    }
     const dataValue = scenarioEvent.dataValues.find(dv => dv.dataFieldId === dataFieldId);
     return dataValue ? dataValue as DataValuePlus : this.blankDataValue;
   }
@@ -290,7 +346,11 @@ export class ScenarioEventListComponent implements OnDestroy {
     this.scenarioEventDataService.updateScenarioEvent(saveScenarioEvent);
   }
 
-  saveScenarioEvent(scenarioEvent: ScenarioEventPlus, dataFieldName: string, newValue: string) {
+  saveScenarioEvent(scenarioEvent: ScenarioEventPlus) {
+    this.scenarioEventDataService.updateScenarioEvent(scenarioEvent);
+  }
+
+  saveScenarioEventValue(scenarioEvent: ScenarioEventPlus, dataFieldName: string, newValue: string) {
     this.getDataValue(scenarioEvent, dataFieldName).value = newValue;
     this.scenarioEventDataService.updateScenarioEvent(scenarioEvent);
   }
@@ -301,8 +361,26 @@ export class ScenarioEventListComponent implements OnDestroy {
     this.scenarioEventDataService.updateScenarioEvent(scenarioEvent);
   }
 
+  getFilteredDataFields(filter: string): DataField[] {
+    let filteredList = [];
+    switch (filter) {
+      case 'Default':
+        filteredList = this.msel.dataFields.filter(x => !x.isInitiallyHidden);
+        break;
+      case 'Gallery':
+        filteredList = this.msel.dataFields.filter(x => !!x.galleryArticleParameter);
+        break;
+      default:
+        filteredList = this.msel.dataFields;
+    }
+    filteredList =  filteredList.sort((a, b) => +a.displayOrder < +b.displayOrder ? -1 : 1);
+    return filteredList;
+  }
+
   getTeamShortName(teamId: string) {
-    if (!teamId) return '';
+    if (!teamId) {
+      return '';
+    }
     const team = this.msel.teams.find(t => t.id === teamId);
     return team ? team.shortName : '';
   }
@@ -332,15 +410,17 @@ export class ScenarioEventListComponent implements OnDestroy {
     switch (column) {
       case 'control number':
       case 'from org':
-      case "to org":
-      case "description":
+      case 'to org':
+      case 'description':
         return (
           (this.getDataValue(a, column).value.toLowerCase() < this.getDataValue(b, column).value.toLowerCase() ? -1 : 1) *
           (isAsc ? 1 : -1)
         );
-      case "assigned to":
-        return (this.getTeamShortName(a.assignedTeamId).toLowerCase() < this.getTeamShortName(b.assignedTeamId).toLowerCase() ? -1 : 1) * (isAsc ? 1 : -1);
-      case "status":
+      case 'assigned to':
+        return (this.getTeamShortName(a.assignedTeamId).toLowerCase()
+                 < this.getTeamShortName(b.assignedTeamId).toLowerCase() ? -1 : 1
+               ) * (isAsc ? 1 : -1);
+      case 'status':
         return (a.status < b.status ? -1 : 1) * (isAsc ? 1 : -1);
       default:
         return 0;
@@ -356,7 +436,7 @@ export class ScenarioEventListComponent implements OnDestroy {
         }
       });
       if (filteredScenarioEvents && filteredScenarioEvents.length > 0 && this.filterString) {
-        var filterString = this.filterString.toLowerCase();
+        const filterString = this.filterString.toLowerCase();
         filteredScenarioEvents = filteredScenarioEvents
           .filter((a) =>
             this.getDataValue(a, 'control number').value.toLowerCase().includes(filterString) ||
@@ -372,23 +452,41 @@ export class ScenarioEventListComponent implements OnDestroy {
   }
 
   addScenarioEvent() {
-    const seId = uuidv4();
-    this.newScenarioEvent = {
-      id: seId,
-      mselId: this.msel.id,
-      status: ItemStatus.Pending,
-      dataValues: [],
-      plusDataValues: []
-    };
-    this.msel.dataFields.forEach(df => {
-      this.newScenarioEvent.dataValues.push({
-        dataFieldId: df.id,
-        id: uuidv4(),
-        scenarioEventId:this.newScenarioEvent.id,
-        value: ''
+    // previous edit has not been saved, so prompt
+    if (this.editingValueList.size > 0) {
+      const scenarioEvent = this.mselScenarioEvents.find(x => x.id === this.expandedScenarioEventId);
+      this.dialogService
+      .confirm(
+        'You are editing values!',
+        'Do you want to save your changes?'
+      )
+      .subscribe((result) => {
+        if (result['confirm']) {
+          this.saveUpdate(scenarioEvent);
+        } else {
+          this.resetUpdate(scenarioEvent);
+        }
       });
-    });
-    this.isAddingScenarioEvent = true;
+    } else {
+      this.expandedScenarioEventId = '';
+      const seId = uuidv4();
+      this.newScenarioEvent = {
+        id: seId,
+        mselId: this.msel.id,
+        status: ItemStatus.Pending,
+        dataValues: [],
+        plusDataValues: []
+      };
+      this.msel.dataFields.forEach(df => {
+        this.newScenarioEvent.dataValues.push({
+          dataFieldId: df.id,
+          id: uuidv4(),
+          scenarioEventId: this.newScenarioEvent.id,
+          value: ''
+        });
+      });
+      this.isAddingScenarioEvent = true;
+    }
   }
 
   copyScenarioEvent(scenarioEvent: ScenarioEventPlus): void {
@@ -399,7 +497,7 @@ export class ScenarioEventListComponent implements OnDestroy {
       this.newScenarioEvent.dataValues.push({
         id: uuidv4(),
         dataFieldId: dv.dataFieldId,
-        scenarioEventId:this.newScenarioEvent.id,
+        scenarioEventId: this.newScenarioEvent.id,
         value: dv.value
       });
     });
@@ -439,13 +537,15 @@ export class ScenarioEventListComponent implements OnDestroy {
   }
 
   verifyNumber(newValue: DataValuePlus) {
-    if (!newValue || !newValue.value) return;
-    // remove non numeric characters, but allow "." and "-"
+    if (!newValue || !newValue.value) {
+      return;
+    }
+    // remove non numeric characters, but allow '.' and '-'
     newValue.value = newValue.value.replace(/[^\d.-]/g, '');
   }
 
   getRgbValues(rowMetadata: string) {
-    const parts = rowMetadata.split(',');
+    const parts = rowMetadata ? rowMetadata.split(',') : [];
     const rgbValues = parts.length >= 4 ? parts[1] + ', ' + parts[2] + ', ' + parts[3] : '';
     return rgbValues;
   }

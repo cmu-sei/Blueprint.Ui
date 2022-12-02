@@ -1,7 +1,6 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
 import { Component, Input, OnDestroy, ViewChild } from '@angular/core';
-import { MatSidenav } from '@angular/material/sidenav';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormControl } from '@angular/forms';
 import { Subject, Observable, BehaviorSubject } from 'rxjs';
@@ -35,7 +34,17 @@ export class MselComponent implements OnDestroy {
   @Input() userTheme$: Observable<Theme>;
   private unsubscribe$ = new Subject();
   msel = this.mselQuery.selectActive()as Observable<Msel>;
-  selectedTab = new FormControl(1);
+  selectedTab = 1;
+  tabSections = new Map([
+    ['default', 1],
+    ['roles', 2],
+    ['datafields', 3],
+    ['organizations', 4],
+    ['moves', 5],
+    ['cards', 6],
+    ['injects', 7],
+    ['exerciseview', 8]
+  ]);
 
   constructor(
     activatedRoute: ActivatedRoute,
@@ -46,30 +55,14 @@ export class MselComponent implements OnDestroy {
   ) {
     // subscribe to route changes
     activatedRoute.queryParamMap.pipe(takeUntil(this.unsubscribe$)).subscribe(params => {
-      const section = params.get('section')
-      switch (section) {
-        case 'roles':
-          this.selectedTab.setValue(2);
-          break;
-        case 'fields':
-          this.selectedTab.setValue(3);
-          break;
-        case 'orgs':
-          this.selectedTab.setValue(4);
-          break;
-        case 'moves':
-          this.selectedTab.setValue(5);
-          break;
-        case 'injects':
-          this.selectedTab.setValue(6);
-          break;
-        case 'view':
-          this.selectedTab.setValue(7);
-          break;
-        default:
-          this.selectedTab.setValue(1);
-          break;
+      // set the selected tab based on the section
+      const section = params.get('section');
+      if (this.tabSections.has(section)) {
+        this.selectedTab = this.tabSections.get(section);
+      } else {
+        this.selectedTab = 1;
       }
+      // load the selected MSEL data
       const mselId = params.get('msel');
       if (mselId) {
         // load the selected MSEL and make it active
@@ -83,56 +76,16 @@ export class MselComponent implements OnDestroy {
   }
 
   tabChange(event) {
-    switch (event) {
-      case 0:
-        this.router.navigate([], {
-          queryParams: { }
-        });
-        break;
-      case 1:
-        this.router.navigate([], {
-          queryParams: { section: 'info' },
-          queryParamsHandling: 'merge'
-        });
-        break;
-      case 2:
-        this.router.navigate([], {
-          queryParams: { section: 'roles' },
-          queryParamsHandling: 'merge'
-        });
-        break;
-      case 3:
-        this.router.navigate([], {
-          queryParams: { section: 'fields' },
-          queryParamsHandling: 'merge'
-        });
-        break;
-      case 4:
-        this.router.navigate([], {
-          queryParams: { section: 'orgs' },
-          queryParamsHandling: 'merge'
-        });
-        break;
-      case 5:
-        this.router.navigate([], {
-          queryParams: { section: 'moves' },
-          queryParamsHandling: 'merge'
-        });
-        break;
-      case 6:
-        this.router.navigate([], {
-          queryParams: { section: 'injects' },
-          queryParamsHandling: 'merge'
-        });
-        break;
-      case 7:
-        this.router.navigate([], {
-          queryParams: { section: 'view' },
-          queryParamsHandling: 'merge'
-        });
-        break;
-      default:
-        break;
+    const section = event.tab.textLabel.toLowerCase().replaceAll(' ', '');
+    if (section === '<<back') {
+      this.router.navigate([], {
+        queryParams: { }
+      });
+    } else {
+      this.router.navigate([], {
+        queryParams: { section: section },
+        queryParamsHandling: 'merge'
+      });
     }
   }
 

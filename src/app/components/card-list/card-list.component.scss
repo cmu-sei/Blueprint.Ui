@@ -50,12 +50,33 @@
   text-align: left;
 }
 
-.scenario-event-detail {
+.card-detail {
   display: flex;
   flex: 1;
   flex-flow: column;
   justify-content: center;
   align-items: center;
+}
+
+.team-label {
+  display: flex;
+  flex-flow: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  text-align: left;
+}
+
+.data-options {
+  display: flex;
+  flex: 7;
+  flex-flow: column;
+  align-items: flex-start;
+  text-align: left;;
+}
+
+.data-option {
+  display: flex;
+  flex-flow: row;
 }
 
 .search-cell {
@@ -69,8 +90,15 @@
 
 .single-detail {
   display: flex;
-  flex-direction: column;
+  flex: 10;
+  flex-flow: row;
+  align-items: flex-start;
   width: 60%;
+}
+
+.partial-detail {
+  display: flex;
+  flex: 3;
 }
 
 .more-or-less {
@@ -78,15 +106,10 @@
 }
 
 .edit-buttons {
-  padding-left: 30%;
-}
-
-.data-values-tab {
-  margin-left: 40px;
-}
-
-.data-values-tab-header {
-  height: 30px;
+  display: flex;
+  flex-flow: row;
+  align-items: flex-start;
+  padding-left: 12%;
 }
 
 .full-width {
@@ -99,25 +122,8 @@
 }
 
 .scrolling-details {
-  min-height: 80px;
-  max-height: calc(100vh - 263px);
+  max-height: calc(100vh - 293px);
   overflow: auto;
-}
-
-.quill-view {
-  border-style: solid;
-  border-width: 1px;
-  border-color: lightgray;
-}
-
-.editor-label {
-  width: 100%;
-  font-size: 13px;
-  font-weight: 400;
-  line-height: 1.125;
-  font-family: Open Sans, sans-serif;
-  letter-spacing: normal;
-  text-align: left;
 }
 
 textarea {
@@ -126,14 +132,10 @@ textarea {
   box-sizing: border-box;
 }
 
-.scenario-event-button {
+.card-button {
   width: 30px;
   height: 30px;
   align-self: center;
-}
-
-.header-dropdown {
-  width: calc(100% - 10px);
 }
 
 .up-12 {
@@ -175,8 +177,8 @@ textarea {
   margin-top: -8px;
 }
 
-.error-text {
-  color: red;
+.eight-cell {
+  flex: 8;
 }
 
 .five-cell {
@@ -201,17 +203,4 @@ textarea {
 
 .center-self {
   align-self: center;
-}
-
-.color-option-button {
-  height: 20px;
-}
-
-
-.color-option {
-  width: 100%;
-  height: 12px;
-  border-color: rgb(187, 187, 187);
-  border-style: solid;
-  border-width: 0.001in;
 }

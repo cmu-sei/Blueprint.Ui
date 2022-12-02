@@ -1,5 +1,5 @@
 /*
-Copyright 2022 Carnegie Mellon University. All Rights Reserved.
+ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
  Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 */
 
@@ -8,6 +8,8 @@ export * from './calendar';
 export * from './calendarAlgorithmType';
 export * from './calendarWeekRule';
 export * from './callingConventions';
+export * from './card';
+export * from './cardTeam';
 export * from './compareInfo';
 export * from './constructorInfo';
 export * from './cultureInfo';
@@ -55,6 +57,11 @@ export * from './organization';
 export * from './parameterAttributes';
 export * from './parameterInfo';
 export * from './permission';
+export * from './playerApiClientPermission';
+export * from './playerApiClientTeam';
+export * from './playerApiClientUser';
+export * from './playerApiClientView';
+export * from './playerApiClientViewStatus';
 export * from './problemDetails';
 export * from './propertyAttributes';
 export * from './propertyInfo';

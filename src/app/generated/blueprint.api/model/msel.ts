@@ -14,6 +14,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
+import { Card } from './card';
 import { DataField } from './dataField';
 import { ItemStatus } from './itemStatus';
 import { Move } from './move';
@@ -28,10 +29,16 @@ export interface Msel {
     createdBy?: string;
     modifiedBy?: string;
     id?: string;
+    name?: string;
     description?: string;
     status?: ItemStatus;
+    playerViewId?: string;
+    useGallery?: boolean;
+    galleryCollectionId?: string;
     galleryExhibitId?: string;
+    useCite?: boolean;
     citeEvaluationId?: string;
+    useSteamfitter?: boolean;
     steamfitterScenarioId?: string;
     isTemplate?: boolean;
     moves?: Array<Move>;
@@ -40,4 +47,7 @@ export interface Msel {
     teams?: Array<Team>;
     userMselRoles?: Array<UserMselRole>;
     headerRowMetadata?: string;
+    cards?: Array<Card>;
+    galleryArticleParameters?: Array<string>;
+    gallerySourceTypes?: Array<string>;
 }

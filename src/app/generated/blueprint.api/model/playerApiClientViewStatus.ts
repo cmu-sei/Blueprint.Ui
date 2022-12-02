@@ -1,5 +1,5 @@
 /*
-Copyright 2022 Carnegie Mellon University. All Rights Reserved.
+ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
  Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 */
 
@@ -14,19 +14,11 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-import { Msel } from './msel';
-import { User } from './user';
 
 
-export interface Team {
-    dateCreated?: Date;
-    dateModified?: Date;
-    createdBy?: string;
-    modifiedBy?: string;
-    id?: string;
-    name?: string;
-    shortName?: string;
-    isParticipantTeam?: boolean;
-    users?: Array<User>;
-    msels?: Array<Msel>;
-}
+export type PlayerApiClientViewStatus = 'Active' | 'Inactive';
+
+export const PlayerApiClientViewStatus = {
+    Active: 'Active' as PlayerApiClientViewStatus,
+    Inactive: 'Inactive' as PlayerApiClientViewStatus
+};

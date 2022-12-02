@@ -1,30 +1,23 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
 import { Component, Input, OnDestroy, ViewChild } from '@angular/core';
-import { MatSidenav } from '@angular/material/sidenav';
-import { ActivatedRoute, Router } from '@angular/router';
-import { Subject, Observable, BehaviorSubject } from 'rxjs';
-import { take, takeUntil } from 'rxjs/operators';
-import {
-  ComnSettingsService,
-  Theme,
-  ComnAuthQuery,
-} from '@cmusei/crucible-common';
+import { Subject, Observable } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { TeamQuery } from 'src/app/data/team/team.query';
 import { UserDataService } from 'src/app/data/user/user-data.service';
-import { TopbarView } from './../shared/top-bar/topbar.models';
 import {
-  ItemStatus,
   DataField,
+  ItemStatus,
   ScenarioEvent,
   Team,
-  User
+  User,
+  PlayerApiClientView
 } from 'src/app/generated/blueprint.api';
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
-import { MoveDataService } from 'src/app/data/move/move-data.service';
-import { Sort } from '@angular/material/sort';
 import { MatMenuTrigger } from '@angular/material/menu';
+import { DialogService } from 'src/app/services/dialog/dialog.service';
+import { PlayerService } from 'src/app/generated/blueprint.api';
 
 @Component({
   selector: 'app-msel-info',
@@ -46,17 +39,16 @@ export class MselInfoComponent implements OnDestroy {
   isEditEnabled = false;
   userList: User[] = [];
   teamList: Team[] = [];
+  viewList: PlayerApiClientView[] = [];
+  itemStatus: ItemStatus[] = [ItemStatus.Pending, ItemStatus.Entered, ItemStatus.Approved, ItemStatus.Complete];
 
   constructor(
-    activatedRoute: ActivatedRoute,
-    private router: Router,
     private teamQuery: TeamQuery,
     private userDataService: UserDataService,
-    private settingsService: ComnSettingsService,
-    private authQuery: ComnAuthQuery,
-    private moveDataService: MoveDataService,
     private mselDataService: MselDataService,
-    private mselQuery: MselQuery
+    private mselQuery: MselQuery,
+    public dialogService: DialogService,
+    private playerService: PlayerService
   ) {
     // subscribe to the active MSEL
     (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
@@ -74,10 +66,13 @@ export class MselInfoComponent implements OnDestroy {
     this.teamQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(teams => {
       this.teamList = teams;
     });
+    this.playerService.getViews().subscribe(views => {
+      this.viewList = views;
+    });
   }
 
   getUserName(userId: string) {
-    var user = this.userList.find(u => u.id === userId);
+    const user = this.userList.find(u => u.id === userId);
     return user ? user.name : 'unknown';
   }
 
@@ -100,6 +95,36 @@ export class MselInfoComponent implements OnDestroy {
   cancelChanges() {
     this.isEditEnabled = false;
     Object.assign(this.msel, this.originalMsel);
+  }
+
+  addViewTeamsToMsel() {
+    this.playerService.addViewTeamsToMsel(this.msel.id).subscribe();
+  }
+
+  pushToGallery() {
+    this.dialogService
+    .confirm(
+      'Push to Gallery',
+      'Are you sure that you want to push this MSEL to Gallery?'
+    )
+    .subscribe((result) => {
+      if (result['confirm']) {
+        this.mselDataService.pushToGallery(this.msel.id);
+      }
+    });
+  }
+
+  pullFromGallery() {
+    this.dialogService
+    .confirm(
+      'Remove from Gallery',
+      'Are you sure you want to delete the Collection and all associated data from Gallery?'
+    )
+    .subscribe((result) => {
+      if (result['confirm']) {
+        this.mselDataService.pullFromGallery(this.msel.id);
+      }
+    });
   }
 
   ngOnDestroy() {

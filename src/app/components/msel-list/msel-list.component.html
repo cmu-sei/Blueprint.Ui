@@ -57,7 +57,8 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 <section class="cards">
   <mat-card class="card highlight" *ngFor="let msel of filteredMselList" (click)="openMsel(msel.id, '')">
     <mat-card-header>
-      <mat-card-title class="msel-title">{{msel.description}}</mat-card-title>
+      <mat-card-title class="msel-title">{{ msel.name }}</mat-card-title>
+      <mat-card-subtitle>{{ msel.description }}</mat-card-subtitle>
     </mat-card-header>
     <mat-card-content class="msel-text" contenteditable="false">
       <span>Status: {{ msel.status }}</span> <span *ngIf="msel.isTemplate"> - Template </span><br />

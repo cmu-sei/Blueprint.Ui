@@ -109,13 +109,14 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
                   <mat-option value="Boolean">Boolean</mat-option>
                   <mat-option value="DateTime">DateTime</mat-option>
                   <mat-option value="Organization">Organization</mat-option>
+                  <mat-option value="Html">Html</mat-option>
                 </mat-select>
               </mat-form-field>
             </div>
           </div>
           <div class="data-field-detail" (click)="$event.stopPropagation();">
             <div class="single-detail">
-              <mat-checkbox [(ngModel)]="changedDataField.isChosenFromList">Selected From a List?</mat-checkbox><br />
+              <mat-checkbox [(ngModel)]="changedDataField.isChosenFromList" class="bottom-margin">Selected From a List?</mat-checkbox><br />
               <span *ngIf="changedDataField.isChosenFromList">
                 <input
                   *ngFor="let dataOption of changedDataField.dataOptions"
@@ -133,6 +134,26 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
                   <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
                 </button>
               </span>
+            </div>
+          </div>
+          <div class="data-field-detail" (click)="$event.stopPropagation();">
+            <div class="single-detail">
+              <mat-checkbox [(ngModel)]="changedDataField.isInitiallyHidden" class="bottom-margin">Hidden under "More Fields" section</mat-checkbox><br />
+            </div>
+          </div>
+          <div class="data-field-detail" (click)="$event.stopPropagation();">
+            <div class="single-detail">
+              <mat-checkbox [(ngModel)]="changedDataField.isOnlyShownToOwners" class="bottom-margin">ONLY Display for Content Developers and Owners</mat-checkbox><br />
+            </div>
+          </div>
+          <div class="data-field-detail" (click)="$event.stopPropagation();">
+            <div class="single-detail">
+              <mat-form-field class="full-width">
+                <mat-select placeholder="Gallery Article Parameter" [(ngModel)]="changedDataField.galleryArticleParameter" [disabled]="!isContentDeveloper && !msel.hasRole(loggedInUserId, null).owner">
+                  <mat-option value=""></mat-option>
+                  <mat-option *ngFor="let parameter of msel.galleryArticleParameters" value="{{ parameter }}">{{ parameter }}</mat-option>
+                </mat-select>
+              </mat-form-field>
             </div>
           </div>
           <div
@@ -208,6 +229,26 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
           </div>
         </mat-expansion-panel-header>
         <ng-template matExpansionPanelContent>
+          <div *ngIf="valuesHaveBeenChanged()" (click)="$event.stopPropagation();">
+            <span class="edit-buttons">
+              <button
+                mat-icon-button
+                (click)="saveDataField();"
+                style="outline: none;"
+                title="Save new data field"
+              >
+                <mat-icon class="mdi-24px self-center" fontIcon="mdi-check"></mat-icon>
+              </button>
+              <button
+                mat-icon-button
+                (click)="resetDataField();"
+                style="outline: none;"
+                title="Cancel new data field"
+              >
+                <mat-icon class="mdi-24px self-center" fontIcon="mdi-close"></mat-icon>
+              </button>
+            </span>
+          </div>
           <div class="data-field-detail" (click)="$event.stopPropagation();">
             <div class="single-detail">
               <mat-form-field class="full-width">
@@ -238,12 +279,15 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
             <div class="single-detail">
               <mat-form-field class="full-width">
                 <mat-select placeholder="Data Type" [(ngModel)]="changedDataField.dataType" [disabled]="!isContentDeveloper && !msel.hasRole(loggedInUserId, null).owner">
-                  <mat-option value="String">String</mat-option>
+                  <mat-option *ngFor="let dataFieldType of dataFieldTypes" value="{{ dataFieldType }}">{{ dataFieldType }}</mat-option>
+                  <!-- <mat-option value="String">String</mat-option>
                   <mat-option value="Integer">Integer</mat-option>
                   <mat-option value="Double">Double</mat-option>
                   <mat-option value="Boolean">Boolean</mat-option>
                   <mat-option value="DateTime">DateTime</mat-option>
                   <mat-option value="Organization">Organization</mat-option>
+                  <mat-option value="Html">Html</mat-option>
+                  <mat-option value="Card">Card</mat-option> -->
                 </mat-select>
               </mat-form-field>
             </div>
@@ -254,6 +298,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
                 <mat-checkbox
                   [(ngModel)]="changedDataField.isChosenFromList"
                   [disabled]="!isContentDeveloper && !msel.hasRole(loggedInUserId, null).owner"
+                  class="bottom-margin"
                 >
                   Use Option List
                 </mat-checkbox><br />
@@ -295,6 +340,26 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
               </div>
             </div>
           </div>
+          <div class="data-field-detail" (click)="$event.stopPropagation();">
+            <div class="single-detail">
+              <mat-checkbox [(ngModel)]="changedDataField.isInitiallyHidden" class="bottom-margin">Hidden under "More Fields" section</mat-checkbox><br />
+            </div>
+          </div>
+          <div class="data-field-detail" (click)="$event.stopPropagation();">
+            <div class="single-detail">
+              <mat-checkbox [(ngModel)]="changedDataField.isOnlyShownToOwners" class="bottom-margin">ONLY Display for Content Developers and Owners</mat-checkbox><br />
+            </div>
+          </div>
+          <div class="data-field-detail" (click)="$event.stopPropagation();" *ngIf="msel.useGallery">
+            <div class="single-detail">
+              <mat-form-field class="full-width">
+                <mat-select placeholder="Gallery Article Parameter" [(ngModel)]="changedDataField.galleryArticleParameter" [disabled]="!isContentDeveloper && !msel.hasRole(loggedInUserId, null).owner">
+                  <mat-option value=""></mat-option>
+                  <mat-option *ngFor="let parameter of msel.galleryArticleParameters" value="{{ parameter }}">{{ parameter }}</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+          </div>
           <div
             class="data-field-detail"
             (click)="$event.stopPropagation();"
@@ -326,26 +391,6 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
                 />
               </mat-form-field>
             </div>
-          </div>
-          <div *ngIf="valuesHaveBeenChanged()" (click)="$event.stopPropagation();">
-            <span class="edit-buttons">
-              <button
-                mat-icon-button
-                (click)="saveDataField();"
-                style="outline: none;"
-                title="Save new data field"
-              >
-                <mat-icon class="mdi-24px self-center" fontIcon="mdi-check"></mat-icon>
-              </button>
-              <button
-                mat-icon-button
-                (click)="resetDataField();"
-                style="outline: none;"
-                title="Cancel new data field"
-              >
-                <mat-icon class="mdi-24px self-center" fontIcon="mdi-close"></mat-icon>
-              </button>
-            </span>
           </div>
         </ng-template>
       </mat-expansion-panel>

@@ -1,5 +1,5 @@
 /*
-Copyright 2022 Carnegie Mellon University. All Rights Reserved.
+ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
  Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 */
 
@@ -14,19 +14,17 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-import { Msel } from './msel';
-import { User } from './user';
+import { PlayerApiClientPermission } from './playerApiClientPermission';
 
 
-export interface Team {
-    dateCreated?: Date;
-    dateModified?: Date;
-    createdBy?: string;
-    modifiedBy?: string;
+export interface PlayerApiClientTeam {
     id?: string;
     name?: string;
-    shortName?: string;
-    isParticipantTeam?: boolean;
-    users?: Array<User>;
-    msels?: Array<Msel>;
+    viewId?: string;
+    roleId?: string;
+    roleName?: string;
+    permissions?: Array<PlayerApiClientPermission>;
+    canManage?: boolean;
+    isMember?: boolean;
+    isPrimary?: boolean;
 }

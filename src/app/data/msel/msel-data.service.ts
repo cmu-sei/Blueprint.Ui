@@ -8,6 +8,7 @@ import { FormControl } from '@angular/forms';
 import { PageEvent } from '@angular/material/paginator';
 import { Router, ActivatedRoute } from '@angular/router';
 import {
+  Card,
   DataField,
   DataValue,
   ItemStatus,
@@ -31,18 +32,27 @@ export class MselPlus implements Msel {
   createdBy?: string;
   modifiedBy?: string;
   id?: string;
+  name?: string;
   description?: string;
   status?: ItemStatus;
+  playerViewId?: string;
+  useGallery?: boolean;
+  galleryCollectionId?: string;
   galleryExhibitId?: string;
+  useCite?: boolean;
   citeEvaluationId?: string;
+  useSteamfitter?: boolean;
   steamfitterScenarioId?: string;
-  isTemplate?: boolean;
+isTemplate?: boolean;
   moves?: Array<Move>;
   dataFields?: Array<DataField>;
   scenarioEvents?: Array<ScenarioEvent>;
   teams?: Array<Team>;
   userMselRoles?: Array<UserMselRole>;
   headerRowMetadata?: string;
+  cards?: Array<Card>;
+  galleryArticleParameters?: Array<string>;
+  gallerySourceTypes?: Array<string>;
 
   hasRole(userId: string, scenarioEventId: string) {
     const mselRole = { owner: false, approver: false, editor: false };
@@ -294,6 +304,42 @@ export class MselDataService {
       });
   }
 
+  pushToGallery(mselId: string) {
+    this.mselStore.setLoading(true);
+    this.mselService
+      .pushToGallery(mselId)
+      .pipe(
+        tap(() => {
+          this.mselStore.setLoading(false);
+        }),
+        take(1)
+      )
+      .subscribe((n) => {
+        this.updateStore(n);
+      },
+      (error) => {
+        this.mselStore.setLoading(false);
+      });
+  }
+
+  pullFromGallery(mselId: string) {
+    this.mselStore.setLoading(true);
+    this.mselService
+      .pullFromGallery(mselId)
+      .pipe(
+        tap(() => {
+          this.mselStore.setLoading(false);
+        }),
+        take(1)
+      )
+      .subscribe((n) => {
+        this.updateStore(n);
+      },
+      (error) => {
+        this.mselStore.setLoading(false);
+      });
+  }
+
   delete(id: string) {
     this.mselService
       .deleteMsel(id)
@@ -416,9 +462,9 @@ export class MselDataService {
             updatedScenarioEvent.dataValues.push(dv);
           }
         });
-        updatedMsel.scenarioEvents.push(updatedScenarioEvent)
+        updatedMsel.scenarioEvents.push(updatedScenarioEvent);
       } else {
-        updatedMsel.scenarioEvents.push(se)
+        updatedMsel.scenarioEvents.push(se);
       }
     });
     this.mselStore.upsert(updatedMsel.id, updatedMsel);

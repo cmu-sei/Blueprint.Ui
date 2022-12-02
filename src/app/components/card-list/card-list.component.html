@@ -1,0 +1,256 @@
+<!--
+Copyright 2022 Carnegie Mellon University. All Rights Reserved.
+ Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
+-->
+<div *ngIf="msel" style="height: 100%;">
+
+  <div style="height: 100%">
+    <section
+      matSort
+      (matSortChange)="sortChanged($event)"
+      class="mat-elevation-z2 mat-header-row background-alt"
+    >
+      <span class="mat-header-cell one-cell" mat-sort-header="move">
+        <button
+          mat-icon-button
+          (click)="addCard(); $event.stopPropagation()"
+          style="outline: none; margin-right: 15px;"
+          title="Add new card"
+          [disabled]="isAddingCard || valuesHaveBeenChanged()"
+          *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
+        >
+          <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
+        </button>
+        Move
+      </span>
+      <span class="mat-header-cell one-cell" mat-sort-header="inject">
+        Inject
+      </span>
+      <span class="mat-header-cell three-cell" mat-sort-header="name">Name</span>
+      <span class="mat-header-cell two-cell" mat-sort-header="description">Description</span>
+      <span class="mat-header-cell three-cell search-cell">
+        <mat-form-field class="search-control">
+          <input matInput [formControl]="filterControl" placeholder="Search" />
+        </mat-form-field>
+        <div style="width: 30px;">
+          <button
+            mat-icon-button
+            (click)="filterControl.setValue(''); $event.stopPropagation()"
+            style="outline: none;"
+            title="Clear Search"
+            [disabled]="!filterString"
+          >
+            <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
+          </button>
+        </div>
+      </span>
+    </section>
+
+    <section class="scrolling-region">
+      <!-- new card -->
+      <mat-expansion-panel *ngIf="isAddingCard" expanded="true">
+        <mat-expansion-panel-header
+          class="mat-row"
+          (click)="$event.stopPropagation();"
+        >
+          <div class="mat-cell flex-row-cell five-cell" (click)="$event.stopPropagation();">
+            <span class="edit-buttons">
+              <button
+                mat-icon-button
+                (click)="saveNewCard(); $event.stopPropagation()"
+                style="outline: none;"
+                title="Save new card"
+              >
+                <mat-icon class="mdi-24px self-center" fontIcon="mdi-check"></mat-icon>
+              </button>
+              <button
+                mat-icon-button
+                (click)="cancelNewCard(); $event.stopPropagation()"
+                style="outline: none;"
+                title="Cancel new card"
+              >
+                <mat-icon class="mdi-24px self-center" fontIcon="mdi-close"></mat-icon>
+              </button>
+            </span>
+            <b>Creating New Card</b>
+          </div>
+          <div class="mat-cell flex-row-cell five-cell">&nbsp;</div>
+        </mat-expansion-panel-header>
+        <ng-template matExpansionPanelContent>
+          <div class="card-detail" (click)="$event.stopPropagation();">
+            <div class="single-detail">
+              <mat-form-field class="full-width">
+                <input
+                  type="text"
+                  matInput
+                  placeholder="Move"
+                  [(ngModel)]="changedCard.move"
+                />
+              </mat-form-field>
+            </div>
+          </div>
+          <div class="card-detail" (click)="$event.stopPropagation();">
+            <div class="single-detail">
+              <mat-form-field class="full-width">
+                <input
+                  type="text"
+                  matInput
+                  placeholder="Inject"
+                  [(ngModel)]="changedCard.inject"
+                />
+              </mat-form-field>
+            </div>
+          </div>
+          <div class="card-detail" (click)="$event.stopPropagation();">
+            <div class="single-detail">
+              <mat-form-field class="full-width">
+                <input
+                  type="text"
+                  matInput
+                  placeholder="name"
+                  [(ngModel)]="changedCard.name"
+                />
+              </mat-form-field>
+            </div>
+          </div>
+          <div class="card-detail" (click)="$event.stopPropagation();">
+            <div class="single-detail">
+              <mat-form-field class="full-width">
+                <input
+                  type="text"
+                  matInput
+                  placeholder="description"
+                  [(ngModel)]="changedCard.description"
+                />
+              </mat-form-field>
+            </div>
+          </div>
+        </ng-template>
+      </mat-expansion-panel>
+
+
+      <!-- existing cards -->
+      <mat-expansion-panel
+        *ngFor="let item of sortedCards;"
+        [expanded]="editingId === item.id"
+        [disabled]="noExpansionChangeAllowed()"
+      >
+        <mat-expansion-panel-header
+          class="mat-row"
+          (click)="editCard(item); $event.stopPropagation();"
+        >
+          <div class="mat-cell flex-row-cell one-cell">
+            <button
+              mat-icon-button
+              class="card-button"
+              title="Edit this card"
+              *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
+            >
+              <mat-icon class="mdi-18px up-12" fontIcon="mdi-square-edit-outline"></mat-icon>
+            </button>
+            <button
+              mat-icon-button
+              class="card-button"
+              (click)="deleteCard(item); $event.stopPropagation()"
+              title="Delete this card"
+              *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
+            >
+              <mat-icon class="mdi-18px up-12" fontIcon="mdi-delete"></mat-icon>
+            </button>
+            &nbsp;{{ item.move }}
+          </div>
+          <div class="mat-cell flex-row-cell one-cell">
+            &nbsp;{{ item.inject }}
+          </div>
+          <div class="mat-cell three-cell center-self">{{ item.name }}</div>
+          <div class="mat-cell five-cell center-self">{{ item.description }}</div>
+        </mat-expansion-panel-header>
+        <ng-template matExpansionPanelContent>
+          <div *ngIf="valuesHaveBeenChanged()" (click)="$event.stopPropagation();">
+            <span class="edit-buttons">
+              <button
+                mat-icon-button
+                (click)="saveCard();"
+                style="outline: none;"
+                title="Save new card"
+              >
+                <mat-icon class="mdi-24px self-center" fontIcon="mdi-check"></mat-icon>
+              </button>
+              <button
+                mat-icon-button
+                (click)="resetCard();"
+                style="outline: none;"
+                title="Cancel new card"
+              >
+                <mat-icon class="mdi-24px self-center" fontIcon="mdi-close"></mat-icon>
+              </button>
+            </span>
+          </div>
+          <div class="card-detail" (click)="$event.stopPropagation();">
+            <div class="single-detail">
+              <mat-form-field class="full-width">
+                <input
+                  type="text"
+                  matInput
+                  placeholder="Move"
+                  [(ngModel)]="changedCard.move"
+                  [disabled]="!(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)"
+                />
+              </mat-form-field>
+            </div>
+          </div>
+          <div class="card-detail" (click)="$event.stopPropagation();">
+            <div class="single-detail">
+              <mat-form-field class="full-width">
+                <input
+                  type="text"
+                  matInput
+                  placeholder="Inject"
+                  [(ngModel)]="changedCard.inject"
+                  [disabled]="!(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)"
+                />
+              </mat-form-field>
+            </div>
+          </div>
+          <div class="card-detail" (click)="$event.stopPropagation();">
+            <div class="single-detail">
+              <mat-form-field class="full-width">
+                <mat-label>Name</mat-label>
+                <input
+                  type="text"
+                  matInput
+                  [(ngModel)]="changedCard.name"
+                  [disabled]="!(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)"
+                />
+              </mat-form-field>
+            </div>
+          </div>
+          <div class="card-detail" (click)="$event.stopPropagation();">
+            <div class="single-detail">
+              <mat-form-field class="full-width">
+                <mat-label>Description</mat-label>
+                <input
+                  type="text"
+                  matInput
+                  [(ngModel)]="changedCard.description"
+                  [disabled]="!(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)"
+                />
+              </mat-form-field>
+            </div>
+          </div>
+          <div class="card-detail" (click)="$event.stopPropagation();">
+            <div class="single-detail">
+              <div class="team-label">
+                <h4>Select Teams</h4>
+                <app-card-teams
+                  [cardId]="changedCard.id"
+                  [teamList]="msel.teams">
+                </app-card-teams>
+              </div>
+            </div>
+          </div>
+        </ng-template>
+      </mat-expansion-panel>
+    </section>
+  </div>
+</div>
