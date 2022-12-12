@@ -31,6 +31,7 @@ export class MselViewComponent implements OnDestroy {
   expandedMoreScenarioEventIds: string[] = [];
   sortedScenarioEvents: ScenarioEvent[];
   sortedDataFields: DataField[];
+  names: string[] = [];
   private unsubscribe$ = new Subject();
   // context menu
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
@@ -73,10 +74,14 @@ export class MselViewComponent implements OnDestroy {
   }
 
   getSortedDataFields(dataFields: DataField[]): DataField[] {
+    this.names = [];
     const sortedDataFields: DataField[] = [];
     if (dataFields) {
       dataFields.forEach(df => {
-        sortedDataFields.push({... df});
+        if (df.onExerciseView) {
+          sortedDataFields.push({... df});
+          this.names.push(df.name);
+        }
       });
       sortedDataFields.sort((a, b) => +a.displayOrder > +b.displayOrder ? 1 : -1);
     }
@@ -93,9 +98,13 @@ export class MselViewComponent implements OnDestroy {
   }
 
   getScenarioEventValue(scenarioEvent: ScenarioEvent, columnName: string) {
-    if (!(this.msel && scenarioEvent && scenarioEvent.id)) return '';
-    const dataField = this.msel.dataFields.find(df => df.name.toLowerCase().replace(/ /gi,'') === columnName.toLowerCase().replace(/ /gi,''));
-    if (!dataField) return '';
+    if (!(this.msel && scenarioEvent && scenarioEvent.id)) {
+      return '';
+    }
+    const dataField = this.msel.dataFields.find(df => df.name === columnName);
+    if (!dataField) {
+      return '';
+    }
     const dataValue = scenarioEvent.dataValues.find(dv => dv.dataFieldId === dataField.id);
     return dataValue && dataValue.value != null ? dataValue.value : ' ';
   }
@@ -109,6 +118,15 @@ export class MselViewComponent implements OnDestroy {
     const tint = this.userTheme === 'dark-theme' ? this.darkThemeTint : this .lightThemeTint;
     const style = color ? {'background-color': 'rgba(' + color + ', ' + tint + ')'} : {};
     return style;
+  }
+
+  getStyle (dataField: DataField): string {
+    if (dataField && dataField.columnMetadata) {
+      const width = +dataField.columnMetadata * 7;
+      return 'width: ' + width.toString() + ';';
+    } else {
+      return 'width: 100%;';
+    }
   }
 
   ngOnDestroy() {

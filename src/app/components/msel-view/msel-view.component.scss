@@ -1,6 +1,39 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
 
+.scrolling-region {
+  height: calc(100vh - 90px);
+  overflow: auto;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+tr {
+  border-bottom: 1pt solid gray;
+}
+
+th, td {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  padding-left: 30px;
+  padding-right: 30px;
+  text-align: left;
+  word-wrap: break-word;
+}
+
+.constrainer {
+  max-height: 300px;
+  overflow: auto;
+}
+
+.html-constrainer {
+  width: 500px;
+  max-height: 300px;
+  overflow: auto;
+}
+
 .mat-header-row {
   min-height: 40px;
   padding-left:30px;

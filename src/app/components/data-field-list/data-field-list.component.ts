@@ -159,10 +159,14 @@ export class DataFieldListComponent implements OnDestroy {
                   this.changedDataField.isOnlyShownToOwners !== original.isOnlyShownToOwners ||
                   this.changedDataField.galleryArticleParameter !== original.galleryArticleParameter ||
                   this.changedDataField.name !== original.name ||
-                  this.changedDataField.cellMetadata != original.cellMetadata ||
-                  this.changedDataField.columnMetadata != original.columnMetadata;
+                  this.changedDataField.cellMetadata !== original.cellMetadata ||
+                  this.changedDataField.columnMetadata !== original.columnMetadata;
     }
     return isChanged;
+  }
+
+  saveChange(dataField: DataField) {
+    this.dataFieldDataService.updateDataField(dataField);
   }
 
   saveDataField() {

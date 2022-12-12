@@ -28,6 +28,8 @@ export interface DataField {
     name?: string;
     dataType?: DataFieldType;
     displayOrder?: number;
+    onScenarioEventList?: boolean;
+    onExerciseView?: boolean;
     isChosenFromList?: boolean;
     dataOptions?: Array<DataOption>;
     cellMetadata?: string;
