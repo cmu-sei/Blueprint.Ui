@@ -381,11 +381,16 @@ export class ScenarioEventListComponent implements OnDestroy {
         scenarioEvent: scenarioEvent,
         dataFields: this.allDataFields,
         organizationList: this.organizationList,
+        cardList: this.msel.cards,
+        gallerySourceTypes: this.msel.gallerySourceTypes,
         isNew: this.isAddingScenarioEvent,
-        canEdit: this.isContentDeveloper || this.msel.hasRole(this.loggedInUserId, scenarioEvent.id).owner
+        canEdit: this.isContentDeveloper || this.msel.hasRole(this.loggedInUserId, scenarioEvent.id).owner,
+        useCite: this.msel.useCite,
+        useGallery: this.msel.useGallery,
+        useSteamfitter: this.msel.useSteamfitter
       },
     });
-    dialogRef.componentInstance.editComplete.subscribe((result) => {
+  dialogRef.componentInstance.editComplete.subscribe((result) => {
       if (result.saveChanges && result.scenarioEvent) {
         this.saveScenarioEvent(result.scenarioEvent);
       }
@@ -413,6 +418,29 @@ export class ScenarioEventListComponent implements OnDestroy {
       });
     });
     return newScenarioEvent;
+  }
+
+  saveScenarioEventValue(scenarioEvent: ScenarioEventPlus, dataFieldName: string, newValue: string) {
+    this.getDataValue(scenarioEvent, dataFieldName).value = newValue;
+    this.scenarioEventDataService.updateScenarioEvent(scenarioEvent);
+  }
+
+  saveScenarioEventArray(scenarioEvent: ScenarioEventPlus, dataFieldName: string, newValues: string[]) {
+    this.getDataValue(scenarioEvent, dataFieldName).value = newValues.join(', ');
+    this.getDataValue(scenarioEvent, dataFieldName).valueArray = newValues;
+    this.scenarioEventDataService.updateScenarioEvent(scenarioEvent);
+  }
+
+  saveAssignedTeam(scenarioEvent: ScenarioEventPlus, teamId: string) {
+    const {dataValues, ...saveScenarioEvent} = scenarioEvent;
+    saveScenarioEvent.assignedTeamId = teamId;
+    this.scenarioEventDataService.updateScenarioEvent(saveScenarioEvent);
+  }
+
+  saveStatus(scenarioEvent: ScenarioEventPlus, status: ItemStatus) {
+    const {dataValues, ...saveScenarioEvent} = scenarioEvent;
+    saveScenarioEvent.status = status;
+    this.scenarioEventDataService.updateScenarioEvent(saveScenarioEvent);
   }
 
   saveScenarioEvent(scenarioEvent: ScenarioEvent) {

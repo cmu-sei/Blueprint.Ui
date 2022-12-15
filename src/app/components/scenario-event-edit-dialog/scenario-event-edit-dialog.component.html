@@ -18,11 +18,6 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
   </div>
   <div mat-dialog-content *ngIf="!!data && data.scenarioEvent">
     <div class="scenario-event-edit-dialog">
-
-
-
-
-
       <mat-tab-group mat-stretch-tabs
         class="full-width"
         mat-align-tabs="start"
@@ -32,26 +27,13 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
         </mat-tab>
         <mat-tab label="All">
         </mat-tab>
-        <mat-tab label="Gallery">
+        <mat-tab label="CITE" *ngIf="data.useCite">
         </mat-tab>
-        <!-- <mat-tab label="CITE" *ngIf="msel.useCite">
+        <mat-tab label="Gallery" *ngIf="data.useGallery">
         </mat-tab>
-        <mat-tab label="Gallery" *ngIf="msel.useGallery">
+        <mat-tab label="Steamfitter" *ngIf="data.useSteamfitter">
         </mat-tab>
-        <mat-tab label="Steamfitter" *ngIf="msel.useSteamfitter">
-        </mat-tab> -->
       </mat-tab-group>
-
-
-
-
-
-
-
-
-
-
-
       <!-- data values for each data field -->
       <div *ngFor="let df of sortedDataFields" class="single-edit-dialog">
         <!-- string input -->
@@ -115,6 +97,48 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
           >
             <mat-option value="''"> </mat-option>
             <mat-option *ngFor="let organization of data.organizationList" [value]="organization">{{ organization }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <!-- To Org value -->
+        <mat-form-field *ngIf="!df.isChosenFromList && df.dataType === dataType.TeamsMultiple" class="full-width">
+          <mat-label>{{ df.name }}</mat-label>
+          <mat-select
+            multiple
+            placeholder="{{ df.name }}"
+            [(ngModel)]="getDataValue(df.name).value"
+            [disabled]="isDisabled(df.name)"
+          >
+            <mat-option value="ALL">ALL</mat-option>
+            <mat-option value="">None</mat-option>
+            <mat-option *ngFor="let team of data.teamList" [value]="team.shortName">
+              {{ team.shortName }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+        <!-- Status value -->
+        <mat-form-field *ngIf="!df.isChosenFromList && df.dataType === dataType.Status" class="full-width">
+          <mat-label>{{ df.name }}</mat-label>
+          <mat-select
+            placeholder="{{ df.name }}"
+            [(ngModel)]="data.scenarioEvent.status"
+            [disabled]="isDisabled(df.name)"
+          >
+            <mat-option *ngFor="let status of itemStatus" [value]="status">
+              {{ status }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+        <!-- Assigned Team value -->
+        <mat-form-field *ngIf="!df.isChosenFromList && df.dataType === dataType.Team" class="full-width">
+          <mat-label>{{ df.name }}</mat-label>
+          <mat-select
+            placeholder="{{ df.name }}"
+            [(ngModel)]="data.scenarioEvent.assignedTeamId"
+            [disabled]="isDisabled(df.name)"
+          >
+            <mat-option *ngFor="let team of data.teamList" [value]="team.id">
+              {{ team.shortName }}
+            </mat-option>
           </mat-select>
         </mat-form-field>
         <!-- Card input -->

@@ -88,12 +88,94 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
             </div>
           </td>
           <ng-container *ngFor="let df of sortedDataFields">
+            <!-- HTML value -->
             <td *ngIf="df.dataType.toString() === 'Html'">
               <div class="html-constrainer" [style]="getStyle(df)">
                 <quill-view-html [content]="getScenarioEventValue(item, df.name)" theme="snow"></quill-view-html>
               </div>
             </td>
-            <td *ngIf="df.dataType.toString() !== 'Html'">
+            <!-- From Org value -->
+            <td *ngIf="df.dataType.toString() === 'Organization'">
+              <div class="constrainer" [style]="getStyle(df)">
+                <mat-select
+                  *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, item.id).owner"
+                  (click)="$event.stopPropagation()"
+                  (valueChange)="saveScenarioEventValue(item, 'From Org', $event)"
+                  class="header-dropdown"
+                  placeholder="None"
+                  [(ngModel)]="getDataValue(item, 'From Org').value"
+                >
+                  <mat-option value="">None</mat-option>
+                  <mat-option *ngFor="let org of getSortedOrganizationOptions()" [value]="org">
+                    {{ org }}
+                  </mat-option>
+                </mat-select>
+                <span *ngIf="!isContentDeveloper && !msel.hasRole(loggedInUserId, item.id).owner">{{ getDataValue(item, 'From Org').value }}</span>
+              </div>
+            </td>
+            <!-- To Org value -->
+            <td *ngIf="df.dataType.toString() === 'TeamsMultiple'">
+              <div class="constrainer" [style]="getStyle(df)">
+                <mat-select
+                  multiple
+                  *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, item.id).owner"
+                  (click)="$event.stopPropagation()"
+                  (valueChange)="saveScenarioEventArray(item, 'To Org', $event)"
+                  class="header-dropdown"
+                  placeholder="None"
+                  [(ngModel)]="getDataValue(item, 'To Org').valueArray"
+                >
+                  <mat-option value="ALL">ALL</mat-option>
+                  <mat-option value="">None</mat-option>
+                  <mat-option *ngFor="let org of getSortedOrganizationOptions()" [value]="org">
+                    {{ org }}
+                  </mat-option>
+                </mat-select>
+                <span *ngIf="!isContentDeveloper && !msel.hasRole(loggedInUserId, item.id).owner">{{ getDataValue(item, 'To Org').value }}</span>
+              </div>
+            </td>
+            <!-- Status value -->
+            <td *ngIf="df.dataType.toString() === 'Status'">
+              <div class="constrainer" [style]="getStyle(df)">
+                <mat-select
+                  *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, item.id).approver"
+                  [(ngModel)]="item.status"
+                  (click)="$event.stopPropagation()"
+                  (valueChange)="saveStatus(item, $event)"
+                  class="header-dropdown"
+                  placeholder="None"
+                >
+                  <mat-option *ngFor="let status of itemStatus" [value]="status">
+                    {{ status }}
+                  </mat-option>
+                </mat-select>
+                <span *ngIf="!isContentDeveloper && !msel.hasRole(loggedInUserId, item.id).approver">{{ item.status }}</span>
+              </div>
+            </td>
+            <!-- Assigned Team value -->
+            <td *ngIf="df.dataType.toString() === 'Team'">
+              <div class="constrainer" [style]="getStyle(df)">
+                <mat-select
+                  *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, item.id).owner"
+                  [(ngModel)]="item.assignedTeamId"
+                  (click)="$event.stopPropagation()"
+                  (valueChange)="saveAssignedTeam(item, $event)"
+                  class="header-dropdown"
+                  placeholder="None"
+                >
+                  <mat-option *ngFor="let team of msel.teams" [value]="team.id">
+                    {{ team.shortName }}
+                  </mat-option>
+                </mat-select>
+                <span *ngIf="!isContentDeveloper && !msel.hasRole(loggedInUserId, item.id).owner">{{ getTeamShortName(item.assignedTeamId) }}</span>
+              </div>
+            </td>
+            <!-- other values -->
+            <td *ngIf="df.dataType.toString() !== 'Html' &&
+                        df.dataType.toString() !== 'Organization' &&
+                        df.dataType.toString() !== 'TeamsMultiple' &&
+                        df.dataType.toString() !== 'Team' &&
+                        df.dataType.toString() !== 'Status'">
               <div class="constrainer" [style]="getStyle(df)">
                 {{ getScenarioEventValue(item, df.name) }}
               </div>

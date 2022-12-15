@@ -3,13 +3,6 @@
 import { Component, EventEmitter, Inject, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { Subject } from 'rxjs';
-import { take, takeUntil } from 'rxjs/operators';
-import {
-  ComnSettingsService,
-  Theme,
-  ComnAuthQuery,
-} from '@cmusei/crucible-common';
-import { UserDataService } from 'src/app/data/user/user-data.service';
 import {
   DataField,
   DataFieldType,
@@ -19,12 +12,7 @@ import {
   Organization,
   Team
 } from 'src/app/generated/blueprint.api';
-import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
-import { MselQuery } from 'src/app/data/msel/msel.query';
-import { MoveDataService } from 'src/app/data/move/move-data.service';
 import { Sort } from '@angular/material/sort';
-import { MatMenuTrigger } from '@angular/material/menu';
-import { OrganizationQuery } from 'src/app/data/organization/organization.query';
 import { ScenarioEventDataService, ScenarioEventPlus, DataValuePlus } from 'src/app/data/scenario-event/scenario-event-data.service';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
@@ -35,12 +23,6 @@ import { DialogService } from 'src/app/services/dialog/dialog.service';
   styleUrls: ['./scenario-event-edit-dialog.component.scss'],
 })
 export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
-  // @Input() scenarioEvent: ScenarioEventPlus;
-  // @Input() dataFields: DataField[];
-  // @Input() organizationList: string[];
-  // @Input() cardList: Card[];
-  // @Input() gallerySourceTypes: string[];
-  // @Input() canEdit: boolean;
   @Output() editComplete = new EventEmitter<any>();
   sort: Sort = {active: '', direction: ''};
   sortedScenarioEvents: ScenarioEventPlus[] = [];
@@ -67,13 +49,11 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
   dataFieldTypes = DataFieldType.keys;
   sortedDataFields: DataField[] = [];
   selectedTab = 0;
-  tabSections = new Map([
+  private tabSections = new Map([
     ['default', 0],
-    ['all', 1],
-    ['gallery', 2],
-    ['cite', 3],
-    ['steamfitter', 4]
+    ['all', 1]
   ]);
+  private tabCount = 2;
 
   constructor(
     public dialogService: DialogService,
@@ -90,6 +70,15 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
     } else {
       this.sortedDataFields = this.getFilteredDataFields('default');
       this.selectedTab = this.tabSections.get('default');
+    }
+    if (this.data.useCite) {
+      this.tabSections.set('cite', this.tabCount++);
+    }
+    if (this.data.useGallery) {
+      this.tabSections.set('gallery', this.tabCount++);
+    }
+    if (this.data.useSteamfitter) {
+      this.tabSections.set('steamfitter', this.tabCount++);
     }
   }
 
