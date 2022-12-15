@@ -122,8 +122,8 @@ export class MselViewComponent implements OnDestroy {
 
   getStyle (dataField: DataField): string {
     if (dataField && dataField.columnMetadata) {
-      const width = +dataField.columnMetadata * 7;
-      return 'width: ' + width.toString() + ';';
+      const width = Math.trunc(+dataField.columnMetadata * 7);
+      return 'width: ' + width.toString() + 'px;';
     } else {
       return 'width: 100%;';
     }

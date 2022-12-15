@@ -1,9 +1,21 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
 
-.scrolling-region {
-  height: calc(100vh - 90px);
+.enchilada {
+  height: 100%;
+  width: 100%;
+  table-layout: fixed;
+}
+
+.enchilada tbody {
+  display: block;
+  width: 100%;
   overflow: auto;
+  height: calc(100vh - 180px);
+}
+
+.enchilada thead tr {
+  display: block;
 }
 
 table {

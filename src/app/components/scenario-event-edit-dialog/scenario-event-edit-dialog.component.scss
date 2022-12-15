@@ -50,7 +50,7 @@
   text-align: left;
 }
 
-.scenario-event-detail {
+.scenario-event-edit-dialog {
   display: flex;
   flex: 1;
   flex-flow: column;
@@ -67,7 +67,7 @@
   width: calc(100% - 32px);
 }
 
-.single-detail {
+.single-edit-dialog {
   display: flex;
   flex-direction: column;
   width: 80%;
@@ -88,13 +88,7 @@
 }
 
 .scrolling-region {
-  height: calc(100vh - 144px);
-  overflow: auto;
-}
-
-.scrolling-details {
-  min-height: 80px;
-  max-height: calc(100vh - 263px);
+  height: 100vh;
   overflow: auto;
 }
 
@@ -208,4 +202,12 @@ textarea {
   border-color: rgb(187, 187, 187);
   border-style: solid;
   border-width: 0.001in;
+}
+
+.close-button {
+  float: right;
+}
+
+.dialog-buttons {
+  margin-left: 10%;
 }

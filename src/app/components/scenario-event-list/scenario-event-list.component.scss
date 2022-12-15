@@ -1,6 +1,57 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
 
+.enchilada {
+  height: calc(100vh - 110px);
+  min-width: 100%;
+  table-layout: fixed;
+}
+
+.enchilada tbody {
+  display: block;
+  width: 100%;
+  overflow: auto;
+  height: calc(100vh - 174px);
+}
+
+.enchilada thead tr {
+  display: block;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+tr {
+  border-bottom: 1pt solid gray;
+  width: 100%;
+}
+
+th, td {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  padding-left: 10px;
+  padding-right: 10px;
+  text-align: left;
+  word-wrap: break-word;
+}
+
+.constrainer {
+  max-height: 300px;
+  overflow: auto;
+}
+
+.html-constrainer {
+  width: 500px;
+  max-height: 300px;
+  overflow: auto;
+}
+
+.row-start-buttons {
+  width: 120px;
+}
+
 .mat-header-row {
   min-height: 40px;
   padding-left:30px;
@@ -13,11 +64,11 @@
 
 .mat-row,
 .mat-header-row {
-  display: flex;
+  display: inline-block;
+  min-width: 100%;
   border-bottom-width: 1px;
   border-bottom-style: solid;
-  align-items: center;
-  box-sizing: border-box;
+  text-align: left;
 }
 
 .mat-header-cell {
@@ -26,10 +77,9 @@
 
 .mat-cell,
 .mat-header-cell {
-  flex: 1;
-  overflow: hidden;
-  word-wrap: break-word;
+  display: inline-block;
   text-align: left;
+  word-wrap: break-word;
 }
 
 .mat-accordion .mat-header-row {

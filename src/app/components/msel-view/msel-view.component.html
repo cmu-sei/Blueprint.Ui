@@ -2,18 +2,22 @@
 Copyright 2022 Carnegie Mellon University. All Rights Reserved.
  Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
-<div *ngIf="msel" class="scrolling-region">
-  <div style="height: 100%">
-    <table>
+<div *ngIf="msel" class="enchilada">
+  <table>
+    <thead>
       <tr>
         <ng-container *ngFor="let df of sortedDataFields">
           <th>
-            {{ df.name }}
+            <div [style]="getStyle(df)">
+              {{ df.name }}
+            </div>
           </th>
-      </ng-container>
-    </tr>
-    <ng-container *ngFor="let item of sortedScenarioEvents">
-        <tr>
+        </ng-container>
+      </tr>
+    </thead>
+    <tbody>
+      <ng-container *ngFor="let item of sortedScenarioEvents">
+        <tr [style]="getRowStyle(item)">
           <ng-container *ngFor="let df of sortedDataFields">
             <td *ngIf="df.dataType.toString() === 'Html'">
               <div class="html-constrainer" [style]="getStyle(df)">
@@ -28,6 +32,6 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
           </ng-container>
         </tr>
       </ng-container>
-    </table>
-  </div>
+    </tbody>
+  </table>
 </div>

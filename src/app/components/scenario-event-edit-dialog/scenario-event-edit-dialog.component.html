@@ -2,41 +2,58 @@
 Copyright 2022 Carnegie Mellon University. All Rights Reserved.
  Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
-<div style="height: 100%">
-  <div class="edit-buttons">
+<div mat-dialog-container>
+  <div mat-dialog-title>
+    <span *ngIf="data.isNew">Create Inject</span>
+    <span *ngIf="!data.isNew">Edit Inject</span>
     <button
       mat-icon-button
-      (click)="enableEditing(); $event.stopPropagation()"
-      style="outline: none;"
-      title="Enable Editing"
-      *ngIf="isViewOnly() && canEdit"
+      (click)="handleEditComplete(false)"
+      title="Cancel"
+      class="close-button"
+      tabindex="-1"
     >
-      <mat-icon class="mdi-24px self-center" fontIcon="mdi-square-edit-outline"></mat-icon>
-    </button>
-    <button
-      mat-icon-button
-      (click)="saveUpdate(); $event.stopPropagation()"
-      style="outline: none;"
-      title="Save Changes"
-      *ngIf="!isViewOnly()"
-    >
-      <mat-icon class="mdi-24px self-center" fontIcon="mdi-check"></mat-icon>
-    </button>
-    <button
-      mat-icon-button
-      (click)="resetEditing(); $event.stopPropagation()"
-      style="outline: none;"
-      title="Cancel Changes"
-      *ngIf="!isViewOnly()"
-    >
-      <mat-icon class="mdi-24px self-center" fontIcon="mdi-close"></mat-icon>
+      <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
     </button>
   </div>
-  <div class="edit-buttons">&nbsp;</div>
-  <div class="scrolling-details" (click)="$event.stopPropagation()">
-    <div class="scenario-event-detail" (click)="$event.stopPropagation();">
+  <div mat-dialog-content *ngIf="!!data && data.scenarioEvent">
+    <div class="scenario-event-edit-dialog">
+
+
+
+
+
+      <mat-tab-group mat-stretch-tabs
+        class="full-width"
+        mat-align-tabs="start"
+        [selectedIndex]="selectedTab"
+        (selectedTabChange)="tabChange($event)">
+        <mat-tab label="Default">
+        </mat-tab>
+        <mat-tab label="All">
+        </mat-tab>
+        <mat-tab label="Gallery">
+        </mat-tab>
+        <!-- <mat-tab label="CITE" *ngIf="msel.useCite">
+        </mat-tab>
+        <mat-tab label="Gallery" *ngIf="msel.useGallery">
+        </mat-tab>
+        <mat-tab label="Steamfitter" *ngIf="msel.useSteamfitter">
+        </mat-tab> -->
+      </mat-tab-group>
+
+
+
+
+
+
+
+
+
+
+
       <!-- data values for each data field -->
-      <div *ngFor="let df of dataFields" class="single-detail">
+      <div *ngFor="let df of sortedDataFields" class="single-edit-dialog">
         <!-- string input -->
         <mat-form-field *ngIf="!df.isChosenFromList && df.dataType === dataType.String" class="full-width">
           <input
@@ -75,7 +92,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
               {{ df.name }}
             </div>
             <div class="quill-view" *ngIf="isViewOnly()">
-              <quill-view-html [content]="getDataValue('Details').value" theme="snow"></quill-view-html>&nbsp;
+              <quill-view-html [content]="getDataValue('EditDialogs').value" theme="snow"></quill-view-html>&nbsp;
             </div>
             <div class="quill-edit" *ngIf="!isViewOnly()">
               <quill-editor
@@ -97,7 +114,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
             [disabled]="isDisabled(df.name)"
           >
             <mat-option value="''"> </mat-option>
-            <mat-option *ngFor="let organization of organizationList" [value]="organization">{{ organization }}</mat-option>
+            <mat-option *ngFor="let organization of data.organizationList" [value]="organization">{{ organization }}</mat-option>
           </mat-select>
         </mat-form-field>
         <!-- Card input -->
@@ -109,7 +126,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
             [disabled]="isDisabled(df.name)"
           >
             <mat-option value="''"> </mat-option>
-            <mat-option *ngFor="let card of cardList" [value]="card.id">{{ card.name }}</mat-option>
+            <mat-option *ngFor="let card of data.cardList" [value]="card.id">{{ card.name }}</mat-option>
           </mat-select>
         </mat-form-field>
         <!-- SourceType input -->
@@ -121,7 +138,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
             [disabled]="isDisabled(df.name)"
           >
             <mat-option value="''"> </mat-option>
-            <mat-option *ngFor="let sourceType of gallerySourceTypes" [value]="sourceType">{{ sourceType }}</mat-option>
+            <mat-option *ngFor="let sourceType of data.gallerySourceTypes" [value]="sourceType">{{ sourceType }}</mat-option>
           </mat-select>
         </mat-form-field>
         <!-- dropdown input -->
@@ -139,5 +156,9 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
         </mat-form-field>
       </div>
     </div>
+  </div>
+  <div mat-dialog-actions class="dialog-buttons">
+    <button mat-stroked-button (click)="handleEditComplete(true)" [disabled]="hasBadData()">Save</button>
+    <button mat-stroked-button (click)="handleEditComplete(false)">Cancel</button>
   </div>
 </div>
