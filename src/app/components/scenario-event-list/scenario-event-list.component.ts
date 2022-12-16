@@ -15,12 +15,10 @@ import { UserDataService } from 'src/app/data/user/user-data.service';
 import {
   DataField,
   DataFieldType,
-  DataValue,
   ItemStatus,
   MselRole,
   Organization,
-  ScenarioEvent,
-  Team
+  ScenarioEvent
 } from 'src/app/generated/blueprint.api';
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
@@ -94,14 +92,10 @@ export class ScenarioEventListComponent implements OnDestroy {
     private router: Router,
     private userDataService: UserDataService,
     private settingsService: ComnSettingsService,
-    private authQuery: ComnAuthQuery,
-    private moveDataService: MoveDataService,
-    private mselDataService: MselDataService,
     private mselQuery: MselQuery,
     private organizationQuery: OrganizationQuery,
     private scenarioEventDataService: ScenarioEventDataService,
     private scenarioEventQuery: ScenarioEventQuery,
-    private dataValueDataService: DataValueDataService,
     public dialogService: DialogService,
     public dialog: MatDialog,
   ) {
@@ -212,7 +206,7 @@ export class ScenarioEventListComponent implements OnDestroy {
     return item.id;
   }
 
-  getSortedOrganizationOptions() {
+  getSortedOrganizationOptions(): string[] {
     let orgs: string[] = [];
     this.organizationList.forEach(o => {
       orgs.push(o.name);
@@ -380,7 +374,8 @@ export class ScenarioEventListComponent implements OnDestroy {
       data: {
         scenarioEvent: scenarioEvent,
         dataFields: this.allDataFields,
-        organizationList: this.organizationList,
+        organizationList: this.getSortedOrganizationOptions(),
+        teamList: this.msel.teams,
         cardList: this.msel.cards,
         gallerySourceTypes: this.msel.gallerySourceTypes,
         isNew: this.isAddingScenarioEvent,
