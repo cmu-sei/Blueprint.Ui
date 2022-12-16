@@ -1,55 +1,6 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
 
-.mat-header-row {
-  min-height: 40px;
-  padding-left:30px;
-  padding-right: 50px;
-}
-
-.mat-row {
-  height: 36px;
-}
-
-.mat-row,
-.mat-header-row {
-  display: flex;
-  border-bottom-width: 1px;
-  border-bottom-style: solid;
-  align-items: center;
-  box-sizing: border-box;
-}
-
-.mat-header-cell {
-  font-weight: bold;
-}
-
-.mat-cell,
-.mat-header-cell {
-  flex: 1;
-  overflow: hidden;
-  word-wrap: break-word;
-  text-align: left;
-}
-
-.mat-accordion .mat-header-row {
-  padding-left: 1.5rem;
-  padding-right: 2rem;
-  border-bottom: none;
-}
-
-.mat-expansion-panel-header.mat-row {
-  border-bottom: none;
-}
-
-.flex-row-cell {
-  display: flex;
-  flex-flow: row;
-  justify-content: flex-start;
-  align-items: center;
-  text-align: left;
-}
-
 .scenario-event-edit-dialog {
   display: flex;
   flex: 1;
@@ -58,38 +9,14 @@
   align-items: center;
 }
 
-.search-cell {
-  display: flex;
-  flex-flow: row;
-}
-
-.search-control {
-  width: calc(100% - 32px);
-}
-
 .single-edit-dialog {
   display: flex;
   flex-direction: column;
   width: 80%;
 }
 
-.more-or-less {
-  padding-right: 40%;
-}
-
-.edit-buttons {
-  display: flex;
-  flex-flow: row;
-  padding-left: 5%;
-}
-
 .full-width {
   width: 100%;
-}
-
-.scrolling-region {
-  height: 100vh;
-  overflow: auto;
 }
 
 .quill-view {
@@ -108,83 +35,14 @@
   text-align: left;
 }
 
-textarea {
-  border: 1px solid;
-  padding: 16px !important;
-  box-sizing: border-box;
-}
-
 .scenario-event-button {
   width: 30px;
   height: 30px;
   align-self: center;
 }
 
-.header-dropdown {
-  width: calc(100% - 10px);
-}
-
-.up-12 {
-  margin-top: -12px;
-}
-
-.copy-icon {
-  margin-top: -8px;
-}
-
-.button-end {
-  margin-left: 100px;
-}
-
-.sp-icon {
-  margin-left: 10px;
-  margin-right: 20px;
-}
-
-.search-icon {
-  margin-left: 50px;
-  transform: scale(0.85);
-  margin-right: 5px;
-}
-
-.scale-85 {
-  transform: scale(0.85);
-}
-
-.search-field {
-  width: 320px;
-}
-
-.clear-search {
-  width: 50px;
-}
-
-.copy-icon {
-  margin-top: -8px;
-}
-
 .error-text {
   color: red;
-}
-
-.five-cell {
-  flex: 5;
-}
-
-.four-cell {
-  flex: 4;
-}
-
-.three-cell {
-  flex: 3;
-}
-
-.two-cell {
-  flex: 2;
-}
-
-.one-cell {
-  flex: 1;
 }
 
 .center-self {
@@ -195,7 +53,6 @@ textarea {
   height: 20px;
 }
 
-
 .color-option {
   width: 100%;
   height: 12px;
@@ -204,10 +61,3 @@ textarea {
   border-width: 0.001in;
 }
 
-.close-button {
-  float: right;
-}
-
-.dialog-buttons {
-  margin-left: 10%;
-}
