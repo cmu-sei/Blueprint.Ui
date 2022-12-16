@@ -100,14 +100,6 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
     return dataField ? dataField.id : '';
   }
 
-  isDisabled(dataFieldName: string): boolean {
-    return !this.data.canEdit;
-  }
-
-  isViewOnly(): boolean {
-    return !this.data.canEdit;
-  }
-
   notValidDateFormat(dateString: string) {
     // only check if there is a value
     if (dateString && dateString.length === 0) {

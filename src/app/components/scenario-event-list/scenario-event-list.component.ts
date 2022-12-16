@@ -368,6 +368,9 @@ export class ScenarioEventListComponent implements OnDestroy {
   }
 
   displayEditDialog(scenarioEvent: ScenarioEvent) {
+    const isOwner = this.isContentDeveloper || this.msel.hasRole(this.loggedInUserId, scenarioEvent.id).owner;
+    const isApprover = isOwner || this.msel.hasRole(this.loggedInUserId, scenarioEvent.id).approver;
+    const isEditor = isApprover || this.msel.hasRole(this.loggedInUserId, scenarioEvent.id).editor;
     const dialogRef = this.dialog.open(ScenarioEventEditDialogComponent, {
       width: '80%',
       maxWidth: '800px',
@@ -379,7 +382,9 @@ export class ScenarioEventListComponent implements OnDestroy {
         cardList: this.msel.cards,
         gallerySourceTypes: this.msel.gallerySourceTypes,
         isNew: this.isAddingScenarioEvent,
-        canEdit: this.isContentDeveloper || this.msel.hasRole(this.loggedInUserId, scenarioEvent.id).owner,
+        isOwner: isOwner,
+        isApprover: isApprover,
+        isEditor: isEditor,
         useCite: this.msel.useCite,
         useGallery: this.msel.useGallery,
         useSteamfitter: this.msel.useSteamfitter

@@ -43,7 +43,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
             matInput
             placeholder="{{ df.name }}"
             [(ngModel)]="getDataValue(df.name).value"
-            [disabled]="isDisabled(df.name)"
+            [disabled]="!data.isEditor"
           />
         </mat-form-field>
         <!-- Numeric input -->
@@ -53,7 +53,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
             placeholder="{{ df.name }}"
             (change)="verifyNumber(getDataValue(df.name))"
             [(ngModel)]="getDataValue(df.name).value"
-            [disabled]="isDisabled(df.name)"
+            [disabled]="!data.isEditor"
           />
         </mat-form-field>
         <!-- date input -->
@@ -64,7 +64,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
             matInput
             placeholder="{{ df.name }}"
             [(ngModel)]="getDataValue(df.name).value"
-            [disabled]="isDisabled(df.name)"
+            [disabled]="!data.isEditor"
           />
         </mat-form-field>
         <!-- html input -->
@@ -73,16 +73,18 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
             <div class="editor-label">
               {{ df.name }}
             </div>
-            <div class="quill-view" *ngIf="isViewOnly()">
-              <quill-view-html [content]="getDataValue('EditDialogs').value" theme="snow"></quill-view-html>&nbsp;
+            <div class="quill-view" *ngIf="!data.isEditor">
+              <quill-view-html
+                [content]="''"
+                theme="snow"
+              ></quill-view-html>&nbsp;
             </div>
-            <div class="quill-edit" *ngIf="!isViewOnly()">
+            <div class="quill-edit" *ngIf="data.isEditor">
               <quill-editor
                 [styles]="editorStyle"
                 placeholder="Enter value ..."
                 [(ngModel)]="getDataValue(df.name).value"
-              >
-              </quill-editor>
+              ></quill-editor>
             </div>
             &nbsp;
           </div>
@@ -93,7 +95,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
           <mat-select
             placeholder="{{ df.name }}"
             [(ngModel)]="getDataValue(df.name).value"
-            [disabled]="isDisabled(df.name)"
+            [disabled]="!data.isEditor"
           >
             <mat-option value="''"> </mat-option>
             <mat-option *ngFor="let organization of data.organizationList" [value]="organization">{{ organization }}</mat-option>
@@ -106,7 +108,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
             multiple
             placeholder="{{ df.name }}"
             [(ngModel)]="getDataValue(df.name).valueArray"
-            [disabled]="isDisabled(df.name)"
+            [disabled]="!data.isEditor"
           >
             <mat-option value="ALL">ALL</mat-option>
             <mat-option value="">None</mat-option>
@@ -121,7 +123,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
           <mat-select
             placeholder="{{ df.name }}"
             [(ngModel)]="data.scenarioEvent.status"
-            [disabled]="isDisabled(df.name)"
+            [disabled]="!data.isApprover"
           >
             <mat-option *ngFor="let status of itemStatus" [value]="status">
               {{ status }}
@@ -134,7 +136,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
           <mat-select
             placeholder="{{ df.name }}"
             [(ngModel)]="data.scenarioEvent.assignedTeamId"
-            [disabled]="isDisabled(df.name)"
+            [disabled]="!data.isOwner"
           >
             <mat-option *ngFor="let team of data.teamList" [value]="team.id">
               {{ team.shortName }}
@@ -147,7 +149,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
           <mat-select
             placeholder="{{ df.name }}"
             [(ngModel)]="getDataValue(df.name).value"
-            [disabled]="isDisabled(df.name)"
+            [disabled]="!data.isEditor"
           >
             <mat-option value="''"> </mat-option>
             <mat-option *ngFor="let card of data.cardList" [value]="card.id">{{ card.name }}</mat-option>
@@ -159,7 +161,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
           <mat-select
             placeholder="{{ df.name }}"
             [(ngModel)]="getDataValue(df.name).value"
-            [disabled]="isDisabled(df.name)"
+            [disabled]="!data.isEditor"
           >
             <mat-option value="''"> </mat-option>
             <mat-option *ngFor="let sourceType of data.gallerySourceTypes" [value]="sourceType">{{ sourceType }}</mat-option>
@@ -171,7 +173,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
           <mat-select
             placeholder="{{ df.name }}"
             [(ngModel)]="getDataValue(df.name).value"
-            [disabled]="isDisabled(df.name)"
+            [disabled]="!data.isEditor"
           >
             <mat-option *ngFor="let dataOption of df.dataOptions" [value]="dataOption.optionValue">
               {{ dataOption.optionName }}

@@ -36,7 +36,6 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
                 class="scenario-event-button"
                 (click)="editScenarioEvent(item)"
                 title="Edit this inject"
-                *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
               >
                 <mat-icon class="mdi-18px up-12" fontIcon="mdi-square-edit-outline"></mat-icon>
               </button>
@@ -98,7 +97,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
             <td *ngIf="df.dataType.toString() === 'Organization'">
               <div class="constrainer" [style]="getStyle(df)">
                 <mat-select
-                  *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, item.id).owner"
+                  *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, item.id).editor"
                   (click)="$event.stopPropagation()"
                   (valueChange)="saveScenarioEventValue(item, 'From Org', $event)"
                   class="header-dropdown"
@@ -110,7 +109,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
                     {{ org }}
                   </mat-option>
                 </mat-select>
-                <span *ngIf="!isContentDeveloper && !msel.hasRole(loggedInUserId, item.id).owner">{{ getDataValue(item, 'From Org').value }}</span>
+                <span *ngIf="!isContentDeveloper && !msel.hasRole(loggedInUserId, item.id).editor">{{ getDataValue(item, 'From Org').value }}</span>
               </div>
             </td>
             <!-- To Org value -->
@@ -118,7 +117,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
               <div class="constrainer" [style]="getStyle(df)">
                 <mat-select
                   multiple
-                  *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, item.id).owner"
+                  *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, item.id).editor"
                   (click)="$event.stopPropagation()"
                   (valueChange)="saveScenarioEventArray(item, 'To Org', $event)"
                   class="header-dropdown"
@@ -131,7 +130,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
                     {{ org }}
                   </mat-option>
                 </mat-select>
-                <span *ngIf="!isContentDeveloper && !msel.hasRole(loggedInUserId, item.id).owner">{{ getDataValue(item, 'To Org').value }}</span>
+                <span *ngIf="!isContentDeveloper && !msel.hasRole(loggedInUserId, item.id).editor">{{ getDataValue(item, 'To Org').value }}</span>
               </div>
             </td>
             <!-- Status value -->
