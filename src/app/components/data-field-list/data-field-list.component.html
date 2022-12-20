@@ -10,7 +10,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
       (matSortChange)="sortChanged($event)"
       class="mat-elevation-z2 mat-header-row background-alt"
     >
-      <span class="mat-header-cell two-cell" mat-sort-header="displayOrder">
+      <span class="mat-header-cell one-cell" mat-sort-header="displayOrder">
         <button
           mat-icon-button
           (click)="addDataField(); $event.stopPropagation()"
@@ -23,10 +23,11 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
         </button>
         Order
       </span>
+      <span class="mat-header-cell one-cell">Display On<br />Injects&nbsp;&nbsp;&nbsp;&nbsp;Exercise View</span>
       <span class="mat-header-cell two-cell" mat-sort-header="name">Name</span>
       <span class="mat-header-cell two-cell" mat-sort-header="dataType">Data Type</span>
-      <span class="mat-header-cell two-cell" mat-sort-header="isChosenFromList">Options</span>
-      <span class="mat-header-cell three-cell search-cell">
+      <span class="mat-header-cell one-cell" mat-sort-header="isChosenFromList">Options</span>
+      <span class="mat-header-cell one-cell search-cell">
         <mat-form-field class="search-control">
           <input matInput [formControl]="filterControl" placeholder="Search" />
         </mat-form-field>
@@ -148,6 +149,16 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
           </div>
           <div class="data-field-detail" (click)="$event.stopPropagation();">
             <div class="single-detail">
+              <mat-checkbox [(ngModel)]="changedDataField.onScenarioEventList" class="bottom-margin">Display in header of Injects</mat-checkbox><br />
+            </div>
+          </div>
+          <div class="data-field-detail" (click)="$event.stopPropagation();">
+            <div class="single-detail">
+              <mat-checkbox [(ngModel)]="changedDataField.onExerciseView" class="bottom-margin">Display in header of Exercise View</mat-checkbox><br />
+            </div>
+          </div>
+          <div class="data-field-detail" (click)="$event.stopPropagation();">
+            <div class="single-detail">
               <mat-form-field class="full-width">
                 <mat-select placeholder="Gallery Article Parameter" [(ngModel)]="changedDataField.galleryArticleParameter" [disabled]="!isContentDeveloper && !msel.hasRole(loggedInUserId, null).owner">
                   <mat-option value=""></mat-option>
@@ -202,7 +213,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
           class="mat-row"
           (click)="editDataField(item); $event.stopPropagation();"
         >
-          <div class="mat-cell flex-row-cell two-cell">
+          <div class="mat-cell flex-row-cell one-cell">
             <button
               mat-icon-button
               class="data-field-button"
@@ -222,9 +233,26 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
             </button>
             &nbsp;{{ item.displayOrder }}
           </div>
+          <div class="mat-cell flex-row-cell one-cell center-self">
+            <mat-checkbox
+              [(ngModel)]="item.onScenarioEventList"
+              [disabled]="!isContentDeveloper && !msel.hasRole(loggedInUserId, null).owner"
+              (change)="saveChange(item);"
+              (click)="$event.stopPropagation();"
+            >
+            </mat-checkbox>
+            <mat-checkbox
+              [(ngModel)]="item.onExerciseView"
+              [disabled]="!isContentDeveloper && !msel.hasRole(loggedInUserId, null).owner"
+              (change)="saveChange(item);"
+              (click)="$event.stopPropagation();"
+              class="exercise-view-checkbox"
+            >
+            </mat-checkbox>
+          </div>
           <div class="mat-cell two-cell center-self">{{ item.name }}</div>
           <div class="mat-cell two-cell center-self">{{ item.dataType }}</div>
-          <div class="mat-cell five-cell center-self">
+          <div class="mat-cell two-cell center-self">
             {{ item.dataOptions }}
           </div>
         </mat-expansion-panel-header>
@@ -280,14 +308,6 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
               <mat-form-field class="full-width">
                 <mat-select placeholder="Data Type" [(ngModel)]="changedDataField.dataType" [disabled]="!isContentDeveloper && !msel.hasRole(loggedInUserId, null).owner">
                   <mat-option *ngFor="let dataFieldType of dataFieldTypes" value="{{ dataFieldType }}">{{ dataFieldType }}</mat-option>
-                  <!-- <mat-option value="String">String</mat-option>
-                  <mat-option value="Integer">Integer</mat-option>
-                  <mat-option value="Double">Double</mat-option>
-                  <mat-option value="Boolean">Boolean</mat-option>
-                  <mat-option value="DateTime">DateTime</mat-option>
-                  <mat-option value="Organization">Organization</mat-option>
-                  <mat-option value="Html">Html</mat-option>
-                  <mat-option value="Card">Card</mat-option> -->
                 </mat-select>
               </mat-form-field>
             </div>
@@ -348,6 +368,16 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
           <div class="data-field-detail" (click)="$event.stopPropagation();">
             <div class="single-detail">
               <mat-checkbox [(ngModel)]="changedDataField.isOnlyShownToOwners" class="bottom-margin">ONLY Display for Content Developers and Owners</mat-checkbox><br />
+            </div>
+          </div>
+          <div class="data-field-detail" (click)="$event.stopPropagation();">
+            <div class="single-detail">
+              <mat-checkbox [(ngModel)]="changedDataField.onScenarioEventList" class="bottom-margin">Display in header of Injects</mat-checkbox><br />
+            </div>
+          </div>
+          <div class="data-field-detail" (click)="$event.stopPropagation();">
+            <div class="single-detail">
+              <mat-checkbox [(ngModel)]="changedDataField.onExerciseView" class="bottom-margin">Display in header of Exercise View</mat-checkbox><br />
             </div>
           </div>
           <div class="data-field-detail" (click)="$event.stopPropagation();" *ngIf="msel.useGallery">

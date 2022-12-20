@@ -3,21 +3,21 @@
 
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
-import { ScenarioEventDetailComponent } from './msel.component';
+import { ScenarioEventEditDialogComponent } from './msel.component';
 
-describe('ScenarioEventDetailComponent', () => {
-  let component: ScenarioEventDetailComponent;
-  let fixture: ComponentFixture<ScenarioEventDetailComponent>;
+describe('ScenarioEventEditDialogComponent', () => {
+  let component: ScenarioEventEditDialogComponent;
+  let fixture: ComponentFixture<ScenarioEventEditDialogComponent>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ ScenarioEventDetailComponent ]
+      declarations: [ ScenarioEventEditDialogComponent ]
     })
     .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(ScenarioEventDetailComponent);
+    fixture = TestBed.createComponent(ScenarioEventEditDialogComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

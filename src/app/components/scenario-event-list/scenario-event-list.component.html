@@ -2,417 +2,187 @@
 Copyright 2022 Carnegie Mellon University. All Rights Reserved.
  Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
-<div *ngIf="msel" style="height: 100%;">
-
-  <div style="height: 100%">
-    <section
-      matSort
-      (matSortChange)="sortChanged($event)"
-      class="mat-elevation-z2 mat-header-row background-alt"
-    >
-      <span class="mat-header-cell two-cell" mat-sort-header="control number">
-        <button
-          mat-icon-button
-          (click)="scrollingRegion.scrollTop = 0; addScenarioEvent(); $event.stopPropagation()"
-          style="outline: none; margin-right: 15px;"
-          title="Add new inject"
-          [disabled]="noExpansionChangeAllowed()"
-          *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
-        >
-          <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
-        </button>
-        Control Number
-      </span>
-      <span class="mat-header-cell one-cell" mat-sort-header="assigned to">Assigned To</span>
-      <span class="mat-header-cell one-cell" mat-sort-header="status">Status</span>
-      <span class="mat-header-cell one-cell" mat-sort-header="from org">From Org</span>
-      <span class="mat-header-cell one-cell" mat-sort-header="to org">To Org</span>
-      <span class="mat-header-cell one-cell" mat-sort-header="description">Description</span>
-      <span class="mat-header-cell three-cell search-cell">
-        <mat-form-field class="search-control">
-          <input matInput [formControl]="filterControl" placeholder="Search" />
-        </mat-form-field>
-        <div style="width: 30px;">
-          <button
-            mat-icon-button
-            (click)="filterControl.setValue(''); $event.stopPropagation()"
-            style="outline: none;"
-            title="Clear Search"
-            [disabled]="!filterString"
-          >
-            <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
-          </button>
-        </div>
-      </span>
-    </section>
-
-    <section class="scrolling-region" #scrollingRegion>
-      <!-- new scenario event fields -->
-      <mat-expansion-panel
-        *ngIf="isAddingScenarioEvent"
-        [expanded]="true"
-        (click)="$event.stopPropagation()"
-      >
-        <mat-expansion-panel-header
-          class="mat-row"
-        >
-          <div class="mat-cell flex-row-cell five-cell">
-            <span class="edit-buttons">
+<div *ngIf="msel" class="enchilada">
+  <table>
+    <thead>
+      <tr>
+        <th>
+          <div class="row-start-buttons">
+            <button
+              mat-icon-button
+              (click)="addScenarioEvent()"
+              style="outline: none; margin-right: 15px;"
+              title="Add new inject"
+              *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
+            >
+              <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
+            </button>
+          </div>
+        </th>
+        <ng-container *ngFor="let df of sortedDataFields">
+          <th>
+            <div [style]="getStyle(df)">{{ df.name }}</div>
+          </th>
+        </ng-container>
+      </tr>
+    </thead>
+    <tbody>
+      <ng-container *ngFor="let item of sortedScenarioEvents">
+        <tr [style]="getRowStyle(item)">
+          <td class="row-start-buttons">
+            <div class="row-start-buttons">
               <button
                 mat-icon-button
-                (click)="saveNewScenarioEvent(); $event.stopPropagation()"
-                style="outline: none;"
-                title="Save new scenario event"
+                class="scenario-event-button"
+                (click)="editScenarioEvent(item)"
+                title="Edit this inject"
               >
-                <mat-icon class="mdi-24px self-center" fontIcon="mdi-check"></mat-icon>
+                <mat-icon class="mdi-18px up-12" fontIcon="mdi-square-edit-outline"></mat-icon>
               </button>
               <button
                 mat-icon-button
-                (click)="cancelNewScenarioEvent(); $event.stopPropagation()"
-                style="outline: none;"
-                title="Cancel new scenario event"
+                class="scenario-event-button"
+                [matMenuTriggerFor]="menu"
+                (click)="$event.stopPropagation()"
+                title="Change highlight color"
+                *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, item.id).owner"
               >
-                <mat-icon class="mdi-24px self-center" fontIcon="mdi-close"></mat-icon>
+                <mat-icon class="mdi-18px up-12" fontIcon="mdi-format-color-fill"></mat-icon>
               </button>
-            </span>
-            <b>Creating New Scenario Event</b>
-          </div>
-          <div class="mat-cell flex-row-cell five-cell">&nbsp;</div>
-        </mat-expansion-panel-header>
-        <ng-template matExpansionPanelContent>
-          <div class="scrolling-details" (click)="$event.stopPropagation()">
-            <div class="scenario-event-detail" (click)="$event.stopPropagation();">
-              <div class="single-detail">
-                <mat-form-field class="full-width">
-                  <input
-                    type="text"
-                    matInput
-                    placeholder="Display Order"
-                    [(ngModel)]="newScenarioEvent.rowIndex"
-                  />
-                </mat-form-field>
-              </div>
-            </div>
-            <div class="scenario-event-detail" (click)="$event.stopPropagation();">
-              <div *ngFor="let df of lessDataFields" class="single-detail">
-                <!-- string input -->
-                <mat-form-field *ngIf="!df.isChosenFromList && df.dataType === dataType.String" class="full-width">
-                  <input
-                    type="text"
-                    matInput
-                    placeholder="{{ df.name }}"
-                    [(ngModel)]="getDataValue(newScenarioEvent, df.name).value"
-                  />
-                </mat-form-field>
-                <!-- numeric input -->
-                <mat-form-field *ngIf="!df.isChosenFromList && df.dataType === dataType.Integer || df.dataType === dataType.Double" class="full-width">
-                  <input
-                    matInput
-                    placeholder="{{ df.name }}"
-                    (change)="verifyNumber(getDataValue(newScenarioEvent, df.name))"
-                    [(ngModel)]="getDataValue(newScenarioEvent, df.name).value"
-                  />
-                </mat-form-field>
-                <!-- date time input -->
-                <mat-form-field *ngIf="!df.isChosenFromList && df.dataType === dataType.DateTime" class="full-width">
-                  <mat-label class="error-text" *ngIf="notValidDateFormat(getDataValue(newScenarioEvent, df.name).value)">Not a valid date format.  Use M/d/yyyy.</mat-label>
-                  <input
-                    type="datetime"
-                    matInput
-                    placeholder="{{ df.name }}"
-                    [(ngModel)]="getDataValue(newScenarioEvent, df.name).value"
-                  />
-                </mat-form-field>
-                <!-- chosen from list -->
-                <mat-form-field *ngIf="df.isChosenFromList" class="full-width">
-                  <mat-label>{{ df.name }}</mat-label>
-                  <mat-select
-                    placeholder="{{ df.name }}"
-                    [(ngModel)]="getDataValue(newScenarioEvent, df.name).value"
-                  >
-                    <mat-option *ngFor="let dataOption of df.dataOptions" [value]="dataOption.optionValue">
-                      {{ dataOption.optionName }}
-                    </mat-option>
-                  </mat-select>
-                </mat-form-field>
-                <div *ngIf="df.dataType === dataType.Html" class="scenario-event-detail" (click)="$event.stopPropagation();">
-                  <div class="full-width">
-                    <div class="editor-label">
-                      Details
-                    </div>
-                    <div class="quill-edit">
-                      <quill-editor
-                        [styles]="editorStyle"
-                        placeholder="Enter details ..."
-                        [(ngModel)]="getDataValue(newScenarioEvent, 'details').value"
-                      >
-                      </quill-editor>
-                    </div>
-                    &nbsp;
-                  </div>
-                </div>
-              </div>
-              <div *ngFor="let df of moreDataFields" class="single-detail">
-                <!-- string input -->
-                <mat-form-field *ngIf="!df.isChosenFromList && df.dataType === dataType.String" class="full-width">
-                  <input
-                    type="text"
-                    matInput
-                    placeholder="{{ df.name }}"
-                    [(ngModel)]="getDataValue(newScenarioEvent, df.name).value"
-                  />
-                </mat-form-field>
-                <!-- numeric input -->
-                <mat-form-field *ngIf="!df.isChosenFromList && df.dataType === dataType.Integer || df.dataType === dataType.Double" class="full-width">
-                  <input
-                    matInput
-                    placeholder="{{ df.name }}"
-                    (change)="verifyNumber(getDataValue(newScenarioEvent, df.name))"
-                    [(ngModel)]="getDataValue(newScenarioEvent, df.name).value"
-                  />
-                </mat-form-field>
-                <!-- date time input -->
-                <mat-form-field *ngIf="!df.isChosenFromList && df.dataType === dataType.DateTime" class="full-width">
-                  <mat-label class="error-text" *ngIf="notValidDateFormat(getDataValue(newScenarioEvent, df.name).value)">Not a valid date format.  Use M/d/yyyy.</mat-label>
-                  <input
-                    type="datetime"
-                    matInput
-                    placeholder="{{ df.name }}"
-                    [(ngModel)]="getDataValue(newScenarioEvent, df.name).value"
-                  />
-                </mat-form-field>
-                <!-- chosen from list -->
-                <mat-form-field *ngIf="df.isChosenFromList" class="full-width">
-                  <mat-label>{{ df.name }}</mat-label>
-                  <mat-select
-                    placeholder="{{ df.name }}"
-                    [(ngModel)]="getDataValue(newScenarioEvent, df.name).value"
-                  >
-                    <mat-option *ngFor="let dataOption of df.dataOptions" [value]="dataOption.optionValue">
-                      {{ dataOption.optionName }}
-                    </mat-option>
-                  </mat-select>
-                </mat-form-field>
-                <div *ngIf="df.dataType === dataType.Html" class="scenario-event-detail" (click)="$event.stopPropagation();">
-                  <div class="full-width">
-                    <div class="editor-label">
-                      Details
-                    </div>
-                    <div class="quill-edit">
-                      <quill-editor
-                        [styles]="editorStyle"
-                        placeholder="Enter details ..."
-                        [(ngModel)]="getDataValue(newScenarioEvent, 'details').value"
-                      >
-                      </quill-editor>
-                    </div>
-                    &nbsp;
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </ng-template>
-      </mat-expansion-panel>
-
-      <!-- existing scenario events -->
-      <mat-expansion-panel
-        *ngFor="
-          let item of sortedScenarioEvents;
-          trackBy: trackByFn
-        "
-        [expanded]="expandedScenarioEventId === item.id"
-        [disabled]="noExpansionChangeAllowed()"
-        [style]="getRowStyle(item)"
-        id="{{ item.id }}"
-      >
-        <mat-expansion-panel-header
-          class="mat-row"
-          (click)="selectScenarioEvent(item.id); $event.stopPropagation();"
-        >
-          <div class="mat-cell flex-row-cell two-cell">
-            <button
-              mat-icon-button
-              class="scenario-event-button"
-              [matMenuTriggerFor]="menu"
-              (click)="$event.stopPropagation()"
-              title="Change highlight color"
-              *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, item.id).owner"
-            >
-              <mat-icon class="mdi-18px up-12" fontIcon="mdi-format-color-fill"></mat-icon>
-            </button>
-
-            <mat-menu #menu="matMenu" [overlapTrigger]="false">
+              <mat-menu #menu="matMenu" [overlapTrigger]="false">
+                <button
+                  mat-menu-item
+                  (click)="selectNewColor('', item)"
+                  class="color-option-button"
+                >
+                <div class="color-option" [style]="getStyleFromColor('')"></div>
+                </button>
+                <button
+                  mat-menu-item
+                  *ngFor="let color of scenarioEventBackgroundColors"
+                  (click)="selectNewColor(color, item)"
+                  class="color-option-button"
+                >
+                  <div class="color-option" [style]="getStyleFromColor(color)">&nbsp;</div>
+                </button>
+              </mat-menu>
               <button
-                mat-menu-item
-                (click)="selectNewColor('', item)"
-                class="color-option-button"
+                mat-icon-button
+                class="scenario-event-button"
+                (click)="copyScenarioEvent(item)"
+                title="Duplicate this inject"
+                *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, item.id).owner"
               >
-              <div class="color-option" [style]="getStyleFromColor('')"></div>
+                <mat-icon class="mdi-18px up-12" fontIcon="mdi-content-copy"></mat-icon>
               </button>
               <button
-                mat-menu-item
-                *ngFor="let color of scenarioEventBackgroundColors"
-                (click)="selectNewColor(color, item)"
-                class="color-option-button"
+                mat-icon-button
+                class="scenario-event-button"
+                (click)="deleteScenarioEvent(item)"
+                title="Delete this inject"
+                *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, item.id).owner"
               >
-                <div class="color-option" [style]="getStyleFromColor(color)">&nbsp;</div>
+                <mat-icon class="mdi-18px up-12" fontIcon="mdi-delete"></mat-icon>
               </button>
-            </mat-menu>
-
-            <button
-              mat-icon-button
-              class="scenario-event-button"
-              (click)="copyScenarioEvent(item); $event.stopPropagation()"
-              title="Duplicate this inject"
-              *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, item.id).owner"
-            >
-              <mat-icon class="mdi-18px up-12" fontIcon="mdi-content-copy"></mat-icon>
-            </button>
-            <button
-              mat-icon-button
-              class="scenario-event-button"
-              (click)="deleteScenarioEvent(item); $event.stopPropagation()"
-              title="Delete this inject"
-              *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, item.id).owner"
-            >
-              <mat-icon class="mdi-18px up-12" fontIcon="mdi-delete"></mat-icon>
-            </button>
-            {{ getDataValue(item, 'Control Number').value }}
-          </div>
-          <div class="mat-cell one-cell center-self">
-            <mat-select
-              *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, item.id).owner"
-              [(ngModel)]="item.assignedTeamId"
-              (click)="$event.stopPropagation()"
-              (valueChange)="saveAssignedTeam(item, $event)"
-              class="header-dropdown"
-              placeholder="None"
-            >
-              <mat-option *ngFor="let team of msel.teams" [value]="team.id">
-                {{ team.shortName }}
-              </mat-option>
-            </mat-select>
-            <span *ngIf="!isContentDeveloper && !msel.hasRole(loggedInUserId, item.id).owner">{{ getTeamShortName(item.assignedTeamId) }}</span>
-          </div>
-          <div class="mat-cell one-cell center-self">
-            <mat-select
-              *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, item.id).approver"
-              [(ngModel)]="item.status"
-              (click)="$event.stopPropagation()"
-              (valueChange)="saveStatus(item, $event)"
-              class="header-dropdown"
-              placeholder="None"
-            >
-              <mat-option *ngFor="let status of itemStatus" [value]="status">
-                {{ status }}
-              </mat-option>
-            </mat-select>
-            <span *ngIf="!isContentDeveloper && !msel.hasRole(loggedInUserId, item.id).approver">{{ item.status }}</span>
-          </div>
-          <div class="mat-cell one-cell center-self">
-            <!-- From Org -->
-            <mat-select
-              *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, item.id).owner"
-              (click)="$event.stopPropagation()"
-              (valueChange)="saveScenarioEventValue(item, 'From Org', $event)"
-              class="header-dropdown"
-              placeholder="None"
-              [(ngModel)]="getDataValue(item, 'From Org').value"
-            >
-              <mat-option value="">None</mat-option>
-              <mat-option *ngFor="let org of getSortedOrganizationOptions()" [value]="org">
-                {{ org }}
-              </mat-option>
-            </mat-select>
-            <span *ngIf="!isContentDeveloper && !msel.hasRole(loggedInUserId, item.id).owner">{{ getDataValue(item, 'From Org').value }}</span>
-          </div>
-          <div class="mat-cell one-cell center-self">
-            <!-- To Org -->
-            <mat-select
-              multiple
-              *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, item.id).owner"
-              (click)="$event.stopPropagation()"
-              (valueChange)="saveScenarioEventArray(item, 'To Org', $event)"
-              class="header-dropdown"
-              placeholder="None"
-              [(ngModel)]="getDataValue(item, 'To Org').valueArray"
-            >
-              <mat-option value="ALL">ALL</mat-option>
-              <mat-option value="">None</mat-option>
-              <mat-option *ngFor="let org of getSortedOrganizationOptions()" [value]="org">
-                {{ org }}
-              </mat-option>
-            </mat-select>
-            <span *ngIf="!isContentDeveloper && !msel.hasRole(loggedInUserId, item.id).owner">{{ getDataValue(item, 'To Org').value }}</span>
-          </div>
-          <div class="mat-cell four-cell center-self">{{ getDataValue(item, 'Description').value }}</div>
-        </mat-expansion-panel-header>
-        <ng-template matExpansionPanelContent>
-          <mat-tab-group mat-stretch-tabs
-            class="data-values-tab"
-            mat-align-tabs="start"
-            [selectedIndex]="selectedTab"
-            (selectedTabChange)="tabChange($event)">
-            <mat-tab label="Default">
-              <app-scenario-event-detail
-                [dataFields]="getFilteredDataFields('Default')"
-                [scenarioEvent]="item"
-                [organizationList]="getSortedOrganizationOptions()"
-                [cardList]="msel.cards"
-                [gallerySourceTypes]="msel.gallerySourceTypes"
-                [canEdit]="(isContentDeveloper || msel.hasRole(loggedInUserId, item.id).editor)"
-                (saveScenarioEvent)="saveScenarioEvent(item)"
-              ></app-scenario-event-detail>
-            </mat-tab>
-            <mat-tab label="All">
-              <app-scenario-event-detail
-                [dataFields]="getFilteredDataFields('')"
-                [scenarioEvent]="item"
-                [organizationList]="getSortedOrganizationOptions()"
-                [cardList]="msel.cards"
-                [gallerySourceTypes]="msel.gallerySourceTypes"
-                [canEdit]="(isContentDeveloper || msel.hasRole(loggedInUserId, item.id).editor)"
-                (saveScenarioEvent)="saveScenarioEvent(item)"
-              ></app-scenario-event-detail>
-            </mat-tab>
-            <mat-tab label="CITE" *ngIf="msel.useCite">
-              <app-scenario-event-detail
-                [dataFields]="getFilteredDataFields('CITE')"
-                [scenarioEvent]="item"
-                [organizationList]="getSortedOrganizationOptions()"
-                [cardList]="msel.cards"
-                [gallerySourceTypes]="msel.gallerySourceTypes"
-                [canEdit]="(isContentDeveloper || msel.hasRole(loggedInUserId, item.id).editor)"
-                (saveScenarioEvent)="saveScenarioEvent(item)"
-              ></app-scenario-event-detail>
-            </mat-tab>
-            <mat-tab label="Gallery" *ngIf="msel.useGallery">
-              <app-scenario-event-detail
-                [dataFields]="getFilteredDataFields('Gallery')"
-                [scenarioEvent]="item"
-                [organizationList]="getSortedOrganizationOptions()"
-                [cardList]="msel.cards"
-                [gallerySourceTypes]="msel.gallerySourceTypes"
-                [canEdit]="(isContentDeveloper || msel.hasRole(loggedInUserId, item.id).editor)"
-                (saveScenarioEvent)="saveScenarioEvent(item)"
-              ></app-scenario-event-detail>
-            </mat-tab>
-            <mat-tab label="Steamfitter" *ngIf="msel.useSteamfitter">
-              <app-scenario-event-detail
-                [dataFields]="getFilteredDataFields('Steamfitter')"
-                [scenarioEvent]="item"
-                [organizationList]="getSortedOrganizationOptions()"
-                [cardList]="msel.cards"
-                [gallerySourceTypes]="msel.gallerySourceTypes"
-                [canEdit]="(isContentDeveloper || msel.hasRole(loggedInUserId, item.id).editor)"
-                (saveScenarioEvent)="saveScenarioEvent(item)"
-              ></app-scenario-event-detail>
-            </mat-tab>
-          </mat-tab-group>
-        </ng-template>
-      </mat-expansion-panel>
-    </section>
-  </div>
+            </div>
+          </td>
+          <ng-container *ngFor="let df of sortedDataFields">
+            <!-- HTML value -->
+            <td *ngIf="df.dataType.toString() === 'Html'">
+              <div class="html-constrainer" [style]="getStyle(df)">
+                <quill-view-html [content]="getScenarioEventValue(item, df.name)" theme="snow"></quill-view-html>
+              </div>
+            </td>
+            <!-- From Org value -->
+            <td *ngIf="df.dataType.toString() === 'Organization'">
+              <div class="constrainer" [style]="getStyle(df)">
+                <mat-select
+                  *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, item.id).editor"
+                  (click)="$event.stopPropagation()"
+                  (valueChange)="saveScenarioEventValue(item, 'From Org', $event)"
+                  class="header-dropdown"
+                  placeholder="None"
+                  [(ngModel)]="getDataValue(item, 'From Org').value"
+                >
+                  <mat-option value="">None</mat-option>
+                  <mat-option *ngFor="let org of getSortedOrganizationOptions()" [value]="org">
+                    {{ org }}
+                  </mat-option>
+                </mat-select>
+                <span *ngIf="!isContentDeveloper && !msel.hasRole(loggedInUserId, item.id).editor">{{ getDataValue(item, 'From Org').value }}</span>
+              </div>
+            </td>
+            <!-- To Org value -->
+            <td *ngIf="df.dataType.toString() === 'TeamsMultiple'">
+              <div class="constrainer" [style]="getStyle(df)">
+                <mat-select
+                  multiple
+                  *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, item.id).editor"
+                  (click)="$event.stopPropagation()"
+                  (valueChange)="saveScenarioEventArray(item, 'To Org', $event)"
+                  class="header-dropdown"
+                  placeholder="None"
+                  [(ngModel)]="getDataValue(item, 'To Org').valueArray"
+                >
+                  <mat-option value="ALL">ALL</mat-option>
+                  <mat-option value="">None</mat-option>
+                  <mat-option *ngFor="let org of getSortedOrganizationOptions()" [value]="org">
+                    {{ org }}
+                  </mat-option>
+                </mat-select>
+                <span *ngIf="!isContentDeveloper && !msel.hasRole(loggedInUserId, item.id).editor">{{ getDataValue(item, 'To Org').value }}</span>
+              </div>
+            </td>
+            <!-- Status value -->
+            <td *ngIf="df.dataType.toString() === 'Status'">
+              <div class="constrainer" [style]="getStyle(df)">
+                <mat-select
+                  *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, item.id).approver"
+                  [(ngModel)]="item.status"
+                  (click)="$event.stopPropagation()"
+                  (valueChange)="saveStatus(item, $event)"
+                  class="header-dropdown"
+                  placeholder="None"
+                >
+                  <mat-option *ngFor="let status of itemStatus" [value]="status">
+                    {{ status }}
+                  </mat-option>
+                </mat-select>
+                <span *ngIf="!isContentDeveloper && !msel.hasRole(loggedInUserId, item.id).approver">{{ item.status }}</span>
+              </div>
+            </td>
+            <!-- Assigned Team value -->
+            <td *ngIf="df.dataType.toString() === 'Team'">
+              <div class="constrainer" [style]="getStyle(df)">
+                <mat-select
+                  *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, item.id).owner"
+                  [(ngModel)]="item.assignedTeamId"
+                  (click)="$event.stopPropagation()"
+                  (valueChange)="saveAssignedTeam(item, $event)"
+                  class="header-dropdown"
+                  placeholder="None"
+                >
+                  <mat-option *ngFor="let team of msel.teams" [value]="team.id">
+                    {{ team.shortName }}
+                  </mat-option>
+                </mat-select>
+                <span *ngIf="!isContentDeveloper && !msel.hasRole(loggedInUserId, item.id).owner">{{ getTeamShortName(item.assignedTeamId) }}</span>
+              </div>
+            </td>
+            <!-- other values -->
+            <td *ngIf="df.dataType.toString() !== 'Html' &&
+                        df.dataType.toString() !== 'Organization' &&
+                        df.dataType.toString() !== 'TeamsMultiple' &&
+                        df.dataType.toString() !== 'Team' &&
+                        df.dataType.toString() !== 'Status'">
+              <div class="constrainer" [style]="getStyle(df)">
+                {{ getScenarioEventValue(item, df.name) }}
+              </div>
+            </td>
+          </ng-container>
+        </tr>
+      </ng-container>
+    </tbody>
+  </table>
 </div>
 
