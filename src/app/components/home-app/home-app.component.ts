@@ -81,7 +81,7 @@ export class HomeAppComponent implements OnDestroy, OnInit {
   ) {
     this.healthCheck();
 
-    var appTitle = this.settingsService.settings.AppTitle || 'Set AppTitle in Settings';
+    const appTitle = this.settingsService.settings.AppTitle || 'Set AppTitle in Settings';
     titleService.setTitle(appTitle);
     this.topbarTextBase = this.settingsService.settings.AppTopBarText || this.topbarTextBase;
     this.topbarText = this.topbarTextBase;
@@ -104,10 +104,10 @@ export class HomeAppComponent implements OnDestroy, OnInit {
     // subscribe to route changes
     activatedRoute.queryParamMap.pipe(takeUntil(this.unsubscribe$)).subscribe(params => {
       this.selectedMselId = params.get('msel');
-      if (this.selectedMselId) {
-        // load the MSEL
-        this.mselDataService.loadById(this.selectedMselId);
-      }
+      // if (this.selectedMselId) {
+      //   // load the MSEL
+      //   this.mselDataService.loadById(this.selectedMselId);
+      // }
     });
     // Set the display settings from config file
     this.topbarColor = this.settingsService.settings.AppTopBarHexColor

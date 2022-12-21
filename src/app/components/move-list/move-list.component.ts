@@ -73,7 +73,7 @@ export class MoveListComponent implements OnDestroy {
     (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
       if (msel) {
         Object.assign(this.msel, msel);
-        this.moveDataService.loadByMsel(msel.id);
+        this.sortedMoves = this.getSortedMoves(this.getFilteredMoves(this.moveList));
       }
     });
     this.filterControl.valueChanges
