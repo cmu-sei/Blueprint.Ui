@@ -10,7 +10,8 @@
 .enchilada tbody {
   display: block;
   width: 100%;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
   height: calc(100vh - 180px);
 }
 
@@ -20,10 +21,12 @@
 
 table {
   border-collapse: collapse;
+  width: 100%;
 }
 
 tr {
   border-bottom: 1pt solid gray;
+  width: 100%;
 }
 
 th, td {
@@ -46,79 +49,9 @@ th, td {
   overflow: auto;
 }
 
-.mat-header-row {
-  min-height: 40px;
-  padding-left:30px;
-  padding-right: 50px;
+.quill-view {
+  border-style: solid;
+  border-width: 1px;
+  border-color: lightgray;
 }
 
-.mat-row,
-.mat-header-row {
-  display: flex;
-  border-bottom-width: 1px;
-  border-bottom-style: solid;
-  align-items: center;
-  box-sizing: border-box;
-}
-
-.mat-header-cell {
-  font-weight: bold;
-}
-
-.mat-cell,
-.mat-header-cell {
-  flex: 1;
-  overflow: hidden;
-  word-wrap: break-word;
-  text-align: left;
-}
-
-.mat-accordion .mat-header-row {
-  padding-left: 1.5rem;
-  padding-right: 2rem;
-  border-bottom: none;
-}
-
-.mat-expansion-panel-header.mat-row {
-  border-bottom: none;
-}
-
-.detail-cell {
-  max-height: 250px;
-  overflow: auto;
-}
-
-.time-cell {
-  text-align: center;
-}
-
-.five-cell {
-  flex: 5;
-}
-
-.four-cell {
-  flex: 4;
-}
-
-.three-cell {
-  flex: 3;
-}
-
-.two-cell {
-  flex: 2;
-}
-
-.one-cell {
-  flex: 1;
-}
-
-.center-self {
-  align-self: center;
-}
-
-.wrap-me {
-  flex-wrap: wrap;
-  height: auto;
-  padding-top: 5px;
-  padding-bottom: 5px;
-}

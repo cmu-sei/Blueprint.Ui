@@ -10,7 +10,8 @@
 .enchilada tbody {
   display: block;
   width: 100%;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
   height: calc(100vh - 174px);
 }
 
@@ -52,10 +53,6 @@ th, td {
   width: 120px;
 }
 
-.full-width {
-  width: 100%;
-}
-
 .quill-view {
   border-style: solid;
   border-width: 1px;
@@ -74,10 +71,6 @@ th, td {
 
 .up-12 {
   margin-top: -12px;
-}
-
-.center-self {
-  align-self: center;
 }
 
 .color-option-button {
