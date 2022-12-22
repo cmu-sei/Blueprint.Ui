@@ -23,6 +23,7 @@ import { Sort } from '@angular/material/sort';
 import { MatMenuTrigger } from '@angular/material/menu';
 import { MoveDataService } from 'src/app/data/move/move-data.service';
 import { MoveQuery } from 'src/app/data/move/move.query';
+import { MoveEditDialogComponent } from '../move-edit-dialog copy/move-edit-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { v4 as uuidv4 } from 'uuid';
@@ -91,79 +92,35 @@ export class MoveListComponent implements OnDestroy {
     return moves;
   }
 
-  noExpansionChangeAllowed() {
-    return this.isAddingMove || this.valuesHaveBeenChanged();
+  addOrEditMove(move: Move) {
+    if (!move) {
+      move = {
+        title: '',
+        description: '',
+        mselId: this.msel.id
+      };
+    }
+    const dialogRef = this.dialog.open(MoveEditDialogComponent, {
+      width: '800px',
+      data: {
+        move: move
+      },
+    });
+    dialogRef.componentInstance.editComplete.subscribe((result) => {
+      if (result.saveChanges && result.move) {
+        this.saveMove(result.move);
+      }
+      dialogRef.close();
+    });
   }
 
-  editMove(move: Move) {
-    if (this.isAddingMove) {
-      return;
-    }
-    // previous edit has not been saved, so prompt
-    if (this.valuesHaveBeenChanged()) {
-      this.dialogService
-      .confirm(
-        'Changes have been made!',
-        'Do you want to save them?'
-      )
-      .subscribe((result) => {
-        if (result['confirm']) {
-          this.moveDataService.updateMove(this.changedMove);
-        }
-        this.setEditing(move);
-      });
-    // if adding a new move, don't start editing another one
+  saveMove(move: Move) {
+    if (move.id) {
+      this.moveDataService.updateMove(move);
     } else {
-      this.setEditing(move);
+      move.id = uuidv4();
+      this.moveDataService.add(move);
     }
-  }
-
-  setEditing(move) {
-    if (move.id === this.editingId) {
-      this.editingId = '';
-      this.changedMove = {};
-    } else {
-      this.editingId = move.id;
-      this.changedMove = {... move};
-    }
-  }
-
-  valuesHaveBeenChanged() {
-    let isChanged = false;
-    const original = this.moveList.find(df => df.id === this.editingId);
-    if (original) {
-      isChanged = this.changedMove.moveNumber !== original.moveNumber ||
-                  this.changedMove.description !== original.description;
-    }
-    return isChanged;
-  }
-
-  saveMove() {
-    this.moveDataService.updateMove(this.changedMove);
-    this.editingId = '';
-  }
-
-  resetMove() {
-    this.changedMove = {};
-    this.editingId = '';
-  }
-
-  addMove() {
-    this.changedMove = {
-      id: uuidv4(),
-      mselId: this.msel.id,
-      moveNumber: this.moveList.length
-    };
-    this.isAddingMove = true;
-  }
-
-  saveNewMove() {
-    this.isAddingMove = false;
-    this.moveDataService.add(this.changedMove);
-  }
-
-  cancelNewMove() {
-    this.isAddingMove = false;
   }
 
   deleteMove(move: Move): void {
@@ -199,7 +156,7 @@ export class MoveListComponent implements OnDestroy {
       case 'moveNumber':
         return ( (a.moveNumber < b.moveNumber ? -1 : 1) * (isAsc ? 1 : -1) );
         break;
-      case "description":
+      case 'description':
         return ( (a.description < b.description ? -1 : 1) * (isAsc ? 1 : -1) );
         break;
       default:
@@ -216,7 +173,7 @@ export class MoveListComponent implements OnDestroy {
         }
       });
       if (filteredMoves && filteredMoves.length > 0 && this.filterString) {
-        var filterString = this.filterString.toLowerCase();
+        const filterString = this.filterString.toLowerCase();
         filteredMoves = filteredMoves
           .filter((a) =>
             a.description.toLowerCase().includes(filterString)
