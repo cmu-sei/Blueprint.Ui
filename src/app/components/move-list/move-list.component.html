@@ -24,9 +24,9 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
         Move
       </span>
       <span class="mat-header-cell two-cell" mat-sort-header="title">Title</span>
-      <span class="mat-header-cell one-cell" mat-sort-header="startTime">Start</span>
+      <span class="mat-header-cell one-cell" mat-sort-header="moveStartTime">Start</span>
       <span class="mat-header-cell one-cell" mat-sort-header="situationTime">Situation Time</span>
-      <span class="mat-header-cell two-cell" mat-sort-header="description">Situation Description</span>
+      <span class="mat-header-cell two-cell" mat-sort-header="situationDescription">Situation Description</span>
       <span class="mat-header-cell two-cell search-cell">
         <mat-form-field class="search-control">
           <input matInput [formControl]="filterControl" placeholder="Search" />
@@ -48,7 +48,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
     <section class="scrolling-region">
       <!-- existing moves -->
       <mat-expansion-panel
-        *ngFor="let item of sortedMoves;"
+        *ngFor="let item of displayedMoves;"
         [expanded]="editingId === item.id"
         disabled
       >
