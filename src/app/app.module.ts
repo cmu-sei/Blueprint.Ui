@@ -65,6 +65,7 @@ import { CardTeamsComponent } from './components/card-teams/card-teams.component
 import { DataFieldListComponent } from './components/data-field-list/data-field-list.component';
 import { DataOptionEditDialogComponent } from './components/data-option-edit-dialog/data-option-edit-dialog.component';
 import { HomeAppComponent } from './components/home-app/home-app.component';
+import { MoveEditDialogComponent } from './components/move-edit-dialog copy/move-edit-dialog.component';
 import { MoveListComponent } from './components/move-list/move-list.component';
 import { MselComponent } from './components/msel/msel.component';
 import { MselInfoComponent } from './components/msel-info/msel-info.component';
@@ -105,6 +106,7 @@ export function getBasePath(settingsSvc: ComnSettingsService) {
     DataFieldListComponent,
     DataOptionEditDialogComponent,
     HomeAppComponent,
+    MoveEditDialogComponent,
     MoveListComponent,
     MselComponent,
     MselInfoComponent,

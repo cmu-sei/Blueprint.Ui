@@ -10,21 +10,24 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
       (matSortChange)="sortChanged($event)"
       class="mat-elevation-z2 mat-header-row background-alt"
     >
-      <span class="mat-header-cell two-cell" mat-sort-header="moveNumber">
+      <span class="mat-header-cell one-cell" mat-sort-header="moveNumber">
         <button
           mat-icon-button
-          (click)="addMove(); $event.stopPropagation()"
+          (click)="addOrEditMove(null); $event.stopPropagation()"
           style="outline: none; margin-right: 15px;"
           title="Add new move"
-          [disabled]="isAddingMove || valuesHaveBeenChanged()"
+          [disabled]="isAddingMove"
           *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
         >
           <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
         </button>
-        Move Number
+        Move
       </span>
-      <span class="mat-header-cell five-cell" mat-sort-header="description">Description</span>
-      <span class="mat-header-cell three-cell search-cell">
+      <span class="mat-header-cell two-cell" mat-sort-header="title">Title</span>
+      <span class="mat-header-cell one-cell" mat-sort-header="moveStartTime">Start</span>
+      <span class="mat-header-cell one-cell" mat-sort-header="situationTime">Situation Time</span>
+      <span class="mat-header-cell two-cell" mat-sort-header="situationDescription">Situation Description</span>
+      <span class="mat-header-cell two-cell search-cell">
         <mat-form-field class="search-control">
           <input matInput [formControl]="filterControl" placeholder="Search" />
         </mat-form-field>
@@ -43,78 +46,20 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
     </section>
 
     <section class="scrolling-region">
-      <!-- new move -->
-      <mat-expansion-panel *ngIf="isAddingMove" expanded="true">
-        <mat-expansion-panel-header
-          class="mat-row"
-          (click)="$event.stopPropagation();"
-        >
-          <div class="mat-cell flex-row-cell five-cell" (click)="$event.stopPropagation();">
-            <span class="edit-buttons">
-              <button
-                mat-icon-button
-                (click)="saveNewMove(); $event.stopPropagation()"
-                style="outline: none;"
-                title="Save new move"
-              >
-                <mat-icon class="mdi-24px self-center" fontIcon="mdi-check"></mat-icon>
-              </button>
-              <button
-                mat-icon-button
-                (click)="cancelNewMove(); $event.stopPropagation()"
-                style="outline: none;"
-                title="Cancel new move"
-              >
-                <mat-icon class="mdi-24px self-center" fontIcon="mdi-close"></mat-icon>
-              </button>
-            </span>
-            <b>Creating New Move</b>
-          </div>
-          <div class="mat-cell flex-row-cell five-cell">&nbsp;</div>
-        </mat-expansion-panel-header>
-        <ng-template matExpansionPanelContent>
-          <div class="move-detail" (click)="$event.stopPropagation();">
-            <div class="single-detail">
-              <mat-form-field class="full-width">
-                <input
-                  type="text"
-                  matInput
-                  placeholder="Move Number"
-                  [(ngModel)]="changedMove.moveNumber"
-                />
-              </mat-form-field>
-            </div>
-          </div>
-          <div class="move-detail" (click)="$event.stopPropagation();">
-            <div class="single-detail">
-              <mat-form-field class="full-width">
-                <input
-                  type="text"
-                  matInput
-                  placeholder="description"
-                  [(ngModel)]="changedMove.description"
-                />
-              </mat-form-field>
-            </div>
-          </div>
-        </ng-template>
-      </mat-expansion-panel>
-
-
       <!-- existing moves -->
       <mat-expansion-panel
-        *ngFor="let item of sortedMoves;"
+        *ngFor="let item of displayedMoves;"
         [expanded]="editingId === item.id"
-        [disabled]="noExpansionChangeAllowed()"
+        disabled
       >
         <mat-expansion-panel-header
           class="mat-row"
-          (click)="editMove(item); $event.stopPropagation();"
         >
-          <div class="mat-cell flex-row-cell two-cell">
+          <div class="mat-cell flex-row-cell one-cell">
             <button
               mat-icon-button
               class="move-button"
+              (click)="addOrEditMove(item)"
               title="Edit this move"
               *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
             >
@@ -123,7 +68,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
             <button
               mat-icon-button
               class="move-button"
-              (click)="deleteMove(item); $event.stopPropagation()"
+              (click)="deleteMove(item)"
               title="Delete this move"
               *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
             >
@@ -131,56 +76,13 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
             </button>
             &nbsp;{{ item.moveNumber }}
           </div>
-          <div class="mat-cell eight-cell center-self">{{ item.description }}</div>
+          <div class="mat-cell two-cell center-self">{{ item.title }}</div>
+          <div class="mat-cell one-cell center-self">{{ item.moveStartTime | date: 'HH:mm' }}</div>
+          <div class="mat-cell one-cell center-self">{{ item.situationTime | date: 'MM/dd/yyyy HH:mm' }}</div>
+          <div class="mat-cell four-cell center-self">
+            <quill-view-html [content]="item.situationDescription" theme="snow"></quill-view-html>
+          </div>
         </mat-expansion-panel-header>
-        <ng-template matExpansionPanelContent>
-          <div class="move-detail" (click)="$event.stopPropagation();">
-            <div class="single-detail">
-              <mat-form-field class="full-width">
-                <input
-                  type="text"
-                  matInput
-                  placeholder="Display Order"
-                  [(ngModel)]="changedMove.moveNumber"
-                  [disabled]="!(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)"
-                />
-              </mat-form-field>
-            </div>
-          </div>
-          <div class="move-detail" (click)="$event.stopPropagation();">
-            <div class="single-detail">
-              <mat-form-field class="full-width">
-                <mat-label>description</mat-label>
-                <input
-                  type="text"
-                  matInput
-                  [(ngModel)]="changedMove.description"
-                  [disabled]="!(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)"
-                />
-              </mat-form-field>
-            </div>
-          </div>
-          <div *ngIf="valuesHaveBeenChanged()" (click)="$event.stopPropagation();">
-            <span class="edit-buttons">
-              <button
-                mat-icon-button
-                (click)="saveMove();"
-                style="outline: none;"
-                title="Save new move"
-              >
-                <mat-icon class="mdi-24px self-center" fontIcon="mdi-check"></mat-icon>
-              </button>
-              <button
-                mat-icon-button
-                (click)="resetMove();"
-                style="outline: none;"
-                title="Cancel new move"
-              >
-                <mat-icon class="mdi-24px self-center" fontIcon="mdi-close"></mat-icon>
-              </button>
-            </span>
-          </div>
-        </ng-template>
       </mat-expansion-panel>
     </section>
   </div>
