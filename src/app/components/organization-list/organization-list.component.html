@@ -52,8 +52,8 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
       <section class="cards">
         <mat-card class="card" *ngFor="let org of sortedOrganizations">
           <mat-card-header>
-            <mat-card-title class="org-title">{{org.name}}</mat-card-title>
-            <mat-card-subtitle class="org-title">{{org.summary}}</mat-card-subtitle>
+            <mat-card-title>{{ org.name }}</mat-card-title>
+            <mat-card-subtitle>{{org.shortName}}</mat-card-subtitle>
           </mat-card-header>
           <mat-card-actions
             class="action-buttons"
@@ -86,7 +86,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
             </button>
           </mat-card-actions>
           <mat-card-content class="org-text" contenteditable="false">
-            <quill-view-html [content]="org.description" theme="snow"></quill-view-html>
+            {{org.summary}}
           </mat-card-content>
         </mat-card>
       </section>
@@ -96,8 +96,8 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
         <section class="cards">
           <mat-card class="card" *ngFor="let org of templateOrganizations">
             <mat-card-header>
-              <mat-card-title class="org-title">{{org.name}}</mat-card-title>
-              <mat-card-subtitle class="org-title">{{org.summary}}</mat-card-subtitle>
+              <mat-card-title>{{ org.name }}</mat-card-title>
+              <mat-card-subtitle>{{ org.shortName }}</mat-card-subtitle>
             </mat-card-header>
             <mat-card-actions
               class="action-buttons"
@@ -131,7 +131,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
               </button>
             </mat-card-actions>
             <mat-card-content class="org-text" contenteditable="false">
-              <quill-view-html [content]="org.description" theme="snow"></quill-view-html>
+              {{ org.summary }}
             </mat-card-content>
           </mat-card>
         </section>

@@ -105,20 +105,25 @@ textarea {
 }
 
 .action-buttons {
-  text-align: center;
+  text-align: center !important;
+}
+
+.mat-card-header {
+  justify-content: center;
 }
 
 .org-title {
+  text-align: center;
   margin-top: 8px;
   font-size: 16pt;
   font-weight: bold;
 }
 
 .org-text {
+  text-align: center;
   margin-top: 8px;
   font-size: 16px;
   white-space: pre-wrap;
-  text-align: left !important;
 }
 
 .eight-cell {
