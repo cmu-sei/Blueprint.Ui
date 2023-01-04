@@ -9,7 +9,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { ErrorStateMatcher } from '@angular/material/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatDialogRef, MAT_DIALOG_DATA, MatDialog } from '@angular/material/dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 
 /** Error when invalid control is dirty, touched, or submitted. */
@@ -37,8 +37,19 @@ export class OrganizationEditDialogComponent {
   public organizationNameFormControl = new FormControl(
     this.data.organization.name,
     [
-      Validators.required,
-      Validators.minLength(MIN_NAME_LENGTH),
+      Validators.required
+    ]
+  );
+  public organizationShortNameFormControl = new FormControl(
+    this.data.organization.shortName,
+    [
+      Validators.required
+    ]
+  );
+  public organizationEmailFormControl = new FormControl(
+    this.data.organization.email,
+    [
+      Validators.required
     ]
   );
   public descriptionFormControl = new FormControl(
@@ -64,6 +75,7 @@ export class OrganizationEditDialogComponent {
   }
 
   errorFree() {
+    return true;
     return !(
       this.organizationNameFormControl.hasError('required') ||
       this.organizationNameFormControl.hasError('minlength') ||
@@ -112,11 +124,17 @@ export class OrganizationEditDialogComponent {
       case 'name':
         this.data.organization.name = this.organizationNameFormControl.value ? this.organizationNameFormControl.value.toString() : '';
         break;
+      case 'shortName':
+        this.data.organization.shortName = this.organizationShortNameFormControl.value ? this.organizationShortNameFormControl.value.toString() : '';
+        break;
       case 'description':
         this.data.organization.description = this.descriptionFormControl.value ? this.descriptionFormControl.value.toString() : '';
         break;
       case 'summary':
         this.data.organization.summary = this.summaryFormControl.value;
+        break;
+      case 'email':
+        this.data.organization.email = this.organizationEmailFormControl.value ? this.organizationEmailFormControl.value.toString() : '';
         break;
       default:
         break;
