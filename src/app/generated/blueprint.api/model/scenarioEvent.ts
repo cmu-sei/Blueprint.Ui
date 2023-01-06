@@ -26,9 +26,6 @@ export interface ScenarioEvent {
     modifiedBy?: string;
     id?: string;
     mselId?: string;
-    status?: ItemStatus;
-    assignedTeamId?: string;
-    assignedTeam?: Team;
     dataValues?: Array<DataValue>;
     rowIndex?: number;
     rowMetadata?: string;

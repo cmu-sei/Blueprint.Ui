@@ -10,6 +10,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import {
   Card,
   DataField,
+  DataFieldType,
   DataValue,
   ItemStatus,
   Move,
@@ -43,7 +44,7 @@ export class MselPlus implements Msel {
   citeEvaluationId?: string;
   useSteamfitter?: boolean;
   steamfitterScenarioId?: string;
-isTemplate?: boolean;
+  isTemplate?: boolean;
   moves?: Array<Move>;
   dataFields?: Array<DataField>;
   scenarioEvents?: Array<ScenarioEvent>;
@@ -64,8 +65,10 @@ isTemplate?: boolean;
       mselRole.editor = true;
     } else if (this.scenarioEvents && this.scenarioEvents.length > 0) {
       const scenarioEvent = this.scenarioEvents.find(se => se.id === scenarioEventId);
-      if (scenarioEvent && scenarioEvent.assignedTeamId) {
-        const team = this.teams.find(t => t.id === scenarioEvent.assignedTeamId);
+      const assignedToDataField = this.dataFields.find(df => df.dataType === DataFieldType.Team);
+      const dataValue = assignedToDataField && scenarioEvent ? scenarioEvent.dataValues.find(dv => dv.dataFieldId === assignedToDataField.id) : null;
+      if (dataValue) {
+        const team = this.teams.find(t => t.shortName === dataValue.value);
         const isOnTeam = team && team.users && team.users.some(u => u.id === userId);
         if (isOnTeam && this.userMselRoles) {
           mselRole.approver = this.userMselRoles.some(umr =>

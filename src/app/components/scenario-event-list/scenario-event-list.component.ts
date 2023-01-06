@@ -9,7 +9,6 @@ import { take, takeUntil } from 'rxjs/operators';
 import {
   ComnSettingsService,
   Theme,
-  ComnAuthQuery,
 } from '@cmusei/crucible-common';
 import { UserDataService } from 'src/app/data/user/user-data.service';
 import {
@@ -20,9 +19,8 @@ import {
   Organization,
   ScenarioEvent
 } from 'src/app/generated/blueprint.api';
-import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
+import { MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
-import { MoveDataService } from 'src/app/data/move/move-data.service';
 import { Sort } from '@angular/material/sort';
 import { MatMenuTrigger } from '@angular/material/menu';
 import { OrganizationQuery } from 'src/app/data/organization/organization.query';
@@ -98,6 +96,7 @@ export class ScenarioEventListComponent implements OnDestroy {
     private scenarioEventQuery: ScenarioEventQuery,
     public dialogService: DialogService,
     public dialog: MatDialog,
+    private dataValueDataService: DataValueDataService
   ) {
     // subscribe to route changes
     activatedRoute.queryParamMap.pipe(takeUntil(this.unsubscribe$)).subscribe(params => {
@@ -209,7 +208,7 @@ export class ScenarioEventListComponent implements OnDestroy {
   getSortedOrganizationOptions(): string[] {
     let orgs: string[] = [];
     this.organizationList.forEach(o => {
-      orgs.push(o.name);
+      orgs.push(o.shortName);
     });
     this.msel.teams.forEach(t => {
       orgs.push(t.shortName);
@@ -296,24 +295,10 @@ export class ScenarioEventListComponent implements OnDestroy {
     direction: string
   ) {
     const isAsc = direction !== 'desc';
-    switch (column) {
-      case 'control number':
-      case 'from org':
-      case 'to org':
-      case 'description':
-        return (
-          (this.getDataValue(a, column).value.toLowerCase() < this.getDataValue(b, column).value.toLowerCase() ? -1 : 1) *
-          (isAsc ? 1 : -1)
-        );
-      case 'assigned to':
-        return (this.getTeamShortName(a.assignedTeamId).toLowerCase()
-                 < this.getTeamShortName(b.assignedTeamId).toLowerCase() ? -1 : 1
-               ) * (isAsc ? 1 : -1);
-      case 'status':
-        return (a.status < b.status ? -1 : 1) * (isAsc ? 1 : -1);
-      default:
-        return 0;
-    }
+    return (
+      (this.getDataValue(a, column).value.toLowerCase() < this.getDataValue(b, column).value.toLowerCase() ? -1 : 1) *
+      (isAsc ? 1 : -1)
+    );
   }
 
   getFilteredScenarioEvents(scenarioEvents: ScenarioEventPlus[]): ScenarioEventPlus[] {
@@ -420,27 +405,15 @@ export class ScenarioEventListComponent implements OnDestroy {
     return newScenarioEvent;
   }
 
-  saveScenarioEventValue(scenarioEvent: ScenarioEventPlus, dataFieldName: string, newValue: string) {
+  saveDataValue(scenarioEvent: ScenarioEventPlus, dataFieldName: string, newValue: string) {
     this.getDataValue(scenarioEvent, dataFieldName).value = newValue;
-    this.scenarioEventDataService.updateScenarioEvent(scenarioEvent);
+    this.dataValueDataService.updateDataValue(this.getDataValue(scenarioEvent, dataFieldName));
   }
 
-  saveScenarioEventArray(scenarioEvent: ScenarioEventPlus, dataFieldName: string, newValues: string[]) {
+  saveDataValueArray(scenarioEvent: ScenarioEventPlus, dataFieldName: string, newValues: string[]) {
     this.getDataValue(scenarioEvent, dataFieldName).value = newValues.join(', ');
     this.getDataValue(scenarioEvent, dataFieldName).valueArray = newValues;
-    this.scenarioEventDataService.updateScenarioEvent(scenarioEvent);
-  }
-
-  saveAssignedTeam(scenarioEvent: ScenarioEventPlus, teamId: string) {
-    const {dataValues, ...saveScenarioEvent} = scenarioEvent;
-    saveScenarioEvent.assignedTeamId = teamId;
-    this.scenarioEventDataService.updateScenarioEvent(saveScenarioEvent);
-  }
-
-  saveStatus(scenarioEvent: ScenarioEventPlus, status: ItemStatus) {
-    const {dataValues, ...saveScenarioEvent} = scenarioEvent;
-    saveScenarioEvent.status = status;
-    this.scenarioEventDataService.updateScenarioEvent(saveScenarioEvent);
+    this.dataValueDataService.updateDataValue(this.getDataValue(scenarioEvent, dataFieldName));
   }
 
   saveScenarioEvent(scenarioEvent: ScenarioEvent) {
