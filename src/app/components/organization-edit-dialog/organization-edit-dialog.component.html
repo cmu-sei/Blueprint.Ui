@@ -34,7 +34,7 @@ Released under a MIT (SEI)-style license. See LICENSE.md in the project root for
         <mat-form-field class="full-width">
           <input type="text" matInput [formControl]="organizationShortNameFormControl" placeholder="Short Name (required)" (blur)="saveOrganization('shortName')"
             value="{{data.organization.shortName}}">
-          <mat-error *ngIf="organizationNameFormControl.hasError('required')">
+          <mat-error *ngIf="organizationShortNameFormControl.hasError('required')">
             Short Name is <strong>required</strong>
           </mat-error>
         </mat-form-field>
