@@ -161,8 +161,8 @@ export class DataFieldDataService {
         }),
         take(1)
       )
-      .subscribe((s) => {
-        this.dataFieldStore.add(s);
+      .subscribe((dataFields) => {
+        this.dataFieldStore.set(dataFields);
       });
   }
 
@@ -176,8 +176,8 @@ export class DataFieldDataService {
         }),
         take(1)
       )
-      .subscribe((n) => {
-        this.updateStore(n);
+      .subscribe((dataFields) => {
+        this.dataFieldStore.set(dataFields);
       });
   }
 
@@ -185,8 +185,8 @@ export class DataFieldDataService {
     this.dataFieldService
       .deleteDataField(id)
       .pipe(take(1))
-      .subscribe((r) => {
-        this.deleteFromStore(id);
+      .subscribe((dataFields) => {
+        this.dataFieldStore.set(dataFields);
       });
   }
 
