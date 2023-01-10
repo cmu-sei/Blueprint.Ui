@@ -40,7 +40,7 @@
     "core-js": "^3.14.0",
     "deep-copy-ts": "^0.5.4",
     "eventsource": "^1.1.1",
-    "luxon": "^1.27.0",
+    "luxon": "^1.28.1",
     "ngx-clipboard": "^14.0.1",
     "ngx-material-timepicker": "^5.5.3",
     "ngx-quill": "^14.3.0",
