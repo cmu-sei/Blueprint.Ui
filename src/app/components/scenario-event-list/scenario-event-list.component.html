@@ -99,7 +99,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
                 <mat-select
                   *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, item.id).editor"
                   (click)="$event.stopPropagation()"
-                  (valueChange)="saveScenarioEventValue(item, 'From Org', $event)"
+                  (valueChange)="saveDataValue(item, 'From Org', $event)"
                   class="header-dropdown"
                   placeholder="None"
                   [(ngModel)]="getDataValue(item, 'From Org').value"
@@ -119,7 +119,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
                   multiple
                   *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, item.id).editor"
                   (click)="$event.stopPropagation()"
-                  (valueChange)="saveScenarioEventArray(item, 'To Org', $event)"
+                  (valueChange)="saveDataValueArray(item, 'To Org', $event)"
                   class="header-dropdown"
                   placeholder="None"
                   [(ngModel)]="getDataValue(item, 'To Org').valueArray"
@@ -138,9 +138,9 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
               <div class="constrainer" [style]="getStyle(df)">
                 <mat-select
                   *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, item.id).approver"
-                  [(ngModel)]="item.status"
+                  [(ngModel)]="getDataValue(item, df.name).value"
                   (click)="$event.stopPropagation()"
-                  (valueChange)="saveStatus(item, $event)"
+                  (valueChange)="saveDataValue(item, df.name, $event)"
                   class="header-dropdown"
                   placeholder="None"
                 >
@@ -148,7 +148,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
                     {{ status }}
                   </mat-option>
                 </mat-select>
-                <span *ngIf="!isContentDeveloper && !msel.hasRole(loggedInUserId, item.id).approver">{{ item.status }}</span>
+                <span *ngIf="!isContentDeveloper && !msel.hasRole(loggedInUserId, item.id).approver">{{ getDataValue(item, df.name).value }}</span>
               </div>
             </td>
             <!-- Assigned Team value -->
@@ -156,17 +156,17 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
               <div class="constrainer" [style]="getStyle(df)">
                 <mat-select
                   *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, item.id).owner"
-                  [(ngModel)]="item.assignedTeamId"
+                  [(ngModel)]="getDataValue(item, df.name).value"
                   (click)="$event.stopPropagation()"
-                  (valueChange)="saveAssignedTeam(item, $event)"
+                  (valueChange)="saveDataValue(item, df.name, $event)"
                   class="header-dropdown"
                   placeholder="None"
                 >
-                  <mat-option *ngFor="let team of msel.teams" [value]="team.id">
+                  <mat-option *ngFor="let team of msel.teams" [value]="team.shortName">
                     {{ team.shortName }}
                   </mat-option>
                 </mat-select>
-                <span *ngIf="!isContentDeveloper && !msel.hasRole(loggedInUserId, item.id).owner">{{ getTeamShortName(item.assignedTeamId) }}</span>
+                <span *ngIf="!isContentDeveloper && !msel.hasRole(loggedInUserId, item.id).owner">{{ getDataValue(item, df.name).value }}</span>
               </div>
             </td>
             <!-- other values -->

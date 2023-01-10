@@ -96,6 +96,8 @@ export class OrganizationListComponent implements OnDestroy {
     if (!organization) {
       organization = {
         name: '',
+        shortName: '',
+        email: '',
         summary: '',
         description: '',
         mselId: this.msel.id,
@@ -103,8 +105,10 @@ export class OrganizationListComponent implements OnDestroy {
       };
     } else {
       organization = {
-        id: makeTemplate == organization.isTemplate ? organization.id : null,
+        id: makeTemplate === organization.isTemplate ? organization.id : null,
         name: organization.name,
+        shortName: organization.shortName,
+        email: organization.email,
         summary: organization.summary,
         description: organization.description,
         mselId: makeTemplate ? null : this.msel.id,
