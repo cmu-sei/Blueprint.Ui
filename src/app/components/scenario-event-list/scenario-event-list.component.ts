@@ -23,6 +23,7 @@ import { MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { Sort } from '@angular/material/sort';
 import { MatMenuTrigger } from '@angular/material/menu';
+import { OrganizationDataService } from 'src/app/data/organization/organization-data.service';
 import { OrganizationQuery } from 'src/app/data/organization/organization.query';
 import { ScenarioEventDataService, ScenarioEventPlus, DataValuePlus } from 'src/app/data/scenario-event/scenario-event-data.service';
 import { ScenarioEventEditDialogComponent } from '../scenario-event-edit-dialog/scenario-event-edit-dialog.component';
@@ -96,7 +97,8 @@ export class ScenarioEventListComponent implements OnDestroy {
     private scenarioEventQuery: ScenarioEventQuery,
     public dialogService: DialogService,
     public dialog: MatDialog,
-    private dataValueDataService: DataValueDataService
+    private dataValueDataService: DataValueDataService,
+    private organizationDataService: OrganizationDataService
   ) {
     // subscribe to route changes
     activatedRoute.queryParamMap.pipe(takeUntil(this.unsubscribe$)).subscribe(params => {
@@ -115,6 +117,7 @@ export class ScenarioEventListComponent implements OnDestroy {
         this.msel = this.getEditableMsel(msel) as MselPlus;
         this.getSortedDataFields(this.msel.dataFields);
         this.scenarioEventDataService.loadByMsel(msel.id);
+        this.organizationDataService.loadByMsel(msel.id);
       }
     });
     (this.scenarioEventQuery.selectAll()).pipe(takeUntil(this.unsubscribe$)).subscribe(scenarioEvents => {
