@@ -34,6 +34,18 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
         <mat-tab label="Steamfitter" *ngIf="data.useSteamfitter">
         </mat-tab>
       </mat-tab-group>
+      <!-- row index -->
+      <div class="single-edit-dialog">
+        <mat-form-field class="full-width">
+          <input
+            matInput
+            placeholder="Order"
+            (change)="verifyNumber(data.scenarioEvent.rowIndex)"
+            [(ngModel)]="data.scenarioEvent.rowIndex"
+            [disabled]="!data.isOwner"
+          />
+        </mat-form-field>
+      </div>
       <!-- data values for each data field -->
       <div *ngFor="let df of sortedDataFields" class="single-edit-dialog">
         <!-- string input -->
