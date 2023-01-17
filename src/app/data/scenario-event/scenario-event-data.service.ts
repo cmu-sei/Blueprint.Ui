@@ -191,7 +191,7 @@ export class ScenarioEventDataService {
         take(1)
       )
       .subscribe((scenarioEvents) => {
-        this.scenarioEventStore.upsertMany(scenarioEvents);
+        this.scenarioEventStore.set(scenarioEvents);
       });
   }
 
@@ -206,7 +206,7 @@ export class ScenarioEventDataService {
         take(1)
       )
       .subscribe((scenarioEvents) => {
-        this.scenarioEventStore.upsertMany(scenarioEvents);
+        this.scenarioEventStore.set(scenarioEvents);
       });
   }
 
@@ -214,8 +214,8 @@ export class ScenarioEventDataService {
     this.scenarioEventService
       .deleteScenarioEvent(id)
       .pipe(take(1))
-      .subscribe((r) => {
-        this.deleteFromStore(id);
+      .subscribe((scenarioEvents) => {
+        this.scenarioEventStore.set(scenarioEvents);
       });
   }
 

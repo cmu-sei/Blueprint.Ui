@@ -109,7 +109,7 @@ export class ScenarioEventService {
             headers = headers.set('Content-Type', httpContentTypeSelected);
         }
 
-        return this.httpClient.post<ScenarioEvent>(`${this.configuration.basePath}/api/scenarioevents`,
+        return this.httpClient.post<Array<ScenarioEvent>>(`${this.configuration.basePath}/api/scenarioevents`,
             ScenarioEvent,
             {
                 withCredentials: this.configuration.withCredentials,
@@ -127,9 +127,9 @@ export class ScenarioEventService {
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public deleteScenarioEvent(id: string, observe?: 'body', reportProgress?: boolean): Observable<any>;
-    public deleteScenarioEvent(id: string, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<any>>;
-    public deleteScenarioEvent(id: string, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<any>>;
+    public deleteScenarioEvent(id: string, observe?: 'body', reportProgress?: boolean): Observable<Array<ScenarioEvent>>;
+    public deleteScenarioEvent(id: string, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Array<ScenarioEvent>>>;
+    public deleteScenarioEvent(id: string, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Array<ScenarioEvent>>>;
     public deleteScenarioEvent(id: string, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
         if (id === null || id === undefined) {
             throw new Error('Required parameter id was null or undefined when calling deleteScenarioEvent.');
@@ -158,7 +158,7 @@ export class ScenarioEventService {
         const consumes: string[] = [
         ];
 
-        return this.httpClient.delete<any>(`${this.configuration.basePath}/api/scenarioevents/${encodeURIComponent(String(id))}`,
+        return this.httpClient.delete<Array<ScenarioEvent>>(`${this.configuration.basePath}/api/scenarioevents/${encodeURIComponent(String(id))}`,
             {
                 withCredentials: this.configuration.withCredentials,
                 headers: headers,
@@ -327,7 +327,7 @@ export class ScenarioEventService {
             headers = headers.set('Content-Type', httpContentTypeSelected);
         }
 
-        return this.httpClient.put<ScenarioEvent>(`${this.configuration.basePath}/api/scenarioevents/${encodeURIComponent(String(id))}`,
+        return this.httpClient.put<Array<ScenarioEvent>>(`${this.configuration.basePath}/api/scenarioevents/${encodeURIComponent(String(id))}`,
             ScenarioEvent,
             {
                 withCredentials: this.configuration.withCredentials,
