@@ -31,11 +31,12 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
     </button>
   </div>
   <div class="header-cell four-cell" matSort (matSortChange)="sortChanged($event)">
-    <div class="one-cell">&nbsp;</div>
+    <div class="two-cell">&nbsp;</div>
     <div class="two-cell">Sort by:</div>
-    <div class="two-cell" mat-sort-header="description">Description</div>
+    <div class="two-cell" mat-sort-header="dateModified">Modified</div>
     <div class="two-cell" mat-sort-header="dateCreated">Created</div>
-    <div class="one-cell">&nbsp;</div>
+    <div class="two-cell" mat-sort-header="name">Name</div>
+    <div class="two-cell">&nbsp;</div>
   </div>
   <div class="header-cell four-cell">
     <mat-form-field class="search-control">
@@ -62,9 +63,9 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
     </mat-card-header>
     <mat-card-content class="msel-text" contenteditable="false">
       <span>Status: {{ msel.status }}</span> <span *ngIf="msel.isTemplate"> - Template </span><br />
-      <span>Created: {{ msel.dateCreated | date: 'MM/dd/yyyy' }}</span><br />
-      <span *ngIf="!msel.dateModified">Modified: {{ msel.dateCreated | date: 'MM/dd/yyyy' }}</span>
-      <span *ngIf="msel.dateModified">Modified: {{ msel.dateModified | date: 'MM/dd/yyyy' }}</span><br />
+      <span>Created: {{ msel.dateCreated | date: 'MM/dd/yyyy HH:mm' }}</span><br />
+      <span *ngIf="!msel.dateModified">Modified: {{ msel.dateCreated | date: 'MM/dd/yyyy HH:mm' }}</span>
+      <span *ngIf="msel.dateModified">Modified: {{ msel.dateModified | date: 'MM/dd/yyyy HH:mm' }}</span><br />
     </mat-card-content>
     <mat-card-actions class="action-buttons">
       <button
