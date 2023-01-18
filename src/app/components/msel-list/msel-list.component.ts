@@ -92,7 +92,9 @@ export class MselListComponent implements OnDestroy {
    * Selects the file(s) to be uploaded. Called when file selection is changed
    */
    selectFile(file: File) {
-    if (!file) return;
+    if (!file) {
+      return;
+    }
     this.uploadProgress = 0;
     this.isReady = false;
     this.mselDataService
@@ -172,16 +174,17 @@ export class MselListComponent implements OnDestroy {
     let filteredMsels: MselPlus[] = [];
     if (this.mselList) {
       this.mselList.forEach(m => {
-        let mselPlus = new MselPlus();
+        const mselPlus = new MselPlus();
         Object.assign(mselPlus, m);
         filteredMsels.push(mselPlus);
       });
       if (filteredMsels && filteredMsels.length > 0 && this.filterString) {
-        var filterString = this.filterString.toLowerCase();
+        const filterString = this.filterString.toLowerCase();
         filteredMsels = filteredMsels
           .filter((a) =>
-            a.description.toLowerCase().includes(filterString) ||
-            a.status.toLowerCase().includes(filterString)
+          a.name.toLowerCase().includes(filterString) ||
+          a.description.toLowerCase().includes(filterString) ||
+          a.status.toLowerCase().includes(filterString)
           );
       }
     }
@@ -211,8 +214,11 @@ export class MselListComponent implements OnDestroy {
       case 'dateCreated':
         return ( (a.dateCreated < b.dateCreated ? -1 : 1) * (isAsc ? 1 : -1) );
         break;
-      case "description":
-        return ( (a.description < b.description ? -1 : 1) * (isAsc ? 1 : -1) );
+      case 'dateModified':
+        return ( (a.dateModified < b.dateModified ? -1 : 1) * (isAsc ? 1 : -1) );
+        break;
+      case 'name':
+        return ( (a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1) * (isAsc ? 1 : -1) );
         break;
       default:
         return 0;
