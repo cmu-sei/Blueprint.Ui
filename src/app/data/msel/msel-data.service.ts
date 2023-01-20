@@ -473,4 +473,35 @@ export class MselDataService {
     this.mselStore.upsert(updatedMsel.id, updatedMsel);
   }
 
+  addMselTeam(mselId: string, team: Team) {
+    const msel = this.mselQuery.getById(mselId);
+    if (!msel.teams.some(t => t.id === team.id)) {
+      const updatedMsel: Msel = {... msel};
+      updatedMsel.teams = [];
+      msel.teams.forEach(t => {
+        const updatedTeam = {... t};
+        updatedMsel.teams.push(updatedTeam);
+      });
+      const newTeam = {... team};
+      updatedMsel.teams.push(newTeam);
+      this.mselStore.upsert(updatedMsel.id, updatedMsel);
+    }
+  }
+
+  deleteMselTeam(mselId: string, teamId: string) {
+    const msel = this.mselQuery.getById(mselId);
+    const index = msel.teams.findIndex(t => t.id === teamId);
+    if (index >= 0) {
+      const updatedMsel: Msel = {... msel};
+      updatedMsel.teams = [];
+      for (let i = 0; i < msel.teams.length; i++) {
+        if (i !== index) {
+          const updatedTeam = {... msel.teams[i]};
+          updatedMsel.teams.push(updatedTeam);
+        }
+      }
+      this.mselStore.upsert(updatedMsel.id, updatedMsel);
+    }
+  }
+
 }

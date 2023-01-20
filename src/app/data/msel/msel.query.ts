@@ -27,6 +27,10 @@ export class MselQuery extends QueryEntity<MselState> {
     return this.selectEntity(id);
   }
 
+  getById(id: string): Msel {
+    return this.getAll().find(m => m.id === id);
+  }
+
   getByScenarioEventId(scenarioEventId: string): Msel {
     return this.getAll().find(m => m.scenarioEvents.find(se => se.id === scenarioEventId));
   }
