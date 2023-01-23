@@ -14,7 +14,8 @@ import {
   ScenarioEvent,
   Team,
   TeamUser,
-  User
+  User,
+  UserMselRole
 } from 'src/app/generated/blueprint.api';
 import { DataFieldDataService } from '../data/data-field/data-field-data.service';
 import { MoveDataService } from '../data/move/move-data.service';
@@ -115,6 +116,7 @@ export class SignalRService {
     this.addTeamHandlers();
     this.addTeamUserHandlers();
     this.addUserHandlers();
+    this.addUserMselRoleHandlers();
   }
 
   private addDataFieldHandlers() {
@@ -266,6 +268,16 @@ export class SignalRService {
 
     this.hubConnection.on('UserDeleted', (id: string) => {
       this.userDataService.deleteFromStore(id);
+    });
+  }
+
+  private addUserMselRoleHandlers() {
+    this.hubConnection.on('UserMselRoleCreated', (userMselRole: UserMselRole) => {
+      this.mselDataService.addUserRole(userMselRole);
+    });
+
+    this.hubConnection.on('UserMselRoleDeleted', (userMselRole: UserMselRole) => {
+      this.mselDataService.deleteUserRole(userMselRole);
     });
   }
 
