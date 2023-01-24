@@ -50,15 +50,11 @@ export class MoveListComponent implements OnDestroy {
     public dialog: MatDialog,
     public dialogService: DialogService
   ) {
-    // subscribe to moves
-    this.moveQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(moves => {
-      this.moveList = moves;
-      this.displayedMoves = this.getSortedMoves(this.getFilteredMoves());
-    });
     // subscribe to the active MSEL
     (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
       if (msel) {
         Object.assign(this.msel, msel);
+        this.moveList = msel.moves;
         this.displayedMoves = this.getSortedMoves(this.getFilteredMoves());
       }
     });
@@ -90,6 +86,9 @@ export class MoveListComponent implements OnDestroy {
         situationTime: moveTime,
         mselId: this.msel.id
       };
+    } else {
+      // make sure all move dates are actual dates
+      this.moveDataService.setAsDates(move);
     }
     const dialogRef = this.dialog.open(MoveEditDialogComponent, {
       width: '800px',
