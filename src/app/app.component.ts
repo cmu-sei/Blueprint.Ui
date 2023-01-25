@@ -1,5 +1,5 @@
 /*
- Copyright 2022 Carnegie Mellon University. All Rights Reserved. 
+ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
  Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 */
 
@@ -20,6 +20,10 @@ import { takeUntil } from 'rxjs/operators';
 export class AppComponent implements OnDestroy {
   @HostBinding('class') componentCssClass: string;
   @HostListener('document:keydown.backspace', ['$event'])
+  theme$: Observable<Theme> = this.authQuery.userTheme$;
+  private paramTheme;
+  unsubscribe$: Subject<null> = new Subject<null>();
+
   onKeyDown(evt: KeyboardEvent) {
     let doPrevent = true;
     const types = [
@@ -65,10 +69,6 @@ export class AppComponent implements OnDestroy {
       return false;
     }
   }
-
-  theme$: Observable<Theme> = this.authQuery.userTheme$;
-  private paramTheme;
-  unsubscribe$: Subject<null> = new Subject<null>();
 
   constructor(
     iconRegistry: MatIconRegistry,
