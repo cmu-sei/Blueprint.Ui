@@ -36,7 +36,7 @@ export class MselRolesComponent implements OnDestroy {
   isEditEnabled = false;
   userList: User[] = [];
   private allTeams: Team[] = [];
-  mselRoles: MselRole[] = [MselRole.Editor, MselRole.Approver, MselRole.Owner];
+  mselRoles: MselRole[] = [MselRole.Editor, MselRole.Approver, MselRole.MoveEditor, MselRole.Owner];
 
   constructor(
     private teamQuery: TeamQuery,

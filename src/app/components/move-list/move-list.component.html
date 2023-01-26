@@ -17,7 +17,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
           style="outline: none; margin-right: 15px;"
           title="Add new move"
           [disabled]="isAddingMove"
-          *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
+          *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner || msel.hasRole(loggedInUserId, null).moveEditor"
         >
           <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
         </button>
@@ -61,7 +61,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
               class="move-button"
               (click)="addOrEditMove(item)"
               title="Edit this move"
-              *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
+              *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner || msel.hasRole(loggedInUserId, null).moveEditor"
             >
               <mat-icon class="mdi-18px up-12" fontIcon="mdi-square-edit-outline"></mat-icon>
             </button>
@@ -70,7 +70,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
               class="move-button"
               (click)="deleteMove(item)"
               title="Delete this move"
-              *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
+              *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner || msel.hasRole(loggedInUserId, null).moveEditor"
             >
               <mat-icon class="mdi-18px up-12" fontIcon="mdi-delete"></mat-icon>
             </button>

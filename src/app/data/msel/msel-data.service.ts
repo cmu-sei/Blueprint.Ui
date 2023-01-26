@@ -56,13 +56,17 @@ export class MselPlus implements Msel {
   gallerySourceTypes?: Array<string>;
 
   hasRole(userId: string, scenarioEventId: string) {
-    const mselRole = { owner: false, approver: false, editor: false };
+    const mselRole = { owner: false, moveEditor: false, approver: false, editor: false };
     mselRole.owner = !this.userMselRoles ? false : this.userMselRoles.some(umr =>
       umr.userId === userId &&
       umr.role === MselRole.Owner);
+    mselRole.moveEditor = !this.userMselRoles ? false : this.userMselRoles.some(umr =>
+      umr.userId === userId &&
+      umr.role === MselRole.MoveEditor);
     if (mselRole.owner) {
       mselRole.approver = true;
       mselRole.editor = true;
+      mselRole.moveEditor = true;
     } else if (this.scenarioEvents && this.scenarioEvents.length > 0) {
       const scenarioEvent = this.scenarioEvents.find(se => se.id === scenarioEventId);
       const assignedToDataField = this.dataFields.find(df => df.dataType === DataFieldType.Team);
