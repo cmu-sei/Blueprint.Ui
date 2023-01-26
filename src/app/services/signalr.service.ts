@@ -4,8 +4,16 @@
 import { Injectable } from '@angular/core';
 import { ComnAuthService, ComnSettingsService } from '@cmusei/crucible-common';
 import * as signalR from '@microsoft/signalr';
-import { Move, Team, TeamUser, User } from 'src/app/generated/blueprint.api';
-import { MoveDataService } from '../data/move/move-data.service';
+import {
+  Msel,
+  Organization,
+  Team,
+  TeamUser,
+  User,
+  UserMselRole
+} from 'src/app/generated/blueprint.api';
+import { MselDataService } from '../data/msel/msel-data.service';
+import { OrganizationDataService } from '../data/organization/organization-data.service';
 import { TeamDataService } from 'src/app/data/team/team-data.service';
 import { TeamUserDataService } from 'src/app/data/user/team-user-data.service';
 import { UserDataService } from 'src/app/data/user/user-data.service';
@@ -26,7 +34,8 @@ export class SignalRService {
   constructor(
     private authService: ComnAuthService,
     private settingsService: ComnSettingsService,
-    private moveDataService: MoveDataService,
+    private mselDataService: MselDataService,
+    private organizationDataService: OrganizationDataService,
     private teamDataService: TeamDataService,
     private teamUserDataService: TeamUserDataService,
     private userDataService: UserDataService
@@ -64,7 +73,7 @@ export class SignalRService {
   private reconnect() {
     if (this.hubConnection != null) {
       this.hubConnection.stop().then(() => {
-        console.log("Reconnecting to the hub.");
+        console.log('Reconnecting to the hub.');
         this.connectionPromise = this.hubConnection.start();
         this.connectionPromise.then(() => this.join());
       });
@@ -86,31 +95,49 @@ export class SignalRService {
   }
 
   private addHandlers() {
-    this.addMoveHandlers();
+    this.addMselHandlers();
+    this.addOrganizationHandlers();
     this.addTeamHandlers();
     this.addTeamUserHandlers();
     this.addUserHandlers();
   }
 
-  private addMoveHandlers() {
+  private addMselHandlers() {
     this.hubConnection.on(
-      'MoveUpdated', (move: Move) => {
-        this.moveDataService.updateStore(move);
+      'MselUpdated', (msel: Msel) => {
+        this.mselDataService.updateStore(msel);
       }
     );
 
-    this.hubConnection.on('MoveCreated', (move: Move) => {
-      this.moveDataService.updateStore(move);
+    this.hubConnection.on('MselCreated', (msel: Msel) => {
+      this.mselDataService.updateStore(msel);
     });
 
-    this.hubConnection.on('MoveDeleted', (id: string) => {
-      this.moveDataService.deleteFromStore(id);
+    this.hubConnection.on('MselDeleted', (id: string) => {
+      this.mselDataService.deleteFromStore(id);
+    });
+  }
+
+  private addOrganizationHandlers() {
+    this.hubConnection.on(
+      'OrganizationUpdated', (organization: Organization) => {
+        this.organizationDataService.updateStore(organization);
+      }
+    );
+
+    this.hubConnection.on('OrganizationCreated', (organization: Organization) => {
+      this.organizationDataService.updateStore(organization);
+    });
+
+    this.hubConnection.on('OrganizationDeleted', (id: string) => {
+      this.organizationDataService.deleteFromStore(id);
     });
   }
 
   private addTeamHandlers() {
     this.hubConnection.on('TeamUpdated', (team: Team) => {
-        this.teamDataService.updateStore(team);
+      console.log('Team updated');
+      this.teamDataService.updateStore(team);
       }
     );
 
@@ -150,6 +177,17 @@ export class SignalRService {
 
     this.hubConnection.on('UserDeleted', (id: string) => {
       this.userDataService.deleteFromStore(id);
+    });
+  }
+
+  private addUserMselRoleHandlers() {
+    this.hubConnection.on('UserMselRoleCreated', (userMselRole: UserMselRole) => {
+      console.log('UserMselRole updated');
+      this.mselDataService.addUserRole(userMselRole);
+    });
+
+    this.hubConnection.on('UserMselRoleDeleted', (userMselRole: UserMselRole) => {
+      this.mselDataService.deleteUserRole(userMselRole);
     });
   }
 

@@ -447,7 +447,7 @@ export class MselDataService {
     this.mselStore.setActive(id);
   }
 
-  // MSEL children update section
+  // MSEL children update section, where the API has already been updated
   updateDataValue(returnedDataValue: DataValue) {
     const msel = this.mselQuery.getByScenarioEventId(returnedDataValue.scenarioEventId);
     const updatedMsel: Msel = {... msel};
@@ -471,6 +471,68 @@ export class MselDataService {
       }
     });
     this.mselStore.upsert(updatedMsel.id, updatedMsel);
+  }
+
+  addMselTeam(mselId: string, team: Team) {
+    const msel = this.mselQuery.getById(mselId);
+    if (!msel.teams.some(t => t.id === team.id)) {
+      const updatedMsel: Msel = {... msel};
+      updatedMsel.teams = [];
+      msel.teams.forEach(t => {
+        const updatedTeam = {... t};
+        updatedMsel.teams.push(updatedTeam);
+      });
+      const newTeam = {... team};
+      updatedMsel.teams.push(newTeam);
+      this.mselStore.upsert(updatedMsel.id, updatedMsel);
+    }
+  }
+
+  deleteMselTeam(mselId: string, teamId: string) {
+    const msel = this.mselQuery.getById(mselId);
+    const index = msel.teams.findIndex(t => t.id === teamId);
+    if (index >= 0) {
+      const updatedMsel: Msel = {... msel};
+      updatedMsel.teams = [];
+      for (let i = 0; i < msel.teams.length; i++) {
+        if (i !== index) {
+          const updatedTeam = {... msel.teams[i]};
+          updatedMsel.teams.push(updatedTeam);
+        }
+      }
+      this.mselStore.upsert(updatedMsel.id, updatedMsel);
+    }
+  }
+
+  addUserRole(userMselRole: UserMselRole) {
+    const msel = this.mselQuery.getById(userMselRole.mselId);
+    if (!msel.userMselRoles.some(umr => umr.mselId === userMselRole.mselId && umr.userId === userMselRole.userId && umr.role === userMselRole.role)) {
+      const updatedMsel: Msel = {... msel};
+      updatedMsel.userMselRoles = [];
+      msel.userMselRoles.forEach(umr => {
+        const updatedUmr = {... umr};
+        updatedMsel.userMselRoles.push(updatedUmr);
+      });
+      const newUmr = {... userMselRole};
+      updatedMsel.userMselRoles.push(newUmr);
+      this.mselStore.upsert(updatedMsel.id, updatedMsel);
+    }
+  }
+
+  deleteUserRole(userMselRole: UserMselRole) {
+    const msel = this.mselQuery.getById(userMselRole.mselId);
+    const index = msel.userMselRoles.findIndex(umr => umr.id === userMselRole.id);
+    if (index >= 0) {
+      const updatedMsel: Msel = {... msel};
+      updatedMsel.userMselRoles = [];
+      for (let i = 0; i < msel.userMselRoles.length; i++) {
+        if (i !== index) {
+          const updatedTeam = {... msel.userMselRoles[i]};
+          updatedMsel.userMselRoles.push(updatedTeam);
+        }
+      }
+      this.mselStore.upsert(updatedMsel.id, updatedMsel);
+    }
   }
 
 }
