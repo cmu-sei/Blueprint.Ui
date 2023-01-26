@@ -6835,7 +6835,8 @@
         "enum": [
           "Owner",
           "Editor",
-          "Approver"
+          "Approver",
+          "MoveEditor"
         ],
         "type": "string"
       },
