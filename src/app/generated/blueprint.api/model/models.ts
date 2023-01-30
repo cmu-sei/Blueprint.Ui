@@ -10,6 +10,8 @@ export * from './calendarWeekRule';
 export * from './callingConventions';
 export * from './card';
 export * from './cardTeam';
+export * from './citeAction';
+export * from './citeRole';
 export * from './compareInfo';
 export * from './constructorInfo';
 export * from './cultureInfo';

@@ -9,6 +9,8 @@ import { HttpClient } from '@angular/common/http';
 
 
 import { CardService } from './api/card.service';
+import { CiteActionService } from './api/citeAction.service';
+import { CiteRoleService } from './api/citeRole.service';
 import { DataFieldService } from './api/dataField.service';
 import { DataOptionService } from './api/dataOption.service';
 import { DataValueService } from './api/dataValue.service';
@@ -30,6 +32,8 @@ import { UserPermissionService } from './api/userPermission.service';
   exports:      [],
   providers: [
     CardService,
+    CiteActionService,
+    CiteRoleService,
     DataFieldService,
     DataOptionService,
     DataValueService,
