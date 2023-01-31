@@ -5,7 +5,7 @@ import { CdkTableModule } from '@angular/cdk/table';
 import { CdkTreeModule } from '@angular/cdk/tree';
 import { HttpClientModule } from '@angular/common/http';
 import { ErrorHandler, NgModule } from '@angular/core';
-import { FlexLayoutModule } from '@angular/flex-layout';
+//import { FlexLayoutModule } from '@angular/flex-layout';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatBadgeModule } from '@angular/material/badge';
@@ -137,7 +137,7 @@ export function getBasePath(settingsSvc: ComnSettingsService) {
     BrowserAnimationsModule,
     SwaggerCodegenApiModule,
     HttpClientModule,
-    FlexLayoutModule,
+    //FlexLayoutModule,
     FormsModule,
     ReactiveFormsModule,
     MatAutocompleteModule,
