@@ -30,6 +30,6 @@ export const ROUTES: Routes = [
 
 @NgModule({
   exports: [RouterModule],
-  imports: [CommonModule, RouterModule.forRoot(ROUTES, { relativeLinkResolution: 'legacy' })],
+  imports: [CommonModule, RouterModule.forRoot(ROUTES, {})],
 })
 export class AppRoutingModule {}
