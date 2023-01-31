@@ -58,6 +58,8 @@ export class AdminTeamEditDialogComponent {
     dialogRef.disableClose = true;
   }
 
+  readonly MIN_NAME_LENGTH = MIN_NAME_LENGTH;
+
   errorFree() {
     return !(
       this.teamNameFormControl.hasError('required') ||
