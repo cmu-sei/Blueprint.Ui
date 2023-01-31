@@ -3,10 +3,10 @@
 
 import { Order, Query, QueryConfig, QueryEntity } from '@datorama/akita';
 import {
-  CiteRoleState,
-  CiteRoleStore,
-} from './citeRole.store';
-import { CiteRole } from 'src/app/generated/blueprint.api';
+  CiteActionState,
+  CiteActionStore,
+} from './cite-action.store';
+import { CiteAction } from 'src/app/generated/blueprint.api';
 import { Injectable } from '@angular/core';
 import { PageEvent } from '@angular/material/paginator';
 import { Observable } from 'rxjs';
@@ -18,12 +18,12 @@ import { Observable } from 'rxjs';
 @Injectable({
   providedIn: 'root',
 })
-export class CiteRoleQuery extends QueryEntity<CiteRoleState> {
-  constructor(protected store: CiteRoleStore) {
+export class CiteActionQuery extends QueryEntity<CiteActionState> {
+  constructor(protected store: CiteActionStore) {
     super(store);
   }
 
-  selectById(id: string): Observable<CiteRole> {
+  selectById(id: string): Observable<CiteAction> {
     return this.selectEntity(id);
   }
 }

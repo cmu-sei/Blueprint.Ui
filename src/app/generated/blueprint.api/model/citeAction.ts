@@ -14,6 +14,7 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
+import { Team } from './team';
 
 
 export interface CiteAction {
@@ -24,6 +25,7 @@ export interface CiteAction {
     id?: string;
     mselId?: string;
     teamId?: string;
+    team?: Team;
     name?: string;
     moveNumber?: number;
     injectNumber?: number;

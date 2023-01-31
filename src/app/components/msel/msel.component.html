@@ -53,6 +53,13 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
       [isContentDeveloper]="isContentDeveloper"
     ></app-card-list>
   </mat-tab>
+  <mat-tab label="CiteRoles" *ngIf="(msel | async)?.useCite">
+    <app-cite-role-list
+      *ngIf="selectedTab === 'CiteRoles'"
+      [loggedInUserId]="loggedInUserId"
+      [isContentDeveloper]="isContentDeveloper"
+    ></app-cite-role-list>
+  </mat-tab>
   <mat-tab label="Injects">
     <app-scenario-event-list
       *ngIf="selectedTab === 'Injects'"

@@ -14,6 +14,7 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
+import { Team } from './team';
 
 
 export interface CiteRole {
@@ -24,5 +25,6 @@ export interface CiteRole {
     id?: string;
     mselId?: string;
     teamId?: string;
+    team?: Team;
     name?: string;
 }

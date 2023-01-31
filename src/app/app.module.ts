@@ -62,6 +62,8 @@ import { AdminTeamUsersComponent } from './components/admin/admin-team-users/adm
 import { AdminUsersComponent } from './components/admin/admin-users/admin-users.component';
 import { CardListComponent } from './components/card-list/card-list.component';
 import { CardTeamsComponent } from './components/card-teams/card-teams.component';
+import { CiteRoleEditDialogComponent } from './components/cite-role-edit-dialog/cite-role-edit-dialog.component';
+import { CiteRoleListComponent } from './components/cite-role-list/cite-role-list.component';
 import { DataFieldListComponent } from './components/data-field-list/data-field-list.component';
 import { DataOptionEditDialogComponent } from './components/data-option-edit-dialog/data-option-edit-dialog.component';
 import { HomeAppComponent } from './components/home-app/home-app.component';
@@ -103,6 +105,8 @@ export function getBasePath(settingsSvc: ComnSettingsService) {
     AppComponent,
     CardListComponent,
     CardTeamsComponent,
+    CiteRoleEditDialogComponent,
+    CiteRoleListComponent,
     DataFieldListComponent,
     DataOptionEditDialogComponent,
     HomeAppComponent,
