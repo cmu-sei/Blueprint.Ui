@@ -18,24 +18,24 @@ Released under a MIT (SEI)-style license. See LICENSE.md in the project root for
   </div>
   <div mat-dialog-content *ngIf="data && data.move">
 
-    <div fxLayout="row" class="add-margin">
-      <div fxFlex fxFlexOffset="10">
+    <div class="add-margin">
+      <div>
         <mat-form-field class="full-width">
           <input type="text" matInput [(ngModel)]="data.move.moveNumber" placeholder="Move Number">
         </mat-form-field>
       </div>
     </div>
-    <div fxLayout="row" class="add-margin">
-      <div fxFlex fxFlexOffset="10">
+    <div class="add-margin">
+      <div>
         <mat-form-field class="full-width">
           <input type="text" matInput [(ngModel)]="data.move.title" placeholder="Title">
         </mat-form-field>
       </div>
     </div>
-    <div fxLayout="row" class="add-margin">
-      <div fxFlex fxFlexOffset="10">
+    <div class="add-margin">
+      <div>
         <label>Start Time</label>
-        <mat-form-field fxFlexOffset="5" style="margin-top: -15px;">
+        <mat-form-field style="margin-top: -15px;">
           <input matInput hidden>
           <ngx-timepicker-field
             [formControl]="moveStartTimeFormControl"
@@ -46,10 +46,10 @@ Released under a MIT (SEI)-style license. See LICENSE.md in the project root for
         </mat-form-field>
       </div>
     </div>
-    <div fxLayout="row" class="add-margin">
-      <div fxFlex fxFlexOffset="10">
+    <div class="add-margin">
+      <div>
         <label>Stop Time</label>
-        <mat-form-field fxFlexOffset="5" style="margin-top: -15px;">
+        <mat-form-field style="margin-top: -15px;">
           <input matInput hidden>
           <ngx-timepicker-field
             [formControl]="moveStopTimeFormControl"
@@ -60,8 +60,8 @@ Released under a MIT (SEI)-style license. See LICENSE.md in the project root for
         </mat-form-field>
       </div>
     </div>
-    <div fxLayout="row" class="add-margin">
-      <div fxFlex fxFlexOffset="10">
+    <div class="add-margin">
+      <div>
         <mat-form-field class="full-width">
           <input type="text" matInput [(ngModel)]="data.move.description" placeholder="Move Description">
         </mat-form-field>
@@ -69,15 +69,15 @@ Released under a MIT (SEI)-style license. See LICENSE.md in the project root for
     </div>
 
 
-    <div fxLayout="row" class="add-margin">
-      <div fxFlex fxFlexOffset="10">
+    <div class="add-margin">
+      <div>
         <mat-form-field>
           <input matInput [matDatepicker]="situationDatePicker" placeholder="Situation Date / Time" (inputChange)="saveMove('situationDate')" (dateChange)="saveMove('situationDate')"
             [formControl]="situationDateFormControl">
           <mat-datepicker-toggle matSuffix [for]="situationDatePicker"></mat-datepicker-toggle>
           <mat-datepicker #situationDatePicker [startAt]="data.move.situationTime.toLocaleDateString()"></mat-datepicker>
         </mat-form-field>
-        <mat-form-field fxFlexOffset="5" style="margin-top: -15px;">
+        <mat-form-field style="margin-top: -15px;">
           <input matInput hidden>
           <ngx-timepicker-field
             [formControl]="situationTimeFormControl"
@@ -88,21 +88,8 @@ Released under a MIT (SEI)-style license. See LICENSE.md in the project root for
         </mat-form-field>
       </div>
     </div>
-
-
-
-
-
-
-    <!-- <div fxLayout="row" class="add-margin">
-      <div fxFlex fxFlexOffset="10">
-        <mat-form-field class="full-width">
-          <input type="text" matInput [(ngModel)]="data.move.situationTime" placeholder="Situation Time">
-        </mat-form-field>
-      </div>
-    </div> -->
-    <div fxLayout="row" class="add-margin left">
-      <div fxFlex fxFlexOffset="10">
+    <div class="add-margin left">
+      <div>
         <p style="font-size: 13px; font-weight: 400; line-height: 1.125; font-family: Open Sans, sans-serif; letter-spacing: normal;">
           Situation Description
         </p>
@@ -117,11 +104,11 @@ Released under a MIT (SEI)-style license. See LICENSE.md in the project root for
       </div>
     </div>
   </div>
-  <div mat-dialog-actions>
-    <div fxFlex fxLayoutAlign="left" class="delete-button">
+  <div class="cssLayoutRowStartCenter bottom-button">
+    <div class="delete-button">
       <button mat-stroked-button (click)="handleEditComplete(true)" style="margin-left: 40px;">Save</button>
     </div>
-    <div fxFlex fxLayoutAlign="end" class="delete-button">
+    <div class="delete-button">
       <button mat-stroked-button (click)="handleEditComplete(false)">Cancel</button>
     </div>
   </div>

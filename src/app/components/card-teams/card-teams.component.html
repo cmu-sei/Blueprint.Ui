@@ -16,7 +16,7 @@ Released under a MIT (SEI)-style license. See LICENSE.md in the project root for
             <input
               matInput
               [(ngModel)]="filterString"
-              (keyup)="applyFilter($event.target.value)"
+              (keyup)="applyFilter($any($event.target).value)"
               placeholder="Search"
             />
           </mat-form-field>
@@ -24,7 +24,6 @@ Released under a MIT (SEI)-style license. See LICENSE.md in the project root for
         <div>
           <button
             *ngIf="filterString != ''"
-            fxLayoutAlign="start center"
             mat-icon-button
             (click)="clearFilter()"
             style="outline: none;"
