@@ -6,7 +6,7 @@ import { PageEvent } from '@angular/material/paginator';
 import { Sort } from '@angular/material/sort';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Observable, BehaviorSubject, Subject } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 import { map, tap, takeUntil } from 'rxjs/operators';
 import { PermissionService } from 'src/app/generated/blueprint.api/api/api';
 import {
@@ -111,7 +111,7 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
     this.topbarTextColor = this.settingsService.settings.AppTopBarHexTextColor
       ? this.settingsService.settings.AppTopBarHexTextColor
       : this.topbarTextColor;
-    var appTitle = this.settingsService.settings.AppTitle || 'Set AppTitle in Settings';
+    const appTitle = this.settingsService.settings.AppTitle || 'Set AppTitle in Settings';
     titleService.setTitle(appTitle);
     this.topbarText = this.settingsService.settings.AppTopBarText || this.topbarText;
   }

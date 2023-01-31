@@ -3,7 +3,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
  Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
 
-<div class="background text app-content-container">
+<div class="background text app-admin-container">
   <app-topbar
     *ngIf="!hideTopbar"
     [title]="topbarText"
@@ -13,9 +13,9 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
     [imageFilePath]="topbarImage"
   ></app-topbar>
 
-  <mat-sidenav-container fxFlex autosize>
+  <mat-sidenav-container class="tall" autosize>
     <mat-sidenav
-      class="appbarmenu-container"
+      class="appbarmenu-container background"
       #sidenav
       mode="side"
       [(opened)]="isSidebarOpen"
@@ -24,7 +24,6 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
         <mat-list-item class="appslist" title="Exit Administration">
           <button
             aria-label="Exit Administration"
-            fxLayoutAlign="start center"
             mat-icon-button
             [routerLink]="['/']"
             style="outline: none"
@@ -35,7 +34,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
             ></mat-icon>
           </button>
           <a class="nolink" [routerLink]="['/']">
-            <div fxLayout="row" fxLayoutAlign="middle center">
+            <div class="cssLayoutRowCenterCenter">
               <h2 class="icon-text">Administration</h2>
             </div>
           </a>
@@ -116,7 +115,6 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
           [pageSize]="pageSize | async"
           [pageIndex]="pageIndex | async"
           [filterString]="filterString | async"
-          (deleteUser)="deleteUserHandler($event)"
           (sortChange)="sortChangeHandler($event)"
           (pageChange)="pageChangeHandler($event)"
         >
