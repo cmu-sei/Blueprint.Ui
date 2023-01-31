@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
 
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { PageEvent } from '@angular/material/paginator';
 import { Sort } from '@angular/material/sort';
 import {
@@ -19,7 +19,7 @@ import { DialogService } from 'src/app/services/dialog/dialog.service';
   styleUrls: ['./admin-users.component.scss'],
 })
 export class AdminUsersComponent implements OnInit {
-  @Input() filterControl: FormControl;
+  @Input() filterControl: UntypedFormControl;
   @Input() filterString: string;
   @Input() userList: User[];
   @Input() permissionList: Permission[];

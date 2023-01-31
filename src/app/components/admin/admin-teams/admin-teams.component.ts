@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
 
 import { Component, EventEmitter, Input, OnInit, Output, OnDestroy } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { PageEvent } from '@angular/material/paginator';
 import { Sort } from '@angular/material/sort';
 import { Team, User, ItemStatus} from 'src/app/generated/blueprint.api/model/models';
@@ -21,7 +21,7 @@ import { DialogService } from 'src/app/services/dialog/dialog.service';
   styleUrls: ['./admin-teams.component.scss'],
 })
 export class AdminTeamsComponent implements OnInit, OnDestroy {
-  @Input() filterControl: FormControl;
+  @Input() filterControl: UntypedFormControl;
   @Input() filterString: string;
   @Input() pageSize: number;
   @Input() pageIndex: number;

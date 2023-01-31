@@ -4,7 +4,7 @@
 import { OrganizationStore } from './organization.store';
 import { OrganizationQuery } from './organization.query';
 import { Injectable } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { PageEvent } from '@angular/material/paginator';
 import { Router, ActivatedRoute } from '@angular/router';
 import {
@@ -24,7 +24,7 @@ export class OrganizationDataService {
     map((params) => params.get('organizationId') || '')
   );
   readonly OrganizationList: Observable<Organization[]>;
-  readonly filterControl = new FormControl();
+  readonly filterControl = new UntypedFormControl();
   private filterTerm: Observable<string>;
   private sortColumn: Observable<string>;
   private sortIsAscending: Observable<boolean>;

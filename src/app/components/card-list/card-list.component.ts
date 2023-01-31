@@ -1,7 +1,7 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
 import { Component, Input, OnDestroy, ViewChild } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import {
@@ -31,7 +31,7 @@ export class CardListComponent implements OnDestroy {
   cardList: Card[] = [];
   changedCard: Card = {};
   filteredCardList: Card[] = [];
-  filterControl = new FormControl();
+  filterControl = new UntypedFormControl();
   filterString = '';
   sort: Sort = {active: '', direction: ''};
   sortedCards: Card[] = [];

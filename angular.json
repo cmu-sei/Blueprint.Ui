@@ -110,7 +110,6 @@
       }
     }
   },
-  "defaultProject": "blueprint-ui",
   "schematics": {
     "@schematics/angular:component": {
       "style": "scss"

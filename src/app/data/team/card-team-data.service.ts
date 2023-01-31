@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { Injectable, OnDestroy } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ComnAuthQuery, ComnAuthService } from '@cmusei/crucible-common';
 import { BehaviorSubject, combineLatest, Observable, Subject } from 'rxjs';
@@ -16,7 +16,7 @@ import { CardTeam, Team } from 'src/app/generated/blueprint.api/model/models';
 export class CardTeamDataService implements OnDestroy {
   private _cardTeams: CardTeam[] = [];
   readonly cardTeams = new BehaviorSubject<CardTeam[]>(this._cardTeams);
-  readonly filterControl = new FormControl();
+  readonly filterControl = new UntypedFormControl();
   private filterTerm: Observable<string>;
   private sortColumn: Observable<string>;
   private sortIsAscending: Observable<boolean>;

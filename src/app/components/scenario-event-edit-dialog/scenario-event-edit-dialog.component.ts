@@ -1,7 +1,7 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
 import { Component, EventEmitter, Inject, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { Subject } from 'rxjs';
 import {
   DataField,
@@ -35,7 +35,7 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
     'overflow': 'auto'
   };
   dataType: typeof DataFieldType = DataFieldType;
-  dateFormControls = new Map<string, FormControl>();
+  dateFormControls = new Map<string, UntypedFormControl>();
   itemStatus: ItemStatus[] = [ItemStatus.Pending, ItemStatus.Entered, ItemStatus.Approved, ItemStatus.Complete];
   mselRole = { Owner: MselRole.Owner, Approver: MselRole.Approver, Editor: MselRole.Editor};
   toOrgList: string[] = [];

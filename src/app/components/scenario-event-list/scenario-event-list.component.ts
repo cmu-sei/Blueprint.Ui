@@ -1,7 +1,7 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
 import { Component, Input, OnDestroy, ViewChild } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, Observable, BehaviorSubject } from 'rxjs';
@@ -46,7 +46,7 @@ export class ScenarioEventListComponent implements OnDestroy {
   expandedScenarioEventId = '';
   expandedMoreScenarioEventIds: string[] = [];
   filteredScenarioEventList: ScenarioEventPlus[] = [];
-  filterControl = new FormControl();
+  filterControl = new UntypedFormControl();
   filterString = '';
   sort: Sort = {active: '', direction: ''};
   sortedScenarioEvents: ScenarioEventPlus[] = [];
@@ -62,7 +62,7 @@ export class ScenarioEventListComponent implements OnDestroy {
     'overflow': 'auto'
   };
   dataType: typeof DataFieldType = DataFieldType;
-  dateFormControls = new Map<string, FormControl>();
+  dateFormControls = new Map<string, UntypedFormControl>();
   itemStatus: ItemStatus[] = [ItemStatus.Pending, ItemStatus.Entered, ItemStatus.Approved, ItemStatus.Complete];
   mselRole = { Owner: MselRole.Owner, Approver: MselRole.Approver, Editor: MselRole.Editor};
   organizationList: Organization[] = [];
@@ -199,7 +199,7 @@ export class ScenarioEventListComponent implements OnDestroy {
     // create date form controls
     this.allDataFields.forEach(df => {
       if (df.dataType === DataFieldType.DateTime) {
-        this.dateFormControls[df.id] = new FormControl();
+        this.dateFormControls[df.id] = new UntypedFormControl();
       }
     });
   }

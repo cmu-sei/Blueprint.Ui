@@ -1,7 +1,7 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { PageEvent } from '@angular/material/paginator';
 import { Sort } from '@angular/material/sort';
 import { Title } from '@angular/platform-browser';
@@ -45,7 +45,7 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
   canAccessAdminSection = false;
   teamList = this.teamDataService.teamList;
   userList = this.userDataService.userList;
-  filterControl: FormControl = this.userDataService.filterControl;
+  filterControl: UntypedFormControl = this.userDataService.filterControl;
   filterString: Observable<string>;
   permissionList: Observable<Permission[]>;
   pageSize: Observable<number>;

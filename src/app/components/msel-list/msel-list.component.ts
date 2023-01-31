@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
 import { Component, Input, OnDestroy, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { HttpEventType, HttpResponse } from '@angular/common/http';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSidenav } from '@angular/material/sidenav';
 import { Sort } from '@angular/material/sort';
@@ -42,7 +42,7 @@ export class MselListComponent implements OnDestroy {
   uploadTeamId = '';
   @ViewChild('fileInput') fileInput: ElementRef<HTMLInputElement>;
   filteredMselList: MselPlus[] = [];
-  filterControl = new FormControl();
+  filterControl = new UntypedFormControl();
   filterString = '';
   sort: Sort = {active: 'dateCreated', direction: 'desc'};
   sortedMselList: MselPlus[] = [];

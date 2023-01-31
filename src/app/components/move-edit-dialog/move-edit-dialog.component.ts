@@ -3,7 +3,7 @@
 
 import { Component, EventEmitter, Inject, Output } from '@angular/core';
 import {
-  FormControl,
+  UntypedFormControl,
   FormGroupDirective,
   NgForm,
   Validators,
@@ -15,7 +15,7 @@ import { DialogService } from 'src/app/services/dialog/dialog.service';
 /** Error when invalid control is dirty, touched, or submitted. */
 export class UserErrorStateMatcher implements ErrorStateMatcher {
   isErrorState(
-    control: FormControl | null,
+    control: UntypedFormControl | null,
     form: FormGroupDirective | NgForm | null
   ): boolean {
     const isSubmitted = form && form.submitted;
@@ -34,19 +34,19 @@ const MIN_NAME_LENGTH = 3;
 export class MoveEditDialogComponent {
   @Output() editComplete = new EventEmitter<any>();
 
-  public situationDateFormControl = new FormControl(
+  public situationDateFormControl = new UntypedFormControl(
     this.data.move.situationTime,
     []
   );
-  public situationTimeFormControl = new FormControl(
+  public situationTimeFormControl = new UntypedFormControl(
     this.data.move.situationTime.toTimeString().substr(0, 5),
     []
   );
-  public moveStartTimeFormControl = new FormControl(
+  public moveStartTimeFormControl = new UntypedFormControl(
     this.data.move.moveStartTime.toTimeString().substr(0, 5),
     []
   );
-  public moveStopTimeFormControl = new FormControl(
+  public moveStopTimeFormControl = new UntypedFormControl(
     this.data.move.moveStopTime.toTimeString().substr(0, 5),
     []
   );
