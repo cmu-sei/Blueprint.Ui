@@ -10,20 +10,19 @@
 .user-list-container {
   display: inline-block;
   flex-direction: column;
-  min-width: 300px;
   margin-top: 10px;
-  width: 300px;
-  min-height: 600px;
+  width: 400px;
+  height: 600px;
 }
 
 .team-list-container {
   display: inline-block;
   flex-direction: column;
-  min-width: 500px;
   margin-top: 10px;
-  width: 500px;
-  min-height: 600px;
+  width: 400px;
+  height: 600px;
 }
+
 
 .mat-table-all-users {
   overflow: auto;
@@ -46,4 +45,7 @@
 .sp-icon {
   margin-left: 10px;
   margin-right: 20px;
+  margin-top: 10px;
+  display: inline-flex;
+  align-items: center;
 }
