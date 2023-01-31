@@ -51,7 +51,7 @@ import {
 import { AkitaNgRouterStoreModule } from '@datorama/akita-ng-router-store';
 import { AkitaNgDevtools } from '@datorama/akita-ngdevtools';
 import { ClipboardModule } from 'ngx-clipboard';
-import { NgxMaterialTimepickerModule } from 'ngx-material-timepicker';
+//import { NgxMaterialTimepickerModule } from 'ngx-material-timepicker';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { AdminContainerComponent } from './components/admin/admin-container/admin-container.component';
@@ -175,7 +175,7 @@ export function getBasePath(settingsSvc: ComnSettingsService) {
     CdkTableModule,
     MatTreeModule,
     CdkTreeModule,
-    NgxMaterialTimepickerModule,
+    //NgxMaterialTimepickerModule,
     ClipboardModule,
     ComnAuthModule.forRoot(),
     ComnSettingsModule.forRoot(),
