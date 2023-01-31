@@ -9,7 +9,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { ErrorStateMatcher } from '@angular/material/core';
-import { MatDialogRef, MAT_DIALOG_DATA, MatDialog } from '@angular/material/dialog';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 
 /** Error when invalid control is dirty, touched, or submitted. */
@@ -125,7 +125,8 @@ export class OrganizationEditDialogComponent {
         this.data.organization.name = this.organizationNameFormControl.value ? this.organizationNameFormControl.value.toString() : '';
         break;
       case 'shortName':
-        this.data.organization.shortName = this.organizationShortNameFormControl.value ? this.organizationShortNameFormControl.value.toString() : '';
+        this.data.organization.shortName =
+            this.organizationShortNameFormControl.value ? this.organizationShortNameFormControl.value.toString() : '';
         break;
       case 'description':
         this.data.organization.description = this.descriptionFormControl.value ? this.descriptionFormControl.value.toString() : '';

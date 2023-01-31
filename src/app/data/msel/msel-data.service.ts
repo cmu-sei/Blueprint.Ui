@@ -70,7 +70,8 @@ export class MselPlus implements Msel {
     } else if (this.scenarioEvents && this.scenarioEvents.length > 0) {
       const scenarioEvent = this.scenarioEvents.find(se => se.id === scenarioEventId);
       const assignedToDataField = this.dataFields.find(df => df.dataType === DataFieldType.Team);
-      const dataValue = assignedToDataField && scenarioEvent ? scenarioEvent.dataValues.find(dv => dv.dataFieldId === assignedToDataField.id) : null;
+      const dataValue = assignedToDataField &&
+          scenarioEvent ? scenarioEvent.dataValues.find(dv => dv.dataFieldId === assignedToDataField.id) : null;
       if (dataValue) {
         const team = this.teams.find(t => t.shortName === dataValue.value);
         const isOnTeam = team && team.users && team.users.some(u => u.id === userId);
@@ -510,7 +511,8 @@ export class MselDataService {
 
   addUserRole(userMselRole: UserMselRole) {
     const msel = this.mselQuery.getById(userMselRole.mselId);
-    if (!msel.userMselRoles.some(umr => umr.mselId === userMselRole.mselId && umr.userId === userMselRole.userId && umr.role === userMselRole.role)) {
+    if (!msel.userMselRoles.some(
+          umr => umr.mselId === userMselRole.mselId && umr.userId === userMselRole.userId && umr.role === userMselRole.role)) {
       const updatedMsel: Msel = {... msel};
       updatedMsel.userMselRoles = [];
       msel.userMselRoles.forEach(umr => {
