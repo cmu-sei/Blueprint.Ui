@@ -8,7 +8,7 @@ import {
 } from './msel.store';
 import { Msel } from 'src/app/generated/blueprint.api';
 import { Injectable } from '@angular/core';
-import { PageEvent } from '@angular/material/paginator';
+import { LegacyPageEvent as PageEvent } from '@angular/material/legacy-paginator';
 import { Observable } from 'rxjs';
 
 @QueryConfig({

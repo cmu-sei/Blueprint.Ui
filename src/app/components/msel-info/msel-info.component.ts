@@ -15,7 +15,7 @@ import {
 } from 'src/app/generated/blueprint.api';
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
-import { MatMenuTrigger } from '@angular/material/menu';
+import { MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy-menu';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { PlayerService } from 'src/app/generated/blueprint.api';
 

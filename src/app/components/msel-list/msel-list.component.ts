@@ -3,7 +3,7 @@
 import { Component, Input, OnDestroy, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { HttpEventType, HttpResponse } from '@angular/common/http';
 import { UntypedFormControl } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
+import { MatLegacyButtonModule as MatButtonModule } from '@angular/material/legacy-button';
 import { MatSidenav } from '@angular/material/sidenav';
 import { Sort } from '@angular/material/sort';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -23,7 +23,7 @@ import {
 import { DataFieldDataService } from 'src/app/data/data-field/data-field-data.service';
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 
 @Component({

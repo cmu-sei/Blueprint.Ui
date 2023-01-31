@@ -5,7 +5,7 @@ import { DataOptionStore } from './data-option.store';
 import { DataOptionQuery } from './data-option.query';
 import { Injectable } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
-import { PageEvent } from '@angular/material/paginator';
+import { LegacyPageEvent as PageEvent } from '@angular/material/legacy-paginator';
 import { Router, ActivatedRoute } from '@angular/router';
 import {
   DataOption,
