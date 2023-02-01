@@ -49,7 +49,7 @@ module.exports = {
                 "accessibility": "explicit"
             }
         ],
-        "@typescript-eslint/indent": "error",
+        "@typescript-eslint/indent": ["error", 2, {"ignoredNodes": ["FunctionExpression[params]:has(Identifier[decorators])"], "SwitchCase": 1}],
         "@typescript-eslint/member-delimiter-style": [
             "error",
             {
