@@ -379,7 +379,7 @@ export class ScenarioEventListComponent implements OnDestroy {
         useSteamfitter: this.msel.useSteamfitter
       },
     });
-  dialogRef.componentInstance.editComplete.subscribe((result) => {
+    dialogRef.componentInstance.editComplete.subscribe((result) => {
       if (result.saveChanges && result.scenarioEvent) {
         this.saveScenarioEvent(result.scenarioEvent);
       }
