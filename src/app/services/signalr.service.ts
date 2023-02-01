@@ -1,5 +1,6 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
-// Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
+/// Released unde^Ca MIT (SEI)-style license. See LICENSE.md in the
+// project root for license information.
 
 import { Injectable } from '@angular/core';
 import { ComnAuthService, ComnSettingsService } from '@cmusei/crucible-common';
@@ -70,16 +71,6 @@ export class SignalRService {
     return this.connectionPromise;
   }
 
-  private reconnect() {
-    if (this.hubConnection != null) {
-      this.hubConnection.stop().then(() => {
-        console.log('Reconnecting to the hub.');
-        this.connectionPromise = this.hubConnection.start();
-        this.connectionPromise.then(() => this.join());
-      });
-    }
-  }
-
   public join() {
     if (this.hubConnection.state === signalR.HubConnectionState.Connected) {
       this.hubConnection.invoke('Join' + this.applicationArea);
@@ -138,7 +129,7 @@ export class SignalRService {
     this.hubConnection.on('TeamUpdated', (team: Team) => {
       console.log('Team updated');
       this.teamDataService.updateStore(team);
-      }
+    }
     );
 
     this.hubConnection.on('TeamCreated', (team: Team) => {
@@ -152,8 +143,8 @@ export class SignalRService {
 
   private addTeamUserHandlers() {
     this.hubConnection.on('TeamUserUpdated', (teamUser: TeamUser) => {
-        this.teamUserDataService.updateStore(teamUser);
-      }
+      this.teamUserDataService.updateStore(teamUser);
+    }
     );
 
     this.hubConnection.on('TeamUserCreated', (teamUser: TeamUser) => {
@@ -167,8 +158,8 @@ export class SignalRService {
 
   private addUserHandlers() {
     this.hubConnection.on('UserUpdated', (user: User) => {
-        this.userDataService.updateStore(user);
-      }
+      this.userDataService.updateStore(user);
+    }
     );
 
     this.hubConnection.on('UserCreated', (user: User) => {
@@ -191,6 +182,15 @@ export class SignalRService {
     });
   }
 
+  private reconnect() {
+    if (this.hubConnection != null) {
+      this.hubConnection.stop().then(() => {
+        console.log('Reconnecting to the hub.');
+        this.connectionPromise = this.hubConnection.start();
+        this.connectionPromise.then(() => this.join());
+      });
+    }
+  }
 }
 
 class RetryPolicy {

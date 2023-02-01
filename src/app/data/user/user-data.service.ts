@@ -1,5 +1,6 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
-// Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
+/// Released unde^Ca MIT (SEI)-style license. See LICENSE.md in the
+// project root for license information.
 
 import { Injectable, OnDestroy } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
@@ -29,15 +30,13 @@ import {
   providedIn: 'root',
 })
 export class UserDataService implements OnDestroy {
-  private _permissions: Permission[] = [];
-  private _users: User[] = [];
-  readonly users = new BehaviorSubject<User[]>(this._users);
+  requestedUserId: Observable<string> | undefined;
+  unsubscribe$: Subject<null> = new Subject<null>();
   readonly filterControl = new UntypedFormControl();
   readonly userList: Observable<User[]>;
   readonly userListTotalLength: Observable<number>;
   readonly selectedUser: Observable<User>;
-  readonly loggedInUser: BehaviorSubject<AuthUser> =
-    new BehaviorSubject<AuthUser>(null);
+  readonly loggedInUser: BehaviorSubject<AuthUser> = new BehaviorSubject<AuthUser>(null);
   readonly isAuthorizedUser = new BehaviorSubject<boolean>(false);
   readonly isSuperUser = new ReplaySubject<boolean>(1);
   readonly canModify = new BehaviorSubject<boolean>(false);
@@ -45,14 +44,15 @@ export class UserDataService implements OnDestroy {
   readonly canIncrementMove = new BehaviorSubject<boolean>(false);
   readonly isContentDeveloper = new BehaviorSubject<boolean>(false);
   readonly canAccessAdminSection = new BehaviorSubject<boolean>(false);
+  private _permissions: Permission[] = [];
+  private _users: User[] = [];
+  readonly users = new BehaviorSubject<User[]>(this._users);
   private loggedInUserPermissions: Permission[] = [];
   private filterTerm: Observable<string>;
   private sortColumn: Observable<string>;
   private sortIsAscending: Observable<boolean>;
   private pageSize: Observable<number>;
   private pageIndex: Observable<number>;
-  requestedUserId: Observable<string> | undefined;
-  unsubscribe$: Subject<null> = new Subject<null>();
 
   constructor(
     private userService: UserService,
@@ -114,16 +114,16 @@ export class UserDataService implements OnDestroy {
         ]) =>
           users
             ? (users as User[])
-                .sort((a: User, b: User) =>
-                  this.sortUsers(a, b, sortColumn, sortIsAscending)
-                )
-                .filter(
-                  (user) =>
-                    user.name
-                      .toLowerCase()
-                      .includes(filterTerm.toLowerCase()) ||
+              .sort((a: User, b: User) =>
+                this.sortUsers(a, b, sortColumn, sortIsAscending)
+              )
+              .filter(
+                (user) =>
+                  user.name
+                    .toLowerCase()
+                    .includes(filterTerm.toLowerCase()) ||
                     user.id.toLowerCase().includes(filterTerm.toLowerCase())
-                )
+              )
             : []
       )
     );
@@ -164,32 +164,11 @@ export class UserDataService implements OnDestroy {
       });
   }
 
-  private sortUsers(a: User, b: User, column: string, isAsc: boolean) {
-    switch (column) {
-      case 'name':
-        return (
-          (a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1) *
-          (isAsc ? 1 : -1)
-        );
-      case 'id':
-        return (
-          (a.id.toLowerCase() < b.id.toLowerCase() ? -1 : 1) * (isAsc ? 1 : -1)
-        );
-      default:
-        return 0;
-    }
-  }
-
   setActive(id: string) {
     this.router.navigate([], {
       queryParams: { userId: id },
       queryParamsHandling: 'merge',
     });
-  }
-
-  private updateUsers(users: User[]) {
-    this._users = Object.assign([], users);
-    this.users.next(this._users);
   }
 
   getUsersFromApi() {
@@ -296,5 +275,26 @@ export class UserDataService implements OnDestroy {
   ngOnDestroy() {
     this.unsubscribe$.next(null);
     this.unsubscribe$.complete();
+  }
+
+  private updateUsers(users: User[]) {
+    this._users = Object.assign([], users);
+    this.users.next(this._users);
+  }
+
+  private sortUsers(a: User, b: User, column: string, isAsc: boolean) {
+    switch (column) {
+      case 'name':
+        return (
+          (a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1) *
+          (isAsc ? 1 : -1)
+        );
+      case 'id':
+        return (
+          (a.id.toLowerCase() < b.id.toLowerCase() ? -1 : 1) * (isAsc ? 1 : -1)
+        );
+      default:
+        return 0;
+    }
   }
 }

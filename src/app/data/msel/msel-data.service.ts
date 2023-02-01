@@ -1,5 +1,6 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
-// Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
+/// Released unde^Ca MIT (SEI)-style license. See LICENSE.md in the
+// project root for license information.
 
 import { MselStore } from './msel.store';
 import { MselQuery } from './msel.query';
@@ -94,12 +95,12 @@ export class MselPlus implements Msel {
   providedIn: 'root',
 })
 export class MselDataService {
+  readonly MselList: Observable<Msel[]>;
+  readonly filterControl = new UntypedFormControl();
   private _requestedMselId: string;
   private _requestedMselId$ = this.activatedRoute.queryParamMap.pipe(
     map((params) => params.get('mselId') || '')
   );
-  readonly MselList: Observable<Msel[]>;
-  readonly filterControl = new UntypedFormControl();
   private filterTerm: Observable<string>;
   private sortColumn: Observable<string>;
   private sortIsAscending: Observable<boolean>;
@@ -155,43 +156,21 @@ export class MselDataService {
         ]) =>
           items
             ? (items as Msel[])
-                .sort((a: Msel, b: Msel) =>
-                  this.sortMsels(a, b, sortColumn, sortIsAscending)
-                )
-                .filter(
-                  (msel) =>
-                    ('' + msel.description)
-                      .toLowerCase()
-                      .includes(filterTerm.toLowerCase()) ||
+              .sort((a: Msel, b: Msel) =>
+                this.sortMsels(a, b, sortColumn, sortIsAscending)
+              )
+              .filter(
+                (msel) =>
+                  ('' + msel.description)
+                    .toLowerCase()
+                    .includes(filterTerm.toLowerCase()) ||
                     msel.id
                       .toLowerCase()
                       .includes(filterTerm.toLowerCase())
-                )
+              )
             : []
       )
     );
-  }
-
-  private sortMsels(
-    a: Msel,
-    b: Msel,
-    column: string,
-    isAsc: boolean
-  ) {
-    switch (column) {
-      case 'description':
-        return (
-          (a.description.toLowerCase() < b.description.toLowerCase() ? -1 : 1) *
-          (isAsc ? 1 : -1)
-        );
-      case 'dateCreated':
-        return (
-          (a.dateCreated.valueOf() < b.dateCreated.valueOf() ? -1 : 1) *
-          (isAsc ? 1 : -1)
-        );
-      default:
-        return 0;
-    }
   }
 
   load() {
@@ -360,69 +339,69 @@ export class MselDataService {
   addTeamToMsel(mselId: string, teamId: string) {
     this.mselStore.setLoading(true);
     this.mselService.addTeamToMsel(mselId, teamId)
-    .pipe(
-      tap(() => {
+      .pipe(
+        tap(() => {
+          this.mselStore.setLoading(false);
+        }),
+        take(1)
+      )
+      .subscribe((n) => {
+        this.updateStore(n);
+      },
+      (error) => {
         this.mselStore.setLoading(false);
-      }),
-      take(1)
-    )
-    .subscribe((n) => {
-      this.updateStore(n);
-    },
-    (error) => {
-      this.mselStore.setLoading(false);
-    });
+      });
   }
 
   removeTeamFromMsel(mselId: string, teamId: string) {
     this.mselStore.setLoading(true);
     this.mselService.removeTeamFromMsel(mselId, teamId)
-    .pipe(
-      tap(() => {
+      .pipe(
+        tap(() => {
+          this.mselStore.setLoading(false);
+        }),
+        take(1)
+      )
+      .subscribe((n) => {
+        this.updateStore(n);
+      },
+      (error) => {
         this.mselStore.setLoading(false);
-      }),
-      take(1)
-    )
-    .subscribe((n) => {
-      this.updateStore(n);
-    },
-    (error) => {
-      this.mselStore.setLoading(false);
-    });
+      });
   }
 
   addUserMselRole(userId: string, mselId: string, mselRole: MselRole) {
     this.mselStore.setLoading(true);
     this.mselService.addUserMselRole(userId, mselId, mselRole)
-    .pipe(
-      tap(() => {
+      .pipe(
+        tap(() => {
+          this.mselStore.setLoading(false);
+        }),
+        take(1)
+      )
+      .subscribe((n) => {
+        this.updateStore(n);
+      },
+      (error) => {
         this.mselStore.setLoading(false);
-      }),
-      take(1)
-    )
-    .subscribe((n) => {
-      this.updateStore(n);
-    },
-    (error) => {
-      this.mselStore.setLoading(false);
-    });
+      });
   }
 
   removeUserMselRole(userId: string, mselId: string, mselRole: MselRole) {
     this.mselStore.setLoading(true);
     this.mselService.removeUserMselRole(userId, mselId, mselRole)
-    .pipe(
-      tap(() => {
+      .pipe(
+        tap(() => {
+          this.mselStore.setLoading(false);
+        }),
+        take(1)
+      )
+      .subscribe((n) => {
+        this.updateStore(n);
+      },
+      (error) => {
         this.mselStore.setLoading(false);
-      }),
-      take(1)
-    )
-    .subscribe((n) => {
-      this.updateStore(n);
-    },
-    (error) => {
-      this.mselStore.setLoading(false);
-    });
+      });
   }
 
   downloadXlsx(id: string) {
@@ -512,7 +491,7 @@ export class MselDataService {
   addUserRole(userMselRole: UserMselRole) {
     const msel = this.mselQuery.getById(userMselRole.mselId);
     if (!msel.userMselRoles.some(
-          umr => umr.mselId === userMselRole.mselId && umr.userId === userMselRole.userId && umr.role === userMselRole.role)) {
+      umr => umr.mselId === userMselRole.mselId && umr.userId === userMselRole.userId && umr.role === userMselRole.role)) {
       const updatedMsel: Msel = {... msel};
       updatedMsel.userMselRoles = [];
       msel.userMselRoles.forEach(umr => {
@@ -538,6 +517,28 @@ export class MselDataService {
         }
       }
       this.mselStore.upsert(updatedMsel.id, updatedMsel);
+    }
+  }
+
+  private sortMsels(
+    a: Msel,
+    b: Msel,
+    column: string,
+    isAsc: boolean
+  ) {
+    switch (column) {
+      case 'description':
+        return (
+          (a.description.toLowerCase() < b.description.toLowerCase() ? -1 : 1) *
+          (isAsc ? 1 : -1)
+        );
+      case 'dateCreated':
+        return (
+          (a.dateCreated.valueOf() < b.dateCreated.valueOf() ? -1 : 1) *
+          (isAsc ? 1 : -1)
+        );
+      default:
+        return 0;
     }
   }
 

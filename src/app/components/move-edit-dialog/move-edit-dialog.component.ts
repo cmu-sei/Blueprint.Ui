@@ -6,7 +6,6 @@ import {
   UntypedFormControl,
   FormGroupDirective,
   NgForm,
-  Validators,
 } from '@angular/forms';
 import { ErrorStateMatcher } from '@angular/material/core';
 import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
@@ -107,22 +106,9 @@ export class MoveEditDialogComponent {
       default:
         break;
     }
-   if (which === 'situationDate') {
-   } else if (which === 'situationTime') {
+    if (which === 'situationDate') {
+    } else if (which === 'situationTime') {
     }
-  }
-
-  private convertTime12to24(time12h: string) {
-    const [time, modifier] = time12h.split(' ');
-    let [hours, minutes] = time.split(':');
-    if (hours === '12') {
-      hours = '00';
-    }
-    if (modifier.toUpperCase() === 'PM') {
-      hours = (parseInt(hours, 10) + 12).toString();
-    }
-
-    return [hours, minutes];
   }
 
   /**
@@ -139,4 +125,16 @@ export class MoveEditDialogComponent {
     }
   }
 
+  private convertTime12to24(time12h: string) {
+    const [time, modifier] = time12h.split(' ');
+    let [hours, minutes] = time.split(':');
+    if (hours === '12') {
+      hours = '00';
+    }
+    if (modifier.toUpperCase() === 'PM') {
+      hours = (parseInt(hours, 10) + 12).toString();
+    }
+
+    return [hours, minutes];
+  }
 }

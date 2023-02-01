@@ -1,5 +1,6 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
-// Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
+// Released under a MIT (SEI)-style license. See LICENSE.md in the
+// project root for license information.
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { LegacyPageEvent as PageEvent } from '@angular/material/legacy-paginator';
@@ -11,7 +12,6 @@ import { map, tap, takeUntil } from 'rxjs/operators';
 import { PermissionService } from 'src/app/generated/blueprint.api/api/api';
 import {
   Permission,
-  Team,
   User,
   UserPermission,
 } from 'src/app/generated/blueprint.api/model/models';
@@ -50,13 +50,13 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
   permissionList: Observable<Permission[]>;
   pageSize: Observable<number>;
   pageIndex: Observable<number>;
-  private unsubscribe$ = new Subject();
   hideTopbar = false;
   TopbarView = TopbarView;
   topbarColor = '#ef3a47';
   topbarTextColor = '#FFFFFF';
   topbarImage = this.settingsService.settings.AppTopBarImage;
   theme$: Observable<Theme>;
+  private unsubscribe$ = new Subject();
 
   constructor(
     private router: Router,

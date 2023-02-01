@@ -27,9 +27,10 @@ import { takeUntil } from 'rxjs/operators';
 export class CardTeamsComponent implements OnDestroy, OnInit {
   @Input() cardId: string;
   @Input() teamList: Team[];
-  teams: Team[];
+  @ViewChild('teamsInput') teamsInput: ElementRef<HTMLInputElement>;
+  @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
+  @ViewChild(MatSort, { static: true }) sort: MatSort;  teams: Team[];
   cardTeams: Team[];
-
   displayedTeamColumns: string[] = ['name', 'id'];
   displayedCardColumns: string[] = ['name', 'team'];
   teamDataSource = new MatTableDataSource<Team>(new Array<Team>());
@@ -38,10 +39,6 @@ export class CardTeamsComponent implements OnDestroy, OnInit {
   defaultPageSize = 100;
   pageEvent: PageEvent;
   private unsubscribe$ = new Subject();
-
-  @ViewChild('teamsInput') teamsInput: ElementRef<HTMLInputElement>;
-  @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
-  @ViewChild(MatSort, { static: true }) sort: MatSort;
 
   constructor(
     private cardTeamDataService: CardTeamDataService,
@@ -80,9 +77,9 @@ export class CardTeamsComponent implements OnDestroy, OnInit {
       if (a.name < b.name) {
         return -1;
       } else if (a.name > b.name) {
-          return 1;
+        return 1;
       } else {
-          return 0;
+        return 0;
       }
     });
     const newAllTeams = !this.teamList ? new Array<Team>() : this.teamList.slice(0);

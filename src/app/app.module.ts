@@ -1,5 +1,6 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
-// Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
+/// Released unde^Ca MIT (SEI)-style license. See LICENSE.md in the
+// project root for license information.
 
 import { CdkTableModule } from '@angular/cdk/table';
 import { CdkTreeModule } from '@angular/cdk/tree';
@@ -51,7 +52,6 @@ import {
 import { AkitaNgRouterStoreModule } from '@datorama/akita-ng-router-store';
 import { AkitaNgDevtools } from '@datorama/akita-ngdevtools';
 import { ClipboardModule } from 'ngx-clipboard';
-//import { NgxMaterialTimepickerModule } from 'ngx-material-timepicker';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { AdminContainerComponent } from './components/admin/admin-container/admin-container.component';
@@ -175,7 +175,6 @@ export function getBasePath(settingsSvc: ComnSettingsService) {
     CdkTableModule,
     MatTreeModule,
     CdkTreeModule,
-    //NgxMaterialTimepickerModule,
     ClipboardModule,
     ComnAuthModule.forRoot(),
     ComnSettingsModule.forRoot(),
@@ -195,14 +194,39 @@ export function getBasePath(settingsSvc: ComnSettingsService) {
           [{ 'size': ['small', false, 'large', 'huge'] }],  // custom dropdown
           [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
 
-          [{ 'color': ['#b5b5b5', 'rgb(163, 235, 163)', 'rgb(250, 235, 100)', 'rgb(250, 163, 2)', '#ff3333', '#ff3838', '#ebb3b3', '#e00', '#d00', '#c00', '#b00', '#a00', '#900', '#800', '#700', '#a60', '#067', '#247', '#085', '#2d69b4', '#336fba', '#2d69b4', '#242526', '#373739', '#306cb7', '#4e8ad5'] },
-           { 'background': [] }],          // dropdown with defaults from theme
+          [{ 'color': [
+            '#b5b5b5',
+            'rgb(163, 235, 163)',
+            'rgb(250, 235, 100)',
+            'rgb(250, 163, 2)',
+            '#ff3333',
+            '#ff3838',
+            '#ebb3b3',
+            '#e00',
+            '#d00',
+            '#c00',
+            '#b00',
+            '#a00',
+            '#900',
+            '#800',
+            '#700',
+            '#a60',
+            '#067',
+            '#247',
+            '#085',
+            '#2d69b4',
+            '#336fba',
+            '#2d69b4',
+            '#242526',
+            '#373739',
+            '#306cb7',
+            '#4e8ad5'
+          ] },
+          { 'background': [] }],      // dropdown with defaults from theme
           [{ 'font': [] }],
           [{ 'align': [] }],
-
-          ['clean'],                                         // remove formatting button
-
-          ['link', 'image', 'video']                         // link and image, video
+          ['clean'],                  // remove formatting button
+          ['link', 'image', 'video']  // link and image, video
         ],
         history: {
           delay: 2000,

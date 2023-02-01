@@ -1,5 +1,6 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
-// Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
+/// Released unde^Ca MIT (SEI)-style license. See LICENSE.md in the
+// project root for license information.
 
 import { MoveStore } from './move.store';
 import { MoveQuery } from './move.query';
@@ -19,12 +20,12 @@ import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
   providedIn: 'root',
 })
 export class MoveDataService {
+  readonly MoveList: Observable<Move[]>;
+  readonly filterControl = new UntypedFormControl();
   private _requestedMoveId: string;
   private _requestedMoveId$ = this.activatedRoute.queryParamMap.pipe(
     map((params) => params.get('moveId') || '')
   );
-  readonly MoveList: Observable<Move[]>;
-  readonly filterControl = new UntypedFormControl();
   private filterTerm: Observable<string>;
   private sortColumn: Observable<string>;
   private sortIsAscending: Observable<boolean>;
@@ -80,43 +81,21 @@ export class MoveDataService {
         ]) =>
           items
             ? (items as Move[])
-                .sort((a: Move, b: Move) =>
-                  this.sortMoves(a, b, sortColumn, sortIsAscending)
-                )
-                .filter(
-                  (move) =>
-                    ('' + move.description)
-                      .toLowerCase()
-                      .includes(filterTerm.toLowerCase()) ||
+              .sort((a: Move, b: Move) =>
+                this.sortMoves(a, b, sortColumn, sortIsAscending)
+              )
+              .filter(
+                (move) =>
+                  ('' + move.description)
+                    .toLowerCase()
+                    .includes(filterTerm.toLowerCase()) ||
                     move.id
                       .toLowerCase()
                       .includes(filterTerm.toLowerCase())
-                )
+              )
             : []
       )
     );
-  }
-
-  private sortMoves(
-    a: Move,
-    b: Move,
-    column: string,
-    isAsc: boolean
-  ) {
-    switch (column) {
-      case 'description':
-        return (
-          (a.description.toLowerCase() < b.description.toLowerCase() ? -1 : 1) *
-          (isAsc ? 1 : -1)
-        );
-      case 'dateCreated':
-        return (
-          (a.dateCreated.valueOf() < b.dateCreated.valueOf() ? -1 : 1) *
-          (isAsc ? 1 : -1)
-        );
-      default:
-        return 0;
-    }
   }
 
   loadByMsel(mselId: string) {
@@ -222,4 +201,25 @@ export class MoveDataService {
     move.situationTime = new Date(move.situationTime);
   }
 
+  private sortMoves(
+    a: Move,
+    b: Move,
+    column: string,
+    isAsc: boolean
+  ) {
+    switch (column) {
+      case 'description':
+        return (
+          (a.description.toLowerCase() < b.description.toLowerCase() ? -1 : 1) *
+          (isAsc ? 1 : -1)
+        );
+      case 'dateCreated':
+        return (
+          (a.dateCreated.valueOf() < b.dateCreated.valueOf() ? -1 : 1) *
+          (isAsc ? 1 : -1)
+        );
+      default:
+        return 0;
+    }
+  }
 }

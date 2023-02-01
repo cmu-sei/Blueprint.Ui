@@ -1,5 +1,6 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
-// Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
+// Released under a MIT (SEI)-style license. See LICENSE.md in the
+// project root for license information.
 import { Component, Input, OnDestroy, ViewChild } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -24,19 +25,18 @@ import { MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy
 export class MselRolesComponent implements OnDestroy {
   @Input() loggedInUserId: string;
   @Input() isContentDeveloper: boolean;
-  msel = new MselPlus();
+  // context menu
+  @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
+  contextMenuPosition = { x: '0px', y: '0px' };  msel = new MselPlus();
   originalMsel = new MselPlus();
   expandedSectionIds: string[] = [];
   sortedScenarioEvents: ScenarioEvent[];
   sortedDataFields: DataField[];
-  private unsubscribe$ = new Subject();
-  // context menu
-  @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
-  contextMenuPosition = { x: '0px', y: '0px' };
+  mselRoles: MselRole[] = [MselRole.Editor, MselRole.Approver, MselRole.MoveEditor, MselRole.Owner];
   isEditEnabled = false;
   userList: User[] = [];
   private allTeams: Team[] = [];
-  mselRoles: MselRole[] = [MselRole.Editor, MselRole.Approver, MselRole.MoveEditor, MselRole.Owner];
+  private unsubscribe$ = new Subject();
 
   constructor(
     private teamQuery: TeamQuery,

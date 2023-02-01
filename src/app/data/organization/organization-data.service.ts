@@ -1,5 +1,6 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
-// Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
+/// Released unde^Ca MIT (SEI)-style license. See LICENSE.md in the
+// project root for license information.
 
 import { OrganizationStore } from './organization.store';
 import { OrganizationQuery } from './organization.query';
@@ -19,12 +20,12 @@ import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
   providedIn: 'root',
 })
 export class OrganizationDataService {
-  private _requestedOrganizationId: string;
+  readonly OrganizationList: Observable<Organization[]>;
+  readonly filterControl = new UntypedFormControl();  private _requestedOrganizationId: string;
   private _requestedOrganizationId$ = this.activatedRoute.queryParamMap.pipe(
     map((params) => params.get('organizationId') || '')
   );
-  readonly OrganizationList: Observable<Organization[]>;
-  readonly filterControl = new UntypedFormControl();
+
   private filterTerm: Observable<string>;
   private sortColumn: Observable<string>;
   private sortIsAscending: Observable<boolean>;
@@ -80,43 +81,21 @@ export class OrganizationDataService {
         ]) =>
           items
             ? (items as Organization[])
-                .sort((a: Organization, b: Organization) =>
-                  this.sortOrganizations(a, b, sortColumn, sortIsAscending)
-                )
-                .filter(
-                  (organization) =>
-                    ('' + organization.description)
-                      .toLowerCase()
-                      .includes(filterTerm.toLowerCase()) ||
+              .sort((a: Organization, b: Organization) =>
+                this.sortOrganizations(a, b, sortColumn, sortIsAscending)
+              )
+              .filter(
+                (organization) =>
+                  ('' + organization.description)
+                    .toLowerCase()
+                    .includes(filterTerm.toLowerCase()) ||
                     organization.id
                       .toLowerCase()
                       .includes(filterTerm.toLowerCase())
-                )
+              )
             : []
       )
     );
-  }
-
-  private sortOrganizations(
-    a: Organization,
-    b: Organization,
-    column: string,
-    isAsc: boolean
-  ) {
-    switch (column) {
-      case 'description':
-        return (
-          (a.description.toLowerCase() < b.description.toLowerCase() ? -1 : 1) *
-          (isAsc ? 1 : -1)
-        );
-      case 'dateCreated':
-        return (
-          (a.dateCreated.valueOf() < b.dateCreated.valueOf() ? -1 : 1) *
-          (isAsc ? 1 : -1)
-        );
-      default:
-        return 0;
-    }
   }
 
   loadTemplates() {
@@ -223,5 +202,27 @@ export class OrganizationDataService {
 
   deleteFromStore(id: string) {
     this.organizationStore.remove(id);
+  }
+
+  private sortOrganizations(
+    a: Organization,
+    b: Organization,
+    column: string,
+    isAsc: boolean
+  ) {
+    switch (column) {
+      case 'description':
+        return (
+          (a.description.toLowerCase() < b.description.toLowerCase() ? -1 : 1) *
+          (isAsc ? 1 : -1)
+        );
+      case 'dateCreated':
+        return (
+          (a.dateCreated.valueOf() < b.dateCreated.valueOf() ? -1 : 1) *
+          (isAsc ? 1 : -1)
+        );
+      default:
+        return 0;
+    }
   }
 }
