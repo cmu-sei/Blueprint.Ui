@@ -19,11 +19,10 @@ import { takeUntil } from 'rxjs/operators';
 })
 export class AppComponent implements OnDestroy {
   @HostBinding('class') componentCssClass: string;
-  @HostListener('document:keydown.backspace', ['$event'])
-  theme$: Observable<Theme> = this.authQuery.userTheme$;
   private paramTheme;
   unsubscribe$: Subject<null> = new Subject<null>();
-
+  theme$: Observable<Theme> = this.authQuery.userTheme$;
+  @HostListener('document:keydown.backspace', ['$event'])
   onKeyDown(evt: KeyboardEvent) {
     let doPrevent = true;
     const types = [
