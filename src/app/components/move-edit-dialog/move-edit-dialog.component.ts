@@ -37,16 +37,12 @@ export class MoveEditDialogComponent {
     this.data.move.situationTime,
     []
   );
-  public situationTimeFormControl = new UntypedFormControl(
-    this.data.move.situationTime.toTimeString().substr(0, 5),
-    []
-  );
   public moveStartTimeFormControl = new UntypedFormControl(
-    this.data.move.moveStartTime.toTimeString().substr(0, 5),
+    this.data.move.moveStartTime,
     []
   );
   public moveStopTimeFormControl = new UntypedFormControl(
-    this.data.move.moveStopTime.toTimeString().substr(0, 5),
+    this.data.move.moveStopTime,
     []
   );
   editorStyle = {
@@ -69,45 +65,18 @@ export class MoveEditDialogComponent {
       case 'situationDate':
         const newPosted = new Date(this.situationDateFormControl.value);
         const oldPosted = new Date(this.data.move.situationTime);
-        newPosted.setHours(oldPosted.getHours());
-        newPosted.setMinutes(oldPosted.getMinutes());
         this.data.move.situationTime = newPosted;
-        break;
-      case 'situationTime':
-        const situationTime = this.situationTimeFormControl.value;
-        if (situationTime.length === 5) {
-          timeParts = situationTime.split(':');
-        } else {
-          timeParts = this.convertTime12to24(situationTime);
-        }
-        this.data.move.situationTime.setHours(timeParts[0]);
-        this.data.move.situationTime.setMinutes(timeParts[1]);
         break;
       case 'moveStartTime':
         const moveStartTime = this.moveStartTimeFormControl.value;
-        if (moveStartTime.length === 5) {
-          timeParts = moveStartTime.split(':');
-        } else {
-          timeParts = this.convertTime12to24(moveStartTime);
-        }
-        this.data.move.moveStartTime.setHours(timeParts[0]);
-        this.data.move.moveStartTime.setMinutes(timeParts[1]);
+        this.data.move.moveStartTime = moveStartTime;
         break;
       case 'moveStopTime':
         const moveStopTime = this.moveStopTimeFormControl.value;
-        if (moveStopTime.length === 5) {
-          timeParts = moveStopTime.split(':');
-        } else {
-          timeParts = this.convertTime12to24(moveStopTime);
-        }
-        this.data.move.moveStopTime.setHours(timeParts[0]);
-        this.data.move.moveStopTime.setMinutes(timeParts[1]);
+        this.data.move.moveStopTime = moveStopTime;
         break;
       default:
         break;
-    }
-    if (which === 'situationDate') {
-    } else if (which === 'situationTime') {
     }
   }
 
@@ -125,16 +94,4 @@ export class MoveEditDialogComponent {
     }
   }
 
-  private convertTime12to24(time12h: string) {
-    const [time, modifier] = time12h.split(' ');
-    let [hours, minutes] = time.split(':');
-    if (hours === '12') {
-      hours = '00';
-    }
-    if (modifier.toUpperCase() === 'PM') {
-      hours = (parseInt(hours, 10) + 12).toString();
-    }
-
-    return [hours, minutes];
-  }
 }

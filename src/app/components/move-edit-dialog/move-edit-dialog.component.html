@@ -33,30 +33,58 @@ Released under a MIT (SEI)-style license. See LICENSE.md in the project root for
       </div>
     </div>
     <div class="add-margin">
-      <div>
-        <label>Start Time</label>
-        <mat-form-field style="margin-top: -15px;">
-          <input matInput hidden>
-          <ngx-timepicker-field
-            [formControl]="moveStartTimeFormControl"
-            [format]=24
-            [defaultTime]="moveStartTimeFormControl.value"
-            (timeChanged)="saveMove('moveStartTime')">
-          </ngx-timepicker-field>
-        </mat-form-field>
-      </div>
+      <mat-form-field>
+        <input
+          matInput
+          [ngxMatDatetimePicker]="moveStartTimePicker"
+          placeholder="Start Date / Time"
+          [formControl]="moveStartTimeFormControl"
+          (inputChange)="saveMove('moveStartTime')"
+          (dateChange)="saveMove('moveStartTime')"
+          >
+        <mat-datepicker-toggle
+          matSuffix
+          [for]="$any(moveStartTimePicker)">
+        </mat-datepicker-toggle>
+        <ngx-mat-datetime-picker #moveStartTimePicker
+          [showSpinners]=true
+          [showSeconds]=true
+          [stepHour]=1
+          [stepMinute]=1
+          [stepSecond]=1
+          [touchUi]=false
+          [enableMeridian]=true
+          [disableMinute]=false
+          [hideTime]=false>
+        </ngx-mat-datetime-picker>
+      </mat-form-field>
     </div>
     <div class="add-margin">
       <div>
-        <label>Stop Time</label>
-        <mat-form-field style="margin-top: -15px;">
-          <input matInput hidden>
-          <ngx-timepicker-field
+        <mat-form-field>
+          <input
+            matInput
+            [ngxMatDatetimePicker]="moveStopTimePicker"
+            placeholder="Stop Date / Time"
             [formControl]="moveStopTimeFormControl"
-            [format]=24
-            [defaultTime]="moveStopTimeFormControl.value"
-            (timeChanged)="saveMove('moveStopTime')">
-          </ngx-timepicker-field>
+            (inputChange)="saveMove('moveStopTime')"
+            (dateChange)="saveMove('moveStopTime')"
+            >
+          <mat-datepicker-toggle
+            matSuffix
+            [for]="$any(moveStopTimePicker)">
+          </mat-datepicker-toggle>
+          <ngx-mat-datetime-picker #moveStopTimePicker
+            [showSpinners]=true
+            [showSeconds]=true
+            [stepHour]=1
+            [stepMinute]=1
+            [stepSecond]=1
+            [touchUi]=false
+            [enableMeridian]=true
+            [disableMinute]=false
+            [hideTime]=false>
+          </ngx-mat-datetime-picker>
         </mat-form-field>
       </div>
     </div>
@@ -68,23 +96,32 @@ Released under a MIT (SEI)-style license. See LICENSE.md in the project root for
       </div>
     </div>
 
-
     <div class="add-margin">
       <div>
         <mat-form-field>
-          <input matInput [matDatepicker]="situationDatePicker" placeholder="Situation Date / Time" (inputChange)="saveMove('situationDate')" (dateChange)="saveMove('situationDate')"
-            [formControl]="situationDateFormControl">
-          <mat-datepicker-toggle matSuffix [for]="situationDatePicker"></mat-datepicker-toggle>
-          <mat-datepicker #situationDatePicker [startAt]="data.move.situationTime.toLocaleDateString()"></mat-datepicker>
-        </mat-form-field>
-        <mat-form-field style="margin-top: -15px;">
-          <input matInput hidden>
-          <ngx-timepicker-field
-            [formControl]="situationTimeFormControl"
-            [format]=24
-            [defaultTime]="situationTimeFormControl.value"
-            (timeChanged)="saveMove('situationTime')">
-          </ngx-timepicker-field>
+          <input
+            matInput
+            [ngxMatDatetimePicker]="situationDatePicker"
+            placeholder="Situation Date / Time"
+            [formControl]="situationDateFormControl"
+            (inputChange)="saveMove('situationDate')"
+            (dateChange)="saveMove('situationDate')"
+            >
+          <mat-datepicker-toggle
+            matSuffix
+            [for]="$any(situationDatePicker)">
+          </mat-datepicker-toggle>
+          <ngx-mat-datetime-picker #situationDatePicker
+            [showSpinners]=true
+            [showSeconds]=true
+            [stepHour]=1
+            [stepMinute]=1
+            [stepSecond]=1
+            [touchUi]=false
+            [enableMeridian]=true
+            [disableMinute]=false
+            [hideTime]=false>
+          </ngx-mat-datetime-picker>
         </mat-form-field>
       </div>
     </div>

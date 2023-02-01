@@ -87,6 +87,7 @@ import { ApiModule as SwaggerCodegenApiModule } from './generated/blueprint.api/
 import { DisplayOrderPipe, SortByPipe } from 'src/app/utilities/sort-by-pipe';
 import { QuillModule } from 'ngx-quill';
 import { PlainTextPipe } from './utilities/plain-text-pipe';
+import { NgxMatDatetimePickerModule, NgxMatTimepickerModule, NgxMatNativeDateModule } from '@angular-material-components/datetime-picker';
 
 const settings: ComnSettingsConfig = {
   url: 'assets/config/settings.json',
@@ -172,6 +173,10 @@ export function getBasePath(settingsSvc: ComnSettingsService) {
     MatBottomSheetModule,
     MatBadgeModule,
     MatFormFieldModule,
+    MatDatepickerModule,
+    NgxMatTimepickerModule,
+    NgxMatDatetimePickerModule,
+    NgxMatNativeDateModule,
     CdkTableModule,
     MatTreeModule,
     CdkTreeModule,
