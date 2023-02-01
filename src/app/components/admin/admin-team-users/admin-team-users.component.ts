@@ -12,7 +12,7 @@ import {
 import { LegacyPageEvent as PageEvent, MatLegacyPaginator as MatPaginator } from '@angular/material/legacy-paginator';
 import { MatSort, MatSortable } from '@angular/material/sort';
 import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
-import { User, Team } from 'src/app/generated/blueprint.api';
+import { User } from 'src/app/generated/blueprint.api';
 import { TeamUserDataService } from 'src/app/data/user/team-user-data.service';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
