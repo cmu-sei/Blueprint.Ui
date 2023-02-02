@@ -17,8 +17,8 @@ Released under a MIT (SEI)-style license. See LICENSE.md in the project root for
   </div>
   <div mat-dialog-content *ngIf="!!data && data.organization !== undefined && data.organization !== null">
 
-    <div fxLayout="row" class="add-margin">
-      <div fxFlex fxFlexOffset="10">
+    <div class="add-margin">
+      <div>
         <mat-form-field class="full-width">
           <input type="text" matInput [formControl]="organizationNameFormControl" placeholder="Name (required)" (blur)="saveOrganization('name')"
             value="{{data.organization.name}}">
@@ -29,8 +29,8 @@ Released under a MIT (SEI)-style license. See LICENSE.md in the project root for
       </div>
     </div>
 
-    <div fxLayout="row" class="add-margin">
-      <div fxFlex fxFlexOffset="10">
+    <div class="add-margin">
+      <div>
         <mat-form-field class="full-width">
           <input type="text" matInput [formControl]="organizationShortNameFormControl" placeholder="Short Name (required)" (blur)="saveOrganization('shortName')"
             value="{{data.organization.shortName}}">
@@ -41,8 +41,8 @@ Released under a MIT (SEI)-style license. See LICENSE.md in the project root for
       </div>
     </div>
 
-    <div fxLayout="row" class="add-margin left">
-      <div fxFlex fxFlexOffset="10">
+    <div class="add-margin left">
+      <div>
         <mat-form-field class="full-width">
           <input type="text" matInput [formControl]="summaryFormControl" placeholder="Summary (required)" (blur)="saveOrganization('summary')"
             value="{{data.organization.summary}}">
@@ -53,8 +53,8 @@ Released under a MIT (SEI)-style license. See LICENSE.md in the project root for
       </div>
     </div>
 
-    <div fxLayout="row" class="add-margin left">
-      <div fxFlex fxFlexOffset="10">
+    <div class="add-margin left">
+      <div>
         <mat-form-field class="full-width">
           <input type="text" matInput [formControl]="organizationEmailFormControl" placeholder="Email" (blur)="saveOrganization('email')"
             value="{{data.organization.email}}">
@@ -65,8 +65,8 @@ Released under a MIT (SEI)-style license. See LICENSE.md in the project root for
       </div>
     </div>
 
-    <div fxLayout="row" class="add-margin left">
-      <div fxFlex fxFlexOffset="10">
+    <div class="add-margin left">
+      <div>
         <p style="font-size: 13px; font-weight: 400; line-height: 1.125; font-family: Open Sans, sans-serif; letter-spacing: normal;">
           Description
         </p>
@@ -82,11 +82,11 @@ Released under a MIT (SEI)-style license. See LICENSE.md in the project root for
       </div>
     </div>
   </div>
-  <div mat-dialog-actions>
-    <div fxFlex fxLayoutAlign="left" class="delete-button">
+  <div class="cssLayoutRowStartCenter bottom-button">
+    <div class="delete-button">
       <button mat-stroked-button (click)="handleEditComplete(true)" [disabled]="!errorFree()" style="margin-left: 40px;">Save</button>
     </div>
-    <div fxFlex fxLayoutAlign="end" class="delete-button">
+    <div class="delete-button">
       <button mat-stroked-button (click)="handleEditComplete(false)">Cancel</button>
     </div>
   </div>

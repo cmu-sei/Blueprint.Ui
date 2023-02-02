@@ -1,16 +1,22 @@
+/*
+ Copyright 2023 Carnegie Mellon University. All Rights Reserved. 
+ Released under a MIT (SEI)-style license. See LICENSE.md in the 
+ project root for license information.
+*/
+
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
-// Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
+/// Released unde^Ca MIT (SEI)-style license. See LICENSE.md in the
+// project root for license information.
 
 import { DataFieldStore } from './data-field.store';
 import { DataFieldQuery } from './data-field.query';
 import { Injectable } from '@angular/core';
-import { FormControl } from '@angular/forms';
-import { PageEvent } from '@angular/material/paginator';
+import { UntypedFormControl } from '@angular/forms';
+import { LegacyPageEvent as PageEvent } from '@angular/material/legacy-paginator';
 import { Router, ActivatedRoute } from '@angular/router';
 import {
   DataField,
   DataFieldService,
-  ItemStatus
 } from 'src/app/generated/blueprint.api';
 import { map, take, tap } from 'rxjs/operators';
 import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
@@ -19,17 +25,16 @@ import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
   providedIn: 'root',
 })
 export class DataFieldDataService {
-  private _requestedDataFieldId: string;
+  readonly DataFieldList: Observable<DataField[]>;
+  readonly filterControl = new UntypedFormControl();
   private _requestedDataFieldId$ = this.activatedRoute.queryParamMap.pipe(
     map((params) => params.get('dataFieldId') || '')
   );
-  readonly DataFieldList: Observable<DataField[]>;
-  readonly filterControl = new FormControl();
   private filterTerm: Observable<string>;
   private sortColumn: Observable<string>;
   private sortIsAscending: Observable<boolean>;
   private _pageEvent: PageEvent = { length: 0, pageIndex: 0, pageSize: 10 };
-  readonly pageEvent = new BehaviorSubject<PageEvent>(this._pageEvent);
+  readonly pageEvent = new BehaviorSubject<PageEvent>(this._pageEvent);  private _requestedDataFieldId: string;
   private pageSize: Observable<number>;
   private pageIndex: Observable<number>;
 
@@ -80,36 +85,19 @@ export class DataFieldDataService {
         ]) =>
           items
             ? (items as DataField[])
-                .sort((a: DataField, b: DataField) =>
-                  this.sortDataFields(a, b, sortColumn, sortIsAscending)
-                )
-                .filter(
-                  (dataField) =>
-                    dataField.id
-                      .toLowerCase()
-                      .includes(filterTerm.toLowerCase()
-                  )
-                )
+              .sort((a: DataField, b: DataField) =>
+                this.sortDataFields(a, b, sortColumn, sortIsAscending)
+              )
+              .filter(
+                (dataField) =>
+                  dataField.id
+                    .toLowerCase()
+                    .includes(filterTerm.toLowerCase()
+                    )
+              )
             : []
       )
     );
-  }
-
-  private sortDataFields(
-    a: DataField,
-    b: DataField,
-    column: string,
-    isAsc: boolean
-  ) {
-    switch (column) {
-      case 'dateCreated':
-        return (
-          (a.dateCreated.valueOf() < b.dateCreated.valueOf() ? -1 : 1) *
-          (isAsc ? 1 : -1)
-        );
-      default:
-        return 0;
-    }
   }
 
   loadByMsel(mselId: string) {
@@ -200,5 +188,22 @@ export class DataFieldDataService {
 
   deleteFromStore(id: string) {
     this.dataFieldStore.remove(id);
+  }
+
+  private sortDataFields(
+    a: DataField,
+    b: DataField,
+    column: string,
+    isAsc: boolean
+  ) {
+    switch (column) {
+      case 'dateCreated':
+        return (
+          (a.dateCreated.valueOf() < b.dateCreated.valueOf() ? -1 : 1) *
+          (isAsc ? 1 : -1)
+        );
+      default:
+        return 0;
+    }
   }
 }

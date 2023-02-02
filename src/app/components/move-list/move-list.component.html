@@ -23,10 +23,11 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
         </button>
         Move
       </span>
-      <span class="mat-header-cell two-cell" mat-sort-header="title">Title</span>
       <span class="mat-header-cell one-cell" mat-sort-header="moveStartTime">Start</span>
+      <span class="mat-header-cell one-cell" mat-sort-header="moveStopTime">Stop</span>
       <span class="mat-header-cell one-cell" mat-sort-header="situationTime">Situation Time</span>
-      <span class="mat-header-cell two-cell" mat-sort-header="situationDescription">Situation Description</span>
+      <span class="mat-header-cell two-cell" mat-sort-header="title">Title</span>
+      <span class="mat-header-cell two-cell" mat-sort-header="description">Description</span>
       <span class="mat-header-cell two-cell search-cell">
         <mat-form-field class="search-control">
           <input matInput [formControl]="filterControl" placeholder="Search" />
@@ -76,12 +77,11 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
             </button>
             &nbsp;{{ item.moveNumber }}
           </div>
-          <div class="mat-cell two-cell center-self">{{ item.title }}</div>
           <div class="mat-cell one-cell center-self">{{ item.moveStartTime | date: 'HH:mm' }}</div>
+          <div class="mat-cell one-cell center-self">{{ item.moveStopTime | date: 'HH:mm' }}</div>
           <div class="mat-cell one-cell center-self">{{ item.situationTime | date: 'MM/dd/yyyy HH:mm' }}</div>
-          <div class="mat-cell four-cell center-self">
-            <quill-view-html [content]="item.situationDescription" theme="snow"></quill-view-html>
-          </div>
+          <div class="mat-cell two-cell center-self">{{ item.title }}</div>
+          <div class="mat-cell four-cell center-self">{{ item.description }}</div>
         </mat-expansion-panel-header>
       </mat-expansion-panel>
     </section>

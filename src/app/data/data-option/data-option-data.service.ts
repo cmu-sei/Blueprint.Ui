@@ -1,16 +1,22 @@
+/*
+ Copyright 2023 Carnegie Mellon University. All Rights Reserved. 
+ Released under a MIT (SEI)-style license. See LICENSE.md in the 
+ project root for license information.
+*/
+
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
-// Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
+/// Released unde^Ca MIT (SEI)-style license. See LICENSE.md in the
+// project root for license information.
 
 import { DataOptionStore } from './data-option.store';
 import { DataOptionQuery } from './data-option.query';
 import { Injectable } from '@angular/core';
-import { FormControl } from '@angular/forms';
-import { PageEvent } from '@angular/material/paginator';
+import { UntypedFormControl } from '@angular/forms';
+import { LegacyPageEvent as PageEvent } from '@angular/material/legacy-paginator';
 import { Router, ActivatedRoute } from '@angular/router';
 import {
   DataOption,
   DataOptionService,
-  ItemStatus
 } from 'src/app/generated/blueprint.api';
 import { map, take, tap } from 'rxjs/operators';
 import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
@@ -19,12 +25,12 @@ import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
   providedIn: 'root',
 })
 export class DataOptionDataService {
+  readonly DataOptionList: Observable<DataOption[]>;
+  readonly filterControl = new UntypedFormControl();
   private _requestedDataOptionId: string;
   private _requestedDataOptionId$ = this.activatedRoute.queryParamMap.pipe(
     map((params) => params.get('dataOptionId') || '')
   );
-  readonly DataOptionList: Observable<DataOption[]>;
-  readonly filterControl = new FormControl();
   private filterTerm: Observable<string>;
   private sortColumn: Observable<string>;
   private sortIsAscending: Observable<boolean>;
@@ -80,36 +86,19 @@ export class DataOptionDataService {
         ]) =>
           items
             ? (items as DataOption[])
-                .sort((a: DataOption, b: DataOption) =>
-                  this.sortDataOptions(a, b, sortColumn, sortIsAscending)
-                )
-                .filter(
-                  (dataOption) =>
-                    dataOption.id
-                      .toLowerCase()
-                      .includes(filterTerm.toLowerCase()
-                  )
-                )
+              .sort((a: DataOption, b: DataOption) =>
+                this.sortDataOptions(a, b, sortColumn, sortIsAscending)
+              )
+              .filter(
+                (dataOption) =>
+                  dataOption.id
+                    .toLowerCase()
+                    .includes(filterTerm.toLowerCase()
+                    )
+              )
             : []
       )
     );
-  }
-
-  private sortDataOptions(
-    a: DataOption,
-    b: DataOption,
-    column: string,
-    isAsc: boolean
-  ) {
-    switch (column) {
-      case 'dateCreated':
-        return (
-          (a.dateCreated.valueOf() < b.dateCreated.valueOf() ? -1 : 1) *
-          (isAsc ? 1 : -1)
-        );
-      default:
-        return 0;
-    }
   }
 
   loadByDataField(dataFieldId: string) {
@@ -199,5 +188,22 @@ export class DataOptionDataService {
 
   deleteFromStore(id: string) {
     this.dataOptionStore.remove(id);
+  }
+
+  private sortDataOptions(
+    a: DataOption,
+    b: DataOption,
+    column: string,
+    isAsc: boolean
+  ) {
+    switch (column) {
+      case 'dateCreated':
+        return (
+          (a.dateCreated.valueOf() < b.dateCreated.valueOf() ? -1 : 1) *
+          (isAsc ? 1 : -1)
+        );
+      default:
+        return 0;
+    }
   }
 }

@@ -1,21 +1,22 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
-// Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
+// Released under a MIT (SEI)-style license. See LICENSE.md in the
+// project root for license information.
 
 import { Component, EventEmitter, Inject, Output } from '@angular/core';
 import {
-  FormControl,
+  UntypedFormControl,
   FormGroupDirective,
   NgForm,
   Validators,
 } from '@angular/forms';
 import { ErrorStateMatcher } from '@angular/material/core';
-import { MatDialogRef, MAT_DIALOG_DATA, MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 
 /** Error when invalid control is dirty, touched, or submitted. */
 export class UserErrorStateMatcher implements ErrorStateMatcher {
   isErrorState(
-    control: FormControl | null,
+    control: UntypedFormControl | null,
     form: FormGroupDirective | NgForm | null
   ): boolean {
     const isSubmitted = form && form.submitted;
@@ -34,29 +35,29 @@ const MIN_NAME_LENGTH = 3;
 export class OrganizationEditDialogComponent {
   @Output() editComplete = new EventEmitter<any>();
 
-  public organizationNameFormControl = new FormControl(
+  public organizationNameFormControl = new UntypedFormControl(
     this.data.organization.name,
     [
       Validators.required
     ]
   );
-  public organizationShortNameFormControl = new FormControl(
+  public organizationShortNameFormControl = new UntypedFormControl(
     this.data.organization.shortName,
     [
       Validators.required
     ]
   );
-  public organizationEmailFormControl = new FormControl(
+  public organizationEmailFormControl = new UntypedFormControl(
     this.data.organization.email,
     [
       Validators.required
     ]
   );
-  public descriptionFormControl = new FormControl(
+  public descriptionFormControl = new UntypedFormControl(
     this.data.organization.description ,
     []
   );
-  public summaryFormControl = new FormControl(
+  public summaryFormControl = new UntypedFormControl(
     this.data.organization.summary,
     []
   );
@@ -125,7 +126,8 @@ export class OrganizationEditDialogComponent {
         this.data.organization.name = this.organizationNameFormControl.value ? this.organizationNameFormControl.value.toString() : '';
         break;
       case 'shortName':
-        this.data.organization.shortName = this.organizationShortNameFormControl.value ? this.organizationShortNameFormControl.value.toString() : '';
+        this.data.organization.shortName =
+            this.organizationShortNameFormControl.value ? this.organizationShortNameFormControl.value.toString() : '';
         break;
       case 'description':
         this.data.organization.description = this.descriptionFormControl.value ? this.descriptionFormControl.value.toString() : '';

@@ -1,11 +1,18 @@
+/*
+ Copyright 2023 Carnegie Mellon University. All Rights Reserved. 
+ Released under a MIT (SEI)-style license. See LICENSE.md in the 
+ project root for license information.
+*/
+
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
-// Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
+/// Released unde^Ca MIT (SEI)-style license. See LICENSE.md in the
+// project root for license information.
 
 import { TeamStore } from './team.store';
 import { TeamQuery } from './team.query';
 import { Injectable } from '@angular/core';
-import { FormControl } from '@angular/forms';
-import { PageEvent } from '@angular/material/paginator';
+import { UntypedFormControl } from '@angular/forms';
+import { LegacyPageEvent as PageEvent } from '@angular/material/legacy-paginator';
 import { Router, ActivatedRoute } from '@angular/router';
 import {
   Team,
@@ -24,7 +31,7 @@ export class TeamDataService {
   // );
   readonly teamList: Observable<Team[]>;
   // readonly selected: Observable<Team>;
-  readonly filterControl = new FormControl();
+  readonly filterControl = new UntypedFormControl();
   private filterTerm: Observable<string>;
   private sortColumn: Observable<string>;
   private sortIsAscending: Observable<boolean>;
@@ -80,21 +87,21 @@ export class TeamDataService {
         ]) =>
           items
             ? (items as Team[])
-                .sort((a: Team, b: Team) =>
-                  this.sortTeams(a, b, sortColumn, sortIsAscending)
-                )
-                .filter(
-                  (team) =>
-                    ('' + team.name)
-                      .toLowerCase()
-                      .includes(filterTerm.toLowerCase()) ||
+              .sort((a: Team, b: Team) =>
+                this.sortTeams(a, b, sortColumn, sortIsAscending)
+              )
+              .filter(
+                (team) =>
+                  ('' + team.name)
+                    .toLowerCase()
+                    .includes(filterTerm.toLowerCase()) ||
                     ('' + team.shortName)
                       .toLowerCase()
                       .includes(filterTerm.toLowerCase())  ||
                     team.id
                       .toLowerCase()
                       .includes(filterTerm.toLowerCase())
-                )
+              )
             : []
       )
     );
@@ -123,28 +130,6 @@ export class TeamDataService {
     //     return selectedTeam;
     //   })
     // );
-  }
-
-  private sortTeams(
-    a: Team,
-    b: Team,
-    column: string,
-    isAsc: boolean
-  ) {
-    switch (column) {
-      case 'name':
-        return (
-          (a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1) *
-          (isAsc ? 1 : -1)
-        );
-      case 'shortName':
-        return (
-          (a.shortName.toLowerCase() < b.shortName.toLowerCase() ? -1 : 1) *
-          (isAsc ? 1 : -1)
-        );
-      default:
-        return 0;
-    }
   }
 
   load() {
@@ -287,5 +272,27 @@ export class TeamDataService {
 
   deleteFromStore(id: string) {
     this.teamStore.remove(id);
+  }
+
+  private sortTeams(
+    a: Team,
+    b: Team,
+    column: string,
+    isAsc: boolean
+  ) {
+    switch (column) {
+      case 'name':
+        return (
+          (a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1) *
+          (isAsc ? 1 : -1)
+        );
+      case 'shortName':
+        return (
+          (a.shortName.toLowerCase() < b.shortName.toLowerCase() ? -1 : 1) *
+          (isAsc ? 1 : -1)
+        );
+      default:
+        return 0;
+    }
   }
 }

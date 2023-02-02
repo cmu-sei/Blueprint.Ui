@@ -70,15 +70,32 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
         </mat-form-field>
         <!-- date input -->
         <mat-form-field *ngIf="!df.isChosenFromList && df.dataType === dataType.DateTime" class="full-width">
-          <mat-label class="error-text" *ngIf="notValidDateFormat(getDataValue(df.name).value)">Not a valid date format.  Use M/d/yyyy.</mat-label>
           <input
-            type="datetime"
             matInput
-            placeholder="{{ df.name }}"
+            [ngxMatDatetimePicker]="scenarioEventTimePicker"
+            placeholder={{df.name}}
+            [formControl]="scenarioEventTimeFormControls"
             [(ngModel)]="getDataValue(df.name).value"
-            [disabled]="!data.isEditor"
-          />
+            >
+          <mat-datepicker-toggle
+            matSuffix
+            [for]="$any(scenarioEventTimePicker)">
+          </mat-datepicker-toggle>
+          <ngx-mat-datetime-picker #scenarioEventTimePicker
+            [showSpinners]=true
+            [showSeconds]=true
+            [stepHour]=1
+            [stepMinute]=1
+            [stepSecond]=1
+            [touchUi]=false
+            [enableMeridian]=true
+            [disableMinute]=false
+            [hideTime]=false>
+          </ngx-mat-datetime-picker>
         </mat-form-field>
+
+
+
         <!-- html input -->
         <div *ngIf="!df.isChosenFromList && df.dataType === dataType.Html">
           <div class="full-width">
