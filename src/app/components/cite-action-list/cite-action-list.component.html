@@ -1,0 +1,103 @@
+<!--
+ Copyright 2023 Carnegie Mellon University. All Rights Reserved.
+ Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
+-->
+<div *ngIf="msel" style="height: 100%;">
+
+  <div style="height: 100%">
+    <section
+      matSort
+      (matSortChange)="sortChanged($event)"
+      class="mat-elevation-z2 mat-header-row background-alt"
+    >
+      <span class="mat-header-cell one-cell">
+        <button
+          mat-icon-button
+          (click)="addOrEditCiteAction(null); $event.stopPropagation()"
+          style="outline: none; margin-right: 15px;"
+          title="Add new citeAction"
+          *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
+        >
+          <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
+        </button>
+      </span>
+      <span class="mat-header-cell one-cell" mat-sort-header="moveNumber">
+        <mat-form-field class="clear-search">
+          <mat-label>Move</mat-label>
+          <mat-select placeholder="Move" [value]="selectedMoveNumber" (selectionChange)="selectMove($event.value)" (click)="$event.stopPropagation()">
+            <mat-option [value]="-1">All</mat-option>
+            <mat-option *ngFor="let move of msel.moves" [value]="move.moveNumber">
+              {{ move.moveNumber }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </span>
+      <span class="mat-header-cell three-cell" mat-sort-header="team">
+        <mat-form-field class="team-selector">
+          <mat-label>Team</mat-label>
+          <mat-select placeholder="Team" [value]="selectedTeamId" (selectionChange)="selectTeam($event.value)" (click)="$event.stopPropagation()">
+            <mat-option value="">All Teams</mat-option>
+            <mat-option *ngFor="let team of msel.teams" [value]="team.id">
+              {{ team.name }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </span>
+      <span class="mat-header-cell one-cell">Display Order</span>
+      <span class="mat-header-cell two-cell" mat-sort-header="description">Description</span>
+      <span class="mat-header-cell two-cell search-cell">
+        <mat-form-field class="search-control">
+          <input matInput [formControl]="filterControl" placeholder="Search" />
+        </mat-form-field>
+        <div style="width: 30px;">
+          <button
+            mat-icon-button
+            (click)="filterControl.setValue(''); $event.stopPropagation()"
+            style="outline: none;"
+            title="Clear Search"
+            [disabled]="!filterString"
+          >
+            <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
+          </button>
+        </div>
+      </span>
+    </section>
+
+    <section class="scrolling-region">
+      <!-- existing citeActions -->
+      <mat-expansion-panel
+        *ngFor="let item of sortedCiteActions;"
+        disabled
+      >
+        <mat-expansion-panel-header
+          class="mat-row"
+          (click)="addOrEditCiteAction(item); $event.stopPropagation();"
+        >
+          <div class="mat-cell flex-row-cell one-cell">
+            <button
+              mat-icon-button
+              class="cite-action-button"
+              title="Edit this citeAction"
+              *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
+            >
+              <mat-icon class="mdi-18px up-12" fontIcon="mdi-square-edit-outline"></mat-icon>
+            </button>
+            <button
+              mat-icon-button
+              class="cite-action-button"
+              (click)="deleteCiteAction(item); $event.stopPropagation()"
+              title="Delete this citeAction"
+              *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
+            >
+              <mat-icon class="mdi-18px up-12" fontIcon="mdi-delete"></mat-icon>
+            </button>
+          </div>
+          <div class="mat-cell flex-row-cell one-cell">{{ item.moveNumber }}</div>
+          <div class="mat-cell three-cell center-self">{{ item.team.name }}</div>
+          <div class="mat-cell one-cell center-self">{{ item.actionNumber }}</div>
+          <div class="mat-cell four-cell center-self">{{ item.description }}</div>
+        </mat-expansion-panel-header>
+      </mat-expansion-panel>
+    </section>
+  </div>
+</div>

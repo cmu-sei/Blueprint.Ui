@@ -146,9 +146,15 @@ export class CiteRoleListComponent implements OnDestroy {
     const isAsc = direction !== 'desc';
     switch (column) {
       case 'name':
+        if (a.name.toLowerCase() === b.name.toLowerCase()) {
+          return ( (a.team.name < b.team.name ? -1 : 1) * (isAsc ? 1 : -1) );
+        }
         return ( (a.name < b.name ? -1 : 1) * (isAsc ? 1 : -1) );
         break;
       case 'team':
+        if (a.team.name === b.team.name) {
+          return ( (a.name < b.name ? -1 : 1) * (isAsc ? 1 : -1) );
+        }
         return ( (a.team.name < b.team.name ? -1 : 1) * (isAsc ? 1 : -1) );
         break;
       default:
