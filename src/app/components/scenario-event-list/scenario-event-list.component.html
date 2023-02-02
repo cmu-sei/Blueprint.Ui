@@ -2,10 +2,10 @@
 Copyright 2022 Carnegie Mellon University. All Rights Reserved.
  Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
-<div *ngIf="msel" class="enchilada">
+<div *ngIf="msel" class="">
   <table>
     <thead>
-      <tr class="cssLayoutRowSpaceBetween">
+      <tr>
         <th>
           <div class="row-start-buttons">
             <button
@@ -28,7 +28,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
     </thead>
     <tbody>
       <ng-container *ngFor="let item of sortedScenarioEvents">
-        <tr [style]="getRowStyle(item)" class="cssLayoutRowSpaceBetween">
+        <tr [style]="getRowStyle(item)">
           <td class="row-start-buttons">
             <div class="row-start-buttons">
               <button

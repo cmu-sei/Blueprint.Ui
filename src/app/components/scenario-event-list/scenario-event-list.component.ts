@@ -447,7 +447,7 @@ export class ScenarioEventListComponent implements OnDestroy {
       return false;
     }
     // check for month/day/year format
-    const regexPattern: RegExp = /^(0?[1-9]|1[012])[- /.](0?[1-9]|[12][0-9]|3[01])[- /.](19|20)\d\d$/;
+    const regexPattern = /^(0?[1-9]|1[012])[- /.](0?[1-9]|[12][0-9]|3[01])[- /.](19|20)\d\d$/;
     return !regexPattern.test(dateString);
   }
 
@@ -503,12 +503,13 @@ export class ScenarioEventListComponent implements OnDestroy {
     this.scenarioEventDataService.updateScenarioEvent(scenarioEvent);
   }
 
-  getStyle (dataField: DataField): string {
+  getStyle(dataField: DataField): string {
     if (dataField && dataField.columnMetadata) {
       const width = Math.trunc(+dataField.columnMetadata * 7);
       return 'width: ' + width.toString() + 'px;';
     } else {
-      return 'width: 100%;';
+      return 'width: ' + Math.trunc( 100 / this.sortedDataFields.length) + 'vh;';
+      // return 'width: 100%;';
     }
   }
 
