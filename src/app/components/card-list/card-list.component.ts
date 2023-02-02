@@ -1,21 +1,21 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
-// Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
+// Released under a MIT (SEI)-style license. See LICENSE.md in the
+// project root for license information.
 import { Component, Input, OnDestroy, ViewChild } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import {
   Card,
-  Team
 } from 'src/app/generated/blueprint.api';
 import { MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { Sort } from '@angular/material/sort';
-import { MatMenuTrigger } from '@angular/material/menu';
+import { MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy-menu';
 import { CardDataService } from 'src/app/data/card/card-data.service';
 import { CardQuery } from 'src/app/data/card/card.query';
 import { CardTeamDataService } from 'src/app/data/team/card-team-data.service';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -27,21 +27,20 @@ import { v4 as uuidv4 } from 'uuid';
 export class CardListComponent implements OnDestroy {
   @Input() loggedInUserId: string;
   @Input() isContentDeveloper: boolean;
+  // context menu
+  @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
   msel = new MselPlus();
   cardList: Card[] = [];
   changedCard: Card = {};
   filteredCardList: Card[] = [];
-  filterControl = new FormControl();
+  filterControl = new UntypedFormControl();
   filterString = '';
   sort: Sort = {active: '', direction: ''};
   sortedCards: Card[] = [];
   isAddingCard = false;
   editingId = '';
-
-  private unsubscribe$ = new Subject();
-  // context menu
-  @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
   contextMenuPosition = { x: '0px', y: '0px' };
+  private unsubscribe$ = new Subject();
 
   constructor(
     private mselQuery: MselQuery,
@@ -90,16 +89,16 @@ export class CardListComponent implements OnDestroy {
     // previous edit has not been saved, so prompt
     if (this.valuesHaveBeenChanged()) {
       this.dialogService
-      .confirm(
-        'Changes have been made!',
-        'Do you want to save them?'
-      )
-      .subscribe((result) => {
-        if (result['confirm']) {
-          this.cardDataService.updateCard(this.changedCard);
-        }
-        this.setEditing(card);
-      });
+        .confirm(
+          'Changes have been made!',
+          'Do you want to save them?'
+        )
+        .subscribe((result) => {
+          if (result['confirm']) {
+            this.cardDataService.updateCard(this.changedCard);
+          }
+          this.setEditing(card);
+        });
     // if adding a new card, don't start editing another one
     } else {
       this.setEditing(card);
@@ -176,25 +175,6 @@ export class CardListComponent implements OnDestroy {
   sortChanged(sort: Sort) {
     this.sort = sort;
     this.sortedCards = this.getSortedCards(this.getFilteredCards(this.cardList));
-  }
-
-  private sortCards(
-    a: Card,
-    b: Card,
-    column: string,
-    direction: string
-  ) {
-    const isAsc = direction !== 'desc';
-    switch (column) {
-      case 'move':
-        return ( (a.move < b.move ? -1 : 1) * (isAsc ? 1 : -1) );
-        break;
-      case 'description':
-        return ( (a.description < b.description ? -1 : 1) * (isAsc ? 1 : -1) );
-        break;
-      default:
-        return 0;
-    }
   }
 
   getFilteredCards(cards: Card[]): Card[] {

@@ -1,5 +1,7 @@
 // Copyright 2023 Carnegie Mellon University. All Rights Reserved.
-// Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
+// Released under a MIT (SEI)-style license. See LICENSE.md in the
+// project root for license information.
+
 import { Component, Input, OnDestroy, ViewChild } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { Subject, Observable } from 'rxjs';
@@ -11,10 +13,10 @@ import {
 import { MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { Sort } from '@angular/material/sort';
-import { MatMenuTrigger } from '@angular/material/menu';
+import { MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy-menu';
 import { CiteRoleDataService } from 'src/app/data/cite-role/cite-role-data.service';
 import { CiteRoleQuery } from 'src/app/data/cite-role/cite-role.query';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { CiteRoleEditDialogComponent } from '../cite-role-edit-dialog/cite-role-edit-dialog.component';
 

@@ -1,29 +1,26 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
-// Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
+// Released under a MIT (SEI)-style license. See LICENSE.md in the
+// project root for license information.
 import { Component, Input, OnDestroy, ViewChild } from '@angular/core';
-import { FormControl } from '@angular/forms';
-import { MatSidenav } from '@angular/material/sidenav';
+import { UntypedFormControl } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, Observable, BehaviorSubject } from 'rxjs';
-import { take, takeUntil } from 'rxjs/operators';
+import { takeUntil } from 'rxjs/operators';
 import {
   ComnSettingsService,
-  Theme,
   ComnAuthQuery,
 } from '@cmusei/crucible-common';
 import { UserDataService } from 'src/app/data/user/user-data.service';
-import { TopbarView } from './../shared/top-bar/topbar.models';
 import {
-  Msel,
   Organization
 } from 'src/app/generated/blueprint.api';
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { Sort } from '@angular/material/sort';
-import { MatMenuTrigger } from '@angular/material/menu';
+import { MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy-menu';
 import { OrganizationDataService } from 'src/app/data/organization/organization-data.service';
 import { OrganizationQuery } from 'src/app/data/organization/organization.query';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { OrganizationEditDialogComponent } from '../organization-edit-dialog/organization-edit-dialog.component';
 import { v4 as uuidv4 } from 'uuid';
@@ -36,11 +33,13 @@ import { v4 as uuidv4 } from 'uuid';
 export class OrganizationListComponent implements OnDestroy {
   @Input() loggedInUserId: string;
   @Input() isContentDeveloper: boolean;
-  msel = new MselPlus();
+  // context menu
+  @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
+  contextMenuPosition = { x: '0px', y: '0px' };  msel = new MselPlus();
   organizationList: Organization[] = [];
   changedOrganization: Organization = {};
   filteredOrganizationList: Organization[] = [];
-  filterControl = new FormControl();
+  filterControl = new UntypedFormControl();
   filterString = '';
   sort: Sort = {active: 'name', direction: 'asc'};
   sortedOrganizations: Organization[] = [];
@@ -48,9 +47,6 @@ export class OrganizationListComponent implements OnDestroy {
   showTemplates = false;
   editingId = '';
   private unsubscribe$ = new Subject();
-  // context menu
-  @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
-  contextMenuPosition = { x: '0px', y: '0px' };
 
   constructor(
     activatedRoute: ActivatedRoute,
@@ -113,7 +109,7 @@ export class OrganizationListComponent implements OnDestroy {
         description: organization.description,
         mselId: makeTemplate ? null : this.msel.id,
         isTemplate: makeTemplate
-      }
+      };
     }
     const dialogRef = this.dialog.open(OrganizationEditDialogComponent, {
       width: '800px',
@@ -158,26 +154,9 @@ export class OrganizationListComponent implements OnDestroy {
     this.templateOrganizations = this.getSortedOrganizations(this.getFilteredOrganizations(null, this.organizationList));
   }
 
-  private sortOrganizations(
-    a: Organization,
-    b: Organization,
-    column: string,
-    direction: string
-  ) {
-    const isAsc = direction !== 'desc';
-    switch (column) {
-      case 'name':
-        return ( (a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1) * (isAsc ? 1 : -1) );
-        break;
-      case "description":
-        return ( (a.description.toLowerCase() < b.description.toLowerCase() ? -1 : 1) * (isAsc ? 1 : -1) );
-        break;
-      case "summary":
-        return ( (a.summary.toLowerCase() < b.summary.toLowerCase() ? -1 : 1) * (isAsc ? 1 : -1) );
-        break;
-      default:
-        return 0;
-    }
+  ngOnDestroy() {
+    this.unsubscribe$.next(null);
+    this.unsubscribe$.complete();
   }
 
   getFilteredOrganizations(mselId: string, organizations: Organization[]): Organization[] {
@@ -189,7 +168,7 @@ export class OrganizationListComponent implements OnDestroy {
         }
       });
       if (filteredOrganizations && filteredOrganizations.length > 0 && this.filterString) {
-        var filterString = this.filterString.toLowerCase();
+        const filterString = this.filterString.toLowerCase();
         filteredOrganizations = filteredOrganizations
           .filter((a) =>
             a.description.toLowerCase().includes(filterString) ||
@@ -201,8 +180,26 @@ export class OrganizationListComponent implements OnDestroy {
     return filteredOrganizations;
   }
 
-  ngOnDestroy() {
-    this.unsubscribe$.next(null);
-    this.unsubscribe$.complete();
+  private sortOrganizations(
+    a: Organization,
+    b: Organization,
+    column: string,
+    direction: string
+  ) {
+    const isAsc = direction !== 'desc';
+    switch (column) {
+      case 'name':
+        return ( (a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1) * (isAsc ? 1 : -1) );
+        break;
+      case 'description':
+        return ( (a.description.toLowerCase() < b.description.toLowerCase() ? -1 : 1) * (isAsc ? 1 : -1) );
+        break;
+      case 'summary':
+        return ( (a.summary.toLowerCase() < b.summary.toLowerCase() ? -1 : 1) * (isAsc ? 1 : -1) );
+        break;
+      default:
+        return 0;
+    }
   }
+
 }

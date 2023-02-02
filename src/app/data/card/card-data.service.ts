@@ -1,16 +1,22 @@
+/*
+ Copyright 2023 Carnegie Mellon University. All Rights Reserved. 
+ Released under a MIT (SEI)-style license. See LICENSE.md in the 
+ project root for license information.
+*/
+
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
-// Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
+/// Released unde^Ca MIT (SEI)-style license. See LICENSE.md in the
+// project root for license information.
 
 import { CardStore } from './card.store';
 import { CardQuery } from './card.query';
 import { Injectable } from '@angular/core';
-import { FormControl } from '@angular/forms';
-import { PageEvent } from '@angular/material/paginator';
+import { UntypedFormControl } from '@angular/forms';
+import { LegacyPageEvent as PageEvent } from '@angular/material/legacy-paginator';
 import { Router, ActivatedRoute } from '@angular/router';
 import {
   Card,
   CardService,
-  ItemStatus
 } from 'src/app/generated/blueprint.api';
 import { map, take, tap } from 'rxjs/operators';
 import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
@@ -19,17 +25,16 @@ import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
   providedIn: 'root',
 })
 export class CardDataService {
-  private _requestedCardId: string;
+  readonly CardList: Observable<Card[]>;
+  readonly filterControl = new UntypedFormControl();
   private _requestedCardId$ = this.activatedRoute.queryParamMap.pipe(
     map((params) => params.get('cardId') || '')
   );
-  readonly CardList: Observable<Card[]>;
-  readonly filterControl = new FormControl();
   private filterTerm: Observable<string>;
   private sortColumn: Observable<string>;
   private sortIsAscending: Observable<boolean>;
   private _pageEvent: PageEvent = { length: 0, pageIndex: 0, pageSize: 10 };
-  readonly pageEvent = new BehaviorSubject<PageEvent>(this._pageEvent);
+  readonly pageEvent = new BehaviorSubject<PageEvent>(this._pageEvent);  private _requestedCardId: string;
   private pageSize: Observable<number>;
   private pageIndex: Observable<number>;
 
@@ -80,43 +85,21 @@ export class CardDataService {
         ]) =>
           items
             ? (items as Card[])
-                .sort((a: Card, b: Card) =>
-                  this.sortCards(a, b, sortColumn, sortIsAscending)
-                )
-                .filter(
-                  (card) =>
-                    ('' + card.description)
-                      .toLowerCase()
-                      .includes(filterTerm.toLowerCase()) ||
+              .sort((a: Card, b: Card) =>
+                this.sortCards(a, b, sortColumn, sortIsAscending)
+              )
+              .filter(
+                (card) =>
+                  ('' + card.description)
+                    .toLowerCase()
+                    .includes(filterTerm.toLowerCase()) ||
                     card.id
                       .toLowerCase()
                       .includes(filterTerm.toLowerCase())
-                )
+              )
             : []
       )
     );
-  }
-
-  private sortCards(
-    a: Card,
-    b: Card,
-    column: string,
-    isAsc: boolean
-  ) {
-    switch (column) {
-      case 'description':
-        return (
-          (a.description.toLowerCase() < b.description.toLowerCase() ? -1 : 1) *
-          (isAsc ? 1 : -1)
-        );
-      case 'dateCreated':
-        return (
-          (a.dateCreated.valueOf() < b.dateCreated.valueOf() ? -1 : 1) *
-          (isAsc ? 1 : -1)
-        );
-      default:
-        return 0;
-    }
   }
 
   loadByMsel(mselId: string) {
@@ -207,5 +190,27 @@ export class CardDataService {
 
   deleteFromStore(id: string) {
     this.cardStore.remove(id);
+  }
+
+  private sortCards(
+    a: Card,
+    b: Card,
+    column: string,
+    isAsc: boolean
+  ) {
+    switch (column) {
+      case 'description':
+        return (
+          (a.description.toLowerCase() < b.description.toLowerCase() ? -1 : 1) *
+          (isAsc ? 1 : -1)
+        );
+      case 'dateCreated':
+        return (
+          (a.dateCreated.valueOf() < b.dateCreated.valueOf() ? -1 : 1) *
+          (isAsc ? 1 : -1)
+        );
+      default:
+        return 0;
+    }
   }
 }

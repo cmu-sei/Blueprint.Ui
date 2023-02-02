@@ -1,17 +1,17 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
-// Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
+// Released under a MIT (SEI)-style license. See LICENSE.md in the
+// project root for license information.
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { FormControl } from '@angular/forms';
-import { PageEvent } from '@angular/material/paginator';
+import { UntypedFormControl } from '@angular/forms';
+import { LegacyPageEvent as PageEvent } from '@angular/material/legacy-paginator';
 import { Sort } from '@angular/material/sort';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Observable, BehaviorSubject, Subject } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 import { map, tap, takeUntil } from 'rxjs/operators';
 import { PermissionService } from 'src/app/generated/blueprint.api/api/api';
 import {
   Permission,
-  Team,
   User,
   UserPermission,
 } from 'src/app/generated/blueprint.api/model/models';
@@ -45,18 +45,18 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
   canAccessAdminSection = false;
   teamList = this.teamDataService.teamList;
   userList = this.userDataService.userList;
-  filterControl: FormControl = this.userDataService.filterControl;
+  filterControl: UntypedFormControl = this.userDataService.filterControl;
   filterString: Observable<string>;
   permissionList: Observable<Permission[]>;
   pageSize: Observable<number>;
   pageIndex: Observable<number>;
-  private unsubscribe$ = new Subject();
   hideTopbar = false;
   TopbarView = TopbarView;
   topbarColor = '#ef3a47';
   topbarTextColor = '#FFFFFF';
   topbarImage = this.settingsService.settings.AppTopBarImage;
   theme$: Observable<Theme>;
+  private unsubscribe$ = new Subject();
 
   constructor(
     private router: Router,
@@ -111,7 +111,7 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
     this.topbarTextColor = this.settingsService.settings.AppTopBarHexTextColor
       ? this.settingsService.settings.AppTopBarHexTextColor
       : this.topbarTextColor;
-    var appTitle = this.settingsService.settings.AppTitle || 'Set AppTitle in Settings';
+    const appTitle = this.settingsService.settings.AppTitle || 'Set AppTitle in Settings';
     titleService.setTitle(appTitle);
     this.topbarText = this.settingsService.settings.AppTopBarText || this.topbarText;
   }

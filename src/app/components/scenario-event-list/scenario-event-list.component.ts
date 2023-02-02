@@ -1,8 +1,9 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
-// Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
+// Released under a MIT (SEI)-style license. See LICENSE.md in the
+// project root for license information.
 import { Component, Input, OnDestroy, ViewChild } from '@angular/core';
-import { FormControl } from '@angular/forms';
-import { MatDialog } from '@angular/material/dialog';
+import { UntypedFormControl } from '@angular/forms';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, Observable, BehaviorSubject } from 'rxjs';
 import { take, takeUntil } from 'rxjs/operators';
@@ -22,7 +23,7 @@ import {
 import { MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { Sort } from '@angular/material/sort';
-import { MatMenuTrigger } from '@angular/material/menu';
+import { MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy-menu';
 import { OrganizationDataService } from 'src/app/data/organization/organization-data.service';
 import { OrganizationQuery } from 'src/app/data/organization/organization.query';
 import { ScenarioEventDataService, ScenarioEventPlus, DataValuePlus } from 'src/app/data/scenario-event/scenario-event-data.service';
@@ -46,7 +47,7 @@ export class ScenarioEventListComponent implements OnDestroy {
   expandedScenarioEventId = '';
   expandedMoreScenarioEventIds: string[] = [];
   filteredScenarioEventList: ScenarioEventPlus[] = [];
-  filterControl = new FormControl();
+  filterControl = new UntypedFormControl();
   filterString = '';
   sort: Sort = {active: '', direction: ''};
   sortedScenarioEvents: ScenarioEventPlus[] = [];
@@ -62,7 +63,7 @@ export class ScenarioEventListComponent implements OnDestroy {
     'overflow': 'auto'
   };
   dataType: typeof DataFieldType = DataFieldType;
-  dateFormControls = new Map<string, FormControl>();
+  dateFormControls = new Map<string, UntypedFormControl>();
   itemStatus: ItemStatus[] = [ItemStatus.Pending, ItemStatus.Entered, ItemStatus.Approved, ItemStatus.Complete];
   mselRole = { Owner: MselRole.Owner, Approver: MselRole.Approver, Editor: MselRole.Editor};
   organizationList: Organization[] = [];
@@ -199,7 +200,7 @@ export class ScenarioEventListComponent implements OnDestroy {
     // create date form controls
     this.allDataFields.forEach(df => {
       if (df.dataType === DataFieldType.DateTime) {
-        this.dateFormControls[df.id] = new FormControl();
+        this.dateFormControls[df.id] = new UntypedFormControl();
       }
     });
   }
@@ -378,7 +379,7 @@ export class ScenarioEventListComponent implements OnDestroy {
         useSteamfitter: this.msel.useSteamfitter
       },
     });
-  dialogRef.componentInstance.editComplete.subscribe((result) => {
+    dialogRef.componentInstance.editComplete.subscribe((result) => {
       if (result.saveChanges && result.scenarioEvent) {
         this.saveScenarioEvent(result.scenarioEvent);
       }
@@ -446,7 +447,7 @@ export class ScenarioEventListComponent implements OnDestroy {
       return false;
     }
     // check for month/day/year format
-    const regexPattern: RegExp = /^(0?[1-9]|1[012])[- /.](0?[1-9]|[12][0-9]|3[01])[- /.](19|20)\d\d$/;
+    const regexPattern = /^(0?[1-9]|1[012])[- /.](0?[1-9]|[12][0-9]|3[01])[- /.](19|20)\d\d$/;
     return !regexPattern.test(dateString);
   }
 
@@ -502,12 +503,15 @@ export class ScenarioEventListComponent implements OnDestroy {
     this.scenarioEventDataService.updateScenarioEvent(scenarioEvent);
   }
 
-  getStyle (dataField: DataField): string {
+  getStyle(dataField: DataField): string {
     if (dataField && dataField.columnMetadata) {
       const width = Math.trunc(+dataField.columnMetadata * 7);
       return 'width: ' + width.toString() + 'px;';
+    } else if (dataField.dataType.toString() === 'DateTime') {
+      return 'width: max-content';
     } else {
-      return 'width: 100%;';
+      return 'width: ' + Math.trunc( 100 / this.sortedDataFields.length) + 'vh;';
+      // return 'width: 100%;';
     }
   }
 

@@ -1,5 +1,6 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
-// Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
+// Released under a MIT (SEI)-style license. See LICENSE.md in the
+// project root for license information.
 import { Component, Input, OnDestroy, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, Observable, BehaviorSubject } from 'rxjs';
@@ -13,7 +14,7 @@ import {
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { MoveDataService } from 'src/app/data/move/move-data.service';
-import { MatTabGroup } from '@angular/material/tabs';
+import { MatLegacyTabGroup as MatTabGroup } from '@angular/material/legacy-tabs';
 
 @Component({
   selector: 'app-msel',

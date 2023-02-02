@@ -18,10 +18,10 @@ import { takeUntil } from 'rxjs/operators';
   styleUrls: ['./app.component.scss'],
 })
 export class AppComponent implements OnDestroy {
-  theme$: Observable<Theme> = this.authQuery.userTheme$;
+  @HostBinding('class') componentCssClass: string;
   private paramTheme;
   unsubscribe$: Subject<null> = new Subject<null>();
-  @HostBinding('class') componentCssClass: string;
+  theme$: Observable<Theme> = this.authQuery.userTheme$;
   @HostListener('document:keydown.backspace', ['$event'])
   onKeyDown(evt: KeyboardEvent) {
     let doPrevent = true;

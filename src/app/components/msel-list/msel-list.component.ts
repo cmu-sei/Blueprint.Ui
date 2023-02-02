@@ -1,29 +1,24 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
-// Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
+// Released under a MIT (SEI)-style license. See LICENSE.md in the
+// project root for license information.
 import { Component, Input, OnDestroy, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { HttpEventType, HttpResponse } from '@angular/common/http';
-import { FormControl } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
-import { MatSidenav } from '@angular/material/sidenav';
+import { UntypedFormControl } from '@angular/forms';
+import { MatLegacyButtonModule as MatButtonModule } from '@angular/material/legacy-button';
 import { Sort } from '@angular/material/sort';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, Observable, BehaviorSubject } from 'rxjs';
-import { take, takeUntil } from 'rxjs/operators';
+import { takeUntil } from 'rxjs/operators';
 import {
   ComnSettingsService,
-  Theme,
   ComnAuthQuery,
 } from '@cmusei/crucible-common';
 import { UserDataService } from 'src/app/data/user/user-data.service';
-import { TopbarView } from './../shared/top-bar/topbar.models';
-import {
-  ItemStatus,
-  Msel
-} from 'src/app/generated/blueprint.api';
+
 import { DataFieldDataService } from 'src/app/data/data-field/data-field-data.service';
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 
 @Component({
@@ -34,18 +29,18 @@ import { DialogService } from 'src/app/services/dialog/dialog.service';
 export class MselListComponent implements OnDestroy {
   @Input() loggedInUserId: string;
   @Input() isContentDeveloper: boolean;
+  @ViewChild('fileInput') fileInput: ElementRef<HTMLInputElement>;
   mselList: MselPlus[] = [];
-  private unsubscribe$ = new Subject();
   isReady = false;
   uploadProgress = 0;
   uploadMselId = '';
   uploadTeamId = '';
-  @ViewChild('fileInput') fileInput: ElementRef<HTMLInputElement>;
   filteredMselList: MselPlus[] = [];
-  filterControl = new FormControl();
+  filterControl = new UntypedFormControl();
   filterString = '';
   sort: Sort = {active: 'dateCreated', direction: 'desc'};
   sortedMselList: MselPlus[] = [];
+  private unsubscribe$ = new Subject();
 
   constructor(
     activatedRoute: ActivatedRoute,
@@ -91,7 +86,7 @@ export class MselListComponent implements OnDestroy {
   /**
    * Selects the file(s) to be uploaded. Called when file selection is changed
    */
-   selectFile(file: File) {
+  selectFile(file: File) {
     if (!file) {
       return;
     }
@@ -121,7 +116,7 @@ export class MselListComponent implements OnDestroy {
    * @param mselId: The GUID of the file to download
    * @param name: The name to use when triggering the download
    */
-   downloadFile(msel: MselPlus) {
+  downloadFile(msel: MselPlus) {
     this.isReady = false;
     this.mselDataService.downloadXlsx(msel.id).subscribe(
       (data) => {
@@ -182,9 +177,9 @@ export class MselListComponent implements OnDestroy {
         const filterString = this.filterString.toLowerCase();
         filteredMsels = filteredMsels
           .filter((a) =>
-          a.name.toLowerCase().includes(filterString) ||
-          a.description.toLowerCase().includes(filterString) ||
-          a.status.toLowerCase().includes(filterString)
+            a.name.toLowerCase().includes(filterString) ||
+              a.description.toLowerCase().includes(filterString) ||
+              a.status.toLowerCase().includes(filterString)
           );
       }
     }
@@ -203,6 +198,11 @@ export class MselListComponent implements OnDestroy {
 
   getSortedMsels() {
     this.sortedMselList = this.filteredMselList.sort((a, b) => this.sortMsels(a, b));
+  }
+
+  ngOnDestroy() {
+    this.unsubscribe$.next(null);
+    this.unsubscribe$.complete();
   }
 
   private sortMsels(
@@ -225,8 +225,4 @@ export class MselListComponent implements OnDestroy {
     }
   }
 
-  ngOnDestroy() {
-    this.unsubscribe$.next(null);
-    this.unsubscribe$.complete();
-  }
 }

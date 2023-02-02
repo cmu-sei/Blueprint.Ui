@@ -1,10 +1,11 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
-// Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
+// Released under a MIT (SEI)-style license. See LICENSE.md in the
+// project root for license information.
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { MatSidenav } from '@angular/material/sidenav';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Subject, Observable, BehaviorSubject } from 'rxjs';
+import { Subject, Observable } from 'rxjs';
 import { take, takeUntil } from 'rxjs/operators';
 import {
   ComnSettingsService,
@@ -12,7 +13,7 @@ import {
   ComnAuthQuery,
 } from '@cmusei/crucible-common';
 import { UserDataService } from 'src/app/data/user/user-data.service';
-import { TopbarView } from './../shared/top-bar/topbar.models';
+import { TopbarView } from '../shared/top-bar/topbar.models';
 import {
   HealthCheckService,
   ItemStatus,
@@ -91,7 +92,7 @@ export class HomeAppComponent implements OnDestroy, OnInit {
     this.userDataService.loggedInUser
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((user) => {
-        if (user && user.profile && user.profile.sub != this.loggedInUserId) {
+        if (user && user.profile && user.profile.sub !== this.loggedInUserId) {
           this.loggedInUserId = user.profile.sub;
         }
       });

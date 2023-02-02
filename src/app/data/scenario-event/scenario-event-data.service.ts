@@ -1,17 +1,23 @@
+/*
+ Copyright 2023 Carnegie Mellon University. All Rights Reserved. 
+ Released under a MIT (SEI)-style license. See LICENSE.md in the 
+ project root for license information.
+*/
+
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
-// Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
+/// Released unde^Ca MIT (SEI)-style license. See LICENSE.md in the
+// project root for license information.
 
 import { ScenarioEventStore } from './scenario-event.store';
 import { ScenarioEventQuery } from './scenario-event.query';
 import { Injectable } from '@angular/core';
-import { FormControl } from '@angular/forms';
-import { PageEvent } from '@angular/material/paginator';
+import { UntypedFormControl } from '@angular/forms';
+import { LegacyPageEvent as PageEvent } from '@angular/material/legacy-paginator';
 import { Router, ActivatedRoute } from '@angular/router';
 import {
   DataValue,
   ScenarioEvent,
   ScenarioEventService,
-  ItemStatus
 } from 'src/app/generated/blueprint.api';
 import { map, take, tap } from 'rxjs/operators';
 import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
@@ -28,12 +34,12 @@ export interface ScenarioEventPlus extends ScenarioEvent {
   providedIn: 'root',
 })
 export class ScenarioEventDataService {
-  private _requestedScenarioEventId: string;
+  readonly ScenarioEventList: Observable<ScenarioEvent[]>;
+  readonly filterControl = new UntypedFormControl();  private _requestedScenarioEventId: string;
   private _requestedScenarioEventId$ = this.activatedRoute.queryParamMap.pipe(
     map((params) => params.get('scenarioEventId') || '')
   );
-  readonly ScenarioEventList: Observable<ScenarioEvent[]>;
-  readonly filterControl = new FormControl();
+
   private filterTerm: Observable<string>;
   private sortColumn: Observable<string>;
   private sortIsAscending: Observable<boolean>;
@@ -89,36 +95,19 @@ export class ScenarioEventDataService {
         ]) =>
           items
             ? (items as ScenarioEvent[])
-                .sort((a: ScenarioEvent, b: ScenarioEvent) =>
-                  this.sortScenarioEvents(a, b, sortColumn, sortIsAscending)
-                )
-                .filter(
-                  (scenarioEvent) =>
-                    scenarioEvent.id
-                      .toLowerCase()
-                      .includes(filterTerm.toLowerCase()
-                  )
-                )
+              .sort((a: ScenarioEvent, b: ScenarioEvent) =>
+                this.sortScenarioEvents(a, b, sortColumn, sortIsAscending)
+              )
+              .filter(
+                (scenarioEvent) =>
+                  scenarioEvent.id
+                    .toLowerCase()
+                    .includes(filterTerm.toLowerCase()
+                    )
+              )
             : []
       )
     );
-  }
-
-  private sortScenarioEvents(
-    a: ScenarioEvent,
-    b: ScenarioEvent,
-    column: string,
-    isAsc: boolean
-  ) {
-    switch (column) {
-      case 'dateCreated':
-        return (
-          (a.dateCreated.valueOf() < b.dateCreated.valueOf() ? -1 : 1) *
-          (isAsc ? 1 : -1)
-        );
-      default:
-        return 0;
-    }
   }
 
   load() {
@@ -229,5 +218,22 @@ export class ScenarioEventDataService {
 
   deleteFromStore(id: string) {
     this.scenarioEventStore.remove(id);
+  }
+
+  private sortScenarioEvents(
+    a: ScenarioEvent,
+    b: ScenarioEvent,
+    column: string,
+    isAsc: boolean
+  ) {
+    switch (column) {
+      case 'dateCreated':
+        return (
+          (a.dateCreated.valueOf() < b.dateCreated.valueOf() ? -1 : 1) *
+          (isAsc ? 1 : -1)
+        );
+      default:
+        return 0;
+    }
   }
 }
