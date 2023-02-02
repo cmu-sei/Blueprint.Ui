@@ -507,6 +507,8 @@ export class ScenarioEventListComponent implements OnDestroy {
     if (dataField && dataField.columnMetadata) {
       const width = Math.trunc(+dataField.columnMetadata * 7);
       return 'width: ' + width.toString() + 'px;';
+    } else if (dataField.dataType.toString() === 'DateTime') {
+      return 'width: max-content';
     } else {
       return 'width: ' + Math.trunc( 100 / this.sortedDataFields.length) + 'vh;';
       // return 'width: 100%;';

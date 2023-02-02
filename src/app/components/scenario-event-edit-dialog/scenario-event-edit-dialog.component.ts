@@ -7,14 +7,12 @@ import { Subject } from 'rxjs';
 import {
   DataField,
   DataFieldType,
-  Card,
   ItemStatus,
   MselRole,
-  Organization,
   Team
 } from 'src/app/generated/blueprint.api';
 import { Sort } from '@angular/material/sort';
-import { ScenarioEventDataService, ScenarioEventPlus, DataValuePlus } from 'src/app/data/scenario-event/scenario-event-data.service';
+import { ScenarioEventPlus, DataValuePlus } from 'src/app/data/scenario-event/scenario-event-data.service';
 import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 
@@ -36,7 +34,11 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
     'overflow': 'auto'
   };
   dataType: typeof DataFieldType = DataFieldType;
-  dateFormControls = new Map<string, UntypedFormControl>();
+  public scenarioEventTimeFormControls = new UntypedFormControl(
+    this.data.scenarioEvent.dateString,
+    []
+  );
+
   itemStatus: ItemStatus[] = [ItemStatus.Pending, ItemStatus.Entered, ItemStatus.Approved, ItemStatus.Complete];
   mselRole = { Owner: MselRole.Owner, Approver: MselRole.Approver, Editor: MselRole.Editor};
   toOrgList: string[] = [];
@@ -99,16 +101,6 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
   getDataFieldIdByName(name: string): string {
     const dataField = this.data.dataFields.find(df => df.name.toLowerCase() === name.toLowerCase());
     return dataField ? dataField.id : '';
-  }
-
-  notValidDateFormat(dateString: string) {
-    // only check if there is a value
-    if (dateString && dateString.length === 0) {
-      return false;
-    }
-    // check for month/day/year format
-    const regexPattern: RegExp = /^(0?[1-9]|1[012])[- /.](0?[1-9]|[12][0-9]|3[01])[- /.](19|20)\d\d$/;
-    return !regexPattern.test(dateString);
   }
 
   verifyNumber(newValue: DataValuePlus) {
