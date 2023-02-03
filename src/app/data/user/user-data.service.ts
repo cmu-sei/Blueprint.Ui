@@ -1,6 +1,6 @@
 /*
- Copyright 2023 Carnegie Mellon University. All Rights Reserved. 
- Released under a MIT (SEI)-style license. See LICENSE.md in the 
+ Copyright 2023 Carnegie Mellon University. All Rights Reserved.
+ Released under a MIT (SEI)-style license. See LICENSE.md in the
  project root for license information.
 */
 
@@ -69,7 +69,7 @@ export class UserDataService implements OnDestroy {
     private router: Router,
     activatedRoute: ActivatedRoute
   ) {
-    this.authQuery.user
+    this.authQuery.user$
       .pipe(
         filter((user: AuthUser) => user != null),
         takeUntil(this.unsubscribe$)
