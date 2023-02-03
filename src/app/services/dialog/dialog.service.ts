@@ -1,12 +1,9 @@
 /*
- Copyright 2023 Carnegie Mellon University. All Rights Reserved. 
- Released under a MIT (SEI)-style license. See LICENSE.md in the 
+ Copyright 2023 Carnegie Mellon University. All Rights Reserved.
+ Released under a MIT (SEI)-style license. See LICENSE.md in the
  project root for license information.
 */
 
-// Copyright 2022 Carnegie Mellon University. All Rights Reserved.
-/// Released unde^Ca MIT (SEI)-style license. See LICENSE.md in the
-// project root for license information.
 
 import { Observable, config } from 'rxjs';
 import { MatLegacyDialogRef as MatDialogRef, MatLegacyDialog as MatDialog, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
@@ -20,8 +17,7 @@ export class DialogService {
 
   public confirm(title: string, message: string, data?: any): Observable<boolean> {
 
-    var dialogRef: MatDialogRef<ConfirmDialogComponent>;
-    dialogRef = this.dialog.open(ConfirmDialogComponent, {data: data || {} });
+    const dialogRef: MatDialogRef<ConfirmDialogComponent> = this.dialog.open(ConfirmDialogComponent, {data: data || {} });
     dialogRef.componentInstance.title = title;
     dialogRef.componentInstance.message = message;
 

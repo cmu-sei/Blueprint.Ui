@@ -11,17 +11,17 @@ import { Pipe, PipeTransform } from '@angular/core';
 @Pipe({ name: 'plainText' })
 export class PlainTextPipe implements PipeTransform{
 
-    constructor() { }
+  constructor() { }
 
-    transform(text: string ) {
+  transform(text: string ) {
 
-        if (!text) {
-            return text;
-        }
-
-        let plain_text = text.replace(/<(?:.|\n)*?>/gm, ' ');
-
-        return plain_text;
+    if (!text) {
+      return text;
     }
+
+    const plainText = text.replace(/<(?:.|\n)*?>/gm, ' ');
+
+    return plainText;
+  }
 
 }

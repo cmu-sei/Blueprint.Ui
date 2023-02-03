@@ -1,25 +1,18 @@
-/*
- Copyright 2023 Carnegie Mellon University. All Rights Reserved. 
- Released under a MIT (SEI)-style license. See LICENSE.md in the 
- project root for license information.
-*/
-
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
-/// Released unde^Ca MIT (SEI)-style license. See LICENSE.md in the
+// Released unde^Ca MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-
 import { CollectionViewer, DataSource } from '@angular/cdk/collections';
-import { Observable } from 'rxjs/Observable';
-import { of } from 'rxjs/observable/of';
+import {
+  Observable,
+  of,
+  combineLatest,
+  concat,
+  map,
+  defer
+} from 'rxjs';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatSort, Sort } from '@angular/material/sort';
-import { combineLatest } from 'rxjs/observable/combineLatest';
-import { concat } from 'rxjs/observable/concat';
-import { distinctUntilChanged, map, startWith, switchMap, tap } from 'rxjs/operators';
-import { defer } from 'rxjs/observable/defer';
-import { QueryList } from '@angular/core';
-import { merge } from 'rxjs/observable/merge';
 
 export class SimpleDataSource<T> extends DataSource<T> {
   constructor(private rows$: Observable<T[]>) {super(); }
@@ -28,15 +21,21 @@ export class SimpleDataSource<T> extends DataSource<T> {
 }
 
 function defaultSort(a: any, b: any): number {
-  //treat null === undefined for sorting
+  // treat null === undefined for sorting
   a = a === undefined ? null : a;
   b = b === undefined ? null : b;
 
-  if (a === b) { return 0; }
-  if (a === null) { return -1; }
-  if (b === null) { return 1; }
+  if (a === b) {
+    return 0;
+  }
+  if (a === null) {
+    return -1;
+  }
+  if (b === null) {
+    return 1;
+  }
 
-  //from this point on a & b can not be null or undefined.
+  // from this point on a & b can not be null or undefined.
 
   if (a > b) {
     return 1;
@@ -64,7 +63,7 @@ function toSortFn<U>(sortFns: PropertySortFns<U> = {}, useDefault = true): (sort
           throw new Error(`Unknown sort property [${sort.active}]`);
         }
 
-        //By default assume sort.active is a property name, and sort using the default sort
+        // By default assume sort.active is a property name, and sort using the default sort
         //  uses < and >.
         sortFn = (a: U, b: U) => defaultSort((<any>a)[sort.active], (<any>b)[sort.active]);
       }
@@ -95,7 +94,9 @@ export function sortRows<U>(
     rows$,
     sort$.pipe(toSortFn(sortFns, useDefault)),
     (rows, sortFn) => {
-      if (!sortFn) { return rows; }
+      if (!sortFn) {
+        return rows;
+      }
 
       const copy = rows.slice();
       return copy.sort(sortFn);

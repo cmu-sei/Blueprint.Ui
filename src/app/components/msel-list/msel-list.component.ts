@@ -179,8 +179,8 @@ export class MselListComponent implements OnDestroy {
         filteredMsels = filteredMsels
           .filter((a) =>
             a.name.toLowerCase().includes(filterString) ||
-              a.description.toLowerCase().includes(filterString) ||
-              a.status.toLowerCase().includes(filterString)
+                a.description.toLowerCase().includes(filterString) ||
+                a.status.toLowerCase().includes(filterString)
           );
       }
     }

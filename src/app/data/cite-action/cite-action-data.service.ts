@@ -79,18 +79,18 @@ export class CiteActionDataService {
         ]) =>
           items
             ? (items as CiteAction[])
-                .sort((a: CiteAction, b: CiteAction) =>
-                  this.sortCiteActions(a, b, sortColumn, sortIsAscending)
-                )
-                .filter(
-                  (citeAction) =>
-                    ('' + citeAction.description)
-                      .toLowerCase()
-                      .includes(filterTerm.toLowerCase()) ||
+              .sort((a: CiteAction, b: CiteAction) =>
+                this.sortCiteActions(a, b, sortColumn, sortIsAscending)
+              )
+              .filter(
+                (citeAction) =>
+                  ('' + citeAction.description)
+                    .toLowerCase()
+                    .includes(filterTerm.toLowerCase()) ||
                     citeAction.id
                       .toLowerCase()
                       .includes(filterTerm.toLowerCase())
-                )
+              )
             : []
       )
     );

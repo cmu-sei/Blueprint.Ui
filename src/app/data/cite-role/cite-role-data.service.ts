@@ -10,7 +10,6 @@ import { Router, ActivatedRoute } from '@angular/router';
 import {
   CiteRole,
   CiteRoleService,
-  ItemStatus
 } from 'src/app/generated/blueprint.api';
 import { map, take, tap } from 'rxjs/operators';
 import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
@@ -80,18 +79,18 @@ export class CiteRoleDataService {
         ]) =>
           items
             ? (items as CiteRole[])
-                .sort((a: CiteRole, b: CiteRole) =>
-                  this.sortCiteRoles(a, b, sortColumn, sortIsAscending)
-                )
-                .filter(
-                  (citeRole) =>
-                    ('' + citeRole.name)
-                      .toLowerCase()
-                      .includes(filterTerm.toLowerCase()) ||
+              .sort((a: CiteRole, b: CiteRole) =>
+                this.sortCiteRoles(a, b, sortColumn, sortIsAscending)
+              )
+              .filter(
+                (citeRole) =>
+                  ('' + citeRole.name)
+                    .toLowerCase()
+                    .includes(filterTerm.toLowerCase()) ||
                     citeRole.id
                       .toLowerCase()
                       .includes(filterTerm.toLowerCase())
-                )
+              )
             : []
       )
     );

@@ -74,9 +74,9 @@ export class AdminTeamUsersComponent implements OnDestroy, OnInit {
       if (a.name < b.name) {
         return -1;
       } else if (a.name > b.name) {
-          return 1;
+        return 1;
       } else {
-          return 0;
+        return 0;
       }
     });
     const newAllUsers = !this.userList ? new Array<User>() : this.userList.slice(0);

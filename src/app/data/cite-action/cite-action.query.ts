@@ -8,7 +8,6 @@ import {
 } from './cite-action.store';
 import { CiteAction } from 'src/app/generated/blueprint.api';
 import { Injectable } from '@angular/core';
-import { PageEvent } from '@angular/material/paginator';
 import { Observable } from 'rxjs';
 
 @QueryConfig({

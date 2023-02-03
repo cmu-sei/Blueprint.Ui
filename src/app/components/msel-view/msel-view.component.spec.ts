@@ -4,7 +4,7 @@
 
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
-import { MselViewComponent } from './msel.component';
+import { MselViewComponent } from './msel-view.component';
 
 describe('MselViewComponent', () => {
   let component: MselViewComponent;
@@ -14,7 +14,7 @@ describe('MselViewComponent', () => {
     TestBed.configureTestingModule({
       declarations: [ MselViewComponent ]
     })
-    .compileComponents();
+      .compileComponents();
   }));
 
   beforeEach(() => {

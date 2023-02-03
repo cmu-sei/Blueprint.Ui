@@ -79,7 +79,7 @@ export class AdminTeamEditDialogComponent {
       this.data.team.name = this.teamNameFormControl.value
         .toString()
         .trim();
-        this.data.team.shortName = this.teamShortNameFormControl.value
+      this.data.team.shortName = this.teamShortNameFormControl.value
         .toString()
         .trim();
       if (this.errorFree) {

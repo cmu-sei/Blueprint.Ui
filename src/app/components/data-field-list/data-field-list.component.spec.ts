@@ -3,8 +3,7 @@
 // project root for license information.
 
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-
-import { DataFieldListComponent } from './msel.component';
+import { DataFieldListComponent } from './data-field-list.component';
 
 describe('DataFieldListComponent', () => {
   let component: DataFieldListComponent;
@@ -14,7 +13,7 @@ describe('DataFieldListComponent', () => {
     TestBed.configureTestingModule({
       declarations: [ DataFieldListComponent ]
     })
-    .compileComponents();
+      .compileComponents();
   }));
 
   beforeEach(() => {

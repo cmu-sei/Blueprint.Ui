@@ -3,8 +3,7 @@
 // project root for license information.
 
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-
-import { CardListComponent } from './msel.component';
+import { CardListComponent } from './card-list.component';
 
 describe('CardListComponent', () => {
   let component: CardListComponent;
@@ -14,7 +13,7 @@ describe('CardListComponent', () => {
     TestBed.configureTestingModule({
       declarations: [ CardListComponent ]
     })
-    .compileComponents();
+      .compileComponents();
   }));
 
   beforeEach(() => {
