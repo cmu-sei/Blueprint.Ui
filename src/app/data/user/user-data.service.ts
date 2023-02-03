@@ -69,7 +69,7 @@ export class UserDataService implements OnDestroy {
     private router: Router,
     activatedRoute: ActivatedRoute
   ) {
-    this.authQuery.user$
+    this.authQuery.user
       .pipe(
         filter((user: AuthUser) => user != null),
         takeUntil(this.unsubscribe$)
