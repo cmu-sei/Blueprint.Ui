@@ -86,7 +86,8 @@ export class MselListComponent implements OnDestroy {
   /**
    * Selects the file(s) to be uploaded. Called when file selection is changed
    */
-  selectFile(file: File) {
+  selectFile(e) {
+    const file = e.target.files[0];
     if (!file) {
       return;
     }

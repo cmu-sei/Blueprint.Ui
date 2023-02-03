@@ -137,3 +137,7 @@ $mdi-font-path: '~@mdi/font/fonts';
   align-items: center;
   align-content: center;
 }
+
+.mat-card-header-text {
+  width: 100% !important;
+}
