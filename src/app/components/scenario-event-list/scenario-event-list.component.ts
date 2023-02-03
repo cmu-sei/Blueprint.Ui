@@ -466,7 +466,7 @@ export class ScenarioEventListComponent implements OnDestroy {
   }
 
   getStyleFromColor(color: string) {
-    const tint = this.userTheme === 'dark-theme' ? this.darkThemeTint : this .lightThemeTint;
+    const tint = this.userTheme === 'dark-theme' ? this.darkThemeTint : this.lightThemeTint;
     return color ? {'background-color': 'rgba(' + color + ', ' + tint + ')'} : {};
   }
 
@@ -497,7 +497,7 @@ export class ScenarioEventListComponent implements OnDestroy {
         colorParts[i] = colorParts[i].length < 2 ? '0' + colorParts[i] : colorParts[i];
       }
       parts[0] = colorParts.join('');
-      parts[1] = this.darkThemeTint;
+      parts[1] = '0.0';
       dv.cellMetadata = parts.join(',');
     });
     this.scenarioEventDataService.updateScenarioEvent(scenarioEvent);
