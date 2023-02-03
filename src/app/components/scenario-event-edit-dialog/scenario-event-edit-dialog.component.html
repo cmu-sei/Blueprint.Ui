@@ -47,6 +47,15 @@ project root for license information or contact permission@sei.cmu.edu for full 
           />
         </mat-form-field>
       </div>
+      <!-- metadata-->
+      <div class="single-edit-dialog">
+        <input
+          type="text"
+          matInput
+          placeholder="row metadata"
+          [(ngModel)]="data.scenarioEvent.rowMetadata"
+        />
+      </div>
       <!-- data values for each data field -->
       <div *ngFor="let df of sortedDataFields" class="single-edit-dialog">
         <!-- string input -->
@@ -94,9 +103,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
             [hideTime]=false>
           </ngx-mat-datetime-picker>
         </mat-form-field>
-
-
-
         <!-- html input -->
         <div *ngIf="!df.isChosenFromList && df.dataType === dataType.Html">
           <div class="full-width">
