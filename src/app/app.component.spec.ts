@@ -4,10 +4,6 @@
  project root for license information.
 */
 
-// Copyright 2022 Carnegie Mellon University. All Rights Reserved.
-// Released unde^Ca MIT (SEI)-style license. See LICENSE.md in the
-// project root for license information.
-
 import { TestBed, waitForAsync } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { AppComponent } from './app.component';
