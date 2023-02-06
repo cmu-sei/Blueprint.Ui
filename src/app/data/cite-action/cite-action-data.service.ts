@@ -1,5 +1,6 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
-// Released under a MIT (SEI)-style license, please see LICENSE.md in the project root for license information or contact permission@sei.cmu.edu for full terms.
+// Released under a MIT (SEI)-style license, please see LICENSE.md in the
+// project root for license information or contact permission@sei.cmu.edu for full terms.
 
 import { CiteActionStore } from './cite-action.store';
 import { CiteActionQuery } from './cite-action.query';
@@ -79,18 +80,18 @@ export class CiteActionDataService {
         ]) =>
           items
             ? (items as CiteAction[])
-                .sort((a: CiteAction, b: CiteAction) =>
-                  this.sortCiteActions(a, b, sortColumn, sortIsAscending)
-                )
-                .filter(
-                  (citeAction) =>
-                    ('' + citeAction.description)
-                      .toLowerCase()
-                      .includes(filterTerm.toLowerCase()) ||
+              .sort((a: CiteAction, b: CiteAction) =>
+                this.sortCiteActions(a, b, sortColumn, sortIsAscending)
+              )
+              .filter(
+                (citeAction) =>
+                  ('' + citeAction.description)
+                    .toLowerCase()
+                    .includes(filterTerm.toLowerCase()) ||
                     citeAction.id
                       .toLowerCase()
                       .includes(filterTerm.toLowerCase())
-                )
+              )
             : []
       )
     );

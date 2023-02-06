@@ -3,8 +3,7 @@
 // project root for license information.
 
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-
-import { MselListComponent } from './msel.component';
+import { MselListComponent } from './msel-list.component';
 
 describe('MselListComponent', () => {
   let component: MselListComponent;

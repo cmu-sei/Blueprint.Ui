@@ -3,8 +3,7 @@
 // project root for license information.
 
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-
-import { MoveListComponent } from './msel.component';
+import { MoveListComponent } from './move-list.component';
 
 describe('MoveListComponent', () => {
   let component: MoveListComponent;
@@ -14,7 +13,7 @@ describe('MoveListComponent', () => {
     TestBed.configureTestingModule({
       declarations: [ MoveListComponent ]
     })
-    .compileComponents();
+      .compileComponents();
   }));
 
   beforeEach(() => {

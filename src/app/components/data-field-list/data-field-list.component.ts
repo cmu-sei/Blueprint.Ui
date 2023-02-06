@@ -4,11 +4,10 @@
 import { Component, Input, OnDestroy, ViewChild } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Subject, Observable, BehaviorSubject } from 'rxjs';
-import { take, takeUntil } from 'rxjs/operators';
+import { Subject, Observable } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import {
   ComnSettingsService,
-  Theme,
   ComnAuthQuery,
 } from '@cmusei/crucible-common';
 import { UserDataService } from 'src/app/data/user/user-data.service';
@@ -120,16 +119,16 @@ export class DataFieldListComponent implements OnDestroy {
     // previous edit has not been saved, so prompt
     if (this.valuesHaveBeenChanged()) {
       this.dialogService
-      .confirm(
-        'Changes have been made!',
-        'Do you want to save them?'
-      )
-      .subscribe((result) => {
-        if (result['confirm']) {
-          this.dataFieldDataService.updateDataField(this.changedDataField);
-        }
-        this.setEditing(dataField);
-      });
+        .confirm(
+          'Changes have been made!',
+          'Do you want to save them?'
+        )
+        .subscribe((result) => {
+          if (result['confirm']) {
+            this.dataFieldDataService.updateDataField(this.changedDataField);
+          }
+          this.setEditing(dataField);
+        });
     } else {
       this.setEditing(dataField);
     }
@@ -266,8 +265,8 @@ export class DataFieldListComponent implements OnDestroy {
 
   getDataFieldOptions(dataFieldId: string) {
     return this.dataOptionList
-            .filter(x => x.dataFieldId === dataFieldId)
-            .sort((a, b) => a.displayOrder < b.displayOrder ? -1 : 1);
+      .filter(x => x.dataFieldId === dataFieldId)
+      .sort((a, b) => a.displayOrder < b.displayOrder ? -1 : 1);
   }
 
   addOrEditDataOption(dataOption: DataOption) {

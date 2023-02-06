@@ -1,12 +1,8 @@
 /*
- Copyright 2023 Carnegie Mellon University. All Rights Reserved. 
- Released under a MIT (SEI)-style license. See LICENSE.md in the 
+ Copyright 2023 Carnegie Mellon University. All Rights Reserved.
+ Released under a MIT (SEI)-style license. See LICENSE.md in the
  project root for license information.
 */
-
-// Copyright 2022 Carnegie Mellon University. All Rights Reserved.
-/// Released unde^Ca MIT (SEI)-style license. See LICENSE.md in the
-// project root for license information.
 
 import { OrganizationStore } from './organization.store';
 import { OrganizationQuery } from './organization.query';
@@ -17,7 +13,6 @@ import { Router, ActivatedRoute } from '@angular/router';
 import {
   Organization,
   OrganizationService,
-  ItemStatus
 } from 'src/app/generated/blueprint.api';
 import { map, take, tap } from 'rxjs/operators';
 import { BehaviorSubject, Observable, combineLatest } from 'rxjs';

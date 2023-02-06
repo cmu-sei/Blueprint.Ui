@@ -3,8 +3,7 @@
 // project root for license information.
 
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-
-import { ScenarioEventListComponent } from './msel.component';
+import { ScenarioEventListComponent } from './scenario-event-list.component';
 
 describe('ScenarioEventListComponent', () => {
   let component: ScenarioEventListComponent;
@@ -14,7 +13,7 @@ describe('ScenarioEventListComponent', () => {
     TestBed.configureTestingModule({
       declarations: [ ScenarioEventListComponent ]
     })
-    .compileComponents();
+      .compileComponents();
   }));
 
   beforeEach(() => {

@@ -104,28 +104,28 @@ export class MselInfoComponent implements OnDestroy {
 
   pushToGallery() {
     this.dialogService
-    .confirm(
-      'Push to Gallery',
-      'Are you sure that you want to push this MSEL to Gallery?'
-    )
-    .subscribe((result) => {
-      if (result['confirm']) {
-        this.mselDataService.pushToGallery(this.msel.id);
-      }
-    });
+      .confirm(
+        'Push to Gallery',
+        'Are you sure that you want to push this MSEL to Gallery?'
+      )
+      .subscribe((result) => {
+        if (result['confirm']) {
+          this.mselDataService.pushToGallery(this.msel.id);
+        }
+      });
   }
 
   pullFromGallery() {
     this.dialogService
-    .confirm(
-      'Remove from Gallery',
-      'Are you sure you want to delete the Collection and all associated data from Gallery?'
-    )
-    .subscribe((result) => {
-      if (result['confirm']) {
-        this.mselDataService.pullFromGallery(this.msel.id);
-      }
-    });
+      .confirm(
+        'Remove from Gallery',
+        'Are you sure you want to delete the Collection and all associated data from Gallery?'
+      )
+      .subscribe((result) => {
+        if (result['confirm']) {
+          this.mselDataService.pullFromGallery(this.msel.id);
+        }
+      });
   }
 
   ngOnDestroy() {

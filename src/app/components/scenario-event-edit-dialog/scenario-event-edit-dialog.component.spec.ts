@@ -3,8 +3,7 @@
 // project root for license information.
 
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-
-import { ScenarioEventEditDialogComponent } from './msel.component';
+import { ScenarioEventEditDialogComponent } from './scenario-event-edit-dialog.component';
 
 describe('ScenarioEventEditDialogComponent', () => {
   let component: ScenarioEventEditDialogComponent;
@@ -14,7 +13,7 @@ describe('ScenarioEventEditDialogComponent', () => {
     TestBed.configureTestingModule({
       declarations: [ ScenarioEventEditDialogComponent ]
     })
-    .compileComponents();
+      .compileComponents();
   }));
 
   beforeEach(() => {

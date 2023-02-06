@@ -4,10 +4,6 @@
  project root for license information.
 */
 
-// Copyright 2022 Carnegie Mellon University. All Rights Reserved.
-/// Released unde^Ca MIT (SEI)-style license. See LICENSE.md in the
-// project root for license information.
-
 import { CdkTableModule } from '@angular/cdk/table';
 import { CdkTreeModule } from '@angular/cdk/tree';
 import { HttpClientModule } from '@angular/common/http';
