@@ -487,17 +487,27 @@ export class ScenarioEventListComponent implements OnDestroy {
     } else {
       scenarioEvent.rowMetadata = parts[0] + ',' + color;
     }
-    // update the data values cell metadata
-    scenarioEvent.dataValues.forEach(dv => {
-      parts = dv.cellMetadata ? dv.cellMetadata.split(',') : ['', '', 'normal', '0'];
+    // convert color to hex value
+    let hexColor = '';
+    let tint = '';
+    if (!color) {
+      hexColor = '';
+      tint = '';
+    } else {
       const colorParts = color.split(',');
       // convert decimal value to hex
       for (let i = 0; i < colorParts.length; i++) {
         colorParts[i] = (+colorParts[i]).toString(16).trim();
         colorParts[i] = colorParts[i].length < 2 ? '0' + colorParts[i] : colorParts[i];
       }
-      parts[0] = colorParts.join('');
-      parts[1] = this.darkThemeTint;
+      hexColor = colorParts.join('');
+      tint = '0.7';  // 0.7 seems to be the correct amount to make excel look right
+    }
+    // convert decimal value to hex
+    scenarioEvent.dataValues.forEach(dv => {
+      parts = dv.cellMetadata ? dv.cellMetadata.split(',') : ['', '', 'normal', '0'];
+      parts[0] = hexColor;
+      parts[1] = tint;
       dv.cellMetadata = parts.join(',');
     });
     this.scenarioEventDataService.updateScenarioEvent(scenarioEvent);
@@ -505,7 +515,7 @@ export class ScenarioEventListComponent implements OnDestroy {
 
   getStyle(dataField: DataField): string {
     if (dataField && dataField.columnMetadata) {
-      const width = Math.trunc(+dataField.columnMetadata * 7);
+      const width = Math.trunc(+dataField.columnMetadata * 7);  // 7 converts excel widths to http widths
       return 'width: ' + width.toString() + 'px;';
     } else if (dataField.dataType.toString() === 'DateTime') {
       return 'width: max-content';
