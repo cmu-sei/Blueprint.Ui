@@ -3,8 +3,7 @@
 // project root for license information.
 
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-
-import { MselInfoComponent } from './msel.component';
+import { MselInfoComponent } from './msel-info.component';
 
 describe('MselInfoComponent', () => {
   let component: MselInfoComponent;
@@ -14,7 +13,7 @@ describe('MselInfoComponent', () => {
     TestBed.configureTestingModule({
       declarations: [ MselInfoComponent ]
     })
-    .compileComponents();
+      .compileComponents();
   }));
 
   beforeEach(() => {

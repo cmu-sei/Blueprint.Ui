@@ -14,7 +14,7 @@ describe('HomeAppComponent', () => {
     TestBed.configureTestingModule({
       declarations: [ HomeAppComponent ]
     })
-    .compileComponents();
+      .compileComponents();
   }));
 
   beforeEach(() => {

@@ -14,7 +14,7 @@ describe('AdminTeamsComponent', () => {
     TestBed.configureTestingModule({
       declarations: [ AdminTeamsComponent ]
     })
-    .compileComponents();
+      .compileComponents();
   }));
 
   beforeEach(() => {

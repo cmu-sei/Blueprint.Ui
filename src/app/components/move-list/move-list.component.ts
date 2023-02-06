@@ -179,10 +179,10 @@ export class MoveListComponent implements OnDestroy {
         const filterString = this.filterString.toLowerCase();
         filteredMoves = filteredMoves
           .filter((a) =>
-          a.title.toLowerCase().includes(filterString) ||
-          a.description.toLowerCase().includes(filterString) ||
-          a.situationDescription.toLowerCase().includes(filterString)
-        );
+            a.title.toLowerCase().includes(filterString) ||
+              a.description.toLowerCase().includes(filterString) ||
+              a.situationDescription.toLowerCase().includes(filterString)
+          );
       }
     }
     return filteredMoves;

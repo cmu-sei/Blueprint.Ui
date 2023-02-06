@@ -86,7 +86,8 @@ export class MselListComponent implements OnDestroy {
   /**
    * Selects the file(s) to be uploaded. Called when file selection is changed
    */
-  selectFile(file: File) {
+  selectFile(e) {
+    const file = e.target.files[0];
     if (!file) {
       return;
     }
@@ -178,8 +179,8 @@ export class MselListComponent implements OnDestroy {
         filteredMsels = filteredMsels
           .filter((a) =>
             a.name.toLowerCase().includes(filterString) ||
-              a.description.toLowerCase().includes(filterString) ||
-              a.status.toLowerCase().includes(filterString)
+                a.description.toLowerCase().includes(filterString) ||
+                a.status.toLowerCase().includes(filterString)
           );
       }
     }
