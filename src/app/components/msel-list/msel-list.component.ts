@@ -125,7 +125,7 @@ export class MselListComponent implements OnDestroy {
         const link = document.createElement('a');
         link.href = url;
         link.target = '_blank';
-        link.download = msel.description.endsWith('.xlsx') ? msel.description : msel.description + '.xlsx';
+        link.download = msel.name.endsWith('.xlsx') ? msel.name : msel.name + '.xlsx';
         link.click();
         this.isReady = true;
       },
