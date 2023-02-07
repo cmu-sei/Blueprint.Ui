@@ -53,7 +53,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <section class="cards cssLayoutRowSpaceCenter">
         <mat-card class="card" *ngFor="let org of sortedOrganizations">
           <mat-card-header>
-            <mat-card-title>{{ org.name }}</mat-card-title>
+            <mat-card-title class="org-title">{{ org.name }}</mat-card-title>
             <mat-card-subtitle>{{org.shortName}}</mat-card-subtitle>
           </mat-card-header>
           <mat-card-actions
