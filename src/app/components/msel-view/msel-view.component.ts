@@ -120,12 +120,15 @@ export class MselViewComponent implements OnDestroy {
     return style;
   }
 
-  getStyle (dataField: DataField): string {
+  getStyle(dataField: DataField): string {
     if (dataField && dataField.columnMetadata) {
-      const width = Math.trunc(+dataField.columnMetadata * 7);
+      const width = Math.trunc(+dataField.columnMetadata * 7);  // 7 converts excel widths to http widths
       return 'width: ' + width.toString() + 'px;';
+    } else if (dataField.dataType.toString() === 'DateTime') {
+      return 'width: max-content';
     } else {
-      return 'width: 100%;';
+      return 'width: ' + Math.trunc( 100 / this.sortedDataFields.length) + 'vh;';
+      // return 'width: 100%;';
     }
   }
 

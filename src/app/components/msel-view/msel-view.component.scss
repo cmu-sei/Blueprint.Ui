@@ -36,12 +36,11 @@ th, td {
   padding-left: 30px;
   padding-right: 30px;
   text-align: left;
-  word-wrap: break-word;
+  word-wrap: normal;
 }
 
 .constrainer {
   max-height: 300px;
-  overflow: auto;
 }
 
 .html-constrainer {
