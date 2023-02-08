@@ -5,8 +5,8 @@ import { Component, Input, OnDestroy, ViewChild } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Subject, Observable, BehaviorSubject } from 'rxjs';
-import { take, takeUntil } from 'rxjs/operators';
+import { Subject, Observable } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import {
   ComnSettingsService,
   Theme,
@@ -203,6 +203,13 @@ export class ScenarioEventListComponent implements OnDestroy {
         this.dateFormControls[df.id] = new UntypedFormControl();
       }
     });
+  }
+
+  toggleNoneSelection(scenarioEvent: ScenarioEventPlus, dataFieldName: string) {
+    const newValues = new Array('None');
+    this.getDataValue(scenarioEvent, dataFieldName).value = newValues.join(', ');
+    this.getDataValue(scenarioEvent, dataFieldName).valueArray = newValues;
+    this.dataValueDataService.updateDataValue(this.getDataValue(scenarioEvent, dataFieldName));
   }
 
   trackByFn(index, item) {
@@ -415,6 +422,9 @@ export class ScenarioEventListComponent implements OnDestroy {
   }
 
   saveDataValueArray(scenarioEvent: ScenarioEventPlus, dataFieldName: string, newValues: string[]) {
+    if (newValues.includes('None')) {
+      newValues = new Array();
+    }
     this.getDataValue(scenarioEvent, dataFieldName).value = newValues.join(', ');
     this.getDataValue(scenarioEvent, dataFieldName).valueArray = newValues;
     this.dataValueDataService.updateDataValue(this.getDataValue(scenarioEvent, dataFieldName));
