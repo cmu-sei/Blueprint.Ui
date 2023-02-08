@@ -333,13 +333,10 @@ export class ScenarioEventListComponent implements OnDestroy {
         const filterString = this.filterString.toLowerCase();
         filteredScenarioEvents = filteredScenarioEvents
           .filter((a) =>
-            this.getDataValue(a, 'control number').value.toLowerCase().includes(filterString) ||
-            this.getDataValue(a, 'assigned to').value.toLowerCase().includes(filterString) ||
-            this.getDataValue(a, 'status').value.toLowerCase().includes(filterString) ||
-            this.getDataValue(a, 'from org').value.toLowerCase().includes(filterString) ||
-            this.getDataValue(a, 'to org').value.toLowerCase().includes(filterString) ||
-            this.getDataValue(a, 'description').value.toLowerCase().includes(filterString)
-          );
+            this.allDataFields.forEach(function (df) {
+              console.log(df.name);
+              this.getDataValue(a, df.name).value.toLowerCase().includes(filterString);
+            }));
       }
     }
     return filteredScenarioEvents;
