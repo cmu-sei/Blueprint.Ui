@@ -51,6 +51,7 @@ th, td {
 
 .row-start-buttons {
   width: 140px;
+  display: flex;
 }
 
 .row-index {
@@ -88,4 +89,8 @@ th, td {
   border-color: rgb(187, 187, 187);
   border-style: solid;
   border-width: 0.001in;
+}
+
+.center-self {
+  align-self: center;
 }
