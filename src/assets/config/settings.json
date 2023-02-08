@@ -30,7 +30,7 @@
       },
       {
         "name": "To Org",
-        "dataType": "Organization",
+        "dataType": "TeamsMultiple",
         "displayOrder": "-3"
       },
       {

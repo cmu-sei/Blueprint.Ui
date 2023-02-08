@@ -1,24 +1,20 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, Input, OnDestroy, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, Input, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { HttpEventType, HttpResponse } from '@angular/common/http';
 import { UntypedFormControl } from '@angular/forms';
-import { MatLegacyButtonModule as MatButtonModule } from '@angular/material/legacy-button';
 import { Sort } from '@angular/material/sort';
-import { ActivatedRoute, Router } from '@angular/router';
-import { Subject, Observable, BehaviorSubject } from 'rxjs';
+import { Router } from '@angular/router';
+import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import {
   ComnSettingsService,
-  ComnAuthQuery,
 } from '@cmusei/crucible-common';
 import { UserDataService } from 'src/app/data/user/user-data.service';
 
-import { DataFieldDataService } from 'src/app/data/data-field/data-field-data.service';
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 
 @Component({
@@ -26,7 +22,7 @@ import { DialogService } from 'src/app/services/dialog/dialog.service';
   templateUrl: './msel-list.component.html',
   styleUrls: ['./msel-list.component.scss'],
 })
-export class MselListComponent implements OnDestroy {
+export class MselListComponent implements OnDestroy  {
   @Input() loggedInUserId: string;
   @Input() isContentDeveloper: boolean;
   @ViewChild('fileInput') fileInput: ElementRef<HTMLInputElement>;
@@ -40,17 +36,14 @@ export class MselListComponent implements OnDestroy {
   filterString = '';
   sort: Sort = {active: 'dateCreated', direction: 'desc'};
   sortedMselList: MselPlus[] = [];
+
   private unsubscribe$ = new Subject();
 
   constructor(
-    activatedRoute: ActivatedRoute,
-    private router: Router,
-    private dialog: MatDialog,
     public dialogService: DialogService,
+    private router: Router,
     private userDataService: UserDataService,
     private settingsService: ComnSettingsService,
-    private authQuery: ComnAuthQuery,
-    private dataFieldDataService: DataFieldDataService,
     private mselDataService: MselDataService,
     private mselQuery: MselQuery
   ) {
@@ -125,7 +118,7 @@ export class MselListComponent implements OnDestroy {
         const link = document.createElement('a');
         link.href = url;
         link.target = '_blank';
-        link.download = msel.description.endsWith('.xlsx') ? msel.description : msel.description + '.xlsx';
+        link.download = msel.name.endsWith('.xlsx') ? msel.name : msel.name + '.xlsx';
         link.click();
         this.isReady = true;
       },
@@ -141,9 +134,9 @@ export class MselListComponent implements OnDestroy {
   }
 
   addMsel() {
-    const current = new Date();
     this.mselDataService.add({
-      description: 'A new MSEL ' + current.toLocaleString(),
+      name: 'New MSEL',
+      description: 'Created from Default Settings by ' + this.userDataService.loggedInUser.value.profile.name,
       status: 'Pending',
       dataFields: this.settingsService.settings.DefaultDataFields
     });
