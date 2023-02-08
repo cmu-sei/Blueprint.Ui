@@ -2,9 +2,9 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 import { Component, Input, OnDestroy, ViewChild } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
-import { Subject, Observable, BehaviorSubject } from 'rxjs';
-import { take, takeUntil } from 'rxjs/operators';
+import { ActivatedRoute } from '@angular/router';
+import { Subject, Observable } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import {
   ComnSettingsService,
   Theme,
