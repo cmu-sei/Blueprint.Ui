@@ -228,6 +228,15 @@ export class ScenarioEventListComponent implements OnDestroy {
     return orgs;
   }
 
+  getSortedTeamOptions(): string[] {
+    let orgs: string[] = [];
+    this.msel.teams.forEach(t => {
+      orgs.push(t.shortName);
+    });
+    orgs = orgs.sort((a, b) => a < b ? -1 : 1);
+    return orgs;
+  }
+
   scroll(id) {
     console.log(`scrolling to ${id}`);
     const el = document.getElementById(id);
