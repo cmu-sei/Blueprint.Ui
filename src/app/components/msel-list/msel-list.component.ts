@@ -143,7 +143,8 @@ export class MselListComponent implements OnDestroy {
   addMsel() {
     const current = new Date();
     this.mselDataService.add({
-      description: 'A new MSEL ' + current.toLocaleString(),
+      name: 'New MSEL',
+      description: 'Default Type',
       status: 'Pending',
       dataFields: this.settingsService.settings.DefaultDataFields
     });
