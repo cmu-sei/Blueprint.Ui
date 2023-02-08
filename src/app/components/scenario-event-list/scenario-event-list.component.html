@@ -101,17 +101,17 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 <mat-select
                   *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, item.id).editor"
                   (click)="$event.stopPropagation()"
-                  (valueChange)="saveDataValue(item, 'From Org', $event)"
+                  (valueChange)="saveDataValue(item, df.name, $event)"
                   class="header-dropdown"
                   placeholder="None"
-                  [(ngModel)]="getDataValue(item, 'From Org').value"
+                  [(ngModel)]="getDataValue(item, df.name).value"
                 >
                   <mat-option value="">None</mat-option>
                   <mat-option *ngFor="let org of getSortedOrganizationOptions()" [value]="org">
                     {{ org }}
                   </mat-option>
                 </mat-select>
-                <span *ngIf="!isContentDeveloper && !msel.hasRole(loggedInUserId, item.id).editor">{{ getDataValue(item, 'From Org').value }}</span>
+                <span *ngIf="!isContentDeveloper && !msel.hasRole(loggedInUserId, item.id).editor">{{ getDataValue(item, df.name).value }}</span>
               </div>
             </td>
             <!-- To Org value -->
@@ -121,10 +121,10 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   multiple
                   *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, item.id).editor"
                   (click)="$event.stopPropagation()"
-                  (valueChange)="saveDataValueArray(item, 'To Org', $event)"
+                  (valueChange)="saveDataValueArray(item, df.name, $event)"
                   class="header-dropdown"
                   placeholder="None"
-                  [(ngModel)]="getDataValue(item, 'To Org').valueArray"
+                  [(ngModel)]="getDataValue(item, df.name).valueArray"
                 >
                   <mat-option value="ALL">ALL</mat-option>
                   <mat-option value="">None</mat-option>
@@ -132,7 +132,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                     {{ org }}
                   </mat-option>
                 </mat-select>
-                <span *ngIf="!isContentDeveloper && !msel.hasRole(loggedInUserId, item.id).editor">{{ getDataValue(item, 'To Org').value }}</span>
+                <span *ngIf="!isContentDeveloper && !msel.hasRole(loggedInUserId, item.id).editor">{{ getDataValue(item, df.name).value }}</span>
               </div>
             </td>
             <!-- Status value -->
