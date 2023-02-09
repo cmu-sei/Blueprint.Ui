@@ -36,12 +36,11 @@ th, td {
   padding-left: 10px;
   padding-right: 10px;
   text-align: left;
-  word-wrap: break-word;
+  word-wrap: normal;
 }
 
 .constrainer {
   max-height: 300px;
-  overflow: auto;
 }
 
 .html-constrainer {
@@ -52,6 +51,7 @@ th, td {
 
 .row-start-buttons {
   width: 140px;
+  display: flex;
 }
 
 .row-index {
@@ -89,4 +89,8 @@ th, td {
   border-color: rgb(187, 187, 187);
   border-style: solid;
   border-width: 0.001in;
+}
+
+.center-self {
+  align-self: center;
 }

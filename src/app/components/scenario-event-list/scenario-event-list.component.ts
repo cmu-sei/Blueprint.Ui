@@ -5,8 +5,8 @@ import { Component, Input, OnDestroy, ViewChild } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Subject, Observable, BehaviorSubject } from 'rxjs';
-import { take, takeUntil } from 'rxjs/operators';
+import { Subject, Observable } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import {
   ComnSettingsService,
   Theme,
@@ -205,6 +205,13 @@ export class ScenarioEventListComponent implements OnDestroy {
     });
   }
 
+  toggleNoneSelection(scenarioEvent: ScenarioEventPlus, dataFieldName: string) {
+    const newValues = new Array('None');
+    this.getDataValue(scenarioEvent, dataFieldName).value = newValues.join(', ');
+    this.getDataValue(scenarioEvent, dataFieldName).valueArray = newValues;
+    this.dataValueDataService.updateDataValue(this.getDataValue(scenarioEvent, dataFieldName));
+  }
+
   trackByFn(index, item) {
     return item.id;
   }
@@ -214,6 +221,15 @@ export class ScenarioEventListComponent implements OnDestroy {
     this.organizationList.forEach(o => {
       orgs.push(o.shortName);
     });
+    this.msel.teams.forEach(t => {
+      orgs.push(t.shortName);
+    });
+    orgs = orgs.sort((a, b) => a < b ? -1 : 1);
+    return orgs;
+  }
+
+  getSortedTeamOptions(): string[] {
+    let orgs: string[] = [];
     this.msel.teams.forEach(t => {
       orgs.push(t.shortName);
     });
@@ -317,13 +333,10 @@ export class ScenarioEventListComponent implements OnDestroy {
         const filterString = this.filterString.toLowerCase();
         filteredScenarioEvents = filteredScenarioEvents
           .filter((a) =>
-            this.getDataValue(a, 'control number').value.toLowerCase().includes(filterString) ||
-            this.getDataValue(a, 'assigned to').value.toLowerCase().includes(filterString) ||
-            this.getDataValue(a, 'status').value.toLowerCase().includes(filterString) ||
-            this.getDataValue(a, 'from org').value.toLowerCase().includes(filterString) ||
-            this.getDataValue(a, 'to org').value.toLowerCase().includes(filterString) ||
-            this.getDataValue(a, 'description').value.toLowerCase().includes(filterString)
-          );
+            this.allDataFields.forEach(function (df) {
+              console.log(df.name);
+              this.getDataValue(a, df.name).value.toLowerCase().includes(filterString);
+            }));
       }
     }
     return filteredScenarioEvents;
@@ -415,6 +428,9 @@ export class ScenarioEventListComponent implements OnDestroy {
   }
 
   saveDataValueArray(scenarioEvent: ScenarioEventPlus, dataFieldName: string, newValues: string[]) {
+    if (newValues.includes('None')) {
+      newValues = new Array();
+    }
     this.getDataValue(scenarioEvent, dataFieldName).value = newValues.join(', ');
     this.getDataValue(scenarioEvent, dataFieldName).valueArray = newValues;
     this.dataValueDataService.updateDataValue(this.getDataValue(scenarioEvent, dataFieldName));

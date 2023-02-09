@@ -42,14 +42,15 @@ export class MselInfoComponent implements OnDestroy {
   teamList: Team[] = [];
   viewList: PlayerApiClientView[] = [];
   itemStatus: ItemStatus[] = [ItemStatus.Pending, ItemStatus.Entered, ItemStatus.Approved, ItemStatus.Complete];
+  viewUrl: string;
 
   constructor(
+    public dialogService: DialogService,
     private teamQuery: TeamQuery,
     private userDataService: UserDataService,
     private mselDataService: MselDataService,
     private mselQuery: MselQuery,
-    public dialogService: DialogService,
-    private playerService: PlayerService
+    private playerService: PlayerService,
   ) {
     // subscribe to the active MSEL
     (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
@@ -57,6 +58,7 @@ export class MselInfoComponent implements OnDestroy {
         Object.assign(this.originalMsel, msel);
         Object.assign(this.msel, msel);
         this.sortedDataFields = this.getSortedDataFields(msel.dataFields);
+        this.viewUrl = window.location.origin + '/msel/' + this.msel.id + '/view';
       }
     });
     // subscribe to users
@@ -70,6 +72,7 @@ export class MselInfoComponent implements OnDestroy {
     this.playerService.getViews().subscribe(views => {
       this.viewList = views;
     });
+
   }
 
   getUserName(userId: string) {

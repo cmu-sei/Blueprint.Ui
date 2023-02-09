@@ -114,6 +114,14 @@ $mdi-font-path: '~@mdi/font/fonts';
   align-content: center;
 }
 
+.cssLayoutRowSpaceStretch {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: stretch;
+  align-content: stretch;
+}
+
 .cssLayoutRowCenterCenter {
   display: flex;
   flex-direction: row;

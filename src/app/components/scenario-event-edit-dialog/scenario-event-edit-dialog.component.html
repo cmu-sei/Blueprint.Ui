@@ -133,11 +133,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
             [(ngModel)]="getDataValue(df.name).value"
             [disabled]="!data.isEditor"
           >
-            <mat-option value="''"> </mat-option>
-            <mat-option *ngFor="let organization of data.organizationList" [value]="organization">{{ organization }}</mat-option>
+          <mat-option value="None">None</mat-option>
+          <mat-option *ngFor="let organization of data.organizationList" [value]="organization">{{ organization }}</mat-option>
           </mat-select>
         </mat-form-field>
-        <!-- To Org value -->
+        <!-- TeamsMultiple value -->
         <mat-form-field *ngIf="!df.isChosenFromList && df.dataType === dataType.TeamsMultiple" class="full-width">
           <mat-label>{{ df.name }}</mat-label>
           <mat-select
@@ -147,7 +147,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             [disabled]="!data.isEditor"
           >
             <mat-option value="ALL">ALL</mat-option>
-            <mat-option value="">None</mat-option>
+            <mat-option value="None">None</mat-option>
             <mat-option *ngFor="let team of data.teamList" [value]="team.shortName">
               {{ team.shortName }}
             </mat-option>
