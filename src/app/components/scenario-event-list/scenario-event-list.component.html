@@ -153,6 +153,24 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 <span *ngIf="!isContentDeveloper && !msel.hasRole(loggedInUserId, item.id).approver">{{ getDataValue(item, df.name).value }}</span>
               </div>
             </td>
+            <!-- Move value -->
+            <td *ngIf="df.name.toString() === 'Move'">
+              <div class="constrainer" [style]="getStyle(df)">
+                <mat-select
+                  *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, item.id).approver"
+                  [(ngModel)]="getDataValue(item, df.name).value"
+                  (click)="$event.stopPropagation()"
+                  (valueChange)="saveDataValue(item, df.name, $event)"
+                  class="header-dropdown"
+                  placeholder="None"
+                >
+                  <mat-option *ngFor="let move of msel.moves" [value]="move.moveNumber.toString()">
+                    {{ move.moveNumber }}
+                  </mat-option>
+                </mat-select>
+                <span *ngIf="!isContentDeveloper && !msel.hasRole(loggedInUserId, item.id).approver">{{ getDataValue(item, df.name).value }}</span>
+              </div>
+            </td>
             <!-- Assigned Team value -->
             <td *ngIf="df.dataType.toString() === 'Team'">
               <div class="constrainer" [style]="getStyle(df)">
@@ -183,6 +201,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                         df.dataType.toString() !== 'TeamsMultiple' &&
                         df.dataType.toString() !== 'Team' &&
                         df.dataType.toString() !== 'DateTime' &&
+                        df.name.toString() !== 'Move' &&
                         df.dataType.toString() !== 'Status'">
               <div class="constrainer" [style]="getStyle(df)">
                 {{ getScenarioEventValue(item, df.name) }}
