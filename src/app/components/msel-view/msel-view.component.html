@@ -25,7 +25,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 <quill-view-html [content]="getScenarioEventValue(item, df.name)" theme="snow"></quill-view-html>
               </div>
             </td>
-            <td *ngIf="df.dataType.toString() !== 'Html'">
+            <td *ngIf="df.dataType.toString() === 'DateTime'">
+              <div class="html-constrainer" [style]="getStyle(df)">
+                <span>{{ getScenarioEventValue(item, df.name) | date: 'MM/dd/yyyy HH:mm' }}</span><br />
+              </div>
+            </td>
+
+            <td *ngIf="df.dataType.toString() !== 'Html' &&
+                df.dataType.toString() !== 'DateTime'">
               <div class="constrainer" [style]="getStyle(df)">
                 {{ getScenarioEventValue(item, df.name) }}
               </div>
