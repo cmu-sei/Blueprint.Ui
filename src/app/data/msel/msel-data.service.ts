@@ -291,6 +291,42 @@ export class MselDataService {
       });
   }
 
+  pushToCite(mselId: string) {
+    this.mselStore.setLoading(true);
+    this.mselService
+      .pushToCite(mselId)
+      .pipe(
+        tap(() => {
+          this.mselStore.setLoading(false);
+        }),
+        take(1)
+      )
+      .subscribe((n) => {
+        this.updateStore(n);
+      },
+      (error) => {
+        this.mselStore.setLoading(false);
+      });
+  }
+
+  pullFromCite(mselId: string) {
+    this.mselStore.setLoading(true);
+    this.mselService
+      .pullFromCite(mselId)
+      .pipe(
+        tap(() => {
+          this.mselStore.setLoading(false);
+        }),
+        take(1)
+      )
+      .subscribe((n) => {
+        this.updateStore(n);
+      },
+      (error) => {
+        this.mselStore.setLoading(false);
+      });
+  }
+
   pushToGallery(mselId: string) {
     this.mselStore.setLoading(true);
     this.mselService

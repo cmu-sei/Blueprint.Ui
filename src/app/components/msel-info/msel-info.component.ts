@@ -105,6 +105,32 @@ export class MselInfoComponent implements OnDestroy {
     this.playerService.addViewTeamsToMsel(this.msel.id).subscribe();
   }
 
+  pushToCite() {
+    this.dialogService
+      .confirm(
+        'Push to CITE',
+        'Are you sure that you want to push this MSEL to CITE?'
+      )
+      .subscribe((result) => {
+        if (result['confirm']) {
+          this.mselDataService.pushToCite(this.msel.id);
+        }
+      });
+  }
+
+  pullFromCite() {
+    this.dialogService
+      .confirm(
+        'Remove from CITE',
+        'Are you sure you want to delete the Evaluation and all associated data from CITE?'
+      )
+      .subscribe((result) => {
+        if (result['confirm']) {
+          this.mselDataService.pullFromCite(this.msel.id);
+        }
+      });
+  }
+
   pushToGallery() {
     this.dialogService
       .confirm(
