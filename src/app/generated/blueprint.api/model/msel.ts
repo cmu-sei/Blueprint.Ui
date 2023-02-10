@@ -39,6 +39,7 @@ export interface Msel {
     galleryExhibitId?: string;
     useCite?: boolean;
     citeEvaluationId?: string;
+    citeScoringModelId?: string;
     useSteamfitter?: boolean;
     steamfitterScenarioId?: string;
     isTemplate?: boolean;
