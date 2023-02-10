@@ -18,7 +18,9 @@ import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy-menu';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
+import { CiteService } from 'src/app/generated/blueprint.api';
 import { PlayerService } from 'src/app/generated/blueprint.api';
+import { CiteApiClientScoringModel } from 'src/app/generated/blueprint.api/model/citeApiClientScoringModel';
 
 @Component({
   selector: 'app-msel-info',
@@ -40,6 +42,7 @@ export class MselInfoComponent implements OnDestroy {
   isEditEnabled = false;
   userList: User[] = [];
   teamList: Team[] = [];
+  scoringModelList: CiteApiClientScoringModel[] = [];
   viewList: PlayerApiClientView[] = [];
   itemStatus: ItemStatus[] = [ItemStatus.Pending, ItemStatus.Entered, ItemStatus.Approved, ItemStatus.Complete];
   viewUrl: string;
@@ -50,6 +53,7 @@ export class MselInfoComponent implements OnDestroy {
     private userDataService: UserDataService,
     private mselDataService: MselDataService,
     private mselQuery: MselQuery,
+    private citeService: CiteService,
     private playerService: PlayerService,
   ) {
     // subscribe to the active MSEL
@@ -72,7 +76,9 @@ export class MselInfoComponent implements OnDestroy {
     this.playerService.getViews().subscribe(views => {
       this.viewList = views;
     });
-
+    this.citeService.getScoringModels().subscribe(scoringModels => {
+      this.scoringModelList = scoringModels;
+    });
   }
 
   getUserName(userId: string) {

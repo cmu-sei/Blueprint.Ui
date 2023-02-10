@@ -125,11 +125,25 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <mat-checkbox [disabled]="!isEditEnabled" [(ngModel)]="msel.useCite">Integrate CITE</mat-checkbox>
     </div>
     <div class="sub-detail bottom-space" *ngIf="msel.useCite">
+      <mat-form-field class="half-width">
+        <mat-label>Select Scoring Model</mat-label>
+        <mat-select
+          [(ngModel)]="msel.citeScoringModelId"
+          [disabled]="!isEditEnabled"
+        >
+        <mat-option [value]=""></mat-option>
+        <mat-option *ngFor="let scoringModel of scoringModelList" [value]="scoringModel.id">
+            {{ scoringModel.description }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+    <div class="sub-detail bottom-space" *ngIf="msel.useCite">
       <button
         (click)="pushToCite()"
         title="Push to CITE"
         *ngIf="!msel.citeEvaluationId"
-        [disabled]="!(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)"
+        [disabled]="!(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) || !msel.citeScoringModelId"
       >Push to CITE</button>
       <button
         (click)="pullFromCite()"
