@@ -138,6 +138,14 @@ $mdi-font-path: '~@mdi/font/fonts';
   align-content: flex-start;
 }
 
+.cssLayoutRowStartStretch {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: stretch;
+  align-content: flex-start;
+}
+
 .cssLayoutRowEndCenter {
   display: flex;
   flex-direction: row;
