@@ -50,7 +50,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     </section>
 
     <section class="scrolling-region">
-      <section class="cards cssLayoutRowSpaceStretch">
+      <section class="cards cssLayoutRowStartStretch">
         <mat-card class="card" *ngFor="let org of sortedOrganizations">
           <mat-card-header>
             <mat-card-title class="org-title">{{ org.name }}</mat-card-title>
@@ -94,10 +94,10 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <span *ngIf="showTemplates">
         <hr />
         <h1>Templates</h1>
-        <section class="cards cssLayoutRowSpaceStretch">
+        <section class="cards cssLayoutRowStartStretch">
           <mat-card class="card" *ngFor="let org of templateOrganizations">
             <mat-card-header>
-              <mat-card-title>{{ org.name }}</mat-card-title>
+              <mat-card-title class="org-title">{{ org.name }}</mat-card-title>
               <mat-card-subtitle>{{ org.shortName }}</mat-card-subtitle>
             </mat-card-header>
             <mat-card-actions
