@@ -7,24 +7,24 @@ project root for license information or contact permission@sei.cmu.edu for full 
   <div class="mat-elevation-z2 section-container">
     <div class="section-content">
       <mat-expansion-panel
-        *ngFor="let team of msel.teams; trackBy: trackByFn"
+        *ngFor="let mselTeam of mselTeamList; trackBy: trackByFn"
       >
         <mat-expansion-panel-header
           (click)="$event.stopPropagation();"
         >
           <button
             mat-icon-button
-            (click)="removeTeamFromMsel(team.id); $event.stopPropagation();"
+            (click)="removeTeamFromMsel(mselTeam.id); $event.stopPropagation();"
             title="Remove team from MSEL"
             *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
           >
             <mat-icon class="mdi-24px self-center" fontIcon="mdi-minus-circle-outline"></mat-icon>
           </button>
-          <span class="center-self">{{ team.shortName }} - {{ team.name }}</span>
+          <span class="center-self">{{ getTeam(mselTeam.teamId).shortName }} - {{ getTeam(mselTeam.teamId).name }}</span>
         </mat-expansion-panel-header>
-        <div class="team-users-div" *ngFor="let user of team.users">
-          <span class="user-name">{{ user.name }}</span>
-          <span class="msel-role" *ngFor="let mselRole of mselRoles">
+        <div class="team-detail" *ngFor="let user of getMselTeamUsers(mselTeam.teamId)">
+          <div class="user-name four-cell">{{ user.name }}</div>
+          <div class="msel-role one-cell" *ngFor="let mselRole of mselRoles">
             <mat-checkbox
               [checked]="hasMselRole(user.id, mselRole)"
               (change)="toggleMselRole(user.id, mselRole, $event.checked)"
@@ -33,9 +33,23 @@ project root for license information or contact permission@sei.cmu.edu for full 
               [disabled]="!isContentDeveloper && !msel.hasRole(loggedInUserId, null).owner"
               >{{ mselRole }}</mat-checkbox
             >
-          </span>
+          </div>
         </div>
-        <div class="no-users" *ngIf="!team.users || team.users.length === 0">This team has no users.</div>
+        <div class="team-detail" *ngIf="getMselTeamUsers(mselTeam.teamId).length === 0">This team has no users.</div>
+        <div class="team-detail">
+          <mat-form-field class="button-margins half-width">
+            <mat-label>CITE Team Type</mat-label>
+            <mat-select
+              placeholder="CITE Team Type"
+              [value]="mselTeam.citeTeamTypeId"
+              (selectionChange)="setTeamType(mselTeam, $event.value)"
+            >
+              <mat-option *ngFor="let teamType of teamTypeList" [value]="teamType.id">
+                {{ teamType.name }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
       </mat-expansion-panel>
     </div>
   </div>

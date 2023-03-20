@@ -24,6 +24,7 @@ import { HttpClient, HttpHeaders, HttpParams,
 import { Observable }                                        from 'rxjs';
 
 import { CiteApiClientScoringModel } from '../model/citeApiClientScoringModel';
+import { CiteApiClientTeamType } from '../model/citeApiClientTeamType';
 
 import { BASE_PATH }                     from '../variables';
 import { Configuration }                                     from '../configuration';
@@ -101,6 +102,52 @@ export class CiteService {
         ];
 
         return this.httpClient.get<Array<CiteApiClientScoringModel>>(`${this.configuration.basePath}/api/scoringmodels`,
+            {
+                withCredentials: this.configuration.withCredentials,
+                headers: headers,
+                observe: observe,
+                reportProgress: reportProgress
+            }
+        );
+    }
+
+    /**
+     * Gets all TeamTypes
+     * Returns a list of all of the TeamTypes.
+     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+     * @param reportProgress flag to report request and response progress.
+     */
+    public getTeamTypes(observe?: 'body', reportProgress?: boolean): Observable<Array<CiteApiClientTeamType>>;
+    public getTeamTypes(observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Array<CiteApiClientTeamType>>>;
+    public getTeamTypes(observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Array<CiteApiClientTeamType>>>;
+    public getTeamTypes(observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+
+        let headers = this.defaultHeaders;
+
+        // authentication (oauth2) required
+        if (this.configuration.accessToken) {
+            const accessToken = typeof this.configuration.accessToken === 'function'
+                ? this.configuration.accessToken()
+                : this.configuration.accessToken;
+            headers = headers.set('Authorization', 'Bearer ' + accessToken);
+        }
+
+        // to determine the Accept header
+        let httpHeaderAccepts: string[] = [
+            'text/plain',
+            'application/json',
+            'text/json'
+        ];
+        const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
+        if (httpHeaderAcceptSelected !== undefined) {
+            headers = headers.set('Accept', httpHeaderAcceptSelected);
+        }
+
+        // to determine the Content-Type header
+        const consumes: string[] = [
+        ];
+
+        return this.httpClient.get<Array<CiteApiClientTeamType>>(`${this.configuration.basePath}/api/teamtypes`,
             {
                 withCredentials: this.configuration.withCredentials,
                 headers: headers,
