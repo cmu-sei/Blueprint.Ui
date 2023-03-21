@@ -36,14 +36,15 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </div>
         </div>
         <div class="team-detail" *ngIf="getMselTeamUsers(mselTeam.teamId).length === 0">This team has no users.</div>
-        <div class="team-detail">
+        <div class="team-detail" *ngIf="msel.useCite">
           <mat-form-field class="button-margins half-width">
-            <mat-label>CITE Team Type</mat-label>
+            <mat-label *ngIf="mselTeam.citeTeamTypeId">CITE Team Type</mat-label>
+            <mat-label *ngIf="!mselTeam.citeTeamTypeId">Not used by CITE</mat-label>
             <mat-select
-              placeholder="CITE Team Type"
               [value]="mselTeam.citeTeamTypeId"
               (selectionChange)="setTeamType(mselTeam, $event.value)"
             >
+              <mat-option [value]="''">Not used by CITE</mat-option>
               <mat-option *ngFor="let teamType of teamTypeList" [value]="teamType.id">
                 {{ teamType.name }}
               </mat-option>
