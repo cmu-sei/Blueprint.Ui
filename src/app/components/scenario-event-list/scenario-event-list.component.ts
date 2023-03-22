@@ -482,7 +482,7 @@ export class ScenarioEventListComponent implements OnDestroy {
   }
 
   getStyleFromColor(color: string) {
-    const tint = this.userTheme === 'dark-theme' ? this.darkThemeTint : this .lightThemeTint;
+    const tint = this.userTheme === 'dark-theme' ? this.darkThemeTint : this.lightThemeTint;
     return color ? {'background-color': 'rgba(' + color + ', ' + tint + ')'} : {};
   }
 

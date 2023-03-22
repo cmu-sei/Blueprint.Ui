@@ -43,6 +43,7 @@ export class MselPlus implements Msel {
   galleryExhibitId?: string;
   useCite?: boolean;
   citeEvaluationId?: string;
+  citeScoringModelId?: string;
   useSteamfitter?: boolean;
   steamfitterScenarioId?: string;
   isTemplate?: boolean;
@@ -277,6 +278,42 @@ export class MselDataService {
     this.mselStore.setLoading(true);
     this.mselService
       .updateMsel(msel.id, msel)
+      .pipe(
+        tap(() => {
+          this.mselStore.setLoading(false);
+        }),
+        take(1)
+      )
+      .subscribe((n) => {
+        this.updateStore(n);
+      },
+      (error) => {
+        this.mselStore.setLoading(false);
+      });
+  }
+
+  pushToCite(mselId: string) {
+    this.mselStore.setLoading(true);
+    this.mselService
+      .pushToCite(mselId)
+      .pipe(
+        tap(() => {
+          this.mselStore.setLoading(false);
+        }),
+        take(1)
+      )
+      .subscribe((n) => {
+        this.updateStore(n);
+      },
+      (error) => {
+        this.mselStore.setLoading(false);
+      });
+  }
+
+  pullFromCite(mselId: string) {
+    this.mselStore.setLoading(true);
+    this.mselService
+      .pullFromCite(mselId)
       .pipe(
         tap(() => {
           this.mselStore.setLoading(false);

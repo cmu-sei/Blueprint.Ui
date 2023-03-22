@@ -25,6 +25,7 @@ export interface Team {
     createdBy?: string;
     modifiedBy?: string;
     id?: string;
+    citeTeamTypeId?: string;
     name?: string;
     shortName?: string;
     isParticipantTeam?: boolean;

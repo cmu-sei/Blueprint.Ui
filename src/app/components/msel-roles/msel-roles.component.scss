@@ -27,11 +27,14 @@
   margin: 5px;
 }
 
-.team-users-div {
+.team-detail {
   text-align: left;
   margin-left:50px;
   margin-bottom: 10px;
   width: calc(100% - 50px);
+  display: flex;
+  flex-direction: row;
+  flex: 1;
 }
 
 .other-teams-div {
@@ -41,13 +44,11 @@
 }
 
 .user-name {
-  display: inline-block;
-  width: 50%;
+  display: flex;
 }
 
 .msel-role {
-  display: inline-block;
-  margin-right: 20px;
+  display: flex;
 }
 
 .no-users {
@@ -58,6 +59,10 @@
 
 .full-width {
   width: 100%;
+}
+
+.half-width {
+  width: 50%;
 }
 
 .five-cell {

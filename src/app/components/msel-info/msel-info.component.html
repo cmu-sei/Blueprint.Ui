@@ -88,7 +88,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <div class="sub-detail bottom-space" *ngIf="msel.useGallery">
       <button
         (click)="pushToGallery()"
-        title="push to Gallery"
+        title="Push to Gallery"
         *ngIf="!msel.galleryCollectionId"
         [disabled]="!(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)"
       >Push to Gallery</button>
@@ -124,8 +124,36 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <div *ngIf="!msel.isTemplate" class="single-detail">
       <mat-checkbox [disabled]="!isEditEnabled" [(ngModel)]="msel.useCite">Integrate CITE</mat-checkbox>
     </div>
+    <div class="sub-detail bottom-space" *ngIf="msel.useCite">
+      <mat-form-field class="half-width">
+        <mat-label>Select Scoring Model</mat-label>
+        <mat-select
+          [(ngModel)]="msel.citeScoringModelId"
+          [disabled]="!isEditEnabled"
+        >
+        <mat-option [value]=""></mat-option>
+        <mat-option *ngFor="let scoringModel of scoringModelList" [value]="scoringModel.id">
+            {{ scoringModel.description }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+    <div class="sub-detail bottom-space" *ngIf="msel.useCite">
+      <button
+        (click)="pushToCite()"
+        title="Push to CITE"
+        *ngIf="!msel.citeEvaluationId"
+        [disabled]="!(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) || !msel.citeScoringModelId"
+      >Push to CITE</button>
+      <button
+        (click)="pullFromCite()"
+        title="Remove from CITE"
+        *ngIf="!!msel.citeEvaluationId"
+        [disabled]="!(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)"
+      >Remove from CITE</button>
+    </div>
     <div class="sub-detail">
-      <mat-form-field *ngIf="msel.useCite" class="full-width">
+      <mat-form-field *ngIf="msel.useCite && msel.citeEvaluationId" class="full-width">
         <input
           type="text"
           matInput

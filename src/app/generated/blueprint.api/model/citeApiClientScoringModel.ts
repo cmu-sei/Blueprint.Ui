@@ -1,7 +1,7 @@
 /*
  Copyright 2023 Carnegie Mellon University. All Rights Reserved.
  Released under a MIT (SEI)-style license. See LICENSE.md in the
-// project root for license information.
+ project root for license information.
 */
 
 /**
@@ -15,17 +15,12 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
+import { ItemStatus } from './itemStatus';
 
-import { Team } from './team';
-
-export interface MselTeam {
-    dateCreated?: Date;
-    dateModified?: Date;
-    createdBy?: string;
-    modifiedBy?: string;
+export interface CiteApiClientScoringModel {
     id?: string;
-    mselId?: string;
-    teamId?: string;
-    team?: Team;
-    citeTeamTypeId?: string;
+    description?: string;
+    calculationEquation?: string;
+    status?: ItemStatus;
+    scoringCategories?: any[];
 }
