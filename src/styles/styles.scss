@@ -123,6 +123,14 @@ $mdi-font-path: '~@mdi/font/fonts';
   align-content: stretch;
 }
 
+.cssLayoutRowStartStretch {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: stretch;
+  align-content: stretch;
+}
+
 .cssLayoutRowCenterCenter {
   display: flex;
   flex-direction: row;
