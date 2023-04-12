@@ -2,22 +2,16 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-.enchilada {
-  height: 100%;
+.container {
+  height: calc(100vh - 87px);
   width: 100%;
-  table-layout: fixed;
+  overflow: auto;
 }
 
-.enchilada tbody {
-  display: block;
-  width: 100%;
-  overflow-y: auto;
-  overflow-x: hidden;
-  height: calc(100vh - 180px);
-}
-
-.enchilada thead tr {
-  display: block;
+.tableFixHead thead th {
+  position: sticky; /* make the table heads sticky */
+  top: 0px; /* table head will be placed from the top of the table and sticks to it */
+  z-index: 50;
 }
 
 table {

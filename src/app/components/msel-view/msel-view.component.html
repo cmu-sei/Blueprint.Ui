@@ -3,36 +3,38 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
-<div *ngIf="msel">
-  <table>
-    <thead>
-      <tr>
-        <ng-container *ngFor="let df of sortedDataFields">
-          <th>
-            <div [style]="getStyle(df)">
-              {{ df.name }}
-            </div>
-          </th>
-        </ng-container>
-      </tr>
-    </thead>
-    <tbody>
-      <ng-container *ngFor="let item of sortedScenarioEvents">
-        <tr [style]="getRowStyle(item)">
+<div class="container">
+  <div class="tableFixHead" *ngIf="msel">
+    <table>
+      <thead>
+        <tr>
           <ng-container *ngFor="let df of sortedDataFields">
-            <td *ngIf="df.dataType.toString() === 'Html'">
-              <div class="html-constrainer" [style]="getStyle(df)">
-                <quill-view-html [content]="getScenarioEventValue(item, df.name)" theme="snow"></quill-view-html>
+            <th class="background">
+              <div [style]="getStyle(df)">
+                {{ df.name }}
               </div>
-            </td>
-            <td *ngIf="df.dataType.toString() !== 'Html'">
-              <div class="constrainer" [style]="getStyle(df)">
-                {{ getScenarioEventValue(item, df.name) }}
-              </div>
-            </td>
+            </th>
           </ng-container>
         </tr>
-      </ng-container>
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+        <ng-container *ngFor="let item of sortedScenarioEvents">
+          <tr [style]="getRowStyle(item)">
+            <ng-container *ngFor="let df of sortedDataFields">
+              <td *ngIf="df.dataType.toString() === 'Html'">
+                <div class="html-constrainer" [style]="getStyle(df)">
+                  <quill-view-html [content]="getScenarioEventValue(item, df.name)" theme="snow"></quill-view-html>
+                </div>
+              </td>
+              <td *ngIf="df.dataType.toString() !== 'Html'">
+                <div class="constrainer" [style]="getStyle(df)">
+                  {{ getScenarioEventValue(item, df.name) }}
+                </div>
+              </td>
+            </ng-container>
+          </tr>
+        </ng-container>
+      </tbody>
+    </table>
+  </div>
 </div>
