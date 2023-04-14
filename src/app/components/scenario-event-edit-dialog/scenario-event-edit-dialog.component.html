@@ -59,7 +59,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <!-- data values for each data field -->
       <div *ngFor="let df of sortedDataFields" class="single-edit-dialog">
         <!-- string input -->
-        <mat-form-field *ngIf="!df.isChosenFromList && df.dataType === dataType.String" class="full-width">
+        <mat-form-field *ngIf="!df.isChosenFromList && (df.dataType === dataType.String || df.dataType === dataType.Url)" class="full-width">
           <input
             type="text"
             matInput
@@ -202,6 +202,32 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <mat-option value="''"> </mat-option>
             <mat-option *ngFor="let sourceType of data.gallerySourceTypes" [value]="sourceType">{{ sourceType }}</mat-option>
           </mat-select>
+        </mat-form-field>
+        <!-- User value -->
+        <mat-form-field *ngIf="df.dataType === dataType.User" class="full-width">
+          <mat-label>{{ df.name }}</mat-label>
+          <mat-select
+            placeholder="{{ df.name }}"
+            [(ngModel)]="getDataValue(df.name).value"
+            [disabled]="!data.isEditor"
+          >
+            <mat-option *ngFor="let user of data.userList" [value]="user.id">
+              {{ user.name }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+        <!-- checkbox input -->
+        <mat-form-field *ngIf="df.dataType === dataType.Checkbox" class="full-width">
+          <input hidden
+            type="text"
+            matInput
+          />
+          <mat-label>{{ df.name }}</mat-label>
+          <mat-checkbox
+            [checked]="getDataValue(df.name).value"
+            (change)="setDataValue(df.name, $event.checked.toString())"
+          >
+          </mat-checkbox>
         </mat-form-field>
         <!-- dropdown input -->
         <mat-form-field *ngIf="df.isChosenFromList" class="full-width">

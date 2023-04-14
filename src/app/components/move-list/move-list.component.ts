@@ -75,9 +75,10 @@ export class MoveListComponent implements OnDestroy {
   }
 
   addOrEditMove(move: Move) {
+    let editMove: Move = {};
     if (!move) {
       const moveTime = new Date();
-      move = {
+      editMove = {
         moveNumber: this.moveList.length,
         title: '',
         moveStartTime: moveTime,
@@ -89,12 +90,13 @@ export class MoveListComponent implements OnDestroy {
       };
     } else {
       // make sure all move dates are actual dates
-      this.moveDataService.setAsDates(move);
+      editMove = { ...move };
+      this.moveDataService.setAsDates(editMove);
     }
     const dialogRef = this.dialog.open(MoveEditDialogComponent, {
       width: '800px',
       data: {
-        move: move
+        move: editMove
       },
     });
     dialogRef.componentInstance.editComplete.subscribe((result) => {

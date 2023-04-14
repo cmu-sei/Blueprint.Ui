@@ -17,7 +17,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
  */
 
 
-export type DataFieldType = 'String' | 'Integer' | 'Double' | 'Boolean' | 'DateTime' | 'Html' | 'Organization' | 'Card' | 'SourceType' | 'Status' | 'Team' | 'TeamsMultiple';
+export type DataFieldType = 'String' | 'Integer' | 'Double' | 'Boolean' | 'DateTime' | 'Html' | 'Organization' | 'Card' | 'SourceType' | 'Status' | 'Team' | 'TeamsMultiple' | 'Checkbox' | 'User' | 'Url';
 
 export const DataFieldType = {
     String: 'String' as DataFieldType,
@@ -32,5 +32,8 @@ export const DataFieldType = {
     Status: 'Status' as DataFieldType,
     Team: 'Team' as DataFieldType,
     TeamsMultiple: 'TeamsMultiple' as DataFieldType,
-    keys: ['Card', 'Boolean', 'DateTime', 'Double', 'Html', 'Integer', 'Organization', 'SourceType', 'Status', 'String', 'Team', 'TeamsMultiple']
+    Checkbox: 'Checkbox' as DataFieldType,
+    User: 'User' as DataFieldType,
+    Url: 'Url' as DataFieldType,
+    keys: ['Card', 'Boolean', 'DateTime', 'Double', 'Html', 'Integer', 'Organization', 'SourceType', 'Status', 'String', 'Team', 'TeamsMultiple', 'Checkbox', 'User', 'Url']
 };

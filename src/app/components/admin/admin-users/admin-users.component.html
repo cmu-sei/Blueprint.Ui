@@ -94,7 +94,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     (matSortChange)="sortChanged($event)"
     class="mat-elevation-z2 mat-header-row"
   >
-    <div class="mat-header-cell user-cell" mat-sort-header="name"><span style="margin-left: 40px;">User</span></div>
+    <div class="mat-header-cell user-cell" mat-sort-header="name"><span style="margin-left: 80px;">User</span></div>
     <div class="mat-header-cell permission-cell">Permissions</div>
   </section>
 
@@ -113,6 +113,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
         >
           <mat-icon class="mdi-24px" fontIcon="mdi-content-copy"></mat-icon>
         </button>
+        <button
+          mat-icon-button
+          (click)="deleteUserRequest(user)"
+          title="Delete User"
+        >
+          <mat-icon class="mdi-24px self-center" fontIcon="mdi-trash-can"></mat-icon>
+        </button>
         {{ user.name }}
       </span>
       <span class="mat-cell permission-cell">
@@ -125,17 +132,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
               >{{ permission.key }}</mat-checkbox
             >
           </div>
-          <button
-            mat-icon-button
-            class="button-end"
-            (click)="deleteUserRequest(user); $event.stopPropagation()"
-            title="Delete User"
-          >
-            <mat-icon
-              class="mdi-24px"
-              fontIcon="mdi-delete-forever-outline"
-            ></mat-icon>
-          </button>
         </div>
       </span>
     </mat-expansion-panel-header>

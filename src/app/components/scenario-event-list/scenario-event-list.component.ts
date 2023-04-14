@@ -18,7 +18,8 @@ import {
   ItemStatus,
   MselRole,
   Organization,
-  ScenarioEvent
+  ScenarioEvent,
+  User
 } from 'src/app/generated/blueprint.api';
 import { MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
@@ -67,6 +68,7 @@ export class ScenarioEventListComponent implements OnDestroy {
   itemStatus: ItemStatus[] = [ItemStatus.Pending, ItemStatus.Entered, ItemStatus.Approved, ItemStatus.Complete];
   mselRole = { Owner: MselRole.Owner, Approver: MselRole.Approver, Editor: MselRole.Editor};
   organizationList: Organization[] = [];
+  mselUsers: User[] = [];
   blankDataValue = {
     id: '',
     value: '',
@@ -116,6 +118,7 @@ export class ScenarioEventListComponent implements OnDestroy {
     (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
       if (msel) {
         this.msel = this.getEditableMsel(msel) as MselPlus;
+        this.mselUsers = this.getMselUsers();
         this.getSortedDataFields(this.msel.dataFields);
         this.scenarioEventDataService.loadByMsel(msel.id);
         this.organizationDataService.loadByMsel(msel.id);
@@ -203,6 +206,17 @@ export class ScenarioEventListComponent implements OnDestroy {
         this.dateFormControls[df.id] = new UntypedFormControl();
       }
     });
+  }
+
+  getMselUsers(): User[] {
+    let users = [];
+    this.msel.teams.forEach(team => {
+      team.users.forEach(user => {
+        users.push({... user});
+      });
+    });
+    users = users.sort((a, b) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
+    return users;
   }
 
   toggleNoneSelection(scenarioEvent: ScenarioEventPlus, dataFieldName: string) {
@@ -349,8 +363,12 @@ export class ScenarioEventListComponent implements OnDestroy {
   }
 
   editScenarioEvent(scenarioEvent: ScenarioEvent) {
-    scenarioEvent = {... scenarioEvent};
-    this.displayEditDialog(scenarioEvent);
+    const editScenarioEvent = {... scenarioEvent};
+    editScenarioEvent.dataValues = [];
+    scenarioEvent.dataValues.forEach(dv => {
+      editScenarioEvent.dataValues.push({ ...dv });
+    });
+    this.displayEditDialog(editScenarioEvent);
   }
 
   copyScenarioEvent(scenarioEvent: ScenarioEventPlus): void {
@@ -389,7 +407,8 @@ export class ScenarioEventListComponent implements OnDestroy {
         isEditor: isEditor,
         useCite: this.msel.useCite,
         useGallery: this.msel.useGallery,
-        useSteamfitter: this.msel.useSteamfitter
+        useSteamfitter: this.msel.useSteamfitter,
+        userList: this.mselUsers
       },
     });
     dialogRef.componentInstance.editComplete.subscribe((result) => {
