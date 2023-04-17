@@ -21,14 +21,40 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <ng-container *ngFor="let item of sortedScenarioEvents">
           <tr [style]="getRowStyle(item)">
             <ng-container *ngFor="let df of sortedDataFields">
+              <!-- HTML -->
               <td *ngIf="df.dataType.toString() === 'Html'">
                 <div class="html-constrainer" [style]="getStyle(df)">
-                  <quill-view-html [content]="getScenarioEventValue(item, df.name)" theme="snow"></quill-view-html>
+                  <quill-view-html [content]="getScenarioEventValue(item, df)" theme="snow"></quill-view-html>
                 </div>
               </td>
-              <td *ngIf="df.dataType.toString() !== 'Html'">
+              <!-- URL -->
+              <td *ngIf="df.dataType.toString() === 'Url'">
                 <div class="constrainer" [style]="getStyle(df)">
-                  {{ getScenarioEventValue(item, df.name) }}
+                  <a target="_blank" href="{{ getScenarioEventValue(item, df) }}">{{ getScenarioEventValue(item, df) }}</a>
+                </div>
+              </td>
+              <!-- User -->
+              <td *ngIf="df.dataType.toString() === 'User'">
+                <div class="constrainer" [style]="getStyle(df)">
+                  {{ getUserName(item, df) }}
+                </div>
+              </td>
+              <!-- Checkbox -->
+              <td *ngIf="df.dataType.toString() === 'Checkbox'">
+                <div class="constrainer" [style]="getStyle(df)">
+                  <mat-checkbox
+                    [checked]="getScenarioEventValue(item, df)"
+                    (change)="saveDataValue(item, df, $event.checked.toString())"
+                  ></mat-checkbox>
+                </div>
+              </td>
+              <!-- All others -->
+              <td *ngIf="df.dataType.toString() !== 'Html' &&
+                          df.dataType.toString() !== 'Url' &&
+                          df.dataType.toString() !== 'User' &&
+                          df.dataType.toString() !== 'Checkbox'">
+                <div class="constrainer" [style]="getStyle(df)">
+                  {{ getScenarioEventValue(item, df) }}
                 </div>
               </td>
             </ng-container>

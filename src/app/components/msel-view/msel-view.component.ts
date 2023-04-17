@@ -12,11 +12,13 @@ import {
 import {
   DataField,
   Msel,
-  ScenarioEvent
+  ScenarioEvent,
+  User
 } from 'src/app/generated/blueprint.api';
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy-menu';
+import { DataValueDataService } from 'src/app/data/data-value/data-value-data.service';
 
 @Component({
   selector: 'app-msel-view',
@@ -35,6 +37,7 @@ export class MselViewComponent implements OnDestroy {
   sortedScenarioEvents: ScenarioEvent[];
   sortedDataFields: DataField[];
   names: string[] = [];
+  mselUsers: User[] = [];
   darkThemeTint = this.settingsService.settings.DarkThemeTint ? this.settingsService.settings.DarkThemeTint : 0.7;
   lightThemeTint = this.settingsService.settings.LightThemeTint ? this.settingsService.settings.LightThemeTint : 0.4;
   private unsubscribe$ = new Subject();
@@ -43,7 +46,8 @@ export class MselViewComponent implements OnDestroy {
     private activatedRoute: ActivatedRoute,
     private settingsService: ComnSettingsService,
     private mselDataService: MselDataService,
-    private mselQuery: MselQuery
+    private mselQuery: MselQuery,
+    private dataValueDataService: DataValueDataService
   ) {
     this.activatedRoute.params.pipe(takeUntil(this.unsubscribe$)).subscribe(params => {
       const mselId = params['mselid'];
@@ -56,6 +60,7 @@ export class MselViewComponent implements OnDestroy {
     (this.mselQuery.selectActive() as Observable<Msel>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
       if (msel) {
         this.msel = {... msel};
+        this.mselUsers = this.getMselUsers();
         this.sortedScenarioEvents = this.getSortedScenarioEvents(msel.scenarioEvents);
         this.sortedDataFields = this.getSortedDataFields(msel.dataFields);
       }
@@ -88,6 +93,17 @@ export class MselViewComponent implements OnDestroy {
     return sortedDataFields;
   }
 
+  getMselUsers(): User[] {
+    let users = [];
+    this.msel.teams.forEach(team => {
+      team.users.forEach(user => {
+        users.push({... user});
+      });
+    });
+    users = users.sort((a, b) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
+    return users;
+  }
+
   trackByFn(index, item) {
     return item.id;
   }
@@ -97,16 +113,29 @@ export class MselViewComponent implements OnDestroy {
     return 'calc(100vh - ' + topHeight + 'px)';
   }
 
-  getScenarioEventValue(scenarioEvent: ScenarioEvent, columnName: string) {
-    if (!(this.msel && scenarioEvent && scenarioEvent.id)) {
-      return '';
-    }
-    const dataField = this.msel.dataFields.find(df => df.name === columnName);
-    if (!dataField) {
-      return '';
-    }
+  getScenarioEventValue(scenarioEvent: ScenarioEvent, dataField: DataField) {
     const dataValue = scenarioEvent.dataValues.find(dv => dv.dataFieldId === dataField.id);
     return dataValue && dataValue.value != null ? dataValue.value : ' ';
+  }
+
+  getUserName(scenarioEvent: ScenarioEvent, dataField: DataField) {
+    let name = '';
+    const dataValue = scenarioEvent.dataValues.find(dv => dv.dataFieldId === dataField.id);
+    if (dataValue && dataValue.value != null) {
+      const user = this.mselUsers.find(u => u.id === dataValue.value);
+      if (user) {
+        name = user.name;
+      } else {
+        name = dataValue.value;
+      }
+    }
+    return name;
+  }
+
+  saveDataValue(scenarioEvent: ScenarioEvent, dataField: DataField, newValue: string) {
+    const dataValue = { ...(scenarioEvent.dataValues.find(dv => dv.dataFieldId === dataField.id)) };
+    dataValue.value = newValue;
+    this.dataValueDataService.updateDataValue(dataValue);
   }
 
   getRowStyle(scenarioEvent: ScenarioEvent) {

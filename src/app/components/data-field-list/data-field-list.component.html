@@ -105,13 +105,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <div class="single-detail">
               <mat-form-field class="full-width">
                 <mat-select placeholder="Data Type" [(ngModel)]="changedDataField.dataType" [disabled]="!isContentDeveloper && !msel.hasRole(loggedInUserId, null).owner">
-                  <mat-option value="String">String</mat-option>
-                  <mat-option value="Integer">Integer</mat-option>
-                  <mat-option value="Double">Double</mat-option>
-                  <mat-option value="Boolean">Boolean</mat-option>
-                  <mat-option value="DateTime">DateTime</mat-option>
-                  <mat-option value="Organization">Organization</mat-option>
-                  <mat-option value="Html">Html</mat-option>
+                  <mat-option *ngFor="let dataFieldType of dataFieldTypes" value="{{ dataFieldType }}">{{ dataFieldType }}</mat-option>
                 </mat-select>
               </mat-form-field>
             </div>
