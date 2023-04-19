@@ -18,6 +18,7 @@ import { DataValueService } from './api/dataValue.service';
 import { HealthCheckService } from './api/healthCheck.service';
 import { MoveService } from './api/move.service';
 import { MselService } from './api/msel.service';
+import { MselPageService } from './api/mselPage.service';
 import { MselTeamService } from './api/mselTeam.service';
 import { OrganizationService } from './api/organization.service';
 import { PermissionService } from './api/permission.service';
@@ -42,6 +43,7 @@ import { UserPermissionService } from './api/userPermission.service';
     HealthCheckService,
     MoveService,
     MselService,
+    MselPageService,
     MselTeamService,
     OrganizationService,
     PermissionService,
