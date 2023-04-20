@@ -9,6 +9,7 @@ import { UserDataService } from 'src/app/data/user/user-data.service';
 import {
   DataField,
   ItemStatus,
+  MselPage,
   ScenarioEvent,
   Team,
   User,
@@ -21,6 +22,8 @@ import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { CiteService } from 'src/app/generated/blueprint.api';
 import { PlayerService } from 'src/app/generated/blueprint.api';
 import { CiteApiClientScoringModel } from 'src/app/generated/blueprint.api/model/citeApiClientScoringModel';
+import { MselPageDataService } from 'src/app/data/msel-page/msel-page-data.service';
+import { MselPageQuery } from 'src/app/data/msel-page/msel-page.query';
 
 @Component({
   selector: 'app-msel-info',
@@ -46,6 +49,16 @@ export class MselInfoComponent implements OnDestroy {
   viewList: PlayerApiClientView[] = [];
   itemStatus: ItemStatus[] = [ItemStatus.Pending, ItemStatus.Entered, ItemStatus.Approved, ItemStatus.Complete];
   viewUrl: string;
+  mselPages: MselPage[] = [];
+  newMselPage = {} as MselPage;
+  changedMselPage = {} as MselPage;
+  currentTabIndex = 0;
+  editingPageId = '';
+  editorStyle = {
+    'height': 'calc(100vh - 334px)',
+    'width': '100%',
+    'overflow': 'auto'
+  };
 
   constructor(
     public dialogService: DialogService,
@@ -55,6 +68,8 @@ export class MselInfoComponent implements OnDestroy {
     private mselQuery: MselQuery,
     private citeService: CiteService,
     private playerService: PlayerService,
+    private mselPageDataService: MselPageDataService,
+    private mselPageQuery: MselPageQuery
   ) {
     // subscribe to the active MSEL
     (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
@@ -63,6 +78,8 @@ export class MselInfoComponent implements OnDestroy {
         Object.assign(this.msel, msel);
         this.sortedDataFields = this.getSortedDataFields(msel.dataFields);
         this.viewUrl = window.location.origin + '/msel/' + this.msel.id + '/view';
+        this.mselPageDataService.loadByMsel(msel.id);
+        this.newMselPage.mselId = msel.id;
       }
     });
     // subscribe to users
@@ -73,9 +90,15 @@ export class MselInfoComponent implements OnDestroy {
     this.teamQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(teams => {
       this.teamList = teams;
     });
+    // subscribe to MselPages
+    this.mselPageQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(pages => {
+      this.mselPages = pages;
+    });
+    // subscribe to views
     this.playerService.getViews().subscribe(views => {
       this.viewList = views;
     });
+    // subscribe to scoring models
     this.citeService.getScoringModels().subscribe(scoringModels => {
       this.scoringModelList = scoringModels;
     });
@@ -161,6 +184,58 @@ export class MselInfoComponent implements OnDestroy {
           this.mselDataService.pullFromGallery(this.msel.id);
         }
       });
+  }
+
+  tabChange(event: any) {
+    this.currentTabIndex = event.index;
+    if (event.index > 0 && event.index <= this.mselPages.length) {
+      this.changedMselPage = this.mselPages[event.index - 1];
+    } else {
+      this.changedMselPage = {} as MselPage;
+    }
+  }
+
+  requestPageEdit(id: string) {
+    this.editingPageId = id;
+    this.changedMselPage = { ... this.mselPages.find(p => p.id === id) };
+  }
+
+  saveMselPageEdits() {
+    this.changedMselPage.mselId = this.originalMsel.id;
+    if (this.changedMselPage.id) {
+      this.mselPageDataService.update(this.changedMselPage);
+    } else {
+      this.mselPageDataService.add(this.changedMselPage);
+    }
+    this.changedMselPage = {} as MselPage;
+    this.editingPageId = '';
+  }
+
+  cancelMselPageEdits() {
+    if (this.currentTabIndex > 0 && this.currentTabIndex <= this.mselPages.length) {
+      this.changedMselPage = this.mselPages[this.currentTabIndex - 1];
+    } else {
+      this.changedMselPage = {} as MselPage;
+    }
+    this.editingPageId = '';
+  }
+
+  deletePage(page: MselPage): void {
+    this.dialogService
+      .confirm(
+        'Delete Page',
+        'Are you sure that you want to delete ' + page.name + '?'
+      )
+      .subscribe((result) => {
+        if (result['confirm']) {
+          this.mselPageDataService.delete(page.id);
+        }
+      });
+  }
+
+  openContent(id: string) {
+    const url = location.origin + '/mselpage/' + id;
+    window.open(url);
   }
 
   ngOnDestroy() {

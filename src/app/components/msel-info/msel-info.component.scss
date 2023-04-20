@@ -2,38 +2,14 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the$
 // project root for license information.
 
-.mat-header-row {
-  min-height: 40px;
+.frame {
+  width: 100%;
+  height: calc(100vh - 88px);
 }
 
-.mat-row {
-  min-height: 30px;
-}
-
-.mat-row,
-.mat-header-row {
-  display: flex;
-  border-bottom-width: 1px;
-  border-bottom-style: solid;
-  align-items: center;
-  box-sizing: border-box;
-}
-
-.mat-cell,
-.mat-header-cell {
-  flex: 1;
-  overflow: hidden;
-  word-wrap: break-word;
-}
-
-.mat-accordion .mat-header-row {
-  padding-left: 1.5rem;
-  padding-right: 2rem;
-  border-bottom: none;
-}
-
-.mat-expansion-panel-header.mat-row {
-  border-bottom: none;
+.tab-group {
+  width: 80%;
+  margin-left: 10%;
 }
 
 .flex-row-cell {
@@ -45,16 +21,21 @@
 }
 
 .scenario-event-detail {
-  display: flex;
-  flex-flow: column;
-  justify-content: space-center;
-  align-items: center;
+  width: 90%;
+  margin-left: 5%;
 }
 
 .scrolling-region {
-  height: calc(100vh - 107px);
+  height: calc(100vh - 198px);
   overflow: auto;
   padding-top: 20px;
+  width: 100%;
+}
+
+.page-content-region {
+  height: calc(100vh - 198px);
+  width: 90%;
+  margin-left: 5%;
 }
 
 .single-detail {
@@ -164,4 +145,10 @@
 
 .center-self {
   align-self: center;
+}
+
+.quill-view {
+  border-style: solid;
+  border-width: 1px;
+  border-color: lightgray;
 }

@@ -54,6 +54,7 @@ export * from './module';
 export * from './moduleHandle';
 export * from './move';
 export * from './msel';
+export * from './mselPage';
 export * from './mselTeam';
 export * from './mselRole';
 export * from './numberFormatInfo';
