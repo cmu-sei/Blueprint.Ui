@@ -52,6 +52,7 @@ export class MselInfoComponent implements OnDestroy {
   mselPages: MselPage[] = [];
   newMselPage = {} as MselPage;
   changedMselPage = {} as MselPage;
+  currentTabIndex = 0;
   editingPageId = '';
   editorStyle = {
     'height': 'calc(100vh - 334px)',
@@ -186,6 +187,7 @@ export class MselInfoComponent implements OnDestroy {
   }
 
   tabChange(event: any) {
+    this.currentTabIndex = event.index;
     if (event.index > 0 && event.index <= this.mselPages.length) {
       this.changedMselPage = this.mselPages[event.index - 1];
     } else {
@@ -210,8 +212,30 @@ export class MselInfoComponent implements OnDestroy {
   }
 
   cancelMselPageEdits() {
-    this.changedMselPage = {} as MselPage;
+    if (this.currentTabIndex > 0 && this.currentTabIndex <= this.mselPages.length) {
+      this.changedMselPage = this.mselPages[this.currentTabIndex - 1];
+    } else {
+      this.changedMselPage = {} as MselPage;
+    }
     this.editingPageId = '';
+  }
+
+  deletePage(page: MselPage): void {
+    this.dialogService
+      .confirm(
+        'Delete Page',
+        'Are you sure that you want to delete ' + page.name + '?'
+      )
+      .subscribe((result) => {
+        if (result['confirm']) {
+          this.mselPageDataService.delete(page.id);
+        }
+      });
+  }
+
+  openContent(id: string) {
+    const url = location.origin + '/mselpage/' + id;
+    window.open(url);
   }
 
   ngOnDestroy() {

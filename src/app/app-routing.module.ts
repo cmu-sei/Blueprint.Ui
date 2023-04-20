@@ -8,7 +8,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { ComnAuthGuardService } from '@cmusei/crucible-common';
 import { AdminContainerComponent } from './components/admin/admin-container/admin-container.component';
 import { HomeAppComponent } from './components/home-app/home-app.component';
-import { MselComponent } from './components/msel/msel.component';
+import { MselPageComponent } from './components/msel-page/msel-page.component';
 import { MselViewComponent } from './components/msel-view/msel-view.component';
 
 export const ROUTES: Routes = [
@@ -20,6 +20,11 @@ export const ROUTES: Routes = [
   {
     path: 'msel/:mselid/view',
     component: MselViewComponent,
+    canActivate: [ComnAuthGuardService],
+  },
+  {
+    path: 'mselpage/:id',
+    component: MselPageComponent,
     canActivate: [ComnAuthGuardService],
   },
   {

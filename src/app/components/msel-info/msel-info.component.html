@@ -16,7 +16,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             mat-icon-button
             (click)="isEditEnabled = true"
             style="outline: none;"
-            title="Enable Editing"
+            title="Edit Config"
             *ngIf="!isEditEnabled && (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)"
           >
             <mat-icon class="mdi-24px self-center" fontIcon="mdi-square-edit-outline"></mat-icon>
@@ -252,22 +252,39 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <mat-tab *ngFor="let page of mselPages" label="{{ page.name }}">
       <!-- page content -->
       <div class="edit-buttons">
-        <span>
+        <span *ngIf="!editingPageId">
           <button
             mat-icon-button
             (click)="requestPageEdit(page.id)"
             style="outline: none;"
-            title="Enable Editing"
-            *ngIf="!editingPageId && (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)"
+            title="Edit Page"
+            *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
           >
             <mat-icon class="mdi-24px self-center" fontIcon="mdi-square-edit-outline"></mat-icon>
           </button>
           <button
             mat-icon-button
+            (click)="deletePage(page); $event.stopPropagation()"
+            style="outline: none;"
+            title="Delete {{ page.name }}"
+          >
+            <mat-icon class="mdi-24px self-center" fontIcon="mdi-trash-can"></mat-icon>
+          </button>
+          <button
+            mat-icon-button
+            (click)="openContent(page.id)"
+            title="Open in new tab"
+            class="far-right-button"
+          >
+            <mat-icon class="mdi-24px self-center" fontIcon="mdi-open-in-new"></mat-icon>
+          </button>
+        </span>
+        <span *ngIf="editingPageId">
+          <button
+            mat-icon-button
             (click)="saveMselPageEdits()"
             style="outline: none;"
             title="Save Changes"
-            *ngIf="editingPageId"
             [disabled]="!changedMselPage.name || !changedMselPage.content"
           >
             <mat-icon class="mdi-24px self-center" fontIcon="mdi-check"></mat-icon>
@@ -277,7 +294,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
             (click)="cancelMselPageEdits()"
             style="outline: none;"
             title="Cancel Changes"
-            *ngIf="editingPageId"
             [disabled]="!changedMselPage.name && !changedMselPage.content"
           >
             <mat-icon class="mdi-24px self-center" fontIcon="mdi-close"></mat-icon>
