@@ -109,7 +109,7 @@ export class MselTeamService {
             headers = headers.set('Content-Type', httpContentTypeSelected);
         }
 
-        return this.httpClient.post<MselTeam>(`${this.configuration.basePath}/api/teammsels`,
+        return this.httpClient.post<MselTeam>(`${this.configuration.basePath}/api/mselteams`,
             MselTeam,
             {
                 withCredentials: this.configuration.withCredentials,
@@ -158,7 +158,7 @@ export class MselTeamService {
         const consumes: string[] = [
         ];
 
-        return this.httpClient.delete<any>(`${this.configuration.basePath}/api/teammsels/${encodeURIComponent(String(id))}`,
+        return this.httpClient.delete<any>(`${this.configuration.basePath}/api/mselteams/${encodeURIComponent(String(id))}`,
             {
                 withCredentials: this.configuration.withCredentials,
                 headers: headers,
