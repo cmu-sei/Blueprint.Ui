@@ -1,7 +1,7 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, Input, OnDestroy, ViewChild } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, Observable } from 'rxjs';
@@ -35,7 +35,7 @@ import { v4 as uuidv4 } from 'uuid';
   templateUrl: './data-field-list.component.html',
   styleUrls: ['./data-field-list.component.scss'],
 })
-export class DataFieldListComponent implements OnDestroy {
+export class DataFieldListComponent implements OnDestroy, OnInit {
   @Input() loggedInUserId: string;
   @Input() isContentDeveloper: boolean;
   msel = new MselPlus();
@@ -86,11 +86,18 @@ export class DataFieldListComponent implements OnDestroy {
         }
       });
     });
-    // subscribe to the active MSEL
-    (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
-      if (msel) {
-        Object.assign(this.msel, msel);
-        this.dataFieldDataService.loadByMsel(msel.id);
+    // we have to check for the current active msel AND for any future changes
+    // set the MSEL values and get the needed info, if there is a current one
+    const msel = this.mselQuery.getActive() as MselPlus;
+    if (msel) {
+      Object.assign(this.msel, msel);
+      this.dataFieldDataService.loadByMsel(msel.id);
+    }
+    // subscribe to the active MSEL changes to get future changes
+    (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(m => {
+      if (m) {
+        Object.assign(this.msel, m);
+        this.dataFieldDataService.loadByMsel(m.id);
       }
     });
     this.filterControl.valueChanges
@@ -99,6 +106,9 @@ export class DataFieldListComponent implements OnDestroy {
         this.filterString = term;
         this.sortedDataFields = this.getSortedDataFields(this.getFilteredDataFields(this.dataFieldList));
       });
+  }
+
+  ngOnInit() {
   }
 
   getSortedDataFields(dataFields: DataField[]) {

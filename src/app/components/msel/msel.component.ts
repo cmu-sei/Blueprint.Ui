@@ -1,7 +1,7 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, Input, OnDestroy, ViewChild } from '@angular/core';
+import { Component, Input, OnDestroy, ViewChild, ViewChildren, QueryList, AfterViewInit, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -14,32 +14,36 @@ import {
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { MoveDataService } from 'src/app/data/move/move-data.service';
-import { MatLegacyTabGroup as MatTabGroup } from '@angular/material/legacy-tabs';
+import { MatLegacyTabGroup as MatTabGroup, MatLegacyTab as MatTab } from '@angular/material/legacy-tabs';
 
 @Component({
   selector: 'app-msel',
   templateUrl: './msel.component.html',
   styleUrls: ['./msel.component.scss'],
 })
-export class MselComponent implements OnDestroy {
+export class MselComponent implements OnDestroy, AfterViewInit {
   @Input() loggedInUserId: string;
   @Input() isContentDeveloper: boolean;
   @Input() userTheme$: Observable<Theme>;
   @ViewChild('tabGroup0', { static: false }) tabGroup0: MatTabGroup;
+  @ViewChildren('MatTab') tabs: QueryList<MatTab>;
+  private tabList: MatTab[] = [];
   private unsubscribe$ = new Subject();
   msel = this.mselQuery.selectActive()as Observable<Msel>;
+  section = 'Info';
   selectedTab = 'Info';
   selectedIndex = 1;
 
   constructor(
-    activatedRoute: ActivatedRoute,
+    private activatedRoute: ActivatedRoute,
     private router: Router,
     private moveDataService: MoveDataService,
     private mselDataService: MselDataService,
-    private mselQuery: MselQuery
+    private mselQuery: MselQuery,
+    private changeDetectorRef: ChangeDetectorRef
   ) {
     // subscribe to route changes
-    activatedRoute.queryParamMap.pipe(takeUntil(this.unsubscribe$)).subscribe(params => {
+    this.activatedRoute.queryParamMap.pipe(takeUntil(this.unsubscribe$)).subscribe(params => {
       // load the selected MSEL data
       const mselId = params.get('msel');
       if (mselId) {
@@ -50,6 +54,24 @@ export class MselComponent implements OnDestroy {
         this.moveDataService.unload();
         this.moveDataService.loadByMsel(mselId);
       }
+      this.section = params.get('section');
+      this.setTabBySection();
+    });
+  }
+
+  ngAfterViewInit() {
+    // have to check for current state and then subscribe to future changes
+    // tabGroup0._tabs doesn't exist until after view init, so we need the detectChanges()
+    if (this.tabGroup0 && this.tabGroup0._tabs && this.tabGroup0._tabs.length > 0) {
+      this.tabList = this.tabGroup0._tabs.toArray();
+      this.setTabBySection();
+      this.changeDetectorRef.detectChanges();
+    }
+    this.tabGroup0._tabs.changes.pipe(takeUntil(this.unsubscribe$)).subscribe(tabs => {
+      const count = tabs ? tabs.length : 0;
+      this.tabList = tabs.toArray();
+      this.setTabBySection();
+      this.changeDetectorRef.detectChanges();
     });
   }
 
@@ -59,8 +81,26 @@ export class MselComponent implements OnDestroy {
         queryParams: { }
       });
     } else {
-      this.selectedTab = event.tab.textLabel;
-      this.selectedIndex = event.index;
+      this.router.navigate([], {
+        queryParams: { section: event.tab.textLabel },
+        queryParamsHandling: 'merge',
+      });
+    }
+  }
+
+  setTabBySection() {
+    if (this.section && this.tabList) {
+      const tabIndex = this.tabList.findIndex(t => t.textLabel === this.section);
+      if (tabIndex > -1) {
+        this.selectedTab = this.section;
+        this.selectedIndex = tabIndex;
+      } else {
+        this.selectedTab = 'Info';
+        this.selectedIndex = 1;
+      }
+    } else {
+      this.selectedTab = 'Info';
+      this.selectedIndex = 1;
     }
   }
 

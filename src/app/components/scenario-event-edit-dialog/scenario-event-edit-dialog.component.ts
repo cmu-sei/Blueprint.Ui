@@ -57,6 +57,7 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
     ['all', 1]
   ]);
   private tabCount = 2;
+  currentFilterBy = 'default';
 
   constructor(
     public dialogService: DialogService,
@@ -139,6 +140,7 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
   }
 
   getFilteredDataFields(filter: string): DataField[] {
+    this.currentFilterBy = filter;
     let filteredList = [];
     switch (filter) {
       case 'default':
@@ -147,8 +149,9 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
       case 'gallery':
         filteredList = this.data.dataFields.filter(x => !!x.galleryArticleParameter);
         break;
-      default:
+      case 'all':
         filteredList = this.data.dataFields;
+        break;
     }
     filteredList =  filteredList.sort((a, b) => +a.displayOrder < +b.displayOrder ? -1 : 1);
     return filteredList;
