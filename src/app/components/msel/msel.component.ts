@@ -29,7 +29,7 @@ export class MselComponent implements OnDestroy, AfterViewInit {
   @ViewChildren('MatTab') tabs: QueryList<MatTab>;
   private tabList: MatTab[] = [];
   private unsubscribe$ = new Subject();
-  msel = this.mselQuery.selectActive()as Observable<Msel>;
+  msel = this.mselQuery.selectActive() as Observable<Msel>;
   section = 'Info';
   selectedTab = 'Info';
   selectedIndex = 1;

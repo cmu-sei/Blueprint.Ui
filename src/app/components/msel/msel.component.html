@@ -47,9 +47,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
       [isContentDeveloper]="isContentDeveloper"
     ></app-move-list>
   </mat-tab>
-  <mat-tab label="GalleryCards" *ngIf="(msel | async)?.useGallery">
+  <mat-tab label="Gallery Cards" *ngIf="(msel | async)?.useGallery">
     <app-card-list
-      *ngIf="selectedTab === 'GalleryCards'"
+      *ngIf="selectedTab === 'Gallery Cards'"
       [loggedInUserId]="loggedInUserId"
       [isContentDeveloper]="isContentDeveloper"
     ></app-card-list>
