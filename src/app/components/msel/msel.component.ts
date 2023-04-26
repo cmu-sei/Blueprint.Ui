@@ -13,8 +13,9 @@ import {
 } from 'src/app/generated/blueprint.api';
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
-import { MoveDataService } from 'src/app/data/move/move-data.service';
 import { MatLegacyTabGroup as MatTabGroup, MatLegacyTab as MatTab } from '@angular/material/legacy-tabs';
+import { TeamDataService } from 'src/app/data/team/team-data.service';
+import { UserDataService } from 'src/app/data/user/user-data.service';
 
 @Component({
   selector: 'app-msel',
@@ -37,10 +38,11 @@ export class MselComponent implements OnDestroy, AfterViewInit {
   constructor(
     private activatedRoute: ActivatedRoute,
     private router: Router,
-    private moveDataService: MoveDataService,
     private mselDataService: MselDataService,
     private mselQuery: MselQuery,
-    private changeDetectorRef: ChangeDetectorRef
+    private changeDetectorRef: ChangeDetectorRef,
+    private teamDataService: TeamDataService,
+    private userDataService: UserDataService
   ) {
     // subscribe to route changes
     this.activatedRoute.queryParamMap.pipe(takeUntil(this.unsubscribe$)).subscribe(params => {
@@ -50,13 +52,14 @@ export class MselComponent implements OnDestroy, AfterViewInit {
         // load the selected MSEL and make it active
         this.mselDataService.loadById(mselId);
         this.mselDataService.setActive(mselId);
-        // load the Moves
-        this.moveDataService.unload();
-        this.moveDataService.loadByMsel(mselId);
       }
       this.section = params.get('section');
       this.setTabBySection();
     });
+    // load the users
+    this.userDataService.getUsersFromApi();
+    // load the teams
+    this.teamDataService.load();
   }
 
   ngAfterViewInit() {

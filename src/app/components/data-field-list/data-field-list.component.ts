@@ -89,13 +89,13 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
     // we have to check for the current active msel AND for any future changes
     // set the MSEL values and get the needed info, if there is a current one
     const msel = this.mselQuery.getActive() as MselPlus;
-    if (msel) {
+    if (msel && (!this.msel || this.msel.id !== msel.id)) {
       Object.assign(this.msel, msel);
       this.dataFieldDataService.loadByMsel(msel.id);
     }
     // subscribe to the active MSEL changes to get future changes
     (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(m => {
-      if (m) {
+      if (m && (!this.msel || this.msel.id !== m.id)) {
         Object.assign(this.msel, m);
         this.dataFieldDataService.loadByMsel(m.id);
       }

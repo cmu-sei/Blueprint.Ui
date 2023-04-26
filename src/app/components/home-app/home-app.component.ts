@@ -21,8 +21,6 @@ import {
 } from 'src/app/generated/blueprint.api';
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
-import { OrganizationDataService } from 'src/app/data/organization/organization-data.service';
-import { TeamDataService } from 'src/app/data/team/team-data.service';
 import { ApplicationArea, SignalRService } from 'src/app/services/signalr.service';
 
 export enum Section {
@@ -68,8 +66,6 @@ export class HomeAppComponent implements OnDestroy, OnInit {
     private userDataService: UserDataService,
     private settingsService: ComnSettingsService,
     private authQuery: ComnAuthQuery,
-    private organizationDataService: OrganizationDataService,
-    private teamDataService: TeamDataService,
     private mselDataService: MselDataService,
     private mselQuery: MselQuery,
     private signalRService: SignalRService,
@@ -101,6 +97,7 @@ export class HomeAppComponent implements OnDestroy, OnInit {
     activatedRoute.queryParamMap.pipe(takeUntil(this.unsubscribe$)).subscribe(params => {
       this.selectedMselId = params.get('msel');
       if (!this.selectedMselId) {
+        // set appTitle and topbarText for top level
         this.mselDataService.setActive('');
         this.topbarText = this.topbarTextBase;
         this.titleService.setTitle(this.appTitle);
@@ -109,6 +106,7 @@ export class HomeAppComponent implements OnDestroy, OnInit {
     // subscribe to the selected MSEL
     (this.mselQuery.selectActive() as Observable<Msel>).pipe(takeUntil(this.unsubscribe$)).subscribe(m => {
       if (m) {
+        // set appTitle and topbarText for the selected MSEL
         const prefix = this.appTitle + ' - ';
         this.topbarText = m ? prefix + m.name : this.topbarTextBase;
         this.titleService.setTitle(prefix + m.name);
@@ -121,14 +119,6 @@ export class HomeAppComponent implements OnDestroy, OnInit {
     this.topbarTextColor = this.settingsService.settings.AppTopBarHexTextColor
       ? this.settingsService.settings.AppTopBarHexTextColor
       : this.topbarTextColor;
-    // load the MSELs
-    this.mselDataService.loadMine();
-    // load the users
-    this.userDataService.getUsersFromApi();
-    // load the teams
-    this.teamDataService.load();
-    // load the organization templates
-    this.organizationDataService.loadTemplates();
   }
 
   ngOnInit() {

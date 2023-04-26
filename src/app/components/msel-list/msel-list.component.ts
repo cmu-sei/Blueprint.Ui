@@ -62,6 +62,8 @@ export class MselListComponent implements OnDestroy  {
       this.filterString = term;
       this.getFilteredMsels();
     });
+    // load the MSELs
+    this.mselDataService.loadMine();
   }
 
   openMsel(mselId, section) {
