@@ -106,30 +106,10 @@ export class ScenarioEventDataService {
     );
   }
 
-  load() {
-    this.scenarioEventStore.setLoading(true);
-    this.scenarioEventService
-      .getScenarioEvents()
-      .pipe(
-        tap(() => {
-          this.scenarioEventStore.setLoading(false);
-        }),
-        take(1)
-      )
-      .subscribe(
-        (scenarioEvents) => {
-          this.scenarioEventStore.set(scenarioEvents);
-        },
-        (error) => {
-          this.scenarioEventStore.set([]);
-        }
-      );
-  }
-
   loadByMsel(mselId: string) {
     this.scenarioEventStore.setLoading(true);
     this.scenarioEventService
-      .getScenarioEvents(mselId)
+      .getScenarioEventsByMsel(mselId)
       .pipe(
         tap(() => {
           this.scenarioEventStore.setLoading(false);
@@ -175,8 +155,8 @@ export class ScenarioEventDataService {
         }),
         take(1)
       )
-      .subscribe((scenarioEvents) => {
-        this.scenarioEventStore.set(scenarioEvents);
+      .subscribe((se) => {
+        this.scenarioEventStore.upsert(se.id, se);
       });
   }
 
@@ -190,8 +170,8 @@ export class ScenarioEventDataService {
         }),
         take(1)
       )
-      .subscribe((scenarioEvents) => {
-        this.scenarioEventStore.set(scenarioEvents);
+      .subscribe((se) => {
+        this.scenarioEventStore.upsert(se.id, se);
       });
   }
 

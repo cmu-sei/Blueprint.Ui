@@ -8,18 +8,31 @@ import { Injectable } from '@angular/core';
 import { ComnAuthService, ComnSettingsService } from '@cmusei/crucible-common';
 import * as signalR from '@microsoft/signalr';
 import {
+  DataField,
+  DataOption,
+  DataValue,
+  Move,
   Msel,
+  MselTeam,
   Organization,
+  ScenarioEvent,
   Team,
   TeamUser,
   User,
   UserMselRole
 } from 'src/app/generated/blueprint.api';
+import { DataFieldDataService } from '../data/data-field/data-field-data.service';
+import { DataOptionDataService } from '../data/data-option/data-option-data.service';
+import { DataValueDataService } from '../data/data-value/data-value-data.service';
+import { MoveDataService } from '../data/move/move-data.service';
 import { MselDataService } from '../data/msel/msel-data.service';
+import { MselTeamDataService } from '../data/msel-team/msel-team-data.service';
 import { OrganizationDataService } from '../data/organization/organization-data.service';
+import { ScenarioEventDataService } from '../data/scenario-event/scenario-event-data.service';
 import { TeamDataService } from 'src/app/data/team/team-data.service';
 import { TeamUserDataService } from 'src/app/data/user/team-user-data.service';
 import { UserDataService } from 'src/app/data/user/user-data.service';
+import { UserMselRoleDataService } from '../data/user-msel-role/user-msel-role-data.service';
 
 export enum ApplicationArea {
   home = '',
@@ -37,11 +50,18 @@ export class SignalRService {
   constructor(
     private authService: ComnAuthService,
     private settingsService: ComnSettingsService,
+    private dataFieldDataService: DataFieldDataService,
+    private dataOptionDataService: DataOptionDataService,
+    private dataValueDataService: DataValueDataService,
+    private moveDataService: MoveDataService,
     private mselDataService: MselDataService,
+    private mselTeamDataService: MselTeamDataService,
     private organizationDataService: OrganizationDataService,
+    private scenarioEventDataService: ScenarioEventDataService,
     private teamDataService: TeamDataService,
     private teamUserDataService: TeamUserDataService,
-    private userDataService: UserDataService
+    private userDataService: UserDataService,
+    private userMselRoleDataService: UserMselRoleDataService
   ) {
     this.authService.user$.subscribe(() => {
       this.reconnect();
@@ -88,11 +108,85 @@ export class SignalRService {
   }
 
   private addHandlers() {
+    this.addDataFieldHandlers();
+    this.addDataOptionHandlers();
+    this.addDataValueHandlers();
+    this.addMoveHandlers();
     this.addMselHandlers();
+    this.addMselTeamHandlers();
     this.addOrganizationHandlers();
+    this.addScenarioEventHandlers();
     this.addTeamHandlers();
     this.addTeamUserHandlers();
     this.addUserHandlers();
+    this.addUserMselRoleHandlers();
+  }
+
+  private addDataFieldHandlers() {
+    this.hubConnection.on(
+      'DataFieldUpdated', (dataField: DataField) => {
+        console.log('DataField updated');
+        this.dataFieldDataService.updateStore(dataField);
+      }
+    );
+
+    this.hubConnection.on('DataFieldCreated', (dataField: DataField) => {
+      this.dataFieldDataService.updateStore(dataField);
+    });
+
+    this.hubConnection.on('DataFieldDeleted', (id: string) => {
+      this.dataFieldDataService.deleteFromStore(id);
+    });
+  }
+
+  private addDataOptionHandlers() {
+    this.hubConnection.on(
+      'DataOptionUpdated', (dataOption: DataOption) => {
+        this.dataOptionDataService.updateStore(dataOption);
+      }
+    );
+
+    this.hubConnection.on('DataOptionCreated', (dataOption: DataOption) => {
+      this.dataOptionDataService.updateStore(dataOption);
+    });
+
+    this.hubConnection.on('DataOptionDeleted', (id: string) => {
+      this.dataOptionDataService.deleteFromStore(id);
+    });
+  }
+
+  private addDataValueHandlers() {
+    this.hubConnection.on(
+      'DataValueUpdated', (dataValue: DataValue) => {
+        console.log('DataValue updated');
+        this.dataValueDataService.updateStore(dataValue);
+      }
+    );
+
+    this.hubConnection.on('DataValueCreated', (dataValue: DataValue) => {
+      this.dataValueDataService.updateStore(dataValue);
+    });
+
+    this.hubConnection.on('DataValueDeleted', (id: string) => {
+      this.dataValueDataService.deleteFromStore(id);
+    });
+  }
+
+  private addMoveHandlers() {
+    this.hubConnection.on(
+      'MoveUpdated', (move: Move) => {
+        console.log('Move updated');
+        this.moveDataService.updateStore(move);
+      }
+    );
+
+    this.hubConnection.on('MoveCreated', (move: Move) => {
+      this.moveDataService.updateStore(move);
+    });
+
+    this.hubConnection.on('MoveDeleted', (id: string) => {
+      this.moveDataService.deleteFromStore(id);
+    });
   }
 
   private addMselHandlers() {
@@ -111,9 +205,26 @@ export class SignalRService {
     });
   }
 
+  private addMselTeamHandlers() {
+    this.hubConnection.on(
+      'MselTeamUpdated', (mselTeam: MselTeam) => {
+        this.mselTeamDataService.updateStore(mselTeam);
+      }
+    );
+
+    this.hubConnection.on('MselTeamCreated', (mselTeam: MselTeam) => {
+      this.mselTeamDataService.updateStore(mselTeam);
+    });
+
+    this.hubConnection.on('MselTeamDeleted', (id: string) => {
+      this.mselTeamDataService.deleteFromStore(id);
+    });
+  }
+
   private addOrganizationHandlers() {
     this.hubConnection.on(
       'OrganizationUpdated', (organization: Organization) => {
+        console.log('Organization updated');
         this.organizationDataService.updateStore(organization);
       }
     );
@@ -124,6 +235,22 @@ export class SignalRService {
 
     this.hubConnection.on('OrganizationDeleted', (id: string) => {
       this.organizationDataService.deleteFromStore(id);
+    });
+  }
+
+  private addScenarioEventHandlers() {
+    this.hubConnection.on('ScenarioEventUpdated', (scenarioEvent: ScenarioEvent) => {
+      console.log('ScenarioEvent updated');
+      this.scenarioEventDataService.updateStore(scenarioEvent);
+    }
+    );
+
+    this.hubConnection.on('ScenarioEventCreated', (scenarioEvent: ScenarioEvent) => {
+      this.scenarioEventDataService.updateStore(scenarioEvent);
+    });
+
+    this.hubConnection.on('ScenarioEventDeleted', (id: string) => {
+      this.scenarioEventDataService.deleteFromStore(id);
     });
   }
 
@@ -176,11 +303,11 @@ export class SignalRService {
   private addUserMselRoleHandlers() {
     this.hubConnection.on('UserMselRoleCreated', (userMselRole: UserMselRole) => {
       console.log('UserMselRole updated');
-      this.mselDataService.addUserRole(userMselRole);
+      this.userMselRoleDataService.updateStore(userMselRole);
     });
 
-    this.hubConnection.on('UserMselRoleDeleted', (userMselRole: UserMselRole) => {
-      this.mselDataService.deleteUserRole(userMselRole);
+    this.hubConnection.on('UserMselRoleDeleted', (id: string) => {
+      this.userMselRoleDataService.deleteFromStore(id);
     });
   }
 

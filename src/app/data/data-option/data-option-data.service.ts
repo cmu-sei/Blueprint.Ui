@@ -97,6 +97,26 @@ export class DataOptionDataService {
     );
   }
 
+  loadByMsel(mselId: string) {
+    this.dataOptionStore.setLoading(true);
+    this.dataOptionService
+      .getByMsel(mselId)
+      .pipe(
+        tap(() => {
+          this.dataOptionStore.setLoading(false);
+        }),
+        take(1)
+      )
+      .subscribe(
+        (dataOptions) => {
+          this.dataOptionStore.set(dataOptions);
+        },
+        (error) => {
+          this.dataOptionStore.set([]);
+        }
+      );
+  }
+
   loadByDataField(dataFieldId: string) {
     this.dataOptionStore.setLoading(true);
     this.dataOptionService

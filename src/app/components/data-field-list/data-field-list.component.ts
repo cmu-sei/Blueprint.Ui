@@ -3,22 +3,15 @@
 // project root for license information.
 import { Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import {
-  ComnSettingsService,
-  ComnAuthQuery,
-} from '@cmusei/crucible-common';
-import { UserDataService } from 'src/app/data/user/user-data.service';
 import {
   DataField,
   DataFieldType,
   DataOption
 } from 'src/app/generated/blueprint.api';
-import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
+import { MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
-import { MoveDataService } from 'src/app/data/move/move-data.service';
 import { Sort } from '@angular/material/sort';
 import { MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy-menu';
 import { DataFieldDataService } from 'src/app/data/data-field/data-field-data.service';
@@ -57,13 +50,6 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
   contextMenuPosition = { x: '0px', y: '0px' };
 
   constructor(
-    activatedRoute: ActivatedRoute,
-    private router: Router,
-    private userDataService: UserDataService,
-    private settingsService: ComnSettingsService,
-    private authQuery: ComnAuthQuery,
-    private moveDataService: MoveDataService,
-    private mselDataService: MselDataService,
     private mselQuery: MselQuery,
     private dataFieldDataService: DataFieldDataService,
     private dataFieldQuery: DataFieldQuery,

@@ -145,8 +145,8 @@ export class DataFieldDataService {
         }),
         take(1)
       )
-      .subscribe((dataFields) => {
-        this.dataFieldStore.set(dataFields);
+      .subscribe((df) => {
+        this.dataFieldStore.upsert(df.id, df);
       });
   }
 
@@ -160,8 +160,8 @@ export class DataFieldDataService {
         }),
         take(1)
       )
-      .subscribe((dataFields) => {
-        this.dataFieldStore.set(dataFields);
+      .subscribe((df) => {
+        this.dataFieldStore.upsert(df.id, df);
       });
   }
 
@@ -169,8 +169,8 @@ export class DataFieldDataService {
     this.dataFieldService
       .deleteDataField(id)
       .pipe(take(1))
-      .subscribe((dataFields) => {
-        this.dataFieldStore.set(dataFields);
+      .subscribe((dfid) => {
+        this.deleteFromStore(dfid);
       });
   }
 
