@@ -36,7 +36,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         </mat-tab>
       </mat-tab-group>
       <!-- row index -->
-      <div class="single-edit-dialog">
+      <div class="single-edit-dialog" *ngIf="currentFilterBy === 'all'">
         <mat-form-field class="full-width">
           <input
             matInput
@@ -46,15 +46,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
             [disabled]="!data.isOwner"
           />
         </mat-form-field>
-      </div>
-      <!-- metadata-->
-      <div class="single-edit-dialog">
-        <input
-          type="text"
-          matInput
-          placeholder="row metadata"
-          [(ngModel)]="data.scenarioEvent.rowMetadata"
-        />
       </div>
       <!-- data values for each data field -->
       <div *ngFor="let df of sortedDataFields" class="single-edit-dialog">
@@ -241,6 +232,17 @@ project root for license information or contact permission@sei.cmu.edu for full 
               {{ dataOption.optionName }}
             </mat-option>
           </mat-select>
+        </mat-form-field>
+      </div>
+      <!-- metadata-->
+      <div class="single-edit-dialog" *ngIf="currentFilterBy === 'all'">
+        <mat-form-field class="full-width">
+          <input
+            type="text"
+            matInput
+            placeholder="row metadata"
+            [(ngModel)]="data.scenarioEvent.rowMetadata"
+          />
         </mat-form-field>
       </div>
     </div>

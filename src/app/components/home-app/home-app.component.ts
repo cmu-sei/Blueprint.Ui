@@ -16,16 +16,11 @@ import { UserDataService } from 'src/app/data/user/user-data.service';
 import { TopbarView } from '../shared/top-bar/topbar.models';
 import {
   HealthCheckService,
-  ItemStatus,
   Msel,
   Team
 } from 'src/app/generated/blueprint.api';
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
-import { MoveDataService } from 'src/app/data/move/move-data.service';
-import { OrganizationDataService } from 'src/app/data/organization/organization-data.service';
-import { TeamDataService } from 'src/app/data/team/team-data.service';
-import { TeamQuery } from 'src/app/data/team/team.query';
 import { ApplicationArea, SignalRService } from 'src/app/services/signalr.service';
 
 export enum Section {
@@ -63,6 +58,7 @@ export class HomeAppComponent implements OnDestroy, OnInit {
   isLoading$ = this.mselQuery.selectLoading();
   mselList = this.mselQuery.selectAll();
   selectedMselId = '';
+  appTitle = '';
 
   constructor(
     activatedRoute: ActivatedRoute,
@@ -70,20 +66,15 @@ export class HomeAppComponent implements OnDestroy, OnInit {
     private userDataService: UserDataService,
     private settingsService: ComnSettingsService,
     private authQuery: ComnAuthQuery,
-    private moveDataService: MoveDataService,
-    private organizationDataService: OrganizationDataService,
-    private teamDataService: TeamDataService,
-    private teamQuery: TeamQuery,
     private mselDataService: MselDataService,
     private mselQuery: MselQuery,
     private signalRService: SignalRService,
     private healthCheckService: HealthCheckService,
-    titleService: Title
+    private titleService: Title
   ) {
     this.healthCheck();
-
-    const appTitle = this.settingsService.settings.AppTitle || 'Set AppTitle in Settings';
-    titleService.setTitle(appTitle);
+    this.appTitle = this.settingsService.settings.AppTitle || 'Set AppTitle in Settings';
+    this.titleService.setTitle(this.appTitle);
     this.topbarTextBase = this.settingsService.settings.AppTopBarText || this.topbarTextBase;
     this.topbarText = this.topbarTextBase;
     this.theme$ = this.authQuery.userTheme$;
@@ -105,10 +96,21 @@ export class HomeAppComponent implements OnDestroy, OnInit {
     // subscribe to route changes
     activatedRoute.queryParamMap.pipe(takeUntil(this.unsubscribe$)).subscribe(params => {
       this.selectedMselId = params.get('msel');
-      // if (this.selectedMselId) {
-      //   // load the MSEL
-      //   this.mselDataService.loadById(this.selectedMselId);
-      // }
+      if (!this.selectedMselId) {
+        // set appTitle and topbarText for top level
+        this.mselDataService.setActive('');
+        this.topbarText = this.topbarTextBase;
+        this.titleService.setTitle(this.appTitle);
+      }
+    });
+    // subscribe to the selected MSEL
+    (this.mselQuery.selectActive() as Observable<Msel>).pipe(takeUntil(this.unsubscribe$)).subscribe(m => {
+      if (m) {
+        // set appTitle and topbarText for the selected MSEL
+        const prefix = this.appTitle + ' - ';
+        this.topbarText = m ? prefix + m.name : this.topbarTextBase;
+        this.titleService.setTitle(prefix + m.name);
+      }
     });
     // Set the display settings from config file
     this.topbarColor = this.settingsService.settings.AppTopBarHexColor
@@ -117,14 +119,6 @@ export class HomeAppComponent implements OnDestroy, OnInit {
     this.topbarTextColor = this.settingsService.settings.AppTopBarHexTextColor
       ? this.settingsService.settings.AppTopBarHexTextColor
       : this.topbarTextColor;
-    // load the MSELs
-    this.mselDataService.loadMine();
-    // load the users
-    this.userDataService.getUsersFromApi();
-    // load the teams
-    this.teamDataService.load();
-    // load the organization templates
-    this.organizationDataService.loadTemplates();
   }
 
   ngOnInit() {

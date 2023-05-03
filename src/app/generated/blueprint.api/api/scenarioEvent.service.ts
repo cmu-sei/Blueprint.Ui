@@ -73,9 +73,9 @@ export class ScenarioEventService {
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public createScenarioEvent(ScenarioEvent?: ScenarioEvent, observe?: 'body', reportProgress?: boolean): Observable<Array<ScenarioEvent>>;
-    public createScenarioEvent(ScenarioEvent?: ScenarioEvent, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Array<ScenarioEvent>>>;
-    public createScenarioEvent(ScenarioEvent?: ScenarioEvent, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Array<ScenarioEvent>>>;
+    public createScenarioEvent(ScenarioEvent?: ScenarioEvent, observe?: 'body', reportProgress?: boolean): Observable<ScenarioEvent>;
+    public createScenarioEvent(ScenarioEvent?: ScenarioEvent, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<ScenarioEvent>>;
+    public createScenarioEvent(ScenarioEvent?: ScenarioEvent, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<ScenarioEvent>>;
     public createScenarioEvent(ScenarioEvent?: ScenarioEvent, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
 
         let headers = this.defaultHeaders;
@@ -110,7 +110,7 @@ export class ScenarioEventService {
             headers = headers.set('Content-Type', httpContentTypeSelected);
         }
 
-        return this.httpClient.post<Array<ScenarioEvent>>(`${this.configuration.basePath}/api/scenarioevents`,
+        return this.httpClient.post<ScenarioEvent>(`${this.configuration.basePath}/api/scenarioevents`,
             ScenarioEvent,
             {
                 withCredentials: this.configuration.withCredentials,
@@ -222,29 +222,20 @@ export class ScenarioEventService {
     /**
      * Gets ScenarioEvents
      * Returns a list of ScenarioEvents.
-     * @param MselId Whether or not to return records only for a designated MSEL
-     * @param TeamId Whether or not to return records only for a designated team
-     * @param MoveId Whether or not to return records only for a designated move
+     * @param mselId designated MSEL
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public getScenarioEvents(MselId?: string, TeamId?: string, MoveId?: string, observe?: 'body', reportProgress?: boolean): Observable<Array<ScenarioEvent>>;
-    public getScenarioEvents(MselId?: string, TeamId?: string, MoveId?: string, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Array<ScenarioEvent>>>;
-    public getScenarioEvents(MselId?: string, TeamId?: string, MoveId?: string, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Array<ScenarioEvent>>>;
-    public getScenarioEvents(MselId?: string, TeamId?: string, MoveId?: string, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+    public getScenarioEventsByMsel(mselId: string, observe?: 'body', reportProgress?: boolean): Observable<Array<ScenarioEvent>>;
+    public getScenarioEventsByMsel(mselId: string, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Array<ScenarioEvent>>>;
+    public getScenarioEventsByMsel(mselId: string, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Array<ScenarioEvent>>>;
+    public getScenarioEventsByMsel(mselId: string, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
 
-        let queryParameters = new HttpParams({encoder: new CustomHttpUrlEncodingCodec()});
-        if (MselId !== undefined && MselId !== null) {
-            queryParameters = queryParameters.set('MselId', <any>MselId);
-        }
-        if (TeamId !== undefined && TeamId !== null) {
-            queryParameters = queryParameters.set('TeamId', <any>TeamId);
-        }
-        if (MoveId !== undefined && MoveId !== null) {
-            queryParameters = queryParameters.set('MoveId', <any>MoveId);
-        }
+      if (mselId === null || mselId === undefined) {
+        throw new Error('Required parameter mselId was null or undefined when calling getScenarioEventsByMsel.');
+    }
 
-        let headers = this.defaultHeaders;
+    let headers = this.defaultHeaders;
 
         // authentication (oauth2) required
         if (this.configuration.accessToken) {
@@ -269,9 +260,8 @@ export class ScenarioEventService {
         const consumes: string[] = [
         ];
 
-        return this.httpClient.get<Array<ScenarioEvent>>(`${this.configuration.basePath}/api/scenarioevents`,
+        return this.httpClient.get<Array<ScenarioEvent>>(`${this.configuration.basePath}/api/msels/${encodeURIComponent(String(mselId))}/scenarioevents`,
             {
-                params: queryParameters,
                 withCredentials: this.configuration.withCredentials,
                 headers: headers,
                 observe: observe,
@@ -288,9 +278,9 @@ export class ScenarioEventService {
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public updateScenarioEvent(id: string, ScenarioEvent?: ScenarioEvent, observe?: 'body', reportProgress?: boolean): Observable<Array<ScenarioEvent>>;
-    public updateScenarioEvent(id: string, ScenarioEvent?: ScenarioEvent, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Array<ScenarioEvent>>>;
-    public updateScenarioEvent(id: string, ScenarioEvent?: ScenarioEvent, observe?: 'events', reportProgress?: boolean): Observable<HttpResponse<Array<ScenarioEvent>>>;
+    public updateScenarioEvent(id: string, ScenarioEvent?: ScenarioEvent, observe?: 'body', reportProgress?: boolean): Observable<ScenarioEvent>;
+    public updateScenarioEvent(id: string, ScenarioEvent?: ScenarioEvent, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<ScenarioEvent>>;
+    public updateScenarioEvent(id: string, ScenarioEvent?: ScenarioEvent, observe?: 'events', reportProgress?: boolean): Observable<HttpResponse<ScenarioEvent>>;
     public updateScenarioEvent(id: string, ScenarioEvent?: ScenarioEvent, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
         if (id === null || id === undefined) {
             throw new Error('Required parameter id was null or undefined when calling updateScenarioEvent.');
@@ -328,7 +318,7 @@ export class ScenarioEventService {
             headers = headers.set('Content-Type', httpContentTypeSelected);
         }
 
-        return this.httpClient.put<Array<ScenarioEvent>>(`${this.configuration.basePath}/api/scenarioevents/${encodeURIComponent(String(id))}`,
+        return this.httpClient.put<ScenarioEvent>(`${this.configuration.basePath}/api/scenarioevents/${encodeURIComponent(String(id))}`,
             ScenarioEvent,
             {
                 withCredentials: this.configuration.withCredentials,

@@ -12,7 +12,8 @@ import {
   MselTeam,
   ScenarioEvent,
   Team,
-  User
+  User,
+  UserMselRole
 } from 'src/app/generated/blueprint.api';
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
@@ -21,6 +22,8 @@ import { MselTeamQuery } from 'src/app/data/msel-team/msel-team.query';
 import { MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy-menu';
 import { CiteApiClientTeamType } from 'src/app/generated/blueprint.api/model/citeApiClientTeamType';
 import { CiteService } from 'src/app/generated/blueprint.api';
+import { UserMselRoleDataService } from 'src/app/data/user-msel-role/user-msel-role-data.service';
+import { UserMselRoleQuery } from 'src/app/data/user-msel-role/user-msel-role.query';
 
 @Component({
   selector: 'app-msel-roles',
@@ -43,7 +46,7 @@ export class MselRolesComponent implements OnDestroy {
   isEditEnabled = false;
   userList: User[] = [];
   mselTeamList: MselTeam[] = [];
-  private teamsOnMsel: Team[] = [];
+  userMselRoles: UserMselRole[] = [];
   private allTeams: Team[] = [];
   private unsubscribe$ = new Subject();
 
@@ -54,15 +57,18 @@ export class MselRolesComponent implements OnDestroy {
     private mselQuery: MselQuery,
     private mselTeamDataService: MselTeamDataService,
     private mselTeamQuery: MselTeamQuery,
-    private citeService: CiteService
+    private citeService: CiteService,
+    private userMselRoleDataService: UserMselRoleDataService,
+    private userMselRoleQuery: UserMselRoleQuery
   ) {
     // subscribe to the active MSEL
     (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
-      if (msel) {
+      if (msel && (!this.msel || this.msel.id !== msel.id)) {
         Object.assign(this.originalMsel, msel);
         Object.assign(this.msel, msel);
         this.sortedDataFields = this.getSortedDataFields(msel.dataFields);
         this.mselTeamDataService.loadByMsel(msel.id);
+        this.userMselRoleDataService.loadByMsel(msel.id);
       }
     });
     // subscribe to users
@@ -89,6 +95,11 @@ export class MselRolesComponent implements OnDestroy {
           this.getTeam(a.teamId).shortName.toLowerCase() > this.getTeam(b.teamId).shortName.toLowerCase() ? 1 : -1);
       }
     });
+    // subscribe to UserMselRoles
+    this.userMselRoleQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(umrs => {
+      this.userMselRoles = umrs;
+    });
+    // subscribe to TeamTypes
     this.citeService.getTeamTypes().subscribe(teamTypes => {
       this.teamTypeList = teamTypes;
     });
@@ -112,11 +123,9 @@ export class MselRolesComponent implements OnDestroy {
 
   getTeamList() {
     let teamList = this.allTeams;
-    if (this.msel && this.msel.teams && this.msel.teams.length > 0 && teamList.length > 0) {
-      const mselTeamIds = new Set(this.msel.teams
-        .map(({ id }) => id));
-      teamList = this.allTeams
-        .filter(({ id }) => !mselTeamIds.has(id));
+    if (this.msel && this.mselTeamList && this.mselTeamList.length > 0 && teamList.length > 0) {
+      const mselTeamIds = new Set(this.mselTeamList.map(mt => mt.teamId));
+      teamList = this.allTeams.filter(t => !mselTeamIds.has(t.id));
     }
 
     return teamList;
@@ -128,7 +137,7 @@ export class MselRolesComponent implements OnDestroy {
   }
 
   getMselTeamUsers(id: string) {
-    const team = this.msel.teams.find(t => t.id === id);
+    const team = this.mselTeamList.find(mt => mt.teamId === id).team;
     return team ? team.users : [];
   }
 
@@ -145,16 +154,26 @@ export class MselRolesComponent implements OnDestroy {
   }
 
   hasMselRole(userId: string, mselRole: MselRole): boolean {
-    const hasRole = this.msel.userMselRoles.some(umr =>
-      umr.userId === userId && umr.role === mselRole);
+    const hasRole = this.userMselRoles.some(umr =>
+      umr.userId === userId && umr.role === mselRole && umr.mselId === this.msel.id);
     return hasRole;
   }
 
   toggleMselRole(userId: string, mselRole: MselRole, addIt: boolean) {
     if (addIt) {
-      this.mselDataService.addUserMselRole(userId, this.msel.id, mselRole);
+      const umr = {
+        userId: userId,
+        mselId: this.msel.id,
+        role: mselRole
+      } as UserMselRole;
+      this.userMselRoleDataService.add(umr);
     } else {
-      this.mselDataService.removeUserMselRole(userId, this.msel.id, mselRole);
+      const umrId = this.userMselRoles.find(umr =>
+        umr.userId === userId &&
+        umr.mselId === this.msel.id &&
+        umr.role === mselRole
+      ).id;
+      this.userMselRoleDataService.delete(umrId);
     }
   }
 
