@@ -112,8 +112,8 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
       ? this.settingsService.settings.AppTopBarHexTextColor
       : this.topbarTextColor;
     const appTitle = this.settingsService.settings.AppTitle || 'Set AppTitle in Settings';
-    titleService.setTitle(appTitle + ' - Administration');
-    this.topbarText = appTitle + ' - Administration';
+    titleService.setTitle(appTitle + ' - Admin');
+    this.topbarText = this.settingsService.settings.AppTopBarText || this.topbarText;
   }
 
   ngOnInit() {
