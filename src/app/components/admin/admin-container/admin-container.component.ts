@@ -8,7 +8,7 @@ import { Sort } from '@angular/material/sort';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Observable, Subject } from 'rxjs';
-import { map, tap, takeUntil } from 'rxjs/operators';
+import { map, tap, take, takeUntil } from 'rxjs/operators';
 import { PermissionService } from 'src/app/generated/blueprint.api/api/api';
 import {
   Permission,
@@ -24,6 +24,8 @@ import {
   Theme,
 } from '@cmusei/crucible-common';
 import { ApplicationArea, SignalRService } from 'src/app/services/signalr.service';
+import { environment } from 'src/environments/environment';
+import { HealthCheckService } from 'src/app/generated/blueprint.api/api/api';
 
 @Component({
   selector: 'app-admin-container',
@@ -56,6 +58,8 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
   topbarTextColor = '#FFFFFF';
   topbarImage = this.settingsService.settings.AppTopBarImage;
   theme$: Observable<Theme>;
+  uiVersion = environment.VERSION;
+  apiVersion = 'API ERROR!';
   private unsubscribe$ = new Subject();
 
   constructor(
@@ -63,6 +67,7 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
     private teamDataService: TeamDataService,
     private userDataService: UserDataService,
     activatedRoute: ActivatedRoute,
+    private healthCheckService: HealthCheckService,
     private permissionService: PermissionService,
     private settingsService: ComnSettingsService,
     private authQuery: ComnAuthQuery,
@@ -114,6 +119,7 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
     const appTitle = this.settingsService.settings.AppTitle || 'Set AppTitle in Settings';
     titleService.setTitle(appTitle + ' - Admin');
     this.topbarText = this.settingsService.settings.AppTopBarText || this.topbarText;
+    this.getApiVersion();
   }
 
   ngOnInit() {
@@ -189,6 +195,20 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
     } catch (e) {
       return true;
     }
+  }
+
+  getApiVersion() {
+    this.healthCheckService
+      .getVersion()
+      .pipe(take(1))
+      .subscribe(
+        (message) => {
+          this.apiVersion = message;
+        },
+        (error) => {
+          this.apiVersion = 'API ERROR!';
+        }
+      );
   }
 
   ngOnDestroy() {
