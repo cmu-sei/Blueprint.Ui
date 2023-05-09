@@ -58,6 +58,21 @@
   width: 100%;
 }
 
+.app-versions {
+  width: 100%;
+  position: absolute;
+  bottom: 0;
+  padding-bottom: 5px;
+  padding-top: 5px;
+  text-align: center;
+  font-size: x-small;
+  border-bottom: 1px;
+  border-bottom-style: solid;
+  border-top: 1px;
+  border-top-style: solid;
+  border-color: lightgray;
+}
+
 .icon-text {
   margin-left: 10px;
   font-family: open_sansbold;

@@ -3,6 +3,7 @@
 // project root for license information or contact permission@sei.cmu.edu for full terms.
 
 export const environment = {
-  production: true
+  production: true,
+  VERSION: require('../../package.json').version,
 };
 
