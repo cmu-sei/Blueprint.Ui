@@ -19,6 +19,7 @@ import {
   Msel,
   Team
 } from 'src/app/generated/blueprint.api';
+import { MoveDataService } from 'src/app/data/move/move-data.service';
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { ApplicationArea, SignalRService } from 'src/app/services/signalr.service';
@@ -66,6 +67,7 @@ export class HomeAppComponent implements OnDestroy, OnInit {
     private userDataService: UserDataService,
     private settingsService: ComnSettingsService,
     private authQuery: ComnAuthQuery,
+    private moveDataService: MoveDataService,
     private mselDataService: MselDataService,
     private mselQuery: MselQuery,
     private signalRService: SignalRService,
@@ -130,6 +132,8 @@ export class HomeAppComponent implements OnDestroy, OnInit {
       .catch((err) => {
         console.log(err);
       });
+    // load the MSELs moves
+    this.moveDataService.loadByMsel(this.selectedMselId);
   }
 
   logout() {
