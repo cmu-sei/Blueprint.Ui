@@ -125,7 +125,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                     (valueChange)="saveDataValueArray(item, df.name, $event)"
                     class="header-dropdown"
                     placeholder="None"
-                    [(ngModel)]="getDataValue(item, df.name).valueArray"
+                    [value]="getDataValue(item, df.name).valueArray"
                   >
                   <mat-option value="None">None</mat-option>
                   <mat-option value="ALL">ALL</mat-option>

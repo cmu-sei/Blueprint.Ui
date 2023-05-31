@@ -282,11 +282,10 @@ export class ScenarioEventListComponent implements OnDestroy {
     if (!dataFieldId) {
       return this.blankDataValue;
     }
-    const dataValue = this.dataValues.find(dv => dv.dataFieldId === dataFieldId && dv.scenarioEventId === scenarioEvent.id);
-    if (dataFieldName === 'Move') {
-      console.log('Move = ' + dataValue.value);
-    }
-    return dataValue ? dataValue as DataValuePlus : this.blankDataValue;
+    const dataValuePlus = this.dataValues.find(dv =>
+      dv.dataFieldId === dataFieldId && dv.scenarioEventId === scenarioEvent.id) as DataValuePlus;
+    dataValuePlus.valueArray = dataValuePlus.value.split(', ');
+    return dataValuePlus ? dataValuePlus : this.blankDataValue;
   }
 
   getDataFieldIdByName(scenarioEvent: ScenarioEventPlus, name: string): string {
