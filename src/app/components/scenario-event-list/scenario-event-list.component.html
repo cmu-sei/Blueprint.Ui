@@ -175,7 +175,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
               <!-- datetime value -->
               <td *ngIf="df.dataType.toString() === 'DateTime'">
                 <div class="constrainer" [style]="getStyle(df)">
-                  {{ getScenarioEventValue(item, df.name) | date :'MM/dd/yyyy HH:mm'}}
+                  {{ getScenarioEventDateValue(item, df.name) }}
                 </div>
               </td>
               <!-- User value -->

@@ -588,6 +588,20 @@ export class ScenarioEventListComponent implements OnDestroy {
     return dataValue && dataValue.value != null ? dataValue.value : ' ';
   }
 
+  getScenarioEventDateValue(scenarioEvent: ScenarioEvent, columnName: string) {
+    if (!(this.msel && scenarioEvent && scenarioEvent.id)) {
+      return '';
+    }
+    const dataField = this.allDataFields.find(df => df.name === columnName);
+    if (!dataField) {
+      return '';
+    }
+    const dataValue = this.dataValues.find(dv => dv.dataFieldId === dataField.id && dv.scenarioEventId === scenarioEvent.id);
+    const dateValue = dataValue && dataValue.value != null ? dataValue.value : ' ';
+    const formattedValue = dateValue ? new Date(dateValue).toLocaleString() : ' ';
+    return formattedValue;
+  }
+
   ngOnDestroy() {
     this.unsubscribe$.next(null);
     this.unsubscribe$.complete();
