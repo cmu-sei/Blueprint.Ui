@@ -260,7 +260,6 @@ export class ScenarioEventListComponent implements OnDestroy {
   }
 
   scroll(id) {
-    console.log(`scrolling to ${id}`);
     const el = document.getElementById(id);
     el.scrollIntoView();
   }
@@ -282,11 +281,12 @@ export class ScenarioEventListComponent implements OnDestroy {
     if (!dataFieldId) {
       return this.blankDataValue;
     }
-    const dataValue = this.dataValues.find(dv => dv.dataFieldId === dataFieldId && dv.scenarioEventId === scenarioEvent.id);
-    if (dataFieldName === 'Move') {
-      console.log('Move = ' + dataValue.value);
+    const dataValuePlus = this.dataValues.find(dv =>
+      dv.dataFieldId === dataFieldId && dv.scenarioEventId === scenarioEvent.id) as DataValuePlus;
+    if (dataValuePlus && dataValuePlus) {
+      dataValuePlus.valueArray = dataValuePlus.value ? dataValuePlus.value.split(', ') : [];
     }
-    return dataValue ? dataValue as DataValuePlus : this.blankDataValue;
+    return dataValuePlus ? dataValuePlus : this.blankDataValue;
   }
 
   getDataFieldIdByName(scenarioEvent: ScenarioEventPlus, name: string): string {
@@ -586,6 +586,20 @@ export class ScenarioEventListComponent implements OnDestroy {
     }
     const dataValue = this.dataValues.find(dv => dv.dataFieldId === dataField.id && dv.scenarioEventId === scenarioEvent.id);
     return dataValue && dataValue.value != null ? dataValue.value : ' ';
+  }
+
+  getScenarioEventDateValue(scenarioEvent: ScenarioEvent, columnName: string) {
+    if (!(this.msel && scenarioEvent && scenarioEvent.id)) {
+      return '';
+    }
+    const dataField = this.allDataFields.find(df => df.name === columnName);
+    if (!dataField) {
+      return '';
+    }
+    const dataValue = this.dataValues.find(dv => dv.dataFieldId === dataField.id && dv.scenarioEventId === scenarioEvent.id);
+    const dateValue = dataValue && dataValue.value != null ? dataValue.value : ' ';
+    const formattedValue = dateValue ? new Date(dateValue).toLocaleString() : ' ';
+    return formattedValue;
   }
 
   ngOnDestroy() {

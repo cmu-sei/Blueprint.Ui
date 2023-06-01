@@ -125,7 +125,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                     (valueChange)="saveDataValueArray(item, df.name, $event)"
                     class="header-dropdown"
                     placeholder="None"
-                    [(ngModel)]="getDataValue(item, df.name).valueArray"
+                    [value]="getDataValue(item, df.name).valueArray"
                   >
                   <mat-option value="None">None</mat-option>
                   <mat-option value="ALL">ALL</mat-option>
@@ -175,7 +175,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
               <!-- datetime value -->
               <td *ngIf="df.dataType.toString() === 'DateTime'">
                 <div class="constrainer" [style]="getStyle(df)">
-                  {{ getScenarioEventValue(item, df.name) | date :'MM/dd/yyyy HH:mm'}}
+                  {{ getScenarioEventDateValue(item, df.name) }}
                 </div>
               </td>
               <!-- User value -->

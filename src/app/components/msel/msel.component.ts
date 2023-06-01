@@ -11,6 +11,7 @@ import {
 import {
   Msel
 } from 'src/app/generated/blueprint.api';
+import { MoveDataService } from 'src/app/data/move/move-data.service';
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { MatLegacyTabGroup as MatTabGroup, MatLegacyTab as MatTab } from '@angular/material/legacy-tabs';
@@ -38,6 +39,7 @@ export class MselComponent implements OnDestroy, AfterViewInit {
   constructor(
     private activatedRoute: ActivatedRoute,
     private router: Router,
+    private moveDataService: MoveDataService,
     private mselDataService: MselDataService,
     private mselQuery: MselQuery,
     private changeDetectorRef: ChangeDetectorRef,
@@ -52,6 +54,8 @@ export class MselComponent implements OnDestroy, AfterViewInit {
         // load the selected MSEL and make it active
         this.mselDataService.loadById(mselId);
         this.mselDataService.setActive(mselId);
+        // load the MSELs moves
+        this.moveDataService.loadByMsel(mselId);
       }
       this.section = params.get('section');
       this.setTabBySection();

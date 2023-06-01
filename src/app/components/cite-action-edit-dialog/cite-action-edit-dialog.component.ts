@@ -12,6 +12,7 @@ import {
 import { ErrorStateMatcher } from '@angular/material/core';
 import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
+import { MoveQuery } from 'src/app/data/move/move.query';
 
 /** Error when invalid control is dirty, touched, or submitted. */
 export class UserErrorStateMatcher implements ErrorStateMatcher {
@@ -32,10 +33,12 @@ export class UserErrorStateMatcher implements ErrorStateMatcher {
 
 export class CiteActionEditDialogComponent {
   @Output() editComplete = new EventEmitter<any>();
+  moveList = this.moveQuery.getAll().sort((a, b) => +a.moveNumber < +b.moveNumber ? -1 : 1);
 
   constructor(
     public dialogService: DialogService,
     dialogRef: MatDialogRef<CiteActionEditDialogComponent>,
+    private moveQuery: MoveQuery,
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {
     dialogRef.disableClose = true;
