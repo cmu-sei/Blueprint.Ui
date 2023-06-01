@@ -221,6 +221,22 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   </mat-select>
                 </div>
               </td>
+              <!-- Move value -->
+              <td *ngIf="df.dataType.toString() === 'Move'">
+                <div class="constrainer" [style]="getStyle(df)">
+                  <mat-select
+                    *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, item.id).owner"
+                    [(ngModel)]="getDataValue(item, df.name).value"
+                    (click)="$event.stopPropagation()"
+                    (valueChange)="saveDataValue(item, df.name, $event)"
+                    class="header-dropdown"
+                    placeholder="Move"
+                  >
+                    <mat-option value="''"> - - - </mat-option>
+                    <mat-option *ngFor="let move of moveList" [value]="move.moveNumber">{{ move.moveNumber }}</mat-option>
+                  </mat-select>
+                </div>
+              </td>
               <!-- other values -->
               <td *ngIf="df.dataType.toString() !== 'Html' &&
                           df.dataType.toString() !== 'Organization' &&
@@ -230,6 +246,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                           df.dataType.toString() !== 'Status' &&
                           df.dataType.toString() !== 'User' &&
                           df.dataType.toString() !== 'Card' &&
+                          df.dataType.toString() !== 'Move' &&
                           df.dataType.toString() !== 'Checkbox'">
                 <div class="constrainer" [style]="getStyle(df)">
                   {{ getScenarioEventValue(item, df.name) }}

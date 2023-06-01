@@ -18,6 +18,7 @@ import {
   DataFieldType,
   DataValue,
   ItemStatus,
+  Move,
   MselRole,
   Organization,
   ScenarioEvent,
@@ -30,6 +31,7 @@ import { MselQuery } from 'src/app/data/msel/msel.query';
 import { Sort } from '@angular/material/sort';
 import { MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy-menu';
 import { CardQuery } from 'src/app/data/card/card.query';
+import { MoveQuery } from 'src/app/data/move/move.query';
 import { OrganizationDataService } from 'src/app/data/organization/organization-data.service';
 import { OrganizationQuery } from 'src/app/data/organization/organization.query';
 import { ScenarioEventDataService, ScenarioEventPlus, DataValuePlus } from 'src/app/data/scenario-event/scenario-event-data.service';
@@ -91,6 +93,7 @@ export class ScenarioEventListComponent implements OnDestroy {
   darkThemeTint = this.settingsService.settings.DarkThemeTint ? this.settingsService.settings.DarkThemeTint : 0.7;
   lightThemeTint = this.settingsService.settings.LightThemeTint ? this.settingsService.settings.LightThemeTint : 0.4;
   cardList: Card[] = [];
+  moveList: Move[] = [];
   teamList: Team[] = [];
 
   constructor(
@@ -99,6 +102,7 @@ export class ScenarioEventListComponent implements OnDestroy {
     private userDataService: UserDataService,
     private settingsService: ComnSettingsService,
     private cardQuery: CardQuery,
+    private moveQuery: MoveQuery,
     private mselDataService: MselDataService,
     private mselQuery: MselQuery,
     private organizationQuery: OrganizationQuery,
@@ -170,7 +174,11 @@ export class ScenarioEventListComponent implements OnDestroy {
     this.cardQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(cards => {
       this.cardList = cards;
     });
-    // observe the Cards
+    // observe the Moves
+    this.moveQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(moves => {
+      this.moveList = moves.sort((a, b) => +a.moveNumber < +b.moveNumber ? -1 : 1);
+    });
+    // observe the Teams
     this.teamQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(teams => {
       this.teamList = teams;
     });
@@ -429,6 +437,7 @@ export class ScenarioEventListComponent implements OnDestroy {
         dataFields: this.allDataFields,
         organizationList: this.getSortedOrganizationOptions(),
         teamList: this.teamList,
+        moveList: this.moveList,
         cardList: this.cardList,
         gallerySourceTypes: this.msel.gallerySourceTypes,
         isNew: this.isAddingScenarioEvent,

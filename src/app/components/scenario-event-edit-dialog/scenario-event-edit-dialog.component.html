@@ -184,6 +184,18 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <mat-option *ngFor="let card of data.cardList" [value]="card.id">{{ card.name }}</mat-option>
           </mat-select>
         </mat-form-field>
+        <!-- Move input -->
+        <mat-form-field *ngIf="!df.isChosenFromList && df.dataType === dataType.Move" class="full-width">
+          <mat-label>{{ df.name }}</mat-label>
+          <mat-select
+            placeholder="{{ df.name }}"
+            [(ngModel)]="getDataValue(df.name).value"
+            [disabled]="!data.isEditor"
+          >
+            <mat-option value="''"> - - - </mat-option>
+            <mat-option *ngFor="let move of data.moveList" [value]="move.moveNumber">{{ move.moveNumber }}</mat-option>
+          </mat-select>
+        </mat-form-field>
         <!-- SourceType input -->
         <mat-form-field *ngIf="!df.isChosenFromList && df.dataType === dataType.SourceType" class="full-width">
           <mat-label>{{ df.name }}</mat-label>
