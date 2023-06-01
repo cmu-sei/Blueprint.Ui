@@ -73,13 +73,15 @@ export class MselInfoComponent implements OnDestroy {
   ) {
     // subscribe to the active MSEL
     (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
-      if (msel && (!this.msel || this.msel.id !== msel.id)) {
+      if (msel) {
         Object.assign(this.originalMsel, msel);
         Object.assign(this.msel, msel);
-        this.sortedDataFields = this.getSortedDataFields(msel.dataFields);
-        this.viewUrl = window.location.origin + '/msel/' + this.msel.id + '/view';
-        this.mselPageDataService.loadByMsel(msel.id);
-        this.newMselPage.mselId = msel.id;
+        if (!this.msel || this.msel.id !== msel.id) {
+          this.sortedDataFields = this.getSortedDataFields(msel.dataFields);
+          this.viewUrl = window.location.origin + '/msel/' + this.msel.id + '/view';
+          this.mselPageDataService.loadByMsel(msel.id);
+          this.newMselPage.mselId = msel.id;
+        }
       }
     });
     // subscribe to users

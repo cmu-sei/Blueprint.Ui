@@ -126,6 +126,10 @@ export class HomeAppComponent implements OnDestroy, OnInit {
       .startConnection(ApplicationArea.home)
       .then(() => {
         this.signalRService.join();
+        if (this.selectedMselId) {
+          // join signalR for this MSEL
+          setTimeout(() => this.signalRService.selectMsel(this.selectedMselId), 1000);
+        }
       })
       .catch((err) => {
         console.log(err);

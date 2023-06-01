@@ -107,6 +107,12 @@ export class SignalRService {
     this.isJoined = false;
   }
 
+  public selectMsel(mselId: string) {
+    if (this.isJoined && this.applicationArea !== ApplicationArea.admin) {
+      this.hubConnection.invoke('selectMsel', [mselId]);
+    }
+  }
+
   private addHandlers() {
     this.addDataFieldHandlers();
     this.addDataOptionHandlers();
@@ -125,7 +131,6 @@ export class SignalRService {
   private addDataFieldHandlers() {
     this.hubConnection.on(
       'DataFieldUpdated', (dataField: DataField) => {
-        console.log('DataField updated');
         this.dataFieldDataService.updateStore(dataField);
       }
     );
@@ -158,7 +163,6 @@ export class SignalRService {
   private addDataValueHandlers() {
     this.hubConnection.on(
       'DataValueUpdated', (dataValue: DataValue) => {
-        console.log('DataValue updated');
         this.dataValueDataService.updateStore(dataValue);
       }
     );
@@ -175,7 +179,6 @@ export class SignalRService {
   private addMoveHandlers() {
     this.hubConnection.on(
       'MoveUpdated', (move: Move) => {
-        console.log('Move updated');
         this.moveDataService.updateStore(move);
       }
     );
@@ -224,7 +227,6 @@ export class SignalRService {
   private addOrganizationHandlers() {
     this.hubConnection.on(
       'OrganizationUpdated', (organization: Organization) => {
-        console.log('Organization updated');
         this.organizationDataService.updateStore(organization);
       }
     );
@@ -240,7 +242,6 @@ export class SignalRService {
 
   private addScenarioEventHandlers() {
     this.hubConnection.on('ScenarioEventUpdated', (scenarioEvent: ScenarioEvent) => {
-      console.log('ScenarioEvent updated');
       this.scenarioEventDataService.updateStore(scenarioEvent);
     }
     );
@@ -256,7 +257,6 @@ export class SignalRService {
 
   private addTeamHandlers() {
     this.hubConnection.on('TeamUpdated', (team: Team) => {
-      console.log('Team updated');
       this.teamDataService.updateStore(team);
     }
     );
@@ -302,7 +302,6 @@ export class SignalRService {
 
   private addUserMselRoleHandlers() {
     this.hubConnection.on('UserMselRoleCreated', (userMselRole: UserMselRole) => {
-      console.log('UserMselRole updated');
       this.userMselRoleDataService.updateStore(userMselRole);
     });
 
@@ -314,7 +313,6 @@ export class SignalRService {
   private reconnect() {
     if (this.hubConnection != null) {
       this.hubConnection.stop().then(() => {
-        console.log('Reconnecting to the hub.');
         this.connectionPromise = this.hubConnection.start();
         this.connectionPromise.then(() => this.join());
       });

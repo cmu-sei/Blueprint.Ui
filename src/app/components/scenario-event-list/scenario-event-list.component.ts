@@ -260,7 +260,6 @@ export class ScenarioEventListComponent implements OnDestroy {
   }
 
   scroll(id) {
-    console.log(`scrolling to ${id}`);
     const el = document.getElementById(id);
     el.scrollIntoView();
   }
@@ -284,7 +283,9 @@ export class ScenarioEventListComponent implements OnDestroy {
     }
     const dataValuePlus = this.dataValues.find(dv =>
       dv.dataFieldId === dataFieldId && dv.scenarioEventId === scenarioEvent.id) as DataValuePlus;
-    dataValuePlus.valueArray = dataValuePlus.value.split(', ');
+    if (dataValuePlus && dataValuePlus) {
+      dataValuePlus.valueArray = dataValuePlus.value ? dataValuePlus.value.split(', ') : [];
+    }
     return dataValuePlus ? dataValuePlus : this.blankDataValue;
   }
 

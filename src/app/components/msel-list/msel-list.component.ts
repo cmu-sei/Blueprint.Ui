@@ -12,7 +12,7 @@ import {
   ComnSettingsService,
 } from '@cmusei/crucible-common';
 import { UserDataService } from 'src/app/data/user/user-data.service';
-
+import { SignalRService } from 'src/app/services/signalr.service';
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
@@ -45,7 +45,8 @@ export class MselListComponent implements OnDestroy  {
     private userDataService: UserDataService,
     private settingsService: ComnSettingsService,
     private mselDataService: MselDataService,
-    private mselQuery: MselQuery
+    private mselQuery: MselQuery,
+    private signalRService: SignalRService
   ) {
     // subscribe to MSELs loading
     this.mselQuery.selectLoading().pipe(takeUntil(this.unsubscribe$)).subscribe((isLoading) => {
@@ -67,6 +68,8 @@ export class MselListComponent implements OnDestroy  {
   }
 
   openMsel(mselId, section) {
+    // join signalR for this MSEL
+    this.signalRService.selectMsel(mselId);
     this.router.navigate([], {
       queryParams: { msel: mselId, section: section },
       queryParamsHandling: 'merge',
@@ -130,7 +133,6 @@ export class MselListComponent implements OnDestroy  {
       },
       () => {
         this.isReady = true;
-        console.log('Got a next value');
       }
     );
   }
