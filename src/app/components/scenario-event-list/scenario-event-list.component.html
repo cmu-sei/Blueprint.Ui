@@ -165,7 +165,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                     class="header-dropdown"
                     placeholder="None"
                   >
-                    <mat-option *ngFor="let team of msel.teams" [value]="team.shortName">
+                    <mat-option *ngFor="let team of teamList" [value]="team.shortName">
                       {{ team.shortName }}
                     </mat-option>
                   </mat-select>
@@ -205,6 +205,22 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   ></mat-checkbox>
                 </div>
               </td>
+              <!-- Card value -->
+              <td *ngIf="df.dataType.toString() === 'Card'">
+                <div class="constrainer" [style]="getStyle(df)">
+                  <mat-select
+                    *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, item.id).owner"
+                    [(ngModel)]="getDataValue(item, df.name).value"
+                    (click)="$event.stopPropagation()"
+                    (valueChange)="saveDataValue(item, df.name, $event)"
+                    class="header-dropdown"
+                    placeholder="Gallery Card"
+                  >
+                    <mat-option value="''"> - - - </mat-option>
+                    <mat-option *ngFor="let card of cardList" [value]="card.id">{{ card.name }}</mat-option>
+                  </mat-select>
+                </div>
+              </td>
               <!-- other values -->
               <td *ngIf="df.dataType.toString() !== 'Html' &&
                           df.dataType.toString() !== 'Organization' &&
@@ -213,6 +229,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                           df.dataType.toString() !== 'DateTime' &&
                           df.dataType.toString() !== 'Status' &&
                           df.dataType.toString() !== 'User' &&
+                          df.dataType.toString() !== 'Card' &&
                           df.dataType.toString() !== 'Checkbox'">
                 <div class="constrainer" [style]="getStyle(df)">
                   {{ getScenarioEventValue(item, df.name) }}

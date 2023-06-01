@@ -13,6 +13,7 @@ import {
 } from '@cmusei/crucible-common';
 import { UserDataService } from 'src/app/data/user/user-data.service';
 import {
+  Card,
   DataField,
   DataFieldType,
   DataValue,
@@ -20,6 +21,7 @@ import {
   MselRole,
   Organization,
   ScenarioEvent,
+  Team,
   User
 } from 'src/app/generated/blueprint.api';
 import { MselPlus } from 'src/app/data/msel/msel-data.service';
@@ -27,6 +29,7 @@ import { MselDataService } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { Sort } from '@angular/material/sort';
 import { MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy-menu';
+import { CardQuery } from 'src/app/data/card/card.query';
 import { OrganizationDataService } from 'src/app/data/organization/organization-data.service';
 import { OrganizationQuery } from 'src/app/data/organization/organization.query';
 import { ScenarioEventDataService, ScenarioEventPlus, DataValuePlus } from 'src/app/data/scenario-event/scenario-event-data.service';
@@ -39,6 +42,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { DataFieldQuery } from 'src/app/data/data-field/data-field.query';
 import { DataFieldDataService } from 'src/app/data/data-field/data-field-data.service';
 import { DataOptionDataService } from 'src/app/data/data-option/data-option-data.service';
+import { TeamQuery } from 'src/app/data/team/team.query';
 
 @Component({
   selector: 'app-scenario-event-list',
@@ -86,12 +90,15 @@ export class ScenarioEventListComponent implements OnDestroy {
   scenarioEventBackgroundColors: Array<string>;
   darkThemeTint = this.settingsService.settings.DarkThemeTint ? this.settingsService.settings.DarkThemeTint : 0.7;
   lightThemeTint = this.settingsService.settings.LightThemeTint ? this.settingsService.settings.LightThemeTint : 0.4;
+  cardList: Card[] = [];
+  teamList: Team[] = [];
 
   constructor(
     activatedRoute: ActivatedRoute,
     private router: Router,
     private userDataService: UserDataService,
     private settingsService: ComnSettingsService,
+    private cardQuery: CardQuery,
     private mselDataService: MselDataService,
     private mselQuery: MselQuery,
     private organizationQuery: OrganizationQuery,
@@ -104,7 +111,8 @@ export class ScenarioEventListComponent implements OnDestroy {
     private dataOptionDataService: DataOptionDataService,
     private dataValueDataService: DataValueDataService,
     private dataValueQuery: DataValueQuery,
-    private organizationDataService: OrganizationDataService
+    private organizationDataService: OrganizationDataService,
+    private teamQuery: TeamQuery
   ) {
     // subscribe to route changes
     activatedRoute.queryParamMap.pipe(takeUntil(this.unsubscribe$)).subscribe(params => {
@@ -157,6 +165,14 @@ export class ScenarioEventListComponent implements OnDestroy {
     // subscribe to organizations
     this.organizationQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(organizations => {
       this.organizationList = organizations.filter(org => !org.isTemplate && org.mselId === this.msel.id);
+    });
+    // observe the Cards
+    this.cardQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(cards => {
+      this.cardList = cards;
+    });
+    // observe the Cards
+    this.teamQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(teams => {
+      this.teamList = teams;
     });
   }
 
@@ -218,7 +234,7 @@ export class ScenarioEventListComponent implements OnDestroy {
 
   getMselUsers(): User[] {
     let users = [];
-    this.msel.teams.forEach(team => {
+    this.teamList.forEach(team => {
       team.users.forEach(user => {
         users.push({... user});
       });
@@ -243,7 +259,7 @@ export class ScenarioEventListComponent implements OnDestroy {
     this.organizationList.forEach(o => {
       orgs.push(o.shortName);
     });
-    this.msel.teams.forEach(t => {
+    this.teamList.forEach(t => {
       orgs.push(t.shortName);
     });
     orgs = orgs.sort((a, b) => a < b ? -1 : 1);
@@ -252,7 +268,7 @@ export class ScenarioEventListComponent implements OnDestroy {
 
   getSortedTeamOptions(): string[] {
     let orgs: string[] = [];
-    this.msel.teams.forEach(t => {
+    this.teamList.forEach(t => {
       orgs.push(t.shortName);
     });
     orgs = orgs.sort((a, b) => a < b ? -1 : 1);
@@ -314,7 +330,7 @@ export class ScenarioEventListComponent implements OnDestroy {
     if (!teamId) {
       return '';
     }
-    const team = this.msel.teams.find(t => t.id === teamId);
+    const team = this.teamList.find(t => t.id === teamId);
     return team ? team.shortName : '';
   }
 
@@ -412,8 +428,8 @@ export class ScenarioEventListComponent implements OnDestroy {
         scenarioEvent: scenarioEvent,
         dataFields: this.allDataFields,
         organizationList: this.getSortedOrganizationOptions(),
-        teamList: this.msel.teams,
-        cardList: this.msel.cards,
+        teamList: this.teamList,
+        cardList: this.cardList,
         gallerySourceTypes: this.msel.gallerySourceTypes,
         isNew: this.isAddingScenarioEvent,
         isOwner: isOwner,

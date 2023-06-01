@@ -11,6 +11,7 @@ import {
 import {
   Msel
 } from 'src/app/generated/blueprint.api';
+import { CardDataService } from 'src/app/data/card/card-data.service';
 import { MoveDataService } from 'src/app/data/move/move-data.service';
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
@@ -39,6 +40,7 @@ export class MselComponent implements OnDestroy, AfterViewInit {
   constructor(
     private activatedRoute: ActivatedRoute,
     private router: Router,
+    private cardDataService: CardDataService,
     private moveDataService: MoveDataService,
     private mselDataService: MselDataService,
     private mselQuery: MselQuery,
@@ -56,6 +58,8 @@ export class MselComponent implements OnDestroy, AfterViewInit {
         this.mselDataService.setActive(mselId);
         // load the MSELs moves
         this.moveDataService.loadByMsel(mselId);
+        // load the gallery cards
+        this.cardDataService.loadByMsel(mselId);
       }
       this.section = params.get('section');
       this.setTabBySection();
