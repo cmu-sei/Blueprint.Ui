@@ -17,7 +17,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
  */
 
 
-export type DataFieldType = 'String' | 'Integer' | 'Double' | 'Boolean' | 'DateTime' | 'Html' | 'Organization' | 'Card' | 'SourceType' | 'Status' | 'Team' | 'TeamsMultiple' | 'Checkbox' | 'User' | 'Url';
+export type DataFieldType = 'String' | 'Integer' | 'Double' | 'Boolean' | 'DateTime' | 'Html' | 'Organization' | 'Card' | 'Move' | 'SourceType' | 'Status' | 'Team' | 'TeamsMultiple' | 'Checkbox' | 'User' | 'Url';
 
 export const DataFieldType = {
     String: 'String' as DataFieldType,
@@ -28,6 +28,7 @@ export const DataFieldType = {
     Html: 'Html' as DataFieldType,
     Organization: 'Organization' as DataFieldType,
     Card: 'Card' as DataFieldType,
+    Move: 'Move' as DataFieldType,
     SourceType: 'SourceType' as DataFieldType,
     Status: 'Status' as DataFieldType,
     Team: 'Team' as DataFieldType,
@@ -35,5 +36,5 @@ export const DataFieldType = {
     Checkbox: 'Checkbox' as DataFieldType,
     User: 'User' as DataFieldType,
     Url: 'Url' as DataFieldType,
-    keys: ['Card', 'Boolean', 'DateTime', 'Double', 'Html', 'Integer', 'Organization', 'SourceType', 'Status', 'String', 'Team', 'TeamsMultiple', 'Checkbox', 'User', 'Url']
+    keys: ['Card', 'Boolean', 'DateTime', 'Double', 'Html', 'Integer', 'Move', 'Organization', 'SourceType', 'Status', 'String', 'Team', 'TeamsMultiple', 'Checkbox', 'User', 'Url']
 };
