@@ -83,10 +83,12 @@ export class ScenarioEventListComponent implements OnDestroy {
   mselUsers: User[] = [];
   blankDataValue = {
     id: '',
+    scenarioEventId: '',
+    dataFieldId: '',
     value: '',
     valueArray: []
   } as DataValuePlus;
-  // context menu
+// context menu
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
   contextMenuPosition = { x: '0px', y: '0px' };
   scenarioEventBackgroundColors: Array<string>;
@@ -297,6 +299,30 @@ export class ScenarioEventListComponent implements OnDestroy {
     }
   }
 
+  blankDataValuePlus(): DataValuePlus {
+    const bdvp = {
+      id: '',
+      scenarioEventId: '',
+      dataFieldId: '',
+      value: '',
+      valueArray: []
+    } as DataValuePlus;
+
+    return bdvp;
+  }
+
+  newDataValuePlus(scenarioEventId: string, dataFieldId: string): DataValuePlus {
+    const ndvp = {
+      id: uuidv4(),
+      scenarioEventId: scenarioEventId,
+      dataFieldId: dataFieldId,
+      value: '',
+      valueArray: []
+    } as DataValuePlus;
+
+    return ndvp;
+  }
+
   getDataValue(scenarioEvent: ScenarioEventPlus, dataFieldName: string): DataValuePlus {
     if (!(this.msel && scenarioEvent && scenarioEvent.id)) {
       return this.blankDataValue;
@@ -305,12 +331,14 @@ export class ScenarioEventListComponent implements OnDestroy {
     if (!dataFieldId) {
       return this.blankDataValue;
     }
-    const dataValuePlus = this.dataValues.find(dv =>
+    let dataValuePlus = this.dataValues.find(dv =>
       dv.dataFieldId === dataFieldId && dv.scenarioEventId === scenarioEvent.id) as DataValuePlus;
-    if (dataValuePlus && dataValuePlus) {
+    if (dataValuePlus) {
       dataValuePlus.valueArray = dataValuePlus.value ? dataValuePlus.value.split(', ') : [];
+    } else {
+      dataValuePlus = this.blankDataValue;
     }
-    return dataValuePlus ? dataValuePlus : this.blankDataValue;
+    return dataValuePlus;
   }
 
   getDataFieldIdByName(scenarioEvent: ScenarioEventPlus, name: string): string {
@@ -399,11 +427,15 @@ export class ScenarioEventListComponent implements OnDestroy {
   editScenarioEvent(scenarioEvent: ScenarioEvent) {
     const editScenarioEvent = {... scenarioEvent};
     editScenarioEvent.dataValues = [];
-    this.dataValues
-      .filter(dv => dv.scenarioEventId === scenarioEvent.id)
-      .forEach(dv => {
-        editScenarioEvent.dataValues.push({ ...dv });
-      });
+    const seDataValues = this.dataValues
+      .filter(dv => dv.scenarioEventId === scenarioEvent.id);
+    this.allDataFields.forEach(df => {
+      let dataValue = seDataValues.find(dv => dv.dataFieldId === df.id);
+      if (!dataValue) {
+        dataValue = this.newDataValuePlus(scenarioEvent.id, df.id);
+      }
+      editScenarioEvent.dataValues.push({ ...dataValue });
+    });
     this.displayEditDialog(editScenarioEvent);
   }
 
@@ -481,17 +513,36 @@ export class ScenarioEventListComponent implements OnDestroy {
   }
 
   saveDataValue(scenarioEvent: ScenarioEventPlus, dataFieldName: string, newValue: string) {
-    this.getDataValue(scenarioEvent, dataFieldName).value = newValue;
-    this.dataValueDataService.updateDataValue(this.getDataValue(scenarioEvent, dataFieldName));
+    let dataValue = this.getDataValue(scenarioEvent, dataFieldName);
+    if (!dataValue || !dataValue.id) {
+      // the dataValue doesn't exist, so create a new one
+      const dataFieldId = this.allDataFields.find(df => df.name === dataFieldName).id;
+      dataValue = this.newDataValuePlus(scenarioEvent.id, dataFieldId);
+      dataValue.value = newValue;
+      this.dataValueDataService.add(dataValue);
+    } else {
+      dataValue.value = newValue;
+      this.dataValueDataService.updateDataValue(dataValue);
+    }
   }
 
   saveDataValueArray(scenarioEvent: ScenarioEventPlus, dataFieldName: string, newValues: string[]) {
     if (newValues.includes('None')) {
       newValues = new Array();
     }
-    this.getDataValue(scenarioEvent, dataFieldName).value = newValues.join(', ');
-    this.getDataValue(scenarioEvent, dataFieldName).valueArray = newValues;
-    this.dataValueDataService.updateDataValue(this.getDataValue(scenarioEvent, dataFieldName));
+    let dataValue = this.getDataValue(scenarioEvent, dataFieldName);
+    if (!dataValue || !dataValue.id) {
+      // the dataValue doesn't exist, so create a new one
+      const dataFieldId = this.allDataFields.find(df => df.name === dataFieldName).id;
+      dataValue = this.newDataValuePlus(scenarioEvent.id, dataFieldId);
+      dataValue.value = newValues.join(', ');
+      dataValue.valueArray = newValues;
+      this.dataValueDataService.add(dataValue);
+    } else {
+      dataValue.value = newValues.join(', ');
+      dataValue.valueArray = newValues;
+      this.dataValueDataService.updateDataValue(dataValue);
+    }
   }
 
   saveScenarioEvent(scenarioEvent: ScenarioEvent) {
