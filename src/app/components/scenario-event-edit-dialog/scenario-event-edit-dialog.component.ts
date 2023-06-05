@@ -2,7 +2,6 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 import { Component, EventEmitter, Inject, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
-import { UntypedFormControl } from '@angular/forms';
 import { Subject } from 'rxjs';
 import {
   DataField,
@@ -34,10 +33,6 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
     'overflow': 'auto'
   };
   dataType: typeof DataFieldType = DataFieldType;
-  public scenarioEventTimeFormControls = new UntypedFormControl(
-    this.data.scenarioEvent.dateString,
-    []
-  );
 
   itemStatus: ItemStatus[] = [ItemStatus.Pending, ItemStatus.Entered, ItemStatus.Approved, ItemStatus.Complete];
   mselRole = { Owner: MselRole.Owner, Approver: MselRole.Approver, Editor: MselRole.Editor};

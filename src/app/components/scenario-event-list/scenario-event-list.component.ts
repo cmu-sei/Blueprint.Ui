@@ -674,8 +674,8 @@ export class ScenarioEventListComponent implements OnDestroy {
     }
     const dataValue = this.dataValues.find(dv => dv.dataFieldId === dataField.id && dv.scenarioEventId === scenarioEvent.id);
     const dateValue = dataValue && dataValue.value != null ? dataValue.value : ' ';
-    const formattedValue = dateValue ? new Date(dateValue).toLocaleString() : ' ';
-    return formattedValue;
+    const formattedValue = new Date(dateValue).toLocaleString();
+    return formattedValue === 'Invalid Date' ? ' ' : formattedValue;
   }
 
   ngOnDestroy() {
