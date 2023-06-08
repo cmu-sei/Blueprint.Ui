@@ -209,7 +209,7 @@ export class DataOptionService {
         const consumes: string[] = [
         ];
 
-        return this.httpClient.get<Array<DataOption>>(`${this.configuration.basePath}/api/msels/${encodeURIComponent(String(mselId))}/datafields`,
+        return this.httpClient.get<Array<DataOption>>(`${this.configuration.basePath}/api/msels/${encodeURIComponent(String(mselId))}/dataoptions`,
             {
                 withCredentials: this.configuration.withCredentials,
                 headers: headers,
@@ -259,7 +259,7 @@ export class DataOptionService {
         const consumes: string[] = [
         ];
 
-        return this.httpClient.get<Array<DataOption>>(`${this.configuration.basePath}/api/msels/${encodeURIComponent(String(dataFieldId))}/dataoptions`,
+        return this.httpClient.get<Array<DataOption>>(`${this.configuration.basePath}/api/datafields/${encodeURIComponent(String(dataFieldId))}/dataoptions`,
             {
                 withCredentials: this.configuration.withCredentials,
                 headers: headers,

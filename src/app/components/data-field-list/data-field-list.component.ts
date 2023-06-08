@@ -1,7 +1,7 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, Input, OnDestroy, ViewChild } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -28,7 +28,7 @@ import { v4 as uuidv4 } from 'uuid';
   templateUrl: './data-field-list.component.html',
   styleUrls: ['./data-field-list.component.scss'],
 })
-export class DataFieldListComponent implements OnDestroy, OnInit {
+export class DataFieldListComponent implements OnDestroy {
   @Input() loggedInUserId: string;
   @Input() isContentDeveloper: boolean;
   msel = new MselPlus();
@@ -66,11 +66,6 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
     this.dataFieldQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(dataFields => {
       this.dataFieldList = dataFields;
       this.sortedDataFields = this.getSortedDataFields(this.getFilteredDataFields(this.dataFieldList));
-      dataFields.forEach(df => {
-        if (df.isChosenFromList) {
-          this.dataOptionDataService.loadByDataField(df.id);
-        }
-      });
     });
     // we have to check for the current active msel AND for any future changes
     // set the MSEL values and get the needed info, if there is a current one
@@ -78,12 +73,14 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
     if (msel && (!this.msel || this.msel.id !== msel.id)) {
       Object.assign(this.msel, msel);
       this.dataFieldDataService.loadByMsel(msel.id);
+      this.dataOptionDataService.loadByMsel(msel.id);
     }
     // subscribe to the active MSEL changes to get future changes
     (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(m => {
       if (m && (!this.msel || this.msel.id !== m.id)) {
         Object.assign(this.msel, m);
         this.dataFieldDataService.loadByMsel(m.id);
+        this.dataOptionDataService.loadByMsel(m.id);
       }
     });
     this.filterControl.valueChanges
@@ -92,9 +89,6 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
         this.filterString = term;
         this.sortedDataFields = this.getSortedDataFields(this.getFilteredDataFields(this.dataFieldList));
       });
-  }
-
-  ngOnInit() {
   }
 
   getSortedDataFields(dataFields: DataField[]) {

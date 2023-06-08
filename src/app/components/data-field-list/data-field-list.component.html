@@ -126,9 +126,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   (click)="addDataOption(changedDataField)"
                   style="outline: none; margin-right: 15px;"
                   title="Add new data option"
+                  [disabled]="isAddingDataField"
                 >
                   <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
                 </button>
+                <span *ngIf="isAddingDataField && changedDataField.isChosenFromList">Save Data Field before adding options.</span>
               </span>
             </div>
           </div>
@@ -248,7 +250,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <div class="mat-cell two-cell center-self">{{ item.name }}</div>
           <div class="mat-cell two-cell center-self">{{ item.dataType }}</div>
           <div class="mat-cell two-cell center-self">
-            {{ item.dataOptions }}
+            <span *ngFor="let dataOption of getDataFieldOptions(item.id)">{{ dataOption.optionName }}, </span>
           </div>
         </mat-expansion-panel-header>
         <ng-template matExpansionPanelContent>
