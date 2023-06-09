@@ -38,6 +38,7 @@ export class CiteActionListComponent implements OnDestroy {
   sortedCiteActions: CiteAction[] = [];
   isAddingCiteAction = false;
   editingId = '';
+  selectedMselId = '';
   selectedMoveNumber = -1;
   selectedTeamId = '';
   teamList: Team[] = [];
@@ -60,9 +61,10 @@ export class CiteActionListComponent implements OnDestroy {
     });
     // subscribe to the active MSEL
     (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
-      if (msel) {
+      if (msel && this.selectedMselId !== msel.id) {
         Object.assign(this.msel, msel);
-        this.citeActionDataService.loadByMsel(msel.id);
+        this.selectedMselId = msel.id;
+        this.sortedCiteActions = this.getSortedCiteActions(this.getFilteredCiteActions(this.citeActionList));
       }
     });
     this.filterControl.valueChanges

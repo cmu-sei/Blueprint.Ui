@@ -76,7 +76,7 @@ export class MselInfoComponent implements OnDestroy {
       if (msel) {
         Object.assign(this.originalMsel, msel);
         Object.assign(this.msel, msel);
-        if (!this.msel || this.msel.id !== msel.id) {
+        if (this.msel.id !== msel.id) {
           this.sortedDataFields = this.getSortedDataFields(msel.dataFields);
           this.viewUrl = window.location.origin + '/msel/' + this.msel.id + '/view';
           this.mselPageDataService.loadByMsel(msel.id);

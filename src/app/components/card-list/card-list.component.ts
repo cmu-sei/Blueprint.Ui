@@ -57,10 +57,9 @@ export class CardListComponent implements OnDestroy {
     });
     // subscribe to the active MSEL
     (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
-      if (msel) {
+      if (msel && this.msel.id !== msel.id) {
         Object.assign(this.msel, msel);
-        this.cardDataService.loadByMsel(msel.id);
-        this.cardTeamDataService.getCardTeamsFromApi(msel.id);
+        this.sortedCards = this.getSortedCards(this.getFilteredCards(this.cardList));
       }
     });
     this.filterControl.valueChanges

@@ -68,9 +68,9 @@ export class OrganizationListComponent implements OnDestroy {
     });
     // subscribe to the active MSEL
     (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
-      if (msel && (!this.msel || this.msel.id !== msel.id)) {
+      if (msel && this.msel.id !== msel.id) {
         Object.assign(this.msel, msel);
-        this.organizationDataService.loadByMsel(msel.id);
+        this.sortChanged(this.sort);
       }
     });
     this.filterControl.valueChanges
@@ -79,8 +79,6 @@ export class OrganizationListComponent implements OnDestroy {
         this.filterString = term;
         this.sortChanged(this.sort);
       });
-    // load the organization templates
-    this.organizationDataService.loadTemplates();
   }
 
   getSortedOrganizations(organizations: Organization[]) {

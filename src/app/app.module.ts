@@ -85,6 +85,7 @@ import { ScenarioEventListComponent } from './components/scenario-event-list/sce
 import { ConfirmDialogComponent } from './components/shared/confirm-dialog/confirm-dialog.component';
 import { SystemMessageComponent } from './components/shared/system-message/system-message.component';
 import { TopbarComponent } from './components/shared/top-bar/topbar.component';
+import { UIDataService } from './data/ui/ui-data.service';
 import { UserDataService } from './data/user/user-data.service';
 import { DialogService } from './services/dialog/dialog.service';
 import { ErrorService } from './services/error/error.service';
@@ -256,6 +257,7 @@ export function getBasePath(settingsSvc: ComnSettingsService) {
   providers: [
     DialogService,
     SystemMessageService,
+    UIDataService,
     UserDataService,
     {
       provide: BASE_PATH,

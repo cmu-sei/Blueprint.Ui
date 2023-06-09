@@ -67,20 +67,11 @@ export class DataFieldListComponent implements OnDestroy {
       this.dataFieldList = dataFields;
       this.sortedDataFields = this.getSortedDataFields(this.getFilteredDataFields(this.dataFieldList));
     });
-    // we have to check for the current active msel AND for any future changes
-    // set the MSEL values and get the needed info, if there is a current one
-    const msel = this.mselQuery.getActive() as MselPlus;
-    if (msel && (!this.msel || this.msel.id !== msel.id)) {
-      Object.assign(this.msel, msel);
-      this.dataFieldDataService.loadByMsel(msel.id);
-      this.dataOptionDataService.loadByMsel(msel.id);
-    }
     // subscribe to the active MSEL changes to get future changes
     (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(m => {
-      if (m && (!this.msel || this.msel.id !== m.id)) {
+      if (m && this.msel.id !== m.id) {
         Object.assign(this.msel, m);
-        this.dataFieldDataService.loadByMsel(m.id);
-        this.dataOptionDataService.loadByMsel(m.id);
+        this.sortedDataFields = this.getSortedDataFields(this.getFilteredDataFields(this.dataFieldList));
       }
     });
     this.filterControl.valueChanges

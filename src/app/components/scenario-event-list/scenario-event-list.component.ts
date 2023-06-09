@@ -32,7 +32,6 @@ import { Sort } from '@angular/material/sort';
 import { MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy-menu';
 import { CardQuery } from 'src/app/data/card/card.query';
 import { MoveQuery } from 'src/app/data/move/move.query';
-import { OrganizationDataService } from 'src/app/data/organization/organization-data.service';
 import { OrganizationQuery } from 'src/app/data/organization/organization.query';
 import { ScenarioEventDataService, ScenarioEventPlus, DataValuePlus } from 'src/app/data/scenario-event/scenario-event-data.service';
 import { ScenarioEventEditDialogComponent } from '../scenario-event-edit-dialog/scenario-event-edit-dialog.component';
@@ -88,7 +87,7 @@ export class ScenarioEventListComponent implements OnDestroy {
     value: '',
     valueArray: []
   } as DataValuePlus;
-// context menu
+  // context menu
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
   contextMenuPosition = { x: '0px', y: '0px' };
   scenarioEventBackgroundColors: Array<string>;
@@ -117,49 +116,32 @@ export class ScenarioEventListComponent implements OnDestroy {
     private dataOptionDataService: DataOptionDataService,
     private dataValueDataService: DataValueDataService,
     private dataValueQuery: DataValueQuery,
-    private organizationDataService: OrganizationDataService,
     private teamQuery: TeamQuery
   ) {
-    // subscribe to route changes
-    activatedRoute.queryParamMap.pipe(takeUntil(this.unsubscribe$)).subscribe(params => {
-      // set the selected tab based on the injectData
-      const mselId = params.get('msel');
-      if (!mselId) {
-        this.mselDataService.setActive('');
-      } else if (!this.msel || this.msel.id !== mselId) {
-        this.mselDataService.setActive(mselId);
-      }
-    });
     this.scenarioEventBackgroundColors = this.settingsService.settings.ScenarioEventBackgroundColors;
     // subscribe to the active MSEL
     (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
-      if (msel && (!this.msel || this.msel.id !== msel.id)) {
+      if (msel && this.msel.id !== msel.id) {
         this.msel = this.getEditableMsel(msel) as MselPlus;
         this.mselUsers = this.getMselUsers();
-        this.dataFieldDataService.loadByMsel(msel.id);
-        this.dataValueDataService.loadByMsel(msel.id);
-        this.scenarioEventDataService.loadByMsel(msel.id);
-        this.organizationDataService.loadByMsel(msel.id);
       }
     });
     // subscribe to data fields
     this.dataFieldQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(dataFields => {
+      console.log('we have ' + dataFields.length + ' dataFields');
       this.getSortedDataFields(dataFields);
-      dataFields.forEach(df => {
-        if (df.isChosenFromList) {
-          this.dataOptionDataService.loadByDataField(df.id);
-        }
-      });
     });
     // subscribe to data values
     this.dataValueQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(dataValues => {
       this.dataValues = [];
+      console.log('we have ' + dataValues.length + ' dataValues');
       dataValues.forEach(dv => {
         this.dataValues.push({ ... dv });
       });
     });
     // subscribe to scenario events
     (this.scenarioEventQuery.selectAll()).pipe(takeUntil(this.unsubscribe$)).subscribe(scenarioEvents => {
+      console.log('we have ' + scenarioEvents.length + ' scenarioEvents');
       this.mselScenarioEvents = this.getEditableScenarioEvents(scenarioEvents as ScenarioEventPlus[]);
       this.filteredScenarioEventList = this.getFilteredScenarioEvents(this.mselScenarioEvents);
       this.sortedScenarioEvents = this.getSortedScenarioEvents(this.filteredScenarioEventList);
