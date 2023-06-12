@@ -67,12 +67,11 @@ export class MselListComponent implements OnDestroy  {
     this.mselDataService.loadMine();
   }
 
-  openMsel(mselId, section) {
+  openMsel(mselId) {
     // join signalR for this MSEL
     this.signalRService.selectMsel(mselId);
     this.router.navigate([], {
-      queryParams: { msel: mselId, section: section },
-      queryParamsHandling: 'merge',
+      queryParams: { msel: mselId }
     });
   }
 

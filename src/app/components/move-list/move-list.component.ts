@@ -3,13 +3,10 @@
 // project root for license information.
 import { Component, Input, OnDestroy, ViewChild } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
-import { Subject, Observable, BehaviorSubject } from 'rxjs';
-import { take, takeUntil } from 'rxjs/operators';
-import {
-  Msel,
-  Move
-} from 'src/app/generated/blueprint.api';
-import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
+import { Subject, Observable } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { Move } from 'src/app/generated/blueprint.api';
+import { MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { Sort } from '@angular/material/sort';
 import { MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy-menu';
@@ -51,18 +48,16 @@ export class MoveListComponent implements OnDestroy {
     public dialog: MatDialog,
     public dialogService: DialogService
   ) {
-    // subscribe to the Moves
+    // subscribe to move changes
     this.moveQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(moves => {
       this.moveList = moves;
       this.displayedMoves = this.getSortedMoves(this.getFilteredMoves());
     });
     // subscribe to the active MSEL
     (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
-      if (msel && (!this.msel || this.msel.id !== msel.id)) {
+      if (msel && this.msel.id !== msel.id) {
         Object.assign(this.msel, msel);
-        // load the Moves
-        this.moveDataService.unload();
-        this.moveDataService.loadByMsel(msel.id);
+        this.displayedMoves = this.getSortedMoves(this.getFilteredMoves());
       }
     });
     this.filterControl.valueChanges

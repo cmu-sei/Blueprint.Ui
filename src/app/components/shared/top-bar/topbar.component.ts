@@ -18,6 +18,7 @@ import { Observable, Subject } from 'rxjs';
 import { filter, takeUntil } from 'rxjs/operators';
 import { UserDataService } from 'src/app/data/user/user-data.service';
 import { TopbarView } from './topbar.models';
+import { UIDataService } from 'src/app/data/ui/ui-data.service';
 
 @Component({
   selector: 'app-topbar',
@@ -45,7 +46,8 @@ export class TopbarComponent implements OnInit, OnDestroy {
     private authService: ComnAuthService,
     private loggedInUserService: UserDataService,
     private authQuery: ComnAuthQuery,
-    private router: Router
+    private router: Router,
+    private uiDataService: UIDataService
   ) {}
 
   ngOnInit() {
@@ -54,6 +56,7 @@ export class TopbarComponent implements OnInit, OnDestroy {
       takeUntil(this.unsubscribe$)
     );
     this.theme$ = this.authQuery.userTheme$;
+    this.authService.setUserTheme(<Theme>this.uiDataService.getTheme() || Theme.LIGHT);
   }
 
   setTeamFn(id: string) {
@@ -65,6 +68,7 @@ export class TopbarComponent implements OnInit, OnDestroy {
   themeFn(event) {
     const theme = event.checked ? Theme.DARK : Theme.LIGHT;
     this.authService.setUserTheme(theme);
+    this.uiDataService.setTheme(theme);
   }
   editFn(event) {
     this.editView.emit(event);
@@ -79,6 +83,7 @@ export class TopbarComponent implements OnInit, OnDestroy {
   }
 
   goToUrl(url): void {
+    this.uiDataService.setMselTab('');
     this.router.navigate([url]);
   }
 

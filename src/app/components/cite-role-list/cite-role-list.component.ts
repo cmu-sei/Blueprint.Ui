@@ -57,9 +57,9 @@ export class CiteRoleListComponent implements OnDestroy {
     });
     // subscribe to the active MSEL
     (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
-      if (msel) {
+      if (msel && msel.id !== this.msel.id) {
         Object.assign(this.msel, msel);
-        this.citeRoleDataService.loadByMsel(msel.id);
+        this.sortedCiteRoles = this.getSortedCiteRoles(this.getFilteredCiteRoles(this.citeRoleList));
       }
     });
     this.filterControl.valueChanges

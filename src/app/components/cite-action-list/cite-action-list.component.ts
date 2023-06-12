@@ -8,10 +8,13 @@ import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import {
   CiteAction,
-  Team
+  Team,
+  Move
 } from 'src/app/generated/blueprint.api';
+import { MoveQuery } from 'src/app/data/move/move.query';
 import { MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
+import { MselTeamQuery } from 'src/app/data/msel-team/msel-team.query';
 import { Sort } from '@angular/material/sort';
 import { MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy-menu';
 import { CiteActionDataService } from 'src/app/data/cite-action/cite-action-data.service';
@@ -41,6 +44,8 @@ export class CiteActionListComponent implements OnDestroy {
   selectedMoveNumber = -1;
   selectedTeamId = '';
   teamList: Team[] = [];
+  mselTeamList: Team[] = [];
+  moveList: Move[] = [];
   private unsubscribe$ = new Subject();
   // context menu
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
@@ -50,6 +55,8 @@ export class CiteActionListComponent implements OnDestroy {
     private mselQuery: MselQuery,
     private citeActionDataService: CiteActionDataService,
     private citeActionQuery: CiteActionQuery,
+    private moveQuery: MoveQuery,
+    private mselTeamQuery: MselTeamQuery,
     public dialog: MatDialog,
     public dialogService: DialogService
   ) {
@@ -60,11 +67,28 @@ export class CiteActionListComponent implements OnDestroy {
     });
     // subscribe to the active MSEL
     (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
-      if (msel) {
+      if (msel && this.msel.id !== msel.id) {
         Object.assign(this.msel, msel);
-        this.citeActionDataService.loadByMsel(msel.id);
+        this.sortedCiteActions = this.getSortedCiteActions(this.getFilteredCiteActions(this.citeActionList));
       }
     });
+    // subscribe to moves
+    this.moveQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(moves => {
+      this.moveList = moves
+        .filter(m => m.mselId === this.msel.id)
+        .sort((a, b) => +a.moveNumber < +b.moveNumber ? -1 : 1);
+    });
+    // subscribe to mselTeams
+    this.mselTeamQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(mselTeams => {
+      const mtList: Team[] = [];
+      mselTeams.forEach(mt => {
+        if (mt.mselId === this.msel.id) {
+          mtList.push(mt.team);
+        }
+      });
+      this.mselTeamList = mtList.sort((a, b) => a.shortName.toLowerCase() < b.shortName.toLowerCase() ? -1 : 1);
+    });
+    // subscribe to filter changes
     this.filterControl.valueChanges
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((term) => {
@@ -88,8 +112,8 @@ export class CiteActionListComponent implements OnDestroy {
       width: '800px',
       data: {
         citeAction: citeAction,
-        teamList: this.msel.teams,
-        moveList: this.msel.moves
+        teamList: this.mselTeamList,
+        moveList: this.moveList
       },
     });
     dialogRef.componentInstance.editComplete.subscribe((result) => {
@@ -109,14 +133,14 @@ export class CiteActionListComponent implements OnDestroy {
       if (citeAction.teamId) {
         teams.push(citeAction.teamId);
       } else {
-        this.msel.teams.forEach(team => {
+        this.mselTeamList.forEach(team => {
           teams.push(team.id);
         });
       }
       if (+citeAction.moveNumber >= 0) {
         moves.push(citeAction.moveNumber);
       } else {
-        this.msel.moves.forEach(move => {
+        this.moveList.forEach(move => {
           moves.push(move.moveNumber);
         });
       }

@@ -63,12 +63,10 @@ export class MselRolesComponent implements OnDestroy {
   ) {
     // subscribe to the active MSEL
     (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
-      if (msel && (!this.msel || this.msel.id !== msel.id)) {
+      if (msel && this.msel.id !== msel.id) {
         Object.assign(this.originalMsel, msel);
         Object.assign(this.msel, msel);
         this.sortedDataFields = this.getSortedDataFields(msel.dataFields);
-        this.mselTeamDataService.loadByMsel(msel.id);
-        this.userMselRoleDataService.loadByMsel(msel.id);
       }
     });
     // subscribe to users

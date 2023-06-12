@@ -15,7 +15,6 @@ import { MatSort, MatSortable } from '@angular/material/sort';
 import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
 import { Team } from 'src/app/generated/blueprint.api';
 import { CardTeamDataService } from 'src/app/data/team/card-team-data.service';
-import { TeamDataService } from 'src/app/data/team/team-data.service';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
@@ -42,8 +41,7 @@ export class CardTeamsComponent implements OnDestroy, OnInit {
   private unsubscribe$ = new Subject();
 
   constructor(
-    private cardTeamDataService: CardTeamDataService,
-    private teamDataService: TeamDataService
+    private cardTeamDataService: CardTeamDataService
   ) {}
 
   ngOnInit() {

@@ -66,7 +66,7 @@ export class MselViewComponent implements OnDestroy {
     // subscribe to the route parameters
     this.activatedRoute.params.pipe(takeUntil(this.unsubscribe$)).subscribe(params => {
       const mselId = params['mselid'];
-      if (mselId) {
+      if (mselId && this.msel.id !== this.msel.id) {
         this.mselDataService.loadById(mselId);
         this.loadInitialData(mselId);
         this.mselDataService.setActive(mselId);
