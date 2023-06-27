@@ -60,7 +60,7 @@ project root for license information.
           <input type="text" matInput [formControl]="organizationEmailFormControl" placeholder="Email" (blur)="saveOrganization('email')"
             value="{{data.organization.email}}">
           <mat-error *ngIf="organizationEmailFormControl.hasError('required')">
-            Summary is <strong>required</strong>
+            Email is <strong>required</strong>
           </mat-error>
         </mat-form-field>
       </div>
