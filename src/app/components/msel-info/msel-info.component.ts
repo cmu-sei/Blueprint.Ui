@@ -59,8 +59,7 @@ export class MselInfoComponent implements OnDestroy {
     'width': '100%',
     'overflow': 'auto'
   };
-  isPushingToCite = false;
-  isPushingToGallery = false;
+  isBusy = true;
 
   constructor(
     public dialogService: DialogService,
@@ -78,8 +77,6 @@ export class MselInfoComponent implements OnDestroy {
       if (msel) {
         Object.assign(this.originalMsel, msel);
         Object.assign(this.msel, msel);
-        this.isPushingToCite = false;
-        this.isPushingToGallery = false;
         if (this.msel.id !== msel.id) {
           this.sortedDataFields = this.getSortedDataFields(msel.dataFields);
           this.viewUrl = window.location.origin + '/msel/' + this.msel.id + '/view';
@@ -87,6 +84,10 @@ export class MselInfoComponent implements OnDestroy {
           this.newMselPage.mselId = msel.id;
         }
       }
+    });
+    //
+    this.mselQuery.selectLoading().pipe(takeUntil(this.unsubscribe$)).subscribe(isLoading => {
+      this.isBusy = isLoading;
     });
     // subscribe to users
     this.userDataService.users.pipe(takeUntil(this.unsubscribe$)).subscribe(users => {
@@ -148,7 +149,6 @@ export class MselInfoComponent implements OnDestroy {
       )
       .subscribe((result) => {
         if (result['confirm']) {
-          this.isPushingToCite = true;
           this.mselDataService.pushToCite(this.msel.id);
         }
       });
@@ -175,7 +175,6 @@ export class MselInfoComponent implements OnDestroy {
       )
       .subscribe((result) => {
         if (result['confirm']) {
-          this.isPushingToGallery = true;
           this.mselDataService.pushToGallery(this.msel.id);
         }
       });
