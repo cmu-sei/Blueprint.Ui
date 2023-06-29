@@ -584,7 +584,7 @@ export class MselService {
         const consumes: string[] = [
         ];
 
-        return this.httpClient.get<Array<Msel>>(`${this.configuration.basePath}/api/msels/mine`,
+        return this.httpClient.get<Array<Msel>>(`${this.configuration.basePath}/api/my-msels`,
             {
                 withCredentials: this.configuration.withCredentials,
                 headers: headers,
