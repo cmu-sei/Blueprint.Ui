@@ -416,4 +416,63 @@ export class CardTeamService {
         );
     }
 
+    /**
+     * Updates a  CardTeam
+     * Updates a CardTeam with the attributes specified.  The ID from the route MUST MATCH the ID contained in the cardTeam parameter  &lt;para /&gt;  Accessible only to a ContentDeveloper or an Administrator
+     * @param id The Id of the CardTeam to update
+     * @param CardTeam The updated CardTeam values
+     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+     * @param reportProgress flag to report request and response progress.
+     */
+    public updateCardTeam(id: string, CardTeam?: CardTeam, observe?: 'body', reportProgress?: boolean): Observable<CardTeam>;
+    public updateCardTeam(id: string, CardTeam?: CardTeam, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<CardTeam>>;
+    public updateCardTeam(id: string, CardTeam?: CardTeam, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<CardTeam>>;
+    public updateCardTeam(id: string, CardTeam?: CardTeam, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+        if (id === null || id === undefined) {
+            throw new Error('Required parameter id was null or undefined when calling updateCardTeam.');
+        }
+
+        let headers = this.defaultHeaders;
+
+        // authentication (oauth2) required
+        if (this.configuration.accessToken) {
+            const accessToken = typeof this.configuration.accessToken === 'function'
+                ? this.configuration.accessToken()
+                : this.configuration.accessToken;
+            headers = headers.set('Authorization', 'Bearer ' + accessToken);
+        }
+
+        // to determine the Accept header
+        let httpHeaderAccepts: string[] = [
+            'text/plain',
+            'application/json',
+            'text/json'
+        ];
+        const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
+        if (httpHeaderAcceptSelected !== undefined) {
+            headers = headers.set('Accept', httpHeaderAcceptSelected);
+        }
+
+        // to determine the Content-Type header
+        const consumes: string[] = [
+            'application/json',
+            'text/json',
+            'application/_*+json'
+        ];
+        const httpContentTypeSelected: string | undefined = this.configuration.selectHeaderContentType(consumes);
+        if (httpContentTypeSelected !== undefined) {
+            headers = headers.set('Content-Type', httpContentTypeSelected);
+        }
+
+        return this.httpClient.put<CardTeam>(`${this.configuration.basePath}/api/cardteams/${encodeURIComponent(String(id))}`,
+            CardTeam,
+            {
+                withCredentials: this.configuration.withCredentials,
+                headers: headers,
+                observe: observe,
+                reportProgress: reportProgress
+            }
+        );
+    }
+
 }

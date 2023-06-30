@@ -48,7 +48,12 @@ export class CardTeamDataService implements OnDestroy {
   }
 
   addTeamToCard(cardId: string, team: Team) {
-    this.cardTeamService.createCardTeam({cardId: cardId, teamId: team.id}).subscribe(
+    this.cardTeamService.createCardTeam({
+      cardId: cardId,
+      teamId: team.id,
+      isShownOnWall: true,
+      canPostArticles: false
+    }).subscribe(
       (et) => {
         this._cardTeams.unshift(et);
         this.updateCardTeams(this._cardTeams);
@@ -64,6 +69,17 @@ export class CardTeamDataService implements OnDestroy {
       (response) => {
         this._cardTeams = this._cardTeams.filter((u) => u.teamId !== teamId);
         this.updateCardTeams(this._cardTeams);
+      },
+      (error) => {
+        this.updateCardTeams(this._cardTeams);
+      }
+    );
+  }
+
+  updateCardTeam(cardTeam: CardTeam) {
+    this.cardTeamService.updateCardTeam(cardTeam.id, cardTeam).subscribe(
+      (et) => {
+        this.updateStore(et);
       },
       (error) => {
         this.updateCardTeams(this._cardTeams);

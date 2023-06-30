@@ -13,8 +13,9 @@ import {
 import { LegacyPageEvent as PageEvent, MatLegacyPaginator as MatPaginator } from '@angular/material/legacy-paginator';
 import { MatSort, MatSortable } from '@angular/material/sort';
 import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
-import { Team } from 'src/app/generated/blueprint.api';
+import { CardTeam, Team } from 'src/app/generated/blueprint.api';
 import { CardTeamDataService } from 'src/app/data/team/card-team-data.service';
+import { TeamQuery } from 'src/app/data/team/team.query';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
@@ -26,12 +27,13 @@ import { takeUntil } from 'rxjs/operators';
 
 export class CardTeamsComponent implements OnDestroy, OnInit {
   @Input() cardId: string;
-  @Input() teamList: Team[];
+  @Input() mselTeamList: Team[];
   @ViewChild('teamsInput') teamsInput: ElementRef<HTMLInputElement>;
   @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
   @ViewChild(MatSort, { static: true }) sort: MatSort;  teams: Team[];
-  cardTeams: Team[];
-  displayedTeamColumns: string[] = ['name', 'id'];
+  cardTeams: CardTeam[];
+  mselTeamColumns: string[] = ['name', 'id'];
+  cardTeamColumns: string[] = ['name', 'isShownOnWall', 'canPostArticles', 'id'];
   displayedCardColumns: string[] = ['name', 'team'];
   teamDataSource = new MatTableDataSource<Team>(new Array<Team>());
   cardTeamDataSource = new MatTableDataSource<Team>(new Array<Team>());
@@ -41,7 +43,8 @@ export class CardTeamsComponent implements OnDestroy, OnInit {
   private unsubscribe$ = new Subject();
 
   constructor(
-    private cardTeamDataService: CardTeamDataService
+    private cardTeamDataService: CardTeamDataService,
+    private teamQuery: TeamQuery
   ) {}
 
   ngOnInit() {
@@ -51,11 +54,8 @@ export class CardTeamsComponent implements OnDestroy, OnInit {
     this.pageEvent.pageIndex = 0;
     this.pageEvent.pageSize = this.defaultPageSize;
     this.cardTeamDataService.cardTeams.pipe(takeUntil(this.unsubscribe$)).subscribe(cardTeams => {
-      const teams: Team[] = [];
-      cardTeams.filter(et => et.cardId === this.cardId).forEach(et => {
-        teams.push(this.teamList.find(t => t.id === et.teamId));
-      });
-      this.setDataSources(teams);
+      this.cardTeams = cardTeams.filter(et => et.cardId === this.cardId);
+      this.setDataSources();
     });
   }
 
@@ -70,25 +70,31 @@ export class CardTeamsComponent implements OnDestroy, OnInit {
     this.applyFilter('');
   }
 
-  setDataSources(cardTeams: Team[]) {
-    // Now that all of the observables are returned, process accordingly.
-    this.cardTeamDataSource.data = !cardTeams ? new Array<Team>() : cardTeams.sort((a, b) => {
-      if (a.name < b.name) {
-        return -1;
-      } else if (a.name > b.name) {
-        return 1;
-      } else {
-        return 0;
-      }
-    });
-    const newAllTeams = !this.teamList ? new Array<Team>() : this.teamList.slice(0);
-    this.cardTeamDataSource.data.forEach((et) => {
-      const index = newAllTeams.findIndex((u) => u.id === et.id);
-      newAllTeams.splice(index, 1);
-    });
-    this.teamDataSource = new MatTableDataSource(newAllTeams);
-    this.teamDataSource.sort = this.sort;
-    this.teamDataSource.paginator = this.paginator;
+  setDataSources() {
+    if (this.mselTeamList) {
+      // Now that all of the observables are returned, process accordingly.
+      this.cardTeamDataSource.data = this.cardTeams ? this.cardTeams.sort((a, b) => {
+        if (this.getTeamShortName(a.teamId).toLowerCase() < this.getTeamShortName(b.teamId).toLowerCase()) {
+          return -1;
+        } else if (this.getTeamShortName(a.teamId).toLowerCase() > this.getTeamShortName(b.teamId).toLowerCase()) {
+          return 1;
+        } else {
+          return 0;
+        }
+      }) : new Array<CardTeam>();
+      const mselTeams = this.mselTeamList ? this.mselTeamList.slice(0) : new Array<Team>();
+      this.cardTeamDataSource.data.forEach((et) => {
+        const index = mselTeams.findIndex((u) => u.id === et.id);
+        mselTeams.splice(index, 1);
+      });
+      this.teamDataSource = new MatTableDataSource(mselTeams);
+      this.teamDataSource.sort = this.sort;
+    }
+  }
+
+  getTeamShortName(teamId: string) {
+    const team = this.mselTeamList.find(t => t.id === teamId);
+    return team ? team.shortName : teamId;
   }
 
 
@@ -99,6 +105,16 @@ export class CardTeamsComponent implements OnDestroy, OnInit {
     if (index === -1) {
       this.cardTeamDataService.addTeamToCard(this.cardId, team);
     }
+  }
+
+  setIsShownOnWall(cardTeam: CardTeam, value: boolean) {
+    cardTeam.isShownOnWall = value;
+    this.cardTeamDataService.updateCardTeam(cardTeam);
+  }
+
+  setCanPostArticles(cardTeam: CardTeam, value: boolean) {
+    cardTeam.canPostArticles = value;
+    this.cardTeamDataService.updateCardTeam(cardTeam);
   }
 
   /**

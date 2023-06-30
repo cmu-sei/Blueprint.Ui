@@ -9,7 +9,7 @@ project root for license information.
     <div class="sp-icon">
       <div>
         <img height="35" src="./assets/svg-icons/account-multiple.svg" alt="Teams" />
-        All Teams
+        MSEL Teams
       </div>
       <div class="search-div">
         <div>
@@ -41,15 +41,16 @@ project root for license information.
     <hr />
 
     <mat-table
-      class="mat-table-all-teams"
+      class="mat-table-msel-teams"
       #table
       [dataSource]="teamDataSource"
       matSort
     >
       <ng-container matColumnDef="name">
         <mat-cell *matCellDef="let element">
-          <div *ngIf="element.name !== null">{{ element.name }}</div>
-          <div *ngIf="element.name === null">{{ element.id }}</div>
+          <div *ngIf="element.shortName">{{ element.shortName }}</div>
+          <div *ngIf="!element.shortName && element.name">{{ element.name }}</div>
+          <div *ngIf="!element.shortName && !element.name">{{ element.id }}</div>
         </mat-cell>
       </ng-container>
 
@@ -63,20 +64,25 @@ project root for license information.
         </mat-cell>
       </ng-container>
 
-      <mat-row *matRowDef="let row; columns: displayedTeamColumns"></mat-row>
+      <mat-row *matRowDef="let row; columns: mselTeamColumns"></mat-row>
     </mat-table>
 
     <div *ngIf="teamDataSource.filteredData.length === 0">No results found</div>
   </div>
 
   <div class="card-list-container mat-elevation-z8">
-    <div class="sp-icon">
-      <img
-        height="35"
-        src="./assets/svg-icons/account-group.svg"
-        alt="Teams"
-      />
-      Card Teams
+    <div class="sp-icon center-self">
+      <div class="head-name center-self">
+        <img
+          height="35"
+          src="./assets/svg-icons/account-group.svg"
+          alt="Card Teams"
+        />
+        Card Teams
+      </div>
+      <div class="head-check center-self">Is Shown</div>
+      <div class="head-check center-self">Can Post</div>
+      <div class="head-right">&nbsp;</div>
     </div>
     <hr />
 
@@ -96,8 +102,25 @@ project root for license information.
     >
       <ng-container matColumnDef="name">
         <mat-cell *matCellDef="let element">
-          <div *ngIf="element.name !== null">{{ element.name }}</div>
-          <div *ngIf="element.name === null">{{ element.id }}</div>
+          <div>{{ getTeamShortName(element.teamId) }}</div>
+        </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="isShownOnWall">
+        <mat-cell *matCellDef="let element">
+          <mat-checkbox
+            [checked]="element.isShownOnWall"
+            (change)="setIsShownOnWall(element, $event.checked)"
+          ></mat-checkbox>
+        </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="canPostArticles">
+        <mat-cell *matCellDef="let element">
+          <mat-checkbox
+          [checked]="element.canPostArticles"
+          (change)="setCanPostArticles(element, $event.checked)"
+        ></mat-checkbox>
         </mat-cell>
       </ng-container>
 
@@ -111,7 +134,7 @@ project root for license information.
         </mat-cell>
       </ng-container>
 
-      <mat-row *matRowDef="let row; columns: displayedTeamColumns"></mat-row>
+      <mat-row *matRowDef="let row; columns: cardTeamColumns"></mat-row>
     </mat-table>
 
   </div>
