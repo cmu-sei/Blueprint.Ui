@@ -24,6 +24,7 @@ import {
 } from 'src/app/generated/blueprint.api';
 import { map, take, tap } from 'rxjs/operators';
 import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
+import { ErrorService } from 'src/app/services/error/error.service';
 
 @Injectable({
   providedIn: 'root',
@@ -115,7 +116,8 @@ export class MselDataService {
     private mselQuery: MselQuery,
     private mselService: MselService,
     private router: Router,
-    private activatedRoute: ActivatedRoute
+    private activatedRoute: ActivatedRoute,
+    private errorService: ErrorService
   ) {
     this.filterTerm = activatedRoute.queryParamMap.pipe(
       map((params) => params.get('mselmask') || '')
@@ -307,6 +309,7 @@ export class MselDataService {
       },
       (error) => {
         this.mselStore.setLoading(false);
+        this.errorService.handleError(error);
       });
   }
 
@@ -343,6 +346,7 @@ export class MselDataService {
       },
       (error) => {
         this.mselStore.setLoading(false);
+        this.errorService.handleError(error);
       });
   }
 

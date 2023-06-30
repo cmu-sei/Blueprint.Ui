@@ -97,8 +97,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
               (click)="pushToGallery()"
               title="Push to Gallery"
               *ngIf="!msel.galleryCollectionId"
-              [disabled]="!(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)"
-            >Push to Gallery</button>
+              [disabled]="!(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) || isBusy"
+            ><span *ngIf="isBusy">Pushing to Gallery ...</span><span *ngIf="!isBusy">Push to Gallery</span></button>
             <button
               (click)="pullFromGallery()"
               title="Remove from Gallery"
@@ -150,8 +150,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
               (click)="pushToCite()"
               title="Push to CITE"
               *ngIf="!msel.citeEvaluationId"
-              [disabled]="!(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) || !msel.citeScoringModelId"
-            >Push to CITE</button>
+              [disabled]="!(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) || !msel.citeScoringModelId || isBusy"
+            ><span *ngIf="isBusy">Pushing to CITE ...</span><span *ngIf="!isBusy">Push to CITE</span></button>
             <button
               (click)="pullFromCite()"
               title="Remove from CITE"

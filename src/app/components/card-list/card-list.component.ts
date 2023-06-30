@@ -140,7 +140,8 @@ export class CardListComponent implements OnDestroy {
     this.changedCard = {
       id: uuidv4(),
       mselId: this.msel.id,
-      move: this.cardList.length
+      move: 0,
+      inject: 0
     };
     this.isAddingCard = true;
   }
