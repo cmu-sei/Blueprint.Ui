@@ -16,18 +16,19 @@
   height: 500px;
   width: 40%;
   min-width: 300px;
+  margin-left: 5%;
 }
 
 .card-list-container {
   display: inline-block;
   flex-direction: column;
   height: 500px;
-  width: 40%;
-  min-width: 300px;
+  width: 50%;
+  min-width: 400px;
   margin-left: 5%;
 }
 
-.mat-table-all-teams {
+.mat-table-msel-teams {
   overflow: auto;
   width: 100%;
   height: 422px;
@@ -39,12 +40,46 @@
   height: 444px;
 }
 
+.mat-column-isShownOnWall {
+  flex: 0 0 15%;
+  justify-content: center;
+}
+
+.mat-column-canPostArticles {
+  flex: 0 0 15%;
+  justify-content: center;
+}
+
+.mat-column-id {
+  flex: 0 0 20%;
+  min-width: 120px;
+  justify-content: center;
+}
+
 .mat-button-focus-overlay {
   background-color: transparent;
 }
 
 .mat-cell {
   padding-right: 0;
+}
+
+.head-name {
+  width: 55%;
+  min-width: 130px;
+  text-align: left;
+}
+
+.head-check {
+  width: 15%;
+  min-width: 100px;
+  text-align: center;
+}
+
+.head-right {
+  width: 20%;
+  min-width: 120px;
+  text-align: center;
 }
 
 .sp-icon {
@@ -58,4 +93,8 @@
   flex-direction: row;
   align-items: flex-end;
   margin-left: 20px;
+}
+
+.center-self {
+  align-self: center;
 }

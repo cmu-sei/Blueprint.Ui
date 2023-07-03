@@ -25,4 +25,6 @@ export interface CardTeam {
     id?: string;
     cardId?: string;
     teamId?: string;
+    isShownOnWall?: boolean;
+    canPostArticles?: boolean;
 }

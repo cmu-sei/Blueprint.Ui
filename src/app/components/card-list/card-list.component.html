@@ -241,13 +241,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </div>
           <div class="card-detail" (click)="$event.stopPropagation();">
             <div class="single-detail">
-              <div class="team-label">
-                <h4>Select Teams</h4>
-                <app-card-teams
-                  [cardId]="changedCard.id"
-                  [teamList]="msel.teams">
-                </app-card-teams>
-              </div>
+              <h4>Select Teams</h4>
+            </div>
+            <div class="single-detail">
+              <app-card-teams
+                style="width: 100%;"
+                [cardId]="changedCard.id"
+                [mselTeamList]="msel.teams">
+              </app-card-teams>
             </div>
           </div>
         </ng-template>
