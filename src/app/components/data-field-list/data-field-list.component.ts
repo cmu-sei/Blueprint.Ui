@@ -71,6 +71,7 @@ export class DataFieldListComponent implements OnDestroy {
     (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(m => {
       if (m && this.msel.id !== m.id) {
         Object.assign(this.msel, m);
+        console.log('Is user a MSEL owner?  '  + this.msel.hasRole(this.loggedInUserId, null).owner.toString());
         this.sortedDataFields = this.getSortedDataFields(this.getFilteredDataFields(this.dataFieldList));
       }
     });
