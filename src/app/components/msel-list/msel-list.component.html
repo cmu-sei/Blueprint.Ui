@@ -1,10 +1,119 @@
 <!--
-Copyright 2022 Carnegie Mellon University. All Rights Reserved.
+Copyright 2023 Carnegie Mellon University. All Rights Reserved.
 Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
 
-<section
+<div class="msel-list-container mat-elevation-z8">
+  <div
+    class="header-div"
+  >
+    <div class="app-icon">
+      <img
+        *ngIf="imageFilePath"
+        class="no-sidenav"
+        [src]="imageFilePath"
+        title="Pencil and Ruler Image"
+      />
+    </div>
+    <div class="msels-title">My MSELs</div>
+    <div class="search-box">
+      <mat-icon
+        style="transform: scale(0.85); margin-top: 20px; margin-right: 5px"
+        svgIcon="ic_magnify_search"
+      ></mat-icon>
+      <mat-form-field class="search-control">
+        <input matInput [formControl]="filterControl" placeholder="Search" />
+      </mat-form-field>
+      <div class="clear-search-button">
+        <button
+          mat-icon-button
+          (click)="filterControl.setValue(''); $event.stopPropagation()"
+          style="outline: none;"
+          title="Clear Search"
+          [disabled]="!filterString"
+        >
+          <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
+        </button>
+      </div>
+    </div>
+    <div class="cog-div">
+      <button
+        mat-button
+        class="cog-button"
+        (click)="goToUrl('/admin')"
+        title="Admin Pages"
+        *ngIf="isSystemAdmin"
+      >
+        <mat-icon aria-hidden="false" class="icon-color mdi-36px cog" fontIcon="mdi-cog-outline"></mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <mat-card
+    *ngIf="isLoading"
+    style="display: flex; justify-content: center; align-items: center"
+  >
+    <mat-progress-spinner color="primary" mode="indeterminate">
+    </mat-progress-spinner>
+  </mat-card>
+  <div class="mat-table">
+    <mat-table #table [dataSource]="mselDataSource" matSort>
+      <!-- name Column -->
+      <ng-container matColumnDef="name">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>
+          Name
+        </mat-header-cell>
+        <mat-cell *matCellDef="let element">
+          <div class="link-text">
+            <a
+            [routerLink]="['/']"
+            [queryParams]="{ msel: element.id }"
+            (click)="openMsel(element.id)"
+            >{{ element.name }}</a>
+          </div>
+        </mat-cell>
+      </ng-container>
+      <!-- status Column -->
+      <ng-container matColumnDef="status">
+        <mat-header-cell *matHeaderCellDef mat-sort-header> Status </mat-header-cell>
+        <mat-cell *matCellDef="let element">
+          <div class="description-text">{{ element.status }}</div>
+        </mat-cell>
+      </ng-container>
+      <!-- dateModified Column -->
+      <ng-container matColumnDef="dateModified">
+        <mat-header-cell *matHeaderCellDef mat-sort-header> Modified </mat-header-cell>
+        <mat-cell *matCellDef="let element">
+          <div class="description-text">{{ element.dateModified | date }}</div>
+        </mat-cell>
+      </ng-container>
+      <!-- Description Column -->
+      <ng-container matColumnDef="description">
+        <mat-header-cell *matHeaderCellDef mat-sort-header> Description </mat-header-cell>
+        <mat-cell *matCellDef="let element">
+          <div class="description-text">{{ element.description }}</div>
+        </mat-cell>
+      </ng-container>
+      <!-- row definitions -->
+      <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+      <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
+    </mat-table>
+    <!-- No Results Message -->
+    <div class="text no-results" *ngIf="mselDataSource.filteredData.length === 0">No results found</div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+<!-- <section
   class="mat-elevation-z2 background-alt header-row"
 >
   <div class="header-cell one-cell">
@@ -111,4 +220,4 @@ project root for license information or contact permission@sei.cmu.edu for full 
   #fileInput
   type="file"
   accept=".xlsx"
-/>
+/> -->

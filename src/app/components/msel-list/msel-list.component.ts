@@ -1,10 +1,11 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, Input, OnDestroy, ViewChild, ElementRef } from '@angular/core';
+import { Component, Input, OnDestroy, ViewChild, ElementRef, OnInit } from '@angular/core';
 import { HttpEventType, HttpResponse } from '@angular/common/http';
 import { UntypedFormControl } from '@angular/forms';
-import { Sort } from '@angular/material/sort';
+import { MatSort, MatSortable, Sort } from '@angular/material/sort';
+import { MatTableDataSource } from '@angular/material/table';
 import { Router } from '@angular/router';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -23,10 +24,12 @@ import { UIDataService } from 'src/app/data/ui/ui-data.service';
   templateUrl: './msel-list.component.html',
   styleUrls: ['./msel-list.component.scss'],
 })
-export class MselListComponent implements OnDestroy  {
+export class MselListComponent implements OnDestroy, OnInit  {
   @Input() loggedInUserId: string;
   @Input() isContentDeveloper: boolean;
+  @Input() isSystemAdmin: boolean;
   @ViewChild('fileInput') fileInput: ElementRef<HTMLInputElement>;
+  @ViewChild(MatSort, { static: true }) sort: MatSort;
   mselList: MselPlus[] = [];
   isReady = false;
   uploadProgress = 0;
@@ -35,10 +38,12 @@ export class MselListComponent implements OnDestroy  {
   filteredMselList: MselPlus[] = [];
   filterControl = new UntypedFormControl();
   filterString = '';
-  sort: Sort = {active: 'dateCreated', direction: 'desc'};
   sortedMselList: MselPlus[] = [];
   defaultTab = 'Info';
-
+  isLoading = true;
+  mselDataSource: MatTableDataSource<MselPlus>;
+  displayedColumns: string[] = ['name', 'status', 'dateModified', 'description'];
+  imageFilePath = '';
   private unsubscribe$ = new Subject();
 
   constructor(
@@ -51,32 +56,44 @@ export class MselListComponent implements OnDestroy  {
     private signalRService: SignalRService,
     private uiDataService: UIDataService
   ) {
+    // load the MSELs
+    this.mselDataService.loadMine();
+  }
+
+  ngOnInit() {
+    // Initial datasource
+    this.mselDataSource = new MatTableDataSource<MselPlus>(
+      new Array<MselPlus>()
+    );
+    this.sort.sort(<MatSortable>{ id: 'name', start: 'asc' });
+    this.mselDataSource.sort = this.sort;
     // subscribe to MSELs loading
     this.mselQuery.selectLoading().pipe(takeUntil(this.unsubscribe$)).subscribe((isLoading) => {
       this.isReady = !isLoading;
     });
+    // subscribe to MSELs
     (this.mselQuery.selectAll() as Observable<MselPlus[]>).pipe(takeUntil(this.unsubscribe$)).subscribe((msels) => {
-      this.mselList.length = 0;
-      if (msels) {
-        this.mselList = msels;
-        this.getFilteredMsels();
-      }
+      this.mselDataSource.data = msels;
+      this.filterMsels();
+      this.isLoading = false;
     });
+    // subscribe to filter control changes
     this.filterControl.valueChanges.pipe(takeUntil(this.unsubscribe$)).subscribe((term) => {
       this.filterString = term;
-      this.getFilteredMsels();
+      this.filterMsels();
     });
-    // load the MSELs
-    this.mselDataService.loadMine();
+    // set image
+    this.imageFilePath = this.settingsService.settings.AppTopBarImage.replace('white', 'blue');
+    console.log(this.imageFilePath);
   }
 
   openMsel(mselId) {
     // join signalR for this MSEL
     this.signalRService.selectMsel(mselId);
     this.uiDataService.setMselTab(this.defaultTab);
-    this.router.navigate([], {
-      queryParams: { msel: mselId }
-    });
+    // this.router.navigate([], {
+    //   queryParams: { msel: mselId }
+    // });
   }
 
   uploadFile(mselId: string, teamId: string) {
@@ -166,64 +183,19 @@ export class MselListComponent implements OnDestroy  {
       });
   }
 
-  getFilteredMsels() {
-    let filteredMsels: MselPlus[] = [];
-    if (this.mselList) {
-      this.mselList.forEach(m => {
-        const mselPlus = new MselPlus();
-        Object.assign(mselPlus, m);
-        filteredMsels.push(mselPlus);
-      });
-      if (filteredMsels && filteredMsels.length > 0 && this.filterString) {
-        const filterString = this.filterString.toLowerCase();
-        filteredMsels = filteredMsels
-          .filter((a) =>
-            a.name.toLowerCase().includes(filterString) ||
-                a.description.toLowerCase().includes(filterString) ||
-                a.status.toLowerCase().includes(filterString)
-          );
-      }
-    }
-    this.filteredMselList = filteredMsels;
-    this.getSortedMsels();
+  filterMsels() {
+    const filterValue = this.filterString.toLowerCase().trim(); //  Remove whitespace and MatTableDataSource defaults to lowercase matches
+    this.mselDataSource.filter = filterValue;
   }
 
-  sortChanged(sort: Sort) {
-    if (!sort.direction) {
-      this.sort = {active: 'dateCreated', direction: 'desc'};
-    } else {
-      this.sort = sort;
-    }
-    this.getSortedMsels();
-  }
-
-  getSortedMsels() {
-    this.sortedMselList = this.filteredMselList.sort((a, b) => this.sortMsels(a, b));
+  goToUrl(url): void {
+    this.uiDataService.setMselTab('');
+    this.router.navigate([url]);
   }
 
   ngOnDestroy() {
     this.unsubscribe$.next(null);
     this.unsubscribe$.complete();
-  }
-
-  private sortMsels(
-    a: MselPlus,
-    b: MselPlus
-  ) {
-    const isAsc = this.sort.direction !== 'desc';
-    switch (this.sort.active) {
-      case 'dateCreated':
-        return ( (a.dateCreated < b.dateCreated ? -1 : 1) * (isAsc ? 1 : -1) );
-        break;
-      case 'dateModified':
-        return ( (a.dateModified < b.dateModified ? -1 : 1) * (isAsc ? 1 : -1) );
-        break;
-      case 'name':
-        return ( (a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1) * (isAsc ? 1 : -1) );
-        break;
-      default:
-        return 0;
-    }
   }
 
 }
