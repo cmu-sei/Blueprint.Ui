@@ -359,22 +359,38 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </div>
           <div class="data-field-detail" (click)="$event.stopPropagation();">
             <div class="single-detail">
-              <mat-checkbox [(ngModel)]="changedDataField.isInitiallyHidden" class="bottom-margin">Hidden under "More Fields" section</mat-checkbox><br />
+              <mat-checkbox
+                [(ngModel)]="changedDataField.isInitiallyHidden"
+                [disabled]="!isContentDeveloper && !msel.hasRole(loggedInUserId, null).owner"
+                class="bottom-margin"
+              >Hidden under "More Fields" section</mat-checkbox><br />
             </div>
           </div>
           <div class="data-field-detail" (click)="$event.stopPropagation();">
             <div class="single-detail">
-              <mat-checkbox [(ngModel)]="changedDataField.isOnlyShownToOwners" class="bottom-margin">ONLY Display for Content Developers and Owners</mat-checkbox><br />
+              <mat-checkbox
+                [(ngModel)]="changedDataField.isOnlyShownToOwners"
+                [disabled]="!isContentDeveloper && !msel.hasRole(loggedInUserId, null).owner"
+                class="bottom-margin"
+              >ONLY Display for Content Developers and Owners</mat-checkbox><br />
             </div>
           </div>
           <div class="data-field-detail" (click)="$event.stopPropagation();">
             <div class="single-detail">
-              <mat-checkbox [(ngModel)]="changedDataField.onScenarioEventList" class="bottom-margin">Display in header of Injects</mat-checkbox><br />
+              <mat-checkbox
+                [(ngModel)]="changedDataField.onScenarioEventList"
+                [disabled]="!isContentDeveloper && !msel.hasRole(loggedInUserId, null).owner"
+                class="bottom-margin"
+              >Display in header of Injects</mat-checkbox><br />
             </div>
           </div>
           <div class="data-field-detail" (click)="$event.stopPropagation();">
             <div class="single-detail">
-              <mat-checkbox [(ngModel)]="changedDataField.onExerciseView" class="bottom-margin">Display in header of Exercise View</mat-checkbox><br />
+              <mat-checkbox
+                [(ngModel)]="changedDataField.onExerciseView"
+                [disabled]="!isContentDeveloper && !msel.hasRole(loggedInUserId, null).owner"
+                class="bottom-margin"
+              >Display in header of Exercise View</mat-checkbox><br />
             </div>
           </div>
           <div class="data-field-detail" (click)="$event.stopPropagation();" *ngIf="msel.useGallery">

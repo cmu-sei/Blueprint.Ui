@@ -16,6 +16,7 @@ import { SignalRService } from 'src/app/services/signalr.service';
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
+import { UIDataService } from 'src/app/data/ui/ui-data.service';
 
 @Component({
   selector: 'app-msel-list',
@@ -36,6 +37,7 @@ export class MselListComponent implements OnDestroy  {
   filterString = '';
   sort: Sort = {active: 'dateCreated', direction: 'desc'};
   sortedMselList: MselPlus[] = [];
+  defaultTab = 'Info';
 
   private unsubscribe$ = new Subject();
 
@@ -46,7 +48,8 @@ export class MselListComponent implements OnDestroy  {
     private settingsService: ComnSettingsService,
     private mselDataService: MselDataService,
     private mselQuery: MselQuery,
-    private signalRService: SignalRService
+    private signalRService: SignalRService,
+    private uiDataService: UIDataService
   ) {
     // subscribe to MSELs loading
     this.mselQuery.selectLoading().pipe(takeUntil(this.unsubscribe$)).subscribe((isLoading) => {
@@ -70,6 +73,7 @@ export class MselListComponent implements OnDestroy  {
   openMsel(mselId) {
     // join signalR for this MSEL
     this.signalRService.selectMsel(mselId);
+    this.uiDataService.setMselTab(this.defaultTab);
     this.router.navigate([], {
       queryParams: { msel: mselId }
     });
