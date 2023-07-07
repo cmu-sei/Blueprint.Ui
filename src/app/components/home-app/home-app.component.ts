@@ -50,7 +50,6 @@ export class HomeAppComponent implements OnDestroy, OnInit {
   isSidebarOpen = true;
   private unsubscribe$ = new Subject();
   hideTopbar = false;
-  cogTopPosition = 'top: 40px;';
   topbarColor = '#ef3a47';
   topbarTextColor = '#FFFFFF';
   topbarImage = this.settingsService.settings.AppTopBarImage;
@@ -81,7 +80,6 @@ export class HomeAppComponent implements OnDestroy, OnInit {
     this.topbarText = this.topbarTextBase;
     this.theme$ = this.authQuery.userTheme$;
     this.hideTopbar = this.inIframe();
-    this.cogTopPosition = this.hideTopbar ? 'top: 0px;' : this.cogTopPosition;
     // subscribe to the logged in user
     this.userDataService.loggedInUser
       .pipe(takeUntil(this.unsubscribe$))

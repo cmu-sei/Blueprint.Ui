@@ -20,7 +20,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <h2>If the problem persists, please contact the site administrator.</h2>
   </div>
 
-  <div *ngIf="!apiIsSick && (isSystemAdmin$ | async)" class="admin-cog-div">
+  <div *ngIf="!apiIsSick && (isSystemAdmin$ | async)" [ngClass]="hideTopbar ? 'admin-cog-div-iframe' : 'admin-cog-div'">
     <button
       mat-button
       class="icon-color admin-cog-button"
