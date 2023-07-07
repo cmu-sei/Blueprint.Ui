@@ -20,13 +20,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <h2>If the problem persists, please contact the site administrator.</h2>
   </div>
 
-  <div *ngIf="!apiIsSick && hideTopbar" class="righticon">
+  <div *ngIf="!apiIsSick && (isSystemAdmin$ | async)" class="admin-cog-div">
     <button
       mat-button
-      class="icon-color"
+      class="icon-color admin-cog-button"
       style="outline: none;"
       (click)="goToUrl('/admin')"
-      title="Admin Pages"
+      title="Administration"
     >
       <mat-icon aria-hidden="false" class="icon-color admin-cog-icon mdi-24px" fontIcon="mdi-cog-outline"></mat-icon>
     </button>
@@ -36,7 +36,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <app-msel-list
       [loggedInUserId]="loggedInUserId"
       [isContentDeveloper]="isContentDeveloper$ | async"
-      [isSystemAdmin]="isSystemAdmin$ | async"
     ></app-msel-list>
   </section>
 

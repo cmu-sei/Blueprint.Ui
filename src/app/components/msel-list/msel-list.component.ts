@@ -27,7 +27,6 @@ import { UIDataService } from 'src/app/data/ui/ui-data.service';
 export class MselListComponent implements OnDestroy, OnInit  {
   @Input() loggedInUserId: string;
   @Input() isContentDeveloper: boolean;
-  @Input() isSystemAdmin: boolean;
   @ViewChild('fileInput') fileInput: ElementRef<HTMLInputElement>;
   @ViewChild(MatSort, { static: true }) sort: MatSort;
   mselList: MselPlus[] = [];

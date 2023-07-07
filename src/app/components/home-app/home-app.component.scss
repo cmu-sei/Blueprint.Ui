@@ -34,11 +34,15 @@
 }
 
 .admin-cog-div {
-  display: flex;
-  flex-direction: row;
-  flex: 1;
-  align-items: flex-end;
-  justify-items: center;
+  position: fixed;
+  top: 40px;
+  right: 0;
+}
+
+.admin-cog-button {
+  width: 40px !important;
+  height: 30px !important;
+  min-width: unset !important;
 }
 
 .admin-cog-icon {

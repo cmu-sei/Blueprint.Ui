@@ -11,7 +11,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <div class="app-icon">
       <img
         *ngIf="imageFilePath"
-        class="no-sidenav"
+        class="title-icon"
         [src]="imageFilePath"
         title="Pencil and Ruler Image"
       />
@@ -19,7 +19,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <div class="msels-title">My MSELs</div>
     <div class="search-box">
       <mat-icon
-        style="transform: scale(0.85); margin-top: 20px; margin-right: 5px"
+        class="search-icon"
         svgIcon="ic_magnify_search"
       ></mat-icon>
       <mat-form-field class="search-control">
@@ -36,17 +36,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
         </button>
       </div>
-    </div>
-    <div class="cog-div">
-      <button
-        mat-button
-        class="cog-button"
-        (click)="goToUrl('/admin')"
-        title="Admin Pages"
-        *ngIf="isSystemAdmin"
-      >
-        <mat-icon aria-hidden="false" class="icon-color mdi-36px cog" fontIcon="mdi-cog-outline"></mat-icon>
-      </button>
     </div>
   </div>
 
