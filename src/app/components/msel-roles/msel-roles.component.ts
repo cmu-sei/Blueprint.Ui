@@ -76,7 +76,7 @@ export class MselRolesComponent implements OnDestroy {
     // subscribe to teams
     this.teamQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(teams => {
       if (teams && teams.length > 0) {
-        this.allTeams = teams.sort((a, b) => a.shortName.toLowerCase() > b.shortName.toLowerCase() ? 1 : -1);
+        this.allTeams = teams.sort((a, b) => a.shortName?.toLowerCase() > b.shortName?.toLowerCase() ? 1 : -1);
       }
     });
     // subscribe to mselTeams
@@ -90,7 +90,7 @@ export class MselRolesComponent implements OnDestroy {
       });
       if (this.mselTeamList.length > 0) {
         this.mselTeamList = this.mselTeamList.sort((a, b) =>
-          this.getTeam(a.teamId).shortName.toLowerCase() > this.getTeam(b.teamId).shortName.toLowerCase() ? 1 : -1);
+          this.getTeam(a.teamId).shortName?.toLowerCase() > this.getTeam(b.teamId).shortName?.toLowerCase() ? 1 : -1);
       }
     });
     // subscribe to UserMselRoles
