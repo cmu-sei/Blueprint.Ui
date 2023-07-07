@@ -251,6 +251,13 @@ export class DataFieldListComponent implements OnDestroy {
       .sort((a, b) => a.displayOrder < b.displayOrder ? -1 : 1);
   }
 
+  getDataOptionsString(dataFieldId: string): string {
+    const dataOptions = this.getDataFieldOptions(dataFieldId).map(function(elem){
+      return elem.optionName;
+    });
+    return dataOptions.join(', ');
+  }
+
   addOrEditDataOption(dataOption: DataOption) {
     const dialogRef = this.dialog.open(DataOptionEditDialogComponent, {
       width: '800px',
