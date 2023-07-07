@@ -90,9 +90,11 @@
 
 .search-div {
   display: flex;
+  flex: 1;
   flex-direction: row;
   align-items: flex-end;
   margin-left: 20px;
+  width: 100%;
 }
 
 .center-self {

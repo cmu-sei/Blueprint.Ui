@@ -64,10 +64,10 @@ export class CardTeamDataService implements OnDestroy {
     );
   }
 
-  removeCardTeam(cardId: string, teamId: string) {
-    this.cardTeamService.deleteCardTeamByIds(cardId, teamId).subscribe(
+  removeCardTeam(id: string) {
+    this.cardTeamService.deleteCardTeam(id).subscribe(
       (response) => {
-        this._cardTeams = this._cardTeams.filter((u) => u.teamId !== teamId);
+        this._cardTeams = this._cardTeams.filter((u) => u.id !== id);
         this.updateCardTeams(this._cardTeams);
       },
       (error) => {

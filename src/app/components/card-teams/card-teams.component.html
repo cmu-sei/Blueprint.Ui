@@ -12,30 +12,28 @@ project root for license information.
         MSEL Teams
       </div>
       <div class="search-div">
-        <div>
-          <mat-form-field style="width: 80%; margin-left:15%;">
-            <input
-              matInput
-              [(ngModel)]="filterString"
-              (keyup)="applyFilter($any($event.target).value)"
-              placeholder="Search"
-            />
-          </mat-form-field>
-        </div>
-        <div>
-          <button
-            *ngIf="filterString != ''"
-            mat-icon-button
-            (click)="clearFilter()"
-            style="outline: none;"
-            title="Clear Search"
-          >
-            <mat-icon
-              style="transform: scale(0.85);"
-              fontIcon="mdi-close-circle-outline"
-            ></mat-icon>
-          </button>
-        </div>
+        <mat-form-field
+          style="width: 75%; margin-left:10%;"
+        >
+          <input
+            matInput
+            [(ngModel)]="filterString"
+            (keyup)="applyFilter($any($event.target).value)"
+            placeholder="Search"
+          />
+        </mat-form-field>
+        <button
+          [disabled]="!filterString"
+          mat-icon-button
+          (click)="clearFilter()"
+          style="outline: none; margin-top: -10px;"
+          title="Clear Search"
+        >
+          <mat-icon
+            class="mdi-24px"
+            fontIcon="mdi-close-circle-outline"
+          ></mat-icon>
+        </button>
       </div>
     </div>
     <hr />
@@ -45,6 +43,7 @@ project root for license information.
       #table
       [dataSource]="teamDataSource"
       matSort
+      *ngIf="teamDataSource.filteredData.length > 0"
     >
       <ng-container matColumnDef="name">
         <mat-cell *matCellDef="let element">
@@ -66,8 +65,7 @@ project root for license information.
 
       <mat-row *matRowDef="let row; columns: mselTeamColumns"></mat-row>
     </mat-table>
-
-    <div *ngIf="teamDataSource.filteredData.length === 0">No results found</div>
+    <div *ngIf="teamDataSource.filteredData.length === 0">No teams found</div>
   </div>
 
   <div class="card-list-container mat-elevation-z8">
@@ -127,7 +125,7 @@ project root for license information.
       <ng-container matColumnDef="id">
         <mat-cell *matCellDef="let element">
           <div>
-            <button mat-stroked-button (click)="removeTeamFromCard(element)">
+            <button mat-stroked-button (click)="removeTeamFromCard(element.id)">
               Remove
             </button>
           </div>

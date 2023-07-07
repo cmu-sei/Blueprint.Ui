@@ -54,7 +54,19 @@ export class CardTeamsComponent implements OnDestroy, OnInit {
     this.pageEvent.pageIndex = 0;
     this.pageEvent.pageSize = this.defaultPageSize;
     this.cardTeamDataService.cardTeams.pipe(takeUntil(this.unsubscribe$)).subscribe(cardTeams => {
-      this.cardTeams = cardTeams.filter(et => et.cardId === this.cardId);
+      this.cardTeams = cardTeams ?
+        cardTeams
+          .filter(et => et.cardId === this.cardId)
+          .sort((a, b) => {
+            if (this.getTeamShortName(a.teamId).toLowerCase() < this.getTeamShortName(b.teamId).toLowerCase()) {
+              return -1;
+            } else if (this.getTeamShortName(a.teamId).toLowerCase() > this.getTeamShortName(b.teamId).toLowerCase()) {
+              return 1;
+            } else {
+              return 0;
+            };
+          }) :
+        new Array<CardTeam>();
       this.setDataSources();
     });
   }
@@ -71,25 +83,13 @@ export class CardTeamsComponent implements OnDestroy, OnInit {
   }
 
   setDataSources() {
+    this.cardTeamDataSource.data = this.cardTeams;
+    let mselTeams = new Array<Team>();
     if (this.mselTeamList) {
-      // Now that all of the observables are returned, process accordingly.
-      this.cardTeamDataSource.data = this.cardTeams ? this.cardTeams.sort((a, b) => {
-        if (this.getTeamShortName(a.teamId).toLowerCase() < this.getTeamShortName(b.teamId).toLowerCase()) {
-          return -1;
-        } else if (this.getTeamShortName(a.teamId).toLowerCase() > this.getTeamShortName(b.teamId).toLowerCase()) {
-          return 1;
-        } else {
-          return 0;
-        }
-      }) : new Array<CardTeam>();
-      const mselTeams = this.mselTeamList ? this.mselTeamList.slice(0) : new Array<Team>();
-      this.cardTeamDataSource.data.forEach((et) => {
-        const index = mselTeams.findIndex((u) => u.id === et.id);
-        mselTeams.splice(index, 1);
-      });
-      this.teamDataSource = new MatTableDataSource(mselTeams);
-      this.teamDataSource.sort = this.sort;
+      mselTeams = this.mselTeamList.filter(mt => !this.cardTeams.some(ct => ct.teamId === mt.id));
     }
+    this.teamDataSource = new MatTableDataSource(mselTeams);
+    this.teamDataSource.sort = this.sort;
   }
 
   getTeamShortName(teamId: string) {
@@ -99,12 +99,7 @@ export class CardTeamsComponent implements OnDestroy, OnInit {
 
 
   addTeamToCard(team: Team): void {
-    const index = this.cardTeamDataSource.data.findIndex(
-      (tu) => tu.id === team.id
-    );
-    if (index === -1) {
-      this.cardTeamDataService.addTeamToCard(this.cardId, team);
-    }
+    this.cardTeamDataService.addTeamToCard(this.cardId, team);
   }
 
   setIsShownOnWall(cardTeam: CardTeam, value: boolean) {
@@ -121,13 +116,8 @@ export class CardTeamsComponent implements OnDestroy, OnInit {
    * Removes a team from the current card
    * @param team The team to remove from card
    */
-  removeTeamFromCard(team: Team): void {
-    const index = this.cardTeamDataSource.data.findIndex(
-      (et) => et.id === team.id
-    );
-    if (index !== -1) {
-      this.cardTeamDataService.removeCardTeam(this.cardId, team.id);
-    }
+  removeTeamFromCard(cardTeamId: string): void {
+    this.cardTeamDataService.removeCardTeam(cardTeamId);
   }
 
   compare(a: string, b: string, isAsc: boolean) {
