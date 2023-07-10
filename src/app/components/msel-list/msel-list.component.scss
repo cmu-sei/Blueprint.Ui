@@ -1,108 +1,108 @@
-// Copyright 2022 Carnegie Mellon University. All Rights Reserved.
+// Copyright 2023 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-.cards {
-  width: 100%;
+.msel-list-container {
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  height: calc(100vh - 140px);
+  min-width: 300px;
+  margin-top: 40px;
+  width: 80%;
+  overflow: auto;
+}
+
+.header-div {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: row;
+  flex: 1;
+  height: 65px;
 }
 
-.card {
-  flex: 1 0 500px;
-  box-sizing: border-box;
-  margin: 1rem .25em;
-  cursor: pointer;
+.title-icon {
+  transform: scale(0.85);
+  margin-left: 30px;
 }
 
-@media screen and (min-width: 40em) {
-  .card {
-     max-width: calc(50% -  1em);
-  }
+.msels-title {
+  display: flex;
+  flex-direction: row;
+  flex: 3;
+  font-size: x-large;
+  align-self: center;
 }
 
-@media screen and (min-width: 60em) {
-  .card {
-      max-width: calc(33.3% - 1em);
-  }
-}
-
-@media screen and (min-width: 80em) {
-  .card {
-      max-width: calc(25% - 1em);
-  }
+.search-box {
+  display: flex;
+  flex-direction: row;
+  flex: 7;
+  align-self: center;
 }
 
 .search-control {
-  width: 100%;
+  width: 80%;
 }
 
-.clear-search-button {
-  align-self: center;
-  width: 30px;
+.search-icon {
+  transform: scale(0.85);
+  margin-right: 5px;
+  margin-top: 20px;
 }
 
-.action-buttons {
+.no-results {
+  font-size: x-large;
+}
+
+.mat-header-cell {
+  font-size: medium;
+}
+
+.app-list-item {
+  padding: 0;
+  text-align: left;
+  font-size: x-small;
+}
+
+.description-text {
+  font-size: large;
+  text-align: left;
+}
+
+.team-text {
+  font-size: large;
   text-align: center;
 }
 
-.msel-title {
-  margin-top: 8px;
-  font-size: 16pt;
-  font-weight: bold;
+.shrink {
+  margin: 0;
+  padding: 0;
 }
 
-.msel-text {
-  margin-top: 8px;
-  font-size: 16px;
-  white-space: pre-wrap;
-  text-align: left !important;
+.msel-table-header-bar {
+  width: 100%;
 }
 
-.header-row {
+.player-icon {
+  transform: scale(2);
+  width: 60px;
+}
+
+.mat-column-name {
+  flex: 0 0 28%;
+  padding: 1%;
+}
+.mat-column-teamName {
+  flex: 0 0 20%;
+}
+.mat-column-description {
+  flex: 0 0 48%;
+  padding: 1%;
+}
+
+.app-icon {
   display: flex;
-  flex-direction: row;
-  border-bottom-width: 1px;
-  border-bottom-style: solid;
-  align-items: center;
-  box-sizing: border-box;
-  height: 65px;
-  padding-left:30px;
-  padding-right: 50px;
-}
-
-.header-cell {
-  display: flex;
-  flex-direction: row;
-  overflow: hidden;
-  word-wrap: break-word;
-  font-weight: bold;
-}
-
-.eight-cell {
-  flex: 8;
-}
-
-.five-cell {
-  flex: 5;
-}
-
-.four-cell {
-  flex: 4;
-}
-
-.three-cell {
-  flex: 3;
-}
-
-.two-cell {
-  flex: 2;
-}
-
-.one-cell {
   flex: 1;
+  align-items: center;
 }
 
-.center-self {
-  align-self: center;
-}

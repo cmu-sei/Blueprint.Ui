@@ -72,6 +72,15 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <mat-icon aria-hidden="false" class="icon-color" svgIcon="ic_expand_more"></mat-icon>
       </button>
       <mat-menu #menu="matMenu" [overlapTrigger]="false">
+        <button
+          mat-menu-item
+          (click)="goToUrl('/admin')"
+          title="Admin Pages"
+          *ngIf="
+            currentUser.profile.isSystemAdmin !== null &&
+            currentUser.profile.isSystemAdmin
+          "
+        >Administration</button>
         <button mat-menu-item (click)="logout()">Logout</button>
         <mat-slide-toggle
           class="mat-menu-item"
@@ -83,19 +92,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
           Dark Theme
         </mat-slide-toggle>
       </mat-menu>
-      <button
-        mat-button
-        class="icon-color"
-        style="outline: none;"
-        (click)="goToUrl('/admin')"
-        title="Admin Pages"
-        *ngIf="
-            currentUser.profile.isSystemAdmin !== null &&
-            currentUser.profile.isSystemAdmin
-          "
-      >
-        <mat-icon aria-hidden="false" class="icon-color admin-cog-icon mdi-24px" fontIcon="mdi-cog-outline"></mat-icon>
-      </button>
     </div>
   </mat-toolbar-row>
 </mat-toolbar>
