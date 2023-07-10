@@ -41,7 +41,7 @@ export class MselInfoComponent implements OnDestroy {
   // context menu
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
   contextMenuPosition = { x: '0px', y: '0px' };
-  isEditEnabled = false;
+  isChanged = false;
   userList: User[] = [];
   teamList: Team[] = [];
   scoringModelList: CiteApiClientScoringModel[] = [];
@@ -117,11 +117,11 @@ export class MselInfoComponent implements OnDestroy {
 
   saveChanges() {
     this.mselDataService.updateMsel(this.msel);
-    this.isEditEnabled = false;
+    this.isChanged = false;
   }
 
   cancelChanges() {
-    this.isEditEnabled = false;
+    this.isChanged = false;
     Object.assign(this.msel, this.originalMsel);
   }
 
