@@ -67,6 +67,7 @@ import { CiteActionEditDialogComponent } from './components/cite-action-edit-dia
 import { CiteActionListComponent } from './components/cite-action-list/cite-action-list.component';
 import { CiteRoleEditDialogComponent } from './components/cite-role-edit-dialog/cite-role-edit-dialog.component';
 import { CiteRoleListComponent } from './components/cite-role-list/cite-role-list.component';
+import { DataFieldEditDialogComponent } from './components/data-field-edit-dialog/data-field-edit-dialog.component';
 import { DataFieldListComponent } from './components/data-field-list/data-field-list.component';
 import { DataOptionEditDialogComponent } from './components/data-option-edit-dialog/data-option-edit-dialog.component';
 import { HomeAppComponent } from './components/home-app/home-app.component';
@@ -115,6 +116,7 @@ export function getBasePath(settingsSvc: ComnSettingsService) {
     CiteActionListComponent,
     CiteRoleEditDialogComponent,
     CiteRoleListComponent,
+    DataFieldEditDialogComponent,
     DataFieldListComponent,
     DataOptionEditDialogComponent,
     HomeAppComponent,

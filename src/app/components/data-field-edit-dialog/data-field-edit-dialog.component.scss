@@ -1,0 +1,64 @@
+// Copyright 2022 Carnegie Mellon University. All Rights Reserved.
+// Released under a MIT (SEI)-style license. See LICENSE.md in the
+// project root for license information.
+
+.full-width {
+    width: 100%;
+}
+
+.bottom-button {
+    margin-bottom: 10px;
+    margin-top: 10px;
+}
+
+.delete-button {
+  margin-top: 10px;
+  margin-right: 50px;
+}
+
+.close-button {
+  float: right;
+}
+
+.data-field-detail {
+  display: flex;
+  flex: 1;
+  flex-flow: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.data-options {
+  display: flex;
+  flex: 7;
+  flex-flow: column;
+  align-items: flex-start;
+  text-align: left;;
+}
+
+.data-option {
+  display: flex;
+  flex-flow: row;
+}
+
+.single-detail {
+  display: flex;
+  flex: 10;
+  flex-flow: row;
+  align-items: flex-start;
+  width: 90%;
+}
+
+.partial-detail {
+  display: flex;
+  flex: 3;
+}
+
+.center-self {
+  align-self: center;
+}
+
+.bottom-margin {
+  margin-bottom: 15px;
+}
+
