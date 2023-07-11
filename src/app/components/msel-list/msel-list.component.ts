@@ -40,8 +40,9 @@ export class MselListComponent implements OnDestroy, OnInit  {
   sortedMselList: MselPlus[] = [];
   defaultTab = 'Info';
   isLoading = true;
+  areButtonsDisabled = false;
   mselDataSource: MatTableDataSource<MselPlus>;
-  displayedColumns: string[] = ['name', 'status', 'dateModified', 'description'];
+  displayedColumns: string[] = ['action', 'name', 'status', 'dateModified', 'description'];
   imageFilePath = '';
   private unsubscribe$ = new Subject();
 
@@ -75,6 +76,7 @@ export class MselListComponent implements OnDestroy, OnInit  {
       this.mselDataSource.data = msels;
       this.filterMsels();
       this.isLoading = false;
+      this.areButtonsDisabled = false;
     });
     // subscribe to filter control changes
     this.filterControl.valueChanges.pipe(takeUntil(this.unsubscribe$)).subscribe((term) => {
@@ -90,12 +92,10 @@ export class MselListComponent implements OnDestroy, OnInit  {
     // join signalR for this MSEL
     this.signalRService.selectMsel(mselId);
     this.uiDataService.setMselTab(this.defaultTab);
-    // this.router.navigate([], {
-    //   queryParams: { msel: mselId }
-    // });
   }
 
   uploadFile(mselId: string, teamId: string) {
+    this.areButtonsDisabled = true;
     this.uploadMselId = mselId ? mselId : '';
     this.uploadTeamId = teamId ? teamId : '';
   }
@@ -106,6 +106,7 @@ export class MselListComponent implements OnDestroy, OnInit  {
   selectFile(e) {
     const file = e.target.files[0];
     if (!file) {
+      this.areButtonsDisabled = false;
       return;
     }
     this.uploadProgress = 0;
@@ -123,6 +124,7 @@ export class MselListComponent implements OnDestroy, OnInit  {
           } else {
             alert('Error uploading files: ' + event.status);
           }
+          this.areButtonsDisabled = false;
         }
       });
     this.fileInput.nativeElement.value = null;
@@ -157,12 +159,15 @@ export class MselListComponent implements OnDestroy, OnInit  {
   }
 
   addMsel() {
+    this.areButtonsDisabled = true;
     this.mselDataService.add({
       name: 'New MSEL',
       description: 'Created from Default Settings by ' + this.userDataService.loggedInUser.value.profile.name,
       status: 'Pending',
       dataFields: this.settingsService.settings.DefaultDataFields
     });
+    this.sort.sort(<MatSortable>{ id: 'dateCreated', start: 'desc' });
+    this.mselDataSource.sort = this.sort;
   }
 
   copyMsel(id: string): void {
