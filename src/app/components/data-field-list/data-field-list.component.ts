@@ -222,6 +222,10 @@ export class DataFieldListComponent implements OnDestroy {
     return dataOptions.join(', ');
   }
 
+  saveChange(dataField: DataField) {
+    this.dataFieldDataService.updateDataField(dataField);
+  }
+
   ngOnDestroy() {
     this.unsubscribe$.next(null);
     this.unsubscribe$.complete();

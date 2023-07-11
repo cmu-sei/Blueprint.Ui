@@ -75,6 +75,23 @@ project root for license information or contact permission@sei.cmu.edu for full 
             </button>
             &nbsp;{{ item.displayOrder }}
           </div>
+          <div class="mat-cell flex-row-cell one-cell center-self">
+            <mat-checkbox
+              [(ngModel)]="item.onScenarioEventList"
+              [disabled]="!isContentDeveloper && !msel.hasRole(loggedInUserId, null).owner"
+              (change)="saveChange(item);"
+              (click)="$event.stopPropagation();"
+            >
+            </mat-checkbox>
+            <mat-checkbox
+              [(ngModel)]="item.onExerciseView"
+              [disabled]="!isContentDeveloper && !msel.hasRole(loggedInUserId, null).owner"
+              (change)="saveChange(item);"
+              (click)="$event.stopPropagation();"
+              class="exercise-view-checkbox"
+            >
+            </mat-checkbox>
+          </div>
           <div class="mat-cell two-cell center-self">{{ item.name }}</div>
           <div class="mat-cell two-cell center-self">{{ item.dataType }}</div>
           <div class="mat-cell two-cell center-self">{{ getDataOptionsString(item.id) }}</div>
