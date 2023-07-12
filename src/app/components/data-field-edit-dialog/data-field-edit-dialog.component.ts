@@ -14,6 +14,7 @@ import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALO
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 import {
   DataField,
+  DataFieldType,
   DataOption
 } from 'src/app/generated/blueprint.api';
 import { DataOptionEditDialogComponent } from '../data-option-edit-dialog/data-option-edit-dialog.component';
@@ -137,7 +138,13 @@ export class DataFieldEditDialogComponent {
       .sort((a, b) => a.displayOrder < b.displayOrder ? -1 : 1);
   }
 
-
+  optionListNotAllowed(): boolean {
+    return !(
+      this.data.dataField.dataType === DataFieldType.Double ||
+      this.data.dataField.dataType === DataFieldType.Integer ||
+      this.data.dataField.dataType === DataFieldType.String
+    );
+  }
 
   /**
    * Closes the edit screen

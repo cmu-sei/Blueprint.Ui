@@ -57,7 +57,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <div class="partial-detail">
         <mat-checkbox
           [(ngModel)]="data.dataField.isChosenFromList"
-          [disabled]="!data.isContentDeveloper && !data.isOwner"
+          [disabled]="(!data.isContentDeveloper && !data.isOwner) || optionListNotAllowed()"
           class="bottom-margin"
         >
           Use Option List
@@ -101,28 +101,10 @@ project root for license information or contact permission@sei.cmu.edu for full 
   <div class="data-field-detail" (click)="$event.stopPropagation();">
     <div class="single-detail">
       <mat-checkbox
-        [(ngModel)]="data.dataField.isInitiallyHidden"
-        [disabled]="!data.isContentDeveloper && !data.isOwner"
-        class="bottom-margin"
-      >Hidden under "More Fields" section</mat-checkbox><br />
-    </div>
-  </div>
-  <div class="data-field-detail" (click)="$event.stopPropagation();">
-    <div class="single-detail">
-      <mat-checkbox
-        [(ngModel)]="data.dataField.isOnlyShownToOwners"
-        [disabled]="!data.isContentDeveloper && !data.isOwner"
-        class="bottom-margin"
-      >ONLY Display for Content Developers and Owners</mat-checkbox><br />
-    </div>
-  </div>
-  <div class="data-field-detail" (click)="$event.stopPropagation();">
-    <div class="single-detail">
-      <mat-checkbox
         [(ngModel)]="data.dataField.onScenarioEventList"
         [disabled]="!data.isContentDeveloper && !data.isOwner"
         class="bottom-margin"
-      >Display in header of Injects</mat-checkbox><br />
+      >Display on the Injects list</mat-checkbox><br />
     </div>
   </div>
   <div class="data-field-detail" (click)="$event.stopPropagation();">
@@ -131,7 +113,25 @@ project root for license information or contact permission@sei.cmu.edu for full 
         [(ngModel)]="data.dataField.onExerciseView"
         [disabled]="!data.isContentDeveloper && !data.isOwner"
         class="bottom-margin"
-      >Display in header of Exercise View</mat-checkbox><br />
+      >Display on the Exercise View</mat-checkbox><br />
+    </div>
+  </div>
+  <div class="data-field-detail" (click)="$event.stopPropagation();">
+    <div class="single-detail">
+      <mat-checkbox
+        [(ngModel)]="data.dataField.isInitiallyHidden"
+        [disabled]="!data.isContentDeveloper && !data.isOwner"
+        class="bottom-margin"
+      >Display under "Additional", not under "Default"</mat-checkbox><br />
+    </div>
+  </div>
+  <div class="data-field-detail" (click)="$event.stopPropagation();">
+    <div class="single-detail">
+      <mat-checkbox
+        [(ngModel)]="data.dataField.isOnlyShownToOwners"
+        [disabled]="!data.isContentDeveloper && !data.isOwner"
+        class="bottom-margin"
+      >Display for Content Developers and MSEL Owners ONLY !!!</mat-checkbox><br />
     </div>
   </div>
   <div class="data-field-detail" (click)="$event.stopPropagation();" *ngIf="data.useGallery">

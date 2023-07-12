@@ -26,7 +26,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <span class="mat-header-cell one-cell">Display On<br />Injects&nbsp;&nbsp;&nbsp;&nbsp;Exercise View</span>
       <span class="mat-header-cell two-cell" mat-sort-header="name">Name</span>
       <span class="mat-header-cell one-cell" mat-sort-header="dataType">Data Type</span>
-      <span class="mat-header-cell one-cell" mat-sort-header="integration"><span class="integration">Integration<span class="gallery-warning" *ngIf="!!galleryToDo()">**</span></span></span>
+      <span class="mat-header-cell one-cell" mat-sort-header="integration">
+        <span class="integration">Integration
+          <span class="gallery-warning" *ngIf="!!galleryToDo()" title="** See warning message below!">
+            **
+          </span>
+        </span>
+      </span>
       <span class="mat-header-cell one-cell" mat-sort-header="isChosenFromList">Options</span>
       <span class="mat-header-cell one-cell search-cell">
         <mat-form-field class="search-control">

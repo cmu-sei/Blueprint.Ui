@@ -49,7 +49,7 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
   selectedTab = 0;
   private tabSections = new Map([
     ['default', 0],
-    ['all', 1]
+    ['additional', 1]
   ]);
   private tabCount = 2;
   currentFilterBy = 'default';
@@ -64,20 +64,15 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
 
   ngOnInit() {
     if (this.data.isNew) {
-      this.sortedDataFields = this.getFilteredDataFields('all');
-      this.selectedTab = this.tabSections.get('all');
+      this.sortedDataFields = this.getFilteredDataFields('additional');
+      this.selectedTab = this.tabSections.get('additional');
     } else {
       this.sortedDataFields = this.getFilteredDataFields('default');
       this.selectedTab = this.tabSections.get('default');
     }
-    if (this.data.useCite) {
-      this.tabSections.set('cite', this.tabCount++);
-    }
     if (this.data.useGallery) {
-      this.tabSections.set('gallery', this.tabCount++);
-    }
-    if (this.data.useSteamfitter) {
-      this.tabSections.set('steamfitter', this.tabCount++);
+      this.tabSections.set('gallery', this.tabCount);
+      this.tabSections.set('additional', this.tabCount++);
     }
   }
 
@@ -152,8 +147,8 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
       case 'gallery':
         filteredList = this.data.dataFields.filter(x => !!x.galleryArticleParameter);
         break;
-      case 'all':
-        filteredList = this.data.dataFields;
+      case 'additional':
+        filteredList = this.data.dataFields.filter(x => x.isInitiallyHidden && !x.galleryArticleParameter);
         break;
     }
     filteredList =  filteredList.sort((a, b) => +a.displayOrder < +b.displayOrder ? -1 : 1);

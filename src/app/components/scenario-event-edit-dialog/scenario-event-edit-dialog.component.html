@@ -26,13 +26,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
         (selectedTabChange)="tabChange($event)">
         <mat-tab label="Default">
         </mat-tab>
-        <mat-tab label="All">
-        </mat-tab>
         <mat-tab label="Gallery" *ngIf="data.useGallery">
+        </mat-tab>
+        <mat-tab label="Additional">
         </mat-tab>
       </mat-tab-group>
       <!-- row index -->
-      <div class="single-edit-dialog" *ngIf="currentFilterBy === 'all'">
+      <div class="single-edit-dialog" *ngIf="currentFilterBy === 'additional'">
         <mat-form-field class="full-width">
           <input
             matInput
@@ -244,7 +244,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         </mat-form-field>
       </div>
       <!-- metadata-->
-      <div class="single-edit-dialog" *ngIf="currentFilterBy === 'all'">
+      <div class="single-edit-dialog" *ngIf="currentFilterBy === 'additional'">
         <mat-form-field class="full-width">
           <input
             type="text"
