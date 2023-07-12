@@ -71,8 +71,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
               (keypress)="isChanged = true"
               >Is a Template</mat-checkbox>
           </div>
+          <!-- Player Integration-->
           <div *ngIf="!msel.isTemplate" class="single-detail top-margin">
-            <mat-form-field class="half-width">
+            <mat-form-field class="half-width" *ngIf="viewList.length > 0">
               <mat-label>Link Player View</mat-label>
               <mat-select
                 [(ngModel)]="msel.playerViewId"
@@ -87,15 +88,28 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 </mat-option>
               </mat-select>
             </mat-form-field>
+            <mat-form-field class="half-width" *ngIf="viewList.length === 0">
+              <input
+                type="text"
+                matInput
+                placeholder="Link Player View"
+                [(ngModel)]="msel.playerViewId"
+                (cut)="isChanged = true"
+                (change)="isChanged = true"
+                (paste)="isChanged = true"
+                (keypress)="isChanged = true"
+              />
+            </mat-form-field>
             <button
               class="half-button"
               (click)="addViewTeamsToMsel()"
               title="Add Player Teams"
-              *ngIf="msel.playerViewId"
+              [disabled]="!msel.playerViewId || viewList.length === 0"
             >Add View Teams</button>
           </div>
+          <!-- Gallery Integration -->
           <div *ngIf="!msel.isTemplate" class="single-detail">
-            <div class="sub-detail">
+            <div class="sub-detail two-cell">
               <mat-checkbox
                 [(ngModel)]="msel.useGallery"
                 (cut)="isChanged = true"
@@ -104,20 +118,27 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 (keypress)="isChanged = true"
               >Integrate Gallery</mat-checkbox>
             </div>
-            <div class="sub-detail" *ngIf="msel.useGallery">
+            <div class="sub-detail five-cell" *ngIf="msel.useGallery">
               <button
                 (click)="pushToGallery()"
                 title="Push to Gallery"
+                class="thin-button"
                 *ngIf="!msel.galleryCollectionId"
+                [disabled]="galleryToDo()"
               ><span *ngIf="isBusy">Pushing to Gallery ...</span><span *ngIf="!isBusy">Push to Gallery</span></button>
+              <span *ngIf="!msel.galleryCollectionId && galleryToDo()" class="gallery-warning">** Unassigned Gallery Article Parameters in Data Fields</span>
               <button
                 (click)="pullFromGallery()"
                 title="Remove from Gallery"
+                class="thin-button"
                 *ngIf="msel.galleryCollectionId"
               >Remove from Gallery</button>
             </div>
-            <div class="sub-detail">
-              <mat-form-field *ngIf="msel.useGallery && msel.galleryCollectionId" class="full-width">
+          </div>
+          <div *ngIf="!msel.isTemplate && msel.useGallery && msel.galleryExhibitId" class="single-detail">
+            <div class="sub-detail one-cell">&nbsp;</div>
+            <div class="sub-detail four-cell" *ngIf="msel.useGallery && msel.galleryCollectionId">
+              <mat-form-field class="guid-field">
                 <input
                   type="text"
                   matInput
@@ -127,8 +148,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 />
               </mat-form-field>
             </div>
-            <div class="sub-detail">
-              <mat-form-field *ngIf="msel.useGallery && msel.galleryExhibitId" class="full-width">
+            <div class="sub-detail four-cell">
+              <mat-form-field class="guid-field">
                 <input
                   type="text"
                   matInput
@@ -139,57 +160,80 @@ project root for license information or contact permission@sei.cmu.edu for full 
               </mat-form-field>
             </div>
           </div>
+          <!-- CITE Integration -->
           <div *ngIf="!msel.isTemplate" class="single-detail">
-            <mat-checkbox
-              [(ngModel)]="msel.useCite"
-              (cut)="isChanged = true"
-              (change)="isChanged = true"
-              (paste)="isChanged = true"
-              (keypress)="isChanged = true"
-              >Integrate CITE</mat-checkbox>
-          </div>
-          <div class="sub-detail bottom-space" *ngIf="msel.useCite">
-            <mat-form-field class="half-width">
-              <mat-label>Select Scoring Model</mat-label>
-              <mat-select
-                [(ngModel)]="msel.citeScoringModelId"
+            <div class="sub-detail center-self two-cell">
+              <mat-checkbox
+                [(ngModel)]="msel.useCite"
                 (cut)="isChanged = true"
                 (change)="isChanged = true"
                 (paste)="isChanged = true"
                 (keypress)="isChanged = true"
-              >
-              <mat-option [value]=""></mat-option>
-              <mat-option *ngFor="let scoringModel of scoringModelList" [value]="scoringModel.id">
-                  {{ scoringModel.description }}
-                </mat-option>
-              </mat-select>
-            </mat-form-field>
+                >Integrate CITE</mat-checkbox>
+            </div>
+            <div class="sub-detail center-self" *ngIf="msel.useCite">
+              <mat-form-field class="half-width" *ngIf="scoringModelList.length > 0">
+                <mat-label>Select Scoring Model</mat-label>
+                <mat-select
+                  [(ngModel)]="msel.citeScoringModelId"
+                  (cut)="isChanged = true"
+                  (change)="isChanged = true"
+                  (paste)="isChanged = true"
+                  (keypress)="isChanged = true"
+                >
+                <mat-option [value]=""></mat-option>
+                <mat-option *ngFor="let scoringModel of scoringModelList" [value]="scoringModel.id">
+                    {{ scoringModel.description }}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+              <mat-form-field class="half-width guid-field" *ngIf="scoringModelList.length === 0">
+                <input
+                  type="text"
+                  matInput
+                  placeholder="Select Scoring Model"
+                  [(ngModel)]="msel.citeScoringModelId"
+                  (cut)="isChanged = true"
+                  (change)="isChanged = true"
+                  (paste)="isChanged = true"
+                  (keypress)="isChanged = true"
+                />
+              </mat-form-field>
+              </div>
+            <div class="sub-detail center-self" *ngIf="msel.useCite">
+              <button
+                (click)="pushToCite()"
+                title="Push to CITE"
+                class="thin-button"
+                *ngIf="!msel.citeEvaluationId"
+                [disabled]="!(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) || !msel.citeScoringModelId || isBusy"
+              ><span *ngIf="isBusy">Pushing to CITE ...</span><span *ngIf="!isBusy">Push to CITE</span></button>
+              <button
+                (click)="pullFromCite()"
+                title="Remove from CITE"
+                class="thin-button"
+                *ngIf="!!msel.citeEvaluationId"
+                [disabled]="!(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)"
+              >Remove from CITE</button>
+            </div>
           </div>
-          <div class="sub-detail bottom-space" *ngIf="msel.useCite">
-            <button
-              (click)="pushToCite()"
-              title="Push to CITE"
-              *ngIf="!msel.citeEvaluationId"
-              [disabled]="!(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) || !msel.citeScoringModelId || isBusy"
-            ><span *ngIf="isBusy">Pushing to CITE ...</span><span *ngIf="!isBusy">Push to CITE</span></button>
-            <button
-              (click)="pullFromCite()"
-              title="Remove from CITE"
-              *ngIf="!!msel.citeEvaluationId"
-              [disabled]="!(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)"
-            >Remove from CITE</button>
+          <div *ngIf="!msel.isTemplate && msel.useCite && msel.citeEvaluationId" class="single-detail">
+            <div class="sub-detail center-self two-cell">
+              &nbsp;
+            </div>
+            <div class="sub-detail center-self">
+              <mat-form-field *ngIf="msel.useCite && msel.citeEvaluationId" class="half-width guid-field">
+                <input
+                  type="text"
+                  matInput
+                  placeholder="Evaluation"
+                  [(ngModel)]="msel.citeEvaluationId"
+                  disabled
+                />
+              </mat-form-field>
+            </div>
           </div>
-          <div class="sub-detail">
-            <mat-form-field *ngIf="msel.useCite && msel.citeEvaluationId" class="full-width">
-              <input
-                type="text"
-                matInput
-                placeholder="Evaluation"
-                [(ngModel)]="msel.citeEvaluationId"
-                disabled
-              />
-            </mat-form-field>
-          </div>
+          <!-- Steamfitter Integration -->
           <div *ngIf="!msel.isTemplate" class="single-detail">
             <mat-checkbox
               [disabled]="true"

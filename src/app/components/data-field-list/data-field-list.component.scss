@@ -109,6 +109,10 @@
   width: 100%;
 }
 
+.integration {
+  width: 130px;
+}
+
 .scrolling-region {
   height: calc(100vh - 144px);
   overflow: auto;
@@ -117,12 +121,6 @@
 .scrolling-details {
   max-height: calc(100vh - 293px);
   overflow: auto;
-}
-
-textarea {
-  border: 1px solid;
-  padding: 16px !important;
-  box-sizing: border-box;
 }
 
 .data-field-button {
@@ -200,4 +198,9 @@ textarea {
 
 .exercise-view-checkbox {
   margin-left: 40%;
+}
+
+.gallery-warning {
+  font-size: small;
+  color: orangered;
 }
