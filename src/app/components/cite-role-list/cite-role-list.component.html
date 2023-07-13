@@ -23,7 +23,17 @@ project root for license information or contact permission@sei.cmu.edu for full 
         </button>
         Name
       </span>
-      <span class="mat-header-cell three-cell" mat-sort-header="team">Team</span>
+      <span class="mat-header-cell three-cell" mat-sort-header="team">
+        <mat-form-field class="team-selector">
+          <mat-label>Team</mat-label>
+          <mat-select placeholder="Team" [value]="selectedTeamId" (selectionChange)="selectTeam($event.value)" (click)="$event.stopPropagation()">
+            <mat-option value="">All Teams</mat-option>
+            <mat-option *ngFor="let team of mselTeamList" [value]="team.id">
+              {{ team.shortName }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </span>
       <span class="mat-header-cell three-cell search-cell">
         <mat-form-field class="search-control">
           <input matInput [formControl]="filterControl" placeholder="Search" />
@@ -72,7 +82,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
             </button>
             &nbsp;{{ item.name }}
           </div>
-          <div class="mat-cell three-cell center-self">{{ item.team.name }}</div>
+          <div class="mat-cell three-cell center-self">
+            {{ item.team.shortName }} - {{ item.team.name }}
+          </div>
           <div class="mat-cell three-cell center-self">&nbsp;</div>
         </mat-expansion-panel-header>
       </mat-expansion-panel>

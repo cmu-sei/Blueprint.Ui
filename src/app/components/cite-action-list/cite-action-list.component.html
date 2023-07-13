@@ -33,7 +33,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </mat-select>
         </mat-form-field>
       </span>
-      <span class="mat-header-cell two-cell" mat-sort-header="team">
+      <span class="mat-header-cell four-cell" mat-sort-header="team">
         <mat-form-field class="team-selector">
           <mat-label>Team</mat-label>
           <mat-select placeholder="Team" [value]="selectedTeamId" (selectionChange)="selectTeam($event.value)" (click)="$event.stopPropagation()">
@@ -45,7 +45,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         </mat-form-field>
       </span>
       <span class="mat-header-cell one-cell">Display Order</span>
-      <span class="mat-header-cell three-cell" mat-sort-header="description">Description</span>
+      <span class="mat-header-cell two-cell" mat-sort-header="description">Description</span>
       <span class="mat-header-cell two-cell search-cell">
         <mat-form-field class="search-control">
           <input matInput [formControl]="filterControl" placeholder="Search" />
@@ -94,9 +94,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
             </button>
           </div>
           <div class="mat-cell flex-row-cell one-cell">{{ item.moveNumber }}</div>
-          <div class="mat-cell two-cell center-self">{{ item.team.shortName }}</div>
+          <div class="mat-cell four-cell center-self">{{ item.team.shortName }} - {{ item.team.name }}</div>
           <div class="mat-cell one-cell center-self">{{ item.actionNumber }}</div>
-          <div class="mat-cell five-cell center-self">{{ item.description }}</div>
+          <div class="mat-cell four-cell center-self">{{ item.description }}</div>
         </mat-expansion-panel-header>
       </mat-expansion-panel>
     </section>

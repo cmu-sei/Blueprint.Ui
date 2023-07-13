@@ -16,6 +16,7 @@ import { Sort } from '@angular/material/sort';
 import { MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy-menu';
 import { CiteRoleDataService } from 'src/app/data/cite-role/cite-role-data.service';
 import { CiteRoleQuery } from 'src/app/data/cite-role/cite-role.query';
+import { MselTeamQuery } from 'src/app/data/msel-team/msel-team.query';
 import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { CiteRoleEditDialogComponent } from '../cite-role-edit-dialog/cite-role-edit-dialog.component';
@@ -38,6 +39,8 @@ export class CiteRoleListComponent implements OnDestroy {
   sortedCiteRoles: CiteRole[] = [];
   isAddingCiteRole = false;
   editingId = '';
+  selectedTeamId = '';
+  mselTeamList: Team[] = [];
   private unsubscribe$ = new Subject();
   // context menu
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
@@ -47,6 +50,7 @@ export class CiteRoleListComponent implements OnDestroy {
     private mselQuery: MselQuery,
     private citeRoleDataService: CiteRoleDataService,
     private citeRoleQuery: CiteRoleQuery,
+    private mselTeamQuery: MselTeamQuery,
     public dialog: MatDialog,
     public dialogService: DialogService
   ) {
@@ -62,6 +66,17 @@ export class CiteRoleListComponent implements OnDestroy {
         this.sortedCiteRoles = this.getSortedCiteRoles(this.getFilteredCiteRoles(this.citeRoleList));
       }
     });
+    // subscribe to mselTeams
+    this.mselTeamQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(mselTeams => {
+      const mtList: Team[] = [];
+      mselTeams.forEach(mt => {
+        if (mt.mselId === this.msel.id) {
+          mtList.push(mt.team);
+        }
+      });
+      this.mselTeamList = mtList.sort((a, b) => a.shortName.toLowerCase() < b.shortName.toLowerCase() ? -1 : 1);
+    });
+    // subscribe to filter term changes
     this.filterControl.valueChanges
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((term) => {
@@ -180,8 +195,16 @@ export class CiteRoleListComponent implements OnDestroy {
             a.team.name.toLowerCase().includes(filterString)
           );
       }
-    }
+      if (this.selectedTeamId) {
+        filteredCiteRoles = filteredCiteRoles.filter((a) => a.teamId === this.selectedTeamId);
+      }
+  }
     return filteredCiteRoles;
+  }
+
+  selectTeam(teamId: string) {
+    this.selectedTeamId = teamId;
+    this.sortedCiteRoles = this.getSortedCiteRoles(this.getFilteredCiteRoles(this.citeRoleList));
   }
 
   ngOnDestroy() {
