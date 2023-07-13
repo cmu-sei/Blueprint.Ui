@@ -17,6 +17,30 @@ project root for license information or contact permission@sei.cmu.edu for full 
       />
     </div>
     <div class="msels-title">My MSELs</div>
+    <div class="header-button">
+      <button
+        mat-icon-button
+        (click)="addMsel(); $event.stopPropagation()"
+        style="outline: none; margin-right: 15px;"
+        title="Add blank MSEL"
+        [disabled]="!isContentDeveloper"
+      >
+        <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
+        Blank
+      </button>
+    </div>
+    <div class="header-button">
+      <button
+        mat-icon-button
+        (click)="uploadFile('', ''); fileInput.click(); $event.stopPropagation();"
+        style="outline: none; margin-right: 15px;"
+        title="Add MSEL from .xlsx file"
+        [disabled]="!isContentDeveloper"
+      >
+        <mat-icon class="mdi-24px self-center" fontIcon="mdi-upload"></mat-icon>
+        Upload
+      </button>
+    </div>
     <div class="search-box">
       <mat-icon
         class="search-icon"
@@ -48,6 +72,46 @@ project root for license information or contact permission@sei.cmu.edu for full 
   </mat-card>
   <div class="mat-table">
     <mat-table #table [dataSource]="mselDataSource" matSort>
+      <!-- action column -->
+      <ng-container matColumnDef="action">
+        <mat-header-cell *matHeaderCellDef></mat-header-cell>
+        <mat-cell *matCellDef="let element">
+          <div class="action-div">
+            <button
+              mat-icon-button class="msel-action"
+              (click)="downloadFile(element); $event.stopPropagation();"
+              title="Download .xlsx file"
+              [disabled]="!isReady"
+            >
+              <mat-icon class="mdi-18px" fontIcon="mdi-download" alt="Download .xlsx file"></mat-icon>
+            </button>
+            <button
+              mat-icon-button class="msel-action"
+              (click)="uploadFile(element.id, null); fileInput.click(); $event.stopPropagation();"
+              title="Upload .xlsx file"
+              [disabled]="!isReady || !(isContentDeveloper || element.hasRole(loggedInUserId, null).owner)"
+            >
+              <mat-icon class="mdi-18px" fontIcon="mdi-upload" alt="Upload .xlsx file"></mat-icon>
+            </button>
+            <button
+              mat-icon-button class="msel-action"
+              (click)="delete(element); $event.stopPropagation();"
+              title="Delete"
+              [disabled]="!isReady || !isContentDeveloper"
+            >
+              <mat-icon class="mdi-18px" fontIcon="mdi-delete" alt="Delete"></mat-icon>
+            </button>
+            <button
+              mat-icon-button class="msel-action"
+              (click)="copyMsel(element.id); $event.stopPropagation();"
+              title="Copy"
+              [disabled]="!isReady || !isContentDeveloper"
+            >
+              <mat-icon class="mdi-18px" fontIcon="mdi-content-copy" alt="Copy"></mat-icon>
+            </button>
+          </div>
+        </mat-cell>
+      </ng-container>
       <!-- name Column -->
       <ng-container matColumnDef="name">
         <mat-header-cell *matHeaderCellDef mat-sort-header>
@@ -93,6 +157,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
   </div>
 </div>
 
+<input
+  hidden
+  (change)="selectFile($event)"
+  #fileInput
+  type="file"
+  accept=".xlsx"
+/>
 
 
 
@@ -202,11 +273,4 @@ project root for license information or contact permission@sei.cmu.edu for full 
     </mat-card-actions>
   </mat-card>
 </section>
-
-<input
-  hidden
-  (change)="selectFile($event)"
-  #fileInput
-  type="file"
-  accept=".xlsx"
-/> -->
+ -->

@@ -16,6 +16,7 @@ import { Sort } from '@angular/material/sort';
 import { MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy-menu';
 import { DataFieldDataService } from 'src/app/data/data-field/data-field-data.service';
 import { DataFieldQuery } from 'src/app/data/data-field/data-field.query';
+import { DataFieldEditDialogComponent } from '../data-field-edit-dialog/data-field-edit-dialog.component';
 import { DataOptionDataService } from 'src/app/data/data-option/data-option-data.service';
 import { DataOptionEditDialogComponent } from '../data-option-edit-dialog/data-option-edit-dialog.component';
 import { DataOptionQuery } from 'src/app/data/data-option/data-option.query';
@@ -71,7 +72,6 @@ export class DataFieldListComponent implements OnDestroy {
     (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(m => {
       if (m && this.msel.id !== m.id) {
         Object.assign(this.msel, m);
-        console.log('Is user a MSEL owner?  '  + this.msel.hasRole(this.loggedInUserId, null).owner.toString());
         this.sortedDataFields = this.getSortedDataFields(this.getFilteredDataFields(this.dataFieldList));
       }
     });
@@ -90,95 +90,59 @@ export class DataFieldListComponent implements OnDestroy {
     return dataFields;
   }
 
-  noExpansionChangeAllowed() {
-    return this.isAddingDataField || this.valuesHaveBeenChanged();
-  }
-
-  editDataField(dataField: DataField) {
-    if (this.isAddingDataField) {
-      return;
+  addOrEditDataField(dataField: DataField) {
+    if (!dataField) {
+      dataField = {
+        mselId: this.msel.id,
+        displayOrder: this.dataFieldList.length + 1,
+        isInitiallyHidden: true,
+        onScenarioEventList: true,
+        onExerciseView: true
+      } as DataField;
     }
-    // previous edit has not been saved, so prompt
-    if (this.valuesHaveBeenChanged()) {
-      this.dialogService
-        .confirm(
-          'Changes have been made!',
-          'Do you want to save them?'
-        )
-        .subscribe((result) => {
-          if (result['confirm']) {
-            this.dataFieldDataService.updateDataField(this.changedDataField);
-          }
-          this.setEditing(dataField);
+    const dialogRef = this.dialog.open(DataFieldEditDialogComponent, {
+      width: '90%',
+      maxWidth: '900px',
+      data: {
+        dataField: dataField,
+        isContentDeveloper: this.isContentDeveloper,
+        isOwner: this.msel.hasRole(this.loggedInUserId, null).owner,
+        dataFieldOptions: this.dataOptionList.filter(x => x.dataFieldId === dataField.id),
+        galleryArticleParameters: this.msel.galleryArticleParameters,
+        useGallery: this.msel.useGallery,
+        useCite: this.msel.useCite,
+        dataFieldTypes: this.dataFieldTypes
+      },
+    });
+    dialogRef.componentInstance.editComplete.subscribe((result) => {
+      if (result.saveChanges && result.dataField) {
+        const dataFieldId = this.saveDataField(result.dataField);
+        result.addedDataFieldOptions.forEach(dfo => {
+          dfo.dataFieldId = dataFieldId;
+          console.log('add ' + dfo.optionName);
+          this.dataOptionDataService.add(dfo);
         });
+        result.changedDataFieldOptions.forEach(dfo => {
+          console.log('update ' + dfo.optionName);
+          this.dataOptionDataService.updateDataOption(dfo);
+        });
+        result.deletedDataFieldOptions.forEach(dfo => {
+          console.log('delete ' + dfo.optionName);
+          this.dataOptionDataService.delete(dfo.id);
+        });
+      }
+      dialogRef.close();
+    });
+  }
+
+  saveDataField(dataField: DataField): string {
+    if (dataField.id) {
+      this.dataFieldDataService.updateDataField(dataField);
     } else {
-      this.setEditing(dataField);
+      dataField.id = uuidv4();
+      this.dataFieldDataService.add(dataField);
     }
-  }
-
-  setEditing(dataField) {
-    if (dataField.id === this.editingId) {
-      this.editingId = '';
-      this.changedDataField = {};
-    } else {
-      this.editingId = dataField.id;
-      this.changedDataField = {... dataField};
-      this.changedDataField.dataOptions = [];
-      dataField.dataOptions.forEach(datOp => {
-        this.changedDataField.dataOptions.push(datOp);
-      });
-    }
-  }
-
-  valuesHaveBeenChanged() {
-    let isChanged = false;
-    const original = this.dataFieldList.find(df => df.id === this.editingId);
-    if (original) {
-      isChanged = this.changedDataField.dataType !== original.dataType ||
-                  this.changedDataField.displayOrder !== original.displayOrder ||
-                  this.changedDataField.isChosenFromList !== original.isChosenFromList ||
-                  this.changedDataField.isInitiallyHidden !== original.isInitiallyHidden ||
-                  this.changedDataField.isOnlyShownToOwners !== original.isOnlyShownToOwners ||
-                  this.changedDataField.galleryArticleParameter !== original.galleryArticleParameter ||
-                  this.changedDataField.name !== original.name ||
-                  this.changedDataField.cellMetadata !== original.cellMetadata ||
-                  this.changedDataField.columnMetadata !== original.columnMetadata;
-    }
-    return isChanged;
-  }
-
-  saveChange(dataField: DataField) {
-    this.dataFieldDataService.updateDataField(dataField);
-  }
-
-  saveDataField() {
-    this.dataFieldDataService.updateDataField(this.changedDataField);
-    this.editingId = '';
-  }
-
-  resetDataField() {
-    this.changedDataField = {};
-    this.editingId = '';
-  }
-
-  addDataField() {
-    this.changedDataField = {
-      id: uuidv4(),
-      mselId: this.msel.id,
-      dataType: DataFieldType.String,
-      isChosenFromList: false,
-      dataOptions: []
-    };
-    this.isAddingDataField = true;
-  }
-
-  saveNewDataField() {
-    this.isAddingDataField = false;
-    this.dataFieldDataService.add(this.changedDataField);
-  }
-
-  cancelNewDataField() {
-    this.isAddingDataField = false;
+    return dataField.id;
   }
 
   deleteDataField(dataField: DataField): void {
@@ -258,53 +222,8 @@ export class DataFieldListComponent implements OnDestroy {
     return dataOptions.join(', ');
   }
 
-  addOrEditDataOption(dataOption: DataOption) {
-    const dialogRef = this.dialog.open(DataOptionEditDialogComponent, {
-      width: '800px',
-      data: {
-        dataOption: dataOption
-      },
-    });
-    dialogRef.componentInstance.editComplete.subscribe((result) => {
-      if (result.saveChanges && result.dataOption) {
-        this.saveDataOption(result.dataOption);
-      }
-      dialogRef.close();
-    });
-  }
-
-  addDataOption(dataField: DataField) {
-    this.addOrEditDataOption({
-      displayOrder: this.getDataFieldOptions(dataField.id).length + 1,
-      dataFieldId: dataField.id
-    });
-  }
-
-  editDataOption(dataOption: DataOption) {
-    const selected = {... dataOption};
-    this.addOrEditDataOption(selected);
-  }
-
-  saveDataOption(dataOption: DataOption) {
-    if (dataOption.id) {
-      this.dataOptionDataService.updateDataOption(dataOption);
-    } else {
-      dataOption.id = uuidv4();
-      this.dataOptionDataService.add(dataOption);
-    }
-  }
-
-  deleteDataOption(dataOption: DataOption) {
-    this.dialogService
-      .confirm(
-        'Delete Option',
-        'Are you sure that you want to delete ' + dataOption.optionName + '?'
-      )
-      .subscribe((result) => {
-        if (result['confirm']) {
-          this.dataOptionDataService.delete(dataOption.id);
-        }
-      });
+  saveChange(dataField: DataField) {
+    this.dataFieldDataService.updateDataField(dataField);
   }
 
   ngOnDestroy() {
