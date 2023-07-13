@@ -38,7 +38,7 @@ export class CardListComponent implements OnDestroy {
   sort: Sort = {active: '', direction: ''};
   sortedCards: Card[] = [];
   isAddingCard = false;
-  editingId = '';
+  expandedId = '';
   contextMenuPosition = { x: '0px', y: '0px' };
   private unsubscribe$ = new Subject();
 
@@ -77,46 +77,19 @@ export class CardListComponent implements OnDestroy {
     return cards;
   }
 
-  noExpansionChangeAllowed() {
-    return this.isAddingCard || this.valuesHaveBeenChanged();
-  }
-
-  editCard(card: Card) {
-    if (this.isAddingCard) {
-      return;
-    }
-    // previous edit has not been saved, so prompt
-    if (this.valuesHaveBeenChanged()) {
-      this.dialogService
-        .confirm(
-          'Changes have been made!',
-          'Do you want to save them?'
-        )
-        .subscribe((result) => {
-          if (result['confirm']) {
-            this.cardDataService.updateCard(this.changedCard);
-          }
-          this.setEditing(card);
-        });
-    // if adding a new card, don't start editing another one
-    } else {
-      this.setEditing(card);
-    }
-  }
-
-  setEditing(card) {
-    if (card.id === this.editingId) {
-      this.editingId = '';
+  expandCard(card: Card) {
+    if (card.id === this.expandedId) {
+      this.expandedId = '';
       this.changedCard = {};
     } else {
-      this.editingId = card.id;
+      this.expandedId = card.id;
       this.changedCard = {... card};
     }
   }
 
   valuesHaveBeenChanged() {
     let isChanged = false;
-    const original = this.cardList.find(df => df.id === this.editingId);
+    const original = this.cardList.find(df => df.id === this.expandedId);
     if (original) {
       isChanged = this.changedCard.move !== original.move ||
       this.changedCard.inject !== original.inject ||
@@ -128,12 +101,16 @@ export class CardListComponent implements OnDestroy {
 
   saveCard() {
     this.cardDataService.updateCard(this.changedCard);
-    this.editingId = '';
+    this.expandedId = '';
   }
 
   resetCard() {
     this.changedCard = {};
-    this.editingId = '';
+    this.expandedId = '';
+  }
+
+  editCard(card: Card) {
+
   }
 
   addCard() {
@@ -156,7 +133,7 @@ export class CardListComponent implements OnDestroy {
   }
 
   deleteCard(card: Card): void {
-    if (this.isAddingCard || (this.editingId && this.editingId !== card.id)) {
+    if (this.isAddingCard || (this.expandedId && this.expandedId !== card.id)) {
       return;
     }
     this.dialogService
@@ -167,7 +144,7 @@ export class CardListComponent implements OnDestroy {
       .subscribe((result) => {
         if (result['confirm']) {
           this.cardDataService.delete(card.id);
-          this.editingId = '';
+          this.expandedId = '';
         }
       });
   }

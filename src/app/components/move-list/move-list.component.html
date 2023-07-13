@@ -52,6 +52,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <mat-expansion-panel
         *ngFor="let item of displayedMoves;"
         [expanded]="editingId === item.id"
+        (click)="addOrEditMove(item)"
         disabled
       >
         <mat-expansion-panel-header
