@@ -41,6 +41,7 @@
 .single-detail {
   display: flex;
   width: 100%;
+  min-height: 45px;
 }
 
 .sub-detail {
@@ -151,4 +152,19 @@
   border-style: solid;
   border-width: 1px;
   border-color: lightgray;
+}
+
+.gallery-warning {
+  font-size: small;
+  color: orangered;
+  margin-left: 20px;
+}
+
+.thin-button {
+  height: 25px;
+}
+
+.guid-field {
+  font-size: small;
+  width: 270px;
 }

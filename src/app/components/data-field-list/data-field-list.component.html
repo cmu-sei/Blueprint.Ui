@@ -25,7 +25,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </span>
       <span class="mat-header-cell one-cell">Display On<br />Injects&nbsp;&nbsp;&nbsp;&nbsp;Exercise View</span>
       <span class="mat-header-cell two-cell" mat-sort-header="name">Name</span>
-      <span class="mat-header-cell two-cell" mat-sort-header="dataType">Data Type</span>
+      <span class="mat-header-cell one-cell" mat-sort-header="dataType">Data Type</span>
+      <span class="mat-header-cell one-cell" mat-sort-header="integration">
+        <span class="integration">Integration
+          <span class="gallery-warning" *ngIf="!!galleryToDo()" title="** See warning message below!">
+            **
+          </span>
+        </span>
+      </span>
       <span class="mat-header-cell one-cell" mat-sort-header="isChosenFromList">Options</span>
       <span class="mat-header-cell one-cell search-cell">
         <mat-form-field class="search-control">
@@ -79,26 +86,39 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <mat-checkbox
               [(ngModel)]="item.onScenarioEventList"
               [disabled]="!isContentDeveloper && !msel.hasRole(loggedInUserId, null).owner"
-              (change)="saveChange(item);"
-              (click)="$event.stopPropagation();"
+              (change)="saveChange(item)"
+              (click)="$event.stopPropagation()"
             >
             </mat-checkbox>
             <mat-checkbox
               [(ngModel)]="item.onExerciseView"
               [disabled]="!isContentDeveloper && !msel.hasRole(loggedInUserId, null).owner"
-              (change)="saveChange(item);"
+              (change)="saveChange(item)"
               (click)="$event.stopPropagation();"
               class="exercise-view-checkbox"
             >
             </mat-checkbox>
           </div>
           <div class="mat-cell two-cell center-self">{{ item.name }}</div>
-          <div class="mat-cell two-cell center-self">{{ item.dataType }}</div>
+          <div class="mat-cell one-cell center-self">{{ item.dataType }}</div>
+          <div class="mat-cell one-cell center-self">
+            <mat-select
+              class="integration"
+              [(ngModel)]="item.galleryArticleParameter"
+              (selectionChange)="saveChange(item)"
+              (click)="$event.stopPropagation();"
+              [disabled]="!isContentDeveloper && !msel.hasRole(this.loggedInUserId, null).owner"
+            >
+              <mat-option value=""></mat-option>
+              <mat-option *ngFor="let parameter of msel.galleryArticleParameters" value="{{ parameter }}">{{ parameter }}</mat-option>
+            </mat-select>
+          </div>
           <div class="mat-cell two-cell center-self">{{ getDataOptionsString(item.id) }}</div>
         </mat-expansion-panel-header>
         <ng-template matExpansionPanelContent>
         </ng-template>
       </mat-expansion-panel>
+      <span class="gallery-warning" *ngIf="!!galleryToDo()">** These Gallery Article Parameters have not been assigned:  {{ galleryToDo() }}</span>
     </section>
   </div>
 </div>

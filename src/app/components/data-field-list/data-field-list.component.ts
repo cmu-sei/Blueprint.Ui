@@ -226,6 +226,16 @@ export class DataFieldListComponent implements OnDestroy {
     this.dataFieldDataService.updateDataField(dataField);
   }
 
+  galleryToDo(): string {
+    let todoString = '';
+    let todoList = Object.assign([], this.msel.galleryArticleParameters);
+    if (todoList && todoList.length > 0) {
+      todoList = todoList.filter(x => !this.dataFieldList.some(df => df.galleryArticleParameter === x));
+      todoString = todoList.join(', ');
+    }
+    return todoString;
+  }
+
   ngOnDestroy() {
     this.unsubscribe$.next(null);
     this.unsubscribe$.complete();

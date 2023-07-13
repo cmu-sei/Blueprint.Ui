@@ -22,6 +22,7 @@ import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { CiteService } from 'src/app/generated/blueprint.api';
 import { PlayerService } from 'src/app/generated/blueprint.api';
 import { CiteApiClientScoringModel } from 'src/app/generated/blueprint.api/model/citeApiClientScoringModel';
+import { DataFieldQuery } from 'src/app/data/data-field/data-field.query';
 import { MselPageDataService } from 'src/app/data/msel-page/msel-page-data.service';
 import { MselPageQuery } from 'src/app/data/msel-page/msel-page.query';
 
@@ -59,11 +60,13 @@ export class MselInfoComponent implements OnDestroy {
     'overflow': 'auto'
   };
   isBusy = true;
+  dataFieldList: DataField[] = [];
 
   constructor(
     public dialogService: DialogService,
     private teamQuery: TeamQuery,
     private userDataService: UserDataService,
+    private dataFieldQuery: DataFieldQuery,
     private mselDataService: MselDataService,
     private mselQuery: MselQuery,
     private citeService: CiteService,
@@ -107,6 +110,10 @@ export class MselInfoComponent implements OnDestroy {
     // subscribe to scoring models
     this.citeService.getScoringModels().subscribe(scoringModels => {
       this.scoringModelList = scoringModels;
+    });
+    // subscribe to data fields
+    this.dataFieldQuery.selectAll().subscribe(dataFields => {
+      this.dataFieldList = dataFields;
     });
   }
 
@@ -231,6 +238,16 @@ export class MselInfoComponent implements OnDestroy {
   openContent(id: string) {
     const url = location.origin + '/mselpage/' + id;
     window.open(url);
+  }
+
+  galleryToDo(): boolean {
+    let hasToDos = false;
+    let todoList = Object.assign([], this.msel.galleryArticleParameters);
+    if (todoList && todoList.length > 0) {
+      todoList = todoList.filter(x => !this.dataFieldList.some(df => df.galleryArticleParameter === x));
+      hasToDos = todoList.length > 0;
+    }
+    return hasToDos;
   }
 
   ngOnDestroy() {

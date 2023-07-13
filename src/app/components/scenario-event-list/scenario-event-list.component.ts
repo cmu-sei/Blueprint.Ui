@@ -446,6 +446,7 @@ export class ScenarioEventListComponent implements OnDestroy {
     const dialogRef = this.dialog.open(ScenarioEventEditDialogComponent, {
       width: '80%',
       maxWidth: '800px',
+      height: '90%',
       data: {
         scenarioEvent: scenarioEvent,
         dataFields: this.allDataFields,
