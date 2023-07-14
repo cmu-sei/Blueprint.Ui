@@ -61,6 +61,7 @@ import { AdminTeamsComponent } from './components/admin/admin-teams/admin-teams.
 import { AdminTeamEditDialogComponent } from './components/admin/admin-team-edit-dialog/admin-team-edit-dialog.component';
 import { AdminTeamUsersComponent } from './components/admin/admin-team-users/admin-team-users.component';
 import { AdminUsersComponent } from './components/admin/admin-users/admin-users.component';
+import { CardEditDialogComponent } from './components/card-edit-dialog/card-edit-dialog.component';
 import { CardListComponent } from './components/card-list/card-list.component';
 import { CardTeamsComponent } from './components/card-teams/card-teams.component';
 import { CiteActionEditDialogComponent } from './components/cite-action-edit-dialog/cite-action-edit-dialog.component';
@@ -110,6 +111,7 @@ export function getBasePath(settingsSvc: ComnSettingsService) {
 @NgModule({
   declarations: [
     AppComponent,
+    CardEditDialogComponent,
     CardListComponent,
     CardTeamsComponent,
     CiteActionEditDialogComponent,

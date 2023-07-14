@@ -14,7 +14,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <span class="mat-header-cell one-cell">
         <button
           mat-icon-button
-          (click)="addOrEditCiteAction(null); $event.stopPropagation()"
+          (click)="addOrEditCiteAction(null)"
           style="outline: none; margin-right: 15px;"
           title="Add new citeAction"
           *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
@@ -53,7 +53,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <div style="width: 30px;">
           <button
             mat-icon-button
-            (click)="filterControl.setValue(''); $event.stopPropagation()"
+            (click)="filterControl.setValue('')"
             style="outline: none;"
             title="Clear Search"
             [disabled]="!filterString"
@@ -72,13 +72,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
       >
         <mat-expansion-panel-header
           class="mat-row"
-          (click)="addOrEditCiteAction(item); $event.stopPropagation();"
         >
           <div class="mat-cell flex-row-cell one-cell">
             <button
               mat-icon-button
               class="cite-action-button"
               title="Edit this citeAction"
+              (click)="addOrEditCiteAction(item)"
               *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
             >
               <mat-icon class="mdi-18px up-12" fontIcon="mdi-square-edit-outline"></mat-icon>
@@ -86,7 +86,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <button
               mat-icon-button
               class="cite-action-button"
-              (click)="deleteCiteAction(item); $event.stopPropagation()"
+              (click)="deleteCiteAction(item)"
               title="Delete this citeAction"
               *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
             >
