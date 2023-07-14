@@ -14,7 +14,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <span class="mat-header-cell four-cell" mat-sort-header="name">
         <button
           mat-icon-button
-          (click)="addOrEditCiteRole(null); $event.stopPropagation()"
+          (click)="addOrEditCiteRole(null)"
           style="outline: none; margin-right: 15px;"
           title="Add new citeRole"
           *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
@@ -41,7 +41,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <div style="width: 30px;">
           <button
             mat-icon-button
-            (click)="filterControl.setValue(''); $event.stopPropagation()"
+            (click)="filterControl.setValue('')"
             style="outline: none;"
             title="Clear Search"
             [disabled]="!filterString"
@@ -60,13 +60,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
       >
         <mat-expansion-panel-header
           class="mat-row"
-          (click)="addOrEditCiteRole(item); $event.stopPropagation();"
         >
           <div class="mat-cell flex-row-cell four-cell">
             <button
               mat-icon-button
               class="cite-role-button"
               title="Edit this citeRole"
+              (click)="addOrEditCiteRole(item)"
               *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
             >
               <mat-icon class="mdi-18px up-12" fontIcon="mdi-square-edit-outline"></mat-icon>
@@ -74,7 +74,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <button
               mat-icon-button
               class="cite-role-button"
-              (click)="deleteCiteRole(item); $event.stopPropagation()"
+              (click)="deleteCiteRole(item)"
               title="Delete this citeRole"
               *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
             >
