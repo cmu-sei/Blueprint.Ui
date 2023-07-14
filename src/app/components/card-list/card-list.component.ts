@@ -17,7 +17,7 @@ import { CardQuery } from 'src/app/data/card/card.query';
 import { CardTeamDataService } from 'src/app/data/team/card-team-data.service';
 import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
-import { v4 as uuidv4 } from 'uuid';
+import { CardEditDialogComponent } from '../card-edit-dialog/card-edit-dialog.component';
 
 @Component({
   selector: 'app-card-list',
@@ -31,13 +31,11 @@ export class CardListComponent implements OnDestroy {
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
   msel = new MselPlus();
   cardList: Card[] = [];
-  changedCard: Card = {};
   filteredCardList: Card[] = [];
   filterControl = new UntypedFormControl();
   filterString = '';
   sort: Sort = {active: '', direction: ''};
   sortedCards: Card[] = [];
-  isAddingCard = false;
   expandedId = '';
   contextMenuPosition = { x: '0px', y: '0px' };
   private unsubscribe$ = new Subject();
@@ -70,72 +68,44 @@ export class CardListComponent implements OnDestroy {
       });
   }
 
-  getSortedCards(cards: Card[]) {
-    if (cards) {
-      cards.sort((a, b) => +a.move > +b.move ? 1 : -1);
-    }
-    return cards;
-  }
-
-  expandCard(card: Card) {
-    if (card.id === this.expandedId) {
+  expandCard(cardId: string) {
+    if (cardId === this.expandedId) {
       this.expandedId = '';
-      this.changedCard = {};
     } else {
-      this.expandedId = card.id;
-      this.changedCard = {... card};
+      this.expandedId = cardId;
     }
-  }
-
-  valuesHaveBeenChanged() {
-    let isChanged = false;
-    const original = this.cardList.find(df => df.id === this.expandedId);
-    if (original) {
-      isChanged = this.changedCard.move !== original.move ||
-      this.changedCard.inject !== original.inject ||
-      this.changedCard.name !== original.name ||
-      this.changedCard.description !== original.description;
-    }
-    return isChanged;
-  }
-
-  saveCard() {
-    this.cardDataService.updateCard(this.changedCard);
-    this.expandedId = '';
-  }
-
-  resetCard() {
-    this.changedCard = {};
-    this.expandedId = '';
-  }
-
-  editCard(card: Card) {
-
   }
 
   addCard() {
-    this.changedCard = {
-      id: uuidv4(),
+    const card = {
       mselId: this.msel.id,
       move: 0,
       inject: 0
     };
-    this.isAddingCard = true;
+    this.editCard(card);
   }
 
-  saveNewCard() {
-    this.isAddingCard = false;
-    this.cardDataService.add(this.changedCard);
-  }
-
-  cancelNewCard() {
-    this.isAddingCard = false;
+  editCard(card: Card) {
+    const dialogRef = this.dialog.open(CardEditDialogComponent, {
+      width: '90%',
+      maxWidth: '800px',
+      data: {
+        card: card
+      },
+    });
+    dialogRef.componentInstance.editComplete.subscribe((result) => {
+      if (result.saveChanges && result.card) {
+        if (result.card.id) {
+          this.cardDataService.updateCard(card);
+        } else {
+          this.cardDataService.add(card);
+        }
+      }
+      dialogRef.close();
+    });
   }
 
   deleteCard(card: Card): void {
-    if (this.isAddingCard || (this.expandedId && this.expandedId !== card.id)) {
-      return;
-    }
     this.dialogService
       .confirm(
         'Delete Card',
@@ -171,6 +141,28 @@ export class CardListComponent implements OnDestroy {
       }
     }
     return filteredCards;
+  }
+
+  getSortedCards(cards: Card[]) {
+    const dir = this.sort.direction === 'desc' ? -1 : 1;
+    if (cards) {
+      switch (this.sort.active) {
+        case 'move':
+          cards.sort((a, b) => +a.move > +b.move ? dir : -dir);
+          break;
+        case 'inject':
+          cards.sort((a, b) => +a.inject > +b.inject ? dir : -dir);
+          break;
+        case 'description':
+          cards.sort((a, b) => (a.description ? a.description : '').toLowerCase() >
+            (b.description ? b.description : '').toLowerCase() ? dir : -dir);
+          break;
+        default:
+          cards.sort((a, b) => a.name.toLowerCase() > b.name.toLowerCase() ? dir : -dir);
+          break;
+      }
+    }
+    return cards;
   }
 
   ngOnDestroy() {

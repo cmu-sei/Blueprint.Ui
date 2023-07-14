@@ -18,14 +18,6 @@ project root for license information.
     </button>
   </div>
   <div mat-dialog-content *ngIf="data && data.card">
-
-    <div class="add-margin">
-      <div>
-        <mat-form-field class="full-width">
-          <input type="text" matInput [(ngModel)]="data.card.cardNumber" placeholder="Card Number">
-        </mat-form-field>
-      </div>
-    </div>
     <div class="add-margin">
       <div>
         <mat-form-field class="full-width">
@@ -37,6 +29,20 @@ project root for license information.
       <div>
         <mat-form-field class="full-width">
           <input type="text" matInput [(ngModel)]="data.card.description" placeholder="Card Description">
+        </mat-form-field>
+      </div>
+    </div>
+    <div class="add-margin">
+      <div>
+        <mat-form-field class="full-width">
+          <input type="text" matInput [(ngModel)]="data.card.move" placeholder="Move">
+        </mat-form-field>
+      </div>
+    </div>
+    <div class="add-margin">
+      <div>
+        <mat-form-field class="full-width">
+          <input type="text" matInput [(ngModel)]="data.card.inject" placeholder="Inject">
         </mat-form-field>
       </div>
     </div>

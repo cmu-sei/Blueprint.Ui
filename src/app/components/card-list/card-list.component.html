@@ -17,7 +17,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
           (click)="addCard(); $event.stopPropagation()"
           style="outline: none; margin-right: 15px;"
           title="Add new card"
-          [disabled]="isAddingCard || valuesHaveBeenChanged()"
           *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
         >
           <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
@@ -55,7 +54,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       >
         <mat-expansion-panel-header
           class="mat-row"
-          (click)="expandCard(item); $event.stopPropagation();"
+          (click)="expandCard(item.id); $event.stopPropagation();"
         >
           <div class="mat-cell flex-row-cell one-cell">
             <button
@@ -85,26 +84,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <div class="mat-cell five-cell center-self">{{ item.description }}</div>
         </mat-expansion-panel-header>
         <ng-template matExpansionPanelContent>
-          <div *ngIf="valuesHaveBeenChanged()" (click)="$event.stopPropagation();">
-            <span class="edit-buttons">
-              <button
-                mat-icon-button
-                (click)="saveCard();"
-                style="outline: none;"
-                title="Save new card"
-              >
-                <mat-icon class="mdi-24px self-center" fontIcon="mdi-check"></mat-icon>
-              </button>
-              <button
-                mat-icon-button
-                (click)="resetCard();"
-                style="outline: none;"
-                title="Cancel new card"
-              >
-                <mat-icon class="mdi-24px self-center" fontIcon="mdi-close"></mat-icon>
-              </button>
-            </span>
-          </div>
           <div class="card-detail" (click)="$event.stopPropagation();">
             <div class="single-detail">
               <h4>Select Teams</h4>
@@ -112,7 +91,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <div class="single-detail">
               <app-card-teams
                 style="width: 100%;"
-                [cardId]="changedCard.id"
+                [cardId]="item.id"
                 [mselTeamList]="msel.teams">
               </app-card-teams>
             </div>
