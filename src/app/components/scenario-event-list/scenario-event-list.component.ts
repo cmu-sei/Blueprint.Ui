@@ -223,6 +223,10 @@ export class ScenarioEventListComponent implements OnDestroy {
     });
   }
 
+  getDataOptions(dataFieldId: string) {
+    return this.sortedDataOptions.filter(x => x.dataFieldId === dataFieldId);
+  }
+
   getMselUsers(): User[] {
     let users = [];
     this.teamList.forEach(team => {
