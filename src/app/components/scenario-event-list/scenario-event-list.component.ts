@@ -16,6 +16,7 @@ import {
   Card,
   DataField,
   DataFieldType,
+  DataOption,
   DataValue,
   ItemStatus,
   Move,
@@ -41,8 +42,7 @@ import { DataValueQuery } from 'src/app/data/data-value/data-value.query';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { v4 as uuidv4 } from 'uuid';
 import { DataFieldQuery } from 'src/app/data/data-field/data-field.query';
-import { DataFieldDataService } from 'src/app/data/data-field/data-field-data.service';
-import { DataOptionDataService } from 'src/app/data/data-option/data-option-data.service';
+import { DataOptionQuery } from 'src/app/data/data-option/data-option.query';
 import { TeamQuery } from 'src/app/data/team/team.query';
 
 @Component({
@@ -63,6 +63,7 @@ export class ScenarioEventListComponent implements OnDestroy {
   sort: Sort = {active: '', direction: ''};
   sortedScenarioEvents: ScenarioEventPlus[] = [];
   sortedDataFields: DataField[] = [];
+  sortedDataOptions: DataOption[] = [];
   allDataFields: DataField[] = [];
   dataValues: DataValue[] = [];
   newScenarioEvent: ScenarioEventPlus;
@@ -98,22 +99,19 @@ export class ScenarioEventListComponent implements OnDestroy {
   teamList: Team[] = [];
 
   constructor(
-    activatedRoute: ActivatedRoute,
     private router: Router,
     private userDataService: UserDataService,
     private settingsService: ComnSettingsService,
     private cardQuery: CardQuery,
     private moveQuery: MoveQuery,
-    private mselDataService: MselDataService,
     private mselQuery: MselQuery,
     private organizationQuery: OrganizationQuery,
     private scenarioEventDataService: ScenarioEventDataService,
     private scenarioEventQuery: ScenarioEventQuery,
     public dialogService: DialogService,
     public dialog: MatDialog,
-    private dataFieldDataService: DataFieldDataService,
     private dataFieldQuery: DataFieldQuery,
-    private dataOptionDataService: DataOptionDataService,
+    private dataOptionQuery: DataOptionQuery,
     private dataValueDataService: DataValueDataService,
     private dataValueQuery: DataValueQuery,
     private teamQuery: TeamQuery
@@ -128,20 +126,21 @@ export class ScenarioEventListComponent implements OnDestroy {
     });
     // subscribe to data fields
     this.dataFieldQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(dataFields => {
-      console.log('we have ' + dataFields.length + ' dataFields');
       this.getSortedDataFields(dataFields);
+    });
+    // subscribe to the data options
+    this.dataOptionQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(dataOptions => {
+      this.sortedDataOptions = dataOptions.sort((a, b) => +a.displayOrder < +b.displayOrder ? -1 : 1);
     });
     // subscribe to data values
     this.dataValueQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(dataValues => {
       this.dataValues = [];
-      console.log('we have ' + dataValues.length + ' dataValues');
       dataValues.forEach(dv => {
         this.dataValues.push({ ... dv });
       });
     });
     // subscribe to scenario events
     (this.scenarioEventQuery.selectAll()).pipe(takeUntil(this.unsubscribe$)).subscribe(scenarioEvents => {
-      console.log('we have ' + scenarioEvents.length + ' scenarioEvents');
       this.mselScenarioEvents = this.getEditableScenarioEvents(scenarioEvents as ScenarioEventPlus[]);
       this.filteredScenarioEventList = this.getFilteredScenarioEvents(this.mselScenarioEvents);
       this.sortedScenarioEvents = this.getSortedScenarioEvents(this.filteredScenarioEventList);
@@ -450,6 +449,7 @@ export class ScenarioEventListComponent implements OnDestroy {
       data: {
         scenarioEvent: scenarioEvent,
         dataFields: this.allDataFields,
+        dataOptions: this.sortedDataOptions,
         organizationList: this.getSortedOrganizationOptions(),
         teamList: this.teamList,
         moveList: this.moveList,

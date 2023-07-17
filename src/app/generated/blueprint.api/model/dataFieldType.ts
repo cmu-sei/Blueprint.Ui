@@ -17,7 +17,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
  */
 
 
-export type DataFieldType = 'String' | 'Integer' | 'Double' | 'Boolean' | 'DateTime' | 'Html' | 'Organization' | 'Card' | 'Move' | 'SourceType' | 'Status' | 'Team' | 'TeamsMultiple' | 'Checkbox' | 'User' | 'Url';
+export type DataFieldType = 'String' | 'Integer' | 'Double' | 'Boolean' | 'DateTime' | 'Html' | 'Organization' | 'Card' | 'Move' | 'SourceType' | 'Status' | 'Team' | 'TeamsMultiple' | 'Checkbox' | 'User' | 'Url' | 'DeliveryMethod';
 
 export const DataFieldType = {
     String: 'String' as DataFieldType,
@@ -36,5 +36,6 @@ export const DataFieldType = {
     Checkbox: 'Checkbox' as DataFieldType,
     User: 'User' as DataFieldType,
     Url: 'Url' as DataFieldType,
-    keys: ['Card', 'Boolean', 'DateTime', 'Double', 'Html', 'Integer', 'Move', 'Organization', 'SourceType', 'Status', 'String', 'Team', 'TeamsMultiple', 'Checkbox', 'User', 'Url']
+    DeliveryMethod: 'DeliveryMethod' as DataFieldType,
+    keys: ['Card', 'Boolean', 'DateTime', 'Double', 'Html', 'Integer', 'Move', 'Organization', 'SourceType', 'Status', 'String', 'Team', 'TeamsMultiple', 'Checkbox', 'User', 'Url', 'DeliveryMethod']
 };

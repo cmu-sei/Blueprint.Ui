@@ -237,7 +237,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             [(ngModel)]="getDataValue(df.name).value"
             [disabled]="!data.isEditor"
           >
-            <mat-option *ngFor="let dataOption of df.dataOptions" [value]="dataOption.optionValue">
+            <mat-option *ngFor="let dataOption of getDataOptions(df.id)" [value]="dataOption.optionValue">
               {{ dataOption.optionName }}
             </mat-option>
           </mat-select>
