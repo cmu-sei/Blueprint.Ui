@@ -80,6 +80,10 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
     return item.id;
   }
 
+  getDataOptions(dataFieldId: string) {
+    return this.data.dataOptions.filter(x => x.dataFieldId === dataFieldId);
+  }
+
   getDataValue(dataFieldName: string): DataValuePlus {
     const dataFieldId = this.getDataFieldIdByName(dataFieldName);
     if (!dataFieldId) {

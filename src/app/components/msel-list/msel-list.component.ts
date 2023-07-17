@@ -56,15 +56,15 @@ export class MselListComponent implements OnDestroy, OnInit  {
     private signalRService: SignalRService,
     private uiDataService: UIDataService
   ) {
+    // Initial datasource
+    this.mselDataSource = new MatTableDataSource<MselPlus>(
+      new Array<MselPlus>()
+    );
     // load the MSELs
     this.mselDataService.loadMine();
   }
 
   ngOnInit() {
-    // Initial datasource
-    this.mselDataSource = new MatTableDataSource<MselPlus>(
-      new Array<MselPlus>()
-    );
     this.sort.sort(<MatSortable>{ id: 'name', start: 'asc' });
     this.mselDataSource.sort = this.sort;
     // subscribe to MSELs loading

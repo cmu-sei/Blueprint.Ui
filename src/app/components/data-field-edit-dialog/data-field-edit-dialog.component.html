@@ -46,7 +46,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
   <div class="data-field-detail" (click)="$event.stopPropagation();">
     <div class="single-detail">
       <mat-form-field class="full-width">
-        <mat-select placeholder="Data Type" [(ngModel)]="data.dataField.dataType" [disabled]="!data.isContentDeveloper && !data.isOwner">
+        <mat-select placeholder="Data Type" [value]="data.dataField.dataType" (selectionChange)="changeDataFieldDataType($event.value)" [disabled]="!data.isContentDeveloper && !data.isOwner">
           <mat-option *ngFor="let dataFieldType of data.dataFieldTypes" value="{{ dataFieldType }}">{{ dataFieldType }}</mat-option>
         </mat-select>
       </mat-form-field>
@@ -65,7 +65,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </div>
       <div class="data-options" *ngIf="data.dataField.isChosenFromList">
         <div class="data-option" *ngFor="let dataOption of sortedDataFieldOptions()">
-          <div *ngIf="data.isContentDeveloper || data.isOwner">
+          <div *ngIf="(data.isContentDeveloper || data.isOwner) && !optionListNotAllowed()">
             <button
               mat-icon-button
               (click)="editDataOption(dataOption)"
@@ -85,7 +85,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             &nbsp;{{ dataOption.displayOrder }} &nbsp;&nbsp; {{dataOption.optionName }} &nbsp;&nbsp; {{dataOption.optionValue }}
           </div>
         </div>
-        <div class="data-option" *ngIf="data.isContentDeveloper || data.isOwner">
+        <div class="data-option" *ngIf="(data.isContentDeveloper || data.isOwner) && !optionListNotAllowed()">
           <button
             mat-icon-button
             (click)="addDataOption(data.dataField)"

@@ -12,6 +12,7 @@ import { ErrorStateMatcher } from '@angular/material/core';
 import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
+import { ComnSettingsService } from '@cmusei/crucible-common';
 import {
   DataField,
   DataFieldType,
@@ -47,7 +48,8 @@ export class DataFieldEditDialogComponent {
     public dialog: MatDialog,
     public dialogService: DialogService,
     dialogRef: MatDialogRef<DataFieldEditDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: any
+    @Inject(MAT_DIALOG_DATA) public data: any,
+    private settingsService: ComnSettingsService
   ) {
     dialogRef.disableClose = true;
   }
@@ -55,6 +57,36 @@ export class DataFieldEditDialogComponent {
   errorFree() {
     return this.data.dataField.name && this.data.dataField.name.length > 0 &&
       this.data.dataField.displayOrder > 0;
+  }
+
+  changeDataFieldDataType(selectedDataType: string) {
+    // only process if it changed
+    if (this.data.dataField.dataType !== selectedDataType) {
+      if (selectedDataType === 'DeliveryMethod') {
+        this.data.dataField.isChosenFromList = true;
+        // Add the default options for DeliveryMethod
+        const defaultOptions = this.settingsService.settings.DefaultDeliveryMethodOptions;
+        defaultOptions.forEach(defopt => {
+          const alreadyExists = this.data.dataFieldOptions.some(dfo =>
+            dfo.optionName === defopt.optName && dfo.optionValue === defopt.optionValue);
+          if (!alreadyExists) {
+            const newDataOption = {
+              id: uuidv4(),
+              displayOrder: this.data.dataFieldOptions.length + 1,
+              dataFieldId: this.data.dataField.id,
+              optionName: defopt.optionName,
+              optionValue: defopt.optionValue,
+            };
+            // add to displayed data options
+            this.data.dataFieldOptions.push(newDataOption);
+            // make sure data option gets added when we are done
+            this.addedDataFieldOptions.push(newDataOption);
+          }
+        });
+      }
+      // set the new value
+      this.data.dataField.dataType = selectedDataType;
+    }
   }
 
   addDataOption(dataField: DataField) {
