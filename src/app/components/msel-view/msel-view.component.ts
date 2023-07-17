@@ -166,6 +166,15 @@ export class MselViewComponent implements OnDestroy {
     return dataValue && dataValue.value != null ? dataValue.value : ' ';
   }
 
+  getScenarioEventDateValue(scenarioEvent: ScenarioEvent, dataField: DataField) {
+    const dataValue = this.dataValues
+      .filter(dv => dv.scenarioEventId === scenarioEvent.id)
+      .find(dv => dv.dataFieldId === dataField.id);
+    const dateValue = dataValue && dataValue.value != null ? dataValue.value : ' ';
+    const formattedValue = new Date(dateValue).toLocaleString();
+    return formattedValue === 'Invalid Date' ? ' ' : formattedValue;
+  }
+
   getUserName(scenarioEvent: ScenarioEvent, dataField: DataField) {
     let name = '';
     const dataValue = this.dataValues

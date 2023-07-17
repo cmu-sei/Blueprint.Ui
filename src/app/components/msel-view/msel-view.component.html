@@ -48,11 +48,18 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   ></mat-checkbox>
                 </div>
               </td>
+              <!-- datetime value -->
+              <td *ngIf="df.dataType.toString() === 'DateTime'">
+                <div class="constrainer" [style]="getStyle(df)">
+                  {{ getScenarioEventDateValue(item, df) }}
+                </div>
+              </td>
               <!-- All others -->
               <td *ngIf="df.dataType.toString() !== 'Html' &&
                           df.dataType.toString() !== 'Url' &&
                           df.dataType.toString() !== 'User' &&
-                          df.dataType.toString() !== 'Checkbox'">
+                          df.dataType.toString() !== 'Checkbox' &&
+                          df.dataType.toString() !== 'DateTime'">
                 <div class="constrainer" [style]="getStyle(df)">
                   {{ getScenarioEventValue(item, df) }}
                 </div>
