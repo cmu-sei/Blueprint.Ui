@@ -59,7 +59,7 @@ export class MselPlus implements Msel {
   gallerySourceTypes?: Array<string>;
 
   hasRole(userId: string, scenarioEventId: string) {
-    const mselRole = { owner: false, moveEditor: false, approver: false, editor: false };
+    const mselRole = { owner: false, moveEditor: false, approver: false, editor: false, viewer: false };
     mselRole.owner = !this.userMselRoles ? false : this.userMselRoles.some(umr =>
       umr.userId === userId &&
       umr.role === MselRole.Owner);
@@ -88,6 +88,10 @@ export class MselPlus implements Msel {
         }
       }
     }
+    mselRole.viewer = !this.userMselRoles ? false : this.userMselRoles.some(umr =>
+      (umr.userId === userId && umr.role === MselRole.Viewer) ||
+      mselRole.editor || mselRole.approver || mselRole.moveEditor || mselRole.owner
+    );
 
     return mselRole;
   }
