@@ -355,6 +355,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           >
             <mat-icon class="mdi-24px self-center" fontIcon="mdi-open-in-new"></mat-icon>
           </button>
+          <span *ngIf="page.allCanView">&nbsp;&nbsp;** All MSEL users can view this page</span>
         </span>
         <span *ngIf="editingPageId">
           <button
@@ -385,6 +386,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
             [disabled]="!editingPageId"
           />
         </mat-form-field>
+        <div class="all-can-view-div">
+          <mat-checkbox
+            [(ngModel)]="changedMselPage.allCanView"
+            title="All MSEL users can view this page"
+            *ngIf="editingPageId"
+          >All MSEL users can view this page</mat-checkbox>
+        </div>
         <div id="quill">
           <quill-editor *ngIf="editingPageId" [styles]="editorStyle"
             placeholder="Content" [(ngModel)]="changedMselPage.content"
@@ -431,6 +439,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
             [(ngModel)]="changedMselPage.name"
           />
         </mat-form-field>
+        <div class="all-can-view-div">
+          <mat-checkbox
+            [(ngModel)]="changedMselPage.allCanView"
+            title="All MSEL users can view this page"
+          >All MSEL users can view this page</mat-checkbox>
+        </div>
         <div id="quill">
           <quill-editor [styles]="editorStyle"
             placeholder="Content" [(ngModel)]="changedMselPage.content"

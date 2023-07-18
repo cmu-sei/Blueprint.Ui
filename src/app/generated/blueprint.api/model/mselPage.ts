@@ -25,4 +25,5 @@ export interface MselPage {
     mselId?: string;
     name?: string;
     content?: string;
+    allCanView?: boolean;
 }

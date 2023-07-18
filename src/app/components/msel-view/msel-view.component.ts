@@ -63,16 +63,16 @@ export class MselViewComponent implements OnDestroy {
     private scenarioEventDataService: ScenarioEventDataService,
     private scenarioEventQuery: ScenarioEventQuery
   ) {
-    // subscribe to the route parameters
+    // subscribe to the route parameters.  Used when viewing independently.
     this.activatedRoute.params.pipe(takeUntil(this.unsubscribe$)).subscribe(params => {
       const mselId = params['mselid'];
-      if (mselId && this.msel.id !== this.msel.id) {
+      if (mselId) {
         this.mselDataService.loadById(mselId);
         this.loadInitialData(mselId);
         this.mselDataService.setActive(mselId);
       }
     });
-    // subscribe to the route query parameters
+    // subscribe to the route query parameters.  Used when editing the MSEL and checking the view.
     activatedRoute.queryParamMap.pipe(takeUntil(this.unsubscribe$)).subscribe(params => {
       // set the selected tab based on the injectData
       const mselId = params.get('msel');
