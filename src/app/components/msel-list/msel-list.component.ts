@@ -73,7 +73,13 @@ export class MselListComponent implements OnDestroy, OnInit  {
     });
     // subscribe to MSELs
     (this.mselQuery.selectAll() as Observable<MselPlus[]>).pipe(takeUntil(this.unsubscribe$)).subscribe((msels) => {
-      this.mselDataSource.data = msels;
+      const mselPlusList: MselPlus[] = [];
+      msels.forEach(msel => {
+        const mselPlus = new MselPlus();
+        Object.assign(mselPlus, msel);
+        mselPlusList.push(mselPlus);
+      });
+      this.mselDataSource.data = mselPlusList;
       this.filterMsels();
       this.isLoading = false;
       this.areButtonsDisabled = false;
