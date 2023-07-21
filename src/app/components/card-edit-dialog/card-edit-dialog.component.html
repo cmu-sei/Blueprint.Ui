@@ -35,7 +35,13 @@ project root for license information.
     <div class="add-margin">
       <div>
         <mat-form-field class="full-width">
-          <input type="text" matInput [(ngModel)]="data.card.move" placeholder="Move">
+          <mat-label>Move</mat-label>
+          <mat-select placeholder="Move" [(ngModel)]="data.card.move">
+            <mat-option value=""></mat-option>
+            <mat-option *ngFor="let move of data.moveList" [value]="move.moveNumber">
+              {{ move.moveNumber }} - {{ move.title }}
+            </mat-option>
+          </mat-select>
         </mat-form-field>
       </div>
     </div>

@@ -7,6 +7,7 @@ import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import {
   Card,
+  Move
 } from 'src/app/generated/blueprint.api';
 import { MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
@@ -14,7 +15,7 @@ import { Sort } from '@angular/material/sort';
 import { MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy-menu';
 import { CardDataService } from 'src/app/data/card/card-data.service';
 import { CardQuery } from 'src/app/data/card/card.query';
-import { CardTeamDataService } from 'src/app/data/team/card-team-data.service';
+import { MoveQuery } from 'src/app/data/move/move.query';
 import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { CardEditDialogComponent } from '../card-edit-dialog/card-edit-dialog.component';
@@ -38,13 +39,14 @@ export class CardListComponent implements OnDestroy {
   sortedCards: Card[] = [];
   expandedId = '';
   contextMenuPosition = { x: '0px', y: '0px' };
+  moveList: Move[] = [];
   private unsubscribe$ = new Subject();
 
   constructor(
     private mselQuery: MselQuery,
     private cardDataService: CardDataService,
     private cardQuery: CardQuery,
-    private cardTeamDataService: CardTeamDataService,
+    private moveQuery: MoveQuery,
     public dialog: MatDialog,
     public dialogService: DialogService
   ) {
@@ -52,6 +54,10 @@ export class CardListComponent implements OnDestroy {
     this.cardQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(cards => {
       this.cardList = cards;
       this.sortedCards = this.getSortedCards(this.getFilteredCards(this.cardList));
+    });
+    // subscribe to moves
+    this.moveQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(moves => {
+      this.moveList = moves;
     });
     // subscribe to the active MSEL
     (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
@@ -90,7 +96,10 @@ export class CardListComponent implements OnDestroy {
       width: '90%',
       maxWidth: '800px',
       data: {
-        card: card
+        card: card,
+        moveList: this.moveList
+          .filter(m => m.mselId === this.msel.id)
+          .sort((a, b) => +a.moveNumber < +b.moveNumber ? -1 : 1)
       },
     });
     dialogRef.componentInstance.editComplete.subscribe((result) => {
