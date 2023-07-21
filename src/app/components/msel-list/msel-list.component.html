@@ -141,6 +141,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <div class="description-text">{{ element.dateModified | date }}</div>
         </mat-cell>
       </ng-container>
+      <!-- createdBy Column -->
+      <ng-container matColumnDef="createdBy">
+        <mat-header-cell *matHeaderCellDef mat-sort-header> Creator </mat-header-cell>
+        <mat-cell *matCellDef="let element">
+          <div class="description-text" [title]="element.createdBy">{{ getUserName(element.createdBy) }}</div>
+        </mat-cell>
+      </ng-container>
       <!-- Description Column -->
       <ng-container matColumnDef="description">
         <mat-header-cell *matHeaderCellDef mat-sort-header> Description </mat-header-cell>

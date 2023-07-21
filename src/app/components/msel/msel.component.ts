@@ -27,7 +27,6 @@ import { OrganizationDataService } from 'src/app/data/organization/organization-
 import { ScenarioEventDataService } from 'src/app/data/scenario-event/scenario-event-data.service';
 import { TeamDataService } from 'src/app/data/team/team-data.service';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
-import { UserDataService } from 'src/app/data/user/user-data.service';
 import { UserMselRoleDataService } from 'src/app/data/user-msel-role/user-msel-role-data.service';
 
 @Component({
@@ -68,7 +67,6 @@ export class MselComponent implements OnDestroy, AfterViewInit {
     private scenarioEventDataService: ScenarioEventDataService,
     private teamDataService: TeamDataService,
     private uiDataService: UIDataService,
-    private userDataService: UserDataService,
     private userMselRoleDataService: UserMselRoleDataService
   ) {
     // subscribe to route changes
@@ -101,8 +99,6 @@ export class MselComponent implements OnDestroy, AfterViewInit {
         this.userMselRoleDataService.loadByMsel(mselId);
       }
     });
-    // load the users
-    this.userDataService.getUsersFromApi();
     // load the teams
     this.teamDataService.load();
     // load the organization templates
