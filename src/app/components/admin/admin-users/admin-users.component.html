@@ -21,7 +21,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle"></mat-icon>
   </button>
   <mat-form-field style="width: 300px; margin-left: 10px;">
-    <input matInput [formControl]="filterControl" placeholder="Search" />
+    <input
+      matInput
+      [(ngModel)]="filterString"
+      (keyup)="applyFilter($any($event.target).value)"
+      placeholder="Search"
+    />
   </mat-form-field>
   <div style="width: 30px;">
     <button
@@ -99,7 +104,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
   </section>
 
   <mat-expansion-panel
-    *ngFor="let user of paginateUsers(userList, pageIndex, pageSize)"
+    *ngFor="let user of paginateUsers(pageIndex, pageSize)"
     [disabled]="true"
   >
     <mat-expansion-panel-header class="mat-row" *ngIf="!isLoading">

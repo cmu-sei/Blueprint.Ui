@@ -15,8 +15,11 @@ import { MatSort, MatSortable } from '@angular/material/sort';
 import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
 import { User } from 'src/app/generated/blueprint.api';
 import { TeamUserDataService } from 'src/app/data/user/team-user-data.service';
+import { UserDataService } from 'src/app/data/user/user-data.service';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { UntypedFormControl } from '@angular/forms';
+
 @Component({
   selector: 'app-admin-team-users',
   templateUrl: './admin-team-users.component.html',
@@ -24,16 +27,17 @@ import { takeUntil } from 'rxjs/operators';
 })
 export class AdminTeamUsersComponent implements OnDestroy, OnInit {
   @Input() teamId: string;
-  @Input() userList: User[];
-  users: User[];
-  teamUsers: User[];
+  userList: User[] = [];
+  users: User[] = [];
+  teamUsers: User[] = [];
 
   displayedUserColumns: string[] = ['name', 'id'];
   displayedTeamColumns: string[] = ['name', 'user'];
   userDataSource = new MatTableDataSource<User>(new Array<User>());
   teamUserDataSource = new MatTableDataSource<User>(new Array<User>());
+  filterControl = new UntypedFormControl();
   filterString = '';
-  defaultPageSize = 100;
+  defaultPageSize = 20;
   pageEvent: PageEvent;
   private unsubscribe$ = new Subject();
 
@@ -42,8 +46,18 @@ export class AdminTeamUsersComponent implements OnDestroy, OnInit {
   @ViewChild(MatSort, { static: true }) sort: MatSort;
 
   constructor(
-    private teamUserDataService: TeamUserDataService
-  ) {}
+    private teamUserDataService: TeamUserDataService,
+    private userDataService: UserDataService
+  ) {
+    this.userDataService.userList.pipe(takeUntil(this.unsubscribe$)).subscribe(users => {
+      this.userList = users;
+      this.setDataSources();
+    });
+    this.teamUserDataService.teamUsers.pipe(takeUntil(this.unsubscribe$)).subscribe(tUsers => {
+      this.teamUsers = tUsers;
+      this.setDataSources();
+    });
+  }
 
   ngOnInit() {
     this.sort.sort(<MatSortable>{ id: 'name', start: 'asc' });
@@ -52,7 +66,8 @@ export class AdminTeamUsersComponent implements OnDestroy, OnInit {
     this.pageEvent.pageIndex = 0;
     this.pageEvent.pageSize = this.defaultPageSize;
     this.teamUserDataService.teamUsers.pipe(takeUntil(this.unsubscribe$)).subscribe(tUsers => {
-      this.setDataSources(tUsers);
+      this.teamUsers = tUsers;
+      this.setDataSources();
     });
     this.teamUserDataService.getTeamUsersFromApi(this.teamId);
   }
@@ -68,12 +83,21 @@ export class AdminTeamUsersComponent implements OnDestroy, OnInit {
     this.applyFilter('');
   }
 
-  setDataSources(tUsers: User[]) {
+  getUserName(id: string) {
+    const user = this.userList.find(u => u.id === id);
+    return user ? user.name : '?';
+  }
+
+  setDataSources() {
     // Now that all of the observables are returned, process accordingly.
-    this.teamUserDataSource.data = !tUsers ? new Array<User>() : tUsers.sort((a, b) => {
-      if (a.name < b.name) {
+    // get users from the TeamUsers
+    // sort the list and add it as the data source
+    this.teamUserDataSource.data = this.teamUsers.sort((a, b) => {
+      const aName = this.getUserName(a.id).toLowerCase();
+      const bName = this.getUserName(b.id).toLowerCase();
+      if (aName < bName) {
         return -1;
-      } else if (a.name > b.name) {
+      } else if (aName > bName) {
         return 1;
       } else {
         return 0;
@@ -82,13 +106,14 @@ export class AdminTeamUsersComponent implements OnDestroy, OnInit {
     const newAllUsers = !this.userList ? new Array<User>() : this.userList.slice(0);
     this.teamUserDataSource.data.forEach((tu) => {
       const index = newAllUsers.findIndex((u) => u.id === tu.id);
-      newAllUsers.splice(index, 1);
+      if (index >= 0) {
+        newAllUsers.splice(index, 1);
+      }
     });
     this.userDataSource = new MatTableDataSource(newAllUsers);
     this.userDataSource.sort = this.sort;
     this.userDataSource.paginator = this.paginator;
   }
-
 
   addUserToTeam(user: User): void {
     const index = this.teamUserDataSource.data.findIndex(
