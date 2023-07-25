@@ -8,6 +8,7 @@ import { Sort } from '@angular/material/sort';
 import { Team, User } from 'src/app/generated/blueprint.api/model/models';
 import { TeamDataService } from 'src/app/data/team/team-data.service';
 import { TeamQuery } from 'src/app/data/team/team.query';
+import { UserDataService } from 'src/app/data/user/user-data.service';
 import { ComnSettingsService } from '@cmusei/crucible-common';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -21,7 +22,7 @@ import { DialogService } from 'src/app/services/dialog/dialog.service';
   styleUrls: ['./admin-teams.component.scss'],
 })
 export class AdminTeamsComponent implements OnDestroy {
-  @Input() userList: User[];
+  userList: User[] = [];
   allTeams: Team[] = [];
   teamList: Team[] = [];
   filterString = '';
@@ -45,7 +46,8 @@ export class AdminTeamsComponent implements OnDestroy {
     private dialog: MatDialog,
     public dialogService: DialogService,
     private teamDataService: TeamDataService,
-    private teamQuery: TeamQuery
+    private teamQuery: TeamQuery,
+    private userDataService: UserDataService
   ) {
     this.topbarColor = this.settingsService.settings.AppTopBarHexColor
       ? this.settingsService.settings.AppTopBarHexColor
@@ -55,7 +57,12 @@ export class AdminTeamsComponent implements OnDestroy {
       this.allTeams = teams;
       this.applyFilter(this.filterString);
     });
+    // load the teams
     this.teamDataService.load();
+    // subscribe to all users
+    this.userDataService.userList.pipe(takeUntil(this.unsubscribe$)).subscribe(users => {
+      this.userList = users;
+    });
   }
 
   addOrEditTeam(team: Team) {

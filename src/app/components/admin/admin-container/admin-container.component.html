@@ -115,10 +115,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     </mat-sidenav>
     <mat-sidenav-content>
       <span *ngIf="isSuperUser && ((showSection | async) === teamsText)">
-        <app-admin-teams
-          [userList]="userList | async"
-        >
-        </app-admin-teams>
+        <app-admin-teams></app-admin-teams>
       </span>
       <span *ngIf="isSuperUser && ((showSection | async) === usersText)">
         <app-admin-users></app-admin-users>

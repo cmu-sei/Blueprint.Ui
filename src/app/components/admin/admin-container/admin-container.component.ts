@@ -2,19 +2,10 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { UntypedFormControl } from '@angular/forms';
-import { LegacyPageEvent as PageEvent } from '@angular/material/legacy-paginator';
-import { Sort } from '@angular/material/sort';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Observable, Subject } from 'rxjs';
 import { map, tap, take, takeUntil } from 'rxjs/operators';
-import { PermissionService } from 'src/app/generated/blueprint.api/api/api';
-import {
-  Permission,
-  User,
-  UserPermission,
-} from 'src/app/generated/blueprint.api/model/models';
 import { TeamDataService } from 'src/app/data/team/team-data.service';
 import { UserDataService } from 'src/app/data/user/user-data.service';
 import { TopbarView } from 'src/app/components/shared/top-bar/topbar.models';
@@ -45,9 +36,6 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
   isSidebarOpen = true;
   isSuperUser = false;
   canAccessAdminSection = false;
-  teamList = this.teamDataService.teamList;
-  userList = this.userDataService.userList;
-  permissionList: Observable<Permission[]>;
   hideTopbar = false;
   TopbarView = TopbarView;
   topbarColor = '#ef3a47';
@@ -64,7 +52,6 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
     private userDataService: UserDataService,
     activatedRoute: ActivatedRoute,
     private healthCheckService: HealthCheckService,
-    private permissionService: PermissionService,
     private settingsService: ComnSettingsService,
     private authQuery: ComnAuthQuery,
     titleService: Title,
@@ -79,11 +66,6 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
         if (this.isSuperUser) {
           this.teamDataService.load();
           this.userDataService.getUsersFromApi();
-          this.userDataService
-            .getPermissionsFromApi()
-            .pipe(takeUntil(this.unsubscribe$))
-            .subscribe();
-          this.permissionList = this.permissionService.getPermissions();
         }
       });
     this.userDataService.canAccessAdminSection
