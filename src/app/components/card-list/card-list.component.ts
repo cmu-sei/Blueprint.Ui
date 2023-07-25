@@ -61,10 +61,8 @@ export class CardListComponent implements OnDestroy {
     });
     // subscribe to the active MSEL
     (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
-      if (msel && this.msel.id !== msel.id) {
-        Object.assign(this.msel, msel);
-        this.sortedCards = this.getSortedCards(this.getFilteredCards(this.cardList));
-      }
+      Object.assign(this.msel, msel);
+      this.sortedCards = this.getSortedCards(this.getFilteredCards(this.cardList));
     });
     this.filterControl.valueChanges
       .pipe(takeUntil(this.unsubscribe$))

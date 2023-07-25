@@ -13,10 +13,10 @@ import {
 import { LegacyPageEvent as PageEvent, MatLegacyPaginator as MatPaginator } from '@angular/material/legacy-paginator';
 import { MatSort, MatSortable } from '@angular/material/sort';
 import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
-import { CardTeam, Team } from 'src/app/generated/blueprint.api';
+import { CardTeam, Msel, Team } from 'src/app/generated/blueprint.api';
 import { CardTeamDataService } from 'src/app/data/team/card-team-data.service';
-import { TeamQuery } from 'src/app/data/team/team.query';
-import { Subject } from 'rxjs';
+import { MselQuery } from 'src/app/data/msel/msel.query';
+import { Observable, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 @Component({
@@ -27,7 +27,7 @@ import { takeUntil } from 'rxjs/operators';
 
 export class CardTeamsComponent implements OnDestroy, OnInit {
   @Input() cardId: string;
-  @Input() mselTeamList: Team[];
+  mselTeamList: Team[] = [];
   @ViewChild('teamsInput') teamsInput: ElementRef<HTMLInputElement>;
   @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
   @ViewChild(MatSort, { static: true }) sort: MatSort;  teams: Team[];
@@ -44,8 +44,13 @@ export class CardTeamsComponent implements OnDestroy, OnInit {
 
   constructor(
     private cardTeamDataService: CardTeamDataService,
-    private teamQuery: TeamQuery
-  ) {}
+    private mselQuery: MselQuery
+  ) {
+    // subscribe to the active MSEL
+    (this.mselQuery.selectActive() as Observable<Msel>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
+      this.mselTeamList = msel.teams;
+    });
+  }
 
   ngOnInit() {
     this.sort.sort(<MatSortable>{ id: 'name', start: 'asc' });
