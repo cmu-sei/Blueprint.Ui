@@ -207,7 +207,6 @@ export class MselListComponent implements OnDestroy, OnInit  {
   }
 
   goToUrl(url): void {
-    this.uiDataService.setMselTab('');
     this.router.navigate([url]);
   }
 
