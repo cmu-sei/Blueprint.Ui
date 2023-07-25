@@ -18,6 +18,7 @@ import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
+import { User } from 'src/app/generated/blueprint.api';
 
 @Component({
   selector: 'app-msel-list',
@@ -42,8 +43,9 @@ export class MselListComponent implements OnDestroy, OnInit  {
   isLoading = true;
   areButtonsDisabled = false;
   mselDataSource: MatTableDataSource<MselPlus>;
-  displayedColumns: string[] = ['action', 'name', 'status', 'dateModified', 'description'];
+  displayedColumns: string[] = ['action', 'name', 'status', 'createdBy', 'dateModified', 'description'];
   imageFilePath = '';
+  userList: User[] = [];
   private unsubscribe$ = new Subject();
 
   constructor(
@@ -62,6 +64,12 @@ export class MselListComponent implements OnDestroy, OnInit  {
     );
     // load the MSELs
     this.mselDataService.loadMine();
+    // subscribe to users
+    this.userDataService.users.pipe(takeUntil(this.unsubscribe$)).subscribe(users => {
+      this.userList = users;
+    });
+    // load the users
+    this.userDataService.getUsersFromApi();
   }
 
   ngOnInit() {
@@ -201,6 +209,11 @@ export class MselListComponent implements OnDestroy, OnInit  {
   goToUrl(url): void {
     this.uiDataService.setMselTab('');
     this.router.navigate([url]);
+  }
+
+  getUserName(userId: string) {
+    const user = this.userList.find(u => u.id === userId);
+    return user ? user.name : 'unknown';
   }
 
   ngOnDestroy() {

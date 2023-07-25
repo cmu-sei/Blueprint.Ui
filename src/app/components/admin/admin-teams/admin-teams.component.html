@@ -21,7 +21,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle"></mat-icon>
   </button>
   <mat-form-field style="width: 300px; margin-left: 10px;">
-    <input matInput [formControl]="filterControl" placeholder="Search" />
+    <input
+      matInput
+      [(ngModel)]="filterString"
+      (keyup)="applyFilter($any($event.target).value)"
+      placeholder="Search"
+    />
   </mat-form-field>
   <div style="width: 30px;">
     <button
@@ -56,7 +61,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
   </section>
 
   <mat-expansion-panel
-    *ngFor="let team of paginateTeams(teamList, pageIndex, pageSize)"
+    *ngFor="let team of paginateTeams(pageIndex, pageSize)"
     [expanded]="editTeam.id === team.id"
   >
     <mat-expansion-panel-header class="mat-row" *ngIf="!isLoading" (click)="togglePanel(team); $event.stopPropagation()">
@@ -91,7 +96,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <div class="user-div">
         <app-admin-team-users *ngIf="team.id === editTeam.id"
           [teamId]="team.id"
-          [userList]="userList"
         ></app-admin-team-users>
       </div>
     </div>

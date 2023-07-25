@@ -233,7 +233,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                     placeholder="Move"
                   >
                     <mat-option value="''"> - - - </mat-option>
-                    <mat-option *ngFor="let move of moveList" [value]="move.moveNumber">{{ move.moveNumber }}</mat-option>
+                    <mat-option *ngFor="let move of moveList" [value]="move.moveNumber">{{ move.moveNumber }} - {{ move.title }}</mat-option>
                   </mat-select>
                 </div>
               </td>

@@ -24,7 +24,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <mat-select placeholder="Move" [(ngModel)]="data.citeAction.moveNumber">
           <mat-option *ngIf="!data.citeAction.id && moveList.length > 1" [value]="-1">All Moves</mat-option>
           <mat-option *ngFor="let move of moveList" [value]="move.moveNumber">
-            {{ move.moveNumber }} - {{ move.description }}
+            {{ move.moveNumber }} - {{ move.title }}
           </mat-option>
         </mat-select>
       </mat-form-field>

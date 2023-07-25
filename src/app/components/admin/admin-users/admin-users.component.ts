@@ -2,8 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { UntypedFormControl } from '@angular/forms';
+import { Component, Input, OnDestroy } from '@angular/core';
 import { LegacyPageEvent as PageEvent } from '@angular/material/legacy-paginator';
 import { Sort } from '@angular/material/sort';
 import {
@@ -13,41 +12,48 @@ import {
 } from 'src/app/generated/blueprint.api/model/models';
 import { ComnSettingsService } from '@cmusei/crucible-common';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
+import { UserDataService } from 'src/app/data/user/user-data.service';
+import { Subject, takeUntil } from 'rxjs';
+import { PermissionService } from 'src/app/generated/blueprint.api';
 
 @Component({
   selector: 'app-admin-users',
   templateUrl: './admin-users.component.html',
   styleUrls: ['./admin-users.component.scss'],
 })
-export class AdminUsersComponent implements OnInit {
-  @Input() filterControl: UntypedFormControl;
-  @Input() filterString: string;
-  @Input() userList: User[];
+export class AdminUsersComponent implements OnDestroy {
+  @Input() allUsers: User[];
   @Input() permissionList: Permission[];
-  @Input() pageSize: number;
-  @Input() pageIndex: number;
-  @Output() removeUserPermission = new EventEmitter<UserPermission>();
-  @Output() addUserPermission = new EventEmitter<UserPermission>();
-  @Output() addUser = new EventEmitter<User>();
-  @Output() deleteUser = new EventEmitter<User>();
-  @Output() sortChange = new EventEmitter<Sort>();
-  @Output() pageChange = new EventEmitter<PageEvent>();
+  userList: User[] = [];
+  filterString = '';
+  pageEvent: PageEvent;
+  pageIndex = 0;
+  pageSize = 20;
+  sort: Sort = { active: 'shortName', direction: 'asc' };
   addingNewUser = false;
   newUser: User = { id: '', name: '' };
   isLoading = false;
   topbarColor = '#ef3a47';
+  private unsubscribe$ = new Subject();
 
   constructor(
     public dialogService: DialogService,
-    private settingsService: ComnSettingsService
+    private settingsService: ComnSettingsService,
+    private userDataService: UserDataService,
+    private permissionService: PermissionService
   ) {
     this.topbarColor = this.settingsService.settings.AppTopBarHexColor
       ? this.settingsService.settings.AppTopBarHexColor
       : this.topbarColor;
-  }
-
-  ngOnInit() {
-    this.filterControl.setValue(this.filterString);
+    // subscribe to permissions
+    this.permissionService.getPermissions().pipe(takeUntil(this.unsubscribe$)).subscribe(permissions => {
+      this.permissionList = permissions;
+    });
+    // subscribe to all users
+    this.userDataService.userList.pipe(takeUntil(this.unsubscribe$)).subscribe(users => {
+      this.allUsers = users;
+      this.applyFilter(this.filterString);
+    });
   }
 
   hasPermission(permissionId: string, user: User) {
@@ -60,15 +66,15 @@ export class AdminUsersComponent implements OnInit {
       permissionId: permissionId,
     };
     if (this.hasPermission(permissionId, user)) {
-      this.removeUserPermission.emit(userPermission);
+      this.userDataService.deleteUserPermission(userPermission);
     } else {
-      this.addUserPermission.emit(userPermission);
+      this.userDataService.addUserPermission(userPermission);
     }
   }
 
   addUserRequest(isAdd: boolean) {
     if (isAdd) {
-      this.addUser.emit(this.newUser);
+      this.userDataService.addUser(this.newUser);
     }
     this.newUser.id = '';
     this.newUser.name = '';
@@ -83,30 +89,50 @@ export class AdminUsersComponent implements OnInit {
       )
       .subscribe((result) => {
         if (result['confirm']) {
-          this.deleteUser.emit(user);
+          this.userDataService.deleteUser(user);
         }
       });
   }
 
-
   applyFilter(filterValue: string) {
-    this.filterControl.setValue(filterValue);
+    this.filterString = filterValue;
+    this.pageIndex = 0;
+    filterValue = filterValue.toLowerCase(); // MatTableDataSource defaults to lowercase matches
+    this.userList = this.allUsers
+      .filter(user => user.name.toLowerCase().indexOf(filterValue) >= 0)
+      .sort((a, b) => this.sortUsers(a, b));
   }
 
   sortChanged(sort: Sort) {
-    this.sortChange.emit(sort);
+    this.sort = sort;
+    this.applyFilter(this.filterString);
+  }
+
+  sortUsers(a: User, b: User): number {
+    const dir = this.sort.direction === 'desc' ? -1 : 1;
+    return a.name.toLowerCase() < b.name.toLowerCase() ? -dir : dir;
   }
 
   paginatorEvent(page: PageEvent) {
-    this.pageChange.emit(page);
+    this.pageIndex = page.pageIndex;
+    this.pageSize = page.pageSize;
   }
 
-  paginateUsers(users: User[], pageIndex: number, pageSize: number) {
-    if (!users) {
+  paginateUsers(pageIndex: number, pageSize: number) {
+    if (!this.userList) {
       return [];
     }
     const startIndex = pageIndex * pageSize;
-    const copy = users.slice();
+    const copy = this.userList.slice();
     return copy.splice(startIndex, pageSize);
+  }
+
+
+
+
+
+  ngOnDestroy() {
+    this.unsubscribe$.next(null);
+    this.unsubscribe$.complete();
   }
 }

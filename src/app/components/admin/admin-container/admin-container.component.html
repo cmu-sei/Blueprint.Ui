@@ -115,34 +115,10 @@ project root for license information or contact permission@sei.cmu.edu for full 
     </mat-sidenav>
     <mat-sidenav-content>
       <span *ngIf="isSuperUser && ((showSection | async) === teamsText)">
-        <app-admin-teams
-          [teamList]="teamList | async"
-          [userList]="userList | async"
-          [filterControl]="filterControl"
-          [pageSize]="pageSize | async"
-          [pageIndex]="pageIndex | async"
-          [filterString]="filterString | async"
-          (sortChange)="sortChangeHandler($event)"
-          (pageChange)="pageChangeHandler($event)"
-        >
-        </app-admin-teams>
+        <app-admin-teams></app-admin-teams>
       </span>
       <span *ngIf="isSuperUser && ((showSection | async) === usersText)">
-        <app-admin-users
-          [userList]="userList | async"
-          [permissionList]="permissionList | async"
-          [filterControl]="filterControl"
-          [pageSize]="pageSize | async"
-          [pageIndex]="pageIndex | async"
-          [filterString]="filterString | async"
-          (removeUserPermission)="removeUserPermissionHandler($event)"
-          (addUserPermission)="addUserPermissionHandler($event)"
-          (addUser)="addUserHandler($event)"
-          (deleteUser)="deleteUserHandler($event)"
-          (sortChange)="sortChangeHandler($event)"
-          (pageChange)="pageChangeHandler($event)"
-        >
-        </app-admin-users>
+        <app-admin-users></app-admin-users>
       </span>
     </mat-sidenav-content>
   </mat-sidenav-container>
