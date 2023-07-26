@@ -39,7 +39,12 @@
 }
 
 .permission-cell {
-  flex: 70;
+  flex: 10;
+  align-self: center;
+}
+
+.permission-item {
+  margin-left: 5px;
 }
 
 .button-end {
@@ -66,14 +71,6 @@
 
 .mat-select {
   width: 100px;
-}
-
-.pad-top {
-  margin-top: 12px;
-}
-
-.permission-item {
-  margin-right: 10px;
 }
 
 .new-user-spacing {

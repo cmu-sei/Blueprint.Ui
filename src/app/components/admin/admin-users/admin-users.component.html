@@ -100,7 +100,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     class="mat-elevation-z2 mat-header-row"
   >
     <div class="mat-header-cell user-cell" mat-sort-header="name"><span style="margin-left: 80px;">User</span></div>
-    <div class="mat-header-cell permission-cell">Permissions</div>
+    <div class="mat-header-cell permission-cell" *ngFor="let permission of permissionList" mat-sort-header="{{ permission.id }}">{{ permission.key }}</div>
   </section>
 
   <mat-expansion-panel
@@ -127,14 +127,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
         </button>
         {{ user.name }}
       </span>
-      <span class="mat-cell permission-cell">
+      <span class="mat-cell permission-cell" *ngFor="let permission of permissionList">
         <div class="cssLayoutRowStartCenter">
-          <div class="permission-item" *ngFor="let permission of permissionList">
+          <div class="permission-item">
             <mat-checkbox
               [checked]="hasPermission(permission.id, user)"
               (change)="toggleUserPermission(user, permission.id)"
               style="margin-right: 20px;"
-              >{{ permission.key }}</mat-checkbox
+            ></mat-checkbox
             >
           </div>
         </div>

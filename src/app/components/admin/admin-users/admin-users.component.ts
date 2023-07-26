@@ -29,7 +29,7 @@ export class AdminUsersComponent implements OnDestroy {
   pageEvent: PageEvent;
   pageIndex = 0;
   pageSize = 20;
-  sort: Sort = { active: 'shortName', direction: 'asc' };
+  sort: Sort = { active: 'name', direction: 'asc' };
   addingNewUser = false;
   newUser: User = { id: '', name: '' };
   isLoading = false;
@@ -110,7 +110,18 @@ export class AdminUsersComponent implements OnDestroy {
 
   sortUsers(a: User, b: User): number {
     const dir = this.sort.direction === 'desc' ? -1 : 1;
-    return a.name.toLowerCase() < b.name.toLowerCase() ? -dir : dir;
+    if (!this.sort.direction || this.sort.active === 'name') {
+      this.sort = { active: 'name', direction: 'asc' };
+      return a.name.toLowerCase() < b.name.toLowerCase() ? -dir : dir;
+    } else {
+      const aValue = this.hasPermission(this.sort.active, a).toString();
+      const bValue = this.hasPermission(this.sort.active, b).toString();
+      if (aValue === bValue) {
+        return a.name.toLowerCase() < b.name.toLowerCase() ? -dir : dir;
+      } else {
+        return aValue < bValue ? dir : -dir;
+      }
+    }
   }
 
   paginatorEvent(page: PageEvent) {
