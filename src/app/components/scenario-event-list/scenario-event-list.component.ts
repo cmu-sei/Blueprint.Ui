@@ -60,7 +60,7 @@ export class ScenarioEventListComponent implements OnDestroy {
   expandedMoreScenarioEventIds: string[] = [];
   filteredScenarioEventList: ScenarioEventPlus[] = [];
   filterString = '';
-  sort: Sort = {active: '', direction: ''};
+  sort: Sort = { active: 'rowIndex', direction: 'asc' };
   sortedScenarioEvents: ScenarioEventPlus[] = [];
   sortedDataFields: DataField[] = [];
   sortedDataOptions: DataOption[] = [];
@@ -198,7 +198,7 @@ export class ScenarioEventListComponent implements OnDestroy {
     if (scenarioEvents) {
       if (scenarioEvents.length > 0 && this.sort && this.sort.direction) {
         sortedScenarioEvents = (scenarioEvents as ScenarioEventPlus[])
-          .sort((a: ScenarioEventPlus, b: ScenarioEventPlus) => this.sortScenarioEvents(a, b, this.sort.active, this.sort.direction));
+          .sort((a: ScenarioEventPlus, b: ScenarioEventPlus) => this.sortScenarioEvents(a, b));
       } else {
         sortedScenarioEvents = (scenarioEvents as ScenarioEventPlus[])
           .sort((a, b) => +a.rowIndex > +b.rowIndex ? 1 : -1);
@@ -370,17 +370,20 @@ export class ScenarioEventListComponent implements OnDestroy {
     this.sortedScenarioEvents = this.getSortedScenarioEvents(this.filteredScenarioEventList);
   }
 
-  private sortScenarioEvents(
-    a: ScenarioEventPlus,
-    b: ScenarioEventPlus,
-    column: string,
-    direction: string
-  ) {
-    const isAsc = direction !== 'desc';
-    return (
-      (this.getDataValue(a, column).value.toLowerCase() < this.getDataValue(b, column).value.toLowerCase() ? -1 : 1) *
-      (isAsc ? 1 : -1)
-    );
+  private sortScenarioEvents(a: ScenarioEventPlus, b: ScenarioEventPlus): number {
+    const dir = this.sort.direction === 'desc' ? -1 : 1;
+    if (!this.sort.direction || this.sort.active === 'rowIndex') {
+      this.sort = { active: 'rowIndex', direction: 'asc' };
+      return +a.rowIndex < +b.rowIndex ? -dir : dir;
+    } else {
+      const aValue = this.getDataValue(a, this.sort.active).value?.toString().toLowerCase();
+      const bValue = this.getDataValue(b, this.sort.active).value?.toString().toLowerCase();
+      if (aValue === bValue) {
+        return +a.rowIndex < +b.rowIndex ? -dir : dir;
+      } else {
+        return aValue < bValue ? -dir : dir;
+      }
+    }
   }
 
   getFilteredScenarioEvents(scenarioEvents: ScenarioEventPlus[]): ScenarioEventPlus[] {
@@ -630,11 +633,11 @@ export class ScenarioEventListComponent implements OnDestroy {
   getStyle(dataField: DataField): string {
     if (dataField && dataField.columnMetadata) {
       const width = Math.trunc(+dataField.columnMetadata * 7);  // 7 converts excel widths to http widths
-      return 'width: ' + width.toString() + 'px;';
+      return 'text-align: left; width: ' + width.toString() + 'px;';
     } else if (dataField.dataType.toString() === 'DateTime') {
       return 'width: max-content';
     } else {
-      return 'width: ' + Math.trunc( 100 / this.sortedDataFields.length) + 'vh;';
+      return 'text-align: left; width: ' + Math.trunc( 100 / this.sortedDataFields.length) + 'vh;';
       // return 'width: 100%;';
     }
   }

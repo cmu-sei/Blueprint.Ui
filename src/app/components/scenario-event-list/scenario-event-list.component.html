@@ -6,9 +6,10 @@ project root for license information or contact permission@sei.cmu.edu for full 
 <div class="container">
   <div class="tableFixHead" *ngIf="msel">
     <table>
-      <thead>
+      <thead matSort
+      (matSortChange)="sortChanged($event)">
         <tr>
-          <th class="background">
+          <th mat-sort-header="displayOrder" class="">
             <div class="row-start-buttons">
               <button
                 mat-icon-button
@@ -19,10 +20,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
               >
                 <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
               </button>
+              <span class="order-header">#</span>
             </div>
           </th>
           <ng-container *ngFor="let df of sortedDataFields">
-            <th class="background">
+            <th mat-sort-header="{{ df.name }}">
               <div [style]="getStyle(df)">{{ df.name }}</div>
             </th>
           </ng-container>
