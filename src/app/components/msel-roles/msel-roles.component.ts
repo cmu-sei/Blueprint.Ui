@@ -90,7 +90,7 @@ export class MselRolesComponent implements OnDestroy {
       });
       if (this.mselTeamList.length > 0) {
         this.mselTeamList = this.mselTeamList.sort((a, b) =>
-          this.getTeam(a.teamId).shortName?.toLowerCase() > this.getTeam(b.teamId).shortName?.toLowerCase() ? 1 : -1);
+          a.team.shortName?.toLowerCase() > b.team.shortName?.toLowerCase() ? 1 : -1);
       }
     });
     // subscribe to UserMselRoles
