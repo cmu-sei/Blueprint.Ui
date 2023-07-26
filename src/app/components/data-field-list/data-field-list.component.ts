@@ -70,10 +70,8 @@ export class DataFieldListComponent implements OnDestroy {
     });
     // subscribe to the active MSEL changes to get future changes
     (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(m => {
-      if (m && this.msel.id !== m.id) {
-        Object.assign(this.msel, m);
-        this.sortedDataFields = this.getSortedDataFields(this.getFilteredDataFields(this.dataFieldList));
-      }
+      Object.assign(this.msel, m);
+      this.sortedDataFields = this.getSortedDataFields(this.getFilteredDataFields(this.dataFieldList));
     });
     this.filterControl.valueChanges
       .pipe(takeUntil(this.unsubscribe$))
