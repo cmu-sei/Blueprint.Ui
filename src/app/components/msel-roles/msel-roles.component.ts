@@ -42,7 +42,7 @@ export class MselRolesComponent implements OnDestroy {
   expandedSectionIds: string[] = [];
   sortedScenarioEvents: ScenarioEvent[];
   sortedDataFields: DataField[];
-  mselRoles: MselRole[] = [MselRole.Editor, MselRole.Approver, MselRole.MoveEditor, MselRole.Owner, MselRole.Viewer];
+  mselRoles: MselRole[] = [MselRole.Editor, MselRole.Approver, MselRole.MoveEditor, MselRole.Owner, MselRole.Facilitator, MselRole.Viewer];
   isEditEnabled = false;
   userList: User[] = [];
   mselTeamList: MselTeam[] = [];

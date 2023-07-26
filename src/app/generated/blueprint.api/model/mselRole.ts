@@ -17,12 +17,13 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
  */
 
 
-export type MselRole = 'Owner' | 'Editor' | 'Approver' | 'MoveEditor' | 'Viewer';
+export type MselRole = 'Owner' | 'Editor' | 'Approver' | 'MoveEditor' | 'Facilitator' | 'Viewer';
 
 export const MselRole = {
     Owner: 'Owner' as MselRole,
     Editor: 'Editor' as MselRole,
     Approver: 'Approver' as MselRole,
     MoveEditor: 'MoveEditor' as MselRole,
+    Facilitator: 'Facilitator' as MselRole,
     Viewer: 'Viewer' as MselRole,
 };
