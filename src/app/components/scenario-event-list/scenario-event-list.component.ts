@@ -4,9 +4,9 @@
 import { Component, Input, OnDestroy, ViewChild } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
-import { ActivatedRoute, Router } from '@angular/router';
-import { Subject, Observable } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { Router } from '@angular/router';
+import { Subject, Subscription, Observable, of } from 'rxjs';
+import { takeUntil, map, debounceTime, distinctUntilChanged, mergeMap, delay } from 'rxjs/operators';
 import {
   ComnSettingsService,
   Theme,
@@ -27,7 +27,6 @@ import {
   User
 } from 'src/app/generated/blueprint.api';
 import { MselPlus } from 'src/app/data/msel/msel-data.service';
-import { MselDataService } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { Sort } from '@angular/material/sort';
 import { MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy-menu';
@@ -97,6 +96,8 @@ export class ScenarioEventListComponent implements OnDestroy {
   cardList: Card[] = [];
   moveList: Move[] = [];
   teamList: Team[] = [];
+  keyUp = new Subject<KeyboardEvent>();
+  private subscription: Subscription;
 
   constructor(
     private router: Router,
@@ -142,7 +143,7 @@ export class ScenarioEventListComponent implements OnDestroy {
     // subscribe to scenario events
     (this.scenarioEventQuery.selectAll()).pipe(takeUntil(this.unsubscribe$)).subscribe(scenarioEvents => {
       this.mselScenarioEvents = this.getEditableScenarioEvents(scenarioEvents as ScenarioEventPlus[]);
-      this.filteredScenarioEventList = this.getFilteredScenarioEvents(this.mselScenarioEvents);
+      this.filteredScenarioEventList = this.getFilteredScenarioEvents();
       this.sortedScenarioEvents = this.getSortedScenarioEvents(this.filteredScenarioEventList);
     });
     // is user a contentdeveloper or system admin?
@@ -164,6 +165,16 @@ export class ScenarioEventListComponent implements OnDestroy {
     // observe the Teams
     this.teamQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(teams => {
       this.teamList = teams;
+    });
+    // subscribe to filter string changes for debounce
+    this.subscription = this.keyUp.pipe(
+      debounceTime(500),
+      distinctUntilChanged(),
+      mergeMap(search => of(search).pipe(
+        delay(250),
+      )),
+    ).subscribe(event => {
+      this.applyFilter(this.filterString);
     });
   }
 
@@ -364,9 +375,15 @@ export class ScenarioEventListComponent implements OnDestroy {
     this.contextMenu.openMenu();
   }
 
+  applyFilter(filterValue: string) {
+    this.filterString = filterValue;
+    this.filteredScenarioEventList = this.getFilteredScenarioEvents();
+    this.sortedScenarioEvents = this.getSortedScenarioEvents(this.filteredScenarioEventList);
+  }
+
   sortChanged(sort: Sort) {
     this.sort = sort;
-    this.filteredScenarioEventList = this.getFilteredScenarioEvents(this.mselScenarioEvents);
+    this.filteredScenarioEventList = this.getFilteredScenarioEvents();
     this.sortedScenarioEvents = this.getSortedScenarioEvents(this.filteredScenarioEventList);
   }
 
@@ -386,24 +403,27 @@ export class ScenarioEventListComponent implements OnDestroy {
     }
   }
 
-  getFilteredScenarioEvents(scenarioEvents: ScenarioEventPlus[]): ScenarioEventPlus[] {
-    let filteredScenarioEvents: ScenarioEventPlus[] = [];
-    if (scenarioEvents) {
-      scenarioEvents.forEach(se => {
+  getFilteredScenarioEvents(): ScenarioEventPlus[] {
+    const mselScenarioEvents: ScenarioEventPlus[] = [];
+    if (this.mselScenarioEvents) {
+      this.mselScenarioEvents.forEach(se => {
         if (se.mselId === this.msel.id) {
-          filteredScenarioEvents.push({... se});
+          mselScenarioEvents.push({... se});
         }
       });
-      if (filteredScenarioEvents && filteredScenarioEvents.length > 0 && this.filterString) {
+      if (mselScenarioEvents && mselScenarioEvents.length > 0 && this.filterString) {
         const filterString = this.filterString.toLowerCase();
-        filteredScenarioEvents = filteredScenarioEvents
+        const that = this;
+        const filteredScenarioEvents = mselScenarioEvents
           .filter((a) =>
-            this.allDataFields.forEach(function (df) {
-              this.getDataValue(a, df.name).value.toLowerCase().includes(filterString);
-            }));
+            this.sortedDataFields.some(df =>
+              that.getDataValue(a, df.name).value?.toLowerCase().includes(filterString)
+            )
+          );
+        return filteredScenarioEvents;
       }
     }
-    return filteredScenarioEvents;
+    return mselScenarioEvents;
   }
 
   addScenarioEvent() {

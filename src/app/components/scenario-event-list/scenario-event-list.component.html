@@ -9,7 +9,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <thead matSort
       (matSortChange)="sortChanged($event)">
         <tr>
-          <th mat-sort-header="displayOrder" class="">
+          <th class="background">
             <div class="row-start-buttons">
               <button
                 mat-icon-button
@@ -20,11 +20,18 @@ project root for license information or contact permission@sei.cmu.edu for full 
               >
                 <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
               </button>
-              <span class="order-header">#</span>
+              <mat-form-field style="width: 100px;">
+                <input
+                  matInput
+                  [(ngModel)]="filterString"
+                  (keyup)="keyUp.next($event)"
+                  placeholder="Search"
+                />
+              </mat-form-field>
             </div>
           </th>
           <ng-container *ngFor="let df of sortedDataFields">
-            <th mat-sort-header="{{ df.name }}">
+            <th mat-sort-header="{{ df.name }}" class="background">
               <div [style]="getStyle(df)">{{ df.name }}</div>
             </th>
           </ng-container>
