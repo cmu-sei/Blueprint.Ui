@@ -4,7 +4,7 @@
 import { Component, Input, OnDestroy, ViewChild } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { Subject, Observable } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { delay, takeUntil } from 'rxjs/operators';
 import {
   DataField,
   DataFieldType,
@@ -44,7 +44,7 @@ export class DataFieldListComponent implements OnDestroy {
   editingId = '';
   dataOptionList: DataOption[] = [];
   dataFieldTypes = DataFieldType.keys;
-
+  private waitCount = 0;
   private unsubscribe$ = new Subject();
   // context menu
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
@@ -115,19 +115,8 @@ export class DataFieldListComponent implements OnDestroy {
     dialogRef.componentInstance.editComplete.subscribe((result) => {
       if (result.saveChanges && result.dataField) {
         const dataFieldId = this.saveDataField(result.dataField);
-        result.addedDataFieldOptions.forEach(dfo => {
-          dfo.dataFieldId = dataFieldId;
-          console.log('add ' + dfo.optionName);
-          this.dataOptionDataService.add(dfo);
-        });
-        result.changedDataFieldOptions.forEach(dfo => {
-          console.log('update ' + dfo.optionName);
-          this.dataOptionDataService.updateDataOption(dfo);
-        });
-        result.deletedDataFieldOptions.forEach(dfo => {
-          console.log('delete ' + dfo.optionName);
-          this.dataOptionDataService.delete(dfo.id);
-        });
+        this.waitCount = 0;
+        this.saveDataOptions(dataFieldId, result.addedDataFieldOptions, result.changedDataFieldOptions, result.deletedDataFieldOptions);
       }
       dialogRef.close();
     });
@@ -141,6 +130,30 @@ export class DataFieldListComponent implements OnDestroy {
       this.dataFieldDataService.add(dataField);
     }
     return dataField.id;
+  }
+
+  saveDataOptions(dataFieldId: string, addOptionList: DataOption[], changeOptionList: DataOption[], deleteOptionList: DataOption[]) {
+    if (this.waitCount >= 50) {
+      console.log('Error saving the DataOptions!  DataField never showed up in the DataField list.');
+    }
+    if (this.dataFieldList.some(df => df.id === dataFieldId)) {
+      addOptionList.forEach(dfo => {
+        dfo.dataFieldId = dataFieldId;
+        this.dataOptionDataService.add(dfo);
+      });
+      changeOptionList.forEach(dfo => {
+        this.dataOptionDataService.updateDataOption(dfo);
+      });
+      deleteOptionList.forEach(dfo => {
+        this.dataOptionDataService.delete(dfo.id);
+      });
+    } else {
+      this.waitCount++;
+      setTimeout(() => {
+        this.saveDataOptions(dataFieldId, addOptionList, changeOptionList, deleteOptionList);
+      }, 300);
+
+    }
   }
 
   deleteDataField(dataField: DataField): void {
