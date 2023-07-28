@@ -45,7 +45,7 @@
       }
     ],
     "DefaultDeliveryMethodOptions": [
-      {"optionName": "Article", "optionValue": "Article"},
+      {"optionName": "Gallery", "optionValue": "Gallery"},
       {"optionName": "Email", "optionValue": "Email"},
       {"optionName": "Notification", "optionValue": "Notification"}
     ],
