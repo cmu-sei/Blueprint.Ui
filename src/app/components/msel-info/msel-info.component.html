@@ -124,7 +124,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 title="Push to Gallery"
                 class="thin-button"
                 *ngIf="!msel.galleryCollectionId"
-                [disabled]="galleryToDo()"
+                [disabled]="!(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) || galleryToDo() || isChanged"
               ><span *ngIf="isBusy">Pushing to Gallery ...</span><span *ngIf="!isBusy">Push to Gallery</span></button>
               <span *ngIf="!msel.galleryCollectionId && galleryToDo()" class="gallery-warning">** Unassigned Gallery Article Parameters in Data Fields</span>
               <button
@@ -132,6 +132,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 title="Remove from Gallery"
                 class="thin-button"
                 *ngIf="msel.galleryCollectionId"
+                [disabled]="!(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)"
               >Remove from Gallery</button>
             </div>
           </div>
@@ -177,7 +178,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 <mat-select
                   [(ngModel)]="msel.citeScoringModelId"
                   (cut)="isChanged = true"
-                  (change)="isChanged = true"
+                  (selectionChange)="isChanged = true"
                   (paste)="isChanged = true"
                   (keypress)="isChanged = true"
                 >
@@ -206,7 +207,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 title="Push to CITE"
                 class="thin-button"
                 *ngIf="!msel.citeEvaluationId"
-                [disabled]="!(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) || !msel.citeScoringModelId || isBusy"
+                [disabled]="!(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) || !msel.citeScoringModelId || isBusy || isChanged"
               ><span *ngIf="isBusy">Pushing to CITE ...</span><span *ngIf="!isBusy">Push to CITE</span></button>
               <button
                 (click)="pullFromCite()"
