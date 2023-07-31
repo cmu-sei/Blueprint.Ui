@@ -4,9 +4,9 @@
 import { Component, Input, OnDestroy, ViewChild } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
-import { ActivatedRoute, Router } from '@angular/router';
-import { Subject, Observable } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { Router } from '@angular/router';
+import { Subject, Subscription, Observable, of } from 'rxjs';
+import { takeUntil, map, debounceTime, distinctUntilChanged, mergeMap, delay } from 'rxjs/operators';
 import {
   ComnSettingsService,
   Theme,
@@ -27,7 +27,6 @@ import {
   User
 } from 'src/app/generated/blueprint.api';
 import { MselPlus } from 'src/app/data/msel/msel-data.service';
-import { MselDataService } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { Sort } from '@angular/material/sort';
 import { MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy-menu';
@@ -60,7 +59,7 @@ export class ScenarioEventListComponent implements OnDestroy {
   expandedMoreScenarioEventIds: string[] = [];
   filteredScenarioEventList: ScenarioEventPlus[] = [];
   filterString = '';
-  sort: Sort = {active: '', direction: ''};
+  sort: Sort = { active: 'rowIndex', direction: 'asc' };
   sortedScenarioEvents: ScenarioEventPlus[] = [];
   sortedDataFields: DataField[] = [];
   sortedDataOptions: DataOption[] = [];
@@ -97,6 +96,8 @@ export class ScenarioEventListComponent implements OnDestroy {
   cardList: Card[] = [];
   moveList: Move[] = [];
   teamList: Team[] = [];
+  keyUp = new Subject<KeyboardEvent>();
+  private subscription: Subscription;
 
   constructor(
     private router: Router,
@@ -142,7 +143,7 @@ export class ScenarioEventListComponent implements OnDestroy {
     // subscribe to scenario events
     (this.scenarioEventQuery.selectAll()).pipe(takeUntil(this.unsubscribe$)).subscribe(scenarioEvents => {
       this.mselScenarioEvents = this.getEditableScenarioEvents(scenarioEvents as ScenarioEventPlus[]);
-      this.filteredScenarioEventList = this.getFilteredScenarioEvents(this.mselScenarioEvents);
+      this.filteredScenarioEventList = this.getFilteredScenarioEvents();
       this.sortedScenarioEvents = this.getSortedScenarioEvents(this.filteredScenarioEventList);
     });
     // is user a contentdeveloper or system admin?
@@ -164,6 +165,16 @@ export class ScenarioEventListComponent implements OnDestroy {
     // observe the Teams
     this.teamQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(teams => {
       this.teamList = teams;
+    });
+    // subscribe to filter string changes for debounce
+    this.subscription = this.keyUp.pipe(
+      debounceTime(500),
+      distinctUntilChanged(),
+      mergeMap(search => of(search).pipe(
+        delay(250),
+      )),
+    ).subscribe(event => {
+      this.applyFilter(this.filterString);
     });
   }
 
@@ -198,7 +209,7 @@ export class ScenarioEventListComponent implements OnDestroy {
     if (scenarioEvents) {
       if (scenarioEvents.length > 0 && this.sort && this.sort.direction) {
         sortedScenarioEvents = (scenarioEvents as ScenarioEventPlus[])
-          .sort((a: ScenarioEventPlus, b: ScenarioEventPlus) => this.sortScenarioEvents(a, b, this.sort.active, this.sort.direction));
+          .sort((a: ScenarioEventPlus, b: ScenarioEventPlus) => this.sortScenarioEvents(a, b));
       } else {
         sortedScenarioEvents = (scenarioEvents as ScenarioEventPlus[])
           .sort((a, b) => +a.rowIndex > +b.rowIndex ? 1 : -1);
@@ -364,43 +375,55 @@ export class ScenarioEventListComponent implements OnDestroy {
     this.contextMenu.openMenu();
   }
 
-  sortChanged(sort: Sort) {
-    this.sort = sort;
-    this.filteredScenarioEventList = this.getFilteredScenarioEvents(this.mselScenarioEvents);
+  applyFilter(filterValue: string) {
+    this.filterString = filterValue;
+    this.filteredScenarioEventList = this.getFilteredScenarioEvents();
     this.sortedScenarioEvents = this.getSortedScenarioEvents(this.filteredScenarioEventList);
   }
 
-  private sortScenarioEvents(
-    a: ScenarioEventPlus,
-    b: ScenarioEventPlus,
-    column: string,
-    direction: string
-  ) {
-    const isAsc = direction !== 'desc';
-    return (
-      (this.getDataValue(a, column).value.toLowerCase() < this.getDataValue(b, column).value.toLowerCase() ? -1 : 1) *
-      (isAsc ? 1 : -1)
-    );
+  sortChanged(sort: Sort) {
+    this.sort = sort;
+    this.filteredScenarioEventList = this.getFilteredScenarioEvents();
+    this.sortedScenarioEvents = this.getSortedScenarioEvents(this.filteredScenarioEventList);
   }
 
-  getFilteredScenarioEvents(scenarioEvents: ScenarioEventPlus[]): ScenarioEventPlus[] {
-    let filteredScenarioEvents: ScenarioEventPlus[] = [];
-    if (scenarioEvents) {
-      scenarioEvents.forEach(se => {
-        if (se.mselId === this.msel.id) {
-          filteredScenarioEvents.push({... se});
-        }
-      });
-      if (filteredScenarioEvents && filteredScenarioEvents.length > 0 && this.filterString) {
-        const filterString = this.filterString.toLowerCase();
-        filteredScenarioEvents = filteredScenarioEvents
-          .filter((a) =>
-            this.allDataFields.forEach(function (df) {
-              this.getDataValue(a, df.name).value.toLowerCase().includes(filterString);
-            }));
+  private sortScenarioEvents(a: ScenarioEventPlus, b: ScenarioEventPlus): number {
+    const dir = this.sort.direction === 'desc' ? -1 : 1;
+    if (!this.sort.direction || this.sort.active === 'rowIndex') {
+      this.sort = { active: 'rowIndex', direction: 'asc' };
+      return +a.rowIndex < +b.rowIndex ? -dir : dir;
+    } else {
+      const aValue = this.getDataValue(a, this.sort.active).value?.toString().toLowerCase();
+      const bValue = this.getDataValue(b, this.sort.active).value?.toString().toLowerCase();
+      if (aValue === bValue) {
+        return +a.rowIndex < +b.rowIndex ? -dir : dir;
+      } else {
+        return aValue < bValue ? -dir : dir;
       }
     }
-    return filteredScenarioEvents;
+  }
+
+  getFilteredScenarioEvents(): ScenarioEventPlus[] {
+    const mselScenarioEvents: ScenarioEventPlus[] = [];
+    if (this.mselScenarioEvents) {
+      this.mselScenarioEvents.forEach(se => {
+        if (se.mselId === this.msel.id) {
+          mselScenarioEvents.push({... se});
+        }
+      });
+      if (mselScenarioEvents && mselScenarioEvents.length > 0 && this.filterString) {
+        const filterString = this.filterString.toLowerCase();
+        const that = this;
+        const filteredScenarioEvents = mselScenarioEvents
+          .filter((a) =>
+            this.sortedDataFields.some(df =>
+              that.getDataValue(a, df.name).value?.toLowerCase().includes(filterString)
+            )
+          );
+        return filteredScenarioEvents;
+      }
+    }
+    return mselScenarioEvents;
   }
 
   addScenarioEvent() {
@@ -630,11 +653,11 @@ export class ScenarioEventListComponent implements OnDestroy {
   getStyle(dataField: DataField): string {
     if (dataField && dataField.columnMetadata) {
       const width = Math.trunc(+dataField.columnMetadata * 7);  // 7 converts excel widths to http widths
-      return 'width: ' + width.toString() + 'px;';
+      return 'text-align: left; width: ' + width.toString() + 'px;';
     } else if (dataField.dataType.toString() === 'DateTime') {
       return 'width: max-content';
     } else {
-      return 'width: ' + Math.trunc( 100 / this.sortedDataFields.length) + 'vh;';
+      return 'text-align: left; width: ' + Math.trunc( 100 / this.sortedDataFields.length) + 'vh;';
       // return 'width: 100%;';
     }
   }
