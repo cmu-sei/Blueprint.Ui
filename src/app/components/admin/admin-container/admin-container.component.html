@@ -12,6 +12,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     [topbarColor]="topbarColor"
     [topbarTextColor]="topbarTextColor"
     [imageFilePath]="topbarImage"
+    (urlNavigate)="goToUrl($event)"
   ></app-topbar>
 
   <mat-sidenav-container class="tall" autosize>
@@ -26,7 +27,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <button
             aria-label="Exit Administration"
             mat-icon-button
-            [routerLink]="['/']"
+            (click)="goToUrl('/')"
             style="outline: none"
           >
             <mat-icon
@@ -34,7 +35,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
               fontIcon="mdi-close-circle-outline"
             ></mat-icon>
           </button>
-          <a class="nolink" [routerLink]="['/']">
+          <a class="nolink" (click)="goToUrl('/')">
             <div class="cssLayoutRowCenterCenter">
               <h2 class="icon-text">Administration</h2>
             </div>

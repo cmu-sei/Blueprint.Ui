@@ -109,6 +109,12 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
     });
   }
 
+  goToUrl(url): void {
+    this.router.navigate([url], {
+      queryParamsHandling: 'merge',
+    });
+  }
+
   getSelectedClass(section: string) {
     if (section === this.displayedSection) {
       return 'selected-item';
