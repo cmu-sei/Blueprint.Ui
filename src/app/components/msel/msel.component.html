@@ -4,89 +4,83 @@ Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
 
-<mat-tab-group
-  *ngIf="selectedTab !== '<<  Back'"
-  #tabGroup0
-  class="tab-group"
-  mat-align-tabs="start"
-  [selectedIndex]="selectedIndex"
-  (selectedTabChange)="tabChange($event)">
-  <mat-tab label="<<  Back">
-  </mat-tab>
-  <mat-tab label="Info">
+<mat-sidenav-container class="appcontent-container" autosize>
+  <mat-sidenav
+    #sidenav
+    class="appbarmenu-container"
+    mode="side"
+    [opened]="sideNavOpen"
+  >
+    <mat-list>
+      <mat-list-item class="top-tab-button">
+        <button
+          mat-button
+          class="tab-button"
+          (click)="tabChange('<<  Back')"
+        ><b><<  Back</b></button>
+        <mat-divider></mat-divider>
+      </mat-list-item>
+      <mat-list-item *ngFor="let tabName of tabList">
+        <button
+          mat-button
+          class="tab-button"
+          (click)="tabChange(tabName)"
+        ><b>{{ tabName }}</b></button>
+        <mat-divider></mat-divider>
+      </mat-list-item>
+    </mat-list>
+  </mat-sidenav>
+  <mat-sidenav-content class="content-frame">
     <app-msel-info
       *ngIf="selectedTab === 'Info'"
       [loggedInUserId]="loggedInUserId"
       [isContentDeveloper]="isContentDeveloper"
     ></app-msel-info>
-  </mat-tab>
-  <mat-tab label="Teams">
     <app-msel-roles
       *ngIf="selectedTab === 'Teams'"
       [loggedInUserId]="loggedInUserId"
       [isContentDeveloper]="isContentDeveloper"
     ></app-msel-roles>
-  </mat-tab>
-  <mat-tab label="Data Fields">
     <app-data-field-list
       *ngIf="selectedTab === 'Data Fields'"
       [loggedInUserId]="loggedInUserId"
       [isContentDeveloper]="isContentDeveloper"
     ></app-data-field-list>
-  </mat-tab>
-  <mat-tab label="Organizations">
     <app-organization-list
       *ngIf="selectedTab === 'Organizations'"
       [loggedInUserId]="loggedInUserId"
       [isContentDeveloper]="isContentDeveloper"
     >Organizations</app-organization-list>
-  </mat-tab>
-  <mat-tab label="Moves">
     <app-move-list
       *ngIf="selectedTab === 'Moves'"
       [loggedInUserId]="loggedInUserId"
       [isContentDeveloper]="isContentDeveloper"
     ></app-move-list>
-  </mat-tab>
-  <mat-tab label="Gallery Cards" *ngIf="(msel | async)?.useGallery">
     <app-card-list
       *ngIf="selectedTab === 'Gallery Cards'"
       [loggedInUserId]="loggedInUserId"
       [isContentDeveloper]="isContentDeveloper"
     ></app-card-list>
-  </mat-tab>
-  <mat-tab label="CiteActions" *ngIf="(msel | async)?.useCite">
     <app-cite-action-list
-      *ngIf="selectedTab === 'CiteActions'"
+      *ngIf="selectedTab === 'Cite Actions'"
       [loggedInUserId]="loggedInUserId"
       [isContentDeveloper]="isContentDeveloper"
     ></app-cite-action-list>
-  </mat-tab>
-  <mat-tab label="CiteRoles" *ngIf="(msel | async)?.useCite">
     <app-cite-role-list
-      *ngIf="selectedTab === 'CiteRoles'"
+      *ngIf="selectedTab === 'Cite Roles'"
       [loggedInUserId]="loggedInUserId"
       [isContentDeveloper]="isContentDeveloper"
     ></app-cite-role-list>
-  </mat-tab>
-  <mat-tab label="Injects">
     <app-scenario-event-list
       *ngIf="selectedTab === 'Injects'"
       [loggedInUserId]="loggedInUserId"
       [isContentDeveloper]="isContentDeveloper"
       [userTheme]="userTheme$ | async"
     ></app-scenario-event-list>
-  </mat-tab>
-  <mat-tab label="Exercise View">
     <app-msel-view
       *ngIf="selectedTab === 'Exercise View'"
       [tabHeight]="48"
       [userTheme]="userTheme$ | async"
     ></app-msel-view>
-  </mat-tab>
-</mat-tab-group>
-
-<app-msel-view
-  *ngIf="selectedTab === '<<  Back'"
-  [tabHeight]="0"
-></app-msel-view>
+  </mat-sidenav-content>
+</mat-sidenav-container>

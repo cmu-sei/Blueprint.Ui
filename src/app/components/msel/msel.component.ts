@@ -1,7 +1,7 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, Input, OnDestroy, ViewChild, ViewChildren, QueryList, AfterViewInit, ChangeDetectorRef } from '@angular/core';
+import { Component, Input, OnDestroy, ViewChild, ViewChildren, QueryList } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -34,19 +34,31 @@ import { UserMselRoleDataService } from 'src/app/data/user-msel-role/user-msel-r
   templateUrl: './msel.component.html',
   styleUrls: ['./msel.component.scss'],
 })
-export class MselComponent implements OnDestroy, AfterViewInit {
+export class MselComponent implements OnDestroy {
   @Input() loggedInUserId: string;
   @Input() isContentDeveloper: boolean;
   @Input() userTheme$: Observable<Theme>;
   @ViewChild('tabGroup0', { static: false }) tabGroup0: MatTabGroup;
   @ViewChildren('MatTab') tabs: QueryList<MatTab>;
-  private tabList: MatTab[] = [];
+  tabList: string[] = [
+    'Info',
+    'Teams',
+    'Data Fields',
+    'Organizations',
+    'Moves',
+    'Gallery Cards',
+    'Cite Actions',
+    'Cite Roles',
+    'Injects',
+    'Exercise View'
+  ];
   private unsubscribe$ = new Subject();
   msel = this.mselQuery.selectActive() as Observable<Msel>;
-  selectedTab = 'Info';
+  selectedTab = '';
   defaultTab = 'Info';
   selectedIndex = 1;
   selectedMselId = '';
+  sideNavOpen = true;
 
   constructor(
     private activatedRoute: ActivatedRoute,
@@ -63,7 +75,6 @@ export class MselComponent implements OnDestroy, AfterViewInit {
     private mselTeamDataService: MselTeamDataService,
     private mselQuery: MselQuery,
     private organizationDataService: OrganizationDataService,
-    private changeDetectorRef: ChangeDetectorRef,
     private scenarioEventDataService: ScenarioEventDataService,
     private teamDataService: TeamDataService,
     private uiDataService: UIDataService,
@@ -104,53 +115,23 @@ export class MselComponent implements OnDestroy, AfterViewInit {
     // load the organization templates
     this.organizationDataService.loadTemplates();
     // set the selected tab
-    const selectedTab = this.uiDataService.getMselTab();
+    let selectedTab = this.uiDataService.getMselTab();
     if (!selectedTab) {
       this.uiDataService.setMselTab(this.defaultTab);
+      selectedTab = this.defaultTab;
     }
+    this.selectedTab = selectedTab;
   }
 
-  ngAfterViewInit() {
-    // have to check for current state and then subscribe to future changes
-    // tabGroup0._tabs doesn't exist until after view init, so we need the detectChanges()
-    if (this.tabGroup0 && this.tabGroup0._tabs && this.tabGroup0._tabs.length > 0) {
-      this.tabList = this.tabGroup0._tabs.toArray();
-      this.setTabBySection();
-      this.changeDetectorRef.detectChanges();
-    }
-    this.tabGroup0._tabs.changes.pipe(takeUntil(this.unsubscribe$)).subscribe(tabs => {
-      const count = tabs ? tabs.length : 0;
-      this.tabList = tabs.toArray();
-      this.setTabBySection();
-      this.changeDetectorRef.detectChanges();
-    });
-  }
-
-  tabChange(event) {
-    if (event.index === 0) {
+  tabChange(tabName: string) {
+    if (tabName === '<<  Back') {
       this.uiDataService.setMselTab(this.defaultTab);
       this.router.navigate([], {
         queryParams: { }
       });
     } else {
-      this.uiDataService.setMselTab(event.tab.textLabel);
-      this.setTabBySection();
-    }
-  }
-
-  setTabBySection() {
-    if (this.tabList) {
-      const tabIndex = this.tabList.findIndex(t => t.textLabel === this.uiDataService.getMselTab());
-      if (tabIndex > -1) {
-        this.selectedTab = this.uiDataService.getMselTab();
-        this.selectedIndex = tabIndex;
-      } else {
-        this.selectedTab = this.defaultTab;
-        this.selectedIndex = 1;
-      }
-    } else {
-      this.selectedTab = this.defaultTab;
-      this.selectedIndex = 1;
+      this.uiDataService.setMselTab(tabName);
+      this.selectedTab = tabName;
     }
   }
 

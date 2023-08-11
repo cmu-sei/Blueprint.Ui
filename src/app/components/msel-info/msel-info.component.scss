@@ -4,12 +4,17 @@
 
 .frame {
   width: 100%;
-  height: calc(100vh - 88px);
+  height: calc(100vh - 39px);
 }
 
-.tab-group {
-  width: 90%;
-  margin-left: 10%;
+.mat-tab-group {
+  width: 100%;
+  height: 100%;
+}
+
+.mat-tab {
+  width: 100%;
+  height: 480px;
 }
 
 .flex-row-cell {
@@ -20,16 +25,15 @@
   text-align: left;
 }
 
-.scenario-event-detail {
-  width: 90%;
-  margin-left: 5%;
+.info-detail {
+  width: 80%;
+  margin-left: 20px;
 }
 
 .scrolling-region {
-  height: calc(100vh - 198px);
   overflow: auto;
-  padding-top: 20px;
-  width: 100%;
+  width: calc(100% - 181px);
+  height: calc(100% - 40px);
 }
 
 .page-content-region {

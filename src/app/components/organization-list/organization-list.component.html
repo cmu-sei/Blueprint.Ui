@@ -3,58 +3,100 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
-<div *ngIf="msel" style="height: 100%;">
-
-  <div style="height: 100%">
-    <section
-      class="mat-elevation-z2 mat-header-row background-alt"
+<div *ngIf="msel" class="frame">
+  <section
+    class="mat-elevation-z2 mat-header-row background-alt"
+  >
+    <span
+      class="mat-header-cell three-cell"
     >
-      <span
-        class="mat-header-cell three-cell"
-      >
-        <span *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner">
-          <button
-            mat-icon-button
-            (click)="addOrEditOrganization(null, false); $event.stopPropagation()"
-            style="outline: none; margin-right: 15px;"
-            title="Add organization"
-          >
-            <mat-icon class="mdi-24px self-center" fontIcon="mdi-bank-plus"></mat-icon>
-          </button>
-          Add Organization
-        </span> &nbsp;
-      </span>
-      <span
-        class="mat-header-cell three-cell"
-      >
-        <span *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner">
-          <mat-checkbox [(ngModel)]="showTemplates">Show Templates</mat-checkbox>
-        </span> &nbsp;
-      </span>
-      <span class="mat-header-cell three-cell search-cell">
-        <mat-form-field class="search-control">
-          <input matInput [formControl]="filterControl" placeholder="Search" />
-        </mat-form-field>
-        <div style="width: 30px;">
-          <button
-            mat-icon-button
-            (click)="filterControl.setValue(''); $event.stopPropagation()"
-            style="outline: none;"
-            title="Clear Search"
-            [disabled]="!filterString"
-          >
-            <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
-          </button>
-        </div>
-      </span>
-    </section>
+      <span *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner">
+        <button
+          mat-icon-button
+          (click)="addOrEditOrganization(null, false); $event.stopPropagation()"
+          style="outline: none; margin-right: 15px;"
+          title="Add organization"
+        >
+          <mat-icon class="mdi-24px self-center" fontIcon="mdi-bank-plus"></mat-icon>
+        </button>
+        Add Organization
+      </span> &nbsp;
+    </span>
+    <span
+      class="mat-header-cell three-cell"
+    >
+      <span *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner">
+        <mat-checkbox [(ngModel)]="showTemplates">Show Templates</mat-checkbox>
+      </span> &nbsp;
+    </span>
+    <span class="mat-header-cell three-cell search-cell">
+      <mat-form-field class="search-control">
+        <input matInput [formControl]="filterControl" placeholder="Search" />
+      </mat-form-field>
+      <div style="width: 30px;">
+        <button
+          mat-icon-button
+          (click)="filterControl.setValue(''); $event.stopPropagation()"
+          style="outline: none;"
+          title="Clear Search"
+          [disabled]="!filterString"
+        >
+          <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
+        </button>
+      </div>
+    </span>
+  </section>
 
-    <section class="scrolling-region">
-      <section class="cards cssLayoutRowStartStretch">
-        <mat-card class="card" *ngFor="let org of sortedOrganizations">
+  <section class="scrolling-region">
+    <section class="cards cssLayoutRowStartStretch">
+      <mat-card class="card" *ngFor="let org of sortedOrganizations">
+        <mat-card-header>
+          <mat-card-title class="org-title">{{ org.name }}</mat-card-title>
+          <mat-card-subtitle>{{org.shortName}}</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-actions
+          class="action-buttons"
+          *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
+        >
+          <button
+            mat-icon-button
+            class="organization-button"
+            title="Edit this organization"
+            (click)="addOrEditOrganization(org, false)"
+          >
+            <mat-icon class="mdi-24px" fontIcon="mdi-square-edit-outline"></mat-icon>
+          </button>
+          <button
+            mat-icon-button
+            class="organization-button"
+            title="Create a template from this organization"
+            (click)="addOrEditOrganization(org, true)"
+            *ngIf="isContentDeveloper"
+          >
+            <mat-icon class="mdi-24px" fontIcon="mdi-bank-outline"></mat-icon>
+          </button>
+          <button
+            mat-icon-button
+            class="organization-button"
+            (click)="deleteOrganization(org); $event.stopPropagation()"
+            title="Delete this organization"
+          >
+            <mat-icon class="mdi-24px" fontIcon="mdi-delete"></mat-icon>
+          </button>
+        </mat-card-actions>
+        <mat-card-content class="org-text" contenteditable="false">
+          {{org.summary}}
+        </mat-card-content>
+      </mat-card>
+    </section>
+    <span *ngIf="showTemplates">
+      <hr />
+      <h1>Templates</h1>
+      <section class="cards cssLayoutRowSpaceStretch">
+        <mat-card class="card" *ngFor="let org of templateOrganizations">
           <mat-card-header>
-            <mat-card-title class="org-title">{{ org.name }}</mat-card-title>
-            <mat-card-subtitle>{{org.shortName}}</mat-card-subtitle>
+            <mat-card-title>{{ org.name }}</mat-card-title>
+            <mat-card-subtitle>{{ org.shortName }}</mat-card-subtitle>
           </mat-card-header>
           <mat-card-actions
             class="action-buttons"
@@ -63,80 +105,35 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <button
               mat-icon-button
               class="organization-button"
-              title="Edit this organization"
-              (click)="addOrEditOrganization(org, false)"
+              title="Edit this template"
+              (click)="addOrEditOrganization(org, true)"
+              *ngIf="isContentDeveloper"
             >
               <mat-icon class="mdi-24px" fontIcon="mdi-square-edit-outline"></mat-icon>
             </button>
             <button
               mat-icon-button
               class="organization-button"
-              title="Create a template from this organization"
-              (click)="addOrEditOrganization(org, true)"
-              *ngIf="isContentDeveloper"
+              title="Add to MSEL organizations"
+              (click)="addOrEditOrganization(org, false)"
             >
-              <mat-icon class="mdi-24px" fontIcon="mdi-bank-outline"></mat-icon>
+              <mat-icon class="mdi-24px" fontIcon="mdi-bank-plus"></mat-icon>
             </button>
             <button
               mat-icon-button
               class="organization-button"
               (click)="deleteOrganization(org); $event.stopPropagation()"
-              title="Delete this organization"
+              title="Delete this template"
+              *ngIf="isContentDeveloper"
             >
               <mat-icon class="mdi-24px" fontIcon="mdi-delete"></mat-icon>
             </button>
           </mat-card-actions>
           <mat-card-content class="org-text" contenteditable="false">
-            {{org.summary}}
+            {{ org.summary }}
           </mat-card-content>
         </mat-card>
       </section>
-      <span *ngIf="showTemplates">
-        <hr />
-        <h1>Templates</h1>
-        <section class="cards cssLayoutRowSpaceStretch">
-          <mat-card class="card" *ngFor="let org of templateOrganizations">
-            <mat-card-header>
-              <mat-card-title>{{ org.name }}</mat-card-title>
-              <mat-card-subtitle>{{ org.shortName }}</mat-card-subtitle>
-            </mat-card-header>
-            <mat-card-actions
-              class="action-buttons"
-              *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
-            >
-              <button
-                mat-icon-button
-                class="organization-button"
-                title="Edit this template"
-                (click)="addOrEditOrganization(org, true)"
-                *ngIf="isContentDeveloper"
-              >
-                <mat-icon class="mdi-24px" fontIcon="mdi-square-edit-outline"></mat-icon>
-              </button>
-              <button
-                mat-icon-button
-                class="organization-button"
-                title="Add to MSEL organizations"
-                (click)="addOrEditOrganization(org, false)"
-              >
-                <mat-icon class="mdi-24px" fontIcon="mdi-bank-plus"></mat-icon>
-              </button>
-              <button
-                mat-icon-button
-                class="organization-button"
-                (click)="deleteOrganization(org); $event.stopPropagation()"
-                title="Delete this template"
-                *ngIf="isContentDeveloper"
-              >
-                <mat-icon class="mdi-24px" fontIcon="mdi-delete"></mat-icon>
-              </button>
-            </mat-card-actions>
-            <mat-card-content class="org-text" contenteditable="false">
-              {{ org.summary }}
-            </mat-card-content>
-          </mat-card>
-        </section>
-      </span>
-    </section>
-  </div>
+    </span>
+  </section>
 </div>
