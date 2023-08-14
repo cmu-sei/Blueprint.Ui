@@ -240,7 +240,7 @@ export class ScenarioEventListComponent implements OnDestroy {
 
   getMselUsers(): User[] {
     let users = [];
-    this.teamList.forEach(team => {
+    this.msel.teams.forEach(team => {
       team.users.forEach(user => {
         users.push({... user});
       });
@@ -265,7 +265,7 @@ export class ScenarioEventListComponent implements OnDestroy {
     this.organizationList.forEach(o => {
       orgs.push(o.shortName);
     });
-    this.teamList.forEach(t => {
+    this.msel.teams.forEach(t => {
       orgs.push(t.shortName);
     });
     orgs = orgs.sort((a, b) => a < b ? -1 : 1);
@@ -274,7 +274,7 @@ export class ScenarioEventListComponent implements OnDestroy {
 
   getSortedTeamOptions(): string[] {
     let orgs: string[] = [];
-    this.teamList.forEach(t => {
+    this.msel.teams.forEach(t => {
       orgs.push(t.shortName);
     });
     orgs = orgs.sort((a, b) => a < b ? -1 : 1);
@@ -478,7 +478,7 @@ export class ScenarioEventListComponent implements OnDestroy {
         dataFields: this.allDataFields,
         dataOptions: this.sortedDataOptions,
         organizationList: this.getSortedOrganizationOptions(),
-        teamList: this.teamList,
+        teamList: this.msel.teams,
         moveList: this.moveList,
         cardList: this.cardList,
         gallerySourceTypes: this.msel.gallerySourceTypes,
