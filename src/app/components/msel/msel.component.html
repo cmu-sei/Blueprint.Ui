@@ -7,25 +7,25 @@ project root for license information or contact permission@sei.cmu.edu for full 
 <mat-sidenav-container class="appcontent-container" autosize>
   <mat-sidenav
     #sidenav
-    class="appbarmenu-container"
+    class="appbarmenu-container background"
     mode="side"
     [opened]="sideNavOpen"
   >
-    <mat-list>
-      <mat-list-item class="top-tab-button">
+    <mat-list style="margin-top: -8px;">
+      <mat-list-item class="top-tab-button background-alt" (click)="tabChange('<<  Back')">
         <button
           mat-button
-          class="tab-button"
+          class="top-tab-button"
           (click)="tabChange('<<  Back')"
         ><b><<  Back</b></button>
         <mat-divider></mat-divider>
       </mat-list-item>
-      <mat-list-item *ngFor="let tabName of tabList">
+      <mat-list-item *ngFor="let tabName of tabList" [ngClass]="getListItemClass(tabName)" (click)="tabChange(tabName)">
         <button
           mat-button
-          class="tab-button"
+          [ngClass]="getButtonClass(tabName)"
           (click)="tabChange(tabName)"
-        ><b>{{ tabName }}</b></button>
+        >{{ tabName }}</button>
         <mat-divider></mat-divider>
       </mat-list-item>
     </mat-list>

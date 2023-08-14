@@ -8,7 +8,7 @@
 }
 
 .appbarmenu-container {
-  min-width: 50px;
+  min-width: 60px;
 }
 
 .content-frame {
@@ -16,14 +16,17 @@
   height: 100%;
 }
 
-.tab-button {
+.list-item {
   width: 100%;
-  text-align: left;
+  padding: 0px !important;
 }
 
 .top-tab-button {
   width: 100%;
   text-align: left;
-  height: 40px !important;
 }
 
+.list-button {
+  width: 100%;
+  text-align: left;
+}

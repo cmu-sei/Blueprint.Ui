@@ -135,6 +135,22 @@ export class MselComponent implements OnDestroy {
     }
   }
 
+  getListItemClass(tab: string) {
+    if (tab === this.selectedTab) {
+      return 'list-item  background';
+    } else {
+      return 'list-item background-alt';
+    }
+  }
+
+  getButtonClass(tab: string) {
+    if (tab === this.selectedTab) {
+      return 'list-button';
+    } else {
+      return 'list-button';
+    }
+  }
+
   ngOnDestroy() {
     this.unsubscribe$.next(null);
     this.unsubscribe$.complete();
