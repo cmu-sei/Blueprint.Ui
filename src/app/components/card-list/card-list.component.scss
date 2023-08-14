@@ -2,6 +2,11 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
+.frame {
+  width: calc(100% - 181px);
+  height: calc(100vh - 39px);
+}
+
 .mat-header-row {
   min-height: 40px;
   padding-left:30px;
@@ -118,7 +123,7 @@
 }
 
 .scrolling-region {
-  height: calc(100vh - 144px);
+  height: calc(100vh - 89px);
   overflow: auto;
 }
 
