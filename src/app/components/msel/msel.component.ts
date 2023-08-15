@@ -58,7 +58,7 @@ export class MselComponent implements OnDestroy {
   defaultTab = 'Info';
   selectedIndex = 1;
   selectedMselId = '';
-  sideNavOpen = true;
+  sideNavExpanded = true;
   fontIconList = new Map<string, string>([
     ['Info', 'mdi-information-outline'],
     ['Teams', 'mdi-account-group-outline'],
@@ -133,6 +133,8 @@ export class MselComponent implements OnDestroy {
       selectedTab = this.defaultTab;
     }
     this.selectedTab = selectedTab;
+    // set the side nav expansion
+    this.sideNavExpanded = this.uiDataService.isNavExpanded();
   }
 
   tabChange(tabName: string) {
@@ -156,7 +158,12 @@ export class MselComponent implements OnDestroy {
   }
 
   getSidebarClass() {
-    return this.sideNavOpen ? 'left-content-open background' : 'left-content-closed background';
+    return this.sideNavExpanded ? 'left-content-open background' : 'left-content-closed background';
+  }
+
+  setExpanded(value: boolean) {
+    this.sideNavExpanded = value;
+    this.uiDataService.setNavExpanded(value);
   }
 
   ngOnDestroy() {

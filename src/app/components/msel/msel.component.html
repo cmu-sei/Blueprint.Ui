@@ -9,7 +9,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     #sidenav
     mode="side"
     opened
-    *ngIf="!sideNavOpen"
+    *ngIf="!sideNavExpanded"
   >
     <mat-list [ngClass]="getSidebarClass()">
 
@@ -18,7 +18,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           mat-button
           class="icon-color sidenav-button"
           style="outline: none;"
-          (click)="sideNavOpen = true"
+          (click)="setExpanded(true)"
           title="Expand Navigation Panel"
         >
           <mat-icon aria-hidden="false" class="icon-color sidenav-icon mdi-36px" fontIcon="mdi-chevron-right"></mat-icon>
@@ -54,7 +54,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     #sidenav
     mode="side"
     opened
-    *ngIf="sideNavOpen"
+    *ngIf="sideNavExpanded"
   >
     <mat-list [ngClass]="getSidebarClass()">
 
@@ -64,7 +64,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             mat-button
             class="icon-color sidenav-button"
             style="outline: none;"
-            (click)="sideNavOpen = false"
+            (click)="setExpanded(false)"
             title="Collapse Navigation Panel"
           >
             <mat-icon aria-hidden="false" class="icon-color sidenav-icon mdi-36px" fontIcon="mdi-chevron-left"></mat-icon>
@@ -83,10 +83,10 @@ project root for license information or contact permission@sei.cmu.edu for full 
             ></mat-icon>
           </button>
         </div>
-        <div class="application-name" *ngIf="sideNavOpen">
+        <div class="application-name" *ngIf="sideNavExpanded">
           MSEL List
         </div>
-        <div *ngIf="sideNavOpen">
+        <div *ngIf="sideNavExpanded">
          &nbsp;
         </div>
       </mat-list-item>
@@ -100,10 +100,10 @@ project root for license information or contact permission@sei.cmu.edu for full 
             ></mat-icon>
           </button>
         </div>
-        <div class="application-name" *ngIf="sideNavOpen">
+        <div class="application-name" *ngIf="sideNavExpanded">
           {{ tabName }}
         </div>
-        <div *ngIf="sideNavOpen">
+        <div *ngIf="sideNavExpanded">
           <button mat-icon-button title="{{ tabName }}">
             <mat-icon class="icon-color" svgIcon="ic_chevron_right"></mat-icon>
           </button>
