@@ -28,11 +28,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
 
       <mat-list-item class="list-item background">
         <div class="lefticon">
-          <button mat-icon-button title="Return to MSEL list" (click)="tabChange('<<  Back')">
+          <button mat-icon-button title="Return to MSEL list" (click)="tabChange('Back')">
             <mat-icon
               inline="true"
               class="primary mdi-36px"
-              fontIcon="mdi-chevron-double-left"
+              fontIcon="mdi-close-circle-outline"
             ></mat-icon>
           </button>
         </div>
@@ -75,7 +75,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
 
       <mat-list-item class="list-item background">
         <div class="lefticon">
-          <button mat-icon-button title="Return to MSEL list" (click)="tabChange('<<  Back')">
+          <button mat-icon-button title="Return to MSEL list" (click)="tabChange('Back')">
             <mat-icon
               inline="true"
               class="primary mdi-36px"
@@ -109,7 +109,16 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </button>
         </div>
       </mat-list-item>
+      <mat-list-item class="background">&nbsp;</mat-list-item>
     </mat-list>
+    <img
+      class="cmu-logo"
+      [src]="
+        (theme$ | async) === 'light-theme'
+          ? '/assets/img/cmu-red-gray.png'
+          : '/assets/img/sei-logo-gray.png'
+      "
+    />
   </mat-sidenav>
   <mat-sidenav-content class="content-frame">
     <div class="main-content">
@@ -167,3 +176,15 @@ project root for license information or contact permission@sei.cmu.edu for full 
     </div>
   </mat-sidenav-content>
 </mat-sidenav-container>
+<img
+class="small-logo"
+[src]="
+  (theme$ | async) === 'light-theme'
+    ? '/assets/img/cmu-red-gray.png'
+    : '/assets/img/sei-logo-gray.png'
+"
+/>
+<br />&nbsp;
+<br />&nbsp;
+<br />&nbsp;
+

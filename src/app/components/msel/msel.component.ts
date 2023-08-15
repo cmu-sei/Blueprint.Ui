@@ -7,6 +7,7 @@ import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import {
   Theme,
+  ComnAuthQuery
 } from '@cmusei/crucible-common';
 import {
   Msel
@@ -60,7 +61,7 @@ export class MselComponent implements OnDestroy {
   selectedMselId = '';
   sideNavExpanded = true;
   fontIconList = new Map<string, string>([
-    ['Info', 'mdi-information-outline'],
+    ['Info', 'mdi-note-outline'],
     ['Teams', 'mdi-account-group-outline'],
     ['Data Fields', 'mdi-view-column-outline'],
     ['Organizations', 'mdi-office-building-outline'],
@@ -71,6 +72,7 @@ export class MselComponent implements OnDestroy {
     ['Events', 'mdi-chart-timeline'],
     ['Exercise View', 'mdi-eye-outline'],
   ]);
+  theme$: Observable<Theme>;
 
   constructor(
     private activatedRoute: ActivatedRoute,
@@ -90,8 +92,10 @@ export class MselComponent implements OnDestroy {
     private scenarioEventDataService: ScenarioEventDataService,
     private teamDataService: TeamDataService,
     private uiDataService: UIDataService,
-    private userMselRoleDataService: UserMselRoleDataService
+    private userMselRoleDataService: UserMselRoleDataService,
+    private authQuery: ComnAuthQuery
   ) {
+    this.theme$ = this.authQuery.userTheme$;
     // subscribe to route changes
     this.activatedRoute.queryParamMap.pipe(takeUntil(this.unsubscribe$)).subscribe(params => {
       // load the selected MSEL data
@@ -138,7 +142,7 @@ export class MselComponent implements OnDestroy {
   }
 
   tabChange(tabName: string) {
-    if (tabName === '<<  Back') {
+    if (tabName === 'Back') {
       this.uiDataService.setMselTab(this.defaultTab);
       this.router.navigate([], {
         queryParams: { }
