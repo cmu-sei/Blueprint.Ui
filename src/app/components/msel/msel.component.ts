@@ -49,7 +49,7 @@ export class MselComponent implements OnDestroy {
     'Gallery Cards',
     'Cite Actions',
     'Cite Roles',
-    'Injects',
+    'Events',
     'Exercise View'
   ];
   private unsubscribe$ = new Subject();
@@ -59,6 +59,18 @@ export class MselComponent implements OnDestroy {
   selectedIndex = 1;
   selectedMselId = '';
   sideNavOpen = true;
+  fontIconList = new Map<string, string>([
+    ['Info', 'mdi-information-outline'],
+    ['Teams', 'mdi-account-group-outline'],
+    ['Data Fields', 'mdi-view-column-outline'],
+    ['Organizations', 'mdi-office-building-outline'],
+    ['Moves', 'mdi-gamepad'],
+    ['Gallery Cards', 'mdi-view-grid-outline'],
+    ['Cite Actions', 'mdi-clipboard-check-outline'],
+    ['Cite Roles', 'mdi-clipboard-account-outline'],
+    ['Events', 'mdi-chart-timeline'],
+    ['Exercise View', 'mdi-eye-outline'],
+  ]);
 
   constructor(
     private activatedRoute: ActivatedRoute,
@@ -137,18 +149,14 @@ export class MselComponent implements OnDestroy {
 
   getListItemClass(tab: string) {
     if (tab === this.selectedTab) {
-      return 'list-item  background';
-    } else {
       return 'list-item background-alt';
+    } else {
+      return 'list-item background';
     }
   }
 
-  getButtonClass(tab: string) {
-    if (tab === this.selectedTab) {
-      return 'list-button';
-    } else {
-      return 'list-button';
-    }
+  getSidebarClass() {
+    return this.sideNavOpen ? 'left-content-open background' : 'left-content-closed background';
   }
 
   ngOnDestroy() {

@@ -3,7 +3,7 @@
 // project root for license information.
 
 .scrolling-region {
-  width: calc(100% - 181px);
+  width: calc(100% - 265px);
   height: calc(100vh - 60px);
   overflow: auto;
   display: flex;
@@ -15,8 +15,7 @@
 .section-container {
   display: flex;
   flex-direction: column;
-  width: 80%;
-  margin-left: 10%;
+  width: 90%;
 }
 
 .section-content {

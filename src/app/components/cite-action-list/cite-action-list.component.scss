@@ -3,7 +3,9 @@
 // project root for license information or contact permission@sei.cmu.edu for full terms.
 
 .frame {
-  width: calc(100% - 181px);
+  display: flex;
+  flex-direction: column;
+  flex: 1;
   height: calc(100vh - 39px);
 }
 

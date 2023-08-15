@@ -2,30 +2,96 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-.appcontent-container {
-  width: calc(100% - 26px);
+.content-container {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  margin-right: 26px;
   height: 100%;
-}
-
-.appbarmenu-container {
-  min-width: 60px;
 }
 
 .content-frame {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  height: 100%;
+}
+
+.main-content {
   width: 100%;
   height: 100%;
 }
 
-.list-item {
+.left-content-open {
   width: 100%;
+  height: calc(100% - 8px);
 }
 
-.top-tab-button {
+.left-content-closed {
   width: 100%;
+  height: calc(100% - 8px);
+}
+
+.top-item {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  cursor: pointer;
+  align-items: flex-end;
+  height: 36px;
+  margin-top: -8px;
+}
+
+.list-item {
+  cursor: pointer;
   text-align: left;
+}
+
+.top-button {
+  text-align: right;
+  height: 36px;
 }
 
 .list-button {
   width: 100%;
   text-align: left;
+}
+
+.sidenav-button {
+  width: 26px !important;
+  height: 26px !important;
+  min-width: unset !important;
+}
+
+.sidenav-icon {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  align-items: center;
+  justify-items: center;
+  margin-left: -14px;
+}
+
+.collapse {
+  width: 100%;
+  float: right;
+  text-align: right;
+}
+
+.lefticon {
+  width: 40px;
+  height: 40px;
+}
+
+.application-name {
+  width: 120px;
+  margin-left: 16px;
+}
+
+.mat-list-item, .mat-list-item-content {
+  padding: 0px !important;
+}
+
+.full-width {
+  width: 100%;
 }
