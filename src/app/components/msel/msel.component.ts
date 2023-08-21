@@ -1,12 +1,13 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, Input, OnDestroy, ViewChild, ViewChildren, QueryList, AfterViewInit, ChangeDetectorRef } from '@angular/core';
+import { Component, Input, OnDestroy, ViewChild, ViewChildren, QueryList } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import {
   Theme,
+  ComnAuthQuery
 } from '@cmusei/crucible-common';
 import {
   Msel
@@ -34,19 +35,44 @@ import { UserMselRoleDataService } from 'src/app/data/user-msel-role/user-msel-r
   templateUrl: './msel.component.html',
   styleUrls: ['./msel.component.scss'],
 })
-export class MselComponent implements OnDestroy, AfterViewInit {
+export class MselComponent implements OnDestroy {
   @Input() loggedInUserId: string;
   @Input() isContentDeveloper: boolean;
   @Input() userTheme$: Observable<Theme>;
   @ViewChild('tabGroup0', { static: false }) tabGroup0: MatTabGroup;
   @ViewChildren('MatTab') tabs: QueryList<MatTab>;
-  private tabList: MatTab[] = [];
+  tabList: string[] = [
+    'Info',
+    'Teams',
+    'Data Fields',
+    'Organizations',
+    'Moves',
+    'Gallery Cards',
+    'Cite Actions',
+    'Cite Roles',
+    'Events',
+    'Exercise View'
+  ];
   private unsubscribe$ = new Subject();
   msel = this.mselQuery.selectActive() as Observable<Msel>;
-  selectedTab = 'Info';
+  selectedTab = '';
   defaultTab = 'Info';
   selectedIndex = 1;
   selectedMselId = '';
+  sideNavExpanded = true;
+  fontIconList = new Map<string, string>([
+    ['Info', 'mdi-note-outline'],
+    ['Teams', 'mdi-account-group-outline'],
+    ['Data Fields', 'mdi-view-column-outline'],
+    ['Organizations', 'mdi-office-building-outline'],
+    ['Moves', 'mdi-gamepad'],
+    ['Gallery Cards', 'mdi-view-grid-outline'],
+    ['Cite Actions', 'mdi-clipboard-check-outline'],
+    ['Cite Roles', 'mdi-clipboard-account-outline'],
+    ['Events', 'mdi-chart-timeline'],
+    ['Exercise View', 'mdi-eye-outline'],
+  ]);
+  theme$: Observable<Theme>;
 
   constructor(
     private activatedRoute: ActivatedRoute,
@@ -63,12 +89,13 @@ export class MselComponent implements OnDestroy, AfterViewInit {
     private mselTeamDataService: MselTeamDataService,
     private mselQuery: MselQuery,
     private organizationDataService: OrganizationDataService,
-    private changeDetectorRef: ChangeDetectorRef,
     private scenarioEventDataService: ScenarioEventDataService,
     private teamDataService: TeamDataService,
     private uiDataService: UIDataService,
-    private userMselRoleDataService: UserMselRoleDataService
+    private userMselRoleDataService: UserMselRoleDataService,
+    private authQuery: ComnAuthQuery
   ) {
+    this.theme$ = this.authQuery.userTheme$;
     // subscribe to route changes
     this.activatedRoute.queryParamMap.pipe(takeUntil(this.unsubscribe$)).subscribe(params => {
       // load the selected MSEL data
@@ -104,54 +131,43 @@ export class MselComponent implements OnDestroy, AfterViewInit {
     // load the organization templates
     this.organizationDataService.loadTemplates();
     // set the selected tab
-    const selectedTab = this.uiDataService.getMselTab();
+    let selectedTab = this.uiDataService.getMselTab();
     if (!selectedTab) {
       this.uiDataService.setMselTab(this.defaultTab);
+      selectedTab = this.defaultTab;
     }
+    this.selectedTab = selectedTab;
+    // set the side nav expansion
+    this.sideNavExpanded = this.uiDataService.isNavExpanded();
   }
 
-  ngAfterViewInit() {
-    // have to check for current state and then subscribe to future changes
-    // tabGroup0._tabs doesn't exist until after view init, so we need the detectChanges()
-    if (this.tabGroup0 && this.tabGroup0._tabs && this.tabGroup0._tabs.length > 0) {
-      this.tabList = this.tabGroup0._tabs.toArray();
-      this.setTabBySection();
-      this.changeDetectorRef.detectChanges();
-    }
-    this.tabGroup0._tabs.changes.pipe(takeUntil(this.unsubscribe$)).subscribe(tabs => {
-      const count = tabs ? tabs.length : 0;
-      this.tabList = tabs.toArray();
-      this.setTabBySection();
-      this.changeDetectorRef.detectChanges();
-    });
-  }
-
-  tabChange(event) {
-    if (event.index === 0) {
+  tabChange(tabName: string) {
+    if (tabName === 'Back') {
       this.uiDataService.setMselTab(this.defaultTab);
       this.router.navigate([], {
         queryParams: { }
       });
     } else {
-      this.uiDataService.setMselTab(event.tab.textLabel);
-      this.setTabBySection();
+      this.uiDataService.setMselTab(tabName);
+      this.selectedTab = tabName;
     }
   }
 
-  setTabBySection() {
-    if (this.tabList) {
-      const tabIndex = this.tabList.findIndex(t => t.textLabel === this.uiDataService.getMselTab());
-      if (tabIndex > -1) {
-        this.selectedTab = this.uiDataService.getMselTab();
-        this.selectedIndex = tabIndex;
-      } else {
-        this.selectedTab = this.defaultTab;
-        this.selectedIndex = 1;
-      }
+  getListItemClass(tab: string) {
+    if (tab === this.selectedTab) {
+      return 'list-item background-alt';
     } else {
-      this.selectedTab = this.defaultTab;
-      this.selectedIndex = 1;
+      return 'list-item background';
     }
+  }
+
+  getSidebarClass() {
+    return this.sideNavExpanded ? 'left-content-open background' : 'left-content-closed background';
+  }
+
+  setExpanded(value: boolean) {
+    this.sideNavExpanded = value;
+    this.uiDataService.setNavExpanded(value);
   }
 
   ngOnDestroy() {

@@ -3,19 +3,19 @@
 // project root for license information.
 
 .scrolling-region {
-  height: calc(100vh - 87px);
+  width: 100%;
+  height: calc(100vh - 60px);
   overflow: auto;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
+  margin-top: 20px;
 }
 
 .section-container {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  margin: 20px;
-  width:70%;
+  width: 100%;
 }
 
 .section-content {
@@ -23,7 +23,7 @@
 }
 
 .mat-expansion-panel {
-  width: calc(100% - 1-px);
+  width: calc(100% - 1px);
   margin: 5px;
 }
 

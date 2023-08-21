@@ -185,6 +185,10 @@ $custom-typography: mat.define-legacy-typography-config(
     color: map-get($theme, 'text');
   }
 
+  .primary {
+    color: mat.get-color-from-palette($primary);
+  }
+
   .selected {
     background: mat.get-color-from-palette($primary);
     &:hover,

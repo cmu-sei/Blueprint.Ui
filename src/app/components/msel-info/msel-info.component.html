@@ -6,10 +6,10 @@ project root for license information or contact permission@sei.cmu.edu for full 
 <div class="frame">
   <mat-tab-group
     mat-align-tabs="start"
-    class="tab-group"
+    class="mat-tab-group"
     (selectedTabChange)="tabChange($event)">
   >
-    <mat-tab label="Config">
+    <mat-tab label="Config" class="mat-tab">
       <div class="edit-buttons">
         <span>
           <button
@@ -33,7 +33,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         </span>
       </div>
       <div *ngIf="msel" class="scrolling-region">
-        <div class="scenario-event-detail">
+        <div class="info-detail">
           <div class="single-detail">
             <mat-form-field class="full-width">
               <input
@@ -327,7 +327,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         </div>
       </div>
     </mat-tab>
-    <mat-tab *ngFor="let page of mselPages" label="{{ page.name }}">
+    <mat-tab *ngFor="let page of mselPages" label="{{ page.name }}" class="mat-tab">
       <!-- page content -->
       <div class="edit-buttons">
         <span *ngIf="!editingPageId">

@@ -3,8 +3,10 @@
 // project root for license information.
 
 .container {
-  height: calc(100vh - 87px);
-  width: 100%;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  height: calc(100vh - 39px);
   overflow: auto;
 }
 

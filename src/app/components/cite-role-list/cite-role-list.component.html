@@ -3,91 +3,88 @@
 Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
-<div *ngIf="msel" style="height: 100%;">
-
-  <div style="height: 100%">
-    <section
-      matSort
-      (matSortChange)="sortChanged($event)"
-      class="mat-elevation-z2 mat-header-row background-alt"
-    >
-      <span class="mat-header-cell four-cell" mat-sort-header="name">
+<div *ngIf="msel" class="frame">
+  <section
+    matSort
+    (matSortChange)="sortChanged($event)"
+    class="mat-elevation-z2 mat-header-row background-alt"
+  >
+    <span class="mat-header-cell four-cell" mat-sort-header="name">
+      <button
+        mat-icon-button
+        (click)="addOrEditCiteRole(null)"
+        style="outline: none; margin-right: 15px;"
+        title="Add new citeRole"
+        *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
+      >
+        <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
+      </button>
+      Name
+    </span>
+    <span class="mat-header-cell three-cell" mat-sort-header="team">
+      <mat-form-field class="team-selector">
+        <mat-label>Team</mat-label>
+        <mat-select placeholder="Team" [value]="selectedTeamId" (selectionChange)="selectTeam($event.value)" (click)="$event.stopPropagation()">
+          <mat-option value="">All Teams</mat-option>
+          <mat-option *ngFor="let team of mselTeamList" [value]="team.id">
+            {{ team.shortName }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </span>
+    <span class="mat-header-cell three-cell search-cell">
+      <mat-form-field class="search-control">
+        <input matInput [formControl]="filterControl" placeholder="Search" />
+      </mat-form-field>
+      <div style="width: 30px;">
         <button
           mat-icon-button
-          (click)="addOrEditCiteRole(null)"
-          style="outline: none; margin-right: 15px;"
-          title="Add new citeRole"
-          *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
+          (click)="filterControl.setValue('')"
+          style="outline: none;"
+          title="Clear Search"
+          [disabled]="!filterString"
         >
-          <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
+          <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
         </button>
-        Name
-      </span>
-      <span class="mat-header-cell three-cell" mat-sort-header="team">
-        <mat-form-field class="team-selector">
-          <mat-label>Team</mat-label>
-          <mat-select placeholder="Team" [value]="selectedTeamId" (selectionChange)="selectTeam($event.value)" (click)="$event.stopPropagation()">
-            <mat-option value="">All Teams</mat-option>
-            <mat-option *ngFor="let team of mselTeamList" [value]="team.id">
-              {{ team.shortName }}
-            </mat-option>
-          </mat-select>
-        </mat-form-field>
-      </span>
-      <span class="mat-header-cell three-cell search-cell">
-        <mat-form-field class="search-control">
-          <input matInput [formControl]="filterControl" placeholder="Search" />
-        </mat-form-field>
-        <div style="width: 30px;">
+      </div>
+    </span>
+  </section>
+
+  <section class="scrolling-region">
+    <!-- existing citeRoles -->
+    <mat-expansion-panel
+      *ngFor="let item of sortedCiteRoles;"
+      disabled
+    >
+      <mat-expansion-panel-header
+        class="mat-row"
+      >
+        <div class="mat-cell flex-row-cell four-cell">
           <button
             mat-icon-button
-            (click)="filterControl.setValue('')"
-            style="outline: none;"
-            title="Clear Search"
-            [disabled]="!filterString"
+            class="cite-role-button"
+            title="Edit this citeRole"
+            (click)="addOrEditCiteRole(item)"
+            *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
           >
-            <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
+            <mat-icon class="mdi-18px up-12" fontIcon="mdi-square-edit-outline"></mat-icon>
           </button>
+          <button
+            mat-icon-button
+            class="cite-role-button"
+            (click)="deleteCiteRole(item)"
+            title="Delete this citeRole"
+            *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
+          >
+            <mat-icon class="mdi-18px up-12" fontIcon="mdi-delete"></mat-icon>
+          </button>
+          &nbsp;{{ item.name }}
         </div>
-      </span>
-    </section>
-
-    <section class="scrolling-region">
-      <!-- existing citeRoles -->
-      <mat-expansion-panel
-        *ngFor="let item of sortedCiteRoles;"
-        disabled
-      >
-        <mat-expansion-panel-header
-          class="mat-row"
-        >
-          <div class="mat-cell flex-row-cell four-cell">
-            <button
-              mat-icon-button
-              class="cite-role-button"
-              title="Edit this citeRole"
-              (click)="addOrEditCiteRole(item)"
-              *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
-            >
-              <mat-icon class="mdi-18px up-12" fontIcon="mdi-square-edit-outline"></mat-icon>
-            </button>
-            <button
-              mat-icon-button
-              class="cite-role-button"
-              (click)="deleteCiteRole(item)"
-              title="Delete this citeRole"
-              *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
-            >
-              <mat-icon class="mdi-18px up-12" fontIcon="mdi-delete"></mat-icon>
-            </button>
-            &nbsp;{{ item.name }}
-          </div>
-          <div class="mat-cell three-cell center-self">
-            {{ item.team.shortName }} - {{ item.team.name }}
-          </div>
-          <div class="mat-cell three-cell center-self">&nbsp;</div>
-        </mat-expansion-panel-header>
-      </mat-expansion-panel>
-    </section>
-  </div>
+        <div class="mat-cell three-cell center-self">
+          {{ item.team.shortName }} - {{ item.team.name }}
+        </div>
+        <div class="mat-cell three-cell center-self">&nbsp;</div>
+      </mat-expansion-panel-header>
+    </mat-expansion-panel>
+  </section>
 </div>
