@@ -72,7 +72,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <button
             mat-icon-button
             class="data-field-button"
-            (click)="deleteDataField(item); $event.stopPropagation()"
+            (click)="deleteDataField(item)"
             title="Delete {{ item.name }}"
             *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
           >

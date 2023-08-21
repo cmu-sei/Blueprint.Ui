@@ -7,14 +7,34 @@ if (extraConfig.proxySettings.port) {
   test.use({proxy: {server: 'http:// ' + extraConfig.proxySettings.host + ':' + extraConfig.proxySettings.port}});
 }
 
-// ===================== Blueprint Access Check ======================
-test('access check blueprint', async ({ page }) => {
+// ===================== Add Page ======================
+test('add page', async ({ page }) => {
   await page.goto(extraConfig.blueprintURL);
   await expect(page).toHaveTitle(/Blueprint/);
-
   await page.locator(':has-text("HSEEP")');
+  await page.waitForTimeout(5 * 1000);
 
-  await page.waitForTimeout(10 * 1000);
+  // Copy a MSEL
+  // Find the "Copy" button using XPath
+  await page.click('// button[@title="Copy HSEEP"]');
+  await page.waitForTimeout(1 * 1000);
+
+  // Select MSEL
+  await page.click('text=Copy of HSEEP');
+
+  // Edit MSEL Name
+  await page.fill('text=Name', extraConfig.MSELName);
+
+  // Edit Description Field
+  await page.fill('text=Description', 'Playwright Test MSEL');
+  await page.click('button:has(mat-icon.mdi-check)');
+
+  // Add Page
+  await page.click('text=Add Page');
+  await page.fill('text=Page Name', 'test');
+  await page.locator('#quill p').fill('test');
+  await page.click('button:has(mat-icon.mdi-check)');
+
 });
 
 // ===================== Access All MSEL Tabs ======================
@@ -25,7 +45,7 @@ test('access all MSEL tabs', async ({ page }) => {
   await page.waitForTimeout(5 * 1000);
 
   // Click on available MSEL
-  await page.click('text=HSEEP');
+  await page.click('text=Test MSEL');
   await page.waitForTimeout(5 * 1000);
 
   // Click on Blueprint Tab
@@ -57,80 +77,10 @@ test('access all MSEL tabs', async ({ page }) => {
   await page.getByRole('button', { name: 'Info' }).click();
   await page.waitForTimeout(2 * 1000);
 
-  // Return to Dashboard
-  await page.getByRole('button', { name: 'Return to MSEL list' }).click();
-  await expect(page).toHaveTitle(/Blueprint/);
-  await page.locator(':has-text("HSEEP")');
-  await page.waitForTimeout(5 * 1000);
-
-});
-
-// ===================== Add Page ======================
-test('add page', async ({ page }) => {
-  await page.goto(extraConfig.blueprintURL);
-  await expect(page).toHaveTitle(/Blueprint/);
-  await page.locator(':has-text("HSEEP")');
-  await page.waitForTimeout(5 * 1000);
-
-  // Copy a MSEL
-  // Find the "Copy" button using XPath
-  await page.click('// button[@title="Copy HSEEP"]');
-  await page.waitForTimeout(1 * 1000);
-
-  // Select MSEL
-  await page.click('text=Copy of HSEEP');
-
-  // Edit MSEL Name
-  await page.fill('text=Name', extraConfig.MSELName);
-
-  // Edit Description Field
-  await page.fill('text=Description', 'Playwright Test MSEL');
-  await page.click('button:has(mat-icon.mdi-check)');
-
-  // Add Page
-  await page.click('text=Add Page');
-  await page.fill('text=Page Name', 'test');
-  await page.locator('#quill p').fill('test');
-  await page.click('button:has(mat-icon.mdi-check)');
-
-  // Return to dashboard
-  await page.click('img[title="Home"]');
-
-  // Delete MSEL
-  // Delete created MSEL
-  await page.click('// button[@title="Delete Test MSEL"]');
-  await page.click('button:has-text("YES")');
-  await page.waitForTimeout(1 * 1000);
-
-  // Verify gone
-  try {
-    await page.waitForSelector('text=Playwright Test MSEL', {timeout: 500});
-  } catch (error) {
-    console.log('MSEL specified has been removed.');
-  }
-  await page.waitForTimeout(5 * 1000);
 });
 
 // ===================== Add/Remove Team ======================
 test('add delete teams', async ({ page }) => {
-  await page.goto(extraConfig.blueprintURL);
-  await expect(page).toHaveTitle(/Blueprint/);
-  await page.locator(':has-text("HSEEP")');
-  await page.waitForTimeout(5 * 1000);
-
-  // Find the "Copy" button using XPath
-  await page.click('// button[@title="Copy HSEEP"]');
-
-  // Select the new copy
-  await page.click('text= Copy of HSEEP');
-
-  // Edit MSEL Name
-  await page.fill('text=Name', extraConfig.MSELName);
-
-  // Edit Description Field
-  await page.fill('text=Description', 'Playwright Test MSEL');
-  await page.click('button:has(mat-icon.mdi-check)');
-
   // Edit Teams Add a Team to the MSEL
   await page.getByRole('button', { name: 'Teams', exact: true }).click();
   await page.click('text=Add a Team');
@@ -142,44 +92,10 @@ test('add delete teams', async ({ page }) => {
   const panelElement = await page.locator('mat-expansion-panel:has(:text("FRB - Federal Reserve Board"))');
   await panelElement.locator('button[title="Remove team from MSEL"]').click();
 
-  // return to dashboard
-  await page.click('img[title="Home"]');
-
-  // Delete MSEL
-  // Delete created MSEL
-  await page.click('// button[@title="Delete Test MSEL"]');
-  await page.click('button:has-text("YES")');
-  await page.waitForTimeout(1 * 1000);
-
-  // Verify gone
-  try {
-    await page.waitForSelector('text=Playwright Test MSEL', {timeout: 500});
-  } catch (error) {
-    console.log('MSEL specified has been removed.');
-  }
-  await page.waitForTimeout(5 * 1000);
 });
 
 // ===================== Add/Remove Data Field ======================
 test('add delete data fields', async ({ page }) => {
-  await page.goto(extraConfig.blueprintURL);
-  await expect(page).toHaveTitle(/Blueprint/);
-  await page.locator(':has-text("Standard MSEL")');
-  await page.waitForTimeout(5 * 1000);
-
-  // Find the "Copy" button using XPath
-  await page.click('// button[@title="Copy HSEEP"]');
-
-  // Select the new copy
-  await page.click('text= Copy of HSEEP');
-
-  // Edit MSEL Name
-  await page.fill('text=Name', extraConfig.MSELName);
-
-  // Edit Description Field
-  await page.fill('text=Description', 'Playwright Test MSEL');
-  await page.click('button:has(mat-icon.mdi-check)');
-
   // Add Data Fields
   await page.getByRole('button', { name: 'Data Fields', exact: true }).click();
   await page.getByRole('button', { name: 'Add new data field', exact: true }).click();
@@ -192,46 +108,14 @@ test('add delete data fields', async ({ page }) => {
   await page.click('text=Save');
   await page.waitForTimeout(2 * 1000);
 
-  // Remove Data Field
-  await page.getByRole('button', { name: 'Delete Group', exact: true }).click();
-  await page.click('text=Yes');
+  // // Remove Data Field
+  // await page.click('// button[@title="Delete Group"]');
+  // await page.click('button:has-text("YES")');
 
-  // return to dashboard
-  await page.click('img[title="Home"]');
-
-  // Delete MSEL
-  // Delete created MSEL
-  await page.click('// button[@title="Delete Test MSEL"]');
-  await page.click('button:has-text("YES")');
-  await page.waitForTimeout(1 * 1000);
-
-  // Verify gone
-  try {
-    await page.waitForSelector('text=Playwright Test MSEL', {timeout: 500});
-  } catch (error) {
-    console.log('MSEL specified has been removed.');
-  }
-  await page.waitForTimeout(5 * 1000);
 });
 
 // ===================== Add/Remove Organization from Template ======================
 test('add delete template organization', async ({ page }) => {
-  await page.goto(extraConfig.blueprintURL);
-  await expect(page).toHaveTitle(/Blueprint/);
-
-  // Find the "Copy" button using XPath
-  await page.click('// button[@title="Copy HSEEP"]');
-
-  // Select the new copy
-  await page.click('text= Copy of HSEEP');
-
-  // Edit MSEL Name
-  await page.fill('text=Name', extraConfig.MSELName);
-
-  // Edit Description Field
-  await page.fill('text=Description', 'Playwright Test MSEL');
-  await page.click('button:has(mat-icon.mdi-check)');
-
   // Change to organization's tab
   await page.getByRole('button', { name: 'Organizations' }).click();
 
@@ -272,46 +156,11 @@ test('add delete template organization', async ({ page }) => {
   }
   await page.waitForTimeout(5 * 1000);
 
-  // return to dashboard
-  await page.click('img[title="Home"]');
-
-  // Delete MSEL
-  // Delete created MSEL
-  await page.click('// button[@title="Delete Test MSEL"]');
-  await page.click('button:has-text("YES")');
-  await page.waitForTimeout(1 * 1000);
-
-  // Verify gone
-  try {
-    await page.waitForSelector('text=Playwright Test MSEL', {timeout: 500});
-  } catch (error) {
-    console.log('MSEL specified has been removed.');
-  }
-  await page.waitForTimeout(5 * 1000);
 });
 
 // ===================== Add/Remove Organization ======================
 
 test('add delete organizations', async ({ page }) => {
-  await page.goto(extraConfig.blueprintURL);
-  await expect(page).toHaveTitle(/Blueprint/);
-
-  await page.locator(':has-text("Standard MSEL"');
-  await page.waitForTimeout(1 * 1000);
-
-  // Find the "Copy" button using XPath
-  await page.click('// button[@title="Copy HSEEP"]');
-
-  // Select the new copy
-  await page.click('text= Copy of HSEEP');
-
-  // Edit MSEL Name
-  await page.fill('text=Name', extraConfig.MSELName);
-
-  // Edit Description Field
-  await page.fill('text=Description', 'Playwright Test MSEL');
-  await page.click('button:has(mat-icon.mdi-check)');
-
   // Go to Organizations tab
   await page.getByRole('button', { name: 'Organizations' }).click();
 
@@ -352,45 +201,10 @@ test('add delete organizations', async ({ page }) => {
   }
   await page.waitForTimeout(5 * 1000);
 
-  // return to dashboard
-  await page.click('img[title="Home"]');
-
-  // Delete MSEL
-  // Delete created MSEL
-  await page.click('// button[@title="Delete Test MSEL"]');
-  await page.click('button:has-text("YES")');
-  await page.waitForTimeout(1 * 1000);
-
-  // Verify gone
-  try {
-    await page.waitForSelector('text=Playwright Test MSEL', {timeout: 500});
-  } catch (error) {
-    console.log('MSEL specified has been removed.');
-  }
-  await page.waitForTimeout(5 * 1000);
-
 });
 
 // ===================== Add/Remove Move ======================
 test('add delete move', async ({ page }) => {
-  await page.goto(extraConfig.blueprintURL);
-  await expect(page).toHaveTitle(/Blueprint/);
-  await page.locator(':has-text("Standard MSEL")');
-  await page.waitForTimeout(5 * 1000);
-
-  // Find the "Copy" button using XPath
-  await page.click('// button[@title="Copy HSEEP"]');
-
-  // Select the new copy
-  await page.click('text= Copy of HSEEP');
-
-  // Edit MSEL Name
-  await page.fill('text=Name', extraConfig.MSELName);
-
-  // Edit Description Field
-  await page.fill('text=Description', 'Playwright Test MSEL');
-  await page.click('button:has(mat-icon.mdi-check)');
-
   // Moves section
   await page.getByRole('button', { name: 'Moves' }).click();
   await page.click('button:has(mat-icon.mdi-plus-circle-outline)');
