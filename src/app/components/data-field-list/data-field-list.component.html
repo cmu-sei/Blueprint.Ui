@@ -73,7 +73,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             mat-icon-button
             class="data-field-button"
             (click)="deleteDataField(item); $event.stopPropagation()"
-            title="Delete this data field"
+            title="Delete {{ item.name }}"
             *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
           >
             <mat-icon class="mdi-18px up-12" fontIcon="mdi-delete"></mat-icon>

@@ -51,3 +51,9 @@ ng-app/
 src/assets/config/settings.env.json
 docker/
 .vscode/**/*.json
+/test-results/
+/playwright-report/
+/playwright/.cache/
+/test-results/
+/playwright-report/
+/playwright/.cache/

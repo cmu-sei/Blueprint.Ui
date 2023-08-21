@@ -80,7 +80,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <button
               mat-icon-button class="msel-action"
               (click)="downloadFile(element); $event.stopPropagation();"
-              title="Download .xlsx file"
+              title="Download .xlsx file from {{ element.name }}"
               [disabled]="!isReady"
             >
               <mat-icon class="mdi-18px" fontIcon="mdi-download" alt="Download .xlsx file"></mat-icon>
@@ -88,7 +88,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <button
               mat-icon-button class="msel-action"
               (click)="uploadFile(element.id, null); fileInput.click(); $event.stopPropagation();"
-              title="Upload .xlsx file"
+              title="Upload .xlsx file to {{ element.name }}"
               [disabled]="!isReady || !(isContentDeveloper || element.hasRole(loggedInUserId, null).owner)"
             >
               <mat-icon class="mdi-18px" fontIcon="mdi-upload" alt="Upload .xlsx file"></mat-icon>
@@ -96,7 +96,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <button
               mat-icon-button class="msel-action"
               (click)="delete(element); $event.stopPropagation();"
-              title="Delete"
+              title="Delete {{ element.name }}"
               [disabled]="!isReady || !isContentDeveloper"
             >
               <mat-icon class="mdi-18px" fontIcon="mdi-delete" alt="Delete"></mat-icon>
@@ -104,7 +104,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <button
               mat-icon-button class="msel-action"
               (click)="copyMsel(element.id); $event.stopPropagation();"
-              title="Copy"
+              title="Copy {{ element.name }}"
               [disabled]="!isReady || !isContentDeveloper"
             >
               <mat-icon class="mdi-18px" fontIcon="mdi-content-copy" alt="Copy"></mat-icon>
