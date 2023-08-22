@@ -71,8 +71,8 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
       this.selectedTab = this.tabSections.get('default');
     }
     if (this.data.useGallery) {
-      this.tabSections.set('gallery', this.tabCount);
       this.tabSections.set('additional', this.tabCount++);
+      this.tabSections.set('gallery', this.tabCount);
     }
   }
 

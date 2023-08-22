@@ -85,9 +85,11 @@
   "orgSummary": "Summary",
   "orgShortName": "test",
   "orgEmail": "test@this.ws",
-  "pathToTestFile": "/home/parallels/Desktop/Treasury/cwd-treasury-testing/playwright/tests-common/data/PlaywrightMSEL.xlsx",
+  "pathToTestFile": "e2e/data/PlaywrightMSEL.xlsx",
+  "downloadPath": "e2e/data/",
   "blueprintTeam": "playwrightTeam",
   "blueprintShortName": "plw",
   "adminNewUserID": "e9244eb2-e6fb-4f18-9ce3-a5df89e8400c",
-  "adminNewUser": "playwrightUser"
+  "adminNewUser": "playwrightUser",
+  "testMselTemplate": "ZZZ Testing Base"
 }
