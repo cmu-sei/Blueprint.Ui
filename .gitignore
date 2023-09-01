@@ -54,6 +54,4 @@ docker/
 /test-results/
 /playwright-report/
 /playwright/.cache/
-/test-results/
-/playwright-report/
-/playwright/.cache/
+/e2e/.auth/

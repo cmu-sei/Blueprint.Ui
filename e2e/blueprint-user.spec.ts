@@ -2,6 +2,8 @@ import { test, expect } from '@playwright/test';
 const extraConfig = require('./settings.json');
 const fs = require('fs');
 // MSEL info for test MSEL
+const testPushMsel = extraConfig.testPushMsel;
+const testPushMselName = Date.now() + ' Test Push MSEL';
 const testMselTemplate = extraConfig.testMselTemplate;
 const testMselName =  Date.now() + ' Test MSEL';
 const testMselDescription = testMselName + ' used for e2e and load testing';
@@ -735,7 +737,7 @@ test('download MSEL', async ({ page }) => {
   // Download MSEL
   const [download] = await Promise.all([
     page.waitForEvent('download'),
-    await page.getByRole('button', { name: 'Download .xlsx file from ZZZ Testing Template' }).click()
+    await page.getByRole('button', { name: 'Download .xlsx file from ' + testMselTemplate }).click()
   ]);
 
   // branch for local vs environment
@@ -757,6 +759,7 @@ test('download MSEL', async ({ page }) => {
       console.log('File does not exist.');
     } else {
       console.log('file size is ' + stats.size);
+      fs.unlink(mselDownloadPath, () => {});
     }
   });
   await page.waitForTimeout(5 * 1000);
@@ -821,109 +824,27 @@ test('push gallery cite', async ({ page }) => {
   console.log(test.info().title + ' started');
   await page.goto(extraConfig.blueprintURL);
   await expect(page).toHaveTitle(/Blueprint/);
-  await page.locator(':has-text("Standard MSEL")');
+  await page.locator(':has-text("' + testPushMsel + '")');
   await page.waitForTimeout(5 * 1000);
 
   // Find the "Copy" button using XPath
-  await page.click('// button[@title="Copy ' + testMselTemplate + '"]');
+  await page.click('// button[@title="Copy ' + testPushMsel + '"]');
 
   // Select the new copy
-  await page.click('text= Copy of ' + testMselTemplate);
+  await page.click('text= Copy of ' + testPushMsel);
 
-  // Edit MSEL Info
-  await page.fill('text=Name', testMselName);
-  await page.fill('text=Description', testMselDescription);
+  // Edit MSEL Name
+  await page.fill('text=Name', testPushMselName);
+
+  // Edit Description Field
+  await page.fill('text=Description', testPushMselName);
   await page.click('button:has(mat-icon.mdi-check)');
 
-  // Add Organization
-  await page.getByRole('button', { name: 'Organizations' }).click();
-  await page.click('button:has(mat-icon.mdi-bank-plus)');
-  await page.fill('text=Name', extraConfig.orgName);
-  await page.fill('text=Short Name (required)', extraConfig.orgShortName);
-  await page.fill('text=Summary (required)', extraConfig.orgSummary);
-  await page.fill('#quill p', extraConfig.orgDescription);
-  await page.click('button:has-text("Save")');
-
-  // Add Move
-  await page.getByRole('button', { name: 'Moves' }).click();
-  await page.click('button:has(mat-icon.mdi-plus-circle-outline)');
-  await page.locator('text=Title').nth(1).fill('Playwright Move');
-  await page.fill('text=Move Description', 'Move created with test');
-  await page.click('button:has-text("Save")');
-
-  // Add Gallery Card
-  await page.getByRole('button', { name: 'Gallery Cards' }).click();
-  await page.click('button:has(mat-icon.mdi-plus-circle-outline)');
-  await page.locator('text=Name').nth(1).fill('Playwright Card');
-  await page.fill('text=Card Description', 'Playwright Test');
-  await page.locator('mat-select[role="combobox"] >> text=Move').click();
-  await page.locator('text=0 - setup').click();
-  await page.click('text=Save');
-
-  // Add Cite Action
-  await page.getByRole('button', { name: 'Cite Actions' }).click();
-  await page.click('button:has(mat-icon.mdi-plus-circle-outline)');
-  await page.locator('mat-select[role="combobox"] >> text=Move').click();
-  await page.locator('text=0 - setup').click();
-  await page.locator('mat-select[role="combobox"] >> text=Team').nth(1).click();
-  await page.locator('text=Test Users').click();
-  await page.locator('text=Display Order').nth(1).fill('1');
-  await page.locator('text=Description').nth(1).fill('Playwright CITE Action');
-  await page.click('text=Save');
-
-  // Add CITE Role
-  await page.getByRole('button', { name: 'Cite Roles' }).click();
-  await page.click('button:has(mat-icon.mdi-plus-circle-outline)');
-  await page.locator('text=Name').nth(1).fill('Playwright CITE Role');
-  await page.locator('mat-select[role="combobox"] >> text=Team').nth(1).click();
-  await page.locator('text=Test Users').click();
-  await page.click('text=Save');
-
-  // Add Inject
-  await page.getByRole('button', { name: 'Events' }).click();
-  await page.waitForTimeout(1 * 1000);
-  await page.click('button:has(mat-icon.mdi-plus-circle-outline)');
-  await page.click('text=Default');
-  await page.locator('mat-dialog-container[role="dialog"] >> text=Gallery').click();
-  await page.locator('text=Description').nth(1).fill('Playwright Inject Description');
-  await page.locator('[aria-label="Open calendar"]').click();
-  await page.locator('button:has-text("done")').click();
-  await page.locator('mat-select[role="combobox"] >> text=Move').click();
-  await page.click('text=0 - setup');
-  await page.locator('text=Title').nth(1).fill('Playwright Inject Title');
-  await page.locator('mat-select[role="combobox"] >> text=From Org').click();
-  await page.click('text=AMB');
-  await page.mouse.click(5, 5);
-  await page.locator('mat-select[role="combobox"] >> text=To Org').click();
-  await page.click('text=ATB');
-  await page.mouse.click(5, 5);
-  await page.locator('quill-editor div').nth(2).fill('Test inject');
-  await page.locator('mat-select[role="combobox"] >> text=Card').click();
-  await page.locator('text=Playwright Card').click();
-  await page.mouse.click(5, 5);
-  await page.locator('text=Gallery Status').nth(1).fill('Open');
-  await page.locator('mat-select[role="combobox"] >> text=Source Type').click();
-  await page.locator('text=Social').click();
-  await page.mouse.click(5, 5);
-  await page.locator('text=Source Name').nth(1).fill('Twitter');
-  await page.fill('input[data-placeholder="Inject"]', '1');
-  await page.locator('mat-select[role="combobox"] >> text=Delivery Method').click();
-  await page.locator('div[role="listbox"] >> text=Gallery').click();
-  await page.mouse.click(5, 5);
-  await page.click('button:has-text("Save")');
-  await page.waitForTimeout(1 * 1000);
-
   // Push to CITE & Gallery
-  await page.locator('mat-tab-header button').first().click();
   await page.getByRole('button', { name: 'Info' }).click();
-  await page.locator('text=Link Player ViewAdd View Teams >> mat-select[role="combobox"] div').nth(2).click();
-  await page.click('text=Test Environment');
   await page.click('button:has-text("Push to Gallery")');
   await page.click('text=Yes');
   await page.waitForTimeout(5 * 1000);
-  await page.locator('text=Integrate CITESelect Scoring ModelPush to CITE >> mat-select[role="combobox"] div').nth(3).click();
-  await page.click('text=Test ITSM');
-  await page.click('button:has(mat-icon.mdi-check)');
   await page.click('button:has-text("Push to CITE")');
   await page.click('text=Yes');
   await page.waitForTimeout(5 * 1000);
@@ -935,18 +856,19 @@ test('push gallery cite', async ({ page }) => {
   await page.click('text=Yes');
 
   // Return to Dashboard
-  await page.click('img[title="Home"]');
+  await page.getByRole('button', { name: 'Return to MSEL list' }).click();
+  await expect(page).toHaveTitle(/Blueprint/);
 
   // Delete created MSEL
-  await page.click('// button[@title="Delete ' + testMselName + '"]');
+  await page.click('// button[@title="Delete ' + testPushMselName + '"]');
   await page.click('button:has-text("YES")');
   await page.waitForTimeout(1 * 1000);
 
   // Verify gone
   try {
-    await page.waitForSelector('text=' + testMselName, {timeout: 500});
+    await page.waitForSelector('text=' + testPushMselName, {timeout: 500});
   } catch (error) {
-    console.log('Specified MSEL has been removed.');
+    console.log('Test Push MSEL has been removed.');
   }
 
   await page.waitForTimeout(5 * 1000);

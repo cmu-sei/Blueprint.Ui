@@ -91,5 +91,6 @@
   "blueprintShortName": "plw",
   "adminNewUserID": "e9244eb2-e6fb-4f18-9ce3-a5df89e8400c",
   "adminNewUser": "playwrightUser",
-  "testMselTemplate": "ZZZ Testing Base"
+  "testMselTemplate": "ZZZ Testing Base",
+  "testPushMsel": "Test Gallery Integration"
 }
