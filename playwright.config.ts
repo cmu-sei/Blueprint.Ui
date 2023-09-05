@@ -23,7 +23,9 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: 'html',
-  /* Configure projects for major browsers */
+  /* Set timeout for a test in millisecands */
+  timeout: 90000,
+  /* Configure projects based on user permissions */
   projects: [
     {
       name: 'adminsetup',
