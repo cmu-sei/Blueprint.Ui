@@ -1,8 +1,9 @@
 import { defineConfig } from '@playwright/test';
 import path from 'path';
 
-export const BEAN_STORAGE_STATE = path.join(__dirname, 'e2e/.auth/bean.json');
 export const ADMIN_STORAGE_STATE = path.join(__dirname, 'e2e/.auth/admin.json');
+export const USER_STORAGE_STATE = path.join(__dirname, 'e2e/.auth/user.json');
+export const CONTENT_DEV_STORAGE_STATE = path.join(__dirname, 'e2e/.auth/contentdev.json');
 
 export default defineConfig({
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
@@ -25,19 +26,31 @@ export default defineConfig({
   /* Configure projects for major browsers */
   projects: [
     {
-      name: 'setup',
-      testMatch: 'login.setup.ts',
-    },
-    {
       name: 'adminsetup',
       testMatch: 'admin.login.setup.ts',
     },
     {
+      name: 'contentdevsetup',
+      testMatch: 'contentdev.login.setup.ts',
+    },
+    {
+      name: 'usersetup',
+      testMatch: 'login.setup.ts',
+    },
+    {
       name: 'user tests',
       testMatch: 'blueprint-user.spec.ts',
-      dependencies: ['adminsetup'],
+      dependencies: ['usersetup'],
       use: {
-        storageState: ADMIN_STORAGE_STATE,
+        storageState: USER_STORAGE_STATE,
+      },
+    },
+    {
+      name: 'content dev tests',
+      testMatch: 'blueprint-contentdev.spec.ts',
+      dependencies: ['contentdevsetup'],
+      use: {
+        storageState: CONTENT_DEV_STORAGE_STATE,
       },
     },
     {

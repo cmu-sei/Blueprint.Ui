@@ -3,83 +3,11 @@
     "host": "",
     "port": ""
   },
-  "resetPassword": "1",
   "identityURL": "http://localhost:5000",
   "blueprintURL": "http://localhost:4725",
   "citeURL": "http://localhost:4721",
   "playerURL": "http://localhost:4301",
   "galleryURL": "http://localhost:4723",
-  "roundcubeURL": "",
-  "mattermostURL": "",
-  "mattermostTeamName": "Hamilton",
-  "steamfitterURL": "http://localhost:4401",
-  "steamfitterTask": "Notifications",
-  "steamfitterScenarioName": "Aliens",
-  "stackstormAccountName": "stackstorm",
-  "expectedOutputState": "True",
-  "taskName": "Task Test",
-  "taskDescription": "Task Test Description",
-  "taskUrl": "http://localhost:",
-  "taskBody":
-    {
-      "fromId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-      "fromType": "View",
-      "toId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-      "toType": "View",
-      "toName": "ALL",
-      "fromName": "Exercise Control",
-      "subject": "STARTEX",
-      "text": "Test Notification",
-      "link": "",
-      "priority": "Normal"
-    },
-  "expectedNotificationOutput": "Message was sent to view c72ab146-ad44-44cd-877e-d03872516c30",
-  "evaluations": [
-    {
-      "name": "NCISS Demonstration",
-      "actionName": "Score the incident",
-      "role": [
-        {
-          "name": "Team Lead",
-          "users": [
-	    {
-              "name": "Bob"
-	    }
-          ]
-        },
-	{
-          "name": "Participant",
-          "users": [
-            {
-              "name": "Bean"
-            }
-          ]
-        }
-      ]
-    }
-  ],
-  "collection": "Demonstration #1",
-  "exhibit": "/03\/16\/2021 .* - Adam Welle/",
-  "view": "Demonstration Environment",
-  "domain": "this.ws",
-  "globalAddressBookUser": "",
-  "globalAddressBookAlias": "",
-  "subjectLine": "",
-  "emailBody": "",
-  "fromUser": "",
-  "toUser": "",
-  "detailsArticle": "Aliens have been vaporized",
-  "rocketchatURL": "",
-  "rocketchatTeamName": "",
-  "actionName": "Check the Gallery",
-  "addActionName": "Action Added",
-  "MSELName": "Test MSEL",
-  "DisplayOrderField": "1",
-  "DataFieldName": "New Field",
-  "injectField": "Test Inject",
-  "roleName": "",
-  "nameTest": "",
-  "receiver": "",
   "orgName": "Test Organization",
   "orgDescription": "Test",
   "orgSummary": "Summary",
@@ -92,5 +20,6 @@
   "adminNewUserID": "e9244eb2-e6fb-4f18-9ce3-a5df89e8400c",
   "adminNewUser": "playwrightUser",
   "testMselTemplate": "ZZZ Testing Base",
-  "testPushMsel": "Test Gallery Integration"
+  "testPushMsel": "Test Gallery Integration",
+  "testUserMsel": "ZZZ User Testing"
 }

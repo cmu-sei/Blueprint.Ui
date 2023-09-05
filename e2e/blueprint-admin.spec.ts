@@ -31,6 +31,7 @@ test('add users', async ({ page }) => {
   if (deleteButton){
     await deleteButton.click({force: true});
     await page.click('button:has-text("Yes")');
+    await page.waitForTimeout(5 * 1000);
   } else {
     console.log('Page does not have specified user.');
   }
@@ -67,6 +68,7 @@ test('add teams', async ({ page }) => {
   if (deleteButton){
     await deleteButton.click({force: true});
     await page.click('button:has-text("Yes")');
+    await page.waitForTimeout(5 * 1000);
   } else {
     console.log('Page does not have specified team.');
   }
