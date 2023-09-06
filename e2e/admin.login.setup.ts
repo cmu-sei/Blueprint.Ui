@@ -1,3 +1,9 @@
+/*
+ Copyright 2023 Carnegie Mellon University. All Rights Reserved.
+ Released under a MIT (SEI)-style license. See LICENSE.md in the
+ project root for license information.
+*/
+
 // login.setup.ts
 import { test as setup, expect } from '@playwright/test';
 import { ADMIN_STORAGE_STATE } from '../playwright.config';

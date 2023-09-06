@@ -1,3 +1,9 @@
+/*
+ Copyright 2023 Carnegie Mellon University. All Rights Reserved.
+ Released under a MIT (SEI)-style license. See LICENSE.md in the
+ project root for license information.
+*/
+
 import { test, expect } from '@playwright/test';
 const extraConfig = require('./settings.json');
 const fs = require('fs');
