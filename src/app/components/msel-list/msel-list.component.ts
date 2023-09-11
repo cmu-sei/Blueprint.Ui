@@ -28,6 +28,7 @@ import { User } from 'src/app/generated/blueprint.api';
 export class MselListComponent implements OnDestroy, OnInit  {
   @Input() loggedInUserId: string;
   @Input() isContentDeveloper: boolean;
+  @Input() isSystemAdmin: boolean;
   @ViewChild('fileInput') fileInput: ElementRef<HTMLInputElement>;
   @ViewChild(MatSort, { static: true }) sort: MatSort;
   mselList: MselPlus[] = [];
@@ -207,7 +208,9 @@ export class MselListComponent implements OnDestroy, OnInit  {
   }
 
   goToUrl(url): void {
-    this.router.navigate([url]);
+    this.router.navigate([url], {
+      queryParamsHandling: 'merge',
+    });
   }
 
   getUserName(userId: string) {

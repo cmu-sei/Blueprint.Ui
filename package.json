@@ -1,6 +1,6 @@
 {
   "name": "blueprint-ui",
-  "version": "0.3.7-rc6",
+  "version": "0.3.7-rc7",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",

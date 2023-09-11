@@ -171,12 +171,6 @@ export class HomeAppComponent implements OnDestroy, OnInit {
       );
   }
 
-  goToUrl(url): void {
-    this.router.navigate([url], {
-      queryParamsHandling: 'merge',
-    });
-  }
-
   topBarNavigate(url): void {
     if (url === '/') {
       this.router.navigate([url]);

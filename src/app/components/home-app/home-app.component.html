@@ -21,22 +21,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <h2>If the problem persists, please contact the site administrator.</h2>
   </div>
 
-  <div *ngIf="!apiIsSick && (isSystemAdmin$ | async)" [ngClass]="hideTopbar ? 'admin-cog-div-iframe' : 'admin-cog-div'">
-    <button
-      mat-button
-      class="icon-color admin-cog-button"
-      style="outline: none;"
-      (click)="goToUrl('/admin')"
-      title="Administration"
-    >
-      <mat-icon aria-hidden="false" class="icon-color admin-cog-icon mdi-24px" fontIcon="mdi-cog-outline"></mat-icon>
-    </button>
-  </div>
-
   <section *ngIf="!apiIsSick && !selectedMselId">
     <app-msel-list
       [loggedInUserId]="loggedInUserId"
       [isContentDeveloper]="isContentDeveloper$ | async"
+      [isSystemAdmin]="isSystemAdmin$ | async"
     ></app-msel-list>
   </section>
 
