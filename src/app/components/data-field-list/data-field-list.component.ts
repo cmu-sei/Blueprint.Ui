@@ -40,8 +40,6 @@ export class DataFieldListComponent implements OnDestroy {
   filterString = '';
   sort: Sort = {active: '', direction: ''};
   sortedDataFields: DataField[] = [];
-  isAddingDataField = false;
-  editingId = '';
   dataOptionList: DataOption[] = [];
   dataFieldTypes = DataFieldType.keys;
   private waitCount = 0;
@@ -157,18 +155,15 @@ export class DataFieldListComponent implements OnDestroy {
   }
 
   deleteDataField(dataField: DataField): void {
-    if (this.isAddingDataField || (this.editingId && this.editingId !== dataField.id)) {
-      return;
-    }
+    console.log('opening data field dialog');
     this.dialogService
       .confirm(
-        'Delete DataField',
+        'Delete Data Field',
         'Are you sure that you want to delete ' + dataField.name + '?'
       )
       .subscribe((result) => {
         if (result['confirm']) {
           this.dataFieldDataService.delete(dataField.id);
-          this.editingId = '';
         }
       });
   }

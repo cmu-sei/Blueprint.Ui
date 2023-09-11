@@ -1,0 +1,25 @@
+{
+  "proxySettings" : {
+    "host": "",
+    "port": ""
+  },
+  "identityURL": "http://localhost:5000",
+  "blueprintURL": "http://localhost:4725",
+  "citeURL": "http://localhost:4721",
+  "playerURL": "http://localhost:4301",
+  "galleryURL": "http://localhost:4723",
+  "orgName": "Test Organization",
+  "orgDescription": "Test",
+  "orgSummary": "Summary",
+  "orgShortName": "test",
+  "orgEmail": "test@this.ws",
+  "pathToTestFile": "e2e/data/PlaywrightMSEL.xlsx",
+  "downloadPath": "e2e/data/",
+  "blueprintTeam": "playwrightTeam",
+  "blueprintShortName": "plw",
+  "adminNewUserID": "e9244eb2-e6fb-4f18-9ce3-a5df89e8400c",
+  "adminNewUser": "playwrightUser",
+  "testMselTemplate": "ZZZ Testing Base",
+  "testPushMsel": "Test Gallery Integration",
+  "testUserMsel": "ZZZ User Testing"
+}

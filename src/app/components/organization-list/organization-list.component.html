@@ -79,7 +79,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             mat-icon-button
             class="organization-button"
             (click)="deleteOrganization(org); $event.stopPropagation()"
-            title="Delete this organization"
+            title="Delete {{ org.name }}"
           >
             <mat-icon class="mdi-24px" fontIcon="mdi-delete"></mat-icon>
           </button>
