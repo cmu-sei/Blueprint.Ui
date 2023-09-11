@@ -12,30 +12,17 @@ project root for license information or contact permission@sei.cmu.edu for full 
     *ngIf="!sideNavExpanded"
   >
     <mat-list [ngClass]="getSidebarClass()">
-
       <mat-list-item class="top-item background">
-        <button
-          mat-button
-          class="icon-color sidenav-button"
-          style="outline: none;"
-          (click)="setExpanded(true)"
-          title="Expand Navigation Panel"
-        >
-          <mat-icon aria-hidden="false" class="icon-color sidenav-icon mdi-36px" fontIcon="mdi-chevron-right"></mat-icon>
-        </button>
-        <mat-divider></mat-divider>
-      </mat-list-item>
-
-      <mat-list-item class="list-item background">
         <div class="lefticon">
           <button mat-icon-button title="Return to MSEL list" (click)="tabChange('Back')">
             <mat-icon
               inline="true"
-              class="primary mdi-36px"
+              class="icon-color mdi-36px"
               fontIcon="mdi-close-circle-outline"
             ></mat-icon>
           </button>
         </div>
+        <mat-divider></mat-divider>
       </mat-list-item>
       <mat-list-item *ngFor="let tabName of tabList" [ngClass]="getListItemClass(tabName)" (click)="tabChange(tabName)">
         <div class="lefticon">
@@ -48,6 +35,27 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </button>
         </div>
       </mat-list-item>
+
+
+
+
+
+      <div class="bottom-div">
+        <div class="background">
+          <button mat-icon-button title="Administration" (click)="goToUrl('/admin')">
+            <mat-icon
+              inline="true"
+              class="icon-color mdi-18px"
+              fontIcon="mdi-cog-outline"
+            ></mat-icon>
+          </button>
+        </div>
+        <div class="background">
+          <button mat-icon-button title="Expand Navigation Panel" (click)="setExpanded(true)">
+            <mat-icon aria-hidden="false" class="icon-color mdi-24px" fontIcon="mdi-chevron-double-right"></mat-icon>
+          </button>
+        </div>
+      </div>
     </mat-list>
   </mat-sidenav>
   <mat-sidenav
@@ -57,28 +65,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
     *ngIf="sideNavExpanded"
   >
     <mat-list [ngClass]="getSidebarClass()">
-
       <mat-list-item class="top-item background">
-        <div class="collapse">
-          <button
-            mat-button
-            class="icon-color sidenav-button"
-            style="outline: none;"
-            (click)="setExpanded(false)"
-            title="Collapse Navigation Panel"
-          >
-            <mat-icon aria-hidden="false" class="icon-color sidenav-icon mdi-36px" fontIcon="mdi-chevron-left"></mat-icon>
-          </button>
-        </div>
-        <mat-divider></mat-divider>
-      </mat-list-item>
-
-      <mat-list-item class="list-item background">
         <div class="lefticon">
           <button mat-icon-button title="Return to MSEL list" (click)="tabChange('Back')">
             <mat-icon
               inline="true"
-              class="primary mdi-36px"
+              class="icon-color mdi-36px"
               fontIcon="mdi-close-circle-outline"
             ></mat-icon>
           </button>
@@ -89,6 +81,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <div *ngIf="sideNavExpanded">
          &nbsp;
         </div>
+        <mat-divider></mat-divider>
       </mat-list-item>
       <mat-list-item *ngFor="let tabName of tabList" [ngClass]="getListItemClass(tabName)" (click)="tabChange(tabName)">
         <div class="lefticon">
@@ -111,14 +104,33 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </mat-list-item>
       <mat-list-item class="background">&nbsp;</mat-list-item>
     </mat-list>
-    <img
+    <div class="bottom-div">
+      <div class="admin-and-collapse">
+        <div class="admin-section background">
+          <button mat-icon-button title="Administration" (click)="goToUrl('/admin')">
+            <mat-icon
+              inline="true"
+              class="icon-color mdi-18px"
+              fontIcon="mdi-cog-outline"
+            ></mat-icon>
+            Administration
+          </button>
+        </div>
+        <div class="collapse-section">
+          <button mat-icon-button title="Collapse Navigation Panel" (click)="setExpanded(false)">
+            <mat-icon aria-hidden="false" class="icon-color mdi-24px" fontIcon="mdi-chevron-double-left"></mat-icon>
+          </button>
+        </div>
+      </div>
+      <img
       class="cmu-logo"
-      [src]="
-        (theme$ | async) === 'light-theme'
-          ? '/assets/img/cmu-red-gray.png'
-          : '/assets/img/sei-logo-gray.png'
-      "
-    />
+        [src]="
+          (theme$ | async) === 'light-theme'
+            ? '/assets/img/cmu-red-gray.png'
+            : '/assets/img/sei-logo-gray.png'
+        "
+      />
+    </div>
   </mat-sidenav>
   <mat-sidenav-content class="content-frame">
     <div class="main-content">

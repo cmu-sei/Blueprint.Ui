@@ -170,6 +170,12 @@ export class MselComponent implements OnDestroy {
     this.uiDataService.setNavExpanded(value);
   }
 
+  goToUrl(url): void {
+    this.router.navigate([url], {
+      queryParamsHandling: 'merge',
+    });
+  }
+
   ngOnDestroy() {
     this.unsubscribe$.next(null);
     this.unsubscribe$.complete();

@@ -61,6 +61,17 @@ project root for license information or contact permission@sei.cmu.edu for full 
         </button>
       </div>
     </div>
+    <div *ngIf="isSystemAdmin" class="admin-cog-div">
+      <button
+        mat-button
+        class="icon-color admin-cog-button"
+        style="outline: none;"
+        (click)="goToUrl('/admin')"
+        title="Administration"
+      >
+        <mat-icon aria-hidden="false" class="icon-color admin-cog-icon mdi-24px" fontIcon="mdi-cog-outline"></mat-icon>
+      </button>
+    </div>
   </div>
 
   <mat-card
