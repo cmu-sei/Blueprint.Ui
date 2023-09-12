@@ -38,6 +38,7 @@ import { UserMselRoleDataService } from 'src/app/data/user-msel-role/user-msel-r
 export class MselComponent implements OnDestroy {
   @Input() loggedInUserId: string;
   @Input() isContentDeveloper: boolean;
+  @Input() isSystemAdmin: boolean;
   @Input() userTheme$: Observable<Theme>;
   @ViewChild('tabGroup0', { static: false }) tabGroup0: MatTabGroup;
   @ViewChildren('MatTab') tabs: QueryList<MatTab>;
