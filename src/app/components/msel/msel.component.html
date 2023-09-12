@@ -42,7 +42,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
 
       <div class="bottom-div">
         <div class="background">
-          <button mat-icon-button title="Administration" (click)="goToUrl('/admin')">
+          <button mat-icon-button title="Administration" *ngIf="isSystemAdmin" (click)="goToUrl('/admin')">
             <mat-icon
               inline="true"
               class="icon-color mdi-18px"
@@ -107,14 +107,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <div class="bottom-div">
       <div class="admin-and-collapse">
         <div class="admin-section background">
-          <button mat-icon-button title="Administration" (click)="goToUrl('/admin')">
+          <button mat-icon-button title="Administration" *ngIf="isSystemAdmin" (click)="goToUrl('/admin')">
             <mat-icon
               inline="true"
               class="icon-color mdi-18px"
               fontIcon="mdi-cog-outline"
             ></mat-icon>
             Administration
-          </button>
+          </button>&nbsp;
         </div>
         <div class="collapse-section">
           <button mat-icon-button title="Collapse Navigation Panel" (click)="setExpanded(false)">
