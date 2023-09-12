@@ -45,6 +45,17 @@ th, td {
   overflow: auto;
 }
 
+.header-row-start {
+  width: 140px;
+  display: flex;
+  flex-direction: column;
+}
+
+.header-buttons {
+  display: flex;
+  flex-direction: row;
+}
+
 .row-start-buttons {
   width: 140px;
   display: flex;
@@ -67,9 +78,9 @@ th, td {
 }
 
 .scenario-event-button {
-  width: 30px;
-  height: 30px;
-  align-self: center;
+  width: 30px !important;
+  height: 30px !important;
+  align-self: center !important;
 }
 
 .header-dropdown {
@@ -77,7 +88,7 @@ th, td {
 }
 
 .up-12 {
-  margin-top: -12px;
+  margin-top: -18px;
 }
 
 .color-option-button {

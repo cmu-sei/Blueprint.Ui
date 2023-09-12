@@ -98,6 +98,8 @@ export class ScenarioEventListComponent implements OnDestroy {
   teamList: Team[] = [];
   keyUp = new Subject<KeyboardEvent>();
   private subscription: Subscription;
+  selectedEventIdList: string[] = [];
+  showSearch = false;
 
   constructor(
     private router: Router,
@@ -566,12 +568,25 @@ export class ScenarioEventListComponent implements OnDestroy {
   deleteScenarioEvent(scenarioEvent: ScenarioEvent): void {
     this.dialogService
       .confirm(
-        'Delete ScenarioEvent',
-        'Are you sure that you want to delete ' + 'scenarioEvent' + '?'
+        'Delete Event #' + scenarioEvent.rowIndex,
+        'Are you sure that you want to delete event #' + scenarioEvent.rowIndex + '?'
       )
       .subscribe((result) => {
         if (result['confirm']) {
           this.scenarioEventDataService.delete(scenarioEvent.id);
+        }
+      });
+  }
+
+  bulkDeleteScenarioEvents() {
+    this.dialogService
+      .confirm(
+        'Delete ALL selected Events!',
+        'Are you sure that you want to delete the selected events?'
+      )
+      .subscribe((result) => {
+        if (result['confirm']) {
+          this.scenarioEventDataService.delete('whats up?');
         }
       });
   }
@@ -686,6 +701,29 @@ export class ScenarioEventListComponent implements OnDestroy {
     const dateValue = dataValue && dataValue.value != null ? dataValue.value : ' ';
     const formattedValue = new Date(dateValue).toLocaleString();
     return formattedValue === 'Invalid Date' ? ' ' : formattedValue;
+  }
+
+  getSelectedState(id: string): boolean {
+    const isSelected = this.selectedEventIdList.some(e => e === id);
+    return isSelected;
+  }
+
+  setSelectedState(id: string, newValue: boolean) {
+    if (newValue) {
+      this.selectedEventIdList.push(id);
+    } else {
+      const index = this.selectedEventIdList.indexOf(id);
+      if (index > -1) {
+        this.selectedEventIdList.splice(index, 1);
+      }
+    }
+  }
+
+  setSearch(value: boolean) {
+    if (!value) {
+      this.applyFilter('');
+    }
+    this.showSearch = value;
   }
 
   ngOnDestroy() {
