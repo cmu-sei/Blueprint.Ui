@@ -179,9 +179,14 @@ export class ScenarioEventDataService {
     this.scenarioEventService
       .deleteScenarioEvent(id)
       .pipe(take(1))
-      .subscribe((scenarioEvents) => {
-        this.scenarioEventStore.set(scenarioEvents);
-      });
+      .subscribe(() => {});
+  }
+
+  batchDelete(idList: string[]) {
+    this.scenarioEventService
+      .batchDeleteScenarioEvent(idList)
+      .pipe(take(1))
+      .subscribe(() => {});
   }
 
   setPageEvent(pageEvent: PageEvent) {

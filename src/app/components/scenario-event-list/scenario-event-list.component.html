@@ -33,7 +33,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 </button>
                 <button
                   mat-icon-button
-                  (click)="bulkDeleteScenarioEvents()"
+                  (click)="batchDeleteScenarioEvents()"
                   style="outline: none;"
                   title="Delete selected events"
                   *ngIf="(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) && selectedEventIdList.length > 0"

@@ -578,7 +578,7 @@ export class ScenarioEventListComponent implements OnDestroy {
       });
   }
 
-  bulkDeleteScenarioEvents() {
+  batchDeleteScenarioEvents() {
     this.dialogService
       .confirm(
         'Delete ALL selected Events!',
@@ -586,7 +586,8 @@ export class ScenarioEventListComponent implements OnDestroy {
       )
       .subscribe((result) => {
         if (result['confirm']) {
-          this.scenarioEventDataService.delete('whats up?');
+          this.scenarioEventDataService.batchDelete(this.selectedEventIdList);
+          this.selectedEventIdList = [];
         }
       });
   }
