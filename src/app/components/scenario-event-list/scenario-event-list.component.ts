@@ -170,7 +170,7 @@ export class ScenarioEventListComponent implements OnDestroy {
     });
     // subscribe to filter string changes for debounce
     this.subscription = this.keyUp.pipe(
-      debounceTime(500),
+      debounceTime(250),
       distinctUntilChanged(),
       mergeMap(search => of(search).pipe(
         delay(250),
@@ -629,7 +629,8 @@ export class ScenarioEventListComponent implements OnDestroy {
     return this.getStyleFromColor(color);
   }
 
-  selectNewColor(color: string, scenarioEvent: ScenarioEventPlus) {
+  selectNewColor(color: string, incomingScenarioEvent: ScenarioEventPlus) {
+    const scenarioEvent = {... incomingScenarioEvent};
     let parts = scenarioEvent.rowMetadata ? scenarioEvent.rowMetadata.split(',') : [];
     // update the scenario event row metadata
     if (parts.length === 0) {
@@ -664,6 +665,13 @@ export class ScenarioEventListComponent implements OnDestroy {
         dv.cellMetadata = parts.join(',');
       });
     this.scenarioEventDataService.updateScenarioEvent(scenarioEvent);
+  }
+
+  batchSelectNewColor(color: string) {
+    this.selectedEventIdList.forEach(id => {
+      const scenarioEvent = this.sortedScenarioEvents.find(e => e.id === id);
+      this.selectNewColor(color, scenarioEvent);
+    });
   }
 
   getStyle(dataField: DataField): string {
@@ -717,6 +725,15 @@ export class ScenarioEventListComponent implements OnDestroy {
       if (index > -1) {
         this.selectedEventIdList.splice(index, 1);
       }
+    }
+  }
+
+  setAllSelectedState(newValue: boolean) {
+    this.selectedEventIdList = [];
+    if (newValue) {
+      this.sortedScenarioEvents.forEach(e => {
+        this.selectedEventIdList.push(e.id);
+      });
     }
   }
 

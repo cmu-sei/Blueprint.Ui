@@ -71,7 +71,7 @@ export class MselPlus implements Msel {
       mselRole.editor = true;
       mselRole.moveEditor = true;
       mselRole.facilitator = true;
-    } else if (this.scenarioEvents && this.scenarioEvents.length > 0) {
+    } else if (this.scenarioEvents && this.scenarioEvents.length > 0 && scenarioEventId) {
       const scenarioEvent = this.scenarioEvents.find(se => se.id === scenarioEventId);
       const assignedToDataField = this.dataFields.find(df => df.dataType === DataFieldType.Team);
       const dataValue = assignedToDataField &&
