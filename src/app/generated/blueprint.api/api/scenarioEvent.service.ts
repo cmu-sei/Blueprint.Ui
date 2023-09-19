@@ -67,6 +67,60 @@ export class ScenarioEventService {
 
 
     /**
+     * Deletes an ScenarioEvent
+     * Deletes an ScenarioEvent with the specified id  &lt;para /&gt;  Accessible only to a SuperUser or a User on an Admin Team within the specified ScenarioEvent
+     * @param id The id of the ScenarioEvent to delete
+     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+     * @param reportProgress flag to report request and response progress.
+     */
+    public batchDeleteScenarioEvent(idList: string[], observe?: 'body', reportProgress?: boolean): Observable<Array<ScenarioEvent>>;
+    public batchDeleteScenarioEvent(idList: string[], observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Array<ScenarioEvent>>>;
+    public batchDeleteScenarioEvent(idList: string[], observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Array<ScenarioEvent>>>;
+    public batchDeleteScenarioEvent(idList: string[], observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+      let headers = this.defaultHeaders;
+
+      // authentication (oauth2) required
+      if (this.configuration.accessToken) {
+          const accessToken = typeof this.configuration.accessToken === 'function'
+              ? this.configuration.accessToken()
+              : this.configuration.accessToken;
+          headers = headers.set('Authorization', 'Bearer ' + accessToken);
+      }
+
+      // to determine the Accept header
+      let httpHeaderAccepts: string[] = [
+          'text/plain',
+          'application/json',
+          'text/json'
+      ];
+      const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
+      if (httpHeaderAcceptSelected !== undefined) {
+          headers = headers.set('Accept', httpHeaderAcceptSelected);
+      }
+
+      // to determine the Content-Type header
+      const consumes: string[] = [
+          'application/json',
+          'text/json',
+          'application/_*+json'
+      ];
+      const httpContentTypeSelected: string | undefined = this.configuration.selectHeaderContentType(consumes);
+      if (httpContentTypeSelected !== undefined) {
+          headers = headers.set('Content-Type', httpContentTypeSelected);
+      }
+
+      return this.httpClient.post<ScenarioEvent>(`${this.configuration.basePath}/api/scenarioevents/batchDelete`,
+        idList,
+        {
+            withCredentials: this.configuration.withCredentials,
+            headers: headers,
+            observe: observe,
+            reportProgress: reportProgress
+        }
+      );
+    }
+
+    /**
      * Creates a new ScenarioEvent
      * Creates a new ScenarioEvent with the attributes specified  &lt;para /&gt;  Accessible only to a SuperUser or an Administrator
      * @param ScenarioEvent The data to create the ScenarioEvent with

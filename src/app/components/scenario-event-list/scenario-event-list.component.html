@@ -6,28 +6,130 @@ project root for license information or contact permission@sei.cmu.edu for full 
 <div class="container">
   <div class="tableFixHead" *ngIf="msel">
     <table>
-      <thead matSort
-      (matSortChange)="sortChanged($event)">
+      <thead matSort (matSortChange)="sortChanged($event)">
+        <tr *ngIf="showSearch">
+          <th colspan="5">
+            <mat-form-field *ngIf="showSearch" class="top-search">
+              <input
+                matInput
+                [(ngModel)]="filterString"
+                (keyup)="keyUp.next($event)"
+                placeholder="Search"
+                style="font-size: 10pt;"
+              />
+            </mat-form-field>
+            <button
+              [disabled]="filterString === ''"
+              mat-icon-button
+              (click)="applyFilter('')"
+              style="outline: none;"
+              title="Clear Search"
+            >
+              <mat-icon
+                style="transform: scale(0.85);"
+                svgIcon="ic_cancel_circle"
+              ></mat-icon>
+            </button>
+          </th>
+        </tr>
         <tr>
           <th class="background">
-            <div class="row-start-buttons">
-              <button
-                mat-icon-button
-                (click)="addScenarioEvent()"
-                style="outline: none; margin-right: 15px;"
-                title="Add new inject"
-                *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
-              >
-                <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
-              </button>
-              <mat-form-field style="width: 100px;">
-                <input
-                  matInput
-                  [(ngModel)]="filterString"
-                  (keyup)="keyUp.next($event)"
-                  placeholder="Search"
-                />
-              </mat-form-field>
+            <div class="header-row-start">
+              <div class="header-buttons">
+                <span *ngIf="(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)">
+                  <mat-checkbox
+                    (change)="setAllSelectedState($event.checked)"
+                    title="Select All/None"
+                    style="margin-top: 7px; margin-right: 7px;"
+                  ></mat-checkbox>
+                  <button
+                    mat-icon-button
+                    style="outline: none;"
+                    title="Action List"
+                    [matMenuTriggerFor]="addEventList"
+                    *ngIf="selectedEventIdList.length === 0"
+                  >
+                    <mat-icon class="mdi-24px" fontIcon="mdi-menu"></mat-icon>
+                  </button>
+                  <mat-menu #addEventList="matMenu" [overlapTrigger]="false">
+                    <button
+                      mat-menu-item
+                      (click)="addScenarioEvent()"
+                      title="Add an event"
+                    >
+                      Add new event
+                    </button>
+                  </mat-menu>
+                  <button
+                    mat-icon-button
+                    style="outline: none;"
+                    title="Action List"
+                    [matMenuTriggerFor]="bulkEventList"
+                    *ngIf="selectedEventIdList.length > 0"
+                  >
+                    <mat-icon class="mdi-24px" fontIcon="mdi-menu"></mat-icon>
+                  </button>
+                  <mat-menu #bulkEventList="matMenu" [overlapTrigger]="false">
+                    <button
+                      mat-menu-item
+                      (click)="addScenarioEvent()"
+                      title="Add an event"
+                    >
+                      Add new event
+                    </button>
+                    <button
+                      mat-menu-item
+                      [matMenuTriggerFor]="colorList"
+                      (click)="$event.stopPropagation()"
+                      title="Highlight selected events"
+                    >
+                      Highlight selected events
+                    </button>
+                    <mat-menu #colorList="matMenu" [overlapTrigger]="false">
+                      <button
+                        mat-menu-item
+                        (click)="selectNewColor('', null)"
+                        class="color-option-button"
+                      >
+                        <div class="color-option" [style]="getStyleFromColor('')"></div>
+                      </button>
+                      <button
+                        mat-menu-item
+                        *ngFor="let color of scenarioEventBackgroundColors"
+                        (click)="batchSelectNewColor(color)"
+                        class="color-option-button"
+                      >
+                        <div class="color-option" [style]="getStyleFromColor(color)">&nbsp;</div>
+                      </button>
+                    </mat-menu>
+                    <button
+                      mat-menu-item
+                      (click)="batchDeleteScenarioEvents()"
+                      title="Delete selecetd events"
+                    >
+                      Delete selected events
+                    </button>
+                  </mat-menu>
+                </span>
+                <button
+                  mat-icon-button
+                  (click)="setSearch(true)"
+                  style="outline: none;"
+                  title="Search Events"
+                  *ngIf="!showSearch"
+                >
+                  <mat-icon class="mdi-24px" fontIcon="mdi-filter-outline"></mat-icon>
+                </button>
+                <button
+                  mat-icon-button
+                  (click)="setSearch(false)"
+                  style="outline: none;"
+                  title="Clear Search"
+                  *ngIf="showSearch"
+                >
+                  <mat-icon class="mdi-24px" fontIcon="mdi-filter-off-outline"></mat-icon>
+                </button>
+              </div>
             </div>
           </th>
           <ng-container *ngFor="let df of sortedDataFields">
@@ -42,59 +144,73 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <tr [style]="getRowStyle(item)">
             <td class="">
               <div class="row-start-buttons">
+                <mat-checkbox
+                  [checked]="getSelectedState(item.id)"
+                  (change)="setSelectedState(item.id, $event.checked)"
+                  title="Select event {{ item.rowIndex }}"
+                  *ngIf="(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)"
+                ></mat-checkbox>
                 <button
                   mat-icon-button
                   class="scenario-event-button"
-                  (click)="editScenarioEvent(item)"
-                  title="Edit this inject"
-                >
-                  <mat-icon class="mdi-18px up-12" fontIcon="mdi-square-edit-outline"></mat-icon>
-                </button>
-                <button
-                  mat-icon-button
-                  class="scenario-event-button"
-                  [matMenuTriggerFor]="menu"
+                  [matMenuTriggerFor]="actionList"
                   (click)="$event.stopPropagation()"
-                  title="Change highlight color"
-                  *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, item.id).owner"
+                  title="Action List"
+                  [disabled]="selectedEventIdList.length > 0"
                 >
-                  <mat-icon class="mdi-18px up-12" fontIcon="mdi-format-color-fill"></mat-icon>
+                  <mat-icon class="mdi-24px up-12" fontIcon="mdi-menu-down"></mat-icon>
                 </button>
-                <mat-menu #menu="matMenu" [overlapTrigger]="false">
+                <mat-menu #actionList="matMenu" [overlapTrigger]="false">
                   <button
                     mat-menu-item
-                    (click)="selectNewColor('', item)"
-                    class="color-option-button"
+                    (click)="editScenarioEvent(item)"
+                    title="Edit event {{ item.rowIndex }}"
                   >
-                  <div class="color-option" [style]="getStyleFromColor('')"></div>
+                    Edit
                   </button>
                   <button
                     mat-menu-item
-                    *ngFor="let color of scenarioEventBackgroundColors"
-                    (click)="selectNewColor(color, item)"
-                    class="color-option-button"
+                    [matMenuTriggerFor]="colorList"
+                    (click)="$event.stopPropagation()"
+                    title="Highlight event {{ item.rowIndex }}"
+                    *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, item.id).owner"
                   >
-                    <div class="color-option" [style]="getStyleFromColor(color)">&nbsp;</div>
+                    Highlight
+                  </button>
+                  <mat-menu #colorList="matMenu" [overlapTrigger]="false">
+                    <button
+                      mat-menu-item
+                      (click)="selectNewColor('', item)"
+                      class="color-option-button"
+                    >
+                      <div class="color-option" [style]="getStyleFromColor('')"></div>
+                    </button>
+                    <button
+                      mat-menu-item
+                      *ngFor="let color of scenarioEventBackgroundColors"
+                      (click)="selectNewColor(color, item)"
+                      class="color-option-button"
+                    >
+                      <div class="color-option" [style]="getStyleFromColor(color)">&nbsp;</div>
+                    </button>
+                  </mat-menu>
+                  <button
+                    mat-menu-item
+                    (click)="copyScenarioEvent(item)"
+                    title="Copy"
+                    *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, item.id).owner"
+                  >
+                    Copy
+                  </button>
+                  <button
+                    mat-menu-item
+                    (click)="deleteScenarioEvent(item)"
+                    title="Delete event {{ item.rowIndex }}"
+                    *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, item.id).owner"
+                  >
+                    Delete
                   </button>
                 </mat-menu>
-                <button
-                  mat-icon-button
-                  class="scenario-event-button"
-                  (click)="copyScenarioEvent(item)"
-                  title="Duplicate this inject"
-                  *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, item.id).owner"
-                >
-                  <mat-icon class="mdi-18px up-12" fontIcon="mdi-content-copy"></mat-icon>
-                </button>
-                <button
-                  mat-icon-button
-                  class="scenario-event-button"
-                  (click)="deleteScenarioEvent(item)"
-                  title="Delete this inject"
-                  *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, item.id).owner"
-                >
-                  <mat-icon class="mdi-18px up-12" fontIcon="mdi-delete"></mat-icon>
-                </button>
                 <span class="row-index center-self">{{ item.rowIndex }}</span>
               </div>
             </td>
