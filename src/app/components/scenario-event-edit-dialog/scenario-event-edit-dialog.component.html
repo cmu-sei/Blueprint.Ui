@@ -229,6 +229,21 @@ project root for license information or contact permission@sei.cmu.edu for full 
             </mat-checkbox><br />&nbsp;
           </div>
         </div>
+        <!-- DeliveryMethod input -->
+        <mat-form-field *ngIf="df.dataType === dataType.DeliveryMethod" class="full-width">
+          <mat-label>{{ df.name }}</mat-label>
+          <mat-select
+            multiple
+            placeholder="{{ df.name }}"
+            (valueChange)="setDataValueArray(df.name, $event)"
+            [value]="getDataValue(df.name).valueArray"
+            [disabled]="!data.isEditor"
+          >
+            <mat-option *ngFor="let dataOption of getDataOptions(df.id)" [value]="dataOption.optionValue">
+              {{ dataOption.optionName }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
         <!-- dropdown input -->
         <mat-form-field *ngIf="df.isChosenFromList" class="full-width">
           <mat-label>{{ df.name }}</mat-label>

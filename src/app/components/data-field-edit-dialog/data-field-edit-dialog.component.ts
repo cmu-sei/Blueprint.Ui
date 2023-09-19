@@ -63,7 +63,7 @@ export class DataFieldEditDialogComponent {
     // only process if it changed
     if (this.data.dataField.dataType !== selectedDataType) {
       if (selectedDataType === 'DeliveryMethod') {
-        this.data.dataField.isChosenFromList = true;
+        this.data.dataField.isChosenFromList = false;
         // Add the default options for DeliveryMethod
         const defaultOptions = this.settingsService.settings.DefaultDeliveryMethodOptions;
         defaultOptions.forEach(defopt => {
