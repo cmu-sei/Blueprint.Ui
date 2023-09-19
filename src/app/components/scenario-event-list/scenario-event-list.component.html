@@ -362,6 +362,25 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   </mat-select>
                 </div>
               </td>
+              <!-- DeliveryMethod value -->
+              <td *ngIf="df.dataType.toString() === 'DeliveryMethod'">
+                <div class="constrainer" [style]="getStyle(df)">
+                  <mat-select
+                    multiple
+                    *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, item.id).editor"
+                    (click)="$event.stopPropagation()"
+                    (valueChange)="saveDataValueArray(item, df.name, $event)"
+                    class="header-dropdown"
+                    placeholder="None"
+                    [value]="getDataValue(item, df.name).valueArray"
+                  >
+                  <mat-option *ngFor="let dataOption of getDataOptions(df.id)" [value]="dataOption.optionValue">
+                      {{ dataOption.optionName }}
+                    </mat-option>
+                  </mat-select>
+                  <span *ngIf="!isContentDeveloper && !msel.hasRole(loggedInUserId, item.id).editor">{{ getDataValue(item, df.name).value }}</span>
+                </div>
+              </td>
               <!-- is Chosen From a List -->
               <td *ngIf="df.isChosenFromList">
                 <div class="constrainer" [style]="getStyle(df)">
@@ -389,6 +408,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                           df.dataType.toString() !== 'Card' &&
                           df.dataType.toString() !== 'Move' &&
                           df.dataType.toString() !== 'Checkbox' &&
+                          df.dataType.toString() !== 'DeliveryMethod' &&
                           !df.isChosenFromList">
                 <div class="constrainer" [style]="getStyle(df)">
                   {{ getScenarioEventValue(item, df.name) }}

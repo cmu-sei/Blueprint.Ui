@@ -60,7 +60,7 @@ export class MselComponent implements OnDestroy {
   defaultTab = 'Info';
   selectedIndex = 1;
   selectedMselId = '';
-  sideNavExpanded = true;
+  sideNavCollapsed = false;
   fontIconList = new Map<string, string>([
     ['Info', 'mdi-note-outline'],
     ['Teams', 'mdi-account-group-outline'],
@@ -139,7 +139,7 @@ export class MselComponent implements OnDestroy {
     }
     this.selectedTab = selectedTab;
     // set the side nav expansion
-    this.sideNavExpanded = this.uiDataService.isNavExpanded();
+    this.sideNavCollapsed = this.uiDataService.isNavCollapsed();
   }
 
   tabChange(tabName: string) {
@@ -163,12 +163,12 @@ export class MselComponent implements OnDestroy {
   }
 
   getSidebarClass() {
-    return this.sideNavExpanded ? 'left-content-open background' : 'left-content-closed background';
+    return this.sideNavCollapsed ? 'left-content-closed background' : 'left-content-open background';
   }
 
-  setExpanded(value: boolean) {
-    this.sideNavExpanded = value;
-    this.uiDataService.setNavExpanded(value);
+  setCollapsed(value: boolean) {
+    this.sideNavCollapsed = value;
+    this.uiDataService.setNavCollapsed(value);
   }
 
   goToUrl(url): void {
