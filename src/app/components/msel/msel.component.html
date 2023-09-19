@@ -9,7 +9,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     #sidenav
     mode="side"
     opened
-    *ngIf="!sideNavExpanded"
+    *ngIf="sideNavCollapsed"
   >
     <mat-list [ngClass]="getSidebarClass()">
       <mat-list-item class="top-item background">
@@ -51,7 +51,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </button>
         </div>
         <div class="background">
-          <button mat-icon-button title="Expand Navigation Panel" (click)="setExpanded(true)">
+          <button mat-icon-button title="Expand Navigation Panel" (click)="setCollapsed(false)">
             <mat-icon aria-hidden="false" class="icon-color mdi-24px" fontIcon="mdi-chevron-double-right"></mat-icon>
           </button>
         </div>
@@ -62,7 +62,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     #sidenav
     mode="side"
     opened
-    *ngIf="sideNavExpanded"
+    *ngIf="!sideNavCollapsed"
   >
     <mat-list [ngClass]="getSidebarClass()">
       <mat-list-item class="top-item background">
@@ -75,10 +75,10 @@ project root for license information or contact permission@sei.cmu.edu for full 
             ></mat-icon>
           </button>
         </div>
-        <div class="application-name" *ngIf="sideNavExpanded">
+        <div class="application-name" *ngIf="!sideNavCollapsed">
           MSEL List
         </div>
-        <div *ngIf="sideNavExpanded">
+        <div *ngIf="!sideNavCollapsed">
          &nbsp;
         </div>
         <mat-divider></mat-divider>
@@ -93,10 +93,10 @@ project root for license information or contact permission@sei.cmu.edu for full 
             ></mat-icon>
           </button>
         </div>
-        <div class="application-name" *ngIf="sideNavExpanded">
+        <div class="application-name" *ngIf="!sideNavCollapsed">
           {{ tabName }}
         </div>
-        <div *ngIf="sideNavExpanded">
+        <div *ngIf="!sideNavCollapsed">
           <button mat-icon-button title="{{ tabName }}">
             <mat-icon class="icon-color" svgIcon="ic_chevron_right"></mat-icon>
           </button>
@@ -117,7 +117,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </button>&nbsp;
         </div>
         <div class="collapse-section">
-          <button mat-icon-button title="Collapse Navigation Panel" (click)="setExpanded(false)">
+          <button mat-icon-button title="Collapse Navigation Panel" (click)="setCollapsed(true)">
             <mat-icon aria-hidden="false" class="icon-color mdi-24px" fontIcon="mdi-chevron-double-left"></mat-icon>
           </button>
         </div>

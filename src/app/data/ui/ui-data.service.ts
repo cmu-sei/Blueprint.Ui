@@ -10,7 +10,7 @@ export class UIState {
   selectedTheme = '';
   selectedMselTab = '';
   expandedItems: string[] = [];
-  navExpanded: boolean;
+  navCollapsed: boolean;
 }
 
 @Injectable({
@@ -41,12 +41,12 @@ export class UIDataService {
 
   //
   // Nav bar Expansion
-  isNavExpanded(): boolean {
-    return this.uiState.navExpanded;
+  isNavCollapsed(): boolean {
+    return this.uiState.navCollapsed;
   }
 
-  setNavExpanded(value: boolean) {
-    this.uiState.navExpanded = value;
+  setNavCollapsed(value: boolean) {
+    this.uiState.navCollapsed = value;
     this.saveChanges();
   }
   // end item expansion
