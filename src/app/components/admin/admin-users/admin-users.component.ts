@@ -15,6 +15,7 @@ import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { UserDataService } from 'src/app/data/user/user-data.service';
 import { Subject, takeUntil } from 'rxjs';
 import { PermissionService } from 'src/app/generated/blueprint.api';
+import { validate as isValidUuid } from 'uuid';
 
 @Component({
   selector: 'app-admin-users',
@@ -138,7 +139,9 @@ export class AdminUsersComponent implements OnDestroy {
     return copy.splice(startIndex, pageSize);
   }
 
-
+  isValidNewUser() {
+    return isValidUuid(this.newUser.id) && this.newUser.name && this.newUser.name.length > 2;
+  }
 
 
 

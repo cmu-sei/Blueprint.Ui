@@ -5,8 +5,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
 -->
 <div mat-dialog-container>
   <div mat-dialog-title>
-    <span *ngIf="data.isNew">Create Inject</span>
-    <span *ngIf="!data.isNew">Edit Inject</span>
+    <span *ngIf="data.isNew">Create Event</span>
+    <span *ngIf="!data.isNew">Edit Event</span>
     <button
       mat-icon-button
       (click)="handleEditComplete(false)"
@@ -271,7 +271,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </div>
     </div>
   </div>
-  <div mat-dialog-actions class="dialog-buttons">
+  <div mat-dialog-actions>
     <button mat-stroked-button (click)="handleEditComplete(true)" [disabled]="hasBadData()">Save</button>
     <button mat-stroked-button (click)="handleEditComplete(false)">Cancel</button>
   </div>

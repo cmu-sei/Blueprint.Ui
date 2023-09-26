@@ -71,44 +71,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
               (keypress)="isChanged = true"
               >Is a Template</mat-checkbox>
           </div>
-          <!-- Player Integration-->
-          <div *ngIf="!msel.isTemplate" class="single-detail top-margin">
-            <mat-form-field class="half-width" *ngIf="viewList.length > 0">
-              <mat-label>Link Player View</mat-label>
-              <mat-select
-                [(ngModel)]="msel.playerViewId"
-                (cut)="isChanged = true"
-                (change)="isChanged = true"
-                (paste)="isChanged = true"
-                (keypress)="isChanged = true"
-              >
-              <mat-option [value]=""></mat-option>
-              <mat-option *ngFor="let view of viewList" [value]="view.id">
-                  {{ view.name }}
-                </mat-option>
-              </mat-select>
-            </mat-form-field>
-            <mat-form-field class="half-width" *ngIf="viewList.length === 0">
-              <input
-                type="text"
-                matInput
-                placeholder="Link Player View"
-                [(ngModel)]="msel.playerViewId"
-                (cut)="isChanged = true"
-                (change)="isChanged = true"
-                (paste)="isChanged = true"
-                (keypress)="isChanged = true"
-              />
-            </mat-form-field>
-            <button
-              class="half-button"
-              (click)="addViewTeamsToMsel()"
-              title="Add Player Teams"
-              [disabled]="!msel.playerViewId || viewList.length === 0"
-            >Add View Teams</button>
-          </div>
           <!-- Gallery Integration -->
-          <div *ngIf="!msel.isTemplate" class="single-detail">
+          <div class="single-detail">
             <div class="sub-detail two-cell">
               <mat-checkbox
                 [(ngModel)]="msel.useGallery"
@@ -162,7 +126,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             </div>
           </div>
           <!-- CITE Integration -->
-          <div *ngIf="!msel.isTemplate" class="single-detail">
+          <div class="single-detail">
             <div class="sub-detail center-self two-cell">
               <mat-checkbox
                 [(ngModel)]="msel.useCite"
@@ -234,8 +198,19 @@ project root for license information or contact permission@sei.cmu.edu for full 
               </mat-form-field>
             </div>
           </div>
+          <!-- Player Integration -->
+          <div class="single-detail">
+            <mat-checkbox
+              [disabled]="true"
+              [(ngModel)]="msel.useSteamfitter"
+              (cut)="isChanged = true"
+              (change)="isChanged = true"
+              (paste)="isChanged = true"
+              (keypress)="isChanged = true"
+              >Integrate Player</mat-checkbox>
+          </div>
           <!-- Steamfitter Integration -->
-          <div *ngIf="!msel.isTemplate" class="single-detail">
+          <div class="single-detail">
             <mat-checkbox
               [disabled]="true"
               [(ngModel)]="msel.useSteamfitter"
