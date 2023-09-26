@@ -2,6 +2,23 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
+.mat-dialog-container {
+  height: 100vh;
+}
+
+.mat-dialog-title {
+  height: 50px;
+}
+
+.mat-dialog-content {
+  height: 100vh ;
+}
+
+.mat-dialog-actions {
+  height: 60px !important;
+  margin: 10px 0 0 75px !important;
+}
+
 .scenario-event-edit-dialog {
   display: flex;
   flex: 1;
