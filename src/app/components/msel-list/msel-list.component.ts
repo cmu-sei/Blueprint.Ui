@@ -193,7 +193,7 @@ export class MselListComponent implements OnDestroy, OnInit  {
     this.dialogService
       .confirm(
         'Delete MSEL',
-        'Are you sure that you want to delete ' + msel.description + '?'
+        'Are you sure that you want to delete ' + msel.name + '?'
       )
       .subscribe((result) => {
         if (result['confirm']) {
