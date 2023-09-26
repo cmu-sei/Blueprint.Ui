@@ -10,6 +10,7 @@ import {
   DataField,
   ItemStatus,
   MselPage,
+  MselTeam,
   ScenarioEvent,
   Team,
   User,
@@ -25,6 +26,7 @@ import { CiteApiClientScoringModel } from 'src/app/generated/blueprint.api/model
 import { DataFieldQuery } from 'src/app/data/data-field/data-field.query';
 import { MselPageDataService } from 'src/app/data/msel-page/msel-page-data.service';
 import { MselPageQuery } from 'src/app/data/msel-page/msel-page.query';
+import { MselTeamQuery } from 'src/app/data/msel-team/msel-team.query';
 
 @Component({
   selector: 'app-msel-info',
@@ -45,6 +47,7 @@ export class MselInfoComponent implements OnDestroy {
   isChanged = false;
   userList: User[] = [];
   teamList: Team[] = [];
+  mselTeamList: MselTeam[] = [];
   scoringModelList: CiteApiClientScoringModel[] = [];
   viewList: PlayerApiClientView[] = [];
   itemStatus: ItemStatus[] = [ItemStatus.Pending, ItemStatus.Entered, ItemStatus.Approved, ItemStatus.Complete];
@@ -72,7 +75,8 @@ export class MselInfoComponent implements OnDestroy {
     private citeService: CiteService,
     private playerService: PlayerService,
     private mselPageDataService: MselPageDataService,
-    private mselPageQuery: MselPageQuery
+    private mselPageQuery: MselPageQuery,
+    private mselTeamQuery: MselTeamQuery
   ) {
     // subscribe to the active MSEL
     (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
@@ -98,6 +102,10 @@ export class MselInfoComponent implements OnDestroy {
     // subscribe to teams
     this.teamQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(teams => {
       this.teamList = teams;
+    });
+    // subscribe to mselTeams
+    this.mselTeamQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(mselTeams => {
+      this.mselTeamList = mselTeams;
     });
     // subscribe to MselPages
     this.mselPageQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(pages => {
@@ -137,10 +145,12 @@ export class MselInfoComponent implements OnDestroy {
   }
 
   pushToCite() {
+    const warningMessage = this.mselTeamList.some(t => t.citeTeamTypeId) ?
+      '' : '** WARNING: No teams have a CITE Team Type selected, so no teams will be pushed to CITE! **  ';
     this.dialogService
       .confirm(
         'Push to CITE',
-        'Are you sure that you want to push this MSEL to CITE?'
+        warningMessage + 'Are you sure that you want to push this MSEL to CITE?'
       )
       .subscribe((result) => {
         if (result['confirm']) {
