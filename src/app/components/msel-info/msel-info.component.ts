@@ -144,13 +144,29 @@ export class MselInfoComponent implements OnDestroy {
     this.playerService.addViewTeamsToMsel(this.msel.id).subscribe();
   }
 
+  galleryWarningMessage() {
+    let warningMessage = '';
+    if (this.msel.useGallery && !this.msel.galleryExhibitId) {
+      warningMessage = this.galleryToDo() ?
+        '** There are unassigned Gallery Article Parameters in Data Fields **' : '';
+    }
+    return warningMessage;
+  }
+
+  citeWarningMessage() {
+    let warningMessage = '';
+    if (this.msel.useCite && !this.msel.citeEvaluationId) {
+      warningMessage = this.mselTeamList.some(t => t.citeTeamTypeId) ?
+        '' : '** WARNING: No teams have a CITE Team Type selected, so no teams will be pushed to CITE! **  ';
+    }
+    return warningMessage;
+  }
+
   pushToCite() {
-    const warningMessage = this.mselTeamList.some(t => t.citeTeamTypeId) ?
-      '' : '** WARNING: No teams have a CITE Team Type selected, so no teams will be pushed to CITE! **  ';
     this.dialogService
       .confirm(
         'Push to CITE',
-        warningMessage + 'Are you sure that you want to push this MSEL to CITE?'
+        this.citeWarningMessage() + 'Are you sure that you want to push this MSEL to CITE?'
       )
       .subscribe((result) => {
         if (result['confirm']) {
