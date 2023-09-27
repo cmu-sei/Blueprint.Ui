@@ -34,7 +34,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </div>
       <div *ngIf="msel" class="scrolling-region">
         <div class="info-detail">
-          <div class="single-detail">
+          <div class="single-detail center-self">
             <mat-form-field class="full-width">
               <input
                 type="text"
@@ -48,7 +48,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
               />
             </mat-form-field>
           </div>
-          <div class="single-detail">
+          <div class="single-detail center-self">
             <mat-form-field class="full-width">
               <input
                 type="text"
@@ -62,18 +62,20 @@ project root for license information or contact permission@sei.cmu.edu for full 
               />
             </mat-form-field>
           </div>
-          <div class="single-detail">
-            <mat-checkbox
-              [(ngModel)]="msel.isTemplate"
-              (cut)="isChanged = true"
-              (change)="isChanged = true"
-              (paste)="isChanged = true"
-              (keypress)="isChanged = true"
-              >Is a Template</mat-checkbox>
+          <div class="single-detail center-self">
+            <div class="sub-detail center-self">
+              <mat-checkbox
+                [(ngModel)]="msel.isTemplate"
+                (cut)="isChanged = true"
+                (change)="isChanged = true"
+                (paste)="isChanged = true"
+                (keypress)="isChanged = true"
+                >Is a Template</mat-checkbox>
+            </div>
           </div>
           <!-- Gallery Integration -->
-          <div class="single-detail">
-            <div class="sub-detail two-cell">
+          <div class="single-detail center-self">
+            <div class="sub-detail center-self three-cell">
               <mat-checkbox
                 [(ngModel)]="msel.useGallery"
                 (cut)="isChanged = true"
@@ -82,7 +84,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 (keypress)="isChanged = true"
               >Integrate Gallery</mat-checkbox>
             </div>
-            <div class="sub-detail five-cell" *ngIf="msel.useGallery">
+            <div class="sub-detail center-self one-cell" *ngIf="msel.useGallery">
               <button
                 (click)="pushToGallery()"
                 title="Push to Gallery"
@@ -90,7 +92,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 *ngIf="!msel.galleryCollectionId"
                 [disabled]="!(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) || galleryToDo() || isChanged"
               ><span *ngIf="isBusy">Pushing to Gallery ...</span><span *ngIf="!isBusy">Push to Gallery</span></button>
-              <span *ngIf="!msel.galleryCollectionId && galleryToDo()" class="gallery-warning">** Unassigned Gallery Article Parameters in Data Fields</span>
               <button
                 (click)="pullFromGallery()"
                 title="Remove from Gallery"
@@ -100,9 +101,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
               >Remove from Gallery</button>
             </div>
           </div>
-          <div *ngIf="!msel.isTemplate && msel.useGallery && msel.galleryExhibitId" class="single-detail">
-            <div class="sub-detail one-cell">&nbsp;</div>
-            <div class="sub-detail four-cell" *ngIf="msel.useGallery && msel.galleryCollectionId">
+          <div *ngIf="galleryWarningMessage()" class="single-detail center-self">
+            <span class="gallery-warning">{{ galleryWarningMessage() }}</span>
+          </div>
+          <div *ngIf="!msel.isTemplate && msel.useGallery && msel.galleryExhibitId" class="single-detail center-self">
+            <div class="sub-detail center-self one-cell">&nbsp;</div>
+            <div class="sub-detail center-self four-cell" *ngIf="msel.useGallery && msel.galleryCollectionId">
               <mat-form-field class="guid-field">
                 <input
                   type="text"
@@ -113,7 +117,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 />
               </mat-form-field>
             </div>
-            <div class="sub-detail four-cell">
+            <div class="sub-detail center-self four-cell">
               <mat-form-field class="guid-field">
                 <input
                   type="text"
@@ -126,8 +130,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
             </div>
           </div>
           <!-- CITE Integration -->
-          <div class="single-detail">
-            <div class="sub-detail center-self two-cell">
+          <div class="single-detail center-self">
+            <div class="sub-detail center-self one-cell">
               <mat-checkbox
                 [(ngModel)]="msel.useCite"
                 (cut)="isChanged = true"
@@ -136,7 +140,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 (keypress)="isChanged = true"
                 >Integrate CITE</mat-checkbox>
             </div>
-            <div class="sub-detail center-self" *ngIf="msel.useCite">
+            <div class="sub-detail center-self two-cell" *ngIf="msel.useCite">
               <mat-form-field class="half-width" *ngIf="scoringModelList.length > 0">
                 <mat-label>Select Scoring Model</mat-label>
                 <mat-select
@@ -165,7 +169,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 />
               </mat-form-field>
               </div>
-            <div class="sub-detail center-self" *ngIf="msel.useCite">
+            <div class="sub-detail center-self one-cell" *ngIf="msel.useCite">
               <button
                 (click)="pushToCite()"
                 title="Push to CITE"
@@ -182,11 +186,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
               >Remove from CITE</button>
             </div>
           </div>
-          <div *ngIf="!msel.isTemplate && msel.useCite && msel.citeEvaluationId" class="single-detail">
-            <div class="sub-detail center-self two-cell">
+          <div *ngIf="citeWarningMessage()" class="single-detail center-self">
+            <span class="gallery-warning">{{ citeWarningMessage() }}</span>
+          </div>
+          <div *ngIf="!msel.isTemplate && msel.useCite && msel.citeEvaluationId" class="single-detail center-self">
+            <div class="sub-detail center-self five-cell">
               &nbsp;
             </div>
-            <div class="sub-detail center-self">
+            <div class="sub-detail center-self four-cell">
               <mat-form-field *ngIf="msel.useCite && msel.citeEvaluationId" class="half-width guid-field">
                 <input
                   type="text"
@@ -199,28 +206,32 @@ project root for license information or contact permission@sei.cmu.edu for full 
             </div>
           </div>
           <!-- Player Integration -->
-          <div class="single-detail">
-            <mat-checkbox
-              [disabled]="true"
-              [(ngModel)]="msel.useSteamfitter"
-              (cut)="isChanged = true"
-              (change)="isChanged = true"
-              (paste)="isChanged = true"
-              (keypress)="isChanged = true"
-              >Integrate Player</mat-checkbox>
+          <div class="single-detail center-self">
+            <div class="sub-detail center-self">
+              <mat-checkbox
+                [disabled]="true"
+                [(ngModel)]="msel.useSteamfitter"
+                (cut)="isChanged = true"
+                (change)="isChanged = true"
+                (paste)="isChanged = true"
+                (keypress)="isChanged = true"
+                >Integrate Player</mat-checkbox>
+            </div>
           </div>
           <!-- Steamfitter Integration -->
-          <div class="single-detail">
-            <mat-checkbox
-              [disabled]="true"
-              [(ngModel)]="msel.useSteamfitter"
-              (cut)="isChanged = true"
-              (change)="isChanged = true"
-              (paste)="isChanged = true"
-              (keypress)="isChanged = true"
-              >Integrate Steamfitter</mat-checkbox>
+          <div class="single-detail center-self">
+            <div class="sub-detail center-self">
+              <mat-checkbox
+                [disabled]="true"
+                [(ngModel)]="msel.useSteamfitter"
+                (cut)="isChanged = true"
+                (change)="isChanged = true"
+                (paste)="isChanged = true"
+                (keypress)="isChanged = true"
+                >Integrate Steamfitter</mat-checkbox>
+            </div>
           </div>
-          <div class="sub-detail">
+          <div class="sub-detail center-self">
             <mat-form-field *ngIf="msel.useSteamfitter" class="full-width">
               <input
                 type="text"
@@ -232,7 +243,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             </mat-form-field>
           </div>
 
-          <div class="single-detail top-margin">
+          <div class="single-detail center-self">
             <mat-form-field class="full-width">
               <mat-label>MSEL Status</mat-label>
               <mat-select
@@ -250,7 +261,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </div>
 
           <div
-            class="single-detail"
+            class="single-detail center-self"
             *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
           >
             <mat-form-field class="full-width">
@@ -266,7 +277,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
               />
             </mat-form-field>
           </div>
-          <div class="single-detail">
+          <div class="single-detail center-self">
             <mat-form-field class="full-width">
               <input
                 type="text"
@@ -277,7 +288,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
               />
             </mat-form-field>
           </div>
-          <div class="single-detail">
+          <div class="single-detail center-self">
             <mat-form-field class="full-width">
               <input
                 type="text"
@@ -288,7 +299,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
               />
             </mat-form-field>
           </div>
-          <div class="single-detail">
+          <div class="single-detail center-self">
             <mat-form-field class="full-width">
               <input
                 type="text"
