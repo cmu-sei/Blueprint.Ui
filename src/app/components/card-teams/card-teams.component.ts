@@ -48,7 +48,7 @@ export class CardTeamsComponent implements OnDestroy, OnInit {
   ) {
     // subscribe to the active MSEL
     (this.mselQuery.selectActive() as Observable<Msel>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
-      this.mselTeamList = msel.teams;
+      this.mselTeamList = msel?.teams;
     });
   }
 
