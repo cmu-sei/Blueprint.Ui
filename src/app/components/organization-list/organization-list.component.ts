@@ -168,12 +168,12 @@ export class OrganizationListComponent implements OnDestroy {
         }
       });
       if (filteredOrganizations && filteredOrganizations.length > 0 && this.filterString) {
-        const filterString = this.filterString.toLowerCase();
+        const filterString = this.filterString?.toLowerCase();
         filteredOrganizations = filteredOrganizations
           .filter((a) =>
-            a.description.toLowerCase().includes(filterString) ||
-            a.summary.toLowerCase().includes(filterString) ||
-            a.name.toLowerCase().includes(filterString)
+            a.description?.toLowerCase().includes(filterString) ||
+            a.summary?.toLowerCase().includes(filterString) ||
+            a.name?.toLowerCase().includes(filterString)
           );
       }
     }
