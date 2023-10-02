@@ -35,6 +35,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       [isContentDeveloper]="isContentDeveloper$ | async"
       [isSystemAdmin]="isSystemAdmin$ | async"
       [userTheme$]="theme$"
+      (deleteThisMsel)="deleteMsel($event)"
     ></app-msel>
   </section>
 

@@ -11,7 +11,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
   >
     <mat-tab label="Config" class="mat-tab">
       <div class="edit-buttons">
-        <span>
+        <span class="edit-buttons-span">
           <button
             mat-icon-button
             (click)="saveChanges()"
@@ -29,6 +29,16 @@ project root for license information or contact permission@sei.cmu.edu for full 
             [disabled]="!isChanged"
           >
             <mat-icon class="mdi-24px self-center" fontIcon="mdi-close"></mat-icon>
+          </button>
+        </span>
+        <span class="delete-span">
+          <button
+            mat-icon-button
+            (click)="deleteMsel()"
+            title="Delete this MSEL"
+            *ngIf="msel.hasRole(this.loggedInUserId, null).owner || isContentDeveloper"
+          >
+            <mat-icon class="mdi-18px" fontIcon="mdi-delete" alt="Delete"></mat-icon>
           </button>
         </span>
       </div>
@@ -150,8 +160,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   (paste)="isChanged = true"
                   (keypress)="isChanged = true"
                 >
-                <mat-option [value]=""></mat-option>
-                <mat-option *ngFor="let scoringModel of scoringModelList" [value]="scoringModel.id">
+                  <mat-option [value]=""></mat-option>
+                  <mat-option *ngFor="let scoringModel of scoringModelList" [value]="scoringModel.id">
                     {{ scoringModel.description }}
                   </mat-option>
                 </mat-select>

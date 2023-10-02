@@ -44,9 +44,12 @@ export class MselListComponent implements OnDestroy, OnInit  {
   isLoading = true;
   areButtonsDisabled = false;
   mselDataSource: MatTableDataSource<MselPlus>;
-  displayedColumns: string[] = ['action', 'name', 'status', 'createdBy', 'dateModified', 'description'];
+  displayedColumns: string[] = ['action', 'name', 'isTemplate', 'status', 'createdBy', 'dateModified', 'description'];
   imageFilePath = '';
   userList: User[] = [];
+  selectedMselType = 'all';
+  selectedMselStatus = 'all';
+  itemStatus = ['Pending', 'Entered', 'Approved', 'Complete'];
   private unsubscribe$ = new Subject();
 
   constructor(
@@ -88,7 +91,7 @@ export class MselListComponent implements OnDestroy, OnInit  {
         Object.assign(mselPlus, msel);
         mselPlusList.push(mselPlus);
       });
-      this.mselDataSource.data = mselPlusList;
+      this.mselList = mselPlusList;
       this.filterMsels();
       this.isLoading = false;
       this.areButtonsDisabled = false;
@@ -203,6 +206,38 @@ export class MselListComponent implements OnDestroy, OnInit  {
   }
 
   filterMsels() {
+    console.log('type=' + this.selectedMselType);
+    let filteredMselList = this.mselList;
+    switch (this.selectedMselType) {
+      case 'is':
+        filteredMselList = filteredMselList.filter(m => m.isTemplate);
+        break;
+      case 'is not':
+        filteredMselList = filteredMselList.filter(m => !m.isTemplate);
+        break;
+      default:
+        filteredMselList = filteredMselList;
+        break;
+    }
+    console.log('status=' + this.selectedMselStatus);
+    switch (this.selectedMselStatus) {
+      case 'Pending':
+        filteredMselList = filteredMselList.filter(m => m.status.toString() === 'Pending');
+        break;
+      case 'Entered':
+        filteredMselList = filteredMselList.filter(m => m.status.toString() === 'Entered');
+        break;
+      case 'Approved':
+        filteredMselList = filteredMselList.filter(m => m.status.toString() === 'Approved');
+        break;
+      case 'Completed':
+        filteredMselList = filteredMselList.filter(m => m.status.toString() === 'Completed');
+        break;
+      default:
+        filteredMselList = filteredMselList;
+        break;
+    }
+    this.mselDataSource.data = filteredMselList;
     const filterValue = this.filterString.toLowerCase().trim(); //  Remove whitespace and MatTableDataSource defaults to lowercase matches
     this.mselDataSource.filter = filterValue;
   }
