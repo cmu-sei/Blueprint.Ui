@@ -48,10 +48,15 @@
   flex-direction: row;
   flex: 4;
   align-self: center;
+  padding-left: 30px;
 }
 
 .search-control {
   width: 75%;
+}
+
+.clear-search-button {
+  align-self: center;
 }
 
 .search-icon {

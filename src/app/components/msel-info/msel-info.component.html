@@ -346,8 +346,17 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </button>
           <button
             mat-icon-button
+            ngxClipboard
+            [cbContent]="basePageUrl + page.id"
+            (click)="$event.stopPropagation()"
+            title="Copy page URL"
+          >
+            <mat-icon class="mdi-24px" fontIcon="mdi-content-copy"></mat-icon>
+          </button>
+          <button
+            mat-icon-button
             (click)="openContent(page.id)"
-            title="Open in new tab"
+            title="Open page in new tab"
             class="far-right-button"
           >
             <mat-icon class="mdi-24px self-center" fontIcon="mdi-open-in-new"></mat-icon>
