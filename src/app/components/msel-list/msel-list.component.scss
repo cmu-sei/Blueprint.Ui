@@ -17,36 +17,37 @@
 .header-div {
   display: flex;
   flex-direction: row;
-  flex: 1;
+  flex: 7;
   border-bottom: 1px solid;
 }
 
 .title-icon {
   transform: scale(0.85);
-  margin-left: 30px;
+  margin-left: 10px;
 }
 
 .msels-title {
   display: flex;
   flex-direction: row;
-  flex: 2;
+  flex: 1;
   font-size: x-large;
   align-self: center;
+  min-width: 125px;
 }
 
 .header-button {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   flex: 1;
   align-self: center;
+  min-width: 125px;
 }
 
 .search-box {
   display: flex;
   flex-direction: row;
-  flex: 6;
+  flex: 4;
   align-self: center;
-  padding-left: 5%;
 }
 
 .search-control {
@@ -128,14 +129,39 @@
   flex: 0 0 20%;
   padding: 1%;
 }
+
 .mat-column-action {
   flex: 0 0 80px;
   flex-direction: row;
   padding: 0;
 }
+
 .mat-column-description {
   flex: 0 0 40%;
   padding: 1%;
+}
+
+.is-template-checkbox {
+  align-items: center;
+  text-align: center;
+  align-self: center;
+  width: 80%;
+}
+
+.mat-column-isTemplate {
+  min-width: 75px;
+}
+
+.mat-column-status {
+  min-width: 70px;
+}
+
+.mat-column-createdBy {
+  min-width: 70px;
+}
+
+.mat-column-dateModified {
+  min-width: 70px;
 }
 
 .app-icon {

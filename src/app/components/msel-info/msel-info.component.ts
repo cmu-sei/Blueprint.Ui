@@ -1,7 +1,7 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, Input, OnDestroy, ViewChild } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, Output, ViewChild } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { TeamQuery } from 'src/app/data/team/team.query';
@@ -36,6 +36,7 @@ import { MselTeamQuery } from 'src/app/data/msel-team/msel-team.query';
 export class MselInfoComponent implements OnDestroy {
   @Input() loggedInUserId: string;
   @Input() isContentDeveloper: boolean;
+  @Output() deleteThisMsel = new EventEmitter<string>();
   msel = new MselPlus();
   originalMsel = new MselPlus();
   expandedScenarioEventIds: string[] = [];
@@ -138,6 +139,12 @@ export class MselInfoComponent implements OnDestroy {
   cancelChanges() {
     this.isChanged = false;
     Object.assign(this.msel, this.originalMsel);
+  }
+
+  deleteMsel() {
+    if (this.msel.hasRole(this.loggedInUserId, null).owner || this.isContentDeveloper) {
+      this.deleteThisMsel.emit(this.msel.id);
+    }
   }
 
   addViewTeamsToMsel() {

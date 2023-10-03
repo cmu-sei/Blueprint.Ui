@@ -18,28 +18,56 @@ project root for license information or contact permission@sei.cmu.edu for full 
     </div>
     <div class="msels-title">My MSELs</div>
     <div class="header-button">
-      <button
-        mat-icon-button
-        (click)="addMsel(); $event.stopPropagation()"
-        style="outline: none; margin-right: 15px;"
-        title="Add blank MSEL"
-        [disabled]="!isContentDeveloper"
-      >
-        <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
-        Blank
-      </button>
+      <div style="width: 100%;">
+        <button
+          mat-icon-button
+          (click)="addMsel(); $event.stopPropagation()"
+          style="outline: none; margin-right: 15px;"
+          title="Add blank MSEL"
+          [disabled]="!isContentDeveloper"
+        >
+          <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
+          Blank
+        </button>
+      </div>
+      <div style="width: 100%;">
+        <button
+          mat-icon-button
+          (click)="uploadFile('', ''); fileInput.click(); $event.stopPropagation();"
+          style="outline: none; margin-right: 15px;"
+          title="Add MSEL from .xlsx file"
+          [disabled]="!isContentDeveloper"
+        >
+          <mat-icon class="mdi-24px self-center" fontIcon="mdi-upload"></mat-icon>
+          Upload
+        </button>
+      </div>
     </div>
     <div class="header-button">
-      <button
-        mat-icon-button
-        (click)="uploadFile('', ''); fileInput.click(); $event.stopPropagation();"
-        style="outline: none; margin-right: 15px;"
-        title="Add MSEL from .xlsx file"
-        [disabled]="!isContentDeveloper"
-      >
-        <mat-icon class="mdi-24px self-center" fontIcon="mdi-upload"></mat-icon>
-        Upload
-      </button>
+      <div style="width: 100%;">
+        <mat-select
+          [(ngModel)]="selectedMselType"
+          (selectionChange)="filterMsels()"
+          style="margin-top: -15px;"
+        >
+          <mat-option value="all">All Types</mat-option>
+          <mat-option value="is">Templates</mat-option>
+          <mat-option value="is not">Not Templates</mat-option>
+        </mat-select>
+      </div>
+      <div style="width: 100%;">
+        <mat-select
+          [(ngModel)]="selectedMselStatus"
+          (selectionChange)="filterMsels()"
+          style="margin-top: 15px;"
+        >
+          <mat-option value="all">All Statuses</mat-option>
+          <mat-option value="Pending">Pending</mat-option>
+          <mat-option value="Entered">Entered</mat-option>
+          <mat-option value="Approved">Approved</mat-option>
+          <mat-option value="Completed">Completed</mat-option>
+        </mat-select>
+      </div>
     </div>
     <div class="search-box">
       <mat-icon
@@ -135,6 +163,15 @@ project root for license information or contact permission@sei.cmu.edu for full 
             [queryParams]="{ msel: element.id }"
             (click)="openMsel(element.id)"
             >{{ element.name }}</a>
+          </div>
+        </mat-cell>
+      </ng-container>
+      <!-- isTemplate Column -->
+      <ng-container matColumnDef="isTemplate">
+        <mat-header-cell *matHeaderCellDef mat-sort-header> Template </mat-header-cell>
+        <mat-cell *matCellDef="let element">
+          <div class="is-template-checkbox">
+            <mat-checkbox [(ngModel)]="element.isTemplate" disabled></mat-checkbox>
           </div>
         </mat-cell>
       </ng-container>

@@ -1,7 +1,7 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, Input, OnDestroy, ViewChild, ViewChildren, QueryList } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, Output, ViewChild, ViewChildren, QueryList } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -40,6 +40,7 @@ export class MselComponent implements OnDestroy {
   @Input() isContentDeveloper: boolean;
   @Input() isSystemAdmin: boolean;
   @Input() userTheme$: Observable<Theme>;
+  @Output() deleteThisMsel = new EventEmitter<string>();
   @ViewChild('tabGroup0', { static: false }) tabGroup0: MatTabGroup;
   @ViewChildren('MatTab') tabs: QueryList<MatTab>;
   tabList: string[] = [
@@ -175,6 +176,11 @@ export class MselComponent implements OnDestroy {
     this.router.navigate([url], {
       queryParamsHandling: 'merge',
     });
+  }
+
+  deleteMsel(id: string) {
+    this.deleteThisMsel.emit(id);
+    this.router.navigate(['/']);
   }
 
   ngOnDestroy() {

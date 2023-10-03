@@ -138,6 +138,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         *ngIf="selectedTab === 'Info'"
         [loggedInUserId]="loggedInUserId"
         [isContentDeveloper]="isContentDeveloper"
+        (deleteThisMsel)="deleteMsel($event)"
       ></app-msel-info>
       <app-msel-roles
         *ngIf="selectedTab === 'Teams'"
