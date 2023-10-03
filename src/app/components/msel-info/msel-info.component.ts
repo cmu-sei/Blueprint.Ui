@@ -65,6 +65,7 @@ export class MselInfoComponent implements OnDestroy {
   };
   isBusy = true;
   dataFieldList: DataField[] = [];
+  basePageUrl = location.origin + '/mselpage/';
 
   constructor(
     public dialogService: DialogService,
@@ -269,8 +270,7 @@ export class MselInfoComponent implements OnDestroy {
   }
 
   openContent(id: string) {
-    const url = location.origin + '/mselpage/' + id;
-    window.open(url);
+    window.open(this.basePageUrl + id);
   }
 
   galleryToDo(): boolean {
