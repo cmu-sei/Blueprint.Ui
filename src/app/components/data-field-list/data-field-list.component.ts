@@ -18,7 +18,6 @@ import { DataFieldDataService } from 'src/app/data/data-field/data-field-data.se
 import { DataFieldQuery } from 'src/app/data/data-field/data-field.query';
 import { DataFieldEditDialogComponent } from '../data-field-edit-dialog/data-field-edit-dialog.component';
 import { DataOptionDataService } from 'src/app/data/data-option/data-option-data.service';
-import { DataOptionEditDialogComponent } from '../data-option-edit-dialog/data-option-edit-dialog.component';
 import { DataOptionQuery } from 'src/app/data/data-option/data-option.query';
 import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
@@ -240,6 +239,24 @@ export class DataFieldListComponent implements OnDestroy {
       todoString = todoList.join(', ');
     }
     return todoString;
+  }
+
+  getUnusedGalleryOptions(parameter: string): string[] {
+    const options = [];
+    this.msel.galleryArticleParameters.forEach(gap => {
+      if (parameter === gap || !this.dataFieldList.some(df => df.galleryArticleParameter === gap)) {
+        options.push(gap);
+      }
+    });
+    return options;
+  }
+
+  compareIntegrationValues(a: any, b: any) {
+    if ((!a && !b) || a === b) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   ngOnDestroy() {
