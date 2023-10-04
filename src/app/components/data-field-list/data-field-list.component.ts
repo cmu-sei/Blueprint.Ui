@@ -103,7 +103,7 @@ export class DataFieldListComponent implements OnDestroy {
         isContentDeveloper: this.isContentDeveloper,
         isOwner: this.msel.hasRole(this.loggedInUserId, null).owner,
         dataFieldOptions: this.dataOptionList.filter(x => x.dataFieldId === dataField.id),
-        galleryArticleParameters: this.msel.galleryArticleParameters,
+        galleryArticleParameters: this.getUnusedGalleryOptions(dataField.galleryArticleParameter),
         useGallery: this.msel.useGallery,
         useCite: this.msel.useCite,
         dataFieldTypes: this.dataFieldTypes

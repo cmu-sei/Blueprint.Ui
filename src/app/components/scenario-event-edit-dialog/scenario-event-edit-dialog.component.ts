@@ -49,7 +49,7 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
   selectedTab = 0;
   private tabSections = new Map([
     ['default', 0],
-    ['additional', 1]
+    ['advanced', 1]
   ]);
   private tabCount = 2;
   currentFilterBy = 'default';
@@ -64,14 +64,14 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
 
   ngOnInit() {
     if (this.data.isNew) {
-      this.sortedDataFields = this.getFilteredDataFields('additional');
-      this.selectedTab = this.tabSections.get('additional');
+      this.sortedDataFields = this.getFilteredDataFields('advanced');
+      this.selectedTab = this.tabSections.get('advanced');
     } else {
       this.sortedDataFields = this.getFilteredDataFields('default');
       this.selectedTab = this.tabSections.get('default');
     }
     if (this.data.useGallery) {
-      this.tabSections.set('additional', this.tabCount++);
+      this.tabSections.set('advanced', this.tabCount++);
       this.tabSections.set('gallery', this.tabCount);
     }
   }
@@ -151,7 +151,7 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
       case 'gallery':
         filteredList = this.data.dataFields.filter(x => !!x.galleryArticleParameter);
         break;
-      case 'additional':
+      case 'advanced':
         filteredList = this.data.dataFields.filter(x => x.isInitiallyHidden && !x.galleryArticleParameter);
         break;
     }
