@@ -3,6 +3,7 @@
 // project root for license information.
 import { Component, Input, OnDestroy, ViewChild } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
+import { MatTableDataSource } from '@angular/material/table';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -46,6 +47,9 @@ export class OrganizationListComponent implements OnDestroy {
   templateOrganizations: Organization[] = [];
   showTemplates = false;
   editingId = '';
+  organizationDataSource = new MatTableDataSource<Organization>(new Array<Organization>());
+  templateDataSource = new MatTableDataSource<Organization>(new Array<Organization>());
+  displayedColumns: string[] = ['action', 'shortname', 'name', 'summary'];
   private unsubscribe$ = new Subject();
 
   constructor(
@@ -150,8 +154,8 @@ export class OrganizationListComponent implements OnDestroy {
 
   sortChanged(sort: Sort) {
     this.sort = sort;
-    this.sortedOrganizations = this.getSortedOrganizations(this.getFilteredOrganizations(this.msel.id, this.organizationList));
-    this.templateOrganizations = this.getSortedOrganizations(this.getFilteredOrganizations(null, this.organizationList));
+    this.organizationDataSource.data = this.getSortedOrganizations(this.getFilteredOrganizations(this.msel.id, this.organizationList));
+    this.templateDataSource.data = this.getSortedOrganizations(this.getFilteredOrganizations(null, this.organizationList));
   }
 
   ngOnDestroy() {
@@ -171,8 +175,8 @@ export class OrganizationListComponent implements OnDestroy {
         const filterString = this.filterString?.toLowerCase();
         filteredOrganizations = filteredOrganizations
           .filter((a) =>
-            a.description?.toLowerCase().includes(filterString) ||
             a.summary?.toLowerCase().includes(filterString) ||
+            a.shortName?.toLowerCase().includes(filterString) ||
             a.name?.toLowerCase().includes(filterString)
           );
       }
@@ -191,8 +195,8 @@ export class OrganizationListComponent implements OnDestroy {
       case 'name':
         return ( (a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1) * (isAsc ? 1 : -1) );
         break;
-      case 'description':
-        return ( (a.description.toLowerCase() < b.description.toLowerCase() ? -1 : 1) * (isAsc ? 1 : -1) );
+      case 'shortname':
+        return ( (a.shortName.toLowerCase() < b.shortName.toLowerCase() ? -1 : 1) * (isAsc ? 1 : -1) );
         break;
       case 'summary':
         return ( (a.summary.toLowerCase() < b.summary.toLowerCase() ? -1 : 1) * (isAsc ? 1 : -1) );
