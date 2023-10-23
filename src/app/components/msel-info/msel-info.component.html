@@ -159,6 +159,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   (selectionChange)="isChanged = true"
                   (paste)="isChanged = true"
                   (keypress)="isChanged = true"
+                  [disabled]="msel.citeEvaluationId"
                 >
                   <mat-option [value]=""></mat-option>
                   <mat-option *ngFor="let scoringModel of scoringModelList" [value]="scoringModel.id">
