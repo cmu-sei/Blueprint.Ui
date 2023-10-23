@@ -65,7 +65,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     *ngIf="!sideNavCollapsed"
   >
     <mat-list [ngClass]="getSidebarClass()">
-      <mat-list-item class="top-item background">
+      <mat-list-item class="top-item background" (click)="tabChange('Back')">
         <div class="lefticon">
           <button mat-icon-button title="Return to MSEL list" (click)="tabChange('Back')">
             <mat-icon
@@ -76,7 +76,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </button>
         </div>
         <div class="application-name" *ngIf="!sideNavCollapsed">
-          MSEL List
+          back to My MSELs
         </div>
         <div *ngIf="!sideNavCollapsed">
          &nbsp;
