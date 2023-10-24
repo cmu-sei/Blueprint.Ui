@@ -100,7 +100,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     class="mat-elevation-z2 mat-header-row"
   >
     <div class="mat-header-cell user-cell" mat-sort-header="name"><span style="margin-left: 80px;">User</span></div>
-    <div class="mat-header-cell permission-cell" *ngFor="let permission of permissionList" mat-sort-header="{{ permission.id }}">{{ permission.key }}</div>
+    <div class="mat-header-cell permission-cell" *ngFor="let permission of permissionList" mat-sort-header="{{ permission.id }}" title="{{ getPermissionTooltip(permission.key) }}">{{ permission.key }}</div>
   </section>
 
   <mat-expansion-panel
