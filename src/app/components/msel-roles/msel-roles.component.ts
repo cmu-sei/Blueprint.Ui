@@ -42,7 +42,16 @@ export class MselRolesComponent implements OnDestroy {
   expandedSectionIds: string[] = [];
   sortedScenarioEvents: ScenarioEvent[];
   sortedDataFields: DataField[];
-  mselRoles: MselRole[] = [MselRole.Editor, MselRole.Approver, MselRole.MoveEditor, MselRole.Owner, MselRole.Facilitator, MselRole.Viewer];
+  mselRoles: MselRole[] = [
+    MselRole.Editor,
+    MselRole.Approver,
+    MselRole.MoveEditor,
+    MselRole.Owner,
+    MselRole.Facilitator,
+    MselRole.Viewer,
+    MselRole.GalleryObserver,
+    MselRole.CiteObserver
+  ];
   isEditEnabled = false;
   userList: User[] = [];
   mselTeamList: MselTeam[] = [];
@@ -192,6 +201,24 @@ export class MselRolesComponent implements OnDestroy {
 
   trackByFn(index, item) {
     return item.id;
+  }
+
+  getMselRolesToDisplay(): MselRole[] {
+    const mselRoles = [];
+    this.mselRoles.forEach(mr => {
+      if (mr.startsWith('Cite')) {
+        if (this.msel.useCite) {
+          mselRoles.push(mr);
+        }
+      } else if (mr.startsWith('Gallery')) {
+        if (this.msel.useGallery) {
+          mselRoles.push(mr);
+        }
+      } else {
+        mselRoles.push(mr);
+      }
+    });
+    return mselRoles;
   }
 
   ngOnDestroy() {
