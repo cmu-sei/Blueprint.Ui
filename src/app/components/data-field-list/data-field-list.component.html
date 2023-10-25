@@ -21,11 +21,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </button>
       Order
     </span>
-    <span class="mat-header-cell one-cell">Display On<br />Injects&nbsp;&nbsp;&nbsp;&nbsp;Exercise View</span>
+    <span class="mat-header-cell one-cell">Display On<br />Events&nbsp;&nbsp;&nbsp;&nbsp;Exercise View</span>
     <span class="mat-header-cell two-cell" mat-sort-header="name">Name</span>
     <span class="mat-header-cell one-cell" mat-sort-header="dataType">Data Type</span>
-    <span class="mat-header-cell one-cell" mat-sort-header="integration">
-      <span class="integration">Integration
+    <span class="mat-header-cell two-cell" mat-sort-header="integration">
+      <span class="integration-header">Integration
         <span class="gallery-warning" *ngIf="!!galleryToDo()" title="** See warning message below!">
           **
         </span>
@@ -99,16 +99,17 @@ project root for license information or contact permission@sei.cmu.edu for full 
         </div>
         <div class="mat-cell two-cell center-self">{{ item.name }}</div>
         <div class="mat-cell one-cell center-self">{{ item.dataType }}</div>
-        <div class="mat-cell one-cell center-self">
+        <div class="mat-cell two-cell center-self">
           <mat-select
             class="integration"
             [(ngModel)]="item.galleryArticleParameter"
             (selectionChange)="saveChange(item)"
             (click)="$event.stopPropagation();"
             [disabled]="!isContentDeveloper && !msel.hasRole(this.loggedInUserId, null).owner"
+            [compareWith]="compareIntegrationValues"
           >
-            <mat-option value=""></mat-option>
-            <mat-option *ngFor="let parameter of msel.galleryArticleParameters" value="{{ parameter }}">{{ parameter }}</mat-option>
+            <mat-option value="">- - -</mat-option>
+            <mat-option *ngFor="let option of getUnusedGalleryOptions(item.galleryArticleParameter)" value="{{ option }}">Gallery {{ option }}</mat-option>
           </mat-select>
         </div>
         <div class="mat-cell two-cell center-self">{{ getDataOptionsString(item.id) }}</div>

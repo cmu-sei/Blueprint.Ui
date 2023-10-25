@@ -143,7 +143,20 @@ export class AdminUsersComponent implements OnDestroy {
     return isValidUuid(this.newUser.id) && this.newUser.name && this.newUser.name.length > 2;
   }
 
-
+  getPermissionTooltip(permission: string): string {
+    let tooltip = '';
+    switch (permission) {
+      case 'SystemAdmin':
+        tooltip = 'A System Admin has permission to modify everything within this application';
+        break;
+      case 'ContentDeveloper':
+        tooltip = 'A Content Developer has permission to modify everything within this application, EXCEPT for these user permissions';
+        break;
+      default:
+        break;
+    }
+    return tooltip;
+  }
 
   ngOnDestroy() {
     this.unsubscribe$.next(null);

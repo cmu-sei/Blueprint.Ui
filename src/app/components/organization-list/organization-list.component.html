@@ -48,92 +48,131 @@ project root for license information or contact permission@sei.cmu.edu for full 
   </section>
 
   <section class="scrolling-region">
-    <section class="cards cssLayoutRowStartStretch">
-      <mat-card class="card" *ngFor="let org of sortedOrganizations">
-        <mat-card-header>
-          <mat-card-title class="org-title">{{ org.name }}</mat-card-title>
-          <mat-card-subtitle>{{org.shortName}}</mat-card-subtitle>
-        </mat-card-header>
-        <mat-card-actions
-          class="action-buttons"
-          *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
-        >
-          <button
-            mat-icon-button
-            class="organization-button"
-            title="Edit this organization"
-            (click)="addOrEditOrganization(org, false)"
-          >
-            <mat-icon class="mdi-24px" fontIcon="mdi-square-edit-outline"></mat-icon>
-          </button>
-          <button
-            mat-icon-button
-            class="organization-button"
-            title="Create a template from this organization"
-            (click)="addOrEditOrganization(org, true)"
-            *ngIf="isContentDeveloper"
-          >
-            <mat-icon class="mdi-24px" fontIcon="mdi-bank-outline"></mat-icon>
-          </button>
-          <button
-            mat-icon-button
-            class="organization-button"
-            (click)="deleteOrganization(org); $event.stopPropagation()"
-            title="Delete {{ org.name }}"
-          >
-            <mat-icon class="mdi-24px" fontIcon="mdi-delete"></mat-icon>
-          </button>
-        </mat-card-actions>
-        <mat-card-content class="org-text" contenteditable="false">
-          {{org.summary}}
-        </mat-card-content>
-      </mat-card>
-    </section>
+    <div class="mat-table">
+      <mat-table #table [dataSource]="organizationDataSource" matSort (matSortChange)="sortChanged($event)">
+        <!-- action column -->
+        <ng-container matColumnDef="action">
+          <mat-header-cell *matHeaderCellDef class="mat-column-action"></mat-header-cell>
+          <mat-cell *matCellDef="let element" class="mat-column-action">
+            <div class="action-div">
+              <button
+                mat-icon-button class="msel-action"
+                (click)="addOrEditOrganization(element, false); $event.stopPropagation();"
+                title="Edit {{ element.name }}"
+                *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
+              >
+                <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline" alt="Edit {{ element.name }}"></mat-icon>
+              </button>
+              <button
+                mat-icon-button class="msel-action"
+                (click)="deleteOrganization(element); $event.stopPropagation();"
+                title="Delete {{ element.name }}"
+                *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
+              >
+                <mat-icon class="mdi-18px" fontIcon="mdi-delete" alt="Delete {{ element.name }}"></mat-icon>
+              </button>
+              <button
+                mat-icon-button class="msel-action"
+                (click)="addOrEditOrganization(element, true); $event.stopPropagation();"
+                title="Make {{ element.name }} a template"
+                *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
+              >
+                <mat-icon class="mdi-18px" fontIcon="mdi-bank" alt="Make {{ element.name }} a template"></mat-icon>
+              </button>
+            </div>
+          </mat-cell>
+        </ng-container>
+        <!-- short name Column -->
+        <ng-container matColumnDef="shortname">
+          <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-shortname">
+            Short Name
+          </mat-header-cell>
+          <mat-cell *matCellDef="let element" class="mat-column-shortname">
+            {{ element.shortName }}
+          </mat-cell>
+        </ng-container>
+        <!-- name Column -->
+        <ng-container matColumnDef="name">
+          <mat-header-cell *matHeaderCellDef mat-sort-header class="mat-column-name">
+            Name
+          </mat-header-cell>
+          <mat-cell *matCellDef="let element" class="mat-column-name">
+            {{ element.name }}
+          </mat-cell>
+        </ng-container>
+        <!-- summary Column -->
+        <ng-container matColumnDef="summary">
+          <mat-header-cell *matHeaderCellDef mat-sort-header class="six-cell"> Summary </mat-header-cell>
+          <mat-cell *matCellDef="let element" class="six-cell">
+            <div class="summary-text">{{ element.summary }}</div>
+          </mat-cell>
+        </ng-container>
+        <!-- row definitions -->
+        <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+        <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
+      </mat-table>
+      <!-- No Results Message -->
+      <div class="text no-results" *ngIf="organizationDataSource?.filteredData.length === 0">No results found</div>
+    </div>
     <span *ngIf="showTemplates">
-      <hr />
-      <h1>Templates</h1>
-      <section class="cards cssLayoutRowSpaceStretch">
-        <mat-card class="card" *ngFor="let org of templateOrganizations">
-          <mat-card-header>
-            <mat-card-title>{{ org.name }}</mat-card-title>
-            <mat-card-subtitle>{{ org.shortName }}</mat-card-subtitle>
-          </mat-card-header>
-          <mat-card-actions
-            class="action-buttons"
-            *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
-          >
-            <button
-              mat-icon-button
-              class="organization-button"
-              title="Edit this template"
-              (click)="addOrEditOrganization(org, true)"
-              *ngIf="isContentDeveloper"
-            >
-              <mat-icon class="mdi-24px" fontIcon="mdi-square-edit-outline"></mat-icon>
-            </button>
-            <button
-              mat-icon-button
-              class="organization-button"
-              title="Add to MSEL organizations"
-              (click)="addOrEditOrganization(org, false)"
-            >
-              <mat-icon class="mdi-24px" fontIcon="mdi-bank-plus"></mat-icon>
-            </button>
-            <button
-              mat-icon-button
-              class="organization-button"
-              (click)="deleteOrganization(org); $event.stopPropagation()"
-              title="Delete this template"
-              *ngIf="isContentDeveloper"
-            >
-              <mat-icon class="mdi-24px" fontIcon="mdi-delete"></mat-icon>
-            </button>
-          </mat-card-actions>
-          <mat-card-content class="org-text" contenteditable="false">
-            {{ org.summary }}
-          </mat-card-content>
-        </mat-card>
-      </section>
+      <div class="template-title"><h1>Templates</h1></div>
+      <div class="mat-table">
+        <mat-table #table [dataSource]="templateDataSource" matSort>
+          <!-- action column -->
+          <ng-container matColumnDef="action">
+            <mat-cell *matCellDef="let element" class="mat-column-action">
+              <div class="action-div">
+                <button
+                  mat-icon-button class="msel-action"
+                  (click)="addOrEditOrganization(element, true); $event.stopPropagation();"
+                  title="Edit {{ element.name }}"
+                  *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
+                >
+                  <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline" alt="Edit {{ element.name }}"></mat-icon>
+                </button>
+                <button
+                  mat-icon-button class="msel-action"
+                  (click)="deleteOrganization(element); $event.stopPropagation();"
+                  title="Delete {{ element.name }}"
+                  *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
+                >
+                  <mat-icon class="mdi-18px" fontIcon="mdi-delete" alt="Delete {{ element.name }}"></mat-icon>
+                </button>
+                <button
+                  mat-icon-button class="msel-action"
+                  (click)="addOrEditOrganization(element, false); $event.stopPropagation();"
+                  title="Make an organization from {{ element.name }}"
+                  *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
+                >
+                  <mat-icon class="mdi-18px" fontIcon="mdi-bank-plus" alt="Make an organization from {{ element.name }}"></mat-icon>
+                </button>
+              </div>
+            </mat-cell>
+          </ng-container>
+          <!-- short name Column -->
+          <ng-container matColumnDef="shortname">
+            <mat-cell *matCellDef="let element" class="mat-column-shortname">
+              {{ element.shortName }}
+            </mat-cell>
+          </ng-container>
+          <!-- name Column -->
+          <ng-container matColumnDef="name">
+            <mat-cell *matCellDef="let element" class="mat-column-name">
+              {{ element.name }}
+            </mat-cell>
+          </ng-container>
+          <!-- summary Column -->
+          <ng-container matColumnDef="summary">
+            <mat-cell *matCellDef="let element" class="six-cell">
+              <div class="summary-text">{{ element.summary }}</div>
+            </mat-cell>
+          </ng-container>
+          <!-- row definitions -->
+          <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
+        </mat-table>
+        <!-- No Results Message -->
+        <div class="text no-results" *ngIf="templateDataSource?.filteredData.length === 0">No results found</div>
+      </div>
     </span>
   </section>
 </div>
