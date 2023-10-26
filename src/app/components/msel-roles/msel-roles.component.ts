@@ -186,6 +186,10 @@ export class MselRolesComponent implements OnDestroy {
 
   setTeamType(mselTeam: MselTeam, value: string) {
     mselTeam.citeTeamTypeId = value;
+    this.saveMselTeam(mselTeam);
+  }
+
+  saveMselTeam(mselTeam: MselTeam) {
     this.mselTeamDataService.updateMselTeam(mselTeam);
   }
 

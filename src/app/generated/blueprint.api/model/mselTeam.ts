@@ -28,4 +28,5 @@ export interface MselTeam {
     teamId?: string;
     team?: Team;
     citeTeamTypeId?: string;
+    email?: string;
 }

@@ -50,6 +50,19 @@ project root for license information or contact permission@sei.cmu.edu for full 
             </mat-select>
           </mat-form-field>
         </div>
+        <div class="team-detail" *ngIf="msel.useCite">
+          <mat-form-field class="button-margins half-width">
+            <mat-label>Team Email</mat-label>
+            <input
+              type="text"
+              matInput
+              placeholder="Header Row Metadata (Height)"
+              [(ngModel)]="mselTeam.email"
+              (blur)="saveMselTeam(mselTeam)"
+              title="Team Email"
+            />
+          </mat-form-field>
+        </div>
       </mat-expansion-panel>
     </div>
   </div>
