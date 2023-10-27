@@ -66,6 +66,7 @@ export class MselInfoComponent implements OnDestroy {
   isBusy = true;
   dataFieldList: DataField[] = [];
   basePageUrl = location.origin + '/mselpage/';
+  pushStatus = '';
 
   constructor(
     public dialogService: DialogService,
@@ -93,9 +94,14 @@ export class MselInfoComponent implements OnDestroy {
         }
       }
     });
-    //
+    // subscribe to MSEL loading flag
     this.mselQuery.selectLoading().pipe(takeUntil(this.unsubscribe$)).subscribe(isLoading => {
       this.isBusy = isLoading;
+    });
+    // subscribe to MSEL push statuses
+    this.mselDataService.mselPushStatuses.pipe(takeUntil(this.unsubscribe$)).subscribe(mselPushStatuses => {
+      const mselPushStatus = mselPushStatuses.find(mps => mps.mselId === this.msel.id);
+      this.pushStatus = mselPushStatus ? mselPushStatus.pushStatus : '';
     });
     // subscribe to users
     this.userDataService.users.pipe(takeUntil(this.unsubscribe$)).subscribe(users => {
@@ -179,6 +185,7 @@ export class MselInfoComponent implements OnDestroy {
       .subscribe((result) => {
         if (result['confirm']) {
           this.mselDataService.pushToCite(this.msel.id);
+          this.pushStatus = 'Pushing to CITE';
         }
       });
   }
@@ -205,6 +212,7 @@ export class MselInfoComponent implements OnDestroy {
       .subscribe((result) => {
         if (result['confirm']) {
           this.mselDataService.pushToGallery(this.msel.id);
+          this.pushStatus = 'Pushing to Gallery';
         }
       });
   }

@@ -88,11 +88,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <div class="sub-detail center-self three-cell">
               <mat-checkbox
                 [(ngModel)]="msel.useGallery"
+                [disabled]="!!msel.galleryExhibitId"
                 (cut)="isChanged = true"
                 (change)="isChanged = true"
                 (paste)="isChanged = true"
                 (keypress)="isChanged = true"
-              >Integrate Gallery</mat-checkbox>
+              ></mat-checkbox>&nbsp;&nbsp;Integrate Gallery
             </div>
             <div class="sub-detail center-self one-cell" *ngIf="msel.useGallery">
               <button
@@ -100,8 +101,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 title="Push to Gallery"
                 class="thin-button"
                 *ngIf="!msel.galleryCollectionId"
-                [disabled]="!(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) || galleryToDo() || isChanged"
-              ><span *ngIf="isBusy">Pushing to Gallery ...</span><span *ngIf="!isBusy">Push to Gallery</span></button>
+                [disabled]="!(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) || galleryToDo() || isBusy || isChanged"
+              ><span *ngIf="isBusy && pushStatus.endsWith('Gallery')">{{ pushStatus }} ...</span><span *ngIf="!isBusy || !pushStatus.endsWith('Gallery')">Push to Gallery</span></button>
               <button
                 (click)="pullFromGallery()"
                 title="Remove from Gallery"
@@ -144,11 +145,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <div class="sub-detail center-self one-cell">
               <mat-checkbox
                 [(ngModel)]="msel.useCite"
+                [disabled]="!!msel.citeEvaluationId"
                 (cut)="isChanged = true"
                 (change)="isChanged = true"
                 (paste)="isChanged = true"
                 (keypress)="isChanged = true"
-                >Integrate CITE</mat-checkbox>
+                ></mat-checkbox>&nbsp;&nbsp;Integrate CITE
             </div>
             <div class="sub-detail center-self two-cell" *ngIf="msel.useCite">
               <mat-form-field class="half-width" *ngIf="scoringModelList.length > 0">
@@ -187,7 +189,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 class="thin-button"
                 *ngIf="!msel.citeEvaluationId"
                 [disabled]="!(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) || !msel.citeScoringModelId || isBusy || isChanged"
-              ><span *ngIf="isBusy">Pushing to CITE ...</span><span *ngIf="!isBusy">Push to CITE</span></button>
+              ><span *ngIf="isBusy && pushStatus.endsWith('CITE')">{{ pushStatus }} ...</span><span *ngIf="!isBusy || !pushStatus.endsWith('CITE')">Push to CITE</span></button>
               <button
                 (click)="pullFromCite()"
                 title="Remove from CITE"
@@ -275,7 +277,10 @@ project root for license information or contact permission@sei.cmu.edu for full 
             class="single-detail center-self"
             *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
           >
-            <mat-form-field class="full-width">
+            <mat-form-field
+              class="full-width"
+              title="A numeric value that defines the height of the header row when this MSEL is exported as an xlsx file"
+            >
               <input
                 type="text"
                 matInput
@@ -285,7 +290,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 (change)="isChanged = true"
                 (paste)="isChanged = true"
                 (keypress)="isChanged = true"
-                title="An integer value that defines the height of the header row when this MSEL is exported as an xlsx file"
               />
             </mat-form-field>
           </div>

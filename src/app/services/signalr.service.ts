@@ -206,6 +206,10 @@ export class SignalRService {
     this.hubConnection.on('MselDeleted', (id: string) => {
       this.mselDataService.deleteFromStore(id);
     });
+
+    this.hubConnection.on('MselPushStatusChange', (mselPushStatus: string) => {
+      this.mselDataService.mselPushStatusChange(mselPushStatus);
+    });
   }
 
   private addMselTeamHandlers() {

@@ -12,7 +12,6 @@ import {
   Card,
   DataField,
   DataFieldType,
-  DataValue,
   ItemStatus,
   Move,
   Msel,
@@ -23,8 +22,13 @@ import {
   UserMselRole
 } from 'src/app/generated/blueprint.api';
 import { map, take, tap } from 'rxjs/operators';
-import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, combineLatest } from 'rxjs';
 import { ErrorService } from 'src/app/services/error/error.service';
+
+export interface MselPushStatus {
+  mselId: string;
+  pushStatus: string;
+}
 
 @Injectable({
   providedIn: 'root',
@@ -118,6 +122,8 @@ export class MselDataService {
   readonly pageEvent = new BehaviorSubject<PageEvent>(this._pageEvent);
   private pageSize: Observable<number>;
   private pageIndex: Observable<number>;
+  public mselPushStatuses = new Subject<Array<MselPushStatus>>();
+  private _mselPushStatuses = new Array<MselPushStatus>();
 
   constructor(
     private mselStore: MselStore,
@@ -374,6 +380,22 @@ export class MselDataService {
       (error) => {
         this.mselStore.setLoading(false);
       });
+  }
+
+  mselPushStatusChange(mselPushStatus: string) {
+    let notFound = true;
+    const parts = mselPushStatus.split(',');
+    const newPushStatus = {mselId: parts[0], pushStatus: parts[1]};
+    this._mselPushStatuses.forEach(mps => {
+      if (mps.mselId === newPushStatus.mselId) {
+        mps.pushStatus = newPushStatus.pushStatus;
+        notFound = false;
+      }
+    });
+    if (notFound) {
+      this._mselPushStatuses.push(newPushStatus);
+    }
+    this.mselPushStatuses.next(this._mselPushStatuses);
   }
 
   delete(id: string) {
