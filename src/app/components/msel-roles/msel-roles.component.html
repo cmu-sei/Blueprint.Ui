@@ -24,7 +24,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         </mat-expansion-panel-header>
         <div class="team-detail" *ngFor="let user of getMselTeamUsers(mselTeam.teamId)">
           <div class="user-name four-cell">{{ user.name }}</div>
-          <div class="msel-role one-cell" *ngFor="let mselRole of mselRoles">
+          <div class="msel-role one-cell" *ngFor="let mselRole of getMselRolesToDisplay()">
             <mat-checkbox
               [checked]="hasMselRole(user.id, mselRole)"
               (change)="toggleMselRole(user.id, mselRole, $event.checked)"
@@ -48,6 +48,19 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 {{ teamType.name }}
               </mat-option>
             </mat-select>
+          </mat-form-field>
+        </div>
+        <div class="team-detail" *ngIf="msel.useCite">
+          <mat-form-field class="button-margins half-width">
+            <mat-label>Team Email</mat-label>
+            <input
+              type="text"
+              matInput
+              placeholder="Header Row Metadata (Height)"
+              [(ngModel)]="mselTeam.email"
+              (blur)="saveMselTeam(mselTeam)"
+              title="Team Email"
+            />
           </mat-form-field>
         </div>
       </mat-expansion-panel>
