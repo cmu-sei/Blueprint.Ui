@@ -565,6 +565,11 @@ export class ScenarioEventListComponent implements OnDestroy {
     }
   }
 
+  setHiddenScenarioEvent(scenarioEvent: ScenarioEvent, value: boolean) {
+    scenarioEvent.isHidden = value;
+    this.scenarioEventDataService.updateScenarioEvent(scenarioEvent);
+  }
+
   deleteScenarioEvent(scenarioEvent: ScenarioEvent): void {
     this.dialogService
       .confirm(
