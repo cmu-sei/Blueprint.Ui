@@ -56,6 +56,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                       mat-menu-item
                       (click)="addScenarioEvent()"
                       title="Add an event"
+                      [disabled]="selectedEventIdList.length > 0"
                     >
                       Add new event
                     </button>
@@ -74,6 +75,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                       mat-menu-item
                       (click)="addScenarioEvent()"
                       title="Add an event"
+                      [disabled]="selectedEventIdList.length > 0"
                     >
                       Add new event
                     </button>
@@ -211,6 +213,26 @@ project root for license information or contact permission@sei.cmu.edu for full 
                     Delete
                   </button>
                 </mat-menu>
+                <button
+                  mat-icon-button
+                  *ngIf="!item.isHidden"
+                  class="scenario-event-button"
+                  (click)="setHiddenScenarioEvent(item, true)"
+                  title="Hide this event on the Exercise View"
+                  [disabled]="selectedEventIdList.length > 0"
+                >
+                  <mat-icon class="mdi-24px up-12" fontIcon="mdi-eye-outline"></mat-icon>
+                </button>
+                <button
+                  mat-icon-button
+                  *ngIf="item.isHidden"
+                  class="scenario-event-button"
+                  (click)="setHiddenScenarioEvent(item, false)"
+                  title="Unhide this event on the Exercise View"
+                  [disabled]="selectedEventIdList.length > 0"
+                >
+                  <mat-icon class="mdi-24px up-12" fontIcon="mdi-eye-off-outline"></mat-icon>
+                </button>
                 <span class="row-index center-self">{{ item.rowIndex }}</span>
               </div>
             </td>
@@ -358,7 +380,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                     placeholder="Move"
                   >
                     <mat-option value="''"> - - - </mat-option>
-                    <mat-option *ngFor="let move of moveList" [value]="move.moveNumber">{{ move.moveNumber }} - {{ move.title }}</mat-option>
+                    <mat-option *ngFor="let move of moveList" [value]="move.moveNumber" title="{{ move.title }}">{{ move.moveNumber }}</mat-option>
                   </mat-select>
                 </div>
               </td>

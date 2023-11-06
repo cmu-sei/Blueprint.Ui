@@ -29,5 +29,6 @@ export interface ScenarioEvent {
     mselId?: string;
     dataValues?: Array<DataValue>;
     rowIndex?: number;
+    isHidden?: boolean;
     rowMetadata?: string;
 }

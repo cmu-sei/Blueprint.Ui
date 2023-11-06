@@ -250,7 +250,7 @@ export class MselListComponent implements OnDestroy, OnInit  {
 
   getUserName(userId: string) {
     const user = this.userList.find(u => u.id === userId);
-    return user ? user.name : 'unknown';
+    return user ? user.name : 'System';
   }
 
   ngOnDestroy() {
