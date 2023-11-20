@@ -59,7 +59,7 @@ export class ScenarioEventListComponent implements OnDestroy {
   expandedMoreScenarioEventIds: string[] = [];
   filteredScenarioEventList: ScenarioEventPlus[] = [];
   filterString = '';
-  sort: Sort = { active: 'rowIndex', direction: 'asc' };
+  sort: Sort = { active: 'deltaSeconds', direction: 'asc' };
   sortedScenarioEvents: ScenarioEventPlus[] = [];
   sortedDataFields: DataField[] = [];
   sortedDataOptions: DataOption[] = [];
@@ -100,6 +100,7 @@ export class ScenarioEventListComponent implements OnDestroy {
   private subscription: Subscription;
   selectedEventIdList: string[] = [];
   showSearch = false;
+  showRealTime = false;
 
   constructor(
     private router: Router,
@@ -214,7 +215,7 @@ export class ScenarioEventListComponent implements OnDestroy {
           .sort((a: ScenarioEventPlus, b: ScenarioEventPlus) => this.sortScenarioEvents(a, b));
       } else {
         sortedScenarioEvents = (scenarioEvents as ScenarioEventPlus[])
-          .sort((a, b) => +a.rowIndex > +b.rowIndex ? 1 : -1);
+          .sort((a, b) => +a.deltaSeconds > +b.deltaSeconds ? 1 : -1);
       }
     }
     return sortedScenarioEvents;
@@ -391,14 +392,14 @@ export class ScenarioEventListComponent implements OnDestroy {
 
   private sortScenarioEvents(a: ScenarioEventPlus, b: ScenarioEventPlus): number {
     const dir = this.sort.direction === 'desc' ? -1 : 1;
-    if (!this.sort.direction || this.sort.active === 'rowIndex') {
-      this.sort = { active: 'rowIndex', direction: 'asc' };
-      return +a.rowIndex < +b.rowIndex ? -dir : dir;
+    if (!this.sort.direction || this.sort.active === 'deltaSeconds') {
+      this.sort = { active: 'deltaSeconds', direction: 'asc' };
+      return +a.deltaSeconds < +b.deltaSeconds ? -dir : dir;
     } else {
       const aValue = this.getDataValue(a, this.sort.active).value?.toString().toLowerCase();
       const bValue = this.getDataValue(b, this.sort.active).value?.toString().toLowerCase();
       if (aValue === bValue) {
-        return +a.rowIndex < +b.rowIndex ? -dir : dir;
+        return +a.deltaSeconds < +b.deltaSeconds ? -dir : dir;
       } else {
         return aValue < bValue ? -dir : dir;
       }
@@ -573,8 +574,8 @@ export class ScenarioEventListComponent implements OnDestroy {
   deleteScenarioEvent(scenarioEvent: ScenarioEvent): void {
     this.dialogService
       .confirm(
-        'Delete Event #' + scenarioEvent.rowIndex,
-        'Are you sure that you want to delete event #' + scenarioEvent.rowIndex + '?'
+        'Delete Event',
+        'Are you sure that you want to delete this event?'
       )
       .subscribe((result) => {
         if (result['confirm']) {
@@ -686,7 +687,7 @@ export class ScenarioEventListComponent implements OnDestroy {
     } else if (dataField.dataType.toString() === 'DateTime') {
       return 'width: max-content';
     } else {
-      return 'text-align: left; width: ' + Math.trunc( 100 / this.sortedDataFields.length) + 'vh;';
+      return 'text-align: left; width: 90%; min-width: 40px;';
       // return 'width: 100%;';
     }
   }
@@ -747,6 +748,46 @@ export class ScenarioEventListComponent implements OnDestroy {
       this.applyFilter('');
     }
     this.showSearch = value;
+  }
+
+  getDeltaTime(deltaSeconds: number) {
+    // <span *ngIf="item.deltaSeconds > 86400">{{ getDays(item.deltaSeconds) }} </span>{{ item.deltaSeconds * 1000 | date:'hh:mm:ss' }}
+    let timeString = '';
+    // get the number of days
+    if (deltaSeconds > 86400) {
+      const days = Math.floor(deltaSeconds / 86400);
+      deltaSeconds = deltaSeconds % 86400;
+      timeString = days + ' ';
+    }
+    // get the number of hours
+    const hours = Math.floor(deltaSeconds / 3600);
+    if (hours < 10) {
+      timeString = timeString + '0' + hours + ':';
+    } else {
+      timeString = timeString + hours + ':';
+    }
+    deltaSeconds = deltaSeconds % 3600;
+    // get the number of minutes
+    const minutes = Math.floor(deltaSeconds / 60);
+    if (minutes < 10) {
+      timeString = timeString + '0' + minutes + ':';
+    } else {
+      timeString = timeString + minutes + ':';
+    }
+    // get the number of seconds
+    const seconds = deltaSeconds % 60;
+    if (seconds < 10) {
+      timeString = timeString + '0' + seconds;
+    } else {
+      timeString = timeString + seconds;
+    }
+    return timeString;
+  }
+
+  getDate(deltaSeconds: number) {
+    const startDate = new Date(this.msel.startTime);
+    const scenarioEventDate = startDate.setSeconds(startDate.getSeconds() + deltaSeconds);
+    return new Date(scenarioEventDate).toLocaleString();
   }
 
   ngOnDestroy() {

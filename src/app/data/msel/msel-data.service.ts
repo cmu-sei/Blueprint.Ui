@@ -52,6 +52,7 @@ export class MselPlus implements Msel {
   useSteamfitter?: boolean;
   steamfitterScenarioId?: string;
   isTemplate?: boolean;
+  startTime?: Date;
   moves?: Array<Move>;
   dataFields?: Array<DataField>;
   scenarioEvents?: Array<ScenarioEvent>;
