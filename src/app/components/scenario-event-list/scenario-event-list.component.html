@@ -36,7 +36,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <th class="background">
             <div class="header-row-start">
               <div class="header-buttons">
-                <span *ngIf="(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)">
+                <span *ngIf="(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)" style="margin-left: 34px;">
                   <mat-checkbox
                     (change)="setAllSelectedState($event.checked)"
                     title="Select All/None"
@@ -44,7 +44,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   ></mat-checkbox>
                   <button
                     mat-icon-button
-                    style="outline: none;"
+                    style="outline: none; width: 30px;"
                     title="Action List"
                     [matMenuTriggerFor]="addEventList"
                     *ngIf="selectedEventIdList.length === 0"
@@ -63,7 +63,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   </mat-menu>
                   <button
                     mat-icon-button
-                    style="outline: none;"
+                    style="outline: none; width: 30px;"
                     title="Action List"
                     [matMenuTriggerFor]="bulkEventList"
                     *ngIf="selectedEventIdList.length > 0"
@@ -117,7 +117,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   <button
                     mat-icon-button
                     (click)="setSearch(true)"
-                    style="outline: none;"
+                    style="outline: none; width: 30px;"
                     title="Search Events"
                     *ngIf="!showSearch"
                   >
@@ -126,7 +126,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   <button
                     mat-icon-button
                     (click)="setSearch(false)"
-                    style="outline: none;"
+                    style="outline: none; width: 30px;"
                     title="Clear Search"
                     *ngIf="showSearch"
                   >
@@ -168,6 +168,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <tr [style]="getRowStyle(item)">
             <td class="center-self">
               <div class="row-start-buttons">
+                <span class="row-index center-self">{{ rowIndex  + 1 }}</span>
                 <mat-checkbox
                   [checked]="getSelectedState(item.id)"
                   (change)="setSelectedState(item.id, $event.checked)"
@@ -255,9 +256,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 >
                   <mat-icon class="mdi-24px up-12" fontIcon="mdi-eye-off-outline"></mat-icon>
                 </button>
-                <span class="row-index center-self">{{ rowIndex  + 1 }}</span>
-                <span class="center-self" *ngIf="!showRealTime">{{ getDeltaTime(item.deltaSeconds) }}</span>
-                <span class="center-self" *ngIf="showRealTime">{{ getDate(item.deltaSeconds) }}</span>
+                <span class="time-span center-self" *ngIf="!showRealTime">{{ getDeltaTime(item.deltaSeconds) }}</span>
+                <span class="time-span center-self" *ngIf="showRealTime">{{ getDate(item.deltaSeconds) }}</span>
               </div>
             </td>
             <ng-container *ngFor="let df of sortedDataFields">
