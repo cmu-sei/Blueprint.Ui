@@ -43,7 +43,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
               [ngxMatDatetimePicker]="eventStartTimePicker"
               placeholder="Start Date / Time"
               [formControl]="eventStartTimeFormControl"
-              (change)="setDeltaValues()"
+              (change)="timeUpdated()"
               >
             <mat-datepicker-toggle
               matSuffix
@@ -59,7 +59,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
               [enableMeridian]=true
               [disableMinute]=false
               [hideTime]=false
-              (close)="setDeltaValues()">
+              (closed)="timeUpdated()">
             </ngx-mat-datetime-picker>
           </mat-form-field>
         </div>

@@ -176,22 +176,24 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
   }
 
   getDateFromDeltaSeconds(deltaSeconds: number): Date {
-    const startDate = new Date(this.data.mselStartTime);
-    return new Date(startDate.getTime() + (deltaSeconds * 1000));
+    const mselStartTime = new Date(this.data.mselStartTime);
+    return new Date(mselStartTime.getTime() + (deltaSeconds * 1000));
+  }
+
+  getDeltaSecondsFromDate() {
+    const scenarioEventValue = this.eventStartTimeFormControl.value;
+    const scenarioEventSeconds = scenarioEventValue.getTime() / 1000;
+    const startValue = new Date(this.data.mselStartTime);
+    const startSeconds = startValue.getTime() / 1000;
+    return scenarioEventSeconds - startSeconds;
   }
 
   setDeltaValues() {
-    const newValue = this.eventStartTimeFormControl.value;
-    const newSeconds = newValue.getTime() / 1000;
-    const startValue = new Date(this.data.mselStartTime);
-    const startSeconds = startValue.getTime() / 1000;
-    let deltaSeconds = newSeconds - startSeconds;
+    let deltaSeconds = this.getDeltaSecondsFromDate();
     this.data.scenarioEvent.deltaSeconds = deltaSeconds;
     // get the number of days
-    if (deltaSeconds > 86400) {
-      this.days = Math.floor(deltaSeconds / 86400);
-      deltaSeconds = deltaSeconds % 86400;
-    }
+    this.days = Math.floor(deltaSeconds / 86400);
+    deltaSeconds = deltaSeconds % 86400;
     // get the number of hours
     this.hours = Math.floor(deltaSeconds / 3600);
     deltaSeconds = deltaSeconds % 3600;
@@ -228,6 +230,11 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
     }
     this.data.scenarioEvent.deltaSeconds = this.calculateDeltaSeconds();
     this.eventStartTimeFormControl.setValue(this.getDateFromDeltaSeconds(this.data.scenarioEvent.deltaSeconds));
+  }
+
+  timeUpdated() {
+    this.data.scenarioEvent.deltaSeconds = this.getDeltaSecondsFromDate();
+    this.setDeltaValues();
   }
 
   ngOnDestroy() {
