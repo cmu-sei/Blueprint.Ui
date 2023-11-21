@@ -67,6 +67,7 @@ export class MselInfoComponent implements OnDestroy {
   dataFieldList: DataField[] = [];
   basePageUrl = location.origin + '/mselpage/';
   pushStatus = '';
+  savedStartTime: Date;
 
   constructor(
     public dialogService: DialogService,
@@ -92,6 +93,7 @@ export class MselInfoComponent implements OnDestroy {
           this.mselPageDataService.loadByMsel(msel.id);
           this.newMselPage.mselId = msel.id;
         }
+        this.savedStartTime = new Date(msel.startTime);
       }
     });
     // subscribe to MSEL loading flag
@@ -289,6 +291,12 @@ export class MselInfoComponent implements OnDestroy {
       hasToDos = todoList.length > 0;
     }
     return hasToDos;
+  }
+
+  startTimeCheck() {
+    if (this.msel.startTime.toLocaleString() !== this.savedStartTime.toLocaleString()) {
+      this.isChanged = true;
+    }
   }
 
   ngOnDestroy() {

@@ -14,6 +14,9 @@ import { Sort } from '@angular/material/sort';
 import { ScenarioEventPlus, DataValuePlus } from 'src/app/data/scenario-event/scenario-event-data.service';
 import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
+import {
+  UntypedFormControl,
+} from '@angular/forms';
 
 @Component({
   selector: 'app-scenario-event-edit-dialog',
@@ -53,6 +56,14 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
   ]);
   private tabCount = 2;
   currentFilterBy = 'default';
+  eventStartTimeFormControl = new UntypedFormControl(
+    this.getDateFromDeltaSeconds(this.data.scenarioEvent.deltaSeconds),
+    []
+  );
+  days = 0;
+  hours = 0;
+  minutes = 0;
+  seconds = 0;
 
   constructor(
     public dialogService: DialogService,
@@ -74,6 +85,7 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
       this.tabSections.set('advanced', this.tabCount++);
       this.tabSections.set('gallery', this.tabCount);
     }
+    this.setDeltaValues();
   }
 
   trackByFn(index, item) {
@@ -161,6 +173,61 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
 
   hasBadData(): boolean {
     return false;
+  }
+
+  getDateFromDeltaSeconds(deltaSeconds: number): Date {
+    const startDate = new Date(this.data.mselStartTime);
+    return new Date(startDate.getTime() + (deltaSeconds * 1000));
+  }
+
+  setDeltaValues() {
+    const newValue = this.eventStartTimeFormControl.value;
+    const newSeconds = newValue.getTime() / 1000;
+    const startValue = new Date(this.data.mselStartTime);
+    const startSeconds = startValue.getTime() / 1000;
+    let deltaSeconds = newSeconds - startSeconds;
+    this.data.scenarioEvent.deltaSeconds = deltaSeconds;
+    // get the number of days
+    if (deltaSeconds > 86400) {
+      this.days = Math.floor(deltaSeconds / 86400);
+      deltaSeconds = deltaSeconds % 86400;
+    }
+    // get the number of hours
+    this.hours = Math.floor(deltaSeconds / 3600);
+    deltaSeconds = deltaSeconds % 3600;
+    // get the number of minutes
+    this.minutes = Math.floor(deltaSeconds / 60);
+    deltaSeconds = deltaSeconds % 60;
+    // get the number of seconds
+    this.seconds = +deltaSeconds;
+  }
+
+  calculateDeltaSeconds() {
+    return this.days * 86400 + this.hours * 3600 + this.minutes * 60 + this.seconds;
+  }
+
+  deltaUpdated(event: any, whichValue: string) {
+    let setValue = +event.target.value;
+    switch (whichValue) {
+      case 'd':
+        setValue = setValue < 0 ? 0 : setValue;
+        this.days = setValue;
+        break;
+      case 'h':
+        setValue = setValue < 0 ? 0 : setValue > 23 ? 23 : setValue;
+        this.hours = setValue;
+        break;
+      case 'm':
+        setValue = setValue < 0 ? 0 : setValue > 59 ? 59 : setValue;
+        this.minutes = setValue;
+        break;
+      case 's':
+        setValue = setValue < 0 ? 0 : setValue > 59 ? 59 : setValue;
+        this.seconds = setValue;
+        break;
+    }
+    this.data.scenarioEvent.deltaSeconds = this.calculateDeltaSeconds();
+    this.eventStartTimeFormControl.setValue(this.getDateFromDeltaSeconds(this.data.scenarioEvent.deltaSeconds));
   }
 
   ngOnDestroy() {

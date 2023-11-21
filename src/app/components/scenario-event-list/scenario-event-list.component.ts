@@ -492,7 +492,8 @@ export class ScenarioEventListComponent implements OnDestroy {
         useCite: this.msel.useCite,
         useGallery: this.msel.useGallery,
         useSteamfitter: this.msel.useSteamfitter,
-        userList: this.mselUsers
+        userList: this.mselUsers,
+        mselStartTime: this.msel.startTime
       },
     });
     dialogRef.componentInstance.editComplete.subscribe((result) => {
@@ -786,8 +787,8 @@ export class ScenarioEventListComponent implements OnDestroy {
 
   getDate(deltaSeconds: number) {
     const startDate = new Date(this.msel.startTime);
-    const scenarioEventDate = startDate.setSeconds(startDate.getSeconds() + deltaSeconds);
-    return new Date(scenarioEventDate).toLocaleString();
+    const scenarioEventDate = new Date(startDate.getTime() + deltaSeconds * 1000);
+    return scenarioEventDate.toLocaleString();
   }
 
   ngOnDestroy() {
