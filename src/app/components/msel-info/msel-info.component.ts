@@ -70,12 +70,6 @@ export class MselInfoComponent implements OnDestroy {
   pushStatus = '';
   savedStartTime: Date;
   savedDurationSeconds = 0;
-  endTimeFormControl = new UntypedFormControl();
-  days = 0;
-  hours = 0;
-  minutes = 0;
-  seconds = 0;
-
   constructor(
     public dialogService: DialogService,
     private teamQuery: TeamQuery,
@@ -102,8 +96,6 @@ export class MselInfoComponent implements OnDestroy {
         }
         this.savedStartTime = new Date(msel.startTime);
         this.savedDurationSeconds = msel.durationSeconds;
-        this.endTimeFormControl.setValue(this.getDateFromDurationSeconds(msel.durationSeconds));
-        this.setDeltaValues();
       }
     });
     // subscribe to MSEL loading flag
@@ -307,76 +299,6 @@ export class MselInfoComponent implements OnDestroy {
     if (this.msel.startTime.toLocaleString() !== this.savedStartTime.toLocaleString()) {
       this.isChanged = true;
     }
-  }
-
-  durationSecondsCheck() {
-    if (this.savedDurationSeconds !== this.msel.durationSeconds) {
-      this.isChanged = true;
-    }
-  }
-
-  getDateFromDurationSeconds(durationSeconds: number): Date {
-    const startTime = new Date(this.msel.startTime);
-    return new Date(startTime.getTime() + (durationSeconds * 1000));
-  }
-
-  getDurationSecondsFromDate() {
-    const endTimeValue = this.endTimeFormControl.value;
-    const endTimeSeconds = endTimeValue.getTime() / 1000;
-    const startValue = new Date(this.msel.startTime);
-    const startSeconds = startValue.getTime() / 1000;
-    return endTimeSeconds - startSeconds;
-  }
-
-  setDeltaValues() {
-    let durationSeconds = this.getDurationSecondsFromDate();
-    this.msel.durationSeconds = durationSeconds;
-    // get the number of days
-    this.days = Math.floor(durationSeconds / 86400);
-    durationSeconds = durationSeconds % 86400;
-    // get the number of hours
-    this.hours = Math.floor(durationSeconds / 3600);
-    durationSeconds = durationSeconds % 3600;
-    // get the number of minutes
-    this.minutes = Math.floor(durationSeconds / 60);
-    durationSeconds = durationSeconds % 60;
-    // get the number of seconds
-    this.seconds = +durationSeconds;
-  }
-
-  calculateDurationSeconds() {
-    return this.days * 86400 + this.hours * 3600 + this.minutes * 60 + this.seconds;
-  }
-
-  deltaUpdated(event: any, whichValue: string) {
-    let setValue = +event.target.value;
-    switch (whichValue) {
-      case 'd':
-        setValue = setValue < 0 ? 0 : setValue;
-        this.days = setValue;
-        break;
-      case 'h':
-        setValue = setValue < 0 ? 0 : setValue > 23 ? 23 : setValue;
-        this.hours = setValue;
-        break;
-      case 'm':
-        setValue = setValue < 0 ? 0 : setValue > 59 ? 59 : setValue;
-        this.minutes = setValue;
-        break;
-      case 's':
-        setValue = setValue < 0 ? 0 : setValue > 59 ? 59 : setValue;
-        this.seconds = setValue;
-        break;
-    }
-    this.msel.durationSeconds = this.calculateDurationSeconds();
-    this.endTimeFormControl.setValue(this.getDateFromDurationSeconds(this.msel.durationSeconds));
-    this.durationSecondsCheck();
-  }
-
-  timeUpdated() {
-    this.msel.durationSeconds = this.getDurationSecondsFromDate();
-    this.setDeltaValues();
-    this.durationSecondsCheck();
   }
 
   ngOnDestroy() {

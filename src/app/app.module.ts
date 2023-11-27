@@ -98,6 +98,7 @@ import { DisplayOrderPipe, SortByPipe } from 'src/app/utilities/sort-by-pipe';
 import { QuillModule } from 'ngx-quill';
 import { PlainTextPipe } from './utilities/plain-text-pipe';
 import { NgxMatDatetimePickerModule, NgxMatTimepickerModule, NgxMatNativeDateModule } from '@angular-material-components/datetime-picker';
+import { OffsetDateTimeComponent } from './components/shared/offset-date-time/offset-date-time.component';
 
 const settings: ComnSettingsConfig = {
   url: 'assets/config/settings.json',
@@ -144,7 +145,8 @@ export function getBasePath(settingsSvc: ComnSettingsService) {
     TopbarComponent,
     DisplayOrderPipe,
     SortByPipe,
-    PlainTextPipe
+    PlainTextPipe,
+    OffsetDateTimeComponent
   ],
   imports: [
     AkitaNgDevtools,
