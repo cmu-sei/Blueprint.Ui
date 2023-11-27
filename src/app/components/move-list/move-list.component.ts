@@ -35,6 +35,7 @@ export class MoveListComponent implements OnDestroy {
   displayedMoves: Move[] = [];
   isAddingMove = false;
   editingId = '';
+  showRealTime = false;
 
   private unsubscribe$ = new Subject();
   // context menu
@@ -78,15 +79,12 @@ export class MoveListComponent implements OnDestroy {
   addOrEditMove(move: Move) {
     let editMove: Move = {};
     if (!move) {
-      const moveTime = new Date();
       editMove = {
         moveNumber: this.moveList.length,
-        title: '',
-        moveStartTime: moveTime,
-        moveStopTime: moveTime,
+        deltaSeconds: 0,
         description: '',
         situationDescription: '',
-        situationTime: moveTime,
+        situationTime: new Date(),
         mselId: this.msel.id
       };
     } else {
@@ -97,7 +95,8 @@ export class MoveListComponent implements OnDestroy {
     const dialogRef = this.dialog.open(MoveEditDialogComponent, {
       width: '800px',
       data: {
-        move: editMove
+        move: editMove,
+        mselStartTime: this.msel.startTime
       },
     });
     dialogRef.componentInstance.editComplete.subscribe((result) => {
@@ -150,14 +149,8 @@ export class MoveListComponent implements OnDestroy {
       case 'moveNumber':
         return ( (+a.moveNumber < +b.moveNumber ? -1 : 1) * (isAsc ? 1 : -1) );
         break;
-      case 'title':
-        return ( (a.title < b.title ? -1 : 1) * (isAsc ? 1 : -1) );
-        break;
-      case 'moveStartTime':
-        return ( (a.moveStartTime < b.moveStartTime ? -1 : 1) * (isAsc ? 1 : -1) );
-        break;
-      case 'moveStopTime':
-        return ( (a.moveStopTime < b.moveStopTime ? -1 : 1) * (isAsc ? 1 : -1) );
+      case 'deltaSeconds':
+        return ( (a.deltaSeconds < b.deltaSeconds ? -1 : 1) * (isAsc ? 1 : -1) );
         break;
       case 'situationTime':
         return ( (a.situationTime < b.situationTime ? -1 : 1) * (isAsc ? 1 : -1) );
@@ -182,13 +175,64 @@ export class MoveListComponent implements OnDestroy {
         const filterString = this.filterString.toLowerCase();
         filteredMoves = filteredMoves
           .filter((a) =>
-            a.title.toLowerCase().includes(filterString) ||
-              a.description.toLowerCase().includes(filterString) ||
-              a.situationDescription.toLowerCase().includes(filterString)
+            a.description.toLowerCase().includes(filterString) ||
+            a.situationDescription.toLowerCase().includes(filterString)
           );
       }
     }
     return filteredMoves;
+  }
+
+  getDeltaTime(deltaSeconds: number) {
+    // <span *ngIf="item.deltaSeconds > 86400">{{ getDays(item.deltaSeconds) }} </span>{{ item.deltaSeconds * 1000 | date:'hh:mm:ss' }}
+    let timeString = '';
+    // get the number of days
+    if (deltaSeconds > 86400) {
+      const days = Math.floor(deltaSeconds / 86400);
+      deltaSeconds = deltaSeconds % 86400;
+      timeString = days + ' ';
+    }
+    // get the number of hours
+    const hours = Math.floor(deltaSeconds / 3600);
+    if (hours < 10) {
+      timeString = timeString + '0' + hours + ':';
+    } else {
+      timeString = timeString + hours + ':';
+    }
+    deltaSeconds = deltaSeconds % 3600;
+    // get the number of minutes
+    const minutes = Math.floor(deltaSeconds / 60);
+    if (minutes < 10) {
+      timeString = timeString + '0' + minutes + ':';
+    } else {
+      timeString = timeString + minutes + ':';
+    }
+    // get the number of seconds
+    const seconds = deltaSeconds % 60;
+    if (seconds < 10) {
+      timeString = timeString + '0' + seconds;
+    } else {
+      timeString = timeString + seconds;
+    }
+    return timeString;
+  }
+
+  getDate(deltaSeconds: number) {
+    const startDate = new Date(this.msel.startTime);
+    const scenarioEventDate = new Date(startDate.getTime() + deltaSeconds * 1000);
+    return scenarioEventDate.toLocaleString();
+  }
+
+  badMoveTimeOrder(): boolean {
+    const orderedMoves = this.moveList.sort((a, b) => +a.moveNumber < +b.moveNumber ? -1 : 1);
+    let deltaSeconds = -1;
+    for (let index = 0; index < orderedMoves.length; index++) {
+      if (+orderedMoves[index].deltaSeconds <= +deltaSeconds) {
+        return true;
+      }
+      deltaSeconds = orderedMoves[index].deltaSeconds;
+    }
+    return false;
   }
 
   ngOnDestroy() {

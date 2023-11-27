@@ -24,10 +24,8 @@ export interface Move {
     modifiedBy?: string;
     id?: string;
     moveNumber?: number;
-    title?: string;
     description?: string;
-    moveStartTime?: Date;
-    moveStopTime?: Date;
+    deltaSeconds?: number;
     situationTime?: Date;
     situationDescription?: string;
     mselId?: string;

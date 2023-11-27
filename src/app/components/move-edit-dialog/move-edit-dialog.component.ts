@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, EventEmitter, Inject, Output } from '@angular/core';
+import { Component, EventEmitter, Inject, OnInit, Output } from '@angular/core';
 import {
   UntypedFormControl,
   FormGroupDirective,
@@ -31,21 +31,21 @@ const MIN_NAME_LENGTH = 3;
   styleUrls: ['./move-edit-dialog.component.scss'],
 })
 
-export class MoveEditDialogComponent {
+export class MoveEditDialogComponent implements OnInit {
   @Output() editComplete = new EventEmitter<any>();
 
   public situationDateFormControl = new UntypedFormControl(
     this.data.move.situationTime,
     []
   );
-  public moveStartTimeFormControl = new UntypedFormControl(
-    this.data.move.moveStartTime,
+  moveStartTimeFormControl = new UntypedFormControl(
+    this.getDateFromDeltaSeconds(this.data.move.deltaSeconds),
     []
   );
-  public moveStopTimeFormControl = new UntypedFormControl(
-    this.data.move.moveStopTime,
-    []
-  );
+  days = 0;
+  hours = 0;
+  minutes = 0;
+  seconds = 0;
   editorStyle = {
     'min-height': '100px',
     'max-height': '400px',
@@ -60,6 +60,10 @@ export class MoveEditDialogComponent {
     dialogRef.disableClose = true;
   }
 
+  ngOnInit() {
+    this.setDeltaValues();
+  }
+
   saveMove(which: string) {
     let timeParts: string[];
     switch (which) {
@@ -71,10 +75,6 @@ export class MoveEditDialogComponent {
       case 'moveStartTime':
         const moveStartTime = this.moveStartTimeFormControl.value;
         this.data.move.moveStartTime = moveStartTime;
-        break;
-      case 'moveStopTime':
-        const moveStopTime = this.moveStopTimeFormControl.value;
-        this.data.move.moveStopTime = moveStopTime;
         break;
       default:
         break;
@@ -93,6 +93,68 @@ export class MoveEditDialogComponent {
         move: this.data.move,
       });
     }
+  }
+
+  getDateFromDeltaSeconds(deltaSeconds: number): Date {
+    const mselStartTime = new Date(this.data.mselStartTime);
+    return new Date(mselStartTime.getTime() + (deltaSeconds * 1000));
+  }
+
+  getDeltaSecondsFromDate() {
+    const moveValue = this.moveStartTimeFormControl.value;
+    const moveSeconds = moveValue.getTime() / 1000;
+    const startValue = new Date(this.data.mselStartTime);
+    const startSeconds = startValue.getTime() / 1000;
+    return moveSeconds - startSeconds;
+  }
+
+  setDeltaValues() {
+    let deltaSeconds = this.getDeltaSecondsFromDate();
+    this.data.move.deltaSeconds = deltaSeconds;
+    // get the number of days
+    this.days = Math.floor(deltaSeconds / 86400);
+    deltaSeconds = deltaSeconds % 86400;
+    // get the number of hours
+    this.hours = Math.floor(deltaSeconds / 3600);
+    deltaSeconds = deltaSeconds % 3600;
+    // get the number of minutes
+    this.minutes = Math.floor(deltaSeconds / 60);
+    deltaSeconds = deltaSeconds % 60;
+    // get the number of seconds
+    this.seconds = +deltaSeconds;
+  }
+
+  calculateDeltaSeconds() {
+    return this.days * 86400 + this.hours * 3600 + this.minutes * 60 + this.seconds;
+  }
+
+  deltaUpdated(event: any, whichValue: string) {
+    let setValue = +event.target.value;
+    switch (whichValue) {
+      case 'd':
+        setValue = setValue < 0 ? 0 : setValue;
+        this.days = setValue;
+        break;
+      case 'h':
+        setValue = setValue < 0 ? 0 : setValue > 23 ? 23 : setValue;
+        this.hours = setValue;
+        break;
+      case 'm':
+        setValue = setValue < 0 ? 0 : setValue > 59 ? 59 : setValue;
+        this.minutes = setValue;
+        break;
+      case 's':
+        setValue = setValue < 0 ? 0 : setValue > 59 ? 59 : setValue;
+        this.seconds = setValue;
+        break;
+    }
+    this.data.move.deltaSeconds = this.calculateDeltaSeconds();
+    this.moveStartTimeFormControl.setValue(this.getDateFromDeltaSeconds(this.data.move.deltaSeconds));
+  }
+
+  timeUpdated() {
+    this.data.move.deltaSeconds = this.getDeltaSecondsFromDate();
+    this.setDeltaValues();
   }
 
 }

@@ -26,56 +26,23 @@ project root for license information.
         </mat-form-field>
       </div>
     </div>
-    <div class="add-margin">
-      <div>
-        <mat-form-field class="full-width">
-          <input type="text" matInput [(ngModel)]="data.move.title" placeholder="Title">
-        </mat-form-field>
-      </div>
-    </div>
-    <div class="add-margin">
-      <mat-form-field>
-        <input
-          matInput
-          [ngxMatDatetimePicker]="moveStartTimePicker"
-          placeholder="Start Date / Time"
-          [formControl]="moveStartTimeFormControl"
-          (inputChange)="saveMove('moveStartTime')"
-          (dateChange)="saveMove('moveStartTime')"
-          >
-        <mat-datepicker-toggle
-          matSuffix
-          [for]="$any(moveStartTimePicker)">
-        </mat-datepicker-toggle>
-        <ngx-mat-datetime-picker #moveStartTimePicker
-          [showSpinners]=true
-          [showSeconds]=true
-          [stepHour]=1
-          [stepMinute]=1
-          [stepSecond]=1
-          [touchUi]=false
-          [enableMeridian]=true
-          [disableMinute]=false
-          [hideTime]=false>
-        </ngx-mat-datetime-picker>
-      </mat-form-field>
-    </div>
-    <div class="add-margin">
-      <div>
+    <!-- move start time (deltaSeconds) -->
+    <div class="add-margin flex-row">
+      <div class="date-time-picker">
         <mat-form-field>
           <input
+            class="date-time-picker"
             matInput
-            [ngxMatDatetimePicker]="moveStopTimePicker"
-            placeholder="Stop Date / Time"
-            [formControl]="moveStopTimeFormControl"
-            (inputChange)="saveMove('moveStopTime')"
-            (dateChange)="saveMove('moveStopTime')"
+            [ngxMatDatetimePicker]="eventStartTimePicker"
+            placeholder="Start Date / Time"
+            [formControl]="moveStartTimeFormControl"
+            (change)="timeUpdated()"
             >
           <mat-datepicker-toggle
             matSuffix
-            [for]="$any(moveStopTimePicker)">
+            [for]="$any(eventStartTimePicker)">
           </mat-datepicker-toggle>
-          <ngx-mat-datetime-picker #moveStopTimePicker
+          <ngx-mat-datetime-picker #eventStartTimePicker
             [showSpinners]=true
             [showSeconds]=true
             [stepHour]=1
@@ -84,11 +51,42 @@ project root for license information.
             [touchUi]=false
             [enableMeridian]=true
             [disableMinute]=false
-            [hideTime]=false>
+            [hideTime]=false
+            (closed)="timeUpdated()">
           </ngx-mat-datetime-picker>
         </mat-form-field>
       </div>
+      <div>
+        <span style="margin-left: 20px; margin-right: 20px;"> or </span>
+        <mat-form-field class="two-digits">
+          <input matInput  [value]="days" placeholder="d" type="number" min="0" step="1"
+            (change)="deltaUpdated($event, 'd')"
+          />
+        </mat-form-field>&nbsp;
+        <mat-form-field class="two-digits">
+          <input matInput  [value]="('0' + hours).slice(-2)" placeholder="h" type="number" min="0" max="23" step="1"
+            onchange="if(parseInt(this.value,10)<10)this.value='0'+this.value;"
+            (change)="deltaUpdated($event, 'h')"
+          />
+        </mat-form-field>:
+        <mat-form-field class="two-digits">
+          <input matInput  [value]="('0' + minutes).slice(-2)" placeholder="m" type="number" min="0" max="59" step="1"
+            onchange="if(parseInt(this.value,10)<10)this.value='0'+this.value;"
+            (change)="deltaUpdated($event, 'm')"
+          />
+        </mat-form-field>:
+        <mat-form-field class="two-digits">
+          <input matInput  [value]="('0' + seconds).slice(-2)" placeholder="s" type="number" min="0" max="59" step="1"
+            onchange="if(parseInt(this.value,10)<10)this.value='0'+this.value;"
+            (change)="deltaUpdated($event, 's')"
+          />
+        </mat-form-field>
+        <span style="margin-left: 10px;">from start</span>
+      </div>
     </div>
+
+
+
     <div class="add-margin">
       <div>
         <mat-form-field class="full-width">
@@ -96,7 +94,6 @@ project root for license information.
         </mat-form-field>
       </div>
     </div>
-
     <div class="add-margin">
       <div>
         <mat-form-field>
