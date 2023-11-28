@@ -97,8 +97,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
           &nbsp;{{ item.moveNumber }}
         </div>
         <span style="width: 40px;">&nbsp;</span>
-        <div class="mat-cell one-cell center-self" *ngIf="!showRealTime">{{ getDeltaTime(item.deltaSeconds) }}</div>
-        <div class="mat-cell one-cell center-self" *ngIf="showRealTime">{{ getDate(item.deltaSeconds) }}</div>
+        <div class="mat-cell one-cell center-self">
+          <app-duration-view
+            [startTime]="msel.startTime"
+            [durationSeconds]="item.deltaSeconds"
+            [showRealTime]="showRealTime"
+          ></app-duration-view>
+        </div>
         <div class="mat-cell one-cell center-self">{{ item.situationTime | date: 'MM/dd/yyyy HH:mm' }}</div>
         <div class="mat-cell four-cell center-self">{{ item.description }}</div>
       </mat-expansion-panel-header>

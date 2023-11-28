@@ -105,14 +105,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
               </ngx-mat-datetime-picker>
             </mat-form-field>
           </div>
-          <app-offset-date-time
+          <app-duration-edit
             [startTime]="msel.startTime"
             [(durationSeconds)]="msel.durationSeconds"
             [timeName]="'End Date / Time'"
             [postScript]="'from start'"
             (change)="isChanged = true;"
           >
-          </app-offset-date-time>
+          </app-duration-edit>
           <div class="single-detail center-self">
             <div class="sub-detail center-self">
               <mat-checkbox

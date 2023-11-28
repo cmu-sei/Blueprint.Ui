@@ -3,19 +3,19 @@
 // project root for license information.
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { OffsetDateTimeComponent } from './offset-date-time.component';
+import { DurationEditComponent } from './duration-edit.component';
 
-describe('OffsetDateTimeComponent', () => {
-  let component: OffsetDateTimeComponent;
-  let fixture: ComponentFixture<OffsetDateTimeComponent>;
+describe('DurationEditComponent', () => {
+  let component: DurationEditComponent;
+  let fixture: ComponentFixture<DurationEditComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ OffsetDateTimeComponent ]
+      declarations: [ DurationEditComponent ]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(OffsetDateTimeComponent);
+    fixture = TestBed.createComponent(DurationEditComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

@@ -28,13 +28,13 @@ project root for license information.
     </div>
     <!-- move start time (deltaSeconds) -->
     <div class="add-margin flex-row">
-      <app-offset-date-time
+      <app-duration-edit
         [startTime]="data.mselStartTime"
         [(durationSeconds)]="data.move.deltaSeconds"
         [timeName]="'Start Date / Time'"
         [postScript]="'from start'"
       >
-      </app-offset-date-time>
+      </app-duration-edit>
     </div>
     <div class="add-margin">
       <div>

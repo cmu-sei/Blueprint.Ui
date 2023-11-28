@@ -6,11 +6,11 @@ import { UntypedFormControl } from '@angular/forms';
 
 
 @Component({
-  selector: 'app-offset-date-time',
-  templateUrl: './offset-date-time.component.html',
-  styleUrls: ['./offset-date-time.component.scss']
+  selector: 'app-duration-edit',
+  templateUrl: './duration-edit.component.html',
+  styleUrls: ['./duration-edit.component.scss']
 })
-export class OffsetDateTimeComponent implements OnChanges {
+export class DurationEditComponent implements OnChanges {
   @Input() startTime: Date;
   @Input()
   get durationSeconds() {

@@ -256,8 +256,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 >
                   <mat-icon class="mdi-24px up-12" fontIcon="mdi-eye-off-outline"></mat-icon>
                 </button>
-                <span class="time-span center-self" *ngIf="!showRealTime">{{ getDeltaTime(item.deltaSeconds) }}</span>
-                <span class="time-span center-self" *ngIf="showRealTime">{{ getDate(item.deltaSeconds) }}</span>
+                <span class="time-span center-self">
+                  <app-duration-view
+                    [startTime]="msel.startTime"
+                    [durationSeconds]="item.deltaSeconds"
+                    [showRealTime]="showRealTime"
+                  ></app-duration-view>
+                </span>
               </div>
             </td>
             <ng-container *ngFor="let df of sortedDataFields">

@@ -33,13 +33,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </mat-tab-group>
       <!-- event start time (deltaSeconds) -->
       <div class="start-time-div" *ngIf="currentFilterBy === 'advanced'">
-        <app-offset-date-time
+        <app-duration-edit
           [startTime]="data.mselStartTime"
           [(durationSeconds)]="data.scenarioEvent.deltaSeconds"
           [timeName]="'Execution Date / Time'"
           [postScript]="'from start'"
         >
-        </app-offset-date-time>
+        </app-duration-edit>
       </div>
       <!-- data values for each data field -->
       <div *ngFor="let df of sortedDataFields" class="single-edit-dialog">
