@@ -12,6 +12,7 @@ import {
 import {
   DataField,
   DataValue,
+  Move,
   Msel,
   ScenarioEvent,
   User
@@ -23,6 +24,7 @@ import { DataValueDataService } from 'src/app/data/data-value/data-value-data.se
 import { DataValueQuery } from 'src/app/data/data-value/data-value.query';
 import { DataFieldDataService } from 'src/app/data/data-field/data-field-data.service';
 import { DataFieldQuery } from 'src/app/data/data-field/data-field.query';
+import { MoveQuery } from 'src/app/data/move/move.query';
 import { ScenarioEventDataService, ScenarioEventPlus } from 'src/app/data/scenario-event/scenario-event-data.service';
 import { ScenarioEventQuery } from 'src/app/data/scenario-event/scenario-event.query';
 
@@ -49,6 +51,9 @@ export class MselViewComponent implements OnDestroy {
   lightThemeTint = this.settingsService.settings.LightThemeTint ? this.settingsService.settings.LightThemeTint : 0.4;
   mselScenarioEvents: ScenarioEventPlus[] = [];
   filteredScenarioEventList: ScenarioEventPlus[] = [];
+  showRealTime = false;
+  moveAndGroupNumbers: Record<string, number[]>[] = [];
+  moveList: Move[] = [];
   private unsubscribe$ = new Subject();
 
   constructor(
@@ -60,6 +65,7 @@ export class MselViewComponent implements OnDestroy {
     private dataValueQuery: DataValueQuery,
     private dataFieldDataService: DataFieldDataService,
     private dataFieldQuery: DataFieldQuery,
+    private moveQuery: MoveQuery,
     private scenarioEventDataService: ScenarioEventDataService,
     private scenarioEventQuery: ScenarioEventQuery
   ) {
@@ -104,6 +110,12 @@ export class MselViewComponent implements OnDestroy {
     // subscribe to scenario events
     (this.scenarioEventQuery.selectAll()).pipe(takeUntil(this.unsubscribe$)).subscribe(scenarioEvents => {
       this.sortedScenarioEvents = this.getSortedScenarioEvents(scenarioEvents);
+      this.moveAndGroupNumbers = this.scenarioEventDataService.getMoveAndGroupNumbers(this.sortedScenarioEvents, this.moveList);
+    });
+    // observe the Moves
+    this.moveQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(moves => {
+      this.moveList = moves.sort((a, b) => +a.moveNumber < +b.moveNumber ? -1 : 1);
+      this.moveAndGroupNumbers = this.scenarioEventDataService.getMoveAndGroupNumbers(this.sortedScenarioEvents, this.moveList);
     });
   }
 

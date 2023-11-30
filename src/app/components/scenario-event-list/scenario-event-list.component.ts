@@ -101,6 +101,7 @@ export class ScenarioEventListComponent implements OnDestroy {
   selectedEventIdList: string[] = [];
   showSearch = false;
   showRealTime = false;
+  moveAndGroupNumbers: Record<string, number[]>[] = [];
 
   constructor(
     private router: Router,
@@ -146,8 +147,11 @@ export class ScenarioEventListComponent implements OnDestroy {
     // subscribe to scenario events
     (this.scenarioEventQuery.selectAll()).pipe(takeUntil(this.unsubscribe$)).subscribe(scenarioEvents => {
       this.mselScenarioEvents = this.getEditableScenarioEvents(scenarioEvents as ScenarioEventPlus[]);
-      this.filteredScenarioEventList = this.getFilteredScenarioEvents();
-      this.sortedScenarioEvents = this.getSortedScenarioEvents(this.filteredScenarioEventList);
+      if (scenarioEvents && scenarioEvents.length > 0) {
+        this.moveAndGroupNumbers = this.scenarioEventDataService.getMoveAndGroupNumbers(this.mselScenarioEvents, this.moveList);
+        this.filteredScenarioEventList = this.getFilteredScenarioEvents();
+        this.sortedScenarioEvents = this.getSortedScenarioEvents(this.filteredScenarioEventList);
+      }
     });
     // is user a contentdeveloper or system admin?
     this.userDataService.isContentDeveloper.pipe(takeUntil(this.unsubscribe$)).subscribe((isOne) => {
@@ -164,6 +168,7 @@ export class ScenarioEventListComponent implements OnDestroy {
     // observe the Moves
     this.moveQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(moves => {
       this.moveList = moves.sort((a, b) => +a.moveNumber < +b.moveNumber ? -1 : 1);
+      this.moveAndGroupNumbers = this.scenarioEventDataService.getMoveAndGroupNumbers(this.mselScenarioEvents, this.moveList);
     });
     // observe the Teams
     this.teamQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(teams => {

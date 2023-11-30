@@ -45,6 +45,12 @@ export interface Msel {
     isTemplate?: boolean;
     startTime?: Date;
     durationSeconds?: number;
+    showTimeOnScenarioEventList?: boolean;
+    showTimeOnExerciseView?: boolean;
+    showMoveOnScenarioEventList?: boolean;
+    showMoveOnExerciseView?: boolean;
+    showGroupOnScenarioEventList?: boolean;
+    showGroupOnExerciseView?: boolean;
     moves?: Array<Move>;
     dataFields?: Array<DataField>;
     scenarioEvents?: Array<ScenarioEvent>;
