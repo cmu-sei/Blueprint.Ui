@@ -21,7 +21,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <div>
               <button
                 mat-icon-button
-                (click)="showRealTime = true"
+                (click)="setRealTime(true)"
                 style="outline: none;"
                 title="Switch to Real Time"
                 *ngIf="!showRealTime"
@@ -30,7 +30,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
               </button>
               <button
                 mat-icon-button
-                (click)="showRealTime = false"
+                (click)="setRealTime(false)"
                 style="outline: none;"
                 title="Switch to Delta Time"
                 *ngIf="showRealTime"

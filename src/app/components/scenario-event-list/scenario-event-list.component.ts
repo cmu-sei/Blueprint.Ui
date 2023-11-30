@@ -43,6 +43,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { DataFieldQuery } from 'src/app/data/data-field/data-field.query';
 import { DataOptionQuery } from 'src/app/data/data-option/data-option.query';
 import { TeamQuery } from 'src/app/data/team/team.query';
+import { UIDataService } from 'src/app/data/ui/ui-data.service';
 
 @Component({
   selector: 'app-scenario-event-list',
@@ -119,7 +120,8 @@ export class ScenarioEventListComponent implements OnDestroy {
     private dataOptionQuery: DataOptionQuery,
     private dataValueDataService: DataValueDataService,
     private dataValueQuery: DataValueQuery,
-    private teamQuery: TeamQuery
+    private teamQuery: TeamQuery,
+    private uiDataService: UIDataService
   ) {
     this.scenarioEventBackgroundColors = this.settingsService.settings.ScenarioEventBackgroundColors;
     // subscribe to the active MSEL
@@ -184,6 +186,8 @@ export class ScenarioEventListComponent implements OnDestroy {
     ).subscribe(event => {
       this.applyFilter(this.filterString);
     });
+    // set the time display format
+    this.showRealTime = this.uiDataService.useRealTime();
   }
 
   tabChange(event) {
@@ -754,6 +758,11 @@ export class ScenarioEventListComponent implements OnDestroy {
       this.applyFilter('');
     }
     this.showSearch = value;
+  }
+
+  setRealTime(value: boolean) {
+    this.showRealTime = value;
+    this.uiDataService.setUseRealTime(value);
   }
 
   ngOnDestroy() {

@@ -27,6 +27,7 @@ import { DataFieldQuery } from 'src/app/data/data-field/data-field.query';
 import { MoveQuery } from 'src/app/data/move/move.query';
 import { ScenarioEventDataService, ScenarioEventPlus } from 'src/app/data/scenario-event/scenario-event-data.service';
 import { ScenarioEventQuery } from 'src/app/data/scenario-event/scenario-event.query';
+import { UIDataService } from 'src/app/data/ui/ui-data.service';
 
 @Component({
   selector: 'app-msel-view',
@@ -67,7 +68,8 @@ export class MselViewComponent implements OnDestroy {
     private dataFieldQuery: DataFieldQuery,
     private moveQuery: MoveQuery,
     private scenarioEventDataService: ScenarioEventDataService,
-    private scenarioEventQuery: ScenarioEventQuery
+    private scenarioEventQuery: ScenarioEventQuery,
+    private uiDataService: UIDataService
   ) {
     // subscribe to the route parameters.  Used when viewing independently.
     this.activatedRoute.params.pipe(takeUntil(this.unsubscribe$)).subscribe(params => {
@@ -117,6 +119,8 @@ export class MselViewComponent implements OnDestroy {
       this.moveList = moves.sort((a, b) => +a.moveNumber < +b.moveNumber ? -1 : 1);
       this.moveAndGroupNumbers = this.scenarioEventDataService.getMoveAndGroupNumbers(this.sortedScenarioEvents, this.moveList);
     });
+    // set the time display format
+    this.showRealTime = this.uiDataService.useRealTime();
   }
 
   loadInitialData(mselId: string) {
@@ -234,6 +238,11 @@ export class MselViewComponent implements OnDestroy {
       return 'width: ' + Math.trunc( 100 / this.sortedDataFields.length) + 'vh;';
       // return 'width: 100%;';
     }
+  }
+
+  setRealTime(value: boolean) {
+    this.showRealTime = value;
+    this.uiDataService.setUseRealTime(value);
   }
 
   ngOnDestroy() {
