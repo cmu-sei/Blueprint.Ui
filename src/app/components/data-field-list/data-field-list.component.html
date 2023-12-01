@@ -9,19 +9,10 @@ project root for license information or contact permission@sei.cmu.edu for full 
     (matSortChange)="sortChanged($event)"
     class="mat-elevation-z2 mat-header-row background-alt"
   >
-    <span class="mat-header-cell one-cell" mat-sort-header="displayOrder">
-      <button
-        mat-icon-button
-        (click)="addOrEditDataField(null); $event.stopPropagation()"
-        style="outline: none; margin-right: 15px;"
-        title="Add new data field"
-        *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
-      >
-        <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
-      </button>
-      Order
+    <span class="mat-header-cell left-cell" mat-sort-header="displayOrder">
+      <span style="padding-left: 55px;">Order</span>
     </span>
-    <span class="mat-header-cell one-cell">Display On<br />Events&nbsp;&nbsp;&nbsp;&nbsp;Exercise View</span>
+    <span class="mat-header-cell left-cell">Display On<br />Events<span style="margin-left: 16px;">View</span></span>
     <span class="mat-header-cell two-cell" mat-sort-header="name">Name</span>
     <span class="mat-header-cell one-cell" mat-sort-header="dataType">Data Type</span>
     <span class="mat-header-cell two-cell" mat-sort-header="integration">
@@ -51,6 +42,117 @@ project root for license information or contact permission@sei.cmu.edu for full 
   </section>
 
   <section class="scrolling-region">
+    <div style="text-align: left; width: 90%; padding-left: 10px; padding-top: 8px;">System Defined</div>
+    <!-- Move -->
+    <mat-expansion-panel disabled>
+      <mat-expansion-panel-header
+        class="mat-row"
+      >
+        <div class="mat-cell flex-row-cell left-cell">
+          <span style="width: 68px;">&nbsp;</span>1
+        </div>
+
+
+        <div class="flex-row-cell center-self left-cell">
+          <mat-checkbox
+            [(ngModel)]="msel.showMoveOnScenarioEventList"
+            [disabled]="!isContentDeveloper && !msel.hasRole(loggedInUserId, null).owner"
+            (change)="saveMsel()"
+            (click)="$event.stopPropagation();"
+          >
+          </mat-checkbox>
+          <mat-checkbox
+            [(ngModel)]="msel.showMoveOnExerciseView"
+            [disabled]="!isContentDeveloper && !msel.hasRole(loggedInUserId, null).owner"
+            (change)="saveMsel()"
+            (click)="$event.stopPropagation();"
+            class="exercise-view-checkbox"
+          >
+          </mat-checkbox>
+        </div>
+
+
+        <div class="mat-cell two-cell center-self">Move</div>
+        <div class="mat-cell one-cell center-self">Move</div>
+        <div class="mat-cell two-cell center-self">Gallery Move</div>
+        <div class="mat-cell two-cell center-self">&nbsp;</div>
+      </mat-expansion-panel-header>
+    </mat-expansion-panel>
+    <!-- Group -->
+    <mat-expansion-panel disabled>
+      <mat-expansion-panel-header
+        class="mat-row"
+      >
+        <div class="mat-cell flex-row-cell left-cell">
+          <span style="width: 68px;">&nbsp;</span>2
+        </div>
+        <div class="flex-row-cell center-self left-cell">
+          <mat-checkbox
+            [(ngModel)]="msel.showGroupOnScenarioEventList"
+            [disabled]="!isContentDeveloper && !msel.hasRole(loggedInUserId, null).owner"
+            (change)="saveMsel()"
+            (click)="$event.stopPropagation();"
+          >
+          </mat-checkbox>
+          <mat-checkbox
+            [(ngModel)]="msel.showGroupOnExerciseView"
+            [disabled]="!isContentDeveloper && !msel.hasRole(loggedInUserId, null).owner"
+            (change)="saveMsel()"
+            (click)="$event.stopPropagation();"
+            class="exercise-view-checkbox"
+          >
+          </mat-checkbox>
+        </div>
+        <div class="mat-cell two-cell center-self">Group</div>
+        <div class="mat-cell one-cell center-self">Integer</div>
+        <div class="mat-cell two-cell center-self">Gallery Inject</div>
+        <div class="mat-cell two-cell center-self">&nbsp;</div>
+      </mat-expansion-panel-header>
+    </mat-expansion-panel>
+    <!-- Execution Time -->
+    <mat-expansion-panel disabled>
+      <mat-expansion-panel-header
+        class="mat-row"
+      >
+        <div class="mat-cell flex-row-cell left-cell">
+          <span style="width: 68px;">&nbsp;</span>3
+        </div>
+        <div class="flex-row-cell center-self left-cell">
+          <mat-checkbox
+            [(ngModel)]="msel.showTimeOnScenarioEventList"
+            [disabled]="!isContentDeveloper && !msel.hasRole(loggedInUserId, null).owner"
+            (change)="saveMsel()"
+            (click)="$event.stopPropagation();"
+          >
+          </mat-checkbox>
+          <mat-checkbox
+            [(ngModel)]="msel.showTimeOnExerciseView"
+            [disabled]="!isContentDeveloper && !msel.hasRole(loggedInUserId, null).owner"
+            (change)="saveMsel()"
+            (click)="$event.stopPropagation();"
+            class="exercise-view-checkbox"
+          >
+          </mat-checkbox>
+        </div>
+        <div class="mat-cell two-cell center-self">Execution Time</div>
+        <div class="mat-cell one-cell center-self">DateTime</div>
+        <div class="mat-cell two-cell center-self">- - -</div>
+        <div class="mat-cell two-cell center-self">&nbsp;</div>
+      </mat-expansion-panel-header>
+    </mat-expansion-panel>
+    <hr />
+    <div class="center-self" style="text-align: left; width: 90%; padding-left: 10px;">
+      User Defined
+      <button
+        mat-icon-button
+        (click)="addOrEditDataField(null); $event.stopPropagation()"
+        style="outline: none; margin-right: 15px;"
+        title="Add new data field"
+        *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
+      >
+        <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
+      </button>
+    </div>
     <!-- existing data fields -->
     <mat-expansion-panel
       *ngFor="let item of sortedDataFields;"
@@ -59,7 +161,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <mat-expansion-panel-header
         class="mat-row"
       >
-        <div class="mat-cell flex-row-cell one-cell">
+        <div class="mat-cell flex-row-cell left-cell">
           <button
             mat-icon-button
             class="data-field-button"
@@ -80,7 +182,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </button>
           &nbsp;{{ item.displayOrder }}
         </div>
-        <div class="mat-cell flex-row-cell one-cell center-self">
+        <div class="flex-row-cell center-self left-cell">
           <mat-checkbox
             [(ngModel)]="item.onScenarioEventList"
             [disabled]="!isContentDeveloper && !msel.hasRole(loggedInUserId, null).owner"

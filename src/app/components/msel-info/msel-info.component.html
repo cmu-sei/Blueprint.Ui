@@ -73,6 +73,47 @@ project root for license information or contact permission@sei.cmu.edu for full 
             </mat-form-field>
           </div>
           <div class="single-detail center-self">
+            <mat-form-field>
+              <input
+                matInput
+                [ngxMatDatetimePicker]="startTimePicker"
+                placeholder="Start Date / Time"
+                [(ngModel)]="msel.startTime"
+                (cut)="isChanged = true"
+                (change)="isChanged = true"
+                (paste)="isChanged = true"
+                (keypress)="isChanged = true"
+
+              >
+              <mat-datepicker-toggle
+                matSuffix
+                [for]="$any(startTimePicker)"
+              >
+              </mat-datepicker-toggle>
+              <ngx-mat-datetime-picker #startTimePicker
+                [showSpinners]=true
+                [showSeconds]=true
+                [stepHour]=1
+                [stepMinute]=1
+                [stepSecond]=1
+                [touchUi]=false
+                [enableMeridian]=true
+                [disableMinute]=false
+                [hideTime]=false
+                (closed)="startTimeCheck()"
+              >
+              </ngx-mat-datetime-picker>
+            </mat-form-field>
+          </div>
+          <app-duration-edit
+            [startTime]="msel.startTime"
+            [(durationSeconds)]="msel.durationSeconds"
+            [timeName]="'End Date / Time'"
+            [postScript]="'from start'"
+            (change)="isChanged = true;"
+          >
+          </app-duration-edit>
+          <div class="single-detail center-self">
             <div class="sub-detail center-self">
               <mat-checkbox
                 [(ngModel)]="msel.isTemplate"

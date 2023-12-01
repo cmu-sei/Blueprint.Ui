@@ -19,6 +19,7 @@ import { DataFieldQuery } from 'src/app/data/data-field/data-field.query';
 import { DataFieldEditDialogComponent } from '../data-field-edit-dialog/data-field-edit-dialog.component';
 import { DataOptionDataService } from 'src/app/data/data-option/data-option-data.service';
 import { DataOptionQuery } from 'src/app/data/data-option/data-option.query';
+import { MselDataService } from 'src/app/data/msel/msel-data.service';
 import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { v4 as uuidv4 } from 'uuid';
@@ -53,6 +54,7 @@ export class DataFieldListComponent implements OnDestroy {
     private dataFieldQuery: DataFieldQuery,
     private dataOptionDataService: DataOptionDataService,
     private dataOptionQuery: DataOptionQuery,
+    private mselDataService: MselDataService,
     public dialog: MatDialog,
     public dialogService: DialogService
   ) {
@@ -257,6 +259,10 @@ export class DataFieldListComponent implements OnDestroy {
     } else {
       return false;
     }
+  }
+
+  saveMsel() {
+    this.mselDataService.updateMsel(this.msel);
   }
 
   ngOnDestroy() {

@@ -1,5 +1,5 @@
 /*
-Copyright 2022 Carnegie Mellon University. All Rights Reserved.
+Copyright 2023 Carnegie Mellon University. All Rights Reserved.
  Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 */
@@ -16,9 +16,6 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
  * Do not edit the class manually.
  */
 import { DataValue } from './dataValue';
-import { ItemStatus } from './itemStatus';
-import { Team } from './team';
-
 
 export interface ScenarioEvent {
     dateCreated?: Date;
@@ -31,4 +28,6 @@ export interface ScenarioEvent {
     rowIndex?: number;
     isHidden?: boolean;
     rowMetadata?: string;
+    deltaSeconds?: number;     // time from the start of the MSEL when this event should be executed
+
 }

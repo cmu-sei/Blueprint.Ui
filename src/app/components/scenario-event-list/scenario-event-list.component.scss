@@ -27,10 +27,10 @@ tr {
 }
 
 th, td {
-  padding-top: 10px;
-  padding-bottom: 10px;
-  padding-left: 10px;
-  padding-right: 10px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
   text-align: left;
   word-wrap: normal;
 }
@@ -52,18 +52,19 @@ th, td {
 }
 
 .header-row-start {
-  width: 110px;
+  width: 120px;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
 }
 
 .header-buttons {
   display: flex;
   flex-direction: row;
+  width: 100%;
 }
 
 .row-start-buttons {
-  width: 110px;
+  width: 120px;
   display: flex;
 }
 
@@ -73,8 +74,13 @@ th, td {
 }
 
 .row-index {
-  width: 20px;
+  width: 15px;
   text-align: right;
+  margin-right: 20px;
+}
+
+.time-span {
+  min-width: 80px;
 }
 
 .quill-view {

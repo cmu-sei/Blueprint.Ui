@@ -31,17 +31,15 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <mat-tab label="Gallery" *ngIf="data.useGallery">
         </mat-tab>
       </mat-tab-group>
-      <!-- row index -->
-      <div class="single-edit-dialog" *ngIf="currentFilterBy === 'advanced'">
-        <mat-form-field class="full-width">
-          <input
-            matInput
-            placeholder="Order"
-            (change)="verifyNumber(data.scenarioEvent.rowIndex)"
-            [(ngModel)]="data.scenarioEvent.rowIndex"
-            [disabled]="!data.isOwner"
-          />
-        </mat-form-field>
+      <!-- event start time (deltaSeconds) -->
+      <div class="start-time-div" *ngIf="currentFilterBy === 'advanced'">
+        <app-duration-edit
+          [startTime]="data.mselStartTime"
+          [(durationSeconds)]="data.scenarioEvent.deltaSeconds"
+          [timeName]="'Execution Date / Time'"
+          [postScript]="'from start'"
+        >
+        </app-duration-edit>
       </div>
       <!-- data values for each data field -->
       <div *ngFor="let df of sortedDataFields" class="single-edit-dialog">

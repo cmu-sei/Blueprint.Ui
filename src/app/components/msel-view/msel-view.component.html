@@ -8,6 +8,37 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <table>
       <thead>
         <tr>
+          <!-- Move -->
+          <th *ngIf="msel.showMoveOnExerciseView" class="background move-group">
+            <div>Move</div>
+          </th>
+          <!-- Group -->
+          <th *ngIf="msel.showGroupOnExerciseView" class="background move-group">
+            <div>Group</div>
+          </th>
+          <!-- Time -->
+          <th *ngIf="msel.showTimeOnExerciseView" class="background">
+            <div>
+              <button
+                mat-icon-button
+                (click)="setRealTime(true)"
+                style="outline: none;"
+                title="Switch to Real Time"
+                *ngIf="!showRealTime"
+              >
+                <mat-icon class="mdi-24px" fontIcon="mdi-timer-outline"></mat-icon>
+              </button>
+              <button
+                mat-icon-button
+                (click)="setRealTime(false)"
+                style="outline: none;"
+                title="Switch to Delta Time"
+                *ngIf="showRealTime"
+              >
+                <mat-icon class="mdi-24px" fontIcon="mdi-clock-time-four-outline"></mat-icon>
+              </button>
+            </div>
+          </th>
           <ng-container *ngFor="let df of sortedDataFields">
             <th class="background">
               <div [style]="getStyle(df)">
@@ -19,7 +50,29 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </thead>
       <tbody>
         <ng-container *ngFor="let item of sortedScenarioEvents">
-          <tr [style]="getRowStyle(item)">
+          <tr class="move-group" [style]="getRowStyle(item)">
+            <!-- Move value -->
+            <td *ngIf="msel.showMoveOnScenarioEventList">
+              <div class="constrainer" style="text-align: center;">
+                {{ moveAndGroupNumbers[item.id][0] }}
+              </div>
+            </td>
+            <!-- Group value -->
+            <td class="move-group" *ngIf="msel.showGroupOnScenarioEventList">
+              <div class="constrainer" style="text-align: center;">
+                {{ moveAndGroupNumbers[item.id][1] }}
+              </div>
+            </td>
+            <!-- Time value -->
+            <td *ngIf="msel.showTimeOnScenarioEventList">
+              <div class="time-span center-self">
+                <app-duration-view
+                  [startTime]="msel.startTime"
+                  [durationSeconds]="item.deltaSeconds"
+                  [showRealTime]="showRealTime"
+                ></app-duration-view>
+              </div>
+            </td>
             <ng-container *ngFor="let df of sortedDataFields">
               <!-- HTML -->
               <td *ngIf="df.dataType.toString() === 'Html'">

@@ -22,10 +22,30 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </button>
       Move
     </span>
-    <span class="mat-header-cell one-cell" mat-sort-header="moveStartTime">Start</span>
-    <span class="mat-header-cell one-cell" mat-sort-header="moveStopTime">Stop</span>
+    <span style="width: 40px;">
+      <button
+        mat-icon-button
+        (click)="showRealTime = true; $event.stopPropagation()"
+        style="outline: none;"
+        title="Switch to Real Time"
+        *ngIf="!showRealTime"
+      >
+        <mat-icon class="mdi-24px" fontIcon="mdi-timer-outline"></mat-icon>
+      </button>
+      <button
+        mat-icon-button
+        (click)="showRealTime = false; $event.stopPropagation()"
+        style="outline: none;"
+        title="Switch to Delta Time"
+        *ngIf="showRealTime"
+      >
+        <mat-icon class="mdi-24px" fontIcon="mdi-clock-time-four-outline"></mat-icon>
+      </button>
+    </span>
+    <span class="mat-header-cell one-cell" mat-sort-header="moveStartTime">
+      Start
+    </span>
     <span class="mat-header-cell one-cell" mat-sort-header="situationTime">Situation Time</span>
-    <span class="mat-header-cell two-cell" mat-sort-header="title">Title</span>
     <span class="mat-header-cell two-cell" mat-sort-header="description">Description</span>
     <span class="mat-header-cell two-cell search-cell">
       <mat-form-field class="search-control">
@@ -76,12 +96,20 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </button>
           &nbsp;{{ item.moveNumber }}
         </div>
-        <div class="mat-cell one-cell center-self">{{ item.moveStartTime | date: 'HH:mm' }}</div>
-        <div class="mat-cell one-cell center-self">{{ item.moveStopTime | date: 'HH:mm' }}</div>
+        <span style="width: 40px;">&nbsp;</span>
+        <div class="mat-cell one-cell center-self">
+          <app-duration-view
+            [startTime]="msel.startTime"
+            [durationSeconds]="item.deltaSeconds"
+            [showRealTime]="showRealTime"
+          ></app-duration-view>
+        </div>
         <div class="mat-cell one-cell center-self">{{ item.situationTime | date: 'MM/dd/yyyy HH:mm' }}</div>
-        <div class="mat-cell two-cell center-self">{{ item.title }}</div>
         <div class="mat-cell four-cell center-self">{{ item.description }}</div>
       </mat-expansion-panel-header>
     </mat-expansion-panel>
+    <div class="warning-message" *ngIf="badMoveTimeOrder()">
+      ** The moves are not in ascending start time order!
+    </div>
   </section>
 </div>

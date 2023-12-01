@@ -26,68 +26,15 @@ project root for license information.
         </mat-form-field>
       </div>
     </div>
-    <div class="add-margin">
-      <div>
-        <mat-form-field class="full-width">
-          <input type="text" matInput [(ngModel)]="data.move.title" placeholder="Title">
-        </mat-form-field>
-      </div>
-    </div>
-    <div class="add-margin">
-      <mat-form-field>
-        <input
-          matInput
-          [ngxMatDatetimePicker]="moveStartTimePicker"
-          placeholder="Start Date / Time"
-          [formControl]="moveStartTimeFormControl"
-          (inputChange)="saveMove('moveStartTime')"
-          (dateChange)="saveMove('moveStartTime')"
-          >
-        <mat-datepicker-toggle
-          matSuffix
-          [for]="$any(moveStartTimePicker)">
-        </mat-datepicker-toggle>
-        <ngx-mat-datetime-picker #moveStartTimePicker
-          [showSpinners]=true
-          [showSeconds]=true
-          [stepHour]=1
-          [stepMinute]=1
-          [stepSecond]=1
-          [touchUi]=false
-          [enableMeridian]=true
-          [disableMinute]=false
-          [hideTime]=false>
-        </ngx-mat-datetime-picker>
-      </mat-form-field>
-    </div>
-    <div class="add-margin">
-      <div>
-        <mat-form-field>
-          <input
-            matInput
-            [ngxMatDatetimePicker]="moveStopTimePicker"
-            placeholder="Stop Date / Time"
-            [formControl]="moveStopTimeFormControl"
-            (inputChange)="saveMove('moveStopTime')"
-            (dateChange)="saveMove('moveStopTime')"
-            >
-          <mat-datepicker-toggle
-            matSuffix
-            [for]="$any(moveStopTimePicker)">
-          </mat-datepicker-toggle>
-          <ngx-mat-datetime-picker #moveStopTimePicker
-            [showSpinners]=true
-            [showSeconds]=true
-            [stepHour]=1
-            [stepMinute]=1
-            [stepSecond]=1
-            [touchUi]=false
-            [enableMeridian]=true
-            [disableMinute]=false
-            [hideTime]=false>
-          </ngx-mat-datetime-picker>
-        </mat-form-field>
-      </div>
+    <!-- move start time (deltaSeconds) -->
+    <div class="add-margin flex-row">
+      <app-duration-edit
+        [startTime]="data.mselStartTime"
+        [(durationSeconds)]="data.move.deltaSeconds"
+        [timeName]="'Start Date / Time'"
+        [postScript]="'from start'"
+      >
+      </app-duration-edit>
     </div>
     <div class="add-margin">
       <div>
@@ -96,7 +43,6 @@ project root for license information.
         </mat-form-field>
       </div>
     </div>
-
     <div class="add-margin">
       <div>
         <mat-form-field>

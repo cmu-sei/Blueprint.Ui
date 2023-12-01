@@ -25,3 +25,18 @@
 .close-button {
   float: right;
 }
+
+.flex-row {
+  display: flex;
+  flex-direction: row;
+}
+
+.date-time-picker {
+  width: 210px;
+}
+
+.two-digits {
+  width: 36px;
+  text-align: center;
+}
+

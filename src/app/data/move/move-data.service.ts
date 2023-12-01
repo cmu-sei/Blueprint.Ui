@@ -198,8 +198,6 @@ export class MoveDataService {
     // set to a date object.
     move.dateCreated = new Date(move.dateCreated);
     move.dateModified = new Date(move.dateModified);
-    move.moveStartTime = new Date(move.moveStartTime);
-    move.moveStopTime = new Date(move.moveStopTime);
     move.situationTime = new Date(move.situationTime);
   }
 

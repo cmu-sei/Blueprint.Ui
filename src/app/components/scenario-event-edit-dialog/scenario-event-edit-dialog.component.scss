@@ -33,6 +33,12 @@
   width: 80%;
 }
 
+.start-time-div {
+  display: flex;
+  flex-direction: row;
+  width: 80%;
+}
+
 .full-width {
   width: 100%;
 }
@@ -83,3 +89,11 @@
   border-width: 0.001in;
 }
 
+.date-time-picker {
+  width: 210px;
+}
+
+.two-digits {
+  width: 36px;
+  text-align: center;
+}

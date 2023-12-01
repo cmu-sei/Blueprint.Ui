@@ -200,6 +200,11 @@
   flex: 1;
 }
 
+.left-cell {
+  flex: 1;
+  min-width: 100px;
+}
+
 .center-self {
   align-self: center;
 }
@@ -209,7 +214,7 @@
 }
 
 .exercise-view-checkbox {
-  margin-left: 40%;
+  margin-left: 40px;
 }
 
 .gallery-warning {

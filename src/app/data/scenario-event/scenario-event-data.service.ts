@@ -12,6 +12,7 @@ import { LegacyPageEvent as PageEvent } from '@angular/material/legacy-paginator
 import { Router, ActivatedRoute } from '@angular/router';
 import {
   DataValue,
+  Move,
   ScenarioEvent,
   ScenarioEventService,
 } from 'src/app/generated/blueprint.api';
@@ -217,4 +218,35 @@ export class ScenarioEventDataService {
         return 0;
     }
   }
+
+  getMoveAndGroupNumbers(rawScenarioEvents: ScenarioEvent[], rawMoves: Move[]): Record<string, number[]>[] {
+    const scenarioEvents = rawScenarioEvents.sort((a, b) => +a.deltaSeconds < +b.deltaSeconds ? -1 : 1);
+    const moveAndGroupNumbers: Record<string, number[]>[] = [];
+    const moves = rawMoves.sort((a, b) => +a.moveNumber < +b.moveNumber ? -1 : 1);
+    let m = 0;
+    let group = 0;
+    let deltaSeconds = scenarioEvents.length > 0 ? scenarioEvents[0].deltaSeconds : 0;
+    // loop through the chronological scenario events
+    for (let s = 0; s < scenarioEvents.length; s++) {
+
+      // if not on the last move, check this scenario event time to determine if it is in the current move
+      if (moves.length === 0 || m === +moves.length - 1 || +scenarioEvents[s].deltaSeconds < +moves[m + 1].deltaSeconds) {
+        if (scenarioEvents[s].deltaSeconds !== deltaSeconds) {
+          group++;
+        }
+      } else {
+        // the move must be incremented
+        while (m < +moves.length - 1 && +scenarioEvents[s].deltaSeconds >= +moves[m + 1].deltaSeconds) {
+          m++;  // increment the move
+        }
+        group = 0;  // start with group 0 for this new move
+      }
+      const moveNumber = moves.length > m ? moves[m].moveNumber : 0;
+      deltaSeconds = scenarioEvents[s].deltaSeconds;
+      moveAndGroupNumbers[scenarioEvents[s].id] = [moveNumber, group];
+    }
+
+    return moveAndGroupNumbers;
+  }
+
 }

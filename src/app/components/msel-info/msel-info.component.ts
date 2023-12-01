@@ -27,6 +27,7 @@ import { DataFieldQuery } from 'src/app/data/data-field/data-field.query';
 import { MselPageDataService } from 'src/app/data/msel-page/msel-page-data.service';
 import { MselPageQuery } from 'src/app/data/msel-page/msel-page.query';
 import { MselTeamQuery } from 'src/app/data/msel-team/msel-team.query';
+import { UntypedFormControl } from '@angular/forms';
 
 @Component({
   selector: 'app-msel-info',
@@ -67,7 +68,8 @@ export class MselInfoComponent implements OnDestroy {
   dataFieldList: DataField[] = [];
   basePageUrl = location.origin + '/mselpage/';
   pushStatus = '';
-
+  savedStartTime: Date;
+  savedDurationSeconds = 0;
   constructor(
     public dialogService: DialogService,
     private teamQuery: TeamQuery,
@@ -92,6 +94,8 @@ export class MselInfoComponent implements OnDestroy {
           this.mselPageDataService.loadByMsel(msel.id);
           this.newMselPage.mselId = msel.id;
         }
+        this.savedStartTime = new Date(msel.startTime);
+        this.savedDurationSeconds = msel.durationSeconds;
       }
     });
     // subscribe to MSEL loading flag
@@ -289,6 +293,12 @@ export class MselInfoComponent implements OnDestroy {
       hasToDos = todoList.length > 0;
     }
     return hasToDos;
+  }
+
+  startTimeCheck() {
+    if (this.msel.startTime.toLocaleString() !== this.savedStartTime.toLocaleString()) {
+      this.isChanged = true;
+    }
   }
 
   ngOnDestroy() {

@@ -11,6 +11,7 @@ export class UIState {
   selectedMselTab = '';
   expandedItems: string[] = [];
   navCollapsed: boolean;
+  useRealTime: boolean;
 }
 
 @Injectable({
@@ -74,6 +75,18 @@ export class UIDataService {
     return this.uiState.selectedTheme;
   }
   // end theme section
+
+  //
+  // real time vs offset time display section
+  useRealTime(): boolean {
+    return this.uiState.useRealTime;
+  }
+
+  setUseRealTime(value: boolean) {
+    this.uiState.useRealTime = value;
+    this.saveChanges();
+  }
+  // end real time vs offset time display section
 
   saveChanges() {
     localStorage.setItem('uiState', JSON.stringify(this.uiState));

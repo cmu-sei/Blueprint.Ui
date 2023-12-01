@@ -38,14 +38,6 @@ export class MoveEditDialogComponent {
     this.data.move.situationTime,
     []
   );
-  public moveStartTimeFormControl = new UntypedFormControl(
-    this.data.move.moveStartTime,
-    []
-  );
-  public moveStopTimeFormControl = new UntypedFormControl(
-    this.data.move.moveStopTime,
-    []
-  );
   editorStyle = {
     'min-height': '100px',
     'max-height': '400px',
@@ -67,14 +59,6 @@ export class MoveEditDialogComponent {
         const newPosted = new Date(this.situationDateFormControl.value);
         const oldPosted = new Date(this.data.move.situationTime);
         this.data.move.situationTime = newPosted;
-        break;
-      case 'moveStartTime':
-        const moveStartTime = this.moveStartTimeFormControl.value;
-        this.data.move.moveStartTime = moveStartTime;
-        break;
-      case 'moveStopTime':
-        const moveStopTime = this.moveStopTimeFormControl.value;
-        this.data.move.moveStopTime = moveStopTime;
         break;
       default:
         break;

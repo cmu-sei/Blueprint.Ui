@@ -43,6 +43,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { DataFieldQuery } from 'src/app/data/data-field/data-field.query';
 import { DataOptionQuery } from 'src/app/data/data-option/data-option.query';
 import { TeamQuery } from 'src/app/data/team/team.query';
+import { UIDataService } from 'src/app/data/ui/ui-data.service';
 
 @Component({
   selector: 'app-scenario-event-list',
@@ -59,7 +60,7 @@ export class ScenarioEventListComponent implements OnDestroy {
   expandedMoreScenarioEventIds: string[] = [];
   filteredScenarioEventList: ScenarioEventPlus[] = [];
   filterString = '';
-  sort: Sort = { active: 'rowIndex', direction: 'asc' };
+  sort: Sort = { active: 'deltaSeconds', direction: 'asc' };
   sortedScenarioEvents: ScenarioEventPlus[] = [];
   sortedDataFields: DataField[] = [];
   sortedDataOptions: DataOption[] = [];
@@ -100,6 +101,8 @@ export class ScenarioEventListComponent implements OnDestroy {
   private subscription: Subscription;
   selectedEventIdList: string[] = [];
   showSearch = false;
+  showRealTime = false;
+  moveAndGroupNumbers: Record<string, number[]>[] = [];
 
   constructor(
     private router: Router,
@@ -117,7 +120,8 @@ export class ScenarioEventListComponent implements OnDestroy {
     private dataOptionQuery: DataOptionQuery,
     private dataValueDataService: DataValueDataService,
     private dataValueQuery: DataValueQuery,
-    private teamQuery: TeamQuery
+    private teamQuery: TeamQuery,
+    private uiDataService: UIDataService
   ) {
     this.scenarioEventBackgroundColors = this.settingsService.settings.ScenarioEventBackgroundColors;
     // subscribe to the active MSEL
@@ -145,8 +149,11 @@ export class ScenarioEventListComponent implements OnDestroy {
     // subscribe to scenario events
     (this.scenarioEventQuery.selectAll()).pipe(takeUntil(this.unsubscribe$)).subscribe(scenarioEvents => {
       this.mselScenarioEvents = this.getEditableScenarioEvents(scenarioEvents as ScenarioEventPlus[]);
-      this.filteredScenarioEventList = this.getFilteredScenarioEvents();
-      this.sortedScenarioEvents = this.getSortedScenarioEvents(this.filteredScenarioEventList);
+      if (scenarioEvents && scenarioEvents.length > 0) {
+        this.moveAndGroupNumbers = this.scenarioEventDataService.getMoveAndGroupNumbers(this.mselScenarioEvents, this.moveList);
+        this.filteredScenarioEventList = this.getFilteredScenarioEvents();
+        this.sortedScenarioEvents = this.getSortedScenarioEvents(this.filteredScenarioEventList);
+      }
     });
     // is user a contentdeveloper or system admin?
     this.userDataService.isContentDeveloper.pipe(takeUntil(this.unsubscribe$)).subscribe((isOne) => {
@@ -163,6 +170,7 @@ export class ScenarioEventListComponent implements OnDestroy {
     // observe the Moves
     this.moveQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(moves => {
       this.moveList = moves.sort((a, b) => +a.moveNumber < +b.moveNumber ? -1 : 1);
+      this.moveAndGroupNumbers = this.scenarioEventDataService.getMoveAndGroupNumbers(this.mselScenarioEvents, this.moveList);
     });
     // observe the Teams
     this.teamQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(teams => {
@@ -178,6 +186,8 @@ export class ScenarioEventListComponent implements OnDestroy {
     ).subscribe(event => {
       this.applyFilter(this.filterString);
     });
+    // set the time display format
+    this.showRealTime = this.uiDataService.useRealTime();
   }
 
   tabChange(event) {
@@ -214,7 +224,7 @@ export class ScenarioEventListComponent implements OnDestroy {
           .sort((a: ScenarioEventPlus, b: ScenarioEventPlus) => this.sortScenarioEvents(a, b));
       } else {
         sortedScenarioEvents = (scenarioEvents as ScenarioEventPlus[])
-          .sort((a, b) => +a.rowIndex > +b.rowIndex ? 1 : -1);
+          .sort((a, b) => +a.deltaSeconds > +b.deltaSeconds ? 1 : -1);
       }
     }
     return sortedScenarioEvents;
@@ -391,14 +401,14 @@ export class ScenarioEventListComponent implements OnDestroy {
 
   private sortScenarioEvents(a: ScenarioEventPlus, b: ScenarioEventPlus): number {
     const dir = this.sort.direction === 'desc' ? -1 : 1;
-    if (!this.sort.direction || this.sort.active === 'rowIndex') {
-      this.sort = { active: 'rowIndex', direction: 'asc' };
-      return +a.rowIndex < +b.rowIndex ? -dir : dir;
+    if (!this.sort.direction || this.sort.active === 'deltaSeconds') {
+      this.sort = { active: 'deltaSeconds', direction: 'asc' };
+      return +a.deltaSeconds < +b.deltaSeconds ? -dir : dir;
     } else {
       const aValue = this.getDataValue(a, this.sort.active).value?.toString().toLowerCase();
       const bValue = this.getDataValue(b, this.sort.active).value?.toString().toLowerCase();
       if (aValue === bValue) {
-        return +a.rowIndex < +b.rowIndex ? -dir : dir;
+        return +a.deltaSeconds < +b.deltaSeconds ? -dir : dir;
       } else {
         return aValue < bValue ? -dir : dir;
       }
@@ -491,7 +501,8 @@ export class ScenarioEventListComponent implements OnDestroy {
         useCite: this.msel.useCite,
         useGallery: this.msel.useGallery,
         useSteamfitter: this.msel.useSteamfitter,
-        userList: this.mselUsers
+        userList: this.mselUsers,
+        mselStartTime: this.msel.startTime
       },
     });
     dialogRef.componentInstance.editComplete.subscribe((result) => {
@@ -573,8 +584,8 @@ export class ScenarioEventListComponent implements OnDestroy {
   deleteScenarioEvent(scenarioEvent: ScenarioEvent): void {
     this.dialogService
       .confirm(
-        'Delete Event #' + scenarioEvent.rowIndex,
-        'Are you sure that you want to delete event #' + scenarioEvent.rowIndex + '?'
+        'Delete Event',
+        'Are you sure that you want to delete this event?'
       )
       .subscribe((result) => {
         if (result['confirm']) {
@@ -686,7 +697,7 @@ export class ScenarioEventListComponent implements OnDestroy {
     } else if (dataField.dataType.toString() === 'DateTime') {
       return 'width: max-content';
     } else {
-      return 'text-align: left; width: ' + Math.trunc( 100 / this.sortedDataFields.length) + 'vh;';
+      return 'text-align: left; width: 90%; min-width: 40px;';
       // return 'width: 100%;';
     }
   }
@@ -747,6 +758,11 @@ export class ScenarioEventListComponent implements OnDestroy {
       this.applyFilter('');
     }
     this.showSearch = value;
+  }
+
+  setRealTime(value: boolean) {
+    this.showRealTime = value;
+    this.uiDataService.setUseRealTime(value);
   }
 
   ngOnDestroy() {
