@@ -96,8 +96,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <div class="application-name" *ngIf="!sideNavCollapsed">
           {{ tabName }}
         </div>
-        <div *ngIf="!sideNavCollapsed">
-          <button mat-icon-button title="{{ tabName }}">
+        <div *ngIf="!sideNavCollapsed" title="{{ tabName }}">
+          <button mat-icon-button>
             <mat-icon class="icon-color" svgIcon="ic_chevron_right"></mat-icon>
           </button>
         </div>

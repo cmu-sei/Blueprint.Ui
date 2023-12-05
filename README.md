@@ -24,7 +24,9 @@ Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.
 
 ## Running end-to-end tests with Playwright
 from powershell to install playwright browsers on windows managed laptop:
+  cd Blueprint.Ui
   $env:PLAYWRIGHT_BROWSERS_PATH="C:\SEI\Tools\ms-playwright"
+  npm install
   npx playwright install
 
 Created a Playwright Test project at C:\SEI\Tools\dev\dot\blueprint\Blueprint.Ui

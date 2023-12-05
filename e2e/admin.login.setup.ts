@@ -10,7 +10,7 @@ import { ADMIN_STORAGE_STATE } from '../playwright.config';
 
 setup('do login', async ({ page }) => {
   await page.goto('http://localhost:5000');
-  await expect(page).toHaveTitle(/Identity | OpenID Connect/);
+  await expect(page).toHaveTitle(/Tim's Identity | OpenID Connect/);
   await page.locator('text=Login').click();
   await page.locator('text=Continue').click();
   await page.fill('input[name="Username"]', 'admin@this.ws');

@@ -60,9 +60,8 @@ test('access all MSEL tabs', async ({ page }) => {
   await page.waitForTimeout(2 * 1000);
 
   // Exercise View Tab
-  await page.getByRole('button', { name: 'Exercise View' }).click();
+  await page.getByRole('button', { name: 'Exercise View', exact: true }).click();
   await page.waitForTimeout(2 * 1000);
-
   // Info Tab
   await page.getByRole('button', { name: 'Info' }).click();
   await page.waitForTimeout(2 * 1000);
@@ -144,8 +143,8 @@ test('add delete data fields', async ({ page }) => {
   await page.getByRole('button', { name: 'Data Fields', exact: true }).click();
   await page.getByRole('button', { name: 'Add new data field', exact: true }).click();
   await page.getByLabel('Display Order').press('Tab');
-  await page.getByLabel('Name').fill('Group');
-  await page.getByLabel('Name').press('Tab');
+  await page.getByLabel('Name', { exact: true }).fill('Added Me');
+  await page.getByLabel('Name', { exact: true }).press('Tab');
   await page.getByLabel('Data Type').getByText('Data Type').click();
   await page.getByRole('option', { name: 'Integer' }).locator('span').click();
   await page.getByLabel('Column Metadata (Width)').click();
@@ -153,7 +152,7 @@ test('add delete data fields', async ({ page }) => {
   await page.waitForTimeout(2 * 1000);
 
   // // Remove Data Field
-  await page.getByRole('button', { name: 'Delete Group', exact: true }).click({force: true});
+  await page.getByRole('button', { name: 'Delete Added Me', exact: true }).click({force: true});
   await page.click('text=Yes');
   await page.waitForTimeout(5 * 1000);
 
@@ -224,7 +223,7 @@ test('add delete organizations', async ({ page }) => {
   await page.click('button:has(mat-icon.mdi-bank-plus)');
 
   // Fill Organization fields
-  await page.fill('text=Name', extraConfig.orgName);
+  await page.fill('text=Long Name (required)', extraConfig.orgName);
   await page.fill('text=Short Name (required)', extraConfig.orgShortName);
   await page.fill('text=Summary (required)', extraConfig.orgSummary);
   await page.fill('#quill p', extraConfig.orgDescription);
