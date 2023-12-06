@@ -264,14 +264,15 @@ test('add delete move', async ({ page }) => {
   // Moves section
   await page.getByRole('button', { name: 'Moves' }).click();
   await page.click('button:has(mat-icon.mdi-plus-circle-outline)');
-  await page.locator('text=Title').nth(1).fill('Playwright Move');
-  await page.fill('text=Move Description', 'Move created with test');
+  await page.getByLabel('Move Description', { exact: true }).fill('Playwright Move');
   await page.click('button:has-text("Save")');
 
   // Delete Move
-  const moveDeleteButton = 'mat-expansion-panel-header:has-text("Playwright Move") button[title="Delete this move"]';
+  const moveDeleteButton = 'mat-expansion-panel-header:has-text("Playwright Move") button[title="Delete Move 4"]';
   if (moveDeleteButton){
+    await page.waitForTimeout(1 * 1000);
     await page.click(moveDeleteButton, {force: true});
+    await page.waitForTimeout(1 * 1000);
     await page.click('button:has-text("Yes")');
   } else {
     console.log('Page does not have specified move.');
@@ -298,13 +299,15 @@ test('add delete gallery card', async ({ page }) => {
   await page.locator('text=Name').nth(1).fill('Playwright Card');
   await page.fill('text=Card Description', 'Playwright Test');
   await page.locator('mat-select[role="combobox"] >> text=Move').click();
-  await page.locator('text=0 - setup').click();
+  await page.locator('text=0').last().click();
   await page.click('text=Save');
 
   // Delete Gallery Card
   const cardDeleteButton = 'mat-expansion-panel-header:has-text("Playwright Card") button[title="Delete this card"]';
   if (cardDeleteButton){
+    await page.waitForTimeout(1 * 1000);
     await page.click(cardDeleteButton, {force: true});
+    await page.waitForTimeout(1 * 1000);
     await page.click('button:has-text("Yes")');
   } else {
     console.log('Page does not have specified Gallery Card.');
@@ -329,7 +332,7 @@ test('add delete cite action', async ({ page }) => {
   await page.getByRole('button', { name: 'Cite Actions' }).click();
   await page.click('button:has(mat-icon.mdi-plus-circle-outline)');
   await page.locator('mat-select[role="combobox"] >> text=Move').click();
-  await page.locator('text=0 - setup').click();
+  await page.locator('text=0').last().click();
   await page.locator('mat-select[role="combobox"] >> text=Team').nth(1).click();
   await page.locator('text=Test Users').click();
   await page.locator('text=Display Order').nth(1).fill('1');
@@ -339,7 +342,9 @@ test('add delete cite action', async ({ page }) => {
   // Delete CITE Action
   const actionDeleteButton = 'mat-expansion-panel-header:has-text("Playwright CITE Action") button[title="Delete this citeAction"]';
   if (actionDeleteButton){
+    await page.waitForTimeout(1 * 1000);
     await page.click(actionDeleteButton, {force: true});
+    await page.waitForTimeout(1 * 1000);
     await page.click('button:has-text("Yes")');
   } else {
     console.log('Page does not have specified CITE Action.');
@@ -371,7 +376,9 @@ test('add delete cite role', async ({ page }) => {
   // Delete CITE Role
   const roleDeleteButton = 'mat-expansion-panel-header:has-text("Playwright CITE Role") button[title="Delete this citeRole"]';
   if (roleDeleteButton){
+    await page.waitForTimeout(1 * 1000);
     await page.click(roleDeleteButton, {force: true});
+    await page.waitForTimeout(1 * 1000);
     await page.click('button:has-text("Yes")');
   } else {
     console.log('Page does not have specified CITE Role.');
@@ -395,20 +402,21 @@ test('add delete injects', async ({ page }) => {
   // Add Inject
   await page.getByRole('button', { name: 'Events' }).click();
   await page.waitForTimeout(1 * 1000);
-  await page.click('button:has(mat-icon.mdi-plus-circle-outline)');
-  await page.getByRole('tab', { name: 'Additional' }).click();
-  await page.fill('text=Order', '1');
-  await page.getByRole('tab', { name: 'Default' }).click();
-  await page.fill('text=Message', 'I hope you enjoy the event!');
+  await page.getByRole('button', { name: 'Action List', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'Add new event' }).click();
+  await page.getByRole('tab', { name: 'Advanced' }).click();
+  await page.fill('text=Description', 'I hope you enjoy the event!');
   await page.locator('mat-select[role="combobox"] >> text=Status').click();
   await page.locator('text=Approved').click();
-  await page.fill('text="Inject Mode"', 'ala mode');
   await page.click('button:has-text("Save")');
   await page.waitForTimeout(1 * 1000);
 
   // Delete inject
-  await page.locator('button[title="Delete this inject"]').first().click();
-  await page.click('text=Yes');
+  await page.getByRole('button', { name: 'Event 1 Action List' }).click();
+  await page.waitForTimeout(1 * 1000);
+  await page.getByRole('menuitem', { name: 'Delete' }).click();
+  await page.waitForTimeout(1 * 1000);
+  await page.getByRole('button', { name: 'YES' }).click();
   await page.waitForTimeout(3 * 1000);
 
   console.log(test.info().title + ' complete');
