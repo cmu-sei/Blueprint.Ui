@@ -8,6 +8,7 @@ import { Injectable } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { LegacyPageEvent as PageEvent } from '@angular/material/legacy-paginator';
 import { Router, ActivatedRoute } from '@angular/router';
+import { HttpEventType, HttpResponse } from '@angular/common/http';
 import {
   Card,
   DataField,
@@ -132,6 +133,7 @@ export class MselDataService {
   private pageIndex: Observable<number>;
   public mselPushStatuses = new Subject<Array<MselPushStatus>>();
   private _mselPushStatuses = new Array<MselPushStatus>();
+  public uploadProgress = new Subject<number>();
 
   constructor(
     private mselStore: MselStore,
@@ -484,14 +486,61 @@ export class MselDataService {
   }
 
   downloadXlsx(id: string) {
-    return this.mselService.download(id);
+    return this.mselService.downloadXlsx(id);
+  }
+
+  downloadJson(id: string) {
+    return this.mselService.downloadJson(id);
   }
 
   uploadXlsx(mselId: string, teamId: string, file: File, observe: any, reportProgress: boolean) {
+    this.mselStore.setLoading(true);
     if (mselId) {
-      return this.mselService.replaceWithXlsxFile(mselId, '', '', teamId, file, observe, reportProgress);
+      this.mselService.replaceWithXlsxFile(mselId, '', '', teamId, file, observe, reportProgress);
+    } else {
+      this.mselService
+        .uploadXlsx('', '', teamId, file, observe, reportProgress)
+        .subscribe((event) => {
+          if (event.type === HttpEventType.UploadProgress) {
+            const uploadProgress = Math.round((100 * event.loaded) / event.total);
+            this.uploadProgress.next(uploadProgress);
+          } else if (event instanceof HttpResponse) {
+            this.uploadProgress.next(0);
+            this.mselStore.setLoading(false);
+            if (event.status === 200) {
+              const msel = event.body;
+              this.mselStore.upsert(msel.id, msel);
+            }
+          }
+        },
+        (error) => {
+          this.mselStore.setLoading(false);
+          this.uploadProgress.next(0);
+        });
     }
-    return this.mselService.uploadXlsxFiles('', '', teamId, file, observe, reportProgress);
+  }
+
+  uploadJson(file: File, observe: any, reportProgress: boolean) {
+    this.mselStore.setLoading(true);
+    this.mselService
+      .uploadJson(file, observe, reportProgress)
+      .subscribe((event) => {
+        if (event.type === HttpEventType.UploadProgress) {
+          const uploadProgress = Math.round((100 * event.loaded) / event.total);
+          this.uploadProgress.next(uploadProgress);
+        } else if (event instanceof HttpResponse) {
+          this.uploadProgress.next(0);
+          this.mselStore.setLoading(false);
+          if (event.status === 200) {
+            const msel = event.body;
+            this.mselStore.upsert(msel.id, msel);
+          }
+        }
+      },
+      (error) => {
+        this.mselStore.setLoading(false);
+        this.uploadProgress.next(0);
+      });
   }
 
   setPageEvent(pageEvent: PageEvent) {
@@ -509,69 +558,6 @@ export class MselDataService {
   setActive(id: string) {
     this.mselStore.setActive(id);
   }
-
-  // addMselTeam(mselId: string, team: Team) {
-  //   const msel = this.mselQuery.getById(mselId);
-  //   if (!msel.teams.some(t => t.id === team.id)) {
-  //     const updatedMsel: Msel = {... msel};
-  //     updatedMsel.teams = [];
-  //     msel.teams.forEach(t => {
-  //       const updatedTeam = {... t};
-  //       updatedMsel.teams.push(updatedTeam);
-  //     });
-  //     const newTeam = {... team};
-  //     updatedMsel.teams.push(newTeam);
-  //     this.mselStore.upsert(updatedMsel.id, updatedMsel);
-  //   }
-  // }
-
-  // deleteMselTeam(mselId: string, teamId: string) {
-  //   const msel = this.mselQuery.getById(mselId);
-  //   const index = msel.teams.findIndex(t => t.id === teamId);
-  //   if (index >= 0) {
-  //     const updatedMsel: Msel = {... msel};
-  //     updatedMsel.teams = [];
-  //     for (let i = 0; i < msel.teams.length; i++) {
-  //       if (i !== index) {
-  //         const updatedTeam = {... msel.teams[i]};
-  //         updatedMsel.teams.push(updatedTeam);
-  //       }
-  //     }
-  //     this.mselStore.upsert(updatedMsel.id, updatedMsel);
-  //   }
-  // }
-
-  // addUserRole(userMselRole: UserMselRole) {
-  //   const msel = this.mselQuery.getById(userMselRole.mselId);
-  //   if (!msel.userMselRoles.some(
-  //     umr => umr.mselId === userMselRole.mselId && umr.userId === userMselRole.userId && umr.role === userMselRole.role)) {
-  //     const updatedMsel: Msel = {... msel};
-  //     updatedMsel.userMselRoles = [];
-  //     msel.userMselRoles.forEach(umr => {
-  //       const updatedUmr = {... umr};
-  //       updatedMsel.userMselRoles.push(updatedUmr);
-  //     });
-  //     const newUmr = {... userMselRole};
-  //     updatedMsel.userMselRoles.push(newUmr);
-  //     this.mselStore.upsert(updatedMsel.id, updatedMsel);
-  //   }
-  // }
-
-  // deleteUserRole(userMselRole: UserMselRole) {
-  //   const msel = this.mselQuery.getById(userMselRole.mselId);
-  //   const index = msel.userMselRoles.findIndex(umr => umr.id === userMselRole.id);
-  //   if (index >= 0) {
-  //     const updatedMsel: Msel = {... msel};
-  //     updatedMsel.userMselRoles = [];
-  //     for (let i = 0; i < msel.userMselRoles.length; i++) {
-  //       if (i !== index) {
-  //         const updatedTeam = {... msel.userMselRoles[i]};
-  //         updatedMsel.userMselRoles.push(updatedTeam);
-  //       }
-  //     }
-  //     this.mselStore.upsert(updatedMsel.id, updatedMsel);
-  //   }
-  // }
 
   private sortMsels(
     a: Msel,

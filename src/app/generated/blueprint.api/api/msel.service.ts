@@ -337,16 +337,67 @@ export class MselService {
     }
 
     /**
+     * Download a msel by id as json file
+     *
+     * @param id The id of the msel
+     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+     * @param reportProgress flag to report request and response progress.
+     */
+    public downloadJson(id: string, observe?: 'body', reportProgress?: boolean): Observable<Blob>;
+    public downloadJson(id: string, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Blob>>;
+    public downloadJson(id: string, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Blob>>;
+    public downloadJson(id: string, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+        if (id === null || id === undefined) {
+            throw new Error('Required parameter id was null or undefined when calling download.');
+        }
+
+        let headers = this.defaultHeaders;
+
+        // authentication (oauth2) required
+        if (this.configuration.accessToken) {
+            const accessToken = typeof this.configuration.accessToken === 'function'
+                ? this.configuration.accessToken()
+                : this.configuration.accessToken;
+            headers = headers.set('Authorization', 'Bearer ' + accessToken);
+        }
+
+        // to determine the Accept header
+        let httpHeaderAccepts: string[] = [
+            'text/plain',
+            'application/json',
+            'text/json'
+        ];
+        const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
+        if (httpHeaderAcceptSelected !== undefined) {
+            headers = headers.set('Accept', httpHeaderAcceptSelected);
+        }
+
+        // to determine the Content-Type header
+        const consumes: string[] = [
+        ];
+
+        return this.httpClient.get(`${this.configuration.basePath}/api/msels/${encodeURIComponent(String(id))}/json`,
+            {
+                responseType: "blob",
+                withCredentials: this.configuration.withCredentials,
+                headers: headers,
+                observe: observe,
+                reportProgress: reportProgress
+            }
+        );
+    }
+
+    /**
      * Download a msel by id as xlsx file
      *
      * @param id The id of the msel
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public download(id: string, observe?: 'body', reportProgress?: boolean): Observable<Blob>;
-    public download(id: string, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Blob>>;
-    public download(id: string, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Blob>>;
-    public download(id: string, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+    public downloadXlsx(id: string, observe?: 'body', reportProgress?: boolean): Observable<Blob>;
+    public downloadXlsx(id: string, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Blob>>;
+    public downloadXlsx(id: string, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Blob>>;
+    public downloadXlsx(id: string, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
         if (id === null || id === undefined) {
             throw new Error('Required parameter id was null or undefined when calling download.');
         }
@@ -1053,7 +1104,7 @@ export class MselService {
     }
 
     /**
-     * Upload file(s)
+     * Upload json file
      * File objects will be returned in the same order as their respective files within the form.
      * @param MselId
      * @param MselTemplateId
@@ -1062,10 +1113,78 @@ export class MselService {
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public uploadXlsxFiles(MselId?: string, MselTemplateId?: string, TeamId?: string, ToUpload?: Blob, observe?: 'body', reportProgress?: boolean): Observable<any>;
-    public uploadXlsxFiles(MselId?: string, MselTemplateId?: string, TeamId?: string, ToUpload?: Blob, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<any>>;
-    public uploadXlsxFiles(MselId?: string, MselTemplateId?: string, TeamId?: string, ToUpload?: Blob, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<any>>;
-    public uploadXlsxFiles(MselId?: string, MselTemplateId?: string, TeamId?: string, ToUpload?: Blob, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+    public uploadJson(ToUpload?: Blob, observe?: 'body', reportProgress?: boolean): Observable<any>;
+    public uploadJson(ToUpload?: Blob, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<any>>;
+    public uploadJson(ToUpload?: Blob, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<any>>;
+    public uploadJson(ToUpload?: Blob, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+
+        let headers = this.defaultHeaders;
+
+        // authentication (oauth2) required
+        if (this.configuration.accessToken) {
+            const accessToken = typeof this.configuration.accessToken === 'function'
+                ? this.configuration.accessToken()
+                : this.configuration.accessToken;
+            headers = headers.set('Authorization', 'Bearer ' + accessToken);
+        }
+
+        // to determine the Accept header
+        let httpHeaderAccepts: string[] = [
+            'application/json'
+        ];
+        const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
+        if (httpHeaderAcceptSelected !== undefined) {
+            headers = headers.set('Accept', httpHeaderAcceptSelected);
+        }
+
+        // to determine the Content-Type header
+        const consumes: string[] = [
+            'multipart/form-data'
+        ];
+
+        const canConsumeForm = this.canConsumeForm(consumes);
+
+        let formParams: { append(param: string, value: any): void; };
+        let useForm = false;
+        let convertFormParamsToString = false;
+        // use FormData to transmit files using content-type "multipart/form-data"
+        // see https://stackoverflow.com/questions/4007969/application-x-www-form-urlencoded-or-multipart-form-data
+        useForm = canConsumeForm;
+        if (useForm) {
+            formParams = new FormData();
+        } else {
+            formParams = new HttpParams({encoder: new CustomHttpUrlEncodingCodec()});
+        }
+
+        if (ToUpload !== undefined) {
+            formParams.append('ToUpload', <any>ToUpload);
+        }
+
+        return this.httpClient.post<any>(`${this.configuration.basePath}/api/msels/json`,
+            convertFormParamsToString ? formParams.toString() : formParams,
+            {
+                withCredentials: this.configuration.withCredentials,
+                headers: headers,
+                observe: observe,
+                reportProgress: reportProgress
+            }
+        );
+    }
+
+    /**
+     * Upload xlsx file
+     * File objects will be returned in the same order as their respective files within the form.
+     * @param MselId
+     * @param MselTemplateId
+     * @param TeamId
+     * @param ToUpload
+     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+     * @param reportProgress flag to report request and response progress.
+     */
+    public uploadXlsx(MselId?: string, MselTemplateId?: string, TeamId?: string, ToUpload?: Blob, observe?: 'body', reportProgress?: boolean): Observable<any>;
+    public uploadXlsx(MselId?: string, MselTemplateId?: string, TeamId?: string, ToUpload?: Blob, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<any>>;
+    public uploadXlsx(MselId?: string, MselTemplateId?: string, TeamId?: string, ToUpload?: Blob, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<any>>;
+    public uploadXlsx(MselId?: string, MselTemplateId?: string, TeamId?: string, ToUpload?: Blob, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
 
         let headers = this.defaultHeaders;
 

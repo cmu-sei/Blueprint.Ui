@@ -29,13 +29,15 @@ export class MselListComponent implements OnDestroy, OnInit  {
   @Input() loggedInUserId: string;
   @Input() isContentDeveloper: boolean;
   @Input() isSystemAdmin: boolean;
-  @ViewChild('fileInput') fileInput: ElementRef<HTMLInputElement>;
+  @ViewChild('jsonInput') jsonInput: ElementRef<HTMLInputElement>;
+  @ViewChild('xlsxInput') xlsxInput: ElementRef<HTMLInputElement>;
   @ViewChild(MatSort, { static: true }) sort: MatSort;
   mselList: MselPlus[] = [];
   isReady = false;
   uploadProgress = 0;
   uploadMselId = '';
   uploadTeamId = '';
+  fileType = '';
   filteredMselList: MselPlus[] = [];
   filterControl = new UntypedFormControl();
   filterString = '';
@@ -82,6 +84,11 @@ export class MselListComponent implements OnDestroy, OnInit  {
     // subscribe to MSELs loading
     this.mselQuery.selectLoading().pipe(takeUntil(this.unsubscribe$)).subscribe((isLoading) => {
       this.isReady = !isLoading;
+      this.areButtonsDisabled = isLoading;
+    });
+    // subscribe to MSELs loading progress
+    this.mselDataService.uploadProgress.pipe(takeUntil(this.unsubscribe$)).subscribe((uploadProgress) => {
+      this.uploadProgress = uploadProgress;
     });
     // subscribe to MSELs
     (this.mselQuery.selectAll() as Observable<MselPlus[]>).pipe(takeUntil(this.unsubscribe$)).subscribe((msels) => {
@@ -112,10 +119,11 @@ export class MselListComponent implements OnDestroy, OnInit  {
     this.uiDataService.setMselTab(this.defaultTab);
   }
 
-  uploadFile(mselId: string, teamId: string) {
+  uploadFile(fileType: string, mselId: string, teamId: string) {
     this.areButtonsDisabled = true;
     this.uploadMselId = mselId ? mselId : '';
     this.uploadTeamId = teamId ? teamId : '';
+    this.fileType = fileType;
   }
 
   /**
@@ -129,23 +137,13 @@ export class MselListComponent implements OnDestroy, OnInit  {
     }
     this.uploadProgress = 0;
     this.isReady = false;
-    this.mselDataService
-      .uploadXlsx(this.uploadMselId, this.uploadTeamId, file, 'events', true)
-      .subscribe((event) => {
-        if (event.type === HttpEventType.UploadProgress) {
-          this.uploadProgress = Math.round((100 * event.loaded) / event.total);
-          console.log(this.uploadProgress);
-        } else if (event instanceof HttpResponse) {
-          this.isReady = true;
-          if (event.status === 200) {
-            this.mselDataService.loadById(event.body);
-          } else {
-            alert('Error uploading files: ' + event.status);
-          }
-          this.areButtonsDisabled = false;
-        }
-      });
-    this.fileInput.nativeElement.value = null;
+    if (this.fileType === 'xlsx') {
+      this.mselDataService.uploadXlsx(this.uploadMselId, this.uploadTeamId, file, 'events', true);
+    } else {
+      this.mselDataService.uploadJson(file, 'events', true);
+    }
+    this.jsonInput.nativeElement.value = null;
+    this.xlsxInput.nativeElement.value = null;
   }
 
   /**
@@ -154,7 +152,7 @@ export class MselListComponent implements OnDestroy, OnInit  {
    * @param mselId: The GUID of the file to download
    * @param name: The name to use when triggering the download
    */
-  downloadFile(msel: MselPlus) {
+  downloadXlsxFile(msel: MselPlus) {
     this.isReady = false;
     this.mselDataService.downloadXlsx(msel.id).subscribe(
       (data) => {
@@ -163,6 +161,34 @@ export class MselListComponent implements OnDestroy, OnInit  {
         link.href = url;
         link.target = '_blank';
         link.download = msel.name.endsWith('.xlsx') ? msel.name : msel.name + '.xlsx';
+        link.click();
+        this.isReady = true;
+      },
+      (err) => {
+        this.isReady = true;
+        window.alert('Error downloading file');
+      },
+      () => {
+        this.isReady = true;
+      }
+    );
+  }
+
+  /**
+   * Trigger a download for a file. This will open the file in the broswer if it is an image or pdf
+   *
+   * @param mselId: The GUID of the file to download
+   * @param name: The name to use when triggering the download
+   */
+  downloadJsonFile(msel: MselPlus) {
+    this.isReady = false;
+    this.mselDataService.downloadJson(msel.id).subscribe(
+      (data) => {
+        const url = window.URL.createObjectURL(data);
+        const link = document.createElement('a');
+        link.href = url;
+        link.target = '_blank';
+        link.download = msel.name.endsWith('.json') ? msel.name : msel.name + '.json';
         link.click();
         this.isReady = true;
       },
@@ -206,7 +232,6 @@ export class MselListComponent implements OnDestroy, OnInit  {
   }
 
   filterMsels() {
-    console.log('type=' + this.selectedMselType);
     let filteredMselList = this.mselList;
     switch (this.selectedMselType) {
       case 'is':
@@ -219,7 +244,6 @@ export class MselListComponent implements OnDestroy, OnInit  {
         filteredMselList = filteredMselList;
         break;
     }
-    console.log('status=' + this.selectedMselStatus);
     switch (this.selectedMselStatus) {
       case 'Pending':
         filteredMselList = filteredMselList.filter(m => m.status.toString() === 'Pending');
