@@ -46,6 +46,22 @@ export default defineConfig({
       testMatch: 'login.setup.ts',
     },
     {
+      name: 'load test data',
+      testMatch: 'blueprint-load-test-data.spec.ts',
+      dependencies: ['adminsetup'],
+      use: {
+        storageState: ADMIN_STORAGE_STATE,
+      },
+    },
+    {
+      name: 'clear test data',
+      testMatch: 'blueprint-clear-test-data.spec.ts',
+      dependencies: ['adminsetup'],
+      use: {
+        storageState: ADMIN_STORAGE_STATE,
+      },
+    },
+    {
       name: 'user tests',
       testMatch: 'blueprint-user.spec.ts',
       dependencies: ['usersetup'],
