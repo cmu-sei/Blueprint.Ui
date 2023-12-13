@@ -54,19 +54,11 @@ export default defineConfig({
       },
     },
     {
-      name: 'clear test data',
-      testMatch: 'blueprint-clear-test-data.spec.ts',
+      name: 'admin tests',
+      testMatch: /blueprint-admin.spec\.ts/,
       dependencies: ['adminsetup'],
       use: {
         storageState: ADMIN_STORAGE_STATE,
-      },
-    },
-    {
-      name: 'user tests',
-      testMatch: 'blueprint-user.spec.ts',
-      dependencies: ['usersetup'],
-      use: {
-        storageState: USER_STORAGE_STATE,
       },
     },
     {
@@ -78,8 +70,16 @@ export default defineConfig({
       },
     },
     {
-      name: 'admin tests',
-      testMatch: /blueprint-admin.spec\.ts/,
+      name: 'user tests',
+      testMatch: 'blueprint-user.spec.ts',
+      dependencies: ['usersetup'],
+      use: {
+        storageState: USER_STORAGE_STATE,
+      },
+    },
+    {
+      name: 'clear test data',
+      testMatch: 'blueprint-clear-test-data.spec.ts',
       dependencies: ['adminsetup'],
       use: {
         storageState: ADMIN_STORAGE_STATE,
