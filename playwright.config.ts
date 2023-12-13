@@ -25,10 +25,10 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
+  /* Opt out of parallel tests. */
+  workers: 1,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: [['html', {outputFolder: 'test-reporter'}]],
+  reporter: [['html', {outputFolder: 'e2e/test-results'}]],
   /* Set timeout for a test in millisecands */
   timeout: 90000,
   /* Configure projects based on user permissions */
@@ -47,7 +47,7 @@ export default defineConfig({
     },
     {
       name: 'load test data',
-      testMatch: 'blueprint-load-test-data.spec.ts',
+      testMatch: '01-blueprint-load-test-data.spec.ts',
       dependencies: ['adminsetup'],
       use: {
         storageState: ADMIN_STORAGE_STATE,
@@ -55,7 +55,7 @@ export default defineConfig({
     },
     {
       name: 'admin tests',
-      testMatch: /blueprint-admin.spec\.ts/,
+      testMatch: '02-blueprint-admin.spec.ts',
       dependencies: ['adminsetup'],
       use: {
         storageState: ADMIN_STORAGE_STATE,
@@ -63,7 +63,7 @@ export default defineConfig({
     },
     {
       name: 'content dev tests',
-      testMatch: 'blueprint-contentdev.spec.ts',
+      testMatch: '03-blueprint-contentdev.spec.ts',
       dependencies: ['contentdevsetup'],
       use: {
         storageState: CONTENT_DEV_STORAGE_STATE,
@@ -71,7 +71,7 @@ export default defineConfig({
     },
     {
       name: 'user tests',
-      testMatch: 'blueprint-user.spec.ts',
+      testMatch: '04-blueprint-user.spec.ts',
       dependencies: ['usersetup'],
       use: {
         storageState: USER_STORAGE_STATE,
@@ -79,7 +79,7 @@ export default defineConfig({
     },
     {
       name: 'clear test data',
-      testMatch: 'blueprint-clear-test-data.spec.ts',
+      testMatch: '05-blueprint-clear-test-data.spec.ts',
       dependencies: ['adminsetup'],
       use: {
         storageState: ADMIN_STORAGE_STATE,
