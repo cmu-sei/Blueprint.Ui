@@ -496,7 +496,25 @@ export class MselDataService {
   uploadXlsx(mselId: string, teamId: string, file: File, observe: any, reportProgress: boolean) {
     this.mselStore.setLoading(true);
     if (mselId) {
-      this.mselService.replaceWithXlsxFile(mselId, '', '', teamId, file, observe, reportProgress);
+      this.mselService
+        .replaceWithXlsxFile(mselId, '', '', teamId, file, observe, reportProgress)
+        .subscribe((event) => {
+          if (event.type === HttpEventType.UploadProgress) {
+            const uploadProgress = Math.round((100 * event.loaded) / event.total);
+            this.uploadProgress.next(uploadProgress);
+          } else if (event instanceof HttpResponse) {
+            this.uploadProgress.next(0);
+            this.mselStore.setLoading(false);
+            if (event.status === 200) {
+              const msel = event.body;
+              this.mselStore.upsert(msel.id, msel);
+            }
+          }
+        },
+        (error) => {
+          this.mselStore.setLoading(false);
+          this.uploadProgress.next(0);
+        });
     } else {
       this.mselService
         .uploadXlsx('', '', teamId, file, observe, reportProgress)

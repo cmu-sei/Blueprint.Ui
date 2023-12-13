@@ -972,9 +972,9 @@ export class MselService {
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public replaceWithXlsxFile(id: string, MselId?: string, MselTemplateId?: string, TeamId?: string, ToUpload?: Blob, observe?: 'body', reportProgress?: boolean): Observable<string>;
-    public replaceWithXlsxFile(id: string, MselId?: string, MselTemplateId?: string, TeamId?: string, ToUpload?: Blob, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<string>>;
-    public replaceWithXlsxFile(id: string, MselId?: string, MselTemplateId?: string, TeamId?: string, ToUpload?: Blob, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<string>>;
+    public replaceWithXlsxFile(id: string, MselId?: string, MselTemplateId?: string, TeamId?: string, ToUpload?: Blob, observe?: 'body', reportProgress?: boolean): Observable<any>;
+    public replaceWithXlsxFile(id: string, MselId?: string, MselTemplateId?: string, TeamId?: string, ToUpload?: Blob, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<any>>;
+    public replaceWithXlsxFile(id: string, MselId?: string, MselTemplateId?: string, TeamId?: string, ToUpload?: Blob, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<any>>;
     public replaceWithXlsxFile(id: string, MselId?: string, MselTemplateId?: string, TeamId?: string, ToUpload?: Blob, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
         if (id === null || id === undefined) {
             throw new Error('Required parameter id was null or undefined when calling replaceWithXlsxFile.');

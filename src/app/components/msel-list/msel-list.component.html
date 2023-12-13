@@ -150,7 +150,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             </mat-menu>
             <button
               mat-icon-button class="msel-action"
-              (click)="uploadFile('xlsx', element.id, null); fileInput.click(); $event.stopPropagation();"
+              (click)="uploadFile('xlsx', element.id, null); xlsxInput.click(); $event.stopPropagation();"
               title="Upload .xlsx file to {{ element.name }}"
               [disabled]="!isReady || !(isContentDeveloper || element.hasRole(loggedInUserId, null).owner)"
             >

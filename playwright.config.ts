@@ -35,15 +35,15 @@ export default defineConfig({
   projects: [
     {
       name: 'adminsetup',
-      testMatch: 'admin.login.setup.ts',
+      testMatch: 'login.setup.admin.ts',
     },
     {
       name: 'contentdevsetup',
-      testMatch: 'contentdev.login.setup.ts',
+      testMatch: 'login.setup.contentdeveloper.ts',
     },
     {
       name: 'usersetup',
-      testMatch: 'login.setup.ts',
+      testMatch: 'login.setup.mselowner.ts',
     },
     {
       name: 'load test data',

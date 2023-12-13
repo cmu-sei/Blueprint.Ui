@@ -29,7 +29,7 @@ test('load blueprint test data', async ({ page }) => {
     await page.getByRole('button', { name: 'Upload', exact: true }).click(),
     await page.getByRole('menuitem', { name: 'Upload json file' }).click()
   ]);
-  await fileChooser.setFiles(extraConfig.downloadPath + testMselTemplate + '.json');
+  await fileChooser.setFiles(extraConfig.dataPath + testMselTemplate + '.json');
   await page.waitForTimeout(1 * 1000);
   // load integration MSEL
   [fileChooser] = await Promise.all([
@@ -37,7 +37,7 @@ test('load blueprint test data', async ({ page }) => {
     await page.getByRole('button', { name: 'Upload', exact: true }).click(),
     await page.getByRole('menuitem', { name: 'Upload json file' }).click()
   ]);
-  await fileChooser.setFiles(extraConfig.downloadPath + testPushMsel + '.json');
+  await fileChooser.setFiles(extraConfig.dataPath + testPushMsel + '.json');
   await page.waitForTimeout(1 * 1000);
   // load user MSEL
   [fileChooser] = await Promise.all([
@@ -45,7 +45,7 @@ test('load blueprint test data', async ({ page }) => {
     await page.getByRole('button', { name: 'Upload', exact: true }).click(),
     await page.getByRole('menuitem', { name: 'Upload json file' }).click()
   ]);
-  await fileChooser.setFiles(extraConfig.downloadPath + testUserMsel + '.json');
+  await fileChooser.setFiles(extraConfig.dataPath + testUserMsel + '.json');
   await page.waitForTimeout(1 * 1000);
   console.log(test.info().title + ' complete');
 });

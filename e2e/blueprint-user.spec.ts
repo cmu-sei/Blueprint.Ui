@@ -92,7 +92,6 @@ test('add delete page', async ({ page }) => {
   await page.click('button:has(mat-icon.mdi-check)');
   await page.waitForTimeout(1 * 1000);
 
-
   // Remove page
   await page.getByRole('tab', { name: 'test' }).click();
   await page.getByRole('button', { name: 'Delete test', exact: true }).click();
