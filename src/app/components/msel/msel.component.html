@@ -154,6 +154,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         *ngIf="selectedTab === 'Organizations'"
         [loggedInUserId]="loggedInUserId"
         [isContentDeveloper]="isContentDeveloper"
+        [showTemplates]="false"
       >Organizations</app-organization-list>
       <app-move-list
         *ngIf="selectedTab === 'Moves'"

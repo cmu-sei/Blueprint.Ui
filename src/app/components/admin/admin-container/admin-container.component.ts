@@ -17,6 +17,7 @@ import {
 import { ApplicationArea, SignalRService } from 'src/app/services/signalr.service';
 import { environment } from 'src/environments/environment';
 import { HealthCheckService } from 'src/app/generated/blueprint.api/api/api';
+import { UIDataService } from 'src/app/data/ui/ui-data.service';
 
 @Component({
   selector: 'app-admin-container',
@@ -29,8 +30,13 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
   scoringModelsText = 'Scoring Models';
   rolesText = 'Roles';
   teamsText = 'Teams';
+  dataFieldsText = 'Data Fields';
+  organizationsText = 'Organizations';
+  galleryCardsText = 'Gallery Cards';
+  citeActionsText = 'CITE Actions';
+  citeRolesText = 'CITE Roles';
   topbarText = 'Set AppTopBarText in Settings';
-  showSection: Observable<string>;
+  selectedTab = 'Data Fields';
   displayedSection = '';
   exitSection = '';
   isSidebarOpen = true;
@@ -55,7 +61,8 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
     private settingsService: ComnSettingsService,
     private authQuery: ComnAuthQuery,
     titleService: Title,
-    private signalRService: SignalRService
+    private signalRService: SignalRService,
+    private uiDataService: UIDataService
   ) {
     this.theme$ = this.authQuery.userTheme$;
     this.hideTopbar = this.inIframe();
@@ -73,11 +80,6 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
       .subscribe((result) => {
         this.canAccessAdminSection = result;
       });
-    this.showSection = activatedRoute.queryParamMap.pipe(
-      tap((params) => this.displayedSection = params.get('section')),
-      map((params) => params.get('section') || this.usersText)
-    );
-
     // Set the display settings from config file
     this.topbarColor = this.settingsService.settings.AppTopBarHexColor
       ? this.settingsService.settings.AppTopBarHexColor
@@ -89,6 +91,13 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
     titleService.setTitle(appTitle + ' - Admin');
     this.topbarText = this.settingsService.settings.AppTopBarText || this.topbarText;
     this.getApiVersion();
+    // set the selected tab
+    let selectedTab = this.uiDataService.getAdminTab();
+    if (!selectedTab) {
+      this.uiDataService.setAdminTab(this.organizationsText);
+      selectedTab = this.organizationsText;
+    }
+    this.selectedTab = selectedTab;
   }
 
   ngOnInit() {
@@ -103,10 +112,8 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
   }
 
   gotoSection(section: string) {
-    this.router.navigate([], {
-      queryParams: { section: section },
-      queryParamsHandling: 'merge',
-    });
+    this.selectedTab = section;
+    this.uiDataService.setAdminTab(section);
   }
 
   goToUrl(url): void {
@@ -116,7 +123,7 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
   }
 
   getSelectedClass(section: string) {
-    if (section === this.displayedSection) {
+    if (section === this.selectedTab) {
       return 'selected-item';
     } else {
       return null;
