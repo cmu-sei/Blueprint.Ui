@@ -21,7 +21,7 @@ project root for license information.
     <div class="add-margin">
       <div>
         <mat-form-field class="full-width">
-          <input type="text" matInput [formControl]="organizationNameFormControl" placeholder="Name (required)" (blur)="saveOrganization('name')"
+          <input type="text" matInput [formControl]="organizationNameFormControl" placeholder="Long Name (required)" (blur)="saveOrganization('name')"
             value="{{data.organization.name}}">
           <mat-error *ngIf="organizationNameFormControl.hasError('required')">
             Name is <strong>required</strong>

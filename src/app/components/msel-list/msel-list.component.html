@@ -33,14 +33,26 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <div style="width: 100%;">
         <button
           mat-icon-button
-          (click)="uploadFile('', ''); fileInput.click(); $event.stopPropagation();"
+          [matMenuTriggerFor]="upload"
           style="outline: none; margin-right: 15px;"
-          title="Add MSEL from .xlsx file"
+          title="Upload a new MSEL from a file"
           [disabled]="!isContentDeveloper"
         >
           <mat-icon class="mdi-24px self-center" fontIcon="mdi-upload"></mat-icon>
           Upload
         </button>
+        <mat-menu #upload="matMenu" [overlapTrigger]="false">
+          <button
+            mat-menu-item
+            (click)="uploadFile('json', '', ''); jsonInput.click()"
+            title="Upload json file"
+          >Upload json file</button>
+          <button
+            mat-menu-item
+            (click)="uploadFile('xlsx', '', ''); xlsxInput.click()"
+            title="Upload xlsx file"
+          >Upload xlsx file</button>
+        </mat-menu>
       </div>
     </div>
     <div class="header-button">
@@ -118,15 +130,27 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <div class="action-div">
             <button
               mat-icon-button class="msel-action"
-              (click)="downloadFile(element); $event.stopPropagation();"
-              title="Download .xlsx file from {{ element.name }}"
+              [matMenuTriggerFor]="download"
+              title="Download {{ element.name }}"
               [disabled]="!isReady"
             >
               <mat-icon class="mdi-18px" fontIcon="mdi-download" alt="Download .xlsx file"></mat-icon>
             </button>
+            <mat-menu #download="matMenu" [overlapTrigger]="false">
+              <button
+                mat-menu-item
+                (click)="downloadJsonFile(element);"
+                title="Download json file"
+              >Download json file</button>
+              <button
+                mat-menu-item
+                (click)="downloadXlsxFile(element);"
+                title="Download xlsx file"
+              >Download xlsx file</button>
+            </mat-menu>
             <button
               mat-icon-button class="msel-action"
-              (click)="uploadFile(element.id, null); fileInput.click(); $event.stopPropagation();"
+              (click)="uploadFile('xlsx', element.id, null); xlsxInput.click(); $event.stopPropagation();"
               title="Upload .xlsx file to {{ element.name }}"
               [disabled]="!isReady || !(isContentDeveloper || element.hasRole(loggedInUserId, null).owner)"
             >
@@ -215,7 +239,15 @@ project root for license information or contact permission@sei.cmu.edu for full 
 <input
   hidden
   (change)="selectFile($event)"
-  #fileInput
+  #xlsxInput
   type="file"
   accept=".xlsx"
+/>
+
+<input
+  hidden
+  (change)="selectFile($event)"
+  #jsonInput
+  type="file"
+  accept=".json"
 />

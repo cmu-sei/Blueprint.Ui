@@ -6,15 +6,16 @@
 
 // login.setup.ts
 import { test as setup, expect } from '@playwright/test';
-import { CONTENT_DEV_STORAGE_STATE } from '../playwright.config';
+import { ADMIN_STORAGE_STATE } from '../playwright.config';
+const extraConfig = require('./settings.json');
 
 setup('do login', async ({ page }) => {
   await page.goto('http://localhost:5000');
-  await expect(page).toHaveTitle(/Identity | OpenID Connect/);
+  await expect(page).toHaveTitle(/Tim's Identity | OpenID Connect/);
   await page.locator('text=Login').click();
   await page.locator('text=Continue').click();
-  await page.fill('input[name="Username"]', 'bean@this.ws');
-  await page.fill('input[name="Password"]', '321ChangeMe!');
+  await page.fill('input[name="Username"]', extraConfig.testAdminEmail);
+  await page.fill('input[name="Password"]', extraConfig.testAdminPassword);
   await page.click('text=Continue');
-  await page.context().storageState({ path: CONTENT_DEV_STORAGE_STATE });
+  await page.context().storageState({ path: ADMIN_STORAGE_STATE });
 });

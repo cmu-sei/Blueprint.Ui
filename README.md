@@ -23,42 +23,18 @@ Run `ng build` to build the project. The build artifacts will be stored in the `
 Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
 
 ## Running end-to-end tests with Playwright
-from powershell to install playwright browsers on windows managed laptop:
-  $env:PLAYWRIGHT_BROWSERS_PATH="C:\SEI\Tools\ms-playwright"
+One time from powershell to install playwright and playwright browsers on windows managed laptop:
+  set this environment variable on your system:  PLAYWRIGHT_BROWSERS_PATH="C:\SEI\Tools\ms-playwright"
+  cd Blueprint.Ui
+  npm install
   npx playwright install
-
-Created a Playwright Test project at C:\SEI\Tools\dev\dot\blueprint\Blueprint.Ui
-
-Inside that directory, you can run several commands:
 
   npx playwright test
     Runs the end-to-end tests.
 
-  npx playwright test --ui
-    Starts the interactive UI mode.
-
-  npx playwright test --project=chromium
-    Runs the tests only on Desktop Chrome.
-
-  npx playwright test example
-    Runs the tests in a specific file.
-
   npx playwright test --debug
     Runs the tests in debug mode.
 
-  npx playwright codegen
-    Auto generate tests with Codegen.
-
-We suggest that you begin by typing:
-
-    npx playwright test
-
-And check out the following files:
-  - .\e2e\example.spec.ts - Example end-to-end test
-  - .\tests-examples\demo-todo-app.spec.ts - Demo Todo App end-to-end tests
-  - .\playwright.config.ts - Playwright Test configuration
-
-Visit https://playwright.dev/docs/intro for more information.
 
 ## Further help
 

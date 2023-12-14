@@ -1,6 +1,6 @@
 {
   "name": "blueprint-ui",
-  "version": "0.4.0-rc1",
+  "version": "0.4.0-rc2",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -64,7 +64,7 @@
     "@angular/compiler-cli": "^15.2.9",
     "@angular/language-service": "^15.2.9",
     "@openapitools/openapi-generator-cli": "1.0.18-3.2.0",
-    "@playwright/test": "^1.37.0",
+    "@playwright/test": "^1.40.1",
     "@types/jasmine": "~3.7.7",
     "@types/jasminewd2": "~2.0.9",
     "@types/node": "^18.11.18",

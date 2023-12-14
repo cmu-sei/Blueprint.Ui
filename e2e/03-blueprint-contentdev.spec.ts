@@ -13,7 +13,8 @@ const testPushMselName = Date.now() + ' Test Push MSEL';
 const testMselTemplate = extraConfig.testMselTemplate;
 const testMselName =  Date.now() + ' Test MSEL';
 const testMselDescription = testMselName + ' used for e2e and load testing';
-let mselDownloadPath = extraConfig.downloadPath + testMselName + '.xlsx';
+let mselDownloadPath = extraConfig.dataPath + testMselName + '.xlsx';
+const temporaryTestMsel = 'Temporary Test MSEL (delete me)';
 console.log('Using ' + testMselTemplate + ' as the base MSEL for testing.');
 
 // pull proxy from settings file
@@ -33,8 +34,8 @@ test('access check blueprint', async ({ page }) => {
   console.log(test.info().title + ' complete');
 });
 
-// ===================== Copy/Delete MSEL ======================
-test('copy delete MSEL', async ({ page }) => {
+// ===================== Copy and Delete a MSEL ======================
+test('copy MSEL', async ({ page }) => {
   console.log(test.info().title + ' started');
   await page.goto(extraConfig.blueprintURL);
   await expect(page).toHaveTitle(/Blueprint/);
@@ -69,12 +70,11 @@ test('copy delete MSEL', async ({ page }) => {
     console.log('Specified MSEL has been removed.');
   }
 
-  await page.waitForTimeout(5 * 1000);
   console.log(test.info().title + ' complete');
 });
 
-// ===================== Download a MSEL ======================
-test('download MSEL', async ({ page }) => {
+// ===================== Download a xlsx file ======================
+test('download MSEL xlsx file', async ({ page }) => {
   console.log(test.info().title + ' started');
   await page.goto(extraConfig.blueprintURL);
   await expect(page).toHaveTitle(/Blueprint/);
@@ -83,11 +83,12 @@ test('download MSEL', async ({ page }) => {
   // Download MSEL
   const [download] = await Promise.all([
     page.waitForEvent('download'),
-    await page.getByRole('button', { name: 'Download .xlsx file from ' + testMselTemplate }).click()
+    await page.getByRole('button', { name: 'Download ' + testMselTemplate, exact: true }).click(),
+    await page.getByRole('menuitem', { name: 'Download xlsx file' }).click()
   ]);
 
   // branch for local vs environment
-  if (extraConfig.downloadPath) {
+  if (extraConfig.dataPath) {
     await download.saveAs(mselDownloadPath);
     console.log('file downloaded as ' + mselDownloadPath);
   } else {
@@ -112,7 +113,48 @@ test('download MSEL', async ({ page }) => {
   console.log(test.info().title + ' complete');
 });
 
-// ===================== Upload a MSEL ======================
+// ===================== Download a json file ======================
+test('download MSEL json file', async ({ page }) => {
+  console.log(test.info().title + ' started');
+  await page.goto(extraConfig.blueprintURL);
+  await expect(page).toHaveTitle(/Blueprint/);
+  await page.waitForTimeout(5 * 1000);
+
+  // Download json file
+  mselDownloadPath = extraConfig.dataPath + testMselName + '.json';
+  const [download] = await Promise.all([
+    page.waitForEvent('download'),
+    await page.getByRole('button', { name: 'Download ' + testMselTemplate, exact: true }).click(),
+    await page.getByRole('menuitem', { name: 'Download json file' }).click()
+  ]);
+
+  // branch for local vs environment
+  if (extraConfig.dataPath) {
+    await download.saveAs(mselDownloadPath);
+    console.log('file downloaded as ' + mselDownloadPath);
+  } else {
+    mselDownloadPath = await download.path();
+    console.log('file downloaded as ' + mselDownloadPath);
+  }
+  // check for download failure
+  if (await download.failure()) {
+    console.log(await download.failure());
+  }
+  console.log(await download.suggestedFilename());
+  // Read file stats
+  fs.stat(mselDownloadPath, (err, stats) => {
+    if (err) {
+      console.log('File does not exist.');
+    } else {
+      console.log('file size is ' + stats.size);
+      fs.unlink(mselDownloadPath, () => {});
+    }
+  });
+  await page.waitForTimeout(5 * 1000);
+  console.log(test.info().title + ' complete');
+});
+
+// ===================== Upload a new MSEL from xlsx ======================
 test('upload MSEL', async ({ page }) => {
   console.log(test.info().title + ' started');
   await page.goto(extraConfig.blueprintURL);
@@ -122,13 +164,14 @@ test('upload MSEL', async ({ page }) => {
   // Upload MSEL
   const [fileChooser] = await Promise.all([
     page.waitForEvent('filechooser'),
-    page.locator('button:has-text("Upload")').click()
+    page.locator('button:has-text("Upload")').click(),
+    await page.getByRole('menuitem', { name: 'Upload xlsx file' }).click()
   ]);
 
   // Be sure to change the file path to your own
-  const filePath = extraConfig.pathToTestFile;
+  const filePath = extraConfig.dataPath + extraConfig.xlsxTestFile;
   await fileChooser.setFiles(filePath);
-  await page.waitForTimeout(1 * 1000);
+  await page.waitForTimeout(5 * 1000);
 
   // Verify File was Uploaded
   const path = require('path');
@@ -140,23 +183,43 @@ test('upload MSEL', async ({ page }) => {
   await page.click('text=PlaywrightMSEL');
 
   // Edit MSEL Name
-  await page.fill('text=Name', testMselName);
+  await page.fill('text=Name', temporaryTestMsel);
 
   // Edit Description Field
-  await page.fill('text=Description', testMselDescription);
+  await page.fill('text=Description', temporaryTestMsel);
   await page.click('button:has(mat-icon.mdi-check)');
 
   // Return to Dashboard
   await page.click('img[title="Home"]');
 
+});
+
+// ===================== Replace and Delete MSEL ======================
+test('replace and delete MSEL', async ({ page }) => {
+  console.log(test.info().title + ' started');
+  await page.goto(extraConfig.blueprintURL);
+  await expect(page).toHaveTitle(/Blueprint/);
+  await page.waitForTimeout(1 * 1000);
+
+  // Upload MSEL
+  const [fileChooser] = await Promise.all([
+    page.waitForEvent('filechooser'),
+    page.getByRole('button', { name: 'Upload .xlsx file to ' + temporaryTestMsel, exact: true }).click(),
+  ]);
+
+  // Be sure to change the file path to your own
+  const filePath = extraConfig.dataPath + extraConfig.xlsxTestFile;
+  await fileChooser.setFiles(filePath);
+  await page.waitForTimeout(5 * 1000);
+
   // Delete created MSEL
-  await page.click('// button[@title="Delete ' + testMselName + '"]');
+  await page.click('// button[@title="Delete ' + temporaryTestMsel + '"]');
   await page.click('button:has-text("YES")');
   await page.waitForTimeout(1 * 1000);
 
   // Verify gone
   try {
-    await page.waitForSelector('text=' + testMselName, {timeout: 500});
+    await page.waitForSelector('text=' + temporaryTestMsel, {timeout: 500});
   } catch (error) {
     console.log('Specified MSEL has been removed.');
   }

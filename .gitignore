@@ -52,3 +52,7 @@ src/assets/config/settings.env.json
 docker/
 .vscode/**/*.json
 e2e/.auth/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
