@@ -36,7 +36,7 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
   citeActionsText = 'CITE Actions';
   citeRolesText = 'CITE Roles';
   topbarText = 'Set AppTopBarText in Settings';
-  selectedTab = 'Data Fields';
+  selectedTab = 'Organizations';
   displayedSection = '';
   exitSection = '';
   isSidebarOpen = true;
