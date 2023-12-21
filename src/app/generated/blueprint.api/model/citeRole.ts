@@ -28,4 +28,5 @@ export interface CiteRole {
     teamId?: string;
     team?: Team;
     name?: string;
+    isTemplate?: boolean;
 }

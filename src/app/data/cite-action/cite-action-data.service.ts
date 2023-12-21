@@ -119,6 +119,24 @@ export class CiteActionDataService {
     }
   }
 
+  loadTemplates() {
+    this.citeActionStore.setLoading(true);
+    this.citeActionService
+      .getCiteActionTemplates()
+      .pipe(
+        tap(() => {
+          this.citeActionStore.setLoading(false);
+        }),
+        take(1)
+      )
+      .subscribe(
+        (templates) => {
+          this.citeActionStore.upsertMany(templates);
+        },
+        (error) => {}
+      );
+  }
+
   loadByMsel(mselId: string) {
     this.citeActionStore.setLoading(true);
     this.citeActionService

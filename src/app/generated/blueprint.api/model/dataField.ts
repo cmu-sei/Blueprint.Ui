@@ -38,4 +38,5 @@ export interface DataField {
     isInitiallyHidden?: boolean;
     isOnlyShownToOwners?: boolean;
     galleryArticleParameter?: string;
+    isTemplate?: boolean;
 }

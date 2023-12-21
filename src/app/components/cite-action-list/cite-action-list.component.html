@@ -25,8 +25,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <mat-label>Move</mat-label>
         <mat-select placeholder="Move" [value]="selectedMoveNumber" (selectionChange)="selectMove($event.value)" (click)="$event.stopPropagation()">
           <mat-option [value]="-1">All</mat-option>
-          <mat-option *ngFor="let move of moveList" [value]="move.moveNumber">
-            {{ move.moveNumber }} - {{ move.title }}
+          <mat-option *ngFor="let move of moveList" [value]="move.moveNumber" title="{{ move.description }}">
+            {{ move.moveNumber }}
           </mat-option>
         </mat-select>
       </mat-form-field>

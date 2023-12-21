@@ -96,6 +96,24 @@ export class DataFieldDataService {
     );
   }
 
+  loadTemplates() {
+    this.dataFieldStore.setLoading(true);
+    this.dataFieldService
+      .getDataFieldTemplates()
+      .pipe(
+        tap(() => {
+          this.dataFieldStore.setLoading(false);
+        }),
+        take(1)
+      )
+      .subscribe(
+        (templates) => {
+          this.dataFieldStore.upsertMany(templates);
+        },
+        (error) => {}
+      );
+  }
+
   loadByMsel(mselId: string) {
     this.dataFieldStore.setLoading(true);
     this.dataFieldService

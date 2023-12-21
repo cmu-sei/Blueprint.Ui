@@ -267,7 +267,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
         ></app-organization-list>
       </span>
       <span *ngIf="isSuperUser && (selectedTab === galleryCardsText)">
-        gallery cards
+        <app-card-list
+          [loggedInUserId]="(loggedInUser | async).profile.sub"
+          [isContentDeveloper]="true"
+          [showTemplates]="true"
+        ></app-card-list>
       </span>
       <span *ngIf="isSuperUser && (selectedTab === citeActionsText)">
         cite actions
