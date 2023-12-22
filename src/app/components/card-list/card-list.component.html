@@ -44,7 +44,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           title="{{ template.description }}"
         >{{ template.name }}</button>
       </mat-menu>
-      Move
+      <span *ngIf="!showTemplates">Move</span>
     </span>
     <span class="mat-header-cell three-cell" mat-sort-header="name">Name</span>
     <span class="mat-header-cell two-cell" mat-sort-header="description">Description</span>
@@ -103,7 +103,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           >
             <mat-icon class="mdi-18px" fontIcon="mdi-card-plus-outline" title="Make {{ item.name }} a template"></mat-icon>
           </button>
-          &nbsp;{{ item.move }}
+          &nbsp;<span *ngIf="!showTemplates">{{ item.move }}</span>
         </div>
         <div class="mat-cell three-cell center-self">{{ item.name }}</div>
         <div class="mat-cell five-cell center-self">{{ item.description }}</div>

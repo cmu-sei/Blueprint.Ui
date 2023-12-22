@@ -56,8 +56,7 @@ export class CardListComponent implements OnDestroy {
     // subscribe to cards
     this.cardQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(cards => {
       this.cardList = cards;
-      this.sortedCards = this.getSortedCards(this.getFilteredCards(this.msel.id, this.cardList));
-      this.templateList = this.getSortedCards(this.getFilteredCards(null, this.cardList));
+      this.sortChanged(this.sort);
     });
     // subscribe to moves
     this.moveQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(moves => {
@@ -70,13 +69,13 @@ export class CardListComponent implements OnDestroy {
       } else {
         Object.assign(this.msel, msel);
       }
-      this.sortedCards = this.getSortedCards(this.getFilteredCards(this.msel.id, this.cardList));
+      this.sortedCards = this.getSortedCards(this.getFilteredCards(false));
     });
     this.filterControl.valueChanges
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((term) => {
         this.filterString = term;
-        this.sortedCards = this.getSortedCards(this.getFilteredCards(this.msel.id, this.cardList));
+        this.sortedCards = this.getSortedCards(this.getFilteredCards(false));
       });
     // load card templates
     this.cardDataService.loadTemplates();
@@ -93,17 +92,18 @@ export class CardListComponent implements OnDestroy {
   addOrEditCard(card: Card, makeTemplate: boolean) {
     if (!card) {
       card = {
-        mselId: this.msel.id,
+        mselId: this.showTemplates || makeTemplate ? null : this.msel.id,
         move: 0,
-        inject: 0
+        inject: 0,
+        isTemplate: this.showTemplates || makeTemplate
       };
     } else {
       card = {
         id: makeTemplate === card.isTemplate ? card.id : null,
         name: card.name,
         description: card.description,
-        mselId: makeTemplate ? null : this.msel.id,
-        isTemplate: makeTemplate,
+        mselId: this.showTemplates || makeTemplate ? null : this.msel.id,
+        isTemplate: this.showTemplates || makeTemplate,
         move: card.move,
         inject: card.inject
       };
@@ -151,11 +151,13 @@ export class CardListComponent implements OnDestroy {
 
   sortChanged(sort: Sort) {
     this.sort = sort;
-    this.sortedCards = this.getSortedCards(this.getFilteredCards(this.msel.id, this.cardList));
-    this.templateList = this.getSortedCards(this.getFilteredCards(null, this.cardList));
+    this.sortedCards = this.getSortedCards(this.getFilteredCards(false));
+    this.templateList = this.getSortedCards(this.getFilteredCards(true));
   }
 
-  getFilteredCards(mselId: string, cards: Card[]): Card[] {
+  getFilteredCards(getTemplatesOnly: boolean): Card[] {
+    const cards = this.cardList;
+    const mselId = getTemplatesOnly || this.showTemplates ? '' : this.msel.id;
     let filteredCards: Card[] = [];
     if (cards) {
       cards.forEach(card => {
