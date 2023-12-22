@@ -274,7 +274,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
         ></app-card-list>
       </span>
       <span *ngIf="isSuperUser && (selectedTab === citeActionsText)">
-        cite actions
+        <app-cite-action-list
+          *ngIf="selectedTab === 'CITE Actions'"
+          [loggedInUserId]="(loggedInUser | async).profile.sub"
+          [isContentDeveloper]="true"
+          [showTemplates]="true"
+        ></app-cite-action-list>
       </span>
       <span *ngIf="isSuperUser && (selectedTab === citeRolesText)">
         cite roles

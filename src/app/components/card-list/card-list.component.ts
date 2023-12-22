@@ -89,24 +89,35 @@ export class CardListComponent implements OnDestroy {
     }
   }
 
-  addOrEditCard(card: Card, makeTemplate: boolean) {
+  addOrEditCard(card: Card, makeTemplate: boolean, makeFromTemplate: boolean) {
     if (!card) {
       card = {
-        mselId: this.showTemplates || makeTemplate ? null : this.msel.id,
+        mselId: this.showTemplates ? '' : this.msel.id,
         move: 0,
-        inject: 0,
-        isTemplate: this.showTemplates || makeTemplate
+        isTemplate: this.showTemplates,
+        inject: 0
       };
     } else {
-      card = {
-        id: makeTemplate === card.isTemplate ? card.id : null,
-        name: card.name,
-        description: card.description,
-        mselId: this.showTemplates || makeTemplate ? null : this.msel.id,
-        isTemplate: this.showTemplates || makeTemplate,
-        move: card.move,
-        inject: card.inject
-      };
+      if (makeTemplate) {
+        card = {
+          name: card.name,
+          description: card.description,
+          isTemplate: true,
+          move: 0,
+          inject: 0
+        };
+      } else if (makeFromTemplate) {
+        card = {
+          name: card.name,
+          description: card.description,
+          mselId: this.msel.id,
+          isTemplate: false,
+          move: 0,
+          inject: 0
+        };
+      } else {
+        card = { ...card};
+      }
     }
     const dialogRef = this.dialog.open(CardEditDialogComponent, {
       width: '90%',

@@ -186,6 +186,11 @@ textarea {
   margin-top: -8px;
 }
 
+.first-cell {
+  flex: 1;
+  min-width: 110px;
+}
+
 .eight-cell {
   flex: 8;
 }

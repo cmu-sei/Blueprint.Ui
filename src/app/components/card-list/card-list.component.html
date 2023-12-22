@@ -13,7 +13,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <span *ngIf="showTemplates && isContentDeveloper">
         <button
           mat-icon-button
-          (click)="addOrEditCard(null, false); $event.stopPropagation();"
+          (click)="addOrEditCard(null, false, false); $event.stopPropagation();"
           title="Add a template card"
           style="outline: none; margin-left: 18px; margin-right: 24px;"
         >
@@ -34,13 +34,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <mat-menu #addMenu="matMenu" [overlapTrigger]="false">
         <button
           mat-menu-item
-          (click)="addOrEditCard(null, false)"
+          (click)="addOrEditCard(null, false, false)"
           title="Add a new card"
         >New Card</button>
         <button
           *ngFor="let template of templateList"
           mat-menu-item
-          (click)="addOrEditCard(template, false)"
+          (click)="addOrEditCard(template, false, true)"
           title="{{ template.description }}"
         >{{ template.name }}</button>
       </mat-menu>
@@ -80,7 +80,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <button
             mat-icon-button
             class="card-button"
-            (click)="addOrEditCard(item, false); $event.stopPropagation()"
+            (click)="addOrEditCard(item, false, false); $event.stopPropagation()"
             title="Edit {{ item.name }}"
             *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
           >
@@ -97,9 +97,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </button>
           <button
             mat-icon-button class="msel-action"
-            (click)="addOrEditCard(item, true); $event.stopPropagation();"
+            (click)="addOrEditCard(item, true, false); $event.stopPropagation();"
             title="Make {{ item.name }} a template"
-            *ngIf="isContentDeveloper"
+            *ngIf="!showTemplates && isContentDeveloper"
           >
             <mat-icon class="mdi-18px" fontIcon="mdi-card-plus-outline" title="Make {{ item.name }} a template"></mat-icon>
           </button>

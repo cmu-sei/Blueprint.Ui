@@ -305,7 +305,7 @@ export class CiteActionService {
         const consumes: string[] = [
         ];
 
-        return this.httpClient.get<Array<CiteAction>>(`${this.configuration.basePath}/api/organizations/templates`,
+        return this.httpClient.get<Array<CiteAction>>(`${this.configuration.basePath}/api/citeActions/templates`,
             {
                 withCredentials: this.configuration.withCredentials,
                 headers: headers,

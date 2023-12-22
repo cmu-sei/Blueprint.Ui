@@ -45,7 +45,7 @@ export class CiteActionEditDialogComponent {
   }
 
   errorFree() {
-    return this.data.citeAction.description.length > 0;
+    return this.data.citeAction.description && this.data.citeAction.description.length > 0;
   }
 
   /**

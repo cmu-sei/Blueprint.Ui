@@ -22,6 +22,7 @@ import { CiteActionQuery } from 'src/app/data/cite-action/cite-action.query';
 import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { CiteActionEditDialogComponent } from '../cite-action-edit-dialog/cite-action-edit-dialog.component';
+import { v4 as uuidv4 } from 'uuid';
 
 @Component({
   selector: 'app-cite-action-list',
@@ -31,8 +32,10 @@ import { CiteActionEditDialogComponent } from '../cite-action-edit-dialog/cite-a
 export class CiteActionListComponent implements OnDestroy {
   @Input() loggedInUserId: string;
   @Input() isContentDeveloper: boolean;
+  @Input() showTemplates: boolean;
   msel = new MselPlus();
   citeActionList: CiteAction[] = [];
+  templateList: CiteAction[] = [];
   changedCiteAction: CiteAction = {};
   filteredCiteActionList: CiteAction[] = [];
   filterControl = new FormControl();
@@ -63,13 +66,17 @@ export class CiteActionListComponent implements OnDestroy {
     // subscribe to citeActions
     this.citeActionQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(citeActions => {
       this.citeActionList = citeActions;
-      this.sortedCiteActions = this.getSortedCiteActions(this.getFilteredCiteActions(this.citeActionList));
+      this.sortChanged(this.sort);
     });
     // subscribe to the active MSEL
     (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
       if (msel && this.msel.id !== msel.id) {
-        Object.assign(this.msel, msel);
-        this.sortedCiteActions = this.getSortedCiteActions(this.getFilteredCiteActions(this.citeActionList));
+        if (this.showTemplates) {
+          this.msel = new MselPlus();
+        } else {
+          Object.assign(this.msel, msel);
+        }
+        this.sortedCiteActions = this.getSortedCiteActions(this.getFilteredCiteActions(false));
       }
     });
     // subscribe to moves
@@ -93,25 +100,46 @@ export class CiteActionListComponent implements OnDestroy {
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((term) => {
         this.filterString = term;
-        this.sortedCiteActions = this.getSortedCiteActions(this.getFilteredCiteActions(this.citeActionList));
+        this.sortedCiteActions = this.getSortedCiteActions(this.getFilteredCiteActions(false));
       });
+    // load CiteAction templates
+    this.citeActionDataService.loadTemplates();
   }
 
-  addOrEditCiteAction(citeAction: CiteAction) {
+  addOrEditCiteAction(citeAction: CiteAction, makeTemplate: boolean, makeFromTemplate: boolean) {
     if (!citeAction) {
       citeAction = {
-        description: '',
-        mselId: this.msel.id,
-        teamId: this.selectedTeamId,
-        moveNumber: this.selectedMoveNumber
+        mselId: this.showTemplates ? '' : this.msel.id,
+        moveNumber: 0,
+        isTemplate: this.showTemplates,
+        actionNumber: 0,
+        teamId: ''
       };
     } else {
-      citeAction = {... citeAction};
+      const newAction = { ...citeAction};
+      if (makeTemplate) {
+        citeAction = {
+          description: citeAction.description,
+          isTemplate: true,
+          moveNumber: 0,
+          actionNumber: 0,
+          teamId: ''
+        };
+      } else if (makeFromTemplate) {
+        citeAction = {
+          description: citeAction.description,
+          mselId: this.msel.id,
+          isTemplate: false
+        };
+      } else {
+        citeAction = { ...citeAction};
+      }
     }
     const dialogRef = this.dialog.open(CiteActionEditDialogComponent, {
-      width: '800px',
+      width: '90%',
+      maxWidth: '800px',
       data: {
-        citeAction: citeAction,
+        citeAction: { ...citeAction},
         teamList: this.mselTeamList,
         moveList: this.moveList
       },
@@ -127,19 +155,21 @@ export class CiteActionListComponent implements OnDestroy {
   saveAction(citeAction: CiteAction) {
     if (citeAction.id) {
       this.citeActionDataService.updateCiteAction(citeAction);
+    } else if (citeAction.isTemplate) {
+      this.citeActionDataService.add(citeAction);
     } else {
       const teams: string[] = [];
       const moves: number[] = [];
       if (citeAction.teamId) {
         teams.push(citeAction.teamId);
-      } else {
+      } else if (!citeAction.isTemplate) {
         this.mselTeamList.forEach(team => {
           teams.push(team.id);
         });
       }
       if (+citeAction.moveNumber >= 0) {
         moves.push(citeAction.moveNumber);
-      } else {
+      } else if (!citeAction.isTemplate) {
         this.moveList.forEach(move => {
           moves.push(move.moveNumber);
         });
@@ -173,7 +203,8 @@ export class CiteActionListComponent implements OnDestroy {
 
   sortChanged(sort: Sort) {
     this.sort = sort;
-    this.sortedCiteActions = this.getSortedCiteActions(this.getFilteredCiteActions(this.citeActionList));
+    this.sortedCiteActions = this.getSortedCiteActions(this.getFilteredCiteActions(false));
+    this.templateList = this.getSortedCiteActions(this.getFilteredCiteActions(true));
   }
 
   getSortedCiteActions(citeActions: CiteAction[]) {
@@ -194,27 +225,27 @@ export class CiteActionListComponent implements OnDestroy {
       case 'description':  // description, moveNumber, team
         if (a.description.toLowerCase() === b.description.toLowerCase()) {
           if (+a.moveNumber === +b.moveNumber) {
-            return ( (a.team.name < b.team.name ? -1 : 1) * (isAsc ? 1 : -1) );
+            return ( (a.team?.name < b.team?.name ? -1 : 1) * (isAsc ? 1 : -1) );
           }
           return ( (+a.moveNumber < +b.moveNumber ? -1 : 1) * (isAsc ? 1 : -1) );
         }
         return ( (a.description.toLowerCase() < b.description.toLowerCase() ? -1 : 1) * (isAsc ? 1 : -1) );
         break;
       case 'team':  // team, moveNumber, actionNumber
-        if (a.team.name === b.team.name) {
+        if (a.team?.name === b.team?.name) {
           if (+a.moveNumber === +b.moveNumber) {
             return ( (+a.actionNumber < +b.actionNumber ? -1 : 1) * (isAsc ? 1 : -1) );
           }
           return ( (+a.moveNumber < +b.moveNumber ? -1 : 1) * (isAsc ? 1 : -1) );
         }
-        return ( (a.team.name < b.team.name ? -1 : 1) * (isAsc ? 1 : -1) );
+        return ( (a.team?.name < b.team?.name ? -1 : 1) * (isAsc ? 1 : -1) );
         break;
       case 'moveNumber':  // moveNumber, team, actionNumber
         if (+a.moveNumber === +b.moveNumber) {
-          if (a.team.name === b.team.name) {
+          if (a.team?.name === b.team?.name) {
             return ( (+a.actionNumber < +b.actionNumber ? -1 : 1) * (isAsc ? 1 : -1) );
           }
-          return ( (a.team.name < b.team.name ? -1 : 1) * (isAsc ? 1 : -1) );
+          return ( (a.team?.name < b.team?.name ? -1 : 1) * (isAsc ? 1 : -1) );
         }
         return ( (+a.moveNumber < +b.moveNumber ? -1 : 1) * (isAsc ? 1 : -1) );
       default:
@@ -222,12 +253,14 @@ export class CiteActionListComponent implements OnDestroy {
     }
   }
 
-  getFilteredCiteActions(citeActions: CiteAction[]): CiteAction[] {
+  getFilteredCiteActions(getTemplatesOnly: boolean): CiteAction[] {
+    const citeActions = this.citeActionList;
+    const mselId = getTemplatesOnly || this.showTemplates ? '' : this.msel.id;
     let filteredCiteActions: CiteAction[] = [];
     if (citeActions) {
-      citeActions.forEach(se => {
-        if (se.mselId === this.msel.id) {
-          filteredCiteActions.push({... se});
+      citeActions.forEach(citeAction => {
+        if ((mselId && citeAction.mselId === mselId) || (!mselId && !citeAction.mselId)) {
+          filteredCiteActions.push({... citeAction});
         }
       });
       if (filteredCiteActions && filteredCiteActions.length > 0) {
@@ -236,7 +269,7 @@ export class CiteActionListComponent implements OnDestroy {
           filteredCiteActions = filteredCiteActions
             .filter((a) =>
               a.description.toLowerCase().includes(filterString) ||
-              a.team.name.toLowerCase().includes(filterString)
+              a.team?.name.toLowerCase().includes(filterString)
             );
         }
         if (this.selectedMoveNumber >= 0) {
@@ -252,12 +285,12 @@ export class CiteActionListComponent implements OnDestroy {
 
   selectMove(moveNumber: number) {
     this.selectedMoveNumber = moveNumber;
-    this.sortedCiteActions = this.getSortedCiteActions(this.getFilteredCiteActions(this.citeActionList));
+    this.sortedCiteActions = this.getSortedCiteActions(this.getFilteredCiteActions(false));
   }
 
   selectTeam(teamId: string) {
     this.selectedTeamId = teamId;
-    this.sortedCiteActions = this.getSortedCiteActions(this.getFilteredCiteActions(this.citeActionList));
+    this.sortedCiteActions = this.getSortedCiteActions(this.getFilteredCiteActions(false));
   }
 
   ngOnDestroy() {
