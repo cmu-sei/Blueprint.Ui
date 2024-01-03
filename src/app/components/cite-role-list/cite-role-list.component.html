@@ -10,19 +10,44 @@ project root for license information or contact permission@sei.cmu.edu for full 
     class="mat-elevation-z2 mat-header-row background-alt"
   >
     <span class="mat-header-cell four-cell" mat-sort-header="name">
-      <button
-        mat-icon-button
-        (click)="addOrEditCiteRole(null)"
-        style="outline: none; margin-right: 15px;"
-        title="Add new citeRole"
-        *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
-      >
-        <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
-      </button>
+      <span *ngIf="showTemplates && isContentDeveloper">
+        <button
+          mat-icon-button
+          (click)="addOrEditCiteRole(null, false, false); $event.stopPropagation();"
+          title="Add a template CITE Role"
+          style="outline: none; margin-left: 18px; margin-right: 24px;"
+        >
+          <mat-icon class="mdi-24px center-self little-left" fontIcon="mdi-plus-circle"></mat-icon>
+        </button>
+      </span> &nbsp;
+      <span *ngIf="!showTemplates && (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)">
+        <button
+          mat-icon-button
+          [matMenuTriggerFor]="addMenu"
+          style="outline: none; margin-left: 18px; margin-right: 24px;"
+          title="Add CITE Role"
+          (click)="$event.stopPropagation();"
+        >
+          <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
+        </button>
+      </span> &nbsp;
+      <mat-menu #addMenu="matMenu" [overlapTrigger]="false">
+        <button
+          mat-menu-item
+          (click)="addOrEditCiteRole(null, false, false)"
+          title="Add a new CITE Role"
+        >New CITE Role</button>
+        <button
+          *ngFor="let template of templateList"
+          mat-menu-item
+          (click)="addOrEditCiteRole(template, false, true)"
+          title="{{ template.name }}"
+        >{{ template.name }}</button>
+      </mat-menu>
       Name
     </span>
     <span class="mat-header-cell three-cell" mat-sort-header="team">
-      <mat-form-field class="team-selector">
+      <mat-form-field class="team-selector" *ngIf="!showTemplates">
         <mat-label>Team</mat-label>
         <mat-select placeholder="Team" [value]="selectedTeamId" (selectionChange)="selectTeam($event.value)" (click)="$event.stopPropagation()">
           <mat-option value="">All Teams</mat-option>
@@ -64,7 +89,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             mat-icon-button
             class="cite-role-button"
             title="Edit this citeRole"
-            (click)="addOrEditCiteRole(item)"
+            (click)="addOrEditCiteRole(item, true, false)"
             *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
           >
             <mat-icon class="mdi-18px up-12" fontIcon="mdi-square-edit-outline"></mat-icon>
@@ -80,7 +105,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </button>
           &nbsp;{{ item.name }}
         </div>
-        <div class="mat-cell three-cell center-self">
+        <div class="mat-cell three-cell center-self" *ngIf="!showTemplates">
           {{ item.team.shortName }} - {{ item.team.name }}
         </div>
         <div class="mat-cell three-cell center-self">&nbsp;</div>

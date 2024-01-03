@@ -282,7 +282,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
         ></app-cite-action-list>
       </span>
       <span *ngIf="isSuperUser && (selectedTab === citeRolesText)">
-        cite roles
+        <app-cite-role-list
+          *ngIf="selectedTab === 'CITE Roles'"
+          [loggedInUserId]="(loggedInUser | async).profile.sub"
+          [isContentDeveloper]="true"
+          [showTemplates]="true"
+        ></app-cite-role-list>
       </span>
     </mat-sidenav-content>
   </mat-sidenav-container>
