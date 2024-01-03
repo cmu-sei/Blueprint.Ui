@@ -24,7 +24,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         </div>
         <mat-divider></mat-divider>
       </mat-list-item>
-      <mat-list-item *ngFor="let tabName of tabList" [ngClass]="getListItemClass(tabName)" (click)="tabChange(tabName)">
+      <mat-list-item *ngFor="let tabName of getTabListItems()" [ngClass]="getListItemClass(tabName)" (click)="tabChange(tabName)">
         <div class="lefticon">
           <button mat-icon-button title="{{ tabName }}" (click)="tabChange(tabName)">
             <mat-icon
@@ -35,11 +35,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </button>
         </div>
       </mat-list-item>
-
-
-
-
-
       <div class="bottom-div">
         <div class="background">
           <button mat-icon-button title="Administration" *ngIf="isSystemAdmin" (click)="goToUrl('/admin')">
@@ -83,7 +78,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         </div>
         <mat-divider></mat-divider>
       </mat-list-item>
-      <mat-list-item *ngFor="let tabName of tabList" [ngClass]="getListItemClass(tabName)" (click)="tabChange(tabName)">
+      <mat-list-item *ngFor="let tabName of getTabListItems()" [ngClass]="getListItemClass(tabName)" (click)="tabChange(tabName)">
         <div class="lefticon">
           <button mat-icon-button title="{{ tabName }}" (click)="tabChange(tabName)">
             <mat-icon
@@ -154,6 +149,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         *ngIf="selectedTab === 'Organizations'"
         [loggedInUserId]="loggedInUserId"
         [isContentDeveloper]="isContentDeveloper"
+        [showTemplates]="false"
       >Organizations</app-organization-list>
       <app-move-list
         *ngIf="selectedTab === 'Moves'"
@@ -164,14 +160,15 @@ project root for license information or contact permission@sei.cmu.edu for full 
         *ngIf="selectedTab === 'Gallery Cards'"
         [loggedInUserId]="loggedInUserId"
         [isContentDeveloper]="isContentDeveloper"
+        [showTemplates]="false"
       ></app-card-list>
       <app-cite-action-list
-        *ngIf="selectedTab === 'Cite Actions'"
+        *ngIf="selectedTab === 'CITE Actions'"
         [loggedInUserId]="loggedInUserId"
         [isContentDeveloper]="isContentDeveloper"
       ></app-cite-action-list>
       <app-cite-role-list
-        *ngIf="selectedTab === 'Cite Roles'"
+        *ngIf="selectedTab === 'CITE Roles'"
         [loggedInUserId]="loggedInUserId"
         [isContentDeveloper]="isContentDeveloper"
       ></app-cite-role-list>

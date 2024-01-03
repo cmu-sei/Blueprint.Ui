@@ -1,7 +1,7 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, Input, OnDestroy, ViewChild } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -31,12 +31,14 @@ import { v4 as uuidv4 } from 'uuid';
   templateUrl: './organization-list.component.html',
   styleUrls: ['./organization-list.component.scss'],
 })
-export class OrganizationListComponent implements OnDestroy {
+export class OrganizationListComponent implements OnDestroy, OnInit {
   @Input() loggedInUserId: string;
   @Input() isContentDeveloper: boolean;
+  @Input() showTemplates: boolean;
   // context menu
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
-  contextMenuPosition = { x: '0px', y: '0px' };  msel = new MselPlus();
+  contextMenuPosition = { x: '0px', y: '0px' };
+  msel = new MselPlus();
   organizationList: Organization[] = [];
   changedOrganization: Organization = {};
   filteredOrganizationList: Organization[] = [];
@@ -45,7 +47,6 @@ export class OrganizationListComponent implements OnDestroy {
   sort: Sort = {active: 'name', direction: 'asc'};
   sortedOrganizations: Organization[] = [];
   templateOrganizations: Organization[] = [];
-  showTemplates = false;
   editingId = '';
   organizationDataSource = new MatTableDataSource<Organization>(new Array<Organization>());
   templateDataSource = new MatTableDataSource<Organization>(new Array<Organization>());
@@ -83,6 +84,12 @@ export class OrganizationListComponent implements OnDestroy {
         this.filterString = term;
         this.sortChanged(this.sort);
       });
+  }
+
+  ngOnInit() {
+    if (this.showTemplates) {
+      this.organizationDataService.loadTemplates();
+    }
   }
 
   getSortedOrganizations(organizations: Organization[]) {

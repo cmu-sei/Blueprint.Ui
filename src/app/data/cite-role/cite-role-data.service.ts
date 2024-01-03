@@ -119,6 +119,24 @@ export class CiteRoleDataService {
     }
   }
 
+  loadTemplates() {
+    this.citeRoleStore.setLoading(true);
+    this.citeRoleService
+      .getCiteRoleTemplates()
+      .pipe(
+        tap(() => {
+          this.citeRoleStore.setLoading(false);
+        }),
+        take(1)
+      )
+      .subscribe(
+        (templates) => {
+          this.citeRoleStore.upsertMany(templates);
+        },
+        (error) => {}
+      );
+  }
+
   loadByMsel(mselId: string) {
     this.citeRoleStore.setLoading(true);
     this.citeRoleService

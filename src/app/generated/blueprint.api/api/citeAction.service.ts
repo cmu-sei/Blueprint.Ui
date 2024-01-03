@@ -270,6 +270,52 @@ export class CiteActionService {
     }
 
     /**
+     * Gets CiteAction Templates
+     * Returns a list of CiteAction Templates
+     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+     * @param reportProgress flag to report request and response progress.
+     */
+    public getCiteActionTemplates(observe?: 'body', reportProgress?: boolean): Observable<Array<CiteAction>>;
+    public getCiteActionTemplates(observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Array<CiteAction>>>;
+    public getCiteActionTemplates(observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Array<CiteAction>>>;
+    public getCiteActionTemplates(observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+
+        let headers = this.defaultHeaders;
+
+        // authentication (oauth2) required
+        if (this.configuration.accessToken) {
+            const accessToken = typeof this.configuration.accessToken === 'function'
+                ? this.configuration.accessToken()
+                : this.configuration.accessToken;
+            headers = headers.set('Authorization', 'Bearer ' + accessToken);
+        }
+
+        // to determine the Accept header
+        let httpHeaderAccepts: string[] = [
+            'text/plain',
+            'application/json',
+            'text/json'
+        ];
+        const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
+        if (httpHeaderAcceptSelected !== undefined) {
+            headers = headers.set('Accept', httpHeaderAcceptSelected);
+        }
+
+        // to determine the Content-Type header
+        const consumes: string[] = [
+        ];
+
+        return this.httpClient.get<Array<CiteAction>>(`${this.configuration.basePath}/api/citeActions/templates`,
+            {
+                withCredentials: this.configuration.withCredentials,
+                headers: headers,
+                observe: observe,
+                reportProgress: reportProgress
+            }
+        );
+    }
+
+    /**
      * Updates a  CiteAction
      * Updates a CiteAction with the attributes specified.  The ID from the route MUST MATCH the ID contained in the citeAction parameter  &lt;para /&gt;  Accessible only to a ContentDeveloper or an Administrator
      * @param id The Id of the CiteAction to update

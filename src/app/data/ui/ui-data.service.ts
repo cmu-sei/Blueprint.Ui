@@ -9,6 +9,7 @@ import { Injectable } from '@angular/core';
 export class UIState {
   selectedTheme = '';
   selectedMselTab = '';
+  selectedAdminTab = '';
   expandedItems: string[] = [];
   navCollapsed: boolean;
   useRealTime: boolean;
@@ -61,6 +62,18 @@ export class UIDataService {
 
   getMselTab(): string {
     return this.uiState.selectedMselTab;
+  }
+  // end MSEL tab section
+
+  //
+  // Admin tab selection
+  setAdminTab(tabName: string) {
+    this.uiState.selectedAdminTab = tabName;
+    this.saveChanges();
+  }
+
+  getAdminTab(): string {
+    return this.uiState.selectedAdminTab;
   }
   // end MSEL tab section
 

@@ -98,6 +98,24 @@ export class CardDataService {
     );
   }
 
+  loadTemplates() {
+    this.cardStore.setLoading(true);
+    this.cardService
+      .getCardTemplates()
+      .pipe(
+        tap(() => {
+          this.cardStore.setLoading(false);
+        }),
+        take(1)
+      )
+      .subscribe(
+        (templates) => {
+          this.cardStore.upsertMany(templates);
+        },
+        (error) => {}
+      );
+  }
+
   loadByMsel(mselId: string) {
     this.cardStore.setLoading(true);
     this.cardService

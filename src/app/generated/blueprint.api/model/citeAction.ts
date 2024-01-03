@@ -32,4 +32,5 @@ export interface CiteAction {
     injectNumber?: number;
     actionNumber?: number;
     description?: string;
+    isTemplate?: boolean;
 }

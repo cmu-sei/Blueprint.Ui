@@ -26,8 +26,8 @@ test('add users', async ({ page }) => {
 
   // add users
   await page.click('button:has(mat-icon.mdi-plus-circle)');
-  await page.locator('#mat-input-2').type(extraConfig.adminNewUserID);
-  await page.locator('#mat-input-3').type(extraConfig.adminNewUser);
+  await page.locator('#mat-input-3').type(extraConfig.adminNewUserID);
+  await page.locator('#mat-input-4').type(extraConfig.adminNewUser);
   await page.waitForTimeout(5 * 1000);
   await page.locator('button:has(mat-icon.mdi-account-plus)').dblclick({force: true});
   await page.waitForTimeout(5 * 1000);

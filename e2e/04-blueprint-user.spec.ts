@@ -158,52 +158,6 @@ test('add delete data fields', async ({ page }) => {
   console.log(test.info().title + ' complete');
 });
 
-// ===================== Add/Remove Organization from Template ======================
-test('add delete template organization', async ({ page }) => {
-  console.log(test.info().title + ' started');
-  await page.goto(extraConfig.blueprintURL);
-  await expect(page).toHaveTitle(/Blueprint/);
-  await page.locator(':has-text("' + testMselName + '")');
-
-  // Select MSEL
-  await page.click('text=' + testMselName);
-
-  // Change to organization's tab
-  await page.getByRole('button', { name: 'Organizations' }).click();
-
-  // Click on the Show Templates checkbox
-  await page.locator('.mat-checkbox-inner-container').click();
-
-  // Select organization template
-  await page.locator('button:has(mat-icon.mdi-bank-plus)').nth(1).click();
-
-  // Edit organization template fields
-  await page.locator('text=Name (required)').nth(0).fill(extraConfig.orgName);
-  await page.locator('text=Short Name (required)').fill(extraConfig.orgShortName);
-  await page.locator('text=Summary (required)').fill(extraConfig.orgSummary);
-  await page.locator('text=Email').fill(extraConfig.orgEmail);
-  await page.locator('#quill p').fill(extraConfig.orgDescription);
-  await page.click('button:has-text("Save")');
-  await page.waitForTimeout(5 * 1000);
-
-  // Verify organization template creation
-  await page.locator('text=' + extraConfig.orgName);
-
-  // Delete new organization template
-  await page.getByRole('button', { name: 'Delete ' + extraConfig.orgName }).click();
-  await page.click('text=Yes');
-  await page.waitForTimeout(5 * 1000);
-
-  // Verify gone
-  try {
-    await page.waitForSelector('text=' + extraConfig.orgName, { timeout: 500});
-  } catch (error) {
-    console.log('Organization template specified has been removed.');
-  }
-
-  console.log(test.info().title + ' complete');
-});
-
 // ===================== Add/Remove Organization ======================
 test('add delete organizations', async ({ page }) => {
   console.log(test.info().title + ' started');
@@ -219,7 +173,9 @@ test('add delete organizations', async ({ page }) => {
   await page.getByRole('button', { name: 'Organizations' }).click();
 
   // Click on Add Organization Button
-  await page.click('button:has(mat-icon.mdi-bank-plus)');
+  await page.click('button:has(mat-icon.mdi-plus-circle-outline)');
+  await page.waitForTimeout(1 * 1000);
+  await page.click('button:has-text("New Organization")');
 
   // Fill Organization fields
   await page.fill('text=Long Name (required)', extraConfig.orgName);
@@ -295,6 +251,8 @@ test('add delete gallery card', async ({ page }) => {
   // Add Gallery Card
   await page.getByRole('button', { name: 'Gallery Cards' }).click();
   await page.click('button:has(mat-icon.mdi-plus-circle-outline)');
+  await page.waitForTimeout(1 * 1000);
+  await page.click('button:has-text("New Card")');
   await page.locator('text=Name').nth(1).fill('Playwright Card');
   await page.fill('text=Card Description', 'Playwright Test');
   await page.locator('mat-select[role="combobox"] >> text=Move').click();
@@ -302,7 +260,7 @@ test('add delete gallery card', async ({ page }) => {
   await page.click('text=Save');
 
   // Delete Gallery Card
-  const cardDeleteButton = 'mat-expansion-panel-header:has-text("Playwright Card") button[title="Delete this card"]';
+  const cardDeleteButton = 'mat-expansion-panel-header:has-text("Playwright Card") button[title="Delete Playwright Card"]';
   if (cardDeleteButton){
     await page.waitForTimeout(1 * 1000);
     await page.click(cardDeleteButton, {force: true});
@@ -330,16 +288,18 @@ test('add delete cite action', async ({ page }) => {
   // Add Cite Action
   await page.getByRole('button', { name: 'Cite Actions' }).click();
   await page.click('button:has(mat-icon.mdi-plus-circle-outline)');
+  await page.waitForTimeout(1 * 1000);
+  await page.click('button:has-text("New CITE Action")');
   await page.locator('mat-select[role="combobox"] >> text=Move').click();
   await page.locator('text=0').last().click();
   await page.locator('mat-select[role="combobox"] >> text=Team').nth(1).click();
   await page.locator('text=Test Users').click();
   await page.locator('text=Display Order').nth(1).fill('1');
-  await page.locator('text=Description').nth(1).fill('Playwright CITE Action');
+  await page.getByLabel('Description of the Action').fill('Playwright CITE Action');
   await page.click('text=Save');
 
   // Delete CITE Action
-  const actionDeleteButton = 'mat-expansion-panel-header:has-text("Playwright CITE Action") button[title="Delete this citeAction"]';
+  const actionDeleteButton = 'mat-expansion-panel-header:has-text("Playwright CITE Action") button[title="Delete Playwright CITE Action"]';
   if (actionDeleteButton){
     await page.waitForTimeout(1 * 1000);
     await page.click(actionDeleteButton, {force: true});
@@ -367,13 +327,15 @@ test('add delete cite role', async ({ page }) => {
   // Add CITE Role
   await page.getByRole('button', { name: 'Cite Roles' }).click();
   await page.click('button:has(mat-icon.mdi-plus-circle-outline)');
+  await page.waitForTimeout(1 * 1000);
+  await page.click('button:has-text("New CITE Role")');
   await page.locator('text=Name').nth(1).fill('Playwright CITE Role');
   await page.locator('mat-select[role="combobox"] >> text=Team').nth(1).click();
   await page.locator('text=Test Users').click();
   await page.click('text=Save');
 
   // Delete CITE Role
-  const roleDeleteButton = 'mat-expansion-panel-header:has-text("Playwright CITE Role") button[title="Delete this citeRole"]';
+  const roleDeleteButton = 'mat-expansion-panel-header:has-text("Playwright CITE Role") button[title="Delete Playwright CITE Role"]';
   if (roleDeleteButton){
     await page.waitForTimeout(1 * 1000);
     await page.click(roleDeleteButton, {force: true});

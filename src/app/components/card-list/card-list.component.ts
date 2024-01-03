@@ -19,6 +19,7 @@ import { MoveQuery } from 'src/app/data/move/move.query';
 import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { CardEditDialogComponent } from '../card-edit-dialog/card-edit-dialog.component';
+import { v4 as uuidv4 } from 'uuid';
 
 @Component({
   selector: 'app-card-list',
@@ -28,9 +29,11 @@ import { CardEditDialogComponent } from '../card-edit-dialog/card-edit-dialog.co
 export class CardListComponent implements OnDestroy {
   @Input() loggedInUserId: string;
   @Input() isContentDeveloper: boolean;
+  @Input() showTemplates: boolean;
   // context menu
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
   msel = new MselPlus();
+  templateList: Card[] = [];
   cardList: Card[] = [];
   filteredCardList: Card[] = [];
   filterControl = new UntypedFormControl();
@@ -53,7 +56,7 @@ export class CardListComponent implements OnDestroy {
     // subscribe to cards
     this.cardQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(cards => {
       this.cardList = cards;
-      this.sortedCards = this.getSortedCards(this.getFilteredCards(this.cardList));
+      this.sortChanged(this.sort);
     });
     // subscribe to moves
     this.moveQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(moves => {
@@ -61,15 +64,21 @@ export class CardListComponent implements OnDestroy {
     });
     // subscribe to the active MSEL
     (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
-      Object.assign(this.msel, msel);
-      this.sortedCards = this.getSortedCards(this.getFilteredCards(this.cardList));
+      if (this.showTemplates) {
+        this.msel = new MselPlus();
+      } else {
+        Object.assign(this.msel, msel);
+      }
+      this.sortedCards = this.getSortedCards(this.getFilteredCards(false));
     });
     this.filterControl.valueChanges
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((term) => {
         this.filterString = term;
-        this.sortedCards = this.getSortedCards(this.getFilteredCards(this.cardList));
+        this.sortedCards = this.getSortedCards(this.getFilteredCards(false));
       });
+    // load card templates
+    this.cardDataService.loadTemplates();
   }
 
   expandCard(cardId: string) {
@@ -80,21 +89,41 @@ export class CardListComponent implements OnDestroy {
     }
   }
 
-  addCard() {
-    const card = {
-      mselId: this.msel.id,
-      move: 0,
-      inject: 0
-    };
-    this.editCard(card);
-  }
-
-  editCard(card: Card) {
+  addOrEditCard(card: Card, makeTemplate: boolean, makeFromTemplate: boolean) {
+    if (!card) {
+      card = {
+        mselId: this.showTemplates ? '' : this.msel.id,
+        move: 0,
+        isTemplate: this.showTemplates,
+        inject: 0
+      };
+    } else {
+      if (makeTemplate) {
+        card = {
+          name: card.name,
+          description: card.description,
+          isTemplate: true,
+          move: 0,
+          inject: 0
+        };
+      } else if (makeFromTemplate) {
+        card = {
+          name: card.name,
+          description: card.description,
+          mselId: this.msel.id,
+          isTemplate: false,
+          move: 0,
+          inject: 0
+        };
+      } else {
+        card = { ...card};
+      }
+    }
     const dialogRef = this.dialog.open(CardEditDialogComponent, {
       width: '90%',
       maxWidth: '800px',
       data: {
-        card: card,
+        card: { ...card},
         moveList: this.moveList
           .filter(m => m.mselId === this.msel.id)
           .sort((a, b) => +a.moveNumber < +b.moveNumber ? -1 : 1)
@@ -102,21 +131,26 @@ export class CardListComponent implements OnDestroy {
     });
     dialogRef.componentInstance.editComplete.subscribe((result) => {
       if (result.saveChanges && result.card) {
-        if (result.card.id) {
-          this.cardDataService.updateCard(card);
-        } else {
-          this.cardDataService.add(card);
-        }
+        this.saveCard(result.card);
       }
       dialogRef.close();
     });
+  }
+
+  saveCard(card: Card) {
+    if (card.id) {
+      this.cardDataService.updateCard(card);
+    } else {
+      card.id = uuidv4();
+      this.cardDataService.add(card);
+    }
   }
 
   deleteCard(card: Card): void {
     this.dialogService
       .confirm(
         'Delete Card',
-        'Are you sure that you want to delete ' + card.description + '?'
+        'Are you sure that you want to delete ' + card.name + '?'
       )
       .subscribe((result) => {
         if (result['confirm']) {
@@ -128,15 +162,18 @@ export class CardListComponent implements OnDestroy {
 
   sortChanged(sort: Sort) {
     this.sort = sort;
-    this.sortedCards = this.getSortedCards(this.getFilteredCards(this.cardList));
+    this.sortedCards = this.getSortedCards(this.getFilteredCards(false));
+    this.templateList = this.getSortedCards(this.getFilteredCards(true));
   }
 
-  getFilteredCards(cards: Card[]): Card[] {
+  getFilteredCards(getTemplatesOnly: boolean): Card[] {
+    const cards = this.cardList;
+    const mselId = getTemplatesOnly || this.showTemplates ? '' : this.msel.id;
     let filteredCards: Card[] = [];
     if (cards) {
-      cards.forEach(se => {
-        if (se.mselId === this.msel.id) {
-          filteredCards.push({... se});
+      cards.forEach(card => {
+        if ((mselId && card.mselId === mselId) || (!mselId && !card.mselId)) {
+          filteredCards.push({... card});
         }
       });
       if (filteredCards && filteredCards.length > 0 && this.filterString) {

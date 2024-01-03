@@ -9,20 +9,42 @@ project root for license information or contact permission@sei.cmu.edu for full 
     (matSortChange)="sortChanged($event)"
     class="mat-elevation-z2 mat-header-row background-alt"
   >
-    <span class="mat-header-cell one-cell" mat-sort-header="move">
-      <button
-        mat-icon-button
-        (click)="addCard(); $event.stopPropagation()"
-        style="outline: none; margin-right: 15px;"
-        title="Add new card"
-        *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
-      >
-        <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
-      </button>
-      Move
-    </span>
-    <span class="mat-header-cell one-cell" mat-sort-header="inject">
-      Event
+    <span class="mat-header-cell first-cell" mat-sort-header="move">
+      <span *ngIf="showTemplates && isContentDeveloper">
+        <button
+          mat-icon-button
+          (click)="addOrEditCard(null, false, false); $event.stopPropagation();"
+          title="Add a template card"
+          style="outline: none; margin-left: 18px; margin-right: 24px;"
+        >
+          <mat-icon class="mdi-24px center-self little-left" fontIcon="mdi-plus-circle"></mat-icon>
+        </button>
+      </span> &nbsp;
+      <span *ngIf="!showTemplates && (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)">
+        <button
+          mat-icon-button
+          [matMenuTriggerFor]="addMenu"
+          style="outline: none; margin-left: 18px; margin-right: 24px;"
+          title="Add card"
+          (click)="$event.stopPropagation();"
+        >
+          <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
+        </button>
+      </span> &nbsp;
+      <mat-menu #addMenu="matMenu" [overlapTrigger]="false">
+        <button
+          mat-menu-item
+          (click)="addOrEditCard(null, false, false)"
+          title="Add a new card"
+        >New Card</button>
+        <button
+          *ngFor="let template of templateList"
+          mat-menu-item
+          (click)="addOrEditCard(template, false, true)"
+          title="{{ template.description }}"
+        >{{ template.name }}</button>
+      </mat-menu>
+      <span *ngIf="!showTemplates">Move</span>
     </span>
     <span class="mat-header-cell three-cell" mat-sort-header="name">Name</span>
     <span class="mat-header-cell two-cell" mat-sort-header="description">Description</span>
@@ -54,12 +76,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
         class="mat-row"
         (click)="expandCard(item.id); $event.stopPropagation();"
       >
-        <div class="mat-cell flex-row-cell one-cell">
+        <div class="mat-cell flex-row-cell first-cell">
           <button
             mat-icon-button
             class="card-button"
-            (click)="editCard(item); $event.stopPropagation()"
-            title="Edit this card"
+            (click)="addOrEditCard(item, false, false); $event.stopPropagation()"
+            title="Edit {{ item.name }}"
             *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
           >
             <mat-icon class="mdi-18px up-12" fontIcon="mdi-square-edit-outline"></mat-icon>
@@ -68,15 +90,20 @@ project root for license information or contact permission@sei.cmu.edu for full 
             mat-icon-button
             class="card-button"
             (click)="deleteCard(item); $event.stopPropagation()"
-            title="Delete this card"
+            title="Delete {{ item.name }}"
             *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
           >
             <mat-icon class="mdi-18px up-12" fontIcon="mdi-delete"></mat-icon>
           </button>
-          &nbsp;{{ item.move }}
-        </div>
-        <div class="mat-cell flex-row-cell one-cell">
-          &nbsp;{{ item.inject }}
+          <button
+            mat-icon-button class="msel-action"
+            (click)="addOrEditCard(item, true, false); $event.stopPropagation();"
+            title="Make {{ item.name }} a template"
+            *ngIf="!showTemplates && isContentDeveloper"
+          >
+            <mat-icon class="mdi-18px" fontIcon="mdi-card-plus-outline" title="Make {{ item.name }} a template"></mat-icon>
+          </button>
+          &nbsp;<span *ngIf="!showTemplates">{{ item.move }}</span>
         </div>
         <div class="mat-cell three-cell center-self">{{ item.name }}</div>
         <div class="mat-cell five-cell center-self">{{ item.description }}</div>

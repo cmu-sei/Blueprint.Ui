@@ -29,4 +29,5 @@ export interface Card {
     move?: number;
     inject?: number;
     galleryId?: string;
+    isTemplate?: boolean;
 }

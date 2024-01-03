@@ -50,18 +50,11 @@ export class MselComponent implements OnDestroy {
     'Organizations',
     'Moves',
     'Gallery Cards',
-    'Cite Actions',
-    'Cite Roles',
+    'CITE Actions',
+    'CITE Roles',
     'Events',
     'Exercise View'
   ];
-  private unsubscribe$ = new Subject();
-  msel = this.mselQuery.selectActive() as Observable<Msel>;
-  selectedTab = '';
-  defaultTab = 'Info';
-  selectedIndex = 1;
-  selectedMselId = '';
-  sideNavCollapsed = false;
   fontIconList = new Map<string, string>([
     ['Info', 'mdi-note-outline'],
     ['Teams', 'mdi-account-group-outline'],
@@ -69,11 +62,18 @@ export class MselComponent implements OnDestroy {
     ['Organizations', 'mdi-office-building-outline'],
     ['Moves', 'mdi-gamepad'],
     ['Gallery Cards', 'mdi-view-grid-outline'],
-    ['Cite Actions', 'mdi-clipboard-check-outline'],
-    ['Cite Roles', 'mdi-clipboard-account-outline'],
+    ['CITE Actions', 'mdi-clipboard-check-outline'],
+    ['CITE Roles', 'mdi-clipboard-account-outline'],
     ['Events', 'mdi-chart-timeline'],
     ['Exercise View', 'mdi-eye-outline'],
   ]);
+  private unsubscribe$ = new Subject();
+  private msel: Msel = {};
+  selectedTab = '';
+  defaultTab = 'Info';
+  selectedIndex = 1;
+  selectedMselId = '';
+  sideNavCollapsed = false;
   theme$: Observable<Theme>;
 
   constructor(
@@ -128,6 +128,14 @@ export class MselComponent implements OnDestroy {
         this.userMselRoleDataService.loadByMsel(mselId);
       }
     });
+    // subscribe to the active MSEL
+    (this.mselQuery.selectActive() as Observable<Msel>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
+      if (msel) {
+        this.msel = msel;
+      } else {
+        this.msel = {};
+      }
+    });
     // load the teams
     this.teamDataService.load();
     // load the organization templates
@@ -153,6 +161,29 @@ export class MselComponent implements OnDestroy {
       this.uiDataService.setMselTab(tabName);
       this.selectedTab = tabName;
     }
+  }
+
+  getTabListItems(): string[] {
+    const tabList = [];
+    this.tabList.forEach(tab => {
+      switch (tab) {
+        case 'Gallery Cards':
+          if (this.msel?.useGallery) {
+            tabList.push(tab);
+          }
+          break;
+        case 'CITE Actions':
+        case 'CITE Roles':
+          if (this.msel?.useCite) {
+            tabList.push(tab);
+          }
+          break;
+        default:
+          tabList.push(tab);
+          break;
+      }
+    });
+    return tabList;
   }
 
   getListItemClass(tab: string) {

@@ -9,29 +9,54 @@ project root for license information or contact permission@sei.cmu.edu for full 
     (matSortChange)="sortChanged($event)"
     class="mat-elevation-z2 mat-header-row background-alt"
   >
-    <span class="mat-header-cell one-cell">
-      <button
-        mat-icon-button
-        (click)="addOrEditCiteAction(null)"
-        style="outline: none; margin-right: 15px;"
-        title="Add new citeAction"
-        *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
-      >
-        <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
-      </button>
+    <span class="mat-header-cell first-cell">
+      <span *ngIf="showTemplates && isContentDeveloper">
+        <button
+          mat-icon-button
+          (click)="addOrEditCiteAction(null, false, false); $event.stopPropagation();"
+          title="Add a template CITE Action"
+          style="outline: none; margin-left: 18px; margin-right: 24px;"
+        >
+          <mat-icon class="mdi-24px center-self little-left" fontIcon="mdi-plus-circle"></mat-icon>
+        </button>
+      </span> &nbsp;
+      <span *ngIf="!showTemplates && (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)">
+        <button
+          mat-icon-button
+          [matMenuTriggerFor]="addMenu"
+          style="outline: none; margin-left: 18px; margin-right: 24px;"
+          title="Add CITE Action"
+          (click)="$event.stopPropagation();"
+        >
+          <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
+        </button>
+      </span> &nbsp;
+      <mat-menu #addMenu="matMenu" [overlapTrigger]="false">
+        <button
+          mat-menu-item
+          (click)="addOrEditCiteAction(null, false, false)"
+          title="Add a new CITE Action"
+        >New CITE Action</button>
+        <button
+          *ngFor="let template of templateList"
+          mat-menu-item
+          (click)="addOrEditCiteAction(template, false, true)"
+          title="{{ template.description }}"
+        >{{ template.description }}</button>
+      </mat-menu>
     </span>
-    <span class="mat-header-cell one-cell" mat-sort-header="moveNumber">
+    <span class="mat-header-cell one-cell" mat-sort-header="moveNumber" *ngIf="!showTemplates">
       <mat-form-field class="clear-search">
         <mat-label>Move</mat-label>
         <mat-select placeholder="Move" [value]="selectedMoveNumber" (selectionChange)="selectMove($event.value)" (click)="$event.stopPropagation()">
           <mat-option [value]="-1">All</mat-option>
-          <mat-option *ngFor="let move of moveList" [value]="move.moveNumber">
-            {{ move.moveNumber }} - {{ move.title }}
+          <mat-option *ngFor="let move of moveList" [value]="move.moveNumber" title="{{ move.description }}">
+            {{ move.moveNumber }}
           </mat-option>
         </mat-select>
       </mat-form-field>
     </span>
-    <span class="mat-header-cell four-cell" mat-sort-header="team">
+    <span class="mat-header-cell four-cell" mat-sort-header="team" *ngIf="!showTemplates">
       <mat-form-field class="team-selector">
         <mat-label>Team</mat-label>
         <mat-select placeholder="Team" [value]="selectedTeamId" (selectionChange)="selectTeam($event.value)" (click)="$event.stopPropagation()">
@@ -42,7 +67,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         </mat-select>
       </mat-form-field>
     </span>
-    <span class="mat-header-cell one-cell">Display Order</span>
+    <span class="mat-header-cell one-cell" *ngIf="!showTemplates">Display Order</span>
     <span class="mat-header-cell two-cell" mat-sort-header="description">Description</span>
     <span class="mat-header-cell two-cell search-cell">
       <mat-form-field class="search-control">
@@ -71,12 +96,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <mat-expansion-panel-header
         class="mat-row"
       >
-        <div class="mat-cell flex-row-cell one-cell">
+        <div class="mat-cell flex-row-cell first-cell">
           <button
             mat-icon-button
             class="cite-action-button"
-            title="Edit this citeAction"
-            (click)="addOrEditCiteAction(item)"
+            title="Edit {{ item.description }}"
+            (click)="addOrEditCiteAction(item, false, false)"
             *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
           >
             <mat-icon class="mdi-18px up-12" fontIcon="mdi-square-edit-outline"></mat-icon>
@@ -85,15 +110,23 @@ project root for license information or contact permission@sei.cmu.edu for full 
             mat-icon-button
             class="cite-action-button"
             (click)="deleteCiteAction(item)"
-            title="Delete this citeAction"
+            title="Delete {{ item.description }}"
             *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
           >
             <mat-icon class="mdi-18px up-12" fontIcon="mdi-delete"></mat-icon>
           </button>
+          <button
+            mat-icon-button class="msel-action"
+            (click)="addOrEditCiteAction(item, true, false); $event.stopPropagation();"
+            title="Make {{ item.description }} a template"
+            *ngIf="!showTemplates && isContentDeveloper"
+          >
+            <mat-icon class="mdi-18px" fontIcon="mdi-card-plus-outline" title="Make {{ item.name }} a template"></mat-icon>
+          </button>
         </div>
-        <div class="mat-cell flex-row-cell one-cell">{{ item.moveNumber }}</div>
-        <div class="mat-cell four-cell center-self">{{ item.team.shortName }} - {{ item.team.name }}</div>
-        <div class="mat-cell one-cell center-self">{{ item.actionNumber }}</div>
+        <div class="mat-cell flex-row-cell one-cell" *ngIf="!showTemplates">{{ item.moveNumber }}</div>
+        <div class="mat-cell four-cell center-self" *ngIf="!showTemplates">{{ item.team?.shortName }} - {{ item.team?.name }}</div>
+        <div class="mat-cell one-cell center-self" *ngIf="!showTemplates">{{ item.actionNumber }}</div>
         <div class="mat-cell four-cell center-self">{{ item.description }}</div>
       </mat-expansion-panel-header>
     </mat-expansion-panel>
