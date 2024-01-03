@@ -98,7 +98,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             mat-icon-button
             class="cite-role-button"
             (click)="deleteCiteRole(item)"
-            title="Delete this citeRole"
+            title="Delete {{ item.name }}"
             *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
           >
             <mat-icon class="mdi-18px up-12" fontIcon="mdi-delete"></mat-icon>
