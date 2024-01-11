@@ -33,6 +33,7 @@ export interface Msel {
     name?: string;
     description?: string;
     status?: ItemStatus;
+    usePlayer?: boolean;
     playerViewId?: string;
     useGallery?: boolean;
     galleryCollectionId?: string;

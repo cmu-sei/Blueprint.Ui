@@ -156,6 +156,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
         [loggedInUserId]="loggedInUserId"
         [isContentDeveloper]="isContentDeveloper"
       ></app-move-list>
+      <app-player-application-list
+        *ngIf="selectedTab === 'Player Apps'"
+        [loggedInUserId]="loggedInUserId"
+        [isContentDeveloper]="isContentDeveloper"
+      ></app-player-application-list>
       <app-card-list
         *ngIf="selectedTab === 'Gallery Cards'"
         [loggedInUserId]="loggedInUserId"

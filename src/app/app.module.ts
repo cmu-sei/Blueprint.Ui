@@ -82,6 +82,9 @@ import { MselRolesComponent } from './components/msel-roles/msel-roles.component
 import { MselViewComponent } from './components/msel-view/msel-view.component';
 import { OrganizationEditDialogComponent } from './components/organization-edit-dialog/organization-edit-dialog.component';
 import { OrganizationListComponent } from './components/organization-list/organization-list.component';
+import { PlayerApplicationEditDialogComponent } from './components/player-application-edit-dialog/player-application-edit-dialog.component';
+import { PlayerApplicationListComponent } from './components/player-application-list/player-application-list.component';
+import { PlayerApplicationTeamsComponent } from './components/player-application-teams/player-application-teams.component';
 import { ScenarioEventEditDialogComponent } from './components/scenario-event-edit-dialog/scenario-event-edit-dialog.component';
 import { ScenarioEventListComponent } from './components/scenario-event-list/scenario-event-list.component';
 import { ConfirmDialogComponent } from './components/shared/confirm-dialog/confirm-dialog.component';
@@ -134,6 +137,9 @@ export function getBasePath(settingsSvc: ComnSettingsService) {
     MselViewComponent,
     OrganizationEditDialogComponent,
     OrganizationListComponent,
+    PlayerApplicationEditDialogComponent,
+    PlayerApplicationListComponent,
+    PlayerApplicationTeamsComponent,
     ScenarioEventEditDialogComponent,
     ScenarioEventListComponent,
     SystemMessageComponent,

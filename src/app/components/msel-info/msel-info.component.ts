@@ -234,6 +234,33 @@ export class MselInfoComponent implements OnDestroy {
       });
   }
 
+  pushToPlayer() {
+    this.dialogService
+      .confirm(
+        'Push to Player',
+        'Are you sure that you want to push this MSEL to Player?'
+      )
+      .subscribe((result) => {
+        if (result['confirm']) {
+          this.mselDataService.pushToPlayer(this.msel.id);
+          this.pushStatus = 'Pushing to Player';
+        }
+      });
+  }
+
+  pullFromPlayer() {
+    this.dialogService
+      .confirm(
+        'Remove from Player',
+        'Are you sure you want to delete the Collection and all associated data from Player?'
+      )
+      .subscribe((result) => {
+        if (result['confirm']) {
+          this.mselDataService.pullFromPlayer(this.msel.id);
+        }
+      });
+  }
+
   tabChange(event: any) {
     this.currentTabIndex = event.index;
     if (event.index > 0 && event.index <= this.mselPages.length) {
