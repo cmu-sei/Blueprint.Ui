@@ -53,8 +53,7 @@ export class PlayerApplicationTeamDataService implements OnDestroy {
       teamId: team.id
     }).subscribe(
       (et) => {
-        this._playerApplicationTeams.unshift(et);
-        this.updatePlayerApplicationTeams(this._playerApplicationTeams);
+        this.updateStore(et);
       },
       (error) => {
         this.updatePlayerApplicationTeams(this._playerApplicationTeams);

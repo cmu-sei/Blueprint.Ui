@@ -55,8 +55,7 @@ export class CardTeamDataService implements OnDestroy {
       canPostArticles: false
     }).subscribe(
       (et) => {
-        this._cardTeams.unshift(et);
-        this.updateCardTeams(this._cardTeams);
+        this.updateStore(et);
       },
       (error) => {
         this.updateCardTeams(this._cardTeams);
