@@ -49,6 +49,7 @@ export class MselComponent implements OnDestroy {
     'Data Fields',
     'Organizations',
     'Moves',
+    'Player Apps',
     'Gallery Cards',
     'CITE Actions',
     'CITE Roles',
@@ -61,6 +62,7 @@ export class MselComponent implements OnDestroy {
     ['Data Fields', 'mdi-view-column-outline'],
     ['Organizations', 'mdi-office-building-outline'],
     ['Moves', 'mdi-gamepad'],
+    ['Player Apps', 'mdi-apps'],
     ['Gallery Cards', 'mdi-view-grid-outline'],
     ['CITE Actions', 'mdi-clipboard-check-outline'],
     ['CITE Roles', 'mdi-clipboard-account-outline'],
@@ -167,6 +169,11 @@ export class MselComponent implements OnDestroy {
     const tabList = [];
     this.tabList.forEach(tab => {
       switch (tab) {
+        case 'Player Apps':
+          if (this.msel?.usePlayer) {
+            tabList.push(tab);
+          }
+          break;
         case 'Gallery Cards':
           if (this.msel?.useGallery) {
             tabList.push(tab);

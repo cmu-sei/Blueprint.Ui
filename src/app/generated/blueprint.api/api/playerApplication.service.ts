@@ -1,5 +1,5 @@
 /*
- Copyright 2022 Carnegie Mellon University. All Rights Reserved.
+Copyright 2024 Carnegie Mellon University. All Rights Reserved.
  Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 */
@@ -20,22 +20,21 @@
 import { Inject, Injectable, Optional }                      from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams,
          HttpResponse, HttpEvent }                           from '@angular/common/http';
+import { CustomHttpUrlEncodingCodec }                        from '../encoder';
 
 import { Observable }                                        from 'rxjs';
 
-import { PlayerApiClientApplicationTemplate } from '../model/playerApiClientApplicationTemplate';
-import { PlayerApiClientTeam } from '../model/playerApiClientTeam';
-import { PlayerApiClientUser } from '../model/playerApiClientUser';
-import { PlayerApiClientView } from '../model/playerApiClientView';
+import { PlayerApplication } from '../model/playerApplication';
+import { ProblemDetails } from '../model/problemDetails';
 
-import { BASE_PATH }                     from '../variables';
+import { BASE_PATH, COLLECTION_FORMATS }                     from '../variables';
 import { Configuration }                                     from '../configuration';
 
 
 @Injectable({
   providedIn: 'root'
 })
-export class PlayerService {
+export class PlayerApplicationService {
 
     protected basePath = 'http://localhost';
     public defaultHeaders = new HttpHeaders();
@@ -68,64 +67,16 @@ export class PlayerService {
 
 
     /**
-     * Adds Player View Teams to MSEL
-     * Adds the Player View&#39;s Teams to the specified MSEL.
-     * @param id
+     * Creates a new PlayerApplication
+     * Creates a new PlayerApplication with the attributes specified  &lt;para /&gt;  Accessible only to a ContentDeveloper or an Administrator
+     * @param PlayerApplication The data used to create the PlayerApplication
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-     public addViewTeamsToMsel(id: string, observe?: 'body', reportProgress?: boolean): Observable<any>;
-     public addViewTeamsToMsel(id: string, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<any>>;
-     public addViewTeamsToMsel(id: string, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<any>>;
-     public addViewTeamsToMsel(id: string, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
-         if (id === null || id === undefined) {
-             throw new Error('Required parameter id was null or undefined when calling addViewTeamsToMsel.');
-         }
-
-         let headers = this.defaultHeaders;
-
-         // authentication (oauth2) required
-         if (this.configuration.accessToken) {
-             const accessToken = typeof this.configuration.accessToken === 'function'
-                 ? this.configuration.accessToken()
-                 : this.configuration.accessToken;
-             headers = headers.set('Authorization', 'Bearer ' + accessToken);
-         }
-
-         // to determine the Accept header
-         let httpHeaderAccepts: string[] = [
-             'application/json'
-         ];
-         const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
-         if (httpHeaderAcceptSelected !== undefined) {
-             headers = headers.set('Accept', httpHeaderAcceptSelected);
-         }
-
-         // to determine the Content-Type header
-         const consumes: string[] = [
-         ];
-
-         return this.httpClient.put<any>(`${this.configuration.basePath}/api/views/teams/msels/${encodeURIComponent(String(id))}`,
-             null,
-             {
-                 withCredentials: this.configuration.withCredentials,
-                 headers: headers,
-                 observe: observe,
-                 reportProgress: reportProgress
-             }
-         );
-     }
-
-    /**
-     * Gets all ApplicationTemplates
-     * Returns a list of all of the ApplicationTemplates.
-     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
-     * @param reportProgress flag to report request and response progress.
-     */
-    public getApplicationTemplates(observe?: 'body', reportProgress?: boolean): Observable<Array<PlayerApiClientApplicationTemplate>>;
-    public getApplicationTemplates(observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Array<PlayerApiClientApplicationTemplate>>>;
-    public getApplicationTemplates(observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Array<PlayerApiClientApplicationTemplate>>>;
-    public getApplicationTemplates(observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+    public createPlayerApplication(PlayerApplication?: PlayerApplication, observe?: 'body', reportProgress?: boolean): Observable<PlayerApplication>;
+    public createPlayerApplication(PlayerApplication?: PlayerApplication, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<PlayerApplication>>;
+    public createPlayerApplication(PlayerApplication?: PlayerApplication, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<PlayerApplication>>;
+    public createPlayerApplication(PlayerApplication?: PlayerApplication, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
 
         let headers = this.defaultHeaders;
 
@@ -150,9 +101,17 @@ export class PlayerService {
 
         // to determine the Content-Type header
         const consumes: string[] = [
+            'application/json',
+            'text/json',
+            'application/_*+json'
         ];
+        const httpContentTypeSelected: string | undefined = this.configuration.selectHeaderContentType(consumes);
+        if (httpContentTypeSelected !== undefined) {
+            headers = headers.set('Content-Type', httpContentTypeSelected);
+        }
 
-        return this.httpClient.get<Array<PlayerApiClientApplicationTemplate>>(`${this.configuration.basePath}/api/applicationTemplates`,
+        return this.httpClient.post<PlayerApplication>(`${this.configuration.basePath}/api/PlayerApplications`,
+            PlayerApplication,
             {
                 withCredentials: this.configuration.withCredentials,
                 headers: headers,
@@ -162,19 +121,67 @@ export class PlayerService {
         );
     }
 
-     /**
-     * GetTeam Users
-     * Returns a list of the Team&#39;s Users.
-     * @param id
+    /**
+     * Deletes a  PlayerApplication
+     * Deletes a  PlayerApplication with the specified id  &lt;para /&gt;  Accessible only to a ContentDeveloper or an Administrator
+     * @param id The id of the PlayerApplication to delete
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public getViewTeamUsers(id: string, observe?: 'body', reportProgress?: boolean): Observable<Array<PlayerApiClientUser>>;
-    public getViewTeamUsers(id: string, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Array<PlayerApiClientUser>>>;
-    public getViewTeamUsers(id: string, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Array<PlayerApiClientUser>>>;
-    public getViewTeamUsers(id: string, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+    public deletePlayerApplication(id: string, observe?: 'body', reportProgress?: boolean): Observable<any>;
+    public deletePlayerApplication(id: string, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<any>>;
+    public deletePlayerApplication(id: string, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<any>>;
+    public deletePlayerApplication(id: string, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
         if (id === null || id === undefined) {
-            throw new Error('Required parameter id was null or undefined when calling getViewTeamUsers.');
+            throw new Error('Required parameter id was null or undefined when calling deletePlayerApplication.');
+        }
+
+        let headers = this.defaultHeaders;
+
+        // authentication (oauth2) required
+        if (this.configuration.accessToken) {
+            const accessToken = typeof this.configuration.accessToken === 'function'
+                ? this.configuration.accessToken()
+                : this.configuration.accessToken;
+            headers = headers.set('Authorization', 'Bearer ' + accessToken);
+        }
+
+        // to determine the Accept header
+        let httpHeaderAccepts: string[] = [
+            'application/json'
+        ];
+        const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
+        if (httpHeaderAcceptSelected !== undefined) {
+            headers = headers.set('Accept', httpHeaderAcceptSelected);
+        }
+
+        // to determine the Content-Type header
+        const consumes: string[] = [
+        ];
+
+        return this.httpClient.delete<any>(`${this.configuration.basePath}/api/PlayerApplications/${encodeURIComponent(String(id))}`,
+            {
+                withCredentials: this.configuration.withCredentials,
+                headers: headers,
+                observe: observe,
+                reportProgress: reportProgress
+            }
+        );
+    }
+
+    /**
+     * Gets PlayerApplications by msel
+     * Returns a list of PlayerApplications for the msel.
+     * @param mselId
+     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+     * @param reportProgress flag to report request and response progress.
+     */
+    public getByMsel(mselId: string, observe?: 'body', reportProgress?: boolean): Observable<Array<PlayerApplication>>;
+    public getByMsel(mselId: string, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Array<PlayerApplication>>>;
+    public getByMsel(mselId: string, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Array<PlayerApplication>>>;
+    public getByMsel(mselId: string, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+        if (mselId === null || mselId === undefined) {
+            throw new Error('Required parameter mselId was null or undefined when calling getByMsel.');
         }
 
         let headers = this.defaultHeaders;
@@ -202,7 +209,7 @@ export class PlayerService {
         const consumes: string[] = [
         ];
 
-        return this.httpClient.get<Array<PlayerApiClientUser>>(`${this.configuration.basePath}/api/views/teams/${encodeURIComponent(String(id))}/users`,
+        return this.httpClient.get<Array<PlayerApplication>>(`${this.configuration.basePath}/api/msels/${encodeURIComponent(String(mselId))}/PlayerApplications`,
             {
                 withCredentials: this.configuration.withCredentials,
                 headers: headers,
@@ -213,18 +220,18 @@ export class PlayerService {
     }
 
     /**
-     * Get View Teams
-     * Returns a list of the View&#39;s Teams.
-     * @param id
+     * Gets a specific PlayerApplication by id
+     * Returns the PlayerApplication with the id specified
+     * @param id The id of the PlayerApplication
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public getViewTeams(id: string, observe?: 'body', reportProgress?: boolean): Observable<Array<PlayerApiClientTeam>>;
-    public getViewTeams(id: string, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Array<PlayerApiClientTeam>>>;
-    public getViewTeams(id: string, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Array<PlayerApiClientTeam>>>;
-    public getViewTeams(id: string, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+    public getPlayerApplication(id: string, observe?: 'body', reportProgress?: boolean): Observable<PlayerApplication>;
+    public getPlayerApplication(id: string, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<PlayerApplication>>;
+    public getPlayerApplication(id: string, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<PlayerApplication>>;
+    public getPlayerApplication(id: string, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
         if (id === null || id === undefined) {
-            throw new Error('Required parameter id was null or undefined when calling getViewTeams.');
+            throw new Error('Required parameter id was null or undefined when calling getPlayerApplication.');
         }
 
         let headers = this.defaultHeaders;
@@ -252,7 +259,7 @@ export class PlayerService {
         const consumes: string[] = [
         ];
 
-        return this.httpClient.get<Array<PlayerApiClientTeam>>(`${this.configuration.basePath}/api/views/${encodeURIComponent(String(id))}/teams`,
+        return this.httpClient.get<PlayerApplication>(`${this.configuration.basePath}/api/PlayerApplications/${encodeURIComponent(String(id))}`,
             {
                 withCredentials: this.configuration.withCredentials,
                 headers: headers,
@@ -263,15 +270,20 @@ export class PlayerService {
     }
 
     /**
-     * Gets all Views
-     * Returns a list of all of the Views.
+     * Updates a  PlayerApplication
+     * Updates a PlayerApplication with the attributes specified.  The ID from the route MUST MATCH the ID contained in the PlayerApplication parameter  &lt;para /&gt;  Accessible only to a ContentDeveloper or an Administrator
+     * @param id The Id of the PlayerApplication to update
+     * @param PlayerApplication The updated PlayerApplication values
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public getViews(observe?: 'body', reportProgress?: boolean): Observable<Array<PlayerApiClientView>>;
-    public getViews(observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Array<PlayerApiClientView>>>;
-    public getViews(observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Array<PlayerApiClientView>>>;
-    public getViews(observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+    public updatePlayerApplication(id: string, PlayerApplication?: PlayerApplication, observe?: 'body', reportProgress?: boolean): Observable<PlayerApplication>;
+    public updatePlayerApplication(id: string, PlayerApplication?: PlayerApplication, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<PlayerApplication>>;
+    public updatePlayerApplication(id: string, PlayerApplication?: PlayerApplication, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<PlayerApplication>>;
+    public updatePlayerApplication(id: string, PlayerApplication?: PlayerApplication, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+        if (id === null || id === undefined) {
+            throw new Error('Required parameter id was null or undefined when calling updatePlayerApplication.');
+        }
 
         let headers = this.defaultHeaders;
 
@@ -296,9 +308,17 @@ export class PlayerService {
 
         // to determine the Content-Type header
         const consumes: string[] = [
+            'application/json',
+            'text/json',
+            'application/_*+json'
         ];
+        const httpContentTypeSelected: string | undefined = this.configuration.selectHeaderContentType(consumes);
+        if (httpContentTypeSelected !== undefined) {
+            headers = headers.set('Content-Type', httpContentTypeSelected);
+        }
 
-        return this.httpClient.get<Array<PlayerApiClientView>>(`${this.configuration.basePath}/api/views`,
+        return this.httpClient.put<PlayerApplication>(`${this.configuration.basePath}/api/PlayerApplications/${encodeURIComponent(String(id))}`,
+            PlayerApplication,
             {
                 withCredentials: this.configuration.withCredentials,
                 headers: headers,

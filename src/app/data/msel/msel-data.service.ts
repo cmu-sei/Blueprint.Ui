@@ -43,6 +43,7 @@ export class MselPlus implements Msel {
   name?: string;
   description?: string;
   status?: ItemStatus;
+  usePlayer?: boolean;
   playerViewId?: string;
   useGallery?: boolean;
   galleryCollectionId?: string;
@@ -378,6 +379,43 @@ export class MselDataService {
     this.mselStore.setLoading(true);
     this.mselService
       .pullFromGallery(mselId)
+      .pipe(
+        tap(() => {
+          this.mselStore.setLoading(false);
+        }),
+        take(1)
+      )
+      .subscribe((n) => {
+        this.updateStore(n);
+      },
+      (error) => {
+        this.mselStore.setLoading(false);
+      });
+  }
+
+  pushToPlayer(mselId: string) {
+    this.mselStore.setLoading(true);
+    this.mselService
+      .pushToPlayer(mselId)
+      .pipe(
+        tap(() => {
+          this.mselStore.setLoading(false);
+        }),
+        take(1)
+      )
+      .subscribe((n) => {
+        this.updateStore(n);
+      },
+      (error) => {
+        this.mselStore.setLoading(false);
+        this.errorService.handleError(error);
+      });
+  }
+
+  pullFromPlayer(mselId: string) {
+    this.mselStore.setLoading(true);
+    this.mselService
+      .pullFromPlayer(mselId)
       .pipe(
         tap(() => {
           this.mselStore.setLoading(false);

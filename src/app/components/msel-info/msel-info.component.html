@@ -124,6 +124,49 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 >Is a Template</mat-checkbox>
             </div>
           </div>
+          <!-- Player Integration -->
+          <div class="single-detail center-self">
+            <div class="sub-detail center-self three-cell">
+              <mat-checkbox
+                [(ngModel)]="msel.usePlayer"
+                [disabled]="!!msel.playerViewId"
+                (cut)="isChanged = true"
+                (change)="isChanged = true"
+                (paste)="isChanged = true"
+                (keypress)="isChanged = true"
+              ></mat-checkbox>&nbsp;&nbsp;Integrate Player
+            </div>
+            <div class="sub-detail center-self one-cell" *ngIf="msel.usePlayer">
+              <button
+                (click)="pushToPlayer()"
+                title="Push to Player"
+                class="thin-button"
+                *ngIf="!msel.playerViewId"
+                [disabled]="!(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) || isBusy || isChanged"
+              ><span *ngIf="isBusy && pushStatus.endsWith('Player')">{{ pushStatus }} ...</span><span *ngIf="!isBusy || !pushStatus.endsWith('Player')">Push to Player</span></button>
+              <button
+                (click)="pullFromPlayer()"
+                title="Remove from Player"
+                class="thin-button"
+                *ngIf="msel.playerViewId"
+                [disabled]="!(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)"
+              >Remove from Player</button>
+            </div>
+          </div>
+          <div *ngIf="!msel.isTemplate && msel.usePlayer && msel.playerViewId" class="single-detail center-self">
+            <div class="sub-detail center-self one-cell">&nbsp;</div>
+            <div class="sub-detail center-self four-cell" *ngIf="msel.usePlayer && msel.playerViewId">
+              <mat-form-field class="guid-field">
+                <input
+                  type="text"
+                  matInput
+                  placeholder="View"
+                  [(ngModel)]="msel.playerViewId"
+                  disabled
+                />
+              </mat-form-field>
+            </div>
+          </div>
           <!-- Gallery Integration -->
           <div class="single-detail center-self">
             <div class="sub-detail center-self three-cell">
@@ -257,19 +300,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   disabled
                 />
               </mat-form-field>
-            </div>
-          </div>
-          <!-- Player Integration -->
-          <div class="single-detail center-self">
-            <div class="sub-detail center-self">
-              <mat-checkbox
-                [disabled]="true"
-                [(ngModel)]="msel.useSteamfitter"
-                (cut)="isChanged = true"
-                (change)="isChanged = true"
-                (paste)="isChanged = true"
-                (keypress)="isChanged = true"
-                >Integrate Player</mat-checkbox>
             </div>
           </div>
           <!-- Steamfitter Integration -->

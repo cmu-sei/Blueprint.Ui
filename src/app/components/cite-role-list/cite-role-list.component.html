@@ -89,7 +89,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             mat-icon-button
             class="cite-role-button"
             title="Edit this citeRole"
-            (click)="addOrEditCiteRole(item, true, false)"
+            (click)="addOrEditCiteRole(item, false, false)"
             *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
           >
             <mat-icon class="mdi-18px up-12" fontIcon="mdi-square-edit-outline"></mat-icon>

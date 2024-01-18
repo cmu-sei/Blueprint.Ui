@@ -8,6 +8,10 @@ import { Injectable } from '@angular/core';
 import { ComnAuthService, ComnSettingsService } from '@cmusei/crucible-common';
 import * as signalR from '@microsoft/signalr';
 import {
+  Card,
+  CardTeam,
+  CiteAction,
+  CiteRole,
   DataField,
   DataOption,
   DataValue,
@@ -15,12 +19,18 @@ import {
   Msel,
   MselTeam,
   Organization,
+  PlayerApplication,
+  PlayerApplicationTeam,
   ScenarioEvent,
   Team,
   TeamUser,
   User,
   UserMselRole
 } from 'src/app/generated/blueprint.api';
+import { CardDataService } from '../data/card/card-data.service';
+import { CardTeamDataService } from '../data/team/card-team-data.service';
+import { CiteActionDataService } from '../data/cite-action/cite-action-data.service';
+import { CiteRoleDataService } from '../data/cite-role/cite-role-data.service';
 import { DataFieldDataService } from '../data/data-field/data-field-data.service';
 import { DataOptionDataService } from '../data/data-option/data-option-data.service';
 import { DataValueDataService } from '../data/data-value/data-value-data.service';
@@ -28,6 +38,8 @@ import { MoveDataService } from '../data/move/move-data.service';
 import { MselDataService } from '../data/msel/msel-data.service';
 import { MselTeamDataService } from '../data/msel-team/msel-team-data.service';
 import { OrganizationDataService } from '../data/organization/organization-data.service';
+import { PlayerApplicationDataService } from '../data/player-application/player-application-data.service';
+import { PlayerApplicationTeamDataService } from '../data/team/player-application-team-data.service';
 import { ScenarioEventDataService } from '../data/scenario-event/scenario-event-data.service';
 import { TeamDataService } from 'src/app/data/team/team-data.service';
 import { TeamUserDataService } from 'src/app/data/user/team-user-data.service';
@@ -50,6 +62,10 @@ export class SignalRService {
   constructor(
     private authService: ComnAuthService,
     private settingsService: ComnSettingsService,
+    private cardDataService: CardDataService,
+    private cardTeamDataService: CardTeamDataService,
+    private citeActionDataService: CiteActionDataService,
+    private citeRoleDataService: CiteRoleDataService,
     private dataFieldDataService: DataFieldDataService,
     private dataOptionDataService: DataOptionDataService,
     private dataValueDataService: DataValueDataService,
@@ -57,6 +73,8 @@ export class SignalRService {
     private mselDataService: MselDataService,
     private mselTeamDataService: MselTeamDataService,
     private organizationDataService: OrganizationDataService,
+    private playerApplicationDataService: PlayerApplicationDataService,
+    private playerApplicationTeamDataService: PlayerApplicationTeamDataService,
     private scenarioEventDataService: ScenarioEventDataService,
     private teamDataService: TeamDataService,
     private teamUserDataService: TeamUserDataService,
@@ -114,6 +132,10 @@ export class SignalRService {
   }
 
   private addHandlers() {
+    this.addCardHandlers();
+    this.addCardTeamHandlers();
+    this.addCiteActionHandlers();
+    this.addCiteRoleHandlers();
     this.addDataFieldHandlers();
     this.addDataOptionHandlers();
     this.addDataValueHandlers();
@@ -121,11 +143,77 @@ export class SignalRService {
     this.addMselHandlers();
     this.addMselTeamHandlers();
     this.addOrganizationHandlers();
+    this.addPlayerApplicationHandlers();
+    this.addPlayerApplicationTeamHandlers();
     this.addScenarioEventHandlers();
     this.addTeamHandlers();
     this.addTeamUserHandlers();
     this.addUserHandlers();
     this.addUserMselRoleHandlers();
+  }
+
+  private addCardHandlers() {
+    this.hubConnection.on(
+      'CardUpdated', (card: Card) => {
+        this.cardDataService.updateStore(card);
+      }
+    );
+
+    this.hubConnection.on('CardCreated', (card: Card) => {
+      this.cardDataService.updateStore(card);
+    });
+
+    this.hubConnection.on('CardDeleted', (id: string) => {
+      this.cardDataService.deleteFromStore(id);
+    });
+  }
+
+  private addCardTeamHandlers() {
+    this.hubConnection.on(
+      'CardTeamUpdated', (cardTeam: CardTeam) => {
+        this.cardTeamDataService.updateStore(cardTeam);
+      }
+    );
+
+    this.hubConnection.on('CardTeamCreated', (cardTeam: CardTeam) => {
+      this.cardTeamDataService.updateStore(cardTeam);
+    });
+
+    this.hubConnection.on('CardTeamDeleted', (id: string) => {
+      this.cardTeamDataService.deleteFromStore(id);
+    });
+  }
+
+  private addCiteActionHandlers() {
+    this.hubConnection.on(
+      'CiteActionUpdated', (citeAction: CiteAction) => {
+        this.citeActionDataService.updateStore(citeAction);
+      }
+    );
+
+    this.hubConnection.on('CiteActionCreated', (citeAction: CiteAction) => {
+      this.citeActionDataService.updateStore(citeAction);
+    });
+
+    this.hubConnection.on('CiteActionDeleted', (id: string) => {
+      this.citeActionDataService.deleteFromStore(id);
+    });
+  }
+
+  private addCiteRoleHandlers() {
+    this.hubConnection.on(
+      'CiteRoleUpdated', (citeRole: CiteRole) => {
+        this.citeRoleDataService.updateStore(citeRole);
+      }
+    );
+
+    this.hubConnection.on('CiteRoleCreated', (citeRole: CiteRole) => {
+      this.citeRoleDataService.updateStore(citeRole);
+    });
+
+    this.hubConnection.on('CiteRoleDeleted', (id: string) => {
+      this.citeRoleDataService.deleteFromStore(id);
+    });
   }
 
   private addDataFieldHandlers() {
@@ -241,6 +329,38 @@ export class SignalRService {
 
     this.hubConnection.on('OrganizationDeleted', (id: string) => {
       this.organizationDataService.deleteFromStore(id);
+    });
+  }
+
+  private addPlayerApplicationHandlers() {
+    this.hubConnection.on(
+      'PlayerApplicationUpdated', (playerApplication: PlayerApplication) => {
+        this.playerApplicationDataService.updateStore(playerApplication);
+      }
+    );
+
+    this.hubConnection.on('PlayerApplicationCreated', (playerApplication: PlayerApplication) => {
+      this.playerApplicationDataService.updateStore(playerApplication);
+    });
+
+    this.hubConnection.on('PlayerApplicationDeleted', (id: string) => {
+      this.playerApplicationDataService.deleteFromStore(id);
+    });
+  }
+
+  private addPlayerApplicationTeamHandlers() {
+    this.hubConnection.on(
+      'PlayerApplicationTeamUpdated', (playerApplicationTeam: PlayerApplicationTeam) => {
+        this.playerApplicationTeamDataService.updateStore(playerApplicationTeam);
+      }
+    );
+
+    this.hubConnection.on('PlayerApplicationTeamCreated', (playerApplicationTeam: PlayerApplicationTeam) => {
+      this.playerApplicationTeamDataService.updateStore(playerApplicationTeam);
+    });
+
+    this.hubConnection.on('PlayerApplicationTeamDeleted', (id: string) => {
+      this.playerApplicationTeamDataService.deleteFromStore(id);
     });
   }
 
