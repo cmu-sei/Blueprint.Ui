@@ -73,7 +73,7 @@ export class MselPlus implements Msel {
   gallerySourceTypes?: Array<string>;
 
   hasRole(userId: string, scenarioEventId: string) {
-    const mselRole = { owner: false, moveEditor: false, approver: false, editor: false, facilitator: false, viewer: false };
+    const mselRole = { owner: false, moveEditor: false, approver: false, editor: false, evaluator: false, viewer: false };
     mselRole.owner = !this.userMselRoles ? false : this.userMselRoles.some(umr =>
       umr.userId === userId &&
       umr.role === MselRole.Owner);
@@ -84,7 +84,7 @@ export class MselPlus implements Msel {
       mselRole.approver = true;
       mselRole.editor = true;
       mselRole.moveEditor = true;
-      mselRole.facilitator = true;
+      mselRole.evaluator = true;
     } else if (this.scenarioEvents && this.scenarioEvents.length > 0 && scenarioEventId) {
       const scenarioEvent = this.scenarioEvents.find(se => se.id === scenarioEventId);
       const assignedToDataField = this.dataFields.find(df => df.dataType === DataFieldType.Team);
@@ -100,15 +100,15 @@ export class MselPlus implements Msel {
           mselRole.editor = mselRole.approver || this.userMselRoles.some(umr =>
             umr.userId === userId &&
             umr.role === MselRole.Editor);
-          mselRole.facilitator = mselRole.approver || mselRole.editor || this.userMselRoles.some(umr =>
+          mselRole.evaluator = mselRole.approver || mselRole.editor || this.userMselRoles.some(umr =>
             umr.userId === userId &&
-            umr.role === MselRole.Facilitator);
+            umr.role === MselRole.Evaluator);
         }
       }
     }
     mselRole.viewer = !this.userMselRoles ? false : this.userMselRoles.some(umr =>
       (umr.userId === userId && umr.role === MselRole.Viewer) ||
-      mselRole.editor || mselRole.approver || mselRole.moveEditor || mselRole.owner || mselRole.facilitator
+      mselRole.editor || mselRole.approver || mselRole.moveEditor || mselRole.owner || mselRole.evaluator
     );
 
     return mselRole;

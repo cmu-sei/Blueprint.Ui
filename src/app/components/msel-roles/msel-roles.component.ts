@@ -47,7 +47,7 @@ export class MselRolesComponent implements OnDestroy {
     MselRole.Approver,
     MselRole.MoveEditor,
     MselRole.Owner,
-    MselRole.Facilitator,
+    MselRole.Evaluator,
     MselRole.Viewer,
     MselRole.GalleryObserver,
     MselRole.CiteObserver
