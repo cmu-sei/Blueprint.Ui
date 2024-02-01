@@ -83,11 +83,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 (change)="isChanged = true"
                 (paste)="isChanged = true"
                 (keypress)="isChanged = true"
-
               >
               <mat-datepicker-toggle
                 matSuffix
                 [for]="$any(startTimePicker)"
+                title = "Choose Date/Time"
               >
               </mat-datepicker-toggle>
               <ngx-mat-datetime-picker #startTimePicker
@@ -263,6 +263,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   (change)="isChanged = true"
                   (paste)="isChanged = true"
                   (keypress)="isChanged = true"
+                  title="Select a CITE Scoring Model"
                 />
               </mat-form-field>
               </div>
@@ -488,7 +489,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     </mat-tab>
     <mat-tab *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner">
       <ng-template mat-tab-label>
-        <mat-icon class="mdi-24px" fontIcon="mdi-plus-circle"></mat-icon>
+        <mat-icon class="mdi-24px" fontIcon="mdi-plus-circle" title="Add MSEL Notes Page"></mat-icon>
         Add Page
       </ng-template>
       <!-- new page content -->
