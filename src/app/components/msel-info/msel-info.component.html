@@ -138,19 +138,30 @@ project root for license information or contact permission@sei.cmu.edu for full 
             </div>
             <div class="sub-detail center-self one-cell" *ngIf="msel.usePlayer">
               <button
-                (click)="pushToPlayer()"
-                title="Push to Player"
+                (click)="pushIntegrations()"
+                title="Push Integrations"
                 class="thin-button"
-                *ngIf="!msel.playerViewId"
-                [disabled]="!(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) || isBusy || isChanged"
-              ><span *ngIf="isBusy && pushStatus.endsWith('Player')">{{ pushStatus }} ...</span><span *ngIf="!isBusy || !pushStatus.endsWith('Player')">Push to Player</span></button>
+                *ngIf="(!msel.playerViewId &&
+                        !msel.citeEvaluationId &&
+                        !msel.galleryCollectionId &&
+                        !msel.steamfitterScenarioId) ||
+                        pushStatus"
+                [disabled]="!(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) ||
+                            (msel.useGallery && galleryToDo()) ||
+                            (msel.useCite && !msel.citeScoringModelId) ||
+                            isBusy || isChanged"
+              ><span *ngIf="pushStatus">{{ pushStatus }} ...</span><span *ngIf="!pushStatus">Push Integrations</span></button>
               <button
-                (click)="pullFromPlayer()"
-                title="Remove from Player"
+                (click)="pullIntegrations()"
+                title="Remove Integrations"
                 class="thin-button"
-                *ngIf="msel.playerViewId"
+                *ngIf="(msel.playerViewId ||
+                       msel.citeEvaluationId ||
+                       msel.galleryCollectionId ||
+                       msel.steamfitterScenarioId) &&
+                       !pushStatus"
                 [disabled]="!(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)"
-              >Remove from Player</button>
+              >Remove Integrations</button>
             </div>
           </div>
           <div *ngIf="!msel.isTemplate && msel.usePlayer && msel.playerViewId" class="single-detail center-self">
@@ -179,22 +190,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 (keypress)="isChanged = true"
               ></mat-checkbox>&nbsp;&nbsp;Integrate Gallery
             </div>
-            <div class="sub-detail center-self one-cell" *ngIf="msel.useGallery">
-              <button
-                (click)="pushToGallery()"
-                title="Push to Gallery"
-                class="thin-button"
-                *ngIf="!msel.galleryCollectionId"
-                [disabled]="!(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) || galleryToDo() || isBusy || isChanged"
-              ><span *ngIf="isBusy && pushStatus.endsWith('Gallery')">{{ pushStatus }} ...</span><span *ngIf="!isBusy || !pushStatus.endsWith('Gallery')">Push to Gallery</span></button>
-              <button
-                (click)="pullFromGallery()"
-                title="Remove from Gallery"
-                class="thin-button"
-                *ngIf="msel.galleryCollectionId"
-                [disabled]="!(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)"
-              >Remove from Gallery</button>
-            </div>
+            <div class="sub-detail center-self one-cell" *ngIf="msel.useGallery">&nbsp;</div>
           </div>
           <div *ngIf="galleryWarningMessage()" class="single-detail center-self">
             <span class="gallery-warning">{{ galleryWarningMessage() }}</span>
@@ -267,22 +263,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 />
               </mat-form-field>
               </div>
-            <div class="sub-detail center-self one-cell" *ngIf="msel.useCite">
-              <button
-                (click)="pushToCite()"
-                title="Push to CITE"
-                class="thin-button"
-                *ngIf="!msel.citeEvaluationId"
-                [disabled]="!(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) || !msel.citeScoringModelId || isBusy || isChanged"
-              ><span *ngIf="isBusy && pushStatus.endsWith('CITE')">{{ pushStatus }} ...</span><span *ngIf="!isBusy || !pushStatus.endsWith('CITE')">Push to CITE</span></button>
-              <button
-                (click)="pullFromCite()"
-                title="Remove from CITE"
-                class="thin-button"
-                *ngIf="!!msel.citeEvaluationId"
-                [disabled]="!(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)"
-              >Remove from CITE</button>
-            </div>
+              <div class="sub-detail center-self one-cell" *ngIf="msel.useCite">&nbsp;</div>
           </div>
           <div *ngIf="citeWarningMessage()" class="single-detail center-self">
             <span class="gallery-warning">{{ citeWarningMessage() }}</span>

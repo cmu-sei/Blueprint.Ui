@@ -123,10 +123,6 @@ export class MselInfoComponent implements OnDestroy {
     this.mselPageQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(pages => {
       this.mselPages = pages;
     });
-    // subscribe to views
-    this.playerService.getViews().subscribe(views => {
-      this.viewList = views;
-    });
     // subscribe to scoring models
     this.citeService.getScoringModels().subscribe(scoringModels => {
       this.scoringModelList = scoringModels;
@@ -158,10 +154,6 @@ export class MselInfoComponent implements OnDestroy {
     }
   }
 
-  addViewTeamsToMsel() {
-    this.playerService.addViewTeamsToMsel(this.msel.id).subscribe();
-  }
-
   galleryWarningMessage() {
     let warningMessage = '';
     if (this.msel.useGallery && !this.msel.galleryExhibitId) {
@@ -180,83 +172,29 @@ export class MselInfoComponent implements OnDestroy {
     return warningMessage;
   }
 
-  pushToCite() {
+  pushIntegrations() {
     this.dialogService
       .confirm(
-        'Push to CITE',
-        this.citeWarningMessage() + 'Are you sure that you want to push this MSEL to CITE?'
+        'Push Integrations',
+        'Are you sure that you want to push MSEL data to the selected applications?'
       )
       .subscribe((result) => {
         if (result['confirm']) {
-          this.mselDataService.pushToCite(this.msel.id);
-          this.pushStatus = 'Pushing to CITE';
+          this.mselDataService.pushIntegrations(this.msel.id);
+          this.pushStatus = 'Pushing Integrations';
         }
       });
   }
 
-  pullFromCite() {
+  pullIntegrations() {
     this.dialogService
       .confirm(
-        'Remove from CITE',
-        'Are you sure you want to delete the Evaluation and all associated data from CITE?'
+        'Remove Integrations',
+        'Are you sure you want to remove this MSEL from the associated applications?'
       )
       .subscribe((result) => {
         if (result['confirm']) {
-          this.mselDataService.pullFromCite(this.msel.id);
-        }
-      });
-  }
-
-  pushToGallery() {
-    this.dialogService
-      .confirm(
-        'Push to Gallery',
-        'Are you sure that you want to push this MSEL to Gallery?'
-      )
-      .subscribe((result) => {
-        if (result['confirm']) {
-          this.mselDataService.pushToGallery(this.msel.id);
-          this.pushStatus = 'Pushing to Gallery';
-        }
-      });
-  }
-
-  pullFromGallery() {
-    this.dialogService
-      .confirm(
-        'Remove from Gallery',
-        'Are you sure you want to delete the Collection and all associated data from Gallery?'
-      )
-      .subscribe((result) => {
-        if (result['confirm']) {
-          this.mselDataService.pullFromGallery(this.msel.id);
-        }
-      });
-  }
-
-  pushToPlayer() {
-    this.dialogService
-      .confirm(
-        'Push to Player',
-        'Are you sure that you want to push this MSEL to Player?'
-      )
-      .subscribe((result) => {
-        if (result['confirm']) {
-          this.mselDataService.pushToPlayer(this.msel.id);
-          this.pushStatus = 'Pushing to Player';
-        }
-      });
-  }
-
-  pullFromPlayer() {
-    this.dialogService
-      .confirm(
-        'Remove from Player',
-        'Are you sure you want to delete the Collection and all associated data from Player?'
-      )
-      .subscribe((result) => {
-        if (result['confirm']) {
-          this.mselDataService.pullFromPlayer(this.msel.id);
+          this.mselDataService.pullIntegrations(this.msel.id);
         }
       });
   }

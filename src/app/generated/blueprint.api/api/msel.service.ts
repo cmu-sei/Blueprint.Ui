@@ -646,119 +646,18 @@ export class MselService {
     }
 
     /**
-     * Pull from Cite
-     * Pulls the Collection and associated information from Cite    * Collection, Exhibit, Cards, Articles, and Teams  for the specified MSEL  &lt;para /&gt;  Accessible only to a ContentDeveloper or an Administrator
+     * Pull Integrations
+     * Pulls all Integrations from the associated applications  &lt;para /&gt;  Accessible only to a ContentDeveloper or an Administrator
      * @param id The id of the MSEL
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-     public pullFromCite(id: string, observe?: 'body', reportProgress?: boolean): Observable<Msel>;
-     public pullFromCite(id: string, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Msel>>;
-     public pullFromCite(id: string, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Msel>>;
-     public pullFromCite(id: string, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
-         if (id === null || id === undefined) {
-             throw new Error('Required parameter id was null or undefined when calling pullFromCite.');
-         }
-
-         let headers = this.defaultHeaders;
-
-         // authentication (oauth2) required
-         if (this.configuration.accessToken) {
-             const accessToken = typeof this.configuration.accessToken === 'function'
-                 ? this.configuration.accessToken()
-                 : this.configuration.accessToken;
-             headers = headers.set('Authorization', 'Bearer ' + accessToken);
-         }
-
-         // to determine the Accept header
-         let httpHeaderAccepts: string[] = [
-             'text/plain',
-             'application/json',
-             'text/json'
-         ];
-         const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
-         if (httpHeaderAcceptSelected !== undefined) {
-             headers = headers.set('Accept', httpHeaderAcceptSelected);
-         }
-
-         // to determine the Content-Type header
-         const consumes: string[] = [
-         ];
-
-         return this.httpClient.delete<Msel>(`${this.configuration.basePath}/api/msels/${encodeURIComponent(String(id))}/cite`,
-             {
-                 withCredentials: this.configuration.withCredentials,
-                 headers: headers,
-                 observe: observe,
-                 reportProgress: reportProgress
-             }
-         );
-     }
-
-     /**
-      * Push to Cite
-      * Pushes all Cite associated MSEL information to Cite    * Collection, Exhibit, Cards, Articles, and Teams  for the specified MSEL  &lt;para /&gt;  Accessible only to a ContentDeveloper or MSEL owner
-      * @param id
-      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
-      * @param reportProgress flag to report request and response progress.
-      */
-     public pushToCite(id: string, observe?: 'body', reportProgress?: boolean): Observable<Msel>;
-     public pushToCite(id: string, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Msel>>;
-     public pushToCite(id: string, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Msel>>;
-     public pushToCite(id: string, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
-         if (id === null || id === undefined) {
-             throw new Error('Required parameter id was null or undefined when calling pushToCite.');
-         }
-
-         let headers = this.defaultHeaders;
-
-         // authentication (oauth2) required
-         if (this.configuration.accessToken) {
-             const accessToken = typeof this.configuration.accessToken === 'function'
-                 ? this.configuration.accessToken()
-                 : this.configuration.accessToken;
-             headers = headers.set('Authorization', 'Bearer ' + accessToken);
-         }
-
-         // to determine the Accept header
-         let httpHeaderAccepts: string[] = [
-             'text/plain',
-             'application/json',
-             'text/json'
-         ];
-         const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
-         if (httpHeaderAcceptSelected !== undefined) {
-             headers = headers.set('Accept', httpHeaderAcceptSelected);
-         }
-
-         // to determine the Content-Type header
-         const consumes: string[] = [
-         ];
-
-         return this.httpClient.post<Msel>(`${this.configuration.basePath}/api/msels/${encodeURIComponent(String(id))}/cite`,
-             null,
-             {
-                 withCredentials: this.configuration.withCredentials,
-                 headers: headers,
-                 observe: observe,
-                 reportProgress: reportProgress
-             }
-         );
-     }
-
-    /**
-     * Pull from Gallery
-     * Pulls the Collection and associated information from Gallery    * Collection, Exhibit, Cards, Articles, and Teams  for the specified MSEL  &lt;para /&gt;  Accessible only to a ContentDeveloper or an Administrator
-     * @param id The id of the MSEL
-     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
-     * @param reportProgress flag to report request and response progress.
-     */
-    public pullFromGallery(id: string, observe?: 'body', reportProgress?: boolean): Observable<Msel>;
-    public pullFromGallery(id: string, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Msel>>;
-    public pullFromGallery(id: string, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Msel>>;
-    public pullFromGallery(id: string, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+    public pullIntegrations(id: string, observe?: 'body', reportProgress?: boolean): Observable<Msel>;
+    public pullIntegrations(id: string, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Msel>>;
+    public pullIntegrations(id: string, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Msel>>;
+    public pullIntegrations(id: string, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
         if (id === null || id === undefined) {
-            throw new Error('Required parameter id was null or undefined when calling pullFromGallery.');
+            throw new Error('Required parameter id was null or undefined when calling pullIntegrations.');
         }
 
         let headers = this.defaultHeaders;
@@ -786,7 +685,7 @@ export class MselService {
         const consumes: string[] = [
         ];
 
-        return this.httpClient.delete<Msel>(`${this.configuration.basePath}/api/msels/${encodeURIComponent(String(id))}/gallery`,
+        return this.httpClient.delete<Msel>(`${this.configuration.basePath}/api/msels/${encodeURIComponent(String(id))}/integrations`,
             {
                 withCredentials: this.configuration.withCredentials,
                 headers: headers,
@@ -797,18 +696,18 @@ export class MselService {
     }
 
     /**
-     * Push to Gallery
-     * Pushes all Gallery associated MSEL information to Gallery    * Collection, Exhibit, Cards, Articles, and Teams  for the specified MSEL  &lt;para /&gt;  Accessible only to a ContentDeveloper or MSEL owner
+     * Push Integrations
+     * Pushes all MSEL Integrations to the associated applications  &lt;para /&gt;  Accessible only to a ContentDeveloper or MSEL owner
      * @param id
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public pushToGallery(id: string, observe?: 'body', reportProgress?: boolean): Observable<Msel>;
-    public pushToGallery(id: string, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Msel>>;
-    public pushToGallery(id: string, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Msel>>;
-    public pushToGallery(id: string, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+    public pushIntegrations(id: string, observe?: 'body', reportProgress?: boolean): Observable<Msel>;
+    public pushIntegrations(id: string, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Msel>>;
+    public pushIntegrations(id: string, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Msel>>;
+    public pushIntegrations(id: string, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
         if (id === null || id === undefined) {
-            throw new Error('Required parameter id was null or undefined when calling pushToGallery.');
+            throw new Error('Required parameter id was null or undefined when calling pushIntegrations.');
         }
 
         let headers = this.defaultHeaders;
@@ -836,108 +735,7 @@ export class MselService {
         const consumes: string[] = [
         ];
 
-        return this.httpClient.post<Msel>(`${this.configuration.basePath}/api/msels/${encodeURIComponent(String(id))}/gallery`,
-            null,
-            {
-                withCredentials: this.configuration.withCredentials,
-                headers: headers,
-                observe: observe,
-                reportProgress: reportProgress
-            }
-        );
-    }
-
-    /**
-     * Pull from Player
-     * Pulls the Collection and associated information from Player    * Collection, Exhibit, Cards, Articles, and Teams  for the specified MSEL  &lt;para /&gt;  Accessible only to a ContentDeveloper or an Administrator
-     * @param id The id of the MSEL
-     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
-     * @param reportProgress flag to report request and response progress.
-     */
-    public pullFromPlayer(id: string, observe?: 'body', reportProgress?: boolean): Observable<Msel>;
-    public pullFromPlayer(id: string, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Msel>>;
-    public pullFromPlayer(id: string, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Msel>>;
-    public pullFromPlayer(id: string, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
-        if (id === null || id === undefined) {
-            throw new Error('Required parameter id was null or undefined when calling pullFromPlayer.');
-        }
-
-        let headers = this.defaultHeaders;
-
-        // authentication (oauth2) required
-        if (this.configuration.accessToken) {
-            const accessToken = typeof this.configuration.accessToken === 'function'
-                ? this.configuration.accessToken()
-                : this.configuration.accessToken;
-            headers = headers.set('Authorization', 'Bearer ' + accessToken);
-        }
-
-        // to determine the Accept header
-        let httpHeaderAccepts: string[] = [
-            'text/plain',
-            'application/json',
-            'text/json'
-        ];
-        const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
-        if (httpHeaderAcceptSelected !== undefined) {
-            headers = headers.set('Accept', httpHeaderAcceptSelected);
-        }
-
-        // to determine the Content-Type header
-        const consumes: string[] = [
-        ];
-
-        return this.httpClient.delete<Msel>(`${this.configuration.basePath}/api/msels/${encodeURIComponent(String(id))}/player`,
-            {
-                withCredentials: this.configuration.withCredentials,
-                headers: headers,
-                observe: observe,
-                reportProgress: reportProgress
-            }
-        );
-    }
-
-    /**
-     * Push to Player
-     * Pushes all Player associated MSEL information to Player    * Collection, Exhibit, Cards, Articles, and Teams  for the specified MSEL  &lt;para /&gt;  Accessible only to a ContentDeveloper or MSEL owner
-     * @param id
-     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
-     * @param reportProgress flag to report request and response progress.
-     */
-    public pushToPlayer(id: string, observe?: 'body', reportProgress?: boolean): Observable<Msel>;
-    public pushToPlayer(id: string, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Msel>>;
-    public pushToPlayer(id: string, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Msel>>;
-    public pushToPlayer(id: string, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
-        if (id === null || id === undefined) {
-            throw new Error('Required parameter id was null or undefined when calling pushToPlayer.');
-        }
-
-        let headers = this.defaultHeaders;
-
-        // authentication (oauth2) required
-        if (this.configuration.accessToken) {
-            const accessToken = typeof this.configuration.accessToken === 'function'
-                ? this.configuration.accessToken()
-                : this.configuration.accessToken;
-            headers = headers.set('Authorization', 'Bearer ' + accessToken);
-        }
-
-        // to determine the Accept header
-        let httpHeaderAccepts: string[] = [
-            'text/plain',
-            'application/json',
-            'text/json'
-        ];
-        const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
-        if (httpHeaderAcceptSelected !== undefined) {
-            headers = headers.set('Accept', httpHeaderAcceptSelected);
-        }
-
-        // to determine the Content-Type header
-        const consumes: string[] = [
-        ];
-
-        return this.httpClient.post<Msel>(`${this.configuration.basePath}/api/msels/${encodeURIComponent(String(id))}/player`,
+        return this.httpClient.post<Msel>(`${this.configuration.basePath}/api/msels/${encodeURIComponent(String(id))}/integrations`,
             null,
             {
                 withCredentials: this.configuration.withCredentials,
