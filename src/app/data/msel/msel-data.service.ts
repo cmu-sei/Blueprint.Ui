@@ -319,10 +319,10 @@ export class MselDataService {
       });
   }
 
-  pushToCite(mselId: string) {
+  pushIntegrations(mselId: string) {
     this.mselStore.setLoading(true);
     this.mselService
-      .pushToCite(mselId)
+      .pushIntegrations(mselId)
       .pipe(
         tap(() => {
           this.mselStore.setLoading(false);
@@ -338,84 +338,10 @@ export class MselDataService {
       });
   }
 
-  pullFromCite(mselId: string) {
+  pullIntegrations(mselId: string) {
     this.mselStore.setLoading(true);
     this.mselService
-      .pullFromCite(mselId)
-      .pipe(
-        tap(() => {
-          this.mselStore.setLoading(false);
-        }),
-        take(1)
-      )
-      .subscribe((n) => {
-        this.updateStore(n);
-      },
-      (error) => {
-        this.mselStore.setLoading(false);
-      });
-  }
-
-  pushToGallery(mselId: string) {
-    this.mselStore.setLoading(true);
-    this.mselService
-      .pushToGallery(mselId)
-      .pipe(
-        tap(() => {
-          this.mselStore.setLoading(false);
-        }),
-        take(1)
-      )
-      .subscribe((n) => {
-        this.updateStore(n);
-      },
-      (error) => {
-        this.mselStore.setLoading(false);
-        this.errorService.handleError(error);
-      });
-  }
-
-  pullFromGallery(mselId: string) {
-    this.mselStore.setLoading(true);
-    this.mselService
-      .pullFromGallery(mselId)
-      .pipe(
-        tap(() => {
-          this.mselStore.setLoading(false);
-        }),
-        take(1)
-      )
-      .subscribe((n) => {
-        this.updateStore(n);
-      },
-      (error) => {
-        this.mselStore.setLoading(false);
-      });
-  }
-
-  pushToPlayer(mselId: string) {
-    this.mselStore.setLoading(true);
-    this.mselService
-      .pushToPlayer(mselId)
-      .pipe(
-        tap(() => {
-          this.mselStore.setLoading(false);
-        }),
-        take(1)
-      )
-      .subscribe((n) => {
-        this.updateStore(n);
-      },
-      (error) => {
-        this.mselStore.setLoading(false);
-        this.errorService.handleError(error);
-      });
-  }
-
-  pullFromPlayer(mselId: string) {
-    this.mselStore.setLoading(true);
-    this.mselService
-      .pullFromPlayer(mselId)
+      .pullIntegrations(mselId)
       .pipe(
         tap(() => {
           this.mselStore.setLoading(false);
