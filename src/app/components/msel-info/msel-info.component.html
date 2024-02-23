@@ -111,19 +111,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             [timeName]="'End Date / Time'"
             [postScript]="'from start'"
             (change)="isChanged = true;"
-          >
-          </app-duration-edit>
-          <div class="single-detail center-self">
-            <div class="sub-detail center-self">
-              <mat-checkbox
-                [(ngModel)]="msel.isTemplate"
-                (cut)="isChanged = true"
-                (change)="isChanged = true"
-                (paste)="isChanged = true"
-                (keypress)="isChanged = true"
-                >Is a Template</mat-checkbox>
-            </div>
-          </div>
+          ></app-duration-edit>
           <!-- Player Integration -->
           <div class="single-detail center-self">
             <div class="sub-detail center-self three-cell">
@@ -308,7 +296,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
               />
             </mat-form-field>
           </div>
-
+          <!-- Status -->
           <div class="single-detail center-self">
             <mat-form-field class="full-width">
               <mat-label>MSEL Status</mat-label>
@@ -325,7 +313,19 @@ project root for license information or contact permission@sei.cmu.edu for full 
               </mat-select>
             </mat-form-field>
           </div>
-
+          <!-- Is a Template -->
+          <div class="single-detail center-self">
+            <div class="sub-detail center-self">
+              <mat-checkbox
+                [(ngModel)]="msel.isTemplate"
+                (cut)="isChanged = true"
+                (change)="isChanged = true"
+                (paste)="isChanged = true"
+                (keypress)="isChanged = true"
+                >Is a Template</mat-checkbox>
+            </div>
+          </div>
+          <!-- row meta data -->
           <div
             class="single-detail center-self"
             *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"

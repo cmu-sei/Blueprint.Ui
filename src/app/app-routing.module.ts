@@ -10,11 +10,17 @@ import { AdminContainerComponent } from './components/admin/admin-container/admi
 import { HomeAppComponent } from './components/home-app/home-app.component';
 import { MselPageComponent } from './components/msel-page/msel-page.component';
 import { MselViewComponent } from './components/msel-view/msel-view.component';
+import { LaunchComponent } from './components/launch/launch.component';
 
 export const ROUTES: Routes = [
   {
     path: '',
     component: HomeAppComponent,
+    canActivate: [ComnAuthGuardService],
+  },
+  {
+    path: 'launch',
+    component: LaunchComponent,
     canActivate: [ComnAuthGuardService],
   },
   {

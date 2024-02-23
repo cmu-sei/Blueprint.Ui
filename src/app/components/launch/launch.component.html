@@ -1,0 +1,88 @@
+<!--
+Copyright 2024 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license, please see LICENSE.md in the
+project root for license information or contact permission@sei.cmu.edu for full terms.
+-->
+
+<div class="msel-list-container mat-elevation-z8">
+  <div class="header-div">
+    <div class="app-icon">
+      <img
+        *ngIf="imageFilePath"
+        class="title-icon"
+        [src]="imageFilePath"
+        title="Blueprint"
+      />
+    </div>
+    <div class="search-box"><h1>My Events</h1></div>
+    <div class="search-box">
+      <mat-icon
+        class="search-icon"
+        svgIcon="ic_magnify_search"
+      ></mat-icon>
+      <mat-form-field class="search-control">
+        <input matInput [formControl]="filterControl" placeholder="Search" />
+      </mat-form-field>
+      <div class="clear-search-button">
+        <button
+          mat-icon-button
+          (click)="filterControl.setValue(''); $event.stopPropagation()"
+          style="outline: none;"
+          title="Clear Search"
+          [disabled]="!filterString"
+        >
+          <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <mat-card
+    *ngIf="isLoading"
+    style="display: flex; justify-content: center; align-items: center"
+  >
+    <mat-progress-spinner color="primary" mode="indeterminate">
+    </mat-progress-spinner>
+  </mat-card>
+  <div class="mat-table">
+    <mat-table #table [dataSource]="mselDataSource" matSort>
+      <!-- action column -->
+      <ng-container matColumnDef="action">
+        <mat-header-cell *matHeaderCellDef></mat-header-cell>
+        <mat-cell *matCellDef="let element">
+          <button
+            mat-icon-button class="launch-button"
+            (click)="launch(element); $event.stopPropagation();"
+            title="Launch {{ element.name }}"
+          >
+            <mat-icon class="mdi-36px" fontIcon="mdi-play-circle" alt="Launch"></mat-icon>
+          </button>
+        </mat-cell>
+      </ng-container>
+      <!-- name Column -->
+      <ng-container matColumnDef="name">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>
+          Name
+        </mat-header-cell>
+        <mat-cell *matCellDef="let element">
+          <div class="link-text">
+            {{ element.name }}
+          </div>
+        </mat-cell>
+      </ng-container>
+      <!-- Description Column -->
+      <ng-container matColumnDef="description">
+        <mat-header-cell *matHeaderCellDef mat-sort-header> Description </mat-header-cell>
+        <mat-cell *matCellDef="let element">
+          <div class="description-text">{{ element.description }}</div>
+        </mat-cell>
+      </ng-container>
+      <!-- row definitions -->
+      <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+      <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
+    </mat-table>
+    <!-- No Results Message -->
+    <div class="text no-results" *ngIf="mselDataSource.filteredData.length === 0">No results found</div>
+  </div>
+</div>
+
