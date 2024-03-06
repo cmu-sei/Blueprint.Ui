@@ -600,6 +600,98 @@ export class MselService {
     }
 
     /**
+     * Gets Msels the current user can join
+     * Returns a list of the current user&#39;s Msels to join.
+     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+     * @param reportProgress flag to report request and response progress.
+     */
+    public getMyJoinMsels(observe?: 'body', reportProgress?: boolean): Observable<Array<Msel>>;
+    public getMyJoinMsels(observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Array<Msel>>>;
+    public getMyJoinMsels(observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Array<Msel>>>;
+    public getMyJoinMsels(observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+
+        let headers = this.defaultHeaders;
+
+        // authentication (oauth2) required
+        if (this.configuration.accessToken) {
+            const accessToken = typeof this.configuration.accessToken === 'function'
+                ? this.configuration.accessToken()
+                : this.configuration.accessToken;
+            headers = headers.set('Authorization', 'Bearer ' + accessToken);
+        }
+
+        // to determine the Accept header
+        let httpHeaderAccepts: string[] = [
+            'text/plain',
+            'application/json',
+            'text/json'
+        ];
+        const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
+        if (httpHeaderAcceptSelected !== undefined) {
+            headers = headers.set('Accept', httpHeaderAcceptSelected);
+        }
+
+        // to determine the Content-Type header
+        const consumes: string[] = [
+        ];
+
+        return this.httpClient.get<Array<Msel>>(`${this.configuration.basePath}/api/my-join-msels`,
+            {
+                withCredentials: this.configuration.withCredentials,
+                headers: headers,
+                observe: observe,
+                reportProgress: reportProgress
+            }
+        );
+    }
+
+    /**
+     * Gets Msels the current user can launch
+     * Returns a list of the current user&#39;s Msels to launch.
+     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+     * @param reportProgress flag to report request and response progress.
+     */
+    public getMyLaunchMsels(observe?: 'body', reportProgress?: boolean): Observable<Array<Msel>>;
+    public getMyLaunchMsels(observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Array<Msel>>>;
+    public getMyLaunchMsels(observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Array<Msel>>>;
+    public getMyLaunchMsels(observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+
+        let headers = this.defaultHeaders;
+
+        // authentication (oauth2) required
+        if (this.configuration.accessToken) {
+            const accessToken = typeof this.configuration.accessToken === 'function'
+                ? this.configuration.accessToken()
+                : this.configuration.accessToken;
+            headers = headers.set('Authorization', 'Bearer ' + accessToken);
+        }
+
+        // to determine the Accept header
+        let httpHeaderAccepts: string[] = [
+            'text/plain',
+            'application/json',
+            'text/json'
+        ];
+        const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
+        if (httpHeaderAcceptSelected !== undefined) {
+            headers = headers.set('Accept', httpHeaderAcceptSelected);
+        }
+
+        // to determine the Content-Type header
+        const consumes: string[] = [
+        ];
+
+        return this.httpClient.get<Array<Msel>>(`${this.configuration.basePath}/api/my-launch-msels`,
+            {
+                withCredentials: this.configuration.withCredentials,
+                headers: headers,
+                observe: observe,
+                reportProgress: reportProgress
+            }
+        );
+    }
+
+    /**
      * Gets Msels for the current user
      * Returns a list of the current user&#39;s active Msels.
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
@@ -686,6 +778,108 @@ export class MselService {
         ];
 
         return this.httpClient.delete<Msel>(`${this.configuration.basePath}/api/msels/${encodeURIComponent(String(id))}/integrations`,
+            {
+                withCredentials: this.configuration.withCredentials,
+                headers: headers,
+                observe: observe,
+                reportProgress: reportProgress
+            }
+        );
+    }
+
+    /**
+     * Join a MSEL by invitation
+     * Joins the user to the msel and team indicated by the invitation
+     * @param id
+     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+     * @param reportProgress flag to report request and response progress.
+     */
+    public joinMselByInvitation(id: string, observe?: 'body', reportProgress?: boolean): Observable<Msel>;
+    public joinMselByInvitation(id: string, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Msel>>;
+    public joinMselByInvitation(id: string, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Msel>>;
+    public joinMselByInvitation(id: string, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+        if (id === null || id === undefined) {
+            throw new Error('Required parameter id was null or undefined when calling pushIntegrations.');
+        }
+
+        let headers = this.defaultHeaders;
+
+        // authentication (oauth2) required
+        if (this.configuration.accessToken) {
+            const accessToken = typeof this.configuration.accessToken === 'function'
+                ? this.configuration.accessToken()
+                : this.configuration.accessToken;
+            headers = headers.set('Authorization', 'Bearer ' + accessToken);
+        }
+
+        // to determine the Accept header
+        let httpHeaderAccepts: string[] = [
+            'text/plain',
+            'application/json',
+            'text/json'
+        ];
+        const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
+        if (httpHeaderAcceptSelected !== undefined) {
+            headers = headers.set('Accept', httpHeaderAcceptSelected);
+        }
+
+        // to determine the Content-Type header
+        const consumes: string[] = [
+        ];
+
+        return this.httpClient.post<Msel>(`${this.configuration.basePath}/api/invitations/${encodeURIComponent(String(id))}/join`,
+            null,
+            {
+                withCredentials: this.configuration.withCredentials,
+                headers: headers,
+                observe: observe,
+                reportProgress: reportProgress
+            }
+        );
+    }
+
+    /**
+     * Launch a MSEL by invitation
+     * Launches the user to the msel and team indicated by the invitation
+     * @param id
+     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+     * @param reportProgress flag to report request and response progress.
+     */
+    public launchMselByInvitation(id: string, observe?: 'body', reportProgress?: boolean): Observable<Msel>;
+    public launchMselByInvitation(id: string, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Msel>>;
+    public launchMselByInvitation(id: string, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Msel>>;
+    public launchMselByInvitation(id: string, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+        if (id === null || id === undefined) {
+            throw new Error('Required parameter id was null or undefined when calling pushIntegrations.');
+        }
+
+        let headers = this.defaultHeaders;
+
+        // authentication (oauth2) required
+        if (this.configuration.accessToken) {
+            const accessToken = typeof this.configuration.accessToken === 'function'
+                ? this.configuration.accessToken()
+                : this.configuration.accessToken;
+            headers = headers.set('Authorization', 'Bearer ' + accessToken);
+        }
+
+        // to determine the Accept header
+        let httpHeaderAccepts: string[] = [
+            'text/plain',
+            'application/json',
+            'text/json'
+        ];
+        const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
+        if (httpHeaderAcceptSelected !== undefined) {
+            headers = headers.set('Accept', httpHeaderAcceptSelected);
+        }
+
+        // to determine the Content-Type header
+        const consumes: string[] = [
+        ];
+
+        return this.httpClient.post<Msel>(`${this.configuration.basePath}/api/invitations/${encodeURIComponent(String(id))}/launch`,
+            null,
             {
                 withCredentials: this.configuration.withCredentials,
                 headers: headers,

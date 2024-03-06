@@ -49,8 +49,10 @@ export class MselRolesComponent implements OnDestroy {
     MselRole.Owner,
     MselRole.Evaluator,
     MselRole.Viewer,
+    MselRole.Participant,
+    MselRole.Inviter,
     MselRole.GalleryObserver,
-    MselRole.CiteObserver
+    MselRole.CiteObserver,
   ];
   isEditEnabled = false;
   userList: User[] = [];

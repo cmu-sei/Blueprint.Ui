@@ -1,5 +1,5 @@
 /*
- Copyright 2023 Carnegie Mellon University. All Rights Reserved.
+ Copyright 2024 Carnegie Mellon University. All Rights Reserved.
  Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 */
@@ -16,9 +16,7 @@
  * Do not edit the class manually.
  */
 
-import { Team } from './team';
-
-export interface MselTeam {
+export interface Invitation {
     dateCreated?: Date;
     dateModified?: Date;
     createdBy?: string;
@@ -26,12 +24,10 @@ export interface MselTeam {
     id?: string;
     mselId?: string;
     teamId?: string;
-    team?: Team;
-    citeTeamTypeId?: string;
-    email?: string;
-    playerTeamId?: string;
-    galleryTeamId?: string;
-    citeTeamId?: string;
-    canTeamLeaderInvite?: boolean;
-    canTeamMemberInvite?: boolean;
+    emailDomain?: string;
+    expirationDateTime?: Date;
+    maxUsersAllowed?: number;
+    userCount?: number;
+    isTeamLeader?: boolean;
+    wasDeactivated?: boolean;
 }

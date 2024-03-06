@@ -17,7 +17,8 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
  */
 
 
-export type MselRole = 'Owner' | 'Editor' | 'Approver' | 'MoveEditor' | 'Evaluator' | 'Viewer' | 'GalleryObserver' | 'CiteObserver';
+export type MselRole = 'Owner' | 'Editor' | 'Approver' | 'MoveEditor' | 'Evaluator' |
+    'Viewer' | 'GalleryObserver' | 'CiteObserver' | 'Participant' | 'Inviter';
 
 export const MselRole = {
     Owner: 'Owner' as MselRole,
@@ -28,4 +29,6 @@ export const MselRole = {
     Viewer: 'Viewer' as MselRole,
     GalleryObserver: 'GalleryObserver' as MselRole,
     CiteObserver: 'CiteObserver' as MselRole,
+    Participant: 'Participant' as MselRole,
+    Inviter: 'Inviter' as MselRole,
 };

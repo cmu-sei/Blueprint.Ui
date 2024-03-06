@@ -109,6 +109,10 @@ export class LaunchComponent implements OnDestroy, OnInit {
     this.mselDataSource.filter = this.filterString.toLowerCase().trim(); //  MatTableDataSource defaults to lowercase matches
   }
 
+  invite(id: string) {
+    alert('Not Implemented');
+  }
+
   launch(id: string) {
     alert('Not Implemented');
   }

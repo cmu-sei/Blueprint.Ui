@@ -1,0 +1,177 @@
+// Copyright 2023 Carnegie Mellon University. All Rights Reserved.
+// Released under a MIT (SEI)-style license. See LICENSE.md in the
+// project root for license information.
+
+.invitation-list-container {
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  height: 100%;
+  min-width: 300px;
+  margin-top: 40px;
+  width: 80%;
+  min-width: 800px;
+
+}
+
+.header-div {
+  display: flex;
+  flex-direction: row;
+  flex: 7;
+  border-bottom: 1px solid;
+}
+
+.title-icon {
+  transform: scale(0.85);
+  margin-left: 10px;
+}
+
+.msels-title {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  font-size: x-large;
+  align-self: center;
+  min-width: 125px;
+}
+
+.header-button {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  align-self: center;
+  min-width: 125px;
+}
+
+.search-box {
+  display: flex;
+  flex-direction: row;
+  flex: 4;
+  align-self: center;
+  padding-left: 30px;
+}
+
+.search-control {
+  width: 75%;
+}
+
+.clear-search-button {
+  align-self: center;
+}
+
+.search-icon {
+  transform: scale(0.85);
+  margin-right: 5px;
+  margin-top: 20px;
+}
+
+.admin-cog-div {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  align-self: center;
+  align-items: flex-end;
+  justify-items: flex-end;
+}
+
+.admin-cog-button {
+  width: 40px !important;
+  height: 30px !important;
+  min-width: unset !important;
+  align-items: center !important;
+  justify-items: center !important;
+}
+
+.admin-cog-icon {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  align-items: center;
+  justify-items: center;
+  margin-left: -7px;
+}
+
+.no-results {
+  font-size: x-large;
+}
+
+.mat-table {
+  font-size: small;
+  height: calc(100vh - 200px);
+  min-height: 250px;
+  overflow: auto;
+}
+
+.app-list-item {
+  padding: 0;
+  text-align: left;
+}
+
+.description-text {
+  text-align: left;
+}
+
+.shrink {
+  margin: 0;
+  padding: 0;
+}
+
+.msel-table-header-bar {
+  width: 100%;
+}
+
+.player-icon {
+  transform: scale(2);
+  width: 60px;
+}
+
+.mat-header-row {
+  height: 40px !important;
+  padding: 0;
+}
+
+.mat-column-name {
+  flex: 0 0 20%;
+  padding: 1%;
+}
+
+.mat-column-action {
+  flex: 0 0 80px;
+  flex-direction: row;
+  padding: 0;
+}
+
+.mat-column-description {
+  flex: 0 0 40%;
+  padding: 1%;
+}
+
+.is-template-checkbox {
+  align-items: center;
+  text-align: center;
+  align-self: center;
+  width: 80%;
+}
+
+.mat-column-isTemplate {
+  min-width: 75px;
+}
+
+.mat-column-status {
+  min-width: 70px;
+}
+
+.mat-column-createdBy {
+  min-width: 70px;
+}
+
+.mat-column-dateModified {
+  min-width: 70px;
+}
+
+.app-icon {
+  display: flex;
+  flex: 1;
+  align-items: center;
+}
+

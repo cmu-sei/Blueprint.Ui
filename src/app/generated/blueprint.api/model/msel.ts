@@ -17,6 +17,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
  */
 import { Card } from './card';
 import { DataField } from './dataField';
+import { IntegrationType } from './integrationType';
 import { ItemStatus } from './itemStatus';
 import { Move } from './move';
 import { ScenarioEvent } from './scenarioEvent';
@@ -61,4 +62,8 @@ export interface Msel {
     cards?: Array<Card>;
     galleryArticleParameters?: Array<string>;
     gallerySourceTypes?: Array<string>;
+    playerIntegrationType?: IntegrationType;
+    galleryIntegrationType?: IntegrationType;
+    citeIntegrationType?: IntegrationType;
+    steamfitterIntegrationType?: IntegrationType;
 }

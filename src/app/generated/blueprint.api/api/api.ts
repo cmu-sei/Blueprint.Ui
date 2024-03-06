@@ -22,6 +22,8 @@ export * from './dataValue.service';
 import { DataValueService } from './dataValue.service';
 export * from './healthCheck.service';
 import { HealthCheckService } from './healthCheck.service';
+export * from './invitation.service';
+import { InvitationService } from './invitation.service';
 export * from './move.service';
 import { MoveService } from './move.service';
 export * from './msel.service';

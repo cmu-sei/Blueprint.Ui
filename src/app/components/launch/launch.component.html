@@ -54,8 +54,17 @@ project root for license information or contact permission@sei.cmu.edu for full 
             mat-icon-button class="launch-button"
             (click)="launch(element); $event.stopPropagation();"
             title="Launch {{ element.name }}"
+            *ngIf="false"
           >
             <mat-icon class="mdi-36px" fontIcon="mdi-play-circle" alt="Launch"></mat-icon>
+          </button>
+          <button
+            mat-icon-button class="launch-button"
+            (click)="invite(element); $event.stopPropagation();"
+            title="Invite to {{ element.name }}"
+            *ngIf="true"
+          >
+            <mat-icon class="mdi-36px" fontIcon="mdi-human-greeting" alt="Launch"></mat-icon>
           </button>
         </mat-cell>
       </ng-container>

@@ -41,6 +41,8 @@ export * from './iContainer';
 export * from './iCustomAttributeProvider';
 export * from './iSite';
 export * from './intPtr';
+export * from './integrationType';
+export * from './invitation';
 export * from './itemStatus';
 export * from './layoutKind';
 export * from './mappingType';
