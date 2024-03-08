@@ -114,20 +114,27 @@ export class SignalRService {
   public join() {
     if (this.hubConnection.state === signalR.HubConnectionState.Connected) {
       this.hubConnection.invoke('Join' + this.applicationArea);
+      this.isJoined = true;
+    } else {
+      this.reconnect();
+      this.isJoined = true;
     }
-    this.isJoined = true;
   }
 
   public leave() {
     if (this.isJoined) {
       this.hubConnection.invoke('Leave' + this.applicationArea);
+      this.isJoined = false;
     }
-    this.isJoined = false;
   }
 
   public selectMsel(mselId: string) {
-    if (this.isJoined && this.applicationArea !== ApplicationArea.admin) {
+    if (this.hubConnection.state === signalR.HubConnectionState.Connected &&
+        this.isJoined &&
+        this.applicationArea !== ApplicationArea.admin) {
       this.hubConnection.invoke('selectMsel', [mselId]);
+    } else {
+      location.reload();
     }
   }
 
