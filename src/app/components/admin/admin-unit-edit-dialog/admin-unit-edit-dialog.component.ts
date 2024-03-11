@@ -27,23 +27,23 @@ export class UserErrorStateMatcher implements ErrorStateMatcher {
 const MIN_NAME_LENGTH = 3;
 
 @Component({
-  selector: 'app-admin-team-edit-dialog',
-  templateUrl: './admin-team-edit-dialog.component.html',
-  styleUrls: ['./admin-team-edit-dialog.component.scss'],
+  selector: 'app-admin-unit-edit-dialog',
+  templateUrl: './admin-unit-edit-dialog.component.html',
+  styleUrls: ['./admin-unit-edit-dialog.component.scss'],
 })
 
-export class AdminTeamEditDialogComponent {
+export class AdminUnitEditDialogComponent {
   @Output() editComplete = new EventEmitter<any>();
 
-  public teamNameFormControl = new UntypedFormControl(
-    this.data.team.name,
+  public unitNameFormControl = new UntypedFormControl(
+    this.data.unit.name,
     [
       Validators.required,
       Validators.minLength(MIN_NAME_LENGTH),
     ]
   );
-  public teamShortNameFormControl = new UntypedFormControl(
-    this.data.team.shortName,
+  public unitShortNameFormControl = new UntypedFormControl(
+    this.data.unit.shortName,
     [
       Validators.required,
       Validators.minLength(MIN_NAME_LENGTH),
@@ -52,7 +52,7 @@ export class AdminTeamEditDialogComponent {
 
   constructor(
     public dialogService: DialogService,
-    dialogRef: MatDialogRef<AdminTeamEditDialogComponent>,
+    dialogRef: MatDialogRef<AdminUnitEditDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {
     dialogRef.disableClose = true;
@@ -62,10 +62,10 @@ export class AdminTeamEditDialogComponent {
 
   errorFree() {
     return !(
-      this.teamNameFormControl.hasError('required') ||
-      this.teamNameFormControl.hasError('minlength') ||
-      this.teamShortNameFormControl.hasError('required') ||
-      this.teamShortNameFormControl.hasError('minlength')
+      this.unitNameFormControl.hasError('required') ||
+      this.unitNameFormControl.hasError('minlength') ||
+      this.unitShortNameFormControl.hasError('required') ||
+      this.unitShortNameFormControl.hasError('minlength')
     );
   }
 
@@ -74,33 +74,33 @@ export class AdminTeamEditDialogComponent {
    */
   handleEditComplete(saveChanges: boolean): void {
     if (!saveChanges) {
-      this.editComplete.emit({ saveChanges: false, team: null });
+      this.editComplete.emit({ saveChanges: false, unit: null });
     } else {
-      this.data.team.name = this.teamNameFormControl.value
+      this.data.unit.name = this.unitNameFormControl.value
         .toString()
         .trim();
-      this.data.team.shortName = this.teamShortNameFormControl.value
+      this.data.unit.shortName = this.unitShortNameFormControl.value
         .toString()
         .trim();
       if (this.errorFree) {
         this.editComplete.emit({
           saveChanges: saveChanges,
-          team: this.data.team,
+          unit: this.data.unit,
         });
       }
     }
   }
 
   /**
-   * Saves the current team
+   * Saves the current unit
    */
-  saveTeam(changedField): void {
+  saveUnit(changedField): void {
     switch (changedField) {
       case 'name':
-        this.data.team.name = this.teamNameFormControl.value.toString();
+        this.data.unit.name = this.unitNameFormControl.value.toString();
         break;
       case 'shortName':
-        this.data.team.shortName = this.teamShortNameFormControl.value.toString();
+        this.data.unit.shortName = this.unitShortNameFormControl.value.toString();
         break;
       default:
         break;

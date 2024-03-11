@@ -45,9 +45,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <mat-list-item
           *ngIf="isSuperUser"
           class="showhand highlight"
-          [ngClass]="getSelectedClass(teamsText)"
+          [ngClass]="getSelectedClass(unitsText)"
           id="wrapper"
-          (click)="gotoSection(teamsText)"
+          (click)="gotoSection(unitsText)"
         >
           <div class="lefticon">
             <mat-icon
@@ -57,12 +57,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
             ></mat-icon>
           </div>
 
-          <div id="teamsText" class="application-name">
-            {{ teamsText }}
+          <div id="unitsText" class="application-name">
+            {{ unitsText }}
           </div>
 
           <div>
-            <button aria-labelledby="teamsText" mat-icon-button>
+            <button aria-labelledby="unitsText" mat-icon-button>
               <mat-icon
                 class="icon-color"
                 fontIcon="mdi-chevron-right"
@@ -250,8 +250,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
       />
     </mat-sidenav>
     <mat-sidenav-content>
-      <span *ngIf="isSuperUser && (selectedTab === teamsText)">
-        <app-admin-teams></app-admin-teams>
+      <span *ngIf="isSuperUser && (selectedTab === unitsText)">
+        <app-admin-units></app-admin-units>
       </span>
       <span *ngIf="isSuperUser && (selectedTab === usersText)">
         <app-admin-users></app-admin-users>

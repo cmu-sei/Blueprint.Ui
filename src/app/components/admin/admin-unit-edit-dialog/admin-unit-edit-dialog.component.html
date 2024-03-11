@@ -1,0 +1,60 @@
+<!--
+Copyright 2022 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license, please see LICENSE.md in the
+project root for license information or contact permission@sei.cmu.edu for full terms.
+-->
+
+<div mat-dialog-title>
+  Edit Unit
+  <button
+    mat-icon-button
+    (click)="handleEditComplete(false)"
+    title="Cancel"
+    class="close-button"
+    tabindex="-1"
+  >
+    <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
+  </button>
+</div>
+<div mat-dialog-content *ngIf="!!data && data.unit !== undefined && data.unit !== null">
+
+  <div class="add-margin">
+    <div>
+      <mat-form-field class="full-width">
+        <input type="text" matInput [formControl]="unitNameFormControl" placeholder="Name (required)" (blur)="saveUnit('name')"
+          value="{{data.unit.name}}">
+        <mat-error *ngIf="unitNameFormControl.hasError('minlength') && !unitNameFormControl.hasError('required')">
+          Must contain {{ MIN_NAME_LENGTH }} or more characters
+        </mat-error>
+        <mat-error *ngIf="unitNameFormControl.hasError('required')">
+          Name is <strong>required</strong>
+        </mat-error>
+      </mat-form-field>
+    </div>
+  </div>
+
+  <div class="add-margin">
+    <div>
+      <mat-form-field class="full-width">
+        <input type="text" matInput [formControl]="unitShortNameFormControl" placeholder="Short Name (required)" (blur)="saveUnit('shortName')"
+          value="{{data.unit.shortName}}">
+        <mat-error *ngIf="unitShortNameFormControl.hasError('minlength') && !unitShortNameFormControl.hasError('required')">
+          Must contain {{ MIN_NAME_LENGTH }} or more characters
+        </mat-error>
+        <mat-error *ngIf="unitShortNameFormControl.hasError('required')">
+          Short Name is <strong>required</strong>
+        </mat-error>
+      </mat-form-field>
+    </div>
+  </div>
+
+  <div class="cssLayoutRowStartCenter bottom-button">
+    <div class="delete-button">
+      <button mat-stroked-button (click)="handleEditComplete(true)" [disabled]="!errorFree()" style="margin-left: 40px;">Save</button>
+    </div>
+    <div class="delete-button">
+      <button mat-stroked-button (click)="handleEditComplete(false)">Cancel</button>
+    </div>
+  </div>
+
+</div>

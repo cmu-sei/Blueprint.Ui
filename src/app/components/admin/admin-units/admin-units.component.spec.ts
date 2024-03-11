@@ -4,20 +4,21 @@
 
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
-import { AdminTeamUsersDialogComponent } from './admin-team-users.component';
+import { AdminUnitsComponent } from './admin-units.component';
 
-describe('AdminTeamUsersComponent', () => {
-  let component: AdminTeamUsersDialogComponent;
-  let fixture: ComponentFixture<AdminTeamUsersDialogComponent>;
+describe('AdminUnitsComponent', () => {
+  let component: AdminUnitsComponent;
+  let fixture: ComponentFixture<AdminUnitsComponent>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [AdminTeamUsersDialogComponent],
-    }).compileComponents();
+      declarations: [ AdminUnitsComponent ]
+    })
+      .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(AdminTeamUsersDialogComponent);
+    fixture = TestBed.createComponent(AdminUnitsComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
@@ -26,3 +27,4 @@ describe('AdminTeamUsersComponent', () => {
     expect(component).toBeTruthy();
   });
 });
+

@@ -1,5 +1,5 @@
 /*
-Copyright 2022 Carnegie Mellon University. All Rights Reserved.
+ Copyright 2024 Carnegie Mellon University. All Rights Reserved.
  Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 */
@@ -24,8 +24,7 @@ import { CustomHttpUrlEncodingCodec }                        from '../encoder';
 
 import { Observable }                                        from 'rxjs';
 
-import { ProblemDetails } from '../model/problemDetails';
-import { User } from '../model/user';
+import { MselUnit } from '../model/mselUnit';
 
 import { BASE_PATH, COLLECTION_FORMATS }                     from '../variables';
 import { Configuration }                                     from '../configuration';
@@ -34,7 +33,7 @@ import { Configuration }                                     from '../configurat
 @Injectable({
   providedIn: 'root'
 })
-export class UserService {
+export class MselUnitService {
 
     protected basePath = 'http://localhost';
     public defaultHeaders = new HttpHeaders();
@@ -67,16 +66,16 @@ export class UserService {
 
 
     /**
-     * Creates a new User
-     * Creates a new User with the attributes specified  &lt;para /&gt;  Accessible only to a SuperUser
-     * @param User The data to create the User with
+     * Creates a new MselUnit
+     * Creates a new MselUnit with the attributes specified  &lt;para /&gt;
+     * @param MselUnit The data to create the MselUnit with
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public createUser(User?: User, observe?: 'body', reportProgress?: boolean): Observable<User>;
-    public createUser(User?: User, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<User>>;
-    public createUser(User?: User, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<User>>;
-    public createUser(User?: User, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+    public createMselUnit(MselUnit?: MselUnit, observe?: 'body', reportProgress?: boolean): Observable<MselUnit>;
+    public createMselUnit(MselUnit?: MselUnit, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<MselUnit>>;
+    public createMselUnit(MselUnit?: MselUnit, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<MselUnit>>;
+    public createMselUnit(MselUnit?: MselUnit, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
 
         let headers = this.defaultHeaders;
 
@@ -110,8 +109,8 @@ export class UserService {
             headers = headers.set('Content-Type', httpContentTypeSelected);
         }
 
-        return this.httpClient.post<User>(`${this.configuration.basePath}/api/users`,
-            User,
+        return this.httpClient.post<MselUnit>(`${this.configuration.basePath}/api/mselunits`,
+            MselUnit,
             {
                 withCredentials: this.configuration.withCredentials,
                 headers: headers,
@@ -122,18 +121,18 @@ export class UserService {
     }
 
     /**
-     * Deletes a User
-     * Deletes a User with the specified id  &lt;para /&gt;  Accessible only to a SuperUser
-     * @param id The id of the User to delete
+     * Deletes a MselUnit
+     * Deletes a MselUnit with the specified id  &lt;para /&gt;
+     * @param id The id of the MselUnit to delete
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public deleteUser(id: string, observe?: 'body', reportProgress?: boolean): Observable<any>;
-    public deleteUser(id: string, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<any>>;
-    public deleteUser(id: string, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<any>>;
-    public deleteUser(id: string, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+    public deleteMselUnit(id: string, observe?: 'body', reportProgress?: boolean): Observable<any>;
+    public deleteMselUnit(id: string, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<any>>;
+    public deleteMselUnit(id: string, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<any>>;
+    public deleteMselUnit(id: string, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
         if (id === null || id === undefined) {
-            throw new Error('Required parameter id was null or undefined when calling deleteUser.');
+            throw new Error('Required parameter id was null or undefined when calling deleteMselUnit.');
         }
 
         let headers = this.defaultHeaders;
@@ -159,7 +158,7 @@ export class UserService {
         const consumes: string[] = [
         ];
 
-        return this.httpClient.delete<any>(`${this.configuration.basePath}/api/users/${encodeURIComponent(String(id))}`,
+        return this.httpClient.delete<any>(`${this.configuration.basePath}/api/mselunits/${encodeURIComponent(String(id))}`,
             {
                 withCredentials: this.configuration.withCredentials,
                 headers: headers,
@@ -170,68 +169,22 @@ export class UserService {
     }
 
     /**
-     * Gets all Users for a team
-     * Returns a list of all of the Users on the team.  &lt;para /&gt;  Only accessible to a SuperUser
-     * @param teamId The id of the Team
+     * Deletes a MselUnit by msel ID and unit ID
+     * Deletes a MselUnit with the specified msel ID and unit ID  &lt;para /&gt;
+     * @param unitId ID of a unit.
+     * @param mselId ID of a msel.
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public getTeamUsers(teamId: string, observe?: 'body', reportProgress?: boolean): Observable<Array<User>>;
-    public getTeamUsers(teamId: string, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Array<User>>>;
-    public getTeamUsers(teamId: string, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Array<User>>>;
-    public getTeamUsers(teamId: string, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
-        if (teamId === null || teamId === undefined) {
-            throw new Error('Required parameter teamId was null or undefined when calling getTeamUsers.');
-        }
-
-        let headers = this.defaultHeaders;
-
-        // authentication (oauth2) required
-        if (this.configuration.accessToken) {
-            const accessToken = typeof this.configuration.accessToken === 'function'
-                ? this.configuration.accessToken()
-                : this.configuration.accessToken;
-            headers = headers.set('Authorization', 'Bearer ' + accessToken);
-        }
-
-        // to determine the Accept header
-        let httpHeaderAccepts: string[] = [
-            'text/plain',
-            'application/json',
-            'text/json'
-        ];
-        const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
-        if (httpHeaderAcceptSelected !== undefined) {
-            headers = headers.set('Accept', httpHeaderAcceptSelected);
-        }
-
-        // to determine the Content-Type header
-        const consumes: string[] = [
-        ];
-
-        return this.httpClient.get<Array<User>>(`${this.configuration.basePath}/api/teams/${encodeURIComponent(String(teamId))}/users`,
-            {
-                withCredentials: this.configuration.withCredentials,
-                headers: headers,
-                observe: observe,
-                reportProgress: reportProgress
-            }
-        );
-    }
-
-    /**
-     * Gets all Users for a unit
-     * Returns a list of all of the Users on the unit.  &lt;para /&gt;  Only accessible to a SuperUser
-     * @param unitId The id of the Unit
-     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
-     * @param reportProgress flag to report request and response progress.
-     */
-    public getUnitUsers(unitId: string, observe?: 'body', reportProgress?: boolean): Observable<Array<User>>;
-    public getUnitUsers(unitId: string, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Array<User>>>;
-    public getUnitUsers(unitId: string, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Array<User>>>;
-    public getUnitUsers(unitId: string, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+    public deleteMselUnitByIds(unitId: string, mselId: string, observe?: 'body', reportProgress?: boolean): Observable<any>;
+    public deleteMselUnitByIds(unitId: string, mselId: string, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<any>>;
+    public deleteMselUnitByIds(unitId: string, mselId: string, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<any>>;
+    public deleteMselUnitByIds(unitId: string, mselId: string, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
         if (unitId === null || unitId === undefined) {
-            throw new Error('Required parameter unitId was null or undefined when calling getUnitUsers.');
+            throw new Error('Required parameter unitId was null or undefined when calling deleteMselUnitByIds.');
+        }
+        if (mselId === null || mselId === undefined) {
+            throw new Error('Required parameter mselId was null or undefined when calling deleteMselUnitByIds.');
         }
 
         let headers = this.defaultHeaders;
@@ -246,9 +199,7 @@ export class UserService {
 
         // to determine the Accept header
         let httpHeaderAccepts: string[] = [
-            'text/plain',
-            'application/json',
-            'text/json'
+            'application/json'
         ];
         const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
         if (httpHeaderAcceptSelected !== undefined) {
@@ -259,7 +210,7 @@ export class UserService {
         const consumes: string[] = [
         ];
 
-        return this.httpClient.get<Array<User>>(`${this.configuration.basePath}/api/units/${encodeURIComponent(String(unitId))}/users`,
+        return this.httpClient.delete<any>(`${this.configuration.basePath}/api/msels/${encodeURIComponent(String(mselId))}/units/${encodeURIComponent(String(unitId))}`,
             {
                 withCredentials: this.configuration.withCredentials,
                 headers: headers,
@@ -270,18 +221,18 @@ export class UserService {
     }
 
     /**
-     * Gets a specific User by id
-     * Returns the User with the id specified  &lt;para /&gt;  Only accessible to a SuperUser
-     * @param id The id of the User
+     * Gets a specific MselUnit by id
+     * Returns the MselUnit with the id specified
+     * @param id The id of the MselUnit
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public getUser(id: string, observe?: 'body', reportProgress?: boolean): Observable<User>;
-    public getUser(id: string, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<User>>;
-    public getUser(id: string, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<User>>;
-    public getUser(id: string, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+    public getMselUnit(id: string, observe?: 'body', reportProgress?: boolean): Observable<MselUnit>;
+    public getMselUnit(id: string, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<MselUnit>>;
+    public getMselUnit(id: string, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<MselUnit>>;
+    public getMselUnit(id: string, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
         if (id === null || id === undefined) {
-            throw new Error('Required parameter id was null or undefined when calling getUser.');
+            throw new Error('Required parameter id was null or undefined when calling getMselUnit.');
         }
 
         let headers = this.defaultHeaders;
@@ -309,7 +260,7 @@ export class UserService {
         const consumes: string[] = [
         ];
 
-        return this.httpClient.get<User>(`${this.configuration.basePath}/api/users/${encodeURIComponent(String(id))}`,
+        return this.httpClient.get<MselUnit>(`${this.configuration.basePath}/api/mselunits/${encodeURIComponent(String(id))}`,
             {
                 withCredentials: this.configuration.withCredentials,
                 headers: headers,
@@ -320,15 +271,19 @@ export class UserService {
     }
 
     /**
-     * Gets all Users in the system
-     * Returns a list of all of the Users in the system.  &lt;para /&gt;  Only accessible to a SuperUser
+     * Gets all MselUnits for a msel
+     * Returns a list of all of the MselUnits for the msel.
+     * @param mselId The id of the MselUnit
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public getUsers(observe?: 'body', reportProgress?: boolean): Observable<Array<User>>;
-    public getUsers(observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Array<User>>>;
-    public getUsers(observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Array<User>>>;
-    public getUsers(observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+    public getMselUnits(mselId: string, observe?: 'body', reportProgress?: boolean): Observable<Array<MselUnit>>;
+    public getMselUnits(mselId: string, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Array<MselUnit>>>;
+    public getMselUnits(mselId: string, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Array<MselUnit>>>;
+    public getMselUnits(mselId: string, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+        if (mselId === null || mselId === undefined) {
+            throw new Error('Required parameter mselId was null or undefined when calling getMselUnits.');
+        }
 
         let headers = this.defaultHeaders;
 
@@ -355,7 +310,7 @@ export class UserService {
         const consumes: string[] = [
         ];
 
-        return this.httpClient.get<Array<User>>(`${this.configuration.basePath}/api/users`,
+        return this.httpClient.get<Array<MselUnit>>(`${this.configuration.basePath}/api/msels/${encodeURIComponent(String(mselId))}/mselunits`,
             {
                 withCredentials: this.configuration.withCredentials,
                 headers: headers,
@@ -366,19 +321,19 @@ export class UserService {
     }
 
     /**
-     * Updates a  User
-     * Updates a User with the attributes specified.  The ID from the route MUST MATCH the ID contained in the user parameter  &lt;para /&gt;  Accessible only to a ContentDeveloper or an Administrator
-     * @param id The Id of the User to update
-     * @param User The updated User values
+     * Updates a MselUnit
+     * Updates a MselUnit with the attributes specified
+     * @param id The Id of the Exericse to update
+     * @param MselUnit The updated MselUnit values
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public updateUser(id: string, User?: User, observe?: 'body', reportProgress?: boolean): Observable<User>;
-    public updateUser(id: string, User?: User, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<User>>;
-    public updateUser(id: string, User?: User, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<User>>;
-    public updateUser(id: string, User?: User, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+    public updateMselUnit(id: string, mselUnit?: MselUnit, observe?: 'body', reportProgress?: boolean): Observable<MselUnit>;
+    public updateMselUnit(id: string, mselUnit?: MselUnit, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<MselUnit>>;
+    public updateMselUnit(id: string, mselUnit?: MselUnit, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<MselUnit>>;
+    public updateMselUnit(id: string, mselUnit?: MselUnit, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
         if (id === null || id === undefined) {
-            throw new Error('Required parameter id was null or undefined when calling updateUser.');
+            throw new Error('Required parameter id was null or undefined when calling updateMselUnit.');
         }
 
         let headers = this.defaultHeaders;
@@ -413,8 +368,8 @@ export class UserService {
             headers = headers.set('Content-Type', httpContentTypeSelected);
         }
 
-        return this.httpClient.put<User>(`${this.configuration.basePath}/api/users/${encodeURIComponent(String(id))}`,
-            User,
+        return this.httpClient.put<MselUnit>(`${this.configuration.basePath}/api/mselunits/${encodeURIComponent(String(id))}`,
+            mselUnit,
             {
                 withCredentials: this.configuration.withCredentials,
                 headers: headers,

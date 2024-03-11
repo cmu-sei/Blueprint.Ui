@@ -57,9 +57,9 @@ import { ClipboardModule } from 'ngx-clipboard';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { AdminContainerComponent } from './components/admin/admin-container/admin-container.component';
-import { AdminTeamsComponent } from './components/admin/admin-teams/admin-teams.component';
-import { AdminTeamEditDialogComponent } from './components/admin/admin-team-edit-dialog/admin-team-edit-dialog.component';
-import { AdminTeamUsersComponent } from './components/admin/admin-team-users/admin-team-users.component';
+import { AdminUnitsComponent } from './components/admin/admin-units/admin-units.component';
+import { AdminUnitEditDialogComponent } from './components/admin/admin-unit-edit-dialog/admin-unit-edit-dialog.component';
+import { AdminUnitUsersComponent } from './components/admin/admin-unit-users/admin-unit-users.component';
 import { AdminUsersComponent } from './components/admin/admin-users/admin-users.component';
 import { CardEditDialogComponent } from './components/card-edit-dialog/card-edit-dialog.component';
 import { CardListComponent } from './components/card-list/card-list.component';
@@ -91,6 +91,8 @@ import { ScenarioEventEditDialogComponent } from './components/scenario-event-ed
 import { ScenarioEventListComponent } from './components/scenario-event-list/scenario-event-list.component';
 import { ConfirmDialogComponent } from './components/shared/confirm-dialog/confirm-dialog.component';
 import { SystemMessageComponent } from './components/shared/system-message/system-message.component';
+import { TeamEditDialogComponent } from './components/team-edit-dialog/team-edit-dialog.component';
+import { TeamUsersComponent } from './components/team-users/team-users.component';
 import { TopbarComponent } from './components/shared/top-bar/topbar.component';
 import { UIDataService } from './data/ui/ui-data.service';
 import { UserDataService } from './data/user/user-data.service';
@@ -148,10 +150,12 @@ export function getBasePath(settingsSvc: ComnSettingsService) {
     ScenarioEventListComponent,
     SystemMessageComponent,
     ConfirmDialogComponent,
+    TeamEditDialogComponent,
+    TeamUsersComponent,
     AdminContainerComponent,
-    AdminTeamsComponent,
-    AdminTeamEditDialogComponent,
-    AdminTeamUsersComponent,
+    AdminUnitsComponent,
+    AdminUnitEditDialogComponent,
+    AdminUnitUsersComponent,
     AdminUsersComponent,
     TopbarComponent,
     DisplayOrderPipe,

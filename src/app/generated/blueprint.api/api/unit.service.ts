@@ -1,5 +1,5 @@
 /*
-Copyright 2022 Carnegie Mellon University. All Rights Reserved.
+Copyright 2024 Carnegie Mellon University. All Rights Reserved.
  Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 */
@@ -25,7 +25,7 @@ import { CustomHttpUrlEncodingCodec }                        from '../encoder';
 import { Observable }                                        from 'rxjs';
 
 import { ProblemDetails } from '../model/problemDetails';
-import { User } from '../model/user';
+import { Unit } from '../model/unit';
 
 import { BASE_PATH, COLLECTION_FORMATS }                     from '../variables';
 import { Configuration }                                     from '../configuration';
@@ -34,7 +34,7 @@ import { Configuration }                                     from '../configurat
 @Injectable({
   providedIn: 'root'
 })
-export class UserService {
+export class UnitService {
 
     protected basePath = 'http://localhost';
     public defaultHeaders = new HttpHeaders();
@@ -67,16 +67,16 @@ export class UserService {
 
 
     /**
-     * Creates a new User
-     * Creates a new User with the attributes specified  &lt;para /&gt;  Accessible only to a SuperUser
-     * @param User The data to create the User with
+     * Creates a new Unit
+     * Creates a new Unit with the attributes specified  &lt;para /&gt;  Accessible only to a SuperUser or an Administrator
+     * @param Unit The data to create the Unit with
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public createUser(User?: User, observe?: 'body', reportProgress?: boolean): Observable<User>;
-    public createUser(User?: User, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<User>>;
-    public createUser(User?: User, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<User>>;
-    public createUser(User?: User, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+    public createUnit(Unit?: Unit, observe?: 'body', reportProgress?: boolean): Observable<Unit>;
+    public createUnit(Unit?: Unit, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Unit>>;
+    public createUnit(Unit?: Unit, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Unit>>;
+    public createUnit(Unit?: Unit, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
 
         let headers = this.defaultHeaders;
 
@@ -110,8 +110,8 @@ export class UserService {
             headers = headers.set('Content-Type', httpContentTypeSelected);
         }
 
-        return this.httpClient.post<User>(`${this.configuration.basePath}/api/users`,
-            User,
+        return this.httpClient.post<Unit>(`${this.configuration.basePath}/api/units`,
+            Unit,
             {
                 withCredentials: this.configuration.withCredentials,
                 headers: headers,
@@ -122,18 +122,18 @@ export class UserService {
     }
 
     /**
-     * Deletes a User
-     * Deletes a User with the specified id  &lt;para /&gt;  Accessible only to a SuperUser
-     * @param id The id of the User to delete
+     * Deletes a Unit
+     * Deletes a Unit with the specified id  &lt;para /&gt;  Accessible only to a SuperUser or a User on an Admin Unit within the specified Unit
+     * @param id The id of the Unit to delete
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public deleteUser(id: string, observe?: 'body', reportProgress?: boolean): Observable<any>;
-    public deleteUser(id: string, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<any>>;
-    public deleteUser(id: string, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<any>>;
-    public deleteUser(id: string, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+    public deleteUnit(id: string, observe?: 'body', reportProgress?: boolean): Observable<any>;
+    public deleteUnit(id: string, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<any>>;
+    public deleteUnit(id: string, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<any>>;
+    public deleteUnit(id: string, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
         if (id === null || id === undefined) {
-            throw new Error('Required parameter id was null or undefined when calling deleteUser.');
+            throw new Error('Required parameter id was null or undefined when calling deleteUnit.');
         }
 
         let headers = this.defaultHeaders;
@@ -159,7 +159,7 @@ export class UserService {
         const consumes: string[] = [
         ];
 
-        return this.httpClient.delete<any>(`${this.configuration.basePath}/api/users/${encodeURIComponent(String(id))}`,
+        return this.httpClient.delete<any>(`${this.configuration.basePath}/api/units/${encodeURIComponent(String(id))}`,
             {
                 withCredentials: this.configuration.withCredentials,
                 headers: headers,
@@ -170,19 +170,15 @@ export class UserService {
     }
 
     /**
-     * Gets all Users for a team
-     * Returns a list of all of the Users on the team.  &lt;para /&gt;  Only accessible to a SuperUser
-     * @param teamId The id of the Team
+     * Gets Units for the current user
+     * Returns a list of the current user&#39;s Units.
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public getTeamUsers(teamId: string, observe?: 'body', reportProgress?: boolean): Observable<Array<User>>;
-    public getTeamUsers(teamId: string, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Array<User>>>;
-    public getTeamUsers(teamId: string, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Array<User>>>;
-    public getTeamUsers(teamId: string, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
-        if (teamId === null || teamId === undefined) {
-            throw new Error('Required parameter teamId was null or undefined when calling getTeamUsers.');
-        }
+    public getMyUnits(observe?: 'body', reportProgress?: boolean): Observable<Array<Unit>>;
+    public getMyUnits(observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Array<Unit>>>;
+    public getMyUnits(observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Array<Unit>>>;
+    public getMyUnits(observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
 
         let headers = this.defaultHeaders;
 
@@ -209,7 +205,7 @@ export class UserService {
         const consumes: string[] = [
         ];
 
-        return this.httpClient.get<Array<User>>(`${this.configuration.basePath}/api/teams/${encodeURIComponent(String(teamId))}/users`,
+        return this.httpClient.get<Array<Unit>>(`${this.configuration.basePath}/api/my-units`,
             {
                 withCredentials: this.configuration.withCredentials,
                 headers: headers,
@@ -220,68 +216,18 @@ export class UserService {
     }
 
     /**
-     * Gets all Users for a unit
-     * Returns a list of all of the Users on the unit.  &lt;para /&gt;  Only accessible to a SuperUser
-     * @param unitId The id of the Unit
+     * Gets a specific Unit by id
+     * Returns the Unit with the id specified  &lt;para /&gt;  Accessible to a SuperUser or a User that is a member of a Unit within the specified Unit
+     * @param id The id of the Unit
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public getUnitUsers(unitId: string, observe?: 'body', reportProgress?: boolean): Observable<Array<User>>;
-    public getUnitUsers(unitId: string, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Array<User>>>;
-    public getUnitUsers(unitId: string, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Array<User>>>;
-    public getUnitUsers(unitId: string, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
-        if (unitId === null || unitId === undefined) {
-            throw new Error('Required parameter unitId was null or undefined when calling getUnitUsers.');
-        }
-
-        let headers = this.defaultHeaders;
-
-        // authentication (oauth2) required
-        if (this.configuration.accessToken) {
-            const accessToken = typeof this.configuration.accessToken === 'function'
-                ? this.configuration.accessToken()
-                : this.configuration.accessToken;
-            headers = headers.set('Authorization', 'Bearer ' + accessToken);
-        }
-
-        // to determine the Accept header
-        let httpHeaderAccepts: string[] = [
-            'text/plain',
-            'application/json',
-            'text/json'
-        ];
-        const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
-        if (httpHeaderAcceptSelected !== undefined) {
-            headers = headers.set('Accept', httpHeaderAcceptSelected);
-        }
-
-        // to determine the Content-Type header
-        const consumes: string[] = [
-        ];
-
-        return this.httpClient.get<Array<User>>(`${this.configuration.basePath}/api/units/${encodeURIComponent(String(unitId))}/users`,
-            {
-                withCredentials: this.configuration.withCredentials,
-                headers: headers,
-                observe: observe,
-                reportProgress: reportProgress
-            }
-        );
-    }
-
-    /**
-     * Gets a specific User by id
-     * Returns the User with the id specified  &lt;para /&gt;  Only accessible to a SuperUser
-     * @param id The id of the User
-     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
-     * @param reportProgress flag to report request and response progress.
-     */
-    public getUser(id: string, observe?: 'body', reportProgress?: boolean): Observable<User>;
-    public getUser(id: string, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<User>>;
-    public getUser(id: string, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<User>>;
-    public getUser(id: string, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+    public getUnit(id: string, observe?: 'body', reportProgress?: boolean): Observable<Unit>;
+    public getUnit(id: string, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Unit>>;
+    public getUnit(id: string, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Unit>>;
+    public getUnit(id: string, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
         if (id === null || id === undefined) {
-            throw new Error('Required parameter id was null or undefined when calling getUser.');
+            throw new Error('Required parameter id was null or undefined when calling getUnit.');
         }
 
         let headers = this.defaultHeaders;
@@ -309,7 +255,7 @@ export class UserService {
         const consumes: string[] = [
         ];
 
-        return this.httpClient.get<User>(`${this.configuration.basePath}/api/users/${encodeURIComponent(String(id))}`,
+        return this.httpClient.get<Unit>(`${this.configuration.basePath}/api/units/${encodeURIComponent(String(id))}`,
             {
                 withCredentials: this.configuration.withCredentials,
                 headers: headers,
@@ -320,15 +266,15 @@ export class UserService {
     }
 
     /**
-     * Gets all Users in the system
-     * Returns a list of all of the Users in the system.  &lt;para /&gt;  Only accessible to a SuperUser
+     * Gets all Unit in the system
+     * Returns a list of all of the Units in the system.  &lt;para /&gt;  Only accessible to a SuperUser
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public getUsers(observe?: 'body', reportProgress?: boolean): Observable<Array<User>>;
-    public getUsers(observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Array<User>>>;
-    public getUsers(observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Array<User>>>;
-    public getUsers(observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+    public getUnits(observe?: 'body', reportProgress?: boolean): Observable<Array<Unit>>;
+    public getUnits(observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Array<Unit>>>;
+    public getUnits(observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Array<Unit>>>;
+    public getUnits(observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
 
         let headers = this.defaultHeaders;
 
@@ -355,7 +301,7 @@ export class UserService {
         const consumes: string[] = [
         ];
 
-        return this.httpClient.get<Array<User>>(`${this.configuration.basePath}/api/users`,
+        return this.httpClient.get<Array<Unit>>(`${this.configuration.basePath}/api/units`,
             {
                 withCredentials: this.configuration.withCredentials,
                 headers: headers,
@@ -366,19 +312,69 @@ export class UserService {
     }
 
     /**
-     * Updates a  User
-     * Updates a User with the attributes specified.  The ID from the route MUST MATCH the ID contained in the user parameter  &lt;para /&gt;  Accessible only to a ContentDeveloper or an Administrator
-     * @param id The Id of the User to update
-     * @param User The updated User values
+     * Gets Units for the specified user
+     * Returns a list of the specified user&#39;s Units.  &lt;para /&gt;  Only accessible to a SuperUser
+     * @param userId
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public updateUser(id: string, User?: User, observe?: 'body', reportProgress?: boolean): Observable<User>;
-    public updateUser(id: string, User?: User, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<User>>;
-    public updateUser(id: string, User?: User, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<User>>;
-    public updateUser(id: string, User?: User, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+    public getUnitsByUser(userId: string, observe?: 'body', reportProgress?: boolean): Observable<Array<Unit>>;
+    public getUnitsByUser(userId: string, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Array<Unit>>>;
+    public getUnitsByUser(userId: string, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Array<Unit>>>;
+    public getUnitsByUser(userId: string, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+        if (userId === null || userId === undefined) {
+            throw new Error('Required parameter userId was null or undefined when calling getUnitsByUser.');
+        }
+
+        let headers = this.defaultHeaders;
+
+        // authentication (oauth2) required
+        if (this.configuration.accessToken) {
+            const accessToken = typeof this.configuration.accessToken === 'function'
+                ? this.configuration.accessToken()
+                : this.configuration.accessToken;
+            headers = headers.set('Authorization', 'Bearer ' + accessToken);
+        }
+
+        // to determine the Accept header
+        let httpHeaderAccepts: string[] = [
+            'text/plain',
+            'application/json',
+            'text/json'
+        ];
+        const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
+        if (httpHeaderAcceptSelected !== undefined) {
+            headers = headers.set('Accept', httpHeaderAcceptSelected);
+        }
+
+        // to determine the Content-Type header
+        const consumes: string[] = [
+        ];
+
+        return this.httpClient.get<Array<Unit>>(`${this.configuration.basePath}/api/users/${encodeURIComponent(String(userId))}/units`,
+            {
+                withCredentials: this.configuration.withCredentials,
+                headers: headers,
+                observe: observe,
+                reportProgress: reportProgress
+            }
+        );
+    }
+
+    /**
+     * Updates a Unit
+     * Updates a Unit with the attributes specified  &lt;para /&gt;  Accessible only to a SuperUser or a User on an Admin Unit within the specified Unit
+     * @param id The Id of the Exericse to update
+     * @param Unit The updated Unit values
+     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+     * @param reportProgress flag to report request and response progress.
+     */
+    public updateUnit(id: string, Unit?: Unit, observe?: 'body', reportProgress?: boolean): Observable<Unit>;
+    public updateUnit(id: string, Unit?: Unit, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Unit>>;
+    public updateUnit(id: string, Unit?: Unit, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Unit>>;
+    public updateUnit(id: string, Unit?: Unit, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
         if (id === null || id === undefined) {
-            throw new Error('Required parameter id was null or undefined when calling updateUser.');
+            throw new Error('Required parameter id was null or undefined when calling updateUnit.');
         }
 
         let headers = this.defaultHeaders;
@@ -413,8 +409,8 @@ export class UserService {
             headers = headers.set('Content-Type', httpContentTypeSelected);
         }
 
-        return this.httpClient.put<User>(`${this.configuration.basePath}/api/users/${encodeURIComponent(String(id))}`,
-            User,
+        return this.httpClient.put<Unit>(`${this.configuration.basePath}/api/units/${encodeURIComponent(String(id))}`,
+            Unit,
             {
                 withCredentials: this.configuration.withCredentials,
                 headers: headers,

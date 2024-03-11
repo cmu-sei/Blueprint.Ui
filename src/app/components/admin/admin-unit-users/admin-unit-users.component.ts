@@ -14,27 +14,27 @@ import { LegacyPageEvent as PageEvent, MatLegacyPaginator as MatPaginator } from
 import { MatSort, MatSortable } from '@angular/material/sort';
 import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
 import { User } from 'src/app/generated/blueprint.api';
-import { TeamUserDataService } from 'src/app/data/user/team-user-data.service';
+import { UnitUserDataService } from 'src/app/data/user/unit-user-data.service';
 import { UserDataService } from 'src/app/data/user/user-data.service';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { UntypedFormControl } from '@angular/forms';
 
 @Component({
-  selector: 'app-admin-team-users',
-  templateUrl: './admin-team-users.component.html',
-  styleUrls: ['./admin-team-users.component.scss'],
+  selector: 'app-admin-unit-users',
+  templateUrl: './admin-unit-users.component.html',
+  styleUrls: ['./admin-unit-users.component.scss'],
 })
-export class AdminTeamUsersComponent implements OnDestroy, OnInit {
-  @Input() teamId: string;
+export class AdminUnitUsersComponent implements OnDestroy, OnInit {
+  @Input() unitId: string;
   userList: User[] = [];
   users: User[] = [];
-  teamUsers: User[] = [];
+  unitUsers: User[] = [];
 
   displayedUserColumns: string[] = ['name', 'id'];
-  displayedTeamColumns: string[] = ['name', 'user'];
+  displayedUnitColumns: string[] = ['name', 'user'];
   userDataSource = new MatTableDataSource<User>(new Array<User>());
-  teamUserDataSource = new MatTableDataSource<User>(new Array<User>());
+  unitUserDataSource = new MatTableDataSource<User>(new Array<User>());
   filterControl = new UntypedFormControl();
   filterString = '';
   defaultPageSize = 20;
@@ -46,15 +46,15 @@ export class AdminTeamUsersComponent implements OnDestroy, OnInit {
   @ViewChild(MatSort, { static: true }) sort: MatSort;
 
   constructor(
-    private teamUserDataService: TeamUserDataService,
+    private unitUserDataService: UnitUserDataService,
     private userDataService: UserDataService
   ) {
     this.userDataService.userList.pipe(takeUntil(this.unsubscribe$)).subscribe(users => {
       this.userList = users;
       this.setDataSources();
     });
-    this.teamUserDataService.teamUsers.pipe(takeUntil(this.unsubscribe$)).subscribe(tUsers => {
-      this.teamUsers = tUsers;
+    this.unitUserDataService.unitUsers.pipe(takeUntil(this.unsubscribe$)).subscribe(tUsers => {
+      this.unitUsers = tUsers;
       this.setDataSources();
     });
   }
@@ -65,11 +65,11 @@ export class AdminTeamUsersComponent implements OnDestroy, OnInit {
     this.pageEvent = new PageEvent();
     this.pageEvent.pageIndex = 0;
     this.pageEvent.pageSize = this.defaultPageSize;
-    this.teamUserDataService.teamUsers.pipe(takeUntil(this.unsubscribe$)).subscribe(tUsers => {
-      this.teamUsers = tUsers;
+    this.unitUserDataService.unitUsers.pipe(takeUntil(this.unsubscribe$)).subscribe(tUsers => {
+      this.unitUsers = tUsers;
       this.setDataSources();
     });
-    this.teamUserDataService.getTeamUsersFromApi(this.teamId);
+    this.unitUserDataService.getUnitUsersFromApi(this.unitId);
   }
 
   applyFilter(filterValue: string) {
@@ -90,9 +90,9 @@ export class AdminTeamUsersComponent implements OnDestroy, OnInit {
 
   setDataSources() {
     // Now that all of the observables are returned, process accordingly.
-    // get users from the TeamUsers
+    // get users from the UnitUsers
     // sort the list and add it as the data source
-    this.teamUserDataSource.data = this.teamUsers.sort((a, b) => {
+    this.unitUserDataSource.data = this.unitUsers.sort((a, b) => {
       const aName = this.getUserName(a.id).toLowerCase();
       const bName = this.getUserName(b.id).toLowerCase();
       if (aName < bName) {
@@ -104,7 +104,7 @@ export class AdminTeamUsersComponent implements OnDestroy, OnInit {
       }
     });
     const newAllUsers = !this.userList ? new Array<User>() : this.userList.slice(0);
-    this.teamUserDataSource.data.forEach((tu) => {
+    this.unitUserDataSource.data.forEach((tu) => {
       const index = newAllUsers.findIndex((u) => u.id === tu.id);
       if (index >= 0) {
         newAllUsers.splice(index, 1);
@@ -115,25 +115,25 @@ export class AdminTeamUsersComponent implements OnDestroy, OnInit {
     this.userDataSource.paginator = this.paginator;
   }
 
-  addUserToTeam(user: User): void {
-    const index = this.teamUserDataSource.data.findIndex(
+  addUserToUnit(user: User): void {
+    const index = this.unitUserDataSource.data.findIndex(
       (tu) => tu.id === user.id
     );
     if (index === -1) {
-      this.teamUserDataService.addUserToTeam(this.teamId, user);
+      this.unitUserDataService.addUserToUnit(this.unitId, user);
     }
   }
 
   /**
-   * Removes a user from the current team
-   * @param user The user to remove from team
+   * Removes a user from the current unit
+   * @param user The user to remove from unit
    */
-  removeUserFromTeam(user: User): void {
-    const index = this.teamUserDataSource.data.findIndex(
+  removeUserFromUnit(user: User): void {
+    const index = this.unitUserDataSource.data.findIndex(
       (tu) => tu.id === user.id
     );
     if (index !== -1) {
-      this.teamUserDataService.removeTeamUser(this.teamId, user.id);
+      this.unitUserDataService.removeUnitUser(this.unitId, user.id);
     }
   }
 

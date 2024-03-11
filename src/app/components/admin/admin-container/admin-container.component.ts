@@ -6,7 +6,7 @@ import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Observable, Subject } from 'rxjs';
 import { map, tap, take, takeUntil } from 'rxjs/operators';
-import { TeamDataService } from 'src/app/data/team/team-data.service';
+import { UnitDataService } from 'src/app/data/unit/unit-data.service';
 import { UserDataService } from 'src/app/data/user/user-data.service';
 import { TopbarView } from 'src/app/components/shared/top-bar/topbar.models';
 import {
@@ -29,7 +29,7 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
   usersText = 'Users';
   scoringModelsText = 'Scoring Models';
   rolesText = 'Roles';
-  teamsText = 'Teams';
+  unitsText = 'Units';
   dataFieldsText = 'Data Fields';
   organizationsText = 'Organizations';
   galleryCardsText = 'Gallery Cards';
@@ -54,7 +54,7 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
 
   constructor(
     private router: Router,
-    private teamDataService: TeamDataService,
+    private unitDataService: UnitDataService,
     private userDataService: UserDataService,
     activatedRoute: ActivatedRoute,
     private healthCheckService: HealthCheckService,
@@ -71,7 +71,7 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
       .subscribe((result) => {
         this.isSuperUser = result;
         if (this.isSuperUser) {
-          this.teamDataService.load();
+          this.unitDataService.load();
           this.userDataService.getUsersFromApi();
         }
       });
