@@ -17,7 +17,7 @@ import {
   DataValue,
   Move,
   Msel,
-  MselTeam,
+  MselUnit,
   Organization,
   PlayerApplication,
   PlayerApplicationTeam,
@@ -36,7 +36,7 @@ import { DataOptionDataService } from '../data/data-option/data-option-data.serv
 import { DataValueDataService } from '../data/data-value/data-value-data.service';
 import { MoveDataService } from '../data/move/move-data.service';
 import { MselDataService } from '../data/msel/msel-data.service';
-import { MselTeamDataService } from '../data/msel-team/msel-team-data.service';
+import { MselUnitDataService } from '../data/msel-unit/msel-unit-data.service';
 import { OrganizationDataService } from '../data/organization/organization-data.service';
 import { PlayerApplicationDataService } from '../data/player-application/player-application-data.service';
 import { PlayerApplicationTeamDataService } from '../data/team/player-application-team-data.service';
@@ -71,7 +71,7 @@ export class SignalRService {
     private dataValueDataService: DataValueDataService,
     private moveDataService: MoveDataService,
     private mselDataService: MselDataService,
-    private mselTeamDataService: MselTeamDataService,
+    private mselUnitDataService: MselUnitDataService,
     private organizationDataService: OrganizationDataService,
     private playerApplicationDataService: PlayerApplicationDataService,
     private playerApplicationTeamDataService: PlayerApplicationTeamDataService,
@@ -122,10 +122,10 @@ export class SignalRService {
   }
 
   public leave() {
-    if (this.isJoined) {
+    if (this.hubConnection.state === signalR.HubConnectionState.Connected && this.isJoined) {
       this.hubConnection.invoke('Leave' + this.applicationArea);
-      this.isJoined = false;
     }
+    this.isJoined = false;
   }
 
   public selectMsel(mselId: string) {
@@ -148,7 +148,7 @@ export class SignalRService {
     this.addDataValueHandlers();
     this.addMoveHandlers();
     this.addMselHandlers();
-    this.addMselTeamHandlers();
+    this.addMselUnitHandlers();
     this.addOrganizationHandlers();
     this.addPlayerApplicationHandlers();
     this.addPlayerApplicationTeamHandlers();
@@ -307,19 +307,19 @@ export class SignalRService {
     });
   }
 
-  private addMselTeamHandlers() {
+  private addMselUnitHandlers() {
     this.hubConnection.on(
-      'MselTeamUpdated', (mselTeam: MselTeam) => {
-        this.mselTeamDataService.updateStore(mselTeam);
+      'MselUnitUpdated', (mselUnit: MselUnit) => {
+        this.mselUnitDataService.updateStore(mselUnit);
       }
     );
 
-    this.hubConnection.on('MselTeamCreated', (mselTeam: MselTeam) => {
-      this.mselTeamDataService.updateStore(mselTeam);
+    this.hubConnection.on('MselUnitCreated', (mselUnit: MselUnit) => {
+      this.mselUnitDataService.updateStore(mselUnit);
     });
 
-    this.hubConnection.on('MselTeamDeleted', (id: string) => {
-      this.mselTeamDataService.deleteFromStore(id);
+    this.hubConnection.on('MselUnitDeleted', (id: string) => {
+      this.mselUnitDataService.deleteFromStore(id);
     });
   }
 

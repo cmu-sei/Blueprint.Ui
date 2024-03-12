@@ -135,6 +135,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
         [isContentDeveloper]="isContentDeveloper"
         (deleteThisMsel)="deleteMsel($event)"
       ></app-msel-info>
+      <app-msel-contributors
+        *ngIf="selectedTab === 'Contributors'"
+        [loggedInUserId]="loggedInUserId"
+        [isContentDeveloper]="isContentDeveloper"
+      ></app-msel-contributors>
       <app-msel-roles
         *ngIf="selectedTab === 'Teams'"
         [loggedInUserId]="loggedInUserId"

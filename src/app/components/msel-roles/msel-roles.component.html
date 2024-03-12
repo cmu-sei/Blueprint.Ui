@@ -4,44 +4,72 @@ Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
 <div *ngIf="msel" class="scrolling-region">
+  <div class="cssLayoutRowStartCenter">
+    <button
+      mat-icon-button
+      (click)="addOrEditTeam(null)"
+      style="outline: none; margin-left: 20px;"
+      title="Add Team"
+    >
+      <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle"></mat-icon>
+    </button>
+    <mat-form-field style="width: 300px; margin-left: 10px;">
+      <input
+        matInput
+        [(ngModel)]="filterString"
+        (keyup)="applyFilter($any($event.target).value)"
+        placeholder="Search"
+      />
+    </mat-form-field>
+    <div style="width: 30px;">
+      <button
+        mat-icon-button
+        (click)="applyFilter('')"
+        style="outline: none;"
+        title="Clear Search"
+      >
+        <mat-icon class="mdi-24px" fontIcon="mdi-close-circle-outline"></mat-icon>
+      </button>
+    </div>
+  </div>
   <div class="mat-elevation-z2 section-container">
     <div class="section-content">
       <mat-expansion-panel
-        *ngFor="let mselTeam of mselTeamList; trackBy: trackByFn"
+        *ngFor="let team of teamList; trackBy: trackByFn"
       >
         <mat-expansion-panel-header
           (click)="$event.stopPropagation();"
         >
           <button
             mat-icon-button
-            (click)="removeTeamFromMsel(mselTeam.id); $event.stopPropagation();"
-            title="Remove team from MSEL"
+            (click)="deleteTeam(team); $event.stopPropagation();"
+            title="Delete team"
             *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
           >
-            <mat-icon class="mdi-24px self-center" fontIcon="mdi-minus-circle-outline"></mat-icon>
+            <mat-icon class="mdi-24px self-center" fontIcon="mdi-trash-can"></mat-icon>
           </button>
-          <span class="center-self">{{ getTeam(mselTeam.teamId).shortName }} - {{ getTeam(mselTeam.teamId).name }}</span>
+          <span class="center-self">{{ team.shortName }} - {{ team.name }}</span>
         </mat-expansion-panel-header>
-        <div class="team-detail" *ngFor="let user of getMselTeamUsers(mselTeam.teamId)">
+        <div class="team-detail" *ngFor="let user of team.users">
           <div class="user-name four-cell">{{ user.name }}</div>
-          <div class="msel-role one-cell" *ngFor="let mselRole of getMselRolesToDisplay()">
+          <div class="msel-role one-cell" *ngFor="let teamRole of getTeamRolesToDisplay()">
             <mat-checkbox
-              [checked]="hasMselRole(user.id, mselRole)"
-              (change)="toggleMselRole(user.id, mselRole, $event.checked)"
+              [checked]="hasTeamRole(user.id, team.id, teamRole)"
+              (change)="toggleTeamRole(user.id, team.id, teamRole, $event.checked)"
               (click)="$event.stopPropagation();"
               style="margin-right: 20px;"
               [disabled]="!isContentDeveloper && !msel.hasRole(loggedInUserId, null).owner"
-              >{{ mselRole }}</mat-checkbox
+              >{{ teamRole }}</mat-checkbox
             >
           </div>
         </div>
-        <div class="team-detail" *ngIf="getMselTeamUsers(mselTeam.teamId).length === 0">This team has no users.</div>
+        <div class="team-detail" *ngIf="team.users?.length === 0">This team has no users.</div>
         <div class="team-detail" *ngIf="msel.useCite">
           <mat-form-field class="button-margins half-width">
             <mat-label>CITE Team Type</mat-label>
             <mat-select
-              [value]="mselTeam.citeTeamTypeId"
-              (selectionChange)="setTeamType(mselTeam, $event.value)"
+              [value]="team.citeTeamTypeId"
+              (selectionChange)="setTeamType(team, $event.value)"
             >
               <mat-option [value]="''"></mat-option>
               <mat-option *ngFor="let teamType of teamTypeList" [value]="teamType.id">
@@ -57,33 +85,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
               type="text"
               matInput
               placeholder="Header Row Metadata (Height)"
-              [(ngModel)]="mselTeam.email"
-              (blur)="saveMselTeam(mselTeam)"
+              [(ngModel)]="team.email"
+              (blur)="saveTeam(team)"
               title="Team Email"
             />
           </mat-form-field>
         </div>
-      </mat-expansion-panel>
-    </div>
-  </div>
-  <div class="mat-elevation-z2 section-container" *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner">
-    <div class="section-content">
-      <mat-expansion-panel>
-        <mat-expansion-panel-header
-          (click)="$event.stopPropagation();"
-        >
-          Add a Team
-          </mat-expansion-panel-header>
-          <div class="other-teams-div" *ngFor="let team of getTeamList()">
-            <button
-              mat-icon-button
-              (click)="addTeamToMsel(team.id); $event.stopPropagation();"
-              title="Add team to MSEL"
-            >
-              <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
-            </button>
-            {{ team.shortName }} - {{ team.name }}
-          </div>
       </mat-expansion-panel>
     </div>
   </div>

@@ -5,7 +5,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
 -->
 
 <div mat-dialog-title>
-  Edit Team
+  <span *ngIf="!data.team.id">Add</span><span *ngIf="data.team.id">Edit</span> Team
   <button
     mat-icon-button
     (click)="handleEditComplete(false)"

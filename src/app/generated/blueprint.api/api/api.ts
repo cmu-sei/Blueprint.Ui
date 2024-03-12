@@ -60,4 +60,6 @@ export * from './userMselRole.service';
 import { UserMselRoleService } from './userMselRole.service';
 export * from './userPermission.service';
 import { UserPermissionService } from './userPermission.service';
-export const APIS = [CardService, CardTeamService, CiteService, CiteActionService, CiteRoleService, DataFieldService, DataOptionService, DataValueService, HealthCheckService, InvitationService, MoveService, MselService, MselPageService, MselTeamService, MselUnitService, OrganizationService, PermissionService, PlayerApplicationService, PlayerApplicationTeamService, PlayerService, ScenarioEventService, TeamService, TeamUserService, UnitService, UnitUserService, UserService, UserMselRoleService, UserPermissionService];
+export * from './userTeamRole.service';
+import { UserTeamRoleService } from './userTeamRole.service';
+export const APIS = [CardService, CardTeamService, CiteService, CiteActionService, CiteRoleService, DataFieldService, DataOptionService, DataValueService, HealthCheckService, InvitationService, MoveService, MselService, MselPageService, MselTeamService, MselUnitService, OrganizationService, PermissionService, PlayerApplicationService, PlayerApplicationTeamService, PlayerService, ScenarioEventService, TeamService, TeamUserService, UnitService, UnitUserService, UserService, UserMselRoleService, UserPermissionService, UserTeamRoleService];

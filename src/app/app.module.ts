@@ -77,6 +77,7 @@ import { LaunchComponent } from './components/launch/launch.component';
 import { MoveEditDialogComponent } from './components/move-edit-dialog/move-edit-dialog.component';
 import { MoveListComponent } from './components/move-list/move-list.component';
 import { MselComponent } from './components/msel/msel.component';
+import { MselContributorsComponent } from './components/msel-contributors/msel-contributors.component';
 import { MselInfoComponent } from './components/msel-info/msel-info.component';
 import { MselListComponent } from './components/msel-list/msel-list.component';
 import { MselPageComponent } from './components/msel-page/msel-page.component';
@@ -136,6 +137,7 @@ export function getBasePath(settingsSvc: ComnSettingsService) {
     MoveEditDialogComponent,
     MoveListComponent,
     MselComponent,
+    MselContributorsComponent,
     MselInfoComponent,
     MselListComponent,
     MselPageComponent,

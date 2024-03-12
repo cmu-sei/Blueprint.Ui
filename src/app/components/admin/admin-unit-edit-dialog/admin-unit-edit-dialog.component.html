@@ -5,7 +5,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
 -->
 
 <div mat-dialog-title>
-  Edit Unit
+  <span *ngIf="!data.unit.id">Add</span><span *ngIf="data.unit.id">Edit</span> Unit
   <button
     mat-icon-button
     (click)="handleEditComplete(false)"

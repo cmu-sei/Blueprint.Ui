@@ -4,26 +4,27 @@
 import { Component, Input, OnDestroy, ViewChild } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { TeamDataService } from 'src/app/data/team/team-data.service';
 import { TeamQuery } from 'src/app/data/team/team.query';
 import { UserDataService } from 'src/app/data/user/user-data.service';
 import {
   DataField,
-  MselRole,
-  MselTeam,
+  TeamRole,
   ScenarioEvent,
   Team,
   User,
-  UserMselRole
+  UserTeamRole
 } from 'src/app/generated/blueprint.api';
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
-import { MselTeamDataService } from 'src/app/data/msel-team/msel-team-data.service';
-import { MselTeamQuery } from 'src/app/data/msel-team/msel-team.query';
 import { MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy-menu';
 import { CiteApiClientTeamType } from 'src/app/generated/blueprint.api/model/citeApiClientTeamType';
 import { CiteService } from 'src/app/generated/blueprint.api';
-import { UserMselRoleDataService } from 'src/app/data/user-msel-role/user-msel-role-data.service';
-import { UserMselRoleQuery } from 'src/app/data/user-msel-role/user-msel-role.query';
+import { UserTeamRoleDataService } from 'src/app/data/user-team-role/user-team-role-data.service';
+import { UserTeamRoleQuery } from 'src/app/data/user-team-role/user-team-role.query';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { DialogService } from 'src/app/services/dialog/dialog.service';
+import { TeamEditDialogComponent } from '../team-edit-dialog/team-edit-dialog.component';
 
 @Component({
   selector: 'app-msel-roles',
@@ -42,42 +43,38 @@ export class MselRolesComponent implements OnDestroy {
   expandedSectionIds: string[] = [];
   sortedScenarioEvents: ScenarioEvent[];
   sortedDataFields: DataField[];
-  mselRoles: MselRole[] = [
-    MselRole.Editor,
-    MselRole.Approver,
-    MselRole.MoveEditor,
-    MselRole.Owner,
-    MselRole.Evaluator,
-    MselRole.Viewer,
-    MselRole.Participant,
-    MselRole.Inviter,
-    MselRole.GalleryObserver,
-    MselRole.CiteObserver,
+  teamRoles: TeamRole[] = [
+    TeamRole.Participant,
+    TeamRole.Inviter,
+    TeamRole.GalleryObserver,
+    TeamRole.CiteObserver,
   ];
   isEditEnabled = false;
   userList: User[] = [];
-  mselTeamList: MselTeam[] = [];
-  userMselRoles: UserMselRole[] = [];
+  teamList: Team[] = [];
+  userTeamRoles: UserTeamRole[] = [];
+  filterString = '';
   private allTeams: Team[] = [];
   private unsubscribe$ = new Subject();
 
   constructor(
     private teamQuery: TeamQuery,
+    private teamDataService: TeamDataService,
     private userDataService: UserDataService,
     private mselDataService: MselDataService,
     private mselQuery: MselQuery,
-    private mselTeamDataService: MselTeamDataService,
-    private mselTeamQuery: MselTeamQuery,
     private citeService: CiteService,
-    private userMselRoleDataService: UserMselRoleDataService,
-    private userMselRoleQuery: UserMselRoleQuery
+    private userTeamRoleDataService: UserTeamRoleDataService,
+    private userTeamRoleQuery: UserTeamRoleQuery,
+    private dialog: MatDialog,
+    public dialogService: DialogService,
   ) {
     // subscribe to the active MSEL
     (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
       if (msel && this.msel.id !== msel.id) {
         Object.assign(this.originalMsel, msel);
         Object.assign(this.msel, msel);
-        this.sortedDataFields = this.getSortedDataFields(msel.dataFields);
+        this.teamList = this.allTeams.filter(t => t.mselId === this.msel.id);
       }
     });
     // subscribe to users
@@ -88,25 +85,12 @@ export class MselRolesComponent implements OnDestroy {
     this.teamQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(teams => {
       if (teams && teams.length > 0) {
         this.allTeams = teams.sort((a, b) => a.shortName?.toLowerCase() > b.shortName?.toLowerCase() ? 1 : -1);
+        this.teamList = this.allTeams.filter(t => t.mselId === this.msel.id);
       }
     });
-    // subscribe to mselTeams
-    this.mselTeamQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(mselTeams => {
-      this.mselTeamList = [];
-      mselTeams.forEach(mt => {
-        const mselTeam = {} as MselTeam;
-        if (mt) {
-          this.mselTeamList.push(Object.assign(mselTeam, mt));
-        }
-      });
-      if (this.mselTeamList.length > 0) {
-        this.mselTeamList = this.mselTeamList.sort((a, b) =>
-          a.team.shortName?.toLowerCase() > b.team.shortName?.toLowerCase() ? 1 : -1);
-      }
-    });
-    // subscribe to UserMselRoles
-    this.userMselRoleQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(umrs => {
-      this.userMselRoles = umrs;
+    // subscribe to UserTeamRoles
+    this.userTeamRoleQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(umrs => {
+      this.userTeamRoles = umrs;
     });
     // subscribe to TeamTypes
     this.citeService.getTeamTypes().subscribe(teamTypes => {
@@ -119,80 +103,43 @@ export class MselRolesComponent implements OnDestroy {
     return user ? user.name : 'unknown';
   }
 
-  getSortedDataFields(dataFields: DataField[]): DataField[] {
-    const sortedDataFields: DataField[] = [];
-    if (dataFields) {
-      dataFields.forEach(df => {
-        sortedDataFields.push({... df});
-      });
-      sortedDataFields.sort((a, b) => +a.displayOrder > +b.displayOrder ? 1 : -1);
-    }
-    return sortedDataFields;
-  }
-
   getTeamList() {
     let teamList = this.allTeams;
-    if (this.msel && this.mselTeamList && this.mselTeamList.length > 0 && teamList.length > 0) {
-      const mselTeamIds = new Set(this.mselTeamList.map(mt => mt.teamId));
-      teamList = this.allTeams.filter(t => !mselTeamIds.has(t.id));
+    if (this.msel && this.teamList && this.teamList.length > 0 && teamList.length > 0) {
+      const teamIds = new Set(this.teamList.map(mt => mt.id));
+      teamList = this.allTeams.filter(t => !teamIds.has(t.id));
     }
 
     return teamList;
   }
 
-  getTeam(id: string) {
-    const team = this.allTeams.find(t => t.id === id);
-    return team ? team : {};
-  }
-
-  getMselTeamUsers(id: string) {
-    const team = this.mselTeamList.find(mt => mt.teamId === id).team;
-    return team ? team.users : [];
-  }
-
-  addTeamToMsel(teamId: string) {
-    const mselTeam: MselTeam = {
-      mselId: this.msel.id,
-      teamId: teamId
-    };
-    this.mselTeamDataService.add(mselTeam);
-  }
-
-  removeTeamFromMsel(id: string) {
-    this.mselTeamDataService.delete(id);
-  }
-
-  hasMselRole(userId: string, mselRole: MselRole): boolean {
-    const hasRole = this.userMselRoles.some(umr =>
-      umr.userId === userId && umr.role === mselRole && umr.mselId === this.msel.id);
+  hasTeamRole(userId: string, teamId: string, teamRole: TeamRole): boolean {
+    const hasRole = this.userTeamRoles.some(utr =>
+      utr.userId === userId && utr.role === teamRole && utr.teamId === teamId);
     return hasRole;
   }
 
-  toggleMselRole(userId: string, mselRole: MselRole, addIt: boolean) {
+  toggleTeamRole(userId: string, teamId: string, teamRole: TeamRole, addIt: boolean) {
     if (addIt) {
       const umr = {
         userId: userId,
         mselId: this.msel.id,
-        role: mselRole
-      } as UserMselRole;
-      this.userMselRoleDataService.add(umr);
+        role: teamRole
+      } as UserTeamRole;
+      this.userTeamRoleDataService.add(umr);
     } else {
-      const umrId = this.userMselRoles.find(umr =>
+      const umrId = this.userTeamRoles.find(umr =>
         umr.userId === userId &&
-        umr.mselId === this.msel.id &&
-        umr.role === mselRole
+        umr.teamId === teamId &&
+        umr.role === teamRole
       ).id;
-      this.userMselRoleDataService.delete(umrId);
+      this.userTeamRoleDataService.delete(umrId);
     }
   }
 
-  setTeamType(mselTeam: MselTeam, value: string) {
-    mselTeam.citeTeamTypeId = value;
-    this.saveMselTeam(mselTeam);
-  }
-
-  saveMselTeam(mselTeam: MselTeam) {
-    this.mselTeamDataService.updateMselTeam(mselTeam);
+  setTeamType(team: Team, value: string) {
+    team.citeTeamTypeId = value;
+    this.saveTeam(team);
   }
 
   saveChanges() {
@@ -209,22 +156,77 @@ export class MselRolesComponent implements OnDestroy {
     return item.id;
   }
 
-  getMselRolesToDisplay(): MselRole[] {
-    const mselRoles = [];
-    this.mselRoles.forEach(mr => {
+  getTeamRolesToDisplay(): TeamRole[] {
+    const teamRoles = [];
+    this.teamRoles.forEach(mr => {
       if (mr.startsWith('Cite')) {
         if (this.msel.useCite) {
-          mselRoles.push(mr);
+          teamRoles.push(mr);
         }
       } else if (mr.startsWith('Gallery')) {
         if (this.msel.useGallery) {
-          mselRoles.push(mr);
+          teamRoles.push(mr);
         }
       } else {
-        mselRoles.push(mr);
+        teamRoles.push(mr);
       }
     });
-    return mselRoles;
+    return teamRoles;
+  }
+
+  addOrEditTeam(team: Team) {
+    if (!team) {
+      team = {
+        name: '',
+        shortName: ''
+      };
+    } else {
+      team = {... team};
+    }
+    const dialogRef = this.dialog.open(TeamEditDialogComponent, {
+      width: '800px',
+      data: {
+        team: team,
+        userList: this.userList
+      },
+    });
+    dialogRef.componentInstance.editComplete.subscribe((result) => {
+      if (result.saveChanges && result.team) {
+        this.saveTeam(result.team);
+      }
+      dialogRef.close();
+    });
+  }
+
+  saveTeam(team: Team) {
+    if (team.id) {
+      this.teamDataService.updateTeam(team);
+    } else {
+      this.teamDataService.add(team);
+    }
+  }
+
+  deleteTeam(team: Team): void {
+    this.dialogService
+      .confirm(
+        'Delete Team',
+        'Are you sure that you want to delete ' + team.name + '?'
+      )
+      .subscribe((result) => {
+        if (result['confirm']) {
+          this.teamDataService.delete(team.id);
+        }
+      });
+  }
+
+  applyFilter(filterValue: string) {
+    this.filterString = filterValue;
+    filterValue = filterValue.toLowerCase(); // MatTableDataSource defaults to lowercase matches
+    this.teamList = this.allTeams
+      .filter(team =>
+        team.mselId === this.msel.id &&
+        (team.name.toLowerCase().indexOf(filterValue) >= 0 ||
+        team.shortName.toLowerCase().indexOf(filterValue) >= 0));
   }
 
   ngOnDestroy() {

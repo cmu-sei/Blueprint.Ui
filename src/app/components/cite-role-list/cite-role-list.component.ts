@@ -16,7 +16,7 @@ import { Sort } from '@angular/material/sort';
 import { MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy-menu';
 import { CiteRoleDataService } from 'src/app/data/cite-role/cite-role-data.service';
 import { CiteRoleQuery } from 'src/app/data/cite-role/cite-role.query';
-import { MselTeamQuery } from 'src/app/data/msel-team/msel-team.query';
+import { TeamQuery } from 'src/app/data/team/team.query';
 import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { CiteRoleEditDialogComponent } from '../cite-role-edit-dialog/cite-role-edit-dialog.component';
@@ -52,7 +52,7 @@ export class CiteRoleListComponent implements OnDestroy {
     private mselQuery: MselQuery,
     private citeRoleDataService: CiteRoleDataService,
     private citeRoleQuery: CiteRoleQuery,
-    private mselTeamQuery: MselTeamQuery,
+    private teamQuery: TeamQuery,
     public dialog: MatDialog,
     public dialogService: DialogService
   ) {
@@ -72,12 +72,12 @@ export class CiteRoleListComponent implements OnDestroy {
         this.sortedCiteRoles = this.getSortedCiteRoles(this.getFilteredCiteRoles(false));
       }
     });
-    // subscribe to mselTeams
-    this.mselTeamQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(mselTeams => {
+    // subscribe to Teams
+    this.teamQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(teams => {
       const mtList: Team[] = [];
-      mselTeams.forEach(mt => {
+      teams.forEach(mt => {
         if (mt.mselId === this.msel.id) {
-          mtList.push(mt.team);
+          mtList.push(mt);
         }
       });
       this.mselTeamList = mtList.sort((a, b) => a.shortName.toLowerCase() < b.shortName.toLowerCase() ? -1 : 1);

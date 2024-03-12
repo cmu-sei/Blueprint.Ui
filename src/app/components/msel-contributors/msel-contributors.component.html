@@ -1,0 +1,63 @@
+<!--
+Copyright 2024 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license, please see LICENSE.md in the
+project root for license information or contact permission@sei.cmu.edu for full terms.
+-->
+<div *ngIf="msel" class="scrolling-region">
+  <div class="mat-elevation-z2 section-container">
+    <div class="section-content">
+      <mat-expansion-panel
+        *ngFor="let mselUnit of mselUnitList; trackBy: trackByFn"
+      >
+        <mat-expansion-panel-header
+          (click)="$event.stopPropagation();"
+        >
+          <button
+            mat-icon-button
+            (click)="removeUnitFromMsel(mselUnit.id); $event.stopPropagation();"
+            title="Remove unit from MSEL"
+            *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
+          >
+            <mat-icon class="mdi-24px self-center" fontIcon="mdi-minus-circle-outline"></mat-icon>
+          </button>
+          <span class="center-self">{{ getUnit(mselUnit.unitId).shortName }} - {{ getUnit(mselUnit.unitId).name }}</span>
+        </mat-expansion-panel-header>
+        <div class="unit-detail" *ngFor="let user of getMselUnitUsers(mselUnit.unitId)">
+          <div class="user-name four-cell">{{ user.name }}</div>
+          <div class="msel-role one-cell" *ngFor="let mselRole of getMselRolesToDisplay()">
+            <mat-checkbox
+              [checked]="hasMselRole(user.id, mselRole)"
+              (change)="toggleMselRole(user.id, mselRole, $event.checked)"
+              (click)="$event.stopPropagation();"
+              style="margin-right: 20px;"
+              [disabled]="!isContentDeveloper && !msel.hasRole(loggedInUserId, null).owner"
+              >{{ mselRole }}</mat-checkbox
+            >
+          </div>
+        </div>
+        <div class="unit-detail" *ngIf="getMselUnitUsers(mselUnit.unitId).length === 0">This unit has no users.</div>
+      </mat-expansion-panel>
+    </div>
+  </div>
+  <div class="mat-elevation-z2 section-container" *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner">
+    <div class="section-content">
+      <mat-expansion-panel>
+        <mat-expansion-panel-header
+          (click)="$event.stopPropagation();"
+        >
+          Add a Unit
+          </mat-expansion-panel-header>
+          <div class="other-units-div" *ngFor="let unit of getUnitList()">
+            <button
+              mat-icon-button
+              (click)="addUnitToMsel(unit.id); $event.stopPropagation();"
+              title="Add unit to MSEL"
+            >
+              <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
+            </button>
+            {{ unit.shortName }} - {{ unit.name }}
+          </div>
+      </mat-expansion-panel>
+    </div>
+  </div>
+</div>

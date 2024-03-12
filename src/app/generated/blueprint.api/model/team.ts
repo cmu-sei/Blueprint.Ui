@@ -15,6 +15,9 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
+import { CardTeam } from './cardTeam';
+import { Invitation } from './invitation';
+import { PlayerApplicationTeam } from './playerApplicationTeam';
 import { Msel } from './msel';
 import { User } from './user';
 
@@ -24,11 +27,19 @@ export interface Team {
     dateModified?: Date;
     createdBy?: string;
     modifiedBy?: string;
-    id?: string;
-    citeTeamTypeId?: string;
     name?: string;
     shortName?: string;
-    isParticipantTeam?: boolean;
+    id?: string;
+    mselId?: string;
+    citeTeamTypeId?: string;
+    email?: string;
+    playerTeamId?: string;
+    galleryTeamId?: string;
+    citeTeamId?: string;
+    canTeamLeaderInvite?: boolean;
+    canTeamMemberInvite?: boolean;
     users?: Array<User>;
-    msels?: Array<Msel>;
+    cardTeams?: Array<CardTeam>;
+    playerApplicationTeams?: Array<PlayerApplicationTeam>;
+    invitations?: Array<Invitation>;
 }

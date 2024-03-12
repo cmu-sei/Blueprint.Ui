@@ -14,7 +14,7 @@ import {
 import { MoveQuery } from 'src/app/data/move/move.query';
 import { MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
-import { MselTeamQuery } from 'src/app/data/msel-team/msel-team.query';
+import { TeamQuery } from 'src/app/data/team/team.query';
 import { Sort } from '@angular/material/sort';
 import { MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy-menu';
 import { CiteActionDataService } from 'src/app/data/cite-action/cite-action-data.service';
@@ -59,7 +59,7 @@ export class CiteActionListComponent implements OnDestroy {
     private citeActionDataService: CiteActionDataService,
     private citeActionQuery: CiteActionQuery,
     private moveQuery: MoveQuery,
-    private mselTeamQuery: MselTeamQuery,
+    private teamQuery: TeamQuery,
     public dialog: MatDialog,
     public dialogService: DialogService
   ) {
@@ -86,11 +86,11 @@ export class CiteActionListComponent implements OnDestroy {
         .sort((a, b) => +a.moveNumber < +b.moveNumber ? -1 : 1);
     });
     // subscribe to mselTeams
-    this.mselTeamQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(mselTeams => {
+    this.teamQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(teams => {
       const mtList: Team[] = [];
-      mselTeams.forEach(mt => {
+      teams.forEach(mt => {
         if (mt.mselId === this.msel.id) {
-          mtList.push(mt.team);
+          mtList.push(mt);
         }
       });
       this.mselTeamList = mtList.sort((a, b) => a.shortName.toLowerCase() < b.shortName.toLowerCase() ? -1 : 1);

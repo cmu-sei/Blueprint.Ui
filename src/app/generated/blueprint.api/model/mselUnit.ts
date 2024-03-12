@@ -26,4 +26,5 @@ export interface MselUnit {
     id?: string;
     mselId?: string;
     unitId?: string;
+    unit?: Unit;
 }

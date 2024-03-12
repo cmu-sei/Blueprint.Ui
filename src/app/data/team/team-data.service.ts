@@ -1,6 +1,6 @@
 /*
- Copyright 2023 Carnegie Mellon University. All Rights Reserved. 
- Released under a MIT (SEI)-style license. See LICENSE.md in the 
+ Copyright 2023 Carnegie Mellon University. All Rights Reserved.
+ Released under a MIT (SEI)-style license. See LICENSE.md in the
  project root for license information.
 */
 
@@ -192,6 +192,26 @@ export class TeamDataService {
     this.teamStore.setLoading(true);
     this.teamService
       .getMyTeams()
+      .pipe(
+        tap(() => {
+          this.teamStore.setLoading(false);
+        }),
+        take(1)
+      )
+      .subscribe(
+        (teams) => {
+          this.teamStore.set(teams);
+        },
+        (error) => {
+          this.teamStore.set([]);
+        }
+      );
+  }
+
+  loadByMsel(mselId: string) {
+    this.teamStore.setLoading(true);
+    this.teamService
+      .getTeamsByMsel(mselId)
       .pipe(
         tap(() => {
           this.teamStore.setLoading(false);
