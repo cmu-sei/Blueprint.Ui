@@ -30,6 +30,7 @@ import { TeamDataService } from 'src/app/data/team/team-data.service';
 import { UnitDataService } from 'src/app/data/unit/unit-data.service';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
 import { UserMselRoleDataService } from 'src/app/data/user-msel-role/user-msel-role-data.service';
+import { UserTeamRoleDataService } from 'src/app/data/user-team-role/user-team-role-data.service';
 
 @Component({
   selector: 'app-msel',
@@ -101,6 +102,7 @@ export class MselComponent implements OnDestroy {
     private unitDataService: UnitDataService,
     private uiDataService: UIDataService,
     private userMselRoleDataService: UserMselRoleDataService,
+    private userTeamRoleDataService: UserTeamRoleDataService,
     private authQuery: ComnAuthQuery
   ) {
     this.theme$ = this.authQuery.userTheme$;
@@ -134,6 +136,8 @@ export class MselComponent implements OnDestroy {
         this.userMselRoleDataService.loadByMsel(mselId);
         // load msel units
         this.mselUnitDataService.loadByMsel(mselId);
+        // load user team roles
+        this.userTeamRoleDataService.loadByMsel(mselId);
       }
     });
     // subscribe to the active MSEL

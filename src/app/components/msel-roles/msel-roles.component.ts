@@ -123,7 +123,7 @@ export class MselRolesComponent implements OnDestroy {
     if (addIt) {
       const umr = {
         userId: userId,
-        mselId: this.msel.id,
+        teamId: teamId,
         role: teamRole
       } as UserTeamRole;
       this.userTeamRoleDataService.add(umr);
