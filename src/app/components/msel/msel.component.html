@@ -198,6 +198,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
         [tabHeight]="48"
         [userTheme]="userTheme$ | async"
       ></app-msel-view>
+      <app-invitation-list
+        *ngIf="selectedTab === 'Invitations'"
+        [loggedInUserId]="loggedInUserId"
+        [isContentDeveloper]="isContentDeveloper"
+        [showTemplates]="false"
+      >Invitations</app-invitation-list>
     </div>
   </mat-sidenav-content>
 </mat-sidenav-container>

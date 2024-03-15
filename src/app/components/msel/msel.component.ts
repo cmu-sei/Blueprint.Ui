@@ -19,6 +19,7 @@ import { CiteRoleDataService } from 'src/app/data/cite-role/cite-role-data.servi
 import { DataFieldDataService } from 'src/app/data/data-field/data-field-data.service';
 import { DataOptionDataService } from 'src/app/data/data-option/data-option-data.service';
 import { DataValueDataService } from 'src/app/data/data-value/data-value-data.service';
+import { InvitationDataService } from 'src/app/data/invitation/invitation-data.service';
 import { MoveDataService } from 'src/app/data/move/move-data.service';
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
@@ -58,7 +59,8 @@ export class MselComponent implements OnDestroy {
     'CITE Actions',
     'CITE Roles',
     'Events',
-    'Exercise View'
+    'Exercise View',
+    'Invitations'
   ];
   fontIconList = new Map<string, string>([
     ['Info', 'mdi-note-outline'],
@@ -73,6 +75,7 @@ export class MselComponent implements OnDestroy {
     ['CITE Roles', 'mdi-clipboard-account-outline'],
     ['Events', 'mdi-chart-timeline'],
     ['Exercise View', 'mdi-eye-outline'],
+    ['Invitations', 'mdi-email-open-outline']
   ]);
   private unsubscribe$ = new Subject();
   private msel: Msel = {};
@@ -93,6 +96,7 @@ export class MselComponent implements OnDestroy {
     private dataFieldDataService: DataFieldDataService,
     private dataOptionDataService: DataOptionDataService,
     private dataValueDataService: DataValueDataService,
+    private invitationDataService: InvitationDataService,
     private moveDataService: MoveDataService,
     private mselDataService: MselDataService,
     private mselUnitDataService: MselUnitDataService,
@@ -140,6 +144,8 @@ export class MselComponent implements OnDestroy {
         this.mselUnitDataService.loadByMsel(mselId);
         // load user team roles
         this.userTeamRoleDataService.loadByMsel(mselId);
+        // load the MSEL organizations and templates
+        this.invitationDataService.loadByMsel(mselId);
       }
     });
     // subscribe to the active MSEL

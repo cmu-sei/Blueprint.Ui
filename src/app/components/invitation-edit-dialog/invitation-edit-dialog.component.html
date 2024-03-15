@@ -5,6 +5,9 @@ project root for license information.
 -->
 <div mat-dialog-container>
   <div mat-dialog-title>
+    <span *ngIf="data.invitation.id">Edit</span>
+    <span *ngIf="!data.invitation.id">Create</span>
+     an Invitation to this MSEL
     &nbsp;
     <button
       mat-icon-button
@@ -17,72 +20,77 @@ project root for license information.
     </button>
   </div>
   <div mat-dialog-content *ngIf="!!data && data.invitation !== undefined && data.invitation !== null">
-
+    <div class="add-margin">
+      <div>
+        <mat-form-field *ngIf="!data.invitation.id" class="full-width">
+          <mat-label>Team</mat-label>
+          <mat-select placeholder="Team" [value]="data.invitation.teamId">
+            <mat-option [value]=""></mat-option>
+            <mat-option *ngFor="let team of data.teamList" [value]="team.id" title="{{ team.shortName }} - {{ team.name }}">
+              {{ team.shortName }} - {{ team.name }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+        <span *ngIf="data.invitation.id">Team <br />{{ getTeamName(data.invitation.teamId) }}<br />&nbsp;</span>
+      </div>
+    </div>
     <div class="add-margin">
       <div>
         <mat-form-field class="full-width">
-          <input type="text" matInput [formControl]="invitationNameFormControl" placeholder="Long Name (required)" (blur)="saveInvitation('name')"
-            value="{{data.invitation.name}}">
-          <mat-error *ngIf="invitationNameFormControl.hasError('required')">
-            Name is <strong>required</strong>
-          </mat-error>
+          <input
+            type="text"
+            matInput
+            placeholder="EmailDomain (MUST contain an @, if entered)"
+            [(ngModel)]="data.invitation.emailDomain">
         </mat-form-field>
       </div>
     </div>
-
+    <div class="add-margin">
+      <div class="single-detail center-self">
+        <mat-form-field>
+          <input
+            matInput
+            [ngxMatDatetimePicker]="startTimePicker"
+            placeholder="Start Date / Time"
+            [(ngModel)]="data.invitation.expirationDateTime"
+          >
+          <mat-datepicker-toggle
+            matSuffix
+            [for]="$any(startTimePicker)"
+            title = "Choose Date/Time"
+          >
+          </mat-datepicker-toggle>
+          <ngx-mat-datetime-picker #startTimePicker
+            [showSpinners]=true
+            [showSeconds]=true
+            [stepHour]=1
+            [stepMinute]=1
+            [stepSecond]=1
+            [touchUi]=false
+            [enableMeridian]=true
+            [disableMinute]=false
+            [hideTime]=false
+          >
+          </ngx-mat-datetime-picker>
+        </mat-form-field>
+      </div>
+    </div>
     <div class="add-margin">
       <div>
         <mat-form-field class="full-width">
-          <input type="text" matInput [formControl]="invitationShortNameFormControl" placeholder="Short Name (required)" (blur)="saveInvitation('shortName')"
-            value="{{data.invitation.shortName}}">
-          <mat-error *ngIf="invitationShortNameFormControl.hasError('required')">
-            Short Name is <strong>required</strong>
-          </mat-error>
+          <input
+            type="text"
+            matInput
+            placeholder="Maximum number of users allowed to use this invitation"
+            [(ngModel)]="data.invitation.maxUsersAllowed">
         </mat-form-field>
       </div>
     </div>
-
-    <div class="add-margin left">
+    <div class="add-margin">
       <div>
-        <mat-form-field class="full-width">
-          <input type="text" matInput [formControl]="summaryFormControl" placeholder="Summary (required)" (blur)="saveInvitation('summary')"
-            value="{{data.invitation.summary}}">
-          <mat-error *ngIf="summaryFormControl.hasError('required')">
-            Summary is <strong>required</strong>
-          </mat-error>
-        </mat-form-field>
+        <mat-checkbox [(ngModel)]="data.invitation.isTeamLeader">Can invite others to this team</mat-checkbox>
       </div>
     </div>
-
-    <div class="add-margin left">
-      <div>
-        <mat-form-field class="full-width">
-          <input type="text" matInput [formControl]="invitationEmailFormControl" placeholder="Email" (blur)="saveInvitation('email')"
-            value="{{data.invitation.email}}">
-          <mat-error *ngIf="invitationEmailFormControl.hasError('required')">
-            Email is <strong>required</strong>
-          </mat-error>
-        </mat-form-field>
-      </div>
-    </div>
-
-    <div class="add-margin left">
-      <div>
-        <p style="font-size: 13px; font-weight: 400; line-height: 1.125; font-family: Open Sans, sans-serif; letter-spacing: normal;">
-          Description
-        </p>
-        <div id="quill">
-          <quill-editor [styles]="editorStyle" placeholder="Enter Text"
-              placeholder="Description" [formControl]="descriptionFormControl"
-              (blur)="saveInvitation('description')">
-          </quill-editor>
-          <mat-error *ngIf="descriptionFormControl.hasError('required')">
-            Description is <strong>required</strong>
-          </mat-error>
-        </div>
-      </div>
-    </div>
-  </div>
   <div class="cssLayoutRowStartCenter bottom-button">
     <div class="delete-button">
       <button mat-stroked-button (click)="handleEditComplete(true)" [disabled]="!errorFree()" style="margin-left: 40px;">Save</button>

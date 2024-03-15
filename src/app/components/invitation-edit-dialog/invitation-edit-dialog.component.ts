@@ -34,38 +34,7 @@ const MIN_NAME_LENGTH = 3;
 
 export class InvitationEditDialogComponent {
   @Output() editComplete = new EventEmitter<any>();
-
-  public invitationNameFormControl = new UntypedFormControl(
-    this.data.invitation.name,
-    [
-      Validators.required
-    ]
-  );
-  public invitationShortNameFormControl = new UntypedFormControl(
-    this.data.invitation.shortName,
-    [
-      Validators.required
-    ]
-  );
-  public invitationEmailFormControl = new UntypedFormControl(
-    this.data.invitation.email,
-    [
-      Validators.required
-    ]
-  );
-  public descriptionFormControl = new UntypedFormControl(
-    this.data.invitation.description ,
-    []
-  );
-  public summaryFormControl = new UntypedFormControl(
-    this.data.invitation.summary,
-    []
-  );
-  editorStyle = {
-    'min-height': '100px',
-    'max-height': '400px',
-    'overflow': 'auto'
-  };
+  isChanged = false;
 
   constructor(
     public dialogService: DialogService,
@@ -77,22 +46,6 @@ export class InvitationEditDialogComponent {
 
   errorFree() {
     return true;
-    return !(
-      this.invitationNameFormControl.hasError('required') ||
-      this.invitationNameFormControl.hasError('minlength') ||
-      !this.data.invitation.summary
-    );
-  }
-
-  trimInitialDescription() {
-    if (
-      this.descriptionFormControl.value &&
-      this.descriptionFormControl.value.toString()[0] === ' '
-    ) {
-      this.descriptionFormControl.setValue(
-        this.descriptionFormControl.value.toString().trim()
-      );
-    }
   }
 
   /**
@@ -102,12 +55,6 @@ export class InvitationEditDialogComponent {
     if (!saveChanges) {
       this.editComplete.emit({ saveChanges: false, invitation: null });
     } else {
-      this.data.invitation.name = this.invitationNameFormControl.value
-        .toString()
-        .trim();
-      this.data.invitation.description = this.descriptionFormControl.value
-        .toString()
-        .trim();
       if (this.errorFree) {
         this.editComplete.emit({
           saveChanges: saveChanges,
@@ -117,30 +64,9 @@ export class InvitationEditDialogComponent {
     }
   }
 
-  /**
-   * Saves the current invitation
-   */
-  saveInvitation(changedField): void {
-    switch (changedField) {
-      case 'name':
-        this.data.invitation.name = this.invitationNameFormControl.value ? this.invitationNameFormControl.value.toString() : '';
-        break;
-      case 'shortName':
-        this.data.invitation.shortName =
-            this.invitationShortNameFormControl.value ? this.invitationShortNameFormControl.value.toString() : '';
-        break;
-      case 'description':
-        this.data.invitation.description = this.descriptionFormControl.value ? this.descriptionFormControl.value.toString() : '';
-        break;
-      case 'summary':
-        this.data.invitation.summary = this.summaryFormControl.value;
-        break;
-      case 'email':
-        this.data.invitation.email = this.invitationEmailFormControl.value ? this.invitationEmailFormControl.value.toString() : '';
-        break;
-      default:
-        break;
-    }
+  getTeamName(teamId: string) {
+    const team = this.data.teamList.find(t => t.id === teamId);
+    return team.shortName + ' - ' + team.name;
   }
 
 }
