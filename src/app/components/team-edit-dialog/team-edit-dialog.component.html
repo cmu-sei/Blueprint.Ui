@@ -22,7 +22,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <div>
       <mat-form-field class="full-width">
         <input type="text" matInput [formControl]="teamNameFormControl" placeholder="Name (required)" (blur)="saveTeam('name')"
-          value="{{data.team.name}}">
+        >
         <mat-error *ngIf="teamNameFormControl.hasError('minlength') && !teamNameFormControl.hasError('required')">
           Must contain {{ MIN_NAME_LENGTH }} or more characters
         </mat-error>
@@ -37,7 +37,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <div>
       <mat-form-field class="full-width">
         <input type="text" matInput [formControl]="teamShortNameFormControl" placeholder="Short Name (required)" (blur)="saveTeam('shortName')"
-          value="{{data.team.shortName}}">
+          value="{{ data.team.shortName }}">
         <mat-error *ngIf="teamShortNameFormControl.hasError('minlength') && !teamShortNameFormControl.hasError('required')">
           Must contain {{ MIN_NAME_LENGTH }} or more characters
         </mat-error>
@@ -45,6 +45,53 @@ project root for license information or contact permission@sei.cmu.edu for full 
           Short Name is <strong>required</strong>
         </mat-error>
       </mat-form-field>
+    </div>
+  </div>
+
+  <div class="add-margin">
+    <div>
+      <mat-form-field class="button-margins half-width">
+        <mat-label>Email</mat-label>
+        <input
+          type="text"
+          matInput
+          placeholder="Header Row Metadata (Height)"
+          [value]="data.team.email"
+          [formControl]="emailFormControl"
+          placeholder="Email"
+          (blur)="saveTeam('email')"
+          title="Team Email"
+        />
+      </mat-form-field>
+    </div>
+  </div>
+
+  <div class="add-margin" *ngIf="data.useCite">
+    <div>
+      <mat-form-field class="button-margins half-width">
+        <mat-label>CITE Team Type</mat-label>
+        <mat-select
+          [value]="data.team.citeTeamTypeId"
+          [formControl]="citeTeamTypeIdFormControl"
+          (selectionChange)="saveTeam('citeTeamTypeId')"
+        >
+          <mat-option [value]="''"></mat-option>
+          <mat-option *ngFor="let teamType of data.teamTypeList" [value]="teamType.id">
+            {{ teamType.name }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+  </div>
+
+  <div class="add-margin">
+    <div>
+      <mat-checkbox
+        [(ngModel)]="data.team.canTeamMemberInvite"
+        class="bottom-margin"
+      >
+        ALL users can invite others to this team
+      </mat-checkbox><br />
     </div>
   </div>
 

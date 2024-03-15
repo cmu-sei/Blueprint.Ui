@@ -29,6 +29,7 @@ import { ScenarioEventDataService } from 'src/app/data/scenario-event/scenario-e
 import { TeamDataService } from 'src/app/data/team/team-data.service';
 import { UnitDataService } from 'src/app/data/unit/unit-data.service';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
+import { UserDataService } from 'src/app/data/user/user-data.service';
 import { UserMselRoleDataService } from 'src/app/data/user-msel-role/user-msel-role-data.service';
 import { UserTeamRoleDataService } from 'src/app/data/user-team-role/user-team-role-data.service';
 
@@ -101,6 +102,7 @@ export class MselComponent implements OnDestroy {
     private teamDataService: TeamDataService,
     private unitDataService: UnitDataService,
     private uiDataService: UIDataService,
+    private userDataService: UserDataService,
     private userMselRoleDataService: UserMselRoleDataService,
     private userTeamRoleDataService: UserTeamRoleDataService,
     private authQuery: ComnAuthQuery
@@ -152,6 +154,8 @@ export class MselComponent implements OnDestroy {
     this.unitDataService.load();
     // load the organization templates
     this.organizationDataService.loadTemplates();
+    // load the users
+    this.userDataService.getUsersFromApi();
     // set the selected tab
     let selectedTab = this.uiDataService.getMselTab();
     if (!selectedTab) {

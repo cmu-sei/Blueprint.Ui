@@ -9,6 +9,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     #sidenav
     mode="side"
     opened
+    class="side-nav"
     *ngIf="sideNavCollapsed"
   >
     <mat-list [ngClass]="getSidebarClass()">
@@ -35,6 +36,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </button>
         </div>
       </mat-list-item>
+      <mat-list-item class="background">&nbsp;</mat-list-item>
+      <mat-list-item class="background">&nbsp;</mat-list-item>
       <div class="bottom-div">
         <div class="background">
           <button mat-icon-button title="Administration" *ngIf="isSystemAdmin" (click)="goToUrl('/admin')">
@@ -57,6 +60,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     #sidenav
     mode="side"
     opened
+    class="side-nav"
     *ngIf="!sideNavCollapsed"
   >
     <mat-list [ngClass]="getSidebarClass()">
@@ -97,6 +101,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </button>
         </div>
       </mat-list-item>
+      <mat-list-item class="background">&nbsp;</mat-list-item>
       <mat-list-item class="background">&nbsp;</mat-list-item>
     </mat-list>
     <div class="bottom-div">

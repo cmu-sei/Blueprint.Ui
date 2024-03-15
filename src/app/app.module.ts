@@ -81,7 +81,7 @@ import { MselContributorsComponent } from './components/msel-contributors/msel-c
 import { MselInfoComponent } from './components/msel-info/msel-info.component';
 import { MselListComponent } from './components/msel-list/msel-list.component';
 import { MselPageComponent } from './components/msel-page/msel-page.component';
-import { MselRolesComponent } from './components/msel-roles/msel-roles.component';
+import { MselTeamsComponent } from './components/msel-teams/msel-teams.component';
 import { MselViewComponent } from './components/msel-view/msel-view.component';
 import { OrganizationEditDialogComponent } from './components/organization-edit-dialog/organization-edit-dialog.component';
 import { OrganizationListComponent } from './components/organization-list/organization-list.component';
@@ -92,10 +92,12 @@ import { ScenarioEventEditDialogComponent } from './components/scenario-event-ed
 import { ScenarioEventListComponent } from './components/scenario-event-list/scenario-event-list.component';
 import { ConfirmDialogComponent } from './components/shared/confirm-dialog/confirm-dialog.component';
 import { SystemMessageComponent } from './components/shared/system-message/system-message.component';
+import { TeamAddDialogComponent } from './components/team-add-dialog/team-add-dialog.component';
 import { TeamEditDialogComponent } from './components/team-edit-dialog/team-edit-dialog.component';
 import { TeamUsersComponent } from './components/team-users/team-users.component';
 import { TopbarComponent } from './components/shared/top-bar/topbar.component';
 import { UIDataService } from './data/ui/ui-data.service';
+import { UserAddDialogComponent } from './components/user-add-dialog/user-add-dialog.component';
 import { UserDataService } from './data/user/user-data.service';
 import { DialogService } from './services/dialog/dialog.service';
 import { ErrorService } from './services/error/error.service';
@@ -141,7 +143,7 @@ export function getBasePath(settingsSvc: ComnSettingsService) {
     MselInfoComponent,
     MselListComponent,
     MselPageComponent,
-    MselRolesComponent,
+    MselTeamsComponent,
     MselViewComponent,
     OrganizationEditDialogComponent,
     OrganizationListComponent,
@@ -152,8 +154,10 @@ export function getBasePath(settingsSvc: ComnSettingsService) {
     ScenarioEventListComponent,
     SystemMessageComponent,
     ConfirmDialogComponent,
+    TeamAddDialogComponent,
     TeamEditDialogComponent,
     TeamUsersComponent,
+    UserAddDialogComponent,
     AdminContainerComponent,
     AdminUnitsComponent,
     AdminUnitEditDialogComponent,

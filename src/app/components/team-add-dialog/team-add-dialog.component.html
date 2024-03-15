@@ -1,0 +1,27 @@
+<!--
+Copyright 2024 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license, please see LICENSE.md in the
+project root for license information or contact permission@sei.cmu.edu for full terms.
+-->
+
+<div mat-dialog-title>
+  Add team by unit
+  <button
+    mat-icon-button
+    (click)="handleEditComplete(false)"
+    title="Cancel"
+    class="close-button"
+    tabindex="-1"
+  >
+    <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
+  </button>
+</div>
+<div mat-dialog-content *ngIf="!!data && data.team !== undefined && data.team !== null">
+
+
+
+</div>
+<div mat-dialog-actions>
+  <button mat-stroked-button class="save-button" (click)="handleEditComplete(true)" [disabled]="!errorFree()">Save</button>
+  <button mat-stroked-button (click)="handleEditComplete(false)">Cancel</button>
+</div>

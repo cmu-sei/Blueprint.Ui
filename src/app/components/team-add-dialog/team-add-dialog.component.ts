@@ -1,4 +1,4 @@
-// Copyright 2022 Carnegie Mellon University. All Rights Reserved.
+// Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
@@ -27,12 +27,12 @@ export class UserErrorStateMatcher implements ErrorStateMatcher {
 const MIN_NAME_LENGTH = 3;
 
 @Component({
-  selector: 'app-team-edit-dialog',
-  templateUrl: './team-edit-dialog.component.html',
-  styleUrls: ['./team-edit-dialog.component.scss'],
+  selector: 'app-team-add-dialog',
+  templateUrl: './team-add-dialog.component.html',
+  styleUrls: ['./team-add-dialog.component.scss'],
 })
 
-export class TeamEditDialogComponent {
+export class TeamAddDialogComponent {
   @Output() editComplete = new EventEmitter<any>();
 
   public teamNameFormControl = new UntypedFormControl(
@@ -60,7 +60,7 @@ export class TeamEditDialogComponent {
 
   constructor(
     public dialogService: DialogService,
-    dialogRef: MatDialogRef<TeamEditDialogComponent>,
+    dialogRef: MatDialogRef<TeamAddDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {
     dialogRef.disableClose = true;

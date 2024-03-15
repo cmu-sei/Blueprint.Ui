@@ -1,0 +1,170 @@
+// Copyright 2022 Carnegie Mellon University. All Rights Reserved.
+// Released under a MIT (SEI)-style license. See LICENSE.md in the
+// project root for license information.
+
+.frame {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  height: calc(100vh - 39px);
+}
+
+.mat-table {
+  font-size: small;
+  width: 100%;
+  overflow: none;
+  background: transparent;
+}
+
+.mat-header-row {
+  min-height: 40px;
+  background: transparent;
+}
+
+.mat-row {
+  min-height: 36px;
+}
+
+.mat-row,
+.mat-header-row {
+  display: flex;
+  border-bottom-width: 1px;
+  border-bottom-style: solid;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.mat-header-cell {
+  font-weight: bold;
+}
+
+.mat-cell,
+.mat-header-cell {
+  overflow: hidden;
+  word-wrap: break-word;
+  text-align: left;
+}
+
+.mat-expansion-panel-header {
+  display: flex;
+  flex-direction: row;
+  text-align: left;
+  flex: 1;
+}
+
+.search-cell {
+  display: flex;
+  flex-flow: row;
+}
+
+.search-control {
+  width: calc(100% - 32px);
+}
+
+.scrolling-region {
+  width: 100%;
+  height: calc(100vh - 60px);
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-top: 20px;
+}
+
+.section-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.section-content {
+  width: 100%;
+}
+
+.mat-expansion-panel {
+  width: calc(100% - 10px);
+  margin: 5px;
+}
+
+.user-panel {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  width: 100%;
+  height: 100%;
+}
+
+.user-panel-left {
+  display: flex;
+  flex-direction: row;
+  flex: 2;
+  width: 100%;
+}
+
+.user-panel-right {
+  display: flex;
+  flex-direction: column;
+  flex: 6;
+}
+
+.team-detail {
+  text-align: left;
+  margin-left:50px;
+  margin-bottom: 10px;
+  width: calc(100% - 50px);
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+}
+
+.other-teams-div {
+  text-align: left;
+  margin-left:50px;
+  width: calc(100% - 50px);
+}
+
+.user-name {
+  display: flex;
+}
+
+.msel-role {
+  display: flex;
+}
+
+.no-users {
+  width: 100%;
+  text-align: left;
+  padding-left: 100px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.half-width {
+  width: 50%;
+}
+
+.five-cell {
+  flex: 5;
+}
+
+.four-cell {
+  flex: 4;
+}
+
+.three-cell {
+  flex: 3;
+}
+
+.two-cell {
+  flex: 2;
+}
+
+.one-cell {
+  flex: 1;
+}
+
+.center-self {
+  align-self: center;
+}
