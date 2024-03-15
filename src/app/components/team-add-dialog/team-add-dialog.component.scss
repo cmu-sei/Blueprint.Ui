@@ -7,6 +7,21 @@
     margin-left: 5px;
 }
 
+.all-content {
+  width: 100%;
+  height: 55vh;
+}
+
+.unit-div {
+  margin-bottom: 10px;
+  width: 80%;
+}
+
+.unit-button {
+  width: 90%;
+  text-align: left;
+}
+
 .full-width {
     width: 90%;
 }
@@ -38,4 +53,18 @@
 
 .close-button {
   float: right;
+}
+
+.search-div {
+  display: flex;
+  flex-flow: row;
+  width: 50%;
+}
+
+.search-control {
+  width: calc(100% - 32px);
+}
+
+.action-buttons{
+  max-height: 70px !important;
 }

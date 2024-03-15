@@ -122,6 +122,62 @@ export class TeamService {
     }
 
     /**
+     * Creates a new Team for a MSEL from a Unit
+     * Creates a new Team on the specified MSEL from the specified Unit.  Accessible only an Administrator or MSEL Owner
+     * @param mselId The MSEL to create the Team on
+     * @param unitId The Unit to create the Team from
+     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+     * @param reportProgress flag to report request and response progress.
+     */
+    public createTeamFromUnit(mselId?: string, unitId?: string, observe?: 'body', reportProgress?: boolean): Observable<Team>;
+    public createTeamFromUnit(mselId?: string, unitId?: string, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Team>>;
+    public createTeamFromUnit(mselId?: string, unitId?: string, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Team>>;
+    public createTeamFromUnit(mselId?: string, unitId?: string, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+
+        let headers = this.defaultHeaders;
+
+        // authentication (oauth2) required
+        if (this.configuration.accessToken) {
+            const accessToken = typeof this.configuration.accessToken === 'function'
+                ? this.configuration.accessToken()
+                : this.configuration.accessToken;
+            headers = headers.set('Authorization', 'Bearer ' + accessToken);
+        }
+
+        // to determine the Accept header
+        let httpHeaderAccepts: string[] = [
+            'text/plain',
+            'application/json',
+            'text/json'
+        ];
+        const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
+        if (httpHeaderAcceptSelected !== undefined) {
+            headers = headers.set('Accept', httpHeaderAcceptSelected);
+        }
+
+        // to determine the Content-Type header
+        const consumes: string[] = [
+            'application/json',
+            'text/json',
+            'application/_*+json'
+        ];
+        const httpContentTypeSelected: string | undefined = this.configuration.selectHeaderContentType(consumes);
+        if (httpContentTypeSelected !== undefined) {
+            headers = headers.set('Content-Type', httpContentTypeSelected);
+        }
+
+        return this.httpClient.post<Team>(`${this.configuration.basePath}/api/teams/msel/${encodeURIComponent(String(mselId))}/unit/${encodeURIComponent(String(unitId))}`,
+            {},
+            {
+                withCredentials: this.configuration.withCredentials,
+                headers: headers,
+                observe: observe,
+                reportProgress: reportProgress
+            }
+        );
+    }
+
+    /**
      * Deletes a Team
      * Deletes a Team with the specified id  &lt;para /&gt;  Accessible only to a SuperUser or a User on an Admin Team within the specified Team
      * @param id The id of the Team to delete

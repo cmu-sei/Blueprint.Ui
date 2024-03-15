@@ -249,6 +249,22 @@ export class TeamDataService {
       });
   }
 
+  addFromUnit(mselId: string, unitId: string) {
+    this.teamStore.setLoading(true);
+    this.teamService
+      .createTeamFromUnit(mselId, unitId)
+      .pipe(
+        tap(() => {
+          this.teamStore.setLoading(false);
+        }),
+        take(1)
+      )
+      .subscribe((s) => {
+        this.teamStore.add(s);
+        this.setActive(s.id);
+      });
+  }
+
   updateTeam(team: Team) {
     this.teamStore.setLoading(true);
     this.teamService

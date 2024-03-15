@@ -12,6 +12,7 @@ import {
   TeamRole,
   ScenarioEvent,
   Team,
+  Unit,
   User,
   UserTeamRole
 } from 'src/app/generated/blueprint.api';
@@ -26,6 +27,7 @@ import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { TeamAddDialogComponent } from '../team-add-dialog/team-add-dialog.component';
 import { TeamEditDialogComponent } from '../team-edit-dialog/team-edit-dialog.component';
+import { UnitQuery } from 'src/app/data/unit/unit.query';
 import { UserAddDialogComponent } from '../user-add-dialog/user-add-dialog.component';
 
 @Component({
@@ -53,6 +55,7 @@ export class MselTeamsComponent implements OnDestroy {
   isEditEnabled = false;
   userList: User[] = [];
   teamList: Team[] = [];
+  unitList: Unit[] = [];
   userTeamRoles: UserTeamRole[] = [];
   filterString = '';
   private allTeams: Team[] = [];
@@ -65,6 +68,7 @@ export class MselTeamsComponent implements OnDestroy {
     private mselDataService: MselDataService,
     private mselQuery: MselQuery,
     private citeService: CiteService,
+    private unitQuery: UnitQuery,
     private userTeamRoleDataService: UserTeamRoleDataService,
     private userTeamRoleQuery: UserTeamRoleQuery,
     private dialog: MatDialog,
@@ -96,6 +100,12 @@ export class MselTeamsComponent implements OnDestroy {
     // subscribe to TeamTypes
     this.citeService.getTeamTypes().subscribe(teamTypes => {
       this.teamTypeList = teamTypes;
+    });
+    // subscribe to units
+    this.unitQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(units => {
+      if (units && units.length > 0) {
+        this.unitList = units.sort((a, b) => a.shortName?.toLowerCase() > b.shortName?.toLowerCase() ? 1 : -1);
+      }
     });
   }
 
@@ -229,10 +239,15 @@ export class MselTeamsComponent implements OnDestroy {
   addTeamFromUnit() {
     const dialogRef = this.dialog.open(TeamAddDialogComponent, {
       width: '800px',
+      height: '80%',
       data: {
+        unitList: this.unitList
       },
     });
     dialogRef.componentInstance.editComplete.subscribe((result) => {
+      if (result.saveChanges && result.unitId) {
+        this.teamDataService.addFromUnit(this.msel.id, result.unitId);
+      }
       dialogRef.close();
     });
   }

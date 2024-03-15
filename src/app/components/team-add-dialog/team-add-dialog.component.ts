@@ -12,6 +12,7 @@ import {
 import { ErrorStateMatcher } from '@angular/material/core';
 import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
+import { Unit } from 'src/app/generated/blueprint.api';
 
 /** Error when invalid control is dirty, touched, or submitted. */
 export class UserErrorStateMatcher implements ErrorStateMatcher {
@@ -34,29 +35,7 @@ const MIN_NAME_LENGTH = 3;
 
 export class TeamAddDialogComponent {
   @Output() editComplete = new EventEmitter<any>();
-
-  public teamNameFormControl = new UntypedFormControl(
-    this.data.team.name,
-    [
-      Validators.required,
-      Validators.minLength(MIN_NAME_LENGTH),
-    ]
-  );
-  public teamShortNameFormControl = new UntypedFormControl(
-    this.data.team.shortName,
-    [
-      Validators.required,
-      Validators.minLength(MIN_NAME_LENGTH),
-    ]
-  );
-  public emailFormControl = new UntypedFormControl(
-    this.data.team.email,
-    []
-  );
-  public citeTeamTypeIdFormControl = new UntypedFormControl(
-    this.data.team.citeTeamTypeId,
-    []
-  );
+  public filterString = '';
 
   constructor(
     public dialogService: DialogService,
@@ -66,63 +45,31 @@ export class TeamAddDialogComponent {
     dialogRef.disableClose = true;
   }
 
-  readonly MIN_NAME_LENGTH = MIN_NAME_LENGTH;
-
-  errorFree() {
-    return !(
-      this.teamNameFormControl.hasError('required') ||
-      this.teamNameFormControl.hasError('minlength') ||
-      this.teamShortNameFormControl.hasError('required') ||
-      this.teamShortNameFormControl.hasError('minlength')
-    );
-  }
-
   /**
    * Closes the edit screen
    */
-  handleEditComplete(saveChanges: boolean): void {
-    if (!saveChanges) {
+  handleEditComplete(unitId: string): void {
+    if (!unitId) {
       this.editComplete.emit({ saveChanges: false, team: null });
     } else {
-      this.data.team.name = this.teamNameFormControl.value
-        .toString()
-        .trim();
-      this.data.team.shortName = this.teamShortNameFormControl.value
-        .toString()
-        .trim();
-      if (this.errorFree) {
-        this.editComplete.emit({
-          saveChanges: saveChanges,
-          team: this.data.team,
-        });
-      }
+      this.editComplete.emit({
+        saveChanges: true,
+        unitId: unitId,
+      });
     }
   }
 
-  /**
-   * Saves the current team
-   */
-  saveTeam(changedField): void {
-    switch (changedField) {
-      case 'name':
-        this.data.team.name = this.teamNameFormControl.value.toString();
-        break;
-      case 'shortName':
-        this.data.team.shortName = this.teamShortNameFormControl.value.toString();
-        break;
-      case 'email':
-        this.data.team.email = this.emailFormControl.value.toString();
-        break;
-      case 'citeTeamTypeId':
-        this.data.team.citeTeamTypeId = this.citeTeamTypeIdFormControl.value.toString();
-        break;
-      default:
-        break;
-    }
+  applyFilter(filterValue: string) {
+    this.filterString = filterValue;
   }
 
-  getUserName(userId: string) {
-    return this.data.userList.find(u => u.id === userId).name;
+  filteredList(): Unit[] {
+    const filteredList = [...this.data?.unitList];
+    const filterValue = this.filterString.toLowerCase();
+    return filteredList.filter(u => {
+      const testString = u.name.toLowerCase() + u.shortName.toLowerCase();
+      return testString.indexOf(filterValue) > -1;
+    });
   }
 
 }

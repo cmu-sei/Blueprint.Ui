@@ -72,6 +72,7 @@ import { DataFieldEditDialogComponent } from './components/data-field-edit-dialo
 import { DataFieldListComponent } from './components/data-field-list/data-field-list.component';
 import { DataOptionEditDialogComponent } from './components/data-option-edit-dialog/data-option-edit-dialog.component';
 import { HomeAppComponent } from './components/home-app/home-app.component';
+import { InvitationEditDialogComponent } from './components/invitation-edit-dialog/invitation-edit-dialog.component';
 import { InvitationListComponent } from './components/invitation-list/invitation-list.component';
 import { LaunchComponent } from './components/launch/launch.component';
 import { MoveEditDialogComponent } from './components/move-edit-dialog/move-edit-dialog.component';
@@ -134,6 +135,7 @@ export function getBasePath(settingsSvc: ComnSettingsService) {
     DataFieldListComponent,
     DataOptionEditDialogComponent,
     HomeAppComponent,
+    InvitationEditDialogComponent,
     InvitationListComponent,
     LaunchComponent,
     MoveEditDialogComponent,

@@ -1,133 +1,53 @@
-// Copyright 2023 Carnegie Mellon University. All Rights Reserved.
+// Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-.invitation-list-container {
-  display: inline-flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  height: 100%;
-  min-width: 300px;
-  margin-top: 40px;
-  width: 80%;
-  min-width: 800px;
-
-}
-
-.header-div {
-  display: flex;
-  flex-direction: row;
-  flex: 7;
-  border-bottom: 1px solid;
-}
-
-.title-icon {
-  transform: scale(0.85);
-  margin-left: 10px;
-}
-
-.msels-title {
-  display: flex;
-  flex-direction: row;
-  flex: 1;
-  font-size: x-large;
-  align-self: center;
-  min-width: 125px;
-}
-
-.header-button {
+.frame {
   display: flex;
   flex-direction: column;
   flex: 1;
-  align-self: center;
-  min-width: 125px;
-}
-
-.search-box {
-  display: flex;
-  flex-direction: row;
-  flex: 4;
-  align-self: center;
-  padding-left: 30px;
-}
-
-.search-control {
-  width: 75%;
-}
-
-.clear-search-button {
-  align-self: center;
-}
-
-.search-icon {
-  transform: scale(0.85);
-  margin-right: 5px;
-  margin-top: 20px;
-}
-
-.admin-cog-div {
-  display: flex;
-  flex-direction: row;
-  flex: 1;
-  align-self: center;
-  align-items: flex-end;
-  justify-items: flex-end;
-}
-
-.admin-cog-button {
-  width: 40px !important;
-  height: 30px !important;
-  min-width: unset !important;
-  align-items: center !important;
-  justify-items: center !important;
-}
-
-.admin-cog-icon {
-  display: flex;
-  flex-direction: row;
-  flex: 1;
-  align-items: center;
-  justify-items: center;
-  margin-left: -7px;
-}
-
-.no-results {
-  font-size: x-large;
+  height: calc(100vh - 39px);
 }
 
 .mat-table {
   font-size: small;
-  height: calc(100vh - 200px);
-  min-height: 250px;
-  overflow: auto;
-}
-
-.app-list-item {
-  padding: 0;
-  text-align: left;
-}
-
-.description-text {
-  text-align: left;
-}
-
-.shrink {
-  margin: 0;
-  padding: 0;
-}
-
-.msel-table-header-bar {
   width: 100%;
-}
-
-.player-icon {
-  transform: scale(2);
-  width: 60px;
+  overflow: none;
+  background: transparent;
 }
 
 .mat-header-row {
-  height: 40px !important;
-  padding: 0;
+  min-height: 40px;
+  background: transparent;
+}
+
+.mat-row {
+  min-height: 36px;
+}
+
+.mat-row,
+.mat-header-row {
+  display: flex;
+  border-bottom-width: 1px;
+  border-bottom-style: solid;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.mat-header-cell {
+  font-weight: bold;
+}
+
+.mat-cell,
+.mat-header-cell {
+  overflow: hidden;
+  word-wrap: break-word;
+  text-align: left;
+}
+
+.mat-column-name-name {
+  flex: 0 0 5%;
+  padding: 1%;
 }
 
 .mat-column-name {
@@ -136,42 +56,65 @@
 }
 
 .mat-column-action {
-  flex: 0 0 80px;
+  flex: 0 0 150px;
   flex-direction: row;
   padding: 0;
+  word-wrap: none;
 }
 
-.mat-column-description {
+.mat-column-summary {
   flex: 0 0 40%;
   padding: 1%;
 }
 
-.is-template-checkbox {
-  align-items: center;
-  text-align: center;
-  align-self: center;
-  width: 80%;
-}
-
-.mat-column-isTemplate {
-  min-width: 75px;
-}
-
-.mat-column-status {
-  min-width: 70px;
-}
-
-.mat-column-createdBy {
-  min-width: 70px;
-}
-
-.mat-column-dateModified {
-  min-width: 70px;
-}
-
-.app-icon {
+.search-cell {
   display: flex;
-  flex: 1;
-  align-items: center;
+  flex-flow: row;
 }
 
+.search-control {
+  width: calc(100% - 32px);
+}
+
+.scrolling-region {
+  height: calc(100vh - 89px);
+  overflow: auto;
+  width: 100%;
+}
+
+.template-title {
+  width: 50%;
+}
+
+.six-cell {
+  flex: 6;
+}
+
+.five-cell {
+  flex: 5;
+}
+
+.four-cell {
+  flex: 4;
+}
+
+.three-cell {
+  flex: 3;
+}
+
+.two-cell {
+  flex: 2;
+}
+
+.one-cell {
+  flex: 1;
+}
+
+.center-self {
+  align-self: center;
+}
+
+.little-left {
+  margin-left: 8px;
+  margin-right: 5px;
+}
