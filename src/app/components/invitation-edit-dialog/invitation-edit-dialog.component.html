@@ -24,8 +24,7 @@ project root for license information.
       <div>
         <mat-form-field *ngIf="!data.invitation.id" class="full-width">
           <mat-label>Team</mat-label>
-          <mat-select placeholder="Team" [value]="data.invitation.teamId">
-            <mat-option [value]=""></mat-option>
+          <mat-select placeholder="Team" [(ngModel)]="data.invitation.teamId">
             <mat-option *ngFor="let team of data.teamList" [value]="team.id" title="{{ team.shortName }} - {{ team.name }}">
               {{ team.shortName }} - {{ team.name }}
             </mat-option>
