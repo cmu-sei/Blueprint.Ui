@@ -1,0 +1,53 @@
+<!--
+Copyright 2024 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license, please see LICENSE.md in the
+project root for license information or contact permission@sei.cmu.edu for full terms.
+-->
+
+<div mat-dialog-title>
+  Add team by unit
+<button
+    mat-icon-button
+    (click)="handleEditComplete(null)"
+    title="Cancel"
+    class="close-button"
+    tabindex="-1"
+  >
+    <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
+  </button>
+</div>
+<div mat-dialog-content *ngIf="!!data && !!data.unitList">
+  <div class="all-content">
+    <div class="search-div">
+      <mat-form-field class="search-control">
+        <input
+          matInput
+          [(ngModel)]="filterString"
+          (keyup)="applyFilter($any($event.target).value)"
+          placeholder="Search"
+        />
+      </mat-form-field>
+      <div style="width: 30px;">
+        <button
+          mat-icon-button
+          (click)="applyFilter('')"
+          style="outline: none;"
+          title="Clear Search"
+          [disabled]="!filterString"
+        >
+          <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
+        </button>
+      </div>
+    </div>
+    <div class="unit-list-div">
+      <div class="unit-div" *ngFor="let unit of filteredList()">
+        <button mat-stroked-button class="unit-button" (click)="handleEditComplete(unit.id)">
+          {{ unit.shortName }} - {{ unit.name }}
+        </button>
+      </div>
+    </div>
+  </div>
+  </div>
+<div mat-dialog-actions class="action-buttons">
+  <button mat-stroked-button (click)="handleEditComplete(null)">Cancel</button>
+</div>

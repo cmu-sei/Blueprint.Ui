@@ -57,9 +57,9 @@ import { ClipboardModule } from 'ngx-clipboard';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { AdminContainerComponent } from './components/admin/admin-container/admin-container.component';
-import { AdminTeamsComponent } from './components/admin/admin-teams/admin-teams.component';
-import { AdminTeamEditDialogComponent } from './components/admin/admin-team-edit-dialog/admin-team-edit-dialog.component';
-import { AdminTeamUsersComponent } from './components/admin/admin-team-users/admin-team-users.component';
+import { AdminUnitsComponent } from './components/admin/admin-units/admin-units.component';
+import { AdminUnitEditDialogComponent } from './components/admin/admin-unit-edit-dialog/admin-unit-edit-dialog.component';
+import { AdminUnitUsersComponent } from './components/admin/admin-unit-users/admin-unit-users.component';
 import { AdminUsersComponent } from './components/admin/admin-users/admin-users.component';
 import { CardEditDialogComponent } from './components/card-edit-dialog/card-edit-dialog.component';
 import { CardListComponent } from './components/card-list/card-list.component';
@@ -72,13 +72,17 @@ import { DataFieldEditDialogComponent } from './components/data-field-edit-dialo
 import { DataFieldListComponent } from './components/data-field-list/data-field-list.component';
 import { DataOptionEditDialogComponent } from './components/data-option-edit-dialog/data-option-edit-dialog.component';
 import { HomeAppComponent } from './components/home-app/home-app.component';
+import { InvitationEditDialogComponent } from './components/invitation-edit-dialog/invitation-edit-dialog.component';
+import { InvitationListComponent } from './components/invitation-list/invitation-list.component';
+import { LaunchComponent } from './components/launch/launch.component';
 import { MoveEditDialogComponent } from './components/move-edit-dialog/move-edit-dialog.component';
 import { MoveListComponent } from './components/move-list/move-list.component';
 import { MselComponent } from './components/msel/msel.component';
+import { MselContributorsComponent } from './components/msel-contributors/msel-contributors.component';
 import { MselInfoComponent } from './components/msel-info/msel-info.component';
 import { MselListComponent } from './components/msel-list/msel-list.component';
 import { MselPageComponent } from './components/msel-page/msel-page.component';
-import { MselRolesComponent } from './components/msel-roles/msel-roles.component';
+import { MselTeamsComponent } from './components/msel-teams/msel-teams.component';
 import { MselViewComponent } from './components/msel-view/msel-view.component';
 import { OrganizationEditDialogComponent } from './components/organization-edit-dialog/organization-edit-dialog.component';
 import { OrganizationListComponent } from './components/organization-list/organization-list.component';
@@ -89,8 +93,12 @@ import { ScenarioEventEditDialogComponent } from './components/scenario-event-ed
 import { ScenarioEventListComponent } from './components/scenario-event-list/scenario-event-list.component';
 import { ConfirmDialogComponent } from './components/shared/confirm-dialog/confirm-dialog.component';
 import { SystemMessageComponent } from './components/shared/system-message/system-message.component';
+import { TeamAddDialogComponent } from './components/team-add-dialog/team-add-dialog.component';
+import { TeamEditDialogComponent } from './components/team-edit-dialog/team-edit-dialog.component';
+import { TeamUsersComponent } from './components/team-users/team-users.component';
 import { TopbarComponent } from './components/shared/top-bar/topbar.component';
 import { UIDataService } from './data/ui/ui-data.service';
+import { UserAddDialogComponent } from './components/user-add-dialog/user-add-dialog.component';
 import { UserDataService } from './data/user/user-data.service';
 import { DialogService } from './services/dialog/dialog.service';
 import { ErrorService } from './services/error/error.service';
@@ -127,13 +135,17 @@ export function getBasePath(settingsSvc: ComnSettingsService) {
     DataFieldListComponent,
     DataOptionEditDialogComponent,
     HomeAppComponent,
+    InvitationEditDialogComponent,
+    InvitationListComponent,
+    LaunchComponent,
     MoveEditDialogComponent,
     MoveListComponent,
     MselComponent,
+    MselContributorsComponent,
     MselInfoComponent,
     MselListComponent,
     MselPageComponent,
-    MselRolesComponent,
+    MselTeamsComponent,
     MselViewComponent,
     OrganizationEditDialogComponent,
     OrganizationListComponent,
@@ -144,10 +156,14 @@ export function getBasePath(settingsSvc: ComnSettingsService) {
     ScenarioEventListComponent,
     SystemMessageComponent,
     ConfirmDialogComponent,
+    TeamAddDialogComponent,
+    TeamEditDialogComponent,
+    TeamUsersComponent,
+    UserAddDialogComponent,
     AdminContainerComponent,
-    AdminTeamsComponent,
-    AdminTeamEditDialogComponent,
-    AdminTeamUsersComponent,
+    AdminUnitsComponent,
+    AdminUnitEditDialogComponent,
+    AdminUnitUsersComponent,
     AdminUsersComponent,
     TopbarComponent,
     DisplayOrderPipe,

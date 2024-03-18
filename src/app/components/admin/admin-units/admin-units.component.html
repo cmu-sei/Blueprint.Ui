@@ -1,0 +1,111 @@
+<!--
+Copyright 2022 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license, please see LICENSE.md in the
+project root for license information or contact permission@sei.cmu.edu for full terms.
+-->
+
+<div class="cssLayoutRowStartCenter">
+  <div class="sp-icon">
+    <mat-icon
+      class="mdi-24px"
+      fontIcon="mdi-account-group"
+      [ngStyle]="{'color': topbarColor}"
+    ></mat-icon>
+  </div>
+  <button
+    mat-icon-button
+    (click)="addOrEditUnit(null)"
+    style="outline: none; margin-left: 20px;"
+    title="Add Unit"
+  >
+    <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle"></mat-icon>
+  </button>
+  <mat-form-field style="width: 300px; margin-left: 10px;">
+    <input
+      matInput
+      [(ngModel)]="filterString"
+      (keyup)="applyFilter($any($event.target).value)"
+      placeholder="Search"
+    />
+  </mat-form-field>
+  <div style="width: 30px;">
+    <button
+      mat-icon-button
+      (click)="applyFilter('')"
+      style="outline: none;"
+      title="Clear Search"
+    >
+      <mat-icon class="mdi-24px" fontIcon="mdi-close-circle-outline"></mat-icon>
+    </button>
+  </div>
+  <div class="button-end" *ngIf="!addingNewUnit">
+    <mat-paginator
+      #paginator
+      [length]="unitList?.length"
+      [pageIndex]="pageIndex"
+      [pageSize]="pageSize"
+      [pageSizeOptions]="[5, 10, 15, 20, 25, 50, 100, 200]"
+      (page)="paginatorEvent($event)"
+    ></mat-paginator>
+  </div>
+</div>
+
+<mat-accordion displayMode="flat">
+  <section
+    matSort
+    (matSortChange)="sortChanged($event)"
+    class="mat-elevation-z2 mat-header-row"
+  >
+    <div class="mat-header-cell two-cell" mat-sort-header="shortName"><span style="margin-left: 80px;">Short Name</span></div>
+    <div class="mat-header-cell five-cell" mat-sort-header="name">Name</div>
+  </section>
+
+  <mat-expansion-panel
+    *ngFor="let unit of paginateUnits(pageIndex, pageSize)"
+    [expanded]="editUnit.id === unit.id"
+  >
+    <mat-expansion-panel-header class="mat-row" *ngIf="!isLoading" (click)="togglePanel(unit); $event.stopPropagation()">
+      <div class="mat-cell two-cell">
+        <div class="panel-div">
+          <button
+            mat-icon-button
+            (click)="addOrEditUnit(unit); $event.stopPropagation()"
+            style="outline: none;"
+            title="Edit {{ unit.name }}"
+          >
+            <mat-icon class="mdi-24px self-center" fontIcon="mdi-square-edit-outline"></mat-icon>
+          </button>
+          <button
+            mat-icon-button
+            (click)="deleteUnit(unit); $event.stopPropagation()"
+            style="outline: none;"
+            title="Delete {{ unit.name }}"
+          >
+            <mat-icon class="mdi-24px self-center" fontIcon="mdi-trash-can"></mat-icon>
+          </button>
+          {{ unit.shortName }}
+        </div>
+      </div>
+      <div class="mat-cell five-cell center-self">
+        <div class="panel-div">
+          {{ unit.name }}
+        </div>
+      </div>
+    </mat-expansion-panel-header>
+    <div class="panel-container" *ngIf="editUnit.id === unit.id">
+      <div class="user-div">
+        <app-admin-unit-users *ngIf="unit.id === editUnit.id"
+          [unitId]="unit.id"
+        ></app-admin-unit-users>
+      </div>
+    </div>
+  </mat-expansion-panel>
+</mat-accordion>
+
+<mat-card
+  *ngIf="isLoading"
+  style="display: flex; justify-content: center; align-items: center;"
+>
+  <mat-progress-spinner color="primary" mode="indeterminate">
+  </mat-progress-spinner>
+</mat-card>

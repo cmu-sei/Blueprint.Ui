@@ -2,7 +2,6 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 import { Component, Input, OnDestroy, ViewChild, ElementRef, OnInit } from '@angular/core';
-import { HttpEventType, HttpResponse } from '@angular/common/http';
 import { UntypedFormControl } from '@angular/forms';
 import { MatSort, MatSortable, Sort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
@@ -19,6 +18,7 @@ import { MselQuery } from 'src/app/data/msel/msel.query';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
 import { User } from 'src/app/generated/blueprint.api';
+import { ItemStatus } from 'src/app/generated/blueprint.api';
 
 @Component({
   selector: 'app-msel-list',
@@ -51,7 +51,7 @@ export class MselListComponent implements OnDestroy, OnInit  {
   userList: User[] = [];
   selectedMselType = 'all';
   selectedMselStatus = 'all';
-  itemStatus = ['Pending', 'Entered', 'Approved', 'Complete'];
+  itemStatus = [ItemStatus.Pending, ItemStatus.Entered, ItemStatus.Approved, ItemStatus.Complete, ItemStatus.Active, ItemStatus.Retired];
   private unsubscribe$ = new Subject();
 
   constructor(
@@ -110,7 +110,13 @@ export class MselListComponent implements OnDestroy, OnInit  {
     });
     // set image
     this.imageFilePath = this.settingsService.settings.AppTopBarImage.replace('white', 'blue');
-    console.log(this.imageFilePath);
+    // remove case sensitivity from mat-table sort
+    this.mselDataSource.sortingDataAccessor = (data: any, sortHeaderId: string): string => {
+      if (typeof data[sortHeaderId] === 'string') {
+        return data[sortHeaderId].toLocaleLowerCase();
+      }
+      return data[sortHeaderId];
+    };
   }
 
   openMsel(mselId) {

@@ -1,0 +1,113 @@
+<!--
+Copyright 2022 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license, please see LICENSE.md in the
+project root for license information or contact permission@sei.cmu.edu for full terms.
+-->
+<div *ngIf="msel" class="frame">
+  <section
+    class="mat-elevation-z2 mat-header-row background-alt"
+  >
+    <span
+      class="mat-header-cell three-cell"
+    >
+      <span *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner">
+        <button
+          mat-icon-button
+          (click)="addOrEditInvitation(null, false)"
+          style="outline: none; margin-left: 15px;"
+          title="Add invitation"
+        >
+          <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
+          Add Invitation
+        </button>
+      </span> &nbsp;
+    </span>
+    <span class="mat-header-cell three-cell search-cell">
+      <mat-form-field class="search-control">
+        <input matInput [formControl]="filterControl" placeholder="Search" />
+      </mat-form-field>
+      <div style="width: 30px;">
+        <button
+          mat-icon-button
+          (click)="filterControl.setValue(''); $event.stopPropagation()"
+          style="outline: none;"
+          title="Clear Search"
+          [disabled]="!filterString"
+        >
+          <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
+        </button>
+      </div>
+    </span>
+    <span class="mat-header-cell three-cell search-cell">&nbsp;</span>
+  </section>
+
+  <section class="scrolling-region">
+    <div class="mat-table">
+      <mat-table #table [dataSource]="invitationDataSource" matSort>
+        <!-- action column -->
+        <ng-container matColumnDef="action">
+          <mat-cell *matCellDef="let element" class="mat-column-action">
+            <div class="action-div">
+              <button
+                mat-icon-button class="msel-action"
+                (click)="addOrEditInvitation(element, true); $event.stopPropagation();"
+                title="Edit {{ element.emailDomain }}"
+                *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
+              >
+                <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline" title="Edit {{ element.emailDomain }}"></mat-icon>
+              </button>
+              <button
+                mat-icon-button class="msel-action"
+                (click)="deleteInvitation(element); $event.stopPropagation();"
+                title="Delete {{ element.emailDomain }}"
+                *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
+              >
+                <mat-icon class="mdi-18px" fontIcon="mdi-delete" title="Delete {{ element.emailDomain }}"></mat-icon>
+              </button>
+            </div>
+          </mat-cell>
+        </ng-container>
+        <!-- teamId Column -->
+        <ng-container matColumnDef="teamId">
+          <mat-cell *matCellDef="let element" class="mat-column-team-id">
+            {{ getTeamName(element.teamId) }}
+          </mat-cell>
+        </ng-container>
+        <!-- emailDomain Column -->
+        <ng-container matColumnDef="emailDomain">
+          <mat-cell *matCellDef="let element" class="mat-column-email-domain">
+            {{ element.emailDomain }}
+          </mat-cell>
+        </ng-container>
+        <!-- expirationDateTime Column -->
+        <ng-container matColumnDef="expirationDateTime">
+          <mat-cell *matCellDef="let element" class="mat-column-expiration-date-time">
+            {{ element.expirationDateTime | date: 'MM/dd/yyyy HH:mm' }}
+          </mat-cell>
+        </ng-container>
+        <!-- maxUsersAllowed Column -->
+        <ng-container matColumnDef="maxUsersAllowed">
+          <mat-cell *matCellDef="let element" class="one-cell">
+            <div class="max-users-allowed">{{ element.maxUsersAllowed }}</div>
+          </mat-cell>
+        </ng-container>
+        <!-- userCount Column -->
+        <ng-container matColumnDef="userCount">
+          <mat-cell *matCellDef="let element" class="one-cell">
+            <div class="max-users-allowed">{{ element.userCount }}</div>
+          </mat-cell>
+        </ng-container>
+        <!-- isTeamLeader Column -->
+        <ng-container matColumnDef="isTeamLeader">
+          <mat-cell *matCellDef="let element" class="one-cell">
+            <div class="is-team-leader">&nbsp; <span *ngIf="element.isTeamLeader">Can invite</span></div>
+          </mat-cell>
+        </ng-container>
+        <!-- row definitions -->
+        <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
+      </mat-table>
+      <!-- No Results Message -->
+      <div class="text no-results" *ngIf="invitationDataSource?.filteredData.length === 0">No results found</div>
+    </div>
+  </section>
+</div>

@@ -1,0 +1,130 @@
+<!--
+Copyright 2024 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license, please see LICENSE.md in the
+project root for license information or contact permission@sei.cmu.edu for full terms.
+-->
+
+<div mat-dialog-title>
+  Add/Remove Users for {{ data.team?.shortName}}
+  <button
+    mat-icon-button
+    (click)="handleEditComplete(false)"
+    title="Cancel"
+    class="close-button"
+    tabindex="-1"
+  >
+    <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
+  </button>
+</div>
+<div mat-dialog-content *ngIf="!!data">
+
+  <div class="cssLayoutRowStartCenter">
+    <div class="user-list-container">
+      <span style="margin-left: 10px">
+        Available Users
+      </span>
+      <div>
+        <mat-icon
+          style="transform: scale(0.85); margin-right: 5px; margin-left: 10px;"
+          svgIcon="ic_magnify_search"
+        ></mat-icon>
+        <mat-form-field style="width: 220px;">
+          <input
+            matInput
+            [(ngModel)]="filterString"
+            (keyup)="applyFilter($any($event.target).value)"
+            placeholder="Search"
+          />
+        </mat-form-field>
+        <button
+          *ngIf="filterString != ''"
+          mat-icon-button
+          (click)="clearFilter()"
+          style="outline: none;"
+          title="Clear Search"
+        >
+          <mat-icon
+            style="transform: scale(0.85);"
+            svgIcon="ic_cancel_circle"
+          ></mat-icon>
+        </button>
+      </div>
+
+      <mat-card
+        *ngIf="false"
+        style="display: flex; justify-content: center; align-items: center;"
+      >
+        <mat-progress-spinner color="primary" mode="indeterminate">
+        </mat-progress-spinner>
+      </mat-card>
+
+      <mat-table
+        class="mat-table-all-users"
+        #table
+        [dataSource]="getUserDataSource()"
+      >
+        <ng-container matColumnDef="name">
+          <mat-cell *matCellDef="let element">
+            <div *ngIf="element.name !== null">{{ element.name }}</div>
+            <div *ngIf="element.name === null">{{ element.id }}</div>
+          </mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="id">
+          <mat-cell *matCellDef="let element">
+            <div>
+              <button mat-stroked-button (click)="addUserToTeam(element)">
+                Add User
+              </button>
+            </div>
+          </mat-cell>
+        </ng-container>
+
+        <mat-row *matRowDef="let row; columns: displayedUserColumns"></mat-row>
+      </mat-table>
+
+      <div *ngIf="userDataSource.filteredData.length === 0">No results found</div>
+    </div>
+    <div style="margin-left: 20px;">
+      <div class="team-list-container">
+        <span style="margin-left: 10px">
+          {{ data.team.shortName }} Users
+        </span>
+        <mat-card
+          *ngIf="false"
+          style="display: flex; justify-content: center; align-items: center;"
+        >
+          <mat-progress-spinner color="primary" mode="indeterminate">
+          </mat-progress-spinner>
+        </mat-card>
+
+        <mat-table
+          class="mat-table-all-users"
+          #table
+          [dataSource]="teamUserDataSource"
+        >
+          <ng-container matColumnDef="name">
+            <mat-cell *matCellDef="let element">
+              <div *ngIf="element.name !== null">{{ element.name }}</div>
+              <div *ngIf="element.name === null">{{ element.id }}</div>
+            </mat-cell>
+          </ng-container>
+
+          <ng-container matColumnDef="id">
+            <mat-cell *matCellDef="let element">
+              <div>
+                <button mat-stroked-button (click)="removeUserFromTeam(element)">
+                  Remove
+                </button>
+              </div>
+            </mat-cell>
+          </ng-container>
+
+          <mat-row *matRowDef="let row; columns: displayedUserColumns"></mat-row>
+        </mat-table>
+
+      </div>
+    </div>
+  </div>
+
+</div>

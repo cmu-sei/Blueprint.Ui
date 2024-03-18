@@ -17,11 +17,13 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
  */
 
 
-export type ItemStatus = 'Pending' | 'Entered' | 'Approved' | 'Complete';
+export type ItemStatus = 'Pending' | 'Entered' | 'Approved' | 'Complete' | 'Active' | 'Retired';
 
 export const ItemStatus = {
     Pending: 'Pending' as ItemStatus,
     Entered: 'Entered' as ItemStatus,
     Approved: 'Approved' as ItemStatus,
-    Complete: 'Complete' as ItemStatus
+    Complete: 'Complete' as ItemStatus,
+    Active: 'Active' as ItemStatus,
+    Retired: 'Retired' as ItemStatus
 };

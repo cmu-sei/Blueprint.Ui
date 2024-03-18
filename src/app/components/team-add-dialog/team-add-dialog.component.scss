@@ -1,0 +1,70 @@
+// Copyright 2024 Carnegie Mellon University. All Rights Reserved.
+// Released under a MIT (SEI)-style license. See LICENSE.md in the
+// project root for license information.
+
+.title {
+    margin-top: -5px;
+    margin-left: 5px;
+}
+
+.all-content {
+  width: 100%;
+  height: 55vh;
+}
+
+.unit-div {
+  margin-bottom: 10px;
+  width: 80%;
+}
+
+.unit-button {
+  width: 90%;
+  text-align: left;
+}
+
+.full-width {
+    width: 90%;
+}
+
+.add-margin {
+    margin-top: 8px;
+    margin-bottom: 8px;
+}
+
+.bottom-button {
+    margin-bottom: 10px;
+    margin-top: 10px;
+}
+
+.left-icon {
+    width: 45px;
+    font-size: 75%;
+    padding:.5em;
+  }
+
+.delete-button {
+  margin-top: 10px;
+  margin-right: 50px;
+}
+
+.top-button {
+    margin-bottom: 10px;
+}
+
+.close-button {
+  float: right;
+}
+
+.search-div {
+  display: flex;
+  flex-flow: row;
+  width: 50%;
+}
+
+.search-control {
+  width: calc(100% - 32px);
+}
+
+.action-buttons{
+  max-height: 70px !important;
+}

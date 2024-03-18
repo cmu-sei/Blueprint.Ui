@@ -13,6 +13,7 @@ import {
   Card,
   DataField,
   DataFieldType,
+  IntegrationType,
   ItemStatus,
   Move,
   Msel,
@@ -71,6 +72,10 @@ export class MselPlus implements Msel {
   cards?: Array<Card>;
   galleryArticleParameters?: Array<string>;
   gallerySourceTypes?: Array<string>;
+  playerIntegrationType?: IntegrationType;
+  galleryIntegrationType?: IntegrationType;
+  citeIntegrationType?: IntegrationType;
+  steamfitterIntegrationType?: IntegrationType;
 
   hasRole(userId: string, scenarioEventId: string) {
     const mselRole = { owner: false, moveEditor: false, approver: false, editor: false, evaluator: false, viewer: false };
@@ -243,6 +248,14 @@ export class MselDataService {
       );
   }
 
+  getMyJoinMsels() {
+    return this.mselService.getMyJoinMsels();
+  }
+
+  getMyLaunchMsels() {
+    return this.mselService.getMyLaunchMsels();
+  }
+
   loadById(id: string) {
     this.mselStore.setLoading(true);
     return this.mselService
@@ -281,6 +294,14 @@ export class MselDataService {
       (error) => {
         this.mselStore.setLoading(false);
       });
+  }
+
+  join(invitationId: string) {
+    return this.mselService.joinMselByInvitation(invitationId);
+  }
+
+  launch(invitationId: string) {
+    return this.mselService.launchMselByInvitation(invitationId);
   }
 
   copy(id: string) {

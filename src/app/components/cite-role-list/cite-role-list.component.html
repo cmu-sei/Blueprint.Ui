@@ -106,7 +106,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           &nbsp;{{ item.name }}
         </div>
         <div class="mat-cell three-cell center-self" *ngIf="!showTemplates">
-          {{ item.team.shortName }} - {{ item.team.name }}
+          {{ item.team?.shortName }} - {{ item.team?.name }}
         </div>
         <div class="mat-cell three-cell center-self">&nbsp;</div>
       </mat-expansion-panel-header>

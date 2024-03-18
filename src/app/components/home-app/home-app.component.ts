@@ -86,6 +86,7 @@ export class HomeAppComponent implements OnDestroy, OnInit {
       .subscribe((user) => {
         if (user && user.profile && user.profile.sub !== this.loggedInUserId) {
           this.loggedInUserId = user.profile.sub;
+          console.log(user);
         }
       });
     // subscribe to authorizedUser

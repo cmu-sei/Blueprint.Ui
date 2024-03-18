@@ -29,4 +29,9 @@ export interface MselTeam {
     team?: Team;
     citeTeamTypeId?: string;
     email?: string;
+    playerTeamId?: string;
+    galleryTeamId?: string;
+    citeTeamId?: string;
+    canTeamLeaderInvite?: boolean;
+    canTeamMemberInvite?: boolean;
 }

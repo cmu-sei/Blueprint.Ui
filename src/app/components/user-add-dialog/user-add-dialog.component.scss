@@ -1,0 +1,56 @@
+// Copyright 2024 Carnegie Mellon University. All Rights Reserved.
+// Released under a MIT (SEI)-style license. See LICENSE.md in the
+// project root for license information.
+
+.mat-dialog-content {
+  height: 100vh !important;
+}
+
+.user-list-container {
+  display: inline-block;
+  flex-direction: column;
+  margin-top: 10px;
+  width: 450px;
+  height: 50vh;
+}
+
+.team-list-container {
+  display: inline-block;
+  flex-direction: column;
+  margin-top: 10px;
+  width: 350px;
+  height: 50vh;
+}
+
+
+.mat-table-all-users {
+  overflow: auto;
+  max-height: 50vh;
+  background-color: transparent;
+}
+
+.mat-table-team-users {
+  overflow: auto;
+  max-height: 50vh;
+  background-color: transparent;
+}
+
+.mat-button-focus-overlay {
+  background-color: transparent;
+}
+
+.mat-cell {
+  padding-right: 0;
+}
+
+.sp-icon {
+  margin-left: 10px;
+  margin-right: 20px;
+  margin-top: 10px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.close-button {
+  float: right;
+}

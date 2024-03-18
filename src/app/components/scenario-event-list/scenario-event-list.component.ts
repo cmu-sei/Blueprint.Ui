@@ -77,7 +77,7 @@ export class ScenarioEventListComponent implements OnDestroy {
   };
   dataType: typeof DataFieldType = DataFieldType;
   dateFormControls = new Map<string, UntypedFormControl>();
-  itemStatus: ItemStatus[] = [ItemStatus.Pending, ItemStatus.Entered, ItemStatus.Approved, ItemStatus.Complete];
+  itemStatus = [ItemStatus.Pending, ItemStatus.Entered, ItemStatus.Approved, ItemStatus.Complete, ItemStatus.Active, ItemStatus.Retired];
   mselRole = { Owner: MselRole.Owner, Approver: MselRole.Approver, Editor: MselRole.Editor};
   organizationList: Organization[] = [];
   mselUsers: User[] = [];

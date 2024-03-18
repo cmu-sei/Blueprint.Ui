@@ -19,16 +19,20 @@ import { CiteRoleDataService } from 'src/app/data/cite-role/cite-role-data.servi
 import { DataFieldDataService } from 'src/app/data/data-field/data-field-data.service';
 import { DataOptionDataService } from 'src/app/data/data-option/data-option-data.service';
 import { DataValueDataService } from 'src/app/data/data-value/data-value-data.service';
+import { InvitationDataService } from 'src/app/data/invitation/invitation-data.service';
 import { MoveDataService } from 'src/app/data/move/move-data.service';
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { MatLegacyTabGroup as MatTabGroup, MatLegacyTab as MatTab } from '@angular/material/legacy-tabs';
-import { MselTeamDataService } from 'src/app/data/msel-team/msel-team-data.service';
+import { MselUnitDataService } from 'src/app/data/msel-unit/msel-unit-data.service';
 import { OrganizationDataService } from 'src/app/data/organization/organization-data.service';
 import { ScenarioEventDataService } from 'src/app/data/scenario-event/scenario-event-data.service';
 import { TeamDataService } from 'src/app/data/team/team-data.service';
+import { UnitDataService } from 'src/app/data/unit/unit-data.service';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
+import { UserDataService } from 'src/app/data/user/user-data.service';
 import { UserMselRoleDataService } from 'src/app/data/user-msel-role/user-msel-role-data.service';
+import { UserTeamRoleDataService } from 'src/app/data/user-team-role/user-team-role-data.service';
 
 @Component({
   selector: 'app-msel',
@@ -45,6 +49,7 @@ export class MselComponent implements OnDestroy {
   @ViewChildren('MatTab') tabs: QueryList<MatTab>;
   tabList: string[] = [
     'Info',
+    'Contributors',
     'Teams',
     'Data Fields',
     'Organizations',
@@ -54,11 +59,13 @@ export class MselComponent implements OnDestroy {
     'CITE Actions',
     'CITE Roles',
     'Events',
-    'Exercise View'
+    'Exercise View',
+    'Invitations'
   ];
   fontIconList = new Map<string, string>([
     ['Info', 'mdi-note-outline'],
-    ['Teams', 'mdi-account-group-outline'],
+    ['Contributors', 'mdi-account-edit'],
+    ['Teams', 'mdi-account-multiple'],
     ['Data Fields', 'mdi-view-column-outline'],
     ['Organizations', 'mdi-office-building-outline'],
     ['Moves', 'mdi-gamepad'],
@@ -68,6 +75,7 @@ export class MselComponent implements OnDestroy {
     ['CITE Roles', 'mdi-clipboard-account-outline'],
     ['Events', 'mdi-chart-timeline'],
     ['Exercise View', 'mdi-eye-outline'],
+    ['Invitations', 'mdi-email-open-outline']
   ]);
   private unsubscribe$ = new Subject();
   private msel: Msel = {};
@@ -88,15 +96,19 @@ export class MselComponent implements OnDestroy {
     private dataFieldDataService: DataFieldDataService,
     private dataOptionDataService: DataOptionDataService,
     private dataValueDataService: DataValueDataService,
+    private invitationDataService: InvitationDataService,
     private moveDataService: MoveDataService,
     private mselDataService: MselDataService,
-    private mselTeamDataService: MselTeamDataService,
+    private mselUnitDataService: MselUnitDataService,
     private mselQuery: MselQuery,
     private organizationDataService: OrganizationDataService,
     private scenarioEventDataService: ScenarioEventDataService,
     private teamDataService: TeamDataService,
+    private unitDataService: UnitDataService,
     private uiDataService: UIDataService,
+    private userDataService: UserDataService,
     private userMselRoleDataService: UserMselRoleDataService,
+    private userTeamRoleDataService: UserTeamRoleDataService,
     private authQuery: ComnAuthQuery
   ) {
     this.theme$ = this.authQuery.userTheme$;
@@ -117,7 +129,7 @@ export class MselComponent implements OnDestroy {
         this.citeActionDataService.loadByMsel(mselId);
         this.citeRoleDataService.loadByMsel(mselId);
         // load the MSEL Teams
-        this.mselTeamDataService.loadByMsel(mselId);
+        this.teamDataService.loadByMsel(mselId);
         // load the MSEL organizations and templates
         this.organizationDataService.loadByMsel(mselId);
         // load data fields, options, and values
@@ -128,6 +140,12 @@ export class MselComponent implements OnDestroy {
         this.scenarioEventDataService.loadByMsel(mselId);
         // load user msel roles
         this.userMselRoleDataService.loadByMsel(mselId);
+        // load msel units
+        this.mselUnitDataService.loadByMsel(mselId);
+        // load user team roles
+        this.userTeamRoleDataService.loadByMsel(mselId);
+        // load the MSEL organizations and templates
+        this.invitationDataService.loadByMsel(mselId);
       }
     });
     // subscribe to the active MSEL
@@ -138,10 +156,12 @@ export class MselComponent implements OnDestroy {
         this.msel = {};
       }
     });
-    // load the teams
-    this.teamDataService.load();
+    // load units
+    this.unitDataService.load();
     // load the organization templates
     this.organizationDataService.loadTemplates();
+    // load the users
+    this.userDataService.getUsersFromApi();
     // set the selected tab
     let selectedTab = this.uiDataService.getMselTab();
     if (!selectedTab) {
