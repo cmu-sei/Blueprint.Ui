@@ -52,7 +52,8 @@ export class MselInfoComponent implements OnDestroy {
   mselUnitList: MselUnit[] = [];
   scoringModelList: CiteApiClientScoringModel[] = [];
   viewList: PlayerApiClientView[] = [];
-  itemStatus: ItemStatus[] = [ItemStatus.Pending, ItemStatus.Entered, ItemStatus.Approved, ItemStatus.Complete];
+  itemStatus: ItemStatus[] =
+    [ItemStatus.Pending, ItemStatus.Entered, ItemStatus.Approved, ItemStatus.Deployed, ItemStatus.Complete, ItemStatus.Archived];
   viewUrl: string;
   mselPages: MselPage[] = [];
   newMselPage = {} as MselPage;

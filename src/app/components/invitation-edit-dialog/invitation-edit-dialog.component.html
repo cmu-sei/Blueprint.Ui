@@ -49,17 +49,17 @@ project root for license information.
         <mat-form-field>
           <input
             matInput
-            [ngxMatDatetimePicker]="startTimePicker"
-            placeholder="Start Date / Time"
+            [ngxMatDatetimePicker]="expirationTimePicker"
+            placeholder="Expiration Date / Time"
             [(ngModel)]="data.invitation.expirationDateTime"
           >
           <mat-datepicker-toggle
             matSuffix
-            [for]="$any(startTimePicker)"
+            [for]="$any(expirationTimePicker)"
             title = "Choose Date/Time"
           >
           </mat-datepicker-toggle>
-          <ngx-mat-datetime-picker #startTimePicker
+          <ngx-mat-datetime-picker #expirationTimePicker
             [showSpinners]=true
             [showSeconds]=true
             [stepHour]=1

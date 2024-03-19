@@ -1,0 +1,79 @@
+<!--
+Copyright 2024 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license, please see LICENSE.md in the
+project root for license information or contact permission@sei.cmu.edu for full terms.
+-->
+<div class="top-container background">
+  <app-topbar
+    [title]="topbarText"
+    [topbarView]="TopbarView.STEAMFITTER_HOME"
+    [topbarColor]="topbarColor"
+    [topbarTextColor]="topbarTextColor"
+    [imageFilePath]="topbarImage"
+    (urlNavigate)="topBarNavigate($event)"
+  ></app-topbar>
+  <div class="card-container">
+
+    <mat-card
+      *ngIf="joinMselList.length > 0"
+      class="base-card"
+      tabindex="0"
+    >
+    <mat-card-header>
+      <mat-card-title>Join an Event</mat-card-title>
+      <mat-card-subtitle>Join and Participate in Active Deployed Exercises</mat-card-subtitle>
+    </mat-card-header>
+    <img class="card-image" src="https://material.angular.io/assets/img/examples/shiba2.jpg" alt="Photo of a Shiba Inu">
+    <mat-card-actions>
+      <button
+        mat-stroked-button
+        (click)="gotoUrl('join')"
+      >
+        Join an Event
+      </button>
+    </mat-card-actions>
+    </mat-card>
+
+    <mat-card
+      *ngIf="launchMselList.length > 0"
+      class="base-card"
+      tabindex="0"
+    >
+    <mat-card-header>
+      <mat-card-title>Start an Event</mat-card-title>
+      <mat-card-subtitle>Start a New Event for You and Others to Participate</mat-card-subtitle>
+    </mat-card-header>
+    <img class="card-image" src="https://material.angular.io/assets/img/examples/shiba2.jpg" alt="Photo of a Shiba Inu">
+    <mat-card-actions>
+      <button
+        mat-stroked-button
+        (click)="gotoUrl('launch')"
+      >
+        Start an Event
+      </button>
+    </mat-card-actions>
+    </mat-card>
+
+    <mat-card
+      *ngIf="buildMselList.length > 0"
+      class="base-card"
+      tabindex="0"
+    >
+    <mat-card-header>
+      <mat-card-title>Build an Event</mat-card-title>
+      <mat-card-subtitle>Design and Plan an Event</mat-card-subtitle>
+    </mat-card-header>
+    <img class="card-image" src="https://material.angular.io/assets/img/examples/shiba2.jpg" alt="Photo of a Shiba Inu">
+    <mat-card-actions>
+      <button
+        mat-stroked-button
+        (click)="gotoUrl('build')"
+      >
+        Build an Event
+      </button>
+    </mat-card-actions>
+    </mat-card>
+
+  </div>
+</div>
+

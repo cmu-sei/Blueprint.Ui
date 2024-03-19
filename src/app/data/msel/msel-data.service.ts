@@ -256,6 +256,10 @@ export class MselDataService {
     return this.mselService.getMyLaunchMsels();
   }
 
+  getMyBuildMsels() {
+    return this.mselService.getMyMsels();
+  }
+
   loadById(id: string) {
     this.mselStore.setLoading(true);
     return this.mselService

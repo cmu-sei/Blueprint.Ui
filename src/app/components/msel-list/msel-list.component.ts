@@ -51,7 +51,7 @@ export class MselListComponent implements OnDestroy, OnInit  {
   userList: User[] = [];
   selectedMselType = 'all';
   selectedMselStatus = 'all';
-  itemStatus = [ItemStatus.Pending, ItemStatus.Entered, ItemStatus.Approved, ItemStatus.Complete, ItemStatus.Active, ItemStatus.Retired];
+  itemStatus = [ItemStatus.Pending, ItemStatus.Entered, ItemStatus.Approved, ItemStatus.Complete, ItemStatus.Deployed, ItemStatus.Archived];
   private unsubscribe$ = new Subject();
 
   constructor(
