@@ -183,7 +183,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <mat-cell *matCellDef="let element">
           <div class="link-text">
             <a
-            [routerLink]="['/']"
+            [routerLink]="['/build']"
             [queryParams]="{ msel: element.id }"
             (click)="openMsel(element.id)"
             >{{ element.name }}</a>
