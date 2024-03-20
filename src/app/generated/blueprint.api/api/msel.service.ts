@@ -827,7 +827,7 @@ export class MselService {
         const consumes: string[] = [
         ];
 
-        return this.httpClient.post<Msel>(`${this.configuration.basePath}/api/invitations/${encodeURIComponent(String(id))}/join`,
+        return this.httpClient.post<Msel>(`${this.configuration.basePath}/api/msels/${encodeURIComponent(String(id))}/join`,
             null,
             {
                 withCredentials: this.configuration.withCredentials,
@@ -878,7 +878,7 @@ export class MselService {
         const consumes: string[] = [
         ];
 
-        return this.httpClient.post<Msel>(`${this.configuration.basePath}/api/invitations/${encodeURIComponent(String(id))}/launch`,
+        return this.httpClient.post<Msel>(`${this.configuration.basePath}/api/msels/${encodeURIComponent(String(id))}/launch`,
             null,
             {
                 withCredentials: this.configuration.withCredentials,

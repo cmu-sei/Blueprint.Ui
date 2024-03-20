@@ -25,12 +25,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
     </mat-card-header>
     <mat-card-actions>
       <button
+      *ngIf="!joinStatus[msel.id] && !isJoined[msel.id]"
         mat-stroked-button
         (click)="join(msel.id)"
         title="Join {{ msel.name }}"
       >
         Join {{ msel.name }}
       </button>
+      <span *ngIf="joinStatus[msel.id]">{{ joinStatus[msel.id] }}</span>
     </mat-card-actions>
     </mat-card>
 

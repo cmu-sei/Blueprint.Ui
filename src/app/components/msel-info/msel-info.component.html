@@ -222,7 +222,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             </div>
             <div class="sub-detail center-self two-cell" *ngIf="msel.useCite">
               <mat-form-field class="half-width" *ngIf="scoringModelList.length > 0">
-                <mat-label>Select Scoring Model</mat-label>
+                <mat-label>Scoring Model</mat-label>
                 <mat-select
                   [(ngModel)]="msel.citeScoringModelId"
                   (cut)="isChanged = true"
@@ -241,13 +241,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 <input
                   type="text"
                   matInput
-                  placeholder="Select Scoring Model"
+                  placeholder="Scoring Model"
                   [(ngModel)]="msel.citeScoringModelId"
                   (cut)="isChanged = true"
                   (change)="isChanged = true"
                   (paste)="isChanged = true"
                   (keypress)="isChanged = true"
-                  title="Select a CITE Scoring Model"
+                  title="CITE Scoring Model"
                 />
               </mat-form-field>
               </div>

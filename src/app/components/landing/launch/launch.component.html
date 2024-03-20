@@ -25,12 +25,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
     </mat-card-header>
     <mat-card-actions>
       <button
+        *ngIf="!launchStatus[msel.id] && !launchedMsel[msel.id]"
         mat-stroked-button
         (click)="launch(msel.id)"
         title="Start {{ msel.name }}"
       >
         Start {{ msel.name }}
       </button>
+      <span *ngIf="launchStatus[msel.id]">{{ launchStatus[msel.id] }}</span>
     </mat-card-actions>
     </mat-card>
 

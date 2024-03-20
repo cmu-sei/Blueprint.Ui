@@ -1,6 +1,7 @@
 {
     "ApiUrl": "http://localhost:4724",
     "GalleryApiUrl": "http://localhost:4722",
+    "PlayerUrl": "http://localhost:4301",
     "OIDCSettings": {
       "authority": "http://localhost:8080/realms/crucible/",
       "client_id": "blueprint-ui",

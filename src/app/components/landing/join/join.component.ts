@@ -16,6 +16,7 @@ import { MselDataService } from 'src/app/data/msel/msel-data.service';
 import { User } from 'src/app/generated/blueprint.api';
 import { TopbarView } from '../../shared/top-bar/topbar.models';
 import { Title } from '@angular/platform-browser';
+import { ErrorService } from 'src/app/services/error/error.service';
 
 @Component({
   selector: 'app-join',
@@ -33,6 +34,8 @@ export class JoinComponent implements OnDestroy {
   topbarImage = this.settingsService.settings.AppTopBarImage;
   TopbarView = TopbarView;
   appTitle = 'Join Event';
+  joinStatus: { [id: string]: string } = {};
+  isJoined: { [id: string]: boolean } = {};
   private unsubscribe$ = new Subject();
 
   constructor(
@@ -40,7 +43,8 @@ export class JoinComponent implements OnDestroy {
     private settingsService: ComnSettingsService,
     private mselDataService: MselDataService,
     private router: Router,
-    private titleService: Title
+    private titleService: Title,
+    private errorService: ErrorService
   ) {
     // set image
     this.imageFilePath = this.settingsService.settings.AppTopBarImage.replace('white', 'blue');
@@ -69,7 +73,20 @@ export class JoinComponent implements OnDestroy {
   }
 
   join(id: string) {
-    alert('Not Implemented');
+    this.joinStatus[id] = 'Starting the event ...';
+    this.mselDataService.join(id).pipe(take(1)).subscribe((playerViewId) => {
+      let url = this.settingsService.settings.PlayerUrl;
+      if (url.slice(-1) !== '/') {
+        url = url + '/';
+      }
+      url = url + 'view/' + playerViewId;
+      location.href = url;
+    },
+    (error) => {
+      this.joinStatus[id] = '';
+      this.isJoined[id] = false;
+      this.errorService.handleError(error);
+    });
   }
 
   ngOnDestroy() {

@@ -3,7 +3,7 @@
 // project root for license information.
 import { Component, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
-import { Subject, Observable } from 'rxjs';
+import { Subject } from 'rxjs';
 import { take, takeUntil } from 'rxjs/operators';
 import {
   ComnSettingsService,
@@ -16,6 +16,7 @@ import { MselDataService } from 'src/app/data/msel/msel-data.service';
 import { User } from 'src/app/generated/blueprint.api';
 import { TopbarView } from '../../shared/top-bar/topbar.models';
 import { Title } from '@angular/platform-browser';
+import { ErrorService } from 'src/app/services/error/error.service';
 
 @Component({
   selector: 'app-launch',
@@ -33,6 +34,8 @@ export class LaunchComponent implements OnDestroy {
   topbarImage = this.settingsService.settings.AppTopBarImage;
   TopbarView = TopbarView;
   appTitle = 'Start Event';
+  launchStatus: { [id: string]: string } = {};
+  launchedMsel: { [id: string]: Msel } = {};
   private unsubscribe$ = new Subject();
 
   constructor(
@@ -40,7 +43,8 @@ export class LaunchComponent implements OnDestroy {
     private settingsService: ComnSettingsService,
     private mselDataService: MselDataService,
     private router: Router,
-    private titleService: Title
+    private titleService: Title,
+    private errorService: ErrorService
   ) {
     // set image
     this.imageFilePath = this.settingsService.settings.AppTopBarImage.replace('white', 'blue');
@@ -69,7 +73,15 @@ export class LaunchComponent implements OnDestroy {
   }
 
   launch(id: string) {
-    alert('Not Implemented');
+    this.launchStatus[id] = 'Starting the event ...';
+    this.mselDataService.launch(id).pipe(take(1)).subscribe((msel) => {
+      this.launchedMsel[id] = msel;
+      this.launchStatus[id] = '';
+    },
+    (error) => {
+      this.launchStatus[id] = '';
+      this.errorService.handleError(error);
+    });
   }
 
   ngOnDestroy() {
