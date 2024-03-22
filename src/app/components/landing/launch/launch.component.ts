@@ -35,7 +35,7 @@ export class LaunchComponent implements OnDestroy {
   TopbarView = TopbarView;
   appTitle = 'Start Event';
   launchStatus: { [id: string]: string } = {};
-  launchedMsel: { [id: string]: Msel } = {};
+  launchedMsel: { [id: string]: string } = {};
   private unsubscribe$ = new Subject();
 
   constructor(
@@ -74,9 +74,17 @@ export class LaunchComponent implements OnDestroy {
 
   launch(id: string) {
     this.launchStatus[id] = 'Starting the event ...';
-    this.mselDataService.launch(id).pipe(take(1)).subscribe((msel) => {
-      this.launchedMsel[id] = msel;
-      this.launchStatus[id] = '';
+    this.mselDataService.launch(id).pipe(take(1)).subscribe((playerViewId) => {
+      this.launchedMsel[id] = playerViewId;
+      this.launchStatus[id] = 'Creating event content ...';
+      let url = this.settingsService.settings.PlayerUrl;
+      if (url.slice(-1) !== '/') {
+        url = url + '/';
+      }
+      url = url + 'view/' + playerViewId;
+      setTimeout(function() {
+        location.href = url;
+      }, 20000);
     },
     (error) => {
       this.launchStatus[id] = '';

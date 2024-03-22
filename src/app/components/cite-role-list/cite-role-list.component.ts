@@ -162,7 +162,7 @@ export class CiteRoleListComponent implements OnDestroy {
     }
     this.dialogService
       .confirm(
-        'Delete CiteRole',
+        'Delete Cite Role',
         'Are you sure that you want to delete ' + citeRole.name + '?'
       )
       .subscribe((result) => {

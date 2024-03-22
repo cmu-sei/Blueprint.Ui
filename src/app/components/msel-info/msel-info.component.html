@@ -117,7 +117,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <div class="sub-detail center-self three-cell">
               <mat-checkbox
                 [(ngModel)]="msel.usePlayer"
-                [disabled]="!!msel.playerViewId"
+                [disabled]="msel.status === 'Deployed'"
                 (cut)="isChanged = true"
                 (change)="isChanged = true"
                 (paste)="isChanged = true"
@@ -171,7 +171,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <div class="sub-detail center-self three-cell">
               <mat-checkbox
                 [(ngModel)]="msel.useGallery"
-                [disabled]="!!msel.galleryExhibitId"
+                [disabled]="msel.status === 'Deployed'"
                 (cut)="isChanged = true"
                 (change)="isChanged = true"
                 (paste)="isChanged = true"
@@ -213,7 +213,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <div class="sub-detail center-self one-cell">
               <mat-checkbox
                 [(ngModel)]="msel.useCite"
-                [disabled]="!!msel.citeEvaluationId"
+                [disabled]="msel.status === 'Deployed'"
                 (cut)="isChanged = true"
                 (change)="isChanged = true"
                 (paste)="isChanged = true"
@@ -229,7 +229,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   (selectionChange)="isChanged = true"
                   (paste)="isChanged = true"
                   (keypress)="isChanged = true"
-                  [disabled]="msel.citeEvaluationId"
+                  [disabled]="msel.status === 'Deployed'"
                 >
                   <mat-option [value]=""></mat-option>
                   <mat-option *ngFor="let scoringModel of scoringModelList" [value]="scoringModel.id">
@@ -302,6 +302,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
               <mat-label>MSEL Status</mat-label>
               <mat-select
                 [(ngModel)]="msel.status"
+                [disabled]="msel.status === 'Deployed'"
                 (cut)="isChanged = true"
                 (change)="isChanged = true"
                 (paste)="isChanged = true"
@@ -318,6 +319,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <div class="sub-detail center-self">
               <mat-checkbox
                 [(ngModel)]="msel.isTemplate"
+                [disabled]="msel.status === 'Deployed'"
                 (cut)="isChanged = true"
                 (change)="isChanged = true"
                 (paste)="isChanged = true"

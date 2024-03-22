@@ -21,6 +21,8 @@
   display: flex;
   flex-direction: column;
   flex: 3;
+  align-items: center;
+  text-align: center;
   margin-top: 10px;
   margin-left: 5%;
   margin-right: 5%;
@@ -33,4 +35,8 @@
   width: 90%;
   margin-left: 5%;
   margin-right: 5%;
+}
+
+.status-message {
+  margin-top: 20px;
 }

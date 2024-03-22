@@ -190,7 +190,7 @@ export class CiteActionListComponent implements OnDestroy {
     }
     this.dialogService
       .confirm(
-        'Delete CiteAction',
+        'Delete Cite Action',
         'Are you sure that you want to delete ' + citeAction.description + '?'
       )
       .subscribe((result) => {

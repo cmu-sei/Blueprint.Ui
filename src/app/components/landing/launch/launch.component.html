@@ -23,6 +23,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <mat-card-title>{{ msel.name }}</mat-card-title>
       <mat-card-subtitle>{{ msel.description }}</mat-card-subtitle>
     </mat-card-header>
+    <mat-card-content>
+      <div *ngIf="launchStatus[msel.id] || launchedMsel[msel.id]">
+        <mat-progress-spinner color="primary" mode="indeterminate">
+        </mat-progress-spinner>
+      </div>&nbsp;
+    </mat-card-content>
     <mat-card-actions>
       <button
         *ngIf="!launchStatus[msel.id] && !launchedMsel[msel.id]"
@@ -32,7 +38,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
       >
         Start {{ msel.name }}
       </button>
-      <span *ngIf="launchStatus[msel.id]">{{ launchStatus[msel.id] }}</span>
+      <div *ngIf="launchStatus[msel.id] || launchedMsel[msel.id]">
+        <label class="status-message">{{ launchStatus[msel.id] }}</label>
+      </div>
     </mat-card-actions>
     </mat-card>
 
