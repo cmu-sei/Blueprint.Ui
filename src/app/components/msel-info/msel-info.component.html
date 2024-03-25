@@ -117,7 +117,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <div class="sub-detail center-self three-cell">
               <mat-checkbox
                 [(ngModel)]="msel.usePlayer"
-                [disabled]="!!msel.playerViewId"
+                [disabled]="msel.status === 'Deployed'"
                 (cut)="isChanged = true"
                 (change)="isChanged = true"
                 (paste)="isChanged = true"
@@ -171,7 +171,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <div class="sub-detail center-self three-cell">
               <mat-checkbox
                 [(ngModel)]="msel.useGallery"
-                [disabled]="!!msel.galleryExhibitId"
+                [disabled]="msel.status === 'Deployed'"
                 (cut)="isChanged = true"
                 (change)="isChanged = true"
                 (paste)="isChanged = true"
@@ -213,7 +213,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <div class="sub-detail center-self one-cell">
               <mat-checkbox
                 [(ngModel)]="msel.useCite"
-                [disabled]="!!msel.citeEvaluationId"
+                [disabled]="msel.status === 'Deployed'"
                 (cut)="isChanged = true"
                 (change)="isChanged = true"
                 (paste)="isChanged = true"
@@ -222,14 +222,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
             </div>
             <div class="sub-detail center-self two-cell" *ngIf="msel.useCite">
               <mat-form-field class="half-width" *ngIf="scoringModelList.length > 0">
-                <mat-label>Select Scoring Model</mat-label>
+                <mat-label>Scoring Model</mat-label>
                 <mat-select
                   [(ngModel)]="msel.citeScoringModelId"
                   (cut)="isChanged = true"
                   (selectionChange)="isChanged = true"
                   (paste)="isChanged = true"
                   (keypress)="isChanged = true"
-                  [disabled]="msel.citeEvaluationId"
+                  [disabled]="msel.status === 'Deployed'"
                 >
                   <mat-option [value]=""></mat-option>
                   <mat-option *ngFor="let scoringModel of scoringModelList" [value]="scoringModel.id">
@@ -241,13 +241,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 <input
                   type="text"
                   matInput
-                  placeholder="Select Scoring Model"
+                  placeholder="Scoring Model"
                   [(ngModel)]="msel.citeScoringModelId"
                   (cut)="isChanged = true"
                   (change)="isChanged = true"
                   (paste)="isChanged = true"
                   (keypress)="isChanged = true"
-                  title="Select a CITE Scoring Model"
+                  title="CITE Scoring Model"
                 />
               </mat-form-field>
               </div>
@@ -302,6 +302,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
               <mat-label>MSEL Status</mat-label>
               <mat-select
                 [(ngModel)]="msel.status"
+                [disabled]="msel.status === 'Deployed'"
                 (cut)="isChanged = true"
                 (change)="isChanged = true"
                 (paste)="isChanged = true"
@@ -318,6 +319,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <div class="sub-detail center-self">
               <mat-checkbox
                 [(ngModel)]="msel.isTemplate"
+                [disabled]="msel.status === 'Deployed'"
                 (cut)="isChanged = true"
                 (change)="isChanged = true"
                 (paste)="isChanged = true"

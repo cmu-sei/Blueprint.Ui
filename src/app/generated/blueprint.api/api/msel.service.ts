@@ -827,7 +827,7 @@ export class MselService {
         const consumes: string[] = [
         ];
 
-        return this.httpClient.post<Msel>(`${this.configuration.basePath}/api/invitations/${encodeURIComponent(String(id))}/join`,
+        return this.httpClient.post<Msel>(`${this.configuration.basePath}/api/msels/${encodeURIComponent(String(id))}/join`,
             null,
             {
                 withCredentials: this.configuration.withCredentials,
@@ -841,13 +841,14 @@ export class MselService {
     /**
      * Launch a MSEL by invitation
      * Launches the user to the msel and team indicated by the invitation
+     * Returns the Player View ID that will be created
      * @param id
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public launchMselByInvitation(id: string, observe?: 'body', reportProgress?: boolean): Observable<Msel>;
-    public launchMselByInvitation(id: string, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Msel>>;
-    public launchMselByInvitation(id: string, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Msel>>;
+    public launchMselByInvitation(id: string, observe?: 'body', reportProgress?: boolean): Observable<string>;
+    public launchMselByInvitation(id: string, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<string>>;
+    public launchMselByInvitation(id: string, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<string>>;
     public launchMselByInvitation(id: string, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
         if (id === null || id === undefined) {
             throw new Error('Required parameter id was null or undefined when calling pushIntegrations.');
@@ -878,7 +879,7 @@ export class MselService {
         const consumes: string[] = [
         ];
 
-        return this.httpClient.post<Msel>(`${this.configuration.basePath}/api/invitations/${encodeURIComponent(String(id))}/launch`,
+        return this.httpClient.post<Msel>(`${this.configuration.basePath}/api/msels/${encodeURIComponent(String(id))}/launch`,
             null,
             {
                 withCredentials: this.configuration.withCredentials,

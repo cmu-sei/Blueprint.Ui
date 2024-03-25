@@ -51,7 +51,8 @@ export class MselListComponent implements OnDestroy, OnInit  {
   userList: User[] = [];
   selectedMselType = 'all';
   selectedMselStatus = 'all';
-  itemStatus = [ItemStatus.Pending, ItemStatus.Entered, ItemStatus.Approved, ItemStatus.Complete, ItemStatus.Active, ItemStatus.Retired];
+  itemStatus = [ItemStatus.Pending, ItemStatus.Entered, ItemStatus.Approved, ItemStatus.Complete, ItemStatus.Deployed, ItemStatus.Archived];
+  allMselsAreLoaded = false;
   private unsubscribe$ = new Subject();
 
   constructor(
@@ -281,6 +282,17 @@ export class MselListComponent implements OnDestroy, OnInit  {
   getUserName(userId: string) {
     const user = this.userList.find(u => u.id === userId);
     return user ? user.name : 'System';
+  }
+
+  adminLoadAllMsels() {
+    // load the MSELs
+    this.mselDataService.load();
+    this.allMselsAreLoaded = true;
+  }
+
+  adminLoadMyMsels() {
+    this.mselDataService.loadMine();
+    this.allMselsAreLoaded = false;
   }
 
   ngOnDestroy() {

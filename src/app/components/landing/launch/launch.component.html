@@ -1,0 +1,49 @@
+<!--
+Copyright 2024 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license, please see LICENSE.md in the
+project root for license information or contact permission@sei.cmu.edu for full terms.
+-->
+<div class="top-container background">
+  <app-topbar
+    [title]="topbarText"
+    [topbarView]="TopbarView.STEAMFITTER_HOME"
+    [topbarColor]="topbarColor"
+    [topbarTextColor]="topbarTextColor"
+    [imageFilePath]="topbarImage"
+    (urlNavigate)="topBarNavigate($event)"
+  ></app-topbar>
+  <div class="card-container">
+
+    <mat-card
+      *ngFor="let msel of launchMselList"
+      class="base-card"
+      tabindex="0"
+    >
+    <mat-card-header>
+      <mat-card-title>{{ msel.name }}</mat-card-title>
+      <mat-card-subtitle>{{ msel.description }}</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <div *ngIf="launchStatus[msel.id] || launchedMsel[msel.id]">
+        <mat-progress-spinner color="primary" mode="indeterminate">
+        </mat-progress-spinner>
+      </div>&nbsp;
+    </mat-card-content>
+    <mat-card-actions>
+      <button
+        *ngIf="!launchStatus[msel.id] && !launchedMsel[msel.id]"
+        mat-stroked-button
+        (click)="launch(msel.id)"
+        title="Start {{ msel.name }}"
+      >
+        Start {{ msel.name }}
+      </button>
+      <div *ngIf="launchStatus[msel.id] || launchedMsel[msel.id]">
+        <label class="status-message">{{ launchStatus[msel.id] }}</label>
+      </div>
+    </mat-card-actions>
+    </mat-card>
+
+  </div>
+</div>
+

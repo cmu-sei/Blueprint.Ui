@@ -68,13 +68,15 @@ import { CiteActionEditDialogComponent } from './components/cite-action-edit-dia
 import { CiteActionListComponent } from './components/cite-action-list/cite-action-list.component';
 import { CiteRoleEditDialogComponent } from './components/cite-role-edit-dialog/cite-role-edit-dialog.component';
 import { CiteRoleListComponent } from './components/cite-role-list/cite-role-list.component';
+import { DashboardComponent } from './components/landing/dashboard/dashboard.component';
 import { DataFieldEditDialogComponent } from './components/data-field-edit-dialog/data-field-edit-dialog.component';
 import { DataFieldListComponent } from './components/data-field-list/data-field-list.component';
 import { DataOptionEditDialogComponent } from './components/data-option-edit-dialog/data-option-edit-dialog.component';
 import { HomeAppComponent } from './components/home-app/home-app.component';
 import { InvitationEditDialogComponent } from './components/invitation-edit-dialog/invitation-edit-dialog.component';
 import { InvitationListComponent } from './components/invitation-list/invitation-list.component';
-import { LaunchComponent } from './components/launch/launch.component';
+import { JoinComponent } from './components/landing/join/join.component';
+import { LaunchComponent } from './components/landing/launch/launch.component';
 import { MoveEditDialogComponent } from './components/move-edit-dialog/move-edit-dialog.component';
 import { MoveListComponent } from './components/move-list/move-list.component';
 import { MselComponent } from './components/msel/msel.component';
@@ -131,12 +133,14 @@ export function getBasePath(settingsSvc: ComnSettingsService) {
     CiteActionListComponent,
     CiteRoleEditDialogComponent,
     CiteRoleListComponent,
+    DashboardComponent,
     DataFieldEditDialogComponent,
     DataFieldListComponent,
     DataOptionEditDialogComponent,
     HomeAppComponent,
     InvitationEditDialogComponent,
     InvitationListComponent,
+    JoinComponent,
     LaunchComponent,
     MoveEditDialogComponent,
     MoveListComponent,

@@ -52,7 +52,8 @@ export class MselInfoComponent implements OnDestroy {
   mselUnitList: MselUnit[] = [];
   scoringModelList: CiteApiClientScoringModel[] = [];
   viewList: PlayerApiClientView[] = [];
-  itemStatus: ItemStatus[] = [ItemStatus.Pending, ItemStatus.Entered, ItemStatus.Approved, ItemStatus.Complete];
+  itemStatus: ItemStatus[] =
+    [ItemStatus.Pending, ItemStatus.Entered, ItemStatus.Approved, ItemStatus.Deployed, ItemStatus.Complete, ItemStatus.Archived];
   viewUrl: string;
   mselPages: MselPage[] = [];
   newMselPage = {} as MselPage;
@@ -105,7 +106,17 @@ export class MselInfoComponent implements OnDestroy {
     // subscribe to MSEL push statuses
     this.mselDataService.mselPushStatuses.pipe(takeUntil(this.unsubscribe$)).subscribe(mselPushStatuses => {
       const mselPushStatus = mselPushStatuses.find(mps => mps.mselId === this.msel.id);
-      this.pushStatus = mselPushStatus ? mselPushStatus.pushStatus : '';
+      if (mselPushStatus) {
+        if (mselPushStatus.pushStatus) {
+          this.pushStatus = mselPushStatus.pushStatus;
+        } else {
+          if (this.pushStatus) {
+            this.pushStatus = '';
+            // added this, because signalR is not updating the actual msel data during a push
+            this.mselDataService.loadById(this.msel.id);
+          }
+        }
+      }
     });
     // subscribe to users
     this.userDataService.users.pipe(takeUntil(this.unsubscribe$)).subscribe(users => {

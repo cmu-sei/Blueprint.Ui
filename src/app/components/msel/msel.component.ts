@@ -58,7 +58,7 @@ export class MselComponent implements OnDestroy {
     'Gallery Cards',
     'CITE Actions',
     'CITE Roles',
-    'Events',
+    'Scenario Events',
     'Exercise View',
     'Invitations'
   ];
@@ -73,7 +73,7 @@ export class MselComponent implements OnDestroy {
     ['Gallery Cards', 'mdi-view-grid-outline'],
     ['CITE Actions', 'mdi-clipboard-check-outline'],
     ['CITE Roles', 'mdi-clipboard-account-outline'],
-    ['Events', 'mdi-chart-timeline'],
+    ['Scenario Events', 'mdi-chart-timeline'],
     ['Exercise View', 'mdi-eye-outline'],
     ['Invitations', 'mdi-email-open-outline']
   ]);

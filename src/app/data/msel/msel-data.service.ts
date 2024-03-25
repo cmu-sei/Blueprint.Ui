@@ -256,6 +256,10 @@ export class MselDataService {
     return this.mselService.getMyLaunchMsels();
   }
 
+  getMyBuildMsels() {
+    return this.mselService.getMyMsels();
+  }
+
   loadById(id: string) {
     this.mselStore.setLoading(true);
     return this.mselService
@@ -296,12 +300,12 @@ export class MselDataService {
       });
   }
 
-  join(invitationId: string) {
-    return this.mselService.joinMselByInvitation(invitationId);
+  join(id: string) {
+    return this.mselService.joinMselByInvitation(id);
   }
 
-  launch(invitationId: string) {
-    return this.mselService.launchMselByInvitation(invitationId);
+  launch(id: string) {
+    return this.mselService.launchMselByInvitation(id);
   }
 
   copy(id: string) {

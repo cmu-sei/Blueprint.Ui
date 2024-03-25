@@ -204,6 +204,7 @@ export class MselTeamsComponent implements OnDestroy {
       width: '800px',
       data: {
         team: team,
+        useCite: this.msel.useCite,
         teamTypeList: this.teamTypeList
       },
     });

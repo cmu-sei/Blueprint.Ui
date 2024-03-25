@@ -103,6 +103,26 @@ project root for license information or contact permission@sei.cmu.edu for full 
     </div>
     <div *ngIf="isSystemAdmin" class="admin-cog-div">
       <button
+        *ngIf="!allMselsAreLoaded"
+        mat-button
+        class="icon-color admin-cog-button"
+        style="outline: none;"
+        (click)="adminLoadAllMsels()"
+        title="Load ALL MSELs"
+      >
+        <mat-icon aria-hidden="false" class="icon-color admin-cog-icon mdi-24px" fontIcon="mdi-set-all"></mat-icon>
+      </button>
+      <button
+        *ngIf="allMselsAreLoaded"
+        mat-button
+        class="icon-color admin-cog-button"
+        style="outline: none;"
+        (click)="adminLoadMyMsels()"
+        title="Load MY MSELs"
+      >
+        <mat-icon aria-hidden="false" class="icon-color admin-cog-icon mdi-24px" fontIcon="mdi-set-center"></mat-icon>
+      </button>
+      <button
         mat-button
         class="icon-color admin-cog-button"
         style="outline: none;"
@@ -183,7 +203,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <mat-cell *matCellDef="let element">
           <div class="link-text">
             <a
-            [routerLink]="['/']"
+            [routerLink]="['/build']"
             [queryParams]="{ msel: element.id }"
             (click)="openMsel(element.id)"
             >{{ element.name }}</a>

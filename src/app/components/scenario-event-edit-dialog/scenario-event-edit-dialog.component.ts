@@ -35,7 +35,7 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
   };
   dataType: typeof DataFieldType = DataFieldType;
 
-  itemStatus = [ItemStatus.Pending, ItemStatus.Entered, ItemStatus.Approved, ItemStatus.Complete, ItemStatus.Active, ItemStatus.Retired];
+  itemStatus = [ItemStatus.Pending, ItemStatus.Entered, ItemStatus.Approved, ItemStatus.Complete, ItemStatus.Deployed, ItemStatus.Archived];
   mselRole = { Owner: MselRole.Owner, Approver: MselRole.Approver, Editor: MselRole.Editor};
   toOrgList: string[] = [];
   sortedMselTeams: Team[] = [];
