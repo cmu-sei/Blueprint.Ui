@@ -49,8 +49,10 @@ export class MselTeamsComponent implements OnDestroy {
   sortedDataFields: DataField[];
   teamRoles: TeamRole[] = [
     TeamRole.Inviter,
-    TeamRole.GalleryObserver,
-    TeamRole.CiteObserver,
+    TeamRole.Observer,
+    TeamRole.Incrementer,
+    TeamRole.Modifier,
+    TeamRole.Submitter
   ];
   isEditEnabled = false;
   userList: User[] = [];

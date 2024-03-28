@@ -58,6 +58,11 @@ export class SignalRService {
   private applicationArea: ApplicationArea;
   private connectionPromise: Promise<void>;
   private isJoined = false;
+  private retryArray = [0, 10, 10, 10, 10,
+    100, 100, 100, 100,
+    1000, 1000, 1000, 1000,
+    10000, 10000, 10000, 10000,
+    30000, 30000, 30000, null];
 
   constructor(
     private authService: ComnAuthService,
@@ -97,12 +102,15 @@ export class SignalRService {
       .withUrl(
         `${this.settingsService.settings.ApiUrl}/hubs/main?bearer=${accessToken}`
       )
-      .withAutomaticReconnect(new RetryPolicy(120, 0, 5))
+      .withAutomaticReconnect(this.retryArray)
+      .configureLogging(signalR.LogLevel.Information)
       .build();
 
     this.hubConnection.onreconnected(() => {
       this.join();
     });
+
+    this.hubConnection.onclose(() => location.reload());
 
     this.addHandlers();
     this.connectionPromise = this.hubConnection.start();
@@ -116,8 +124,8 @@ export class SignalRService {
       this.hubConnection.invoke('Join' + this.applicationArea);
       this.isJoined = true;
     } else {
+      this.isJoined = false;
       this.reconnect();
-      this.isJoined = true;
     }
   }
 
@@ -129,12 +137,37 @@ export class SignalRService {
   }
 
   public selectMsel(mselId: string) {
-    if (this.hubConnection.state === signalR.HubConnectionState.Connected &&
-        this.isJoined &&
-        this.applicationArea !== ApplicationArea.admin) {
-      this.hubConnection.invoke('selectMsel', [mselId]);
+    if (this.hubConnection.state !== signalR.HubConnectionState.Disconnected &&
+      this.hubConnection.state !== signalR.HubConnectionState.Connected) {
+      setTimeout(() => {
+        this.selectMsel(mselId);
+      }, 100);
+    } else if (!this.hubConnection || this.hubConnection.state === signalR.HubConnectionState.Disconnected) {
+      this.connectionPromise = this.hubConnection.start();
+      this.connectionPromise.then((x) => {
+        this.join();
+        setTimeout(() => {
+          this.selectMsel(mselId);
+        }, 100);
+      });
+    } else if (this.isJoined) {
+      if (this.applicationArea !== ApplicationArea.admin) {
+        this.hubConnection.invoke('selectMsel', [mselId]);
+      }
     } else {
-      location.reload();
+      this.join();
+      setTimeout(() => {
+        this.selectMsel(mselId);
+      }, 100);
+    }
+  }
+
+  private reconnect() {
+    if (this.hubConnection != null) {
+      this.hubConnection.stop().then(() => {
+        this.connectionPromise = this.hubConnection.start();
+        this.connectionPromise.then(() => this.join());
+      });
     }
   }
 
@@ -439,39 +472,5 @@ export class SignalRService {
     this.hubConnection.on('UserMselRoleDeleted', (id: string) => {
       this.userMselRoleDataService.deleteFromStore(id);
     });
-  }
-
-  private reconnect() {
-    if (this.hubConnection != null) {
-      this.hubConnection.stop().then(() => {
-        this.connectionPromise = this.hubConnection.start();
-        this.connectionPromise.then(() => this.join());
-      });
-    }
-  }
-}
-
-class RetryPolicy {
-  constructor(
-    private maxSeconds: number,
-    private minJitterSeconds: number,
-    private maxJitterSeconds: number
-  ) {}
-
-  nextRetryDelayInMilliseconds(
-    retryContext: signalR.RetryContext
-  ): number | null {
-    let nextRetrySeconds = Math.pow(2, retryContext.previousRetryCount + 1);
-
-    if (retryContext.elapsedMilliseconds / 1000 > this.maxSeconds) {
-      location.reload();
-    }
-
-    nextRetrySeconds +=
-      Math.floor(
-        Math.random() * (this.maxJitterSeconds - this.minJitterSeconds + 1)
-      ) + this.minJitterSeconds; // Add Jitter
-
-    return nextRetrySeconds * 1000;
   }
 }

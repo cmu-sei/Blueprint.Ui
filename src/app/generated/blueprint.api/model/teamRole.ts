@@ -17,10 +17,12 @@ Copyright 2024 Carnegie Mellon University. All Rights Reserved.
  */
 
 
-export type TeamRole = 'GalleryObserver' | 'CiteObserver' | 'Inviter';
+export type TeamRole = 'Observer' | 'Incrementer' | 'Modifier' | 'Submitter' | 'Inviter';
 
 export const TeamRole = {
-    GalleryObserver: 'GalleryObserver' as TeamRole,
-    CiteObserver: 'CiteObserver' as TeamRole,
+    Observer: 'Observer' as TeamRole,
+    Incrementer: 'Incrementer' as TeamRole,
+    Modifier: 'Modifier' as TeamRole,
+    Submitter: 'Submitter' as TeamRole,
     Inviter: 'Inviter' as TeamRole,
 };

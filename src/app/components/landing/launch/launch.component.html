@@ -24,22 +24,22 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <mat-card-subtitle>{{ msel.description }}</mat-card-subtitle>
     </mat-card-header>
     <mat-card-content>
-      <div *ngIf="launchStatus[msel.id] || launchedMsel[msel.id]">
+      <div *ngIf="launchStatus">
         <mat-progress-spinner color="primary" mode="indeterminate">
         </mat-progress-spinner>
       </div>&nbsp;
     </mat-card-content>
     <mat-card-actions>
       <button
-        *ngIf="!launchStatus[msel.id] && !launchedMsel[msel.id]"
+        *ngIf="!launchStatus"
         mat-stroked-button
         (click)="launch(msel.id)"
         title="Start {{ msel.name }}"
       >
         Start {{ msel.name }}
       </button>
-      <div *ngIf="launchStatus[msel.id] || launchedMsel[msel.id]">
-        <label class="status-message">{{ launchStatus[msel.id] }}</label>
+      <div *ngIf="launchStatus">
+        <label class="status-message">{{ launchStatus }}</label>
       </div>
     </mat-card-actions>
     </mat-card>
