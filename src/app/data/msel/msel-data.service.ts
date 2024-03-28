@@ -304,7 +304,7 @@ export class MselDataService {
     return this.mselService.joinMselByInvitation(id);
   }
 
-  launch(id: string) {
+  launch(id: string): Observable<Msel> {
     return this.mselService.launchMselByInvitation(id);
   }
 
