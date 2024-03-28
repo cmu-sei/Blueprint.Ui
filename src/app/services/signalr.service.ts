@@ -58,6 +58,11 @@ export class SignalRService {
   private applicationArea: ApplicationArea;
   private connectionPromise: Promise<void>;
   private isJoined = false;
+  private retryArray = [0, 10, 10, 10, 10,
+    100, 100, 100, 100,
+    1000, 1000, 1000, 1000,
+    10000, 10000, 10000, 10000,
+    30000, 30000, 30000, null];
 
   constructor(
     private authService: ComnAuthService,
@@ -97,13 +102,15 @@ export class SignalRService {
       .withUrl(
         `${this.settingsService.settings.ApiUrl}/hubs/main?bearer=${accessToken}`
       )
-      .withAutomaticReconnect([0, 10, 100, 100, 100, 100, 1000, 5000, 10000, 20000, 30000, 60000, 60000, null])
+      .withAutomaticReconnect(this.retryArray)
       .configureLogging(signalR.LogLevel.Information)
       .build();
 
     this.hubConnection.onreconnected(() => {
       this.join();
     });
+
+    this.hubConnection.onclose(() => location.reload());
 
     this.addHandlers();
     this.connectionPromise = this.hubConnection.start();
@@ -465,30 +472,5 @@ export class SignalRService {
     this.hubConnection.on('UserMselRoleDeleted', (id: string) => {
       this.userMselRoleDataService.deleteFromStore(id);
     });
-  }
-}
-
-class RetryPolicy {
-  constructor(
-    private maxSeconds: number,
-    private minJitterSeconds: number,
-    private maxJitterSeconds: number
-  ) {}
-
-  nextRetryDelayInMilliseconds(
-    retryContext: signalR.RetryContext
-  ): number | null {
-    let nextRetrySeconds = Math.pow(2, retryContext.previousRetryCount + 1);
-
-    if (retryContext.elapsedMilliseconds / 1000 > this.maxSeconds) {
-      location.reload();
-    }
-
-    nextRetrySeconds +=
-      Math.floor(
-        Math.random() * (this.maxJitterSeconds - this.minJitterSeconds + 1)
-      ) + this.minJitterSeconds; // Add Jitter
-
-    return nextRetrySeconds * 1000;
   }
 }
