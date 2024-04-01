@@ -21,17 +21,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
     >
     <mat-card-header>
       <mat-card-title>Join an Event</mat-card-title>
-      <mat-card-subtitle>Join an Already Deployed Event</mat-card-subtitle>
+      <mat-card-subtitle>Access In-Progress Events</mat-card-subtitle>
     </mat-card-header>
-    <img class="card-image" src="assets/img/join.png" alt="Join image">
-    <mat-card-actions>
-      <button
-        mat-stroked-button
-        (click)="gotoUrl('join')"
-      >
-        Join an Event
-      </button>
-    </mat-card-actions>
+    <img class="card-image" (click)="gotoUrl('join')" src="assets/img/join.png" alt="Join image">
     </mat-card>
 
     <mat-card
@@ -41,17 +33,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
     >
     <mat-card-header>
       <mat-card-title>Start an Event</mat-card-title>
-      <mat-card-subtitle>Start a New Event for You and Others</mat-card-subtitle>
+      <mat-card-subtitle>Launch New events</mat-card-subtitle>
     </mat-card-header>
-    <img class="card-image" src="assets/img/start.png" alt="Start image">
-    <mat-card-actions>
-      <button
-        mat-stroked-button
-        (click)="gotoUrl('launch')"
-      >
-        Start an Event
-      </button>
-    </mat-card-actions>
+    <img class="card-image" (click)="gotoUrl('launch')" src="assets/img/start.png" alt="Start image">
     </mat-card>
 
     <mat-card
@@ -60,18 +44,10 @@ project root for license information or contact permission@sei.cmu.edu for full 
       tabindex="0"
     >
     <mat-card-header>
-      <mat-card-title>Build an Event</mat-card-title>
-      <mat-card-subtitle>Design and Plan an Event</mat-card-subtitle>
+      <mat-card-title>Manage an Event</mat-card-title>
+      <mat-card-subtitle>Design and Plan Events</mat-card-subtitle>
     </mat-card-header>
-    <img class="card-image" src="assets/img/build.png" alt="Build image">
-    <mat-card-actions>
-      <button
-        mat-stroked-button
-        (click)="gotoUrl('build')"
-      >
-        Build an Event
-      </button>
-    </mat-card-actions>
+    <img class="card-image" (click)="gotoUrl('build')" src="assets/img/build.png" alt="Build image">
     </mat-card>
 
   </div>
