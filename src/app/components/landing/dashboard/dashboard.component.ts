@@ -1,7 +1,7 @@
 // Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, ElementRef, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { Subject, Observable } from 'rxjs';
 import { take, takeUntil } from 'rxjs/operators';
@@ -35,6 +35,9 @@ export class DashboardComponent implements OnDestroy {
   topbarImage = this.settingsService.settings.AppTopBarImage;
   TopbarView = TopbarView;
   appTitle = 'Event Dashboard';
+  joinClass = 'base-card';
+  launchClass = 'base-card';
+  buildClass = 'base-card';
   private unsubscribe$ = new Subject();
 
   constructor(

@@ -16,38 +16,50 @@ project root for license information or contact permission@sei.cmu.edu for full 
 
     <mat-card
       *ngIf="joinMselList.length > 0"
-      class="base-card"
-      tabindex="0"
+      [ngClass]="joinClass"
+      tabindex="1"
+      role="button"
+      (click)="gotoUrl('join')"
+      (mouseover)="joinClass='base-card outline'"
+      (mouseout)="joinClass='base-card'"
     >
-    <mat-card-header>
-      <mat-card-title>Join an Event</mat-card-title>
-      <mat-card-subtitle>Access In-Progress Events</mat-card-subtitle>
-    </mat-card-header>
-    <img class="card-image" (click)="gotoUrl('join')" src="assets/img/join.png" alt="Join image">
+      <mat-card-header>
+        <mat-card-title>Join an Event</mat-card-title>
+        <mat-card-subtitle>Access In-Progress Events</mat-card-subtitle>
+      </mat-card-header>
+      <img class="card-image" src="assets/img/join.png" alt="Join image">
     </mat-card>
 
     <mat-card
       *ngIf="launchMselList.length > 0"
-      class="base-card"
-      tabindex="0"
+      [ngClass]="launchClass"
+      tabindex="2"
+      role="button"
+      (click)="gotoUrl('launch')"
+      (mouseover)="launchClass='base-card outline'"
+      (mouseout)="launchClass='base-card'"
     >
-    <mat-card-header>
-      <mat-card-title>Start an Event</mat-card-title>
-      <mat-card-subtitle>Launch New events</mat-card-subtitle>
-    </mat-card-header>
-    <img class="card-image" (click)="gotoUrl('launch')" src="assets/img/start.png" alt="Start image">
+      <mat-card-header>
+        <mat-card-title>Start an Event</mat-card-title>
+        <mat-card-subtitle>Launch New events</mat-card-subtitle>
+      </mat-card-header>
+      <img class="card-image" src="assets/img/start.png" alt="Start image">
     </mat-card>
 
     <mat-card
       *ngIf="buildMselList.length > 0"
-      class="base-card"
-      tabindex="0"
+      [ngClass]="buildClass"
+      tabindex="3"
+      role="button"
+      (click)="gotoUrl('build')"
+      (mouseover)="buildClass='base-card outline'"
+      (mouseout)="buildClass='base-card'"
     >
-    <mat-card-header>
-      <mat-card-title>Manage an Event</mat-card-title>
-      <mat-card-subtitle>Design and Plan Events</mat-card-subtitle>
-    </mat-card-header>
-    <img class="card-image" (click)="gotoUrl('build')" src="assets/img/build.png" alt="Build image">
+      <mat-card-header>
+        <mat-card-title>Manage an Event</mat-card-title>
+        <mat-card-subtitle>Design and Plan Events</mat-card-subtitle>
+      </mat-card-header>
+      <img class="card-image" src="assets/img/build.png" alt="Build image">
     </mat-card>
 
   </div>
