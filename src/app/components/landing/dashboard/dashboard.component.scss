@@ -32,6 +32,7 @@
   min-width: 200px;
   max-width: 300px;
   max-height: 350px;
+  cursor: pointer;
 }
 
 .card-image {
@@ -39,4 +40,9 @@
   align-self: center;
   margin-top: 40px;
   margin-bottom: 40px;
+}
+
+.outline {
+  border-width: 1px;
+  border-style: solid;
 }
