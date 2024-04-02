@@ -87,10 +87,7 @@ export class LaunchComponent implements OnDestroy, OnInit {
           }
           url = url + 'view/' + this.launchedMsel.playerViewId;
           this.launchedMsel = {};
-          console.log('sending to the player view in 1 seconds');
-          setTimeout(() => {
-            location.href = url;
-          }, 1000);
+          location.href = url;
         }
       }
     });
