@@ -36,6 +36,7 @@ export class LaunchComponent implements OnDestroy, OnInit {
   TopbarView = TopbarView;
   appTitle = 'Start Event';
   launchStatus = '';
+  launchingMselId = '';
   launchedMsel: Msel = {};
   private unsubscribe$ = new Subject();
 
@@ -109,13 +110,16 @@ export class LaunchComponent implements OnDestroy, OnInit {
   }
 
   launch(id: string) {
+    this.launchingMselId = id;
     this.launchStatus = 'Starting the event ...';
     this.mselDataService.launch(id).pipe(take(1)).subscribe((msel) => {
       // join signalR for this MSEL
       this.signalRService.selectMsel(msel.id);
       this.launchedMsel = msel;
+      this.launchingMselId = '';
     },
     (error) => {
+      this.launchingMselId = '';
       this.launchStatus = '';
       this.launchedMsel = {};
       this.errorService.handleError(error);
