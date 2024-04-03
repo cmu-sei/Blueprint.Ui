@@ -80,13 +80,13 @@ export class LaunchComponent implements OnDestroy, OnInit {
           }
         }
         if (this.launchStatus === '' && this.launchedMsel.playerViewId) {
+          this.launchStatus = 'Preparing to display your event ...';
           let url = this.settingsService.settings.PlayerUrl;
           if (url.slice(-1) !== '/') {
             url = url + '/';
           }
           url = url + 'view/' + this.launchedMsel.playerViewId;
           this.launchedMsel = {};
-          console.log('sending to the player view');
           location.href = url;
         }
       }
