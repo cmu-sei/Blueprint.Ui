@@ -13,6 +13,7 @@ import { MselViewComponent } from './components/msel-view/msel-view.component';
 import { DashboardComponent } from './components/landing/dashboard/dashboard.component';
 import { JoinComponent } from './components/landing/join/join.component';
 import { LaunchComponent } from './components/landing/launch/launch.component';
+import { ManageComponent } from './components/landing/manage/manage.component';
 
 export const ROUTES: Routes = [
   {
@@ -33,6 +34,11 @@ export const ROUTES: Routes = [
   {
     path: 'launch',
     component: LaunchComponent,
+    canActivate: [ComnAuthGuardService],
+  },
+  {
+    path: 'manage',
+    component: ManageComponent,
     canActivate: [ComnAuthGuardService],
   },
   {

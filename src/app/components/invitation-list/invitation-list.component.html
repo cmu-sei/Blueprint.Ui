@@ -18,11 +18,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
           title="Add invitation"
         >
           <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
-          Add Invitation
+          Invite Others
         </button>
       </span> &nbsp;
     </span>
-    <span class="mat-header-cell three-cell search-cell">
+    <span class="mat-header-cell three-cell search-cell" *ngIf="!hideSearch">
       <mat-form-field class="search-control">
         <input matInput [formControl]="filterControl" placeholder="Search" />
       </mat-form-field>
@@ -51,18 +51,18 @@ project root for license information or contact permission@sei.cmu.edu for full 
               <button
                 mat-icon-button class="msel-action"
                 (click)="addOrEditInvitation(element, true); $event.stopPropagation();"
-                title="Edit {{ element.emailDomain }}"
+                title="Edit {{ element.emailDomain }} invitation"
                 *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
               >
-                <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline" title="Edit {{ element.emailDomain }}"></mat-icon>
+                <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline" title="Edit {{ element.emailDomain }} invitation"></mat-icon>
               </button>
               <button
                 mat-icon-button class="msel-action"
                 (click)="deleteInvitation(element); $event.stopPropagation();"
-                title="Delete {{ element.emailDomain }}"
+                title="Delete {{ element.emailDomain }} invitation"
                 *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
               >
-                <mat-icon class="mdi-18px" fontIcon="mdi-delete" title="Delete {{ element.emailDomain }}"></mat-icon>
+                <mat-icon class="mdi-18px" fontIcon="mdi-delete" title="Delete {{ element.emailDomain }} invitation"></mat-icon>
               </button>
             </div>
           </mat-cell>

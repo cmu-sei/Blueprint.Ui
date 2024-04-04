@@ -77,6 +77,7 @@ import { InvitationEditDialogComponent } from './components/invitation-edit-dial
 import { InvitationListComponent } from './components/invitation-list/invitation-list.component';
 import { JoinComponent } from './components/landing/join/join.component';
 import { LaunchComponent } from './components/landing/launch/launch.component';
+import { ManageComponent } from './components/landing/manage/manage.component';
 import { MoveEditDialogComponent } from './components/move-edit-dialog/move-edit-dialog.component';
 import { MoveListComponent } from './components/move-list/move-list.component';
 import { MselComponent } from './components/msel/msel.component';
@@ -142,6 +143,7 @@ export function getBasePath(settingsSvc: ComnSettingsService) {
     InvitationListComponent,
     JoinComponent,
     LaunchComponent,
+    ManageComponent,
     MoveEditDialogComponent,
     MoveListComponent,
     MselComponent,

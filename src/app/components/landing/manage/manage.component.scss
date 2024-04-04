@@ -1,0 +1,39 @@
+// Copyright 2024 Carnegie Mellon University. All Rights Reserved.
+// Released under a MIT (SEI)-style license. See LICENSE.md in the
+// project root for license information.
+
+.top-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  height: 100vh;
+}
+.card-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  flex: 1;
+  padding-top: 40px;
+  max-height: 440px;
+}
+
+.base-card {
+  display: flex;
+  flex-direction: column;
+  flex: 3;
+  align-items: center;
+  text-align: center;
+  margin-top: 40px;
+  width: 100%;
+  max-height: calc(100vh - 140px);
+}
+
+.card-image {
+  width: 90%;
+  margin-left: 5%;
+  margin-right: 5%;
+}
+
+.status-message {
+  margin-top: 20px;
+}
