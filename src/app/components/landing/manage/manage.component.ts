@@ -19,6 +19,7 @@ import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { InvitationDataService } from 'src/app/data/invitation/invitation-data.service';
 import { InvitationQuery } from 'src/app/data/invitation/invitation.query';
 import { TeamDataService } from 'src/app/data/team/team-data.service';
+import { ItemStatus } from 'src/app/generated/blueprint.api';
 
 @Component({
   selector: 'app-manage',
@@ -57,6 +58,7 @@ export class ManageComponent implements OnDestroy {
     public dialogService: DialogService,
     private errorService: ErrorService
   ) {
+    this.hideTopbar = this.inIframe();
     // set image
     this.imageFilePath = this.settingsService.settings.AppTopBarImage.replace('white', 'blue');
     this.titleService.setTitle(this.appTitle);
@@ -78,6 +80,10 @@ export class ManageComponent implements OnDestroy {
         this.mselDataService.setActive(mselId);
         (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe( msel => {
           if (msel) {
+            if (msel.status !== ItemStatus.Deployed) {
+              const url = this.settingsService.settings.OIDCSettings.post_logout_redirect_uri;
+              window.top.location.href = url;
+            }
             this.msel = Object.assign(this.msel, msel);
             this.startTime = new Date(this.msel.startTime);
             this.endTime = new Date(this.startTime.getTime() + (this.msel.durationSeconds * 1000));
@@ -125,6 +131,18 @@ export class ManageComponent implements OnDestroy {
     if (this.endTime) {
       this.msel.durationSeconds = Math.round((this.endTime.getTime() - this.startTime.getTime()) / 1000);
       this.mselDataService.updateMsel(this.msel);
+    }
+  }
+
+  logout() {
+    this.userDataService.logout();
+  }
+
+  inIframe() {
+    try {
+      return window.self !== window.top;
+    } catch (e) {
+      return true;
     }
   }
 

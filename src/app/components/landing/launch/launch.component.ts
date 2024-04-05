@@ -13,6 +13,7 @@ import {
   Msel,
 } from 'src/app/generated/blueprint.api';
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
+import { PlayerApplicationDataService } from 'src/app/data/player-application/player-application-data.service';
 import { User } from 'src/app/generated/blueprint.api';
 import { TopbarView } from '../../shared/top-bar/topbar.models';
 import { Title } from '@angular/platform-browser';
@@ -44,11 +45,13 @@ export class LaunchComponent implements OnDestroy, OnInit {
     private userDataService: UserDataService,
     private settingsService: ComnSettingsService,
     private mselDataService: MselDataService,
+    private playerApplicationDataService: PlayerApplicationDataService,
     private router: Router,
     private titleService: Title,
     private errorService: ErrorService,
     private signalRService: SignalRService
   ) {
+    this.hideTopbar = this.inIframe();
     // set image
     this.imageFilePath = this.settingsService.settings.AppTopBarImage.replace('white', 'blue');
     this.titleService.setTitle(this.appTitle);
@@ -81,14 +84,27 @@ export class LaunchComponent implements OnDestroy, OnInit {
           }
         }
         if (this.launchStatus === '' && this.launchedMsel.playerViewId) {
-          this.launchStatus = 'Preparing to display your event ...';
-          let url = this.settingsService.settings.PlayerUrl;
-          if (url.slice(-1) !== '/') {
-            url = url + '/';
-          }
-          url = url + 'view/' + this.launchedMsel.playerViewId;
-          this.launchedMsel = {};
-          location.href = url;
+          this.launchStatus = 'Adding event management ...';
+          // add a manage event application
+          const playerApplication = {
+            mselId: this.launchedMsel.id,
+            name: 'Manage Event',
+            url: location.origin + '/manage?msel=' + this.launchedMsel.id,
+            icon: location.origin + '/assets/img/pencil-ruler-blue.png',
+            embeddable: true,
+            loadInBackground: false
+          };
+          this.playerApplicationDataService.addAndPush(playerApplication).pipe(take(1)).subscribe((s) => {
+            // redirect to player view
+            this.launchStatus = 'Redirecting to your event ...';
+            let playerUrl = this.settingsService.settings.PlayerUrl;
+            if (playerUrl.slice(-1) !== '/') {
+              playerUrl = playerUrl + '/';
+            }
+            playerUrl = playerUrl + 'view/' + this.launchedMsel.playerViewId;
+            this.launchedMsel = {};
+            location.href = playerUrl;
+          });
         }
       }
     });
@@ -124,6 +140,18 @@ export class LaunchComponent implements OnDestroy, OnInit {
       this.launchedMsel = {};
       this.errorService.handleError(error);
     });
+  }
+
+  logout() {
+    this.userDataService.logout();
+  }
+
+  inIframe() {
+    try {
+      return window.self !== window.top;
+    } catch (e) {
+      return true;
+    }
   }
 
   ngOnDestroy() {
