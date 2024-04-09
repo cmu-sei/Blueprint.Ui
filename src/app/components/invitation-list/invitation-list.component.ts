@@ -4,14 +4,8 @@
 import { Component, Input, OnDestroy, ViewChild } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
-import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import {
-  ComnSettingsService,
-  ComnAuthQuery,
-} from '@cmusei/crucible-common';
-import { UserDataService } from 'src/app/data/user/user-data.service';
 import {
   Invitation,
   Team
@@ -36,7 +30,7 @@ import { v4 as uuidv4 } from 'uuid';
 export class InvitationListComponent implements OnDestroy {
   @Input() loggedInUserId: string;
   @Input() isContentDeveloper: boolean;
-  @Input() showTemplates: boolean;
+  @Input() hideSearch: boolean;
   // context menu
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
   contextMenuPosition = { x: '0px', y: '0px' };
@@ -56,10 +50,6 @@ export class InvitationListComponent implements OnDestroy {
   private unsubscribe$ = new Subject();
 
   constructor(
-    activatedRoute: ActivatedRoute,
-    private router: Router,
-    private authQuery: ComnAuthQuery,
-    private mselDataService: MselDataService,
     private mselQuery: MselQuery,
     private invitationDataService: InvitationDataService,
     private invitationQuery: InvitationQuery,
@@ -202,7 +192,7 @@ export class InvitationListComponent implements OnDestroy {
   }
 
   getTeamName(teamId: string) {
-    const teamName = this.teamList.find(t => t.id === teamId).shortName;
+    const teamName = this.teamList.find(t => t.id === teamId)?.shortName;
     return teamName;
   }
 

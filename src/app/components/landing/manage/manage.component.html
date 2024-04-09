@@ -1,0 +1,81 @@
+<!--
+Copyright 2024 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license, please see LICENSE.md in the
+project root for license information or contact permission@sei.cmu.edu for full terms.
+-->
+<div class="top-container background" *ngIf="msel.id && (isMselOwner || (isContentDeveloper$ | async))">
+  <app-topbar
+    *ngIf="!hideTopbar"
+    [title]="topbarText"
+    [topbarView]="TopbarView.STEAMFITTER_HOME"
+    [topbarColor]="topbarColor"
+    [topbarTextColor]="topbarTextColor"
+    [imageFilePath]="topbarImage"
+    (urlNavigate)="topBarNavigate($event)"
+  ></app-topbar>
+  <mat-card class="base-card">
+    <mat-card-header>
+      <mat-card-title>{{ msel.name }}</mat-card-title>
+      <mat-card-subtitle>{{ msel.description }}</mat-card-subtitle><br />
+    </mat-card-header>
+    <mat-card-content>
+      <div *ngIf="msel.status === 'Deployed'">
+        <mat-form-field>
+          <input
+            matInput
+            [ngxMatDatetimePicker]="startTimePicker"
+            placeholder="End Date / Time"
+            [(ngModel)]="endTime"
+            (cut)="updateEndTime()"
+            (change)="updateEndTime()"
+            (paste)="updateEndTime()"
+            (keypress)="updateEndTime()"
+          >
+          <mat-datepicker-toggle
+            matSuffix
+            [for]="$any(startTimePicker)"
+            title = "Choose Date/Time"
+          >
+          </mat-datepicker-toggle>
+          <ngx-mat-datetime-picker #startTimePicker
+            [showSpinners]=true
+            [showSeconds]=true
+            [stepHour]=1
+            [stepMinute]=1
+            [stepSecond]=1
+            [touchUi]=false
+            [enableMeridian]=true
+            [disableMinute]=false
+            [hideTime]=false
+            (closed)="updateEndTime()"
+          >
+          </ngx-mat-datetime-picker>
+        </mat-form-field>
+      </div>
+      <div *ngIf="msel.status !== 'Deployed'">
+        <h1>This event has ended</h1>
+      </div>
+    </mat-card-content>
+    <mat-card-actions *ngIf="msel.status === 'Deployed'">
+      <button
+        mat-stroked-button
+        (click)="endEvent()"
+        style="height: 40px;"
+        title="End Event"
+      >
+        End Event
+      </button>
+    </mat-card-actions>
+  </mat-card>
+  <mat-card *ngIf="msel.status === 'Deployed'">
+    <app-invitation-list
+      [loggedInUserId]="loggedInUserId"
+      [hideSearch]="true"
+    ></app-invitation-list>
+  </mat-card>
+</div>
+
+<div class="nothing-to-see-here background" *ngIf="!msel.id || !(isMselOwner || (isContentDeveloper$ | async))">
+  <h1>You have nothing to manage.</h1>
+  <h2>If you believe you should have permissions to manage this event, contact you administrator.</h2>
+</div>

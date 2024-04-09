@@ -152,6 +152,10 @@ export class PlayerApplicationDataService {
       });
   }
 
+  addAndPush(playerApplication: PlayerApplication) {
+    return this.playerApplicationService.createAndPushPlayerApplication(playerApplication);
+  }
+
   updatePlayerApplication(playerApplication: PlayerApplication) {
     this.playerApplicationStore.setLoading(true);
     this.playerApplicationService

@@ -397,6 +397,24 @@ export class MselDataService {
     this.mselPushStatuses.next(this._mselPushStatuses);
   }
 
+  archive(mselId: string) {
+    this.mselStore.setLoading(true);
+    this.mselService
+      .archive(mselId)
+      .pipe(
+        tap(() => {
+          this.mselStore.setLoading(false);
+        }),
+        take(1)
+      )
+      .subscribe((n) => {
+        this.updateStore(n);
+      },
+      (error) => {
+        this.mselStore.setLoading(false);
+      });
+  }
+
   delete(id: string) {
     this.mselService
       .deleteMsel(id)
