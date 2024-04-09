@@ -76,35 +76,39 @@ export class LaunchComponent implements OnDestroy, OnInit {
     this.mselDataService.mselPushStatuses.pipe(takeUntil(this.unsubscribe$)).subscribe(mselPushStatuses => {
       const mselPushStatus = mselPushStatuses.find(mps => mps.mselId === this.launchedMsel.id);
       if (mselPushStatus) {
+        console.log('mselPushStatus is ' + mselPushStatus.pushStatus);
         if (mselPushStatus.pushStatus) {
+          console.log('set launch status to ' + mselPushStatus.pushStatus);
           this.launchStatus = mselPushStatus.pushStatus;
         } else {
-          if (this.launchStatus) {
+          if (this.launchedMsel.playerViewId) {
+            console.log('set launch status to Adding event management ...');
+            this.launchStatus = 'Adding event management ...';
+            // add a manage event application
+            const playerApplication = {
+              mselId: this.launchedMsel.id,
+              name: 'Manage Event',
+              url: location.origin + '/manage?msel=' + this.launchedMsel.id,
+              icon: location.origin + '/assets/img/pencil-ruler-blue.png',
+              embeddable: true,
+              loadInBackground: false
+            };
+            console.log('add new player application');
+            this.playerApplicationDataService.addAndPush(playerApplication).pipe(take(1)).subscribe((s) => {
+              // redirect to player view
+              console.log('Redirecting to your event ...');
+              this.launchStatus = 'Redirecting to your event ...';
+              let playerUrl = this.settingsService.settings.PlayerUrl;
+              if (playerUrl.slice(-1) !== '/') {
+                playerUrl = playerUrl + '/';
+              }
+              playerUrl = playerUrl + 'view/' + this.launchedMsel.playerViewId;
+              location.href = playerUrl;
+            });
+          } else {
+            console.log('clearing launch status');
             this.launchStatus = '';
           }
-        }
-        if (this.launchStatus === '' && this.launchedMsel.playerViewId) {
-          this.launchStatus = 'Adding event management ...';
-          // add a manage event application
-          const playerApplication = {
-            mselId: this.launchedMsel.id,
-            name: 'Manage Event',
-            url: location.origin + '/manage?msel=' + this.launchedMsel.id,
-            icon: location.origin + '/assets/img/pencil-ruler-blue.png',
-            embeddable: true,
-            loadInBackground: false
-          };
-          this.playerApplicationDataService.addAndPush(playerApplication).pipe(take(1)).subscribe((s) => {
-            // redirect to player view
-            this.launchStatus = 'Redirecting to your event ...';
-            let playerUrl = this.settingsService.settings.PlayerUrl;
-            if (playerUrl.slice(-1) !== '/') {
-              playerUrl = playerUrl + '/';
-            }
-            playerUrl = playerUrl + 'view/' + this.launchedMsel.playerViewId;
-            this.launchedMsel = {};
-            location.href = playerUrl;
-          });
         }
       }
     });
@@ -132,7 +136,6 @@ export class LaunchComponent implements OnDestroy, OnInit {
       // join signalR for this MSEL
       this.signalRService.selectMsel(msel.id);
       this.launchedMsel = msel;
-      this.launchingMselId = '';
     },
     (error) => {
       this.launchingMselId = '';
