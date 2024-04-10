@@ -94,17 +94,15 @@ export class LaunchComponent implements OnDestroy, OnInit {
               loadInBackground: false
             };
             console.log('add new player application');
-            this.playerApplicationDataService.addAndPush(playerApplication).pipe(take(1)).subscribe((s) => {
-              // redirect to player view
-              console.log('Redirecting to your event ...');
-              this.launchStatus = 'Redirecting to your event ...';
-              let playerUrl = this.settingsService.settings.PlayerUrl;
-              if (playerUrl.slice(-1) !== '/') {
-                playerUrl = playerUrl + '/';
-              }
-              playerUrl = playerUrl + 'view/' + this.launchedMsel.playerViewId;
-              location.href = playerUrl;
-            });
+            // redirect to player view
+            console.log('Redirecting to your event ...');
+            this.launchStatus = 'Redirecting to your event ...';
+            let playerUrl = this.settingsService.settings.PlayerUrl;
+            if (playerUrl.slice(-1) !== '/') {
+              playerUrl = playerUrl + '/';
+            }
+            playerUrl = playerUrl + 'view/' + this.launchedMsel.playerViewId;
+            location.href = playerUrl;
           } else {
             console.log('clearing launch status');
             this.launchStatus = '';
