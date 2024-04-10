@@ -79,9 +79,11 @@ export class MselPlus implements Msel {
 
   hasRole(userId: string, scenarioEventId: string) {
     const mselRole = { owner: false, moveEditor: false, approver: false, editor: false, evaluator: false, viewer: false };
-    mselRole.owner = !this.userMselRoles ? false : this.userMselRoles.some(umr =>
-      umr.userId === userId &&
-      umr.role === MselRole.Owner);
+    mselRole.owner = this.createdBy === userId ||
+      (this.userMselRoles && this.userMselRoles.some(umr =>
+        umr.userId === userId &&
+        umr.role === MselRole.Owner)
+      );
     mselRole.moveEditor = !this.userMselRoles ? false : this.userMselRoles.some(umr =>
       umr.userId === userId &&
       umr.role === MselRole.MoveEditor);
