@@ -3,7 +3,7 @@ Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
-<div class="top-container background" *ngIf="msel.id && (isMselOwner || (isContentDeveloper$ | async))">
+<div class="top-container background" *ngIf="msel.id && (msel.hasRole(loggedInUserId, null).owner || (isContentDeveloper$ | async))">
   <app-topbar
     *ngIf="!hideTopbar"
     [title]="topbarText"
@@ -75,7 +75,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
   </mat-card>
 </div>
 
-<div class="nothing-to-see-here background" *ngIf="!msel.id || !(isMselOwner || (isContentDeveloper$ | async))">
+<div class="nothing-to-see-here background" *ngIf="!(msel.id && (msel.hasRole(loggedInUserId, null).owner || (isContentDeveloper$ | async)))">
   <h1>You have nothing to manage.</h1>
   <h2>If you believe you should have permissions to manage this event, contact you administrator.</h2>
 </div>

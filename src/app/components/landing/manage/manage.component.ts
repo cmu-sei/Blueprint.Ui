@@ -40,7 +40,6 @@ export class ManageComponent implements OnDestroy {
   startTime = new Date();
   endTime = new Date();
   loggedInUserId = '';
-  isMselOwner = false;
   isContentDeveloper$ = this.userDataService.isContentDeveloper;
   private unsubscribe$ = new Subject();
 
@@ -89,7 +88,6 @@ export class ManageComponent implements OnDestroy {
             this.endTime = new Date(this.startTime.getTime() + (this.msel.durationSeconds * 1000));
             this.invitationDataService.loadByMsel(msel.id);
             this.teamDataService.loadByMsel(mselId);
-            this.isMselOwner = this.msel.hasRole(this.loggedInUserId, null).owner;
           }
         });
         // set appTitle and topbarText for top level
