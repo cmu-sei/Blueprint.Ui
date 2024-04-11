@@ -75,7 +75,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
   </mat-card>
 </div>
 
-<div class="nothing-to-see-here background" *ngIf="!msel.id || !(msel.hasRole(loggedInUserId, null).owner || (isContentDeveloper$ | async))">
+<div class="nothing-to-see-here background" *ngIf="!(msel.id && (msel.hasRole(loggedInUserId, null).owner || (isContentDeveloper$ | async)))">
   <h1>You have nothing to manage.</h1>
   <h2>If you believe you should have permissions to manage this event, contact you administrator.</h2>
 </div>
