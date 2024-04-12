@@ -13,22 +13,18 @@ import {
   ScenarioEvent,
   Team,
   Unit,
-  User,
-  UserTeamRole
+  User
 } from 'src/app/generated/blueprint.api';
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy-menu';
 import { CiteApiClientTeamType } from 'src/app/generated/blueprint.api/model/citeApiClientTeamType';
 import { CiteService } from 'src/app/generated/blueprint.api';
-import { UserTeamRoleDataService } from 'src/app/data/user-team-role/user-team-role-data.service';
-import { UserTeamRoleQuery } from 'src/app/data/user-team-role/user-team-role.query';
 import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { TeamAddDialogComponent } from '../team-add-dialog/team-add-dialog.component';
 import { TeamEditDialogComponent } from '../team-edit-dialog/team-edit-dialog.component';
 import { UnitQuery } from 'src/app/data/unit/unit.query';
-import { UserAddDialogComponent } from '../user-add-dialog/user-add-dialog.component';
 
 @Component({
   selector: 'app-msel-roles',
@@ -47,18 +43,11 @@ export class MselTeamsComponent implements OnDestroy {
   expandedSectionIds: string[] = [];
   sortedScenarioEvents: ScenarioEvent[];
   sortedDataFields: DataField[];
-  teamRoles: TeamRole[] = [
-    TeamRole.Inviter,
-    TeamRole.Observer,
-    TeamRole.Incrementer,
-    TeamRole.Modifier,
-    TeamRole.Submitter
-  ];
   isEditEnabled = false;
+  editTeamId = '';
   userList: User[] = [];
   teamList: Team[] = [];
   unitList: Unit[] = [];
-  userTeamRoles: UserTeamRole[] = [];
   filterString = '';
   private allTeams: Team[] = [];
   private unsubscribe$ = new Subject();
@@ -71,8 +60,6 @@ export class MselTeamsComponent implements OnDestroy {
     private mselQuery: MselQuery,
     private citeService: CiteService,
     private unitQuery: UnitQuery,
-    private userTeamRoleDataService: UserTeamRoleDataService,
-    private userTeamRoleQuery: UserTeamRoleQuery,
     private dialog: MatDialog,
     public dialogService: DialogService,
   ) {
@@ -94,10 +81,6 @@ export class MselTeamsComponent implements OnDestroy {
         this.allTeams = teams.sort((a, b) => a.shortName?.toLowerCase() > b.shortName?.toLowerCase() ? 1 : -1);
         this.teamList = this.allTeams.filter(t => t.mselId === this.msel.id);
       }
-    });
-    // subscribe to UserTeamRoles
-    this.userTeamRoleQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(umrs => {
-      this.userTeamRoles = umrs;
     });
     // subscribe to TeamTypes
     this.citeService.getTeamTypes().subscribe(teamTypes => {
@@ -126,35 +109,6 @@ export class MselTeamsComponent implements OnDestroy {
     return teamList;
   }
 
-  hasTeamRole(userId: string, team: Team, teamRole: TeamRole): boolean {
-    // if all members can invite, don't have to check each user
-    if (team.canTeamMemberInvite && teamRole === TeamRole.Inviter) {
-      return true;
-    } else {
-      const hasRole = this.userTeamRoles.some(utr =>
-        utr.userId === userId && utr.role === teamRole && utr.teamId === team.id);
-      return hasRole;
-    }
-  }
-
-  toggleTeamRole(userId: string, teamId: string, teamRole: TeamRole, addIt: boolean) {
-    if (addIt) {
-      const umr = {
-        userId: userId,
-        teamId: teamId,
-        role: teamRole
-      } as UserTeamRole;
-      this.userTeamRoleDataService.add(umr);
-    } else {
-      const umrId = this.userTeamRoles.find(umr =>
-        umr.userId === userId &&
-        umr.teamId === teamId &&
-        umr.role === teamRole
-      ).id;
-      this.userTeamRoleDataService.delete(umrId);
-    }
-  }
-
   getCiteTeamTypeName(id: string): string {
     const teamType = this.teamTypeList?.find(x => x.id === id);
     return teamType ? teamType.name : ' ';
@@ -172,24 +126,6 @@ export class MselTeamsComponent implements OnDestroy {
 
   trackByFn(index, item) {
     return item.id;
-  }
-
-  getTeamRolesToDisplay(): TeamRole[] {
-    const teamRoles = [];
-    this.teamRoles.forEach(mr => {
-      if (mr.startsWith('Cite')) {
-        if (this.msel.useCite) {
-          teamRoles.push(mr);
-        }
-      } else if (mr.startsWith('Gallery')) {
-        if (this.msel.useGallery) {
-          teamRoles.push(mr);
-        }
-      } else {
-        teamRoles.push(mr);
-      }
-    });
-    return teamRoles;
   }
 
   addOrEditTeam(team: Team) {
@@ -252,21 +188,6 @@ export class MselTeamsComponent implements OnDestroy {
         this.teamDataService.addFromUnit(this.msel.id, result.unitId);
       }
       dialogRef.close();
-    });
-  }
-
-  addRemoveUsers(team: Team) {
-    const dialogRef = this.dialog.open(UserAddDialogComponent, {
-      width: '800px',
-      height: '80vh',
-      data: {
-        team: team,
-        availableUsers: this.getAvailableUsers(team.id)
-      },
-    });
-    dialogRef.componentInstance.editComplete.subscribe((result) => {
-      dialogRef.close();
-      this.teamDataService.loadById(team.id);
     });
   }
 

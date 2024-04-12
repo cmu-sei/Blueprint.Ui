@@ -28,6 +28,7 @@ import { MselUnitDataService } from 'src/app/data/msel-unit/msel-unit-data.servi
 import { OrganizationDataService } from 'src/app/data/organization/organization-data.service';
 import { ScenarioEventDataService } from 'src/app/data/scenario-event/scenario-event-data.service';
 import { TeamDataService } from 'src/app/data/team/team-data.service';
+import { TeamUserDataService } from 'src/app/data/team-user/team-user-data.service';
 import { UnitDataService } from 'src/app/data/unit/unit-data.service';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
 import { UserDataService } from 'src/app/data/user/user-data.service';
@@ -104,6 +105,7 @@ export class MselComponent implements OnDestroy {
     private organizationDataService: OrganizationDataService,
     private scenarioEventDataService: ScenarioEventDataService,
     private teamDataService: TeamDataService,
+    private teamUserDataService: TeamUserDataService,
     private unitDataService: UnitDataService,
     private uiDataService: UIDataService,
     private userDataService: UserDataService,
@@ -146,6 +148,8 @@ export class MselComponent implements OnDestroy {
         this.userTeamRoleDataService.loadByMsel(mselId);
         // load the MSEL organizations and templates
         this.invitationDataService.loadByMsel(mselId);
+        // load the Msel TeamUsers
+        this.teamUserDataService.loadByMsel(mselId);
       }
     });
     // subscribe to the active MSEL

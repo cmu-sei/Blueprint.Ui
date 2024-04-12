@@ -63,6 +63,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <div class="section-content">
       <mat-expansion-panel
         *ngFor="let team of teamList; trackBy: trackByFn"
+        (opened)="editTeamId = team.id"
+        (closed)="editTeamId = ''"
       >
         <mat-expansion-panel-header
           (click)="$event.stopPropagation();"
@@ -92,31 +94,10 @@ project root for license information or contact permission@sei.cmu.edu for full 
         </mat-expansion-panel-header>
         <div class="user-panel">
           <div class="user-panel-left">&nbsp;</div>
-          <div class="user-panel-left">
-            <button
-              mat-stroked-button
-              (click)="addRemoveUsers(team)"
-              style="height: 40px;"
-              title="Add/Remove user"
-            >
-              Add/Remove Users
-            </button>
-          </div>
           <div class="user-panel-right">
-            <div class="team-detail" *ngFor="let user of team.users">
-              <div class="user-name four-cell">{{ user.name }}</div>
-              <div class="msel-role one-cell" *ngFor="let teamRole of getTeamRolesToDisplay()">
-                <mat-checkbox
-                  [checked]="hasTeamRole(user.id, team, teamRole)"
-                  (change)="toggleTeamRole(user.id, team.id, teamRole, $event.checked)"
-                  (click)="$event.stopPropagation();"
-                  style="margin-right: 20px;"
-                  [disabled]="(!isContentDeveloper && !msel.hasRole(loggedInUserId, null).owner) || (team.canTeamMemberInvite && teamRole === 'Inviter')"
-                  >{{ teamRole }}</mat-checkbox
-                >
-              </div>
-            </div>
-            <div class="team-detail" *ngIf="team.users?.length === 0">This team has no users.</div>
+            <app-team-users *ngIf="team.id === editTeamId"
+              [team]="team"
+            ></app-team-users>
           </div>
         </div>
       </mat-expansion-panel>

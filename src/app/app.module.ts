@@ -101,7 +101,6 @@ import { TeamEditDialogComponent } from './components/team-edit-dialog/team-edit
 import { TeamUsersComponent } from './components/team-users/team-users.component';
 import { TopbarComponent } from './components/shared/top-bar/topbar.component';
 import { UIDataService } from './data/ui/ui-data.service';
-import { UserAddDialogComponent } from './components/user-add-dialog/user-add-dialog.component';
 import { UserDataService } from './data/user/user-data.service';
 import { DialogService } from './services/dialog/dialog.service';
 import { ErrorService } from './services/error/error.service';
@@ -165,7 +164,6 @@ export function getBasePath(settingsSvc: ComnSettingsService) {
     TeamAddDialogComponent,
     TeamEditDialogComponent,
     TeamUsersComponent,
-    UserAddDialogComponent,
     AdminContainerComponent,
     AdminUnitsComponent,
     AdminUnitEditDialogComponent,
