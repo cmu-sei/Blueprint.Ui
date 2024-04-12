@@ -42,7 +42,7 @@ import { PlayerApplicationDataService } from '../data/player-application/player-
 import { PlayerApplicationTeamDataService } from '../data/team/player-application-team-data.service';
 import { ScenarioEventDataService } from '../data/scenario-event/scenario-event-data.service';
 import { TeamDataService } from 'src/app/data/team/team-data.service';
-import { TeamUserDataService } from 'src/app/data/user/team-user-data.service';
+import { TeamUserDataService } from '../data/team-user/team-user-data.service';
 import { UserDataService } from 'src/app/data/user/user-data.service';
 import { UserMselRoleDataService } from '../data/user-msel-role/user-msel-role-data.service';
 
@@ -445,7 +445,7 @@ export class SignalRService {
     });
 
     this.hubConnection.on('TeamUserDeleted', (teamUser: TeamUser) => {
-      this.teamUserDataService.deleteFromStore(teamUser);
+      this.teamUserDataService.deleteFromStore(teamUser.id);
     });
   }
 
