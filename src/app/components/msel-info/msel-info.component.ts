@@ -27,7 +27,7 @@ import { DataFieldQuery } from 'src/app/data/data-field/data-field.query';
 import { MselPageDataService } from 'src/app/data/msel-page/msel-page-data.service';
 import { MselPageQuery } from 'src/app/data/msel-page/msel-page.query';
 import { MselUnitQuery } from 'src/app/data/msel-unit/msel-unit.query';
-import { UntypedFormControl } from '@angular/forms';
+import { AngularEditorConfig } from '@kolkov/angular-editor';
 
 @Component({
   selector: 'app-msel-info',
@@ -60,10 +60,49 @@ export class MselInfoComponent implements OnDestroy {
   changedMselPage = {} as MselPage;
   currentTabIndex = 0;
   editingPageId = '';
-  editorStyle = {
-    'height': 'calc(100vh - 334px)',
-    'width': '100%',
-    'overflow': 'auto'
+  editorConfig: AngularEditorConfig = {
+    editable: true,
+    spellcheck: true,
+    height: 'auto',
+    minHeight: '0',
+    maxHeight: 'auto',
+    width: 'auto',
+    minWidth: '0',
+    translate: 'yes',
+    enableToolbar: true,
+    showToolbar: true,
+    placeholder: 'Enter text here...',
+    defaultParagraphSeparator: '',
+    defaultFontName: '',
+    defaultFontSize: '',
+    fonts: [
+      {class: 'arial', name: 'Arial'},
+      {class: 'times-new-roman', name: 'Times New Roman'},
+      {class: 'calibri', name: 'Calibri'},
+      {class: 'comic-sans-ms', name: 'Comic Sans MS'}
+    ],
+    uploadUrl: '',
+    uploadWithCredentials: false,
+    sanitize: true,
+    toolbarPosition: 'top',
+    toolbarHiddenButtons: [
+      ['backgroundColor']
+    ]
+  };
+  viewConfig: AngularEditorConfig = {
+    editable: false,
+    height: 'auto',
+    minHeight: '1200px',
+    width: '100%',
+    minWidth: '0',
+    translate: 'yes',
+    enableToolbar: false,
+    showToolbar: false,
+    placeholder: '',
+    defaultParagraphSeparator: '',
+    defaultFontName: '',
+    defaultFontSize: '',
+    sanitize: true,
   };
   isBusy = true;
   dataFieldList: DataField[] = [];

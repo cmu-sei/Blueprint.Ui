@@ -108,7 +108,7 @@ import { SystemMessageService } from './services/system-message/system-message.s
 import { BASE_PATH } from './generated/blueprint.api';
 import { ApiModule as SwaggerCodegenApiModule } from './generated/blueprint.api/api.module';
 import { DisplayOrderPipe, SortByPipe } from 'src/app/utilities/sort-by-pipe';
-import { QuillModule } from 'ngx-quill';
+import { AngularEditorModule } from '@kolkov/angular-editor';
 import { PlainTextPipe } from './utilities/plain-text-pipe';
 import { NgxMatDatetimePickerModule, NgxMatTimepickerModule, NgxMatNativeDateModule } from '@angular-material-components/datetime-picker';
 import { DurationEditComponent } from './components/shared/duration-edit/duration-edit.component';
@@ -230,62 +230,7 @@ export function getBasePath(settingsSvc: ComnSettingsService) {
     ClipboardModule,
     ComnAuthModule.forRoot(),
     ComnSettingsModule.forRoot(),
-    QuillModule.forRoot({
-      bounds: '.left',
-      modules: {
-        toolbar: [
-          ['bold', 'italic', 'underline', 'strike'],        // toggled buttons
-          ['blockquote', 'code-block'],
-
-          [{ 'header': 1 }, { 'header': 2 }],               // custom button values
-          [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-          [{ 'script': 'sub'}, { 'script': 'super' }],      // superscript/subscript
-          [{ 'indent': '-1'}, { 'indent': '+1' }],          // outdent/indent
-          [{ 'direction': 'rtl' }],                         // text direction
-
-          [{ 'size': ['small', false, 'large', 'huge'] }],  // custom dropdown
-          [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
-
-          [{ 'color': [
-            '#b5b5b5',
-            'rgb(163, 235, 163)',
-            'rgb(250, 235, 100)',
-            'rgb(250, 163, 2)',
-            '#ff3333',
-            '#ff3838',
-            '#ebb3b3',
-            '#e00',
-            '#d00',
-            '#c00',
-            '#b00',
-            '#a00',
-            '#900',
-            '#800',
-            '#700',
-            '#a60',
-            '#067',
-            '#247',
-            '#085',
-            '#2d69b4',
-            '#336fba',
-            '#2d69b4',
-            '#242526',
-            '#373739',
-            '#306cb7',
-            '#4e8ad5'
-          ] },
-          { 'background': [] }],      // dropdown with defaults from theme
-          [{ 'font': [] }],
-          [{ 'align': [] }],
-          ['clean'],                  // remove formatting button
-          ['link', 'image', 'video']  // link and image, video
-        ],
-        history: {
-          delay: 2000,
-          maxStack: 200
-        }
-      }
-    }),
+    AngularEditorModule
   ],
   exports: [MatSortModule],
   providers: [

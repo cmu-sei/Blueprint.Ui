@@ -461,12 +461,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
             *ngIf="editingPageId"
           >All MSEL users can view this page</mat-checkbox>
         </div>
-        <div id="quill">
-          <quill-editor *ngIf="editingPageId" [styles]="editorStyle"
-            placeholder="Content" [(ngModel)]="changedMselPage.content"
-          >
-          </quill-editor>
-          <quill-view-html *ngIf="!editingPageId" [content]="changedMselPage.content" theme="snow"></quill-view-html>
+        <div>
+          <angular-editor
+            [placeholder]="'Content'"
+            [(ngModel)]="changedMselPage.content"
+            [config]="editingPageId ? editorConfig : viewConfig"
+          ></angular-editor>
         </div>
       </div>
     </mat-tab>
@@ -513,11 +513,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
             title="All MSEL users can view this page"
           >All MSEL users can view this page</mat-checkbox>
         </div>
-        <div id="quill">
-          <quill-editor [styles]="editorStyle"
-            placeholder="Content" [(ngModel)]="changedMselPage.content"
-          >
-          </quill-editor>
+        <div>
+          <angular-editor
+            [placeholder]="'Content'"
+            [(ngModel)]="changedMselPage.content"
+            [config]="editorConfig"
+          ></angular-editor>
         </div>
       </div>
     </mat-tab>

@@ -71,11 +71,13 @@ project root for license information.
         <p style="font-size: 13px; font-weight: 400; line-height: 1.125; font-family: Open Sans, sans-serif; letter-spacing: normal;">
           Description
         </p>
-        <div id="quill">
-          <quill-editor [styles]="editorStyle" placeholder="Enter Text"
-              placeholder="Description" [formControl]="descriptionFormControl"
-              (blur)="saveOrganization('description')">
-          </quill-editor>
+        <div>
+          <angular-editor
+            [placeholder]="'Description'"
+            [formControl]="descriptionFormControl"
+            [config]="editorConfig"
+            (blur)="saveOrganization('description')"
+          ></angular-editor>
           <mat-error *ngIf="descriptionFormControl.hasError('required')">
             Description is <strong>required</strong>
           </mat-error>

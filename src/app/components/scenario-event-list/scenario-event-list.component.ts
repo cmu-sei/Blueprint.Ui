@@ -44,6 +44,7 @@ import { DataFieldQuery } from 'src/app/data/data-field/data-field.query';
 import { DataOptionQuery } from 'src/app/data/data-option/data-option.query';
 import { TeamQuery } from 'src/app/data/team/team.query';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
+import { AngularEditorConfig } from '@kolkov/angular-editor';
 
 @Component({
   selector: 'app-scenario-event-list',
@@ -70,10 +71,20 @@ export class ScenarioEventListComponent implements OnDestroy {
   isAddingScenarioEvent = false;
   canDoAnything = false;
   private unsubscribe$ = new Subject();
-  editorStyle = {
-    'min-height': '100px',
-    'max-height': '400px',
-    'overflow': 'auto'
+  viewConfig: AngularEditorConfig = {
+    editable: false,
+    height: 'auto',
+    minHeight: '1200px',
+    width: '100%',
+    minWidth: '0',
+    translate: 'yes',
+    enableToolbar: false,
+    showToolbar: false,
+    placeholder: '',
+    defaultParagraphSeparator: '',
+    defaultFontName: '',
+    defaultFontSize: '',
+    sanitize: true,
   };
   dataType: typeof DataFieldType = DataFieldType;
   dateFormControls = new Map<string, UntypedFormControl>();
