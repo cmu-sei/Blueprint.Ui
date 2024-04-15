@@ -5,6 +5,10 @@ Released under a MIT (SEI)-style license. See LICENSE.md in the project root for
 
 <div class="article-container background">
   <div class="page">
-    <quill-view-html [content]="mselPage.content" theme="snow"></quill-view-html>
+    <angular-editor
+      [placeholder]="'Description'"
+      [(ngModel)]="mselPage.content"
+      [config]="viewConfig"
+    ></angular-editor>
   </div>
 </div>

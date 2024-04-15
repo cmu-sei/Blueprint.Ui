@@ -93,18 +93,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <div class="editor-label">
               {{ df.name }}
             </div>
-            <div class="quill-view" *ngIf="!data.isEditor">
-              <quill-view-html
-                [content]="''"
-                theme="snow"
-              ></quill-view-html>&nbsp;
-            </div>
-            <div class="quill-edit" *ngIf="data.isEditor">
-              <quill-editor
-                [styles]="editorStyle"
-                placeholder="Enter value ..."
+            <div>
+              <angular-editor
+                [placeholder]="'Enter value ...'"
                 [(ngModel)]="getDataValue(df.name).value"
-              ></quill-editor>
+                [config]="data.isEditor ? editorConfig : viewConfig"
+              ></angular-editor>
             </div>
             &nbsp;
           </div>

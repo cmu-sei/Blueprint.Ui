@@ -46,11 +46,6 @@ export class PlayerApplicationEditDialogComponent {
     this.data.playerApplication.playerApplicationStopTime,
     []
   );
-  editorStyle = {
-    'min-height': '100px',
-    'max-height': '400px',
-    'overflow': 'auto'
-  };
 
   constructor(
     public dialogService: DialogService,

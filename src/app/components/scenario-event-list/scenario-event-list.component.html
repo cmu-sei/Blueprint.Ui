@@ -294,7 +294,10 @@ project root for license information or contact permission@sei.cmu.edu for full 
               <!-- HTML value -->
               <td *ngIf="df.dataType.toString() === 'Html'">
                 <div class="html-constrainer" [style]="getStyle(df)">
-                  <quill-view-html [content]="getScenarioEventValue(item, df.name)" theme="snow"></quill-view-html>
+                  <angular-editor
+                    [ngModel]="getScenarioEventValue(item, df.name)"
+                    [config]="viewConfig"
+                  ></angular-editor>
                 </div>
               </td>
               <!-- Organization value -->

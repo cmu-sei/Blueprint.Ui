@@ -78,13 +78,12 @@ project root for license information.
         <p style="font-size: 13px; font-weight: 400; line-height: 1.125; font-family: Open Sans, sans-serif; letter-spacing: normal;">
           Situation Description
         </p>
-        <div id="quill">
-          <quill-editor
-            [styles]="editorStyle"
-            placeholder="Enter Text"
-            placeholder="Description"
-            [(ngModel)]="data.move.situationDescription">
-          </quill-editor>
+        <div>
+          <angular-editor
+            [placeholder]="'Description'"
+            [(ngModel)]="data.move.situationDescription"
+            [config]="editorConfig"
+          ></angular-editor>
         </div>
       </div>
     </div>
