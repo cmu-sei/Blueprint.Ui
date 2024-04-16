@@ -273,7 +273,7 @@ export class CiteActionListComponent implements OnDestroy {
             );
         }
         if (this.selectedMoveNumber >= 0) {
-          filteredCiteActions = filteredCiteActions.filter((a) => a.moveNumber === this.selectedMoveNumber);
+          filteredCiteActions = filteredCiteActions.filter((a) => +a.moveNumber === +this.selectedMoveNumber);
         }
         if (this.selectedTeamId) {
           filteredCiteActions = filteredCiteActions.filter((a) => a.teamId === this.selectedTeamId);
