@@ -160,10 +160,12 @@ export class InvitationListComponent implements OnDestroy {
       });
       if (filteredInvitations && filteredInvitations.length > 0 && this.filterString) {
         const filterString = this.filterString?.toLowerCase();
-        filteredInvitations = filteredInvitations
-          .filter((a) =>
-            true
-          );
+        filteredInvitations = filteredInvitations.filter(invitation => {
+          const teamName = this.getTeamName(invitation.teamId)?.toLowerCase() || ''; // Ensuring it's always a string
+          return teamName.includes(filterString) ||
+                 invitation.emailDomain.toLowerCase().includes(filterString) ||
+                 (invitation.teamId && invitation.teamId.toString().includes(filterString));
+        });
       }
     }
     return filteredInvitations;
