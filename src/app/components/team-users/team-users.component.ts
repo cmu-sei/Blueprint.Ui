@@ -9,8 +9,7 @@ import {
   Input,
   ViewChild,
 } from '@angular/core';
-import { LegacyPageEvent as PageEvent, MatLegacyPaginator as MatPaginator } from '@angular/material/legacy-paginator';
-import { MatSort, MatSortable } from '@angular/material/sort';
+import { Sort, MatSortable } from '@angular/material/sort';
 import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
 import { TeamQuery } from 'src/app/data/team/team.query';
 import { TeamRole, Team, TeamUser, User, UserTeamRole } from 'src/app/generated/blueprint.api';
@@ -21,6 +20,7 @@ import { UserTeamRoleDataService } from 'src/app/data/user-team-role/user-team-r
 import { UserTeamRoleQuery } from 'src/app/data/user-team-role/user-team-role.query';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { UntypedFormControl } from '@angular/forms';
 @Component({
   selector: 'app-team-users',
   templateUrl: './team-users.component.html',
@@ -38,16 +38,12 @@ export class TeamUsersComponent implements OnDestroy, OnInit {
   displayedTeamUserColumns: string[] = [];
   userDataSource = new MatTableDataSource<User>(new Array<User>());
   teamUserDataSource = new MatTableDataSource<TeamUser>(new Array<TeamUser>());
-  filterControl = this.userDataService.filterControl;
+  filterControl = new UntypedFormControl();
   filterString = '';
   isAddMode = false;
-  currentPageIndex = 0;
-  pageSize = 7;
-  itemCount = 0;
+  sort: Sort = {active: 'name', direction: 'asc'};
   teamRoles: string[] = ['Inviter', 'Observer', 'Incrementer', 'Modifier', 'Submitter'];
   private unsubscribe$ = new Subject();
-  @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
-  @ViewChild(MatSort, { static: true }) sort: MatSort;
 
   constructor(
     private teamQuery: TeamQuery,
@@ -78,8 +74,14 @@ export class TeamUsersComponent implements OnDestroy, OnInit {
   }
 
   ngOnInit() {
-    this.sort.sort(<MatSortable>{ id: 'name', start: 'asc' });
-    this.userDataSource.sort = this.sort;
+    this.filterControl.valueChanges.pipe(takeUntil(this.unsubscribe$)).subscribe(() => {
+      this.filterString = this.filterControl.value;
+      this.applyFilter();
+    });
+    this.userDataService.userList.pipe(takeUntil(this.unsubscribe$)).subscribe(users => {
+      this.userList = users;
+      this.applyFilter();
+    });
     this.filterControl.setValue('');
     this.teamUsers = this.teamUserQuery.getAll().filter(tu => tu.teamId === this.team?.id);
     this.otherTeamUsers = this.teamUserQuery.getAll().filter(tu => tu.teamId !== this.team?.id);
@@ -113,8 +115,58 @@ export class TeamUsersComponent implements OnDestroy, OnInit {
       }
     });
     this.userDataSource = new MatTableDataSource(newAllUsers);
-    this.userDataSource.sort = this.sort;
-    this.itemCount = this.userDataSource.data.length;
+  }
+
+  applyFilter() {
+    const searchTerm = this.filterControl.value ? this.filterControl.value.toLowerCase() : '';
+    const filteredData = this.userList.filter(user =>
+      !searchTerm || user.name.toLowerCase().includes(searchTerm)
+    );
+    this.sortUserData(filteredData);
+  }
+
+  sortUserData(data: User[]) {
+    data.sort((a, b) => {
+      const isAsc = this.sort.direction === 'asc';
+      switch (this.sort.active) {
+        case 'name':
+          return this.compare(a.name, b.name, isAsc);
+        case 'id':
+          return this.compare(a.id, b.id, isAsc);
+        default:
+          return 0;
+      }
+    });
+    this.userDataSource.data = data;
+  }
+
+  sortTeamUserData(teamUserData: TeamUser[]) {
+    teamUserData.sort((a, b) => {
+      const aName = this.getUserName(a.userId).toLowerCase(); // Assumption: getUserName resolves the user's name by ID
+      const bName = this.getUserName(b.userId).toLowerCase();
+      const isAsc = this.sort.direction === 'asc';
+      switch (this.sort.active) {
+        case 'name':
+          return this.compare(aName, bName, isAsc);
+        default:
+          return 0;
+      }
+    });
+    this.teamUserDataSource.data = teamUserData;
+  }
+
+  compare(a: string, b: string, isAsc: boolean) {
+    return (a < b ? -1 : 1) * (isAsc ? 1 : -1);
+  }
+
+  onSortChange(sort: Sort) {
+    this.sort = sort;
+    this.applyFilter();
+  }
+
+  onSortTeamChange(sort: Sort) {
+    this.sort = sort;
+    this.sortTeamUserData(this.teamUsers);
   }
 
   getUserName(id: string) {
@@ -175,10 +227,6 @@ export class TeamUsersComponent implements OnDestroy, OnInit {
     } else {
       this.displayedTeamUserColumns = this.allUserColumns;
     }
-  }
-
-  handlePageEvent(pageEvent: PageEvent) {
-    this.currentPageIndex = pageEvent.pageIndex;
   }
 
   onAnotherTeam(userId: string): boolean {

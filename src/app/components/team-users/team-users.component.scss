@@ -3,11 +3,10 @@
 // project root for license information or contact permission@sei.cmu.edu for full terms.
 
 .user-list-container {
-  display: flex;
+  display: inline-block;
   flex-direction: column;
-  flex: 8;
-  min-width: 250px;
   margin-top: 10px;
+  min-width: 400px;
   min-height: 600px;
 }
 
@@ -16,18 +15,16 @@
 }
 
 .team-list-container {
-  display: flex;
+  display: inline-block;
   flex-direction: column;
-  flex: 8;
-  margin-left: 20px;
   margin-top: 10px;
+  min-width: 800px;
   min-height: 600px;
-  min-width: 250px;
 }
 
 .search-box {
-  margin-left: 30px;
   width: 150px;
+  margin-left: 10px;
 }
 
 .mat-table-all-users {
@@ -61,3 +58,11 @@
   flex: 1;
   flex-direction: row;
 }
+.special-team-list-container {
+  display: inline-block;
+  flex-direction: column;
+  margin-top: 10px;
+  min-width: 400px;
+  min-height: 600px;
+}
+

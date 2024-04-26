@@ -10,8 +10,7 @@ import {
   ElementRef,
   ViewChild,
 } from '@angular/core';
-import { LegacyPageEvent as PageEvent, MatLegacyPaginator as MatPaginator } from '@angular/material/legacy-paginator';
-import { MatSort, MatSortable } from '@angular/material/sort';
+import { Sort } from '@angular/material/sort';
 import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
 import { User } from 'src/app/generated/blueprint.api';
 import { UnitUserDataService } from 'src/app/data/user/unit-user-data.service';
@@ -30,20 +29,16 @@ export class AdminUnitUsersComponent implements OnDestroy, OnInit {
   userList: User[] = [];
   users: User[] = [];
   unitUsers: User[] = [];
-
   displayedUserColumns: string[] = ['name', 'id'];
   displayedUnitColumns: string[] = ['name', 'user'];
   userDataSource = new MatTableDataSource<User>(new Array<User>());
   unitUserDataSource = new MatTableDataSource<User>(new Array<User>());
   filterControl = new UntypedFormControl();
   filterString = '';
-  defaultPageSize = 20;
-  pageEvent: PageEvent;
   private unsubscribe$ = new Subject();
-
+  sort: Sort = {active: 'name', direction: 'asc'};
   @ViewChild('usersInput') usersInput: ElementRef<HTMLInputElement>;
-  @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
-  @ViewChild(MatSort, { static: true }) sort: MatSort;
+
 
   constructor(
     private unitUserDataService: UnitUserDataService,
@@ -60,11 +55,6 @@ export class AdminUnitUsersComponent implements OnDestroy, OnInit {
   }
 
   ngOnInit() {
-    this.sort.sort(<MatSortable>{ id: 'name', start: 'asc' });
-    this.userDataSource.sort = this.sort;
-    this.pageEvent = new PageEvent();
-    this.pageEvent.pageIndex = 0;
-    this.pageEvent.pageSize = this.defaultPageSize;
     this.unitUserDataService.unitUsers.pipe(takeUntil(this.unsubscribe$)).subscribe(tUsers => {
       this.unitUsers = tUsers;
       this.setDataSources();
@@ -74,7 +64,6 @@ export class AdminUnitUsersComponent implements OnDestroy, OnInit {
 
   applyFilter(filterValue: string) {
     this.filterString = filterValue;
-    this.pageEvent.pageIndex = 0;
     filterValue = filterValue.toLowerCase(); // MatTableDataSource defaults to lowercase matches
     this.userDataSource.filter = filterValue;
   }
@@ -89,9 +78,6 @@ export class AdminUnitUsersComponent implements OnDestroy, OnInit {
   }
 
   setDataSources() {
-    // Now that all of the observables are returned, process accordingly.
-    // get users from the UnitUsers
-    // sort the list and add it as the data source
     this.unitUserDataSource.data = this.unitUsers.sort((a, b) => {
       const aName = this.getUserName(a.id).toLowerCase();
       const bName = this.getUserName(b.id).toLowerCase();
@@ -111,8 +97,6 @@ export class AdminUnitUsersComponent implements OnDestroy, OnInit {
       }
     });
     this.userDataSource = new MatTableDataSource(newAllUsers);
-    this.userDataSource.sort = this.sort;
-    this.userDataSource.paginator = this.paginator;
   }
 
   addUserToUnit(user: User): void {
@@ -122,6 +106,46 @@ export class AdminUnitUsersComponent implements OnDestroy, OnInit {
     if (index === -1) {
       this.unitUserDataService.addUserToUnit(this.unitId, user);
     }
+  }
+
+  onSortChange(sort: Sort) {
+    this.sort = sort;
+    this.sortUserData(this.userList);
+  }
+
+  sortUserData(data: User[]) {
+    data.sort((a, b) => {
+      const isAsc = this.sort.direction === 'asc';
+      switch (this.sort.active) {
+        case 'name':
+          return this.compare(a.name, b.name, isAsc);
+        case 'id':
+          return this.compare(a.id, b.id, isAsc);
+        default:
+          return 0;
+      }
+    });
+    this.userDataSource.data = data;
+  }
+
+  onSortUnitChange(sort: Sort) {
+    this.sort = sort;
+    this.sortUserUnitData(this.unitUsers);
+  }
+
+  sortUserUnitData(data: User[]) {
+    data.sort((a, b) => {
+      const isAsc = this.sort.direction === 'asc';
+      switch (this.sort.active) {
+        case 'name':
+          return this.compare(a.name, b.name, isAsc);
+        case 'id':
+          return this.compare(a.id, b.id, isAsc);
+        default:
+          return 0;
+      }
+    });
+    this.unitUserDataSource.data = data;
   }
 
   /**
