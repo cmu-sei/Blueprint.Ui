@@ -55,6 +55,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       #table
       [dataSource]="userDataSource"
       matSort
+      (matSortChange)="onSortChange($event)"
     >
       <ng-container matColumnDef="name">
         <mat-header-cell *matHeaderCellDef mat-sort-header
@@ -82,13 +83,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
     </mat-table>
 
     <div *ngIf="userDataSource.filteredData.length === 0">No results found</div>
-    <mat-paginator
-      #paginator
-      [pageSize]="defaultPageSize"
-      [showFirstLastButtons]="true"
-      (page)="pageEvent = $event"
-    >
-    </mat-paginator>
   </div>
 
   <div style="margin-left: 20px;">
@@ -116,6 +110,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         #table
         [dataSource]="unitUserDataSource"
         matSort
+        (matSortChange)="onSortUnitChange($event)"
       >
         <ng-container matColumnDef="name">
           <mat-header-cell *matHeaderCellDef mat-sort-header
