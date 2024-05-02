@@ -195,7 +195,7 @@ export class MselListComponent implements OnDestroy, OnInit  {
         const link = document.createElement('a');
         link.href = url;
         link.target = '_blank';
-        link.download = msel.name.endsWith('.json') ? msel.name : msel.name + '.json';
+        link.download = msel.name + '-msel.json';
         link.click();
         this.isReady = true;
       },
