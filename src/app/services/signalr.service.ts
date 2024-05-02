@@ -4,7 +4,7 @@
  project root for license information.
 */
 
-import { Injectable } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 import { ComnAuthService, ComnSettingsService } from '@cmusei/crucible-common';
 import * as signalR from '@microsoft/signalr';
 import {
@@ -45,6 +45,8 @@ import { TeamDataService } from 'src/app/data/team/team-data.service';
 import { TeamUserDataService } from '../data/team-user/team-user-data.service';
 import { UserDataService } from 'src/app/data/user/user-data.service';
 import { UserMselRoleDataService } from '../data/user-msel-role/user-msel-role-data.service';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 export enum ApplicationArea {
   home = '',
@@ -53,16 +55,14 @@ export enum ApplicationArea {
 @Injectable({
   providedIn: 'root',
 })
-export class SignalRService {
+export class SignalRService implements OnDestroy {
   private hubConnection: signalR.HubConnection;
   private applicationArea: ApplicationArea;
   private connectionPromise: Promise<void>;
   private isJoined = false;
-  private retryArray = [0, 10, 10, 10, 10,
-    100, 100, 100, 100,
-    1000, 1000, 1000, 1000,
-    10000, 10000, 10000, 10000,
-    30000, 30000, 30000, null];
+  private mselId = '';
+  private token = '';
+  private unsubscribe$ = new Subject();
 
   constructor(
     private authService: ComnAuthService,
@@ -86,7 +86,7 @@ export class SignalRService {
     private userDataService: UserDataService,
     private userMselRoleDataService: UserMselRoleDataService
   ) {
-    this.authService.user$.subscribe(() => {
+    this.authService.user$.pipe(takeUntil(this.unsubscribe$)).subscribe(() => {
       this.reconnect();
     });
   }
@@ -99,18 +99,14 @@ export class SignalRService {
     this.applicationArea = applicationArea;
     const accessToken = this.authService.getAuthorizationToken();
     this.hubConnection = new signalR.HubConnectionBuilder()
-      .withUrl(
-        `${this.settingsService.settings.ApiUrl}/hubs/main?bearer=${accessToken}`
-      )
-      .withAutomaticReconnect(this.retryArray)
+      .withUrl(this.getHubUrlWithAuth())
+      .withAutomaticReconnect(new RetryPolicy(120, 0, 5))
       .configureLogging(signalR.LogLevel.Information)
       .build();
 
     this.hubConnection.onreconnected(() => {
       this.join();
     });
-
-    this.hubConnection.onclose(() => location.reload());
 
     this.addHandlers();
     this.connectionPromise = this.hubConnection.start();
@@ -119,54 +115,58 @@ export class SignalRService {
     return this.connectionPromise;
   }
 
+  private getHubUrlWithAuth(): string {
+    const accessToken = this.authService.getAuthorizationToken();
+    if (accessToken !== this.token) {
+      this.token = accessToken;
+      if (!this.token) {
+        location.reload();
+      }
+    }
+    const hubUrl = `${this.settingsService.settings.ApiUrl}/hubs/main?bearer=${accessToken}`;
+    return hubUrl;
+  }
+
   public join() {
     if (this.hubConnection.state === signalR.HubConnectionState.Connected) {
       this.hubConnection.invoke('Join' + this.applicationArea);
       this.isJoined = true;
-    } else {
-      this.isJoined = false;
-      this.reconnect();
+      if (this.mselId) {
+        setTimeout(() => this.selectMsel(this.mselId), 100);
+      }
     }
   }
 
   public leave() {
-    if (this.hubConnection.state === signalR.HubConnectionState.Connected && this.isJoined) {
+    if (this.isJoined) {
       this.hubConnection.invoke('Leave' + this.applicationArea);
     }
     this.isJoined = false;
   }
 
   public selectMsel(mselId: string) {
-    if (this.hubConnection.state !== signalR.HubConnectionState.Disconnected &&
-      this.hubConnection.state !== signalR.HubConnectionState.Connected) {
-      setTimeout(() => {
-        this.selectMsel(mselId);
-      }, 100);
-    } else if (!this.hubConnection || this.hubConnection.state === signalR.HubConnectionState.Disconnected) {
-      this.connectionPromise = this.hubConnection.start();
-      this.connectionPromise.then((x) => {
-        this.join();
-        setTimeout(() => {
-          this.selectMsel(mselId);
-        }, 100);
-      });
+    if (this.hubConnection.state !== signalR.HubConnectionState.Connected) {
+      setTimeout(() => this.selectMsel(mselId), 500);
     } else if (this.isJoined) {
       if (this.applicationArea !== ApplicationArea.admin) {
         this.hubConnection.invoke('selectMsel', [mselId]);
+        this.mselId = mselId;
       }
-    } else {
-      this.join();
-      setTimeout(() => {
-        this.selectMsel(mselId);
-      }, 100);
     }
   }
 
   private reconnect() {
     if (this.hubConnection != null) {
       this.hubConnection.stop().then(() => {
+        this.hubConnection.baseUrl = this.getHubUrlWithAuth();
         this.connectionPromise = this.hubConnection.start();
-        this.connectionPromise.then(() => this.join());
+        this.connectionPromise.then(() => {
+          if (this.hubConnection.state !== signalR.HubConnectionState.Connected) {
+            setTimeout(() => this.reconnect(), 500);
+          } else {
+            this.join();
+          }
+        });
       });
     }
   }
@@ -472,5 +472,36 @@ export class SignalRService {
     this.hubConnection.on('UserMselRoleDeleted', (id: string) => {
       this.userMselRoleDataService.deleteFromStore(id);
     });
+  }
+
+  ngOnDestroy() {
+    this.unsubscribe$.next(null);
+    this.unsubscribe$.complete();
+  }
+
+}
+
+class RetryPolicy {
+  constructor(
+    private maxSeconds: number,
+    private minJitterSeconds: number,
+    private maxJitterSeconds: number
+  ) {}
+
+  nextRetryDelayInMilliseconds(
+    retryContext: signalR.RetryContext
+  ): number | null {
+    let nextRetrySeconds = Math.pow(2, retryContext.previousRetryCount + 1);
+
+    if (retryContext.elapsedMilliseconds / 1000 > this.maxSeconds) {
+      location.reload();
+    }
+
+    nextRetrySeconds +=
+      Math.floor(
+        Math.random() * (this.maxJitterSeconds - this.minJitterSeconds + 1)
+      ) + this.minJitterSeconds; // Add Jitter
+
+    return nextRetrySeconds * 1000;
   }
 }
