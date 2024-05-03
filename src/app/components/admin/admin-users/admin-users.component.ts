@@ -143,6 +143,10 @@ export class AdminUsersComponent implements OnDestroy {
     return isValidUuid(this.newUser.id) && this.newUser.name && this.newUser.name.length > 2;
   }
 
+  handleInput(event: KeyboardEvent): void{
+    event.stopPropagation();
+  }
+
   getPermissionTooltip(permission: string): string {
     let tooltip = '';
     switch (permission) {

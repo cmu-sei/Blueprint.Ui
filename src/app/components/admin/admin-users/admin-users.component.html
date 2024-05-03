@@ -66,10 +66,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <mat-form-field class="new-user-spacing">
           <input
             matInput
+            (keydown)="handleInput($event)"
             placeholder="User Name"
             [(ngModel)]="newUser.name"
             matTooltip="Must have a minimum of 4 characters"
-          />
+          >
         </mat-form-field>
         <button
           mat-icon-button
