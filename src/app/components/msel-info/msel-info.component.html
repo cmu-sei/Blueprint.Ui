@@ -132,7 +132,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 *ngIf="(!msel.playerViewId &&
                         !msel.citeEvaluationId &&
                         !msel.galleryCollectionId &&
-                        !msel.steamfitterScenarioId) ||
+                        !msel.steamfitterScenarioId &&
+                        !msel.isTemplate) ||
                         pushStatus"
                 [disabled]="!(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) ||
                             (msel.useGallery && galleryToDo()) ||
