@@ -1,0 +1,32 @@
+<div class="container">
+  <app-topbar
+    *ngIf="!hideTopbar"
+    [title]="topbarText"
+    [topbarView]="TopbarView.STEAMFITTER_HOME"
+    [topbarColor]="topbarColor"
+    [topbarTextColor]="topbarTextColor"
+    [imageFilePath]="topbarImage"
+    (urlNavigate)="topBarNavigate($event)"
+  ></app-topbar>
+  <h1>Inject Details for {{getTitleForScenarioEvent(this.scenarioEventId)}}</h1>
+  <div *ngIf="msel">
+    <table id="eventDetails">
+      <thead>
+        <tr>
+            <th>Data Field</th>
+            <th>Data Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <ng-container *ngFor="let item of sortedScenarioEvents">
+            <ng-container *ngFor="let df of allDataFields">
+                <tr *ngIf="getScenarioEventValue(item, df.name) && item.id === scenarioEventId">
+                  <td>{{ df.name }}</td>
+                  <td>{{ getScenarioEventValue(item, df.name) }}</td>
+                </tr>
+            </ng-container>
+        </ng-container>
+      </tbody>
+    </table>
+  </div>
+</div>

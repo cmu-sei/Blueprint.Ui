@@ -1,0 +1,22 @@
+#eventDetails {
+  font-family: Arial, Helvetica, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+#eventDetails td, #eventDetails th {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+#eventDetails tr:nth-child(even){background-color: #f2f2f2;}
+
+#eventDetails tr:hover {background-color: #ddd;}
+
+#eventDetails th {
+  padding-top: 12px;
+  padding-bottom: 12px;
+  text-align: left;
+  background-color: #04AA6D;
+  color: white;
+}
