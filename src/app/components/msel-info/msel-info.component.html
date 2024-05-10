@@ -328,6 +328,18 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 >Is a Template</mat-checkbox>
             </div>
           </div>
+          <!-- MSEL Playbook -->
+          <div class="single-detail center-self">
+            <div class="sub-detail center-self">
+              <mat-checkbox
+                [(ngModel)]="msel.usePlaybook"
+                (cut)="isChanged = true"
+                (change)="isChanged = true"
+                (paste)="isChanged = true"
+                (keypress)="isChanged = true"
+                >Enable Playbook</mat-checkbox>
+            </div>
+          </div>
           <!-- row meta data -->
           <div
             class="single-detail center-self"

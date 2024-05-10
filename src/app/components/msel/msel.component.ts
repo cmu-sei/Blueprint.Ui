@@ -61,6 +61,7 @@ export class MselComponent implements OnDestroy {
     'CITE Roles',
     'Scenario Events',
     'Exercise View',
+    'MSEL Playbook',
     'Invitations'
   ];
   fontIconList = new Map<string, string>([
@@ -76,6 +77,7 @@ export class MselComponent implements OnDestroy {
     ['CITE Roles', 'mdi-clipboard-account-outline'],
     ['Scenario Events', 'mdi-chart-timeline'],
     ['Exercise View', 'mdi-eye-outline'],
+    ['MSEL Playbook', 'mdi-book'],
     ['Invitations', 'mdi-email-open-outline']
   ]);
   private unsubscribe$ = new Subject();
@@ -209,6 +211,11 @@ export class MselComponent implements OnDestroy {
             tabList.push(tab);
           }
           break;
+        // case 'MSEL Playbook':
+        //   if (this.msel?.usePlaybook) {
+        //     tabList.push(tab);
+        //   }
+        //   break;
         default:
           tabList.push(tab);
           break;

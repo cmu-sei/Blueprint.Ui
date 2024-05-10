@@ -1,0 +1,41 @@
+<div class="frame">
+    <div id="printable-area">
+        <div class="header-div">
+          <h2>MSEL Playbook</h2>
+          <div class="right-buttons no-print">
+            <button
+              aria-label="Print Submission Review"
+              mat-icon-button
+              style="outline: none;"
+              title="Print Submission Review"
+              (click)="printpage()"
+            >
+              <mat-icon aria-hidden="false" class="mdi-24px" fontIcon="mdi-printer"></mat-icon>
+            </button>
+          </div>
+        </div>
+    <div *ngIf="msel" class="table-container">
+      <ng-container *ngFor="let scenarioEvent of sortedScenarioEvents | slice: (pageIndex * pageSize) : (pageIndex * pageSize) + pageSize; let i = index">
+        <table id="eventDetails" [style.marginBottom.px]="i !== sortedScenarioEvents.length - 1 ? 20 : 0">
+          <thead>
+            <tr>
+              <th style="width: 100px;">Title</th>
+              <th>{{ getTitleForScenarioEvent(scenarioEvent.id) }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <ng-container *ngFor="let df of allDataFields">
+              <tr *ngIf="getScenarioEventValue(scenarioEvent, df.name) && df.name != 'Title'">
+                <td style="font-weight:bold;">{{ df.name }}</td>
+                <td>{{ removeHtmlTags(getScenarioEventValue(scenarioEvent, df.name)) }}</td>
+              </tr>
+            </ng-container>
+          </tbody>
+        </table>
+      </ng-container>
+      <mat-paginator [length]="sortedScenarioEvents.length" [pageSize]="pageSize" [pageSizeOptions]="[1, 5, 10, 20]" (page)="changePage($event)">
+      </mat-paginator>
+    </div>
+  </div>
+  </div>
+  

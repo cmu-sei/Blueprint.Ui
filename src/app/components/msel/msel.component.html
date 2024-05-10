@@ -204,6 +204,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
         [isContentDeveloper]="isContentDeveloper"
         [hideSearch]="false"
       >Invitations</app-invitation-list>
+      <app-msel-playbook
+        *ngIf="selectedTab === 'MSEL Playbook'"
+        [loggedInUserId]="loggedInUserId"
+        [isContentDeveloper]="isContentDeveloper"
+      ></app-msel-playbook>
     </div>
   </mat-sidenav-content>
 </mat-sidenav-container>

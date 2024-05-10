@@ -27,14 +27,14 @@
     <table id="eventDetails">
       <thead>
         <tr>
-            <th>Title</th>
+            <th style="width: 100px;">Title</th>
             <th>{{getTitleForScenarioEvent(this.scenarioEventId)}}</th>
         </tr>
       </thead>
       <tbody>
         <ng-container *ngFor="let item of sortedScenarioEvents">
             <ng-container *ngFor="let df of allDataFields">
-                <tr *ngIf="getScenarioEventValue(item, df.name) && item.id === scenarioEventId">
+                <tr *ngIf="getScenarioEventValue(item, df.name) && item.id === scenarioEventId && df.name !='Title'">
                   <td style="font-weight:bold">{{ df.name }}</td>
                   <td>{{ removeHtmlTags(getScenarioEventValue(item, df.name)) }}</td>
                 </tr>

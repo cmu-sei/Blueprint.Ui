@@ -2,7 +2,21 @@
   font-family: Arial, Helvetica, sans-serif;
   border-collapse: collapse;
   width: 100%;
+  // table-layout: fixed;
+  // margin: 0 auto;
 }
+
+// #eventDetails td {
+//   text-align: left;
+// }
+
+// #eventDetails th, #eventDetails td {
+//   padding: 8px; 
+//   border: 1px solid #ccc; 
+//   word-wrap: break-word; 
+//   white-space: normal; 
+//   vertical-align: top; 
+// }
 
 #eventDetails td, #eventDetails th {
   border: 1px solid #ddd;
@@ -13,14 +27,14 @@ h2 {
   font-family: "Open Sans", sans-serif;
 }
 
-#eventDetails tr:nth-child(even){background-color: #f2f2f2;}
+#eventDetails tr:nth-child(even) {background-color: #f2f2f2;}
 
 #eventDetails tr:hover {background-color: #ddd;}
 
 #eventDetails th {
   padding-top: 12px;
   padding-bottom: 12px;
-  text-align: left;
+  text-align: center;
   background-color: darkgrey;
   color: black;
 }
@@ -41,3 +55,4 @@ h2 {
     display: none;
   }
 }
+

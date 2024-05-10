@@ -196,13 +196,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   <mat-icon class="mdi-24px up-12" fontIcon="mdi-menu"></mat-icon>
                 </button>
                 <mat-menu #actionList="matMenu" [overlapTrigger]="false">
-                  <button
+                  <a
                     mat-menu-item
                     [routerLink]="'/msel/' + msel.id +'/scenarioEvent/' + item.id"
                     title="Open event {{ rowIndex  + 1 }}"
+                    target="_blank"
                   >
                     Open in a New Tab
-                  </button>
+                  </a>
                   <button
                     mat-menu-item
                     (click)="editScenarioEvent(item)"
