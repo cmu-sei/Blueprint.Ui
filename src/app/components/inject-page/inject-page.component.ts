@@ -366,11 +366,19 @@ export class InjectPageComponent {
     return scenarioEvent ? this.getScenarioEventTitle(scenarioEvent) : '';
   }
 
+  printpage() {
+    const printContents = document.getElementById('printable-area').innerHTML;
+    document.body.innerHTML = printContents;
+    window.print();
+    location.reload();
+  }
 
   getCardNameById(cardId: string): string {
     const card = this.cardList.find(c => c.id === cardId);
     return card ? card.name : 'Unknown';
   }
+
+  removeHtmlTags(content: string): string {
+    return content.replace(/<[^>]*>/g, '');
+  }
 }
-
-

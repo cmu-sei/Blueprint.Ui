@@ -24,3 +24,20 @@ h2 {
   background-color: darkgrey;
   color: black;
 }
+
+.header-div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.right-buttons {
+  margin-right: 10px;
+}
+
+
+@media print {
+  .no-print {
+    display: none;
+  }
+}

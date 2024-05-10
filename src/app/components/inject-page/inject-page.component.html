@@ -8,7 +8,21 @@
     [imageFilePath]="topbarImage"
     (urlNavigate)="topBarNavigate($event)"
   ></app-topbar>
-  <h2>{{msel.name}} Event Details </h2>
+  <div id="printable-area">
+  <div class="header-div">
+    <h2>{{msel.name}} Event Details </h2>
+    <div class="right-buttons no-print">
+      <button
+        aria-label="Print Submission Review"
+        mat-icon-button
+        style="outline: none;"
+        title="Print Submission Review"
+        (click)="printpage()"
+      >
+        <mat-icon aria-hidden="false" class="mdi-24px" fontIcon="mdi-printer"></mat-icon>
+      </button>
+    </div>
+  </div>
   <div *ngIf="msel">
     <table id="eventDetails">
       <thead>
@@ -22,11 +36,12 @@
             <ng-container *ngFor="let df of allDataFields">
                 <tr *ngIf="getScenarioEventValue(item, df.name) && item.id === scenarioEventId">
                   <td style="font-weight:bold">{{ df.name }}</td>
-                  <td>{{ getScenarioEventValue(item, df.name) }}</td>
+                  <td>{{ removeHtmlTags(getScenarioEventValue(item, df.name)) }}</td>
                 </tr>
             </ng-container>
         </ng-container>
       </tbody>
     </table>
+  </div>
   </div>
 </div>
