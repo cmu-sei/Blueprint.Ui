@@ -9,6 +9,10 @@
   padding: 8px;
 }
 
+h2 {
+  font-family: "Open Sans", sans-serif;
+}
+
 #eventDetails tr:nth-child(even){background-color: #f2f2f2;}
 
 #eventDetails tr:hover {background-color: #ddd;}
@@ -17,6 +21,6 @@
   padding-top: 12px;
   padding-bottom: 12px;
   text-align: left;
-  background-color: #04AA6D;
-  color: white;
+  background-color: darkgrey;
+  color: black;
 }

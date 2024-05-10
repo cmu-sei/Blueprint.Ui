@@ -193,7 +193,6 @@ export class InjectPageComponent {
     });
     this.cardQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(cards => {
       this.cardList = cards;
-      console.log(this.cardList);
     });
 
     (this.scenarioEventQuery.selectAll()).pipe(takeUntil(this.unsubscribe$)).subscribe(scenarioEvents => {
@@ -325,37 +324,6 @@ export class InjectPageComponent {
     }
   }
 
-  // getRowStyle(scenarioEvent: ScenarioEventPlus) {
-  //   if (!scenarioEvent || !scenarioEvent.rowMetadata) {
-  //     return '';
-  //   }
-  //   const color = this.getRgbValues(scenarioEvent.rowMetadata);
-  //   return this.getStyleFromColor(color);
-  // }
-
-  // getRgbValues(rowMetadata: string) {
-  //   const parts = rowMetadata ? rowMetadata.split(',') : [];
-  //   const rgbValues = parts.length >= 4 ? parts[1] + ', ' + parts[2] + ', ' + parts[3] : '';
-  //   return rgbValues;
-  // }
-
-  // getStyleFromColor(color: string) {
-  //   const tint = this.userTheme === 'dark-theme' ? this.darkThemeTint : this.lightThemeTint;
-  //   return color ? {'background-color': 'rgba(' + color + ', ' + tint + ')'} : {};
-  // }
-
-  // getStyle(dataField: DataField): string {
-  //   if (dataField && dataField.columnMetadata) {
-  //     const width = Math.trunc(+dataField.columnMetadata * 7);  // 7 converts excel widths to http widths
-  //     return 'text-align: left; width: ' + width.toString() + 'px;';
-  //   } else if (dataField.dataType.toString() === 'DateTime') {
-  //     return 'width: max-content';
-  //   } else {
-  //     return 'text-align: left; width: 90%; min-width: 40px;';
-  //     // return 'width: 100%;';
-  //   }
-  // }
-
   getScenarioEventValue(scenarioEvent: ScenarioEvent, columnName: string) {
     if (!(this.msel && scenarioEvent && scenarioEvent.id)) {
       return '';
@@ -383,18 +351,14 @@ export class InjectPageComponent {
 
   getScenarioEventTitle(scenarioEvent: ScenarioEventPlus): string {
     if (!scenarioEvent) {
-      return ''; // Return an empty string if no scenario event is provided
+      return '';
     }
-
-    // Find the 'Title' data field ID
     const titleField = this.allDataFields.find(df => df.name === 'Title');
     if (!titleField) {
-      return ''; // Return an empty string if the 'Title' field is not found
+      return '';
     }
-
-    // Find the data value associated with the 'Title' field for the given scenario event
     const titleDataValue = this.dataValues.find(dv => dv.dataFieldId === titleField.id && dv.scenarioEventId === scenarioEvent.id);
-    return titleDataValue ? titleDataValue.value : ''; // Return the title or an empty string if not found
+    return titleDataValue ? titleDataValue.value : '';
   }
 
   getTitleForScenarioEvent(scenarioEventId: string): string {
@@ -405,7 +369,7 @@ export class InjectPageComponent {
 
   getCardNameById(cardId: string): string {
     const card = this.cardList.find(c => c.id === cardId);
-    return card ? card.name : 'Unknown'; // Return 'Unknown' or any placeholder if the card is not found
+    return card ? card.name : 'Unknown';
   }
 }
 

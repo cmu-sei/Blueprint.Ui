@@ -8,20 +8,20 @@
     [imageFilePath]="topbarImage"
     (urlNavigate)="topBarNavigate($event)"
   ></app-topbar>
-  <h1>Inject Details for {{getTitleForScenarioEvent(this.scenarioEventId)}}</h1>
+  <h2>{{msel.name}} Event Details </h2>
   <div *ngIf="msel">
     <table id="eventDetails">
       <thead>
         <tr>
-            <th>Data Field</th>
-            <th>Data Value</th>
+            <th>Title</th>
+            <th>{{getTitleForScenarioEvent(this.scenarioEventId)}}</th>
         </tr>
       </thead>
       <tbody>
         <ng-container *ngFor="let item of sortedScenarioEvents">
             <ng-container *ngFor="let df of allDataFields">
                 <tr *ngIf="getScenarioEventValue(item, df.name) && item.id === scenarioEventId">
-                  <td>{{ df.name }}</td>
+                  <td style="font-weight:bold">{{ df.name }}</td>
                   <td>{{ getScenarioEventValue(item, df.name) }}</td>
                 </tr>
             </ng-container>
