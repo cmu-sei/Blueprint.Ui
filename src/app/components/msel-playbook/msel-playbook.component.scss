@@ -20,7 +20,7 @@
 
 #eventDetails th, #eventDetails td {
     padding: 8px; 
-    border: 1px solid #ccc; 
+    border: 1px solid #ddd; 
     word-wrap: break-word; 
     white-space: normal; 
     vertical-align: top; 
@@ -30,9 +30,9 @@ h2 {
     font-family: "Open Sans", sans-serif;
 }
 
-#eventDetails tr:nth-child(even) {background-color: #f2f2f2;}
+#eventDetails tr:nth-child(even) {background-color: lightgray; color: black !important;}
 
-#eventDetails tr:hover {background-color: #ddd;}
+#eventDetails tr:hover {background-color: #ddd; color: black;}
 
 #eventDetails th {
     padding-top: 12px;
@@ -49,13 +49,23 @@ h2 {
 }
 
 .right-buttons {
-    margin-right: 10px;
-  }
-  
-  
-  @media print {
-    .no-print {
-      display: none;
-    }
+  margin-right: 10px;
+}
+
+::ng-deep mat-option:last-child:before{
+    content: 'ALL' !important;
+   visibility: visible !important;
+   display: block !important;
+   position: absolute !important;
+   margin-left: 15px !important;
   }
 
+  ::ng-deep mat-option:last-child .mat-option-text{
+    display: none;
+  }
+
+@media print {
+  .no-print {
+    display: none;
+  }
+}

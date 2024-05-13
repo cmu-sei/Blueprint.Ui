@@ -81,7 +81,6 @@ export class MselPlaybookComponent {
   moveAndGroupNumbers: Record<string, number[]>[] = [];
   moveList: Move[] = [];
   filteredScenarioEventList: ScenarioEventPlus[] = [];
-  teamList: Team[] = [];
   filterString = '';
   blankDataValue = {
     id: '',
@@ -90,30 +89,10 @@ export class MselPlaybookComponent {
     value: '',
     valueArray: []
   } as DataValuePlus;
-  filteredScenarioEvents: any[] = [];
-  organizationList: Organization[] = [];
   sort: Sort = { active: 'deltaSeconds', direction: 'asc' };
   itemStatus = [ItemStatus.Pending, ItemStatus.Entered, ItemStatus.Approved, ItemStatus.Complete, ItemStatus.Deployed, ItemStatus.Archived];
   darkThemeTint = this.settingsService.settings.DarkThemeTint ? this.settingsService.settings.DarkThemeTint : 0.7;
   lightThemeTint = this.settingsService.settings.LightThemeTint ? this.settingsService.settings.LightThemeTint : 0.4;
-  selectedEventIdList: string[] = [];
-  mselUsers: User[] = [];
-  showRealTime = false;
-  viewConfig: AngularEditorConfig = {
-    editable: false,
-    height: 'auto',
-    minHeight: '1200px',
-    width: '100%',
-    minWidth: '0',
-    translate: 'yes',
-    enableToolbar: false,
-    showToolbar: false,
-    placeholder: '',
-    defaultParagraphSeparator: '',
-    defaultFontName: '',
-    defaultFontSize: '',
-    sanitize: true,
-  };
 
   constructor(
     private settingsService: ComnSettingsService,
@@ -210,7 +189,6 @@ export class MselPlaybookComponent {
       this.moveList = moves.sort((a, b) => +a.moveNumber < +b.moveNumber ? -1 : 1);
       this.moveAndGroupNumbers = this.scenarioEventDataService.getMoveAndGroupNumbers(this.mselScenarioEvents, this.moveList);
     });
-    console.log(this.getTitleForScenarioEvent(this.scenarioEventId));
   }
 
   topBarNavigate(url): void {
@@ -389,4 +367,9 @@ export class MselPlaybookComponent {
     this.pageIndex = event.pageIndex;
     this.pageSize = event.pageSize;
   }
+
+  getStyleFromColor() {
+    return this.userTheme === 'dark-theme' ? {'color': 'black'} : {'color': 'white'};
+  }
+
 }

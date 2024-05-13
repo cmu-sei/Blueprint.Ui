@@ -10,7 +10,7 @@ describe('MselPlaybookComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [ MselPlaybookComponent ]
     })
-    .compileComponents();
+      .compileComponents();
 
     fixture = TestBed.createComponent(MselPlaybookComponent);
     component = fixture.componentInstance;
