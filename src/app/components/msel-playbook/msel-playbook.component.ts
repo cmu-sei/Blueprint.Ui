@@ -368,8 +368,4 @@ export class MselPlaybookComponent {
     this.pageSize = event.pageSize;
   }
 
-  getStyleFromColor() {
-    return this.userTheme === 'dark-theme' ? {'color': 'black'} : {'color': 'white'};
-  }
-
 }
