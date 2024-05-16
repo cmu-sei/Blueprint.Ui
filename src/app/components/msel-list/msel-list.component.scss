@@ -33,6 +33,7 @@
   font-size: x-large;
   align-self: center;
   min-width: 125px;
+  padding-left: 20px;
 }
 
 .header-button {
@@ -46,7 +47,7 @@
 .search-box {
   display: flex;
   flex-direction: row;
-  flex: 4;
+  flex: 2;
   align-self: center;
   padding-left: 30px;
 }
@@ -68,10 +69,8 @@
 .admin-cog-div {
   display: flex;
   flex-direction: row;
-  flex: 1;
-  align-self: center;
-  align-items: flex-end;
-  justify-items: flex-end;
+  margin: auto;
+  margin-right: 10px;
 }
 
 .admin-cog-button {
@@ -174,4 +173,19 @@
   flex: 1;
   align-items: center;
 }
+
+.buttons-container{
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid;
+  font-size: small;
+}
+
+.button-items{
+  flex-grow: 1;
+  margin-right: 15px;
+}
+
 
