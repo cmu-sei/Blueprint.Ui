@@ -49,10 +49,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </button>
     </div>
   </div>
-<ng-container>
   <div class="buttons-container">
     <div class="button-items">
-      <button mat-icon-button (click)="addMsel(); $event.stopPropagation()" title="Add blank MSEL" [disabled]="!isContentDeveloper">
+      <button mat-icon-button (click)="addMsel()" title="Add blank MSEL" [disabled]="!isContentDeveloper">
         <mat-icon class="mdi-24px" fontIcon="mdi-plus-circle-outline"></mat-icon> Blank
       </button>
     </div>
@@ -86,12 +85,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <mat-form-field class="search-control">
         <input matInput [formControl]="filterControl" placeholder="Search" />
       </mat-form-field>
-      <button mat-icon-button (click)="filterControl.setValue(''); $event.stopPropagation()" title="Clear Search" [disabled]="!filterString">
+      <button mat-icon-button (click)="filterControl.setValue('')" title="Clear Search" [disabled]="!filterString">
         <mat-icon class="mdi-24px" fontIcon="mdi-close-circle-outline"></mat-icon>
       </button>
     </div>
   </div>
-</ng-container>
   <mat-card
     *ngIf="isLoading"
     style="display: flex; justify-content: center; align-items: center"
