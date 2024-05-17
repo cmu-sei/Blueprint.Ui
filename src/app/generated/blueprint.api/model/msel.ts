@@ -40,7 +40,6 @@ export interface Msel {
   galleryCollectionId?: string;
   galleryExhibitId?: string;
   useCite?: boolean;
-  usePlaybook?: boolean;
   citeEvaluationId?: string;
   citeScoringModelId?: string;
   useSteamfitter?: boolean;

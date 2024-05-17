@@ -211,11 +211,6 @@ export class MselComponent implements OnDestroy {
             tabList.push(tab);
           }
           break;
-        // case 'MSEL Playbook':
-        //   if (this.msel?.usePlaybook) {
-        //     tabList.push(tab);
-        //   }
-        //   break;
         default:
           tabList.push(tab);
           break;

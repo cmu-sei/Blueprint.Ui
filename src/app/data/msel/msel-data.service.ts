@@ -55,7 +55,6 @@ export class MselPlus implements Msel {
   useSteamfitter?: boolean;
   steamfitterScenarioId?: string;
   isTemplate?: boolean;
-  usePlaybook?: boolean;
   startTime?: Date;
   durationSeconds?: number;
   showTimeOnScenarioEventList?: boolean;

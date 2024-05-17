@@ -58,7 +58,7 @@ export class MselPlaybookComponent{
   topbarText = 'MSEL Playbook';
   pageIndex = 0;
   pagedScenarioEvents: any[] = [];
-  pageSize = 1; // Default to 10 tables per page
+  pageSize = 1;
   hideTopbar = false;
   imageFilePath = '';
   scenarioEventId = '';
