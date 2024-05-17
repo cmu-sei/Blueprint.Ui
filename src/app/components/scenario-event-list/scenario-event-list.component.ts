@@ -776,6 +776,11 @@ export class ScenarioEventListComponent implements OnDestroy {
     this.uiDataService.setUseRealTime(value);
   }
 
+  openContent(id: string) {
+    const basePageUrl = location.origin + '/msel/' + this.msel.id + '/scenarioEvent/';
+    window.open(basePageUrl + id);
+  }
+
   ngOnDestroy() {
     this.unsubscribe$.next(null);
     this.unsubscribe$.complete();

@@ -66,7 +66,6 @@ export class MselPlaybookComponent{
   topbarTextColor = '#FFFFFF';
   topbarImage = this.settingsService.settings.AppTopBarImage;
   TopbarView = TopbarView;
-  appTitle = 'MSEL Playbook';
   selectedMselId = '';
   selectedScenarioEventId = '';
   private unsubscribe$ = new Subject();
@@ -120,7 +119,6 @@ export class MselPlaybookComponent{
   ) {
     // set image
     this.imageFilePath = this.settingsService.settings.AppTopBarImage.replace('white', 'blue');
-    this.titleService.setTitle(this.appTitle);
     // Set the display settings from config file
     this.topbarColor = this.settingsService.settings.AppTopBarHexColor
       ? this.settingsService.settings.AppTopBarHexColor
