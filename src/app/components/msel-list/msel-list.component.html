@@ -15,91 +15,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         [src]="imageFilePath"
         title="Pencil and Ruler Image"
       />
-    </div>
-    <div class="msels-title">My MSELs</div>
-    <div class="header-button">
-      <div style="width: 100%;">
-        <button
-          mat-icon-button
-          (click)="addMsel(); $event.stopPropagation()"
-          style="outline: none; margin-right: 15px;"
-          title="Add blank MSEL"
-          [disabled]="!isContentDeveloper"
-        >
-          <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
-          Blank
-        </button>
-      </div>
-      <div style="width: 100%;">
-        <button
-          mat-icon-button
-          [matMenuTriggerFor]="upload"
-          style="outline: none; margin-right: 15px;"
-          title="Upload a new MSEL from a file"
-          [disabled]="!isContentDeveloper"
-        >
-          <mat-icon class="mdi-24px self-center" fontIcon="mdi-upload"></mat-icon>
-          Upload
-        </button>
-        <mat-menu #upload="matMenu" [overlapTrigger]="false">
-          <button
-            mat-menu-item
-            (click)="uploadFile('json', '', ''); jsonInput.click()"
-            title="Upload json file"
-          >Upload json file</button>
-          <button
-            mat-menu-item
-            (click)="uploadFile('xlsx', '', ''); xlsxInput.click()"
-            title="Upload xlsx file"
-          >Upload xlsx file</button>
-        </mat-menu>
-      </div>
-    </div>
-    <div class="header-button">
-      <div style="width: 100%;">
-        <mat-select
-          [(ngModel)]="selectedMselType"
-          (selectionChange)="filterMsels()"
-          style="margin-top: -15px;"
-        >
-          <mat-option value="all">All Types</mat-option>
-          <mat-option value="is">Templates</mat-option>
-          <mat-option value="is not">Not Templates</mat-option>
-        </mat-select>
-      </div>
-      <div style="width: 100%;">
-        <mat-select
-          [(ngModel)]="selectedMselStatus"
-          (selectionChange)="filterMsels()"
-          style="margin-top: 15px;"
-        >
-          <mat-option value="all">All Statuses</mat-option>
-          <mat-option value="Pending">Pending</mat-option>
-          <mat-option value="Entered">Entered</mat-option>
-          <mat-option value="Approved">Approved</mat-option>
-          <mat-option value="Completed">Completed</mat-option>
-        </mat-select>
-      </div>
-    </div>
-    <div class="search-box">
-      <mat-icon
-        class="search-icon"
-        svgIcon="ic_magnify_search"
-      ></mat-icon>
-      <mat-form-field class="search-control">
-        <input matInput [formControl]="filterControl" placeholder="Search" />
-      </mat-form-field>
-      <div class="clear-search-button">
-        <button
-          mat-icon-button
-          (click)="filterControl.setValue(''); $event.stopPropagation()"
-          style="outline: none;"
-          title="Clear Search"
-          [disabled]="!filterString"
-        >
-          <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
-        </button>
-      </div>
+      <div class="msels-title">My MSELs</div>
     </div>
     <div *ngIf="isSystemAdmin" class="admin-cog-div">
       <button
@@ -133,7 +49,47 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </button>
     </div>
   </div>
-
+  <div class="buttons-container">
+    <div class="button-items">
+      <button mat-icon-button (click)="addMsel()" title="Add blank MSEL" [disabled]="!isContentDeveloper">
+        <mat-icon class="mdi-24px" fontIcon="mdi-plus-circle-outline"></mat-icon> Blank
+      </button>
+    </div>
+    <div class="button-items">
+      <button mat-icon-button [matMenuTriggerFor]="upload" title="Upload a new MSEL from a file" [disabled]="!isContentDeveloper">
+        <mat-icon class="mdi-24px" fontIcon="mdi-upload"></mat-icon> Upload
+      </button>
+      <mat-menu #upload="matMenu" [overlapTrigger]="false">
+        <button mat-menu-item (click)="uploadFile('json', '', ''); jsonInput.click()" title="Upload json file">Upload json file</button>
+        <button mat-menu-item (click)="uploadFile('xlsx', '', ''); xlsxInput.click()" title="Upload xlsx file">Upload xlsx file</button>
+      </mat-menu>
+    </div>
+    <div class="button-items">
+      <mat-select [(ngModel)]="selectedMselType" (selectionChange)="filterMsels()">
+        <mat-option value="all">All Types</mat-option>
+        <mat-option value="is">Templates</mat-option>
+        <mat-option value="is not">Not Templates</mat-option>
+      </mat-select>
+    </div>
+    <div class="button-items">
+      <mat-select [(ngModel)]="selectedMselStatus" (selectionChange)="filterMsels()">
+        <mat-option value="all">All Statuses</mat-option>
+        <mat-option value="Pending">Pending</mat-option>
+        <mat-option value="Entered">Entered</mat-option>
+        <mat-option value="Approved">Approved</mat-option>
+        <mat-option value="Completed">Completed</mat-option>
+      </mat-select>
+    </div>
+    <div class="button-items search-box">
+      <mat-icon class="search-icon" svgIcon="ic_magnify_search"></mat-icon>
+      <mat-form-field class="search-control">
+        <input matInput [formControl]="filterControl" placeholder="Search" />
+      </mat-form-field>
+      <button mat-icon-button (click)="filterControl.setValue('')" title="Clear Search" [disabled]="!filterString">
+        <mat-icon class="mdi-24px" fontIcon="mdi-close-circle-outline"></mat-icon>
+      </button>
+    </div>
+  </div>
   <mat-card
     *ngIf="isLoading"
     style="display: flex; justify-content: center; align-items: center"
