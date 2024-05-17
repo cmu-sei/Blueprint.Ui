@@ -3,14 +3,11 @@
  Released under a MIT (SEI)-style license. See LICENSE.md in the
  project root for license information.
 */
-
-import { TopbarView } from 'src/app/components/shared/top-bar/topbar.models';
 import {
   ComnSettingsService,
   Theme
 } from '@cmusei/crucible-common';
-import { Title } from '@angular/platform-browser';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute} from '@angular/router';
 import { takeUntil } from 'rxjs/operators';
 import { Subject, Observable } from 'rxjs';
 import { MoveDataService } from 'src/app/data/move/move-data.service';
@@ -32,10 +29,7 @@ import {
   DataValue,
   Move,
   ScenarioEvent,
-  Organization,
   ItemStatus,
-  Team,
-  User,
   Card
 } from 'src/app/generated/blueprint.api';
 import { UntypedFormControl } from '@angular/forms';
@@ -43,13 +37,10 @@ import { MselPlus } from 'src/app/data/msel/msel-data.service';
 import { DataValueQuery } from 'src/app/data/data-value/data-value.query';
 import { ScenarioEventQuery } from 'src/app/data/scenario-event/scenario-event.query';
 import { Sort } from '@angular/material/sort';
-import { Component, Input, OnInit} from '@angular/core';
-import { AngularEditorConfig } from '@kolkov/angular-editor';
+import { Component, Input} from '@angular/core';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
-import { v4 as uuidv4 } from 'uuid';
 import { CardQuery } from 'src/app/data/card/card.query';
 import { CardDataService } from 'src/app/data/card/card-data.service';
-import { MatPaginatorModule } from '@angular/material/paginator';
 import { PageEvent } from '@angular/material/paginator';
 
 @Component({
@@ -61,17 +52,10 @@ export class MselPlaybookComponent{
   @Input() userTheme: Theme;
   @Input() isContentDeveloper: boolean;
   @Input() loggedInUserId: string;
-  topbarText = 'MSEL Playbook';
   pageIndex = 0;
-  pagedScenarioEvents: any[] = [];
   pageSize = 1;
-  hideTopbar = false;
   imageFilePath = '';
   scenarioEventId = '';
-  topbarColor = '#ef3a47';
-  topbarTextColor = '#FFFFFF';
-  topbarImage = this.settingsService.settings.AppTopBarImage;
-  TopbarView = TopbarView;
   selectedMselId = '';
   selectedScenarioEventId = '';
   private unsubscribe$ = new Subject();
@@ -102,11 +86,9 @@ export class MselPlaybookComponent{
 
   constructor(
     private settingsService: ComnSettingsService,
-    private router: Router,
     private moveDataService: MoveDataService,
     private organizationDataService: OrganizationDataService,
     private mselDataService: MselDataService,
-    private titleService: Title,
     private teamDataService: TeamDataService,
     private dataFieldDataService: DataFieldDataService,
     private dataOptionDataService: DataOptionDataService,
@@ -124,14 +106,6 @@ export class MselPlaybookComponent{
     private activatedRoute: ActivatedRoute
   ) {
     // set image
-    this.imageFilePath = this.settingsService.settings.AppTopBarImage.replace('white', 'blue');
-    // Set the display settings from config file
-    this.topbarColor = this.settingsService.settings.AppTopBarHexColor
-      ? this.settingsService.settings.AppTopBarHexColor
-      : this.topbarColor;
-    this.topbarTextColor = this.settingsService.settings.AppTopBarHexTextColor
-      ? this.settingsService.settings.AppTopBarHexTextColor
-      : this.topbarTextColor;
     this.activatedRoute.paramMap.pipe(takeUntil(this.unsubscribe$)).subscribe(params => {
       // load the selected MSEL data
       const mselId = params.get('id');
@@ -194,10 +168,6 @@ export class MselPlaybookComponent{
       this.moveList = moves.sort((a, b) => +a.moveNumber < +b.moveNumber ? -1 : 1);
       this.moveAndGroupNumbers = this.scenarioEventDataService.getMoveAndGroupNumbers(this.mselScenarioEvents, this.moveList);
     });
-  }
-
-  topBarNavigate(url): void {
-    this.router.navigate([url]);
   }
 
   getEditableMsel (msel: MselPlus): MselPlus {
