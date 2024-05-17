@@ -15,7 +15,7 @@
           </div>
         </div>
     <div *ngIf="msel" class="table-container">
-      <ng-container *ngFor="let scenarioEvent of pagedScenarioEvents; let i = index">
+      <ng-container *ngFor="let scenarioEvent of getPagedScenarioEvents(); let i = index">
         <table id="eventDetails" class="page-break">
           <thead>
             <tr>

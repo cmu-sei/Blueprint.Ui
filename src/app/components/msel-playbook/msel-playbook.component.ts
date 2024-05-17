@@ -51,7 +51,7 @@ import { PageEvent } from '@angular/material/paginator';
   templateUrl: './msel-playbook.component.html',
   styleUrls: ['./msel-playbook.component.scss']
 })
-export class MselPlaybookComponent implements OnInit {
+export class MselPlaybookComponent{
   @Input() userTheme: Theme;
   @Input() isContentDeveloper: boolean;
   @Input() loggedInUserId: string;
@@ -190,10 +190,6 @@ export class MselPlaybookComponent implements OnInit {
       this.moveList = moves.sort((a, b) => +a.moveNumber < +b.moveNumber ? -1 : 1);
       this.moveAndGroupNumbers = this.scenarioEventDataService.getMoveAndGroupNumbers(this.mselScenarioEvents, this.moveList);
     });
-  }
-
-  ngOnInit() {
-    this.playbookPaginator();
   }
 
   topBarNavigate(url): void {
@@ -368,16 +364,14 @@ export class MselPlaybookComponent implements OnInit {
     return content.replace(/<[^>]*>/g, '');
   }
 
-  playbookPaginator() {
-    const startIndex = this.pageIndex * this.pageSize;
-    const endIndex = startIndex + this.pageSize;
-    this.pagedScenarioEvents = this.sortedScenarioEvents.slice(startIndex, endIndex);
-  }
-
-  changePage(event: PageEvent) {
+  changePage(event: PageEvent): void {
     this.pageIndex = event.pageIndex;
     this.pageSize = event.pageSize;
-    this.playbookPaginator();
   }
 
+  getPagedScenarioEvents(): ScenarioEventPlus[] {
+    const startIndex = this.pageIndex * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    return this.sortedScenarioEvents.slice(startIndex, endIndex);
+  }
 }
