@@ -4,10 +4,10 @@
           <h2>MSEL Playbook</h2>
           <div class="right-buttons no-print">
             <button
-              aria-label="Print Submission Review"
+              aria-label="Print MSEL Playbook"
               mat-icon-button
               style="outline: none;"
-              title="Print Submission Review"
+              title="Print MSEL Playbook"
               (click)="printpage()"
             >
               <mat-icon aria-hidden="false" class="mdi-24px" fontIcon="mdi-printer"></mat-icon>
@@ -15,8 +15,8 @@
           </div>
         </div>
     <div *ngIf="msel" class="table-container">
-      <ng-container *ngFor="let scenarioEvent of sortedScenarioEvents | slice: (pageIndex * pageSize) : (pageIndex * pageSize) + pageSize; let i = index">
-        <table id="eventDetails" [style.marginBottom.px]="i !== sortedScenarioEvents.length - 1 ? 20 : 0">
+      <ng-container *ngFor="let scenarioEvent of pagedScenarioEvents; let i = index">
+        <table id="eventDetails" class="page-break">
           <thead>
             <tr>
               <th style="width: 100px;">Title</th>
@@ -33,7 +33,7 @@
           </tbody>
         </table>
       </ng-container>
-      <mat-paginator [length]="sortedScenarioEvents.length" [pageSize]="pageSize" [pageSizeOptions]="[1, 5, 10, 20, sortedScenarioEvents.length]" (page)="changePage($event)">
+      <mat-paginator [length]="sortedScenarioEvents.length" [pageSize]="pageSize" [pageSizeOptions]="[1, 5, 10, 20, sortedScenarioEvents.length]" (page)="changePage($event)" class="no-print">
       </mat-paginator>
     </div>
   </div>

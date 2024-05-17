@@ -37,7 +37,7 @@ import { MselPlus } from 'src/app/data/msel/msel-data.service';
 import { DataValueQuery } from 'src/app/data/data-value/data-value.query';
 import { ScenarioEventQuery } from 'src/app/data/scenario-event/scenario-event.query';
 import { Sort } from '@angular/material/sort';
-import { Component, Input} from '@angular/core';
+import { Component, Input, OnInit} from '@angular/core';
 import { AngularEditorConfig } from '@kolkov/angular-editor';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
 import { v4 as uuidv4 } from 'uuid';
@@ -51,12 +51,13 @@ import { PageEvent } from '@angular/material/paginator';
   templateUrl: './msel-playbook.component.html',
   styleUrls: ['./msel-playbook.component.scss']
 })
-export class MselPlaybookComponent {
+export class MselPlaybookComponent implements OnInit {
   @Input() userTheme: Theme;
   @Input() isContentDeveloper: boolean;
   @Input() loggedInUserId: string;
   topbarText = 'MSEL Playbook';
   pageIndex = 0;
+  pagedScenarioEvents: any[] = [];
   pageSize = 1; // Default to 10 tables per page
   hideTopbar = false;
   imageFilePath = '';
@@ -189,6 +190,10 @@ export class MselPlaybookComponent {
       this.moveList = moves.sort((a, b) => +a.moveNumber < +b.moveNumber ? -1 : 1);
       this.moveAndGroupNumbers = this.scenarioEventDataService.getMoveAndGroupNumbers(this.mselScenarioEvents, this.moveList);
     });
+  }
+
+  ngOnInit() {
+    this.playbookPaginator();
   }
 
   topBarNavigate(url): void {
@@ -363,9 +368,16 @@ export class MselPlaybookComponent {
     return content.replace(/<[^>]*>/g, '');
   }
 
-  changePage(event: PageEvent): void {
+  playbookPaginator() {
+    const startIndex = this.pageIndex * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    this.pagedScenarioEvents = this.sortedScenarioEvents.slice(startIndex, endIndex);
+  }
+
+  changePage(event: PageEvent) {
     this.pageIndex = event.pageIndex;
     this.pageSize = event.pageSize;
+    this.playbookPaginator();
   }
 
 }
