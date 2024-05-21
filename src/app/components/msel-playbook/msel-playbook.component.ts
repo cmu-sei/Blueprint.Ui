@@ -334,8 +334,10 @@ export class MselPlaybookComponent{
     return card ? card.name : 'Unknown';
   }
 
-  removeHtmlTags(content: string): string {
-    return content.replace(/<[^>]*>/g, '');
+  removeHtmlTags(content) {
+    const template = document.createElement('template');
+    template.innerHTML = content;
+    return template.content.textContent;
   }
 
   changePage(event: PageEvent): void {
