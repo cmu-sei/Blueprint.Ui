@@ -14,6 +14,7 @@ import { DashboardComponent } from './components/landing/dashboard/dashboard.com
 import { JoinComponent } from './components/landing/join/join.component';
 import { LaunchComponent } from './components/landing/launch/launch.component';
 import { ManageComponent } from './components/landing/manage/manage.component';
+import { InjectPageComponent } from './components/inject-page/inject-page.component';
 
 export const ROUTES: Routes = [
   {
@@ -54,6 +55,11 @@ export const ROUTES: Routes = [
   {
     path: 'admin',
     component: AdminContainerComponent,
+    canActivate: [ComnAuthGuardService],
+  },
+  {
+    path: 'msel/:id/scenarioEvent/:scenarioEventId',
+    component: InjectPageComponent,
     canActivate: [ComnAuthGuardService],
   },
 ];

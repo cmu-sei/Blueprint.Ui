@@ -197,6 +197,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 </button>
                 <mat-menu #actionList="matMenu" [overlapTrigger]="false">
                   <button
+                  mat-menu-item
+                  (click)="openContent(item.id)"
+                  title="Open page in new tab"
+                >
+                  Open in a New Tab
+                </button>
+                  <button
                     mat-menu-item
                     (click)="editScenarioEvent(item)"
                     title="Edit event {{ rowIndex  + 1 }}"

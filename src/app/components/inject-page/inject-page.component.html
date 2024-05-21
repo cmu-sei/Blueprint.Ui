@@ -1,0 +1,53 @@
+<!--
+ Copyright 2024 Carnegie Mellon University. All Rights Reserved.
+ Released under a MIT (SEI)-style license. See LICENSE.md in the
+ project root for license information.
+-->
+
+<div class="container app-inject-page background text">
+  <app-topbar
+    *ngIf="!hideTopbar"
+    [title]="topbarText"
+    [topbarView]="TopbarView.STEAMFITTER_HOME"
+    [topbarColor]="topbarColor"
+    [topbarTextColor]="topbarTextColor"
+    [imageFilePath]="topbarImage"
+    (urlNavigate)="topBarNavigate($event)"
+  ></app-topbar>
+  <div id="printable-area">
+  <div class="header-div">
+    <h2>{{msel.name}} Event Details </h2>
+    <div class="right-buttons no-print">
+      <button
+        aria-label="Print Submission Review"
+        mat-icon-button
+        style="outline: none;"
+        title="Print Submission Review"
+        (click)="printpage()"
+      >
+        <mat-icon aria-hidden="false" class="mdi-24px" fontIcon="mdi-printer"></mat-icon>
+      </button>
+    </div>
+  </div>
+  <div *ngIf="msel">
+    <table id="eventDetails">
+      <thead>
+        <tr>
+            <th style="width: 100px;">Title</th>
+            <th>{{getTitleForScenarioEvent(this.scenarioEventId)}}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <ng-container *ngFor="let item of sortedScenarioEvents">
+            <ng-container *ngFor="let df of allDataFields">
+                <tr *ngIf="getScenarioEventValue(item, df.name) && item.id === scenarioEventId && df.name !='Title'">
+                  <td style="font-weight:bold">{{ df.name }}</td>
+                  <td>{{ removeHtmlTags(getScenarioEventValue(item, df.name)) }}</td>
+                </tr>
+            </ng-container>
+        </ng-container>
+      </tbody>
+    </table>
+  </div>
+  </div>
+</div>

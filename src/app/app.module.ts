@@ -113,6 +113,8 @@ import { PlainTextPipe } from './utilities/plain-text-pipe';
 import { NgxMatDatetimePickerModule, NgxMatTimepickerModule, NgxMatNativeDateModule } from '@angular-material-components/datetime-picker';
 import { DurationEditComponent } from './components/shared/duration-edit/duration-edit.component';
 import { DurationViewComponent } from './components/shared/duration-view/duration-view.component';
+import { InjectPageComponent } from './components/inject-page/inject-page.component';
+import { MselPlaybookComponent } from './components/msel-playbook/msel-playbook.component';
 
 const settings: ComnSettingsConfig = {
   url: 'assets/config/settings.json',
@@ -174,7 +176,9 @@ export function getBasePath(settingsSvc: ComnSettingsService) {
     SortByPipe,
     PlainTextPipe,
     DurationEditComponent,
-    DurationViewComponent
+    DurationViewComponent,
+    InjectPageComponent,
+    MselPlaybookComponent
   ],
   imports: [
     AkitaNgDevtools,
