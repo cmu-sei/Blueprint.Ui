@@ -38,8 +38,9 @@ project root for license information.
         <mat-form-field class="full-width">
           <input
             type="text"
+            title="If entered, the users email must end with this value.  You can enter the user's specific email address, or any portion of their email address, as long as it contains the complete domain. (i.e. @provider.com)"
             matInput
-            placeholder="Email Domain (MUST contain an @, if entered)"
+            placeholder="User emails end with ..."
             [(ngModel)]="data.invitation.emailDomain">
         </mat-form-field>
       </div>

@@ -211,8 +211,7 @@ export class InvitationDataService {
 
   setAsDates(invitation: Invitation) {
     // set to a date object.
-    invitation.dateCreated = new Date(invitation.dateCreated);
-    invitation.dateModified = new Date(invitation.dateModified);
+    invitation.expirationDateTime = new Date(invitation.expirationDateTime);
   }
 
 }
