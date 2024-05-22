@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { take, takeUntil } from 'rxjs/operators';
 import {
@@ -39,6 +39,7 @@ export class LaunchComponent implements OnDestroy, OnInit {
   launchStatus = '';
   launchingMselId = '';
   launchedMsel: Msel = {};
+  showChoices = false;
   private unsubscribe$ = new Subject();
 
   constructor(
@@ -46,6 +47,7 @@ export class LaunchComponent implements OnDestroy, OnInit {
     private settingsService: ComnSettingsService,
     private mselDataService: MselDataService,
     private playerApplicationDataService: PlayerApplicationDataService,
+    private activatedRoute: ActivatedRoute,
     private router: Router,
     private titleService: Title,
     private errorService: ErrorService,
@@ -112,6 +114,17 @@ export class LaunchComponent implements OnDestroy, OnInit {
         }
       }
     });
+    // subscribe to route changes
+    this.activatedRoute.queryParamMap.pipe(takeUntil(this.unsubscribe$)).subscribe(params => {
+      const mselId = params.get('msel');
+      if (mselId) {
+        // launch the msel
+        this.launch(mselId);
+        this.showChoices = false;
+      } else {
+        this.showChoices = true;
+      }
+    });
   }
 
   ngOnInit() {
@@ -141,6 +154,7 @@ export class LaunchComponent implements OnDestroy, OnInit {
       this.launchingMselId = '';
       this.launchStatus = '';
       this.launchedMsel = {};
+      this.showChoices = true;
       this.errorService.handleError(error);
     });
   }

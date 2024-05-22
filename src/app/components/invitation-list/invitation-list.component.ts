@@ -8,6 +8,7 @@ import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import {
   Invitation,
+  ItemStatus,
   Team
 } from 'src/app/generated/blueprint.api';
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
@@ -45,7 +46,7 @@ export class InvitationListComponent implements OnDestroy {
   templateInvitations: Invitation[] = [];
   editingId = '';
   invitationDataSource = new MatTableDataSource<Invitation>(new Array<Invitation>());
-  displayedColumns: string[] = ['action', 'teamId', 'emailDomain', 'expirationDateTime', 'maxUsersAllowed', 'userCount', 'isTeamLeader'];
+  displayedColumns: string[] = ['action', 'teamId', 'emailDomain', 'expirationDateTime', 'usesAllowed', 'usesRemaining'];
   teamList: Team[] = [];
   private unsubscribe$ = new Subject();
 
@@ -163,7 +164,7 @@ export class InvitationListComponent implements OnDestroy {
         filteredInvitations = filteredInvitations.filter(invitation => {
           const teamName = this.getTeamName(invitation.teamId)?.toLowerCase() || ''; // Ensuring it's always a string
           return teamName.includes(filterString) ||
-                 invitation.emailDomain.toLowerCase().includes(filterString) ||
+                 invitation.emailDomain?.toLowerCase().includes(filterString) ||
                  (invitation.teamId && invitation.teamId.toString().includes(filterString));
         });
       }
@@ -190,6 +191,16 @@ export class InvitationListComponent implements OnDestroy {
       //   break;
       default:
         return 0;
+    }
+  }
+
+  getInvitationLink() {
+    if (this.msel.isTemplate && this.msel.status === ItemStatus.Approved) {
+      return location.origin + '/launch/?msel=' + this.msel.id;
+    } else if (!this.msel.isTemplate && this.msel.status === ItemStatus.Deployed) {
+      return location.origin + '/join/?msel=' + this.msel.id;
+    } else {
+      return '';
     }
   }
 

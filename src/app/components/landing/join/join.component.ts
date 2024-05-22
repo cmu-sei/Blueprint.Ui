@@ -2,8 +2,8 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 import { Component, OnDestroy } from '@angular/core';
-import { Router } from '@angular/router';
-import { Subject, Observable } from 'rxjs';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Subject } from 'rxjs';
 import { take, takeUntil } from 'rxjs/operators';
 import {
   ComnSettingsService,
@@ -25,6 +25,7 @@ import { ErrorService } from 'src/app/services/error/error.service';
 })
 export class JoinComponent implements OnDestroy {
   joinMselList: Msel[] = [];
+  joiningMselId = '';
   imageFilePath = '';
   userList: User[] = [];
   topbarText = 'Join Event';
@@ -36,12 +37,14 @@ export class JoinComponent implements OnDestroy {
   appTitle = 'Join Event';
   joinStatus: { [id: string]: string } = {};
   isJoined: { [id: string]: boolean } = {};
+  showChoices = false;
   private unsubscribe$ = new Subject();
 
   constructor(
     private userDataService: UserDataService,
     private settingsService: ComnSettingsService,
     private mselDataService: MselDataService,
+    private activatedRoute: ActivatedRoute,
     private router: Router,
     private titleService: Title,
     private errorService: ErrorService
@@ -66,6 +69,17 @@ export class JoinComponent implements OnDestroy {
     this.mselDataService.getMyJoinMsels().pipe(take(1)).subscribe((msels) => {
       this.joinMselList = msels;
     });
+    // subscribe to route changes
+    this.activatedRoute.queryParamMap.pipe(takeUntil(this.unsubscribe$)).subscribe(params => {
+      const mselId = params.get('msel');
+      if (mselId) {
+        // launch the msel
+        this.join(mselId);
+        this.showChoices = false;
+      } else {
+        this.showChoices = true;
+      }
+    });
   }
 
   topBarNavigate(url): void {
@@ -73,7 +87,8 @@ export class JoinComponent implements OnDestroy {
   }
 
   join(id: string) {
-    this.joinStatus[id] = 'Starting the event ...';
+    this.joinStatus[id] = 'Joining the event ...';
+    this.joiningMselId = id;
     this.mselDataService.join(id).pipe(take(1)).subscribe((playerViewId) => {
       let url = this.settingsService.settings.PlayerUrl;
       if (url.slice(-1) !== '/') {
@@ -85,6 +100,7 @@ export class JoinComponent implements OnDestroy {
     (error) => {
       this.joinStatus[id] = '';
       this.isJoined[id] = false;
+      this.showChoices = true;
       this.errorService.handleError(error);
     });
   }

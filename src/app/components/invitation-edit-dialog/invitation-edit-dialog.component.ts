@@ -45,7 +45,12 @@ export class InvitationEditDialogComponent {
   }
 
   errorFree() {
-    return true;
+    return this.data.invitation.teamId &&
+      (!this.data.invitation.emailDomain ||
+        (this.data.invitation.emailDomain.length > 3  &&
+          this.data.invitation.emailDomain.includes('@')
+        )
+      );
   }
 
   /**
