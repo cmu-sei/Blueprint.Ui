@@ -47,9 +47,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
               <button
                 mat-icon-button
                 ngxClipboard
-                [cbContent]="getInvitationLink(element.id)"
-                title="Copy Invitation Link:  {{ getInvitationLink(element.id) }}"
-                [disabled]="getInvitationLink(element.id).length === 0"
+                [cbContent]="getInvitationLink(element.teamId)"
+                title="Copy Invitation Link:  {{ getInvitationLink(element.teamId) }}"
+                [disabled]="getInvitationLink(element.teamId).length === 0"
               >
                 <mat-icon class="mdi-18px" fontIcon="mdi-content-copy"></mat-icon>
               </button>

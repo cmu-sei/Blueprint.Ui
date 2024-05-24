@@ -7,7 +7,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
   <app-topbar
     *ngIf="!hideTopbar"
     [title]="topbarText"
-    [topbarView]="TopbarView.STEAMFITTER_HOME"
+    [topbarView]="TopbarView.BLUEPRINT_HOME"
     [topbarColor]="topbarColor"
     [topbarTextColor]="topbarTextColor"
     [imageFilePath]="topbarImage"
@@ -34,7 +34,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         *ngIf="launchingMselId !== msel.id"
         [disabled]="!!launchingMselId"
         mat-stroked-button
-        (click)="launch(msel.id)"
+        (click)="launch(msel.id, '')"
         title="Start {{ msel.name }}"
       >
         Start {{ msel.name }}

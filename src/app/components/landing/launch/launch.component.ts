@@ -98,8 +98,7 @@ export class LaunchComponent implements OnDestroy, OnInit {
             console.log('add new player application');
             this.playerApplicationDataService.addAndPush(playerApplication).pipe(take(1)).subscribe((s) => {
               // redirect to player view
-              console.log('Redirecting to your event ...');
-              this.launchStatus = 'Redirecting to your event ...';
+              this.launchStatus = 'Completing event processing ...';
               let playerUrl = this.settingsService.settings.PlayerUrl;
               if (playerUrl.slice(-1) !== '/') {
                 playerUrl = playerUrl + '/';
@@ -117,9 +116,10 @@ export class LaunchComponent implements OnDestroy, OnInit {
     // subscribe to route changes
     this.activatedRoute.queryParamMap.pipe(takeUntil(this.unsubscribe$)).subscribe(params => {
       const mselId = params.get('msel');
+      const teamId = params.get('team');
       if (mselId) {
         // launch the msel
-        this.launch(mselId);
+        this.launch(mselId, teamId);
         this.showChoices = false;
       } else {
         this.showChoices = true;
@@ -142,10 +142,10 @@ export class LaunchComponent implements OnDestroy, OnInit {
     this.router.navigate([url]);
   }
 
-  launch(id: string) {
-    this.launchingMselId = id;
+  launch(mselId: string, teamId: string) {
+    this.launchingMselId = mselId;
     this.launchStatus = 'Starting the event ...';
-    this.mselDataService.launch(id).pipe(take(1)).subscribe((msel) => {
+    this.mselDataService.launch(mselId, teamId).pipe(take(1)).subscribe((msel) => {
       // join signalR for this MSEL
       this.signalRService.selectMsel(msel.id);
       this.launchedMsel = msel;
