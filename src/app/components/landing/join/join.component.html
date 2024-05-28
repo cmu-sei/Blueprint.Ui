@@ -6,7 +6,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
 <div class="top-container background">
   <app-topbar
     [title]="topbarText"
-    [topbarView]="TopbarView.STEAMFITTER_HOME"
+    [topbarView]="TopbarView.BLUEPRINT_HOME"
     [topbarColor]="topbarColor"
     [topbarTextColor]="topbarTextColor"
     [imageFilePath]="topbarImage"
@@ -32,7 +32,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <button
       *ngIf="!joinStatus[msel.id] && !isJoined[msel.id]"
         mat-stroked-button
-        (click)="join(msel.id)"
+        (click)="join(msel.id, '')"
         title="Join {{ msel.name }}"
       >
         Join {{ msel.name }}

@@ -194,11 +194,11 @@ export class InvitationListComponent implements OnDestroy {
     }
   }
 
-  getInvitationLink() {
+  getInvitationLink(teamId: string) {
     if (this.msel.isTemplate && this.msel.status === ItemStatus.Approved) {
-      return location.origin + '/launch/?msel=' + this.msel.id;
+      return location.origin + '/launch/?msel=' + this.msel.id + '&team=' + teamId;
     } else if (!this.msel.isTemplate && this.msel.status === ItemStatus.Deployed) {
-      return location.origin + '/join/?msel=' + this.msel.id;
+      return location.origin + '/join/?msel=' + this.msel.id + '&team=' + teamId;
     } else {
       return '';
     }
