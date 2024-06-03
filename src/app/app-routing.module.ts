@@ -58,7 +58,7 @@ export const ROUTES: Routes = [
     canActivate: [ComnAuthGuardService],
   },
   {
-    path: 'msel/:id/scenarioEvent/:scenarioEventId',
+    path: 'injectpage',
     component: InjectPageComponent,
     canActivate: [ComnAuthGuardService],
   },
