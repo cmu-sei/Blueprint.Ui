@@ -6,6 +6,7 @@
 
 import { CdkTableModule } from '@angular/cdk/table';
 import { CdkTreeModule } from '@angular/cdk/tree';
+import { DragDropModule } from '@angular/cdk/drag-drop';
 import { HttpClientModule } from '@angular/common/http';
 import { ErrorHandler, NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -234,7 +235,8 @@ export function getBasePath(settingsSvc: ComnSettingsService) {
     ClipboardModule,
     ComnAuthModule.forRoot(),
     ComnSettingsModule.forRoot(),
-    AngularEditorModule
+    AngularEditorModule,
+    DragDropModule
   ],
   exports: [MatSortModule],
   providers: [

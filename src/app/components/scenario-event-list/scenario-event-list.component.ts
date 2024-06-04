@@ -4,6 +4,7 @@
 import { Component, Input, OnDestroy, ViewChild } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { Router } from '@angular/router';
 import { Subject, Subscription, Observable, of } from 'rxjs';
 import { takeUntil, map, debounceTime, distinctUntilChanged, mergeMap, delay } from 'rxjs/operators';
@@ -137,66 +138,66 @@ export class ScenarioEventListComponent implements OnDestroy {
     this.scenarioEventBackgroundColors = this.settingsService.settings.ScenarioEventBackgroundColors;
     // subscribe to the active MSEL
     (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
-      if (msel && this.msel.id !== msel.id) {
-        this.msel = this.getEditableMsel(msel) as MselPlus;
-        this.mselUsers = this.getMselUsers();
-      }
-    });
+        if (msel && this.msel.id !== msel.id) {
+          this.msel = this.getEditableMsel(msel) as MselPlus;
+          this.mselUsers = this.getMselUsers();
+        }
+      });
     // subscribe to data fields
     this.dataFieldQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(dataFields => {
-      this.getSortedDataFields(dataFields);
-    });
+        this.getSortedDataFields(dataFields);
+      });
     // subscribe to the data options
     this.dataOptionQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(dataOptions => {
       this.sortedDataOptions = dataOptions.sort((a, b) => +a.displayOrder < +b.displayOrder ? -1 : 1);
-    });
+      });
     // subscribe to data values
     this.dataValueQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(dataValues => {
-      this.dataValues = [];
+        this.dataValues = [];
       dataValues.forEach(dv => {
         this.dataValues.push({ ... dv });
+        });
       });
-    });
     // subscribe to scenario events
     (this.scenarioEventQuery.selectAll()).pipe(takeUntil(this.unsubscribe$)).subscribe(scenarioEvents => {
       this.mselScenarioEvents = this.getEditableScenarioEvents(scenarioEvents as ScenarioEventPlus[]);
-      if (scenarioEvents && scenarioEvents.length > 0) {
+        if (scenarioEvents && scenarioEvents.length > 0) {
         this.moveAndGroupNumbers = this.scenarioEventDataService.getMoveAndGroupNumbers(this.mselScenarioEvents, this.moveList);
-        this.filteredScenarioEventList = this.getFilteredScenarioEvents();
+          this.filteredScenarioEventList = this.getFilteredScenarioEvents();
         this.sortedScenarioEvents = this.getSortedScenarioEvents(this.filteredScenarioEventList);
-      }
-    });
+        }
+      });
     // is user a contentdeveloper or system admin?
     this.userDataService.isContentDeveloper.pipe(takeUntil(this.unsubscribe$)).subscribe((isOne) => {
-      this.canDoAnything = isOne;
-    });
+        this.canDoAnything = isOne;
+      });
     // subscribe to organizations
     this.organizationQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(organizations => {
       this.organizationList = organizations.filter(org => !org.isTemplate && org.mselId === this.msel.id);
-    });
+      });
     // observe the Cards
     this.cardQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(cards => {
-      this.cardList = cards;
-    });
+        this.cardList = cards;
+      });
     // observe the Moves
     this.moveQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(moves => {
       this.moveList = moves.sort((a, b) => +a.moveNumber < +b.moveNumber ? -1 : 1);
       this.moveAndGroupNumbers = this.scenarioEventDataService.getMoveAndGroupNumbers(this.mselScenarioEvents, this.moveList);
-    });
+      });
     // observe the Teams
     this.teamQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(teams => {
-      this.teamList = teams;
-    });
+        this.teamList = teams;
+      });
     // subscribe to filter string changes for debounce
     this.subscription = this.keyUp.pipe(
-      debounceTime(250),
-      distinctUntilChanged(),
+        debounceTime(250),
+        distinctUntilChanged(),
       mergeMap(search => of(search).pipe(
         delay(250),
       )),
     ).subscribe(event => {
-      this.applyFilter(this.filterString);
-    });
+        this.applyFilter(this.filterString);
+      });
     // set the time display format
     this.showRealTime = this.uiDataService.useRealTime();
   }
@@ -441,12 +442,47 @@ export class ScenarioEventListComponent implements OnDestroy {
           .filter((a) =>
             this.sortedDataFields.some(df =>
               that.getDataValue(a, df.name).value?.toLowerCase().includes(filterString)
-            )
-          );
+          )
+        );
         return filteredScenarioEvents;
       }
     }
     return mselScenarioEvents;
+  }
+
+  drop(event: CdkDragDrop<string[]>) {
+    const droppedMsel = event.item.data;
+    const origMselOffset = Number(droppedMsel.deltaSeconds);
+    const defaultOffsetSecs = 3600;
+    let newOffset = origMselOffset;
+    console.log('Moved msel: ' + droppedMsel.mselId + 'from ' + event.previousIndex + ' to ' + event.currentIndex);
+    if (this.mselScenarioEvents) {
+      if (this.mselScenarioEvents.length > 1 && event.previousIndex !== event.currentIndex) {
+        if (0 === event.currentIndex) {
+          const prevSecs = this.mselScenarioEvents[0].deltaSeconds;
+          // droppedMsel.deltaSeconds = Math.min(prevSecs, defaultOffsetSecs);
+          newOffset = this.mselScenarioEvents[0].deltaSeconds - Math.min(prevSecs, defaultOffsetSecs);
+        } else if (event.currentIndex === this.mselScenarioEvents.length - 1) {
+          // droppedMsel.deltaSeconds =
+          //  this.mselScenarioEvents[event.currentIndex].deltaSeconds +
+          //  defaultOffsetSecs;
+          console.log(
+            'Last offset is ' +
+            this.mselScenarioEvents[event.currentIndex].deltaSeconds
+          );
+          newOffset = this.mselScenarioEvents[event.currentIndex].deltaSeconds + defaultOffsetSecs;
+        } else {
+          const prevIndex = event.currentIndex;
+          const nextIndex = event.currentIndex + 1;
+          const timeDiff = this.mselScenarioEvents[nextIndex].deltaSeconds - this.mselScenarioEvents[prevIndex].deltaSeconds;
+          // droppedMsel.deltaSeconds =
+          //  this.mselScenarioEvents[prevIndex].deltaSeconds - (timeDiff / 2);
+          newOffset =
+            this.mselScenarioEvents[prevIndex].deltaSeconds - timeDiff / 2;
+        }
+      }
+    }
+    console.log('Changing from ' + origMselOffset + ' to ' + newOffset);
   }
 
   addScenarioEvent() {

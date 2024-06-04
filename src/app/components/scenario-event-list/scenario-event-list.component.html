@@ -172,9 +172,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </ng-container>
         </tr>
       </thead>
-      <tbody>
+      <tbody cdkDropList (cdkDropListDropped)="drop($event)">
         <ng-container *ngFor="let item of sortedScenarioEvents; index as rowIndex">
-          <tr [style]="getRowStyle(item)">
+          <tr [style]="getRowStyle(item)" cdkDrag [cdkDragData]="item">
             <!-- row buttons -->
             <td class="center-self">
               <div class="row-start-buttons">
