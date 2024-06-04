@@ -804,8 +804,8 @@ export class ScenarioEventListComponent implements OnDestroy {
   }
 
   openContent(id: string) {
-    const basePageUrl = location.origin + '/msel/' + this.msel.id + '/scenarioEvent/';
-    window.open(basePageUrl + id);
+    const url = location.origin + '/injectpage?msel=' + this.msel.id + '&scenarioEvent=' + id;
+    window.open(url);
   }
 
   ngOnDestroy() {

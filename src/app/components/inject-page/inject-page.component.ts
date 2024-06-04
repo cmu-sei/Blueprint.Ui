@@ -45,10 +45,7 @@ import { ScenarioEventQuery } from 'src/app/data/scenario-event/scenario-event.q
 import { Sort } from '@angular/material/sort';
 import { Component, Input} from '@angular/core';
 import { AngularEditorConfig } from '@kolkov/angular-editor';
-import { UIDataService } from 'src/app/data/ui/ui-data.service';
-import { v4 as uuidv4 } from 'uuid';
 import { CardQuery } from 'src/app/data/card/card.query';
-import { CardDataService } from 'src/app/data/card/card-data.service';
 
 @Component({
   selector: 'app-inject-page',
@@ -60,7 +57,7 @@ export class InjectPageComponent {
   @Input() userTheme: Theme;
   @Input() isContentDeveloper: boolean;
   @Input() loggedInUserId: string;
-  topbarText = 'MSEL Playbook';
+  topbarText = 'Scenario Event Details';
   hideTopbar = false;
   imageFilePath = '';
   scenarioEventId = '';
@@ -68,9 +65,8 @@ export class InjectPageComponent {
   topbarTextColor = '#FFFFFF';
   topbarImage = this.settingsService.settings.AppTopBarImage;
   TopbarView = TopbarView;
-  appTitle = 'MSEL Playbook';
-  selectedMselId = '';
-  selectedScenarioEventId = '';
+  appTitle = 'Scenario Event Details';
+  mselId = '';
   private unsubscribe$ = new Subject();
   msel = new MselPlus();
   sortedDataFields: DataField[] = [];
@@ -79,11 +75,8 @@ export class InjectPageComponent {
   dateFormControls = new Map<string, UntypedFormControl>();
   sortedDataOptions: DataOption[] = [];
   dataValues: DataValue[] = [];
-  mselScenarioEvents: ScenarioEventPlus[] = [];
-  sortedScenarioEvents: ScenarioEventPlus[] = [];
-  moveAndGroupNumbers: Record<string, number[]>[] = [];
+  scenarioEvent: ScenarioEventPlus = {} as ScenarioEventPlus;
   moveList: Move[] = [];
-  filteredScenarioEventList: ScenarioEventPlus[] = [];
   teamList: Team[] = [];
   filterString = '';
   blankDataValue = {
@@ -93,7 +86,6 @@ export class InjectPageComponent {
     value: '',
     valueArray: []
   } as DataValuePlus;
-  filteredScenarioEvents: any[] = [];
   organizationList: Organization[] = [];
   sort: Sort = { active: 'deltaSeconds', direction: 'asc' };
   itemStatus = [ItemStatus.Pending, ItemStatus.Entered, ItemStatus.Approved, ItemStatus.Complete, ItemStatus.Deployed, ItemStatus.Archived];
@@ -117,6 +109,8 @@ export class InjectPageComponent {
     defaultFontSize: '',
     sanitize: true,
   };
+  dataType: typeof DataFieldType = DataFieldType;
+  dataValueId = '';
 
   constructor(
     private settingsService: ComnSettingsService,
@@ -136,9 +130,7 @@ export class InjectPageComponent {
     private moveQuery: MoveQuery,
     private dataValueQuery: DataValueQuery,
     private scenarioEventQuery: ScenarioEventQuery,
-    private uiDataService: UIDataService,
     private cardQuery: CardQuery,
-    private cardDataService: CardDataService,
     private activatedRoute: ActivatedRoute
   ) {
     // set image
@@ -151,12 +143,13 @@ export class InjectPageComponent {
     this.topbarTextColor = this.settingsService.settings.AppTopBarHexTextColor
       ? this.settingsService.settings.AppTopBarHexTextColor
       : this.topbarTextColor;
-    this.activatedRoute.paramMap.pipe(takeUntil(this.unsubscribe$)).subscribe(params => {
+    this.activatedRoute.queryParamMap.pipe(takeUntil(this.unsubscribe$)).subscribe(queryParams => {
       // load the selected MSEL data
-      const mselId = params.get('id');
-      const scenarioEventId = params.get('scenarioEventId');
+      const mselId = queryParams.get('msel');
+      const scenarioEventId = queryParams.get('scenarioEvent');
+      this.dataValueId = queryParams.get('dataValue');
       this.scenarioEventId = scenarioEventId;
-      if (mselId && this.selectedMselId !== mselId) {
+      if (mselId && this.mselId !== mselId) {
         // load the selected MSEL and make it active
         this.mselDataService.loadById(mselId);
         this.mselDataService.setActive(mselId);
@@ -202,18 +195,13 @@ export class InjectPageComponent {
     });
 
     (this.scenarioEventQuery.selectAll()).pipe(takeUntil(this.unsubscribe$)).subscribe(scenarioEvents => {
-      this.mselScenarioEvents = this.getEditableScenarioEvents(scenarioEvents as ScenarioEventPlus[]);
       if (scenarioEvents && scenarioEvents.length > 0) {
-        this.moveAndGroupNumbers = this.scenarioEventDataService.getMoveAndGroupNumbers(this.mselScenarioEvents, this.moveList);
-        this.filteredScenarioEventList = this.getFilteredScenarioEvents();
-        this.sortedScenarioEvents = this.getSortedScenarioEvents(this.filteredScenarioEventList);
+        this.scenarioEvent = scenarioEvents.find(m => m.id === this.scenarioEventId) as ScenarioEventPlus;
       }
     });
     this.moveQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(moves => {
       this.moveList = moves.sort((a, b) => +a.moveNumber < +b.moveNumber ? -1 : 1);
-      this.moveAndGroupNumbers = this.scenarioEventDataService.getMoveAndGroupNumbers(this.mselScenarioEvents, this.moveList);
     });
-    console.log(this.getTitleForScenarioEvent(this.scenarioEventId));
   }
 
   topBarNavigate(url): void {
@@ -231,7 +219,6 @@ export class InjectPageComponent {
   getSortedDataFields(dataFields: DataField[]) {
     if (dataFields) {
       this.sortedDataFields = dataFields
-        .filter(df => df.onScenarioEventList)
         .sort((a, b) => +a.displayOrder > +b.displayOrder ? 1 : -1);
       this.allDataFields = dataFields
         .sort((a, b) => +a.displayOrder > +b.displayOrder ? 1 : -1);
@@ -254,29 +241,6 @@ export class InjectPageComponent {
     return editableList;
   }
 
-  getFilteredScenarioEvents(): ScenarioEventPlus[] {
-    const mselScenarioEvents: ScenarioEventPlus[] = [];
-    if (this.mselScenarioEvents) {
-      this.mselScenarioEvents.forEach(se => {
-        if (se.mselId === this.msel.id) {
-          mselScenarioEvents.push({... se});
-        }
-      });
-      if (mselScenarioEvents && mselScenarioEvents.length > 0 && this.filterString) {
-        const filterString = this.filterString.toLowerCase();
-        const that = this;
-        const filteredScenarioEvents = mselScenarioEvents
-          .filter((a) =>
-            this.sortedDataFields.some(df =>
-              that.getDataValue(a, df.name).value?.toLowerCase().includes(filterString)
-            )
-          );
-        return filteredScenarioEvents;
-      }
-    }
-    return mselScenarioEvents;
-  }
-
   getDataValue(scenarioEvent: ScenarioEventPlus, dataFieldName: string): DataValuePlus {
     if (!(this.msel && scenarioEvent && scenarioEvent.id)) {
       return this.blankDataValue;
@@ -295,50 +259,28 @@ export class InjectPageComponent {
     return dataValuePlus;
   }
 
+  getDataValueById() {
+    if (this.dataValueId) {
+      const dataValue = this.dataValues.find(dv => dv.id === this.dataValueId);
+      return dataValue ? dataValue.value : '';
+    }
+    return '';
+  }
+
   getDataFieldIdByName(scenarioEvent: ScenarioEventPlus, name: string): string {
     const dataField = this.allDataFields.find(df => df.name.toLowerCase() === name.toLowerCase());
     return dataField ? dataField.id : '';
   }
 
-  getSortedScenarioEvents(scenarioEvents: ScenarioEventPlus[]): ScenarioEventPlus[] {
-    let sortedScenarioEvents: ScenarioEventPlus[];
-    if (scenarioEvents) {
-      if (scenarioEvents.length > 0 && this.sort && this.sort.direction) {
-        sortedScenarioEvents = (scenarioEvents as ScenarioEventPlus[])
-          .sort((a: ScenarioEventPlus, b: ScenarioEventPlus) => this.sortScenarioEvents(a, b));
-      } else {
-        sortedScenarioEvents = (scenarioEvents as ScenarioEventPlus[])
-          .sort((a, b) => +a.deltaSeconds > +b.deltaSeconds ? 1 : -1);
-      }
-    }
-    return sortedScenarioEvents;
-  }
-
-  private sortScenarioEvents(a: ScenarioEventPlus, b: ScenarioEventPlus): number {
-    const dir = this.sort.direction === 'desc' ? -1 : 1;
-    if (!this.sort.direction || this.sort.active === 'deltaSeconds') {
-      this.sort = { active: 'deltaSeconds', direction: 'asc' };
-      return +a.deltaSeconds < +b.deltaSeconds ? -dir : dir;
-    } else {
-      const aValue = this.getDataValue(a, this.sort.active).value?.toString().toLowerCase();
-      const bValue = this.getDataValue(b, this.sort.active).value?.toString().toLowerCase();
-      if (aValue === bValue) {
-        return +a.deltaSeconds < +b.deltaSeconds ? -dir : dir;
-      } else {
-        return aValue < bValue ? -dir : dir;
-      }
-    }
-  }
-
-  getScenarioEventValue(scenarioEvent: ScenarioEvent, columnName: string) {
-    if (!(this.msel && scenarioEvent && scenarioEvent.id)) {
+  getScenarioEventValue(columnName: string) {
+    if (!(this.msel && this.scenarioEvent && this.scenarioEvent.id)) {
       return '';
     }
     const dataField = this.allDataFields.find(df => df.name === columnName);
     if (!dataField) {
       return '';
     }
-    const dataValue = this.dataValues.find(dv => dv.dataFieldId === dataField.id && dv.scenarioEventId === scenarioEvent.id);
+    const dataValue = this.dataValues.find(dv => dv.dataFieldId === dataField.id && dv.scenarioEventId === this.scenarioEvent.id);
 
     if (dataValue) {
       if (dataField.dataType === 'Card') {
@@ -351,10 +293,6 @@ export class InjectPageComponent {
     }
   }
 
-  getScenarioEventById(id: string): ScenarioEventPlus | undefined {
-    return this.mselScenarioEvents.find(se => se.id === id);
-  }
-
   getScenarioEventTitle(scenarioEvent: ScenarioEventPlus): string {
     if (!scenarioEvent) {
       return '';
@@ -365,11 +303,6 @@ export class InjectPageComponent {
     }
     const titleDataValue = this.dataValues.find(dv => dv.dataFieldId === titleField.id && dv.scenarioEventId === scenarioEvent.id);
     return titleDataValue ? titleDataValue.value : '';
-  }
-
-  getTitleForScenarioEvent(scenarioEventId: string): string {
-    const scenarioEvent = this.getScenarioEventById(scenarioEventId);
-    return scenarioEvent ? this.getScenarioEventTitle(scenarioEvent) : '';
   }
 
   printpage() {
@@ -389,4 +322,16 @@ export class InjectPageComponent {
     template.innerHTML = content;
     return template.content.textContent;
   }
+
+  openInNewTab(scenarioEventId: string, dataFieldId: string) {
+    const dataValue = this.dataValues.find(dv => dv.dataFieldId === dataFieldId && dv.scenarioEventId === scenarioEventId);
+    if (dataValue && dataValue.id) {
+      const url = location.origin +
+        '/injectpage?msel=' + this.msel.id +
+        '&scenarioEvent=' + this.scenarioEventId +
+        '&dataValue=' + dataValue.id;
+      window.open(url);
+    }
+  }
+
 }

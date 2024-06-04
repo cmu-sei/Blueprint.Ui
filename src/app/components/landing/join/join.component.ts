@@ -72,9 +72,10 @@ export class JoinComponent implements OnDestroy {
     // subscribe to route changes
     this.activatedRoute.queryParamMap.pipe(takeUntil(this.unsubscribe$)).subscribe(params => {
       const mselId = params.get('msel');
+      const teamId = params.get('team');
       if (mselId) {
         // launch the msel
-        this.join(mselId);
+        this.join(mselId, teamId);
         this.showChoices = false;
       } else {
         this.showChoices = true;
@@ -86,20 +87,20 @@ export class JoinComponent implements OnDestroy {
     this.router.navigate([url]);
   }
 
-  join(id: string) {
-    this.joinStatus[id] = 'Joining the event ...';
-    this.joiningMselId = id;
-    this.mselDataService.join(id).pipe(take(1)).subscribe((playerViewId) => {
-      let url = this.settingsService.settings.PlayerUrl;
-      if (url.slice(-1) !== '/') {
-        url = url + '/';
+  join(mselId: string, teamId: string) {
+    this.joinStatus[mselId] = 'Processing your request ...';
+    this.joiningMselId = mselId;
+    this.mselDataService.join(mselId, teamId).pipe(take(1)).subscribe((playerViewId) => {
+      let playerUrl = this.settingsService.settings.PlayerUrl;
+      if (playerUrl.slice(-1) !== '/') {
+        playerUrl = playerUrl + '/';
       }
-      url = url + 'view/' + playerViewId;
-      location.href = url;
+      playerUrl = playerUrl + 'view/' + playerViewId;
+      location.href = playerUrl;
     },
     (error) => {
-      this.joinStatus[id] = '';
-      this.isJoined[id] = false;
+      this.joinStatus[mselId] = '';
+      this.isJoined[mselId] = false;
       this.showChoices = true;
       this.errorService.handleError(error);
     });

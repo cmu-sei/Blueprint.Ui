@@ -302,12 +302,12 @@ export class MselDataService {
       });
   }
 
-  join(id: string) {
-    return this.mselService.joinMselByInvitation(id);
+  join(mselId: string, teamId: string) {
+    return this.mselService.joinMselByInvitation(mselId, teamId);
   }
 
-  launch(id: string): Observable<Msel> {
-    return this.mselService.launchMselByInvitation(id);
+  launch(mselId: string, teamId: string): Observable<Msel> {
+    return this.mselService.launchMselByInvitation(mselId, teamId);
   }
 
   copy(id: string) {
