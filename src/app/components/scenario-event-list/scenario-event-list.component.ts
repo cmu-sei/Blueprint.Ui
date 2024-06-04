@@ -452,37 +452,28 @@ export class ScenarioEventListComponent implements OnDestroy {
 
   drop(event: CdkDragDrop<string[]>) {
     const droppedMsel = event.item.data;
-    const origMselOffset = Number(droppedMsel.deltaSeconds);
+    const origMselOffset = parseInt(droppedMsel.deltaSeconds, 10);
     const defaultOffsetSecs = 3600;
     let newOffset = origMselOffset;
-    console.log('Moved msel: ' + droppedMsel.mselId + 'from ' + event.previousIndex + ' to ' + event.currentIndex);
-    if (this.mselScenarioEvents) {
-      if (this.mselScenarioEvents.length > 1 && event.previousIndex !== event.currentIndex) {
-        if (0 === event.currentIndex) {
-          const prevSecs = this.mselScenarioEvents[0].deltaSeconds;
-          // droppedMsel.deltaSeconds = Math.min(prevSecs, defaultOffsetSecs);
-          newOffset = this.mselScenarioEvents[0].deltaSeconds - Math.min(prevSecs, defaultOffsetSecs);
-        } else if (event.currentIndex === this.mselScenarioEvents.length - 1) {
-          // droppedMsel.deltaSeconds =
-          //  this.mselScenarioEvents[event.currentIndex].deltaSeconds +
-          //  defaultOffsetSecs;
-          console.log(
-            'Last offset is ' +
-            this.mselScenarioEvents[event.currentIndex].deltaSeconds
-          );
-          newOffset = this.mselScenarioEvents[event.currentIndex].deltaSeconds + defaultOffsetSecs;
-        } else {
-          const prevIndex = event.currentIndex;
-          const nextIndex = event.currentIndex + 1;
-          const timeDiff = this.mselScenarioEvents[nextIndex].deltaSeconds - this.mselScenarioEvents[prevIndex].deltaSeconds;
-          // droppedMsel.deltaSeconds =
-          //  this.mselScenarioEvents[prevIndex].deltaSeconds - (timeDiff / 2);
-          newOffset =
-            this.mselScenarioEvents[prevIndex].deltaSeconds - timeDiff / 2;
-        }
+    if (this.mselScenarioEvents && this.mselScenarioEvents.length > 1 && event.previousIndex !== event.currentIndex) {
+      if (0 === event.currentIndex) {
+        const prevSecs = this.mselScenarioEvents[0].deltaSeconds;
+        newOffset = +this.mselScenarioEvents[0].deltaSeconds - Math.min(prevSecs, defaultOffsetSecs);
+      } else if (event.currentIndex === this.mselScenarioEvents.length - 1) {
+        newOffset = +this.mselScenarioEvents[event.currentIndex].deltaSeconds + defaultOffsetSecs;
+      } else {
+        const movedDown = event.currentIndex > event.previousIndex;
+        const topRow = movedDown ? event.currentIndex : event.currentIndex - 1;
+        const bottomRow = topRow + 1;
+        const timeDiff = +this.mselScenarioEvents[bottomRow].deltaSeconds - +this.mselScenarioEvents[topRow].deltaSeconds;
+        newOffset =
+          +this.mselScenarioEvents[topRow].deltaSeconds + Math.floor(timeDiff / 2);
       }
     }
-    console.log('Changing from ' + origMselOffset + ' to ' + newOffset);
+    if (newOffset !== origMselOffset) {
+      droppedMsel.deltaSeconds = newOffset;
+      this.saveScenarioEvent(droppedMsel);
+    }
   }
 
   addScenarioEvent() {
