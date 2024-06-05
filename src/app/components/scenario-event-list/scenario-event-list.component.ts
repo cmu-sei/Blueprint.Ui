@@ -1,10 +1,10 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, Input, OnDestroy, ViewChild } from '@angular/core';
+import { Component, Input, OnDestroy, OnChanges, SimpleChanges, ViewChild } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
-import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
+import { CdkDragDrop, CdkDragStart, CdkDragEnd } from '@angular/cdk/drag-drop';
 import { Router } from '@angular/router';
 import { Subject, Subscription, Observable, of } from 'rxjs';
 import { takeUntil, map, debounceTime, distinctUntilChanged, mergeMap, delay } from 'rxjs/operators';
@@ -52,7 +52,7 @@ import { AngularEditorConfig } from '@kolkov/angular-editor';
   templateUrl: './scenario-event-list.component.html',
   styleUrls: ['./scenario-event-list.component.scss'],
 })
-export class ScenarioEventListComponent implements OnDestroy {
+export class ScenarioEventListComponent implements OnDestroy, OnChanges  {
   @Input() loggedInUserId: string;
   @Input() isContentDeveloper: boolean;
   @Input() userTheme: Theme;
@@ -70,6 +70,7 @@ export class ScenarioEventListComponent implements OnDestroy {
   dataValues: DataValue[] = [];
   newScenarioEvent: ScenarioEventPlus;
   isAddingScenarioEvent = false;
+  initDragPreviewClass = ['mat-drawer-container', 'background'];
   canDoAnything = false;
   private unsubscribe$ = new Subject();
   viewConfig: AngularEditorConfig = {
@@ -200,6 +201,9 @@ export class ScenarioEventListComponent implements OnDestroy {
       });
     // set the time display format
     this.showRealTime = this.uiDataService.useRealTime();
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
   }
 
   tabChange(event) {
@@ -450,7 +454,7 @@ export class ScenarioEventListComponent implements OnDestroy {
     return mselScenarioEvents;
   }
 
-  drop(event: CdkDragDrop<string[]>) {
+  dropHandler(event: CdkDragDrop<string[]>) {
     const droppedMsel = event.item.data;
     const origMselOffset = parseInt(droppedMsel.deltaSeconds, 10);
     const defaultOffsetSecs = 3600;
@@ -474,6 +478,16 @@ export class ScenarioEventListComponent implements OnDestroy {
       droppedMsel.deltaSeconds = newOffset;
       this.saveScenarioEvent(droppedMsel);
     }
+  }
+
+  dragStart(event: CdkDragStart) {
+    // event.source.previewClass = [this.userTheme, 'text', 'background'];
+    // event.source.element.nativeElement.classList.add(this.userTheme, 'mat-drawer-container', 'background');
+  }
+
+  dragEnd(event: CdkDragEnd) {
+    // event.source.previewClass = [this.userTheme, 'text', 'background'];
+    // event.source.element.nativeElement.classList.remove(this.userTheme, 'mat-drawer-container', 'background');
   }
 
   addScenarioEvent() {
