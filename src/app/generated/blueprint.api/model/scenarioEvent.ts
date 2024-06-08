@@ -25,7 +25,7 @@ export interface ScenarioEvent {
     id?: string;
     mselId?: string;
     dataValues?: Array<DataValue>;
-    rowIndex?: number;
+    groupOrder?: number;
     isHidden?: boolean;
     rowMetadata?: string;
     deltaSeconds?: number;     // time from the start of the MSEL when this event should be executed
