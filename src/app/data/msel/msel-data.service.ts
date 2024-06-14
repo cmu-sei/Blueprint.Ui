@@ -14,7 +14,7 @@ import {
   DataField,
   DataFieldType,
   IntegrationType,
-  ItemStatus,
+  MselItemStatus,
   Move,
   Msel,
   MselRole,
@@ -43,7 +43,7 @@ export class MselPlus implements Msel {
   id?: string;
   name?: string;
   description?: string;
-  status?: ItemStatus;
+  status?: MselItemStatus;
   usePlayer?: boolean;
   playerViewId?: string;
   useGallery?: boolean;

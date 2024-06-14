@@ -6,7 +6,7 @@ import { Subject } from 'rxjs';
 import {
   DataField,
   DataFieldType,
-  ItemStatus,
+  MselItemStatus,
   MselRole,
   Team
 } from 'src/app/generated/blueprint.api';
@@ -75,7 +75,7 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
   };
   dataType: typeof DataFieldType = DataFieldType;
 
-  itemStatus = [ItemStatus.Pending, ItemStatus.Entered, ItemStatus.Approved, ItemStatus.Complete, ItemStatus.Deployed, ItemStatus.Archived];
+  itemStatus = [MselItemStatus.Pending, MselItemStatus.Entered, MselItemStatus.Approved, MselItemStatus.Complete, MselItemStatus.Deployed, MselItemStatus.Archived];
   mselRole = { Owner: MselRole.Owner, Approver: MselRole.Approver, Editor: MselRole.Editor};
   toOrgList: string[] = [];
   sortedMselTeams: Team[] = [];
@@ -85,7 +85,7 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
     valueArray: []
   } as DataValuePlus;
   scenarioEventBackgroundColors: Array<string>;
-  dataFieldTypes = DataFieldType.keys;
+  dataFieldTypes = DataFieldType;
   sortedDataFields: DataField[] = [];
   selectedTab = 0;
   private tabSections = new Map([

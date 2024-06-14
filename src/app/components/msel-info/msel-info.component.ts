@@ -8,7 +8,7 @@ import { TeamQuery } from 'src/app/data/team/team.query';
 import { UserDataService } from 'src/app/data/user/user-data.service';
 import {
   DataField,
-  ItemStatus,
+  MselItemStatus,
   MselPage,
   MselUnit,
   ScenarioEvent,
@@ -52,8 +52,8 @@ export class MselInfoComponent implements OnDestroy {
   mselUnitList: MselUnit[] = [];
   scoringModelList: CiteApiClientScoringModel[] = [];
   viewList: PlayerApiClientView[] = [];
-  itemStatus: ItemStatus[] =
-    [ItemStatus.Pending, ItemStatus.Entered, ItemStatus.Approved, ItemStatus.Deployed, ItemStatus.Complete, ItemStatus.Archived];
+  itemStatus: MselItemStatus[] =
+    [MselItemStatus.Pending, MselItemStatus.Entered, MselItemStatus.Approved, MselItemStatus.Deployed, MselItemStatus.Complete, MselItemStatus.Archived];
   viewUrl: string;
   mselPages: MselPage[] = [];
   newMselPage = {} as MselPage;

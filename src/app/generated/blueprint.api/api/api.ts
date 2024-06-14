@@ -1,13 +1,13 @@
-/*
-Copyright 2022 Carnegie Mellon University. All Rights Reserved.
- Released under a MIT (SEI)-style license. See LICENSE.md in the
-// project root for license information.
-*/
-
 export * from './card.service';
 import { CardService } from './card.service';
 export * from './cardTeam.service';
 import { CardTeamService } from './cardTeam.service';
+export * from './catalog.service';
+import { CatalogService } from './catalog.service';
+export * from './catalogInject.service';
+import { CatalogInjectService } from './catalogInject.service';
+export * from './catalogUnit.service';
+import { CatalogUnitService } from './catalogUnit.service';
 export * from './cite.service';
 import { CiteService } from './cite.service';
 export * from './citeAction.service';
@@ -22,6 +22,10 @@ export * from './dataValue.service';
 import { DataValueService } from './dataValue.service';
 export * from './healthCheck.service';
 import { HealthCheckService } from './healthCheck.service';
+export * from './inject.service';
+import { InjectService } from './inject.service';
+export * from './injectType.service';
+import { InjectTypeService } from './injectType.service';
 export * from './invitation.service';
 import { InvitationService } from './invitation.service';
 export * from './move.service';
@@ -30,8 +34,6 @@ export * from './msel.service';
 import { MselService } from './msel.service';
 export * from './mselPage.service';
 import { MselPageService } from './mselPage.service';
-export * from './mselTeam.service';
-import { MselTeamService } from './mselTeam.service';
 export * from './mselUnit.service';
 import { MselUnitService } from './mselUnit.service';
 export * from './organization.service';
@@ -62,4 +64,4 @@ export * from './userPermission.service';
 import { UserPermissionService } from './userPermission.service';
 export * from './userTeamRole.service';
 import { UserTeamRoleService } from './userTeamRole.service';
-export const APIS = [CardService, CardTeamService, CiteService, CiteActionService, CiteRoleService, DataFieldService, DataOptionService, DataValueService, HealthCheckService, InvitationService, MoveService, MselService, MselPageService, MselTeamService, MselUnitService, OrganizationService, PermissionService, PlayerApplicationService, PlayerApplicationTeamService, PlayerService, ScenarioEventService, TeamService, TeamUserService, UnitService, UnitUserService, UserService, UserMselRoleService, UserPermissionService, UserTeamRoleService];
+export const APIS = [CardService, CardTeamService, CatalogService, CatalogInjectService, CatalogUnitService, CiteService, CiteActionService, CiteRoleService, DataFieldService, DataOptionService, DataValueService, HealthCheckService, InjectService, InjectTypeService, InvitationService, MoveService, MselService, MselPageService, MselUnitService, OrganizationService, PermissionService, PlayerService, PlayerApplicationService, PlayerApplicationTeamService, ScenarioEventService, TeamService, TeamUserService, UnitService, UnitUserService, UserService, UserMselRoleService, UserPermissionService, UserTeamRoleService];

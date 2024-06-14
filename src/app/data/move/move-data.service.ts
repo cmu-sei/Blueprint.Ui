@@ -13,7 +13,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import {
   Move,
   MoveService,
-  ItemStatus
+  MselItemStatus
 } from 'src/app/generated/blueprint.api';
 import { map, take, tap } from 'rxjs/operators';
 import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
