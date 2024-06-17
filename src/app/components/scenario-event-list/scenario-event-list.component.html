@@ -180,7 +180,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         </tr>
       </thead>
       <tbody cdkDropList (cdkDropListDropped)="dropHandler($event)">
-        <ng-container *ngFor="let item of sortedScenarioEvents; index as rowIndex">
+        <ng-container *ngFor="let item of displayedScenarioEvents; index as rowIndex">
           <tr [style]="getRowStyle(item)" cdkDrag [cdkDragData]="item" cdkDragLockAxis="y" [cdkDragPreviewClass]="userTheme" (cdkDragStarted)="dragStart($event)" (cdkDragEnded)="dragEnd($event)">
             <!-- row buttons -->
             <td class="center-self">
@@ -458,7 +458,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   <span *ngIf="!isContentDeveloper && !msel.hasRole(loggedInUserId, item.id).editor">{{ getDataValue(item, df.name).value }}</span>
                 </div>
               </td>
-              <!-- is Chosen From a List -->
+              <!-- Move Type -->
+              <td *ngIf="df.dataType.toString() === 'Move'">
+                <div class="constrainer" [style]="getStyle(df)">
+                {{ getScenarioEventValue(item, df.name) }}
+                </div>
+              </td>
+            <!-- is Chosen From a List -->
               <td *ngIf="df.isChosenFromList">
                 <div class="constrainer" [style]="getStyle(df)">
                   <mat-select

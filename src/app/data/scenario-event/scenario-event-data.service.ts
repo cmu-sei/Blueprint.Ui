@@ -14,7 +14,6 @@ import { Router, ActivatedRoute } from '@angular/router';
 import {
   Card,
   DataField,
-  DataFieldService,
   DataFieldType,
   DataValue,
   Move,
@@ -230,27 +229,22 @@ export class ScenarioEventDataService {
 
   private sortAndFilterValueFromField(value: DataValue, fieldType: DataFieldType,
     cardMap: Map<string, string>, userMap: Map<string, string>): (string | number) {
-    let sortAndFilterVal = '';
     switch (fieldType) {
       case DataFieldType.Card:
         const cardName = cardMap.get(value.value);
-        if (cardName) {
-          sortAndFilterVal = cardName;
-        }
-        break;
+        return cardName ? cardName : '';
       case DataFieldType.User:
         const userName = userMap.get(value.value);
-        if (userName) {
-          sortAndFilterVal = userName;
-        }
-        break;
+        return userName ? userName : '';
       case DataFieldType.Html:
-        break;
+        return '';
+      case DataFieldType.Double:
+      case DataFieldType.Integer:
+      case DataFieldType.Move:
+        return value.value ? +value.value : Number.NEGATIVE_INFINITY;
       default:
-        sortAndFilterVal = value.value;
-        break;
+        return value.value ? value.value : '';
     }
-    return sortAndFilterVal;
   }
 
   private indexFieldsAndValues(datafields: DataField[], dataValues: DataValue[], cards: Card[],
@@ -270,7 +264,7 @@ export class ScenarioEventDataService {
       }
     }
     for (const field of datafields) {
-      fieldMap.set(field.name, field);
+      fieldMap.set(field.id, field);
     }
     for (const value of dataValues) {
       let eventProps = valueMap.get(value.scenarioEventId);
@@ -303,7 +297,7 @@ export class ScenarioEventDataService {
   private cloneAndFilterScenarioEvents(scenarioEvents: ScenarioEvent[], datafields: DataField[], dataValues: DataValue[],
     cards: Card[], users: User[], filterString: string, showHidden: boolean): ScenarioEventPlus[] {
     const clonedList: ScenarioEventPlus[] = [];
-    if (scenarioEvents && scenarioEvents.length > 0) {
+    if (scenarioEvents && scenarioEvents.length > 0 && dataValues.length > 0) {
       // index the fields and values for faster access
       const [fieldMap, valueMap] = this.indexFieldsAndValues(datafields, dataValues, cards, users);
 
@@ -322,16 +316,48 @@ export class ScenarioEventDataService {
     return clonedList;
   }
 
+  private getSortAndFilterValueFromEvent(scenarioEvent: ScenarioEventPlus, fieldName: string): (string | number) {
+    if ('deltaSeconds' === fieldName) {
+      return +scenarioEvent.deltaSeconds;
+    } else if ('groupOrder' === fieldName) {
+      return +scenarioEvent.groupOrder;
+    } else {
+      const val = scenarioEvent.plusDataValues.get(fieldName);
+      if (val) {
+        return val.sortAndFilterValue;
+      }
+      return '';
+    }
+  }
+
+  private getNumOrDefault(value: (string | number)): number {
+    if (typeof value !== undefined && typeof value !== null) {
+      return +value;
+    }
+    return Number.NEGATIVE_INFINITY;
+  }
+
   private sortScenarioEventImpl(a: ScenarioEventPlus, b: ScenarioEventPlus, sorts: Sort[]): number {
     let sortVal = 0;
     for (const sort of sorts) {
       const dir = sort.direction === 'desc' ? -1 : 1;
-      const sortValA = a.plusDataValues.get(sort.active).sortAndFilterValue;
-      const sortValB = b.plusDataValues.get(sort.active).sortAndFilterValue;
-      if (typeof sortValA === 'number' && typeof sortValB === 'number') {
-        sortVal = (+sortValA - +sortValB) * dir;
+      const sortValA = this.getSortAndFilterValueFromEvent(a, sort.active);
+      const sortValB = this.getSortAndFilterValueFromEvent(b, sort.active);
+      if (typeof sortValA === 'number' || typeof sortValB === 'number') {
+        const numValA = this.getNumOrDefault(sortValA);
+        const numValB = this.getNumOrDefault(sortValB);
+        let numSortVal = 0;
+        if (+numValA < +numValB) {
+          numSortVal = -1;
+        } else if (+numValA > +numValB) {
+          numSortVal = 1;
+        }
+        sortVal = numSortVal ? numSortVal * dir : numSortVal;
       } else {
-        sortVal = Intl.Collator().compare(sortValA as string, sortValB as string) * dir;
+        const strSortVal = Intl.Collator().compare(
+          sortValA ? sortValA.trim().toLowerCase() : '',
+          sortValB ? sortValB.trim().toLowerCase() : '');
+        sortVal = strSortVal ? strSortVal * dir : strSortVal;
       }
       if (sortVal) {
         return sortVal;

@@ -60,12 +60,11 @@ export class ScenarioEventListComponent implements OnDestroy  {
   mselScenarioEvents: ScenarioEventPlus[] = [];
   expandedScenarioEventId = '';
   expandedMoreScenarioEventIds: string[] = [];
-  filteredScenarioEventList: ScenarioEventPlus[] = [];
   filterString = '';
-  sort: Sort = { active: 'deltaSeconds', direction: 'asc' };
+  sort: Sort = { active: '', direction: ''};
 
   // maybe call this displayedScenarioEvents
-  sortedScenarioEvents: ScenarioEventPlus[] = [];
+  displayedScenarioEvents: ScenarioEventPlus[] = [];
   sortedDataFields: DataField[] = [];
   sortedDataOptions: DataOption[] = [];
   allDataFields: DataField[] = [];
@@ -169,10 +168,10 @@ export class ScenarioEventListComponent implements OnDestroy  {
     (this.scenarioEventQuery.selectAll()).pipe(takeUntil(this.unsubscribe$)).subscribe(scenarioEvents => {
       this.mselScenarioEvents = this.getEditableScenarioEvents(scenarioEvents as ScenarioEventPlus[]);
         if (scenarioEvents && scenarioEvents.length > 0) {
-        this.moveAndGroupNumbers = this.scenarioEventDataService.getMoveAndGroupNumbers(this.mselScenarioEvents, this.moveList);
-          this.filteredScenarioEventList = this.getFilteredScenarioEvents();
-        this.sortedScenarioEvents = this.getSortedScenarioEvents(this.filteredScenarioEventList);
-        }
+          this.moveAndGroupNumbers = this.scenarioEventDataService.getMoveAndGroupNumbers(this.mselScenarioEvents, this.moveList);
+          this.displayedScenarioEvents = this.scenarioEventDataService.sortAndFilterScenarioEvents(
+            scenarioEvents, this.sortedDataFields, this.dataValues, this.cardList, this.mselUsers, this.sort, this.filterString, true);
+          }
       });
     // is user a contentdeveloper or system admin?
     this.userDataService.isContentDeveloper.pipe(takeUntil(this.unsubscribe$)).subscribe((isOne) => {
@@ -233,20 +232,6 @@ export class ScenarioEventListComponent implements OnDestroy  {
     });
 
     return editableList;
-  }
-
-  getSortedScenarioEvents(scenarioEvents: ScenarioEventPlus[]): ScenarioEventPlus[] {
-    let sortedScenarioEvents: ScenarioEventPlus[];
-    if (scenarioEvents) {
-      if (scenarioEvents.length > 0 && this.sort && this.sort.direction) {
-        sortedScenarioEvents = (scenarioEvents as ScenarioEventPlus[])
-          .sort((a: ScenarioEventPlus, b: ScenarioEventPlus) => this.sortScenarioEvents(a, b));
-      } else {
-        sortedScenarioEvents = (scenarioEvents as ScenarioEventPlus[])
-          .sort((a, b) => +a.deltaSeconds > +b.deltaSeconds ? 1 : -1);
-      }
-    }
-    return sortedScenarioEvents;
   }
 
   getSortedDataFields(dataFields: DataField[]) {
@@ -408,53 +393,14 @@ export class ScenarioEventListComponent implements OnDestroy  {
 
   applyFilter(filterValue: string) {
     this.filterString = filterValue;
-    this.filteredScenarioEventList = this.getFilteredScenarioEvents();
-    this.sortedScenarioEvents = this.getSortedScenarioEvents(this.filteredScenarioEventList);
+    this.displayedScenarioEvents = this.scenarioEventDataService.sortAndFilterScenarioEvents(
+      this.mselScenarioEvents, this.sortedDataFields, this.dataValues, this.cardList, this.mselUsers, this.sort, this.filterString, true);
   }
 
   sortChanged(sort: Sort) {
     this.sort = sort;
-    this.filteredScenarioEventList = this.getFilteredScenarioEvents();
-    this.sortedScenarioEvents = this.getSortedScenarioEvents(this.filteredScenarioEventList);
-  }
-
-  private sortScenarioEvents(a: ScenarioEventPlus, b: ScenarioEventPlus): number {
-    const dir = this.sort.direction === 'desc' ? -1 : 1;
-    if (!this.sort.direction || this.sort.active === 'deltaSeconds') {
-      this.sort = { active: 'deltaSeconds', direction: 'asc' };
-      return +a.deltaSeconds < +b.deltaSeconds ? -dir : dir;
-    } else {
-      const aValue = this.getDataValue(a, this.sort.active).value?.toString().toLowerCase();
-      const bValue = this.getDataValue(b, this.sort.active).value?.toString().toLowerCase();
-      if (aValue === bValue) {
-        return +a.deltaSeconds < +b.deltaSeconds ? -dir : dir;
-      } else {
-        return aValue < bValue ? -dir : dir;
-      }
-    }
-  }
-
-  getFilteredScenarioEvents(): ScenarioEventPlus[] {
-    const mselScenarioEvents: ScenarioEventPlus[] = [];
-    if (this.mselScenarioEvents) {
-      this.mselScenarioEvents.forEach(se => {
-        if (se.mselId === this.msel.id) {
-          mselScenarioEvents.push({... se});
-        }
-      });
-      if (mselScenarioEvents && mselScenarioEvents.length > 0 && this.filterString) {
-        const filterString = this.filterString.toLowerCase();
-        const that = this;
-        const filteredScenarioEvents = mselScenarioEvents
-          .filter((a) =>
-            this.sortedDataFields.some(df =>
-              that.getDataValue(a, df.name).value?.toLowerCase().includes(filterString)
-          )
-        );
-        return filteredScenarioEvents;
-      }
-    }
-    return mselScenarioEvents;
+    this.displayedScenarioEvents = this.scenarioEventDataService.sortAndFilterScenarioEvents(
+      this.mselScenarioEvents, this.sortedDataFields, this.dataValues, this.cardList, this.mselUsers, this.sort, this.filterString, true);
   }
 
   dropHandler(event: CdkDragDrop<string[]>) {
@@ -740,7 +686,7 @@ export class ScenarioEventListComponent implements OnDestroy  {
 
   batchSelectNewColor(color: string) {
     this.selectedEventIdList.forEach(id => {
-      const scenarioEvent = this.sortedScenarioEvents.find(e => e.id === id);
+      const scenarioEvent = this.displayedScenarioEvents.find(e => e.id === id);
       this.selectNewColor(color, scenarioEvent);
     });
   }
@@ -802,7 +748,7 @@ export class ScenarioEventListComponent implements OnDestroy  {
   setAllSelectedState(newValue: boolean) {
     this.selectedEventIdList = [];
     if (newValue) {
-      this.sortedScenarioEvents.forEach(e => {
+      this.displayedScenarioEvents.forEach(e => {
         this.selectedEventIdList.push(e.id);
       });
     }
