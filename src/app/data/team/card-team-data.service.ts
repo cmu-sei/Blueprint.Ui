@@ -97,12 +97,6 @@ export class CardTeamDataService implements OnDestroy {
     this.updateCardTeams(updatedCardTeams);
   }
 
-  setAsDates(cardTeam: CardTeam) {
-    // set to a date object.
-    cardTeam.dateCreated = new Date(cardTeam.dateCreated);
-    cardTeam.dateModified = new Date(cardTeam.dateModified);
-  }
-
   ngOnDestroy() {
     this.unsubscribe$.next(null);
     this.unsubscribe$.complete();

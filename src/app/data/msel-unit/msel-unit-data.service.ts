@@ -79,9 +79,6 @@ export class MselUnitDataService {
         ]) =>
           items
             ? (items as MselUnit[])
-              .sort((a: MselUnit, b: MselUnit) =>
-                this.sortMselUnits(a, b, sortColumn, sortIsAscending)
-              )
               .filter(
                 (mselUnit) =>
                   mselUnit.id
@@ -90,23 +87,6 @@ export class MselUnitDataService {
             : []
       )
     );
-  }
-
-  private sortMselUnits(
-    a: MselUnit,
-    b: MselUnit,
-    column: string,
-    isAsc: boolean
-  ) {
-    switch (column) {
-      case 'dateCreated':
-        return (
-          (a.dateCreated.valueOf() < b.dateCreated.valueOf() ? -1 : 1) *
-          (isAsc ? 1 : -1)
-        );
-      default:
-        return 0;
-    }
   }
 
   loadByMsel(mselId: string) {
@@ -121,9 +101,6 @@ export class MselUnitDataService {
       )
       .subscribe(
         (mselUnits) => {
-          mselUnits.forEach(a => {
-            this.setAsDates(a);
-          });
           this.mselUnitStore.set(mselUnits);
         },
         (error) => {
@@ -143,7 +120,6 @@ export class MselUnitDataService {
         take(1)
       )
       .subscribe((s) => {
-        this.setAsDates(s);
         this.mselUnitStore.upsert(s.id, { ...s });
       });
   }
@@ -163,7 +139,6 @@ export class MselUnitDataService {
         take(1)
       )
       .subscribe((s) => {
-        this.setAsDates(s);
         this.mselUnitStore.add(s);
       });
   }
@@ -179,7 +154,6 @@ export class MselUnitDataService {
         take(1)
       )
       .subscribe((n) => {
-        this.setAsDates(n);
         this.updateStore(n);
       });
   }
@@ -207,12 +181,6 @@ export class MselUnitDataService {
 
   deleteFromStore(id: string) {
     this.mselUnitStore.remove(id);
-  }
-
-  setAsDates(mselUnit: MselUnit) {
-    // set to a date object.
-    mselUnit.dateCreated = new Date(mselUnit.dateCreated);
-    mselUnit.dateModified = new Date(mselUnit.dateModified);
   }
 
 }

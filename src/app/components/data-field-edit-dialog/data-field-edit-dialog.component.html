@@ -47,7 +47,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <div class="single-detail">
       <mat-form-field class="full-width">
         <mat-select placeholder="Data Type" [value]="data.dataField.dataType" (selectionChange)="changeDataFieldDataType($event.value)" [disabled]="!data.isContentDeveloper && !data.isOwner">
-          <mat-option *ngFor="let dataFieldType of data.dataFieldTypes" value="{{ dataFieldType }}">{{ dataFieldType }}</mat-option>
+          <mat-option *ngFor="let dataFieldType of (data.dataFieldTypes | keyvalue)" value="{{ dataFieldType.key }}">{{ dataFieldType.key }}</mat-option>
         </mat-select>
       </mat-form-field>
     </div>

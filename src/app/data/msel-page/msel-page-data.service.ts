@@ -79,9 +79,6 @@ export class MselPageDataService {
         ]) =>
           items
             ? (items as MselPage[])
-              .sort((a: MselPage, b: MselPage) =>
-                this.sortMselPages(a, b, sortColumn, sortIsAscending)
-              )
               .filter(
                 (mselPage) =>
                   mselPage.id
@@ -90,23 +87,6 @@ export class MselPageDataService {
             : []
       )
     );
-  }
-
-  private sortMselPages(
-    a: MselPage,
-    b: MselPage,
-    column: string,
-    isAsc: boolean
-  ) {
-    switch (column) {
-      case 'dateCreated':
-        return (
-          (a.dateCreated.valueOf() < b.dateCreated.valueOf() ? -1 : 1) *
-          (isAsc ? 1 : -1)
-        );
-      default:
-        return 0;
-    }
   }
 
   loadByMsel(mselId: string) {
@@ -122,7 +102,6 @@ export class MselPageDataService {
       .subscribe(
         (mselPages) => {
           mselPages.forEach(a => {
-            this.setAsDates(a);
           });
           this.mselPageStore.set(mselPages);
         },
@@ -143,7 +122,6 @@ export class MselPageDataService {
         take(1)
       )
       .subscribe((s) => {
-        this.setAsDates(s);
         this.mselPageStore.upsert(s.id, { ...s });
       });
   }
@@ -163,7 +141,6 @@ export class MselPageDataService {
         take(1)
       )
       .subscribe((s) => {
-        this.setAsDates(s);
         this.mselPageStore.add(s);
       });
   }
@@ -179,7 +156,6 @@ export class MselPageDataService {
         take(1)
       )
       .subscribe((n) => {
-        this.setAsDates(n);
         this.updateStore(n);
       });
   }
@@ -207,12 +183,6 @@ export class MselPageDataService {
 
   deleteFromStore(id: string) {
     this.mselPageStore.remove(id);
-  }
-
-  setAsDates(mselPage: MselPage) {
-    // set to a date object.
-    mselPage.dateCreated = new Date(mselPage.dateCreated);
-    mselPage.dateModified = new Date(mselPage.dateModified);
   }
 
 }

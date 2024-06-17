@@ -79,9 +79,6 @@ export class InvitationDataService {
         ]) =>
           items
             ? (items as Invitation[])
-              .sort((a: Invitation, b: Invitation) =>
-                this.sortInvitations(a, b, sortColumn, sortIsAscending)
-              )
               .filter(
                 (invitation) =>
                   invitation.id
@@ -90,23 +87,6 @@ export class InvitationDataService {
             : []
       )
     );
-  }
-
-  private sortInvitations(
-    a: Invitation,
-    b: Invitation,
-    column: string,
-    isAsc: boolean
-  ) {
-    switch (column) {
-      case 'dateCreated':
-        return (
-          (a.dateCreated.valueOf() < b.dateCreated.valueOf() ? -1 : 1) *
-          (isAsc ? 1 : -1)
-        );
-      default:
-        return 0;
-    }
   }
 
   loadByMsel(mselId: string) {

@@ -41,7 +41,7 @@ export class DataFieldListComponent implements OnDestroy {
   sort: Sort = {active: '', direction: ''};
   sortedDataFields: DataField[] = [];
   dataOptionList: DataOption[] = [];
-  dataFieldTypes = DataFieldType.keys;
+  dataFieldTypes = DataFieldType;
   private waitCount = 0;
   private unsubscribe$ = new Subject();
   // context menu

@@ -151,18 +151,18 @@ export class HomeAppComponent implements OnDestroy, OnInit {
 
   healthCheck() {
     this.healthCheckService
-      .healthGetReadiness()
+      .getReadiness()
       .pipe(take(1))
       .subscribe(
-        (message) => {
-          this.apiIsSick = !message || !message.status || message.status !== 'Healthy';
-          if (!message || !message.status) {
+        (healthReport) => {
+          this.apiIsSick = !healthReport || !healthReport.status || healthReport.status !== 'Healthy';
+          if (!healthReport || !healthReport.status) {
             this.apiIsSick = true;
-            if (message.status !== 'Healthy') {
-              this.apiMessage = 'The API web service is not healthy (' + message.status + ').';
+            if (healthReport.status !== 'Healthy') {
+              this.apiMessage = 'The API web service is not healthy (' + healthReport.status + ').';
             }
           }
-          this.apiMessage = message;
+          this.apiMessage = healthReport.status;
         },
         (error) => {
           this.apiIsSick = true;

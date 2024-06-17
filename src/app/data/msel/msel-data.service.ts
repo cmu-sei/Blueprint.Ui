@@ -426,40 +426,6 @@ export class MselDataService {
       });
   }
 
-  addTeamToMsel(mselId: string, teamId: string) {
-    this.mselStore.setLoading(true);
-    this.mselService.addTeamToMsel(mselId, teamId)
-      .pipe(
-        tap(() => {
-          this.mselStore.setLoading(false);
-        }),
-        take(1)
-      )
-      .subscribe((n) => {
-        this.updateStore(n);
-      },
-      (error) => {
-        this.mselStore.setLoading(false);
-      });
-  }
-
-  removeTeamFromMsel(mselId: string, teamId: string) {
-    this.mselStore.setLoading(true);
-    this.mselService.removeTeamFromMsel(mselId, teamId)
-      .pipe(
-        tap(() => {
-          this.mselStore.setLoading(false);
-        }),
-        take(1)
-      )
-      .subscribe((n) => {
-        this.updateStore(n);
-      },
-      (error) => {
-        this.mselStore.setLoading(false);
-      });
-  }
-
   addUserMselRole(userId: string, mselId: string, mselRole: MselRole) {
     this.mselStore.setLoading(true);
     this.mselService.addUserMselRole(userId, mselId, mselRole)
@@ -507,7 +473,7 @@ export class MselDataService {
     if (mselId) {
       this.mselService
         .replaceWithXlsxFile(mselId, '', '', teamId, file, observe, reportProgress)
-        .subscribe((event) => {
+        .subscribe((event: any) => {
           if (event.type === HttpEventType.UploadProgress) {
             const uploadProgress = Math.round((100 * event.loaded) / event.total);
             this.uploadProgress.next(uploadProgress);
@@ -550,8 +516,8 @@ export class MselDataService {
   uploadJson(file: File, observe: any, reportProgress: boolean) {
     this.mselStore.setLoading(true);
     this.mselService
-      .uploadJson(file, observe, reportProgress)
-      .subscribe((event) => {
+      .uploadJsonFiles('', '', '', file, observe, reportProgress)
+      .subscribe((event: any) => {
         if (event.type === HttpEventType.UploadProgress) {
           const uploadProgress = Math.round((100 * event.loaded) / event.total);
           this.uploadProgress.next(uploadProgress);

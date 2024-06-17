@@ -185,7 +185,7 @@ export class ScenarioEventDataService {
 
   batchDelete(idList: string[]) {
     this.scenarioEventService
-      .batchDeleteScenarioEvent(idList)
+      .batchDeleteScenarioEvents(idList)
       .pipe(take(1))
       .subscribe(() => {});
   }

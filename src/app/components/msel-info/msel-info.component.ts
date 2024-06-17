@@ -13,8 +13,7 @@ import {
   MselUnit,
   ScenarioEvent,
   Team,
-  User,
-  PlayerApiClientView
+  User
 } from 'src/app/generated/blueprint.api';
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
@@ -22,7 +21,7 @@ import { MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { CiteService } from 'src/app/generated/blueprint.api';
 import { PlayerService } from 'src/app/generated/blueprint.api';
-import { CiteApiClientScoringModel } from 'src/app/generated/blueprint.api/model/citeApiClientScoringModel';
+import { ScoringModel } from 'src/app/generated/blueprint.api/model/scoringModel';
 import { DataFieldQuery } from 'src/app/data/data-field/data-field.query';
 import { MselPageDataService } from 'src/app/data/msel-page/msel-page-data.service';
 import { MselPageQuery } from 'src/app/data/msel-page/msel-page.query';
@@ -50,8 +49,7 @@ export class MselInfoComponent implements OnDestroy {
   userList: User[] = [];
   teamList: Team[] = [];
   mselUnitList: MselUnit[] = [];
-  scoringModelList: CiteApiClientScoringModel[] = [];
-  viewList: PlayerApiClientView[] = [];
+  scoringModelList: ScoringModel[] = [];
   itemStatus: MselItemStatus[] =
     [MselItemStatus.Pending, MselItemStatus.Entered, MselItemStatus.Approved, MselItemStatus.Deployed, MselItemStatus.Complete, MselItemStatus.Archived];
   viewUrl: string;
