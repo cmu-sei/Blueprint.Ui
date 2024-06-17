@@ -1,9 +1,3 @@
-/*
- Copyright 2024 Carnegie Mellon University. All Rights Reserved.
- Released under a MIT (SEI)-style license. See LICENSE.md in the
- project root for license information.
-*/
-
 export * from './applicationTemplate';
 export * from './assembly';
 export * from './calendar';
@@ -48,12 +42,8 @@ export * from './healthStatus';
 export * from './iComponent';
 export * from './iContainer';
 export * from './iSite';
-export * from './inject';
 export * from './injectType';
-export * from './inlineObject';
-export * from './inlineObject1';
-export * from './inlineObject2';
-export * from './inlineObject3';
+export * from './injectm';
 export * from './integrationType';
 export * from './invitation';
 export * from './itemStatus';

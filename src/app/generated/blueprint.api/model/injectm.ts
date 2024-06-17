@@ -9,18 +9,18 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
+import { DataValue } from './dataValue';
 
 
-export interface ScoringOption { 
+export interface Injectm { 
     dateCreated?: Date;
     dateModified?: Date | null;
     createdBy?: string;
     modifiedBy?: string | null;
     id?: string;
-    displayOrder?: number;
-    description?: string | null;
-    isModifier?: boolean;
-    value?: number;
-    scoringCategoryId?: string;
+    injectTypeId?: string;
+    requiresInjectId?: string | null;
+    requiresInject?: Injectm;
+    dataValues?: Array<DataValue> | null;
 }
 

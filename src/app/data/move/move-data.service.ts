@@ -103,7 +103,7 @@ export class MoveDataService {
   loadByMsel(mselId: string) {
     this.moveStore.setLoading(true);
     this.moveService
-      .getByMsel(mselId)
+      .getMovesByMsel(mselId)
       .pipe(
         tap(() => {
           this.moveStore.setLoading(false);

@@ -117,7 +117,7 @@ export class DataFieldDataService {
   loadByMsel(mselId: string) {
     this.dataFieldStore.setLoading(true);
     this.dataFieldService
-      .getByMsel(mselId)
+      .getDataFieldsByMsel(mselId)
       .pipe(
         tap(() => {
           this.dataFieldStore.setLoading(false);

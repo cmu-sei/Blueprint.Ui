@@ -101,7 +101,7 @@ export class PlayerApplicationDataService {
   loadByMsel(mselId: string) {
     this.playerApplicationStore.setLoading(true);
     this.playerApplicationService
-      .getByMsel(mselId)
+      .getApplicationsByMsel(mselId)
       .pipe(
         tap(() => {
           this.playerApplicationStore.setLoading(false);

@@ -119,7 +119,7 @@ export class CardDataService {
   loadByMsel(mselId: string) {
     this.cardStore.setLoading(true);
     this.cardService
-      .getByMsel(mselId)
+      .getCardsByMsel(mselId)
       .pipe(
         tap(() => {
           this.cardStore.setLoading(false);

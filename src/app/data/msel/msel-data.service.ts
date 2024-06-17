@@ -465,7 +465,7 @@ export class MselDataService {
   }
 
   downloadJson(id: string) {
-    return this.mselService.downloadJson(id);
+    return this.mselService.downloadJsonMsel(id);
   }
 
   uploadXlsx(mselId: string, teamId: string, file: File, observe: any, reportProgress: boolean) {
@@ -516,7 +516,7 @@ export class MselDataService {
   uploadJson(file: File, observe: any, reportProgress: boolean) {
     this.mselStore.setLoading(true);
     this.mselService
-      .uploadJsonFiles('', '', '', file, observe, reportProgress)
+      .uploadJsonMsel('', '', '', file, observe, reportProgress)
       .subscribe((event: any) => {
         if (event.type === HttpEventType.UploadProgress) {
           const uploadProgress = Math.round((100 * event.loaded) / event.total);
