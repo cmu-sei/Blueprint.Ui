@@ -166,9 +166,16 @@ project root for license information or contact permission@sei.cmu.edu for full 
             </div>
           </th>
           <ng-container *ngFor="let df of sortedDataFields">
-            <th mat-sort-header="{{ df.name }}" class="background">
-              <div [style]="getStyle(df)">{{ df.name }}</div>
-            </th>
+            <ng-container *ngIf="sortableDataTypes.includes(df.dataType); else noSort">
+              <th mat-sort-header="{{ df.name }}" class="background">
+                <div [style]="getStyle(df)">{{ df.name }}</div>
+              </th>
+            </ng-container>
+            <ng-template #noSort>
+              <th class="background">
+                <div [style]="getStyle(df)">{{ df.name }}</div>
+              </th>
+            </ng-template>
           </ng-container>
         </tr>
       </thead>

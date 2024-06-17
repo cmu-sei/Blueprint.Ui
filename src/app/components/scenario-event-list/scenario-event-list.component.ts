@@ -63,6 +63,8 @@ export class ScenarioEventListComponent implements OnDestroy  {
   filteredScenarioEventList: ScenarioEventPlus[] = [];
   filterString = '';
   sort: Sort = { active: 'deltaSeconds', direction: 'asc' };
+
+  // maybe call this displayedScenarioEvents
   sortedScenarioEvents: ScenarioEventPlus[] = [];
   sortedDataFields: DataField[] = [];
   sortedDataOptions: DataOption[] = [];
@@ -89,6 +91,10 @@ export class ScenarioEventListComponent implements OnDestroy  {
     sanitize: true,
   };
   dataType: typeof DataFieldType = DataFieldType;
+  sortableDataTypes = [DataFieldType.String, DataFieldType.Integer, DataFieldType.Double, DataFieldType.Boolean,
+    DataFieldType.DateTime, DataFieldType.Organization, DataFieldType.Card, DataFieldType.Move,
+    DataFieldType.SourceType, DataFieldType.Status, DataFieldType.Team, DataFieldType.TeamsMultiple,
+    DataFieldType.Checkbox, DataFieldType.User, DataFieldType.Url, DataFieldType.DeliveryMethod];
   dateFormControls = new Map<string, UntypedFormControl>();
   itemStatus = [ItemStatus.Pending, ItemStatus.Entered, ItemStatus.Approved, ItemStatus.Complete, ItemStatus.Deployed, ItemStatus.Archived];
   mselRole = { Owner: MselRole.Owner, Approver: MselRole.Approver, Editor: MselRole.Editor};
