@@ -85,7 +85,6 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
     valueArray: []
   } as DataValuePlus;
   scenarioEventBackgroundColors: Array<string>;
-  dataFieldTypes = DataFieldType;
   sortedDataFields: DataField[] = [];
   selectedTab = 0;
   private tabSections = new Map([
