@@ -71,7 +71,6 @@ export class ScenarioEventListComponent implements OnDestroy  {
   dataValues: DataValue[] = [];
   newScenarioEvent: ScenarioEventPlus;
   isAddingScenarioEvent = false;
-  initDragPreviewClass = ['mat-drawer-container', 'background'];
   canDoAnything = false;
   private unsubscribe$ = new Subject();
   viewConfig: AngularEditorConfig = {
@@ -120,6 +119,7 @@ export class ScenarioEventListComponent implements OnDestroy  {
   selectedEventIdList: string[] = [];
   showSearch = false;
   showRealTime = false;
+  allowDragAndDrop = true;
   moveAndGroupNumbers: Record<string, number[]>[] = [];
 
   constructor(
@@ -401,6 +401,7 @@ export class ScenarioEventListComponent implements OnDestroy  {
     this.sort = sort;
     this.displayedScenarioEvents = this.scenarioEventDataService.sortAndFilterScenarioEvents(
       this.mselScenarioEvents, this.sortedDataFields, this.dataValues, this.cardList, this.mselUsers, this.sort, this.filterString, true);
+    this.allowDragAndDrop = !this.sort.active || this.sort.direction === '';
   }
 
   dropHandler(event: CdkDragDrop<string[]>) {

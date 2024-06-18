@@ -179,7 +179,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </ng-container>
         </tr>
       </thead>
-      <tbody cdkDropList (cdkDropListDropped)="dropHandler($event)">
+      <tbody cdkDropList [cdkDropListDisabled]="!allowDragAndDrop" (cdkDropListDropped)="dropHandler($event)">
         <ng-container *ngFor="let item of displayedScenarioEvents; index as rowIndex">
           <tr [style]="getRowStyle(item)" cdkDrag [cdkDragData]="item" cdkDragLockAxis="y" [cdkDragPreviewClass]="userTheme" (cdkDragStarted)="dragStart($event)" (cdkDragEnded)="dragEnd($event)">
             <!-- row buttons -->
