@@ -13,7 +13,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import {
   Move,
   MoveService,
-  ItemStatus
+  MselItemStatus
 } from 'src/app/generated/blueprint.api';
 import { map, take, tap } from 'rxjs/operators';
 import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
@@ -103,7 +103,7 @@ export class MoveDataService {
   loadByMsel(mselId: string) {
     this.moveStore.setLoading(true);
     this.moveService
-      .getByMsel(mselId)
+      .getMovesByMsel(mselId)
       .pipe(
         tap(() => {
           this.moveStore.setLoading(false);

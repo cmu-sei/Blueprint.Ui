@@ -120,7 +120,7 @@ export class OrganizationDataService {
   loadByMsel(mselId: string) {
     this.organizationStore.setLoading(true);
     this.organizationService
-      .getByMsel(mselId)
+      .getOrganizationsByMsel(mselId)
       .pipe(
         tap(() => {
           this.organizationStore.setLoading(false);

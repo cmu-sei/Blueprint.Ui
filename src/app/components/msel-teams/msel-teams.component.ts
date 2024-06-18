@@ -12,13 +12,13 @@ import {
   TeamRole,
   ScenarioEvent,
   Team,
+  TeamType,
   Unit,
   User
 } from 'src/app/generated/blueprint.api';
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy-menu';
-import { CiteApiClientTeamType } from 'src/app/generated/blueprint.api/model/citeApiClientTeamType';
 import { CiteService } from 'src/app/generated/blueprint.api';
 import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
@@ -34,7 +34,7 @@ import { UnitQuery } from 'src/app/data/unit/unit.query';
 export class MselTeamsComponent implements OnDestroy {
   @Input() loggedInUserId: string;
   @Input() isContentDeveloper: boolean;
-  @Input() teamTypeList: CiteApiClientTeamType[];
+  @Input() teamTypeList: TeamType[];
   // context menu
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
   contextMenuPosition = { x: '0px', y: '0px' };

@@ -95,12 +95,6 @@ export class PlayerApplicationTeamDataService implements OnDestroy {
     this.updatePlayerApplicationTeams(updatedPlayerApplicationTeams);
   }
 
-  setAsDates(playerApplicationTeam: PlayerApplicationTeam) {
-    // set to a date object.
-    playerApplicationTeam.dateCreated = new Date(playerApplicationTeam.dateCreated);
-    playerApplicationTeam.dateModified = new Date(playerApplicationTeam.dateModified);
-  }
-
   ngOnDestroy() {
     this.unsubscribe$.next(null);
     this.unsubscribe$.complete();

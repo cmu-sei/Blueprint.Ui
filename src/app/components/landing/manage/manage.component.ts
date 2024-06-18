@@ -19,7 +19,7 @@ import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { InvitationDataService } from 'src/app/data/invitation/invitation-data.service';
 import { InvitationQuery } from 'src/app/data/invitation/invitation.query';
 import { TeamDataService } from 'src/app/data/team/team-data.service';
-import { ItemStatus } from 'src/app/generated/blueprint.api';
+import { MselItemStatus } from 'src/app/generated/blueprint.api';
 
 @Component({
   selector: 'app-manage',
@@ -79,7 +79,7 @@ export class ManageComponent implements OnDestroy {
         this.mselDataService.setActive(mselId);
         (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe( msel => {
           if (msel) {
-            if (msel.status !== ItemStatus.Deployed) {
+            if (msel.status !== MselItemStatus.Deployed) {
               const url = this.settingsService.settings.OIDCSettings.post_logout_redirect_uri;
               window.top.location.href = url;
             }

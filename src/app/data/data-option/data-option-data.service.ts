@@ -100,7 +100,7 @@ export class DataOptionDataService {
   loadByMsel(mselId: string) {
     this.dataOptionStore.setLoading(true);
     this.dataOptionService
-      .getByMsel(mselId)
+      .getDataOptionsByMsel(mselId)
       .pipe(
         tap(() => {
           this.dataOptionStore.setLoading(false);
