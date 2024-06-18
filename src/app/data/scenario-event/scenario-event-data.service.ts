@@ -287,7 +287,7 @@ export class ScenarioEventDataService {
 
   private dataValuesIncludesFilter(valueMap: Map<string, DataValuePlus>, filterString: string) {
     for (const val of valueMap.values()) {
-      if (val.value?.toLowerCase().includes(filterString)) {
+      if (val.sortAndFilterValue && val.sortAndFilterValue.toString().toLowerCase().includes(filterString)) {
         return true;
       }
     }
@@ -305,7 +305,7 @@ export class ScenarioEventDataService {
         if (!scenarioEvent.isHidden || showHidden) {
           const plusDataValues = valueMap.get(scenarioEvent.id);
           if (plusDataValues) {
-            if (!filterString || this.dataValuesIncludesFilter(plusDataValues, filterString)) {
+            if (!filterString || this.dataValuesIncludesFilter(plusDataValues, filterString.toLowerCase())) {
               const newScenarioEvent = { ...scenarioEvent, plusDataValues: plusDataValues};
               clonedList.push(newScenarioEvent);
             }
