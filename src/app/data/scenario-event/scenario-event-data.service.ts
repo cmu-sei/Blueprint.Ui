@@ -164,8 +164,8 @@ export class ScenarioEventDataService {
         }),
         take(1)
       )
-      .subscribe((se) => {
-        this.scenarioEventStore.upsert(se.id, se);
+      .subscribe((ses) => {
+        this.scenarioEventStore.upsertMany(ses);
       });
   }
 
@@ -179,8 +179,8 @@ export class ScenarioEventDataService {
         }),
         take(1)
       )
-      .subscribe((se) => {
-        this.scenarioEventStore.upsert(se.id, se);
+      .subscribe((ses) => {
+        this.scenarioEventStore.upsertMany(ses);
       });
   }
 
