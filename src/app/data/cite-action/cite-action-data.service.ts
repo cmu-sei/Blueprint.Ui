@@ -140,7 +140,7 @@ export class CiteActionDataService {
   loadByMsel(mselId: string) {
     this.citeActionStore.setLoading(true);
     this.citeActionService
-      .getByMsel(mselId)
+      .getActionsByMsel(mselId)
       .pipe(
         tap(() => {
           this.citeActionStore.setLoading(false);

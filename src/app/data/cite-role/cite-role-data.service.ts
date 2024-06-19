@@ -140,7 +140,7 @@ export class CiteRoleDataService {
   loadByMsel(mselId: string) {
     this.citeRoleStore.setLoading(true);
     this.citeRoleService
-      .getByMsel(mselId)
+      .getRolesByMsel(mselId)
       .pipe(
         tap(() => {
           this.citeRoleStore.setLoading(false);

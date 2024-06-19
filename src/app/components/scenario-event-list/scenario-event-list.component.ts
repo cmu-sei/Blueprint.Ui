@@ -19,7 +19,7 @@ import {
   DataFieldType,
   DataOption,
   DataValue,
-  ItemStatus,
+  MselItemStatus,
   Move,
   MselRole,
   Organization,
@@ -94,7 +94,7 @@ export class ScenarioEventListComponent implements OnDestroy  {
     DataFieldType.SourceType, DataFieldType.Status, DataFieldType.Team, DataFieldType.TeamsMultiple,
     DataFieldType.Checkbox, DataFieldType.User, DataFieldType.Url, DataFieldType.DeliveryMethod];
   dateFormControls = new Map<string, UntypedFormControl>();
-  itemStatus = [ItemStatus.Pending, ItemStatus.Entered, ItemStatus.Approved, ItemStatus.Complete, ItemStatus.Deployed, ItemStatus.Archived];
+  itemStatus = [MselItemStatus.Pending, MselItemStatus.Entered, MselItemStatus.Approved, MselItemStatus.Complete, MselItemStatus.Deployed, MselItemStatus.Archived];
   mselRole = { Owner: MselRole.Owner, Approver: MselRole.Approver, Editor: MselRole.Editor};
   organizationList: Organization[] = [];
   mselUsers: User[] = [];
@@ -522,7 +522,7 @@ export class ScenarioEventListComponent implements OnDestroy  {
     const newScenarioEvent = {
       id: seId,
       mselId: this.msel.id,
-      status: ItemStatus.Pending,
+      status: MselItemStatus.Pending,
       dataValues: [],
       plusDataValues: []
     };

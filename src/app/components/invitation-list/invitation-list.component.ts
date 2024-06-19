@@ -8,7 +8,7 @@ import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import {
   Invitation,
-  ItemStatus,
+  MselItemStatus,
   Team
 } from 'src/app/generated/blueprint.api';
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
@@ -195,9 +195,9 @@ export class InvitationListComponent implements OnDestroy {
   }
 
   getInvitationLink(teamId: string) {
-    if (this.msel.isTemplate && this.msel.status === ItemStatus.Approved) {
+    if (this.msel.isTemplate && this.msel.status === MselItemStatus.Approved) {
       return location.origin + '/launch/?msel=' + this.msel.id + '&team=' + teamId;
-    } else if (!this.msel.isTemplate && this.msel.status === ItemStatus.Deployed) {
+    } else if (!this.msel.isTemplate && this.msel.status === MselItemStatus.Deployed) {
       return location.origin + '/join/?msel=' + this.msel.id + '&team=' + teamId;
     } else {
       return '';

@@ -29,7 +29,7 @@ import {
   DataValue,
   Move,
   ScenarioEvent,
-  ItemStatus,
+  MselItemStatus,
   Card
 } from 'src/app/generated/blueprint.api';
 import { UntypedFormControl } from '@angular/forms';
@@ -80,7 +80,7 @@ export class MselPlaybookComponent{
     valueArray: []
   } as DataValuePlus;
   sort: Sort = { active: 'deltaSeconds', direction: 'asc' };
-  itemStatus = [ItemStatus.Pending, ItemStatus.Entered, ItemStatus.Approved, ItemStatus.Complete, ItemStatus.Deployed, ItemStatus.Archived];
+  itemStatus = [MselItemStatus.Pending, MselItemStatus.Entered, MselItemStatus.Approved, MselItemStatus.Complete, MselItemStatus.Deployed, MselItemStatus.Archived];
   darkThemeTint = this.settingsService.settings.DarkThemeTint ? this.settingsService.settings.DarkThemeTint : 0.7;
   lightThemeTint = this.settingsService.settings.LightThemeTint ? this.settingsService.settings.LightThemeTint : 0.4;
 

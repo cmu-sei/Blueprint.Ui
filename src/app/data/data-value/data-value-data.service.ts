@@ -29,7 +29,7 @@ export class DataValueDataService {
   loadByMsel(mselId: string) {
     this.dataValueStore.setLoading(true);
     this.dataValueService
-      .getByMsel(mselId)
+      .getDataValuesByMsel(mselId)
       .pipe(
         tap(() => {
           this.dataValueStore.setLoading(false);

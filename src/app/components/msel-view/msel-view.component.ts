@@ -153,7 +153,6 @@ export class MselViewComponent implements OnDestroy {
           sortedScenarioEvents.push({... se});
         }
       });
-      sortedScenarioEvents.sort((a, b) => +a.groupOrder > +b.groupOrder ? 1 : -1);
     }
     return sortedScenarioEvents;
   }

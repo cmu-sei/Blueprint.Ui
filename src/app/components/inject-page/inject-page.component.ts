@@ -33,7 +33,7 @@ import {
   Move,
   ScenarioEvent,
   Organization,
-  ItemStatus,
+  MselItemStatus,
   Team,
   User,
   Card
@@ -88,7 +88,7 @@ export class InjectPageComponent {
   } as DataValuePlus;
   organizationList: Organization[] = [];
   sort: Sort = { active: 'deltaSeconds', direction: 'asc' };
-  itemStatus = [ItemStatus.Pending, ItemStatus.Entered, ItemStatus.Approved, ItemStatus.Complete, ItemStatus.Deployed, ItemStatus.Archived];
+  itemStatus = [MselItemStatus.Pending, MselItemStatus.Entered, MselItemStatus.Approved, MselItemStatus.Complete, MselItemStatus.Deployed, MselItemStatus.Archived];
   darkThemeTint = this.settingsService.settings.DarkThemeTint ? this.settingsService.settings.DarkThemeTint : 0.7;
   lightThemeTint = this.settingsService.settings.LightThemeTint ? this.settingsService.settings.LightThemeTint : 0.4;
   selectedEventIdList: string[] = [];
