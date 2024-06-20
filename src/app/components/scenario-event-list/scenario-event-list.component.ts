@@ -57,13 +57,12 @@ export class ScenarioEventListComponent implements OnDestroy  {
   @Input() isContentDeveloper: boolean;
   @Input() userTheme: Theme;
   msel = new MselPlus();
-  mselScenarioEvents: ScenarioEventPlus[] = [];
+  mselScenarioEvents: ScenarioEvent[] = [];
+  mselScenarioEvtIndex = new Map<string, number>();
   expandedScenarioEventId = '';
   expandedMoreScenarioEventIds: string[] = [];
   filterString = '';
   sort: Sort = { active: '', direction: ''};
-
-  // maybe call this displayedScenarioEvents
   displayedScenarioEvents: ScenarioEventPlus[] = [];
   sortedDataFields: DataField[] = [];
   sortedDataOptions: DataOption[] = [];
@@ -94,7 +93,8 @@ export class ScenarioEventListComponent implements OnDestroy  {
     DataFieldType.SourceType, DataFieldType.Status, DataFieldType.Team, DataFieldType.TeamsMultiple,
     DataFieldType.Checkbox, DataFieldType.User, DataFieldType.Url, DataFieldType.DeliveryMethod];
   dateFormControls = new Map<string, UntypedFormControl>();
-  itemStatus = [MselItemStatus.Pending, MselItemStatus.Entered, MselItemStatus.Approved, MselItemStatus.Complete, MselItemStatus.Deployed, MselItemStatus.Archived];
+  itemStatus = [MselItemStatus.Pending, MselItemStatus.Entered, MselItemStatus.Approved, MselItemStatus.Complete,
+    MselItemStatus.Deployed, MselItemStatus.Archived];
   mselRole = { Owner: MselRole.Owner, Approver: MselRole.Approver, Editor: MselRole.Editor};
   organizationList: Organization[] = [];
   mselUsers: User[] = [];
@@ -166,13 +166,13 @@ export class ScenarioEventListComponent implements OnDestroy  {
       });
     // subscribe to scenario events
     (this.scenarioEventQuery.selectAll()).pipe(takeUntil(this.unsubscribe$)).subscribe(scenarioEvents => {
-      this.mselScenarioEvents = this.getEditableScenarioEvents(scenarioEvents as ScenarioEventPlus[]);
-        if (scenarioEvents && scenarioEvents.length > 0) {
-          this.moveAndGroupNumbers = this.scenarioEventDataService.getMoveAndGroupNumbers(this.mselScenarioEvents, this.moveList);
-          this.displayedScenarioEvents = this.scenarioEventDataService.sortAndFilterScenarioEvents(
-            scenarioEvents, this.sortedDataFields, this.dataValues, this.cardList, this.mselUsers, this.sort, this.filterString, true);
-          }
-      });
+      [this.mselScenarioEvents, this.mselScenarioEvtIndex] = this.getEditableScenarioEvents(scenarioEvents);
+      if (scenarioEvents && scenarioEvents.length > 0) {
+        this.moveAndGroupNumbers = this.scenarioEventDataService.getMoveAndGroupNumbers(this.mselScenarioEvents, this.moveList);
+        this.displayedScenarioEvents = this.scenarioEventDataService.sortAndFilterScenarioEvents(
+          scenarioEvents, this.sortedDataFields, this.dataValues, this.cardList, this.mselUsers, this.sort, this.filterString, true);
+      }
+    });
     // is user a contentdeveloper or system admin?
     this.userDataService.isContentDeveloper.pipe(takeUntil(this.unsubscribe$)).subscribe((isOne) => {
         this.canDoAnything = isOne;
@@ -224,14 +224,16 @@ export class ScenarioEventListComponent implements OnDestroy  {
     return editableMsel;
   }
 
-  getEditableScenarioEvents(scenarioEvents: ScenarioEventPlus[]): ScenarioEventPlus[] {
-    const editableList: ScenarioEventPlus[] = [];
-    scenarioEvents.forEach(scenarioEvent => {
+  getEditableScenarioEvents(scenarioEvents: ScenarioEvent[]): [ScenarioEvent[], Map<string, number>] {
+    const editableList: ScenarioEvent[] = [];
+    const evtIndex = new Map<string, number>();
+    scenarioEvents.forEach((scenarioEvent, index) => {
       const newScenarioEvent = { ...scenarioEvent};
       editableList.push(newScenarioEvent);
+      evtIndex.set(newScenarioEvent.id, index);
     });
 
-    return editableList;
+    return [editableList, evtIndex];
   }
 
   getSortedDataFields(dataFields: DataField[]) {
@@ -405,39 +407,59 @@ export class ScenarioEventListComponent implements OnDestroy  {
   }
 
   dropHandler(event: CdkDragDrop<string[]>) {
-    const droppedMsel = event.item.data;
-    const origMselOffset = parseInt(droppedMsel.deltaSeconds, 10);
+    // defaultOffsetSecs is the amount of time to offset a new group that is before or after all others
     const defaultOffsetSecs = 3600;
-    let newOffset = origMselOffset;
-    if (this.mselScenarioEvents && this.mselScenarioEvents.length > 1 && event.previousIndex !== event.currentIndex) {
-      if (0 === event.currentIndex) {
-        const prevSecs = this.mselScenarioEvents[0].deltaSeconds;
-        newOffset = +this.mselScenarioEvents[0].deltaSeconds - Math.min(prevSecs, defaultOffsetSecs);
-      } else if (event.currentIndex === this.mselScenarioEvents.length - 1) {
-        newOffset = +this.mselScenarioEvents[event.currentIndex].deltaSeconds + defaultOffsetSecs;
+    if (event.previousIndex !== event.currentIndex) {  // sanity check
+      const droppedScenarioEvt = event.item.data;
+      const droppedScenarioEvtIdx = this.mselScenarioEvtIndex.get(droppedScenarioEvt.id);
+      const targetScenarioEvtId = this.displayedScenarioEvents[event.currentIndex].id;
+      const targetScenarioEvtIdx = this.mselScenarioEvtIndex.get(targetScenarioEvtId);
+      const targetScenarioEvt = this.mselScenarioEvents[targetScenarioEvtIdx];
+      const movedDown = droppedScenarioEvtIdx < targetScenarioEvtIdx;
+      const origOffset = +droppedScenarioEvt.deltaSeconds;
+      const origGroupOrder = +droppedScenarioEvt.groupOrder;
+      let newOffset = origOffset;
+      let newGrpOrder = origGroupOrder;
+      // case where we moved the event to the top of the MSEL
+      if (0 === targetScenarioEvtIdx) {
+        const prevOffset = +this.mselScenarioEvents[targetScenarioEvtIdx].deltaSeconds;
+        if (prevOffset > 0) {
+          newOffset = Math.max(prevOffset - defaultOffsetSecs, 0);
+        } else {
+          newOffset = prevOffset;
+        }
+        newGrpOrder = newOffset === prevOffset ? +targetScenarioEvt.groupOrder : 0;
+      // case where we moved the event to the bottom of the MSEL
+      } else if (targetScenarioEvtIdx === this.mselScenarioEvents.length - 1) {
+        newOffset = +this.mselScenarioEvents[targetScenarioEvtIdx].deltaSeconds + defaultOffsetSecs;
+        newGrpOrder = 0;
+      // case where we moved the event somewhere in the middle of the MSELs
       } else {
-        const movedDown = event.currentIndex > event.previousIndex;
-        const topRow = movedDown ? event.currentIndex : event.currentIndex - 1;
-        const bottomRow = topRow + 1;
-        const timeDiff = +this.mselScenarioEvents[bottomRow].deltaSeconds - +this.mselScenarioEvents[topRow].deltaSeconds;
-        newOffset =
-          +this.mselScenarioEvents[topRow].deltaSeconds + Math.floor(timeDiff / 2);
+        const aboveIndex = movedDown ? targetScenarioEvtIdx : targetScenarioEvtIdx - 1;
+        const belowIndex = aboveIndex + 1;
+        const aboveOffset = +this.mselScenarioEvents[aboveIndex].deltaSeconds;
+        const belowOffset = +this.mselScenarioEvents[belowIndex].deltaSeconds;
+
+        const timeDiff = belowOffset - aboveOffset;
+        if (timeDiff > 1) {
+          newOffset = belowOffset + Math.floor(timeDiff / 2);
+          newGrpOrder = 0;
+        } else {
+          newOffset = belowOffset;
+          newGrpOrder = +this.mselScenarioEvents[belowIndex].groupOrder;
+        }
       }
-    }
-    if (newOffset !== origMselOffset) {
-      droppedMsel.deltaSeconds = newOffset;
-      this.saveScenarioEvent(droppedMsel);
+      // save the change
+      droppedScenarioEvt.deltaSeconds = newOffset;
+      droppedScenarioEvt.groupOrder = newGrpOrder;
+      this.saveScenarioEvent(droppedScenarioEvt);
     }
   }
 
   dragStart(event: CdkDragStart) {
-    // event.source.previewClass = [this.userTheme, 'text', 'background'];
-    // event.source.element.nativeElement.classList.add(this.userTheme, 'mat-drawer-container', 'background');
   }
 
   dragEnd(event: CdkDragEnd) {
-    // event.source.previewClass = [this.userTheme, 'text', 'background'];
-    // event.source.element.nativeElement.classList.remove(this.userTheme, 'mat-drawer-container', 'background');
   }
 
   addScenarioEvent() {
