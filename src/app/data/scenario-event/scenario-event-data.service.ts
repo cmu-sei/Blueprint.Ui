@@ -5,12 +5,8 @@
 */
 
 import { ScenarioEventStore } from './scenario-event.store';
-import { ScenarioEventQuery } from './scenario-event.query';
 import { Injectable } from '@angular/core';
 import { Sort } from '@angular/material/sort';
-import { UntypedFormControl } from '@angular/forms';
-import { LegacyPageEvent as PageEvent } from '@angular/material/legacy-paginator';
-import { Router, ActivatedRoute } from '@angular/router';
 import {
   Card,
   DataField,
@@ -21,8 +17,7 @@ import {
   ScenarioEventService,
   User,
 } from 'src/app/generated/blueprint.api';
-import { map, take, tap } from 'rxjs/operators';
-import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
+import { take, tap } from 'rxjs/operators';
 
 export interface DataValuePlus extends DataValue {
   fieldType: DataFieldType;
@@ -31,89 +26,63 @@ export interface DataValuePlus extends DataValue {
 }
 
 export interface ScenarioEventPlus extends ScenarioEvent {
-  plusDataValues: Map<string, DataValuePlus>;
+}
+
+export interface ScenarioEventView {
+  get mselScenarioEvents(): ScenarioEvent[];
+  set mselScenarioEvents(evts: ScenarioEvent[]);
+
+  get mselScenarioEvtIndex(): Map<string, number>;
+  set mselScenarioEvtIndex(evts: Map<string, number>);
+
+  get filterString(): string;
+
+  get showHiddenEvents(): boolean;
+
+  get sort(): Sort;
+
+  get displayedScenarioEvents(): ScenarioEventPlus[];
+  set displayedScenarioEvents(evts: ScenarioEventPlus[]);
+
+  get dataFields(): DataField[];
+
+  get fieldMap(): Map<string, DataField>;
+  set fieldMap(fields: Map<string, DataField>);
+
+  get dataValues(): DataValue[];
+
+  get valueMap(): Map<string, Map<string, DataValuePlus>>;
+  set valueMap(vals: Map<string, Map<string, DataValuePlus>>);
+
+  get cardList(): Card[];
+
+  get cardMap(): Map<string, string>;
+  set cardMap(cards: Map<string, string>);
+
+  get userList(): User[];
+
+  get userMap(): Map<string, string>;
+  set userMap(users: Map<string, string>);
 }
 
 @Injectable({
   providedIn: 'root',
 })
 export class ScenarioEventDataService {
-  readonly ScenarioEventList: Observable<ScenarioEvent[]>;
-  readonly filterControl = new UntypedFormControl();  private _requestedScenarioEventId: string;
-  private _requestedScenarioEventId$ = this.activatedRoute.queryParamMap.pipe(
-    map((params) => params.get('scenarioEventId') || '')
-  );
-
-  private filterTerm: Observable<string>;
-  private sortColumn: Observable<string>;
-  private sortIsAscending: Observable<boolean>;
-  private _pageEvent: PageEvent = { length: 0, pageIndex: 0, pageSize: 10 };
-  readonly pageEvent = new BehaviorSubject<PageEvent>(this._pageEvent);
-  private pageSize: Observable<number>;
-  private pageIndex: Observable<number>;
-  readonly baseSort: Sort[] = [{ active: 'deltaSeconds', direction: 'asc' }, { active: 'groupOrder', direction: 'asc' }];
 
   constructor(
     private scenarioEventStore: ScenarioEventStore,
-    private scenarioEventQuery: ScenarioEventQuery,
     private scenarioEventService: ScenarioEventService,
-    private router: Router,
-    private activatedRoute: ActivatedRoute
-  ) {
-    this.filterTerm = activatedRoute.queryParamMap.pipe(
-      map((params) => params.get('scenarioEventmask') || '')
-    );
-    this.filterControl.valueChanges.subscribe((term) => {
-      this.router.navigate([], {
-        queryParams: { scenarioEventmask: term },
-        queryParamsHandling: 'merge',
-      });
-    });
-    this.sortColumn = activatedRoute.queryParamMap.pipe(
-      map((params) => params.get('sorton') || 'name')
-    );
-    this.sortIsAscending = activatedRoute.queryParamMap.pipe(
-      map((params) => (params.get('sortdir') || 'asc') === 'asc')
-    );
-    this.pageSize = activatedRoute.queryParamMap.pipe(
-      map((params) => parseInt(params.get('pagesize') || '20', 10))
-    );
-    this.pageIndex = activatedRoute.queryParamMap.pipe(
-      map((params) => parseInt(params.get('pageindex') || '0', 10))
-    );
-    this.ScenarioEventList = combineLatest([
-      this.scenarioEventQuery.selectAll(),
-      this.filterTerm,
-      this.sortColumn,
-      this.sortIsAscending,
-      this.pageSize,
-      this.pageIndex,
-    ]).pipe(
-      map(
-        ([
-          items,
-          filterTerm,
-          sortColumn,
-          sortIsAscending,
-          pageSize,
-          pageIndex,
-        ]) =>
-          items
-            ? (items as ScenarioEvent[])
-              .sort((a: ScenarioEvent, b: ScenarioEvent) =>
-                this.sortScenarioEvents(a, b, sortColumn, sortIsAscending)
-              )
-              .filter(
-                (scenarioEvent) =>
-                  scenarioEvent.id
-                    .toLowerCase()
-                    .includes(filterTerm.toLowerCase()
-                    )
-              )
-            : []
-      )
-    );
-  }
+  ) {}
+
+  readonly baseSort: Sort[] = [{ active: 'deltaSeconds', direction: 'asc' }, { active: 'groupOrder', direction: 'asc' }];
+  readonly blankDataValue = {
+    id: '',
+    scenarioEventId: '',
+    dataFieldId: '',
+    value: '',
+    valueArray: []
+  } as DataValuePlus;
 
   loadByMsel(mselId: string) {
     this.scenarioEventStore.setLoading(true);
@@ -198,10 +167,6 @@ export class ScenarioEventDataService {
       .subscribe(() => {});
   }
 
-  setPageEvent(pageEvent: PageEvent) {
-    this.scenarioEventStore.update({ pageEvent: pageEvent });
-  }
-
   updateStore(scenarioEvent: ScenarioEvent) {
     this.scenarioEventStore.upsert(scenarioEvent.id, scenarioEvent);
   }
@@ -210,176 +175,45 @@ export class ScenarioEventDataService {
     this.scenarioEventStore.remove(id);
   }
 
-  private sortScenarioEvents(
-    a: ScenarioEvent,
-    b: ScenarioEvent,
-    column: string,
-    isAsc: boolean
-  ) {
-    switch (column) {
-      case 'dateCreated':
-        return (
-          (a.dateCreated.valueOf() < b.dateCreated.valueOf() ? -1 : 1) *
-          (isAsc ? 1 : -1)
-        );
-      default:
-        return 0;
-    }
+  getDataValueFromView(view: ScenarioEventView, scenarioEvent: ScenarioEventPlus, dataFieldName: string): DataValuePlus {
+    return this.getValueFromEvent(view, scenarioEvent, dataFieldName);
   }
 
-  private sortAndFilterValueFromField(value: DataValue, fieldType: DataFieldType,
-    cardMap: Map<string, string>, userMap: Map<string, string>): (string | number) {
-    switch (fieldType) {
-      case DataFieldType.Card:
-        const cardName = cardMap.get(value.value);
-        return cardName ? cardName : '';
-      case DataFieldType.User:
-        const userName = userMap.get(value.value);
-        return userName ? userName : '';
-      case DataFieldType.Html:
-        return '';
-      case DataFieldType.Double:
-      case DataFieldType.Integer:
-      case DataFieldType.Move:
-        return value.value ? +value.value : Number.NEGATIVE_INFINITY;
-      default:
-        return value.value ? value.value : '';
-    }
+  updateScenarioEventViewCards(view: ScenarioEventView) {
+    view.cardMap = this.indexCards(view.cardList);
   }
 
-  private indexFieldsAndValues(datafields: DataField[], dataValues: DataValue[], cards: Card[],
-    users: User[]): [Map<string, DataField>, Map<string, Map<string, DataValuePlus>>] {
-    const fieldMap = new Map<string, DataField>();
-    const valueMap = new Map<string, Map<string, DataValuePlus>>();
-    const cardMap = new Map<string, string>();
-    const userMap = new Map<string, string>();
-    if (cards) {
-      for (const card of cards) {
-        cardMap.set(card.id, card.name);
+  updateScenarioEventViewUsers(view: ScenarioEventView) {
+    view.userMap = this.indexUsers(view.userList);
+  }
+
+  updateScenarioEventViewDataFields(view: ScenarioEventView) {
+    view.fieldMap = this.indexFields(view.dataFields);
+  }
+
+  updateScenarioEventViewDataValues(view: ScenarioEventView) {
+    view.valueMap = this.indexValues(view.fieldMap, view.cardMap, view.userMap, view.dataValues);
+  }
+
+  refreshScenarioEventViewEvents(view: ScenarioEventView, scenarioEvents: ScenarioEvent[]) {
+    const editableList: ScenarioEvent[] = [];
+    const evtIndex = new Map<string, number>();
+    scenarioEvents.forEach((scenarioEvent, index) => {
+      if (!scenarioEvent.isHidden || view.showHiddenEvents) {
+        const newScenarioEvent = { ...scenarioEvent};
+        editableList.push(newScenarioEvent);
+        evtIndex.set(newScenarioEvent.id, index);
       }
-    }
-    if (users) {
-      for (const user of users) {
-        userMap.set(user.id, user.name);
-      }
-    }
-    for (const field of datafields) {
-      fieldMap.set(field.id, field);
-    }
-    for (const value of dataValues) {
-      let eventProps = valueMap.get(value.scenarioEventId);
-      if (!(eventProps)) {
-        eventProps = new Map<string, DataValuePlus>();
-        valueMap.set(value.scenarioEventId, eventProps);
-      }
-      const fieldType = fieldMap.get(value.dataFieldId);
-      if (fieldType) {
-        const sortAndFilterVal = this.sortAndFilterValueFromField(value, fieldType.dataType, cardMap, userMap);
-        const dataValue: DataValuePlus =
-        {...value, sortAndFilterValue: sortAndFilterVal,
-          valueArray: value.value ? value.value.split(', ') : [], fieldType: fieldType.dataType};
-        eventProps.set(fieldType.name, dataValue);
-      }
-    }
-
-    return [fieldMap, valueMap];
+    });
+    view.mselScenarioEvents = editableList;
+    view.mselScenarioEvtIndex = evtIndex;
   }
 
-  private dataValuesIncludesFilter(valueMap: Map<string, DataValuePlus>, filterString: string) {
-    for (const val of valueMap.values()) {
-      if (val.sortAndFilterValue && val.sortAndFilterValue.toString().toLowerCase().includes(filterString)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  private cloneAndFilterScenarioEvents(scenarioEvents: ScenarioEvent[], datafields: DataField[], dataValues: DataValue[],
-    cards: Card[], users: User[], filterString: string, showHidden: boolean): ScenarioEventPlus[] {
-    const clonedList: ScenarioEventPlus[] = [];
-    if (scenarioEvents && scenarioEvents.length > 0 && dataValues.length > 0) {
-      // index the fields and values for faster access
-      const [fieldMap, valueMap] = this.indexFieldsAndValues(datafields, dataValues, cards, users);
-
-      scenarioEvents.forEach(scenarioEvent => {
-        if (!scenarioEvent.isHidden || showHidden) {
-          const plusDataValues = valueMap.get(scenarioEvent.id);
-          if (plusDataValues) {
-            if (!filterString || this.dataValuesIncludesFilter(plusDataValues, filterString.toLowerCase())) {
-              const newScenarioEvent = { ...scenarioEvent, plusDataValues: plusDataValues};
-              clonedList.push(newScenarioEvent);
-            }
-          }
-        }
-      });
-    }
-    return clonedList;
-  }
-
-  private getSortAndFilterValueFromEvent(scenarioEvent: ScenarioEventPlus, fieldName: string): (string | number) {
-    if ('deltaSeconds' === fieldName) {
-      return +scenarioEvent.deltaSeconds;
-    } else if ('groupOrder' === fieldName) {
-      return +scenarioEvent.groupOrder;
-    } else {
-      const val = scenarioEvent.plusDataValues.get(fieldName);
-      if (val) {
-        return val.sortAndFilterValue;
-      }
-      return '';
-    }
-  }
-
-  private getNumOrDefault(value: (string | number)): number {
-    if (typeof value !== undefined && typeof value !== null) {
-      return +value;
-    }
-    return Number.NEGATIVE_INFINITY;
-  }
-
-  private sortScenarioEventImpl(a: ScenarioEventPlus, b: ScenarioEventPlus, sorts: Sort[]): number {
-    let sortVal = 0;
-    for (const sort of sorts) {
-      const dir = sort.direction === 'desc' ? -1 : 1;
-      const sortValA = this.getSortAndFilterValueFromEvent(a, sort.active);
-      const sortValB = this.getSortAndFilterValueFromEvent(b, sort.active);
-      if (typeof sortValA === 'number' || typeof sortValB === 'number') {
-        const numValA = this.getNumOrDefault(sortValA);
-        const numValB = this.getNumOrDefault(sortValB);
-        let numSortVal = 0;
-        if (+numValA < +numValB) {
-          numSortVal = -1;
-        } else if (+numValA > +numValB) {
-          numSortVal = 1;
-        }
-        sortVal = numSortVal ? numSortVal * dir : numSortVal;
-      } else {
-        const strSortVal = Intl.Collator().compare(
-          sortValA ? sortValA.trim().toLowerCase() : '',
-          sortValB ? sortValB.trim().toLowerCase() : '');
-        sortVal = strSortVal ? strSortVal * dir : strSortVal;
-      }
-      if (sortVal) {
-        return sortVal;
-      }
-    }
-    return sortVal;
-  }
-
-  private sortExternalScenarioEvents(scenarioEvents: ScenarioEventPlus[], sort: Sort) {
-    const sorts: Sort[] = [];
-    if (sort && sort.active && sort.direction) {
-      sorts.push(sort);
-    }
-    sorts.push(...this.baseSort);
-    scenarioEvents.sort((a: ScenarioEventPlus, b: ScenarioEventPlus) => this.sortScenarioEventImpl(a, b, sorts));
-  }
-
-  sortAndFilterScenarioEvents(rawScenarioEvents: ScenarioEvent[], datafields: DataField[], dataValues: DataValue[],
-    cards: Card[], users: User[], sort: Sort, filterString: string, showHidden: boolean = false): ScenarioEventPlus[] {
-    const clonedList = this.cloneAndFilterScenarioEvents(rawScenarioEvents, datafields, dataValues, cards, users, filterString, showHidden);
-    this.sortExternalScenarioEvents(clonedList, sort);
-    return clonedList;
+  updateScenarioEventViewDisplayedEvents(view: ScenarioEventView) {
+    const clonedList = this.cloneAndFilterScenarioEvents(view.mselScenarioEvents, view.valueMap,
+      view.filterString, view.showHiddenEvents);
+    this.sortScenarioEvents(clonedList, view.sort, view.valueMap);
+    view.displayedScenarioEvents = clonedList;
   }
 
   getMoveAndGroupNumbers(sortedScenarioEvents: ScenarioEvent[], rawMoves: Move[]): Record<string, number[]>[] {
@@ -411,4 +245,204 @@ export class ScenarioEventDataService {
     return moveAndGroupNumbers;
   }
 
+  private sortAndFilterValueFromField(value: DataValue, fieldType: DataFieldType,
+    cardMap: Map<string, string>, userMap: Map<string, string>): (string | number) {
+    switch (fieldType) {
+      case DataFieldType.Card:
+        const cardName = cardMap.get(value.value);
+        return cardName ? cardName : '';
+      case DataFieldType.User:
+        const userName = userMap.get(value.value);
+        return userName ? userName : '';
+      case DataFieldType.Html:
+        return '';
+      case DataFieldType.Double:
+      case DataFieldType.Integer:
+      case DataFieldType.Move:
+        return value.value ? +value.value : Number.NEGATIVE_INFINITY;
+      default:
+        return value.value ? value.value : '';
+    }
+  }
+
+  private indexFields(datafields: DataField[]): Map<string, DataField> {
+    const fieldMap = new Map<string, DataField>();
+    for (const field of datafields) {
+      fieldMap.set(field.id, field);
+    }
+    return fieldMap;
+  }
+
+  private indexUsers(users: User[]): Map<string, string> {
+    const userMap = new Map<string, string>();
+    if (users) {
+      for (const user of users) {
+        userMap.set(user.id, user.name);
+      }
+    }
+    return userMap;
+  }
+
+  private indexCards(cards: Card[]): Map<string, string> {
+    const cardMap = new Map<string, string>();
+    if (cards) {
+      for (const card of cards) {
+        cardMap.set(card.id, card.name);
+      }
+    }
+    return cardMap;
+  }
+
+  private indexValues(fieldMap: Map<string, DataField>, cardMap: Map<string, string>, userMap: Map<string, string>,
+    dataValues: DataValue[]): Map<string, Map<string, DataValuePlus>> {
+    const valueMap = new Map<string, Map<string, DataValuePlus>>();
+    for (const value of dataValues) {
+      let eventProps = valueMap.get(value.scenarioEventId);
+      if (!(eventProps)) {
+        eventProps = new Map<string, DataValuePlus>();
+        valueMap.set(value.scenarioEventId, eventProps);
+      }
+      const fieldType = fieldMap.get(value.dataFieldId);
+      if (fieldType) {
+        const sortAndFilterVal = this.sortAndFilterValueFromField(value, fieldType.dataType, cardMap, userMap);
+        const dataValue: DataValuePlus =
+        {...value, sortAndFilterValue: sortAndFilterVal,
+          valueArray: value.value ? value.value.split(', ') : [], fieldType: fieldType.dataType};
+        eventProps.set(fieldType.name, dataValue);
+      }
+    }
+
+    return valueMap;
+  }
+
+  private dataValuesIncludesFilter(valueMap: Map<string, DataValuePlus>, filterString: string) {
+    for (const val of valueMap.values()) {
+      if (val.sortAndFilterValue && val.sortAndFilterValue.toString().toLowerCase().includes(filterString)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private cloneAndFilterScenarioEvents(scenarioEvents: ScenarioEvent[], valueMap: Map<string, Map<string, DataValuePlus>>,
+    filterString: string, showHidden: boolean): ScenarioEventPlus[] {
+    const clonedList: ScenarioEventPlus[] = [];
+    if (scenarioEvents && scenarioEvents.length > 0) {
+      scenarioEvents.forEach(scenarioEvent => {
+        if (!scenarioEvent.isHidden || showHidden) {
+          const eventValues = valueMap.get(scenarioEvent.id);
+          if (eventValues) {
+            if (!filterString || this.dataValuesIncludesFilter(eventValues, filterString.toLowerCase())) {
+              const newScenarioEvent = { ...scenarioEvent};
+              clonedList.push(newScenarioEvent);
+            }
+          }
+        }
+      });
+    }
+    return clonedList;
+  }
+
+  private getValueFromEvent(view: ScenarioEventView, scenarioEvent: ScenarioEventPlus, dataFieldName: string): DataValuePlus {
+    if ('deltaSeconds' === dataFieldName) {
+      const value = +scenarioEvent.deltaSeconds;
+      return { ...this.blankDataValue,
+        value: value.toString(),
+        fieldType: DataFieldType.Integer,
+        scenarioEventId: scenarioEvent.id,
+        sortAndFilterValue: value,
+        valueArray: [value.toString()]
+      };
+    } else if ('groupOrder' === dataFieldName) {
+      const value = +scenarioEvent.groupOrder;
+      return { ...this.blankDataValue,
+        value: value.toString(),
+        fieldType: DataFieldType.Integer,
+        scenarioEventId: scenarioEvent.id,
+        sortAndFilterValue: value,
+        valueArray: [value.toString()]
+      };
+    } else {
+      const eventMap = view.valueMap.get(scenarioEvent.id);
+      const val = eventMap ? eventMap.get(dataFieldName) : '';
+      if (val) {
+        return val;
+      }
+      return { ...this.blankDataValue,
+        scenarioEventId: scenarioEvent.id
+      };
+    }
+  }
+
+  private getSortAndFilterValueFromEvent(scenarioEvent: ScenarioEventPlus, valueMap: Map<string, Map<string, DataValuePlus>>,
+    fieldName: string): (string | number) {
+    if ('deltaSeconds' === fieldName) {
+      return +scenarioEvent.deltaSeconds;
+    } else if ('groupOrder' === fieldName) {
+      return +scenarioEvent.groupOrder;
+    } else {
+      const eventMap = valueMap.get(scenarioEvent.id);
+      const val = eventMap ? eventMap.get(fieldName) : '';
+      if (val) {
+        return val.sortAndFilterValue;
+      }
+      return '';
+    }
+  }
+
+  private getNumOrDefault(value: (string | number)): number {
+    if (typeof value !== undefined && typeof value !== null) {
+      return +value;
+    }
+    return Number.NEGATIVE_INFINITY;
+  }
+
+  private sortAsNumbers(a: string | number, b: string | number, isAsc: boolean): number {
+    const dir = isAsc ? 1 : -1;
+    const numValA = this.getNumOrDefault(a);
+    const numValB = this.getNumOrDefault(b);
+    let numSortVal = 0;
+    if (+numValA < +numValB) {
+      numSortVal = -1;
+    } else if (+numValA > +numValB) {
+      numSortVal = 1;
+    }
+    return numSortVal ? numSortVal * dir : numSortVal;
+  }
+
+  private sortAsStrings(a: string | number, b: string | number, isAsc: boolean): number {
+    const dir = isAsc ? 1 : -1;
+    const strSortVal = Intl.Collator().compare(
+      a ? a.toString().trim().toLowerCase() : '',
+      b ? b.toString().trim().toLowerCase() : '');
+    return strSortVal ? strSortVal * dir : strSortVal;
+  }
+
+  private sortScenarioEventImpl(a: ScenarioEventPlus, b: ScenarioEventPlus, sorts: Sort[],
+    valueMap: Map<string, Map<string, DataValuePlus>>): number {
+    let sortVal = 0;
+    for (const sort of sorts) {
+      const isAsc = sort.direction === 'asc';
+      const sortValA = this.getSortAndFilterValueFromEvent(a, valueMap, sort.active);
+      const sortValB = this.getSortAndFilterValueFromEvent(b, valueMap, sort.active);
+      if (typeof sortValA === 'number' || typeof sortValB === 'number') {
+        sortVal = this.sortAsNumbers(sortValA, sortValB, isAsc);
+      } else {
+        sortVal = this.sortAsStrings(sortValA, sortValB, isAsc);
+      }
+      if (sortVal) {
+        return sortVal;
+      }
+    }
+    return sortVal;
+  }
+
+  private sortScenarioEvents(scenarioEvents: ScenarioEventPlus[], sort: Sort, valueMap: Map<string, Map<string, DataValuePlus>>) {
+    const sorts: Sort[] = [];
+    if (sort && sort.active && sort.direction) {
+      sorts.push(sort);
+    }
+    sorts.push(...this.baseSort);
+    scenarioEvents.sort((a: ScenarioEventPlus, b: ScenarioEventPlus) => this.sortScenarioEventImpl(a, b, sorts, valueMap));
+  }
 }
