@@ -13,7 +13,7 @@ export interface ScenarioEventState extends EntityState<ScenarioEvent> {}
 @Injectable({
   providedIn: 'root',
 })
-@StoreConfig({ name: 'scenarioEvents', idKey: 'id'})
+@StoreConfig({ name: 'scenarioEvents' })
 export class ScenarioEventStore extends EntityStore<ScenarioEventState> {
   constructor() {
     super();

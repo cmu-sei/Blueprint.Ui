@@ -7,11 +7,15 @@ import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { CdkDragDrop, CdkDragStart, CdkDragEnd } from '@angular/cdk/drag-drop';
 import { Router } from '@angular/router';
 import { Subject, Subscription, Observable, of } from 'rxjs';
-import { takeUntil, map, debounceTime, distinctUntilChanged, mergeMap, delay } from 'rxjs/operators';
 import {
-  ComnSettingsService,
-  Theme,
-} from '@cmusei/crucible-common';
+  takeUntil,
+  map,
+  debounceTime,
+  distinctUntilChanged,
+  mergeMap,
+  delay,
+} from 'rxjs/operators';
+import { ComnSettingsService, Theme } from '@cmusei/crucible-common';
 import { UserDataService } from 'src/app/data/user/user-data.service';
 import {
   Card,
@@ -25,7 +29,7 @@ import {
   Organization,
   ScenarioEvent,
   Team,
-  User
+  User,
 } from 'src/app/generated/blueprint.api';
 import { MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
@@ -34,8 +38,12 @@ import { MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy
 import { CardQuery } from 'src/app/data/card/card.query';
 import { MoveQuery } from 'src/app/data/move/move.query';
 import { OrganizationQuery } from 'src/app/data/organization/organization.query';
-import { ScenarioEventDataService, ScenarioEventView, ScenarioEventPlus,
-  DataValuePlus } from 'src/app/data/scenario-event/scenario-event-data.service';
+import {
+  ScenarioEventDataService,
+  ScenarioEventView,
+  ScenarioEventPlus,
+  DataValuePlus,
+} from 'src/app/data/scenario-event/scenario-event-data.service';
 import { ScenarioEventEditDialogComponent } from '../scenario-event-edit-dialog/scenario-event-edit-dialog.component';
 import { ScenarioEventQuery } from 'src/app/data/scenario-event/scenario-event.query';
 import { DataValueDataService } from 'src/app/data/data-value/data-value-data.service';
@@ -53,7 +61,8 @@ import { AngularEditorConfig } from '@kolkov/angular-editor';
   templateUrl: './scenario-event-list.component.html',
   styleUrls: ['./scenario-event-list.component.scss'],
 })
-export class ScenarioEventListComponent implements OnDestroy, ScenarioEventView  {
+export class ScenarioEventListComponent
+implements OnDestroy, ScenarioEventView {
   @Input() loggedInUserId: string;
   @Input() isContentDeveloper: boolean;
   @Input() userTheme: Theme;
@@ -63,7 +72,7 @@ export class ScenarioEventListComponent implements OnDestroy, ScenarioEventView 
   expandedScenarioEventId = '';
   expandedMoreScenarioEventIds: string[] = [];
   filterString = '';
-  sort: Sort = { active: '', direction: ''};
+  sort: Sort = { active: '', direction: '' };
   displayedScenarioEvents: ScenarioEventPlus[] = [];
   fieldMap = new Map<string, DataField>();
   valueMap = new Map<string, Map<string, DataValuePlus>>();
@@ -93,14 +102,38 @@ export class ScenarioEventListComponent implements OnDestroy, ScenarioEventView 
     sanitize: true,
   };
   dataType: typeof DataFieldType = DataFieldType;
-  sortableDataTypes = [DataFieldType.String, DataFieldType.Integer, DataFieldType.Double, DataFieldType.Boolean,
-    DataFieldType.DateTime, DataFieldType.Organization, DataFieldType.Card, DataFieldType.Move,
-    DataFieldType.SourceType, DataFieldType.Status, DataFieldType.Team, DataFieldType.TeamsMultiple,
-    DataFieldType.Checkbox, DataFieldType.User, DataFieldType.Url, DataFieldType.DeliveryMethod];
+  sortableDataTypes = [
+    DataFieldType.String,
+    DataFieldType.Integer,
+    DataFieldType.Double,
+    DataFieldType.Boolean,
+    DataFieldType.DateTime,
+    DataFieldType.Organization,
+    DataFieldType.Card,
+    DataFieldType.Move,
+    DataFieldType.SourceType,
+    DataFieldType.Status,
+    DataFieldType.Team,
+    DataFieldType.TeamsMultiple,
+    DataFieldType.Checkbox,
+    DataFieldType.User,
+    DataFieldType.Url,
+    DataFieldType.DeliveryMethod,
+  ];
   dateFormControls = new Map<string, UntypedFormControl>();
-  itemStatus = [MselItemStatus.Pending, MselItemStatus.Entered, MselItemStatus.Approved, MselItemStatus.Complete,
-    MselItemStatus.Deployed, MselItemStatus.Archived];
-  mselRole = { Owner: MselRole.Owner, Approver: MselRole.Approver, Editor: MselRole.Editor};
+  itemStatus = [
+    MselItemStatus.Pending,
+    MselItemStatus.Entered,
+    MselItemStatus.Approved,
+    MselItemStatus.Complete,
+    MselItemStatus.Deployed,
+    MselItemStatus.Archived,
+  ];
+  mselRole = {
+    Owner: MselRole.Owner,
+    Approver: MselRole.Approver,
+    Editor: MselRole.Editor,
+  };
   organizationList: Organization[] = [];
   mselUsers: User[] = [];
   blankDataValue = {
@@ -108,14 +141,18 @@ export class ScenarioEventListComponent implements OnDestroy, ScenarioEventView 
     scenarioEventId: '',
     dataFieldId: '',
     value: '',
-    valueArray: []
+    valueArray: [],
   } as DataValuePlus;
   // context menu
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
   contextMenuPosition = { x: '0px', y: '0px' };
   scenarioEventBackgroundColors: Array<string>;
-  darkThemeTint = this.settingsService.settings.DarkThemeTint ? this.settingsService.settings.DarkThemeTint : 0.7;
-  lightThemeTint = this.settingsService.settings.LightThemeTint ? this.settingsService.settings.LightThemeTint : 0.4;
+  darkThemeTint = this.settingsService.settings.DarkThemeTint
+    ? this.settingsService.settings.DarkThemeTint
+    : 0.7;
+  lightThemeTint = this.settingsService.settings.LightThemeTint
+    ? this.settingsService.settings.LightThemeTint
+    : 0.4;
   cardList: Card[] = [];
   moveList: Move[] = [];
   teamList: Team[] = [];
@@ -146,9 +183,12 @@ export class ScenarioEventListComponent implements OnDestroy, ScenarioEventView 
     private teamQuery: TeamQuery,
     private uiDataService: UIDataService
   ) {
-    this.scenarioEventBackgroundColors = this.settingsService.settings.ScenarioEventBackgroundColors;
+    this.scenarioEventBackgroundColors =
+      this.settingsService.settings.ScenarioEventBackgroundColors;
     // subscribe to the active MSEL
-    (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
+    (this.mselQuery.selectActive() as Observable<MselPlus>)
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((msel) => {
         if (msel && this.msel.id !== msel.id) {
           this.msel = this.getEditableMsel(msel) as MselPlus;
           this.mselUsers = this.getMselUsers();
@@ -156,63 +196,112 @@ export class ScenarioEventListComponent implements OnDestroy, ScenarioEventView 
         }
       });
     // subscribe to data fields
-    this.dataFieldQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(dataFields => {
+    this.dataFieldQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((dataFields) => {
         this.getSortedDataFields(dataFields);
         this.scenarioEventDataService.updateScenarioEventViewDataFields(this);
-        this.scenarioEventDataService.updateScenarioEventViewDisplayedEvents(this);
+        this.scenarioEventDataService.updateScenarioEventViewDisplayedEvents(
+          this
+        );
       });
     // subscribe to the data options
-    this.dataOptionQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(dataOptions => {
-      this.sortedDataOptions = dataOptions.sort((a, b) => +a.displayOrder < +b.displayOrder ? -1 : 1);
+    this.dataOptionQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((dataOptions) => {
+        this.sortedDataOptions = dataOptions.sort((a, b) =>
+          +a.displayOrder < +b.displayOrder ? -1 : 1
+        );
       });
     // subscribe to data values
-    this.dataValueQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(dataValues => {
-      this.dataValues = [];
-      dataValues.forEach(dv => {
-        this.dataValues.push({ ... dv });
+    this.dataValueQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((dataValues) => {
+        this.dataValues = [];
+        dataValues.forEach((dv) => {
+          this.dataValues.push({ ...dv });
         });
-      this.scenarioEventDataService.updateScenarioEventViewDataValues(this);
-      this.scenarioEventDataService.updateScenarioEventViewDisplayedEvents(this);
+        this.scenarioEventDataService.updateScenarioEventViewDataValues(this);
+        this.scenarioEventDataService.updateScenarioEventViewDisplayedEvents(
+          this
+        );
       });
     // subscribe to scenario events
-    (this.scenarioEventQuery.selectAll()).pipe(takeUntil(this.unsubscribe$)).subscribe(scenarioEvents => {
-      this.scenarioEventDataService.refreshScenarioEventViewEvents(this, scenarioEvents);
-      if (scenarioEvents && scenarioEvents.length > 0) {
-        this.moveAndGroupNumbers = this.scenarioEventDataService.getMoveAndGroupNumbers(this.mselScenarioEvents, this.moveList);
-        this.scenarioEventDataService.updateScenarioEventViewDisplayedEvents(this);
-      }
-    });
+    this.scenarioEventQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((scenarioEvents) => {
+        this.scenarioEventDataService.refreshScenarioEventViewEvents(
+          this,
+          scenarioEvents
+        );
+        if (scenarioEvents && scenarioEvents.length > 0) {
+          this.moveAndGroupNumbers =
+            this.scenarioEventDataService.getMoveAndGroupNumbers(
+              this.mselScenarioEvents,
+              this.moveList
+            );
+          this.scenarioEventDataService.updateScenarioEventViewDisplayedEvents(
+            this
+          );
+        }
+      });
     // is user a contentdeveloper or system admin?
-    this.userDataService.isContentDeveloper.pipe(takeUntil(this.unsubscribe$)).subscribe((isOne) => {
+    this.userDataService.isContentDeveloper
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((isOne) => {
         this.canDoAnything = isOne;
       });
     // subscribe to organizations
-    this.organizationQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(organizations => {
-      this.organizationList = organizations.filter(org => !org.isTemplate && org.mselId === this.msel.id);
+    this.organizationQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((organizations) => {
+        this.organizationList = organizations.filter(
+          (org) => !org.isTemplate && org.mselId === this.msel.id
+        );
       });
     // observe the Cards
-    this.cardQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(cards => {
+    this.cardQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((cards) => {
         this.cardList = cards;
       });
-      this.scenarioEventDataService.updateScenarioEventViewCards(this);
-      this.scenarioEventDataService.updateScenarioEventViewDisplayedEvents(this);
+    this.scenarioEventDataService.updateScenarioEventViewCards(this);
+    this.scenarioEventDataService.updateScenarioEventViewDisplayedEvents(this);
     // observe the Moves
-    this.moveQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(moves => {
-      this.moveList = moves.sort((a, b) => +a.moveNumber < +b.moveNumber ? -1 : 1);
-      this.moveAndGroupNumbers = this.scenarioEventDataService.getMoveAndGroupNumbers(this.mselScenarioEvents, this.moveList);
+    this.moveQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((moves) => {
+        this.moveList = moves.sort((a, b) =>
+          +a.moveNumber < +b.moveNumber ? -1 : 1
+        );
+        this.moveAndGroupNumbers =
+          this.scenarioEventDataService.getMoveAndGroupNumbers(
+            this.mselScenarioEvents,
+            this.moveList
+          );
       });
     // observe the Teams
-    this.teamQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(teams => {
+    this.teamQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((teams) => {
         this.teamList = teams;
       });
     // subscribe to filter string changes for debounce
-    this.subscription = this.keyUp.pipe(
+    this.subscription = this.keyUp
+      .pipe(
         debounceTime(250),
         distinctUntilChanged(),
-      mergeMap(search => of(search).pipe(
-        delay(250),
-      )),
-    ).subscribe(event => {
+        mergeMap((search) => of(search).pipe(delay(250)))
+      )
+      .subscribe((event) => {
         this.applyFilter(this.filterString);
       });
     // set the time display format
@@ -221,28 +310,32 @@ export class ScenarioEventListComponent implements OnDestroy, ScenarioEventView 
 
   get userList(): User[] {
     return this.mselUsers;
-  };
+  }
 
   get dataFields(): DataField[] {
     return this.sortedDataFields;
-  };
+  }
 
   get showHiddenEvents(): boolean {
     return true;
-  };
+  }
 
   tabChange(event) {
     const injectData = event.tab.textLabel.toLowerCase().replace(' ', '');
     this.router.navigate([], {
       queryParams: { injectData: injectData },
-      queryParamsHandling: 'merge'
+      queryParamsHandling: 'merge',
     });
   }
 
-  getEditableMsel (msel: MselPlus): MselPlus {
+  getEditableMsel(msel: MselPlus): MselPlus {
     const editableMsel = new MselPlus();
     Object.assign(editableMsel, msel);
-    editableMsel.teams = editableMsel.teams.slice(0).sort((a, b) => a.shortName.toLowerCase() < b.shortName.toLowerCase() ? -1 : 1);
+    editableMsel.teams = editableMsel.teams
+      .slice(0)
+      .sort((a, b) =>
+        a.shortName.toLowerCase() < b.shortName.toLowerCase() ? -1 : 1
+      );
 
     return editableMsel;
   }
@@ -250,13 +343,14 @@ export class ScenarioEventListComponent implements OnDestroy, ScenarioEventView 
   getSortedDataFields(dataFields: DataField[]) {
     if (dataFields) {
       this.sortedDataFields = dataFields
-        .filter(df => df.onScenarioEventList)
-        .sort((a, b) => +a.displayOrder > +b.displayOrder ? 1 : -1);
-      this.allDataFields = dataFields
-        .sort((a, b) => +a.displayOrder > +b.displayOrder ? 1 : -1);
+        .filter((df) => df.onScenarioEventList)
+        .sort((a, b) => (+a.displayOrder > +b.displayOrder ? 1 : -1));
+      this.allDataFields = dataFields.sort((a, b) =>
+        +a.displayOrder > +b.displayOrder ? 1 : -1
+      );
     }
     // create date form controls
-    this.allDataFields.forEach(df => {
+    this.allDataFields.forEach((df) => {
       if (df.dataType === DataFieldType.DateTime) {
         this.dateFormControls[df.id] = new UntypedFormControl();
       }
@@ -264,25 +358,30 @@ export class ScenarioEventListComponent implements OnDestroy, ScenarioEventView 
   }
 
   getDataOptions(dataFieldId: string) {
-    return this.sortedDataOptions.filter(x => x.dataFieldId === dataFieldId);
+    return this.sortedDataOptions.filter((x) => x.dataFieldId === dataFieldId);
   }
 
   getMselUsers(): User[] {
     let users = [];
-    this.msel.teams.forEach(team => {
-      team.users.forEach(user => {
-        users.push({... user});
+    this.msel.teams.forEach((team) => {
+      team.users.forEach((user) => {
+        users.push({ ...user });
       });
     });
-    users = users.sort((a, b) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
+    users = users.sort((a, b) =>
+      a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1
+    );
     return users;
   }
 
   toggleNoneSelection(scenarioEvent: ScenarioEventPlus, dataFieldName: string) {
     const newValues = new Array('None');
-    this.getDataValue(scenarioEvent, dataFieldName).value = newValues.join(', ');
+    this.getDataValue(scenarioEvent, dataFieldName).value =
+      newValues.join(', ');
     this.getDataValue(scenarioEvent, dataFieldName).valueArray = newValues;
-    this.dataValueDataService.updateDataValue(this.getDataValue(scenarioEvent, dataFieldName));
+    this.dataValueDataService.updateDataValue(
+      this.getDataValue(scenarioEvent, dataFieldName)
+    );
   }
 
   trackByFn(index, item) {
@@ -291,22 +390,22 @@ export class ScenarioEventListComponent implements OnDestroy, ScenarioEventView 
 
   getSortedOrganizationOptions(): string[] {
     let orgs: string[] = [];
-    this.organizationList.forEach(o => {
+    this.organizationList.forEach((o) => {
       orgs.push(o.shortName);
     });
-    this.msel.teams.forEach(t => {
+    this.msel.teams.forEach((t) => {
       orgs.push(t.shortName);
     });
-    orgs = orgs.sort((a, b) => a < b ? -1 : 1);
+    orgs = orgs.sort((a, b) => (a < b ? -1 : 1));
     return orgs;
   }
 
   getSortedTeamOptions(): string[] {
     let orgs: string[] = [];
-    this.msel.teams.forEach(t => {
+    this.msel.teams.forEach((t) => {
       orgs.push(t.shortName);
     });
-    orgs = orgs.sort((a, b) => a < b ? -1 : 1);
+    orgs = orgs.sort((a, b) => (a < b ? -1 : 1));
     return orgs;
   }
 
@@ -316,7 +415,9 @@ export class ScenarioEventListComponent implements OnDestroy, ScenarioEventView 
   }
 
   selectMoreScenarioEvent(id: string) {
-    const expandedIndex = this.expandedMoreScenarioEventIds.findIndex(seId => seId === id);
+    const expandedIndex = this.expandedMoreScenarioEventIds.findIndex(
+      (seId) => seId === id
+    );
     if (expandedIndex === -1) {
       this.expandedMoreScenarioEventIds.push(id);
     } else {
@@ -330,44 +431,58 @@ export class ScenarioEventListComponent implements OnDestroy, ScenarioEventView 
       scenarioEventId: '',
       dataFieldId: '',
       value: '',
-      valueArray: []
+      valueArray: [],
     } as DataValuePlus;
 
     return bdvp;
   }
 
-  newDataValuePlus(scenarioEventId: string, dataFieldId: string): DataValuePlus {
+  newDataValuePlus(
+    scenarioEventId: string,
+    dataFieldId: string
+  ): DataValuePlus {
     const ndvp = {
       id: uuidv4(),
       scenarioEventId: scenarioEventId,
       dataFieldId: dataFieldId,
       value: '',
-      valueArray: []
+      valueArray: [],
     } as DataValuePlus;
 
     return ndvp;
   }
 
-  getDataValue(scenarioEvent: ScenarioEventPlus, dataFieldName: string): DataValuePlus {
+  getDataValue(
+    scenarioEvent: ScenarioEventPlus,
+    dataFieldName: string
+  ): DataValuePlus {
     if (!(this.msel && scenarioEvent && scenarioEvent.id)) {
       return this.blankDataValue;
     }
-    return this.scenarioEventDataService.getDataValueFromView(this, scenarioEvent, dataFieldName);
+    return this.scenarioEventDataService.getDataValueFromView(
+      this,
+      scenarioEvent,
+      dataFieldName
+    );
   }
 
   getFilteredDataFields(filter: string): DataField[] {
     let filteredList = [];
     switch (filter) {
       case 'Default':
-        filteredList = this.allDataFields.filter(x => !x.isInitiallyHidden);
+        filteredList = this.allDataFields.filter((x) => !x.isInitiallyHidden);
         break;
       case 'Gallery':
-        filteredList = this.allDataFields.filter(x => !!x.galleryArticleParameter);
+        filteredList = this.allDataFields.filter(
+          (x) => !!x.galleryArticleParameter
+        );
         break;
       default:
         filteredList = this.allDataFields;
     }
-    filteredList =  filteredList.sort((a, b) => +a.displayOrder < +b.displayOrder ? -1 : 1);
+    filteredList = filteredList.sort((a, b) =>
+      +a.displayOrder < +b.displayOrder ? -1 : 1
+    );
     return filteredList;
   }
 
@@ -375,7 +490,7 @@ export class ScenarioEventListComponent implements OnDestroy, ScenarioEventView 
     if (!teamId) {
       return '';
     }
-    const team = this.teamList.find(t => t.id === teamId);
+    const team = this.teamList.find((t) => t.id === teamId);
     return team ? team.shortName : '';
   }
 
@@ -402,11 +517,16 @@ export class ScenarioEventListComponent implements OnDestroy, ScenarioEventView 
   dropHandler(event: CdkDragDrop<string[]>) {
     // defaultOffsetSecs is the amount of time to offset a new group that is before or after all others
     const defaultOffsetSecs = 3600;
-    if (event.previousIndex !== event.currentIndex) {  // sanity check
+    if (event.previousIndex !== event.currentIndex) {
+      // sanity check
       const droppedScenarioEvt = event.item.data;
-      const droppedScenarioEvtIdx = this.mselScenarioEvtIndex.get(droppedScenarioEvt.id);
-      const targetScenarioEvtId = this.displayedScenarioEvents[event.currentIndex].id;
-      const targetScenarioEvtIdx = this.mselScenarioEvtIndex.get(targetScenarioEvtId);
+      const droppedScenarioEvtIdx = this.mselScenarioEvtIndex.get(
+        droppedScenarioEvt.id
+      );
+      const targetScenarioEvtId =
+        this.displayedScenarioEvents[event.currentIndex].id;
+      const targetScenarioEvtIdx =
+        this.mselScenarioEvtIndex.get(targetScenarioEvtId);
       const targetScenarioEvt = this.mselScenarioEvents[targetScenarioEvtIdx];
       const movedDown = droppedScenarioEvtIdx < targetScenarioEvtIdx;
       const origOffset = +droppedScenarioEvt.deltaSeconds;
@@ -415,20 +535,26 @@ export class ScenarioEventListComponent implements OnDestroy, ScenarioEventView 
       let newGrpOrder = origGroupOrder;
       // case where we moved the event to the top of the MSEL
       if (0 === targetScenarioEvtIdx) {
-        const prevOffset = +this.mselScenarioEvents[targetScenarioEvtIdx].deltaSeconds;
+        const prevOffset =
+          +this.mselScenarioEvents[targetScenarioEvtIdx].deltaSeconds;
         if (prevOffset > 0) {
           newOffset = Math.max(prevOffset - defaultOffsetSecs, 0);
         } else {
           newOffset = prevOffset;
         }
-        newGrpOrder = newOffset === prevOffset ? +targetScenarioEvt.groupOrder : 0;
-      // case where we moved the event to the bottom of the MSEL
+        newGrpOrder =
+          newOffset === prevOffset ? +targetScenarioEvt.groupOrder : 0;
+        // case where we moved the event to the bottom of the MSEL
       } else if (targetScenarioEvtIdx === this.mselScenarioEvents.length - 1) {
-        newOffset = +this.mselScenarioEvents[targetScenarioEvtIdx].deltaSeconds + defaultOffsetSecs;
+        newOffset =
+          +this.mselScenarioEvents[targetScenarioEvtIdx].deltaSeconds +
+          defaultOffsetSecs;
         newGrpOrder = 0;
-      // case where we moved the event somewhere in the middle of the MSELs
+        // case where we moved the event somewhere in the middle of the MSELs
       } else {
-        const aboveIndex = movedDown ? targetScenarioEvtIdx : targetScenarioEvtIdx - 1;
+        const aboveIndex = movedDown
+          ? targetScenarioEvtIdx
+          : targetScenarioEvtIdx - 1;
         const belowIndex = aboveIndex + 1;
         const aboveOffset = +this.mselScenarioEvents[aboveIndex].deltaSeconds;
         const belowOffset = +this.mselScenarioEvents[belowIndex].deltaSeconds;
@@ -449,11 +575,9 @@ export class ScenarioEventListComponent implements OnDestroy, ScenarioEventView 
     }
   }
 
-  dragStart(event: CdkDragStart) {
-  }
+  dragStart(event: CdkDragStart) {}
 
-  dragEnd(event: CdkDragEnd) {
-  }
+  dragEnd(event: CdkDragEnd) {}
 
   addScenarioEvent() {
     const newScenarioEvent = this.createBlankScenarioEvent();
@@ -462,12 +586,13 @@ export class ScenarioEventListComponent implements OnDestroy, ScenarioEventView 
   }
 
   editScenarioEvent(scenarioEvent: ScenarioEvent) {
-    const editScenarioEvent = {... scenarioEvent};
+    const editScenarioEvent = { ...scenarioEvent };
     editScenarioEvent.dataValues = [];
-    const seDataValues = this.dataValues
-      .filter(dv => dv.scenarioEventId === scenarioEvent.id);
-    this.allDataFields.forEach(df => {
-      let dataValue = seDataValues.find(dv => dv.dataFieldId === df.id);
+    const seDataValues = this.dataValues.filter(
+      (dv) => dv.scenarioEventId === scenarioEvent.id
+    );
+    this.allDataFields.forEach((df) => {
+      let dataValue = seDataValues.find((dv) => dv.dataFieldId === df.id);
       if (!dataValue) {
         dataValue = this.newDataValuePlus(scenarioEvent.id, df.id);
       }
@@ -477,17 +602,17 @@ export class ScenarioEventListComponent implements OnDestroy, ScenarioEventView 
   }
 
   copyScenarioEvent(scenarioEvent: ScenarioEventPlus): void {
-    const newScenarioEvent = {... scenarioEvent};
+    const newScenarioEvent = { ...scenarioEvent };
     newScenarioEvent.id = uuidv4();
     newScenarioEvent.dataValues = [];
     this.dataValues
-      .filter(dv => dv.scenarioEventId === scenarioEvent.id)
-      .forEach(dv => {
+      .filter((dv) => dv.scenarioEventId === scenarioEvent.id)
+      .forEach((dv) => {
         newScenarioEvent.dataValues.push({
           id: uuidv4(),
           dataFieldId: dv.dataFieldId,
           scenarioEventId: newScenarioEvent.id,
-          value: dv.value
+          value: dv.value,
         });
       });
     this.isAddingScenarioEvent = true;
@@ -495,9 +620,15 @@ export class ScenarioEventListComponent implements OnDestroy, ScenarioEventView 
   }
 
   displayEditDialog(scenarioEvent: ScenarioEvent) {
-    const isOwner = this.isContentDeveloper || this.msel.hasRole(this.loggedInUserId, scenarioEvent.id).owner;
-    const isApprover = isOwner || this.msel.hasRole(this.loggedInUserId, scenarioEvent.id).approver;
-    const isEditor = isApprover || this.msel.hasRole(this.loggedInUserId, scenarioEvent.id).editor;
+    const isOwner =
+      this.isContentDeveloper ||
+      this.msel.hasRole(this.loggedInUserId, scenarioEvent.id).owner;
+    const isApprover =
+      isOwner ||
+      this.msel.hasRole(this.loggedInUserId, scenarioEvent.id).approver;
+    const isEditor =
+      isApprover ||
+      this.msel.hasRole(this.loggedInUserId, scenarioEvent.id).editor;
     const dialogRef = this.dialog.open(ScenarioEventEditDialogComponent, {
       width: '80%',
       maxWidth: '800px',
@@ -519,7 +650,7 @@ export class ScenarioEventListComponent implements OnDestroy, ScenarioEventView 
         useGallery: this.msel.useGallery,
         useSteamfitter: this.msel.useSteamfitter,
         userList: this.mselUsers,
-        mselStartTime: this.msel.startTime
+        mselStartTime: this.msel.startTime,
       },
     });
     dialogRef.componentInstance.editComplete.subscribe((result) => {
@@ -538,24 +669,30 @@ export class ScenarioEventListComponent implements OnDestroy, ScenarioEventView 
       id: seId,
       mselId: this.msel.id,
       status: MselItemStatus.Pending,
-      dataValues: []
+      dataValues: [],
     };
-    this.allDataFields.forEach(df => {
+    this.allDataFields.forEach((df) => {
       newScenarioEvent.dataValues.push({
         dataFieldId: df.id,
         id: uuidv4(),
         scenarioEventId: seId,
-        value: ''
+        value: '',
       });
     });
     return newScenarioEvent;
   }
 
-  saveDataValue(scenarioEvent: ScenarioEventPlus, dataFieldName: string, newValue: string) {
+  saveDataValue(
+    scenarioEvent: ScenarioEventPlus,
+    dataFieldName: string,
+    newValue: string
+  ) {
     let dataValue = this.getDataValue(scenarioEvent, dataFieldName);
     if (!dataValue || !dataValue.id) {
       // the dataValue doesn't exist, so create a new one
-      const dataFieldId = this.allDataFields.find(df => df.name === dataFieldName).id;
+      const dataFieldId = this.allDataFields.find(
+        (df) => df.name === dataFieldName
+      ).id;
       dataValue = this.newDataValuePlus(scenarioEvent.id, dataFieldId);
       dataValue.value = newValue;
       this.dataValueDataService.add(dataValue);
@@ -565,14 +702,20 @@ export class ScenarioEventListComponent implements OnDestroy, ScenarioEventView 
     }
   }
 
-  saveDataValueArray(scenarioEvent: ScenarioEventPlus, dataFieldName: string, newValues: string[]) {
+  saveDataValueArray(
+    scenarioEvent: ScenarioEventPlus,
+    dataFieldName: string,
+    newValues: string[]
+  ) {
     if (newValues.includes('None')) {
       newValues = new Array();
     }
     let dataValue = this.getDataValue(scenarioEvent, dataFieldName);
     if (!dataValue || !dataValue.id) {
       // the dataValue doesn't exist, so create a new one
-      const dataFieldId = this.allDataFields.find(df => df.name === dataFieldName).id;
+      const dataFieldId = this.allDataFields.find(
+        (df) => df.name === dataFieldName
+      ).id;
       dataValue = this.newDataValuePlus(scenarioEvent.id, dataFieldId);
       dataValue.value = newValues.join(', ');
       dataValue.valueArray = newValues;
@@ -630,7 +773,8 @@ export class ScenarioEventListComponent implements OnDestroy, ScenarioEventView 
       return false;
     }
     // check for month/day/year format
-    const regexPattern = /^(0?[1-9]|1[012])[- /.](0?[1-9]|[12][0-9]|3[01])[- /.](19|20)\d\d$/;
+    const regexPattern =
+      /^(0?[1-9]|1[012])[- /.](0?[1-9]|[12][0-9]|3[01])[- /.](19|20)\d\d$/;
     return !regexPattern.test(dateString);
   }
 
@@ -644,13 +788,19 @@ export class ScenarioEventListComponent implements OnDestroy, ScenarioEventView 
 
   getRgbValues(rowMetadata: string) {
     const parts = rowMetadata ? rowMetadata.split(',') : [];
-    const rgbValues = parts.length >= 4 ? parts[1] + ', ' + parts[2] + ', ' + parts[3] : '';
+    const rgbValues =
+      parts.length >= 4 ? parts[1] + ', ' + parts[2] + ', ' + parts[3] : '';
     return rgbValues;
   }
 
   getStyleFromColor(color: string) {
-    const tint = this.userTheme === 'dark-theme' ? this.darkThemeTint : this.lightThemeTint;
-    return color ? {'background-color': 'rgba(' + color + ', ' + tint + ')'} : {};
+    const tint =
+      this.userTheme === 'dark-theme'
+        ? this.darkThemeTint
+        : this.lightThemeTint;
+    return color
+      ? { 'background-color': 'rgba(' + color + ', ' + tint + ')' }
+      : {};
   }
 
   getRowStyle(scenarioEvent: ScenarioEventPlus) {
@@ -662,11 +812,15 @@ export class ScenarioEventListComponent implements OnDestroy, ScenarioEventView 
   }
 
   selectNewColor(color: string, incomingScenarioEvent: ScenarioEventPlus) {
-    const scenarioEvent = {... incomingScenarioEvent};
-    let parts = scenarioEvent.rowMetadata ? scenarioEvent.rowMetadata.split(',') : [];
+    const scenarioEvent = { ...incomingScenarioEvent };
+    let parts = scenarioEvent.rowMetadata
+      ? scenarioEvent.rowMetadata.split(',')
+      : [];
     // update the scenario event row metadata
     if (parts.length === 0) {
-      const rowHeight = this.settingsService.settings.DefaultXlsxRowHeight ? this.settingsService.settings.DefaultXlsxRowHeight : 15;
+      const rowHeight = this.settingsService.settings.DefaultXlsxRowHeight
+        ? this.settingsService.settings.DefaultXlsxRowHeight
+        : 15;
       scenarioEvent.rowMetadata = rowHeight + ',' + color;
     } else {
       scenarioEvent.rowMetadata = parts[0] + ',' + color;
@@ -682,16 +836,19 @@ export class ScenarioEventListComponent implements OnDestroy, ScenarioEventView 
       // convert decimal value to hex
       for (let i = 0; i < colorParts.length; i++) {
         colorParts[i] = (+colorParts[i]).toString(16).trim();
-        colorParts[i] = colorParts[i].length < 2 ? '0' + colorParts[i] : colorParts[i];
+        colorParts[i] =
+          colorParts[i].length < 2 ? '0' + colorParts[i] : colorParts[i];
       }
       hexColor = colorParts.join('');
-      tint = '0.7';  // 0.7 seems to be the correct amount to make excel look right
+      tint = '0.7'; // 0.7 seems to be the correct amount to make excel look right
     }
     // convert decimal value to hex
     this.dataValues
-      .filter(dv => dv.scenarioEventId === scenarioEvent.id)
-      .forEach(dv => {
-        parts = dv.cellMetadata ? dv.cellMetadata.split(',') : ['', '', 'normal', '0'];
+      .filter((dv) => dv.scenarioEventId === scenarioEvent.id)
+      .forEach((dv) => {
+        parts = dv.cellMetadata
+          ? dv.cellMetadata.split(',')
+          : ['', '', 'normal', '0'];
         parts[0] = hexColor;
         parts[1] = tint;
         dv.cellMetadata = parts.join(',');
@@ -700,15 +857,17 @@ export class ScenarioEventListComponent implements OnDestroy, ScenarioEventView 
   }
 
   batchSelectNewColor(color: string) {
-    this.selectedEventIdList.forEach(id => {
-      const scenarioEvent = this.displayedScenarioEvents.find(e => e.id === id);
+    this.selectedEventIdList.forEach((id) => {
+      const scenarioEvent = this.displayedScenarioEvents.find(
+        (e) => e.id === id
+      );
       this.selectNewColor(color, scenarioEvent);
     });
   }
 
   getStyle(dataField: DataField): string {
     if (dataField && dataField.columnMetadata) {
-      const width = Math.trunc(+dataField.columnMetadata * 7);  // 7 converts excel widths to http widths
+      const width = Math.trunc(+dataField.columnMetadata * 7); // 7 converts excel widths to http widths
       return 'text-align: left; width: ' + width.toString() + 'px;';
     } else if (dataField.dataType.toString() === 'DateTime') {
       return 'width: max-content';
@@ -722,11 +881,15 @@ export class ScenarioEventListComponent implements OnDestroy, ScenarioEventView 
     if (!(this.msel && scenarioEvent && scenarioEvent.id)) {
       return '';
     }
-    const dataField = this.allDataFields.find(df => df.name === columnName);
+    const dataField = this.allDataFields.find((df) => df.name === columnName);
     if (!dataField) {
       return '';
     }
-    const dataValue = this.dataValues.find(dv => dv.dataFieldId === dataField.id && dv.scenarioEventId === scenarioEvent.id);
+    const dataValue = this.dataValues.find(
+      (dv) =>
+        dv.dataFieldId === dataField.id &&
+        dv.scenarioEventId === scenarioEvent.id
+    );
     return dataValue && dataValue.value != null ? dataValue.value : ' ';
   }
 
@@ -734,18 +897,23 @@ export class ScenarioEventListComponent implements OnDestroy, ScenarioEventView 
     if (!(this.msel && scenarioEvent && scenarioEvent.id)) {
       return '';
     }
-    const dataField = this.allDataFields.find(df => df.name === columnName);
+    const dataField = this.allDataFields.find((df) => df.name === columnName);
     if (!dataField) {
       return '';
     }
-    const dataValue = this.dataValues.find(dv => dv.dataFieldId === dataField.id && dv.scenarioEventId === scenarioEvent.id);
-    const dateValue = dataValue && dataValue.value != null ? dataValue.value : ' ';
+    const dataValue = this.dataValues.find(
+      (dv) =>
+        dv.dataFieldId === dataField.id &&
+        dv.scenarioEventId === scenarioEvent.id
+    );
+    const dateValue =
+      dataValue && dataValue.value != null ? dataValue.value : ' ';
     const formattedValue = new Date(dateValue).toLocaleString();
     return formattedValue === 'Invalid Date' ? ' ' : formattedValue;
   }
 
   getSelectedState(id: string): boolean {
-    const isSelected = this.selectedEventIdList.some(e => e === id);
+    const isSelected = this.selectedEventIdList.some((e) => e === id);
     return isSelected;
   }
 
@@ -763,7 +931,7 @@ export class ScenarioEventListComponent implements OnDestroy, ScenarioEventView 
   setAllSelectedState(newValue: boolean) {
     this.selectedEventIdList = [];
     if (newValue) {
-      this.displayedScenarioEvents.forEach(e => {
+      this.displayedScenarioEvents.forEach((e) => {
         this.selectedEventIdList.push(e.id);
       });
     }
@@ -782,7 +950,12 @@ export class ScenarioEventListComponent implements OnDestroy, ScenarioEventView 
   }
 
   openContent(id: string) {
-    const url = location.origin + '/injectpage?msel=' + this.msel.id + '&scenarioEvent=' + id;
+    const url =
+      location.origin +
+      '/injectpage?msel=' +
+      this.msel.id +
+      '&scenarioEvent=' +
+      id;
     window.open(url);
   }
 
