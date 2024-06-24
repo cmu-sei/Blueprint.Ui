@@ -31,6 +31,8 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
   rolesText = 'Roles';
   unitsText = 'Units';
   dataFieldsText = 'Data Fields';
+  injectTypesText = 'Inject Types';
+  catalogsText = 'Catalogs';
   organizationsText = 'Organizations';
   galleryCardsText = 'Gallery Cards';
   citeActionsText = 'CITE Actions';
@@ -40,6 +42,8 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
   displayedSection = '';
   exitSection = '';
   isSidebarOpen = true;
+  loggedInUserId = '';
+  isContentDeveloper$ = this.userDataService.isContentDeveloper;
   isSuperUser = false;
   canAccessAdminSection = false;
   hideTopbar = false;
@@ -66,6 +70,15 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
   ) {
     this.theme$ = this.authQuery.userTheme$;
     this.hideTopbar = this.inIframe();
+    // subscribe to the logged in user
+    this.userDataService.loggedInUser
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((user) => {
+        if (user && user.profile && user.profile.sub !== this.loggedInUserId) {
+          this.loggedInUserId = user.profile.sub;
+        }
+      });
+    // subscribe to isSuperUser
     this.userDataService.isSuperUser
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((result) => {
@@ -75,6 +88,7 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
           this.userDataService.getUsersFromApi();
         }
       });
+    // subscribe to canAccessAdminSection
     this.userDataService.canAccessAdminSection
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((result) => {

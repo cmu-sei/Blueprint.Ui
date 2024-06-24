@@ -92,13 +92,6 @@ export class OrganizationListComponent implements OnDestroy, OnInit {
     }
   }
 
-  getSortedOrganizations(organizations: Organization[]) {
-    if (organizations) {
-      organizations.sort((a, b) => this.sortOrganizations(a, b, this.sort.active, this.sort.direction));
-    }
-    return organizations;
-  }
-
   addOrEditOrganization(organization: Organization, makeTemplate: boolean) {
     if (!organization) {
       organization = {
@@ -161,8 +154,8 @@ export class OrganizationListComponent implements OnDestroy, OnInit {
 
   sortChanged(sort: Sort) {
     this.sort = sort;
-    this.organizationDataSource.data = this.getSortedOrganizations(this.getFilteredOrganizations(this.msel.id, this.organizationList));
-    this.templateDataSource.data = this.getSortedOrganizations(this.getFilteredOrganizations(null, this.organizationList));
+    this.organizationDataSource.data = this.getFilteredAndSortedOrganizations(this.msel.id, this.organizationList);
+    this.templateDataSource.data = this.getFilteredAndSortedOrganizations(null, this.organizationList);
   }
 
   ngOnDestroy() {
@@ -170,17 +163,17 @@ export class OrganizationListComponent implements OnDestroy, OnInit {
     this.unsubscribe$.complete();
   }
 
-  getFilteredOrganizations(mselId: string, organizations: Organization[]): Organization[] {
-    let filteredOrganizations: Organization[] = [];
+  getFilteredAndSortedOrganizations(mselId: string, organizations: Organization[]): Organization[] {
+    let filteredAndSortedOrganizations: Organization[] = [];
     if (organizations) {
       organizations.forEach(se => {
         if (se.mselId === mselId) {
-          filteredOrganizations.push({... se});
+          filteredAndSortedOrganizations.push({... se});
         }
       });
-      if (filteredOrganizations && filteredOrganizations.length > 0 && this.filterString) {
+      if (filteredAndSortedOrganizations && filteredAndSortedOrganizations.length > 0 && this.filterString) {
         const filterString = this.filterString?.toLowerCase();
-        filteredOrganizations = filteredOrganizations
+        filteredAndSortedOrganizations = filteredAndSortedOrganizations
           .filter((a) =>
             a.summary?.toLowerCase().includes(filterString) ||
             a.shortName?.toLowerCase().includes(filterString) ||
@@ -188,7 +181,10 @@ export class OrganizationListComponent implements OnDestroy, OnInit {
           );
       }
     }
-    return filteredOrganizations;
+    if (filteredAndSortedOrganizations) {
+      filteredAndSortedOrganizations.sort((a, b) => this.sortOrganizations(a, b, this.sort.active, this.sort.direction));
+    }
+    return filteredAndSortedOrganizations;
   }
 
   private sortOrganizations(
