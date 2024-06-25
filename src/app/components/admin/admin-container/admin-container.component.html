@@ -23,6 +23,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       [(opened)]="isSidebarOpen"
     >
       <mat-list>
+        <!-- Exit Aministration -->
         <mat-list-item class="appslist" title="Exit Administration">
           <button
             aria-label="Exit Administration"
@@ -42,6 +43,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </a>
           <mat-divider></mat-divider>
         </mat-list-item>
+        <!-- Units -->
         <mat-list-item
           *ngIf="isSuperUser"
           class="showhand highlight"
@@ -70,6 +72,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             </button>
           </div>
         </mat-list-item>
+        <!-- Users -->
         <mat-list-item
           *ngIf="isSuperUser"
           class="showhand highlight"
@@ -98,7 +101,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
             </button>
           </div>
         </mat-list-item>
-        <!-- <mat-list-item
+        <!-- Data Fields -->
+        <mat-list-item
           class="showhand highlight"
           [ngClass]="getSelectedClass(dataFieldsText)"
           id="wrapper"
@@ -124,7 +128,64 @@ project root for license information or contact permission@sei.cmu.edu for full 
               ></mat-icon>
             </button>
           </div>
-        </mat-list-item> -->
+        </mat-list-item>
+        <!-- Inject Types -->
+        <mat-list-item
+          class="showhand highlight"
+          [ngClass]="getSelectedClass(injectTypesText)"
+          id="wrapper"
+          (click)="gotoSection(injectTypesText)"
+        >
+          <div class="lefticon">
+            <mat-icon
+              class="mdi-24px"
+              fontIcon="mdi-format-list-group"
+              [ngStyle]="{ color: topbarColor }"
+            ></mat-icon>
+          </div>
+
+          <div id="injectTypesText" class="application-name">
+            {{ injectTypesText }}
+          </div>
+
+          <div>
+            <button aria-labelledby="injectTypesText" mat-icon-button>
+              <mat-icon
+                class="icon-color"
+                fontIcon="mdi-chevron-right"
+              ></mat-icon>
+            </button>
+          </div>
+        </mat-list-item>
+        <!-- Catalogs -->
+        <mat-list-item
+          class="showhand highlight"
+          [ngClass]="getSelectedClass(catalogsText)"
+          id="wrapper"
+          (click)="gotoSection(catalogsText)"
+        >
+          <div class="lefticon">
+            <mat-icon
+              class="mdi-24px"
+              fontIcon="mdi-book-open-outline"
+              [ngStyle]="{ color: topbarColor }"
+            ></mat-icon>
+          </div>
+
+          <div id="catalogsText" class="application-name">
+            {{ catalogsText }}
+          </div>
+
+          <div>
+            <button aria-labelledby="catalogsText" mat-icon-button>
+              <mat-icon
+                class="icon-color"
+                fontIcon="mdi-chevron-right"
+              ></mat-icon>
+            </button>
+          </div>
+        </mat-list-item>
+        <!-- Organizations -->
         <mat-list-item
           class="showhand highlight"
           [ngClass]="getSelectedClass(organizationsText)"
@@ -152,6 +213,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             </button>
           </div>
         </mat-list-item>
+        <!-- Gallery Cards -->
         <mat-list-item
           class="showhand highlight"
           [ngClass]="getSelectedClass(galleryCardsText)"
@@ -179,6 +241,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             </button>
           </div>
         </mat-list-item>
+        <!-- CITE Actions -->
         <mat-list-item
           class="showhand highlight"
           [ngClass]="getSelectedClass(citeActionsText)"
@@ -206,6 +269,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             </button>
           </div>
         </mat-list-item>
+        <!-- CITE Roles -->
         <mat-list-item
           class="showhand highlight"
           [ngClass]="getSelectedClass(citeRolesText)"
@@ -257,7 +321,17 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <app-admin-users></app-admin-users>
       </span>
       <span *ngIf="isSuperUser && (selectedTab === dataFieldsText)">
-        data fields
+        <app-data-field-list
+          [loggedInUserId]="loggedInUserId"
+          [isContentDeveloper]="isContentDeveloper$ | async"
+          [showTemplates]="true"
+        ></app-data-field-list>
+      </span>
+      <span *ngIf="isSuperUser && (selectedTab === injectTypesText)">
+        <h1>INJECT TYPES</h1>
+      </span>
+      <span *ngIf="isSuperUser && (selectedTab === catalogsText)">
+        <h1>CATALOGS</h1>
       </span>
       <span *ngIf="isSuperUser && (selectedTab === organizationsText)">
         <app-organization-list
