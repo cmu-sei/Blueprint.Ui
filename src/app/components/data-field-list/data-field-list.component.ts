@@ -1,18 +1,20 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, Input, OnDestroy, ViewChild } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { Subject, Observable } from 'rxjs';
-import { delay, takeUntil } from 'rxjs/operators';
+import { takeUntil } from 'rxjs/operators';
 import {
   DataField,
   DataFieldType,
-  DataOption
+  DataOption,
+  InjectType
 } from 'src/app/generated/blueprint.api';
 import { MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { Sort } from '@angular/material/sort';
+import { MatTableDataSource } from '@angular/material/table';
 import { MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy-menu';
 import { DataFieldDataService } from 'src/app/data/data-field/data-field-data.service';
 import { DataFieldQuery } from 'src/app/data/data-field/data-field.query';
@@ -29,10 +31,12 @@ import { v4 as uuidv4 } from 'uuid';
   templateUrl: './data-field-list.component.html',
   styleUrls: ['./data-field-list.component.scss'],
 })
-export class DataFieldListComponent implements OnDestroy {
+export class DataFieldListComponent implements OnDestroy, OnInit {
   @Input() loggedInUserId: string;
   @Input() isContentDeveloper: boolean;
+  @Input() showTemplates: boolean;
   msel = new MselPlus();
+  injectType: InjectType = { id: null };
   dataFieldList: DataField[] = [];
   changedDataField: DataField = {};
   filteredDataFieldList: DataField[] = [];
@@ -42,6 +46,10 @@ export class DataFieldListComponent implements OnDestroy {
   sortedDataFields: DataField[] = [];
   dataOptionList: DataOption[] = [];
   dataFieldTypes = DataFieldType;
+  systemDefinedDataFields = new Array<DataField>();
+  dataFieldDataSource = new MatTableDataSource<DataField>(new Array<DataField>());
+  templateDataSource = new MatTableDataSource<DataField>(new Array<DataField>());
+  displayedColumns: string[] = ['action', 'events', 'exercise', 'name', 'datatype', 'options'];
   private waitCount = 0;
   private unsubscribe$ = new Subject();
   // context menu
@@ -58,6 +66,7 @@ export class DataFieldListComponent implements OnDestroy {
     public dialog: MatDialog,
     public dialogService: DialogService
   ) {
+    this.msel.id = null;
     // subscribe to data options
     this.dataOptionQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(dataOptions => {
       this.dataOptionList = dataOptions;
@@ -65,37 +74,88 @@ export class DataFieldListComponent implements OnDestroy {
     // subscribe to data fields
     this.dataFieldQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(dataFields => {
       this.dataFieldList = dataFields;
-      this.sortedDataFields = this.getSortedDataFields(this.getFilteredDataFields(this.dataFieldList));
+      this.sortChanged(this.sort);
     });
     // subscribe to the active MSEL changes to get future changes
     (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(m => {
       Object.assign(this.msel, m);
-      this.sortedDataFields = this.getSortedDataFields(this.getFilteredDataFields(this.dataFieldList));
+      if (this.msel) {
+        if (this.msel.useGallery && !this.displayedColumns.includes('integration')) {
+          this.displayedColumns.push('integration');
+        } else if (!this.msel.useGallery && this.displayedColumns.includes('integration')) {
+          this.displayedColumns.splice(this.displayedColumns.length - 1);
+        }
+        this.createSystemDefinedDataFields();
+      }
+      this.sortChanged(this.sort);
     });
     this.filterControl.valueChanges
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((term) => {
         this.filterString = term;
-        this.sortedDataFields = this.getSortedDataFields(this.getFilteredDataFields(this.dataFieldList));
+        this.sortChanged(this.sort);
       });
   }
 
-  getSortedDataFields(dataFields: DataField[]) {
-    if (dataFields) {
-      dataFields.sort((a, b) => +a.displayOrder > +b.displayOrder ? 1 : -1);
+  ngOnInit() {
+    if (this.showTemplates) {
+      this.dataFieldDataService.loadTemplates();
+      this.displayedColumns.splice(1, 2);
     }
-    return dataFields;
   }
 
-  addOrEditDataField(dataField: DataField) {
+  createSystemDefinedDataFields() {
+    this.systemDefinedDataFields = [
+      {
+        displayOrder: -3,
+        name: 'Move',
+        onScenarioEventList: this.msel.showMoveOnScenarioEventList,
+        onExerciseView: this.msel.showMoveOnExerciseView,
+        galleryArticleParameter: 'Gallery Move',
+        dataType: 'Move',
+        description: 'System defined',
+      },
+      {
+        displayOrder: -2,
+        name: 'Group',
+        onScenarioEventList: this.msel.showGroupOnScenarioEventList,
+        onExerciseView: this.msel.showGroupOnExerciseView,
+        galleryArticleParameter: 'Gallery Inject',
+        dataType: 'Integer',
+        description: 'System defined',
+      },
+      {
+        displayOrder: -1,
+        name: 'Execution Time',
+        onScenarioEventList: this.msel.showTimeOnScenarioEventList,
+        onExerciseView: this.msel.showTimeOnExerciseView,
+        galleryArticleParameter: '- - -',
+        dataType: 'DateTime',
+        description: 'System defined',
+      },
+    ];
+  }
+
+  addOrEditDataField(dataField: DataField, makeTemplate: boolean) {
     if (!dataField) {
       dataField = {
         mselId: this.msel.id,
         displayOrder: this.dataFieldList.length + 1,
         isInitiallyHidden: true,
         onScenarioEventList: true,
-        onExerciseView: true
+        onExerciseView: true,
+        isTemplate: makeTemplate
       } as DataField;
+    } else {
+      dataField.id = makeTemplate === dataField.isTemplate ? dataField.id : null;
+      if (makeTemplate) {
+        dataField.mselId = null;
+        dataField.injectTypeId = null;
+      }
+      dataField.isTemplate = makeTemplate;
+      dataField.onScenarioEventList = true;
+      dataField.onExerciseView = true;
+      dataField.displayOrder = makeTemplate ? 99 : this.dataFieldList.length + 1;
     }
     const dialogRef = this.dialog.open(DataFieldEditDialogComponent, {
       width: '90%',
@@ -171,49 +231,33 @@ export class DataFieldListComponent implements OnDestroy {
 
   sortChanged(sort: Sort) {
     this.sort = sort;
-    this.sortedDataFields = this.getSortedDataFields(this.getFilteredDataFields(this.dataFieldList));
+    this.dataFieldDataSource.data = this.getFilteredDataFields(this.msel.id, this.injectType.id, this.dataFieldList);
+    this.templateDataSource.data = this.getFilteredDataFields(null, null, this.dataFieldList);
   }
 
-  private sortDataFields(
-    a: DataField,
-    b: DataField,
-    column: string,
-    direction: string
-  ) {
-    const isAsc = direction !== 'desc';
-    switch (column) {
-      case 'displayOrder':
-        return ( (a.displayOrder < b.displayOrder ? -1 : 1) * (isAsc ? 1 : -1) );
-        break;
-      case 'name':
-        return ( (a.name < b.name ? -1 : 1) * (isAsc ? 1 : -1) );
-        break;
-      case 'isChosenFromList':
-        return ( (a.isChosenFromList < b.isChosenFromList ? -1 : 1) * (isAsc ? 1 : -1) );
-        break;
-      default:
-        return 0;
-    }
-  }
-
-  getFilteredDataFields(dataFields: DataField[]): DataField[] {
+  getFilteredDataFields(mselId: string, injectTypeId: string, dataFields: DataField[]): DataField[] {
     let filteredDataFields: DataField[] = [];
     if (dataFields) {
       dataFields.forEach(se => {
-        if (se.mselId === this.msel.id) {
+        if (se.mselId === mselId && se.injectTypeId === injectTypeId) {
           filteredDataFields.push({... se});
         }
       });
       if (filteredDataFields && filteredDataFields.length > 0 && this.filterString) {
-        const filterString = this.filterString.toLowerCase();
+        const filterString = this.filterString?.toLowerCase();
         filteredDataFields = filteredDataFields
           .filter((a) =>
-            a.name.toLowerCase().includes(filterString) ||
-            a.dataType.toLowerCase().includes(filterString)
+            a.name?.toLowerCase().includes(filterString)
           );
       }
     }
-    return filteredDataFields;
+    if (filteredDataFields) {
+      filteredDataFields.sort((a, b) => +a.displayOrder > +b.displayOrder ? 1 : -1);
+    }
+    const returnArray = this.showTemplates || (!mselId && !injectTypeId)
+      ? filteredDataFields
+      : this.systemDefinedDataFields.concat(filteredDataFields);
+    return returnArray;
   }
 
   getDataFieldOptions(dataFieldId: string) {
@@ -230,7 +274,25 @@ export class DataFieldListComponent implements OnDestroy {
   }
 
   saveChange(dataField: DataField) {
-    this.dataFieldDataService.updateDataField(dataField);
+    if (dataField.displayOrder > 0) {
+      this.dataFieldDataService.updateDataField(dataField);
+    } else {
+      switch (dataField.name) {
+        case 'Move':
+          this.msel.showMoveOnExerciseView = dataField.onExerciseView;
+          this.msel.showMoveOnScenarioEventList = dataField.onScenarioEventList;
+          break;
+        case 'Group':
+          this.msel.showGroupOnExerciseView = dataField.onExerciseView;
+          this.msel.showGroupOnScenarioEventList = dataField.onScenarioEventList;
+          break;
+        case 'Execution Time':
+          this.msel.showTimeOnExerciseView = dataField.onExerciseView;
+          this.msel.showTimeOnScenarioEventList = dataField.onScenarioEventList;
+          break;
+      }
+      this.saveMsel();
+    }
   }
 
   galleryToDo(): string {
@@ -245,11 +307,13 @@ export class DataFieldListComponent implements OnDestroy {
 
   getUnusedGalleryOptions(parameter: string): string[] {
     const options = [];
-    this.msel.galleryArticleParameters.forEach(gap => {
-      if (parameter === gap || !this.dataFieldList.some(df => df.galleryArticleParameter === gap)) {
-        options.push(gap);
-      }
-    });
+    if (this.msel.galleryArticleParameters) {
+      this.msel.galleryArticleParameters.forEach(gap => {
+        if (parameter === gap || !this.dataFieldList.some(df => df.galleryArticleParameter === gap)) {
+          options.push(gap);
+        }
+      });
+    }
     return options;
   }
 

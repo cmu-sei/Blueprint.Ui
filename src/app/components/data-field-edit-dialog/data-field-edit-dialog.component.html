@@ -17,7 +17,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
   </button>
 </div>
 <div mat-dialog-content>
-  <div class="data-field-detail" (click)="$event.stopPropagation();">
+  <div class="data-field-detail" (click)="$event.stopPropagation();" *ngIf="!data.dataField.isTemplate">
     <div class="single-detail">
       <mat-form-field class="full-width">
         <input
@@ -98,7 +98,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </div>
     </div>
   </div>
-  <div class="data-field-detail" (click)="$event.stopPropagation();">
+  <div class="data-field-detail" (click)="$event.stopPropagation();" *ngIf="!data.dataField.isTemplate">
     <div class="single-detail">
       <mat-checkbox
         [(ngModel)]="data.dataField.onScenarioEventList"
@@ -107,7 +107,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       >Display on the Events list</mat-checkbox><br />
     </div>
   </div>
-  <div class="data-field-detail" (click)="$event.stopPropagation();">
+  <div class="data-field-detail" (click)="$event.stopPropagation();" *ngIf="!data.dataField.isTemplate">
     <div class="single-detail">
       <mat-checkbox
         [(ngModel)]="data.dataField.onExerciseView"
@@ -116,7 +116,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       >Display on the Exercise View</mat-checkbox><br />
     </div>
   </div>
-  <div class="data-field-detail" (click)="$event.stopPropagation();">
+  <div class="data-field-detail" (click)="$event.stopPropagation();" *ngIf="!data.dataField.isTemplate">
     <div class="single-detail">
       <mat-checkbox
         [(ngModel)]="data.dataField.isInitiallyHidden"
@@ -125,7 +125,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       >Display on "Advanced" edit tab</mat-checkbox><br />
     </div>
   </div>
-  <div class="data-field-detail" (click)="$event.stopPropagation();">
+  <div class="data-field-detail" (click)="$event.stopPropagation();" *ngIf="!data.dataField.isTemplate">
     <div class="single-detail">
       <mat-checkbox
         [(ngModel)]="data.dataField.isOnlyShownToOwners"
@@ -147,7 +147,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
   <div
     class="data-field-detail"
     (click)="$event.stopPropagation();"
-    *ngIf="data.isContentDeveloper || data.isOwner"
+    *ngIf="(data.isContentDeveloper || data.isOwner) && !data.dataField.isTemplate"
   >
     <div class="single-detail">
       <mat-form-field class="full-width">
@@ -163,7 +163,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
   <div
     class="data-field-detail"
     (click)="$event.stopPropagation();"
-    *ngIf="data.isContentDeveloper || data.isOwner"
+    *ngIf="(data.isContentDeveloper || data.isOwner) && !data.dataField.isTemplate"
   >
     <div class="single-detail">
       <mat-form-field class="full-width">

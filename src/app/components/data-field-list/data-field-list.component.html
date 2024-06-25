@@ -9,21 +9,46 @@ project root for license information or contact permission@sei.cmu.edu for full 
     (matSortChange)="sortChanged($event)"
     class="mat-elevation-z2 mat-header-row background-alt"
   >
-    <span class="mat-header-cell left-cell" mat-sort-header="displayOrder">
-      <span style="padding-left: 55px;">Order</span>
+    <span
+      class="mat-header-cell three-cell"
+    >
+      <span *ngIf="showTemplates && isContentDeveloper">
+        <button
+          mat-icon-button
+          (click)="addOrEditDataField(null, true)"
+          title="Add a template data Field"
+          style="outline: none; margin-left: 15px;"
+        >
+          <mat-icon class="mdi-24px center-self little-left" fontIcon="mdi-plus-circle"></mat-icon>
+          New Template Data Field
+        </button>
+      </span> &nbsp;
+      <span *ngIf="!showTemplates && (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)">
+        <button
+          mat-icon-button
+          [matMenuTriggerFor]="addMenu"
+          style="outline: none; margin-left: 15px;"
+          title="Add data Field"
+        >
+          <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
+          Add Data Field
+        </button>
+      </span> &nbsp;
+      <mat-menu #addMenu="matMenu" [overlapTrigger]="false">
+        <button
+          mat-menu-item
+          (click)="addOrEditDataField(null, false)"
+          title="Add a new data Field"
+        >New Data Field</button>
+        <button
+          *ngFor="let template of templateDataSource.data"
+          mat-menu-item
+          (click)="addOrEditDataField(template, false)"
+          title="{{ template.name }} - {{ template.description }}"
+        >{{ template.name }}</button>
+      </mat-menu>
     </span>
-    <span class="mat-header-cell left-cell">Display On<br />Events<span style="margin-left: 16px;">View</span></span>
-    <span class="mat-header-cell two-cell" mat-sort-header="name">Name</span>
-    <span class="mat-header-cell one-cell" mat-sort-header="dataType">Data Type</span>
-    <span class="mat-header-cell two-cell" mat-sort-header="integration">
-      <span class="integration-header">Integration
-        <span class="gallery-warning" *ngIf="!!galleryToDo()" title="** See warning message below!">
-          **
-        </span>
-      </span>
-    </span>
-    <span class="mat-header-cell one-cell" mat-sort-header="isChosenFromList">Options</span>
-    <span class="mat-header-cell one-cell search-cell">
+    <span class="mat-header-cell three-cell search-cell">
       <mat-form-field class="search-control">
         <input matInput [formControl]="filterControl" placeholder="Search" />
       </mat-form-field>
@@ -39,9 +64,144 @@ project root for license information or contact permission@sei.cmu.edu for full 
         </button>
       </div>
     </span>
+    <span class="mat-header-cell three-cell search-cell">&nbsp;</span>
   </section>
 
   <section class="scrolling-region">
+    <div class="gallery-warning" *ngIf="!!galleryToDo()">** Gallery Parameters not assigned:  {{ galleryToDo() }}</div>
+    <div class="mat-table">
+      <mat-table #table [dataSource]="dataFieldDataSource" matSort (matSortChange)="sortChanged($event)">
+        <!-- action column -->
+        <ng-container matColumnDef="action">
+          <mat-header-cell *matHeaderCellDef class="mat-column-action"></mat-header-cell>
+          <mat-cell *matCellDef="let element" class="mat-column-action">
+            <div class="action-div">
+              <span *ngIf="element.displayOrder > 0">
+                <button
+                  mat-icon-button class="msel-action"
+                  (click)="addOrEditDataField(element, showTemplates); $event.stopPropagation();"
+                  title="Edit {{ element.name }}"
+                  *ngIf="isContentDeveloper || (!showTemplates && msel.hasRole(loggedInUserId, null).owner)"
+                >
+                  <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline" title="Edit {{ element.name }}"></mat-icon>
+                </button>
+                <button
+                  mat-icon-button class="msel-action"
+                  (click)="deleteDataField(element); $event.stopPropagation();"
+                  title="Delete {{ element.name }}"
+                  *ngIf="isContentDeveloper || (!showTemplates && msel.hasRole(loggedInUserId, null).owner)"
+                >
+                  <mat-icon class="mdi-18px" fontIcon="mdi-delete" title="Delete {{ element.name }}"></mat-icon>
+                </button>
+                <button
+                  mat-icon-button class="msel-action"
+                  (click)="addOrEditDataField(element, true); $event.stopPropagation();"
+                  title="Make {{ element.name }} a template"
+                  *ngIf="!showTemplates && isContentDeveloper"
+                >
+                  <mat-icon class="mdi-18px" fontIcon="mdi-bank" title="Make {{ element.name }} a template"></mat-icon>
+                </button>
+              </span>
+              <span *ngIf="element.displayOrder < 0" style="margin-left: 10px; font-size: 12px;">*System Defined*</span>
+              &nbsp;
+            </div>
+            <div>{{ !showTemplates && element.displayOrder > 0 ? element.displayOrder : ' '}}</div>
+          </mat-cell>
+        </ng-container>
+        <!-- events Column -->
+        <ng-container matColumnDef="events">
+          <mat-header-cell title="Display on Scenario Events list?" *matHeaderCellDef class="mat-column-display">
+            Events
+          </mat-header-cell>
+          <mat-cell *matCellDef="let element" class="mat-column-display">
+            <mat-checkbox
+              [(ngModel)]="element.onScenarioEventList"
+              [disabled]="!isContentDeveloper && !msel.hasRole(loggedInUserId, null).owner"
+              (change)="saveChange(element)"
+              (click)="$event.stopPropagation()"
+              title="Display on Scenario Events list?"
+            >
+            </mat-checkbox>
+          </mat-cell>
+        </ng-container>
+        <!-- exercise Column -->
+        <ng-container matColumnDef="exercise">
+          <mat-header-cell title="Display on the Exercise View?" *matHeaderCellDef class="mat-column-display">
+            View
+          </mat-header-cell>
+          <mat-cell *matCellDef="let element" class="mat-column-display">
+            <mat-checkbox
+              [(ngModel)]="element.onExerciseView"
+              [disabled]="!isContentDeveloper && !msel.hasRole(loggedInUserId, null).owner"
+              (change)="saveChange(element)"
+              (click)="$event.stopPropagation();"
+              title="Display on the Exercise View?"
+            >
+            </mat-checkbox>
+          </mat-cell>
+        </ng-container>
+        <!-- name Column -->
+        <ng-container matColumnDef="name">
+          <mat-header-cell *matHeaderCellDef class="mat-column-name">
+            Name
+          </mat-header-cell>
+          <mat-cell *matCellDef="let element" class="mat-column-name">
+            {{ element.name }}
+          </mat-cell>
+        </ng-container>
+        <!-- datatype Column -->
+        <ng-container matColumnDef="datatype">
+          <mat-header-cell *matHeaderCellDef class="six-cell"> Data Type </mat-header-cell>
+          <mat-cell *matCellDef="let element" class="six-cell">
+            <div class="summary-text">{{ element.dataType }}</div>
+          </mat-cell>
+        </ng-container>
+        <!-- options Column -->
+        <ng-container matColumnDef="options">
+          <mat-header-cell *matHeaderCellDef class="six-cell"> Options </mat-header-cell>
+          <mat-cell *matCellDef="let element" class="six-cell">
+            <div class="summary-text">{{ getDataOptionsString(element.id) }}</div>
+          </mat-cell>
+        </ng-container>
+        <!-- integration Column -->
+        <ng-container matColumnDef="integration">
+          <mat-header-cell *matHeaderCellDef class="six-cell"> Integration </mat-header-cell>
+          <mat-cell *matCellDef="let element" class="six-cell">
+            <mat-select
+              class="integration"
+              [(ngModel)]="element.galleryArticleParameter"
+              (selectionChange)="saveChange(element)"
+              (click)="$event.stopPropagation();"
+              [disabled]="!isContentDeveloper && !msel.hasRole(this.loggedInUserId, null).owner"
+              [compareWith]="compareIntegrationValues"
+              *ngIf="element.displayOrder > 0"
+            >
+              <mat-option value="">- - -</mat-option>
+              <mat-option *ngFor="let option of getUnusedGalleryOptions(element.galleryArticleParameter)" value="{{ option }}">Gallery {{ option }}</mat-option>
+            </mat-select>
+            <span *ngIf="element.displayOrder < 0">{{ element.galleryArticleParameter }}</span>
+          </mat-cell>
+        </ng-container>
+        <!-- row definitions -->
+        <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+        <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
+      </mat-table>
+      <!-- No Results Message -->
+      <div class="text no-results" *ngIf="dataFieldDataSource?.filteredData.length === 0">No results found</div>
+    </div>
+  </section>
+
+
+
+
+
+
+
+
+
+
+
+  <section *ngIf="false" class="scrolling-region">
     <div style="text-align: left; width: 90%; padding-left: 10px; padding-top: 8px;">System Defined</div>
     <!-- Move -->
     <mat-expansion-panel disabled>
@@ -143,82 +303,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <hr />
     <div class="center-self" style="text-align: left; width: 90%; padding-left: 10px;">
       User Defined
-      <button
-        mat-icon-button
-        (click)="addOrEditDataField(null); $event.stopPropagation()"
-        style="outline: none; margin-right: 15px;"
-        title="Add new data field"
-        *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
-      >
-        <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
-      </button>
     </div>
-    <!-- existing data fields -->
-    <mat-expansion-panel
-      *ngFor="let item of sortedDataFields;"
-      disabled
-    >
-      <mat-expansion-panel-header
-        class="mat-row"
-      >
-        <div class="mat-cell flex-row-cell left-cell">
-          <button
-            mat-icon-button
-            class="data-field-button"
-            title="Edit this data field"
-            (click)="addOrEditDataField(item)"
-            *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
-          >
-            <mat-icon class="mdi-18px up-12" fontIcon="mdi-square-edit-outline"></mat-icon>
-          </button>
-          <button
-            mat-icon-button
-            class="data-field-button"
-            (click)="deleteDataField(item)"
-            title="Delete {{ item.name }}"
-            *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
-          >
-            <mat-icon class="mdi-18px up-12" fontIcon="mdi-delete"></mat-icon>
-          </button>
-          &nbsp;{{ item.displayOrder }}
-        </div>
-        <div class="flex-row-cell center-self left-cell">
-          <mat-checkbox
-            [(ngModel)]="item.onScenarioEventList"
-            [disabled]="!isContentDeveloper && !msel.hasRole(loggedInUserId, null).owner"
-            (change)="saveChange(item)"
-            (click)="$event.stopPropagation()"
-          >
-          </mat-checkbox>
-          <mat-checkbox
-            [(ngModel)]="item.onExerciseView"
-            [disabled]="!isContentDeveloper && !msel.hasRole(loggedInUserId, null).owner"
-            (change)="saveChange(item)"
-            (click)="$event.stopPropagation();"
-            class="exercise-view-checkbox"
-          >
-          </mat-checkbox>
-        </div>
-        <div class="mat-cell two-cell center-self">{{ item.name }}</div>
-        <div class="mat-cell one-cell center-self">{{ item.dataType }}</div>
-        <div class="mat-cell two-cell center-self">
-          <mat-select
-            class="integration"
-            [(ngModel)]="item.galleryArticleParameter"
-            (selectionChange)="saveChange(item)"
-            (click)="$event.stopPropagation();"
-            [disabled]="!isContentDeveloper && !msel.hasRole(this.loggedInUserId, null).owner"
-            [compareWith]="compareIntegrationValues"
-          >
-            <mat-option value="">- - -</mat-option>
-            <mat-option *ngFor="let option of getUnusedGalleryOptions(item.galleryArticleParameter)" value="{{ option }}">Gallery {{ option }}</mat-option>
-          </mat-select>
-        </div>
-        <div class="mat-cell two-cell center-self">{{ getDataOptionsString(item.id) }}</div>
-      </mat-expansion-panel-header>
-      <ng-template matExpansionPanelContent>
-      </ng-template>
-    </mat-expansion-panel>
-    <span class="gallery-warning" *ngIf="!!galleryToDo()">** These Gallery Article Parameters have not been assigned:  {{ galleryToDo() }}</span>
   </section>
 </div>
