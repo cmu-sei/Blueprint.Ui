@@ -35,7 +35,10 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <tr>
           <th class="background center-self">
             <div class="row-start-buttons">
-              <span class="row-index center-self">&nbsp;</span>
+              <ng-container *ngIf="allowDragAndDrop">
+                <span class="row-index center-self">&nbsp;</span>
+              </ng-container>
+              <span class="row-index center-self">&nbsp;&nbsp;</span>
               <mat-checkbox
                 (change)="setAllSelectedState($event.checked)"
                 title="Select All/None"
@@ -185,6 +188,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <!-- row buttons -->
             <td class="center-self">
               <div class="row-start-buttons">
+                <ng-container *ngIf="allowDragAndDrop">
+                  <div cdkDragHandle>
+                    <span><mat-icon class="mdi-24px" fontIcon="mdi-drag-vertical"/></span>
+                  </div>
+                </ng-container>
                 <span class="row-index center-self">{{ rowIndex  + 1 }}</span>
                 <mat-checkbox
                   [checked]="getSelectedState(item.id)"
