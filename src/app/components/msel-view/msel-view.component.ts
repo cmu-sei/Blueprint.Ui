@@ -414,17 +414,6 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
     return bdvp;
   }
 
-  getScenarioEventValue(scenarioEvent: ScenarioEvent, dataField: DataField) {
-    if (!(this.msel && scenarioEvent && scenarioEvent.id)) {
-      return this.blankDataValue;
-    }
-    return this.scenarioEventDataService.getDataValueFromView(
-      this,
-      scenarioEvent,
-      dataField.name
-    );
-  }
-
   saveDataValue(
     scenarioEvent: ScenarioEvent,
     dataField: DataField,
