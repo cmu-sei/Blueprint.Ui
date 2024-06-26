@@ -63,26 +63,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
     public dialogService: DialogService,
   ) {
     this.msel.id = null;
-    // subscribe to data fields, if not on template page
-    if (!this.showTemplates) {
-      this.dataFieldQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(dataFields => {
-        this.dataFieldList = dataFields;
-        this.sortChanged(this.sort);
-      });
-    }
-    // subscribe to the active MSEL changes to get future changes
-    (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(m => {
-      Object.assign(this.msel, m);
-      if (this.msel) {
-        if (this.msel.useGallery && !this.displayedColumns.includes('integration')) {
-          this.displayedColumns.push('integration');
-        } else if (!this.msel.useGallery && this.displayedColumns.includes('integration')) {
-          this.displayedColumns.splice(this.displayedColumns.length - 1);
-        }
-        this.createSystemDefinedDataFields();
-      }
-      this.sortChanged(this.sort);
-    });
+    // subscribe to filter string changes
     this.filterControl.valueChanges
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((term) => {
@@ -114,6 +95,27 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
   ngOnInit() {
     if (this.showTemplates) {
       this.displayedColumns.splice(1, 2);
+      this.msel = new MselPlus();
+      this.mselDataService.setActive('');
+    } else {
+      // subscribe to data fields
+      this.dataFieldQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(dataFields => {
+        this.dataFieldList = dataFields;
+        this.sortChanged(this.sort);
+      });
+      // subscribe to the active MSEL changes to get future changes
+      (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(m => {
+        Object.assign(this.msel, m);
+        if (this.msel) {
+          if (this.msel.useGallery && !this.displayedColumns.includes('integration')) {
+            this.displayedColumns.push('integration');
+          } else if (!this.msel.useGallery && this.displayedColumns.includes('integration')) {
+            this.displayedColumns.splice(this.displayedColumns.length - 1);
+          }
+          this.createSystemDefinedDataFields();
+        }
+        this.sortChanged(this.sort);
+      });
     }
   }
 
