@@ -166,8 +166,6 @@ export class MselComponent implements OnDestroy {
     this.unitDataService.load();
     // load the organization templates
     this.organizationDataService.loadTemplates();
-    // load the dataField templates
-    this.dataFieldDataService.loadTemplates();
     // load the users
     this.userDataService.getUsersFromApi();
     // set the selected tab

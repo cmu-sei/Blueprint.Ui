@@ -5,6 +5,7 @@
 */
 
 import { DataFieldStore } from './data-field.store';
+import { DataFieldTemplateStore } from './data-field-template.store';
 import { DataFieldQuery } from './data-field.query';
 import { Injectable } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
@@ -36,6 +37,7 @@ export class DataFieldDataService {
 
   constructor(
     private dataFieldStore: DataFieldStore,
+    private dataFieldTemplateStore: DataFieldTemplateStore,
     private dataFieldQuery: DataFieldQuery,
     private dataFieldService: DataFieldService,
     private router: Router,
@@ -97,18 +99,18 @@ export class DataFieldDataService {
   }
 
   loadTemplates() {
-    this.dataFieldStore.setLoading(true);
+    this.dataFieldTemplateStore.setLoading(true);
     this.dataFieldService
       .getDataFieldTemplates()
       .pipe(
         tap(() => {
-          this.dataFieldStore.setLoading(false);
+          this.dataFieldTemplateStore.setLoading(false);
         }),
         take(1)
       )
       .subscribe(
         (templates) => {
-          this.dataFieldStore.upsertMany(templates);
+          this.dataFieldTemplateStore.upsertMany(templates);
         },
         (error) => {}
       );
@@ -134,53 +136,68 @@ export class DataFieldDataService {
       );
   }
 
-  loadById(id: string) {
-    this.dataFieldStore.setLoading(true);
-    return this.dataFieldService
-      .getDataField(id)
-      .pipe(
-        tap(() => {
-          this.dataFieldStore.setLoading(false);
-        }),
-        take(1)
-      )
-      .subscribe((s) => {
-        this.dataFieldStore.upsert(s.id, { ...s });
-      });
-  }
-
   unload() {
     this.dataFieldStore.set([]);
   }
 
   add(dataField: DataField) {
-    this.dataFieldStore.setLoading(true);
-    this.dataFieldService
-      .createDataField(dataField)
-      .pipe(
-        tap(() => {
-          this.dataFieldStore.setLoading(false);
-        }),
-        take(1)
-      )
-      .subscribe((df) => {
-        this.dataFieldStore.upsert(df.id, df);
-      });
+    if (dataField.isTemplate) {
+      this.dataFieldTemplateStore.setLoading(true);
+      this.dataFieldService
+        .createDataField(dataField)
+        .pipe(
+          tap(() => {
+            this.dataFieldTemplateStore.setLoading(false);
+          }),
+          take(1)
+        )
+        .subscribe((df) => {
+          this.dataFieldTemplateStore.upsert(df.id, df);
+        });
+    } else {
+      this.dataFieldStore.setLoading(true);
+      this.dataFieldService
+        .createDataField(dataField)
+        .pipe(
+          tap(() => {
+            this.dataFieldStore.setLoading(false);
+          }),
+          take(1)
+        )
+        .subscribe((df) => {
+          this.dataFieldStore.upsert(df.id, df);
+        });
+    }
   }
 
   updateDataField(dataField: DataField) {
-    this.dataFieldStore.setLoading(true);
-    this.dataFieldService
-      .updateDataField(dataField.id, dataField)
-      .pipe(
-        tap(() => {
-          this.dataFieldStore.setLoading(false);
-        }),
-        take(1)
-      )
-      .subscribe((df) => {
-        this.dataFieldStore.upsert(df.id, df);
-      });
+    if (dataField.isTemplate) {
+      this.dataFieldTemplateStore.setLoading(true);
+      this.dataFieldService
+        .updateDataField(dataField.id, dataField)
+        .pipe(
+          tap(() => {
+            this.dataFieldTemplateStore.setLoading(false);
+          }),
+          take(1)
+        )
+        .subscribe((df) => {
+          this.dataFieldTemplateStore.upsert(df.id, df);
+        });
+    } else {
+      this.dataFieldStore.setLoading(true);
+      this.dataFieldService
+        .updateDataField(dataField.id, dataField)
+        .pipe(
+          tap(() => {
+            this.dataFieldStore.setLoading(false);
+          }),
+          take(1)
+        )
+        .subscribe((df) => {
+          this.dataFieldStore.upsert(df.id, df);
+        });
+    }
   }
 
   delete(id: string) {
@@ -197,11 +214,16 @@ export class DataFieldDataService {
   }
 
   updateStore(dataField: DataField) {
-    this.dataFieldStore.upsert(dataField.id, dataField);
+    if (dataField.isTemplate) {
+      this.dataFieldTemplateStore.upsert(dataField.id, dataField);
+    } else {
+      this.dataFieldStore.upsert(dataField.id, dataField);
+    }
   }
 
   deleteFromStore(id: string) {
     this.dataFieldStore.remove(id);
+    this.dataFieldTemplateStore.remove(id);
   }
 
   private sortDataFields(

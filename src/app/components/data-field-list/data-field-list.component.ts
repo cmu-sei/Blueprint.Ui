@@ -8,7 +8,6 @@ import { takeUntil } from 'rxjs/operators';
 import {
   DataField,
   DataFieldType,
-  DataOption,
   InjectType
 } from 'src/app/generated/blueprint.api';
 import { MselPlus } from 'src/app/data/msel/msel-data.service';
@@ -18,9 +17,8 @@ import { MatTableDataSource } from '@angular/material/table';
 import { MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy-menu';
 import { DataFieldDataService } from 'src/app/data/data-field/data-field-data.service';
 import { DataFieldQuery } from 'src/app/data/data-field/data-field.query';
+import { DataFieldTemplateQuery } from 'src/app/data/data-field/data-field-template.query';
 import { DataFieldEditDialogComponent } from '../data-field-edit-dialog/data-field-edit-dialog.component';
-import { DataOptionDataService } from 'src/app/data/data-option/data-option-data.service';
-import { DataOptionQuery } from 'src/app/data/data-option/data-option.query';
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
 import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
@@ -38,19 +36,18 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
   msel = new MselPlus();
   injectType: InjectType = { id: null };
   dataFieldList: DataField[] = [];
+  templateList: DataField[] = [];
   changedDataField: DataField = {};
   filteredDataFieldList: DataField[] = [];
   filterControl = new UntypedFormControl();
   filterString = '';
   sort: Sort = {active: '', direction: ''};
   sortedDataFields: DataField[] = [];
-  dataOptionList: DataOption[] = [];
   dataFieldTypes = DataFieldType;
   systemDefinedDataFields = new Array<DataField>();
   dataFieldDataSource = new MatTableDataSource<DataField>(new Array<DataField>());
   templateDataSource = new MatTableDataSource<DataField>(new Array<DataField>());
   displayedColumns: string[] = ['action', 'events', 'exercise', 'name', 'datatype', 'options'];
-  private waitCount = 0;
   private unsubscribe$ = new Subject();
   // context menu
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
@@ -60,22 +57,19 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
     private mselQuery: MselQuery,
     private dataFieldDataService: DataFieldDataService,
     private dataFieldQuery: DataFieldQuery,
-    private dataOptionDataService: DataOptionDataService,
-    private dataOptionQuery: DataOptionQuery,
+    private dataFieldTemplateQuery: DataFieldTemplateQuery,
     private mselDataService: MselDataService,
     public dialog: MatDialog,
-    public dialogService: DialogService
+    public dialogService: DialogService,
   ) {
     this.msel.id = null;
-    // subscribe to data options
-    this.dataOptionQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(dataOptions => {
-      this.dataOptionList = dataOptions;
-    });
-    // subscribe to data fields
-    this.dataFieldQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(dataFields => {
-      this.dataFieldList = dataFields;
-      this.sortChanged(this.sort);
-    });
+    // subscribe to data fields, if not on template page
+    if (!this.showTemplates) {
+      this.dataFieldQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(dataFields => {
+        this.dataFieldList = dataFields;
+        this.sortChanged(this.sort);
+      });
+    }
     // subscribe to the active MSEL changes to get future changes
     (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(m => {
       Object.assign(this.msel, m);
@@ -95,11 +89,30 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
         this.filterString = term;
         this.sortChanged(this.sort);
       });
+    // load the dataField templates
+    this.dataFieldDataService.loadTemplates();
+    // subscribe to the templates
+    this.dataFieldTemplateQuery.selectAll()
+      .pipe(
+        takeUntil(this.unsubscribe$)
+      )
+      .subscribe(
+        (templates) => {
+          this.templateList = templates;
+          // if on the templates page, the dataFieldList is the templates
+          if (this.showTemplates) {
+            this.dataFieldList = templates;
+          }
+          this.sortChanged(this.sort);
+        },
+        (error) => {
+          this.templateDataSource.data = [];
+        }
+      );
   }
 
   ngOnInit() {
     if (this.showTemplates) {
-      this.dataFieldDataService.loadTemplates();
       this.displayedColumns.splice(1, 2);
     }
   }
@@ -136,7 +149,11 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
     ];
   }
 
-  addOrEditDataField(dataField: DataField, makeTemplate: boolean) {
+  addOrEditDataField(dataFieldIn: DataField, makeTemplate: boolean) {
+    const dataOptions = dataFieldIn && dataFieldIn.isChosenFromList
+      ? dataFieldIn.dataOptions.slice()
+      : [];
+    let dataField = dataFieldIn ? { ...dataFieldIn} : null;
     if (!dataField) {
       dataField = {
         mselId: this.msel.id,
@@ -151,12 +168,17 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
       if (makeTemplate) {
         dataField.mselId = null;
         dataField.injectTypeId = null;
+        dataField.displayOrder = 99;
+      } else {
+        dataField.mselId = this.msel.id;
+        dataField.injectTypeId = this.injectType.id;
+        dataField.displayOrder = dataField.isTemplate ? this.dataFieldList.length + 1 : dataField.displayOrder;
       }
       dataField.isTemplate = makeTemplate;
       dataField.onScenarioEventList = true;
       dataField.onExerciseView = true;
-      dataField.displayOrder = makeTemplate ? 99 : this.dataFieldList.length + 1;
     }
+    dataField.dataOptions = dataOptions;
     const dialogRef = this.dialog.open(DataFieldEditDialogComponent, {
       width: '90%',
       maxWidth: '900px',
@@ -164,7 +186,6 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
         dataField: dataField,
         isContentDeveloper: this.isContentDeveloper,
         isOwner: this.msel.hasRole(this.loggedInUserId, null).owner,
-        dataFieldOptions: this.dataOptionList.filter(x => x.dataFieldId === dataField.id),
         galleryArticleParameters: this.getUnusedGalleryOptions(dataField.galleryArticleParameter),
         useGallery: this.msel.useGallery,
         useCite: this.msel.useCite,
@@ -174,8 +195,6 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
     dialogRef.componentInstance.editComplete.subscribe((result) => {
       if (result.saveChanges && result.dataField) {
         const dataFieldId = this.saveDataField(result.dataField);
-        this.waitCount = 0;
-        this.saveDataOptions(dataFieldId, result.addedDataFieldOptions, result.changedDataFieldOptions, result.deletedDataFieldOptions);
       }
       dialogRef.close();
     });
@@ -189,30 +208,6 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
       this.dataFieldDataService.add(dataField);
     }
     return dataField.id;
-  }
-
-  saveDataOptions(dataFieldId: string, addOptionList: DataOption[], changeOptionList: DataOption[], deleteOptionList: DataOption[]) {
-    if (this.waitCount >= 50) {
-      console.log('Error saving the DataOptions!  DataField never showed up in the DataField list.');
-    }
-    if (this.dataFieldList.some(df => df.id === dataFieldId)) {
-      addOptionList.forEach(dfo => {
-        dfo.dataFieldId = dataFieldId;
-        this.dataOptionDataService.add(dfo);
-      });
-      changeOptionList.forEach(dfo => {
-        this.dataOptionDataService.updateDataOption(dfo);
-      });
-      deleteOptionList.forEach(dfo => {
-        this.dataOptionDataService.delete(dfo.id);
-      });
-    } else {
-      this.waitCount++;
-      setTimeout(() => {
-        this.saveDataOptions(dataFieldId, addOptionList, changeOptionList, deleteOptionList);
-      }, 300);
-
-    }
   }
 
   deleteDataField(dataField: DataField): void {
@@ -232,18 +227,14 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
   sortChanged(sort: Sort) {
     this.sort = sort;
     this.dataFieldDataSource.data = this.getFilteredDataFields(this.msel.id, this.injectType.id, this.dataFieldList);
-    this.templateDataSource.data = this.getFilteredDataFields(null, null, this.dataFieldList);
+    this.templateDataSource.data = this.templateList.sort((a, b) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
   }
 
   getFilteredDataFields(mselId: string, injectTypeId: string, dataFields: DataField[]): DataField[] {
     let filteredDataFields: DataField[] = [];
-    if (dataFields) {
-      dataFields.forEach(se => {
-        if (se.mselId === mselId && se.injectTypeId === injectTypeId) {
-          filteredDataFields.push({... se});
-        }
-      });
-      if (filteredDataFields && filteredDataFields.length > 0 && this.filterString) {
+    if (dataFields && dataFields.length > 0) {
+      filteredDataFields = dataFields.slice();
+      if (this.filterString) {
         const filterString = this.filterString?.toLowerCase();
         filteredDataFields = filteredDataFields
           .filter((a) =>
@@ -252,7 +243,11 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
       }
     }
     if (filteredDataFields) {
-      filteredDataFields.sort((a, b) => +a.displayOrder > +b.displayOrder ? 1 : -1);
+      if (this.showTemplates) {
+        filteredDataFields.sort((a, b) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
+      } else {
+        filteredDataFields.sort((a, b) => +a.displayOrder > +b.displayOrder ? 1 : -1);
+      }
     }
     const returnArray = this.showTemplates || (!mselId && !injectTypeId)
       ? filteredDataFields
@@ -260,17 +255,15 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
     return returnArray;
   }
 
-  getDataFieldOptions(dataFieldId: string) {
-    return this.dataOptionList
-      .filter(x => x.dataFieldId === dataFieldId)
-      .sort((a, b) => a.displayOrder < b.displayOrder ? -1 : 1);
-  }
-
-  getDataOptionsString(dataFieldId: string): string {
-    const dataOptions = this.getDataFieldOptions(dataFieldId).map(function(elem){
-      return elem.optionName;
-    });
-    return dataOptions.join(', ');
+  getDataOptionsString(dataField: DataField): string {
+    if (dataField.dataOptions) {
+      const dataOptions = dataField.dataOptions.slice().sort((a, b) => +a.displayOrder < +b.displayOrder ? -1 : 1).map(function(elem){
+        return elem.optionName;
+      });
+      return dataOptions.join(', ');
+    } else {
+      return ' ';
+    }
   }
 
   saveChange(dataField: DataField) {

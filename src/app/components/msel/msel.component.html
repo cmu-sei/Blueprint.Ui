@@ -154,6 +154,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         *ngIf="selectedTab === 'Data Fields'"
         [loggedInUserId]="loggedInUserId"
         [isContentDeveloper]="isContentDeveloper"
+        [showTemplates]="false"
       ></app-data-field-list>
       <app-organization-list
         *ngIf="selectedTab === 'Organizations'"
