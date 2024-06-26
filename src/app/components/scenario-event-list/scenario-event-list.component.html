@@ -35,7 +35,10 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <tr>
           <th class="background center-self">
             <div class="row-start-buttons">
-              <span class="row-index center-self">&nbsp;</span>
+              <ng-container *ngIf="allowDragAndDrop">
+                <span class="row-index center-self">&nbsp;</span>
+              </ng-container>
+              <span class="row-index center-self">&nbsp;&nbsp;</span>
               <mat-checkbox
                 (change)="setAllSelectedState($event.checked)"
                 title="Select All/None"
@@ -185,6 +188,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <!-- row buttons -->
             <td class="center-self">
               <div class="row-start-buttons">
+                <ng-container *ngIf="allowDragAndDrop">
+                  <div cdkDragHandle>
+                    <span><mat-icon class="mdi-24px" fontIcon="mdi-drag-vertical"/></span>
+                  </div>
+                </ng-container>
                 <span class="row-index center-self">{{ rowIndex  + 1 }}</span>
                 <mat-checkbox
                   [checked]="getSelectedState(item.id)"
@@ -309,7 +317,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
               <td *ngIf="df.dataType.toString() === 'Html'">
                 <div class="html-constrainer" [style]="getStyle(df)">
                   <angular-editor
-                    [ngModel]="getScenarioEventValue(item, df.name)"
+                    [ngModel]="getDisplayValue(item, df.name)"
                     [config]="viewConfig"
                   ></angular-editor>
                 </div>
@@ -330,7 +338,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                       {{ org }}
                     </mat-option>
                   </mat-select>
-                  <span *ngIf="!isContentDeveloper && !msel.hasRole(loggedInUserId, item.id).editor">{{ getDataValue(item, df.name).value }}</span>
+                  <span *ngIf="!isContentDeveloper && !msel.hasRole(loggedInUserId, item.id).editor">{{ getDisplayValue(item, df.name) }}</span>
                 </div>
               </td>
               <!-- TeamsMultiple value -->
@@ -351,7 +359,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                       {{ org }}
                     </mat-option>
                   </mat-select>
-                  <span *ngIf="!isContentDeveloper && !msel.hasRole(loggedInUserId, item.id).editor">{{ getDataValue(item, df.name).value }}</span>
+                  <span *ngIf="!isContentDeveloper && !msel.hasRole(loggedInUserId, item.id).editor">{{ getDisplayValue(item, df.name) }}</span>
                 </div>
               </td>
               <!-- Status value -->
@@ -369,7 +377,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                       {{ status }}
                     </mat-option>
                   </mat-select>
-                  <span *ngIf="!isContentDeveloper && !msel.hasRole(loggedInUserId, item.id).approver">{{ getDataValue(item, df.name).value }}</span>
+                  <span *ngIf="!isContentDeveloper && !msel.hasRole(loggedInUserId, item.id).approver">{{ getDisplayValue(item, df.name) }}</span>
                 </div>
               </td>
               <!-- Assigned Team value -->
@@ -387,13 +395,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
                       {{ team.shortName }}
                     </mat-option>
                   </mat-select>
-                  <span *ngIf="!isContentDeveloper && !msel.hasRole(loggedInUserId, item.id).owner">{{ getDataValue(item, df.name).value }}</span>
+                  <span *ngIf="!isContentDeveloper && !msel.hasRole(loggedInUserId, item.id).owner">{{ getDisplayValue(item, df.name) }}</span>
                 </div>
               </td>
               <!-- datetime value -->
               <td *ngIf="df.dataType.toString() === 'DateTime'">
                 <div class="constrainer" [style]="getStyle(df)">
-                  {{ getScenarioEventDateValue(item, df.name) }}
+                  {{ getDisplayValue(item, df.name) }}
                 </div>
               </td>
               <!-- User value -->
@@ -411,7 +419,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                       {{ user.name }}
                     </mat-option>
                   </mat-select>
-                  <span *ngIf="!isContentDeveloper && !msel.hasRole(loggedInUserId, item.id).owner">{{ getDataValue(item, df.name).value }}</span>
+                  <span *ngIf="!isContentDeveloper && !msel.hasRole(loggedInUserId, item.id).owner">{{ getDisplayValue(item, df.name) }}</span>
                 </div>
               </td>
               <!-- checkbox value -->
@@ -437,6 +445,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                     <mat-option value="''"> - - - </mat-option>
                     <mat-option *ngFor="let card of cardList" [value]="card.id">{{ card.name }}</mat-option>
                   </mat-select>
+                  <span *ngIf="!isContentDeveloper && !msel.hasRole(loggedInUserId, item.id).owner">{{ getDisplayValue(item, df.name) }}</span>
                 </div>
               </td>
               <!-- DeliveryMethod value -->
@@ -451,21 +460,21 @@ project root for license information or contact permission@sei.cmu.edu for full 
                     placeholder="None"
                     [value]="getDataValue(item, df.name).valueArray"
                   >
-                  <mat-option *ngFor="let dataOption of getDataOptions(df.id)" [value]="dataOption.optionValue">
-                      {{ dataOption.optionName }}
-                    </mat-option>
+                    <mat-option *ngFor="let dataOption of getDataOptions(df.id)" [value]="dataOption.optionValue">
+                        {{ dataOption.optionName }}
+                      </mat-option>
                   </mat-select>
-                  <span *ngIf="!isContentDeveloper && !msel.hasRole(loggedInUserId, item.id).editor">{{ getDataValue(item, df.name).value }}</span>
+                  <span *ngIf="!isContentDeveloper && !msel.hasRole(loggedInUserId, item.id).editor">{{ getDisplayValue(item, df.name) }}</span>
                 </div>
               </td>
               <!-- Move Type -->
               <td *ngIf="df.dataType.toString() === 'Move'">
                 <div class="constrainer" [style]="getStyle(df)">
-                {{ getScenarioEventValue(item, df.name) }}
+                {{ getDisplayValue(item, df.name) }}
                 </div>
               </td>
             <!-- is Chosen From a List -->
-              <td *ngIf="df.isChosenFromList">
+              <td *ngIf="!customHandledDataTypes.includes(df.dataType) && df.isChosenFromList">
                 <div class="constrainer" [style]="getStyle(df)">
                   <mat-select
                     *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, item.id).editor"
@@ -481,20 +490,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 </div>
               </td>
               <!-- other values -->
-              <td *ngIf="df.dataType.toString() !== 'Html' &&
-                          df.dataType.toString() !== 'Organization' &&
-                          df.dataType.toString() !== 'TeamsMultiple' &&
-                          df.dataType.toString() !== 'Team' &&
-                          df.dataType.toString() !== 'DateTime' &&
-                          df.dataType.toString() !== 'Status' &&
-                          df.dataType.toString() !== 'User' &&
-                          df.dataType.toString() !== 'Card' &&
-                          df.dataType.toString() !== 'Move' &&
-                          df.dataType.toString() !== 'Checkbox' &&
-                          df.dataType.toString() !== 'DeliveryMethod' &&
-                          !df.isChosenFromList">
+              <td *ngIf="!customHandledDataTypes.includes(df.dataType) && !df.isChosenFromList">
                 <div class="constrainer" [style]="getStyle(df)">
-                  {{ getScenarioEventValue(item, df.name) }}
+                  {{ getDisplayValue(item, df.name) }}
                 </div>
               </td>
             </ng-container>
@@ -507,7 +505,3 @@ project root for license information or contact permission@sei.cmu.edu for full 
 
 
 </div>
-
-
-
-

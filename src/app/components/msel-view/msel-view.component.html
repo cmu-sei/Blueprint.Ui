@@ -6,8 +6,55 @@ project root for license information or contact permission@sei.cmu.edu for full 
 <div class="container">
   <div class="tableFixHead" *ngIf="msel">
     <table>
-      <thead>
+      <thead matSort (matSortChange)="sortChanged($event)">
+        <tr *ngIf="showSearch">
+          <th colspan="5">
+            <mat-form-field *ngIf="showSearch" class="top-search">
+              <input
+                matInput
+                [(ngModel)]="filterString"
+                (keyup)="keyUp.next($event)"
+                placeholder="Search"
+                style="font-size: 10pt;"
+              />
+            </mat-form-field>
+            <button
+              [disabled]="filterString === ''"
+              mat-icon-button
+              (click)="applyFilter('')"
+              style="outline: none;"
+              title="Close Search"
+            >
+              <mat-icon
+                style="transform: scale(0.85);"
+                svgIcon="ic_cancel_circle"
+              ></mat-icon>
+            </button>
+          </th>
+        </tr>
         <tr>
+          <th class="background center-self">
+            <div class="row-start-buttons">
+              <button
+                mat-icon-button
+                (click)="setSearch(true)"
+                style="outline: none; width: 30px;"
+                title="Search Events"
+                *ngIf="!showSearch"
+              >
+                <mat-icon class="mdi-24px" fontIcon="mdi-filter-outline"></mat-icon>
+              </button>
+              <button
+                mat-icon-button
+                (click)="setSearch(false)"
+                style="outline: none; width: 30px;"
+                title="Clear Search"
+                *ngIf="showSearch"
+              >
+                <mat-icon class="mdi-24px" fontIcon="mdi-filter-off-outline"></mat-icon>
+              </button>
+            </div>
+          </th>
           <!-- Move -->
           <th *ngIf="msel.showMoveOnExerciseView" class="background move-group">
             <div>Move</div>
@@ -40,31 +87,42 @@ project root for license information or contact permission@sei.cmu.edu for full 
             </div>
           </th>
           <ng-container *ngFor="let df of sortedDataFields">
-            <th class="background">
-              <div [style]="getStyle(df)">
-                {{ df.name }}
-              </div>
-            </th>
+            <ng-container *ngIf="sortableDataTypes.includes(df.dataType); else noSort">
+              <th mat-sort-header="{{ df.name }}" class="background">
+                <div [style]="getStyle(df)">{{ df.name }}</div>
+              </th>
+            </ng-container>
+            <ng-template #noSort>
+              <th class="background">
+                <div [style]="getStyle(df)">{{ df.name }}</div>
+              </th>
+            </ng-template>
           </ng-container>
         </tr>
       </thead>
       <tbody>
-        <ng-container *ngFor="let item of sortedScenarioEvents">
+        <ng-container *ngFor="let item of sortedScenarioEvents; index as rowIndex">
           <tr class="move-group" [style]="getRowStyle(item)">
+            <!-- row buttons -->
+            <td class="center-self">
+              <div class="row-start-buttons">
+                <span class="row-index center-self">{{ rowIndex  + 1 }}</span>
+              </div>
+            </td>
             <!-- Move value -->
-            <td *ngIf="msel.showMoveOnScenarioEventList">
+            <td *ngIf="msel.showMoveOnExerciseView">
               <div class="constrainer" style="text-align: center;">
                 {{ moveAndGroupNumbers[item.id][0] }}
               </div>
             </td>
             <!-- Group value -->
-            <td class="move-group" *ngIf="msel.showGroupOnScenarioEventList">
+            <td class="move-group" *ngIf="msel.showGroupOnExerciseView">
               <div class="constrainer" style="text-align: center;">
                 {{ moveAndGroupNumbers[item.id][1] }}
               </div>
             </td>
             <!-- Time value -->
-            <td *ngIf="msel.showTimeOnScenarioEventList">
+            <td *ngIf="msel.showTimeOnExerciseView">
               <div class="time-span center-self">
                 <app-duration-view
                   [startTime]="msel.startTime"
@@ -79,7 +137,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 <div class="html-constrainer" [style]="getStyle(df)">
                   <angular-editor
                     [placeholder]="'Description'"
-                    [ngModel]="getScenarioEventValue(item, df)"
+                    [ngModel]="getDisplayValue(item, df.name)"
                     [config]="viewConfig"
                   ></angular-editor>
                 </div>
@@ -87,20 +145,20 @@ project root for license information or contact permission@sei.cmu.edu for full 
               <!-- URL -->
               <td *ngIf="df.dataType.toString() === 'Url'">
                 <div class="constrainer" [style]="getStyle(df)">
-                  <a target="_blank" href="{{ getScenarioEventValue(item, df) }}">{{ getScenarioEventValue(item, df) }}</a>
+                  <a target="_blank" href="{{ getDisplayValue(item, df.name) }}">{{ getDisplayValue(item, df.name) }}</a>
                 </div>
               </td>
               <!-- User -->
               <td *ngIf="df.dataType.toString() === 'User'">
                 <div class="constrainer" [style]="getStyle(df)">
-                  {{ getUserName(item, df) }}
+                  {{ getDisplayValue(item, df.name) }}
                 </div>
               </td>
               <!-- Checkbox -->
               <td *ngIf="df.dataType.toString() === 'Checkbox'">
                 <div class="constrainer" [style]="getStyle(df)">
                   <mat-checkbox
-                    [checked]="getScenarioEventValue(item, df)"
+                    [checked]="getDisplayValue(item, df.name)"
                     (change)="saveDataValue(item, df, $event.checked.toString())"
                   ></mat-checkbox>
                 </div>
@@ -108,7 +166,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
               <!-- datetime value -->
               <td *ngIf="df.dataType.toString() === 'DateTime'">
                 <div class="constrainer" [style]="getStyle(df)">
-                  {{ getScenarioEventDateValue(item, df) }}
+                  {{ getDisplayValue(item, df.name) }}
                 </div>
               </td>
               <!-- All others -->
@@ -118,7 +176,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                           df.dataType.toString() !== 'Checkbox' &&
                           df.dataType.toString() !== 'DateTime'">
                 <div class="constrainer" [style]="getStyle(df)">
-                  {{ getScenarioEventValue(item, df) }}
+                  {{ getDisplayValue(item, df.name) }}
                 </div>
               </td>
             </ng-container>

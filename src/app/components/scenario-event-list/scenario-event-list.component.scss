@@ -29,14 +29,14 @@ tr {
 tr.cdk-drag-preview.light-theme {
   border-top: 1pt solid gray;
   width: 100%;
-  background: #f1f1f2;
+  background: #f1f1f2 !important;
   color: #242526;
 }
 
 tr.cdk-drag-preview.dark-theme {
   border-top: 1pt solid gray;
   width: 100%;
-  background: #373739;
+  background: #373739 !important;
   color: #efefef;
 }
 
