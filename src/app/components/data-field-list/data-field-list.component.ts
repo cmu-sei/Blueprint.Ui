@@ -168,7 +168,6 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
       if (makeTemplate) {
         dataField.mselId = null;
         dataField.injectTypeId = null;
-        dataField.displayOrder = 99;
       } else {
         dataField.mselId = this.msel.id;
         dataField.injectTypeId = this.injectType.id;
