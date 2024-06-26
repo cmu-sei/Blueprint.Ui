@@ -9,7 +9,6 @@ import { Router } from '@angular/router';
 import { Subject, Subscription, Observable, of } from 'rxjs';
 import {
   takeUntil,
-  map,
   debounceTime,
   distinctUntilChanged,
   mergeMap,
@@ -41,6 +40,7 @@ import { OrganizationQuery } from 'src/app/data/organization/organization.query'
 import {
   ScenarioEventDataService,
   ScenarioEventView,
+  ScenarioEventViewIndexing,
   ScenarioEventPlus,
   DataValuePlus,
 } from 'src/app/data/scenario-event/scenario-event-data.service';
@@ -62,26 +62,28 @@ import { AngularEditorConfig } from '@kolkov/angular-editor';
   styleUrls: ['./scenario-event-list.component.scss'],
 })
 export class ScenarioEventListComponent
-implements OnDestroy, ScenarioEventView {
+  implements OnDestroy, ScenarioEventView
+{
   @Input() loggedInUserId: string;
   @Input() isContentDeveloper: boolean;
   @Input() userTheme: Theme;
   msel = new MselPlus();
+
+  // ScenarioEventView Fields
   mselScenarioEvents: ScenarioEvent[] = [];
-  mselScenarioEvtIndex = new Map<string, number>();
-  expandedScenarioEventId = '';
-  expandedMoreScenarioEventIds: string[] = [];
   filterString = '';
   sort: Sort = { active: '', direction: '' };
   displayedScenarioEvents: ScenarioEventPlus[] = [];
-  fieldMap = new Map<string, DataField>();
-  valueMap = new Map<string, Map<string, DataValuePlus>>();
-  cardMap = new Map<string, string>();
-  userMap = new Map<string, string>();
   sortedDataFields: DataField[] = [];
+  dataValues: DataValue[] = [];
+  cardList: Card[] = [];
+  mselUsers: User[] = [];
+  viewIndex = new ScenarioEventViewIndexing();
+
   sortedDataOptions: DataOption[] = [];
   allDataFields: DataField[] = [];
-  dataValues: DataValue[] = [];
+  expandedScenarioEventId = '';
+  expandedMoreScenarioEventIds: string[] = [];
   newScenarioEvent: ScenarioEventPlus;
   isAddingScenarioEvent = false;
   canDoAnything = false;
@@ -102,23 +104,19 @@ implements OnDestroy, ScenarioEventView {
     sanitize: true,
   };
   dataType: typeof DataFieldType = DataFieldType;
-  sortableDataTypes = [
-    DataFieldType.String,
-    DataFieldType.Integer,
-    DataFieldType.Double,
-    DataFieldType.Boolean,
-    DataFieldType.DateTime,
+  sortableDataTypes = this.scenarioEventDataService.sortableDataTypes;
+  customHandledDataTypes = [
+    DataFieldType.Html,
     DataFieldType.Organization,
-    DataFieldType.Card,
-    DataFieldType.Move,
-    DataFieldType.SourceType,
+    DataFieldType.TeamsMultiple,
     DataFieldType.Status,
     DataFieldType.Team,
-    DataFieldType.TeamsMultiple,
-    DataFieldType.Checkbox,
+    DataFieldType.DateTime,
     DataFieldType.User,
-    DataFieldType.Url,
+    DataFieldType.Checkbox,
+    DataFieldType.Card,
     DataFieldType.DeliveryMethod,
+    DataFieldType.Move,
   ];
   dateFormControls = new Map<string, UntypedFormControl>();
   itemStatus = [
@@ -135,7 +133,6 @@ implements OnDestroy, ScenarioEventView {
     Editor: MselRole.Editor,
   };
   organizationList: Organization[] = [];
-  mselUsers: User[] = [];
   blankDataValue = {
     id: '',
     scenarioEventId: '',
@@ -153,7 +150,6 @@ implements OnDestroy, ScenarioEventView {
   lightThemeTint = this.settingsService.settings.LightThemeTint
     ? this.settingsService.settings.LightThemeTint
     : 0.4;
-  cardList: Card[] = [];
   moveList: Move[] = [];
   teamList: Team[] = [];
   keyUp = new Subject<KeyboardEvent>();
@@ -425,18 +421,6 @@ implements OnDestroy, ScenarioEventView {
     }
   }
 
-  blankDataValuePlus(): DataValuePlus {
-    const bdvp = {
-      id: '',
-      scenarioEventId: '',
-      dataFieldId: '',
-      value: '',
-      valueArray: [],
-    } as DataValuePlus;
-
-    return bdvp;
-  }
-
   newDataValuePlus(
     scenarioEventId: string,
     dataFieldId: string
@@ -460,6 +444,20 @@ implements OnDestroy, ScenarioEventView {
       return this.blankDataValue;
     }
     return this.scenarioEventDataService.getDataValueFromView(
+      this,
+      scenarioEvent,
+      dataFieldName
+    );
+  }
+
+  getDisplayValue(
+    scenarioEvent: ScenarioEventPlus,
+    dataFieldName: string
+  ): string {
+    if (!(this.msel && scenarioEvent && scenarioEvent.id)) {
+      return '';
+    }
+    return this.scenarioEventDataService.getDisplayValueFromView(
       this,
       scenarioEvent,
       dataFieldName
@@ -520,13 +518,13 @@ implements OnDestroy, ScenarioEventView {
     if (event.previousIndex !== event.currentIndex) {
       // sanity check
       const droppedScenarioEvt = event.item.data;
-      const droppedScenarioEvtIdx = this.mselScenarioEvtIndex.get(
+      const droppedScenarioEvtIdx = this.viewIndex.mselScenarioEvtIndex.get(
         droppedScenarioEvt.id
       );
       const targetScenarioEvtId =
         this.displayedScenarioEvents[event.currentIndex].id;
       const targetScenarioEvtIdx =
-        this.mselScenarioEvtIndex.get(targetScenarioEvtId);
+        this.viewIndex.mselScenarioEvtIndex.get(targetScenarioEvtId);
       const targetScenarioEvt = this.mselScenarioEvents[targetScenarioEvtIdx];
       const movedDown = droppedScenarioEvtIdx < targetScenarioEvtIdx;
       const origOffset = +droppedScenarioEvt.deltaSeconds;
@@ -875,41 +873,6 @@ implements OnDestroy, ScenarioEventView {
       return 'text-align: left; width: 90%; min-width: 40px;';
       // return 'width: 100%;';
     }
-  }
-
-  getScenarioEventValue(scenarioEvent: ScenarioEvent, columnName: string) {
-    if (!(this.msel && scenarioEvent && scenarioEvent.id)) {
-      return '';
-    }
-    const dataField = this.allDataFields.find((df) => df.name === columnName);
-    if (!dataField) {
-      return '';
-    }
-    const dataValue = this.dataValues.find(
-      (dv) =>
-        dv.dataFieldId === dataField.id &&
-        dv.scenarioEventId === scenarioEvent.id
-    );
-    return dataValue && dataValue.value != null ? dataValue.value : ' ';
-  }
-
-  getScenarioEventDateValue(scenarioEvent: ScenarioEvent, columnName: string) {
-    if (!(this.msel && scenarioEvent && scenarioEvent.id)) {
-      return '';
-    }
-    const dataField = this.allDataFields.find((df) => df.name === columnName);
-    if (!dataField) {
-      return '';
-    }
-    const dataValue = this.dataValues.find(
-      (dv) =>
-        dv.dataFieldId === dataField.id &&
-        dv.scenarioEventId === scenarioEvent.id
-    );
-    const dateValue =
-      dataValue && dataValue.value != null ? dataValue.value : ' ';
-    const formattedValue = new Date(dateValue).toLocaleString();
-    return formattedValue === 'Invalid Date' ? ' ' : formattedValue;
   }
 
   getSelectedState(id: string): boolean {
