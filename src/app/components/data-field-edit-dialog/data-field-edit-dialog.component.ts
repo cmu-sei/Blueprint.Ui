@@ -40,9 +40,6 @@ export class UserErrorStateMatcher implements ErrorStateMatcher {
 
 export class DataFieldEditDialogComponent {
   @Output() editComplete = new EventEmitter<any>();
-  private addedDataFieldOptions: DataOption[] = [];
-  private changedDataFieldOptions: DataOption[] = [];
-  private deletedDataFieldOptions: DataOption[] = [];
 
   constructor(
     public dialog: MatDialog,
@@ -67,20 +64,18 @@ export class DataFieldEditDialogComponent {
         // Add the default options for DeliveryMethod
         const defaultOptions = this.settingsService.settings.DefaultDeliveryMethodOptions;
         defaultOptions.forEach(defopt => {
-          const alreadyExists = this.data.dataFieldOptions.some(dfo =>
+          const alreadyExists = this.data.dataField.dataOptions.some(dfo =>
             dfo.optionName === defopt.optName && dfo.optionValue === defopt.optionValue);
           if (!alreadyExists) {
             const newDataOption = {
               id: uuidv4(),
-              displayOrder: this.data.dataFieldOptions.length + 1,
+              displayOrder: this.data.dataField.dataOptions.length + 1,
               dataFieldId: this.data.dataField.id,
               optionName: defopt.optionName,
               optionValue: defopt.optionValue,
             };
             // add to displayed data options
-            this.data.dataFieldOptions.push(newDataOption);
-            // make sure data option gets added when we are done
-            this.addedDataFieldOptions.push(newDataOption);
+            this.data.dataField.dataOptions.push(newDataOption);
           }
         });
       }
@@ -91,7 +86,7 @@ export class DataFieldEditDialogComponent {
 
   addDataOption(dataField: DataField) {
     this.addOrEditDataOption({
-      displayOrder: this.data.dataFieldOptions.length + 1,
+      displayOrder: this.data.dataField.dataOptions.length + 1,
       dataFieldId: dataField.id
     });
   }
@@ -113,32 +108,13 @@ export class DataFieldEditDialogComponent {
         // an id means this data option is being edited
         if (dataOption.id) {
           // update the displayed data options
-          const existingIndex = this.data.dataFieldOptions.findIndex(x => x.id === dataOption.id);
-          this.data.dataFieldOptions[existingIndex] = dataOption;
-          // make sure this data option gets saved when we are finished
-          const changedIndex = this.changedDataFieldOptions.findIndex(x => x.id === dataOption.id);
-          // is it on the changed list already?
-          if (changedIndex < 0) {
-            // not on changed list, is it on the added list?
-            const addedIndex = this.addedDataFieldOptions.findIndex(ado => ado.id === dataOption.id);
-            if (addedIndex < 0) {
-              // not on added list either, so add to changed list
-              this.changedDataFieldOptions.push(dataOption);
-            } else {
-              // on added list, so update with new values
-              this.addedDataFieldOptions[addedIndex] = dataOption;
-            }
-          } else {
-            // on the changed list, so update with new values
-            this.changedDataFieldOptions[changedIndex] = dataOption;
-          }
+          const existingIndex = this.data.dataField.dataOptions.findIndex(x => x.id === dataOption.id);
+          this.data.dataField.dataOptions[existingIndex] = dataOption;
         } else {
           // no id means this data option has just been entered
           dataOption.id = uuidv4();
           // add to displayed data options
-          this.data.dataFieldOptions.push(dataOption);
-          // make sure data option gets added when we are done
-          this.addedDataFieldOptions.push(dataOption);
+          this.data.dataField.dataOptions.push(dataOption);
         }
       }
       dialogRef.close();
@@ -147,27 +123,13 @@ export class DataFieldEditDialogComponent {
 
   deleteDataOption(dataOption: DataOption) {
     // remove this from the displayed list
-    const index = this.data.dataFieldOptions.findIndex(x => x.id === dataOption.id);
-    this.data.dataFieldOptions.splice(index, 1);
-    // determine if this has just been added or if it existed previously
-    const addedIndex = this.addedDataFieldOptions.findIndex(ado => ado.id === dataOption.id);
-    if (addedIndex < 0) {
-      const changedIndex = this.changedDataFieldOptions.findIndex(x => x.id === dataOption.id);
-      // if this was previously changed, delete it from the changed list
-      if (changedIndex >= 0) {
-        this.changedDataFieldOptions.splice(changedIndex, 1);
-      }
-      // push this onto the delted list
-      this.deletedDataFieldOptions.push(dataOption);
-    } else {
-      // since this is an added data field option, just remove it from the added list
-      this.addedDataFieldOptions.splice(addedIndex, 1);
-    }
+    const index = this.data.dataField.dataOptions.findIndex(x => x.id === dataOption.id);
+    this.data.dataField.dataOptions.splice(index, 1);
   }
 
   sortedDataFieldOptions() {
-    return this.data.dataFieldOptions
-      .sort((a, b) => a.displayOrder < b.displayOrder ? -1 : 1);
+    return this.data.dataField.dataOptions
+      .sort((a, b) => +a.displayOrder < +b.displayOrder ? -1 : 1);
   }
 
   optionListNotAllowed(): boolean {
@@ -188,10 +150,7 @@ export class DataFieldEditDialogComponent {
       if (this.errorFree) {
         this.editComplete.emit({
           saveChanges: saveChanges,
-          dataField: this.data.dataField,
-          addedDataFieldOptions: this.addedDataFieldOptions,
-          changedDataFieldOptions: this.changedDataFieldOptions,
-          deletedDataFieldOptions: this.deletedDataFieldOptions
+          dataField: this.data.dataField
         });
       }
     }
