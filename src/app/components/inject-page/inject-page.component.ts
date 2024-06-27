@@ -18,41 +18,40 @@ import { MselDataService } from 'src/app/data/msel/msel-data.service';
 import { TeamDataService } from 'src/app/data/team/team-data.service';
 import { OrganizationDataService } from 'src/app/data/organization/organization-data.service';
 import { DataFieldDataService } from 'src/app/data/data-field/data-field-data.service';
-import { DataOptionDataService } from 'src/app/data/data-option/data-option-data.service';
 import { DataValueDataService } from 'src/app/data/data-value/data-value-data.service';
-import { ScenarioEventDataService, ScenarioEventPlus, DataValuePlus } from 'src/app/data/scenario-event/scenario-event-data.service';
+import {
+  ScenarioEventDataService,
+  ScenarioEventPlus,
+  DataValuePlus,
+} from 'src/app/data/scenario-event/scenario-event-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { DataFieldQuery } from 'src/app/data/data-field/data-field.query';
-import { DataOptionQuery } from 'src/app/data/data-option/data-option.query';
 import { MoveQuery } from 'src/app/data/move/move.query';
 import {
   DataField,
   DataFieldType,
-  DataOption,
   DataValue,
   Move,
-  ScenarioEvent,
   Organization,
   MselItemStatus,
   Team,
   User,
-  Card
+  Card,
 } from 'src/app/generated/blueprint.api';
 import { UntypedFormControl } from '@angular/forms';
 import { MselPlus } from 'src/app/data/msel/msel-data.service';
 import { DataValueQuery } from 'src/app/data/data-value/data-value.query';
 import { ScenarioEventQuery } from 'src/app/data/scenario-event/scenario-event.query';
 import { Sort } from '@angular/material/sort';
-import { Component, Input} from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { AngularEditorConfig } from '@kolkov/angular-editor';
 import { CardQuery } from 'src/app/data/card/card.query';
 
 @Component({
   selector: 'app-inject-page',
   templateUrl: './inject-page.component.html',
-  styleUrls: ['./inject-page.component.scss']
+  styleUrls: ['./inject-page.component.scss'],
 })
-
 export class InjectPageComponent {
   @Input() userTheme: Theme;
   @Input() isContentDeveloper: boolean;
@@ -73,7 +72,6 @@ export class InjectPageComponent {
   cardList: Card[] = [];
   allDataFields: DataField[] = [];
   dateFormControls = new Map<string, UntypedFormControl>();
-  sortedDataOptions: DataOption[] = [];
   dataValues: DataValue[] = [];
   scenarioEvent: ScenarioEventPlus = {} as ScenarioEventPlus;
   moveList: Move[] = [];
@@ -84,13 +82,24 @@ export class InjectPageComponent {
     scenarioEventId: '',
     dataFieldId: '',
     value: '',
-    valueArray: []
+    valueArray: [],
   } as DataValuePlus;
   organizationList: Organization[] = [];
   sort: Sort = { active: 'deltaSeconds', direction: 'asc' };
-  itemStatus = [MselItemStatus.Pending, MselItemStatus.Entered, MselItemStatus.Approved, MselItemStatus.Complete, MselItemStatus.Deployed, MselItemStatus.Archived];
-  darkThemeTint = this.settingsService.settings.DarkThemeTint ? this.settingsService.settings.DarkThemeTint : 0.7;
-  lightThemeTint = this.settingsService.settings.LightThemeTint ? this.settingsService.settings.LightThemeTint : 0.4;
+  itemStatus = [
+    MselItemStatus.Pending,
+    MselItemStatus.Entered,
+    MselItemStatus.Approved,
+    MselItemStatus.Complete,
+    MselItemStatus.Deployed,
+    MselItemStatus.Archived,
+  ];
+  darkThemeTint = this.settingsService.settings.DarkThemeTint
+    ? this.settingsService.settings.DarkThemeTint
+    : 0.7;
+  lightThemeTint = this.settingsService.settings.LightThemeTint
+    ? this.settingsService.settings.LightThemeTint
+    : 0.4;
   selectedEventIdList: string[] = [];
   mselUsers: User[] = [];
   showRealTime = false;
@@ -121,12 +130,10 @@ export class InjectPageComponent {
     private titleService: Title,
     private teamDataService: TeamDataService,
     private dataFieldDataService: DataFieldDataService,
-    private dataOptionDataService: DataOptionDataService,
     private dataValueDataService: DataValueDataService,
     private scenarioEventDataService: ScenarioEventDataService,
     private mselQuery: MselQuery,
     private dataFieldQuery: DataFieldQuery,
-    private dataOptionQuery: DataOptionQuery,
     private moveQuery: MoveQuery,
     private dataValueQuery: DataValueQuery,
     private scenarioEventQuery: ScenarioEventQuery,
@@ -134,7 +141,10 @@ export class InjectPageComponent {
     private activatedRoute: ActivatedRoute
   ) {
     // set image
-    this.imageFilePath = this.settingsService.settings.AppTopBarImage.replace('white', 'blue');
+    this.imageFilePath = this.settingsService.settings.AppTopBarImage.replace(
+      'white',
+      'blue'
+    );
     this.titleService.setTitle(this.appTitle);
     // Set the display settings from config file
     this.topbarColor = this.settingsService.settings.AppTopBarHexColor
@@ -143,105 +153,134 @@ export class InjectPageComponent {
     this.topbarTextColor = this.settingsService.settings.AppTopBarHexTextColor
       ? this.settingsService.settings.AppTopBarHexTextColor
       : this.topbarTextColor;
-    this.activatedRoute.queryParamMap.pipe(takeUntil(this.unsubscribe$)).subscribe(queryParams => {
-      // load the selected MSEL data
-      const mselId = queryParams.get('msel');
-      const scenarioEventId = queryParams.get('scenarioEvent');
-      this.dataValueId = queryParams.get('dataValue');
-      this.scenarioEventId = scenarioEventId;
-      if (mselId && this.mselId !== mselId) {
-        // load the selected MSEL and make it active
-        this.mselDataService.loadById(mselId);
-        this.mselDataService.setActive(mselId);
-        // // load the MSELs moves
-        this.moveDataService.loadByMsel(mselId);
-        // // load the MSEL Teams
-        this.teamDataService.loadByMsel(mselId);
-        // // load the MSEL organizations and templates
-        this.organizationDataService.loadByMsel(mselId);
-        // // load data fields, options, and values
-        this.dataFieldDataService.loadByMsel(mselId);
-        this.dataOptionDataService.loadByMsel(mselId);
-        this.dataValueDataService.loadByMsel(mselId);
-        // // load scenario events
-        if (scenarioEventId) {
-          this.scenarioEventDataService.loadById(scenarioEventId);
+    this.activatedRoute.queryParamMap
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((queryParams) => {
+        // load the selected MSEL data
+        const mselId = queryParams.get('msel');
+        const scenarioEventId = queryParams.get('scenarioEvent');
+        this.dataValueId = queryParams.get('dataValue');
+        this.scenarioEventId = scenarioEventId;
+        if (mselId && this.mselId !== mselId) {
+          // load the selected MSEL and make it active
+          this.mselDataService.loadById(mselId);
+          this.mselDataService.setActive(mselId);
+          // // load the MSELs moves
+          this.moveDataService.loadByMsel(mselId);
+          // // load the MSEL Teams
+          this.teamDataService.loadByMsel(mselId);
+          // // load the MSEL organizations and templates
+          this.organizationDataService.loadByMsel(mselId);
+          // // load data fields and values
+          this.dataFieldDataService.loadByMsel(mselId);
+          this.dataValueDataService.loadByMsel(mselId);
+          // // load scenario events
+          if (scenarioEventId) {
+            this.scenarioEventDataService.loadById(scenarioEventId);
+          }
         }
-      }
-    });
-    // subscribe to the active MSEL
-    (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
-      if (msel && this.msel.id !== msel.id) {
-        this.msel = this.getEditableMsel(msel) as MselPlus;
-      }
-    });
-    // subscribe to data fields
-    this.dataFieldQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(dataFields => {
-      this.getSortedDataFields(dataFields);
-    });
-    // subscribe to the data options
-    this.dataOptionQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(dataOptions => {
-      this.sortedDataOptions = dataOptions.sort((a, b) => +a.displayOrder < +b.displayOrder ? -1 : 1);
-    });
-    // subscribe to data values
-    this.dataValueQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(dataValues => {
-      this.dataValues = [];
-      dataValues.forEach(dv => {
-        this.dataValues.push({ ... dv });
       });
-    });
-    this.cardQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(cards => {
-      this.cardList = cards;
-    });
+    // subscribe to the active MSEL
+    (this.mselQuery.selectActive() as Observable<MselPlus>)
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((msel) => {
+        if (msel && this.msel.id !== msel.id) {
+          this.msel = this.getEditableMsel(msel) as MselPlus;
+        }
+      });
+    // subscribe to data fields
+    this.dataFieldQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((dataFields) => {
+        this.getSortedDataFields(dataFields);
+      });
+    // subscribe to data values
+    this.dataValueQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((dataValues) => {
+        this.dataValues = [];
+        dataValues.forEach((dv) => {
+          this.dataValues.push({ ...dv });
+        });
+      });
+    this.cardQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((cards) => {
+        this.cardList = cards;
+      });
 
-    (this.scenarioEventQuery.selectAll()).pipe(takeUntil(this.unsubscribe$)).subscribe(scenarioEvents => {
-      if (scenarioEvents && scenarioEvents.length > 0) {
-        this.scenarioEvent = scenarioEvents.find(m => m.id === this.scenarioEventId) as ScenarioEventPlus;
-      }
-    });
-    this.moveQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(moves => {
-      this.moveList = moves.sort((a, b) => +a.moveNumber < +b.moveNumber ? -1 : 1);
-    });
+    this.scenarioEventQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((scenarioEvents) => {
+        if (scenarioEvents && scenarioEvents.length > 0) {
+          this.scenarioEvent = scenarioEvents.find(
+            (m) => m.id === this.scenarioEventId
+          ) as ScenarioEventPlus;
+        }
+      });
+    this.moveQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((moves) => {
+        this.moveList = moves.sort((a, b) =>
+          +a.moveNumber < +b.moveNumber ? -1 : 1
+        );
+      });
   }
 
   topBarNavigate(url): void {
     this.router.navigate([url]);
   }
 
-  getEditableMsel (msel: MselPlus): MselPlus {
+  getEditableMsel(msel: MselPlus): MselPlus {
     const editableMsel = new MselPlus();
     Object.assign(editableMsel, msel);
-    editableMsel.teams = editableMsel.teams.slice(0).sort((a, b) => a.shortName.toLowerCase() < b.shortName.toLowerCase() ? -1 : 1);
+    editableMsel.teams = editableMsel.teams
+      .slice(0)
+      .sort((a, b) =>
+        a.shortName.toLowerCase() < b.shortName.toLowerCase() ? -1 : 1
+      );
 
     return editableMsel;
   }
 
   getSortedDataFields(dataFields: DataField[]) {
     if (dataFields) {
-      this.sortedDataFields = dataFields
-        .sort((a, b) => +a.displayOrder > +b.displayOrder ? 1 : -1);
-      this.allDataFields = dataFields
-        .sort((a, b) => +a.displayOrder > +b.displayOrder ? 1 : -1);
+      this.sortedDataFields = dataFields.sort((a, b) =>
+        +a.displayOrder > +b.displayOrder ? 1 : -1
+      );
+      this.allDataFields = dataFields.sort((a, b) =>
+        +a.displayOrder > +b.displayOrder ? 1 : -1
+      );
     }
     // create date form controls
-    this.allDataFields.forEach(df => {
+    this.allDataFields.forEach((df) => {
       if (df.dataType === DataFieldType.DateTime) {
         this.dateFormControls[df.id] = new UntypedFormControl();
       }
     });
   }
 
-  getEditableScenarioEvents(scenarioEvents: ScenarioEventPlus[]): ScenarioEventPlus[] {
+  getEditableScenarioEvents(
+    scenarioEvents: ScenarioEventPlus[]
+  ): ScenarioEventPlus[] {
     const editableList: ScenarioEventPlus[] = [];
-    scenarioEvents.forEach(scenarioEvent => {
-      const newScenarioEvent = { ...scenarioEvent};
+    scenarioEvents.forEach((scenarioEvent) => {
+      const newScenarioEvent = { ...scenarioEvent };
       editableList.push(newScenarioEvent);
     });
 
     return editableList;
   }
 
-  getDataValue(scenarioEvent: ScenarioEventPlus, dataFieldName: string): DataValuePlus {
+  getDataValue(
+    scenarioEvent: ScenarioEventPlus,
+    dataFieldName: string
+  ): DataValuePlus {
     if (!(this.msel && scenarioEvent && scenarioEvent.id)) {
       return this.blankDataValue;
     }
@@ -249,10 +288,15 @@ export class InjectPageComponent {
     if (!dataFieldId) {
       return this.blankDataValue;
     }
-    let dataValuePlus = this.dataValues.find(dv =>
-      dv.dataFieldId === dataFieldId && dv.scenarioEventId === scenarioEvent.id) as DataValuePlus;
+    let dataValuePlus = this.dataValues.find(
+      (dv) =>
+        dv.dataFieldId === dataFieldId &&
+        dv.scenarioEventId === scenarioEvent.id
+    ) as DataValuePlus;
     if (dataValuePlus) {
-      dataValuePlus.valueArray = dataValuePlus.value ? dataValuePlus.value.split(', ') : [];
+      dataValuePlus.valueArray = dataValuePlus.value
+        ? dataValuePlus.value.split(', ')
+        : [];
     } else {
       dataValuePlus = this.blankDataValue;
     }
@@ -261,14 +305,18 @@ export class InjectPageComponent {
 
   getDataValueById() {
     if (this.dataValueId) {
-      const dataValue = this.dataValues.find(dv => dv.id === this.dataValueId);
+      const dataValue = this.dataValues.find(
+        (dv) => dv.id === this.dataValueId
+      );
       return dataValue ? dataValue.value : '';
     }
     return '';
   }
 
   getDataFieldIdByName(scenarioEvent: ScenarioEventPlus, name: string): string {
-    const dataField = this.allDataFields.find(df => df.name.toLowerCase() === name.toLowerCase());
+    const dataField = this.allDataFields.find(
+      (df) => df.name.toLowerCase() === name.toLowerCase()
+    );
     return dataField ? dataField.id : '';
   }
 
@@ -276,11 +324,15 @@ export class InjectPageComponent {
     if (!(this.msel && this.scenarioEvent && this.scenarioEvent.id)) {
       return '';
     }
-    const dataField = this.allDataFields.find(df => df.name === columnName);
+    const dataField = this.allDataFields.find((df) => df.name === columnName);
     if (!dataField) {
       return '';
     }
-    const dataValue = this.dataValues.find(dv => dv.dataFieldId === dataField.id && dv.scenarioEventId === this.scenarioEvent.id);
+    const dataValue = this.dataValues.find(
+      (dv) =>
+        dv.dataFieldId === dataField.id &&
+        dv.scenarioEventId === this.scenarioEvent.id
+    );
 
     if (dataValue) {
       if (dataField.dataType === 'Card') {
@@ -297,11 +349,15 @@ export class InjectPageComponent {
     if (!scenarioEvent) {
       return '';
     }
-    const titleField = this.allDataFields.find(df => df.name === 'Title');
+    const titleField = this.allDataFields.find((df) => df.name === 'Title');
     if (!titleField) {
       return '';
     }
-    const titleDataValue = this.dataValues.find(dv => dv.dataFieldId === titleField.id && dv.scenarioEventId === scenarioEvent.id);
+    const titleDataValue = this.dataValues.find(
+      (dv) =>
+        dv.dataFieldId === titleField.id &&
+        dv.scenarioEventId === scenarioEvent.id
+    );
     return titleDataValue ? titleDataValue.value : '';
   }
 
@@ -313,7 +369,7 @@ export class InjectPageComponent {
   }
 
   getCardNameById(cardId: string): string {
-    const card = this.cardList.find(c => c.id === cardId);
+    const card = this.cardList.find((c) => c.id === cardId);
     return card ? card.name : 'Unknown';
   }
 
@@ -324,14 +380,20 @@ export class InjectPageComponent {
   }
 
   openInNewTab(scenarioEventId: string, dataFieldId: string) {
-    const dataValue = this.dataValues.find(dv => dv.dataFieldId === dataFieldId && dv.scenarioEventId === scenarioEventId);
+    const dataValue = this.dataValues.find(
+      (dv) =>
+        dv.dataFieldId === dataFieldId && dv.scenarioEventId === scenarioEventId
+    );
     if (dataValue && dataValue.id) {
-      const url = location.origin +
-        '/injectpage?msel=' + this.msel.id +
-        '&scenarioEvent=' + this.scenarioEventId +
-        '&dataValue=' + dataValue.id;
+      const url =
+        location.origin +
+        '/injectpage?msel=' +
+        this.msel.id +
+        '&scenarioEvent=' +
+        this.scenarioEventId +
+        '&dataValue=' +
+        dataValue.id;
       window.open(url);
     }
   }
-
 }

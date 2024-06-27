@@ -460,7 +460,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                     placeholder="None"
                     [value]="getDataValue(item, df.name).valueArray"
                   >
-                    <mat-option *ngFor="let dataOption of getDataOptions(df.id)" [value]="dataOption.optionValue">
+                    <mat-option *ngFor="let dataOption of df.dataOptions" [value]="dataOption.optionValue">
                         {{ dataOption.optionName }}
                       </mat-option>
                   </mat-select>
@@ -485,7 +485,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                     placeholder=" - - - "
                   >
                     <mat-option value=""> - - - </mat-option>
-                    <mat-option *ngFor="let dataOption of getDataOptions(df.id)" [value]="dataOption.optionValue">{{ dataOption.optionName }}</mat-option>
+                    <mat-option *ngFor="let dataOption of df.dataOptions" [value]="dataOption.optionValue">{{ dataOption.optionName }}</mat-option>
                   </mat-select>
                 </div>
               </td>
