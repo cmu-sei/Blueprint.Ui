@@ -58,6 +58,8 @@ import { ClipboardModule } from 'ngx-clipboard';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { AdminContainerComponent } from './components/admin/admin-container/admin-container.component';
+import { AdminInjectTypesComponent } from './components/admin/admin-inject-types/admin-inject-types.component';
+import { AdminInjectTypeEditDialogComponent } from './components/admin/admin-inject-type-edit-dialog/admin-inject-type-edit-dialog.component';
 import { AdminUnitsComponent } from './components/admin/admin-units/admin-units.component';
 import { AdminUnitEditDialogComponent } from './components/admin/admin-unit-edit-dialog/admin-unit-edit-dialog.component';
 import { AdminUnitUsersComponent } from './components/admin/admin-unit-users/admin-unit-users.component';
@@ -168,6 +170,8 @@ export function getBasePath(settingsSvc: ComnSettingsService) {
     TeamEditDialogComponent,
     TeamUsersComponent,
     AdminContainerComponent,
+    AdminInjectTypesComponent,
+    AdminInjectTypeEditDialogComponent,
     AdminUnitsComponent,
     AdminUnitEditDialogComponent,
     AdminUnitUsersComponent,

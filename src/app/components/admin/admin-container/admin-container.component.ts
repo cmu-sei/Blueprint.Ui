@@ -60,7 +60,6 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
     private router: Router,
     private unitDataService: UnitDataService,
     private userDataService: UserDataService,
-    activatedRoute: ActivatedRoute,
     private healthCheckService: HealthCheckService,
     private settingsService: ComnSettingsService,
     private authQuery: ComnAuthQuery,

@@ -28,7 +28,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <button
             aria-label="Exit Administration"
             mat-icon-button
-            (click)="goToUrl('/')"
+            (click)="goToUrl('/build/')"
             style="outline: none"
           >
             <mat-icon
@@ -36,7 +36,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
               fontIcon="mdi-close-circle-outline"
             ></mat-icon>
           </button>
-          <a class="nolink" (click)="goToUrl('/')">
+          <a class="nolink" (click)="goToUrl('/build/')">
             <div class="cssLayoutRowCenterCenter">
               <h2 class="icon-text">Administration</h2>
             </div>
@@ -328,7 +328,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
         ></app-data-field-list>
       </span>
       <span *ngIf="isSuperUser && (selectedTab === injectTypesText)">
-        <h1>INJECT TYPES</h1>
+        <app-admin-inject-types
+          [loggedInUserId]="loggedInUserId"
+          [isContentDeveloper]="isContentDeveloper$ | async"
+          [showTemplates]="true"
+        ></app-admin-inject-types>
       </span>
       <span *ngIf="isSuperUser && (selectedTab === catalogsText)">
         <h1>CATALOGS</h1>
