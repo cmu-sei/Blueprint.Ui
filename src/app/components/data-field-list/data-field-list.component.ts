@@ -8,7 +8,7 @@ import { takeUntil } from 'rxjs/operators';
 import {
   DataField,
   DataFieldType,
-  InjectType
+  InjectType,
 } from 'src/app/generated/blueprint.api';
 import { MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
@@ -19,6 +19,8 @@ import { DataFieldDataService } from 'src/app/data/data-field/data-field-data.se
 import { DataFieldQuery } from 'src/app/data/data-field/data-field.query';
 import { DataFieldTemplateQuery } from 'src/app/data/data-field/data-field-template.query';
 import { DataFieldEditDialogComponent } from '../data-field-edit-dialog/data-field-edit-dialog.component';
+import { InjectTypeDataService } from 'src/app/data/inject-type/inject-type-data.service';
+import { InjectTypeQuery } from 'src/app/data/inject-type/inject-type.query';
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
 import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
@@ -33,8 +35,8 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
   @Input() loggedInUserId: string;
   @Input() isContentDeveloper: boolean;
   @Input() showTemplates: boolean;
+  @Input() injectTypeId: string;
   msel = new MselPlus();
-  injectType: InjectType = { id: null };
   dataFieldList: DataField[] = [];
   templateList: DataField[] = [];
   changedDataField: DataField = {};
@@ -58,6 +60,8 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
     private dataFieldDataService: DataFieldDataService,
     private dataFieldQuery: DataFieldQuery,
     private dataFieldTemplateQuery: DataFieldTemplateQuery,
+    private injectTypeDataService: InjectTypeDataService,
+    private injectTypeQuery: InjectTypeQuery,
     private mselDataService: MselDataService,
     public dialog: MatDialog,
     public dialogService: DialogService,
@@ -103,19 +107,27 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
         this.dataFieldList = dataFields;
         this.sortChanged(this.sort);
       });
-      // subscribe to the active MSEL changes to get future changes
-      (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(m => {
-        Object.assign(this.msel, m);
-        if (this.msel) {
-          if (this.msel.useGallery && !this.displayedColumns.includes('integration')) {
-            this.displayedColumns.push('integration');
-          } else if (!this.msel.useGallery && this.displayedColumns.includes('integration')) {
-            this.displayedColumns.splice(this.displayedColumns.length - 1);
+      if (this.injectTypeId) {
+        this.msel = new MselPlus();
+        this.mselDataService.setActive('');
+        this.displayedColumns.splice(1, 2);
+        // load data fields for the inject type
+        this.dataFieldDataService.loadByInjectType(this.injectTypeId);
+      } else {
+        // subscribe to the active MSEL changes to get future changes
+        (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(m => {
+          Object.assign(this.msel, m);
+          if (this.msel && this.msel.id) {
+            if (this.msel.useGallery && !this.displayedColumns.includes('integration')) {
+              this.displayedColumns.push('integration');
+            } else if (!this.msel.useGallery && this.displayedColumns.includes('integration')) {
+              this.displayedColumns.splice(this.displayedColumns.length - 1);
+            }
+            this.createSystemDefinedDataFields();
           }
-          this.createSystemDefinedDataFields();
-        }
-        this.sortChanged(this.sort);
-      });
+          this.sortChanged(this.sort);
+        });
+      }
     }
   }
 
@@ -159,6 +171,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
     if (!dataField) {
       dataField = {
         mselId: this.msel.id,
+        injectTypeId: this.injectTypeId,
         displayOrder: this.dataFieldList.length + 1,
         isInitiallyHidden: true,
         onScenarioEventList: true,
@@ -172,7 +185,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
         dataField.injectTypeId = null;
       } else {
         dataField.mselId = this.msel.id;
-        dataField.injectTypeId = this.injectType.id;
+        dataField.injectTypeId = this.injectTypeId;
         dataField.displayOrder = dataField.isTemplate ? this.dataFieldList.length + 1 : dataField.displayOrder;
       }
       dataField.isTemplate = makeTemplate;
@@ -227,7 +240,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
 
   sortChanged(sort: Sort) {
     this.sort = sort;
-    this.dataFieldDataSource.data = this.getFilteredDataFields(this.msel.id, this.injectType.id, this.dataFieldList);
+    this.dataFieldDataSource.data = this.getFilteredDataFields(this.msel.id, this.injectTypeId, this.dataFieldList);
     this.templateDataSource.data = this.templateList.sort((a, b) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
   }
 

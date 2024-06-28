@@ -7,6 +7,14 @@
   flex-direction: column;
   flex: 1;
   height: calc(100vh - 39px);
+  width: 100%;
+}
+
+.inject-type-frame {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  width: 100%;
 }
 
 .mat-table {
@@ -149,13 +157,13 @@
 }
 
 .scrolling-region {
+  width: 100%;
   height: calc(100vh - 89px);
   overflow: auto;
 }
 
-.scrolling-details {
-  max-height: calc(100vh - 293px);
-  overflow: auto;
+.inject-type-scrolling-region {
+  width: 100%;
 }
 
 .data-field-button {

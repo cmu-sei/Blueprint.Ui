@@ -92,22 +92,18 @@ project root for license information or contact permission@sei.cmu.edu for full 
           {{ element.description }}
         </mat-cell>
       </ng-container>
-      <!-- expandMe Column -->
-      <ng-container matColumnDef="expandMe">
-        <mat-header-cell *matHeaderCellDef class="mat-column-expand-me"></mat-header-cell>
-        <mat-cell *matCellDef="let element" class="mat-column-expand-me">
-          <button aria-labelledby="expand me" mat-icon-button>
-            <mat-icon
-              class="icon-color"
-              fontIcon="mdi-chevron-down"
-            ></mat-icon>
-          </button>
-        </mat-cell>
-      </ng-container>
       <!-- Expanded Content Column - The detail row is made up of this one column that spans across all columns -->
       <ng-container matColumnDef="expandedDetail">
-        <mat-cell *matCellDef="let element" [attr.colspan]="displayedColumns.length">
-          <h1>data fields go here!</h1>
+        <mat-cell class="expanded-detail-cell" *matCellDef="let element" [attr.colspan]="displayedColumns.length">
+          <div class="expanded-detail-div">
+            <app-data-field-list
+              *ngIf="expandedElementId === element.id"
+              [loggedInUserId]="loggedInUserId"
+              [isContentDeveloper]="isContentDeveloper"
+              [showTemplates]="false"
+              [injectTypeId]="element.id"
+            ></app-data-field-list>
+          </div>
         </mat-cell>
       </ng-container>
       <!-- row definitions -->

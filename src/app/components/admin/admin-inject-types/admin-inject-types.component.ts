@@ -54,7 +54,7 @@ export class AdminInjectTypesComponent implements OnDestroy {
   templateInjectTypes: InjectType[] = [];
   editingId = '';
   injectTypeDataSource = new MatTableDataSource<InjectType>(new Array<InjectType>());
-  displayedColumns: string[] = ['action', 'name', 'description', 'expandMe'];
+  displayedColumns: string[] = ['action', 'name', 'description'];
   teamList: Team[] = [];
   private unsubscribe$ = new Subject();
   isExpansionDetailRow = (i: number, row: Object) => (row as InjectType).id === this.expandedElementId;

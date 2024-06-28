@@ -6,7 +6,7 @@
   display: flex;
   flex-direction: column;
   flex: 1;
-  height: calc(100vh - 39px);
+  height: 100%;
   overflow-y: hidden;
   margin-left: 5px;
 }
@@ -79,8 +79,21 @@
   padding: 2px;
 }
 
+.expanded-detail-cell {
+  width: 100%;
+  min-width: 660px;
+}
+
+.expanded-detail-div {
+  width: calc(100% - 20px);
+  min-width: 660px;
+  margin-left: 20px;
+  max-height: 500px;
+  overflow: auto;
+}
+
 .scrolling-region {
-  height: calc(100vh - 89px);
+  height: 100%;
   overflow: auto;
   width: 100%;
 }
