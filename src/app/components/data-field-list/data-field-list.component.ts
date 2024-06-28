@@ -252,7 +252,6 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
   }
 
   deleteDataField(dataField: DataField): void {
-    console.log('opening data field dialog');
     this.dialogService
       .confirm(
         'Delete Data Field',
@@ -273,8 +272,68 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
       this.dataFieldList
     );
     this.templateDataSource.data = this.templateList.sort((a, b) =>
-      a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1
+      this.sortDataFields(a, b)
     );
+  }
+
+  private getNumOrDefault(value: number): number {
+    if (typeof value !== undefined && typeof value !== null) {
+      return +value;
+    }
+    return Number.NEGATIVE_INFINITY;
+  }
+
+  sortDataFieldsByDefinedSort(sort: Sort, a: DataField, b: DataField): number {
+    let sortResult = 0;
+    const isAsc = 'asc' === sort.direction;
+    const dir = isAsc ? 1 : -1;
+    const sortFieldName = sort.active;
+    switch (sortFieldName) {
+      case 'displayOrder':
+        const numValA = this.getNumOrDefault(a.displayOrder);
+        const numValB = this.getNumOrDefault(b.displayOrder);
+        if (+numValA < +numValB) {
+          sortResult = -1;
+        } else if (+numValA > +numValB) {
+          sortResult = 1;
+        }
+        break;
+      case 'onScenarioEventList':
+      case 'onExerciseView':
+        const aChecked = a[sortFieldName];
+        const bChecked = b[sortFieldName];
+        if (aChecked !== bChecked) {
+          sortResult = aChecked ? -1 : 1;
+        }
+        break;
+      case 'name':
+      case 'dataType':
+        const aStr = a[sortFieldName];
+        const bStr = b[sortFieldName];
+        sortResult = Intl.Collator().compare(
+          aStr ? aStr.trim().toLowerCase() : '',
+          bStr ? bStr.trim().toLowerCase() : ''
+        );
+        break;
+    }
+    if (sortResult) {
+      sortResult = sortResult * dir;
+    }
+    return sortResult;
+  }
+
+  sortDataFields(a: DataField, b: DataField): number {
+    const defaultSort: Sort = this.showTemplates
+      ? { active: 'name', direction: 'asc' }
+      : { active: 'displayOrder', direction: 'asc' };
+    let sortResult = 0;
+    if (this.sort && this.sort.active && this.sort.direction) {
+      sortResult = this.sortDataFieldsByDefinedSort(this.sort, a, b);
+    }
+    if (!sortResult) {
+      sortResult = this.sortDataFieldsByDefinedSort(defaultSort, a, b);
+    }
+    return sortResult;
   }
 
   getFilteredDataFields(
@@ -293,15 +352,16 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
       }
     }
     if (filteredDataFields) {
-      if (this.showTemplates) {
-        filteredDataFields.sort((a, b) =>
-          a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1
-        );
-      } else {
-        filteredDataFields.sort((a, b) =>
-          +a.displayOrder > +b.displayOrder ? 1 : -1
-        );
-      }
+      filteredDataFields.sort((a, b) => this.sortDataFields(a, b));
+    }
+
+    if (
+      (this.sort && this.sort.active && this.sort.direction) ||
+      this.filterString
+    ) {
+      this.allowDragAndDrop = false;
+    } else {
+      this.allowDragAndDrop = true;
     }
     const returnArray =
       this.showTemplates || (!mselId && !injectTypeId)
