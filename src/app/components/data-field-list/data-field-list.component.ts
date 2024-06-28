@@ -46,7 +46,6 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
   filterControl = new UntypedFormControl();
   filterString = '';
   sort: Sort = { active: '', direction: '' };
-  sortedDataFields: DataField[] = [];
   allowDragAndDrop = true;
   dataFieldTypes = DataFieldType;
   systemDefinedDataFields = new Array<DataField>();
@@ -451,7 +450,25 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
     this.mselDataService.updateMsel(this.msel);
   }
 
-  dropHandler(event: CdkDragDrop<string[]>) {}
+  dropHandler(event: CdkDragDrop<string[]>) {
+    // NOTE: The event index only considers rows that were draggable starting at 0
+    // The nonSystemDefaultFieldStartIndex tracks which actual index is equivalent to zero
+    const nonSystemDefaultFieldStartIndex =
+      this.dataFieldDataSource.data.findIndex(
+        (df, index) => !this.fieldIsSystemDefined(index, df)
+      );
+    const prevIndex = event.previousIndex + nonSystemDefaultFieldStartIndex;
+    const currIndex = event.currentIndex + nonSystemDefaultFieldStartIndex;
+    // sanity check
+    if (nonSystemDefaultFieldStartIndex >= 0 && prevIndex !== currIndex) {
+      const droppedField = event.item.data;
+      const targetField = this.dataFieldDataSource.data[currIndex];
+      this.saveDataField({
+        ...droppedField,
+        displayOrder: targetField.displayOrder,
+      });
+    }
+  }
 
   ngOnDestroy() {
     this.unsubscribe$.next(null);
