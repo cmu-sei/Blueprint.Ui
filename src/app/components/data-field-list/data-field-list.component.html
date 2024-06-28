@@ -77,14 +77,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <mat-header-cell *matHeaderCellDef class="mat-column-draghandle"></mat-header-cell>
           <mat-cell *matCellDef="let element;" class="mat-column-draghandle">
             <div class="draghandle-div">
-              <mat-icon cdkDragHandle class="mdi-18px down-12" fontIcon="mdi-drag-vertical"/>
+              <mat-icon cdkDragHandle cdkDragRootElement="mat-row" cdkDrag [cdkDragData]="element" cdkDragLockAxis="y" [cdkDragPreviewClass]="userTheme" class="mdi-18px down-12" fontIcon="mdi-drag-vertical"/>
             </div>
           </mat-cell>
         </ng-container>
         <ng-container matColumnDef="draghandleSpacer">
           <mat-header-cell *matHeaderCellDef class="mat-column-draghandle"></mat-header-cell>
           <mat-cell *matCellDef="let element;" class="mat-column-draghandle">
-            <span></span>
+            <div class="draghandle-div"></div>
           </mat-cell>
         </ng-container>
         <!-- action column -->
@@ -201,7 +201,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <!-- row definitions -->
         <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
         <mat-row *matRowDef="let row; columns: systemFieldDisplayedColumns when: fieldIsSystemDefined"></mat-row>
-        <mat-row *matRowDef="let row; columns: displayedColumns; when: !fieldIsSystemDefined" cdkDrag [cdkDragData]="row" cdkDragLockAxis="y"></mat-row>
+        <mat-row *matRowDef="let row; columns: displayedColumns; when: !fieldIsSystemDefined"></mat-row>
 
       </mat-table>
       <!-- No Results Message -->

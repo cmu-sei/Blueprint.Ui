@@ -155,6 +155,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         [loggedInUserId]="loggedInUserId"
         [isContentDeveloper]="isContentDeveloper"
         [showTemplates]="false"
+        [userTheme]="userTheme$ | async"
       ></app-data-field-list>
       <app-organization-list
         *ngIf="selectedTab === 'Organizations'"
