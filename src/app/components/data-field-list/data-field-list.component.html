@@ -72,15 +72,27 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <div class="mat-table">
       <mat-table #table [dataSource]="dataFieldDataSource" matSort (matSortChange)="sortChanged($event)"
       cdkDropList [cdkDropListDisabled]="!allowDragAndDrop" (cdkDropListDropped)="dropHandler($event)">
+        <!-- Drag Handler column -->
+        <ng-container matColumnDef="draghandle">
+          <mat-header-cell *matHeaderCellDef class="mat-column-draghandle"></mat-header-cell>
+          <mat-cell *matCellDef="let element;" class="mat-column-draghandle">
+            <div class="draghandle-div">
+              <mat-icon cdkDragHandle class="mdi-18px down-12" fontIcon="mdi-drag-vertical"/>
+            </div>
+          </mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="draghandleSpacer">
+          <mat-header-cell *matHeaderCellDef class="mat-column-draghandle"></mat-header-cell>
+          <mat-cell *matCellDef="let element;" class="mat-column-draghandle">
+            <span></span>
+          </mat-cell>
+        </ng-container>
         <!-- action column -->
         <ng-container matColumnDef="action">
           <mat-header-cell *matHeaderCellDef class="mat-column-action"></mat-header-cell>
           <mat-cell *matCellDef="let element" class="mat-column-action">
             <div class="action-div">
               <span *ngIf="element.displayOrder > 0">
-                <button cdkDragHandle mat-icon-button *ngIf="allowDragAndDrop" >
-                  <mat-icon class="mdi-18px" fontIcon="mdi-drag-vertical"/>
-                </button>
                 <button
                   mat-icon-button class="msel-action"
                   (click)="addOrEditDataField(element, showTemplates); $event.stopPropagation();"
@@ -188,8 +200,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
         </ng-container>
         <!-- row definitions -->
         <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-        <mat-row *matRowDef="let row; columns: displayedColumns when: fieldIsSystemDefined"></mat-row>
+        <mat-row *matRowDef="let row; columns: systemFieldDisplayedColumns when: fieldIsSystemDefined"></mat-row>
         <mat-row *matRowDef="let row; columns: displayedColumns; when: !fieldIsSystemDefined" cdkDrag [cdkDragData]="row" cdkDragLockAxis="y"></mat-row>
+
       </mat-table>
       <!-- No Results Message -->
       <div class="text no-results" *ngIf="dataFieldDataSource?.filteredData.length === 0">No results found</div>

@@ -10,6 +10,7 @@ import {
   DataFieldType,
   InjectType
 } from 'src/app/generated/blueprint.api';
+import { Theme } from '@cmusei/crucible-common';
 import { MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { Sort } from '@angular/material/sort';
@@ -34,6 +35,8 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
   @Input() loggedInUserId: string;
   @Input() isContentDeveloper: boolean;
   @Input() showTemplates: boolean;
+  @Input() userTheme: Theme;
+
   msel = new MselPlus();
   injectType: InjectType = { id: null };
   dataFieldList: DataField[] = [];
@@ -53,7 +56,17 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
   templateDataSource = new MatTableDataSource<DataField>(
     new Array<DataField>()
   );
+  systemFieldDisplayedColumns: string[] = [
+    'draghandleSpacer',
+    'action',
+    'events',
+    'exercise',
+    'name',
+    'datatype',
+    'options',
+  ];
   displayedColumns: string[] = [
+    'draghandle',
     'action',
     'events',
     'exercise',
