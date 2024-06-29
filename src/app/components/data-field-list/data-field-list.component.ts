@@ -148,7 +148,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
 
   ngOnInit() {
     if (this.showTemplates) {
-      this.displayedColumns.splice(1, 2);
+      this.displayedColumns.splice(2, 2);
     }
   }
 
@@ -265,6 +265,14 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
 
   sortChanged(sort: Sort) {
     this.sort = sort;
+    if (
+      (this.sort && this.sort.active && this.sort.direction) ||
+      this.filterString
+    ) {
+      this.allowDragAndDrop = false;
+    } else {
+      this.allowDragAndDrop = !this.showTemplates;
+    }
     this.dataFieldDataSource.data = this.getFilteredDataFields(
       this.msel.id,
       this.injectType.id,
@@ -354,14 +362,6 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
       filteredDataFields.sort((a, b) => this.sortDataFields(a, b));
     }
 
-    if (
-      (this.sort && this.sort.active && this.sort.direction) ||
-      this.filterString
-    ) {
-      this.allowDragAndDrop = false;
-    } else {
-      this.allowDragAndDrop = true;
-    }
     const returnArray =
       this.showTemplates || (!mselId && !injectTypeId)
         ? filteredDataFields
