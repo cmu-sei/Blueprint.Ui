@@ -10,11 +10,13 @@ import {
   DataFieldType,
   InjectType,
 } from 'src/app/generated/blueprint.api';
+import { Theme } from '@cmusei/crucible-common';
 import { MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { Sort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy-menu';
+import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { DataFieldDataService } from 'src/app/data/data-field/data-field-data.service';
 import { DataFieldQuery } from 'src/app/data/data-field/data-field.query';
 import { DataFieldTemplateQuery } from 'src/app/data/data-field/data-field-template.query';
@@ -35,6 +37,8 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
   @Input() loggedInUserId: string;
   @Input() isContentDeveloper: boolean;
   @Input() showTemplates: boolean;
+  @Input() userTheme: Theme;
+
   @Input() injectTypeId: string;
   msel = new MselPlus();
   dataFieldList: DataField[] = [];
@@ -43,13 +47,34 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
   filteredDataFieldList: DataField[] = [];
   filterControl = new UntypedFormControl();
   filterString = '';
-  sort: Sort = {active: '', direction: ''};
-  sortedDataFields: DataField[] = [];
+  sort: Sort = { active: '', direction: '' };
+  allowDragAndDrop = true;
   dataFieldTypes = DataFieldType;
   systemDefinedDataFields = new Array<DataField>();
-  dataFieldDataSource = new MatTableDataSource<DataField>(new Array<DataField>());
-  templateDataSource = new MatTableDataSource<DataField>(new Array<DataField>());
-  displayedColumns: string[] = ['action', 'events', 'exercise', 'name', 'datatype', 'options'];
+  dataFieldDataSource = new MatTableDataSource<DataField>(
+    new Array<DataField>()
+  );
+  templateDataSource = new MatTableDataSource<DataField>(
+    new Array<DataField>()
+  );
+  systemFieldDisplayedColumns: string[] = [
+    'draghandleSpacer',
+    'action',
+    'events',
+    'exercise',
+    'name',
+    'datatype',
+    'options',
+  ];
+  displayedColumns: string[] = [
+    'draghandle',
+    'action',
+    'events',
+    'exercise',
+    'name',
+    'datatype',
+    'options',
+  ];
   private unsubscribe$ = new Subject();
   // context menu
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
@@ -64,7 +89,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
     private injectTypeQuery: InjectTypeQuery,
     private mselDataService: MselDataService,
     public dialog: MatDialog,
-    public dialogService: DialogService,
+    public dialogService: DialogService
   ) {
     this.msel.id = null;
     // subscribe to filter string changes
@@ -77,10 +102,9 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
     // load the dataField templates
     this.dataFieldDataService.loadTemplates();
     // subscribe to the templates
-    this.dataFieldTemplateQuery.selectAll()
-      .pipe(
-        takeUntil(this.unsubscribe$)
-      )
+    this.dataFieldTemplateQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
       .subscribe(
         (templates) => {
           this.templateList = templates;
@@ -98,7 +122,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
 
   ngOnInit() {
     if (this.showTemplates) {
-      this.displayedColumns.splice(1, 2);
+      this.displayedColumns.splice(2, 2);
       this.msel = new MselPlus();
       this.mselDataService.setActive('');
     } else {
@@ -164,10 +188,11 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
   }
 
   addOrEditDataField(dataFieldIn: DataField, makeTemplate: boolean) {
-    const dataOptions = dataFieldIn && dataFieldIn.isChosenFromList
-      ? dataFieldIn.dataOptions.slice()
-      : [];
-    let dataField = dataFieldIn ? { ...dataFieldIn} : null;
+    const dataOptions =
+      dataFieldIn && dataFieldIn.isChosenFromList
+        ? dataFieldIn.dataOptions.slice()
+        : [];
+    let dataField = dataFieldIn ? { ...dataFieldIn } : null;
     if (!dataField) {
       dataField = {
         mselId: this.msel.id,
@@ -176,17 +201,20 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
         isInitiallyHidden: true,
         onScenarioEventList: true,
         onExerciseView: true,
-        isTemplate: makeTemplate
+        isTemplate: makeTemplate,
       } as DataField;
     } else {
-      dataField.id = makeTemplate === dataField.isTemplate ? dataField.id : null;
+      dataField.id =
+        makeTemplate === dataField.isTemplate ? dataField.id : null;
       if (makeTemplate) {
         dataField.mselId = null;
         dataField.injectTypeId = null;
       } else {
         dataField.mselId = this.msel.id;
         dataField.injectTypeId = this.injectTypeId;
-        dataField.displayOrder = dataField.isTemplate ? this.dataFieldList.length + 1 : dataField.displayOrder;
+        dataField.displayOrder = dataField.isTemplate
+          ? this.dataFieldList.length + 1
+          : dataField.displayOrder;
       }
       dataField.isTemplate = makeTemplate;
       dataField.onScenarioEventList = true;
@@ -200,10 +228,12 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
         dataField: dataField,
         isContentDeveloper: this.isContentDeveloper,
         isOwner: this.msel.hasRole(this.loggedInUserId, null).owner,
-        galleryArticleParameters: this.getUnusedGalleryOptions(dataField.galleryArticleParameter),
+        galleryArticleParameters: this.getUnusedGalleryOptions(
+          dataField.galleryArticleParameter
+        ),
         useGallery: this.msel.useGallery,
         useCite: this.msel.useCite,
-        dataFieldTypes: this.dataFieldTypes
+        dataFieldTypes: this.dataFieldTypes,
       },
     });
     dialogRef.componentInstance.editComplete.subscribe((result) => {
@@ -225,7 +255,6 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
   }
 
   deleteDataField(dataField: DataField): void {
-    console.log('opening data field dialog');
     this.dialogService
       .confirm(
         'Delete Data Field',
@@ -240,40 +269,118 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
 
   sortChanged(sort: Sort) {
     this.sort = sort;
-    this.dataFieldDataSource.data = this.getFilteredDataFields(this.msel.id, this.injectTypeId, this.dataFieldList);
-    this.templateDataSource.data = this.templateList.sort((a, b) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
+    if (
+      (this.sort && this.sort.active && this.sort.direction) ||
+      this.filterString
+    ) {
+      this.allowDragAndDrop = false;
+    } else {
+      this.allowDragAndDrop = !this.showTemplates;
+    }
+    this.dataFieldDataSource.data = this.getFilteredDataFields(
+      this.msel.id,
+      this.injectTypeId,
+      this.dataFieldList
+    );
+    this.templateDataSource.data = this.templateList.sort((a, b) =>
+      this.sortDataFields(a, b)
+    );
   }
 
-  getFilteredDataFields(mselId: string, injectTypeId: string, dataFields: DataField[]): DataField[] {
+  private getNumOrDefault(value: number): number {
+    if (typeof value !== undefined && typeof value !== null) {
+      return +value;
+    }
+    return Number.NEGATIVE_INFINITY;
+  }
+
+  sortDataFieldsByDefinedSort(sort: Sort, a: DataField, b: DataField): number {
+    let sortResult = 0;
+    const isAsc = 'asc' === sort.direction;
+    const dir = isAsc ? 1 : -1;
+    const sortFieldName = sort.active;
+    switch (sortFieldName) {
+      case 'displayOrder':
+        const numValA = this.getNumOrDefault(a.displayOrder);
+        const numValB = this.getNumOrDefault(b.displayOrder);
+        if (+numValA < +numValB) {
+          sortResult = -1;
+        } else if (+numValA > +numValB) {
+          sortResult = 1;
+        }
+        break;
+      case 'onScenarioEventList':
+      case 'onExerciseView':
+        const aChecked = a[sortFieldName];
+        const bChecked = b[sortFieldName];
+        if (aChecked !== bChecked) {
+          sortResult = aChecked ? -1 : 1;
+        }
+        break;
+      case 'name':
+      case 'dataType':
+        const aStr = a[sortFieldName];
+        const bStr = b[sortFieldName];
+        sortResult = Intl.Collator().compare(
+          aStr ? aStr.trim().toLowerCase() : '',
+          bStr ? bStr.trim().toLowerCase() : ''
+        );
+        break;
+    }
+    if (sortResult) {
+      sortResult = sortResult * dir;
+    }
+    return sortResult;
+  }
+
+  sortDataFields(a: DataField, b: DataField): number {
+    const defaultSort: Sort = this.showTemplates
+      ? { active: 'name', direction: 'asc' }
+      : { active: 'displayOrder', direction: 'asc' };
+    let sortResult = 0;
+    if (this.sort && this.sort.active && this.sort.direction) {
+      sortResult = this.sortDataFieldsByDefinedSort(this.sort, a, b);
+    }
+    if (!sortResult) {
+      sortResult = this.sortDataFieldsByDefinedSort(defaultSort, a, b);
+    }
+    return sortResult;
+  }
+
+  getFilteredDataFields(
+    mselId: string,
+    injectTypeId: string,
+    dataFields: DataField[]
+  ): DataField[] {
     let filteredDataFields: DataField[] = [];
     if (dataFields && dataFields.length > 0) {
       filteredDataFields = dataFields.slice();
       if (this.filterString) {
         const filterString = this.filterString?.toLowerCase();
-        filteredDataFields = filteredDataFields
-          .filter((a) =>
-            a.name?.toLowerCase().includes(filterString)
-          );
+        filteredDataFields = filteredDataFields.filter((a) =>
+          a.name?.toLowerCase().includes(filterString)
+        );
       }
     }
     if (filteredDataFields) {
-      if (this.showTemplates) {
-        filteredDataFields.sort((a, b) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
-      } else {
-        filteredDataFields.sort((a, b) => +a.displayOrder > +b.displayOrder ? 1 : -1);
-      }
+      filteredDataFields.sort((a, b) => this.sortDataFields(a, b));
     }
-    const returnArray = this.showTemplates || (!mselId && !injectTypeId)
-      ? filteredDataFields
-      : this.systemDefinedDataFields.concat(filteredDataFields);
+
+    const returnArray =
+      this.showTemplates || (!mselId && !injectTypeId)
+        ? filteredDataFields
+        : this.systemDefinedDataFields.concat(filteredDataFields);
     return returnArray;
   }
 
   getDataOptionsString(dataField: DataField): string {
     if (dataField.dataOptions) {
-      const dataOptions = dataField.dataOptions.slice().sort((a, b) => +a.displayOrder < +b.displayOrder ? -1 : 1).map(function(elem){
-        return elem.optionName;
-      });
+      const dataOptions = dataField.dataOptions
+        .slice()
+        .sort((a, b) => (+a.displayOrder < +b.displayOrder ? -1 : 1))
+        .map(function (elem) {
+          return elem.optionName;
+        });
       return dataOptions.join(', ');
     } else {
       return ' ';
@@ -291,7 +398,8 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
           break;
         case 'Group':
           this.msel.showGroupOnExerciseView = dataField.onExerciseView;
-          this.msel.showGroupOnScenarioEventList = dataField.onScenarioEventList;
+          this.msel.showGroupOnScenarioEventList =
+            dataField.onScenarioEventList;
           break;
         case 'Execution Time':
           this.msel.showTimeOnExerciseView = dataField.onExerciseView;
@@ -306,7 +414,10 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
     let todoString = '';
     let todoList = Object.assign([], this.msel.galleryArticleParameters);
     if (todoList && todoList.length > 0) {
-      todoList = todoList.filter(x => !this.dataFieldList.some(df => df.galleryArticleParameter === x));
+      todoList = todoList.filter(
+        (x) =>
+          !this.dataFieldList.some((df) => df.galleryArticleParameter === x)
+      );
       todoString = todoList.join(', ');
     }
     return todoString;
@@ -315,8 +426,11 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
   getUnusedGalleryOptions(parameter: string): string[] {
     const options = [];
     if (this.msel.galleryArticleParameters) {
-      this.msel.galleryArticleParameters.forEach(gap => {
-        if (parameter === gap || !this.dataFieldList.some(df => df.galleryArticleParameter === gap)) {
+      this.msel.galleryArticleParameters.forEach((gap) => {
+        if (
+          parameter === gap ||
+          !this.dataFieldList.some((df) => df.galleryArticleParameter === gap)
+        ) {
           options.push(gap);
         }
       });
@@ -332,8 +446,32 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
     }
   }
 
+  fieldIsSystemDefined(index: number, rowData: DataField) {
+    return rowData.displayOrder < 0;
+  }
+
   saveMsel() {
     this.mselDataService.updateMsel(this.msel);
+  }
+
+  dropHandler(event: CdkDragDrop<string[]>) {
+    // NOTE: The event index only considers rows that were draggable starting at 0
+    // The nonSystemDefaultFieldStartIndex tracks which actual index is equivalent to zero
+    const nonSystemDefaultFieldStartIndex =
+      this.dataFieldDataSource.data.findIndex(
+        (df, index) => !this.fieldIsSystemDefined(index, df)
+      );
+    const prevIndex = event.previousIndex + nonSystemDefaultFieldStartIndex;
+    const currIndex = event.currentIndex + nonSystemDefaultFieldStartIndex;
+    // sanity check
+    if (nonSystemDefaultFieldStartIndex >= 0 && prevIndex !== currIndex) {
+      const droppedField = event.item.data;
+      const targetField = this.dataFieldDataSource.data[currIndex];
+      this.saveDataField({
+        ...droppedField,
+        displayOrder: targetField.displayOrder,
+      });
+    }
   }
 
   ngOnDestroy() {

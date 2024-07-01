@@ -23,7 +23,7 @@ import { AngularEditorConfig } from '@kolkov/angular-editor';
 })
 export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
   @Output() editComplete = new EventEmitter<any>();
-  sort: Sort = {active: '', direction: ''};
+  sort: Sort = { active: '', direction: '' };
   sortedScenarioEvents: ScenarioEventPlus[] = [];
   newScenarioEvent: ScenarioEventPlus;
   isAddingScenarioEvent = false;
@@ -45,18 +45,16 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
     defaultFontName: '',
     defaultFontSize: '',
     fonts: [
-      {class: 'arial', name: 'Arial'},
-      {class: 'times-new-roman', name: 'Times New Roman'},
-      {class: 'calibri', name: 'Calibri'},
-      {class: 'comic-sans-ms', name: 'Comic Sans MS'}
+      { class: 'arial', name: 'Arial' },
+      { class: 'times-new-roman', name: 'Times New Roman' },
+      { class: 'calibri', name: 'Calibri' },
+      { class: 'comic-sans-ms', name: 'Comic Sans MS' },
     ],
     uploadUrl: '',
     uploadWithCredentials: false,
     sanitize: true,
     toolbarPosition: 'top',
-    toolbarHiddenButtons: [
-      ['backgroundColor']
-    ]
+    toolbarHiddenButtons: [['backgroundColor']],
   };
   viewConfig: AngularEditorConfig = {
     editable: false,
@@ -75,21 +73,32 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
   };
   dataType: typeof DataFieldType = DataFieldType;
 
-  itemStatus = [MselItemStatus.Pending, MselItemStatus.Entered, MselItemStatus.Approved, MselItemStatus.Complete, MselItemStatus.Deployed, MselItemStatus.Archived];
-  mselRole = { Owner: MselRole.Owner, Approver: MselRole.Approver, Editor: MselRole.Editor};
+  itemStatus = [
+    MselItemStatus.Pending,
+    MselItemStatus.Entered,
+    MselItemStatus.Approved,
+    MselItemStatus.Complete,
+    MselItemStatus.Deployed,
+    MselItemStatus.Archived,
+  ];
+  mselRole = {
+    Owner: MselRole.Owner,
+    Approver: MselRole.Approver,
+    Editor: MselRole.Editor,
+  };
   toOrgList: string[] = [];
   sortedMselTeams: Team[] = [];
   blankDataValue = {
     id: '',
     value: '',
-    valueArray: []
+    valueArray: [],
   } as DataValuePlus;
   scenarioEventBackgroundColors: Array<string>;
   sortedDataFields: DataField[] = [];
   selectedTab = 0;
   private tabSections = new Map([
     ['default', 0],
-    ['advanced', 1]
+    ['advanced', 1],
   ]);
   private tabCount = 2;
   currentFilterBy = 'default';
@@ -120,23 +129,23 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
     return item.id;
   }
 
-  getDataOptions(dataFieldId: string) {
-    return this.data.dataOptions.filter(x => x.dataFieldId === dataFieldId);
-  }
-
   getDataValue(dataFieldName: string): DataValuePlus {
     const dataFieldId = this.getDataFieldIdByName(dataFieldName);
     if (!dataFieldId) {
       return this.blankDataValue;
     }
-    const dataValue = this.data.scenarioEvent.dataValues.find(dv => dv.dataFieldId === dataFieldId);
-    return dataValue ? dataValue as DataValuePlus : this.blankDataValue;
+    const dataValue = this.data.scenarioEvent.dataValues.find(
+      (dv) => dv.dataFieldId === dataFieldId
+    );
+    return dataValue ? (dataValue as DataValuePlus) : this.blankDataValue;
   }
 
   setDataValue(dataFieldName: string, value: string) {
     const dataFieldId = this.getDataFieldIdByName(dataFieldName);
     if (dataFieldId) {
-      const dataValue = this.data.scenarioEvent.dataValues.find(dv => dv.dataFieldId === dataFieldId);
+      const dataValue = this.data.scenarioEvent.dataValues.find(
+        (dv) => dv.dataFieldId === dataFieldId
+      );
       dataValue.value = value;
     }
   }
@@ -150,7 +159,9 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
   }
 
   getDataFieldIdByName(name: string): string {
-    const dataField = this.data.dataFields.find(df => df.name.toLowerCase() === name.toLowerCase());
+    const dataField = this.data.dataFields.find(
+      (df) => df.name.toLowerCase() === name.toLowerCase()
+    );
     return dataField ? dataField.id : '';
   }
 
@@ -171,7 +182,7 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
     } else {
       this.editComplete.emit({
         saveChanges: saveChanges,
-        scenarioEvent: this.data.scenarioEvent
+        scenarioEvent: this.data.scenarioEvent,
       });
     }
   }
@@ -186,16 +197,22 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
     let filteredList = [];
     switch (filter) {
       case 'default':
-        filteredList = this.data.dataFields.filter(x => !x.isInitiallyHidden);
+        filteredList = this.data.dataFields.filter((x) => !x.isInitiallyHidden);
         break;
       case 'gallery':
-        filteredList = this.data.dataFields.filter(x => !!x.galleryArticleParameter);
+        filteredList = this.data.dataFields.filter(
+          (x) => !!x.galleryArticleParameter
+        );
         break;
       case 'advanced':
-        filteredList = this.data.dataFields.filter(x => x.isInitiallyHidden && !x.galleryArticleParameter);
+        filteredList = this.data.dataFields.filter(
+          (x) => x.isInitiallyHidden && !x.galleryArticleParameter
+        );
         break;
     }
-    filteredList =  filteredList.sort((a, b) => +a.displayOrder < +b.displayOrder ? -1 : 1);
+    filteredList = filteredList.sort((a, b) =>
+      +a.displayOrder < +b.displayOrder ? -1 : 1
+    );
     return filteredList;
   }
 

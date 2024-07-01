@@ -20,7 +20,6 @@ import {
   Card,
   DataField,
   DataFieldType,
-  DataOption,
   DataValue,
   MselItemStatus,
   Move,
@@ -51,7 +50,6 @@ import { DataValueQuery } from 'src/app/data/data-value/data-value.query';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { v4 as uuidv4 } from 'uuid';
 import { DataFieldQuery } from 'src/app/data/data-field/data-field.query';
-import { DataOptionQuery } from 'src/app/data/data-option/data-option.query';
 import { TeamQuery } from 'src/app/data/team/team.query';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
 import { AngularEditorConfig } from '@kolkov/angular-editor';
@@ -80,7 +78,6 @@ export class ScenarioEventListComponent
   mselUsers: User[] = [];
   viewIndex = new ScenarioEventViewIndexing();
 
-  sortedDataOptions: DataOption[] = [];
   allDataFields: DataField[] = [];
   expandedScenarioEventId = '';
   expandedMoreScenarioEventIds: string[] = [];
@@ -173,7 +170,6 @@ export class ScenarioEventListComponent
     public dialogService: DialogService,
     public dialog: MatDialog,
     private dataFieldQuery: DataFieldQuery,
-    private dataOptionQuery: DataOptionQuery,
     private dataValueDataService: DataValueDataService,
     private dataValueQuery: DataValueQuery,
     private teamQuery: TeamQuery,
@@ -200,15 +196,6 @@ export class ScenarioEventListComponent
         this.scenarioEventDataService.updateScenarioEventViewDataFields(this);
         this.scenarioEventDataService.updateScenarioEventViewDisplayedEvents(
           this
-        );
-      });
-    // subscribe to the data options
-    this.dataOptionQuery
-      .selectAll()
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe((dataOptions) => {
-        this.sortedDataOptions = dataOptions.sort((a, b) =>
-          +a.displayOrder < +b.displayOrder ? -1 : 1
         );
       });
     // subscribe to data values
@@ -351,10 +338,6 @@ export class ScenarioEventListComponent
         this.dateFormControls[df.id] = new UntypedFormControl();
       }
     });
-  }
-
-  getDataOptions(dataFieldId: string) {
-    return this.sortedDataOptions.filter((x) => x.dataFieldId === dataFieldId);
   }
 
   getMselUsers(): User[] {
@@ -634,7 +617,6 @@ export class ScenarioEventListComponent
       data: {
         scenarioEvent: scenarioEvent,
         dataFields: this.allDataFields,
-        dataOptions: this.sortedDataOptions,
         organizationList: this.getSortedOrganizationOptions(),
         teamList: this.msel.teams,
         moveList: this.moveList,
