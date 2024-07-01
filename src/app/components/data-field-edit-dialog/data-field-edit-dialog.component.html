@@ -64,7 +64,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         </mat-checkbox><br />
       </div>
       <div class="data-options" *ngIf="data.dataField.isChosenFromList">
-        <div class="data-option" *ngFor="let dataOption of sortedDataFieldOptions()">
+        <div class="data-option" *ngFor="let dataOption of data.dataField.dataOptions">
           <div *ngIf="(data.isContentDeveloper || data.isOwner) && !optionListNotAllowed()">
             <button
               mat-icon-button
