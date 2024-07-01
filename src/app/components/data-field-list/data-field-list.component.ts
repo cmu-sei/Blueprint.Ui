@@ -128,7 +128,10 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
     } else {
       // subscribe to data fields
       this.dataFieldQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(dataFields => {
-        this.dataFieldList = dataFields;
+        this.dataFieldList = [];
+        dataFields.forEach(df => {
+          this.dataFieldList.push({ ...df });
+        });
         this.sortChanged(this.sort);
       });
       if (this.injectTypeId) {
