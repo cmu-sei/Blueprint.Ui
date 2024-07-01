@@ -3,7 +3,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
-<div *ngIf="msel" class="frame">
+<div [ngClass]="injectTypeId ? 'inject-type-frame' : 'frame'">
   <section
     matSort
     (matSortChange)="sortChanged($event)"
@@ -67,7 +67,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <span class="mat-header-cell three-cell search-cell">&nbsp;</span>
   </section>
 
-  <section class="scrolling-region">
+  <section [ngClass]="injectTypeId ? 'inject-type-scrolling-region' : 'scrolling-region'">
     <div class="gallery-warning" *ngIf="!!galleryToDo()">** Gallery Parameters not assigned:  {{ galleryToDo() }}</div>
     <div class="mat-table">
       <mat-table #table [dataSource]="dataFieldDataSource" matSort (matSortChange)="sortChanged($event)"
@@ -114,7 +114,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   mat-icon-button class="msel-action"
                   (click)="addOrEditDataField(element, true); $event.stopPropagation();"
                   title="Make {{ element.name }} a template"
-                  *ngIf="!showTemplates && isContentDeveloper"
+                  *ngIf="!injectTypeId && !showTemplates && isContentDeveloper"
                 >
                   <mat-icon class="mdi-18px" fontIcon="mdi-bank" title="Make {{ element.name }} a template"></mat-icon>
                 </button>

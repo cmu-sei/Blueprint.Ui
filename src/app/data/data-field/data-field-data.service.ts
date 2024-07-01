@@ -136,6 +136,26 @@ export class DataFieldDataService {
       );
   }
 
+  loadByInjectType(injectTypeId: string) {
+    this.dataFieldStore.setLoading(true);
+    this.dataFieldService
+      .getDataFieldsByInjectType(injectTypeId)
+      .pipe(
+        tap(() => {
+          this.dataFieldStore.setLoading(false);
+        }),
+        take(1)
+      )
+      .subscribe(
+        (dataFields) => {
+          this.dataFieldStore.set(dataFields);
+        },
+        (error) => {
+          this.dataFieldStore.set([]);
+        }
+      );
+  }
+
   unload() {
     this.dataFieldStore.set([]);
   }

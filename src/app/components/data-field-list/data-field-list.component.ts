@@ -8,7 +8,7 @@ import { takeUntil } from 'rxjs/operators';
 import {
   DataField,
   DataFieldType,
-  InjectType
+  InjectType,
 } from 'src/app/generated/blueprint.api';
 import { Theme } from '@cmusei/crucible-common';
 import { MselPlus } from 'src/app/data/msel/msel-data.service';
@@ -21,6 +21,8 @@ import { DataFieldDataService } from 'src/app/data/data-field/data-field-data.se
 import { DataFieldQuery } from 'src/app/data/data-field/data-field.query';
 import { DataFieldTemplateQuery } from 'src/app/data/data-field/data-field-template.query';
 import { DataFieldEditDialogComponent } from '../data-field-edit-dialog/data-field-edit-dialog.component';
+import { InjectTypeDataService } from 'src/app/data/inject-type/inject-type-data.service';
+import { InjectTypeQuery } from 'src/app/data/inject-type/inject-type.query';
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
 import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
@@ -37,8 +39,8 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
   @Input() showTemplates: boolean;
   @Input() userTheme: Theme;
 
+  @Input() injectTypeId: string;
   msel = new MselPlus();
-  injectType: InjectType = { id: null };
   dataFieldList: DataField[] = [];
   templateList: DataField[] = [];
   changedDataField: DataField = {};
@@ -83,42 +85,14 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
     private dataFieldDataService: DataFieldDataService,
     private dataFieldQuery: DataFieldQuery,
     private dataFieldTemplateQuery: DataFieldTemplateQuery,
+    private injectTypeDataService: InjectTypeDataService,
+    private injectTypeQuery: InjectTypeQuery,
     private mselDataService: MselDataService,
     public dialog: MatDialog,
     public dialogService: DialogService
   ) {
     this.msel.id = null;
-    // subscribe to data fields, if not on template page
-    if (!this.showTemplates) {
-      this.dataFieldQuery
-        .selectAll()
-        .pipe(takeUntil(this.unsubscribe$))
-        .subscribe((dataFields) => {
-          this.dataFieldList = dataFields;
-          this.sortChanged(this.sort);
-        });
-    }
-    // subscribe to the active MSEL changes to get future changes
-    (this.mselQuery.selectActive() as Observable<MselPlus>)
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe((m) => {
-        Object.assign(this.msel, m);
-        if (this.msel) {
-          if (
-            this.msel.useGallery &&
-            !this.displayedColumns.includes('integration')
-          ) {
-            this.displayedColumns.push('integration');
-          } else if (
-            !this.msel.useGallery &&
-            this.displayedColumns.includes('integration')
-          ) {
-            this.displayedColumns.splice(this.displayedColumns.length - 1);
-          }
-          this.createSystemDefinedDataFields();
-        }
-        this.sortChanged(this.sort);
-      });
+    // subscribe to filter string changes
     this.filterControl.valueChanges
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((term) => {
@@ -149,6 +123,38 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
   ngOnInit() {
     if (this.showTemplates) {
       this.displayedColumns.splice(2, 2);
+      this.msel = new MselPlus();
+      this.mselDataService.setActive('');
+    } else {
+      // subscribe to data fields
+      this.dataFieldQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(dataFields => {
+        this.dataFieldList = [];
+        dataFields.forEach(df => {
+          this.dataFieldList.push({ ...df });
+        });
+        this.sortChanged(this.sort);
+      });
+      if (this.injectTypeId) {
+        this.msel = new MselPlus();
+        this.mselDataService.setActive('');
+        this.displayedColumns.splice(1, 2);
+        // load data fields for the inject type
+        this.dataFieldDataService.loadByInjectType(this.injectTypeId);
+      } else {
+        // subscribe to the active MSEL changes to get future changes
+        (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(m => {
+          Object.assign(this.msel, m);
+          if (this.msel && this.msel.id) {
+            if (this.msel.useGallery && !this.displayedColumns.includes('integration')) {
+              this.displayedColumns.push('integration');
+            } else if (!this.msel.useGallery && this.displayedColumns.includes('integration')) {
+              this.displayedColumns.splice(this.displayedColumns.length - 1);
+            }
+            this.createSystemDefinedDataFields();
+          }
+          this.sortChanged(this.sort);
+        });
+      }
     }
   }
 
@@ -193,6 +199,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
     if (!dataField) {
       dataField = {
         mselId: this.msel.id,
+        injectTypeId: this.injectTypeId,
         displayOrder: this.dataFieldList.length + 1,
         isInitiallyHidden: true,
         onScenarioEventList: true,
@@ -207,7 +214,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
         dataField.injectTypeId = null;
       } else {
         dataField.mselId = this.msel.id;
-        dataField.injectTypeId = this.injectType.id;
+        dataField.injectTypeId = this.injectTypeId;
         dataField.displayOrder = dataField.isTemplate
           ? this.dataFieldList.length + 1
           : dataField.displayOrder;
@@ -275,7 +282,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
     }
     this.dataFieldDataSource.data = this.getFilteredDataFields(
       this.msel.id,
-      this.injectType.id,
+      this.injectTypeId,
       this.dataFieldList
     );
     this.templateDataSource.data = this.templateList.sort((a, b) =>
