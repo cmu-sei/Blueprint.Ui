@@ -331,11 +331,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <app-admin-inject-types
           [loggedInUserId]="loggedInUserId"
           [isContentDeveloper]="isContentDeveloper$ | async"
-          [showTemplates]="true"
         ></app-admin-inject-types>
       </span>
       <span *ngIf="isSuperUser && (selectedTab === catalogsText)">
-        <h1>CATALOGS</h1>
+        <app-admin-catalog-list
+          [loggedInUserId]="loggedInUserId"
+          [isContentDeveloper]="isContentDeveloper$ | async"
+        >
+        </app-admin-catalog-list>
       </span>
       <span *ngIf="isSuperUser && (selectedTab === organizationsText)">
         <app-organization-list
