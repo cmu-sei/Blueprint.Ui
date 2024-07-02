@@ -48,7 +48,7 @@ project root for license information.
       <div>
         <mat-form-field class="full-width">
           <mat-label>Inject Type</mat-label>
-          <mat-select placeholder="Inject Type" [(ngModel)]="data.catalog.InjectTypeId">
+          <mat-select placeholder="Inject Type" [(ngModel)]="data.catalog.injectTypeId">
             <mat-option *ngFor="let injectType of data.injectTypeList" [value]="injectType.id" title="{{ injectType.name}}">
               {{ injectType.name }}
             </mat-option>

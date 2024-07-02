@@ -100,7 +100,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           Inject Type
         </mat-header-cell>
         <mat-cell *matCellDef="let element" class="mat-column-inject-type">
-          {{ element.injectType?.name }}
+          {{ getInjectTypeName(element.injectTypeId) }}
         </mat-cell>
       </ng-container>
       <!-- description Column -->

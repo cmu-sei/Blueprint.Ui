@@ -198,4 +198,9 @@ export class AdminCatalogListComponent implements OnDestroy {
     return rowClass;
   }
 
+  getInjectTypeName(injectTypeId: string) {
+    const injectType = this.injectTypeList.find(m => m.id === injectTypeId);
+    return injectType ? injectType.name : '';
+  }
+
 }
