@@ -2,59 +2,24 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-.scrolling-region {
-  width: 100%;
-  height: calc(100vh - 60px);
-  overflow: auto;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  margin-top: 20px;
-}
-
-.section-container {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-}
-
-.section-content {
-  width: 100%;
-}
-
 .mat-expansion-panel {
-  width: calc(100% - 10px);
-  margin: 5px;
+  width: calc(100% - 60px);
+  margin-left: 60px;
 }
 
-.unit-detail {
+.mat-expansion-panel-header {
+  height: 32px;
+}
+
+.units-title {
+  margin-top: 12px;
+  font-weight: bold;
+  height: 30px;
+}
+
+.units-div {
   text-align: left;
-  margin-left:50px;
-  margin-bottom: 10px;
-  width: calc(100% - 50px);
-  display: flex;
-  flex-direction: row;
-  flex: 1;
-}
-
-.other-units-div {
-  text-align: left;
-  margin-left:50px;
-  width: calc(100% - 50px);
-}
-
-.user-name {
-  display: flex;
-}
-
-.catalog-role {
-  display: flex;
-}
-
-.no-users {
   width: 100%;
-  text-align: left;
-  padding-left: 100px;
 }
 
 .full-width {

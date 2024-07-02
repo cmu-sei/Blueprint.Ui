@@ -1,7 +1,7 @@
 // Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, Input, OnDestroy, ViewChild } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { UnitQuery } from 'src/app/data/unit/unit.query';
@@ -25,7 +25,7 @@ import { MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy
   templateUrl: './catalog-units.component.html',
   styleUrls: ['./catalog-units.component.scss'],
 })
-export class CatalogUnitsComponent implements OnDestroy {
+export class CatalogUnitsComponent implements OnDestroy, OnInit {
   @Input() loggedInUserId: string;
   @Input() isContentDeveloper: boolean;
   @Input() catalog: Catalog;
@@ -45,7 +45,6 @@ export class CatalogUnitsComponent implements OnDestroy {
     private unitQuery: UnitQuery,
     private userDataService: UserDataService,
     private catalogDataService: CatalogDataService,
-    private catalogQuery: CatalogQuery,
     private catalogUnitDataService: CatalogUnitDataService,
     private catalogUnitQuery: CatalogUnitQuery,
   ) {
@@ -75,9 +74,9 @@ export class CatalogUnitsComponent implements OnDestroy {
     });
   }
 
-  getUserName(userId: string) {
-    const user = this.userList.find(u => u.id === userId);
-    return user ? user.name : 'unknown';
+  ngOnInit() {
+    // load the CatalogUnits
+    this.catalogUnitDataService.loadByCatalog(this.catalog.id);
   }
 
   getSortedDataFields(dataFields: DataField[]): DataField[] {
@@ -101,9 +100,9 @@ export class CatalogUnitsComponent implements OnDestroy {
     return unitList;
   }
 
-  getUnit(id: string) {
+  getUnit(id: string): Unit {
     const unit = this.allUnits.find(t => t.id === id);
-    return unit ? unit : {};
+    return unit ? unit : { shortName: 'unit' };
   }
 
   getCatalogUnitUsers(id: string) {

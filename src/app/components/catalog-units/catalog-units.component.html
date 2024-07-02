@@ -3,51 +3,32 @@ Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
-<div *ngIf="catalog" class="scrolling-region">
-  <div class="mat-elevation-z2 section-container">
-    <div class="section-content">
-      <mat-expansion-panel
-        *ngFor="let catalogUnit of catalogUnitList; trackBy: trackByFn"
+<mat-expansion-panel *ngIf="catalog">
+  <mat-expansion-panel-header>
+    <span class="units-title">Units with access</span>
+  </mat-expansion-panel-header>
+  <div class="units-div">
+    <div *ngFor="let catalogUnit of catalogUnitList; trackBy: trackByFn">
+      <button
+        mat-icon-button
+        (click)="removeUnitFromCatalog(catalogUnit.id); $event.stopPropagation();"
+        title="Remove {{ getUnit(catalogUnit.unitId).shortName }} from this catalog"
+        *ngIf="isContentDeveloper"
       >
-        <mat-expansion-panel-header
-          (click)="$event.stopPropagation();"
-        >
-          <button
-            mat-icon-button
-            (click)="removeUnitFromCatalog(catalogUnit.id); $event.stopPropagation();"
-            title="Remove unit from MSEL"
-            *ngIf="isContentDeveloper"
-          >
-            <mat-icon class="mdi-24px self-center" fontIcon="mdi-minus-circle-outline"></mat-icon>
-          </button>
-          <span class="center-self">{{ getUnit(catalogUnit.unitId).shortName }} - {{ getUnit(catalogUnit.unitId).name }}</span>
-        </mat-expansion-panel-header>
-        <div class="unit-detail" *ngFor="let user of getCatalogUnitUsers(catalogUnit.unitId)">
-          <div class="user-name four-cell">{{ user.name }}</div>
-        </div>
-        <div class="unit-detail" *ngIf="getCatalogUnitUsers(catalogUnit.unitId).length === 0">This unit has no users.</div>
-      </mat-expansion-panel>
+        <mat-icon class="mdi-24px self-center" fontIcon="mdi-minus-circle-outline"></mat-icon>
+      </button>
+      <span class="center-self">{{ getUnit(catalogUnit.unitId).shortName }} - {{ getUnit(catalogUnit.unitId).name }}</span>
+    </div>
+    <span class="units-title">Units to add</span>
+    <div *ngFor="let unit of getUnitList(); trackBy: trackByFn">
+      <button
+        mat-icon-button
+        (click)="addUnitToCatalog(unit.id); $event.stopPropagation();"
+        title="Add {{ unit.shortName }} to this catalog"
+      >
+        <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
+      </button>
+      {{ unit.shortName }} - {{ unit.name }}
     </div>
   </div>
-  <div class="mat-elevation-z2 section-container" *ngIf="isContentDeveloper">
-    <div class="section-content">
-      <mat-expansion-panel>
-        <mat-expansion-panel-header
-          (click)="$event.stopPropagation();"
-        >
-          Add a Unit Unit
-          </mat-expansion-panel-header>
-          <div class="other-units-div" *ngFor="let unit of getUnitList()">
-            <button
-              mat-icon-button
-              (click)="addUnitToCatalog(unit.id); $event.stopPropagation();"
-              title="Add unit to MSEL"
-            >
-              <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
-            </button>
-            {{ unit.shortName }} - {{ unit.name }}
-          </div>
-      </mat-expansion-panel>
-    </div>
-  </div>
-</div>
+</mat-expansion-panel>
