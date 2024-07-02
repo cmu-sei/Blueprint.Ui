@@ -6,19 +6,19 @@
 
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { InjectPageComponent } from './inject-page.component';
+import { EventDetailPageComponent } from './event-detail-page.component';
 
-describe('InjectPageComponent', () => {
-  let component: InjectPageComponent;
-  let fixture: ComponentFixture<InjectPageComponent>;
+describe('EventDetailPageComponent', () => {
+  let component: EventDetailPageComponent;
+  let fixture: ComponentFixture<EventDetailPageComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ InjectPageComponent ]
+      declarations: [ EventDetailPageComponent ]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(InjectPageComponent);
+    fixture = TestBed.createComponent(EventDetailPageComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
