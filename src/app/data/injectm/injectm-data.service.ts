@@ -112,6 +112,29 @@ export class InjectmDataService {
       );
   }
 
+  loadByInjectType(injectTypeId: string) {
+    this.injectmStore.setLoading(true);
+    this.injectService
+      .getInjectsByInjectType(injectTypeId)
+      .pipe(
+        tap(() => {
+          this.injectmStore.setLoading(false);
+        }),
+        take(1)
+      )
+      .subscribe(
+        (injectms) => {
+          injectms.forEach(a => {
+            this.setAsDates(a);
+          });
+          this.injectmStore.set(injectms);
+        },
+        (error) => {
+          this.injectmStore.set([]);
+        }
+      );
+  }
+
   loadById(id: string) {
     this.injectmStore.setLoading(true);
     return this.injectService

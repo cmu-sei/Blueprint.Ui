@@ -13,12 +13,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
   <span *ngIf="isContentDeveloper">
     <button
       mat-icon-button
-      (click)="addOrEditCatalog(null)"
+      (click)="addOrEditInject(null)"
       style="outline: none; margin-left: 15px;"
-      title="Add new Catalog"
+      title="Add new Inject"
     >
       <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle"></mat-icon>
-      Add Catalog
+      Add Inject
     </button>
   </span> &nbsp;
 </span>
@@ -42,7 +42,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
 </section>
 
   <section class="scrolling-region">
-    <table mat-table #catalogTable [dataSource]="catalogDataSource" matSort multiTemplateDataRows>
+    <table mat-table #injectTable [dataSource]="injectDataSource" matSort multiTemplateDataRows>
       <!-- action column -->
       <ng-container matColumnDef="action">
         <mat-header-cell *matHeaderCellDef class="mat-column-action"></mat-header-cell>
@@ -50,62 +50,42 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <div class="action-div">
             <button
               mat-icon-button class="msel-action"
-              (click)="addOrEditCatalog(element); $event.stopPropagation();"
-              title="Edit {{ element.name }} catalog"
+              (click)="addOrEditInject(element); $event.stopPropagation();"
+              title="Edit {{ element.name }} inject"
               *ngIf="isContentDeveloper"
             >
-              <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline" title="Edit {{ element.name }} catalog"></mat-icon>
+              <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline" title="Edit {{ element.name }} inject"></mat-icon>
             </button>
             <button
               mat-icon-button
-              (click)="copyCatalog(element); $event.stopPropagation();"
+              (click)="copyInject(element); $event.stopPropagation();"
               title="Copy {{ element.name }}"
             >
               <mat-icon class="mdi-18px" fontIcon="mdi-content-copy" alt="Copy"></mat-icon>
             </button>
             <button
               mat-icon-button class="msel-action"
-              (click)="deleteCatalog(element); $event.stopPropagation();"
-              title="Delete {{ element.name }} catalog"
+              (click)="deleteInject(element); $event.stopPropagation();"
+              title="Delete {{ element.name }} inject"
               *ngIf="isContentDeveloper"
             >
-              <mat-icon class="mdi-18px" fontIcon="mdi-delete" title="Delete {{ element.name }} catalog"></mat-icon>
+              <mat-icon class="mdi-18px" fontIcon="mdi-delete" title="Delete {{ element.name }} inject"></mat-icon>
             </button>
           </div>
         </mat-cell>
       </ng-container>
-      <!-- ispublic Column -->
-      <ng-container matColumnDef="ispublic">
-        <mat-header-cell title="Is Public" *matHeaderCellDef class="mat-column-is-public">
-          Public
-        </mat-header-cell>
-        <mat-cell *matCellDef="let element" class="mat-column-is-public">
-          <mat-checkbox
-            [(ngModel)]="element.isPublic"
-          ></mat-checkbox>
-        </mat-cell>
-      </ng-container>
       <!-- name Column -->
       <ng-container matColumnDef="name">
-        <mat-header-cell title="Catalog Name" *matHeaderCellDef class="mat-column-name">
+        <mat-header-cell title="Inject Name" *matHeaderCellDef class="mat-column-name">
           Name
         </mat-header-cell>
         <mat-cell *matCellDef="let element" class="mat-column-name">
           {{ element.name }}
         </mat-cell>
       </ng-container>
-      <!-- inject type Column -->
-      <ng-container matColumnDef="injecttype">
-        <mat-header-cell title="Inject Type" *matHeaderCellDef class="mat-column-inject-type">
-          Inject Type
-        </mat-header-cell>
-        <mat-cell *matCellDef="let element" class="mat-column-inject-type">
-          {{ getInjectTypeName(element.injectTypeId) }}
-        </mat-cell>
-      </ng-container>
       <!-- description Column -->
       <ng-container matColumnDef="description">
-        <mat-header-cell title="Catalog Description" *matHeaderCellDef class="mat-column-description">
+        <mat-header-cell title="Inject Description" *matHeaderCellDef class="mat-column-description">
           Description
         </mat-header-cell>
         <mat-cell *matCellDef="let element" class="mat-column-description">
@@ -116,17 +96,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <ng-container matColumnDef="expandedDetail">
         <mat-cell class="expanded-detail-cell" *matCellDef="let element" [attr.colspan]="displayedColumns.length">
           <div class="expanded-detail-div">
-            <app-inject-list
-              [isContentDeveloper]="isContentDeveloper"
-              [loggedInUserId]="loggedInUserId"
-              [catalogId]="element.id"
-              [injectTypeId]="element.injectTypeId"
-            ></app-inject-list>
-            <app-catalog-units
-              [isContentDeveloper]="isContentDeveloper"
-              [loggedInUserId]="loggedInUserId"
-              [catalog]="element"
-            ></app-catalog-units>
+            what goes here?
           </div>
         </mat-cell>
       </ng-container>
@@ -143,6 +113,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </mat-row>
     </table>
     <!-- No Results Message -->
-    <div class="no-results" *ngIf="catalogDataSource?.filteredData.length === 0">No Catalogs found</div>
+    <div class="no-results" *ngIf="injectDataSource?.filteredData.length === 0">No Injects found</div>
   </section>
 </div>
