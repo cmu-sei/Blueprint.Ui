@@ -897,7 +897,7 @@ export class ScenarioEventListComponent
   openContent(id: string) {
     const url =
       location.origin +
-      '/injectpage?msel=' +
+      '/eventdetail?msel=' +
       this.msel.id +
       '&scenarioEvent=' +
       id;

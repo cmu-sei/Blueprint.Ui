@@ -57,6 +57,8 @@ import { AkitaNgDevtools } from '@datorama/akita-ngdevtools';
 import { ClipboardModule } from 'ngx-clipboard';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
+import { AdminCatalogEditDialogComponent } from './components/admin/admin-catalog-edit-dialog/admin-catalog-edit-dialog.component';
+import { AdminCatalogListComponent } from './components/admin/admin-catalog-list/admin-catalog-list.component';
 import { AdminContainerComponent } from './components/admin/admin-container/admin-container.component';
 import { AdminInjectTypesComponent } from './components/admin/admin-inject-types/admin-inject-types.component';
 import { AdminInjectTypeEditDialogComponent } from './components/admin/admin-inject-type-edit-dialog/admin-inject-type-edit-dialog.component';
@@ -67,6 +69,7 @@ import { AdminUsersComponent } from './components/admin/admin-users/admin-users.
 import { CardEditDialogComponent } from './components/card-edit-dialog/card-edit-dialog.component';
 import { CardListComponent } from './components/card-list/card-list.component';
 import { CardTeamsComponent } from './components/card-teams/card-teams.component';
+import { CatalogUnitsComponent } from './components/catalog-units/catalog-units.component';
 import { CiteActionEditDialogComponent } from './components/cite-action-edit-dialog/cite-action-edit-dialog.component';
 import { CiteActionListComponent } from './components/cite-action-list/cite-action-list.component';
 import { CiteRoleEditDialogComponent } from './components/cite-role-edit-dialog/cite-role-edit-dialog.component';
@@ -116,7 +119,7 @@ import { PlainTextPipe } from './utilities/plain-text-pipe';
 import { NgxMatDatetimePickerModule, NgxMatTimepickerModule, NgxMatNativeDateModule } from '@angular-material-components/datetime-picker';
 import { DurationEditComponent } from './components/shared/duration-edit/duration-edit.component';
 import { DurationViewComponent } from './components/shared/duration-view/duration-view.component';
-import { InjectPageComponent } from './components/inject-page/inject-page.component';
+import { EventDetailPageComponent } from './components/event-detail-page/event-detail-page.component';
 import { MselPlaybookComponent } from './components/msel-playbook/msel-playbook.component';
 
 const settings: ComnSettingsConfig = {
@@ -134,6 +137,7 @@ export function getBasePath(settingsSvc: ComnSettingsService) {
     CardEditDialogComponent,
     CardListComponent,
     CardTeamsComponent,
+    CatalogUnitsComponent,
     CiteActionEditDialogComponent,
     CiteActionListComponent,
     CiteRoleEditDialogComponent,
@@ -169,6 +173,8 @@ export function getBasePath(settingsSvc: ComnSettingsService) {
     TeamAddDialogComponent,
     TeamEditDialogComponent,
     TeamUsersComponent,
+    AdminCatalogEditDialogComponent,
+    AdminCatalogListComponent,
     AdminContainerComponent,
     AdminInjectTypesComponent,
     AdminInjectTypeEditDialogComponent,
@@ -182,7 +188,7 @@ export function getBasePath(settingsSvc: ComnSettingsService) {
     PlainTextPipe,
     DurationEditComponent,
     DurationViewComponent,
-    InjectPageComponent,
+    EventDetailPageComponent,
     MselPlaybookComponent
   ],
   imports: [
