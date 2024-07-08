@@ -86,7 +86,6 @@ export class UIDataService {
       return true;
     }
   }
-  // end theme section
 
   //
   // real time vs offset time display section
