@@ -68,7 +68,7 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
     private uiDataService: UIDataService
   ) {
     this.theme$ = this.authQuery.userTheme$;
-    this.hideTopbar = this.inIframe();
+    this.hideTopbar = this.uiDataService.inIframe();
     // subscribe to the logged in user
     this.userDataService.loggedInUser
       .pipe(takeUntil(this.unsubscribe$))
@@ -145,14 +145,6 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
 
   logout() {
     this.userDataService.logout();
-  }
-
-  inIframe() {
-    try {
-      return window.self !== window.top;
-    } catch (e) {
-      return true;
-    }
   }
 
   getApiVersion() {

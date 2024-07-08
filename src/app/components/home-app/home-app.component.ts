@@ -22,11 +22,12 @@ import {
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { ApplicationArea, SignalRService } from 'src/app/services/signalr.service';
+import { UIDataService } from 'src/app/data/ui/ui-data.service';
 
 export enum Section {
   info = 'info',
   moves = 'moves',
-  injects = 'injects'
+  injects = 'injects',
 }
 
 @Component({
@@ -71,15 +72,18 @@ export class HomeAppComponent implements OnDestroy, OnInit {
     private mselQuery: MselQuery,
     private signalRService: SignalRService,
     private healthCheckService: HealthCheckService,
-    private titleService: Title
+    private titleService: Title,
+    private uiDataService: UIDataService
   ) {
     this.healthCheck();
-    this.appTitle = this.settingsService.settings.AppTitle || 'Set AppTitle in Settings';
+    this.appTitle =
+      this.settingsService.settings.AppTitle || 'Set AppTitle in Settings';
     this.titleService.setTitle(this.appTitle);
-    this.topbarTextBase = this.settingsService.settings.AppTopBarText || this.topbarTextBase;
+    this.topbarTextBase =
+      this.settingsService.settings.AppTopBarText || this.topbarTextBase;
     this.topbarText = this.topbarTextBase;
     this.theme$ = this.authQuery.userTheme$;
-    this.hideTopbar = this.inIframe();
+    this.hideTopbar = this.uiDataService.inIframe();
     // subscribe to the logged in user
     this.userDataService.loggedInUser
       .pipe(takeUntil(this.unsubscribe$))
@@ -95,24 +99,28 @@ export class HomeAppComponent implements OnDestroy, OnInit {
         this.isAuthorizedUser = isAuthorized;
       });
     // subscribe to route changes
-    activatedRoute.queryParamMap.pipe(takeUntil(this.unsubscribe$)).subscribe(params => {
-      this.selectedMselId = params.get('msel');
-      if (!this.selectedMselId) {
-        // set appTitle and topbarText for top level
-        this.mselDataService.setActive('');
-        this.topbarText = this.topbarTextBase;
-        this.titleService.setTitle(this.appTitle);
-      }
-    });
+    activatedRoute.queryParamMap
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((params) => {
+        this.selectedMselId = params.get('msel');
+        if (!this.selectedMselId) {
+          // set appTitle and topbarText for top level
+          this.mselDataService.setActive('');
+          this.topbarText = this.topbarTextBase;
+          this.titleService.setTitle(this.appTitle);
+        }
+      });
     // subscribe to the selected MSEL
-    (this.mselQuery.selectActive() as Observable<Msel>).pipe(takeUntil(this.unsubscribe$)).subscribe(m => {
-      if (m) {
-        // set appTitle and topbarText for the selected MSEL
-        const prefix = this.appTitle + ' - ';
-        this.topbarText = m ? prefix + m.name : this.topbarTextBase;
-        this.titleService.setTitle(prefix + m.name);
-      }
-    });
+    (this.mselQuery.selectActive() as Observable<Msel>)
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((m) => {
+        if (m) {
+          // set appTitle and topbarText for the selected MSEL
+          const prefix = this.appTitle + ' - ';
+          this.topbarText = m ? prefix + m.name : this.topbarTextBase;
+          this.titleService.setTitle(prefix + m.name);
+        }
+      });
     // Set the display settings from config file
     this.topbarColor = this.settingsService.settings.AppTopBarHexColor
       ? this.settingsService.settings.AppTopBarHexColor
@@ -129,7 +137,10 @@ export class HomeAppComponent implements OnDestroy, OnInit {
         this.signalRService.join();
         if (this.selectedMselId) {
           // join signalR for this MSEL
-          setTimeout(() => this.signalRService.selectMsel(this.selectedMselId), 1000);
+          setTimeout(
+            () => this.signalRService.selectMsel(this.selectedMselId),
+            1000
+          );
         }
       })
       .catch((err) => {
@@ -141,25 +152,23 @@ export class HomeAppComponent implements OnDestroy, OnInit {
     this.userDataService.logout();
   }
 
-  inIframe() {
-    try {
-      return window.self !== window.top;
-    } catch (e) {
-      return true;
-    }
-  }
-
   healthCheck() {
     this.healthCheckService
       .getReadiness()
       .pipe(take(1))
       .subscribe(
         (healthReport) => {
-          this.apiIsSick = !healthReport || !healthReport.status || healthReport.status !== 'Healthy';
+          this.apiIsSick =
+            !healthReport ||
+            !healthReport.status ||
+            healthReport.status !== 'Healthy';
           if (!healthReport || !healthReport.status) {
             this.apiIsSick = true;
             if (healthReport.status !== 'Healthy') {
-              this.apiMessage = 'The API web service is not healthy (' + healthReport.status + ').';
+              this.apiMessage =
+                'The API web service is not healthy (' +
+                healthReport.status +
+                ').';
             }
           }
           this.apiMessage = healthReport.status;
