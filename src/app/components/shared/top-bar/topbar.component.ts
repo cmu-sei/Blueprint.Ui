@@ -57,7 +57,6 @@ export class TopbarComponent implements OnInit, OnDestroy {
       takeUntil(this.unsubscribe$)
     );
     this.theme$ = this.authQuery.userTheme$;
-    this.authService.setUserTheme(<Theme>this.uiDataService.getTheme() || Theme.LIGHT);
   }
 
   setTeamFn(id: string) {
@@ -69,7 +68,6 @@ export class TopbarComponent implements OnInit, OnDestroy {
   themeFn(event) {
     const theme = event.checked ? Theme.DARK : Theme.LIGHT;
     this.authService.setUserTheme(theme);
-    this.uiDataService.setTheme(theme);
   }
   editFn(event) {
     this.editView.emit(event);

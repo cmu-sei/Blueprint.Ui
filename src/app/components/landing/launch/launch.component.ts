@@ -19,6 +19,7 @@ import { TopbarView } from '../../shared/top-bar/topbar.models';
 import { Title } from '@angular/platform-browser';
 import { ErrorService } from 'src/app/services/error/error.service';
 import { ApplicationArea, SignalRService } from 'src/app/services/signalr.service';
+import { UIDataService } from 'src/app/data/ui/ui-data.service';
 
 @Component({
   selector: 'app-launch',
@@ -51,11 +52,15 @@ export class LaunchComponent implements OnDestroy, OnInit {
     private router: Router,
     private titleService: Title,
     private errorService: ErrorService,
-    private signalRService: SignalRService
+    private signalRService: SignalRService,
+    private uiDataService: UIDataService
   ) {
-    this.hideTopbar = this.inIframe();
+    this.hideTopbar = this.uiDataService.inIframe();
     // set image
-    this.imageFilePath = this.settingsService.settings.AppTopBarImage.replace('white', 'blue');
+    this.imageFilePath = this.settingsService.settings.AppTopBarImage.replace(
+      'white',
+      'blue'
+    );
     this.titleService.setTitle(this.appTitle);
     // Set the display settings from config file
     this.topbarColor = this.settingsService.settings.AppTopBarHexColor
@@ -65,66 +70,85 @@ export class LaunchComponent implements OnDestroy, OnInit {
       ? this.settingsService.settings.AppTopBarHexTextColor
       : this.topbarTextColor;
     // subscribe to users
-    this.userDataService.users.pipe(takeUntil(this.unsubscribe$)).subscribe(users => {
-      this.userList = users;
-    });
+    this.userDataService.users
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((users) => {
+        this.userList = users;
+      });
     // load the users
     this.userDataService.getUsersFromApi();
     // load the join MSELs
-    this.mselDataService.getMyLaunchMsels().pipe(take(1)).subscribe((msels) => {
-      this.launchMselList = msels;
-    });
+    this.mselDataService
+      .getMyLaunchMsels()
+      .pipe(take(1))
+      .subscribe((msels) => {
+        this.launchMselList = msels;
+      });
     // subscribe to MSEL push statuses
-    this.mselDataService.mselPushStatuses.pipe(takeUntil(this.unsubscribe$)).subscribe(mselPushStatuses => {
-      const mselPushStatus = mselPushStatuses.find(mps => mps.mselId === this.launchedMsel.id);
-      if (mselPushStatus) {
-        console.log('mselPushStatus is ' + mselPushStatus.pushStatus);
-        if (mselPushStatus.pushStatus) {
-          console.log('set launch status to ' + mselPushStatus.pushStatus);
-          this.launchStatus = mselPushStatus.pushStatus;
-        } else {
-          if (this.launchedMsel.playerViewId) {
-            console.log('set launch status to Adding event management ...');
-            this.launchStatus = 'Adding event management ...';
-            // add a manage event application
-            const playerApplication = {
-              mselId: this.launchedMsel.id,
-              name: 'Manage Event',
-              url: location.origin + '/manage?msel=' + this.launchedMsel.id,
-              icon: location.origin + '/assets/img/pencil-ruler-blue.png',
-              embeddable: true,
-              loadInBackground: false
-            };
-            console.log('add new player application');
-            this.playerApplicationDataService.addAndPush(playerApplication).pipe(take(1)).subscribe((s) => {
-              // redirect to player view
-              this.launchStatus = 'Completing event processing ...';
-              let playerUrl = this.settingsService.settings.PlayerUrl;
-              if (playerUrl.slice(-1) !== '/') {
-                playerUrl = playerUrl + '/';
-              }
-              playerUrl = playerUrl + 'view/' + this.launchedMsel.playerViewId;
-              location.href = playerUrl;
-            });
+    this.mselDataService.mselPushStatuses
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((mselPushStatuses) => {
+        const mselPushStatus = mselPushStatuses.find(
+          (mps) => mps.mselId === this.launchedMsel.id
+        );
+        if (mselPushStatus) {
+          console.log('mselPushStatus is ' + mselPushStatus.pushStatus);
+          if (mselPushStatus.pushStatus) {
+            console.log('set launch status to ' + mselPushStatus.pushStatus);
+            this.launchStatus = mselPushStatus.pushStatus;
           } else {
-            console.log('clearing launch status');
-            this.launchStatus = '';
+            if (this.launchedMsel.playerViewId) {
+              console.log('set launch status to Adding event management ...');
+              this.launchStatus = 'Adding event management ...';
+              // add a manage event application
+              const playerApplication = {
+                mselId: this.launchedMsel.id,
+                name: 'Manage Event',
+                url:
+                  location.origin +
+                  '/manage?msel=' +
+                  this.launchedMsel.id +
+                  '&{theme}',
+                icon: location.origin + '/assets/img/pencil-ruler-blue.png',
+                embeddable: true,
+                loadInBackground: false,
+              };
+              console.log('add new player application');
+              this.playerApplicationDataService
+                .addAndPush(playerApplication)
+                .pipe(take(1))
+                .subscribe((s) => {
+                  // redirect to player view
+                  this.launchStatus = 'Completing event processing ...';
+                  let playerUrl = this.settingsService.settings.PlayerUrl;
+                  if (playerUrl.slice(-1) !== '/') {
+                    playerUrl = playerUrl + '/';
+                  }
+                  playerUrl =
+                    playerUrl + 'view/' + this.launchedMsel.playerViewId;
+                  location.href = playerUrl;
+                });
+            } else {
+              console.log('clearing launch status');
+              this.launchStatus = '';
+            }
           }
         }
-      }
-    });
+      });
     // subscribe to route changes
-    this.activatedRoute.queryParamMap.pipe(takeUntil(this.unsubscribe$)).subscribe(params => {
-      const mselId = params.get('msel');
-      const teamId = params.get('team');
-      if (mselId) {
-        // launch the msel
-        this.launch(mselId, teamId);
-        this.showChoices = false;
-      } else {
-        this.showChoices = true;
-      }
-    });
+    this.activatedRoute.queryParamMap
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((params) => {
+        const mselId = params.get('msel');
+        const teamId = params.get('team');
+        if (mselId) {
+          // launch the msel
+          this.launch(mselId, teamId);
+          this.showChoices = false;
+        } else {
+          this.showChoices = true;
+        }
+      });
   }
 
   ngOnInit() {
@@ -145,30 +169,27 @@ export class LaunchComponent implements OnDestroy, OnInit {
   launch(mselId: string, teamId: string) {
     this.launchingMselId = mselId;
     this.launchStatus = 'Starting the event ...';
-    this.mselDataService.launch(mselId, teamId).pipe(take(1)).subscribe((msel) => {
-      // join signalR for this MSEL
-      this.signalRService.selectMsel(msel.id);
-      this.launchedMsel = msel;
-    },
-    (error) => {
-      this.launchingMselId = '';
-      this.launchStatus = '';
-      this.launchedMsel = {};
-      this.showChoices = true;
-      this.errorService.handleError(error);
-    });
+    this.mselDataService
+      .launch(mselId, teamId)
+      .pipe(take(1))
+      .subscribe(
+        (msel) => {
+          // join signalR for this MSEL
+          this.signalRService.selectMsel(msel.id);
+          this.launchedMsel = msel;
+        },
+        (error) => {
+          this.launchingMselId = '';
+          this.launchStatus = '';
+          this.launchedMsel = {};
+          this.showChoices = true;
+          this.errorService.handleError(error);
+        }
+      );
   }
 
   logout() {
     this.userDataService.logout();
-  }
-
-  inIframe() {
-    try {
-      return window.self !== window.top;
-    } catch (e) {
-      return true;
-    }
   }
 
   ngOnDestroy() {

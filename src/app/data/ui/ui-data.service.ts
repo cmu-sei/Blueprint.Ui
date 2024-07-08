@@ -7,7 +7,6 @@
 import { Injectable } from '@angular/core';
 
 export class UIState {
-  selectedTheme = '';
   selectedMselTab = '';
   selectedAdminTab = '';
   expandedItems: string[] = [];
@@ -29,7 +28,7 @@ export class UIDataService {
   //
   // Item Expansion
   isItemExpanded(id: string): boolean {
-    return this.uiState.expandedItems.some(ei => ei === id);
+    return this.uiState.expandedItems.some((ei) => ei === id);
   }
 
   setItemExpanded(id: string) {
@@ -80,17 +79,13 @@ export class UIDataService {
   }
   // end MSEL tab section
 
-  //
-  // theme section
-  setTheme(theme: string) {
-    this.uiState.selectedTheme = theme;
-    this.saveChanges();
+  inIframe() {
+    try {
+      return window.self !== window.top;
+    } catch (e) {
+      return true;
+    }
   }
-
-  getTheme(): string {
-    return this.uiState.selectedTheme;
-  }
-  // end theme section
 
   //
   // real time vs offset time display section

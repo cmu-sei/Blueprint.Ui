@@ -16,6 +16,7 @@ import { MselDataService } from 'src/app/data/msel/msel-data.service';
 import { User } from 'src/app/generated/blueprint.api';
 import { TopbarView } from '../../shared/top-bar/topbar.models';
 import { Title } from '@angular/platform-browser';
+import { UIDataService } from 'src/app/data/ui/ui-data.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -45,10 +46,15 @@ export class DashboardComponent implements OnDestroy {
     private settingsService: ComnSettingsService,
     private mselDataService: MselDataService,
     private router: Router,
-    private titleService: Title
+    private titleService: Title,
+    private uiDataService: UIDataService
   ) {
+    this.hideTopbar = this.uiDataService.inIframe();
     // set image
-    this.imageFilePath = this.settingsService.settings.AppTopBarImage.replace('white', 'blue');
+    this.imageFilePath = this.settingsService.settings.AppTopBarImage.replace(
+      'white',
+      'blue'
+    );
     this.titleService.setTitle(this.appTitle);
     // Set the display settings from config file
     this.topbarColor = this.settingsService.settings.AppTopBarHexColor
@@ -58,23 +64,34 @@ export class DashboardComponent implements OnDestroy {
       ? this.settingsService.settings.AppTopBarHexTextColor
       : this.topbarTextColor;
     // subscribe to users
-    this.userDataService.users.pipe(takeUntil(this.unsubscribe$)).subscribe(users => {
-      this.userList = users;
-    });
+    this.userDataService.users
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((users) => {
+        this.userList = users;
+      });
     // load the users
     this.userDataService.getUsersFromApi();
     // load the launch MSELs
-    this.mselDataService.getMyLaunchMsels().pipe(take(1)).subscribe((msels) => {
-      this.launchMselList = msels;
-    });
+    this.mselDataService
+      .getMyLaunchMsels()
+      .pipe(take(1))
+      .subscribe((msels) => {
+        this.launchMselList = msels;
+      });
     // load the join MSELs
-    this.mselDataService.getMyJoinMsels().pipe(take(1)).subscribe((msels) => {
-      this.joinMselList = msels;
-    });
+    this.mselDataService
+      .getMyJoinMsels()
+      .pipe(take(1))
+      .subscribe((msels) => {
+        this.joinMselList = msels;
+      });
     // load the build MSELs
-    this.mselDataService.getMyBuildMsels().pipe(take(1)).subscribe((msels) => {
-      this.buildMselList = msels;
-    });
+    this.mselDataService
+      .getMyBuildMsels()
+      .pipe(take(1))
+      .subscribe((msels) => {
+        this.buildMselList = msels;
+      });
   }
 
   topBarNavigate(url): void {
