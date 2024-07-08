@@ -3,7 +3,10 @@ Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
-<div class="frame">
+<mat-expansion-panel>
+  <mat-expansion-panel-header>
+    <span class="injects-title">Injects</span>
+  </mat-expansion-panel-header>
   <section
     class="mat-elevation-z2 mat-header-row background-alt"
   >
@@ -115,4 +118,4 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <!-- No Results Message -->
     <div class="no-results" *ngIf="injectDataSource?.filteredData.length === 0">No Injects found</div>
   </section>
-</div>
+</mat-expansion-panel>

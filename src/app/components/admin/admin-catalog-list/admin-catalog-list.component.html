@@ -119,14 +119,16 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <app-inject-list
               [isContentDeveloper]="isContentDeveloper"
               [loggedInUserId]="loggedInUserId"
-              [catalogId]="element.id"
-              [injectTypeId]="element.injectTypeId"
+              [catalog]="element"
+              [injectType]="{}"
             ></app-inject-list>
+            <br />
             <app-catalog-units
               [isContentDeveloper]="isContentDeveloper"
               [loggedInUserId]="loggedInUserId"
               [catalog]="element"
             ></app-catalog-units>
+            <br />
           </div>
         </mat-cell>
       </ng-container>

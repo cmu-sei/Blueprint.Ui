@@ -2,13 +2,20 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-.frame {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  height: 100%;
-  overflow-y: hidden;
-  margin-left: 5px;
+.mat-expansion-panel {
+  width: calc(100% - 100px);
+  margin-left: 100px;
+}
+
+.mat-expansion-panel-header {
+  height: 32px;
+  font-size: 14px;
+}
+
+.injects-title {
+  margin-top: 12px;
+  font-weight: bold;
+  height: 30px;
 }
 
 .mat-table {

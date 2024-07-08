@@ -5,8 +5,8 @@ project root for license information.
 -->
 <div mat-dialog-container>
   <div mat-dialog-title>
-    <span *ngIf="data.Inject.id">Edit</span>
-    <span *ngIf="!data.Inject.id">Create</span>
+    <span *ngIf="data.inject.id">Edit</span>
+    <span *ngIf="!data.inject.id">Create</span>
      an Inject to this MSEL
     &nbsp;
     <button
@@ -19,7 +19,7 @@ project root for license information.
       <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
     </button>
   </div>
-  <div mat-dialog-content *ngIf="!!data && data.Inject !== undefined && data.Inject !== null">
+  <div mat-dialog-content *ngIf="!!data && data.inject !== undefined && data.inject !== null">
     <div class="add-margin">
       <div>
         <mat-form-field class="full-width">
@@ -28,7 +28,7 @@ project root for license information.
             title="The Name of the Inject"
             matInput
             placeholder="Name"
-            [(ngModel)]="data.Inject.name">
+            [(ngModel)]="data.inject.name">
         </mat-form-field>
       </div>
     </div>
@@ -40,7 +40,7 @@ project root for license information.
             title="The Description of the Inject"
             matInput
             placeholder="Description"
-            [(ngModel)]="data.Inject.description">
+            [(ngModel)]="data.inject.description">
         </mat-form-field>
       </div>
     </div>
@@ -48,7 +48,7 @@ project root for license information.
       <div>
         <mat-form-field class="full-width">
           <mat-label>Inject Type</mat-label>
-          <mat-select placeholder="Inject Type" [(ngModel)]="data.Inject.injectTypeId">
+          <mat-select placeholder="Inject Type" [(ngModel)]="data.inject.injectTypeId">
             <mat-option *ngFor="let injectType of data.injectTypeList" [value]="injectType.id" title="{{ injectType.name}}">
               {{ injectType.name }}
             </mat-option>
@@ -56,14 +56,11 @@ project root for license information.
         </mat-form-field>
       </div>
     </div>
-    <div class="add-margin">
+    <div class="add-margin" *ngFor="let dataField of data.dataFieldList">
       <div class="partial-detail">
-        <mat-checkbox
-          [(ngModel)]="data.Inject.isPublic"
-          class="bottom-margin"
-        >
-          Is Public
-        </mat-checkbox><br />
+        {{ dataField.name }}
+        <app-data-value [(value)]="getDataValue(dataField.id).value"></app-data-value>
+        <br />
       </div>
     </div>
   </div>

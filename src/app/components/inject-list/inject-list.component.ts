@@ -8,9 +8,10 @@ import { animate, state, style, transition, trigger } from '@angular/animations'
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import {
+  Catalog,
+  DataField,
   Injectm,
   InjectType,
-  Team
 } from 'src/app/generated/blueprint.api';
 import { Sort } from '@angular/material/sort';
 import { MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy-menu';
@@ -22,6 +23,8 @@ import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { InjectEditDialogComponent } from '../inject-edit-dialog/inject-edit-dialog.component';
 import { v4 as uuidv4 } from 'uuid';
 import { InjectTypeQuery } from 'src/app/data/inject-type/inject-type.query';
+import { DataFieldDataService } from 'src/app/data/data-field/data-field-data.service';
+import { DataFieldQuery } from 'src/app/data/data-field/data-field.query';
 
 @Component({
   selector: 'app-inject-list',
@@ -38,8 +41,8 @@ import { InjectTypeQuery } from 'src/app/data/inject-type/inject-type.query';
 export class InjectListComponent implements OnDestroy, OnInit {
   @Input() loggedInUserId: string;
   @Input() isContentDeveloper: boolean;
-  @Input() catalogId: string;
-  @Input() injectTypeId: string;
+  @Input() catalog: Catalog;
+  @Input() injectType: InjectType;
   @ViewChild('injectTable', {static: false}) injectTable: MatTable<any>;
   contextMenuPosition = { x: '0px', y: '0px' };
   injectList: Injectm[] = [];
@@ -49,8 +52,8 @@ export class InjectListComponent implements OnDestroy, OnInit {
   filterString = '';
   sort: Sort = {active: 'name', direction: 'asc'};
   sortedInjects: Injectm[] = [];
-  templateInjects: Injectm[] = [];
-  editingId = '';
+  allInjectsOfType: Injectm[] = [];
+  dataFieldList: DataField[] = [];
   injectDataSource = new MatTableDataSource<Injectm>(new Array<Injectm>());
   displayedColumns: string[] = ['action', 'name', 'description'];
   injectTypeList: InjectType[] = [];
@@ -64,6 +67,8 @@ export class InjectListComponent implements OnDestroy, OnInit {
     public dialog: MatDialog,
     public dialogService: DialogService,
     private injectTypeQuery: InjectTypeQuery,
+    private dataFieldDataService: DataFieldDataService,
+    private dataFieldQuery: DataFieldQuery,
   ) {
     // subscribe to injects
     this.injectmQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(injects => {
@@ -73,6 +78,10 @@ export class InjectListComponent implements OnDestroy, OnInit {
     // subscribe to InjectTypes
     this.injectTypeQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(injectTypes => {
       this.injectTypeList = injectTypes.sort((a, b) => a.name?.toLowerCase() > b.name?.toLowerCase() ? 1 : -1);
+    });
+    // subscribe to dataFields
+    this.dataFieldQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(dataFields => {
+      this.dataFieldList = dataFields.sort((a, b) => +a.displayOrder > +b.displayOrder ? 1 : -1);
     });
     // subscribe to filter control changes
     this.filterControl.valueChanges
@@ -85,10 +94,13 @@ export class InjectListComponent implements OnDestroy, OnInit {
 
   ngOnInit() {
     // load injects
-    if (this.catalogId) {
-      this.injectmDataService.loadByCatalog(this.catalogId);
-    } else if (this.injectTypeId) {
-      this.injectmDataService.loadByInjectType(this.injectTypeId);
+    if (this.catalog.id) {
+      this.injectmDataService.loadByCatalog(this.catalog.id);
+      this.dataFieldDataService.loadByInjectType(this.catalog.injectTypeId);
+    }
+    if (this.injectType.id) {
+      this.injectmDataService.loadByInjectType(this.injectType.id);
+      this.dataFieldDataService.loadByInjectType(this.injectType.id);
     }
   }
 
@@ -101,16 +113,16 @@ export class InjectListComponent implements OnDestroy, OnInit {
 
   addOrEditInject(inject: Injectm) {
     if (!inject) {
-      const dateTime = new Date();
-      dateTime.setMinutes(dateTime.getMinutes() + 30);
       inject = {
-      };
+        id: '',
+        injectTypeId: this.catalog.id ? this.catalog.injectTypeId : this.injectType.id,
+      }as Injectm;
     }
     const dialogRef = this.dialog.open(InjectEditDialogComponent, {
       width: '800px',
       data: {
         inject: inject,
-        injectTypeList: this.injectTypeList,
+        dataFieldList: this.dataFieldList,
       },
     });
     dialogRef.componentInstance.editComplete.subscribe((result) => {
@@ -126,7 +138,7 @@ export class InjectListComponent implements OnDestroy, OnInit {
       this.injectmDataService.update(inject);
     } else {
       inject.id = uuidv4();
-      this.injectmDataService.add(this.catalogId, inject);
+      this.injectmDataService.add(this.catalog.id, inject);
     }
   }
 
@@ -139,7 +151,6 @@ export class InjectListComponent implements OnDestroy, OnInit {
       .subscribe((result) => {
         if (result['confirm']) {
           this.injectmDataService.delete(inject.id);
-          this.editingId = '';
         }
       });
   }

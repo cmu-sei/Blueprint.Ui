@@ -12,6 +12,7 @@ import {
 import { ErrorStateMatcher } from '@angular/material/core';
 import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
+import { DataValue } from 'src/app/generated/blueprint.api';
 
 /** Error when invalid control is dirty, touched, or submitted. */
 export class UserErrorStateMatcher implements ErrorStateMatcher {
@@ -45,7 +46,7 @@ export class InjectEditDialogComponent {
   }
 
   errorFree() {
-    return this.data.Inject.name && this.data.Inject.description;
+    return this.data.inject.name && this.data.inject.description;
   }
 
   /**
@@ -53,20 +54,20 @@ export class InjectEditDialogComponent {
    */
   handleEditComplete(saveChanges: boolean): void {
     if (!saveChanges) {
-      this.editComplete.emit({ saveChanges: false, Inject: null });
+      this.editComplete.emit({ saveChanges: false, inject: null });
     } else {
       if (this.errorFree) {
         this.editComplete.emit({
           saveChanges: saveChanges,
-          Inject: this.data.Inject,
+          inject: this.data.inject,
         });
       }
     }
   }
 
-  getTeamName(teamId: string) {
-    const team = this.data.teamList.find(t => t.id === teamId);
-    return team.shortName + ' - ' + team.name;
+  getDataValue(dataFieldId: string): DataValue {
+    const dataValue = this.data.inject.dataValues.find(dv => dv.dataFieldId === dataFieldId);
+    return dataValue;
   }
 
 }

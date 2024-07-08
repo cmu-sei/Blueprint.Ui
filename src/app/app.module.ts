@@ -123,6 +123,7 @@ import { DurationEditComponent } from './components/shared/duration-edit/duratio
 import { DurationViewComponent } from './components/shared/duration-view/duration-view.component';
 import { EventDetailPageComponent } from './components/event-detail-page/event-detail-page.component';
 import { MselPlaybookComponent } from './components/msel-playbook/msel-playbook.component';
+import { DataValueComponent } from './components/data-value/data-value.component';
 
 const settings: ComnSettingsConfig = {
   url: 'assets/config/settings.json',
@@ -193,7 +194,8 @@ export function getBasePath(settingsSvc: ComnSettingsService) {
     DurationEditComponent,
     DurationViewComponent,
     EventDetailPageComponent,
-    MselPlaybookComponent
+    MselPlaybookComponent,
+    DataValueComponent
   ],
   imports: [
     AkitaNgDevtools,
