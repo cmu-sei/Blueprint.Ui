@@ -49,11 +49,11 @@ import { CardQuery } from 'src/app/data/card/card.query';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
 
 @Component({
-  selector: 'app-inject-page',
-  templateUrl: './inject-page.component.html',
-  styleUrls: ['./inject-page.component.scss'],
+  selector: 'app-event-detail-page',
+  templateUrl: './event-detail-page.component.html',
+  styleUrls: ['./event-detail-page.component.scss'],
 })
-export class InjectPageComponent {
+export class EventDetailPageComponent {
   @Input() userTheme: Theme;
   @Input() isContentDeveloper: boolean;
   @Input() loggedInUserId: string;
@@ -390,7 +390,7 @@ export class InjectPageComponent {
     if (dataValue && dataValue.id) {
       const url =
         location.origin +
-        '/injectpage?msel=' +
+        '/eventdetail?msel=' +
         this.msel.id +
         '&scenarioEvent=' +
         this.scenarioEventId +

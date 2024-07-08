@@ -3,9 +3,9 @@
 // project root for license information.
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Title } from '@angular/platform-browser';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { Observable, Subject } from 'rxjs';
-import { map, tap, take, takeUntil } from 'rxjs/operators';
+import { take, takeUntil } from 'rxjs/operators';
 import { UnitDataService } from 'src/app/data/unit/unit-data.service';
 import { UserDataService } from 'src/app/data/user/user-data.service';
 import { TopbarView } from 'src/app/components/shared/top-bar/topbar.models';
@@ -18,6 +18,7 @@ import { ApplicationArea, SignalRService } from 'src/app/services/signalr.servic
 import { environment } from 'src/environments/environment';
 import { HealthCheckService } from 'src/app/generated/blueprint.api/api/api';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
+import { InjectTypeDataService } from 'src/app/data/inject-type/inject-type-data.service';
 
 @Component({
   selector: 'app-admin-container',
@@ -65,7 +66,8 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
     private authQuery: ComnAuthQuery,
     titleService: Title,
     private signalRService: SignalRService,
-    private uiDataService: UIDataService
+    private uiDataService: UIDataService,
+    private injectTypeDataService: InjectTypeDataService,
   ) {
     this.theme$ = this.authQuery.userTheme$;
     this.hideTopbar = this.uiDataService.inIframe();
@@ -111,6 +113,8 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
       selectedTab = this.organizationsText;
     }
     this.selectedTab = selectedTab;
+    // load injectTypes
+    this.injectTypeDataService.load();
   }
 
   ngOnInit() {

@@ -40,7 +40,6 @@ import { v4 as uuidv4 } from 'uuid';
 export class AdminInjectTypesComponent implements OnDestroy {
   @Input() loggedInUserId: string;
   @Input() isContentDeveloper: boolean;
-  @Input() hideSearch: boolean;
   @ViewChild('injectTypeTable', {static: false}) injectTypeTable: MatTable<any>;
   contextMenuPosition = { x: '0px', y: '0px' };
   msel = new MselPlus();
@@ -80,8 +79,6 @@ export class AdminInjectTypesComponent implements OnDestroy {
         this.filterString = term;
         this.sortChanged(this.sort);
       });
-    // load injectTypes
-    this.injectTypeDataService.load();
   }
 
   getSortedInjectTypes(injectTypes: InjectType[]) {
