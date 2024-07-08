@@ -5,6 +5,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
 -->
 <div class="top-container background">
   <app-topbar
+    *ngIf="!hideTopbar"
     [title]="topbarText"
     [topbarView]="TopbarView.BLUEPRINT_HOME"
     [topbarColor]="topbarColor"
@@ -62,4 +63,3 @@ project root for license information or contact permission@sei.cmu.edu for full 
     </mat-card>
   </div>
 </div>
-

@@ -17,6 +17,7 @@ import { User } from 'src/app/generated/blueprint.api';
 import { TopbarView } from '../../shared/top-bar/topbar.models';
 import { Title } from '@angular/platform-browser';
 import { ErrorService } from 'src/app/services/error/error.service';
+import { UIDataService } from 'src/app/data/ui/ui-data.service';
 
 @Component({
   selector: 'app-join',
@@ -47,10 +48,15 @@ export class JoinComponent implements OnDestroy {
     private activatedRoute: ActivatedRoute,
     private router: Router,
     private titleService: Title,
-    private errorService: ErrorService
+    private errorService: ErrorService,
+    private uiDataService: UIDataService
   ) {
+    this.hideTopbar = this.uiDataService.inIframe();
     // set image
-    this.imageFilePath = this.settingsService.settings.AppTopBarImage.replace('white', 'blue');
+    this.imageFilePath = this.settingsService.settings.AppTopBarImage.replace(
+      'white',
+      'blue'
+    );
     this.titleService.setTitle(this.appTitle);
     // Set the display settings from config file
     this.topbarColor = this.settingsService.settings.AppTopBarHexColor
@@ -60,27 +66,34 @@ export class JoinComponent implements OnDestroy {
       ? this.settingsService.settings.AppTopBarHexTextColor
       : this.topbarTextColor;
     // subscribe to users
-    this.userDataService.users.pipe(takeUntil(this.unsubscribe$)).subscribe(users => {
-      this.userList = users;
-    });
+    this.userDataService.users
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((users) => {
+        this.userList = users;
+      });
     // load the users
     this.userDataService.getUsersFromApi();
     // load the join MSELs
-    this.mselDataService.getMyJoinMsels().pipe(take(1)).subscribe((msels) => {
-      this.joinMselList = msels;
-    });
+    this.mselDataService
+      .getMyJoinMsels()
+      .pipe(take(1))
+      .subscribe((msels) => {
+        this.joinMselList = msels;
+      });
     // subscribe to route changes
-    this.activatedRoute.queryParamMap.pipe(takeUntil(this.unsubscribe$)).subscribe(params => {
-      const mselId = params.get('msel');
-      const teamId = params.get('team');
-      if (mselId) {
-        // launch the msel
-        this.join(mselId, teamId);
-        this.showChoices = false;
-      } else {
-        this.showChoices = true;
-      }
-    });
+    this.activatedRoute.queryParamMap
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((params) => {
+        const mselId = params.get('msel');
+        const teamId = params.get('team');
+        if (mselId) {
+          // launch the msel
+          this.join(mselId, teamId);
+          this.showChoices = false;
+        } else {
+          this.showChoices = true;
+        }
+      });
   }
 
   topBarNavigate(url): void {
@@ -90,20 +103,25 @@ export class JoinComponent implements OnDestroy {
   join(mselId: string, teamId: string) {
     this.joinStatus[mselId] = 'Processing your request ...';
     this.joiningMselId = mselId;
-    this.mselDataService.join(mselId, teamId).pipe(take(1)).subscribe((playerViewId) => {
-      let playerUrl = this.settingsService.settings.PlayerUrl;
-      if (playerUrl.slice(-1) !== '/') {
-        playerUrl = playerUrl + '/';
-      }
-      playerUrl = playerUrl + 'view/' + playerViewId;
-      location.href = playerUrl;
-    },
-    (error) => {
-      this.joinStatus[mselId] = '';
-      this.isJoined[mselId] = false;
-      this.showChoices = true;
-      this.errorService.handleError(error);
-    });
+    this.mselDataService
+      .join(mselId, teamId)
+      .pipe(take(1))
+      .subscribe(
+        (playerViewId) => {
+          let playerUrl = this.settingsService.settings.PlayerUrl;
+          if (playerUrl.slice(-1) !== '/') {
+            playerUrl = playerUrl + '/';
+          }
+          playerUrl = playerUrl + 'view/' + playerViewId;
+          location.href = playerUrl;
+        },
+        (error) => {
+          this.joinStatus[mselId] = '';
+          this.isJoined[mselId] = false;
+          this.showChoices = true;
+          this.errorService.handleError(error);
+        }
+      );
   }
 
   ngOnDestroy() {

@@ -46,6 +46,7 @@ import { Sort } from '@angular/material/sort';
 import { Component, Input } from '@angular/core';
 import { AngularEditorConfig } from '@kolkov/angular-editor';
 import { CardQuery } from 'src/app/data/card/card.query';
+import { UIDataService } from 'src/app/data/ui/ui-data.service';
 
 @Component({
   selector: 'app-event-detail-page',
@@ -138,8 +139,10 @@ export class EventDetailPageComponent {
     private dataValueQuery: DataValueQuery,
     private scenarioEventQuery: ScenarioEventQuery,
     private cardQuery: CardQuery,
-    private activatedRoute: ActivatedRoute
+    private activatedRoute: ActivatedRoute,
+    private uiDataService: UIDataService
   ) {
+    this.hideTopbar = this.uiDataService.inIframe();
     // set image
     this.imageFilePath = this.settingsService.settings.AppTopBarImage.replace(
       'white',
