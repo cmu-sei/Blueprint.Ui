@@ -10,6 +10,7 @@ import { takeUntil } from 'rxjs/operators';
 import {
   Catalog,
   DataField,
+  DataValue,
   Injectm,
   InjectType,
 } from 'src/app/generated/blueprint.api';
@@ -32,9 +33,15 @@ import { DataFieldQuery } from 'src/app/data/data-field/data-field.query';
   styleUrls: ['./inject-list.component.scss'],
   animations: [
     trigger('detailExpand', [
-      state('collapsed', style({ height: '0px', minHeight: '0', visibility: 'hidden' })),
+      state(
+        'collapsed',
+        style({ height: '0px', minHeight: '0', visibility: 'hidden' })
+      ),
       state('expanded', style({ height: '*', visibility: 'visible' })),
-      transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
+      transition(
+        'expanded <=> collapsed',
+        animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')
+      ),
     ]),
   ],
 })
@@ -43,14 +50,14 @@ export class InjectListComponent implements OnDestroy, OnInit {
   @Input() isContentDeveloper: boolean;
   @Input() catalog: Catalog;
   @Input() injectType: InjectType;
-  @ViewChild('injectTable', {static: false}) injectTable: MatTable<any>;
+  @ViewChild('injectTable', { static: false }) injectTable: MatTable<any>;
   contextMenuPosition = { x: '0px', y: '0px' };
   injectList: Injectm[] = [];
   changedInject: Injectm = {};
   filteredInjects: Injectm[] = [];
   filterControl = new UntypedFormControl();
   filterString = '';
-  sort: Sort = {active: 'name', direction: 'asc'};
+  sort: Sort = { active: 'name', direction: 'asc' };
   sortedInjects: Injectm[] = [];
   allInjectsOfType: Injectm[] = [];
   dataFieldList: DataField[] = [];
@@ -58,7 +65,8 @@ export class InjectListComponent implements OnDestroy, OnInit {
   displayedColumns: string[] = ['action', 'name', 'description'];
   injectTypeList: InjectType[] = [];
   private unsubscribe$ = new Subject();
-  isExpansionDetailRow = (i: number, row: Object) => (row as Injectm).id === this.expandedElementId;
+  isExpansionDetailRow = (i: number, row: Object) =>
+    (row as Injectm).id === this.expandedElementId;
   expandedElementId = '';
 
   constructor(
@@ -68,21 +76,43 @@ export class InjectListComponent implements OnDestroy, OnInit {
     public dialogService: DialogService,
     private injectTypeQuery: InjectTypeQuery,
     private dataFieldDataService: DataFieldDataService,
-    private dataFieldQuery: DataFieldQuery,
+    private dataFieldQuery: DataFieldQuery
   ) {
     // subscribe to injects
-    this.injectmQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(injects => {
-      this.injectList = injects;
-      this.sortChanged(this.sort);
-    });
+    this.injectmQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((injects) => {
+        this.injectList = [];
+        // get editable objects
+        injects.forEach((m) => {
+          const inject = { ...m };
+          inject.dataValues = [];
+          m.dataValues.forEach((dv) => {
+            inject.dataValues.push({ ...dv });
+          });
+          this.injectList.push(inject);
+        });
+        this.sortChanged(this.sort);
+      });
     // subscribe to InjectTypes
-    this.injectTypeQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(injectTypes => {
-      this.injectTypeList = injectTypes.sort((a, b) => a.name?.toLowerCase() > b.name?.toLowerCase() ? 1 : -1);
-    });
+    this.injectTypeQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((injectTypes) => {
+        this.injectTypeList = injectTypes.sort((a, b) =>
+          a.name?.toLowerCase() > b.name?.toLowerCase() ? 1 : -1
+        );
+      });
     // subscribe to dataFields
-    this.dataFieldQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(dataFields => {
-      this.dataFieldList = dataFields.sort((a, b) => +a.displayOrder > +b.displayOrder ? 1 : -1);
-    });
+    this.dataFieldQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((dataFields) => {
+        this.dataFieldList = dataFields.sort((a, b) =>
+          +a.displayOrder > +b.displayOrder ? 1 : -1
+        );
+      });
     // subscribe to filter control changes
     this.filterControl.valueChanges
       .pipe(takeUntil(this.unsubscribe$))
@@ -106,7 +136,9 @@ export class InjectListComponent implements OnDestroy, OnInit {
 
   getSortedInjects(injects: Injectm[]) {
     if (injects) {
-      injects.sort((a, b) => this.sortInjects(a, b, this.sort.active, this.sort.direction));
+      injects.sort((a, b) =>
+        this.sortInjects(a, b, this.sort.active, this.sort.direction)
+      );
     }
     return injects;
   }
@@ -115,8 +147,11 @@ export class InjectListComponent implements OnDestroy, OnInit {
     if (!inject) {
       inject = {
         id: '',
-        injectTypeId: this.catalog.id ? this.catalog.injectTypeId : this.injectType.id,
-      }as Injectm;
+        injectTypeId: this.catalog.id
+          ? this.catalog.injectTypeId
+          : this.injectType.id,
+        dataValues: this.createNewDataValues(),
+      } as Injectm;
     }
     const dialogRef = this.dialog.open(InjectEditDialogComponent, {
       width: '800px',
@@ -137,7 +172,10 @@ export class InjectListComponent implements OnDestroy, OnInit {
     if (inject.id) {
       this.injectmDataService.update(inject);
     } else {
+      // set inject ID for inject and the data values
       inject.id = uuidv4();
+      inject.dataValues.forEach((dv) => (dv.injectId = inject.id));
+      // create this inject on the API
       this.injectmDataService.add(this.catalog.id, inject);
     }
   }
@@ -161,7 +199,9 @@ export class InjectListComponent implements OnDestroy, OnInit {
 
   sortChanged(sort: Sort) {
     this.sort = sort;
-    this.injectDataSource.data = this.getSortedInjects(this.getFilteredInjects(this.injectList));
+    this.injectDataSource.data = this.getSortedInjects(
+      this.getFilteredInjects(this.injectList)
+    );
   }
 
   ngOnDestroy() {
@@ -170,17 +210,13 @@ export class InjectListComponent implements OnDestroy, OnInit {
   }
 
   getFilteredInjects(injects: Injectm[]): Injectm[] {
-    let filteredInjects: Injectm[] = [];
-    if (injects) {
-      injects.forEach(se => {
-        filteredInjects.push({... se});
-      });
-      if (filteredInjects && filteredInjects.length > 0 && this.filterString) {
-        const filterString = this.filterString?.toLowerCase();
-        filteredInjects = filteredInjects.filter(inject => inject.name?.toLowerCase().includes(filterString));
-      }
+    if (injects && injects.length > 0 && this.filterString) {
+      const filterString = this.filterString?.toLowerCase();
+      injects = injects.filter((inject) =>
+        inject.name?.toLowerCase().includes(filterString)
+      );
     }
-    return filteredInjects;
+    return injects;
   }
 
   private sortInjects(
@@ -192,10 +228,16 @@ export class InjectListComponent implements OnDestroy, OnInit {
     const isAsc = direction !== 'desc';
     switch (column) {
       case 'name':
-        return ( (a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1) * (isAsc ? 1 : -1) );
+        return (
+          (a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1) *
+          (isAsc ? 1 : -1)
+        );
         break;
       case 'description':
-        return ( (a.description.toLowerCase() < b.description.toLowerCase() ? -1 : 1) * (isAsc ? 1 : -1) );
+        return (
+          (a.description.toLowerCase() < b.description.toLowerCase() ? -1 : 1) *
+          (isAsc ? 1 : -1)
+        );
         break;
       default:
         return 0;
@@ -212,15 +254,27 @@ export class InjectListComponent implements OnDestroy, OnInit {
   }
 
   getRowClass(id: string) {
-    const rowClass = this.expandedElementId === id
-      ? 'element-row element-row-expanded'
-      : 'element-row element-row-not-expanded';
+    const rowClass =
+      this.expandedElementId === id
+        ? 'element-row element-row-expanded'
+        : 'element-row element-row-not-expanded';
     return rowClass;
   }
 
   getInjectTypeName(injectTypeId: string) {
-    const injectType = this.injectTypeList.find(m => m.id === injectTypeId);
+    const injectType = this.injectTypeList.find((m) => m.id === injectTypeId);
     return injectType ? injectType.name : '';
   }
 
+  createNewDataValues(): DataValue[] {
+    const dataValues = [];
+    this.dataFieldList.forEach((df) => {
+      const dv: DataValue = {
+        dataFieldId: df.id,
+        value: null,
+      };
+      dataValues.push(dv);
+    });
+    return dataValues;
+  }
 }

@@ -280,21 +280,17 @@ export class EventDetailPageComponent {
     return editableList;
   }
 
-  getDataValue(
-    scenarioEvent: ScenarioEventPlus,
-    dataFieldName: string
-  ): DataValuePlus {
-    if (!(this.msel && scenarioEvent && scenarioEvent.id)) {
+  getDataValue(dataFieldId: string): DataValuePlus {
+    if (!(this.msel && this.scenarioEvent && this.scenarioEvent.id)) {
       return this.blankDataValue;
     }
-    const dataFieldId = this.getDataFieldIdByName(scenarioEvent, dataFieldName);
     if (!dataFieldId) {
       return this.blankDataValue;
     }
     let dataValuePlus = this.dataValues.find(
       (dv) =>
         dv.dataFieldId === dataFieldId &&
-        dv.scenarioEventId === scenarioEvent.id
+        dv.scenarioEventId === this.scenarioEvent.id
     ) as DataValuePlus;
     if (dataValuePlus) {
       dataValuePlus.valueArray = dataValuePlus.value
@@ -316,19 +312,8 @@ export class EventDetailPageComponent {
     return '';
   }
 
-  getDataFieldIdByName(scenarioEvent: ScenarioEventPlus, name: string): string {
-    const dataField = this.allDataFields.find(
-      (df) => df.name.toLowerCase() === name.toLowerCase()
-    );
-    return dataField ? dataField.id : '';
-  }
-
-  getScenarioEventValue(columnName: string) {
+  getScenarioEventValue(dataField: DataField) {
     if (!(this.msel && this.scenarioEvent && this.scenarioEvent.id)) {
-      return '';
-    }
-    const dataField = this.allDataFields.find((df) => df.name === columnName);
-    if (!dataField) {
       return '';
     }
     const dataValue = this.dataValues.find(
@@ -348,22 +333,6 @@ export class EventDetailPageComponent {
     }
   }
 
-  getScenarioEventTitle(scenarioEvent: ScenarioEventPlus): string {
-    if (!scenarioEvent) {
-      return '';
-    }
-    const titleField = this.allDataFields.find((df) => df.name === 'Title');
-    if (!titleField) {
-      return '';
-    }
-    const titleDataValue = this.dataValues.find(
-      (dv) =>
-        dv.dataFieldId === titleField.id &&
-        dv.scenarioEventId === scenarioEvent.id
-    );
-    return titleDataValue ? titleDataValue.value : '';
-  }
-
   printpage() {
     const printContents = document.getElementById('printable-area').innerHTML;
     document.body.innerHTML = printContents;
@@ -374,12 +343,6 @@ export class EventDetailPageComponent {
   getCardNameById(cardId: string): string {
     const card = this.cardList.find((c) => c.id === cardId);
     return card ? card.name : 'Unknown';
-  }
-
-  removeHtmlTags(content) {
-    const template = document.createElement('template');
-    template.innerHTML = content;
-    return template.content.textContent;
   }
 
   openInNewTab(scenarioEventId: string, dataFieldId: string) {

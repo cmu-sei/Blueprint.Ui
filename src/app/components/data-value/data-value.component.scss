@@ -1,0 +1,35 @@
+// Copyright 2024 Carnegie Mellon University. All Rights Reserved.
+// Released under a MIT (SEI)-style license. See LICENSE.md in the
+// project root for license information.
+
+.full-width {
+  width: 100%;
+}
+
+.editor-label {
+  width: 100%;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.125;
+  font-family: Open Sans, sans-serif;
+  letter-spacing: normal;
+  text-align: left;
+}
+
+// overrides.scss or styles.scss
+// This fixes https://github.com//issues/4609
+.mat-dialog-override {
+  height: 0px;
+  mat-dialog-container {
+    > :first-child {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+    mat-dialog-content,
+    div[mat-dialog-content] {
+      flex-grow: 1;
+      max-height: unset;
+    }
+  }
+}
