@@ -45,7 +45,11 @@ export class AdminCatalogEditDialogComponent {
   }
 
   errorFree() {
-    return this.data.catalog.name && this.data.catalog.description;
+    return (
+      this.data.catalog.name &&
+      this.data.catalog.description &&
+      this.data.catalog.injectTypeId
+    );
   }
 
   /**

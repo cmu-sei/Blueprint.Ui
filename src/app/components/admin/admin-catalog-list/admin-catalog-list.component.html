@@ -82,6 +82,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <mat-cell *matCellDef="let element" class="mat-column-is-public">
           <mat-checkbox
             [(ngModel)]="element.isPublic"
+            (ngModelChange)="saveCatalog(element)"
+            (click)="$event.stopPropagation();"
           ></mat-checkbox>
         </mat-cell>
       </ng-container>
