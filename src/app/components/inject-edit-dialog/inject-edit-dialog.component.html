@@ -1,0 +1,76 @@
+<!--
+Copyright 2024 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license. See LICENSE.md in the
+project root for license information.
+-->
+<div mat-dialog-container>
+  <div mat-dialog-title>
+    <span *ngIf="data.inject.id">Edit</span>
+    <span *ngIf="!data.inject.id">Create</span>
+     an Inject
+    &nbsp;
+    <button
+      mat-icon-button
+      (click)="handleEditComplete(false)"
+      title="Cancel"
+      class="close-button"
+      tabindex="-1"
+    >
+      <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
+    </button>
+  </div>
+  <div mat-dialog-content *ngIf="!!data && data.inject !== undefined && data.inject !== null">
+    <div class="add-margin">
+      <div>
+        <mat-form-field class="full-width">
+          <input
+            type="text"
+            title="The Name of the Inject"
+            matInput
+            placeholder="Name (required)"
+            [(ngModel)]="data.inject.name">
+        </mat-form-field>
+      </div>
+    </div>
+    <div class="add-margin">
+      <div>
+        <mat-form-field class="full-width">
+          <input
+            type="text"
+            title="The Description of the Inject"
+            matInput
+            placeholder="Description (required)"
+            [(ngModel)]="data.inject.description">
+        </mat-form-field>
+      </div>
+    </div>
+    <div class="add-margin" *ngFor="let dataField of data.dataFieldList">
+      <div class="full-width">
+        <app-data-value
+          [(value)]="getDataValue(dataField.id).value"
+          [dataField]="dataField"
+          [canEdit]="true"
+          [canApprove]="false"
+          [isOwner]="false"
+          [isViewOnly]="false"
+          [organizationOptions]="[]"
+          [teamOptions]="[]"
+          [unitOptions]="[]"
+          [cardOptions]="[]"
+          [moveOptions]="[]"
+          [gallerySourceTypeOptions]="[]"
+          [userOptions]="[]"
+        ></app-data-value>
+        <br />
+      </div>
+    </div>
+  </div>
+  <div class="cssLayoutRowStartCenter bottom-button">
+    <div class="delete-button">
+      <button mat-stroked-button (click)="handleEditComplete(true)" [disabled]="!errorFree()" style="margin-left: 40px;">Save</button>
+    </div>
+    <div class="delete-button">
+      <button mat-stroked-button (click)="handleEditComplete(false)">Cancel</button>
+    </div>
+  </div>
+</div>

@@ -19,6 +19,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </button>
       <span class="center-self">{{ getUnit(catalogUnit.unitId).shortName }} - {{ getUnit(catalogUnit.unitId).name }}</span>
     </div>
+    <div *ngIf="catalogUnitList.length === 0" style="margin-left: 45px;">
+      No units have access
+    </div>
     <span class="units-title">Units to add</span>
     <div *ngFor="let unit of getUnitList(); trackBy: trackByFn">
       <button

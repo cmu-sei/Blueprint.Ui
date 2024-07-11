@@ -1,0 +1,254 @@
+<!--
+Copyright 2024 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license. See LICENSE.md in the
+project root for license information.
+-->
+<!-- view only display -->
+<span *ngIf="isViewOnly; else editable">
+  <!-- dataType.DateTime -->
+  <span *ngIf="dataField.dataType === dataType.DateTime">
+    {{ value | date: 'MM/dd/yyyy HH:mm' }}
+  </span>
+  <!-- dataType.Html -->
+  <span *ngIf="dataField.dataType === dataType.Html">
+    <angular-editor
+      [innerHtml]="value"
+      [config]="viewConfig"
+    ></angular-editor>
+  </span>
+  <!-- dataType.Card -->
+  <span *ngIf="dataField.dataType === dataType.Card">
+    {{ getCardName(value) }}
+  </span>
+  <!-- dataType.Move -->
+  <span *ngIf="dataField.dataType === dataType.Move">
+    {{ value }} - {{ getMoveTitle(value) }}
+  </span>
+  <!-- dataType.User -->
+  <span *ngIf="dataField.dataType === dataType.User">
+    {{ getUserName(value) }}
+  </span>
+  <!-- other dataTypes -->
+  <span *ngIf="dataField.dataType !== dataType.DateTime && dataField.dataType !== dataType.Html && dataField.dataType !== dataType.Card && dataField.dataType !== dataType.Move && dataField.dataType !== dataType.User">
+    {{ value }}
+  </span>
+</span>
+<!-- editable display -->
+<ng-template #editable>
+  <!-- string input -->
+  <mat-form-field *ngIf="!dataField.isChosenFromList && (dataField.dataType === dataType.String || dataField.dataType === dataType.Url)" class="full-width">
+    <input
+      type="text"
+      matInput
+      placeholder="{{ dataField.name }}"
+      [(ngModel)]="value"
+      (ngModelChange)="valueChangeHandler()"
+      [disabled]="!canEdit"
+    />
+  </mat-form-field>
+  <!-- Numeric input -->
+  <mat-form-field *ngIf="!dataField.isChosenFromList && dataField.dataType === dataType.Integer || dataField.dataType === dataType.Double" class="full-width">
+    <input
+      matInput
+      placeholder="{{ dataField.name }}"
+      (change)="verifyNumber(value)"
+      [(ngModel)]="value"
+      (ngModelChange)="valueChangeHandler()"
+      [disabled]="!canEdit"
+    />
+  </mat-form-field>
+  <!-- date input -->
+  <mat-form-field *ngIf="!dataField.isChosenFromList && dataField.dataType === dataType.DateTime" class="full-width">
+    <input
+      matInput
+      [ngxMatDatetimePicker]="scenarioEventTimePicker"
+      placeholder={{dataField.name}}
+      [(ngModel)]="value"
+      (ngModelChange)="valueChangeHandler()"
+      >
+    <mat-datepicker-toggle
+      matSuffix
+      [for]="$any(scenarioEventTimePicker)">
+    </mat-datepicker-toggle>
+    <ngx-mat-datetime-picker #scenarioEventTimePicker
+      [showSpinners]=true
+      [showSeconds]=true
+      [stepHour]=1
+      [stepMinute]=1
+      [stepSecond]=1
+      [touchUi]=false
+      [enableMeridian]=true
+      [disableMinute]=false
+      [hideTime]=false>
+    </ngx-mat-datetime-picker>
+  </mat-form-field>
+  <!-- html input -->
+  <div *ngIf="!dataField.isChosenFromList && dataField.dataType === dataType.Html">
+    <div class="full-width">
+      <div class="editor-label">
+        {{ dataField.name }}
+      </div>
+      <div>
+        <angular-editor
+          [placeholder]="'Enter value ...'"
+          [(ngModel)]="value"
+          (ngModelChange)="valueChangeHandler()"
+          [config]="canEdit ? editorConfig : viewConfig"
+        ></angular-editor>
+      </div>
+      &nbsp;
+    </div>
+  </div>
+  <!-- Organization input -->
+  <mat-form-field *ngIf="!dataField.isChosenFromList && dataField.dataType === dataType.Organization" class="full-width">
+    <mat-label>{{ dataField.name }}</mat-label>
+    <mat-select
+      placeholder="{{ dataField.name }}"
+      [(ngModel)]="value"
+      (ngModelChange)="valueChangeHandler()"
+      [disabled]="!canEdit"
+    >
+    <mat-option *ngIf="organizationOptions && organizationOptions.length > 0" value="None">None</mat-option>
+    <mat-option *ngFor="let organization of organizationOptions" [value]="organization">{{ organization }}</mat-option>
+    </mat-select>
+  </mat-form-field>
+  <!-- TeamsMultiple value -->
+  <mat-form-field *ngIf="!dataField.isChosenFromList && dataField.dataType === dataType.TeamsMultiple" class="full-width">
+    <mat-label>{{ dataField.name }}</mat-label>
+    <mat-select
+      multiple
+      placeholder="{{ dataField.name }}"
+      (click)="$event.stopPropagation()"
+      (valueChange)="setDataValueArray($event)"
+      [value]="getValueArray()"
+      [disabled]="!canEdit"
+    >
+      <mat-option *ngIf="teamOptions && teamOptions.length > 0" value="ALL">ALL</mat-option>
+      <mat-option *ngIf="teamOptions && teamOptions.length > 0" value="None">None</mat-option>
+      <mat-option *ngFor="let team of teamOptions" [value]="team.shortName">
+        {{ team.shortName }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+  <!-- Status value -->
+  <mat-form-field *ngIf="!dataField.isChosenFromList && dataField.dataType === dataType.Status" class="full-width">
+    <mat-label>{{ dataField.name }}</mat-label>
+    <mat-select
+      placeholder="{{ dataField.name }}"
+      [(ngModel)]="value"
+      [disabled]="!canApprove"
+    >
+      <mat-option *ngFor="let status of itemStatus" [value]="status">
+        {{ status }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+  <!-- Assigned Unit value -->
+  <mat-form-field *ngIf="!dataField.isChosenFromList && dataField.dataType === dataType.Team" class="full-width">
+    <mat-label>{{ dataField.name }}</mat-label>
+    <mat-select
+      placeholder="{{ dataField.name }}"
+      [(ngModel)]="value"
+      [disabled]="!isOwner"
+    >
+      <mat-option *ngFor="let unit of unitOptions" [value]="unit.shortName">
+        {{ unit.shortName }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+  <!-- Card input -->
+  <mat-form-field *ngIf="!dataField.isChosenFromList && dataField.dataType === dataType.Card" class="full-width">
+    <mat-label>{{ dataField.name }}</mat-label>
+    <mat-select
+      placeholder="{{ dataField.name }}"
+      [(ngModel)]="value"
+      (ngModelChange)="valueChangeHandler()"
+      [disabled]="!canEdit"
+    >
+      <mat-option value="''"> - - - </mat-option>
+      <mat-option *ngFor="let card of cardOptions" [value]="card.id">{{ card.name }}</mat-option>
+    </mat-select>
+  </mat-form-field>
+  <!-- Move input -->
+  <mat-form-field *ngIf="!dataField.isChosenFromList && dataField.dataType === dataType.Move" class="full-width">
+    <mat-label>{{ dataField.name }}</mat-label>
+    <mat-select
+      placeholder="{{ dataField.name }}"
+      [(ngModel)]="value"
+      (ngModelChange)="valueChangeHandler()"
+      [disabled]="!canEdit"
+    >
+      <mat-option value="''"> - - - </mat-option>
+      <mat-option *ngFor="let move of moveOptions" [value]="move.id">{{ move.moveNumber }} - {{ move.title }}</mat-option>
+    </mat-select>
+  </mat-form-field>
+  <!-- SourceType input -->
+  <mat-form-field *ngIf="!dataField.isChosenFromList && dataField.dataType === dataType.SourceType" class="full-width">
+    <mat-label>{{ dataField.name }}</mat-label>
+    <mat-select
+      placeholder="{{ dataField.name }}"
+      [(ngModel)]="value"
+      (ngModelChange)="valueChangeHandler()"
+      [disabled]="!canEdit"
+    >
+      <mat-option value="''"> </mat-option>
+      <mat-option *ngFor="let sourceType of gallerySourceTypeOptions" [value]="sourceType">{{ sourceType }}</mat-option>
+    </mat-select>
+  </mat-form-field>
+  <!-- User value -->
+  <mat-form-field *ngIf="dataField.dataType === dataType.User" class="full-width">
+    <mat-label>{{ dataField.name }}</mat-label>
+    <mat-select
+      placeholder="{{ dataField.name }}"
+      [(ngModel)]="value"
+      (ngModelChange)="valueChangeHandler()"
+      [disabled]="!canEdit"
+    >
+      <mat-option *ngFor="let user of userOptions" [value]="user.id">
+        {{ user.name }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+  <!-- boolean/checkbox input -->
+  <div class="full-width" *ngIf="dataField.dataType === dataType.Boolean || dataField.dataType === dataType.Checkbox">
+    <div class="editor-label">
+      {{ dataField.name }}
+    </div>
+    <div>
+      <mat-checkbox
+        [checked]="value"
+        (change)="value = $event.checked.toString(); valueChangeHandler()"
+      >
+      </mat-checkbox><br />&nbsp;
+    </div>
+  </div>
+  <!-- DeliveryMethod input -->
+  <mat-form-field *ngIf="dataField.dataType === dataType.DeliveryMethod" class="full-width">
+    <mat-label>{{ dataField.name }}</mat-label>
+    <mat-select
+      multiple
+      placeholder="{{ dataField.name }}"
+      (valueChange)="setDataValueArray($event)"
+      [value]="getValueArray()"
+      [disabled]="!canEdit"
+    >
+      <mat-option *ngFor="let dataOption of dataField.dataOptions" [value]="dataOption.optionValue">
+        {{ dataOption.optionName }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+  <!-- dropdown input -->
+  <mat-form-field *ngIf="dataField.isChosenFromList" class="full-width">
+    <mat-label>{{ dataField.name }}</mat-label>
+    <mat-select
+      placeholder="{{ dataField.name }}"
+      [(ngModel)]="value"
+      (ngModelChange)="valueChangeHandler()"
+      [disabled]="!canEdit"
+    >
+      <mat-option *ngFor="let dataOption of dataField.dataOptions" [value]="dataOption.optionValue">
+        {{ dataOption.optionName }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+</ng-template>

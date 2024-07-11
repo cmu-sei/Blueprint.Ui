@@ -86,8 +86,6 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
     Approver: MselRole.Approver,
     Editor: MselRole.Editor,
   };
-  toOrgList: string[] = [];
-  sortedMselTeams: Team[] = [];
   blankDataValue = {
     id: '',
     value: '',

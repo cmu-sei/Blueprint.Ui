@@ -33,7 +33,7 @@
       <table id="eventDetails">
         <tbody>
           <ng-container *ngFor="let df of sortedDataFields">
-            <tr *ngIf="getScenarioEventValue(df.name) && scenarioEvent.id === scenarioEventId && df.name !='Title'">
+            <tr *ngIf="getScenarioEventValue(df) && scenarioEvent.id === scenarioEventId">
               <td style="font-weight:bold">
                 {{ df.name }}
                 <button
@@ -45,16 +45,22 @@
                   <mat-icon class="mdi-18px self-center" fontIcon="mdi-open-in-new"></mat-icon>
                 </button>
               </td>
-              <td *ngIf="df.dataType !== dataType.Html">
-                {{ removeHtmlTags(getScenarioEventValue(df.name)) }}
-              </td>
-              <!-- html input -->
-              <td *ngIf="df.dataType === dataType.Html">
-                <angular-editor
-                  [placeholder]="'Enter value ...'"
-                  [innerHtml]="getScenarioEventValue(df.name)"
-                  [config]="viewConfig"
-                ></angular-editor>
+              <td>
+                <app-data-value
+                  [(value)]="getDataValue(df.id).value"
+                  [dataField]="df"
+                  [canEdit]="false"
+                  [canApprove]="false"
+                  [isOwner]="false"
+                  [isViewOnly]="true"
+                  [organizationOptions]="organizationList"
+                  [teamOptions]="teamList"
+                  [unitOptions]="teamList"
+                  [cardOptions]="cardList"
+                  [moveOptions]="moveList"
+                  [gallerySourceTypeOptions]="gallerySourceTypes"
+                  [userOptions]="userList"
+                ></app-data-value>
               </td>
             </tr>
         </ng-container>
