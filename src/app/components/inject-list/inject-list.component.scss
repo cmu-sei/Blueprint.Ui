@@ -75,6 +75,13 @@
   word-wrap: none;
 }
 
+.mat-column-select {
+  flex: 0 0 50px;
+  flex-direction: row;
+  padding: 0px;
+  word-wrap: none;
+}
+
 .mat-column-description {
   flex: 0 0 40%;
   padding: 2px;

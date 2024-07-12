@@ -18,6 +18,7 @@ import { ComnSettingsService, Theme } from '@cmusei/crucible-common';
 import { UserDataService } from 'src/app/data/user/user-data.service';
 import {
   Card,
+  Catalog,
   DataField,
   DataFieldType,
   DataValue,
@@ -28,12 +29,16 @@ import {
   ScenarioEvent,
   Team,
   User,
+  Injectm,
 } from 'src/app/generated/blueprint.api';
 import { MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { Sort } from '@angular/material/sort';
 import { MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy-menu';
 import { CardQuery } from 'src/app/data/card/card.query';
+import { CatalogQuery } from 'src/app/data/catalog/catalog.query';
+import { InjectmDataService } from 'src/app/data/injectm/injectm-data.service';
+import { InjectSelectDialogComponent } from '../inject-select-dialog/inject-select-dialog.component';
 import { MoveQuery } from 'src/app/data/move/move.query';
 import { OrganizationQuery } from 'src/app/data/organization/organization.query';
 import {
@@ -156,12 +161,15 @@ export class ScenarioEventListComponent
   showRealTime = false;
   allowDragAndDrop = true;
   moveAndGroupNumbers: Record<string, number[]>[] = [];
+  catalogList: Catalog[] = [];
 
   constructor(
     private router: Router,
     private userDataService: UserDataService,
     private settingsService: ComnSettingsService,
     private cardQuery: CardQuery,
+    private catalogQuery: CatalogQuery,
+    private injectmDataService: InjectmDataService,
     private moveQuery: MoveQuery,
     private mselQuery: MselQuery,
     private organizationQuery: OrganizationQuery,
@@ -286,6 +294,13 @@ export class ScenarioEventListComponent
       )
       .subscribe((event) => {
         this.applyFilter(this.filterString);
+      });
+    // observe the Catalogs
+    this.catalogQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((catalogs) => {
+        this.catalogList = catalogs;
       });
     // set the time display format
     this.showRealTime = this.uiDataService.useRealTime();
@@ -902,6 +917,37 @@ export class ScenarioEventListComponent
       '&scenarioEvent=' +
       id;
     window.open(url);
+  }
+
+  selectFromCatalog(catalog: Catalog) {
+    this.injectmDataService.loadByCatalog(catalog.id);
+    const dialogRef = this.dialog.open(InjectSelectDialogComponent, {
+      width: '80%',
+      maxWidth: '800px',
+      height: '90%',
+      data: {
+        catalog: catalog,
+        loggedInUserId: this.loggedInUserId,
+        isContentDeveloper: this.isContentDeveloper,
+      },
+    });
+    dialogRef.componentInstance.editComplete.subscribe((result) => {
+      if (result.saveChanges && result.selectedInjectIdList.length > 0) {
+        //
+        //
+        //
+        //
+        // TODO:  add the injects to the MSEL
+        console.log(result.selectedInjectIdList);
+        //
+        //
+        //
+        //
+      }
+      // reset the flag indicating a new scenario event
+      this.isAddingScenarioEvent = false;
+      dialogRef.close();
+    });
   }
 
   ngOnDestroy() {

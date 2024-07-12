@@ -3,119 +3,113 @@ Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
-<mat-expansion-panel>
-  <mat-expansion-panel-header>
-    <span class="injects-title">Injects</span>
-  </mat-expansion-panel-header>
-  <section
-    class="mat-elevation-z2 mat-header-row background-alt"
-  >
-  <span
-  class="mat-header-cell three-cell"
->
-  <span *ngIf="isContentDeveloper">
-    <button
-      mat-icon-button
-      (click)="addOrEditInject(null)"
-      style="outline: none; margin-left: 15px;"
-      title="Add new Inject"
-    >
-      <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle"></mat-icon>
-      Add Inject
-    </button>
-  </span> &nbsp;
-</span>
-<span class="mat-header-cell three-cell search-cell">
-  <mat-form-field class="search-control">
-    <input matInput [formControl]="filterControl" placeholder="Search" />
-  </mat-form-field>
-  <div style="width: 30px;">
-    <button
-      mat-icon-button
-      (click)="filterControl.setValue(''); $event.stopPropagation()"
-      style="outline: none;"
-      title="Clear Search"
-      [disabled]="!filterString"
-    >
-      <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
-    </button>
-  </div>
-</span>
-<span class="mat-header-cell three-cell search-cell">&nbsp;</span>
-</section>
-
-  <section class="scrolling-region">
-    <table mat-table #injectTable [dataSource]="injectDataSource" matSort multiTemplateDataRows>
-      <!-- action column -->
-      <ng-container matColumnDef="action">
-        <mat-header-cell *matHeaderCellDef class="mat-column-action"></mat-header-cell>
-        <mat-cell *matCellDef="let element" class="mat-column-action">
-          <div class="action-div">
-            <button
-              mat-icon-button class="msel-action"
-              (click)="addOrEditInject(element); $event.stopPropagation();"
-              title="Edit {{ element.name }} inject"
-              *ngIf="isContentDeveloper"
-            >
-              <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline" title="Edit {{ element.name }} inject"></mat-icon>
-            </button>
+<section class="scrolling-region">
+  <table mat-table #injectTable [dataSource]="injectDataSource" matSort multiTemplateDataRows>
+    <!-- action column -->
+    <ng-container matColumnDef="action">
+      <mat-header-cell *matHeaderCellDef [ngClass]="isEditMode ? 'mat-column-action' : 'mat-column-select'">
+        <button
+          mat-icon-button
+          (click)="addOrEditInject(null)"
+          style="outline: none; margin-left: 15px;"
+          title="Add new Inject"
+          *ngIf="isContentDeveloper"
+        >
+          <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle"></mat-icon>
+          Add Inject
+        </button>
+      </mat-header-cell>
+      <mat-cell *matCellDef="let element" [ngClass]="isEditMode ? 'mat-column-action' : 'mat-column-select'">
+        <div *ngIf="isEditMode">
+          <button
+            mat-icon-button class="msel-action"
+            (click)="addOrEditInject(element)"
+            title="Edit {{ element.name }} inject"
+            *ngIf="isContentDeveloper"
+          >
+            <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline" title="Edit {{ element.name }} inject"></mat-icon>
+          </button>
+          <button
+            mat-icon-button
+            (click)="copyInject(element)"
+            title="Copy {{ element.name }}"
+            *ngIf="isContentDeveloper"
+          >
+            <mat-icon class="mdi-18px" fontIcon="mdi-content-copy" alt="Copy"></mat-icon>
+          </button>
+          <button
+            mat-icon-button class="msel-action"
+            (click)="deleteInject(element)"
+            title="Delete {{ element.name }} inject"
+            *ngIf="isContentDeveloper"
+          >
+            <mat-icon class="mdi-18px" fontIcon="mdi-delete" title="Delete {{ element.name }} inject"></mat-icon>
+          </button>
+        </div>
+        <div *ngIf="!isEditMode">
+          <mat-checkbox
+            [checked]="isSelected(element.id)"
+            (change)="select(element.id)"
+          ></mat-checkbox><br />
+        </div>
+      </mat-cell>
+    </ng-container>
+    <!-- name Column -->
+    <ng-container matColumnDef="name">
+      <mat-header-cell title="Inject Name" *matHeaderCellDef class="mat-column-name">
+        Name
+      </mat-header-cell>
+      <mat-cell *matCellDef="let element" class="mat-column-name">
+        {{ element.name }}
+      </mat-cell>
+    </ng-container>
+    <!-- description Column -->
+    <ng-container matColumnDef="description">
+      <mat-header-cell title="Inject Description" *matHeaderCellDef class="mat-column-description">
+        <span class="two-cell search-cell">
+          Description
+        </span>
+        <span class="three-cell search-cell">
+          <mat-form-field class="search-control">
+            <input matInput [formControl]="filterControl" placeholder="Search" />
+          </mat-form-field>
+          <div style="width: 30px;">
             <button
               mat-icon-button
-              (click)="copyInject(element); $event.stopPropagation();"
-              title="Copy {{ element.name }}"
+              (click)="filterControl.setValue('')"
+              style="outline: none;"
+              title="Clear Search"
+              [disabled]="!filterString"
             >
-              <mat-icon class="mdi-18px" fontIcon="mdi-content-copy" alt="Copy"></mat-icon>
-            </button>
-            <button
-              mat-icon-button class="msel-action"
-              (click)="deleteInject(element); $event.stopPropagation();"
-              title="Delete {{ element.name }} inject"
-              *ngIf="isContentDeveloper"
-            >
-              <mat-icon class="mdi-18px" fontIcon="mdi-delete" title="Delete {{ element.name }} inject"></mat-icon>
+              <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
             </button>
           </div>
-        </mat-cell>
-      </ng-container>
-      <!-- name Column -->
-      <ng-container matColumnDef="name">
-        <mat-header-cell title="Inject Name" *matHeaderCellDef class="mat-column-name">
-          Name
-        </mat-header-cell>
-        <mat-cell *matCellDef="let element" class="mat-column-name">
-          {{ element.name }}
-        </mat-cell>
-      </ng-container>
-      <!-- description Column -->
-      <ng-container matColumnDef="description">
-        <mat-header-cell title="Inject Description" *matHeaderCellDef class="mat-column-description">
-          Description
-        </mat-header-cell>
-        <mat-cell *matCellDef="let element" class="mat-column-description">
-          {{ element.description }}
-        </mat-cell>
-      </ng-container>
-      <!-- Expanded Content Column - The detail row is made up of this one column that spans across all columns -->
-      <ng-container matColumnDef="expandedDetail">
-        <mat-cell class="expanded-detail-cell" *matCellDef="let element" [attr.colspan]="displayedColumns.length">
-          <div class="expanded-detail-div">
-            what goes here?
-          </div>
-        </mat-cell>
-      </ng-container>
-      <!-- row definitions -->
-      <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-      <mat-row *matRowDef="let row; columns: displayedColumns;"
-        matRipple
-        [class]="getRowClass(row.id)"
-        (click)="rowClicked(row)">
-      </mat-row>
-      <mat-row *matRowDef="let row; columns: ['expandedDetail']; when: isExpansionDetailRow"
-        [@detailExpand]="row.id == expandedElementId ? 'expanded' : 'collapsed'"
-        style="overflow: hidden">
-      </mat-row>
-    </table>
-    <!-- No Results Message -->
-    <div class="no-results" *ngIf="injectDataSource?.filteredData.length === 0">No Injects found</div>
-  </section>
-</mat-expansion-panel>
+        </span>
+      </mat-header-cell>
+      <mat-cell *matCellDef="let element" class="mat-column-description">
+        {{ element.description }}
+      </mat-cell>
+    </ng-container>
+    <!-- Expanded Content Column - The detail row is made up of this one column that spans across all columns -->
+    <ng-container matColumnDef="expandedDetail">
+      <mat-cell class="expanded-detail-cell" *matCellDef="let element" [attr.colspan]="displayedColumns.length">
+        <div class="expanded-detail-div">
+          what goes here?
+        </div>
+      </mat-cell>
+    </ng-container>
+    <!-- row definitions -->
+    <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+    <mat-row *matRowDef="let row; columns: displayedColumns;"
+      matRipple
+      [class]="getRowClass(row.id)"
+      (click)="rowClicked(row)">
+    </mat-row>
+    <mat-row *matRowDef="let row; columns: ['expandedDetail']; when: isExpansionDetailRow"
+      [@detailExpand]="row.id == expandedElementId ? 'expanded' : 'collapsed'"
+      style="overflow: hidden">
+    </mat-row>
+  </table>
+  <!-- No Results Message -->
+  <div class="no-results" *ngIf="injectDataSource?.filteredData.length === 0">No Injects found</div>
+</section>

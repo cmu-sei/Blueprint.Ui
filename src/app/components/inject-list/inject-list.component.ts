@@ -1,10 +1,24 @@
 // Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
-import { animate, state, style, transition, trigger } from '@angular/animations';
+import {
+  animate,
+  state,
+  style,
+  transition,
+  trigger,
+} from '@angular/animations';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import {
@@ -48,11 +62,14 @@ import { DataFieldQuery } from 'src/app/data/data-field/data-field.query';
 export class InjectListComponent implements OnDestroy, OnInit {
   @Input() loggedInUserId: string;
   @Input() isContentDeveloper: boolean;
-  @Input() catalog: Catalog;
-  @Input() injectType: InjectType;
+  @Input() isEditMode: boolean;
+  @Input() catalog: Catalog = {};
+  @Input() injectType: InjectType = {};
+  @Output() selectedInjectIdList = new EventEmitter<string[]>();
   @ViewChild('injectTable', { static: false }) injectTable: MatTable<any>;
   contextMenuPosition = { x: '0px', y: '0px' };
   injectList: Injectm[] = [];
+  selectedInjectIds: string[] = [];
   changedInject: Injectm = {};
   filteredInjects: Injectm[] = [];
   filterControl = new UntypedFormControl();
@@ -276,5 +293,19 @@ export class InjectListComponent implements OnDestroy, OnInit {
       dataValues.push(dv);
     });
     return dataValues;
+  }
+
+  isSelected(id: string): boolean {
+    return this.selectedInjectIds.some((m) => m === id);
+  }
+
+  select(id: string) {
+    const index = this.selectedInjectIds.indexOf(id);
+    if (index > -1) {
+      this.selectedInjectIds.splice(index, 1);
+    } else {
+      this.selectedInjectIds.push(id);
+    }
+    this.selectedInjectIdList.emit(this.selectedInjectIds);
   }
 }

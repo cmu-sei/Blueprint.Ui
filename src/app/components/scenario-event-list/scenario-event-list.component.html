@@ -64,6 +64,25 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 >
                   Add New Event
                 </button>
+                <button
+                  mat-menu-item
+                  [matMenuTriggerFor]="addFromCatalog"
+                  title="Add an inject from a catalog"
+                  [disabled]="selectedEventIdList.length > 0"
+                  *ngIf="catalogList.length > 0 && (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)"
+                >
+                  Add Inject from Catalog
+                </button>
+              </mat-menu>
+              <mat-menu #addFromCatalog="matMenu" [overlapTrigger]="false">
+                <button
+                  mat-menu-item
+                  (click)="selectFromCatalog(catalog)"
+                  title="{{ catalog.name }}"
+                  *ngFor="let catalog of catalogList"
+                >
+                  {{ catalog.name }}
+                </button>
               </mat-menu>
               <button
                 mat-icon-button
