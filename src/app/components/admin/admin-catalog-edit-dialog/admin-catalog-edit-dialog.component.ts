@@ -12,6 +12,10 @@ import {
 import { ErrorStateMatcher } from '@angular/material/core';
 import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
+import { DataFieldDataService } from 'src/app/data/data-field/data-field-data.service';
+import { DataFieldQuery } from 'src/app/data/data-field/data-field.query';
+import { Subject, takeUntil } from 'rxjs';
+import { DataField } from 'src/app/generated/blueprint.api';
 
 /** Error when invalid control is dirty, touched, or submitted. */
 export class UserErrorStateMatcher implements ErrorStateMatcher {
@@ -31,17 +35,29 @@ const MIN_NAME_LENGTH = 3;
   templateUrl: './admin-catalog-edit-dialog.component.html',
   styleUrls: ['./admin-catalog-edit-dialog.component.scss'],
 })
-
 export class AdminCatalogEditDialogComponent {
   @Output() editComplete = new EventEmitter<any>();
   isChanged = false;
+  dataFieldList: DataField[] = [];
+  private dataFieldsLoaded = false;
+  private unsubscribe$ = new Subject();
 
   constructor(
     public dialogService: DialogService,
     dialogRef: MatDialogRef<AdminCatalogEditDialogComponent>,
+    private dataFieldDataService: DataFieldDataService,
+    private dataFieldQuery: DataFieldQuery,
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {
     dialogRef.disableClose = true;
+    this.dataFieldQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((dataFields) => {
+        this.dataFieldList = dataFields
+          .filter((m) => m.injectTypeId === this.data.catalog.injectTypeId)
+          .sort((a, b) => (+a.displayOrder > +b.displayOrder ? 1 : -1));
+      });
   }
 
   errorFree() {
@@ -68,9 +84,34 @@ export class AdminCatalogEditDialogComponent {
     }
   }
 
-  getTeamName(teamId: string) {
-    const team = this.data.teamList.find(t => t.id === teamId);
-    return team.shortName + ' - ' + team.name;
+  getInjectTypeDataFields() {
+    if (!this.dataFieldsLoaded && this.data.catalog.injectTypeId) {
+      this.loadDataFields();
+    }
+    return this.dataFieldList;
   }
 
+  isInListDataFields(id: string) {
+    return this.data.catalog.listDataFields
+      ? this.data.catalog.listDataFields.indexOf(id) > -1
+      : false;
+  }
+
+  setDataFieldInList(id: string) {
+    let idArray = this.data.catalog.listDataFields
+      ? this.data.catalog.listDataFields.split(',')
+      : [];
+    const index = idArray ? idArray.indexOf(id) : -1;
+    if (index > -1) {
+      idArray = idArray.pop(index, 1);
+    } else {
+      idArray.push(id);
+    }
+    this.data.catalog.listDataFields = idArray.join(',');
+  }
+
+  loadDataFields() {
+    this.dataFieldsLoaded = true;
+    this.dataFieldDataService.loadByInjectType(this.data.catalog.injectTypeId);
+  }
 }

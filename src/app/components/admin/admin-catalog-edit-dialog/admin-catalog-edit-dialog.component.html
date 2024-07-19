@@ -48,7 +48,7 @@ project root for license information.
       <div>
         <mat-form-field class="full-width">
           <mat-label>Inject Type (required)</mat-label>
-          <mat-select placeholder="Inject Type (required)" [(ngModel)]="data.catalog.injectTypeId">
+          <mat-select placeholder="Inject Type (required)" [(ngModel)]="data.catalog.injectTypeId" (ngModelChange)="loadDataFields()">
             <mat-option *ngFor="let injectType of data.injectTypeList" [value]="injectType.id" title="{{ injectType.name}}">
               {{ injectType.name }}
             </mat-option>
@@ -62,8 +62,22 @@ project root for license information.
           [(ngModel)]="data.catalog.isPublic"
           class="bottom-margin"
         >
-          Is Public
+          Is a Public Catalog
         </mat-checkbox><br />
+      </div>
+    </div>
+    <div class="add-margin" *ngIf="data.catalog.injectTypeId">
+      <div class="full-width">
+        <mat-label>Data Fields to Show on Inject List</mat-label>
+        <div *ngFor="let dataField of getInjectTypeDataFields()" class="datafield-div">
+          <mat-checkbox
+            [checked]="isInListDataFields(dataField.id)"
+            (change)="setDataFieldInList(dataField.id)"
+            class="bottom-margin"
+          >
+            {{ dataField.name }}
+          </mat-checkbox><br />
+        </div>
       </div>
     </div>
   </div>

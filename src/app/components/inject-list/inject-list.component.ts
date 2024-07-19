@@ -40,6 +40,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { InjectTypeQuery } from 'src/app/data/inject-type/inject-type.query';
 import { DataFieldDataService } from 'src/app/data/data-field/data-field-data.service';
 import { DataFieldQuery } from 'src/app/data/data-field/data-field.query';
+import { UnitQuery } from 'src/app/data/unit/unit.query';
+import { UserDataService } from 'src/app/data/user/user-data.service';
 
 @Component({
   selector: 'app-inject-list',
@@ -80,11 +82,14 @@ export class InjectListComponent implements OnDestroy, OnInit {
   dataFieldList: DataField[] = [];
   injectDataSource = new MatTableDataSource<Injectm>(new Array<Injectm>());
   displayedColumns: string[] = ['action', 'name', 'description'];
+  displayedDataFields: DataField[] = [];
   injectTypeList: InjectType[] = [];
   private unsubscribe$ = new Subject();
   isExpansionDetailRow = (i: number, row: Object) =>
     (row as Injectm).id === this.expandedElementId;
   expandedElementId = '';
+  unitList = [];
+  userList = [];
 
   constructor(
     private injectmDataService: InjectmDataService,
@@ -93,7 +98,9 @@ export class InjectListComponent implements OnDestroy, OnInit {
     public dialogService: DialogService,
     private injectTypeQuery: InjectTypeQuery,
     private dataFieldDataService: DataFieldDataService,
-    private dataFieldQuery: DataFieldQuery
+    private dataFieldQuery: DataFieldQuery,
+    private unitQuery: UnitQuery,
+    private userDataService: UserDataService
   ) {
     // subscribe to injects
     this.injectmQuery
@@ -137,6 +144,19 @@ export class InjectListComponent implements OnDestroy, OnInit {
         this.filterString = term;
         this.sortChanged(this.sort);
       });
+    // subscribe to users
+    this.userDataService.userList
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((users) => {
+        this.userList = users;
+      });
+    // subscribe to units
+    this.unitQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((units) => {
+        this.unitList = units;
+      });
   }
 
   ngOnInit() {
@@ -160,41 +180,55 @@ export class InjectListComponent implements OnDestroy, OnInit {
     return injects;
   }
 
-  addOrEditInject(inject: Injectm) {
-    if (!inject) {
-      inject = {
-        id: '',
-        injectTypeId: this.catalog.id
-          ? this.catalog.injectTypeId
-          : this.injectType.id,
-        dataValues: this.createNewDataValues(),
-      } as Injectm;
-    }
+  addInject() {
+    const inject = {
+      id: uuidv4(),
+      injectTypeId: this.catalog.id
+        ? this.catalog.injectTypeId
+        : this.injectType.id,
+    } as Injectm;
+    inject.dataValues = this.createNewDataValues(inject.id);
+    this.editInject(inject, true);
+  }
+
+  copyInject(inject: Injectm): void {
+    const newInjectId = uuidv4();
+    const newInject: Injectm = {};
+    Object.assign(newInject, inject);
+    newInject.id = newInjectId;
+    newInject.dataValues = [];
+    inject.dataValues.forEach((dv) => {
+      const newDataValue: DataValue = {};
+      Object.assign(newDataValue, dv);
+      newDataValue.id = uuidv4();
+      newDataValue.injectId = newInjectId;
+      newInject.dataValues.push(newDataValue);
+    });
+    this.editInject(newInject, true);
+  }
+
+  editInject(inject: Injectm, isNewInject?: boolean) {
     const dialogRef = this.dialog.open(InjectEditDialogComponent, {
       width: '800px',
       data: {
         inject: inject,
         dataFieldList: this.dataFieldList,
+        isEditMode: this.isEditMode,
+        unitList: this.unitList,
+        userList: this.userList,
       },
     });
     dialogRef.componentInstance.editComplete.subscribe((result) => {
       if (result.saveChanges && result.inject) {
-        this.saveInject(result.inject);
+        // save the inject (add or update)
+        if (isNewInject) {
+          this.injectmDataService.add(this.catalog.id, result.inject);
+        } else {
+          this.injectmDataService.update(result.inject);
+        }
       }
       dialogRef.close();
     });
-  }
-
-  saveInject(inject: Injectm) {
-    if (inject.id) {
-      this.injectmDataService.update(inject);
-    } else {
-      // set inject ID for inject and the data values
-      inject.id = uuidv4();
-      inject.dataValues.forEach((dv) => (dv.injectId = inject.id));
-      // create this inject on the API
-      this.injectmDataService.add(this.catalog.id, inject);
-    }
   }
 
   deleteInject(inject: Injectm): void {
@@ -210,20 +244,11 @@ export class InjectListComponent implements OnDestroy, OnInit {
       });
   }
 
-  copyInject(inject: Injectm): void {
-    // this.injectDataService.copy(id);
-  }
-
   sortChanged(sort: Sort) {
     this.sort = sort;
     this.injectDataSource.data = this.getSortedInjects(
       this.getFilteredInjects(this.injectList)
     );
-  }
-
-  ngOnDestroy() {
-    this.unsubscribe$.next(null);
-    this.unsubscribe$.complete();
   }
 
   getFilteredInjects(injects: Injectm[]): Injectm[] {
@@ -283,10 +308,12 @@ export class InjectListComponent implements OnDestroy, OnInit {
     return injectType ? injectType.name : '';
   }
 
-  createNewDataValues(): DataValue[] {
+  createNewDataValues(injectId: string): DataValue[] {
     const dataValues = [];
     this.dataFieldList.forEach((df) => {
       const dv: DataValue = {
+        id: uuidv4(),
+        injectId: injectId,
         dataFieldId: df.id,
         value: null,
       };
@@ -307,5 +334,38 @@ export class InjectListComponent implements OnDestroy, OnInit {
       this.selectedInjectIds.push(id);
     }
     this.selectedInjectIdList.emit(this.selectedInjectIds);
+  }
+
+  getDisplayedColumns(): string[] {
+    const dataFields = this.getDisplayedDataFields().sort((a, b) =>
+      +a.displayOrder < +b.displayOrder ? -1 : 1
+    );
+    const displayedColumns = this.displayedColumns.slice(0);
+    dataFields.forEach((df) => {
+      displayedColumns.push(df.name);
+    });
+    return displayedColumns;
+  }
+
+  getDisplayedDataFields(): DataField[] {
+    const displayedDataFields = [];
+    this.dataFieldList.forEach((df) => {
+      if (this.catalog.listDataFields.indexOf(df.id) > -1) {
+        displayedDataFields.push(df);
+      }
+    });
+    return displayedDataFields;
+  }
+
+  getDataValue(inject: Injectm, dataField: DataField): DataValue {
+    const dataValue = inject.dataValues.find(
+      (dv) => dv.dataFieldId === dataField.id
+    );
+    return dataValue ? dataValue : ({} as DataValue);
+  }
+
+  ngOnDestroy() {
+    this.unsubscribe$.next(null);
+    this.unsubscribe$.complete();
   }
 }

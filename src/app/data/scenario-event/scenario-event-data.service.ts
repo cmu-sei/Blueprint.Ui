@@ -9,6 +9,7 @@ import { Injectable } from '@angular/core';
 import { Sort } from '@angular/material/sort';
 import {
   Card,
+  CreateFromInjectsForm,
   DataField,
   DataFieldType,
   DataValue,
@@ -21,12 +22,11 @@ import { take, tap } from 'rxjs/operators';
 
 export interface DataValuePlus extends DataValue {
   fieldType: DataFieldType;
-  sortAndFilterValue: (string | number);
+  sortAndFilterValue: string | number;
   valueArray: string[];
 }
 
-export interface ScenarioEventPlus extends ScenarioEvent {
-}
+export interface ScenarioEventPlus extends ScenarioEvent {}
 
 export class ScenarioEventViewIndexing {
   fieldMap = new Map<string, DataField>();
@@ -144,6 +144,21 @@ export class ScenarioEventDataService {
     this.scenarioEventStore.setLoading(true);
     this.scenarioEventService
       .createScenarioEvent(scenarioEvent)
+      .pipe(
+        tap(() => {
+          this.scenarioEventStore.setLoading(false);
+        }),
+        take(1)
+      )
+      .subscribe((scenarioEvents) => {
+        this.scenarioEventStore.upsertMany(scenarioEvents);
+      });
+  }
+
+  addInjects(createFromInjectsForm: CreateFromInjectsForm) {
+    this.scenarioEventStore.setLoading(true);
+    this.scenarioEventService
+      .createScenarioEventsFromInjects(createFromInjectsForm)
       .pipe(
         tap(() => {
           this.scenarioEventStore.setLoading(false);

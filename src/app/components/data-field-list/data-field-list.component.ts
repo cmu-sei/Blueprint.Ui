@@ -41,6 +41,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
 
   @Input() injectTypeId: string;
   msel = new MselPlus();
+  allDataFields: DataField[] = [];
   dataFieldList: DataField[] = [];
   templateList: DataField[] = [];
   changedDataField: DataField = {};
@@ -127,13 +128,13 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
       this.mselDataService.setActive('');
     } else {
       // subscribe to data fields
-      this.dataFieldQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(dataFields => {
-        this.dataFieldList = [];
-        dataFields.forEach(df => {
-          this.dataFieldList.push({ ...df });
+      this.dataFieldQuery
+        .selectAll()
+        .pipe(takeUntil(this.unsubscribe$))
+        .subscribe((dataFields) => {
+          this.allDataFields = dataFields;
+          this.setDataFieldList();
         });
-        this.sortChanged(this.sort);
-      });
       if (this.injectTypeId) {
         this.msel = new MselPlus();
         this.mselDataService.setActive('');
@@ -142,20 +143,39 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
         this.dataFieldDataService.loadByInjectType(this.injectTypeId);
       } else {
         // subscribe to the active MSEL changes to get future changes
-        (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(m => {
-          Object.assign(this.msel, m);
-          if (this.msel && this.msel.id) {
-            if (this.msel.useGallery && !this.displayedColumns.includes('integration')) {
-              this.displayedColumns.push('integration');
-            } else if (!this.msel.useGallery && this.displayedColumns.includes('integration')) {
-              this.displayedColumns.splice(this.displayedColumns.length - 1);
+        (this.mselQuery.selectActive() as Observable<MselPlus>)
+          .pipe(takeUntil(this.unsubscribe$))
+          .subscribe((m) => {
+            Object.assign(this.msel, m);
+            this.setDataFieldList();
+            if (this.msel && this.msel.id) {
+              if (
+                this.msel.useGallery &&
+                !this.displayedColumns.includes('integration')
+              ) {
+                this.displayedColumns.push('integration');
+              } else if (
+                !this.msel.useGallery &&
+                this.displayedColumns.includes('integration')
+              ) {
+                this.displayedColumns.splice(this.displayedColumns.length - 1);
+              }
+              this.createSystemDefinedDataFields();
             }
-            this.createSystemDefinedDataFields();
-          }
-          this.sortChanged(this.sort);
-        });
+            this.sortChanged(this.sort);
+          });
       }
     }
+  }
+
+  setDataFieldList() {
+    this.dataFieldList = [];
+    this.allDataFields.forEach((df) => {
+      if (df.mselId && df.mselId === this.msel.id) {
+        this.dataFieldList.push({ ...df });
+      }
+    });
+    this.sortChanged(this.sort);
   }
 
   createSystemDefinedDataFields() {

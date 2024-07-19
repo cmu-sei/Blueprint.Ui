@@ -49,17 +49,17 @@ project root for license information.
         <app-data-value
           [(value)]="getDataValue(dataField.id).value"
           [dataField]="dataField"
-          [canEdit]="true"
+          [canEdit]="data.isEditMode"
           [canApprove]="false"
           [isOwner]="false"
-          [isViewOnly]="false"
+          [isViewOnly]="!data.isEditMode"
           [organizationOptions]="[]"
           [teamOptions]="[]"
-          [unitOptions]="[]"
+          [unitOptions]="data.unitList"
           [cardOptions]="[]"
           [moveOptions]="[]"
           [gallerySourceTypeOptions]="[]"
-          [userOptions]="[]"
+          [userOptions]="data.userList"
         ></app-data-value>
         <br />
       </div>

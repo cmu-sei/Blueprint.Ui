@@ -148,10 +148,7 @@ export class DataFieldDataService {
       )
       .subscribe(
         (dataFields) => {
-          this.dataFieldStore.set(dataFields);
-        },
-        (error) => {
-          this.dataFieldStore.set([]);
+          this.dataFieldStore.upsertMany(dataFields);
         }
       );
   }

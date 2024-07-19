@@ -67,7 +67,7 @@ export class InjectEditDialogComponent {
 
   getDataValue(dataFieldId: string): DataValue {
     const dataValue = this.data.inject.dataValues.find(dv => dv.dataFieldId === dataFieldId);
-    return dataValue;
+    return dataValue ? dataValue : ({} as DataValue);
   }
 
 }
