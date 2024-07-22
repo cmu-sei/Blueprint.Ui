@@ -12,7 +12,8 @@ import {
   CatalogService,
 } from 'src/app/generated/blueprint.api';
 import { map, take, tap } from 'rxjs/operators';
-import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, combineLatest } from 'rxjs';
+import { HttpEventType, HttpResponse } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root',
@@ -31,6 +32,7 @@ export class CatalogDataService {
   readonly pageEvent = new BehaviorSubject<PageEvent>(this._pageEvent);
   private pageSize: Observable<number>;
   private pageIndex: Observable<number>;
+  public uploadProgress = new Subject<number>();
 
   constructor(
     private catalogStore: CatalogStore,
@@ -156,6 +158,15 @@ export class CatalogDataService {
       });
   }
 
+  copy(catalogId: string) {
+    this.catalogService
+      .copyCatalog(catalogId)
+      .pipe(take(1))
+      .subscribe((s) => {
+        this.updateStore(s);
+      });
+  }
+
   update(catalog: Catalog) {
     this.catalogStore.setLoading(true);
     this.catalogService
@@ -178,6 +189,37 @@ export class CatalogDataService {
       .subscribe((r) => {
         this.deleteFromStore(id);
       });
+  }
+
+  downloadJson(id: string) {
+    return this.catalogService.downloadJsonCatalog(id);
+  }
+
+  uploadJson(file: File, observe: any, reportProgress: boolean) {
+    this.catalogStore.setLoading(true);
+    this.catalogService
+      .uploadJsonCatalog('', '', '', file, observe, reportProgress)
+      .subscribe(
+        (event: any) => {
+          if (event.type === HttpEventType.UploadProgress) {
+            const uploadProgress = Math.round(
+              (100 * event.loaded) / event.total
+            );
+            this.uploadProgress.next(uploadProgress);
+          } else if (event instanceof HttpResponse) {
+            this.uploadProgress.next(0);
+            this.catalogStore.setLoading(false);
+            if (event.status === 200) {
+              const catalog = event.body;
+              this.catalogStore.upsert(catalog.id, catalog);
+            }
+          }
+        },
+        (error) => {
+          this.catalogStore.setLoading(false);
+          this.uploadProgress.next(0);
+        }
+      );
   }
 
   setActive(id: string) {
