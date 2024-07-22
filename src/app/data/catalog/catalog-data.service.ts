@@ -78,12 +78,9 @@ export class CatalogDataService {
           pageIndex,
         ]) =>
           items
-            ? (items as Catalog[])
-              .filter(
-                (catalog) =>
-                  catalog.id
-                    .toLowerCase()
-                    .includes(filterTerm.toLowerCase())                )
+            ? (items as Catalog[]).filter((catalog) =>
+                catalog.id.toLowerCase().includes(filterTerm.toLowerCase())
+              )
             : []
       )
     );
@@ -93,6 +90,24 @@ export class CatalogDataService {
     this.catalogStore.setLoading(true);
     this.catalogService
       .getCatalogs()
+      .pipe(
+        tap(() => {
+          this.catalogStore.setLoading(false);
+        }),
+        take(1)
+      )
+      .subscribe(
+        (templates) => {
+          this.catalogStore.upsertMany(templates);
+        },
+        (error) => {}
+      );
+  }
+
+  loadMine() {
+    this.catalogStore.setLoading(true);
+    this.catalogService
+      .getMyCatalogs()
       .pipe(
         tap(() => {
           this.catalogStore.setLoading(false);
@@ -180,5 +195,4 @@ export class CatalogDataService {
   deleteFromStore(id: string) {
     this.catalogStore.remove(id);
   }
-
 }

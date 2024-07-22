@@ -81,6 +81,7 @@ import { DataOptionEditDialogComponent } from './components/data-option-edit-dia
 import { HomeAppComponent } from './components/home-app/home-app.component';
 import { InjectEditDialogComponent } from './components/inject-edit-dialog/inject-edit-dialog.component';
 import { InjectListComponent } from './components/inject-list/inject-list.component';
+import { InjectSelectDialogComponent } from './components/inject-select-dialog/inject-select-dialog.component';
 import { InvitationEditDialogComponent } from './components/invitation-edit-dialog/invitation-edit-dialog.component';
 import { InvitationListComponent } from './components/invitation-list/invitation-list.component';
 import { JoinComponent } from './components/landing/join/join.component';
@@ -118,7 +119,11 @@ import { ApiModule as SwaggerCodegenApiModule } from './generated/blueprint.api/
 import { DisplayOrderPipe, SortByPipe } from 'src/app/utilities/sort-by-pipe';
 import { AngularEditorModule } from '@kolkov/angular-editor';
 import { PlainTextPipe } from './utilities/plain-text-pipe';
-import { NgxMatDatetimePickerModule, NgxMatTimepickerModule, NgxMatNativeDateModule } from '@angular-material-components/datetime-picker';
+import {
+  NgxMatDatetimePickerModule,
+  NgxMatTimepickerModule,
+  NgxMatNativeDateModule,
+} from '@angular-material-components/datetime-picker';
 import { DurationEditComponent } from './components/shared/duration-edit/duration-edit.component';
 import { DurationViewComponent } from './components/shared/duration-view/duration-view.component';
 import { EventDetailPageComponent } from './components/event-detail-page/event-detail-page.component';
@@ -152,6 +157,7 @@ export function getBasePath(settingsSvc: ComnSettingsService) {
     HomeAppComponent,
     InjectEditDialogComponent,
     InjectListComponent,
+    InjectSelectDialogComponent,
     InvitationEditDialogComponent,
     InvitationListComponent,
     JoinComponent,
@@ -195,7 +201,7 @@ export function getBasePath(settingsSvc: ComnSettingsService) {
     DurationViewComponent,
     EventDetailPageComponent,
     MselPlaybookComponent,
-    DataValueComponent
+    DataValueComponent,
   ],
   imports: [
     AkitaNgDevtools,
@@ -252,7 +258,7 @@ export function getBasePath(settingsSvc: ComnSettingsService) {
     ComnAuthModule.forRoot(),
     ComnSettingsModule.forRoot(),
     AngularEditorModule,
-    DragDropModule
+    DragDropModule,
   ],
   exports: [MatSortModule],
   providers: [

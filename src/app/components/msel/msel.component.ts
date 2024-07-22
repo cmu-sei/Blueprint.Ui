@@ -9,11 +9,11 @@ import {
   Theme,
   ComnAuthQuery
 } from '@cmusei/crucible-common';
-import {
-  Msel
-} from 'src/app/generated/blueprint.api';
+import { CatalogUnit, Msel } from 'src/app/generated/blueprint.api';
 import { CardDataService } from 'src/app/data/card/card-data.service';
 import { CardTeamDataService } from 'src/app/data/team/card-team-data.service';
+import { CatalogDataService } from 'src/app/data/catalog/catalog-data.service';
+import { CatalogUnitDataService } from 'src/app/data/catalog-unit/catalog-unit-data.service';
 import { CiteActionDataService } from 'src/app/data/cite-action/cite-action-data.service';
 import { CiteRoleDataService } from 'src/app/data/cite-role/cite-role-data.service';
 import { DataFieldDataService } from 'src/app/data/data-field/data-field-data.service';
@@ -23,7 +23,10 @@ import { InvitationDataService } from 'src/app/data/invitation/invitation-data.s
 import { MoveDataService } from 'src/app/data/move/move-data.service';
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
-import { MatLegacyTabGroup as MatTabGroup, MatLegacyTab as MatTab } from '@angular/material/legacy-tabs';
+import {
+  MatLegacyTabGroup as MatTabGroup,
+  MatLegacyTab as MatTab,
+} from '@angular/material/legacy-tabs';
 import { MselUnitDataService } from 'src/app/data/msel-unit/msel-unit-data.service';
 import { OrganizationDataService } from 'src/app/data/organization/organization-data.service';
 import { ScenarioEventDataService } from 'src/app/data/scenario-event/scenario-event-data.service';
@@ -62,7 +65,7 @@ export class MselComponent implements OnDestroy {
     'Scenario Events',
     'Exercise View',
     'MSEL Playbook',
-    'Invitations'
+    'Invitations',
   ];
   fontIconList = new Map<string, string>([
     ['Info', 'mdi-note-outline'],
@@ -78,7 +81,7 @@ export class MselComponent implements OnDestroy {
     ['Scenario Events', 'mdi-chart-timeline'],
     ['Exercise View', 'mdi-eye-outline'],
     ['MSEL Playbook', 'mdi-book'],
-    ['Invitations', 'mdi-email-open-outline']
+    ['Invitations', 'mdi-email-open-outline'],
   ]);
   private unsubscribe$ = new Subject();
   private msel: Msel = {};
@@ -94,6 +97,8 @@ export class MselComponent implements OnDestroy {
     private router: Router,
     private cardDataService: CardDataService,
     private cardTeamDataService: CardTeamDataService,
+    private catalogDataService: CatalogDataService,
+    private catalogUnitDataService: CatalogUnitDataService,
     private citeActionDataService: CiteActionDataService,
     private citeRoleDataService: CiteRoleDataService,
     private dataFieldDataService: DataFieldDataService,
@@ -117,51 +122,57 @@ export class MselComponent implements OnDestroy {
   ) {
     this.theme$ = this.authQuery.userTheme$;
     // subscribe to route changes
-    this.activatedRoute.queryParamMap.pipe(takeUntil(this.unsubscribe$)).subscribe(params => {
-      // load the selected MSEL data
-      const mselId = params.get('msel');
-      if (mselId && this.selectedMselId !== mselId) {
-        // load the selected MSEL and make it active
-        this.mselDataService.loadById(mselId);
-        this.mselDataService.setActive(mselId);
-        // load the MSELs moves
-        this.moveDataService.loadByMsel(mselId);
-        // load the gallery cards and cardTeams
-        this.cardDataService.loadByMsel(mselId);
-        this.cardTeamDataService.getCardTeamsFromApi(mselId);
-        // load CITE Actions and Roles
-        this.citeActionDataService.loadByMsel(mselId);
-        this.citeRoleDataService.loadByMsel(mselId);
-        // load the MSEL Teams
-        this.teamDataService.loadByMsel(mselId);
-        // load the MSEL organizations and templates
-        this.organizationDataService.loadByMsel(mselId);
-        // load data fields, options, and values
-        this.dataFieldDataService.loadByMsel(mselId);
-        this.dataOptionDataService.loadByMsel(mselId);
-        this.dataValueDataService.loadByMsel(mselId);
-        // load scenario events
-        this.scenarioEventDataService.loadByMsel(mselId);
-        // load user msel roles
-        this.userMselRoleDataService.loadByMsel(mselId);
-        // load msel units
-        this.mselUnitDataService.loadByMsel(mselId);
-        // load user team roles
-        this.userTeamRoleDataService.loadByMsel(mselId);
-        // load the MSEL organizations and templates
-        this.invitationDataService.loadByMsel(mselId);
-        // load the Msel TeamUsers
-        this.teamUserDataService.loadByMsel(mselId);
-      }
-    });
+    this.activatedRoute.queryParamMap
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((params) => {
+        // load the selected MSEL data
+        const mselId = params.get('msel');
+        if (mselId && this.selectedMselId !== mselId) {
+          // load the selected MSEL and make it active
+          this.mselDataService.loadById(mselId);
+          this.mselDataService.setActive(mselId);
+          // load the MSELs moves
+          this.moveDataService.loadByMsel(mselId);
+          // load the gallery cards and cardTeams
+          this.cardDataService.loadByMsel(mselId);
+          this.cardTeamDataService.getCardTeamsFromApi(mselId);
+          // load CITE Actions and Roles
+          this.citeActionDataService.loadByMsel(mselId);
+          this.citeRoleDataService.loadByMsel(mselId);
+          // load the MSEL Teams
+          this.teamDataService.loadByMsel(mselId);
+          // load the MSEL organizations and templates
+          this.organizationDataService.loadByMsel(mselId);
+          // load data fields, options, and values
+          this.dataFieldDataService.loadByMsel(mselId);
+          this.dataOptionDataService.loadByMsel(mselId);
+          this.dataValueDataService.loadByMsel(mselId);
+          // load scenario events
+          this.scenarioEventDataService.loadByMsel(mselId);
+          // load user msel roles
+          this.userMselRoleDataService.loadByMsel(mselId);
+          // load msel units
+          this.mselUnitDataService.loadByMsel(mselId);
+          // load user team roles
+          this.userTeamRoleDataService.loadByMsel(mselId);
+          // load the MSEL organizations and templates
+          this.invitationDataService.loadByMsel(mselId);
+          // load the Msel TeamUsers
+          this.teamUserDataService.loadByMsel(mselId);
+          // load the Catalogs
+          this.catalogDataService.loadMine();
+        }
+      });
     // subscribe to the active MSEL
-    (this.mselQuery.selectActive() as Observable<Msel>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
-      if (msel) {
-        this.msel = msel;
-      } else {
-        this.msel = {};
-      }
-    });
+    (this.mselQuery.selectActive() as Observable<Msel>)
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((msel) => {
+        if (msel) {
+          this.msel = msel;
+        } else {
+          this.msel = {};
+        }
+      });
     // load units
     this.unitDataService.load();
     // load the organization templates
@@ -183,7 +194,7 @@ export class MselComponent implements OnDestroy {
     if (tabName === 'Back') {
       this.uiDataService.setMselTab(this.defaultTab);
       this.router.navigate([], {
-        queryParams: { }
+        queryParams: {},
       });
     } else {
       this.uiDataService.setMselTab(tabName);
@@ -193,7 +204,7 @@ export class MselComponent implements OnDestroy {
 
   getTabListItems(): string[] {
     const tabList = [];
-    this.tabList.forEach(tab => {
+    this.tabList.forEach((tab) => {
       switch (tab) {
         case 'Player Apps':
           if (this.msel?.usePlayer) {
@@ -228,7 +239,9 @@ export class MselComponent implements OnDestroy {
   }
 
   getSidebarClass() {
-    return this.sideNavCollapsed ? 'left-content-closed background' : 'left-content-open background';
+    return this.sideNavCollapsed
+      ? 'left-content-closed background'
+      : 'left-content-open background';
   }
 
   setCollapsed(value: boolean) {

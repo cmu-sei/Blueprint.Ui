@@ -7,7 +7,7 @@ project root for license information.
   <div mat-dialog-title>
     <span *ngIf="data.injectType.id">Edit</span>
     <span *ngIf="!data.injectType.id">Create</span>
-     an InjectType to this MSEL
+     Inject Type
     &nbsp;
     <button
       mat-icon-button
@@ -27,7 +27,7 @@ project root for license information.
             type="text"
             title="The Name of the Inject Type"
             matInput
-            placeholder="Name"
+            placeholder="Name (required)"
             [(ngModel)]="data.injectType.name">
         </mat-form-field>
       </div>
@@ -39,7 +39,7 @@ project root for license information.
             type="text"
             title="The Description of the Inject Type"
             matInput
-            placeholder="Description"
+            placeholder="Description (required)"
             [(ngModel)]="data.injectType.description">
         </mat-form-field>
       </div>

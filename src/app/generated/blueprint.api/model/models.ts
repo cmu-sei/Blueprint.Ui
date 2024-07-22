@@ -19,6 +19,7 @@ export * from './citeAction';
 export * from './citeRole';
 export * from './compareInfo';
 export * from './constructorInfo';
+export * from './createFromInjectsForm';
 export * from './cultureInfo';
 export * from './cultureTypes';
 export * from './customAttributeData';

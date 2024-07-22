@@ -63,11 +63,6 @@
   border-bottom-color: transparent;
 }
 
-.mat-column-name {
-  flex: 0 0 20%;
-  padding: 2px;
-}
-
 .mat-column-action {
   flex: 0 0 150px;
   flex-direction: row;
@@ -75,9 +70,11 @@
   word-wrap: none;
 }
 
-.mat-column-description {
-  flex: 0 0 40%;
-  padding: 2px;
+.mat-column-select {
+  flex: 0 0 50px;
+  flex-direction: row;
+  padding: 0px;
+  word-wrap: none;
 }
 
 .mat-column-expand-me {

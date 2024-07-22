@@ -18,9 +18,12 @@ import { ComnSettingsService, Theme } from '@cmusei/crucible-common';
 import { UserDataService } from 'src/app/data/user/user-data.service';
 import {
   Card,
+  Catalog,
+  CreateFromInjectsForm,
   DataField,
   DataFieldType,
   DataValue,
+  InjectType,
   MselItemStatus,
   Move,
   MselRole,
@@ -28,12 +31,17 @@ import {
   ScenarioEvent,
   Team,
   User,
+  Injectm,
 } from 'src/app/generated/blueprint.api';
 import { MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { Sort } from '@angular/material/sort';
 import { MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy-menu';
 import { CardQuery } from 'src/app/data/card/card.query';
+import { CatalogQuery } from 'src/app/data/catalog/catalog.query';
+import { InjectmDataService } from 'src/app/data/injectm/injectm-data.service';
+import { InjectSelectDialogComponent } from '../inject-select-dialog/inject-select-dialog.component';
+import { InjectTypeQuery } from 'src/app/data/inject-type/inject-type.query';
 import { MoveQuery } from 'src/app/data/move/move.query';
 import { OrganizationQuery } from 'src/app/data/organization/organization.query';
 import {
@@ -156,12 +164,17 @@ export class ScenarioEventListComponent
   showRealTime = false;
   allowDragAndDrop = true;
   moveAndGroupNumbers: Record<string, number[]>[] = [];
+  catalogList: Catalog[] = [];
+  injectTypeList: InjectType[] = [];
 
   constructor(
     private router: Router,
     private userDataService: UserDataService,
     private settingsService: ComnSettingsService,
     private cardQuery: CardQuery,
+    private catalogQuery: CatalogQuery,
+    private injectmDataService: InjectmDataService,
+    private injectTypeQuery: InjectTypeQuery,
     private moveQuery: MoveQuery,
     private mselQuery: MselQuery,
     private organizationQuery: OrganizationQuery,
@@ -192,7 +205,10 @@ export class ScenarioEventListComponent
       .selectAll()
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((dataFields) => {
-        this.getSortedDataFields(dataFields);
+        const mselDataFields = dataFields.filter(
+          (m) => m.mselId === this.msel.id
+        );
+        this.getSortedDataFields(mselDataFields);
         this.scenarioEventDataService.updateScenarioEventViewDataFields(this);
         this.scenarioEventDataService.updateScenarioEventViewDisplayedEvents(
           this
@@ -227,10 +243,10 @@ export class ScenarioEventListComponent
               this.mselScenarioEvents,
               this.moveList
             );
-          this.scenarioEventDataService.updateScenarioEventViewDisplayedEvents(
-            this
-          );
         }
+        this.scenarioEventDataService.updateScenarioEventViewDisplayedEvents(
+          this
+        );
       });
     // is user a contentdeveloper or system admin?
     this.userDataService.isContentDeveloper
@@ -286,6 +302,20 @@ export class ScenarioEventListComponent
       )
       .subscribe((event) => {
         this.applyFilter(this.filterString);
+      });
+    // observe the Catalogs
+    this.catalogQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((catalogs) => {
+        this.catalogList = catalogs;
+      });
+    // observe the Inject Types
+    this.injectTypeQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((injectTypes) => {
+        this.injectTypeList = injectTypes;
       });
     // set the time display format
     this.showRealTime = this.uiDataService.useRealTime();
@@ -902,6 +932,34 @@ export class ScenarioEventListComponent
       '&scenarioEvent=' +
       id;
     window.open(url);
+  }
+
+  selectFromCatalog(catalog: Catalog) {
+    this.injectmDataService.loadByCatalog(catalog.id);
+    const dialogRef = this.dialog.open(InjectSelectDialogComponent, {
+      width: '80%',
+      maxWidth: '800px',
+      height: '90%',
+      data: {
+        catalog: catalog,
+        loggedInUserId: this.loggedInUserId,
+        isContentDeveloper: this.isContentDeveloper,
+      },
+    });
+    dialogRef.componentInstance.editComplete.subscribe((result) => {
+      if (result.saveChanges && result.selectedInjectIdList.length > 0) {
+        const createFromInjectsForm = {
+          injectIdList: result.selectedInjectIdList,
+          injectTypeId: catalog.injectTypeId,
+          mselId: this.msel.id,
+          addDataFields: true,
+        } as CreateFromInjectsForm;
+        this.scenarioEventDataService.addInjects(createFromInjectsForm);
+      }
+      // reset the flag indicating a new scenario event
+      this.isAddingScenarioEvent = false;
+      dialogRef.close();
+    });
   }
 
   ngOnDestroy() {
