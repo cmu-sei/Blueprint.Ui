@@ -32,35 +32,28 @@ const MIN_NAME_LENGTH = 3;
   templateUrl: './organization-edit-dialog.component.html',
   styleUrls: ['./organization-edit-dialog.component.scss'],
 })
-
 export class OrganizationEditDialogComponent {
   @Output() editComplete = new EventEmitter<any>();
 
   public organizationNameFormControl = new UntypedFormControl(
     this.data.organization.name,
-    [
-      Validators.required
-    ]
+    [Validators.required, Validators.minLength(MIN_NAME_LENGTH)]
   );
   public organizationShortNameFormControl = new UntypedFormControl(
     this.data.organization.shortName,
-    [
-      Validators.required
-    ]
+    [Validators.required, Validators.minLength(MIN_NAME_LENGTH)]
   );
   public organizationEmailFormControl = new UntypedFormControl(
     this.data.organization.email,
-    [
-      Validators.required
-    ]
+    [Validators.required, Validators.minLength(MIN_NAME_LENGTH)]
   );
   public descriptionFormControl = new UntypedFormControl(
-    this.data.organization.description ,
+    this.data.organization.description,
     []
   );
   public summaryFormControl = new UntypedFormControl(
     this.data.organization.summary,
-    []
+    [Validators.required, Validators.minLength(MIN_NAME_LENGTH)]
   );
   editorConfig: AngularEditorConfig = {
     editable: true,
@@ -78,18 +71,16 @@ export class OrganizationEditDialogComponent {
     defaultFontName: '',
     defaultFontSize: '',
     fonts: [
-      {class: 'arial', name: 'Arial'},
-      {class: 'times-new-roman', name: 'Times New Roman'},
-      {class: 'calibri', name: 'Calibri'},
-      {class: 'comic-sans-ms', name: 'Comic Sans MS'}
+      { class: 'arial', name: 'Arial' },
+      { class: 'times-new-roman', name: 'Times New Roman' },
+      { class: 'calibri', name: 'Calibri' },
+      { class: 'comic-sans-ms', name: 'Comic Sans MS' },
     ],
     uploadUrl: '',
     uploadWithCredentials: false,
     sanitize: true,
     toolbarPosition: 'top',
-    toolbarHiddenButtons: [
-      ['backgroundColor']
-    ]
+    toolbarHiddenButtons: [['backgroundColor']],
   };
 
   constructor(
@@ -101,11 +92,15 @@ export class OrganizationEditDialogComponent {
   }
 
   errorFree() {
-    return true;
     return !(
       this.organizationNameFormControl.hasError('required') ||
       this.organizationNameFormControl.hasError('minlength') ||
-      !this.data.organization.summary
+      this.organizationShortNameFormControl.hasError('required') ||
+      this.organizationShortNameFormControl.hasError('minlength') ||
+      this.organizationEmailFormControl.hasError('required') ||
+      this.organizationEmailFormControl.hasError('minlength') ||
+      this.summaryFormControl.hasError('required') ||
+      this.summaryFormControl.hasError('minlength')
     );
   }
 
@@ -148,24 +143,31 @@ export class OrganizationEditDialogComponent {
   saveOrganization(changedField): void {
     switch (changedField) {
       case 'name':
-        this.data.organization.name = this.organizationNameFormControl.value ? this.organizationNameFormControl.value.toString() : '';
+        this.data.organization.name = this.organizationNameFormControl.value
+          ? this.organizationNameFormControl.value.toString()
+          : '';
         break;
       case 'shortName':
-        this.data.organization.shortName =
-            this.organizationShortNameFormControl.value ? this.organizationShortNameFormControl.value.toString() : '';
+        this.data.organization.shortName = this.organizationShortNameFormControl
+          .value
+          ? this.organizationShortNameFormControl.value.toString()
+          : '';
         break;
       case 'description':
-        this.data.organization.description = this.descriptionFormControl.value ? this.descriptionFormControl.value.toString() : '';
+        this.data.organization.description = this.descriptionFormControl.value
+          ? this.descriptionFormControl.value.toString()
+          : '';
         break;
       case 'summary':
         this.data.organization.summary = this.summaryFormControl.value;
         break;
       case 'email':
-        this.data.organization.email = this.organizationEmailFormControl.value ? this.organizationEmailFormControl.value.toString() : '';
+        this.data.organization.email = this.organizationEmailFormControl.value
+          ? this.organizationEmailFormControl.value.toString()
+          : '';
         break;
       default:
         break;
     }
   }
-
 }

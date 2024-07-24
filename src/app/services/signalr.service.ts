@@ -10,11 +10,14 @@ import * as signalR from '@microsoft/signalr';
 import {
   Card,
   CardTeam,
+  Catalog,
   CiteAction,
   CiteRole,
   DataField,
   DataOption,
   DataValue,
+  Injectm,
+  InjectType,
   Move,
   Msel,
   MselUnit,
@@ -25,15 +28,18 @@ import {
   Team,
   TeamUser,
   User,
-  UserMselRole
+  UserMselRole,
 } from 'src/app/generated/blueprint.api';
 import { CardDataService } from '../data/card/card-data.service';
 import { CardTeamDataService } from '../data/team/card-team-data.service';
+import { CatalogDataService } from '../data/catalog/catalog-data.service';
 import { CiteActionDataService } from '../data/cite-action/cite-action-data.service';
 import { CiteRoleDataService } from '../data/cite-role/cite-role-data.service';
 import { DataFieldDataService } from '../data/data-field/data-field-data.service';
 import { DataOptionDataService } from '../data/data-option/data-option-data.service';
 import { DataValueDataService } from '../data/data-value/data-value-data.service';
+import { InjectmDataService } from '../data/injectm/injectm-data.service';
+import { InjectTypeDataService } from '../data/inject-type/inject-type-data.service';
 import { MoveDataService } from '../data/move/move-data.service';
 import { MselDataService } from '../data/msel/msel-data.service';
 import { MselUnitDataService } from '../data/msel-unit/msel-unit-data.service';
@@ -50,7 +56,7 @@ import { takeUntil } from 'rxjs/operators';
 
 export enum ApplicationArea {
   home = '',
-  admin = 'Admin'
+  admin = 'Admin',
 }
 @Injectable({
   providedIn: 'root',
@@ -69,11 +75,14 @@ export class SignalRService implements OnDestroy {
     private settingsService: ComnSettingsService,
     private cardDataService: CardDataService,
     private cardTeamDataService: CardTeamDataService,
+    private catalogDataService: CatalogDataService,
     private citeActionDataService: CiteActionDataService,
     private citeRoleDataService: CiteRoleDataService,
     private dataFieldDataService: DataFieldDataService,
     private dataOptionDataService: DataOptionDataService,
     private dataValueDataService: DataValueDataService,
+    private injectmDataService: InjectmDataService,
+    private injectTypeDataService: InjectTypeDataService,
     private moveDataService: MoveDataService,
     private mselDataService: MselDataService,
     private mselUnitDataService: MselUnitDataService,
@@ -160,7 +169,9 @@ export class SignalRService implements OnDestroy {
         this.hubConnection.baseUrl = this.getHubUrlWithAuth();
         this.connectionPromise = this.hubConnection.start();
         this.connectionPromise.then(() => {
-          if (this.hubConnection.state !== signalR.HubConnectionState.Connected) {
+          if (
+            this.hubConnection.state !== signalR.HubConnectionState.Connected
+          ) {
             setTimeout(() => this.reconnect(), 500);
           } else {
             this.join();
@@ -173,11 +184,14 @@ export class SignalRService implements OnDestroy {
   private addHandlers() {
     this.addCardHandlers();
     this.addCardTeamHandlers();
+    this.addCatalogHandlers();
     this.addCiteActionHandlers();
     this.addCiteRoleHandlers();
     this.addDataFieldHandlers();
     this.addDataOptionHandlers();
     this.addDataValueHandlers();
+    this.addInjectmHandlers();
+    this.addInjectTypeHandlers();
     this.addMoveHandlers();
     this.addMselHandlers();
     this.addMselUnitHandlers();
@@ -192,11 +206,9 @@ export class SignalRService implements OnDestroy {
   }
 
   private addCardHandlers() {
-    this.hubConnection.on(
-      'CardUpdated', (card: Card) => {
-        this.cardDataService.updateStore(card);
-      }
-    );
+    this.hubConnection.on('CardUpdated', (card: Card) => {
+      this.cardDataService.updateStore(card);
+    });
 
     this.hubConnection.on('CardCreated', (card: Card) => {
       this.cardDataService.updateStore(card);
@@ -208,11 +220,9 @@ export class SignalRService implements OnDestroy {
   }
 
   private addCardTeamHandlers() {
-    this.hubConnection.on(
-      'CardTeamUpdated', (cardTeam: CardTeam) => {
-        this.cardTeamDataService.updateStore(cardTeam);
-      }
-    );
+    this.hubConnection.on('CardTeamUpdated', (cardTeam: CardTeam) => {
+      this.cardTeamDataService.updateStore(cardTeam);
+    });
 
     this.hubConnection.on('CardTeamCreated', (cardTeam: CardTeam) => {
       this.cardTeamDataService.updateStore(cardTeam);
@@ -223,12 +233,24 @@ export class SignalRService implements OnDestroy {
     });
   }
 
+  private addCatalogHandlers() {
+    this.hubConnection.on('CatalogUpdated', (catalog: Catalog) => {
+      this.catalogDataService.updateStore(catalog);
+    });
+
+    this.hubConnection.on('CatalogCreated', (catalog: Catalog) => {
+      this.catalogDataService.updateStore(catalog);
+    });
+
+    this.hubConnection.on('CatalogDeleted', (id: string) => {
+      this.catalogDataService.deleteFromStore(id);
+    });
+  }
+
   private addCiteActionHandlers() {
-    this.hubConnection.on(
-      'CiteActionUpdated', (citeAction: CiteAction) => {
-        this.citeActionDataService.updateStore(citeAction);
-      }
-    );
+    this.hubConnection.on('CiteActionUpdated', (citeAction: CiteAction) => {
+      this.citeActionDataService.updateStore(citeAction);
+    });
 
     this.hubConnection.on('CiteActionCreated', (citeAction: CiteAction) => {
       this.citeActionDataService.updateStore(citeAction);
@@ -240,11 +262,9 @@ export class SignalRService implements OnDestroy {
   }
 
   private addCiteRoleHandlers() {
-    this.hubConnection.on(
-      'CiteRoleUpdated', (citeRole: CiteRole) => {
-        this.citeRoleDataService.updateStore(citeRole);
-      }
-    );
+    this.hubConnection.on('CiteRoleUpdated', (citeRole: CiteRole) => {
+      this.citeRoleDataService.updateStore(citeRole);
+    });
 
     this.hubConnection.on('CiteRoleCreated', (citeRole: CiteRole) => {
       this.citeRoleDataService.updateStore(citeRole);
@@ -256,11 +276,9 @@ export class SignalRService implements OnDestroy {
   }
 
   private addDataFieldHandlers() {
-    this.hubConnection.on(
-      'DataFieldUpdated', (dataField: DataField) => {
-        this.dataFieldDataService.updateStore(dataField);
-      }
-    );
+    this.hubConnection.on('DataFieldUpdated', (dataField: DataField) => {
+      this.dataFieldDataService.updateStore(dataField);
+    });
 
     this.hubConnection.on('DataFieldCreated', (dataField: DataField) => {
       this.dataFieldDataService.updateStore(dataField);
@@ -272,11 +290,9 @@ export class SignalRService implements OnDestroy {
   }
 
   private addDataOptionHandlers() {
-    this.hubConnection.on(
-      'DataOptionUpdated', (dataOption: DataOption) => {
-        this.dataOptionDataService.updateStore(dataOption);
-      }
-    );
+    this.hubConnection.on('DataOptionUpdated', (dataOption: DataOption) => {
+      this.dataOptionDataService.updateStore(dataOption);
+    });
 
     this.hubConnection.on('DataOptionCreated', (dataOption: DataOption) => {
       this.dataOptionDataService.updateStore(dataOption);
@@ -288,11 +304,9 @@ export class SignalRService implements OnDestroy {
   }
 
   private addDataValueHandlers() {
-    this.hubConnection.on(
-      'DataValueUpdated', (dataValue: DataValue) => {
-        this.dataValueDataService.updateStore(dataValue);
-      }
-    );
+    this.hubConnection.on('DataValueUpdated', (dataValue: DataValue) => {
+      this.dataValueDataService.updateStore(dataValue);
+    });
 
     this.hubConnection.on('DataValueCreated', (dataValue: DataValue) => {
       this.dataValueDataService.updateStore(dataValue);
@@ -303,12 +317,38 @@ export class SignalRService implements OnDestroy {
     });
   }
 
+  private addInjectmHandlers() {
+    this.hubConnection.on('InjectmUpdated', (injectm: Injectm) => {
+      this.injectmDataService.updateStore(injectm);
+    });
+
+    this.hubConnection.on('InjectmCreated', (injectm: Injectm) => {
+      this.injectmDataService.updateStore(injectm);
+    });
+
+    this.hubConnection.on('InjectmDeleted', (id: string) => {
+      this.injectmDataService.deleteFromStore(id);
+    });
+  }
+
+  private addInjectTypeHandlers() {
+    this.hubConnection.on('InjectTypeUpdated', (injectType: InjectType) => {
+      this.injectTypeDataService.updateStore(injectType);
+    });
+
+    this.hubConnection.on('InjectTypeCreated', (injectType: InjectType) => {
+      this.injectTypeDataService.updateStore(injectType);
+    });
+
+    this.hubConnection.on('InjectTypeDeleted', (id: string) => {
+      this.injectTypeDataService.deleteFromStore(id);
+    });
+  }
+
   private addMoveHandlers() {
-    this.hubConnection.on(
-      'MoveUpdated', (move: Move) => {
-        this.moveDataService.updateStore(move);
-      }
-    );
+    this.hubConnection.on('MoveUpdated', (move: Move) => {
+      this.moveDataService.updateStore(move);
+    });
 
     this.hubConnection.on('MoveCreated', (move: Move) => {
       this.moveDataService.updateStore(move);
@@ -320,11 +360,9 @@ export class SignalRService implements OnDestroy {
   }
 
   private addMselHandlers() {
-    this.hubConnection.on(
-      'MselUpdated', (msel: Msel) => {
-        this.mselDataService.updateStore(msel);
-      }
-    );
+    this.hubConnection.on('MselUpdated', (msel: Msel) => {
+      this.mselDataService.updateStore(msel);
+    });
 
     this.hubConnection.on('MselCreated', (msel: Msel) => {
       this.mselDataService.updateStore(msel);
@@ -340,11 +378,9 @@ export class SignalRService implements OnDestroy {
   }
 
   private addMselUnitHandlers() {
-    this.hubConnection.on(
-      'MselUnitUpdated', (mselUnit: MselUnit) => {
-        this.mselUnitDataService.updateStore(mselUnit);
-      }
-    );
+    this.hubConnection.on('MselUnitUpdated', (mselUnit: MselUnit) => {
+      this.mselUnitDataService.updateStore(mselUnit);
+    });
 
     this.hubConnection.on('MselUnitCreated', (mselUnit: MselUnit) => {
       this.mselUnitDataService.updateStore(mselUnit);
@@ -357,14 +393,18 @@ export class SignalRService implements OnDestroy {
 
   private addOrganizationHandlers() {
     this.hubConnection.on(
-      'OrganizationUpdated', (organization: Organization) => {
+      'OrganizationUpdated',
+      (organization: Organization) => {
         this.organizationDataService.updateStore(organization);
       }
     );
 
-    this.hubConnection.on('OrganizationCreated', (organization: Organization) => {
-      this.organizationDataService.updateStore(organization);
-    });
+    this.hubConnection.on(
+      'OrganizationCreated',
+      (organization: Organization) => {
+        this.organizationDataService.updateStore(organization);
+      }
+    );
 
     this.hubConnection.on('OrganizationDeleted', (id: string) => {
       this.organizationDataService.deleteFromStore(id);
@@ -373,14 +413,18 @@ export class SignalRService implements OnDestroy {
 
   private addPlayerApplicationHandlers() {
     this.hubConnection.on(
-      'PlayerApplicationUpdated', (playerApplication: PlayerApplication) => {
+      'PlayerApplicationUpdated',
+      (playerApplication: PlayerApplication) => {
         this.playerApplicationDataService.updateStore(playerApplication);
       }
     );
 
-    this.hubConnection.on('PlayerApplicationCreated', (playerApplication: PlayerApplication) => {
-      this.playerApplicationDataService.updateStore(playerApplication);
-    });
+    this.hubConnection.on(
+      'PlayerApplicationCreated',
+      (playerApplication: PlayerApplication) => {
+        this.playerApplicationDataService.updateStore(playerApplication);
+      }
+    );
 
     this.hubConnection.on('PlayerApplicationDeleted', (id: string) => {
       this.playerApplicationDataService.deleteFromStore(id);
@@ -389,14 +433,22 @@ export class SignalRService implements OnDestroy {
 
   private addPlayerApplicationTeamHandlers() {
     this.hubConnection.on(
-      'PlayerApplicationTeamUpdated', (playerApplicationTeam: PlayerApplicationTeam) => {
-        this.playerApplicationTeamDataService.updateStore(playerApplicationTeam);
+      'PlayerApplicationTeamUpdated',
+      (playerApplicationTeam: PlayerApplicationTeam) => {
+        this.playerApplicationTeamDataService.updateStore(
+          playerApplicationTeam
+        );
       }
     );
 
-    this.hubConnection.on('PlayerApplicationTeamCreated', (playerApplicationTeam: PlayerApplicationTeam) => {
-      this.playerApplicationTeamDataService.updateStore(playerApplicationTeam);
-    });
+    this.hubConnection.on(
+      'PlayerApplicationTeamCreated',
+      (playerApplicationTeam: PlayerApplicationTeam) => {
+        this.playerApplicationTeamDataService.updateStore(
+          playerApplicationTeam
+        );
+      }
+    );
 
     this.hubConnection.on('PlayerApplicationTeamDeleted', (id: string) => {
       this.playerApplicationTeamDataService.deleteFromStore(id);
@@ -404,14 +456,19 @@ export class SignalRService implements OnDestroy {
   }
 
   private addScenarioEventHandlers() {
-    this.hubConnection.on('ScenarioEventUpdated', (scenarioEvent: ScenarioEvent) => {
-      this.scenarioEventDataService.updateStore(scenarioEvent);
-    }
+    this.hubConnection.on(
+      'ScenarioEventUpdated',
+      (scenarioEvent: ScenarioEvent) => {
+        this.scenarioEventDataService.updateStore(scenarioEvent);
+      }
     );
 
-    this.hubConnection.on('ScenarioEventCreated', (scenarioEvent: ScenarioEvent) => {
-      this.scenarioEventDataService.updateStore(scenarioEvent);
-    });
+    this.hubConnection.on(
+      'ScenarioEventCreated',
+      (scenarioEvent: ScenarioEvent) => {
+        this.scenarioEventDataService.updateStore(scenarioEvent);
+      }
+    );
 
     this.hubConnection.on('ScenarioEventDeleted', (id: string) => {
       this.scenarioEventDataService.deleteFromStore(id);
@@ -421,8 +478,7 @@ export class SignalRService implements OnDestroy {
   private addTeamHandlers() {
     this.hubConnection.on('TeamUpdated', (team: Team) => {
       this.teamDataService.updateStore(team);
-    }
-    );
+    });
 
     this.hubConnection.on('TeamCreated', (team: Team) => {
       this.teamDataService.updateStore(team);
@@ -436,8 +492,7 @@ export class SignalRService implements OnDestroy {
   private addTeamUserHandlers() {
     this.hubConnection.on('TeamUserUpdated', (teamUser: TeamUser) => {
       this.teamUserDataService.updateStore(teamUser);
-    }
-    );
+    });
 
     this.hubConnection.on('TeamUserCreated', (teamUser: TeamUser) => {
       this.teamUserDataService.updateStore(teamUser);
@@ -451,8 +506,7 @@ export class SignalRService implements OnDestroy {
   private addUserHandlers() {
     this.hubConnection.on('UserUpdated', (user: User) => {
       this.userDataService.updateStore(user);
-    }
-    );
+    });
 
     this.hubConnection.on('UserCreated', (user: User) => {
       this.userDataService.updateStore(user);
@@ -464,9 +518,12 @@ export class SignalRService implements OnDestroy {
   }
 
   private addUserMselRoleHandlers() {
-    this.hubConnection.on('UserMselRoleCreated', (userMselRole: UserMselRole) => {
-      this.userMselRoleDataService.updateStore(userMselRole);
-    });
+    this.hubConnection.on(
+      'UserMselRoleCreated',
+      (userMselRole: UserMselRole) => {
+        this.userMselRoleDataService.updateStore(userMselRole);
+      }
+    );
 
     this.hubConnection.on('UserMselRoleDeleted', (id: string) => {
       this.userMselRoleDataService.deleteFromStore(id);
@@ -477,7 +534,6 @@ export class SignalRService implements OnDestroy {
     this.unsubscribe$.next(null);
     this.unsubscribe$.complete();
   }
-
 }
 
 class RetryPolicy {

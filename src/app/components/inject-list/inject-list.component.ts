@@ -350,7 +350,7 @@ export class InjectListComponent implements OnDestroy, OnInit {
   getDisplayedDataFields(): DataField[] {
     const displayedDataFields = [];
     this.dataFieldList.forEach((df) => {
-      if (this.catalog.listDataFields.indexOf(df.id) > -1) {
+      if (this.catalog.listDataFields?.indexOf(df.id) > -1) {
         displayedDataFields.push(df);
       }
     });
