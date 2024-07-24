@@ -132,7 +132,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <!-- Expanded Content Column - The detail row is made up of this one column that spans across all columns -->
       <ng-container matColumnDef="expandedDetail">
         <mat-cell class="expanded-detail-cell" *matCellDef="let element" [attr.colspan]="displayedColumns.length">
-          <div class="expanded-detail-div">
+          <div class="inject-list-div">
             <app-inject-list
               [isContentDeveloper]="isContentDeveloper"
               [loggedInUserId]="loggedInUserId"
@@ -140,13 +140,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
               [injectType]="{}"
               [isEditMode]="true"
             ></app-inject-list>
-            <br />
+          </div>
+          <div class="unit-list-div">
             <app-catalog-units
               [isContentDeveloper]="isContentDeveloper"
               [loggedInUserId]="loggedInUserId"
               [catalog]="element"
             ></app-catalog-units>
-            <br />
           </div>
         </mat-cell>
       </ng-container>
