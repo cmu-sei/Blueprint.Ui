@@ -20,6 +20,7 @@ project root for license information.
   <div mat-dialog-content *ngIf="!!data && data.catalog">
     <app-inject-list
       [catalog]="data.catalog"
+      [injectType]="data.injectType"
       [isContentDeveloper]="false"
       [loggedInUserId]="data.loggedInUserId"
       (selectedInjectIdList)="selectedInjectIdList=$event"

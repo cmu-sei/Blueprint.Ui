@@ -23,6 +23,7 @@ import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import {
   Catalog,
+  CatalogInject,
   DataField,
   DataValue,
   Injectm,
@@ -31,6 +32,10 @@ import {
 import { Sort } from '@angular/material/sort';
 import { MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy-menu';
 import { MatTable } from '@angular/material/table';
+import { CatalogDataService } from 'src/app/data/catalog/catalog-data.service';
+import { CatalogQuery } from 'src/app/data/catalog/catalog.query';
+import { CatalogInjectDataService } from 'src/app/data/catalog-inject/catalog-inject-data.service';
+import { CatalogInjectQuery } from 'src/app/data/catalog-inject/catalog-inject.query';
 import { InjectmDataService } from 'src/app/data/injectm/injectm-data.service';
 import { InjectmQuery } from 'src/app/data/injectm/injectm.query';
 import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
@@ -42,6 +47,7 @@ import { DataFieldDataService } from 'src/app/data/data-field/data-field-data.se
 import { DataFieldQuery } from 'src/app/data/data-field/data-field.query';
 import { UnitQuery } from 'src/app/data/unit/unit.query';
 import { UserDataService } from 'src/app/data/user/user-data.service';
+import { InjectSelectDialogComponent } from '../inject-select-dialog/inject-select-dialog.component';
 
 @Component({
   selector: 'app-inject-list',
@@ -90,8 +96,13 @@ export class InjectListComponent implements OnDestroy, OnInit {
   expandedElementId = '';
   unitList = [];
   userList = [];
-
+  catalogList: Catalog[] = [];
+  catalogInjectList: CatalogInject[] = [];
   constructor(
+    private catalogDataService: CatalogDataService,
+    private catalogQuery: CatalogQuery,
+    private catalogInjectDataService: CatalogInjectDataService,
+    private catalogInjectQuery: CatalogInjectQuery,
     private injectmDataService: InjectmDataService,
     private injectmQuery: InjectmQuery,
     public dialog: MatDialog,
@@ -157,12 +168,19 @@ export class InjectListComponent implements OnDestroy, OnInit {
       .subscribe((units) => {
         this.unitList = units;
       });
+    // subscribe to catalogs
+    this.catalogQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((catalogs) => {
+        this.catalogList = catalogs;
+      });
   }
 
   ngOnInit() {
     // load injects
     if (this.catalog.id) {
-      this.injectmDataService.loadByCatalog(this.catalog.id);
+      this.catalogInjectDataService.loadByCatalog(this.catalog.id);
       this.dataFieldDataService.loadByInjectType(this.catalog.injectTypeId);
     }
     if (this.injectType.id) {
@@ -214,6 +232,7 @@ export class InjectListComponent implements OnDestroy, OnInit {
         inject: inject,
         dataFieldList: this.dataFieldList,
         isEditMode: this.isEditMode,
+        isNewInject: isNewInject,
         unitList: this.unitList,
         userList: this.userList,
         injectList: this.injectList,
@@ -232,17 +251,21 @@ export class InjectListComponent implements OnDestroy, OnInit {
     });
   }
 
-  deleteInject(inject: Injectm): void {
-    this.dialogService
-      .confirm(
-        'Delete Inject',
-        'Are you sure that you want to delete ' + inject.name + '?'
-      )
-      .subscribe((result) => {
-        if (result['confirm']) {
-          this.injectmDataService.delete(inject.id);
-        }
-      });
+  deleteInject(injectm: Injectm): void {
+    if (this.catalog.id) {
+      this.catalogInjectDataService.deleteByIds(this.catalog.id, injectm.id);
+    } else {
+      this.dialogService
+        .confirm(
+          'Delete Inject',
+          'Are you sure that you want to delete ' + injectm.name + '?'
+        )
+        .subscribe((result) => {
+          if (result['confirm']) {
+            this.injectmDataService.delete(injectm.id);
+          }
+        });
+    }
   }
 
   sortChanged(sort: Sort) {
@@ -406,6 +429,37 @@ export class InjectListComponent implements OnDestroy, OnInit {
       (dv) => dv.dataFieldId === dataField.id
     );
     return dataValue ? dataValue : ({} as DataValue);
+  }
+
+  selectExisting(catalog: Catalog) {
+    let injectType = {};
+    // load the appropriate injects for selection
+    if (catalog) {
+      this.injectmDataService.loadByCatalog(catalog.id);
+    } else {
+      catalog = {};
+      injectType = this.injectTypeList.find(
+        (m) => m.id === this.catalog.injectTypeId
+      );
+      this.injectmDataService.loadByInjectType(this.injectType.id);
+    }
+    const dialogRef = this.dialog.open(InjectSelectDialogComponent, {
+      width: '80%',
+      maxWidth: '800px',
+      height: '90%',
+      data: {
+        catalog: catalog,
+        injectType: injectType,
+        loggedInUserId: this.loggedInUserId,
+        isContentDeveloper: this.isContentDeveloper,
+      },
+    });
+    dialogRef.componentInstance.editComplete.subscribe((result) => {
+      if (result.saveChanges && result.selectedInjectIdList.length > 0) {
+        // this.catalogDataService.addInjectsToCatalog(result.selectedInjectIdList);
+      }
+      dialogRef.close();
+    });
   }
 
   ngOnDestroy() {

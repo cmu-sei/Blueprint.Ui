@@ -16,22 +16,19 @@
  * Do not edit the class manually.
  */
 import { Unit } from './unit';
-import { Injectm } from './injectm';
-
 
 export interface Catalog {
-    dateCreated?: Date;
-    dateModified?: Date | null;
-    createdBy?: string;
-    modifiedBy?: string | null;
-    id?: string;
-    name?: string | null;
-    description?: string | null;
-    injectTypeId?: string;
-    isPublic?: boolean;
-    parentId?: string | null;
-    parent?: Catalog;
-    injects?: Array<Injectm> | null;
-    units?: Array<Unit> | null;
-    listDataFields?: string;
+  dateCreated?: Date;
+  dateModified?: Date | null;
+  createdBy?: string;
+  modifiedBy?: string | null;
+  id?: string;
+  name?: string | null;
+  description?: string | null;
+  injectTypeId?: string;
+  isPublic?: boolean;
+  parentId?: string | null;
+  parent?: Catalog;
+  units?: Array<Unit> | null;
+  listDataFields?: string | null;
 }
