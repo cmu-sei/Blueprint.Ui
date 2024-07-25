@@ -216,6 +216,7 @@ export class InjectListComponent implements OnDestroy, OnInit {
         isEditMode: this.isEditMode,
         unitList: this.unitList,
         userList: this.userList,
+        injectList: this.injectList,
       },
     });
     dialogRef.componentInstance.editComplete.subscribe((result) => {
@@ -326,14 +327,57 @@ export class InjectListComponent implements OnDestroy, OnInit {
     return this.selectedInjectIds.some((m) => m === id);
   }
 
-  select(id: string) {
-    const index = this.selectedInjectIds.indexOf(id);
+  select(injectm: Injectm, event: any) {
+    let requiredInjectNames = '';
+    const requiredInjectIds = [];
+    let requiredInject = this.injectList.find(
+      (m) => m.id === injectm.requiresInjectId
+    );
+    while (requiredInject) {
+      if (this.selectedInjectIds.some((m) => m === requiredInject.id)) {
+        requiredInject = null;
+      } else {
+        requiredInjectNames = requiredInject.name + ', ' + requiredInjectNames;
+        requiredInjectIds.unshift(requiredInject.id);
+        requiredInject = this.injectList.find(
+          (m) => m.id === requiredInject.requiresInjectId
+        );
+      }
+    }
+    const index = this.selectedInjectIds.indexOf(injectm.id);
     if (index > -1) {
       this.selectedInjectIds.splice(index, 1);
+      this.selectedInjectIdList.emit(this.selectedInjectIds);
+      event.source._checked = false;
     } else {
-      this.selectedInjectIds.push(id);
+      if (requiredInjectNames) {
+        this.dialogService
+          .confirm(
+            'Inject Requires Additional Injects',
+            'Adding Inject ' +
+              injectm.name +
+              ' also requires adding inject(s) ' +
+              requiredInjectNames +
+              '.  Add them?'
+          )
+          .subscribe((result) => {
+            if (result['confirm']) {
+              requiredInjectIds.forEach((id) => {
+                this.selectedInjectIds.push(id);
+              });
+              this.selectedInjectIds.push(injectm.id);
+              this.selectedInjectIdList.emit(this.selectedInjectIds);
+              event.source._checked = true;
+            } else {
+              event.source._checked = false;
+            }
+          });
+      } else {
+        this.selectedInjectIds.push(injectm.id);
+        this.selectedInjectIdList.emit(this.selectedInjectIds);
+        event.source._checked = true;
+      }
     }
-    this.selectedInjectIdList.emit(this.selectedInjectIds);
   }
 
   getDisplayedColumns(): string[] {

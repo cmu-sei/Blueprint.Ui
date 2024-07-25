@@ -20,6 +20,7 @@ project root for license information.
     </button>
   </div>
   <div mat-dialog-content *ngIf="!!data && data.inject !== undefined && data.inject !== null">
+    <!-- name -->
     <div class="add-margin">
       <div>
         <mat-form-field class="full-width">
@@ -32,6 +33,7 @@ project root for license information.
         </mat-form-field>
       </div>
     </div>
+    <!-- description -->
     <div class="add-margin">
       <div>
         <mat-form-field class="full-width">
@@ -41,6 +43,19 @@ project root for license information.
             matInput
             placeholder="Description (required)"
             [(ngModel)]="data.inject.description">
+        </mat-form-field>
+      </div>
+    </div>
+    <!-- requires inject -->
+    <div class="add-margin">
+      <div>
+        <mat-form-field class="full-width">
+          <mat-label>Prerequisite Inject</mat-label>
+          <mat-select placeholder="Prerequisite Inject" [(ngModel)]="data.inject.requiresInjectId">
+            <mat-option *ngFor="let inject of data.injectList" [value]="inject.id" title="{{ inject.name}}" [disabled]="inject.id === data.inject.id">
+              {{ inject.name }}
+            </mat-option>
+          </mat-select>
         </mat-form-field>
       </div>
     </div>
