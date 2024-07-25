@@ -3,10 +3,8 @@ Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
-<mat-expansion-panel *ngIf="catalog">
-  <mat-expansion-panel-header>
-    <span class="units-title">Units with access</span>
-  </mat-expansion-panel-header>
+<div *ngIf="catalog">
+  <div class="units-title">Units with access</div>
   <div class="units-div">
     <div *ngFor="let catalogUnit of catalogUnitList; trackBy: trackByFn">
       <button
@@ -22,7 +20,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <div *ngIf="catalogUnitList.length === 0" style="margin-left: 45px;">
       No units have access
     </div>
-    <span class="units-title">Units to add</span>
+  </div>
+  <mat-expansion-panel class="units-div">
+    <mat-expansion-panel-header class="units-title">Add a Unit</mat-expansion-panel-header>
     <div *ngFor="let unit of getUnitList(); trackBy: trackByFn">
       <button
         mat-icon-button
@@ -33,5 +33,5 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </button>
       {{ unit.shortName }} - {{ unit.name }}
     </div>
-  </div>
-</mat-expansion-panel>
+  </mat-expansion-panel>
+</div>

@@ -38,7 +38,6 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
   @Input() isContentDeveloper: boolean;
   @Input() showTemplates: boolean;
   @Input() userTheme: Theme;
-
   @Input() injectTypeId: string;
   msel = new MselPlus();
   allDataFields: DataField[] = [];
@@ -171,7 +170,10 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
   setDataFieldList() {
     this.dataFieldList = [];
     this.allDataFields.forEach((df) => {
-      if (df.mselId && df.mselId === this.msel.id) {
+      if (
+        (df.mselId && df.mselId === this.msel.id) ||
+        (df.injectTypeId && df.injectTypeId === this.injectTypeId)
+      ) {
         this.dataFieldList.push({ ...df });
       }
     });

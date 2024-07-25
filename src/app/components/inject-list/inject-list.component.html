@@ -48,7 +48,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <div *ngIf="!isEditMode">
           <mat-checkbox
             [checked]="isSelected(element.id)"
-            (change)="select(element.id)"
+            (change)="select(element, $event)"
           ></mat-checkbox><br />
         </div>
       </mat-cell>
@@ -92,10 +92,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
           [gallerySourceTypeOptions]="[]"
           [userOptions]="userList"
         ></app-data-value>
-
-
-
-
       </mat-cell>
     </ng-container>
     <!-- row definitions -->

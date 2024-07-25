@@ -405,7 +405,7 @@ export class ScenarioEventListComponent
     this.msel.teams.forEach((t) => {
       orgs.push(t.shortName);
     });
-    orgs = orgs.sort((a, b) => (a.toLowerCase() < b.toLowerCase() ? -1 : 1));
+    orgs = orgs.sort((a, b) => (a?.toLowerCase() < b?.toLowerCase() ? -1 : 1));
     return orgs;
   }
 

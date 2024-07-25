@@ -3,8 +3,8 @@
 // project root for license information.
 
 .mat-expansion-panel {
-  width: calc(100% - 100px);
-  margin-left: 100px;
+  width: calc(100% - 20px);
+  background-color: transparent;
 }
 
 .mat-expansion-panel-header {
@@ -20,7 +20,7 @@
 
 .units-div {
   text-align: left;
-  width: 100%;
+  width: calc(100% - 20px);
 }
 
 .full-width {

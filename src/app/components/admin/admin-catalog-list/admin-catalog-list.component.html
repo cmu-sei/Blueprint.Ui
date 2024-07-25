@@ -18,7 +18,15 @@ project root for license information or contact permission@sei.cmu.edu for full 
       title="Add new Catalog"
     >
       <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle"></mat-icon>
-      Add Catalog
+      Add
+    </button>
+    <button
+      mat-icon-button
+      style="outline: none; margin-left: 25px;"
+      title="Upload a new catalog from a file"
+      (click)="uploadFile('json', '', ''); jsonInput.click()"
+    >
+      <mat-icon class="mdi-24px" fontIcon="mdi-upload"></mat-icon> Upload
     </button>
   </span> &nbsp;
 </span>
@@ -47,9 +55,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <ng-container matColumnDef="action">
         <mat-header-cell *matHeaderCellDef class="mat-column-action"></mat-header-cell>
         <mat-cell *matCellDef="let element" class="mat-column-action">
-          <div class="action-div">
+          <div>
             <button
-              mat-icon-button class="msel-action"
+              mat-icon-button
               (click)="addOrEditCatalog(element); $event.stopPropagation();"
               title="Edit {{ element.name }} catalog"
               *ngIf="isContentDeveloper"
@@ -64,7 +72,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
               <mat-icon class="mdi-18px" fontIcon="mdi-content-copy" alt="Copy"></mat-icon>
             </button>
             <button
-              mat-icon-button class="msel-action"
+              mat-icon-button
+              title="Download {{ element.name }}"
+              (click)="downloadJsonFile(element); $event.stopPropagation();"
+            >
+              <mat-icon class="mdi-18px" fontIcon="mdi-download" alt="Download catalog"></mat-icon>
+            </button>
+            <button
+              mat-icon-button
               (click)="deleteCatalog(element); $event.stopPropagation();"
               title="Delete {{ element.name }} catalog"
               *ngIf="isContentDeveloper"
@@ -117,7 +132,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <!-- Expanded Content Column - The detail row is made up of this one column that spans across all columns -->
       <ng-container matColumnDef="expandedDetail">
         <mat-cell class="expanded-detail-cell" *matCellDef="let element" [attr.colspan]="displayedColumns.length">
-          <div class="expanded-detail-div">
+          <div class="inject-list-div">
             <app-inject-list
               [isContentDeveloper]="isContentDeveloper"
               [loggedInUserId]="loggedInUserId"
@@ -125,13 +140,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
               [injectType]="{}"
               [isEditMode]="true"
             ></app-inject-list>
-            <br />
+          </div>
+          <div class="unit-list-div">
             <app-catalog-units
               [isContentDeveloper]="isContentDeveloper"
               [loggedInUserId]="loggedInUserId"
               [catalog]="element"
             ></app-catalog-units>
-            <br />
           </div>
         </mat-cell>
       </ng-container>
@@ -151,3 +166,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <div class="no-results" *ngIf="catalogDataSource?.filteredData.length === 0">No Catalogs found</div>
   </section>
 </div>
+
+<input
+  hidden
+  (change)="selectFile($event)"
+  #jsonInput
+  type="file"
+  accept=".json"
+/>
