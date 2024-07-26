@@ -129,7 +129,7 @@ export class CatalogInjectService {
 
   /**
    * Creates a new CatalogInject
-   * Creates a new CatalogInject with the attributes specified  &lt;para /&gt;  Accessible only to a SuperCatalog
+   * Creates a new CatalogInject with the attributes specified  &lt;para /&gt;  Accessible only to a SuperUser
    * @param catalogInject The data to create the CatalogInject with
    * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
    * @param reportProgress flag to report request and response progress.
@@ -252,8 +252,132 @@ export class CatalogInjectService {
   }
 
   /**
+   * Creates multiple CatalogInjects
+   * Creates multiple CatalogInjects with the attributes specified  &lt;para /&gt;  Accessible only to a SuperUser
+   * @param catalogInject The data to create the CatalogInjects with
+   * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+   * @param reportProgress flag to report request and response progress.
+   */
+  public createMultipleCatalogInjects(
+    catalogInject?: Array<CatalogInject>,
+    observe?: 'body',
+    reportProgress?: boolean,
+    options?: {
+      httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json';
+      context?: HttpContext;
+    }
+  ): Observable<Array<CatalogInject>>;
+  public createMultipleCatalogInjects(
+    catalogInject?: Array<CatalogInject>,
+    observe?: 'response',
+    reportProgress?: boolean,
+    options?: {
+      httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json';
+      context?: HttpContext;
+    }
+  ): Observable<HttpResponse<Array<CatalogInject>>>;
+  public createMultipleCatalogInjects(
+    catalogInject?: Array<CatalogInject>,
+    observe?: 'events',
+    reportProgress?: boolean,
+    options?: {
+      httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json';
+      context?: HttpContext;
+    }
+  ): Observable<HttpEvent<Array<CatalogInject>>>;
+  public createMultipleCatalogInjects(
+    catalogInject?: Array<CatalogInject>,
+    observe: any = 'body',
+    reportProgress: boolean = false,
+    options?: {
+      httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json';
+      context?: HttpContext;
+    }
+  ): Observable<any> {
+    let localVarHeaders = this.defaultHeaders;
+
+    let localVarCredential: string | undefined;
+    // authentication (oauth2) required
+    localVarCredential = this.configuration.lookupCredential('oauth2');
+    if (localVarCredential) {
+      localVarHeaders = localVarHeaders.set(
+        'Authorization',
+        'Bearer ' + localVarCredential
+      );
+    }
+
+    let localVarHttpHeaderAcceptSelected: string | undefined =
+      options && options.httpHeaderAccept;
+    if (localVarHttpHeaderAcceptSelected === undefined) {
+      // to determine the Accept header
+      const httpHeaderAccepts: string[] = [
+        'text/plain',
+        'application/json',
+        'text/json',
+      ];
+      localVarHttpHeaderAcceptSelected =
+        this.configuration.selectHeaderAccept(httpHeaderAccepts);
+    }
+    if (localVarHttpHeaderAcceptSelected !== undefined) {
+      localVarHeaders = localVarHeaders.set(
+        'Accept',
+        localVarHttpHeaderAcceptSelected
+      );
+    }
+
+    let localVarHttpContext: HttpContext | undefined =
+      options && options.context;
+    if (localVarHttpContext === undefined) {
+      localVarHttpContext = new HttpContext();
+    }
+
+    // to determine the Content-Type header
+    const consumes: string[] = [
+      'application/json',
+      'text/json',
+      'application/*+json',
+    ];
+    const httpContentTypeSelected: string | undefined =
+      this.configuration.selectHeaderContentType(consumes);
+    if (httpContentTypeSelected !== undefined) {
+      localVarHeaders = localVarHeaders.set(
+        'Content-Type',
+        httpContentTypeSelected
+      );
+    }
+
+    let responseType_: 'text' | 'json' | 'blob' = 'json';
+    if (localVarHttpHeaderAcceptSelected) {
+      if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
+        responseType_ = 'text';
+      } else if (
+        this.configuration.isJsonMime(localVarHttpHeaderAcceptSelected)
+      ) {
+        responseType_ = 'json';
+      } else {
+        responseType_ = 'blob';
+      }
+    }
+
+    let localVarPath = `/api/cataloginjects/multiple`;
+    return this.httpClient.request<Array<CatalogInject>>(
+      'post',
+      `${this.configuration.basePath}${localVarPath}`,
+      {
+        context: localVarHttpContext,
+        body: catalogInject,
+        responseType: <any>responseType_,
+        withCredentials: this.configuration.withCredentials,
+        headers: localVarHeaders,
+        observe: observe,
+        reportProgress: reportProgress,
+      }
+    );
+  }
+
+  /**
    * Deletes a CatalogInject
-   * Deletes a CatalogInject with the specified id  &lt;para /&gt;  Accessible only to a SuperCatalog
+   * Deletes a CatalogInject with the specified id  &lt;para /&gt;  Accessible only to a SuperUser
    * @param id The id of the CatalogInject to delete
    * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
    * @param reportProgress flag to report request and response progress.
@@ -359,7 +483,7 @@ export class CatalogInjectService {
 
   /**
    * Deletes a CatalogInject by catalog ID and inject ID
-   * Deletes a CatalogInject with the specified catalog ID and inject ID  &lt;para /&gt;  Accessible only to a SuperCatalog
+   * Deletes a CatalogInject with the specified catalog ID and inject ID  &lt;para /&gt;  Accessible only to a SuperUser
    * @param catalogId ID of a catalog.
    * @param injectId ID of a inject.
    * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
@@ -483,7 +607,7 @@ export class CatalogInjectService {
 
   /**
    * Gets a specific CatalogInject by id
-   * Returns the CatalogInject with the id specified  &lt;para /&gt;  Only accessible to a SuperCatalog
+   * Returns the CatalogInject with the id specified  &lt;para /&gt;  Only accessible to a SuperUser
    * @param id The id of the CatalogInject
    * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
    * @param reportProgress flag to report request and response progress.

@@ -47,7 +47,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             mat-menu-item
             (click)="selectExisting(catalog)"
             title="{{ catalog.name }}"
-            *ngFor="let catalog of catalogList"
+            *ngFor="let catalog of getFilteredCatalogs()"
           >
             {{ catalog.name }}
           </button>
@@ -59,12 +59,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
             All Injects of Type
           </button>
         </mat-menu>
-
-
-
-
-
-
       </mat-header-cell>
       <mat-cell *matCellDef="let element" [ngClass]="isEditMode ? 'mat-column-action' : 'mat-column-select'">
         <div *ngIf="isEditMode">

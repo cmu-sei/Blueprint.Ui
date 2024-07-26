@@ -144,6 +144,21 @@ export class CatalogInjectDataService {
       });
   }
 
+  addMultiple(catalogInjects: CatalogInject[]) {
+    this.catalogInjectStore.setLoading(true);
+    this.catalogInjectService
+      .createMultipleCatalogInjects(catalogInjects)
+      .pipe(
+        tap(() => {
+          this.catalogInjectStore.setLoading(false);
+        }),
+        take(1)
+      )
+      .subscribe((s) => {
+        this.catalogInjectStore.upsertMany(s);
+      });
+  }
+
   delete(id: string) {
     this.catalogInjectService
       .deleteCatalogInject(id)
