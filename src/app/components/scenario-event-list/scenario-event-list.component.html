@@ -495,8 +495,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <!-- is Chosen From a List -->
               <td *ngIf="!customHandledDataTypes.includes(df.dataType) && df.isChosenFromList">
                 <div class="constrainer" [style]="getStyle(df)">
+                  <!-- single select -->
                   <mat-select
-                    *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, item.id).editor"
+                    *ngIf="(isContentDeveloper || msel.hasRole(loggedInUserId, item.id).editor) && !df.isMultiSelect"
                     [(ngModel)]="getDataValue(item, df.name).value"
                     (click)="$event.stopPropagation()"
                     (valueChange)="saveDataValue(item, df.name, $event)"
@@ -505,6 +506,18 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   >
                     <mat-option value=""> - - - </mat-option>
                     <mat-option *ngFor="let dataOption of df.dataOptions" [value]="dataOption.optionValue">{{ dataOption.optionName }}</mat-option>
+                  </mat-select>
+                  <!-- multi-select -->
+                  <mat-select
+                    *ngIf="(isContentDeveloper || msel.hasRole(loggedInUserId, item.id).editor) && df.isMultiSelect"
+                    multiple
+                    placeholder="{{ df.name }}"
+                    (valueChange)="saveDataValueArray(item, df.name, $event)"
+                    [value]="getDataValue(item, df.name).valueArray"
+                  >
+                    <mat-option *ngFor="let dataOption of df.dataOptions" [value]="dataOption.optionValue">
+                      {{ dataOption.optionName }}
+                    </mat-option>
                   </mat-select>
                 </div>
               </td>

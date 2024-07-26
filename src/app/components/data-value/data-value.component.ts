@@ -89,14 +89,16 @@ export class DataValueComponent {
   }
 
   getValueArray(): any[] {
-    return this.value ? this.value.split(',') : [];
+    return this.value ? this.value.split(', ') : [];
   }
 
   setDataValueArray(newValues: string[]) {
+    console.log(newValues);
     if (newValues.includes('None')) {
       newValues = new Array();
     }
     this.value = newValues.join(', ');
+    console.log(this.value);
     this.valueChangeHandler();
   }
 
