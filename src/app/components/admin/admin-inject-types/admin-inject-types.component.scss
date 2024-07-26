@@ -11,6 +11,17 @@
   margin-left: 5px;
 }
 
+.mat-expansion-panel {
+  width: calc(100% - 20px);
+  background-color: transparent;
+  margin-bottom: 20px;
+}
+
+.mat-expansion-panel-header {
+  height: 32px;
+  font-size: 14px;
+}
+
 .mat-table {
   font-size: small;
   width: 100%;
@@ -81,6 +92,8 @@
 }
 
 .expanded-detail-cell {
+  display: flex;
+  flex-direction: column;
   width: 100%;
   min-width: 660px;
 }

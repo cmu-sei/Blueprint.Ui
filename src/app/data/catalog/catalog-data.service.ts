@@ -10,10 +10,12 @@ import { Router, ActivatedRoute } from '@angular/router';
 import {
   Catalog,
   CatalogService,
+  CatalogInjectService,
 } from 'src/app/generated/blueprint.api';
 import { map, take, tap } from 'rxjs/operators';
 import { BehaviorSubject, Observable, Subject, combineLatest } from 'rxjs';
 import { HttpEventType, HttpResponse } from '@angular/common/http';
+import { InjectmDataService } from '../injectm/injectm-data.service';
 
 @Injectable({
   providedIn: 'root',
@@ -38,6 +40,8 @@ export class CatalogDataService {
     private catalogStore: CatalogStore,
     private catalogQuery: CatalogQuery,
     private catalogService: CatalogService,
+    private catalogInjectService: CatalogInjectService,
+    private injectmDataService: InjectmDataService,
     private router: Router,
     private activatedRoute: ActivatedRoute
   ) {
@@ -189,6 +193,23 @@ export class CatalogDataService {
       .subscribe((r) => {
         this.deleteFromStore(id);
       });
+  }
+
+  addInjectToCatalog(
+    catalogId: string,
+    injectId: string,
+    displayOrder: number
+  ) {
+    const catalogInject = {
+      catalogId: catalogId,
+      injectId: injectId,
+      isNew: false,
+      displayOrder: displayOrder,
+    };
+    this.catalogInjectService
+      .createCatalogInject(catalogInject)
+      .pipe(take(1))
+      .subscribe((r) => {});
   }
 
   downloadJson(id: string) {

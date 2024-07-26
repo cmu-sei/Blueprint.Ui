@@ -8,15 +8,57 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <!-- action column -->
     <ng-container matColumnDef="action">
       <mat-header-cell *matHeaderCellDef [ngClass]="isEditMode ? 'mat-column-action' : 'mat-column-select'">
+        <!-- In InjectType -->
         <button
           mat-icon-button
           (click)="addInject()"
           style="outline: none;"
           title="Add new Inject"
-          *ngIf="isContentDeveloper"
+          *ngIf="isContentDeveloper && !catalog.id"
         >
-          <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle"></mat-icon>
+          <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
         </button>
+        <!-- In Catalog -->
+        <button
+          mat-icon-button
+          [matMenuTriggerFor]="addMenu"
+          style="outline: none;"
+          title="Add Inject"
+          *ngIf="isContentDeveloper && catalog.id"
+        >
+          <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
+        </button>
+        <mat-menu #addMenu="matMenu" [overlapTrigger]="false">
+          <button
+            mat-menu-item
+            (click)="addInject()"
+            title="Add a new inject"
+          >New Inject</button>
+          <button
+            mat-menu-item
+            [matMenuTriggerFor]="addExistingInject"
+            title="Add an existing inject"
+          >
+            Add Existing Inject
+          </button>
+        </mat-menu>
+        <mat-menu #addExistingInject="matMenu" [overlapTrigger]="false">
+          <button
+            mat-menu-item
+            (click)="selectExisting(catalog)"
+            title="{{ catalog.name }}"
+            *ngFor="let catalog of getFilteredCatalogs()"
+          >
+            {{ catalog.name }}
+          </button>
+          <button
+            mat-menu-item
+            (click)="selectExisting(null)"
+            title="All Injects of Type"
+          >
+            All Injects of Type
+          </button>
+        </mat-menu>
       </mat-header-cell>
       <mat-cell *matCellDef="let element" [ngClass]="isEditMode ? 'mat-column-action' : 'mat-column-select'">
         <div *ngIf="isEditMode">

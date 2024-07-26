@@ -3,21 +3,20 @@
 // project root for license information.
 
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { InjectsComponent } from './inject-lists.component';
+import { InjectListComponent } from './inject-list.component';
 
 describe('InjectsComponent', () => {
-  let component: InjectsComponent;
-  let fixture: ComponentFixture<InjectsComponent>;
+  let component: InjectListComponent;
+  let fixture: ComponentFixture<InjectListComponent>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ InjectsComponent ]
-    })
-      .compileComponents();
+      declarations: [InjectListComponent],
+    }).compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(InjectsComponent);
+    fixture = TestBed.createComponent(InjectListComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

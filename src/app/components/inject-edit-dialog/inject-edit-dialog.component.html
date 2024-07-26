@@ -5,8 +5,8 @@ project root for license information.
 -->
 <div mat-dialog-container>
   <div mat-dialog-title>
-    <span *ngIf="data.inject.id">Edit</span>
-    <span *ngIf="!data.inject.id">Create</span>
+    <span *ngIf="!data.isNewInject">Edit</span>
+    <span *ngIf="data.isNewInject">Create</span>
      an Inject
     &nbsp;
     <button
