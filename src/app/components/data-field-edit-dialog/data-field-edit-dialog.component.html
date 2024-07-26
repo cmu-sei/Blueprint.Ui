@@ -55,13 +55,24 @@ project root for license information or contact permission@sei.cmu.edu for full 
   <div class="data-field-detail" (click)="$event.stopPropagation();">
     <div class="single-detail">
       <div class="partial-detail">
-        <mat-checkbox
-          [(ngModel)]="data.dataField.isChosenFromList"
-          [disabled]="(!data.isContentDeveloper && !data.isOwner) || optionListNotAllowed()"
-          class="bottom-margin"
-        >
-          Use Option List
-        </mat-checkbox><br />
+        <div>
+          <mat-checkbox
+            [(ngModel)]="data.dataField.isChosenFromList"
+            [disabled]="(!data.isContentDeveloper && !data.isOwner) || optionListNotAllowed()"
+            class="bottom-margin"
+          >
+            Use Option List
+          </mat-checkbox>
+        </div>
+        <div *ngIf="data.dataField.isChosenFromList">
+          <mat-checkbox
+            [(ngModel)]="data.dataField.isMultiSelect"
+            [disabled]="(!data.isContentDeveloper && !data.isOwner) || optionListNotAllowed()"
+            class="bottom-margin left-margin"
+          >
+            Multi-select
+          </mat-checkbox>
+        </div>
       </div>
       <div class="data-options" *ngIf="data.dataField.isChosenFromList">
         <div class="data-option" *ngFor="let dataOption of data.dataField.dataOptions">

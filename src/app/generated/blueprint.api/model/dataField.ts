@@ -20,25 +20,26 @@ import { DataOption } from './dataOption';
 
 
 export interface DataField {
-    dateCreated?: Date;
-    dateModified?: Date | null;
-    createdBy?: string;
-    modifiedBy?: string | null;
-    id?: string;
-    mselId?: string | null;
-    injectTypeId?: string | null;
-    name?: string | null;
-    description?: string | null;
-    dataType?: DataFieldType;
-    displayOrder?: number;
-    onScenarioEventList?: boolean;
-    onExerciseView?: boolean;
-    isChosenFromList?: boolean;
-    dataOptions?: Array<DataOption> | null;
-    cellMetadata?: string | null;
-    columnMetadata?: string | null;
-    isInitiallyHidden?: boolean;
-    isOnlyShownToOwners?: boolean;
-    galleryArticleParameter?: string | null;
-    isTemplate?: boolean;
+  dateCreated?: Date;
+  dateModified?: Date | null;
+  createdBy?: string;
+  modifiedBy?: string | null;
+  id?: string;
+  mselId?: string | null;
+  injectTypeId?: string | null;
+  name?: string | null;
+  description?: string | null;
+  dataType?: DataFieldType;
+  displayOrder?: number;
+  onScenarioEventList?: boolean;
+  onExerciseView?: boolean;
+  isChosenFromList?: boolean;
+  isMultiSelect?: boolean;
+  dataOptions?: Array<DataOption> | null;
+  cellMetadata?: string | null;
+  columnMetadata?: string | null;
+  isInitiallyHidden?: boolean;
+  isOnlyShownToOwners?: boolean;
+  galleryArticleParameter?: string | null;
+  isTemplate?: boolean;
 }

@@ -240,10 +240,25 @@ project root for license information.
   <!-- dropdown input -->
   <mat-form-field *ngIf="dataField.isChosenFromList" class="full-width">
     <mat-label>{{ dataField.name }}</mat-label>
+    <!-- single select -->
     <mat-select
+      *ngIf="!dataField.isMultiSelect"
       placeholder="{{ dataField.name }}"
       [(ngModel)]="value"
       (ngModelChange)="valueChangeHandler()"
+      [disabled]="!canEdit"
+    >
+      <mat-option *ngFor="let dataOption of dataField.dataOptions" [value]="dataOption.optionValue">
+        {{ dataOption.optionName }}
+      </mat-option>
+    </mat-select>
+    <!-- multi-select -->
+    <mat-select
+      *ngIf="dataField.isMultiSelect"
+      multiple
+      placeholder="{{ dataField.name }}"
+      (valueChange)="setDataValueArray($event)"
+      [value]="getValueArray()"
       [disabled]="!canEdit"
     >
       <mat-option *ngFor="let dataOption of dataField.dataOptions" [value]="dataOption.optionValue">
