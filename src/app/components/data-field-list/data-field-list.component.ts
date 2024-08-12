@@ -137,7 +137,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
       if (this.injectTypeId) {
         this.msel = new MselPlus();
         this.mselDataService.setActive('');
-        this.displayedColumns.splice(1, 2);
+        this.displayedColumns.splice(2, 1);
         // load data fields for the inject type
         this.dataFieldDataService.loadByInjectType(this.injectTypeId);
       } else {
