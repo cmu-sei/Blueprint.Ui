@@ -331,205 +331,26 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 ></app-duration-view>
               </div>
             </td>
-            <ng-container *ngFor="let df of sortedDataFields">
-              <!-- HTML value -->
-              <td *ngIf="df.dataType.toString() === 'Html'">
-                <div class="html-constrainer" [style]="getStyle(df)">
-                  <angular-editor
-                    [ngModel]="getDisplayValue(item, df.name)"
-                    [config]="viewConfig"
-                  ></angular-editor>
-                </div>
-              </td>
-              <!-- Organization value -->
-              <td *ngIf="df.dataType.toString() === 'Organization'">
-                <div class="constrainer" [style]="getStyle(df)">
-                  <mat-select
-                    *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, item.id).editor"
-                    (click)="$event.stopPropagation()"
-                    (valueChange)="saveDataValue(item, df.name, $event)"
-                    class="header-dropdown"
-                    placeholder="None"
-                    [(ngModel)]="getDataValue(item, df.name).value"
-                  >
-                    <mat-option value="None">None</mat-option>
-                    <mat-option *ngFor="let org of getSortedOrganizationOptions()" [value]="org">
-                      {{ org }}
-                    </mat-option>
-                  </mat-select>
-                  <span *ngIf="!isContentDeveloper && !msel.hasRole(loggedInUserId, item.id).editor">{{ getDisplayValue(item, df.name) }}</span>
-                </div>
-              </td>
-              <!-- TeamsMultiple value -->
-              <td *ngIf="df.dataType.toString() === 'TeamsMultiple'">
-                <div class="constrainer" [style]="getStyle(df)">
-                  <mat-select
-                    multiple
-                    *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, item.id).editor"
-                    (click)="$event.stopPropagation()"
-                    (valueChange)="saveDataValueArray(item, df.name, $event)"
-                    class="header-dropdown"
-                    placeholder="None"
-                    [value]="getDataValue(item, df.name).valueArray"
-                  >
-                  <mat-option value="None">None</mat-option>
-                  <mat-option value="ALL">ALL</mat-option>
-                  <mat-option *ngFor="let org of getSortedTeamOptions()" [value]="org">
-                      {{ org }}
-                    </mat-option>
-                  </mat-select>
-                  <span *ngIf="!isContentDeveloper && !msel.hasRole(loggedInUserId, item.id).editor">{{ getDisplayValue(item, df.name) }}</span>
-                </div>
-              </td>
-              <!-- Status value -->
-              <td *ngIf="df.dataType.toString() === 'Status'">
-                <div class="constrainer" [style]="getStyle(df)">
-                  <mat-select
-                    *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, item.id).approver"
-                    [(ngModel)]="getDataValue(item, df.name).value"
-                    (click)="$event.stopPropagation()"
-                    (valueChange)="saveDataValue(item, df.name, $event)"
-                    class="header-dropdown"
-                    placeholder="None"
-                  >
-                    <mat-option *ngFor="let status of itemStatus" [value]="status">
-                      {{ status }}
-                    </mat-option>
-                  </mat-select>
-                  <span *ngIf="!isContentDeveloper && !msel.hasRole(loggedInUserId, item.id).approver">{{ getDisplayValue(item, df.name) }}</span>
-                </div>
-              </td>
-              <!-- Assigned Team value -->
-              <td *ngIf="df.dataType.toString() === 'Team'">
-                <div class="constrainer" [style]="getStyle(df)">
-                  <mat-select
-                    *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, item.id).owner"
-                    [(ngModel)]="getDataValue(item, df.name).value"
-                    (click)="$event.stopPropagation()"
-                    (valueChange)="saveDataValue(item, df.name, $event)"
-                    class="header-dropdown"
-                    placeholder="None"
-                  >
-                    <mat-option *ngFor="let team of teamList" [value]="team.shortName">
-                      {{ team.shortName }}
-                    </mat-option>
-                  </mat-select>
-                  <span *ngIf="!isContentDeveloper && !msel.hasRole(loggedInUserId, item.id).owner">{{ getDisplayValue(item, df.name) }}</span>
-                </div>
-              </td>
-              <!-- datetime value -->
-              <td *ngIf="df.dataType.toString() === 'DateTime'">
-                <div class="constrainer" [style]="getStyle(df)">
-                  {{ getDisplayValue(item, df.name) }}
-                </div>
-              </td>
-              <!-- User value -->
-              <td *ngIf="df.dataType.toString() === 'User'">
-                <div class="constrainer" [style]="getStyle(df)">
-                  <mat-select
-                    *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, item.id).owner"
-                    [(ngModel)]="getDataValue(item, df.name).value"
-                    (click)="$event.stopPropagation()"
-                    (valueChange)="saveDataValue(item, df.name, $event)"
-                    class="header-dropdown"
-                    placeholder="None"
-                  >
-                    <mat-option *ngFor="let user of mselUsers" [value]="user.id">
-                      {{ user.name }}
-                    </mat-option>
-                  </mat-select>
-                  <span *ngIf="!isContentDeveloper && !msel.hasRole(loggedInUserId, item.id).owner">{{ getDisplayValue(item, df.name) }}</span>
-                </div>
-              </td>
-              <!-- checkbox value -->
-              <td *ngIf="df.dataType.toString() === 'Checkbox'">
-                <div class="constrainer" [style]="getStyle(df)">
-                  <mat-checkbox
-                    [checked]="getDataValue(item, df.name).value"
-                    (change)="saveDataValue(item, df.name, $event.checked.toString())"
-                  ></mat-checkbox>
-                </div>
-              </td>
-              <!-- Card value -->
-              <td *ngIf="df.dataType.toString() === 'Card'">
-                <div class="constrainer" [style]="getStyle(df)">
-                  <mat-select
-                    *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, item.id).owner"
-                    [(ngModel)]="getDataValue(item, df.name).value"
-                    (click)="$event.stopPropagation()"
-                    (valueChange)="saveDataValue(item, df.name, $event)"
-                    class="header-dropdown"
-                    placeholder="Gallery Card"
-                  >
-                    <mat-option value="''"> - - - </mat-option>
-                    <mat-option *ngFor="let card of cardList" [value]="card.id">{{ card.name }}</mat-option>
-                  </mat-select>
-                  <span *ngIf="!isContentDeveloper && !msel.hasRole(loggedInUserId, item.id).owner">{{ getDisplayValue(item, df.name) }}</span>
-                </div>
-              </td>
-              <!-- DeliveryMethod value -->
-              <td *ngIf="df.dataType.toString() === 'DeliveryMethod'">
-                <div class="constrainer" [style]="getStyle(df)">
-                  <mat-select
-                    multiple
-                    *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, item.id).editor"
-                    (click)="$event.stopPropagation()"
-                    (valueChange)="saveDataValueArray(item, df.name, $event)"
-                    class="header-dropdown"
-                    placeholder="None"
-                    [value]="getDataValue(item, df.name).valueArray"
-                  >
-                    <mat-option *ngFor="let dataOption of df.dataOptions" [value]="dataOption.optionValue">
-                        {{ dataOption.optionName }}
-                      </mat-option>
-                  </mat-select>
-                  <span *ngIf="!isContentDeveloper && !msel.hasRole(loggedInUserId, item.id).editor">{{ getDisplayValue(item, df.name) }}</span>
-                </div>
-              </td>
-              <!-- Move Type -->
-              <td *ngIf="df.dataType.toString() === 'Move'">
-                <div class="constrainer" [style]="getStyle(df)">
-                {{ getDisplayValue(item, df.name) }}
-                </div>
-              </td>
-            <!-- is Chosen From a List -->
-              <td *ngIf="!customHandledDataTypes.includes(df.dataType) && df.isChosenFromList">
-                <div class="constrainer" [style]="getStyle(df)">
-                  <!-- single select -->
-                  <mat-select
-                    *ngIf="(isContentDeveloper || msel.hasRole(loggedInUserId, item.id).editor) && !df.isMultiSelect"
-                    [(ngModel)]="getDataValue(item, df.name).value"
-                    (click)="$event.stopPropagation()"
-                    (valueChange)="saveDataValue(item, df.name, $event)"
-                    class="header-dropdown"
-                    placeholder=" - - - "
-                  >
-                    <mat-option value=""> - - - </mat-option>
-                    <mat-option *ngFor="let dataOption of df.dataOptions" [value]="dataOption.optionValue">{{ dataOption.optionName }}</mat-option>
-                  </mat-select>
-                  <!-- multi-select -->
-                  <mat-select
-                    *ngIf="(isContentDeveloper || msel.hasRole(loggedInUserId, item.id).editor) && df.isMultiSelect"
-                    multiple
-                    placeholder="{{ df.name }}"
-                    (valueChange)="saveDataValueArray(item, df.name, $event)"
-                    [value]="getDataValue(item, df.name).valueArray"
-                  >
-                    <mat-option *ngFor="let dataOption of df.dataOptions" [value]="dataOption.optionValue">
-                      {{ dataOption.optionName }}
-                    </mat-option>
-                  </mat-select>
-                </div>
-              </td>
-              <!-- other values -->
-              <td *ngIf="!customHandledDataTypes.includes(df.dataType) && !df.isChosenFromList">
-                <div class="constrainer" [style]="getStyle(df)">
-                  {{ getDisplayValue(item, df.name) }}
-                </div>
-              </td>
-            </ng-container>
+            <td *ngFor="let df of sortedDataFields">
+              <app-data-value
+                [value]="getDataValue(item, df.name).value"
+                (valueChange)="saveDataValue(item, df.name, $event)"
+                [dataField]="df"
+                [canEdit]="isContentDeveloper || msel.hasRole(this.loggedInUserId, item.id).editor"
+                [canApprove]="isContentDeveloper || msel.hasRole(this.loggedInUserId, item.id).approver"
+                [isOwner]="isContentDeveloper || msel.hasRole(this.loggedInUserId, item.id).owner"
+                [showValueOnly]="true"
+                [organizationOptions]="organizationList"
+                [teamOptions]="teamList"
+                [unitOptions]="teamList"
+                [cardOptions]="cardList"
+                [moveOptions]="moveList"
+                [gallerySourceTypeOptions]="msel.gallerySourceTypes"
+                [userOptions]="userList"
+              ></app-data-value>
+            </td>
           </tr>
-                  </ng-container>
+        </ng-container>
       </tbody>
     </table>
   </div>
