@@ -23,7 +23,7 @@ export class DataValueComponent {
   @Input() canEdit: boolean; // enables editing of values
   @Input() canApprove: boolean; // enables editing of status value
   @Input() isOwner: boolean; // enables editing of assigned unit value
-  @Input() isViewOnly: boolean; // simply displays the value and does not use inputs or dropdowns
+  @Input() showValueOnly: boolean; // displays the value without a matFormField
   @Input() organizationOptions: any[] = [];
   @Input() teamOptions: any[] = [];
   @Input() unitOptions: any[] = [];
