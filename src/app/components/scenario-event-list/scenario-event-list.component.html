@@ -60,7 +60,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   (click)="addScenarioEvent()"
                   title="Add an event"
                   [disabled]="selectedEventIdList.length > 0"
-                  *ngIf="(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)"
+                  *ngIf="(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) && !isStarterMsel"
                 >
                   Add New Event
                 </button>
@@ -99,6 +99,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   (click)="addScenarioEvent()"
                   title="Add an event"
                   [disabled]="selectedEventIdList.length > 0 && (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)"
+                  *ngIf="!isStarterMsel"
                 >
                   Add New Event
                 </button>
@@ -107,7 +108,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   [matMenuTriggerFor]="colorList"
                   (click)="$event.stopPropagation()"
                   title="Highlight selected events"
-                  *ngIf="(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)"
+                  *ngIf="(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) && !isStarterMsel"
                 >
                   Highlight selected events
                 </button>
@@ -231,16 +232,17 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 </button>
                 <mat-menu #actionList="matMenu" [overlapTrigger]="false">
                   <button
-                  mat-menu-item
-                  (click)="openContent(item.id)"
-                  title="Open page in new tab"
-                >
-                  Open in a New Tab
-                </button>
+                    mat-menu-item
+                    (click)="openContent(item.id)"
+                    title="Open page in new tab"
+                  >
+                    Open in a New Tab
+                  </button>
                   <button
                     mat-menu-item
                     (click)="editScenarioEvent(item)"
                     title="Edit event {{ rowIndex  + 1 }}"
+                    *ngIf="!isStarterMsel"
                   >
                     Edit
                   </button>
@@ -249,7 +251,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                     [matMenuTriggerFor]="colorList"
                     (click)="$event.stopPropagation()"
                     title="Highlight event {{ rowIndex  + 1 }}"
-                    *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, item.id).owner"
+                    *ngIf="(isContentDeveloper || msel.hasRole(loggedInUserId, item.id).owner)"
                   >
                     Highlight
                   </button>
@@ -274,7 +276,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                     mat-menu-item
                     (click)="copyScenarioEvent(item)"
                     title="Copy event {{ rowIndex + 1 }}"
-                    *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, item.id).owner"
+                    *ngIf="(isContentDeveloper || msel.hasRole(loggedInUserId, item.id).owner) && !isStarterMsel"
                   >
                     Copy
                   </button>
@@ -289,7 +291,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 </mat-menu>
                 <button
                   mat-icon-button
-                  *ngIf="!item.isHidden"
+                  *ngIf="!item.isHidden && !isStarterMsel"
                   class="scenario-event-button"
                   (click)="setHiddenScenarioEvent(item, true)"
                   title="Hide event {{ rowIndex + 1 }} on the Exercise View"
@@ -299,7 +301,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 </button>
                 <button
                   mat-icon-button
-                  *ngIf="item.isHidden"
+                  *ngIf="item.isHidden && !isStarterMsel"
                   class="scenario-event-button"
                   (click)="setHiddenScenarioEvent(item, false)"
                   title="Unhide event {{ rowIndex + 1 }} on the Exercise View"
@@ -336,9 +338,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 [value]="getDataValue(item, df.name).value"
                 (valueChange)="saveDataValue(item, df.name, $event)"
                 [dataField]="df"
-                [canEdit]="isContentDeveloper || msel.hasRole(this.loggedInUserId, item.id).editor"
-                [canApprove]="isContentDeveloper || msel.hasRole(this.loggedInUserId, item.id).approver"
-                [isOwner]="isContentDeveloper || msel.hasRole(this.loggedInUserId, item.id).owner"
+                [canEdit]="(isContentDeveloper || msel.hasRole(this.loggedInUserId, item.id).editor) && !isStarterMsel"
+                [canApprove]="(isContentDeveloper || msel.hasRole(this.loggedInUserId, item.id).approver) && !isStarterMsel"
+                [isOwner]="(isContentDeveloper || msel.hasRole(this.loggedInUserId, item.id).owner) && !isStarterMsel"
                 [showValueOnly]="true"
                 [organizationOptions]="organizationList"
                 [teamOptions]="teamList"

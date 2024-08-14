@@ -73,6 +73,7 @@ export class ScenarioEventListComponent
   @Input() loggedInUserId: string;
   @Input() isContentDeveloper: boolean;
   @Input() userTheme: Theme;
+  @Input() isStarterMsel: boolean;
   msel = new MselPlus();
 
   // ScenarioEventView Fields
