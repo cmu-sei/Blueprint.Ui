@@ -242,6 +242,11 @@ export class EventDetailPageComponent {
   getEditableMsel(msel: MselPlus): MselPlus {
     const editableMsel = new MselPlus();
     Object.assign(editableMsel, msel);
+    editableMsel.teams = editableMsel.teams
+      .slice(0)
+      .sort((a, b) =>
+        a.shortName.toLowerCase() < b.shortName.toLowerCase() ? -1 : 1
+      );
     editableMsel.units = editableMsel.units
       .slice(0)
       .sort((a, b) =>

@@ -345,6 +345,11 @@ export class ScenarioEventListComponent
   getEditableMsel(msel: MselPlus): MselPlus {
     const editableMsel = new MselPlus();
     Object.assign(editableMsel, msel);
+    editableMsel.teams = editableMsel.teams
+      .slice(0)
+      .sort((a, b) =>
+        a.shortName.toLowerCase() < b.shortName.toLowerCase() ? -1 : 1
+      );
     editableMsel.units = editableMsel.units
       .slice(0)
       .sort((a, b) =>
@@ -373,8 +378,13 @@ export class ScenarioEventListComponent
 
   getMselUsers(): User[] {
     let users = [];
-    this.msel.units.forEach((team) => {
+    this.msel.teams.forEach((team) => {
       team.users.forEach((user) => {
+        users.push({ ...user });
+      });
+    });
+    this.msel.units.forEach((unit) => {
+      unit.users.forEach((user) => {
         users.push({ ...user });
       });
     });
@@ -403,7 +413,7 @@ export class ScenarioEventListComponent
     this.organizationList.forEach((o) => {
       orgs.push(o.shortName);
     });
-    this.msel.units.forEach((t) => {
+    this.msel.teams.forEach((t) => {
       orgs.push(t.shortName);
     });
     orgs = orgs.sort((a, b) => (a?.toLowerCase() < b?.toLowerCase() ? -1 : 1));
@@ -411,12 +421,12 @@ export class ScenarioEventListComponent
   }
 
   getSortedTeamOptions(): string[] {
-    let orgs: string[] = [];
-    this.msel.units.forEach((t) => {
-      orgs.push(t.shortName);
+    let teams: string[] = [];
+    this.msel.teams.forEach((t) => {
+      teams.push(t.shortName);
     });
-    orgs = orgs.sort((a, b) => (a < b ? -1 : 1));
-    return orgs;
+    teams = teams.sort((a, b) => (a < b ? -1 : 1));
+    return teams;
   }
 
   scroll(id) {
