@@ -345,7 +345,7 @@ export class ScenarioEventListComponent
   getEditableMsel(msel: MselPlus): MselPlus {
     const editableMsel = new MselPlus();
     Object.assign(editableMsel, msel);
-    editableMsel.teams = editableMsel.teams
+    editableMsel.units = editableMsel.units
       .slice(0)
       .sort((a, b) =>
         a.shortName.toLowerCase() < b.shortName.toLowerCase() ? -1 : 1
@@ -373,7 +373,7 @@ export class ScenarioEventListComponent
 
   getMselUsers(): User[] {
     let users = [];
-    this.msel.teams.forEach((team) => {
+    this.msel.units.forEach((team) => {
       team.users.forEach((user) => {
         users.push({ ...user });
       });
@@ -403,7 +403,7 @@ export class ScenarioEventListComponent
     this.organizationList.forEach((o) => {
       orgs.push(o.shortName);
     });
-    this.msel.teams.forEach((t) => {
+    this.msel.units.forEach((t) => {
       orgs.push(t.shortName);
     });
     orgs = orgs.sort((a, b) => (a?.toLowerCase() < b?.toLowerCase() ? -1 : 1));
@@ -412,7 +412,7 @@ export class ScenarioEventListComponent
 
   getSortedTeamOptions(): string[] {
     let orgs: string[] = [];
-    this.msel.teams.forEach((t) => {
+    this.msel.units.forEach((t) => {
       orgs.push(t.shortName);
     });
     orgs = orgs.sort((a, b) => (a < b ? -1 : 1));
@@ -649,7 +649,7 @@ export class ScenarioEventListComponent
         scenarioEvent: scenarioEvent,
         dataFields: this.allDataFields,
         organizationList: this.getSortedOrganizationOptions(),
-        teamList: this.msel.teams,
+        teamList: this.msel.units,
         moveList: this.moveList,
         cardList: this.cardList,
         gallerySourceTypes: this.msel.gallerySourceTypes,

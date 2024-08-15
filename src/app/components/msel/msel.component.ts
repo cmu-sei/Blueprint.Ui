@@ -161,6 +161,8 @@ export class MselComponent implements OnDestroy {
           this.teamUserDataService.loadByMsel(mselId);
           // load the Catalogs
           this.catalogDataService.loadMine();
+          // load the users
+          this.userDataService.getMselUsers(mselId);
         }
       });
     // subscribe to the active MSEL
@@ -177,8 +179,6 @@ export class MselComponent implements OnDestroy {
     this.unitDataService.load();
     // load the organization templates
     this.organizationDataService.loadTemplates();
-    // load the users
-    this.userDataService.getUsersFromApi();
     // set the selected tab
     let selectedTab = this.uiDataService.getMselTab();
     if (!selectedTab) {

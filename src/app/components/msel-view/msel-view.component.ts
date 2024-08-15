@@ -359,7 +359,7 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
 
   getMselUsers(): User[] {
     let users = [];
-    this.msel.teams.forEach((team) => {
+    this.msel.units.forEach((team) => {
       team.users.forEach((user) => {
         users.push({ ...user });
       });
@@ -379,7 +379,7 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
     this.organizationList.forEach((o) => {
       orgs.push(o.shortName);
     });
-    this.msel.teams.forEach((t) => {
+    this.msel.units.forEach((t) => {
       orgs.push(t.shortName);
     });
     orgs = orgs.sort((a, b) => (a < b ? -1 : 1));
@@ -388,7 +388,7 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
 
   getSortedTeamOptions(): string[] {
     let orgs: string[] = [];
-    this.msel.teams.forEach((t) => {
+    this.msel.units.forEach((t) => {
       orgs.push(t.shortName);
     });
     orgs = orgs.sort((a, b) => (a < b ? -1 : 1));

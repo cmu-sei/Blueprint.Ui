@@ -38,7 +38,8 @@ export class UserDataService implements OnDestroy {
   readonly userList: Observable<User[]>;
   readonly userListTotalLength: Observable<number>;
   readonly selectedUser: Observable<User>;
-  readonly loggedInUser: BehaviorSubject<AuthUser> = new BehaviorSubject<AuthUser>(null);
+  readonly loggedInUser: BehaviorSubject<AuthUser> =
+    new BehaviorSubject<AuthUser>(null);
   readonly isAuthorizedUser = new BehaviorSubject<boolean>(false);
   readonly isSuperUser = new ReplaySubject<boolean>(1);
   readonly canModify = new BehaviorSubject<boolean>(false);
@@ -116,16 +117,16 @@ export class UserDataService implements OnDestroy {
         ]) =>
           users
             ? (users as User[])
-              .sort((a: User, b: User) =>
-                this.sortUsers(a, b, sortColumn, sortIsAscending)
-              )
-              .filter(
-                (user) =>
-                  user.name
-                    .toLowerCase()
-                    .includes(filterTerm.toLowerCase()) ||
+                .sort((a: User, b: User) =>
+                  this.sortUsers(a, b, sortColumn, sortIsAscending)
+                )
+                .filter(
+                  (user) =>
+                    user.name
+                      .toLowerCase()
+                      .includes(filterTerm.toLowerCase()) ||
                     user.id.toLowerCase().includes(filterTerm.toLowerCase())
-              )
+                )
             : []
       )
     );
@@ -156,7 +157,9 @@ export class UserDataService implements OnDestroy {
         // for authorized user, sub is a uuid of length 36
         this.isAuthorizedUser.next(authUser.profile.sub.length === 36);
         const isSuperUser = permissions.some((p) => p.key === 'SystemAdmin');
-        const isContentDeveloper = permissions.some((p) => p.key === 'ContentDeveloper');
+        const isContentDeveloper = permissions.some(
+          (p) => p.key === 'ContentDeveloper'
+        );
         authUser.profile.isSystemAdmin = isSuperUser;
         this.isSuperUser.next(isSuperUser);
         this.isContentDeveloper.next(isContentDeveloper || isSuperUser);
@@ -187,6 +190,20 @@ export class UserDataService implements OnDestroy {
       );
   }
 
+  getMselUsers(mselId: string) {
+    return this.userService
+      .getMselUsers(mselId)
+      .pipe(take(1))
+      .subscribe(
+        (users) => {
+          this.updateUsers(users);
+        },
+        (error) => {
+          this.updateUsers([]);
+        }
+      );
+  }
+
   getPermissionsFromApi() {
     return this.permissionService.getPermissions().pipe(
       map(
@@ -201,24 +218,20 @@ export class UserDataService implements OnDestroy {
   }
 
   addUser(user: User) {
-    this.userService.createUser(user).subscribe(
-      (u) => {
-        // condition added because sometimes signalR adds the item first
-        if (!this._users.some(s => s.id === u.id)) {
-          this._users.unshift(u);
-          this.updateUsers(this._users);
-        }
+    this.userService.createUser(user).subscribe((u) => {
+      // condition added because sometimes signalR adds the item first
+      if (!this._users.some((s) => s.id === u.id)) {
+        this._users.unshift(u);
+        this.updateUsers(this._users);
       }
-    );
+    });
   }
 
   deleteUser(user: User) {
-    this.userService.deleteUser(user.id).subscribe(
-      (response) => {
-        this._users = this._users.filter((u) => u.id !== user.id);
-        this.updateUsers(this._users);
-      }
-    );
+    this.userService.deleteUser(user.id).subscribe((response) => {
+      this._users = this._users.filter((u) => u.id !== user.id);
+      this.updateUsers(this._users);
+    });
   }
 
   addUserPermission(userPermission: UserPermission) {
@@ -253,7 +266,7 @@ export class UserDataService implements OnDestroy {
   }
 
   updateStore(user: User) {
-    const existingUserIndex = this._users.findIndex(u => u.id === user.id);
+    const existingUserIndex = this._users.findIndex((u) => u.id === user.id);
     if (existingUserIndex >= 0) {
       this._users.splice(existingUserIndex, 1, user);
     } else {
@@ -263,7 +276,7 @@ export class UserDataService implements OnDestroy {
   }
 
   deleteFromStore(id: string) {
-    const existingUserIndex = this._users.findIndex(u => u.id === id);
+    const existingUserIndex = this._users.findIndex((u) => u.id === id);
     if (existingUserIndex >= 0) {
       this._users.splice(existingUserIndex, 1);
       this.updateUsers(this._users);

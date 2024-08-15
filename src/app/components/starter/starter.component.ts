@@ -1,16 +1,7 @@
 // Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import {
-  Component,
-  EventEmitter,
-  Input,
-  OnDestroy,
-  Output,
-  ViewChild,
-  ViewChildren,
-  QueryList,
-} from '@angular/core';
+import { Component, Input, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 import { Subject, Observable } from 'rxjs';
@@ -20,7 +11,7 @@ import {
   Theme,
   ComnAuthQuery,
 } from '@cmusei/crucible-common';
-import { CatalogUnit, Msel } from 'src/app/generated/blueprint.api';
+import { Msel } from 'src/app/generated/blueprint.api';
 import { CardDataService } from 'src/app/data/card/card-data.service';
 import { CardTeamDataService } from 'src/app/data/team/card-team-data.service';
 import { CatalogDataService } from 'src/app/data/catalog/catalog-data.service';
@@ -73,26 +64,18 @@ export class StarterComponent implements OnDestroy {
   constructor(
     private activatedRoute: ActivatedRoute,
     private router: Router,
-    private cardDataService: CardDataService,
-    private cardTeamDataService: CardTeamDataService,
     private catalogDataService: CatalogDataService,
-    private catalogUnitDataService: CatalogUnitDataService,
-    private citeActionDataService: CiteActionDataService,
-    private citeRoleDataService: CiteRoleDataService,
     private dataFieldDataService: DataFieldDataService,
     private dataOptionDataService: DataOptionDataService,
     private dataValueDataService: DataValueDataService,
-    private invitationDataService: InvitationDataService,
     private moveDataService: MoveDataService,
     private mselDataService: MselDataService,
-    private mselUnitDataService: MselUnitDataService,
     private mselQuery: MselQuery,
     private organizationDataService: OrganizationDataService,
     private scenarioEventDataService: ScenarioEventDataService,
     private teamDataService: TeamDataService,
     private teamUserDataService: TeamUserDataService,
     private unitDataService: UnitDataService,
-    private uiDataService: UIDataService,
     private userDataService: UserDataService,
     private userMselRoleDataService: UserMselRoleDataService,
     private userTeamRoleDataService: UserTeamRoleDataService,
@@ -114,12 +97,6 @@ export class StarterComponent implements OnDestroy {
           this.mselDataService.setActive(mselId);
           // load the MSELs moves
           this.moveDataService.loadByMsel(mselId);
-          // load the gallery cards and cardTeams
-          this.cardDataService.loadByMsel(mselId);
-          this.cardTeamDataService.getCardTeamsFromApi(mselId);
-          // load CITE Actions and Roles
-          this.citeActionDataService.loadByMsel(mselId);
-          this.citeRoleDataService.loadByMsel(mselId);
           // load the MSEL Teams
           this.teamDataService.loadByMsel(mselId);
           // load the MSEL organizations and templates
@@ -132,16 +109,14 @@ export class StarterComponent implements OnDestroy {
           this.scenarioEventDataService.loadByMsel(mselId);
           // load user msel roles
           this.userMselRoleDataService.loadByMsel(mselId);
-          // load msel units
-          this.mselUnitDataService.loadByMsel(mselId);
           // load user team roles
           this.userTeamRoleDataService.loadByMsel(mselId);
-          // load the MSEL organizations and templates
-          this.invitationDataService.loadByMsel(mselId);
           // load the Msel TeamUsers
           this.teamUserDataService.loadByMsel(mselId);
           // load the Catalogs
           this.catalogDataService.loadMine();
+          // load the users
+          this.userDataService.getMselUsers(mselId);
           // set the selected MSEL
           this.selectedMselId = mselId;
           this.mselDataService.setActive(mselId);
@@ -165,8 +140,6 @@ export class StarterComponent implements OnDestroy {
     this.unitDataService.load();
     // load the organization templates
     this.organizationDataService.loadTemplates();
-    // load the users
-    this.userDataService.getUsersFromApi();
     // subscribe to the logged in user
     this.userDataService.loggedInUser
       .pipe(takeUntil(this.unsubscribe$))

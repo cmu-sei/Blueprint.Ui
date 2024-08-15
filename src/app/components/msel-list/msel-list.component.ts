@@ -25,7 +25,7 @@ import { MselItemStatus } from 'src/app/generated/blueprint.api';
   templateUrl: './msel-list.component.html',
   styleUrls: ['./msel-list.component.scss'],
 })
-export class MselListComponent implements OnDestroy, OnInit  {
+export class MselListComponent implements OnDestroy, OnInit {
   @Input() loggedInUserId: string;
   @Input() isContentDeveloper: boolean;
   @Input() isSystemAdmin: boolean;
@@ -46,12 +46,27 @@ export class MselListComponent implements OnDestroy, OnInit  {
   isLoading = true;
   areButtonsDisabled = false;
   mselDataSource: MatTableDataSource<MselPlus>;
-  displayedColumns: string[] = ['action', 'name', 'isTemplate', 'status', 'createdBy', 'dateModified', 'description'];
+  displayedColumns: string[] = [
+    'action',
+    'name',
+    'isTemplate',
+    'status',
+    'createdBy',
+    'dateModified',
+    'description',
+  ];
   imageFilePath = '';
   userList: User[] = [];
   selectedMselType = 'all';
   selectedMselStatus = 'all';
-  itemStatus = [MselItemStatus.Pending, MselItemStatus.Entered, MselItemStatus.Approved, MselItemStatus.Complete, MselItemStatus.Deployed, MselItemStatus.Archived];
+  itemStatus = [
+    MselItemStatus.Pending,
+    MselItemStatus.Entered,
+    MselItemStatus.Approved,
+    MselItemStatus.Complete,
+    MselItemStatus.Deployed,
+    MselItemStatus.Archived,
+  ];
   allMselsAreLoaded = false;
   private unsubscribe$ = new Subject();
 
@@ -72,9 +87,11 @@ export class MselListComponent implements OnDestroy, OnInit  {
     // load the MSELs
     this.mselDataService.loadMine();
     // subscribe to users
-    this.userDataService.users.pipe(takeUntil(this.unsubscribe$)).subscribe(users => {
-      this.userList = users;
-    });
+    this.userDataService.users
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((users) => {
+        this.userList = users;
+      });
     // load the users
     this.userDataService.getUsersFromApi();
   }
@@ -83,36 +100,51 @@ export class MselListComponent implements OnDestroy, OnInit  {
     this.sort.sort(<MatSortable>{ id: 'name', start: 'asc' });
     this.mselDataSource.sort = this.sort;
     // subscribe to MSELs loading
-    this.mselQuery.selectLoading().pipe(takeUntil(this.unsubscribe$)).subscribe((isLoading) => {
-      this.isReady = !isLoading;
-      this.areButtonsDisabled = isLoading;
-    });
-    // subscribe to MSELs loading progress
-    this.mselDataService.uploadProgress.pipe(takeUntil(this.unsubscribe$)).subscribe((uploadProgress) => {
-      this.uploadProgress = uploadProgress;
-    });
-    // subscribe to MSELs
-    (this.mselQuery.selectAll() as Observable<MselPlus[]>).pipe(takeUntil(this.unsubscribe$)).subscribe((msels) => {
-      const mselPlusList: MselPlus[] = [];
-      msels.forEach(msel => {
-        const mselPlus = new MselPlus();
-        Object.assign(mselPlus, msel);
-        mselPlusList.push(mselPlus);
+    this.mselQuery
+      .selectLoading()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((isLoading) => {
+        this.isReady = !isLoading;
+        this.areButtonsDisabled = isLoading;
       });
-      this.mselList = mselPlusList;
-      this.filterMsels();
-      this.isLoading = false;
-      this.areButtonsDisabled = false;
-    });
+    // subscribe to MSELs loading progress
+    this.mselDataService.uploadProgress
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((uploadProgress) => {
+        this.uploadProgress = uploadProgress;
+      });
+    // subscribe to MSELs
+    (this.mselQuery.selectAll() as Observable<MselPlus[]>)
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((msels) => {
+        const mselPlusList: MselPlus[] = [];
+        msels.forEach((msel) => {
+          const mselPlus = new MselPlus();
+          Object.assign(mselPlus, msel);
+          mselPlusList.push(mselPlus);
+        });
+        this.mselList = mselPlusList;
+        this.filterMsels();
+        this.isLoading = false;
+        this.areButtonsDisabled = false;
+      });
     // subscribe to filter control changes
-    this.filterControl.valueChanges.pipe(takeUntil(this.unsubscribe$)).subscribe((term) => {
-      this.filterString = term;
-      this.filterMsels();
-    });
+    this.filterControl.valueChanges
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((term) => {
+        this.filterString = term;
+        this.filterMsels();
+      });
     // set image
-    this.imageFilePath = this.settingsService.settings.AppTopBarImage.replace('white', 'blue');
+    this.imageFilePath = this.settingsService.settings.AppTopBarImage.replace(
+      'white',
+      'blue'
+    );
     // remove case sensitivity from mat-table sort
-    this.mselDataSource.sortingDataAccessor = (data: any, sortHeaderId: string): string => {
+    this.mselDataSource.sortingDataAccessor = (
+      data: any,
+      sortHeaderId: string
+    ): string => {
       if (typeof data[sortHeaderId] === 'string') {
         return data[sortHeaderId].toLocaleLowerCase();
       }
@@ -145,7 +177,13 @@ export class MselListComponent implements OnDestroy, OnInit  {
     this.uploadProgress = 0;
     this.isReady = false;
     if (this.fileType === 'xlsx') {
-      this.mselDataService.uploadXlsx(this.uploadMselId, this.uploadTeamId, file, 'events', true);
+      this.mselDataService.uploadXlsx(
+        this.uploadMselId,
+        this.uploadTeamId,
+        file,
+        'events',
+        true
+      );
     } else {
       this.mselDataService.uploadJson(file, 'events', true);
     }
@@ -167,7 +205,9 @@ export class MselListComponent implements OnDestroy, OnInit  {
         const link = document.createElement('a');
         link.href = url;
         link.target = '_blank';
-        link.download = msel.name.endsWith('.xlsx') ? msel.name : msel.name + '.xlsx';
+        link.download = msel.name.endsWith('.xlsx')
+          ? msel.name
+          : msel.name + '.xlsx';
         link.click();
         this.isReady = true;
       },
@@ -213,9 +253,11 @@ export class MselListComponent implements OnDestroy, OnInit  {
     this.areButtonsDisabled = true;
     this.mselDataService.add({
       name: 'New MSEL',
-      description: 'Created from Default Settings by ' + this.userDataService.loggedInUser.value.profile.name,
+      description:
+        'Created from Default Settings by ' +
+        this.userDataService.loggedInUser.value.profile.name,
       status: 'Pending',
-      dataFields: this.settingsService.settings.DefaultDataFields
+      dataFields: this.settingsService.settings.DefaultDataFields,
     });
     this.sort.sort(<MatSortable>{ id: 'dateCreated', start: 'desc' });
     this.mselDataSource.sort = this.sort;
@@ -242,10 +284,10 @@ export class MselListComponent implements OnDestroy, OnInit  {
     let filteredMselList = this.mselList;
     switch (this.selectedMselType) {
       case 'is':
-        filteredMselList = filteredMselList.filter(m => m.isTemplate);
+        filteredMselList = filteredMselList.filter((m) => m.isTemplate);
         break;
       case 'is not':
-        filteredMselList = filteredMselList.filter(m => !m.isTemplate);
+        filteredMselList = filteredMselList.filter((m) => !m.isTemplate);
         break;
       default:
         filteredMselList = filteredMselList;
@@ -253,16 +295,24 @@ export class MselListComponent implements OnDestroy, OnInit  {
     }
     switch (this.selectedMselStatus) {
       case 'Pending':
-        filteredMselList = filteredMselList.filter(m => m.status.toString() === 'Pending');
+        filteredMselList = filteredMselList.filter(
+          (m) => m.status.toString() === 'Pending'
+        );
         break;
       case 'Entered':
-        filteredMselList = filteredMselList.filter(m => m.status.toString() === 'Entered');
+        filteredMselList = filteredMselList.filter(
+          (m) => m.status.toString() === 'Entered'
+        );
         break;
       case 'Approved':
-        filteredMselList = filteredMselList.filter(m => m.status.toString() === 'Approved');
+        filteredMselList = filteredMselList.filter(
+          (m) => m.status.toString() === 'Approved'
+        );
         break;
       case 'Completed':
-        filteredMselList = filteredMselList.filter(m => m.status.toString() === 'Completed');
+        filteredMselList = filteredMselList.filter(
+          (m) => m.status.toString() === 'Completed'
+        );
         break;
       default:
         filteredMselList = filteredMselList;
@@ -280,7 +330,7 @@ export class MselListComponent implements OnDestroy, OnInit  {
   }
 
   getUserName(userId: string) {
-    const user = this.userList.find(u => u.id === userId);
+    const user = this.userList.find((u) => u.id === userId);
     return user ? user.name : 'System';
   }
 
@@ -299,5 +349,4 @@ export class MselListComponent implements OnDestroy, OnInit  {
     this.unsubscribe$.next(null);
     this.unsubscribe$.complete();
   }
-
 }
