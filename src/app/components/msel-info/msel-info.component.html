@@ -112,6 +112,19 @@ project root for license information or contact permission@sei.cmu.edu for full 
             [postScript]="'from start'"
             (change)="isChanged = true;"
           ></app-duration-edit>
+          <!-- Is a Template -->
+          <div class="single-detail center-self">
+            <div class="sub-detail center-self">
+              <mat-checkbox
+                [(ngModel)]="msel.isTemplate"
+                [disabled]="msel.status === 'Deployed'"
+                (cut)="isChanged = true"
+                (change)="isChanged = true"
+                (paste)="isChanged = true"
+                (keypress)="isChanged = true"
+                >Is a Template</mat-checkbox>
+            </div>
+          </div>
           <!-- Player Integration -->
           <div class="single-detail center-self">
             <div class="sub-detail center-self three-cell">
@@ -315,17 +328,40 @@ project root for license information or contact permission@sei.cmu.edu for full 
               </mat-select>
             </mat-form-field>
           </div>
-          <!-- Is a Template -->
-          <div class="single-detail center-self">
-            <div class="sub-detail center-self">
-              <mat-checkbox
-                [(ngModel)]="msel.isTemplate"
-                [disabled]="msel.status === 'Deployed'"
-                (cut)="isChanged = true"
-                (change)="isChanged = true"
-                (paste)="isChanged = true"
-                (keypress)="isChanged = true"
-                >Is a Template</mat-checkbox>
+          <!-- Exercise View URL -->
+          <div class="url-form-field">
+            <div class="editor-label">
+              Exercise View URL
+            </div>
+            <div class="url-button-link">
+              <button
+                mat-icon-button
+                ngxClipboard
+                [cbContent]="viewUrl"
+                (click)="$event.stopPropagation()"
+                title="Copy Exercise View URL:  {{ viewUrl }}"
+              >
+                <mat-icon class="mdi-24px" fontIcon="mdi-content-copy"></mat-icon>
+              </button>
+              <a target="_blank" href="{{ viewUrl }}">{{ viewUrl }}</a>
+            </div>
+          </div>
+          <!-- MSEL Starter URL -->
+          <div class="url-form-field">
+            <div class="editor-label">
+              MSEL Starter URL
+            </div>
+            <div class="url-button-link">
+              <button
+                mat-icon-button
+                ngxClipboard
+                [cbContent]="starterUrl"
+                (click)="$event.stopPropagation()"
+                title="Copy MSEL Starter URL:  {{ starterUrl }}"
+              >
+                <mat-icon class="mdi-24px" fontIcon="mdi-content-copy"></mat-icon>
+              </button>
+              <a target="_blank" href="{{ starterUrl }}">{{ starterUrl }}</a>
             </div>
           </div>
           <!-- row meta data -->
@@ -368,17 +404,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 matInput
                 placeholder="Created By"
                 value="{{ getUserName(msel.createdBy) }}"
-                disabled
-              />
-            </mat-form-field>
-          </div>
-          <div class="single-detail center-self">
-            <mat-form-field class="full-width">
-              <input
-                type="text"
-                matInput
-                placeholder="Exercise View URL"
-                value="{{ viewUrl }}"
                 disabled
               />
             </mat-form-field>
