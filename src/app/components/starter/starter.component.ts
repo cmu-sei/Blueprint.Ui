@@ -164,9 +164,11 @@ export class StarterComponent implements OnDestroy {
   }
 
   goToUrl(url): void {
-    this.router.navigate([url], {
-      queryParamsHandling: 'merge',
-    });
+    if (url !== '/') {
+      this.router.navigate([url], {
+        queryParamsHandling: 'merge',
+      });
+    }
   }
 
   ngOnDestroy() {
