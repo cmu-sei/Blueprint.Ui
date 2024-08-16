@@ -185,7 +185,7 @@ export class MoveListComponent implements OnDestroy {
 
   badMoveTimeOrder(): boolean {
     const orderedMoves = this.moveList.sort((a, b) => +a.moveNumber < +b.moveNumber ? -1 : 1);
-    let deltaSeconds = -1;
+    let deltaSeconds = Number.MIN_SAFE_INTEGER;
     for (let index = 0; index < orderedMoves.length; index++) {
       if (+orderedMoves[index].deltaSeconds <= +deltaSeconds) {
         return true;

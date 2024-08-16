@@ -36,6 +36,25 @@ project root for license information.
   </div>
   <div>
     <span style="margin-left: 20px; margin-right: 20px;"> or </span>
+    <span>
+      <button
+        mat-icon-button
+        (click)="changeSign()"
+        title="Plus"
+        *ngIf="+durationSeconds >= 0"
+        [disabled]="+durationSeconds === 0"
+      >
+        <mat-icon class="mdi-18px self-center" fontIcon="mdi-plus"></mat-icon>
+      </button>
+      <button
+        mat-icon-button
+        (click)="changeSign()"
+        title="Minus"
+        *ngIf="+durationSeconds < 0"
+      >
+        <mat-icon class="mdi-18px self-center" fontIcon="mdi-minus"></mat-icon>
+      </button>
+    </span>
     <mat-form-field class="two-digits">
       <input matInput  [value]="days" placeholder="d" type="number" min="0" step="1"
         (change)="deltaUpdated($event, 'd')" title="Days from Start"
@@ -62,4 +81,3 @@ project root for license information.
     <span style="margin-left: 10px;">{{ postScript }}</span>
   </div>
 </div>
-

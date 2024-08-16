@@ -8,7 +8,7 @@ import { UntypedFormControl } from '@angular/forms';
 @Component({
   selector: 'app-duration-edit',
   templateUrl: './duration-edit.component.html',
-  styleUrls: ['./duration-edit.component.scss']
+  styleUrls: ['./duration-edit.component.scss'],
 })
 export class DurationEditComponent implements OnChanges {
   @Input() startTime: Date;
@@ -33,14 +33,16 @@ export class DurationEditComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges) {
     if (this.startTime && this.durationSeconds) {
-      this.endTimeFormControl.setValue(this.getDateFromDurationSeconds(this.durationSeconds));
+      this.endTimeFormControl.setValue(
+        this.getDateFromDurationSeconds(this.durationSeconds)
+      );
       this.setDeltaValues();
     }
   }
 
   getDateFromDurationSeconds(durationSeconds: number): Date {
     const startTime = new Date(this.startTime);
-    return new Date(startTime.getTime() + (durationSeconds * 1000));
+    return new Date(startTime.getTime() + durationSeconds * 1000);
   }
 
   getDurationSecondsFromDate() {
@@ -52,7 +54,7 @@ export class DurationEditComponent implements OnChanges {
   }
 
   setDeltaValues() {
-    let durationSeconds = this.durationSeconds;
+    let durationSeconds = Math.abs(this.durationSeconds);
     // get the number of days
     this.days = Math.floor(durationSeconds / 86400);
     durationSeconds = durationSeconds % 86400;
@@ -67,7 +69,9 @@ export class DurationEditComponent implements OnChanges {
   }
 
   calculateDurationSeconds() {
-    return this.days * 86400 + this.hours * 3600 + this.minutes * 60 + this.seconds;
+    return (
+      this.days * 86400 + this.hours * 3600 + this.minutes * 60 + this.seconds
+    );
   }
 
   deltaUpdated(event: any, whichValue: string) {
@@ -92,7 +96,9 @@ export class DurationEditComponent implements OnChanges {
     }
     this.durationSeconds = this.calculateDurationSeconds();
     this.change.emit(this.durationSeconds);
-    this.endTimeFormControl.setValue(this.getDateFromDurationSeconds(this.durationSeconds));
+    this.endTimeFormControl.setValue(
+      this.getDateFromDurationSeconds(this.durationSeconds)
+    );
   }
 
   timeUpdated() {
@@ -101,6 +107,7 @@ export class DurationEditComponent implements OnChanges {
     this.setDeltaValues();
   }
 
-
-
+  changeSign() {
+    this.durationSeconds = -this.durationSeconds;
+  }
 }
