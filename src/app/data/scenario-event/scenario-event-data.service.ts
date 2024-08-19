@@ -273,13 +273,13 @@ export class ScenarioEventDataService {
   }
 
   updateScenarioEventViewDisplayedEvents(view: ScenarioEventView) {
-    const clonedList = this.cloneAndFilterScenarioEvents(
+    let clonedList = this.cloneAndFilterScenarioEvents(
       view.mselScenarioEvents,
       view.viewIndex.valueMap,
       view.filterString,
       view.showHiddenEvents
     );
-    this.sortScenarioEvents(clonedList, view.sort, view.viewIndex.valueMap);
+    clonedList = this.sortScenarioEvents(clonedList, view.sort, view.viewIndex.valueMap);
     view.displayedScenarioEvents = clonedList;
   }
 
@@ -582,7 +582,7 @@ export class ScenarioEventDataService {
     scenarioEvents: ScenarioEventPlus[],
     sort: Sort,
     valueMap: Map<string, Map<string, DataValuePlus>>
-  ) {
+  ): ScenarioEventPlus[] {
     const sorts: Sort[] = [];
     if (sort && sort.active && sort.direction) {
       sorts.push(sort);
@@ -591,5 +591,6 @@ export class ScenarioEventDataService {
     scenarioEvents.sort((a: ScenarioEventPlus, b: ScenarioEventPlus) =>
       this.sortScenarioEventImpl(a, b, sorts, valueMap)
     );
+    return scenarioEvents;
   }
 }

@@ -1,7 +1,7 @@
 // Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, Input, OnDestroy } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 import { Subject, Observable } from 'rxjs';
@@ -28,6 +28,10 @@ import { MselQuery } from 'src/app/data/msel/msel.query';
 import { MselUnitDataService } from 'src/app/data/msel-unit/msel-unit-data.service';
 import { OrganizationDataService } from 'src/app/data/organization/organization-data.service';
 import { ScenarioEventDataService } from 'src/app/data/scenario-event/scenario-event-data.service';
+import {
+  ApplicationArea,
+  SignalRService,
+} from 'src/app/services/signalr.service';
 import { TeamDataService } from 'src/app/data/team/team-data.service';
 import { TeamUserDataService } from 'src/app/data/team-user/team-user-data.service';
 import { TopbarView } from '../shared/top-bar/topbar.models';
@@ -42,7 +46,7 @@ import { UserTeamRoleDataService } from 'src/app/data/user-team-role/user-team-r
   templateUrl: './starter.component.html',
   styleUrls: ['./starter.component.scss'],
 })
-export class StarterComponent implements OnDestroy {
+export class StarterComponent implements OnDestroy, OnInit {
   @Input() isSystemAdmin: boolean;
   private unsubscribe$ = new Subject();
   private msel: Msel = {};
@@ -73,6 +77,7 @@ export class StarterComponent implements OnDestroy {
     private mselQuery: MselQuery,
     private organizationDataService: OrganizationDataService,
     private scenarioEventDataService: ScenarioEventDataService,
+    private signalRService: SignalRService,
     private teamDataService: TeamDataService,
     private teamUserDataService: TeamUserDataService,
     private unitDataService: UnitDataService,
@@ -161,6 +166,19 @@ export class StarterComponent implements OnDestroy {
     this.topbarTextBase =
       this.settingsService.settings.AppTopBarText || this.topbarTextBase;
     this.topbarText = this.topbarTextBase;
+  }
+
+  ngOnInit() {
+    this.signalRService
+      .startConnection(ApplicationArea.home)
+      .then(() => {
+        this.signalRService.join();
+        // select MSEL in signalR updates
+        this.signalRService.selectMsel(this.selectedMselId);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   }
 
   goToUrl(url): void {
