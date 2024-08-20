@@ -17,13 +17,14 @@ export class DurationViewComponent {
   @Input() showRealTime: boolean;
 
   getDeltaTime(deltaSeconds: number) {
-    // <span *ngIf="item.deltaSeconds > 86400">{{ getDays(item.deltaSeconds) }} </span>{{ item.deltaSeconds * 1000 | date:'hh:mm:ss' }}
-    let timeString = '';
+    // get the absolute value and sign
+    let timeString = deltaSeconds < 0 ? '- ' : '+ ';
+    deltaSeconds = Math.abs(deltaSeconds);
     // get the number of days
     if (deltaSeconds > 86400) {
       const days = Math.floor(deltaSeconds / 86400);
       deltaSeconds = deltaSeconds % 86400;
-      timeString = days + ' ';
+      timeString = timeString + days + ' ';
     }
     // get the number of hours
     const hours = Math.floor(deltaSeconds / 3600);
