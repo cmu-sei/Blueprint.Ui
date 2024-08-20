@@ -28,8 +28,16 @@ project root for license information.
   <span *ngIf="dataField.dataType === dataType.User">
     {{ getUserName(value) }}
   </span>
+  <!-- dataType.Boolean or dataType.Checkbox -->
+  <span *ngIf="dataField.dataType === dataType.Boolean || dataField.dataType === dataType.Checkbox">
+    <mat-checkbox
+      [checked]="value"
+      [disabled]="true"
+    >
+    </mat-checkbox><br />&nbsp;
+  </span>
   <!-- other dataTypes -->
-  <span *ngIf="dataField.dataType !== dataType.DateTime && dataField.dataType !== dataType.Html && dataField.dataType !== dataType.Card && dataField.dataType !== dataType.Move && dataField.dataType !== dataType.User">
+  <span *ngIf="dataField.dataType !== dataType.DateTime && dataField.dataType !== dataType.Html && dataField.dataType !== dataType.Card && dataField.dataType !== dataType.Move && dataField.dataType !== dataType.User && dataField.dataType !== dataType.Boolean && dataField.dataType !== dataType.Checkbox">
     {{ value }}
   </span>
 </span>

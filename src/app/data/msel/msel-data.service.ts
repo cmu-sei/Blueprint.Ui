@@ -19,9 +19,10 @@ import {
   Msel,
   MselRole,
   MselService,
+  Unit,
   ScenarioEvent,
   Team,
-  UserMselRole
+  UserMselRole,
 } from 'src/app/generated/blueprint.api';
 import { map, take, tap } from 'rxjs/operators';
 import { BehaviorSubject, Observable, Subject, combineLatest } from 'rxjs';
@@ -67,6 +68,7 @@ export class MselPlus implements Msel {
   dataFields?: Array<DataField>;
   scenarioEvents?: Array<ScenarioEvent>;
   teams?: Array<Team>;
+  units?: Array<Unit>;
   userMselRoles?: Array<UserMselRole>;
   headerRowMetadata?: string;
   cards?: Array<Card>;
@@ -78,46 +80,90 @@ export class MselPlus implements Msel {
   steamfitterIntegrationType?: IntegrationType;
 
   hasRole(userId: string, scenarioEventId: string) {
-    const mselRole = { owner: false, moveEditor: false, approver: false, editor: false, evaluator: false, viewer: false };
-    mselRole.owner = this.createdBy === userId ||
-      (this.userMselRoles && this.userMselRoles.some(umr =>
-        umr.userId === userId &&
-        umr.role === MselRole.Owner)
-      );
-    mselRole.moveEditor = !this.userMselRoles ? false : this.userMselRoles.some(umr =>
-      umr.userId === userId &&
-      umr.role === MselRole.MoveEditor);
+    // initialize to no roles
+    let mselRole = {
+      owner: false,
+      moveEditor: false,
+      approver: false,
+      editor: false,
+      evaluator: false,
+      viewer: false,
+    };
+    // set owner role
+    mselRole.owner =
+      this.createdBy === userId ||
+      (this.userMselRoles &&
+        this.userMselRoles.some(
+          (umr) => umr.userId === userId && umr.role === MselRole.Owner
+        ));
+    mselRole.moveEditor = !this.userMselRoles
+      ? false
+      : this.userMselRoles.some(
+          (umr) => umr.userId === userId && umr.role === MselRole.MoveEditor
+        );
+    // owners can do everything
     if (mselRole.owner) {
       mselRole.approver = true;
       mselRole.editor = true;
       mselRole.moveEditor = true;
       mselRole.evaluator = true;
-    } else if (this.scenarioEvents && this.scenarioEvents.length > 0 && scenarioEventId) {
-      const scenarioEvent = this.scenarioEvents.find(se => se.id === scenarioEventId);
-      const assignedToDataField = this.dataFields.find(df => df.dataType === DataFieldType.Team);
-      const dataValue = assignedToDataField &&
-          scenarioEvent ? scenarioEvent.dataValues.find(dv => dv.dataFieldId === assignedToDataField.id) : null;
+      mselRole.viewer = true;
+      // set roles for a particular scenario event for a non-owner
+    } else if (
+      this.scenarioEvents &&
+      this.scenarioEvents.length > 0 &&
+      scenarioEventId
+    ) {
+      const scenarioEvent = this.scenarioEvents.find(
+        (se) => se.id === scenarioEventId
+      );
+      const assignedToDataField = this.dataFields.find(
+        (df) => df.dataType === DataFieldType.Team
+      );
+      const dataValue =
+        assignedToDataField && scenarioEvent
+          ? scenarioEvent.dataValues.find(
+              (dv) => dv.dataFieldId === assignedToDataField.id
+            )
+          : null;
       if (dataValue) {
-        const team = this.teams.find(t => t.shortName === dataValue.value);
-        const isOnTeam = team && team.users && team.users.some(u => u.id === userId);
-        if (isOnTeam && this.userMselRoles) {
-          mselRole.approver = this.userMselRoles.some(umr =>
-            umr.userId === userId &&
-            umr.role === MselRole.Approver);
-          mselRole.editor = mselRole.approver || this.userMselRoles.some(umr =>
-            umr.userId === userId &&
-            umr.role === MselRole.Editor);
-          mselRole.evaluator = mselRole.approver || mselRole.editor || this.userMselRoles.some(umr =>
-            umr.userId === userId &&
-            umr.role === MselRole.Evaluator);
+        const unit = this.units.find((t) => t.shortName === dataValue.value);
+        const isInUnit =
+          unit && unit.users && unit.users.some((u) => u.id === userId);
+        if (isInUnit) {
+          mselRole = this.setMselRoles(userId, mselRole);
         }
       }
+      // set roles for the MSEL for a non-owner, if no scenario event is supplied
+    } else {
+      mselRole = this.setMselRoles(userId, mselRole);
     }
-    mselRole.viewer = !this.userMselRoles ? false : this.userMselRoles.some(umr =>
-      (umr.userId === userId && umr.role === MselRole.Viewer) ||
-      mselRole.editor || mselRole.approver || mselRole.moveEditor || mselRole.owner || mselRole.evaluator
-    );
 
+    return mselRole;
+  }
+
+  private setMselRoles(userId: string, mselRole: any) {
+    if (this.userMselRoles && this.userMselRoles.length > 0) {
+      mselRole.approver = this.userMselRoles.some(
+        (umr) => umr.userId === userId && umr.role === MselRole.Approver
+      );
+      mselRole.editor =
+        mselRole.approver ||
+        this.userMselRoles.some(
+          (umr) => umr.userId === userId && umr.role === MselRole.Editor
+        );
+      mselRole.evaluator = this.userMselRoles.some(
+        (umr) => umr.userId === userId && umr.role === MselRole.Evaluator
+      );
+      mselRole.viewer =
+        mselRole.approver ||
+        mselRole.editor ||
+        mselRole.moveEditor ||
+        mselRole.evaluator ||
+        this.userMselRoles.some(
+          (umr) => umr.userId === userId && umr.role === MselRole.Viewer
+        );
+    }
     return mselRole;
   }
 }

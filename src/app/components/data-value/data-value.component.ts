@@ -108,17 +108,17 @@ export class DataValueComponent {
   }
 
   getCardName(id: string): string {
-    const card = this.cardOptions.find((m) => m.id === id);
+    const card = this.cardOptions?.find((m) => m.id === id);
     return card ? card.name : '';
   }
 
   getMoveTitle(id: string): string {
-    const move = this.moveOptions.find((m) => m.id === id);
+    const move = this.moveOptions?.find((m) => m.id === id);
     return move ? move.title : '';
   }
 
   getUserName(id: string): string {
-    const user = this.userOptions.find((m) => m.id === id);
+    const user = this.userOptions?.find((m) => m.id === id);
     return user ? user.name : '';
   }
 }

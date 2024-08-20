@@ -108,7 +108,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
               mat-icon-button class="msel-action"
               [matMenuTriggerFor]="download"
               title="Download {{ element.name }}"
-              [disabled]="!isReady"
+              [disabled]="!isReady || !element.hasRole(loggedInUserId, '').owner"
             >
               <mat-icon class="mdi-18px" fontIcon="mdi-download" alt="Download .xlsx file"></mat-icon>
             </button>
@@ -157,12 +157,15 @@ project root for license information or contact permission@sei.cmu.edu for full 
           Name
         </mat-header-cell>
         <mat-cell *matCellDef="let element">
-          <div class="link-text">
+          <div *ngIf="element.hasRole(loggedInUserId, '').editor" class="link-text">
             <a
-            [routerLink]="['/build']"
-            [queryParams]="{ msel: element.id }"
-            (click)="openMsel(element.id)"
+              [routerLink]="['/build']"
+              [queryParams]="{ msel: element.id }"
+              (click)="openMsel(element.id)"
             >{{ element.name }}</a>
+          </div>
+          <div *ngIf="!element.hasRole(loggedInUserId, '').editor" class="link-text">
+            {{ element.name }}
           </div>
         </mat-cell>
       </ng-container>

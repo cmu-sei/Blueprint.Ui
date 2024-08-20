@@ -247,6 +247,11 @@ export class EventDetailPageComponent {
       .sort((a, b) =>
         a.shortName.toLowerCase() < b.shortName.toLowerCase() ? -1 : 1
       );
+    editableMsel.units = editableMsel.units
+      .slice(0)
+      .sort((a, b) =>
+        a.shortName.toLowerCase() < b.shortName.toLowerCase() ? -1 : 1
+      );
 
     return editableMsel;
   }

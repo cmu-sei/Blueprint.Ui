@@ -50,9 +50,16 @@ export class MselInfoComponent implements OnDestroy {
   teamList: Team[] = [];
   mselUnitList: MselUnit[] = [];
   scoringModelList: ScoringModel[] = [];
-  itemStatus: MselItemStatus[] =
-    [MselItemStatus.Pending, MselItemStatus.Entered, MselItemStatus.Approved, MselItemStatus.Deployed, MselItemStatus.Complete, MselItemStatus.Archived];
+  itemStatus: MselItemStatus[] = [
+    MselItemStatus.Pending,
+    MselItemStatus.Entered,
+    MselItemStatus.Approved,
+    MselItemStatus.Deployed,
+    MselItemStatus.Complete,
+    MselItemStatus.Archived,
+  ];
   viewUrl: string;
+  starterUrl: string;
   mselPages: MselPage[] = [];
   newMselPage = {} as MselPage;
   changedMselPage = {} as MselPage;
@@ -74,18 +81,16 @@ export class MselInfoComponent implements OnDestroy {
     defaultFontName: '',
     defaultFontSize: '',
     fonts: [
-      {class: 'arial', name: 'Arial'},
-      {class: 'times-new-roman', name: 'Times New Roman'},
-      {class: 'calibri', name: 'Calibri'},
-      {class: 'comic-sans-ms', name: 'Comic Sans MS'}
+      { class: 'arial', name: 'Arial' },
+      { class: 'times-new-roman', name: 'Times New Roman' },
+      { class: 'calibri', name: 'Calibri' },
+      { class: 'comic-sans-ms', name: 'Comic Sans MS' },
     ],
     uploadUrl: '',
     uploadWithCredentials: false,
     sanitize: true,
     toolbarPosition: 'top',
-    toolbarHiddenButtons: [
-      ['backgroundColor']
-    ]
+    toolbarHiddenButtons: [['backgroundColor']],
   };
   viewConfig: AngularEditorConfig = {
     editable: false,
@@ -122,67 +127,90 @@ export class MselInfoComponent implements OnDestroy {
     private mselUnitQuery: MselUnitQuery
   ) {
     // subscribe to the active MSEL
-    (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
-      if (msel) {
-        const isNewMselId = this.msel.id !== msel.id;
-        Object.assign(this.originalMsel, msel);
-        Object.assign(this.msel, msel);
-        if (isNewMselId) {
-          this.viewUrl = window.location.origin + '/msel/' + this.msel.id + '/view';
-          this.mselPageDataService.loadByMsel(msel.id);
-          this.newMselPage.mselId = msel.id;
+    (this.mselQuery.selectActive() as Observable<MselPlus>)
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((msel) => {
+        if (msel) {
+          const isNewMselId = this.msel.id !== msel.id;
+          Object.assign(this.originalMsel, msel);
+          Object.assign(this.msel, msel);
+          if (isNewMselId) {
+            this.viewUrl =
+              window.location.origin + '/msel/' + this.msel.id + '/view';
+            this.starterUrl =
+              window.location.origin + '/starter/?msel=' + this.msel.id;
+            this.mselPageDataService.loadByMsel(msel.id);
+            this.newMselPage.mselId = msel.id;
+          }
+          this.savedStartTime = new Date(msel.startTime);
+          this.savedDurationSeconds = msel.durationSeconds;
         }
-        this.savedStartTime = new Date(msel.startTime);
-        this.savedDurationSeconds = msel.durationSeconds;
-      }
-    });
+      });
     // subscribe to MSEL loading flag
-    this.mselQuery.selectLoading().pipe(takeUntil(this.unsubscribe$)).subscribe(isLoading => {
-      this.isBusy = isLoading;
-    });
+    this.mselQuery
+      .selectLoading()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((isLoading) => {
+        this.isBusy = isLoading;
+      });
     // subscribe to MSEL push statuses
-    this.mselDataService.mselPushStatuses.pipe(takeUntil(this.unsubscribe$)).subscribe(mselPushStatuses => {
-      const mselPushStatus = mselPushStatuses.find(mps => mps.mselId === this.msel.id);
-      if (mselPushStatus) {
-        if (mselPushStatus.pushStatus) {
-          this.pushStatus = mselPushStatus.pushStatus;
-        } else {
-          if (this.pushStatus) {
-            this.pushStatus = '';
-            // added this, because signalR is not updating the actual msel data during a push
-            this.mselDataService.loadById(this.msel.id);
+    this.mselDataService.mselPushStatuses
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((mselPushStatuses) => {
+        const mselPushStatus = mselPushStatuses.find(
+          (mps) => mps.mselId === this.msel.id
+        );
+        if (mselPushStatus) {
+          if (mselPushStatus.pushStatus) {
+            this.pushStatus = mselPushStatus.pushStatus;
+          } else {
+            if (this.pushStatus) {
+              this.pushStatus = '';
+              // added this, because signalR is not updating the actual msel data during a push
+              this.mselDataService.loadById(this.msel.id);
+            }
           }
         }
-      }
-    });
+      });
     // subscribe to users
-    this.userDataService.users.pipe(takeUntil(this.unsubscribe$)).subscribe(users => {
-      this.userList = users;
-    });
+    this.userDataService.users
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((users) => {
+        this.userList = users;
+      });
     // subscribe to teams
-    this.teamQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(teams => {
-      this.teamList = teams;
-    });
+    this.teamQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((teams) => {
+        this.teamList = teams;
+      });
     // subscribe to mselUnits
-    this.mselUnitQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(mselUnits => {
-      this.mselUnitList = mselUnits;
-    });
+    this.mselUnitQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((mselUnits) => {
+        this.mselUnitList = mselUnits;
+      });
     // subscribe to MselPages
-    this.mselPageQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(pages => {
-      this.mselPages = pages;
-    });
+    this.mselPageQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((pages) => {
+        this.mselPages = pages;
+      });
     // subscribe to scoring models
-    this.citeService.getScoringModels().subscribe(scoringModels => {
+    this.citeService.getScoringModels().subscribe((scoringModels) => {
       this.scoringModelList = scoringModels;
     });
     // subscribe to data fields
-    this.dataFieldQuery.selectAll().subscribe(dataFields => {
+    this.dataFieldQuery.selectAll().subscribe((dataFields) => {
       this.dataFieldList = dataFields;
     });
   }
 
   getUserName(userId: string) {
-    const user = this.userList.find(u => u.id === userId);
+    const user = this.userList.find((u) => u.id === userId);
     return user ? user.name : 'unknown';
   }
 
@@ -197,7 +225,10 @@ export class MselInfoComponent implements OnDestroy {
   }
 
   deleteMsel() {
-    if (this.msel.hasRole(this.loggedInUserId, null).owner || this.isContentDeveloper) {
+    if (
+      this.msel.hasRole(this.loggedInUserId, null).owner ||
+      this.isContentDeveloper
+    ) {
       this.deleteThisMsel.emit(this.msel.id);
     }
   }
@@ -205,8 +236,9 @@ export class MselInfoComponent implements OnDestroy {
   galleryWarningMessage() {
     let warningMessage = '';
     if (this.msel.useGallery && !this.msel.galleryExhibitId) {
-      warningMessage = this.galleryToDo() ?
-        '** There are unassigned Gallery Article Parameters in Data Fields **' : '';
+      warningMessage = this.galleryToDo()
+        ? '** There are unassigned Gallery Article Parameters in Data Fields **'
+        : '';
     }
     return warningMessage;
   }
@@ -214,8 +246,9 @@ export class MselInfoComponent implements OnDestroy {
   citeWarningMessage() {
     let warningMessage = '';
     if (this.msel.useCite && !this.msel.citeEvaluationId) {
-      warningMessage = this.teamList.some(t => t.citeTeamTypeId) ?
-        '' : '** WARNING: No teams have a CITE Team Type selected, so no teams will be pushed to CITE! **  ';
+      warningMessage = this.teamList.some((t) => t.citeTeamTypeId)
+        ? ''
+        : '** WARNING: No teams have a CITE Team Type selected, so no teams will be pushed to CITE! **  ';
     }
     return warningMessage;
   }
@@ -258,7 +291,7 @@ export class MselInfoComponent implements OnDestroy {
 
   requestPageEdit(id: string) {
     this.editingPageId = id;
-    this.changedMselPage = { ... this.mselPages.find(p => p.id === id) };
+    this.changedMselPage = { ...this.mselPages.find((p) => p.id === id) };
   }
 
   saveMselPageEdits() {
@@ -273,7 +306,10 @@ export class MselInfoComponent implements OnDestroy {
   }
 
   cancelMselPageEdits() {
-    if (this.currentTabIndex > 0 && this.currentTabIndex <= this.mselPages.length) {
+    if (
+      this.currentTabIndex > 0 &&
+      this.currentTabIndex <= this.mselPages.length
+    ) {
       this.changedMselPage = this.mselPages[this.currentTabIndex - 1];
     } else {
       this.changedMselPage = {} as MselPage;
@@ -302,14 +338,20 @@ export class MselInfoComponent implements OnDestroy {
     let hasToDos = false;
     let todoList = Object.assign([], this.msel.galleryArticleParameters);
     if (todoList && todoList.length > 0) {
-      todoList = todoList.filter(x => !this.dataFieldList.some(df => df.galleryArticleParameter === x));
+      todoList = todoList.filter(
+        (x) =>
+          !this.dataFieldList.some((df) => df.galleryArticleParameter === x)
+      );
       hasToDos = todoList.length > 0;
     }
     return hasToDos;
   }
 
   startTimeCheck() {
-    if (this.msel.startTime.toLocaleString() !== this.savedStartTime.toLocaleString()) {
+    if (
+      this.msel.startTime.toLocaleString() !==
+      this.savedStartTime.toLocaleString()
+    ) {
       this.isChanged = true;
     }
   }

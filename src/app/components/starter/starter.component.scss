@@ -1,0 +1,139 @@
+// Copyright 2024 Carnegie Mellon University. All Rights Reserved.
+// Released under a MIT (SEI)-style license. See LICENSE.md in the
+// project root for license information.
+
+.content-container {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  height: 100%;
+}
+
+.content-frame {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  height: 100%;
+}
+
+.main-content {
+  width: 100%;
+  height: 100%;
+}
+
+.left-content-open {
+  width: 100%;
+  height: calc(100% - 8px);
+}
+
+.left-content-closed {
+  width: 100%;
+  height: calc(100% - 8px);
+}
+
+.side-nav {
+  height: 100%;
+  padding-bottom: 100px;
+}
+
+.top-item {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  cursor: pointer;
+  align-items: flex-end;
+  height: 36px;
+  margin-top: -8px;
+}
+
+.list-item {
+  cursor: pointer;
+  text-align: left;
+}
+
+.top-button {
+  text-align: right;
+  height: 36px;
+}
+
+.list-button {
+  width: 100%;
+  text-align: left;
+}
+
+.sidenav-button {
+  width: 26px !important;
+  height: 26px !important;
+  min-width: unset !important;
+}
+
+.sidenav-icon {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  align-items: center;
+  justify-items: center;
+  margin-left: -14px;
+}
+
+.collapse {
+  width: 100%;
+  float: right;
+  text-align: right;
+}
+
+.lefticon {
+  width: 40px;
+  height: 40px;
+}
+
+.application-name {
+  width: 100%;
+  margin-left: 8px;
+}
+
+.mat-list-item, .mat-list-item-content {
+  padding: 0px !important;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.bottom-div {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+}
+
+.mat-drawer {
+  background-color: inherit;
+}
+
+.admin-and-collapse {
+  display: flex;
+  flex-direction: row;
+}
+
+.admin-section {
+  display: flex;
+  flex-direction: row;
+  flex: 6;
+  align-self: center;
+  align-items: center;
+  margin-left: 10px;
+}
+
+.collapse-section {
+  display: flex;
+  flex: 1;
+}
+
+.cmu-logo {
+  width: 100%;
+}
+
+.small-logo {
+  width: 300px;
+}

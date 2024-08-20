@@ -73,6 +73,7 @@ export class ScenarioEventListComponent
   @Input() loggedInUserId: string;
   @Input() isContentDeveloper: boolean;
   @Input() userTheme: Theme;
+  @Input() isStarterMsel: boolean;
   msel = new MselPlus();
 
   // ScenarioEventView Fields
@@ -349,6 +350,11 @@ export class ScenarioEventListComponent
       .sort((a, b) =>
         a.shortName.toLowerCase() < b.shortName.toLowerCase() ? -1 : 1
       );
+    editableMsel.units = editableMsel.units
+      .slice(0)
+      .sort((a, b) =>
+        a.shortName.toLowerCase() < b.shortName.toLowerCase() ? -1 : 1
+      );
 
     return editableMsel;
   }
@@ -374,6 +380,11 @@ export class ScenarioEventListComponent
     let users = [];
     this.msel.teams.forEach((team) => {
       team.users.forEach((user) => {
+        users.push({ ...user });
+      });
+    });
+    this.msel.units.forEach((unit) => {
+      unit.users.forEach((user) => {
         users.push({ ...user });
       });
     });
@@ -410,12 +421,12 @@ export class ScenarioEventListComponent
   }
 
   getSortedTeamOptions(): string[] {
-    let orgs: string[] = [];
+    let teams: string[] = [];
     this.msel.teams.forEach((t) => {
-      orgs.push(t.shortName);
+      teams.push(t.shortName);
     });
-    orgs = orgs.sort((a, b) => (a < b ? -1 : 1));
-    return orgs;
+    teams = teams.sort((a, b) => (a < b ? -1 : 1));
+    return teams;
   }
 
   scroll(id) {
@@ -648,7 +659,7 @@ export class ScenarioEventListComponent
         scenarioEvent: scenarioEvent,
         dataFields: this.allDataFields,
         organizationList: this.getSortedOrganizationOptions(),
-        teamList: this.msel.teams,
+        teamList: this.msel.units,
         moveList: this.moveList,
         cardList: this.cardList,
         gallerySourceTypes: this.msel.gallerySourceTypes,
