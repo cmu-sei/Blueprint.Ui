@@ -23,6 +23,7 @@ import {
   DataField,
   DataFieldType,
   DataValue,
+  EventType,
   InjectType,
   MselItemStatus,
   Move,
@@ -691,6 +692,7 @@ export class ScenarioEventListComponent
       mselId: this.msel.id,
       status: MselItemStatus.Pending,
       dataValues: [],
+      scenarioEventType: EventType.Information,
     };
     this.allDataFields.forEach((df) => {
       newScenarioEvent.dataValues.push({

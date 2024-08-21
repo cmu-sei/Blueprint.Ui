@@ -19,33 +19,79 @@ project root for license information or contact permission@sei.cmu.edu for full 
   </div>
   <div mat-dialog-content *ngIf="!!data && data.scenarioEvent">
     <div class="scenario-event-edit-dialog">
-      <mat-tab-group mat-stretch-tabs
-        class="full-width"
-        mat-align-tabs="start"
-        [selectedIndex]="selectedTab"
-        (selectedTabChange)="tabChange($event)">
-        <mat-tab label="Default">
-        </mat-tab>
-        <mat-tab label="Advanced">
-        </mat-tab>
-        <mat-tab label="Gallery" *ngIf="data.useGallery">
-        </mat-tab>
-      </mat-tab-group>
-      <!-- event start time (deltaSeconds) -->
-      <div class="start-time-div" *ngIf="currentFilterBy === 'advanced'">
-        <app-duration-edit
-          [startTime]="data.mselStartTime"
-          [(durationSeconds)]="data.scenarioEvent.deltaSeconds"
-          [timeName]="'Execution Date / Time'"
-          [postScript]="'from start'"
-        >
-        </app-duration-edit>
+      <!-- Scenario Event Type -->
+      <div class="single-edit-dialog">
+        <mat-form-field>
+          <mat-select
+            placeholder="Scenario Event Type"
+            [(ngModel)]="data.scenarioEvent.scenarioEventType"
+            (valueChange)="scenarioEventTypeChange()"
+            [disabled]="!data.isContentDeveloper && !data.isOwner"
+          >
+            <mat-option *ngFor="let eventType of eventTypes" value="{{ eventType }}">{{ eventType }}</mat-option>
+          </mat-select>
+        </mat-form-field>
       </div>
-      <!-- data values for each data field -->
-      <div *ngFor="let df of sortedDataFields" class="single-edit-dialog">
+      <span class="single-edit-dialog" *ngIf="data.scenarioEvent.scenarioEventType === eventType.Inject">
+        <mat-tab-group mat-stretch-tabs
+          class="full-width"
+          mat-align-tabs="start"
+          [selectedIndex]="selectedTab"
+          (selectedTabChange)="tabChange($event)"
+          style="margin-bottom: 20px;"
+          *ngIf="showDefaultTab() || data.useGallery"
+        >
+          <mat-tab label="Default" *ngIf="showDefaultTab()">
+          </mat-tab>
+          <mat-tab label="All">
+          </mat-tab>
+          <mat-tab label="Gallery" *ngIf="data.useGallery">
+          </mat-tab>
+        </mat-tab-group>
+        <!-- event start time (deltaSeconds) -->
+        <div class="start-time-div" *ngIf="currentFilterBy === 'all'">
+          <app-duration-edit
+            [startTime]="data.mselStartTime"
+            [(durationSeconds)]="data.scenarioEvent.deltaSeconds"
+            [timeName]="'Execution Date / Time'"
+            [postScript]="'from start'"
+          >
+          </app-duration-edit>
+        </div>
+        <!-- data values for each data field -->
+        <div *ngFor="let df of sortedDataFields" class="full-width">
+          <app-data-value
+            [(value)]="getDataValue(df.name).value"
+            [dataField]="df"
+            [canEdit]="data.isEditor"
+            [canApprove]="data.isApprover"
+            [isOwner]="data.isOwner"
+            [showValueOnly]="false"
+            [organizationOptions]="data.organizationList"
+            [teamOptions]="data.teamList"
+            [unitOptions]="data.teamList"
+            [cardOptions]="data.cardList"
+            [moveOptions]="data.moveList"
+            [gallerySourceTypeOptions]="data.gallerySourceTypes"
+            [userOptions]="data.userList"
+          ></app-data-value>
+        </div>
+        <!-- metadata-->
+        <div class="full-width" *ngIf="currentFilterBy === 'all'">
+          <mat-form-field class="full-width">
+            <input
+              type="text"
+              matInput
+              placeholder="row metadata"
+              [(ngModel)]="data.scenarioEvent.rowMetadata"
+            />
+          </mat-form-field>
+        </div>
+      </span>
+      <span class="single-edit-dialog" *ngIf="data.scenarioEvent.scenarioEventType !== eventType.Inject">
         <app-data-value
-          [(value)]="getDataValue(df.name).value"
-          [dataField]="df"
+          [(value)]="getDataValue('description').value"
+          [dataField]="getDataFieldByName('description')"
           [canEdit]="data.isEditor"
           [canApprove]="data.isApprover"
           [isOwner]="data.isOwner"
@@ -58,18 +104,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           [gallerySourceTypeOptions]="data.gallerySourceTypes"
           [userOptions]="data.userList"
         ></app-data-value>
-      </div>
-      <!-- metadata-->
-      <div class="single-edit-dialog" *ngIf="currentFilterBy === 'advanced'">
-        <mat-form-field class="full-width">
-          <input
-            type="text"
-            matInput
-            placeholder="row metadata"
-            [(ngModel)]="data.scenarioEvent.rowMetadata"
-          />
-        </mat-form-field>
-      </div>
+      </span>
     </div>
   </div>
   <div mat-dialog-actions>
