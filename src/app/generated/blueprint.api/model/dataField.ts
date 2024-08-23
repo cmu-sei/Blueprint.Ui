@@ -38,8 +38,10 @@ export interface DataField {
   dataOptions?: Array<DataOption> | null;
   cellMetadata?: string | null;
   columnMetadata?: string | null;
-  isInitiallyHidden?: boolean;
+  isShownOnDefaultTab?: boolean;
   isOnlyShownToOwners?: boolean;
   galleryArticleParameter?: string | null;
   isTemplate?: boolean;
+  isInformationField?: boolean;
+  isFacilitationField?: boolean;
 }

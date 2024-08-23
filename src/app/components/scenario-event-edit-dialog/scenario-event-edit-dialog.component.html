@@ -32,14 +32,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </mat-select>
         </mat-form-field>
       </div>
-      <span class="single-edit-dialog" *ngIf="data.scenarioEvent.scenarioEventType === eventType.Inject">
+      <span class="single-edit-dialog">
         <mat-tab-group mat-stretch-tabs
           class="full-width"
           mat-align-tabs="start"
           [selectedIndex]="selectedTab"
           (selectedTabChange)="tabChange($event)"
           style="margin-bottom: 20px;"
-          *ngIf="showDefaultTab() || data.useGallery"
+          *ngIf="(showDefaultTab() || data.useGallery) && data.scenarioEvent.scenarioEventType === eventType.Inject"
         >
           <mat-tab label="Default" *ngIf="showDefaultTab()">
           </mat-tab>
@@ -49,7 +49,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </mat-tab>
         </mat-tab-group>
         <!-- event start time (deltaSeconds) -->
-        <div class="start-time-div" *ngIf="currentFilterBy === 'all'">
+        <div class="start-time-div"
+          *ngIf="currentFilterBy === 'all' || data.scenarioEvent.scenarioEventType !== eventType.Inject">
           <app-duration-edit
             [startTime]="data.mselStartTime"
             [(durationSeconds)]="data.scenarioEvent.deltaSeconds"
@@ -59,7 +60,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </app-duration-edit>
         </div>
         <!-- data values for each data field -->
-        <div *ngFor="let df of sortedDataFields" class="full-width">
+        <div *ngFor="let df of getScenarioTypeDataFields()" class="full-width">
           <app-data-value
             [(value)]="getDataValue(df.name).value"
             [dataField]="df"
@@ -77,7 +78,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           ></app-data-value>
         </div>
         <!-- metadata-->
-        <div class="full-width" *ngIf="currentFilterBy === 'all'">
+        <div class="full-width" *ngIf="currentFilterBy === 'all' && data.scenarioEvent.scenarioEventType === eventType.Inject">
           <mat-form-field class="full-width">
             <input
               type="text"
@@ -87,23 +88,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
             />
           </mat-form-field>
         </div>
-      </span>
-      <span class="single-edit-dialog" *ngIf="data.scenarioEvent.scenarioEventType !== eventType.Inject">
-        <app-data-value
-          [(value)]="getDataValue('description').value"
-          [dataField]="getDataFieldByName('description')"
-          [canEdit]="data.isEditor"
-          [canApprove]="data.isApprover"
-          [isOwner]="data.isOwner"
-          [showValueOnly]="false"
-          [organizationOptions]="data.organizationList"
-          [teamOptions]="data.teamList"
-          [unitOptions]="data.teamList"
-          [cardOptions]="data.cardList"
-          [moveOptions]="data.moveList"
-          [gallerySourceTypeOptions]="data.gallerySourceTypes"
-          [userOptions]="data.userList"
-        ></app-data-value>
       </span>
     </div>
   </div>

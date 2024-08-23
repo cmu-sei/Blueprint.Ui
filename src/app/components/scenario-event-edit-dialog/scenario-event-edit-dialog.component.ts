@@ -199,20 +199,24 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
     this.sortedDataFields = this.getFilteredDataFields(filterBy);
   }
 
+  // filter the data fields by the selected tab
   getFilteredDataFields(filter: string): DataField[] {
     this.currentFilterBy = filter;
+    const scenarioTypeDataFields = this.getScenarioTypeDataFields();
     let filteredList = [];
     switch (filter) {
       case 'default':
-        filteredList = this.data.dataFields.filter((x) => x.isInitiallyHidden);
+        filteredList = scenarioTypeDataFields.filter(
+          (x) => x.isShownOnDefaultTab
+        );
         break;
       case 'gallery':
-        filteredList = this.data.dataFields.filter(
+        filteredList = scenarioTypeDataFields.filter(
           (x) => !!x.galleryArticleParameter
         );
         break;
       default:
-        filteredList = this.data.dataFields;
+        filteredList = scenarioTypeDataFields;
         break;
     }
     filteredList = filteredList.sort((a, b) =>
@@ -221,12 +225,30 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
     return filteredList;
   }
 
+  // get the datafields based on the selected scenario event type
+  getScenarioTypeDataFields(): DataField[] {
+    const dataFields = new Array<DataField>();
+    this.data.dataFields.forEach((df) => {
+      if (
+        (this.data.scenarioEvent.scenarioEventType === EventType.Inject &&
+          df.onScenarioEventList) ||
+        (this.data.scenarioEvent.scenarioEventType === EventType.Information &&
+          df.isInformationField) ||
+        (this.data.scenarioEvent.scenarioEventType === EventType.Facilitation &&
+          df.isFacilitationField)
+      ) {
+        dataFields.push(df);
+      }
+    });
+    return dataFields;
+  }
+
   hasBadData(): boolean {
     return false;
   }
 
   showDefaultTab(): boolean {
-    return this.data.dataFields.some((d) => d.isInitiallyHidden);
+    return this.data.dataFields.some((d) => d.isShownOnDefaultTab);
   }
 
   ngOnDestroy() {

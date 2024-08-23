@@ -130,10 +130,28 @@ project root for license information or contact permission@sei.cmu.edu for full 
   <div class="data-field-detail" (click)="$event.stopPropagation();" *ngIf="!data.dataField.isTemplate">
     <div class="single-detail">
       <mat-checkbox
-        [(ngModel)]="data.dataField.isInitiallyHidden"
+        [(ngModel)]="data.dataField.isShownOnDefaultTab"
         [disabled]="!data.isContentDeveloper && !data.isOwner"
         class="bottom-margin"
-      >Display on "Advanced" edit tab</mat-checkbox><br />
+      >Display on "Default" edit tab</mat-checkbox><br />
+    </div>
+  </div>
+  <div class="data-field-detail" (click)="$event.stopPropagation();" *ngIf="!data.dataField.isTemplate">
+    <div class="single-detail">
+      <mat-checkbox
+        [(ngModel)]="data.dataField.isInformationField"
+        [disabled]="!data.isContentDeveloper && !data.isOwner"
+        class="bottom-margin"
+      >Information Data Field</mat-checkbox><br />
+    </div>
+  </div>
+  <div class="data-field-detail" (click)="$event.stopPropagation();" *ngIf="!data.dataField.isTemplate">
+    <div class="single-detail">
+      <mat-checkbox
+        [(ngModel)]="data.dataField.isFacilitationField"
+        [disabled]="!data.isContentDeveloper && !data.isOwner"
+        class="bottom-margin"
+      >Facilitation Data Field</mat-checkbox><br />
     </div>
   </div>
   <div class="data-field-detail" (click)="$event.stopPropagation();" *ngIf="!data.dataField.isTemplate">
