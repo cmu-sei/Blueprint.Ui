@@ -23,6 +23,7 @@ import {
   DataField,
   DataFieldType,
   DataValue,
+  EventType,
   InjectType,
   MselItemStatus,
   Move,
@@ -81,7 +82,7 @@ export class ScenarioEventListComponent
   filterString = '';
   sort: Sort = { active: '', direction: '' };
   displayedScenarioEvents: ScenarioEventPlus[] = [];
-  sortedDataFields: DataField[] = [];
+  headerDataFields: DataField[] = [];
   dataValues: DataValue[] = [];
   cardList: Card[] = [];
   mselUsers: User[] = [];
@@ -167,6 +168,7 @@ export class ScenarioEventListComponent
   moveAndGroupNumbers: Record<string, number[]>[] = [];
   catalogList: Catalog[] = [];
   injectTypeList: InjectType[] = [];
+  eventType: typeof EventType = EventType;
 
   constructor(
     private router: Router,
@@ -209,7 +211,7 @@ export class ScenarioEventListComponent
         const mselDataFields = dataFields.filter(
           (m) => m.mselId === this.msel.id
         );
-        this.getSortedDataFields(mselDataFields);
+        this.setSortedDataFields(mselDataFields);
         this.scenarioEventDataService.updateScenarioEventViewDataFields(this);
         this.scenarioEventDataService.updateScenarioEventViewDisplayedEvents(
           this
@@ -327,7 +329,7 @@ export class ScenarioEventListComponent
   }
 
   get dataFields(): DataField[] {
-    return this.sortedDataFields;
+    return this.headerDataFields;
   }
 
   get showHiddenEvents(): boolean {
@@ -359,9 +361,9 @@ export class ScenarioEventListComponent
     return editableMsel;
   }
 
-  getSortedDataFields(dataFields: DataField[]) {
+  setSortedDataFields(dataFields: DataField[]) {
     if (dataFields) {
-      this.sortedDataFields = dataFields
+      this.headerDataFields = dataFields
         .filter((df) => df.onScenarioEventList)
         .sort((a, b) => (+a.displayOrder > +b.displayOrder ? 1 : -1));
       this.allDataFields = dataFields.sort((a, b) =>
@@ -374,6 +376,12 @@ export class ScenarioEventListComponent
         this.dateFormControls[df.id] = new UntypedFormControl();
       }
     });
+  }
+
+  getDataFieldByName(name: string) {
+    return this.dataFields.find(
+      (df) => df.name.toLowerCase() === name.toLowerCase()
+    );
   }
 
   getMselUsers(): User[] {
@@ -486,26 +494,6 @@ export class ScenarioEventListComponent
       scenarioEvent,
       dataFieldName
     );
-  }
-
-  getFilteredDataFields(filter: string): DataField[] {
-    let filteredList = [];
-    switch (filter) {
-      case 'Default':
-        filteredList = this.allDataFields.filter((x) => !x.isInitiallyHidden);
-        break;
-      case 'Gallery':
-        filteredList = this.allDataFields.filter(
-          (x) => !!x.galleryArticleParameter
-        );
-        break;
-      default:
-        filteredList = this.allDataFields;
-    }
-    filteredList = filteredList.sort((a, b) =>
-      +a.displayOrder < +b.displayOrder ? -1 : 1
-    );
-    return filteredList;
   }
 
   getTeamShortName(teamId: string) {
@@ -691,6 +679,7 @@ export class ScenarioEventListComponent
       mselId: this.msel.id,
       status: MselItemStatus.Pending,
       dataValues: [],
+      scenarioEventType: EventType.Information,
     };
     this.allDataFields.forEach((df) => {
       newScenarioEvent.dataValues.push({
@@ -971,6 +960,23 @@ export class ScenarioEventListComponent
       this.isAddingScenarioEvent = false;
       dialogRef.close();
     });
+  }
+
+  rowDataFields(scenarioEvent: ScenarioEventPlus): DataField[] {
+    const dataFields = new Array<DataField>();
+    this.allDataFields.forEach((df) => {
+      if (
+        (scenarioEvent.scenarioEventType === EventType.Inject &&
+          df.onScenarioEventList) ||
+        (scenarioEvent.scenarioEventType === EventType.Information &&
+          df.isInformationField) ||
+        (scenarioEvent.scenarioEventType === EventType.Facilitation &&
+          df.isFacilitationField)
+      ) {
+        dataFields.push(df);
+      }
+    });
+    return dataFields;
   }
 
   ngOnDestroy() {

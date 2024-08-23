@@ -128,7 +128,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <!-- events Column -->
         <ng-container matColumnDef="events">
           <mat-header-cell mat-sort-header="onScenarioEventList" title="Display on Scenario Events list?" *matHeaderCellDef class="mat-column-display">
-            &nbsp;&nbsp;&nbsp;&nbsp;Events
+            &nbsp;&nbsp;&nbsp;&nbsp;List
           </mat-header-cell>
           <mat-cell *matCellDef="let element" class="mat-column-display">
             <mat-checkbox
@@ -154,6 +154,32 @@ project root for license information or contact permission@sei.cmu.edu for full 
               (click)="$event.stopPropagation();"
               title="Display on the Exercise View?"
             >
+            </mat-checkbox>
+          </mat-cell>
+        </ng-container>
+        <!-- information Column -->
+        <ng-container matColumnDef="information">
+          <mat-header-cell mat-sort-header="isInformationField" title="Display for Information Events?" *matHeaderCellDef
+            class="mat-column-display">
+            &nbsp;&nbsp;&nbsp;&nbsp;Info
+          </mat-header-cell>
+          <mat-cell *matCellDef="let element" class="mat-column-display">
+            <mat-checkbox [(ngModel)]="element.isInformationField"
+              [disabled]="!isContentDeveloper && !msel.hasRole(loggedInUserId, null).owner" (change)="saveChange(element)"
+              (click)="$event.stopPropagation();" title="Display for Information Events?">
+            </mat-checkbox>
+          </mat-cell>
+        </ng-container>
+        <!-- facilitation Column -->
+        <ng-container matColumnDef="facilitation">
+          <mat-header-cell mat-sort-header="isFacilitationField" title="Display for Facilitation Events?" *matHeaderCellDef
+            class="mat-column-display">
+            &nbsp;&nbsp;&nbsp;&nbsp;Facil
+          </mat-header-cell>
+          <mat-cell *matCellDef="let element" class="mat-column-display">
+            <mat-checkbox [(ngModel)]="element.isFacilitationField"
+              [disabled]="!isContentDeveloper && !msel.hasRole(loggedInUserId, null).owner" (change)="saveChange(element)"
+              (click)="$event.stopPropagation();" title="Display for Facilitation Events?">
             </mat-checkbox>
           </mat-cell>
         </ng-container>

@@ -30,13 +30,13 @@
 .single-edit-dialog {
   display: flex;
   flex-direction: column;
-  width: 80%;
+  width: 90%;
 }
 
 .start-time-div {
   display: flex;
   flex-direction: row;
-  width: 80%;
+  width: 90%;
 }
 
 .full-width {
@@ -90,4 +90,8 @@
 .two-digits {
   width: 36px;
   text-align: center;
+}
+
+.no-display {
+  display: none;
 }

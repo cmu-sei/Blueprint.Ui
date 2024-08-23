@@ -6,13 +6,19 @@ import { Subject } from 'rxjs';
 import {
   DataField,
   DataFieldType,
+  EventType,
   MselItemStatus,
   MselRole,
-  Team
 } from 'src/app/generated/blueprint.api';
 import { Sort } from '@angular/material/sort';
-import { ScenarioEventPlus, DataValuePlus } from 'src/app/data/scenario-event/scenario-event-data.service';
-import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
+import {
+  ScenarioEventPlus,
+  DataValuePlus,
+} from 'src/app/data/scenario-event/scenario-event-data.service';
+import {
+  MatLegacyDialogRef as MatDialogRef,
+  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
+} from '@angular/material/legacy-dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { AngularEditorConfig } from '@kolkov/angular-editor';
 
@@ -72,7 +78,12 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
     sanitize: true,
   };
   dataType: typeof DataFieldType = DataFieldType;
-
+  eventType: typeof EventType = EventType;
+  eventTypes = [
+    EventType.Inject,
+    EventType.Information,
+    EventType.Facilitation,
+  ];
   itemStatus = [
     MselItemStatus.Pending,
     MselItemStatus.Entered,
@@ -94,12 +105,7 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
   scenarioEventBackgroundColors: Array<string>;
   sortedDataFields: DataField[] = [];
   selectedTab = 0;
-  private tabSections = new Map([
-    ['default', 0],
-    ['advanced', 1],
-  ]);
-  private tabCount = 2;
-  currentFilterBy = 'default';
+  currentFilterBy = 'all';
 
   constructor(
     public dialogService: DialogService,
@@ -110,16 +116,10 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
   }
 
   ngOnInit() {
-    if (this.data.isNew) {
-      this.sortedDataFields = this.getFilteredDataFields('advanced');
-      this.selectedTab = this.tabSections.get('advanced');
-    } else {
+    if (!this.data.isNew && this.showDefaultTab()) {
       this.sortedDataFields = this.getFilteredDataFields('default');
-      this.selectedTab = this.tabSections.get('default');
-    }
-    if (this.data.useGallery) {
-      this.tabSections.set('advanced', this.tabCount++);
-      this.tabSections.set('gallery', this.tabCount);
+    } else {
+      this.sortedDataFields = this.getFilteredDataFields('all');
     }
   }
 
@@ -156,10 +156,14 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
     this.getDataValue(dataFieldName).value = newValues.join(', ');
   }
 
-  getDataFieldIdByName(name: string): string {
-    const dataField = this.data.dataFields.find(
+  getDataFieldByName(name: string) {
+    return this.data.dataFields.find(
       (df) => df.name.toLowerCase() === name.toLowerCase()
     );
+  }
+
+  getDataFieldIdByName(name: string): string {
+    const dataField = this.getDataFieldByName(name);
     return dataField ? dataField.id : '';
   }
 
@@ -190,22 +194,29 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
     this.sortedDataFields = this.getFilteredDataFields(injectData);
   }
 
+  scenarioEventTypeChange() {
+    const filterBy = this.showDefaultTab() ? 'default' : 'all';
+    this.sortedDataFields = this.getFilteredDataFields(filterBy);
+  }
+
+  // filter the data fields by the selected tab
   getFilteredDataFields(filter: string): DataField[] {
     this.currentFilterBy = filter;
+    const scenarioTypeDataFields = this.getScenarioTypeDataFields();
     let filteredList = [];
     switch (filter) {
       case 'default':
-        filteredList = this.data.dataFields.filter((x) => !x.isInitiallyHidden);
+        filteredList = scenarioTypeDataFields.filter(
+          (x) => x.isShownOnDefaultTab
+        );
         break;
       case 'gallery':
-        filteredList = this.data.dataFields.filter(
+        filteredList = scenarioTypeDataFields.filter(
           (x) => !!x.galleryArticleParameter
         );
         break;
-      case 'advanced':
-        filteredList = this.data.dataFields.filter(
-          (x) => x.isInitiallyHidden && !x.galleryArticleParameter
-        );
+      default:
+        filteredList = scenarioTypeDataFields;
         break;
     }
     filteredList = filteredList.sort((a, b) =>
@@ -214,8 +225,30 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
     return filteredList;
   }
 
+  // get the datafields based on the selected scenario event type
+  getScenarioTypeDataFields(): DataField[] {
+    const dataFields = new Array<DataField>();
+    this.data.dataFields.forEach((df) => {
+      if (
+        (this.data.scenarioEvent.scenarioEventType === EventType.Inject &&
+          df.onScenarioEventList) ||
+        (this.data.scenarioEvent.scenarioEventType === EventType.Information &&
+          df.isInformationField) ||
+        (this.data.scenarioEvent.scenarioEventType === EventType.Facilitation &&
+          df.isFacilitationField)
+      ) {
+        dataFields.push(df);
+      }
+    });
+    return dataFields;
+  }
+
   hasBadData(): boolean {
     return false;
+  }
+
+  showDefaultTab(): boolean {
+    return this.data.dataFields.some((d) => d.isShownOnDefaultTab);
   }
 
   ngOnDestroy() {
