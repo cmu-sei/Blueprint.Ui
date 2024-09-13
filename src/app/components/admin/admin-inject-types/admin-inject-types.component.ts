@@ -182,9 +182,9 @@ export class AdminInjectTypesComponent implements OnDestroy {
 
   getInjectTypeLink(teamId: string) {
     if (this.msel.isTemplate && this.msel.status === MselItemStatus.Approved) {
-      return location.origin + '/launch/?msel=' + this.msel.id + '&team=' + teamId;
+      return document.baseURI + '/launch/?msel=' + this.msel.id + '&team=' + teamId;
     } else if (!this.msel.isTemplate && this.msel.status === MselItemStatus.Deployed) {
-      return location.origin + '/join/?msel=' + this.msel.id + '&team=' + teamId;
+      return document.baseURI + '/join/?msel=' + this.msel.id + '&team=' + teamId;
     } else {
       return '';
     }

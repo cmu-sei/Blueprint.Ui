@@ -655,6 +655,7 @@ export class ScenarioEventListComponent
         isOwner: isOwner,
         isApprover: isApprover,
         isEditor: isEditor,
+        showScenarioEventType: !this.isStarterMsel,
         useCite: this.msel.useCite,
         useGallery: this.msel.useGallery,
         useSteamfitter: this.msel.useSteamfitter,
@@ -926,7 +927,7 @@ export class ScenarioEventListComponent
 
   openContent(id: string) {
     const url =
-      location.origin +
+      document.baseURI +
       '/eventdetail?msel=' +
       this.msel.id +
       '&scenarioEvent=' +

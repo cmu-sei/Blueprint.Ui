@@ -5,8 +5,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
 -->
 <div class="container">
   <div class="tableFixHead" *ngIf="msel">
+    <!-- scenario event table -->
     <table>
+      <!-- table header -->
       <thead matSort (matSortChange)="sortChanged($event)">
+        <!-- search field header row -->
         <tr *ngIf="showSearch">
           <th colspan="5">
             <mat-form-field *ngIf="showSearch" class="top-search">
@@ -32,7 +35,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
             </button>
           </th>
         </tr>
+        <!-- main header row -->
         <tr>
+          <!-- action button header -->
           <th class="background center-self">
             <div class="row-start-buttons">
               <ng-container *ngIf="allowDragAndDrop">
@@ -60,7 +65,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   (click)="addScenarioEvent()"
                   title="Add an event"
                   [disabled]="selectedEventIdList.length > 0"
-                  *ngIf="(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) && !isStarterMsel"
+                  *ngIf="(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)"
                 >
                   Add New Event
                 </button>
@@ -99,7 +104,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   (click)="addScenarioEvent()"
                   title="Add an event"
                   [disabled]="selectedEventIdList.length > 0 && (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)"
-                  *ngIf="!isStarterMsel"
                 >
                   Add New Event
                 </button>
@@ -108,7 +112,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   [matMenuTriggerFor]="colorList"
                   (click)="$event.stopPropagation()"
                   title="Highlight selected events"
-                  *ngIf="(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) && !isStarterMsel"
+                  *ngIf="(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)"
                 >
                   Highlight selected events
                 </button>
@@ -157,15 +161,15 @@ project root for license information or contact permission@sei.cmu.edu for full 
               </button>
             </div>
           </th>
-          <!-- Move -->
+          <!-- Move header -->
           <th *ngIf="msel.showMoveOnScenarioEventList" class="background">
             <div>Move</div>
           </th>
-          <!-- Group -->
+          <!-- Group header -->
           <th *ngIf="msel.showGroupOnScenarioEventList" class="background">
             <div>Group</div>
           </th>
-          <!-- Time -->
+          <!-- Time header -->
           <th *ngIf="msel.showTimeOnScenarioEventList" class="background">
             <div>
               <button
@@ -188,6 +192,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
               </button>
             </div>
           </th>
+          <!-- Data Field headers -->
           <ng-container *ngFor="let df of headerDataFields">
             <ng-container *ngIf="sortableDataTypes.includes(df.dataType); else noSort">
               <th mat-sort-header="{{ df.name }}" class="background">
@@ -202,6 +207,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </ng-container>
         </tr>
       </thead>
+      <!-- table body -->
       <tbody cdkDropList [cdkDropListDisabled]="!allowDragAndDrop" (cdkDropListDropped)="dropHandler($event)">
         <ng-container *ngFor="let item of displayedScenarioEvents; index as rowIndex">
           <tr [style]="getRowStyle(item)" cdkDrag [cdkDragData]="item" cdkDragLockAxis="y" [cdkDragPreviewClass]="userTheme" (cdkDragStarted)="dragStart($event)" (cdkDragEnded)="dragEnd($event)">
@@ -236,13 +242,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
                     (click)="openContent(item.id)"
                     title="Open page in new tab"
                   >
-                    Open in a New Tab
+                    View
                   </button>
                   <button
                     mat-menu-item
                     (click)="editScenarioEvent(item)"
                     title="Edit event {{ rowIndex  + 1 }}"
-                    *ngIf="!isStarterMsel"
+                    *ngIf="!isStarterMsel || item.scenarioEventType === eventType.Information"
                   >
                     Edit
                   </button>

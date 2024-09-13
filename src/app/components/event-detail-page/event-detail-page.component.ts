@@ -357,7 +357,7 @@ export class EventDetailPageComponent {
     );
     if (dataValue && dataValue.id) {
       const url =
-        location.origin +
+        document.baseURI +
         '/eventdetail?msel=' +
         this.msel.id +
         '&scenarioEvent=' +

@@ -248,7 +248,10 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
   }
 
   showDefaultTab(): boolean {
-    return this.data.dataFields.some((d) => d.isShownOnDefaultTab);
+    return (
+      this.data.showScenarioEventType &&
+      this.data.dataFields.some((d) => d.isShownOnDefaultTab)
+    );
   }
 
   ngOnDestroy() {
