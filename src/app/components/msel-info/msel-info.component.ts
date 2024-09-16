@@ -109,7 +109,7 @@ export class MselInfoComponent implements OnDestroy {
   };
   isBusy = true;
   dataFieldList: DataField[] = [];
-  basePageUrl = location.origin + '/mselpage/';
+  basePageUrl = document.baseURI + '/mselpage/';
   pushStatus = '';
   savedStartTime: Date;
   savedDurationSeconds = 0;
@@ -135,10 +135,9 @@ export class MselInfoComponent implements OnDestroy {
           Object.assign(this.originalMsel, msel);
           Object.assign(this.msel, msel);
           if (isNewMselId) {
-            this.viewUrl =
-              window.location.origin + '/msel/' + this.msel.id + '/view';
+            this.viewUrl = document.baseURI + '/msel/' + this.msel.id + '/view';
             this.starterUrl =
-              window.location.origin + '/starter/?msel=' + this.msel.id;
+              document.baseURI + '/starter/?msel=' + this.msel.id;
             this.mselPageDataService.loadByMsel(msel.id);
             this.newMselPage.mselId = msel.id;
           }

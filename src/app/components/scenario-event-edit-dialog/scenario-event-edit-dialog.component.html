@@ -20,7 +20,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
   <div mat-dialog-content *ngIf="!!data && data.scenarioEvent">
     <div class="scenario-event-edit-dialog">
       <!-- Scenario Event Type -->
-      <div class="single-edit-dialog">
+      <div class="single-edit-dialog" *ngIf="data.showScenarioEventType">
         <mat-form-field>
           <mat-select
             placeholder="Scenario Event Type"

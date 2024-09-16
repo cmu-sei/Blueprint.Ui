@@ -105,11 +105,11 @@ export class LaunchComponent implements OnDestroy, OnInit {
                 mselId: this.launchedMsel.id,
                 name: 'Manage Event',
                 url:
-                  location.origin +
+                  document.baseURI +
                   '/manage?msel=' +
                   this.launchedMsel.id +
                   '&{theme}',
-                icon: location.origin + '/assets/img/pencil-ruler-blue.png',
+                icon: document.baseURI + '/assets/img/pencil-ruler-blue.png',
                 embeddable: true,
                 loadInBackground: false,
               };
