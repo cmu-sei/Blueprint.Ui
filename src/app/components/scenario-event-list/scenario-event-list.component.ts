@@ -89,6 +89,7 @@ export class ScenarioEventListComponent
   viewIndex = new ScenarioEventViewIndexing();
 
   allDataFields: DataField[] = [];
+  mselDataFields: DataField[] = [];
   expandedScenarioEventId = '';
   expandedMoreScenarioEventIds: string[] = [];
   newScenarioEvent: ScenarioEventPlus;
@@ -201,6 +202,16 @@ export class ScenarioEventListComponent
           this.msel = this.getEditableMsel(msel) as MselPlus;
           this.mselUsers = this.getMselUsers();
           this.scenarioEventDataService.updateScenarioEventViewUsers(this);
+          // in case the dataFields were received before the msel
+          if (this.allDataFields.length > 0) {
+            this.setSortedDataFields();
+            this.scenarioEventDataService.updateScenarioEventViewDataFields(
+              this
+            );
+            this.scenarioEventDataService.updateScenarioEventViewDisplayedEvents(
+              this
+            );
+          }
         }
       });
     // subscribe to data fields
@@ -208,10 +219,8 @@ export class ScenarioEventListComponent
       .selectAll()
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((dataFields) => {
-        const mselDataFields = dataFields.filter(
-          (m) => m.mselId === this.msel.id
-        );
-        this.setSortedDataFields(mselDataFields);
+        this.allDataFields = dataFields;
+        this.setSortedDataFields();
         this.scenarioEventDataService.updateScenarioEventViewDataFields(this);
         this.scenarioEventDataService.updateScenarioEventViewDisplayedEvents(
           this
@@ -361,17 +370,20 @@ export class ScenarioEventListComponent
     return editableMsel;
   }
 
-  setSortedDataFields(dataFields: DataField[]) {
-    if (dataFields) {
-      this.headerDataFields = dataFields
+  setSortedDataFields() {
+    this.mselDataFields = this.allDataFields;
+    if (this.msel && this.msel.id) {
+      this.mselDataFields = this.allDataFields
+        .filter((m) => m.mselId === this.msel.id)
+        .sort((a, b) => (+a.displayOrder > +b.displayOrder ? 1 : -1));
+    }
+    if (this.mselDataFields.length > 0) {
+      this.headerDataFields = this.mselDataFields
         .filter((df) => df.onScenarioEventList)
         .sort((a, b) => (+a.displayOrder > +b.displayOrder ? 1 : -1));
-      this.allDataFields = dataFields.sort((a, b) =>
-        +a.displayOrder > +b.displayOrder ? 1 : -1
-      );
     }
     // create date form controls
-    this.allDataFields.forEach((df) => {
+    this.mselDataFields.forEach((df) => {
       if (df.dataType === DataFieldType.DateTime) {
         this.dateFormControls[df.id] = new UntypedFormControl();
       }
@@ -601,7 +613,7 @@ export class ScenarioEventListComponent
     const seDataValues = this.dataValues.filter(
       (dv) => dv.scenarioEventId === scenarioEvent.id
     );
-    this.allDataFields.forEach((df) => {
+    this.mselDataFields.forEach((df) => {
       let dataValue = seDataValues.find((dv) => dv.dataFieldId === df.id);
       if (!dataValue) {
         dataValue = this.newDataValuePlus(scenarioEvent.id, df.id);
@@ -645,7 +657,7 @@ export class ScenarioEventListComponent
       height: '90%',
       data: {
         scenarioEvent: scenarioEvent,
-        dataFields: this.allDataFields,
+        dataFields: this.mselDataFields,
         organizationList: this.getSortedOrganizationOptions(),
         teamList: this.msel.units,
         moveList: this.moveList,
@@ -682,7 +694,7 @@ export class ScenarioEventListComponent
       dataValues: [],
       scenarioEventType: EventType.Information,
     };
-    this.allDataFields.forEach((df) => {
+    this.mselDataFields.forEach((df) => {
       newScenarioEvent.dataValues.push({
         dataFieldId: df.id,
         id: uuidv4(),
@@ -701,7 +713,7 @@ export class ScenarioEventListComponent
     let dataValue = this.getDataValue(scenarioEvent, dataFieldName);
     if (!dataValue || !dataValue.id) {
       // the dataValue doesn't exist, so create a new one
-      const dataFieldId = this.allDataFields.find(
+      const dataFieldId = this.mselDataFields.find(
         (df) => df.name === dataFieldName
       ).id;
       dataValue = this.newDataValuePlus(scenarioEvent.id, dataFieldId);
@@ -724,7 +736,7 @@ export class ScenarioEventListComponent
     let dataValue = this.getDataValue(scenarioEvent, dataFieldName);
     if (!dataValue || !dataValue.id) {
       // the dataValue doesn't exist, so create a new one
-      const dataFieldId = this.allDataFields.find(
+      const dataFieldId = this.mselDataFields.find(
         (df) => df.name === dataFieldName
       ).id;
       dataValue = this.newDataValuePlus(scenarioEvent.id, dataFieldId);
@@ -965,7 +977,7 @@ export class ScenarioEventListComponent
 
   rowDataFields(scenarioEvent: ScenarioEventPlus): DataField[] {
     const dataFields = new Array<DataField>();
-    this.allDataFields.forEach((df) => {
+    this.mselDataFields.forEach((df) => {
       if (
         (scenarioEvent.scenarioEventType === EventType.Inject &&
           df.onScenarioEventList) ||
