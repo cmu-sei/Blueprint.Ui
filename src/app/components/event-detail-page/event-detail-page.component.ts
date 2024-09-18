@@ -71,7 +71,6 @@ export class EventDetailPageComponent {
   msel = new MselPlus();
   sortedDataFields: DataField[] = [];
   cardList: Card[] = [];
-  allDataFields: DataField[] = [];
   dateFormControls = new Map<string, UntypedFormControl>();
   dataValues: DataValue[] = [];
   scenarioEvent: ScenarioEventPlus = {} as ScenarioEventPlus;
@@ -261,12 +260,9 @@ export class EventDetailPageComponent {
       this.sortedDataFields = dataFields.sort((a, b) =>
         +a.displayOrder > +b.displayOrder ? 1 : -1
       );
-      this.allDataFields = dataFields.sort((a, b) =>
-        +a.displayOrder > +b.displayOrder ? 1 : -1
-      );
     }
     // create date form controls
-    this.allDataFields.forEach((df) => {
+    this.sortedDataFields.forEach((df) => {
       if (df.dataType === DataFieldType.DateTime) {
         this.dateFormControls[df.id] = new UntypedFormControl();
       }
