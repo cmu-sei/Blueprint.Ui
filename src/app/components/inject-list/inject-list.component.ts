@@ -118,7 +118,6 @@ export class InjectListComponent implements OnDestroy, OnInit {
       .selectAll()
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((injects) => {
-        this.injectList = [];
         // get editable objects
         injects.forEach((m) => {
           const inject = { ...m };
@@ -126,7 +125,12 @@ export class InjectListComponent implements OnDestroy, OnInit {
           m.dataValues.forEach((dv) => {
             inject.dataValues.push({ ...dv });
           });
-          this.injectList.push(inject);
+          const index = this.injectList.findIndex((i) => i.id === inject.id);
+          if (index === -1) {
+            this.injectList.push(inject);
+          } else {
+            this.injectList[index] = inject;
+          }
         });
         this.sortChanged(this.sort);
       });

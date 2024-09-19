@@ -52,7 +52,8 @@ project root for license information.
         <mat-form-field class="full-width">
           <mat-label>Prerequisite Inject</mat-label>
           <mat-select placeholder="Prerequisite Inject" [(ngModel)]="data.inject.requiresInjectId">
-            <mat-option *ngFor="let inject of data.injectList" [value]="inject.id" title="{{ inject.name}}" [disabled]="inject.id === data.inject.id">
+            <mat-option [value]="null" title="None"></mat-option>
+            <mat-option *ngFor="let inject of otherInjects(data.inject.id)" [value]="data.inject.id" title="{{ data.inject.name}}">
               {{ inject.name }}
             </mat-option>
           </mat-select>

@@ -318,15 +318,15 @@ export class SignalRService implements OnDestroy {
   }
 
   private addInjectmHandlers() {
-    this.hubConnection.on('InjectmUpdated', (injectm: Injectm) => {
+    this.hubConnection.on('InjectUpdated', (injectm: Injectm) => {
       this.injectmDataService.updateStore(injectm);
     });
 
-    this.hubConnection.on('InjectmCreated', (injectm: Injectm) => {
+    this.hubConnection.on('InjectCreated', (injectm: Injectm) => {
       this.injectmDataService.updateStore(injectm);
     });
 
-    this.hubConnection.on('InjectmDeleted', (id: string) => {
+    this.hubConnection.on('InjectDeleted', (id: string) => {
       this.injectmDataService.deleteFromStore(id);
     });
   }

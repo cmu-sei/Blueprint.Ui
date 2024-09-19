@@ -32,7 +32,6 @@ const MIN_NAME_LENGTH = 3;
   templateUrl: './inject-edit-dialog.component.html',
   styleUrls: ['./inject-edit-dialog.component.scss'],
 })
-
 export class InjectEditDialogComponent {
   @Output() editComplete = new EventEmitter<any>();
   isChanged = false;
@@ -66,8 +65,13 @@ export class InjectEditDialogComponent {
   }
 
   getDataValue(dataFieldId: string): DataValue {
-    const dataValue = this.data.inject.dataValues.find(dv => dv.dataFieldId === dataFieldId);
+    const dataValue = this.data.inject.dataValues.find(
+      (dv) => dv.dataFieldId === dataFieldId
+    );
     return dataValue ? dataValue : ({} as DataValue);
   }
 
+  otherInjects(id: string) {
+    return this.data.injectList.filter((i) => i.id !== id);
+  }
 }
