@@ -41,7 +41,6 @@ import {
   ScenarioEventDataService,
   ScenarioEventView,
   ScenarioEventViewIndexing,
-  ScenarioEventPlus,
 } from 'src/app/data/scenario-event/scenario-event-data.service';
 import { ScenarioEventQuery } from 'src/app/data/scenario-event/scenario-event.query';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
@@ -65,7 +64,7 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
   showSearch = false;
 
   // ScenarioEventView Fields
-  mselScenarioEvents: ScenarioEventPlus[] = [];
+  mselScenarioEvents: ScenarioEvent[] = [];
   filterString = '';
   sort: Sort = { active: '', direction: '' };
   sortedScenarioEvents: ScenarioEvent[];
@@ -274,10 +273,10 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
     return false;
   }
 
-  get displayedScenarioEvents(): ScenarioEventPlus[] {
+  get displayedScenarioEvents(): ScenarioEvent[] {
     return this.sortedScenarioEvents;
   }
-  set displayedScenarioEvents(evts: ScenarioEventPlus[]) {
+  set displayedScenarioEvents(evts: ScenarioEvent[]) {
     this.sortedScenarioEvents = evts;
   }
 
@@ -330,7 +329,7 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
   }
 
   getDataValue(
-    scenarioEvent: ScenarioEventPlus,
+    scenarioEvent: ScenarioEvent,
     dataFieldName: string
   ): DataValuePlus {
     if (!(this.msel && scenarioEvent && scenarioEvent.id)) {
@@ -343,10 +342,7 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
     );
   }
 
-  getDisplayValue(
-    scenarioEvent: ScenarioEventPlus,
-    dataFieldName: string
-  ): string {
+  getDisplayValue(scenarioEvent: ScenarioEvent, dataFieldName: string): string {
     if (!(this.msel && scenarioEvent && scenarioEvent.id)) {
       return '';
     }

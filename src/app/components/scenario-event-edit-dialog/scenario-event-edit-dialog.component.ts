@@ -9,12 +9,10 @@ import {
   EventType,
   MselItemStatus,
   MselRole,
+  ScenarioEvent,
 } from 'src/app/generated/blueprint.api';
 import { Sort } from '@angular/material/sort';
-import {
-  ScenarioEventPlus,
-  DataValuePlus,
-} from 'src/app/data/scenario-event/scenario-event-data.service';
+import { DataValuePlus } from 'src/app/data/scenario-event/scenario-event-data.service';
 import {
   MatLegacyDialogRef as MatDialogRef,
   MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
@@ -30,8 +28,8 @@ import { AngularEditorConfig } from '@kolkov/angular-editor';
 export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
   @Output() editComplete = new EventEmitter<any>();
   sort: Sort = { active: '', direction: '' };
-  sortedScenarioEvents: ScenarioEventPlus[] = [];
-  newScenarioEvent: ScenarioEventPlus;
+  sortedScenarioEvents: ScenarioEvent[] = [];
+  newScenarioEvent: ScenarioEvent;
   isAddingScenarioEvent = false;
   canDoAnything = false;
   private unsubscribe$ = new Subject();

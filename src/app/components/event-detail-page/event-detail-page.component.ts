@@ -21,7 +21,6 @@ import { DataFieldDataService } from 'src/app/data/data-field/data-field-data.se
 import { DataValueDataService } from 'src/app/data/data-value/data-value-data.service';
 import {
   ScenarioEventDataService,
-  ScenarioEventPlus,
   DataValuePlus,
 } from 'src/app/data/scenario-event/scenario-event-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
@@ -37,6 +36,7 @@ import {
   Team,
   User,
   Card,
+  ScenarioEvent,
 } from 'src/app/generated/blueprint.api';
 import { UntypedFormControl } from '@angular/forms';
 import { MselPlus } from 'src/app/data/msel/msel-data.service';
@@ -73,7 +73,7 @@ export class EventDetailPageComponent {
   cardList: Card[] = [];
   dateFormControls = new Map<string, UntypedFormControl>();
   dataValues: DataValue[] = [];
-  scenarioEvent: ScenarioEventPlus = {} as ScenarioEventPlus;
+  scenarioEvent: ScenarioEvent = {};
   moveList: Move[] = [];
   teamList: Team[] = [];
   filterString = '';
@@ -221,7 +221,7 @@ export class EventDetailPageComponent {
         if (scenarioEvents && scenarioEvents.length > 0) {
           this.scenarioEvent = scenarioEvents.find(
             (m) => m.id === this.scenarioEventId
-          ) as ScenarioEventPlus;
+          );
         }
       });
     this.moveQuery
@@ -269,10 +269,8 @@ export class EventDetailPageComponent {
     });
   }
 
-  getEditableScenarioEvents(
-    scenarioEvents: ScenarioEventPlus[]
-  ): ScenarioEventPlus[] {
-    const editableList: ScenarioEventPlus[] = [];
+  getEditableScenarioEvents(scenarioEvents: ScenarioEvent[]): ScenarioEvent[] {
+    const editableList: ScenarioEvent[] = [];
     scenarioEvents.forEach((scenarioEvent) => {
       const newScenarioEvent = { ...scenarioEvent };
       editableList.push(newScenarioEvent);
