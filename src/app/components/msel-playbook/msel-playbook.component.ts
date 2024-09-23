@@ -18,7 +18,6 @@ import { DataFieldDataService } from 'src/app/data/data-field/data-field-data.se
 import { DataValueDataService } from 'src/app/data/data-value/data-value-data.service';
 import {
   ScenarioEventDataService,
-  ScenarioEventPlus,
   DataValuePlus,
 } from 'src/app/data/scenario-event/scenario-event-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
@@ -66,11 +65,11 @@ export class MselPlaybookComponent {
   allDataFields: DataField[] = [];
   dateFormControls = new Map<string, UntypedFormControl>();
   dataValues: DataValue[] = [];
-  mselScenarioEvents: ScenarioEventPlus[] = [];
-  sortedScenarioEvents: ScenarioEventPlus[] = [];
+  mselScenarioEvents: ScenarioEvent[] = [];
+  sortedScenarioEvents: ScenarioEvent[] = [];
   moveAndGroupNumbers: Record<string, number[]>[] = [];
   moveList: Move[] = [];
-  filteredScenarioEventList: ScenarioEventPlus[] = [];
+  filteredScenarioEventList: ScenarioEvent[] = [];
   filterString = '';
   blankDataValue = {
     id: '',
@@ -178,7 +177,7 @@ export class MselPlaybookComponent {
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((scenarioEvents) => {
         this.mselScenarioEvents = this.getEditableScenarioEvents(
-          scenarioEvents as ScenarioEventPlus[]
+          scenarioEvents as ScenarioEvent[]
         );
         if (scenarioEvents && scenarioEvents.length > 0) {
           this.moveAndGroupNumbers =
@@ -241,10 +240,8 @@ export class MselPlaybookComponent {
     });
   }
 
-  getEditableScenarioEvents(
-    scenarioEvents: ScenarioEventPlus[]
-  ): ScenarioEventPlus[] {
-    const editableList: ScenarioEventPlus[] = [];
+  getEditableScenarioEvents(scenarioEvents: ScenarioEvent[]): ScenarioEvent[] {
+    const editableList: ScenarioEvent[] = [];
     scenarioEvents.forEach((scenarioEvent) => {
       const newScenarioEvent = { ...scenarioEvent };
       editableList.push(newScenarioEvent);
@@ -253,8 +250,8 @@ export class MselPlaybookComponent {
     return editableList;
   }
 
-  getFilteredScenarioEvents(): ScenarioEventPlus[] {
-    const mselScenarioEvents: ScenarioEventPlus[] = [];
+  getFilteredScenarioEvents(): ScenarioEvent[] {
+    const mselScenarioEvents: ScenarioEvent[] = [];
     if (this.mselScenarioEvents) {
       this.mselScenarioEvents.forEach((se) => {
         if (se.mselId === this.msel.id) {
@@ -283,7 +280,7 @@ export class MselPlaybookComponent {
   }
 
   getDataValue(
-    scenarioEvent: ScenarioEventPlus,
+    scenarioEvent: ScenarioEvent,
     dataFieldName: string
   ): DataValuePlus {
     if (!(this.msel && scenarioEvent && scenarioEvent.id)) {
@@ -308,25 +305,22 @@ export class MselPlaybookComponent {
     return dataValuePlus;
   }
 
-  getDataFieldIdByName(scenarioEvent: ScenarioEventPlus, name: string): string {
+  getDataFieldIdByName(scenarioEvent: ScenarioEvent, name: string): string {
     const dataField = this.allDataFields.find(
       (df) => df.name.toLowerCase() === name.toLowerCase()
     );
     return dataField ? dataField.id : '';
   }
 
-  getSortedScenarioEvents(
-    scenarioEvents: ScenarioEventPlus[]
-  ): ScenarioEventPlus[] {
-    let sortedScenarioEvents: ScenarioEventPlus[];
+  getSortedScenarioEvents(scenarioEvents: ScenarioEvent[]): ScenarioEvent[] {
+    let sortedScenarioEvents: ScenarioEvent[];
     if (scenarioEvents) {
       if (scenarioEvents.length > 0 && this.sort && this.sort.direction) {
-        sortedScenarioEvents = (scenarioEvents as ScenarioEventPlus[]).sort(
-          (a: ScenarioEventPlus, b: ScenarioEventPlus) =>
-            this.sortScenarioEvents(a, b)
+        sortedScenarioEvents = (scenarioEvents as ScenarioEvent[]).sort(
+          (a: ScenarioEvent, b: ScenarioEvent) => this.sortScenarioEvents(a, b)
         );
       } else {
-        sortedScenarioEvents = (scenarioEvents as ScenarioEventPlus[]).sort(
+        sortedScenarioEvents = (scenarioEvents as ScenarioEvent[]).sort(
           (a, b) => (+a.deltaSeconds > +b.deltaSeconds ? 1 : -1)
         );
       }
@@ -334,10 +328,7 @@ export class MselPlaybookComponent {
     return sortedScenarioEvents;
   }
 
-  private sortScenarioEvents(
-    a: ScenarioEventPlus,
-    b: ScenarioEventPlus
-  ): number {
+  private sortScenarioEvents(a: ScenarioEvent, b: ScenarioEvent): number {
     const dir = this.sort.direction === 'desc' ? -1 : 1;
     if (!this.sort.direction || this.sort.active === 'deltaSeconds') {
       this.sort = { active: 'deltaSeconds', direction: 'asc' };
@@ -382,11 +373,11 @@ export class MselPlaybookComponent {
     }
   }
 
-  getScenarioEventById(id: string): ScenarioEventPlus | undefined {
+  getScenarioEventById(id: string): ScenarioEvent | undefined {
     return this.mselScenarioEvents.find((se) => se.id === id);
   }
 
-  getScenarioEventTitle(scenarioEvent: ScenarioEventPlus): string {
+  getScenarioEventTitle(scenarioEvent: ScenarioEvent): string {
     if (!scenarioEvent) {
       return '';
     }
@@ -430,7 +421,7 @@ export class MselPlaybookComponent {
     this.pageSize = event.pageSize;
   }
 
-  getPagedScenarioEvents(): ScenarioEventPlus[] {
+  getPagedScenarioEvents(): ScenarioEvent[] {
     const startIndex = this.pageIndex * this.pageSize;
     const endIndex = startIndex + this.pageSize;
     return this.sortedScenarioEvents.slice(startIndex, endIndex);

@@ -26,8 +26,6 @@ export interface DataValuePlus extends DataValue {
   valueArray: string[];
 }
 
-export interface ScenarioEventPlus extends ScenarioEvent {}
-
 export class ScenarioEventViewIndexing {
   fieldMap = new Map<string, DataField>();
   valueMap = new Map<string, Map<string, DataValuePlus>>();
@@ -46,8 +44,8 @@ export interface ScenarioEventView {
 
   get sort(): Sort;
 
-  get displayedScenarioEvents(): ScenarioEventPlus[];
-  set displayedScenarioEvents(evts: ScenarioEventPlus[]);
+  get displayedScenarioEvents(): ScenarioEvent[];
+  set displayedScenarioEvents(evts: ScenarioEvent[]);
 
   get dataFields(): DataField[];
 
@@ -209,7 +207,7 @@ export class ScenarioEventDataService {
 
   getDataValueFromView(
     view: ScenarioEventView,
-    scenarioEvent: ScenarioEventPlus,
+    scenarioEvent: ScenarioEvent,
     dataFieldName: string
   ): DataValuePlus {
     return this.getValueFromEvent(view, scenarioEvent, dataFieldName);
@@ -217,7 +215,7 @@ export class ScenarioEventDataService {
 
   getDisplayValueFromView(
     view: ScenarioEventView,
-    scenarioEvent: ScenarioEventPlus,
+    scenarioEvent: ScenarioEvent,
     dataFieldName: string
   ): string {
     const value = this.getDataValueFromView(view, scenarioEvent, dataFieldName);
@@ -279,7 +277,11 @@ export class ScenarioEventDataService {
       view.filterString,
       view.showHiddenEvents
     );
-    clonedList = this.sortScenarioEvents(clonedList, view.sort, view.viewIndex.valueMap);
+    clonedList = this.sortScenarioEvents(
+      clonedList,
+      view.sort,
+      view.viewIndex.valueMap
+    );
     view.displayedScenarioEvents = clonedList;
   }
 
@@ -432,8 +434,8 @@ export class ScenarioEventDataService {
     valueMap: Map<string, Map<string, DataValuePlus>>,
     filterString: string,
     showHidden: boolean
-  ): ScenarioEventPlus[] {
-    const clonedList: ScenarioEventPlus[] = [];
+  ): ScenarioEvent[] {
+    const clonedList: ScenarioEvent[] = [];
     if (scenarioEvents && scenarioEvents.length > 0) {
       scenarioEvents.forEach((scenarioEvent) => {
         if (!scenarioEvent.isHidden || showHidden) {
@@ -458,7 +460,7 @@ export class ScenarioEventDataService {
 
   private getValueFromEvent(
     view: ScenarioEventView,
-    scenarioEvent: ScenarioEventPlus,
+    scenarioEvent: ScenarioEvent,
     dataFieldName: string
   ): DataValuePlus {
     if ('deltaSeconds' === dataFieldName) {
@@ -492,7 +494,7 @@ export class ScenarioEventDataService {
   }
 
   private getSortAndFilterValueFromEvent(
-    scenarioEvent: ScenarioEventPlus,
+    scenarioEvent: ScenarioEvent,
     valueMap: Map<string, Map<string, DataValuePlus>>,
     fieldName: string
   ): string | number {
@@ -548,8 +550,8 @@ export class ScenarioEventDataService {
   }
 
   private sortScenarioEventImpl(
-    a: ScenarioEventPlus,
-    b: ScenarioEventPlus,
+    a: ScenarioEvent,
+    b: ScenarioEvent,
     sorts: Sort[],
     valueMap: Map<string, Map<string, DataValuePlus>>
   ): number {
@@ -579,16 +581,16 @@ export class ScenarioEventDataService {
   }
 
   private sortScenarioEvents(
-    scenarioEvents: ScenarioEventPlus[],
+    scenarioEvents: ScenarioEvent[],
     sort: Sort,
     valueMap: Map<string, Map<string, DataValuePlus>>
-  ): ScenarioEventPlus[] {
+  ): ScenarioEvent[] {
     const sorts: Sort[] = [];
     if (sort && sort.active && sort.direction) {
       sorts.push(sort);
     }
     sorts.push(...this.baseSort);
-    scenarioEvents.sort((a: ScenarioEventPlus, b: ScenarioEventPlus) =>
+    scenarioEvents.sort((a: ScenarioEvent, b: ScenarioEvent) =>
       this.sortScenarioEventImpl(a, b, sorts, valueMap)
     );
     return scenarioEvents;

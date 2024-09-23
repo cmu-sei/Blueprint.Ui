@@ -49,7 +49,6 @@ import {
   ScenarioEventDataService,
   ScenarioEventView,
   ScenarioEventViewIndexing,
-  ScenarioEventPlus,
   DataValuePlus,
 } from 'src/app/data/scenario-event/scenario-event-data.service';
 import { ScenarioEventEditDialogComponent } from '../scenario-event-edit-dialog/scenario-event-edit-dialog.component';
@@ -81,7 +80,7 @@ export class ScenarioEventListComponent
   mselScenarioEvents: ScenarioEvent[] = [];
   filterString = '';
   sort: Sort = { active: '', direction: '' };
-  displayedScenarioEvents: ScenarioEventPlus[] = [];
+  displayedScenarioEvents: ScenarioEvent[] = [];
   headerDataFields: DataField[] = [];
   dataValues: DataValue[] = [];
   cardList: Card[] = [];
@@ -92,7 +91,7 @@ export class ScenarioEventListComponent
   mselDataFields: DataField[] = [];
   expandedScenarioEventId = '';
   expandedMoreScenarioEventIds: string[] = [];
-  newScenarioEvent: ScenarioEventPlus;
+  newScenarioEvent: ScenarioEvent;
   isAddingScenarioEvent = false;
   canDoAnything = false;
   private unsubscribe$ = new Subject();
@@ -414,7 +413,7 @@ export class ScenarioEventListComponent
     return users;
   }
 
-  toggleNoneSelection(scenarioEvent: ScenarioEventPlus, dataFieldName: string) {
+  toggleNoneSelection(scenarioEvent: ScenarioEvent, dataFieldName: string) {
     const newValues = new Array('None');
     this.getDataValue(scenarioEvent, dataFieldName).value =
       newValues.join(', ');
@@ -481,7 +480,7 @@ export class ScenarioEventListComponent
   }
 
   getDataValue(
-    scenarioEvent: ScenarioEventPlus,
+    scenarioEvent: ScenarioEvent,
     dataFieldName: string
   ): DataValuePlus {
     if (!(this.msel && scenarioEvent && scenarioEvent.id)) {
@@ -494,10 +493,7 @@ export class ScenarioEventListComponent
     );
   }
 
-  getDisplayValue(
-    scenarioEvent: ScenarioEventPlus,
-    dataFieldName: string
-  ): string {
+  getDisplayValue(scenarioEvent: ScenarioEvent, dataFieldName: string): string {
     if (!(this.msel && scenarioEvent && scenarioEvent.id)) {
       return '';
     }
@@ -516,7 +512,7 @@ export class ScenarioEventListComponent
     return team ? team.shortName : '';
   }
 
-  onContextMenu(event: MouseEvent, scenarioEvent: ScenarioEventPlus) {
+  onContextMenu(event: MouseEvent, scenarioEvent: ScenarioEvent) {
     event.preventDefault();
     this.contextMenuPosition.x = event.clientX + 'px';
     this.contextMenuPosition.y = event.clientY + 'px';
@@ -623,7 +619,7 @@ export class ScenarioEventListComponent
     this.displayEditDialog(editScenarioEvent);
   }
 
-  copyScenarioEvent(scenarioEvent: ScenarioEventPlus): void {
+  copyScenarioEvent(scenarioEvent: ScenarioEvent): void {
     const newScenarioEvent = { ...scenarioEvent };
     newScenarioEvent.id = uuidv4();
     newScenarioEvent.dataValues = [];
@@ -706,7 +702,7 @@ export class ScenarioEventListComponent
   }
 
   saveDataValue(
-    scenarioEvent: ScenarioEventPlus,
+    scenarioEvent: ScenarioEvent,
     dataFieldName: string,
     newValue: string
   ) {
@@ -726,7 +722,7 @@ export class ScenarioEventListComponent
   }
 
   saveDataValueArray(
-    scenarioEvent: ScenarioEventPlus,
+    scenarioEvent: ScenarioEvent,
     dataFieldName: string,
     newValues: string[]
   ) {
@@ -826,7 +822,7 @@ export class ScenarioEventListComponent
       : {};
   }
 
-  getRowStyle(scenarioEvent: ScenarioEventPlus) {
+  getRowStyle(scenarioEvent: ScenarioEvent) {
     if (!scenarioEvent || !scenarioEvent.rowMetadata) {
       return '';
     }
@@ -834,7 +830,7 @@ export class ScenarioEventListComponent
     return this.getStyleFromColor(color);
   }
 
-  selectNewColor(color: string, incomingScenarioEvent: ScenarioEventPlus) {
+  selectNewColor(color: string, incomingScenarioEvent: ScenarioEvent) {
     const scenarioEvent = { ...incomingScenarioEvent };
     let parts = scenarioEvent.rowMetadata
       ? scenarioEvent.rowMetadata.split(',')
@@ -975,7 +971,7 @@ export class ScenarioEventListComponent
     });
   }
 
-  rowDataFields(scenarioEvent: ScenarioEventPlus): DataField[] {
+  rowDataFields(scenarioEvent: ScenarioEvent): DataField[] {
     const dataFields = new Array<DataField>();
     this.mselDataFields.forEach((df) => {
       if (
