@@ -110,4 +110,8 @@ export class DurationEditComponent implements OnChanges {
   changeSign() {
     this.durationSeconds = -this.durationSeconds;
   }
+
+  hasStartTime(): boolean {
+    return this.startTime && this.startTime.valueOf() > 0;
+  }
 }

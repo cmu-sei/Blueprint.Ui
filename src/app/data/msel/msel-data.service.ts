@@ -237,18 +237,16 @@ export class MselDataService {
         ]) =>
           items
             ? (items as Msel[])
-              .sort((a: Msel, b: Msel) =>
-                this.sortMsels(a, b, sortColumn, sortIsAscending)
-              )
-              .filter(
-                (msel) =>
-                  ('' + msel.description)
-                    .toLowerCase()
-                    .includes(filterTerm.toLowerCase()) ||
-                    msel.id
+                .sort((a: Msel, b: Msel) =>
+                  this.sortMsels(a, b, sortColumn, sortIsAscending)
+                )
+                .filter(
+                  (msel) =>
+                    ('' + msel.description)
                       .toLowerCase()
-                      .includes(filterTerm.toLowerCase())
-              )
+                      .includes(filterTerm.toLowerCase()) ||
+                    msel.id.toLowerCase().includes(filterTerm.toLowerCase())
+                )
             : []
       )
     );
@@ -266,6 +264,9 @@ export class MselDataService {
       )
       .subscribe(
         (msels) => {
+          msels.forEach(a => {
+            this.setAsDates(a);
+          });
           this.mselStore.set(msels);
         },
         (error) => {
@@ -287,6 +288,9 @@ export class MselDataService {
       )
       .subscribe(
         (msels) => {
+          msels.forEach(a => {
+            this.setAsDates(a);
+          });
           this.mselStore.set(msels);
         },
         (error) => {
@@ -318,12 +322,15 @@ export class MselDataService {
         }),
         take(1)
       )
-      .subscribe((s) => {
-        this.mselStore.upsert(s.id, { ...s });
-      },
-      (error) => {
-        this.mselStore.setLoading(false);
-      });
+      .subscribe(
+        (s) => {
+          this.setAsDates(s);
+          this.mselStore.upsert(s.id, { ...s });
+        },
+        (error) => {
+          this.mselStore.setLoading(false);
+        }
+      );
   }
 
   unload() {
@@ -340,12 +347,15 @@ export class MselDataService {
         }),
         take(1)
       )
-      .subscribe((s) => {
-        this.mselStore.add(s);
-      },
-      (error) => {
-        this.mselStore.setLoading(false);
-      });
+      .subscribe(
+        (s) => {
+          this.setAsDates(s);
+          this.mselStore.add(s);
+        },
+        (error) => {
+          this.mselStore.setLoading(false);
+        }
+      );
   }
 
   join(mselId: string, teamId: string) {
@@ -366,12 +376,15 @@ export class MselDataService {
         }),
         take(1)
       )
-      .subscribe((s) => {
-        this.mselStore.add(s);
-      },
-      (error) => {
-        this.mselStore.setLoading(false);
-      });
+      .subscribe(
+        (s) => {
+          this.setAsDates(s);
+          this.mselStore.add(s);
+        },
+        (error) => {
+          this.mselStore.setLoading(false);
+        }
+      );
   }
 
   updateMsel(msel: Msel) {
@@ -384,12 +397,15 @@ export class MselDataService {
         }),
         take(1)
       )
-      .subscribe((n) => {
-        this.updateStore(n);
-      },
-      (error) => {
-        this.mselStore.setLoading(false);
-      });
+      .subscribe(
+        (n) => {
+          this.setAsDates(n);
+          this.updateStore(n);
+        },
+        (error) => {
+          this.mselStore.setLoading(false);
+        }
+      );
   }
 
   pushIntegrations(mselId: string) {
@@ -402,13 +418,15 @@ export class MselDataService {
         }),
         take(1)
       )
-      .subscribe((n) => {
-        this.updateStore(n);
-      },
-      (error) => {
-        this.mselStore.setLoading(false);
-        this.errorService.handleError(error);
-      });
+      .subscribe(
+        (n) => {
+          this.updateStore(n);
+        },
+        (error) => {
+          this.mselStore.setLoading(false);
+          this.errorService.handleError(error);
+        }
+      );
   }
 
   pullIntegrations(mselId: string) {
@@ -421,19 +439,21 @@ export class MselDataService {
         }),
         take(1)
       )
-      .subscribe((n) => {
-        this.updateStore(n);
-      },
-      (error) => {
-        this.mselStore.setLoading(false);
-      });
+      .subscribe(
+        (n) => {
+          this.updateStore(n);
+        },
+        (error) => {
+          this.mselStore.setLoading(false);
+        }
+      );
   }
 
   mselPushStatusChange(mselPushStatus: string) {
     let notFound = true;
     const parts = mselPushStatus.split(',');
-    const newPushStatus = {mselId: parts[0], pushStatus: parts[1]};
-    this._mselPushStatuses.forEach(mps => {
+    const newPushStatus = { mselId: parts[0], pushStatus: parts[1] };
+    this._mselPushStatuses.forEach((mps) => {
       if (mps.mselId === newPushStatus.mselId) {
         mps.pushStatus = newPushStatus.pushStatus;
         notFound = false;
@@ -455,12 +475,14 @@ export class MselDataService {
         }),
         take(1)
       )
-      .subscribe((n) => {
-        this.updateStore(n);
-      },
-      (error) => {
-        this.mselStore.setLoading(false);
-      });
+      .subscribe(
+        (n) => {
+          this.updateStore(n);
+        },
+        (error) => {
+          this.mselStore.setLoading(false);
+        }
+      );
   }
 
   delete(id: string) {
@@ -474,36 +496,42 @@ export class MselDataService {
 
   addUserMselRole(userId: string, mselId: string, mselRole: MselRole) {
     this.mselStore.setLoading(true);
-    this.mselService.addUserMselRole(userId, mselId, mselRole)
+    this.mselService
+      .addUserMselRole(userId, mselId, mselRole)
       .pipe(
         tap(() => {
           this.mselStore.setLoading(false);
         }),
         take(1)
       )
-      .subscribe((n) => {
-        this.updateStore(n);
-      },
-      (error) => {
-        this.mselStore.setLoading(false);
-      });
+      .subscribe(
+        (n) => {
+          this.updateStore(n);
+        },
+        (error) => {
+          this.mselStore.setLoading(false);
+        }
+      );
   }
 
   removeUserMselRole(userId: string, mselId: string, mselRole: MselRole) {
     this.mselStore.setLoading(true);
-    this.mselService.removeUserMselRole(userId, mselId, mselRole)
+    this.mselService
+      .removeUserMselRole(userId, mselId, mselRole)
       .pipe(
         tap(() => {
           this.mselStore.setLoading(false);
         }),
         take(1)
       )
-      .subscribe((n) => {
-        this.updateStore(n);
-      },
-      (error) => {
-        this.mselStore.setLoading(false);
-      });
+      .subscribe(
+        (n) => {
+          this.updateStore(n);
+        },
+        (error) => {
+          this.mselStore.setLoading(false);
+        }
+      );
   }
 
   downloadXlsx(id: string) {
@@ -514,48 +542,70 @@ export class MselDataService {
     return this.mselService.downloadJsonMsel(id);
   }
 
-  uploadXlsx(mselId: string, teamId: string, file: File, observe: any, reportProgress: boolean) {
+  uploadXlsx(
+    mselId: string,
+    teamId: string,
+    file: File,
+    observe: any,
+    reportProgress: boolean
+  ) {
     this.mselStore.setLoading(true);
     if (mselId) {
       this.mselService
-        .replaceWithXlsxFile(mselId, '', '', teamId, file, observe, reportProgress)
-        .subscribe((event: any) => {
-          if (event.type === HttpEventType.UploadProgress) {
-            const uploadProgress = Math.round((100 * event.loaded) / event.total);
-            this.uploadProgress.next(uploadProgress);
-          } else if (event instanceof HttpResponse) {
-            this.uploadProgress.next(0);
-            this.mselStore.setLoading(false);
-            if (event.status === 200) {
-              const msel = event.body;
-              this.mselStore.upsert(msel.id, msel);
+        .replaceWithXlsxFile(
+          mselId,
+          '',
+          '',
+          teamId,
+          file,
+          observe,
+          reportProgress
+        )
+        .subscribe(
+          (event: any) => {
+            if (event.type === HttpEventType.UploadProgress) {
+              const uploadProgress = Math.round(
+                (100 * event.loaded) / event.total
+              );
+              this.uploadProgress.next(uploadProgress);
+            } else if (event instanceof HttpResponse) {
+              this.uploadProgress.next(0);
+              this.mselStore.setLoading(false);
+              if (event.status === 200) {
+                const msel = event.body;
+                this.mselStore.upsert(msel.id, msel);
+              }
             }
+          },
+          (error) => {
+            this.mselStore.setLoading(false);
+            this.uploadProgress.next(0);
           }
-        },
-        (error) => {
-          this.mselStore.setLoading(false);
-          this.uploadProgress.next(0);
-        });
+        );
     } else {
       this.mselService
         .uploadXlsx('', '', teamId, file, observe, reportProgress)
-        .subscribe((event) => {
-          if (event.type === HttpEventType.UploadProgress) {
-            const uploadProgress = Math.round((100 * event.loaded) / event.total);
-            this.uploadProgress.next(uploadProgress);
-          } else if (event instanceof HttpResponse) {
-            this.uploadProgress.next(0);
-            this.mselStore.setLoading(false);
-            if (event.status === 200) {
-              const msel = event.body;
-              this.mselStore.upsert(msel.id, msel);
+        .subscribe(
+          (event) => {
+            if (event.type === HttpEventType.UploadProgress) {
+              const uploadProgress = Math.round(
+                (100 * event.loaded) / event.total
+              );
+              this.uploadProgress.next(uploadProgress);
+            } else if (event instanceof HttpResponse) {
+              this.uploadProgress.next(0);
+              this.mselStore.setLoading(false);
+              if (event.status === 200) {
+                const msel = event.body;
+                this.mselStore.upsert(msel.id, msel);
+              }
             }
+          },
+          (error) => {
+            this.mselStore.setLoading(false);
+            this.uploadProgress.next(0);
           }
-        },
-        (error) => {
-          this.mselStore.setLoading(false);
-          this.uploadProgress.next(0);
-        });
+        );
     }
   }
 
@@ -563,23 +613,27 @@ export class MselDataService {
     this.mselStore.setLoading(true);
     this.mselService
       .uploadJsonMsel('', '', '', file, observe, reportProgress)
-      .subscribe((event: any) => {
-        if (event.type === HttpEventType.UploadProgress) {
-          const uploadProgress = Math.round((100 * event.loaded) / event.total);
-          this.uploadProgress.next(uploadProgress);
-        } else if (event instanceof HttpResponse) {
-          this.uploadProgress.next(0);
-          this.mselStore.setLoading(false);
-          if (event.status === 200) {
-            const msel = event.body;
-            this.mselStore.upsert(msel.id, msel);
+      .subscribe(
+        (event: any) => {
+          if (event.type === HttpEventType.UploadProgress) {
+            const uploadProgress = Math.round(
+              (100 * event.loaded) / event.total
+            );
+            this.uploadProgress.next(uploadProgress);
+          } else if (event instanceof HttpResponse) {
+            this.uploadProgress.next(0);
+            this.mselStore.setLoading(false);
+            if (event.status === 200) {
+              const msel = event.body;
+              this.mselStore.upsert(msel.id, msel);
+            }
           }
+        },
+        (error) => {
+          this.mselStore.setLoading(false);
+          this.uploadProgress.next(0);
         }
-      },
-      (error) => {
-        this.mselStore.setLoading(false);
-        this.uploadProgress.next(0);
-      });
+      );
   }
 
   setPageEvent(pageEvent: PageEvent) {
@@ -598,12 +652,7 @@ export class MselDataService {
     this.mselStore.setActive(id);
   }
 
-  private sortMsels(
-    a: Msel,
-    b: Msel,
-    column: string,
-    isAsc: boolean
-  ) {
+  private sortMsels(a: Msel, b: Msel, column: string, isAsc: boolean) {
     switch (column) {
       case 'description':
         return (
@@ -620,4 +669,10 @@ export class MselDataService {
     }
   }
 
+  setAsDates(msel: Msel) {
+    // set to a date object.
+    msel.dateCreated = new Date(msel.dateCreated);
+    msel.dateModified = new Date(msel.dateModified);
+    msel.startTime = new Date(msel.startTime);
+  }
 }

@@ -31,6 +31,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <mat-icon class="mdi-24px self-center" fontIcon="mdi-close"></mat-icon>
           </button>
         </span>
+        <span class="change-span">
+          <mat-label *ngIf="isChanged">Changes have not been saved!</mat-label>
+        </span>
         <span class="delete-span">
           <button
             mat-icon-button
@@ -44,6 +47,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </div>
       <div *ngIf="msel" class="scrolling-region">
         <div class="info-detail">
+          <!-- MSEL Name -->
           <div class="single-detail center-self">
             <mat-form-field class="full-width">
               <input
@@ -58,6 +62,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
               />
             </mat-form-field>
           </div>
+          <!-- MSEL Description -->
           <div class="single-detail center-self">
             <mat-form-field class="full-width">
               <input
@@ -72,7 +77,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
               />
             </mat-form-field>
           </div>
-          <div class="single-detail center-self">
+          <!-- MSEL Start Time -->
+          <div class="single-checkbox">
+            <mat-checkbox [checked]="msel.startTime?.valueOf() > 0"
+              [disabled]="!isContentDeveloper && !msel.hasRole(loggedInUserId, null).owner" (change)="toggleStartTime($event)"
+              title="Set a Start Time">Set a Start Time
+            </mat-checkbox>
+          </div>
+          <div class="single-detail center-self" *ngIf="hasStartTime()">
             <mat-form-field>
               <input
                 matInput
@@ -105,11 +117,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
               </ngx-mat-datetime-picker>
             </mat-form-field>
           </div>
+          <!-- MSEL End/Duration -->
           <app-duration-edit
             [startTime]="msel.startTime"
             [(durationSeconds)]="msel.durationSeconds"
             [timeName]="'End Date / Time'"
-            [postScript]="'from start'"
+            [postScript]="'duration'"
             (change)="isChanged = true;"
           ></app-duration-edit>
           <!-- Is a Template -->
@@ -162,7 +175,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                        msel.galleryCollectionId ||
                        msel.steamfitterScenarioId) &&
                        !pushStatus"
-                [disabled]="!(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)"
+                [disabled]="!(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) || isChanged"
               >Remove Integrations</button>
             </div>
           </div>

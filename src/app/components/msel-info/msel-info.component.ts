@@ -355,6 +355,17 @@ export class MselInfoComponent implements OnDestroy {
     }
   }
 
+  hasStartTime(): boolean {
+    return this.msel.startTime && this.msel.startTime.valueOf() > 0;
+  }
+
+  toggleStartTime(event: any) {
+    this.msel.startTime = event.checked
+      ? new Date()
+      : new Date('0001-01-01T00:00:00');
+    this.startTimeCheck();
+  }
+
   ngOnDestroy() {
     this.unsubscribe$.next(null);
     this.unsubscribe$.complete();

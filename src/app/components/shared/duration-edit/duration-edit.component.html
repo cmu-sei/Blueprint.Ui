@@ -6,7 +6,7 @@ project root for license information.
 
 <div class="single-detail center-self">
   <div class="date-time-picker">
-    <mat-form-field>
+    <mat-form-field *ngIf="hasStartTime()">
       <input
         matInput
         [ngxMatDatetimePicker]="endTimePicker"
@@ -35,7 +35,7 @@ project root for license information.
     </mat-form-field>
   </div>
   <div>
-    <span style="margin-left: 20px; margin-right: 20px;"> or </span>
+    <span style="margin-left: 20px; margin-right: 20px;"> &nbsp; </span>
     <span>
       <button
         mat-icon-button
