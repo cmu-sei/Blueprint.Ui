@@ -78,15 +78,19 @@ export class DurationEditComponent implements OnChanges {
   }
 
   deltaUpdated(event: any, whichValue: string) {
+    // the setValue can be -1 when decrementing and can be (24, 60, 60) for (hours, minutes, seconds) respectively
     let setValue = +event.target.value;
     switch (whichValue) {
+      // Days change
       case 'd':
         if (setValue < 0) {
           setValue = 0;
         }
         this.days = setValue;
         break;
+      // Hours change
       case 'h':
+        // decrementing hours past 0, adjust days and hours
         if (setValue < 0) {
           if (this.days > 0) {
             this.days -= 1;
@@ -94,13 +98,16 @@ export class DurationEditComponent implements OnChanges {
           } else {
             setValue = 0;
           }
+          // incrementing hours past 23, adjust days and hours
         } else if (setValue > 23) {
           this.days += 1;
           setValue = 0;
         }
         this.hours = setValue;
         break;
+      // Minutes change
       case 'm':
+        // decrementing minutes past 0, adjust days, hours, and minutes
         if (setValue < 0) {
           if (this.hours > 0) {
             this.hours -= 1;
@@ -114,6 +121,7 @@ export class DurationEditComponent implements OnChanges {
               setValue = 0;
             }
           }
+          // incrementing minutes past 59, adjust days, hours, and minutes
         } else if (setValue > 59) {
           if (this.hours === 23) {
             this.days += 1;
@@ -126,7 +134,9 @@ export class DurationEditComponent implements OnChanges {
         }
         this.minutes = setValue;
         break;
+      // Seconds change
       case 's':
+        // decrementing seconds past 0, adjust days, hours, minutes, and seconds
         if (setValue < 0) {
           if (this.minutes > 0) {
             this.minutes -= 1;
@@ -147,6 +157,7 @@ export class DurationEditComponent implements OnChanges {
               }
             }
           }
+          // incrementing seconds past 59, adjust days, hours, minutes, and seconds
         } else if (setValue > 59) {
           if (this.minutes === 59) {
             if (this.hours === 23) {
