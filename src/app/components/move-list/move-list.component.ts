@@ -31,11 +31,12 @@ export class MoveListComponent implements OnDestroy {
   filteredMoveList: Move[] = [];
   filterControl = new UntypedFormControl();
   filterString = '';
-  sort: Sort = {active: 'moveNumber', direction: 'asc'};
+  sort: Sort = { active: 'moveNumber', direction: 'asc' };
   displayedMoves: Move[] = [];
   isAddingMove = false;
   editingId = '';
   showRealTime = false;
+  maxMoveNumber = Number.MIN_SAFE_INTEGER;
 
   private unsubscribe$ = new Subject();
   // context menu
@@ -50,17 +51,28 @@ export class MoveListComponent implements OnDestroy {
     public dialogService: DialogService
   ) {
     // subscribe to move changes
-    this.moveQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(moves => {
-      this.moveList = moves;
-      this.displayedMoves = this.getSortedMoves(this.getFilteredMoves());
-    });
-    // subscribe to the active MSEL
-    (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
-      if (msel && this.msel.id !== msel.id) {
-        Object.assign(this.msel, msel);
+    this.moveQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((moves) => {
+        this.moveList = moves;
         this.displayedMoves = this.getSortedMoves(this.getFilteredMoves());
-      }
-    });
+        this.maxMoveNumber = Math.max.apply(
+          Math,
+          moves.map(function (o) {
+            return +o.moveNumber;
+          })
+        );
+      });
+    // subscribe to the active MSEL
+    (this.mselQuery.selectActive() as Observable<MselPlus>)
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((msel) => {
+        if (msel && this.msel.id !== msel.id) {
+          Object.assign(this.msel, msel);
+          this.displayedMoves = this.getSortedMoves(this.getFilteredMoves());
+        }
+      });
     this.filterControl.valueChanges
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((term) => {
@@ -71,7 +83,9 @@ export class MoveListComponent implements OnDestroy {
 
   getSortedMoves(moves: Move[]) {
     if (moves) {
-      moves.sort((a, b) => this.sortMoves(a, b, this.sort.active, this.sort.direction));
+      moves.sort((a, b) =>
+        this.sortMoves(a, b, this.sort.active, this.sort.direction)
+      );
     }
     return moves;
   }
@@ -80,12 +94,12 @@ export class MoveListComponent implements OnDestroy {
     let editMove: Move = {};
     if (!move) {
       editMove = {
-        moveNumber: this.moveList.length,
+        moveNumber: this.maxMoveNumber + 1,
         deltaSeconds: 0,
         description: '',
         situationDescription: '',
         situationTime: new Date(),
-        mselId: this.msel.id
+        mselId: this.msel.id,
       };
     } else {
       // make sure all move dates are actual dates
@@ -96,7 +110,7 @@ export class MoveListComponent implements OnDestroy {
       width: '800px',
       data: {
         move: editMove,
-        mselStartTime: this.msel.startTime
+        mselStartTime: this.msel.startTime,
       },
     });
     dialogRef.componentInstance.editComplete.subscribe((result) => {
@@ -134,29 +148,30 @@ export class MoveListComponent implements OnDestroy {
   }
 
   sortChanged(sort: Sort) {
-    this.sort = sort && sort.active ? sort : {active: 'moveNumber', direction: 'asc'};
-    this.displayedMoves = this.displayedMoves.sort((a, b) => this.sortMoves(a, b, sort.active, sort.direction));
+    this.sort =
+      sort && sort.active ? sort : { active: 'moveNumber', direction: 'asc' };
+    this.displayedMoves = this.displayedMoves.sort((a, b) =>
+      this.sortMoves(a, b, sort.active, sort.direction)
+    );
   }
 
-  private sortMoves(
-    a: Move,
-    b: Move,
-    column: string,
-    direction: string
-  ) {
+  private sortMoves(a: Move, b: Move, column: string, direction: string) {
     const isAsc = direction !== 'desc';
     switch (column) {
       case 'moveNumber':
-        return ( (+a.moveNumber < +b.moveNumber ? -1 : 1) * (isAsc ? 1 : -1) );
+        return (+a.moveNumber < +b.moveNumber ? -1 : 1) * (isAsc ? 1 : -1);
         break;
       case 'deltaSeconds':
-        return ( (a.deltaSeconds < b.deltaSeconds ? -1 : 1) * (isAsc ? 1 : -1) );
+        return (a.deltaSeconds < b.deltaSeconds ? -1 : 1) * (isAsc ? 1 : -1);
         break;
       case 'situationTime':
-        return ( (a.situationTime < b.situationTime ? -1 : 1) * (isAsc ? 1 : -1) );
+        return (a.situationTime < b.situationTime ? -1 : 1) * (isAsc ? 1 : -1);
         break;
       case 'situationDescription':
-        return ( (a.situationDescription < b.situationDescription ? -1 : 1) * (isAsc ? 1 : -1) );
+        return (
+          (a.situationDescription < b.situationDescription ? -1 : 1) *
+          (isAsc ? 1 : -1)
+        );
         break;
       default:
         return 0;
@@ -166,25 +181,27 @@ export class MoveListComponent implements OnDestroy {
   getFilteredMoves(): Move[] {
     let filteredMoves: Move[] = [];
     if (this.moveList) {
-      this.moveList.forEach(m => {
+      this.moveList.forEach((m) => {
         if (m.mselId === this.msel.id) {
-          filteredMoves.push({... m});
+          filteredMoves.push({ ...m });
         }
       });
       if (filteredMoves && filteredMoves.length > 0 && this.filterString) {
         const filterString = this.filterString.toLowerCase();
-        filteredMoves = filteredMoves
-          .filter((a) =>
+        filteredMoves = filteredMoves.filter(
+          (a) =>
             a.description.toLowerCase().includes(filterString) ||
             a.situationDescription.toLowerCase().includes(filterString)
-          );
+        );
       }
     }
     return filteredMoves;
   }
 
   badMoveTimeOrder(): boolean {
-    const orderedMoves = this.moveList.sort((a, b) => +a.moveNumber < +b.moveNumber ? -1 : 1);
+    const orderedMoves = this.moveList.sort((a, b) =>
+      +a.moveNumber < +b.moveNumber ? -1 : 1
+    );
     let deltaSeconds = Number.MIN_SAFE_INTEGER;
     for (let index = 0; index < orderedMoves.length; index++) {
       if (+orderedMoves[index].deltaSeconds <= +deltaSeconds) {

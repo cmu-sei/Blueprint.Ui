@@ -18,6 +18,7 @@ export class DurationEditComponent implements OnChanges {
   }
   set durationSeconds(value) {
     this.durationSecondsValue = value;
+    this.sign = value < 0 ? -1 : 1;
     this.durationSecondsChange.emit(this.durationSecondsValue);
   }
   @Input() timeName: string;
@@ -30,6 +31,7 @@ export class DurationEditComponent implements OnChanges {
   hours = 0;
   minutes = 0;
   seconds = 0;
+  sign = 0;
 
   ngOnChanges(changes: SimpleChanges) {
     if (this.startTime && this.durationSeconds) {
@@ -70,7 +72,8 @@ export class DurationEditComponent implements OnChanges {
 
   calculateDurationSeconds() {
     return (
-      this.days * 86400 + this.hours * 3600 + this.minutes * 60 + this.seconds
+      this.sign *
+      (this.days * 86400 + this.hours * 3600 + this.minutes * 60 + this.seconds)
     );
   }
 
@@ -78,22 +81,93 @@ export class DurationEditComponent implements OnChanges {
     let setValue = +event.target.value;
     switch (whichValue) {
       case 'd':
-        setValue = setValue < 0 ? 0 : setValue;
+        if (setValue < 0) {
+          setValue = 0;
+        }
         this.days = setValue;
         break;
       case 'h':
-        setValue = setValue < 0 ? 0 : setValue > 23 ? 23 : setValue;
+        if (setValue < 0) {
+          if (this.days > 0) {
+            this.days -= 1;
+            setValue = 23;
+          } else {
+            setValue = 0;
+          }
+        } else if (setValue > 23) {
+          this.days += 1;
+          setValue = 0;
+        }
         this.hours = setValue;
         break;
       case 'm':
-        setValue = setValue < 0 ? 0 : setValue > 59 ? 59 : setValue;
+        if (setValue < 0) {
+          if (this.hours > 0) {
+            this.hours -= 1;
+            setValue = 59;
+          } else {
+            if (this.days > 0) {
+              this.days -= 1;
+              this.hours = 23;
+              setValue = 59;
+            } else {
+              setValue = 0;
+            }
+          }
+        } else if (setValue > 59) {
+          if (this.hours === 23) {
+            this.days += 1;
+            this.hours = 0;
+            setValue = 0;
+          } else {
+            this.hours += 1;
+            setValue = 0;
+          }
+        }
         this.minutes = setValue;
         break;
       case 's':
-        setValue = setValue < 0 ? 0 : setValue > 59 ? 59 : setValue;
+        if (setValue < 0) {
+          if (this.minutes > 0) {
+            this.minutes -= 1;
+            setValue = 59;
+          } else {
+            if (this.hours > 0) {
+              this.hours -= 1;
+              this.minutes = 59;
+              setValue = 59;
+            } else {
+              if (this.days > 0) {
+                this.days -= 1;
+                this.hours = 23;
+                this.minutes = 59;
+                setValue = 59;
+              } else {
+                setValue = 0;
+              }
+            }
+          }
+        } else if (setValue > 59) {
+          if (this.minutes === 59) {
+            if (this.hours === 23) {
+              this.days += 1;
+              this.hours = 0;
+              this.minutes = 0;
+              setValue = 0;
+            } else {
+              this.hours += 1;
+              this.minutes = 0;
+              setValue = 0;
+            }
+          } else {
+            this.minutes += 1;
+            setValue = 0;
+          }
+        }
         this.seconds = setValue;
         break;
     }
+    event.target.value = setValue < 10 ? '0' + setValue : setValue;
     this.durationSeconds = this.calculateDurationSeconds();
     this.change.emit(this.durationSeconds);
     this.endTimeFormControl.setValue(
@@ -109,6 +183,7 @@ export class DurationEditComponent implements OnChanges {
 
   changeSign() {
     this.durationSeconds = -this.durationSeconds;
+    this.sign = -this.sign;
   }
 
   hasStartTime(): boolean {

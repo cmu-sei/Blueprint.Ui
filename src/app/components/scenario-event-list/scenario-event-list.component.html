@@ -178,6 +178,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 style="outline: none;"
                 title="Switch to Real Time"
                 *ngIf="!showRealTime"
+                [disabled]="!msel || !msel.startTime || msel.startTime.valueOf() < 0"
               >
                 <mat-icon class="mdi-24px" fontIcon="mdi-timer-outline"></mat-icon>
               </button>
