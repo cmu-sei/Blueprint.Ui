@@ -37,6 +37,7 @@ export class MoveListComponent implements OnDestroy {
   editingId = '';
   showRealTime = false;
   maxMoveNumber = Number.MIN_SAFE_INTEGER;
+  maxMoveStartSeconds = 0;
 
   private unsubscribe$ = new Subject();
   // context menu
@@ -61,6 +62,12 @@ export class MoveListComponent implements OnDestroy {
           Math,
           moves.map(function (o) {
             return +o.moveNumber;
+          })
+        );
+        this.maxMoveStartSeconds = Math.max.apply(
+          Math,
+          moves.map(function (o) {
+            return +o.deltaSeconds;
           })
         );
       });
@@ -95,7 +102,7 @@ export class MoveListComponent implements OnDestroy {
     if (!move) {
       editMove = {
         moveNumber: this.maxMoveNumber + 1,
-        deltaSeconds: 0,
+        deltaSeconds: this.maxMoveStartSeconds,
         description: '',
         situationDescription: '',
         situationTime: new Date(),
