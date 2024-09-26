@@ -169,6 +169,7 @@ export class ScenarioEventListComponent
   catalogList: Catalog[] = [];
   injectTypeList: InjectType[] = [];
   eventType: typeof EventType = EventType;
+  maxScenarioEventStartSeconds: 0;
 
   constructor(
     private router: Router,
@@ -254,6 +255,12 @@ export class ScenarioEventListComponent
               this.mselScenarioEvents,
               this.moveList
             );
+          this.maxScenarioEventStartSeconds = Math.max.apply(
+            Math,
+            scenarioEvents.map(function (o) {
+              return +o.deltaSeconds;
+            })
+          );
         }
         this.scenarioEventDataService.updateScenarioEventViewDisplayedEvents(
           this
@@ -689,6 +696,7 @@ export class ScenarioEventListComponent
       status: MselItemStatus.Pending,
       dataValues: [],
       scenarioEventType: EventType.Information,
+      deltaSeconds: this.maxScenarioEventStartSeconds,
     };
     this.mselDataFields.forEach((df) => {
       newScenarioEvent.dataValues.push({

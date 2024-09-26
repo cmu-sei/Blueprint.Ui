@@ -21,7 +21,7 @@ export class DurationViewComponent {
     let timeString = deltaSeconds < 0 ? '- ' : '+ ';
     deltaSeconds = Math.abs(deltaSeconds);
     // get the number of days
-    if (deltaSeconds > 86400) {
+    if (deltaSeconds >= 86400) {
       const days = Math.floor(deltaSeconds / 86400);
       deltaSeconds = deltaSeconds % 86400;
       timeString = timeString + days + ' ';

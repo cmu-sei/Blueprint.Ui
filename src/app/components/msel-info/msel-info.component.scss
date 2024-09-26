@@ -48,6 +48,12 @@
   min-height: 45px;
 }
 
+.single-checkbox {
+  display: flex;
+  width: 100%;
+  align-self: center;
+}
+
 .url-form-field {
   display: flex;
   flex-direction: column;
@@ -80,11 +86,18 @@
 }
 
 .edit-buttons-span {
-  min-width: 150px;
+  width: 150px;
+}
+
+.change-span {
+  color: orangered;
+  width: 300px;
+  align-self: center;
+  align-items: center;
 }
 
 .delete-span {
-  margin-left: calc(100% - 200px);
+  margin-left: calc(100% - 500px);
 }
 
 .top-margin {
