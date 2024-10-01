@@ -1,0 +1,36 @@
+// Copyright 2024 Carnegie Mellon University. All Rights Reserved.
+// Released under a MIT (SEI)-style license. See LICENSE.md in the
+// project root for license information.
+
+.mat-dialog-container {
+  height: 100vh;
+}
+
+.mat-dialog-content {
+  height: 100vh ;
+}
+
+.mat-dialog-actions {
+  height: 60px !important;
+  margin: 10px 0 0 75px !important;
+}
+
+.scenario-event-copy-dialog {
+  display: flex;
+  flex: 1;
+  flex-flow: column;
+}
+
+mat-radio-group {
+  display: flex;
+  flex-direction: column;
+  margin: 15px 0;
+}
+
+mat-radio-button {
+  height: 50px;
+}
+
+.close-button {
+  float: right;
+}
