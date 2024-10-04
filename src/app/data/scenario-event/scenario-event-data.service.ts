@@ -197,6 +197,15 @@ export class ScenarioEventDataService {
       .subscribe(() => {});
   }
 
+  copyScenarioEventsToMsel(mselId: string, scenarioEventIds: string[]) {
+    this.scenarioEventService
+      .copyScenarioEventsToMsel(mselId, scenarioEventIds)
+      .pipe(take(1))
+      .subscribe((scenarioEvents) => {
+        this.scenarioEventStore.upsertMany(scenarioEvents);
+      });
+  }
+
   updateStore(scenarioEvent: ScenarioEvent) {
     this.scenarioEventStore.upsert(scenarioEvent.id, scenarioEvent);
   }

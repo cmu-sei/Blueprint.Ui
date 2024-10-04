@@ -45,9 +45,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
               </ng-container>
               <span class="row-index center-self">&nbsp;&nbsp;</span>
               <mat-checkbox
+                [checked]="allSelected"
                 (change)="setAllSelectedState($event.checked)"
                 title="Select All/None"
                 style="margin-top: 7px; margin-right: 7px;"
+                [disabled]="displayedScenarioEvents.length === 0"
                 *ngIf="(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)"
               ></mat-checkbox>
               <button
@@ -64,8 +66,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   mat-menu-item
                   (click)="addScenarioEvent()"
                   title="Add an event"
-                  [disabled]="selectedEventIdList.length > 0"
-                  *ngIf="(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)"
+                  *ngIf="(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) && selectedEventIdList.length === 0"
                 >
                   Add New Event
                 </button>
@@ -101,11 +102,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
               <mat-menu #bulkEventList="matMenu" [overlapTrigger]="false">
                 <button
                   mat-menu-item
-                  (click)="addScenarioEvent()"
-                  title="Add an event"
-                  [disabled]="selectedEventIdList.length > 0 && (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)"
+                  (click)="copyToAnotherMsel()"
+                  title="Copy Selected Events"
+                  *ngIf="(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)"
                 >
-                  Add New Event
+                Copy Selected Events
                 </button>
                 <button
                   mat-menu-item

@@ -6,7 +6,7 @@ import { UntypedFormControl } from '@angular/forms';
 import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { CdkDragDrop, CdkDragStart, CdkDragEnd } from '@angular/cdk/drag-drop';
 import { Router } from '@angular/router';
-import { Subject, Subscription, Observable, of } from 'rxjs';
+import { Subject, Subscription, Observable, of, take } from 'rxjs';
 import {
   takeUntil,
   debounceTime,
@@ -27,14 +27,14 @@ import {
   InjectType,
   MselItemStatus,
   Move,
+  Msel,
   MselRole,
   Organization,
   ScenarioEvent,
   Team,
   User,
-  Injectm,
 } from 'src/app/generated/blueprint.api';
-import { MselPlus } from 'src/app/data/msel/msel-data.service';
+import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { Sort } from '@angular/material/sort';
 import { MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy-menu';
@@ -51,6 +51,7 @@ import {
   ScenarioEventViewIndexing,
   DataValuePlus,
 } from 'src/app/data/scenario-event/scenario-event-data.service';
+import { ScenarioEventCopyDialogComponent } from '../scenario-event-copy-dialog/scenario-event-copy-dialog.component';
 import { ScenarioEventEditDialogComponent } from '../scenario-event-edit-dialog/scenario-event-edit-dialog.component';
 import { ScenarioEventQuery } from 'src/app/data/scenario-event/scenario-event.query';
 import { DataValueDataService } from 'src/app/data/data-value/data-value-data.service';
@@ -170,6 +171,8 @@ export class ScenarioEventListComponent
   injectTypeList: InjectType[] = [];
   eventType: typeof EventType = EventType;
   maxScenarioEventStartSeconds: 0;
+  allSelected = false;
+  mselListForCopy: Msel[] = [];
 
   constructor(
     private router: Router,
@@ -180,6 +183,7 @@ export class ScenarioEventListComponent
     private injectmDataService: InjectmDataService,
     private injectTypeQuery: InjectTypeQuery,
     private moveQuery: MoveQuery,
+    private mselDataService: MselDataService,
     private mselQuery: MselQuery,
     private organizationQuery: OrganizationQuery,
     private scenarioEventDataService: ScenarioEventDataService,
@@ -192,6 +196,15 @@ export class ScenarioEventListComponent
     private teamQuery: TeamQuery,
     private uiDataService: UIDataService
   ) {
+    // load the user's build MSELs for use when copying scenario events
+    this.mselDataService
+      .getMyBuildMsels()
+      .pipe(take(1))
+      .subscribe((msels) => {
+        this.mselListForCopy = msels.sort((a, b) =>
+          a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1
+        );
+      });
     this.scenarioEventBackgroundColors =
       this.settingsService.settings.ScenarioEventBackgroundColors;
     // subscribe to the active MSEL
@@ -790,6 +803,7 @@ export class ScenarioEventListComponent
         if (result['confirm']) {
           this.scenarioEventDataService.batchDelete(this.selectedEventIdList);
           this.selectedEventIdList = [];
+          this.allSelected = false;
         }
       });
   }
@@ -922,6 +936,7 @@ export class ScenarioEventListComponent
 
   setAllSelectedState(newValue: boolean) {
     this.selectedEventIdList = [];
+    this.allSelected = newValue;
     if (newValue) {
       this.displayedScenarioEvents.forEach((e) => {
         this.selectedEventIdList.push(e.id);
@@ -961,6 +976,7 @@ export class ScenarioEventListComponent
         catalog: catalog,
         loggedInUserId: this.loggedInUserId,
         isContentDeveloper: this.isContentDeveloper,
+        injectList: [],
       },
     });
     dialogRef.componentInstance.editComplete.subscribe((result) => {
@@ -994,6 +1010,26 @@ export class ScenarioEventListComponent
       }
     });
     return dataFields;
+  }
+
+  copyToAnotherMsel() {
+    const dialogRef = this.dialog.open(ScenarioEventCopyDialogComponent, {
+      width: '80%',
+      maxWidth: '800px',
+      height: '90%',
+      data: {
+        mselList: this.mselListForCopy,
+      },
+    });
+    dialogRef.componentInstance.editComplete.subscribe((result) => {
+      if (result.mselId) {
+        this.scenarioEventDataService.copyScenarioEventsToMsel(
+          result.mselId,
+          this.selectedEventIdList
+        );
+      }
+      dialogRef.close();
+    });
   }
 
   ngOnDestroy() {

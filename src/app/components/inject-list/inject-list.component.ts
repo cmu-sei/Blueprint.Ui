@@ -125,7 +125,9 @@ export class InjectListComponent implements OnDestroy, OnInit {
           m.dataValues.forEach((dv) => {
             inject.dataValues.push({ ...dv });
           });
-          const index = this.injectList.findIndex((i) => i.id === inject.id);
+          const index = this.injectList
+            ? this.injectList.findIndex((i) => i.id === inject.id)
+            : -1;
           if (index === -1) {
             this.injectList.push(inject);
           } else {
