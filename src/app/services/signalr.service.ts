@@ -109,6 +109,7 @@ export class SignalRService implements OnDestroy {
     this.hubConnection = new signalR.HubConnectionBuilder()
       .withUrl(this.getHubUrlWithAuth())
       .withAutomaticReconnect(new RetryPolicy(120, 0, 5))
+      .withStatefulReconnect()
       .configureLogging(signalR.LogLevel.Information)
       .build();
 
