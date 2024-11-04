@@ -599,7 +599,7 @@ export class ScenarioEventListComponent
 
         const timeDiff = belowOffset - aboveOffset;
         if (timeDiff > 1) {
-          newOffset = belowOffset + Math.floor(timeDiff / 2);
+          newOffset = aboveOffset + Math.floor(timeDiff / 2);
           newGrpOrder = 0;
         } else {
           newOffset = belowOffset;
