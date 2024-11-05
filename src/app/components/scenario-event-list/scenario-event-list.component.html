@@ -67,6 +67,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   (click)="addScenarioEvent()"
                   title="Add an event"
                   *ngIf="(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) && selectedEventIdList.length === 0"
+                  [disabled]="allDataFields.length === 0"
                 >
                   Add New Event
                 </button>

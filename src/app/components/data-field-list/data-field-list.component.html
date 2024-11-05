@@ -165,6 +165,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </mat-header-cell>
           <mat-cell *matCellDef="let element" class="mat-column-display">
             <mat-checkbox [(ngModel)]="element.isInformationField"
+              *ngIf="element.displayOrder >= 0"
               [disabled]="!isContentDeveloper && !msel.hasRole(loggedInUserId, null).owner" (change)="saveChange(element)"
               (click)="$event.stopPropagation();" title="Display for Information Events?">
             </mat-checkbox>
@@ -178,6 +179,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </mat-header-cell>
           <mat-cell *matCellDef="let element" class="mat-column-display">
             <mat-checkbox [(ngModel)]="element.isFacilitationField"
+              *ngIf="element.displayOrder >= 0"
               [disabled]="!isContentDeveloper && !msel.hasRole(loggedInUserId, null).owner" (change)="saveChange(element)"
               (click)="$event.stopPropagation();" title="Display for Facilitation Events?">
             </mat-checkbox>
