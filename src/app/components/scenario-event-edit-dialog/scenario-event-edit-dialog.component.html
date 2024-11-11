@@ -50,7 +50,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         </mat-tab-group>
         <!-- event start time (deltaSeconds) -->
         <div class="start-time-div"
-          *ngIf="currentFilterBy === 'all' || data.scenarioEvent.scenarioEventType !== eventType.Inject">
+          *ngIf="(currentFilterBy === 'all' || data.scenarioEvent.scenarioEventType !== eventType.Inject) && getScenarioTypeDataFields().length > 0">
           <app-duration-edit
             [startTime]="data.mselStartTime"
             [(durationSeconds)]="data.scenarioEvent.deltaSeconds"
@@ -87,6 +87,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
               [(ngModel)]="data.scenarioEvent.rowMetadata"
             />
           </mat-form-field>
+        </div>
+        <!-- no data fields message -->
+        <div class="full-width" *ngIf="getScenarioTypeDataFields().length === 0">
+          <br /><br />
+          <b>No data fields have been defined for this scenario event type!</b>
         </div>
       </span>
     </div>
