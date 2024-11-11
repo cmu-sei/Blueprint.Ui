@@ -251,7 +251,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
                     mat-menu-item
                     (click)="editScenarioEvent(item)"
                     title="Edit event {{ rowIndex  + 1 }}"
-                    *ngIf="!isStarterMsel || item.scenarioEventType === eventType.Information"
                   >
                     Edit
                   </button>

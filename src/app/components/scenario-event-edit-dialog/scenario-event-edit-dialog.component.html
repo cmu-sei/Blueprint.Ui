@@ -20,7 +20,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
   <div mat-dialog-content *ngIf="!!data && data.scenarioEvent">
     <div class="scenario-event-edit-dialog">
       <!-- Scenario Event Type -->
-      <div class="single-edit-dialog" *ngIf="data.showScenarioEventType">
+      <div class="single-edit-dialog" *ngIf="!data.isEditingRestricted">
         <mat-form-field>
           <mat-select
             placeholder="Scenario Event Type"
@@ -51,11 +51,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <!-- event start time (deltaSeconds) -->
         <div class="start-time-div"
           *ngIf="(currentFilterBy === 'all' || data.scenarioEvent.scenarioEventType !== eventType.Inject) && getScenarioTypeDataFields().length > 0">
+          <span>Execution Time</span>
           <app-duration-edit
             [startTime]="data.mselStartTime"
             [(durationSeconds)]="data.scenarioEvent.deltaSeconds"
             [timeName]="'Execution Date / Time'"
-            [postScript]="'from start'"
+            [postScript]="''"
           >
           </app-duration-edit>
         </div>
@@ -64,7 +65,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <app-data-value
             [(value)]="getDataValue(df.name).value"
             [dataField]="df"
-            [canEdit]="data.isEditor"
+            [canEdit]="data.isEditor && !data.isEditingRestricted"
             [canApprove]="data.isApprover"
             [isOwner]="data.isOwner"
             [showValueOnly]="false"
