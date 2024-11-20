@@ -65,7 +65,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <app-data-value
             [(value)]="getDataValue(df.name).value"
             [dataField]="df"
-            [canEdit]="data.isEditor && !data.isEditingRestricted"
+            [canEdit]="data.isEditor && (!data.isEditingRestricted || data.scenarioEvent.scenarioEventType === eventType.Information)"
             [canApprove]="data.isApprover"
             [isOwner]="data.isOwner"
             [showValueOnly]="false"
