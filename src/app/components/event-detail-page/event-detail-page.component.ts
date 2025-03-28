@@ -34,6 +34,7 @@ import {
   Organization,
   MselItemStatus,
   Team,
+  Unit,
   User,
   Card,
   ScenarioEvent,
@@ -76,6 +77,7 @@ export class EventDetailPageComponent {
   scenarioEvent: ScenarioEvent = {};
   moveList: Move[] = [];
   teamList: Team[] = [];
+  unitList: Unit[] = [];
   filterString = '';
   blankDataValue = {
     id: '',

@@ -32,6 +32,7 @@ import {
   Organization,
   ScenarioEvent,
   Team,
+  Unit,
   User,
 } from 'src/app/generated/blueprint.api';
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
@@ -60,6 +61,7 @@ import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { v4 as uuidv4 } from 'uuid';
 import { DataFieldQuery } from 'src/app/data/data-field/data-field.query';
 import { TeamQuery } from 'src/app/data/team/team.query';
+import { UnitQuery } from 'src/app/data/unit/unit.query';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
 import { AngularEditorConfig } from '@kolkov/angular-editor';
 
@@ -160,6 +162,7 @@ export class ScenarioEventListComponent
     : 0.4;
   moveList: Move[] = [];
   teamList: Team[] = [];
+  unitList: Unit[] = [];
   keyUp = new Subject<KeyboardEvent>();
   private subscription: Subscription;
   selectedEventIdList: string[] = [];
@@ -194,6 +197,7 @@ export class ScenarioEventListComponent
     private dataValueDataService: DataValueDataService,
     private dataValueQuery: DataValueQuery,
     private teamQuery: TeamQuery,
+    private unitQuery: UnitQuery,
     private uiDataService: UIDataService
   ) {
     // load the user's build MSELs for use when copying scenario events
@@ -323,6 +327,13 @@ export class ScenarioEventListComponent
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((teams) => {
         this.teamList = teams;
+      });
+    // observe the Units
+    this.unitQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((units) => {
+        this.unitList = units;
       });
     // subscribe to filter string changes for debounce
     this.subscription = this.keyUp
@@ -675,7 +686,8 @@ export class ScenarioEventListComponent
         scenarioEvent: scenarioEvent,
         dataFields: this.mselDataFields,
         organizationList: this.getSortedOrganizationOptions(),
-        teamList: this.msel.units,
+        teamList: this.teamList,
+        unitList: this.unitList,
         moveList: this.moveList,
         cardList: this.cardList,
         gallerySourceTypes: this.msel.gallerySourceTypes,

@@ -39,7 +39,8 @@
           </tbody>
         </table>
       </ng-container>
-      <mat-paginator [length]="sortedScenarioEvents.length" [pageSize]="pageSize" [pageSizeOptions]="[1, 5, 10, 20, sortedScenarioEvents.length]" (page)="changePage($event)" class="no-print">
+      <mat-paginator [length]="sortedScenarioEvents.length" [pageSize]="pageSize" [pageSizeOptions]="pageSizeOptions"
+        (page)="changePage($event)" class="no-print">
       </mat-paginator>
     </div>
   </div>

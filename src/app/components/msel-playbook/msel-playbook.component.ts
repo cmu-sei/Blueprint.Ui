@@ -54,6 +54,8 @@ export class MselPlaybookComponent {
   @Input() loggedInUserId: string;
   pageIndex = 0;
   pageSize = 1;
+  defaultPageSizeOptions = [1, 5, 10, 20];
+  pageSizeOptions = this.defaultPageSizeOptions;
   imageFilePath = '';
   scenarioEventId = '';
   selectedMselId = '';
@@ -108,9 +110,7 @@ export class MselPlaybookComponent {
     private moveQuery: MoveQuery,
     private dataValueQuery: DataValueQuery,
     private scenarioEventQuery: ScenarioEventQuery,
-    private uiDataService: UIDataService,
     private cardQuery: CardQuery,
-    private cardDataService: CardDataService,
     private activatedRoute: ActivatedRoute
   ) {
     // set image
@@ -189,6 +189,7 @@ export class MselPlaybookComponent {
           this.sortedScenarioEvents = this.getSortedScenarioEvents(
             this.filteredScenarioEventList
           );
+          this.setPageSizeOptions();
         }
       });
     this.moveQuery
@@ -425,5 +426,17 @@ export class MselPlaybookComponent {
     const startIndex = this.pageIndex * this.pageSize;
     const endIndex = startIndex + this.pageSize;
     return this.sortedScenarioEvents.slice(startIndex, endIndex);
+  }
+
+  setPageSizeOptions() {
+    const newOptions = [];
+    const max = this.sortedScenarioEvents.length;
+    this.defaultPageSizeOptions.forEach((m) => {
+      if (m < max) {
+        newOptions.push(m);
+      }
+    });
+    newOptions.push(max);
+    this.pageSizeOptions = newOptions;
   }
 }

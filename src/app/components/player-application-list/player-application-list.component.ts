@@ -5,10 +5,7 @@ import { Component, Input, OnDestroy, ViewChild } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import {
-  PlayerApplication,
-  Move
-} from 'src/app/generated/blueprint.api';
+import { PlayerApplication, Move, Team } from 'src/app/generated/blueprint.api';
 import { MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { Sort } from '@angular/material/sort';
@@ -33,12 +30,13 @@ export class PlayerApplicationListComponent implements OnDestroy {
   // context menu
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
   msel = new MselPlus();
+  mselTeamList: Team[] = [];
   templateList: PlayerApplication[] = [];
   playerApplicationList: PlayerApplication[] = [];
   filteredPlayerApplicationList: PlayerApplication[] = [];
   filterControl = new UntypedFormControl();
   filterString = '';
-  sort: Sort = {active: '', direction: ''};
+  sort: Sort = { active: '', direction: '' };
   sortedPlayerApplications: PlayerApplication[] = [];
   expandedId = '';
   contextMenuPosition = { x: '0px', y: '0px' };
@@ -65,6 +63,7 @@ export class PlayerApplicationListComponent implements OnDestroy {
       if (msel) {
         this.playerApplicationDataService.loadByMsel(msel.id);
         this.playerApplicationTeamDataService.getPlayerApplicationTeamsFromApi(msel.id);
+        this.mselTeamList = msel.teams;
       }
       this.sortedPlayerApplications = this.getSortedPlayerApplications(this.getFilteredPlayerApplications());
     });
@@ -148,7 +147,9 @@ export class PlayerApplicationListComponent implements OnDestroy {
 
   sortChanged(sort: Sort) {
     this.sort = sort;
-    this.sortedPlayerApplications = this.getSortedPlayerApplications(this.getFilteredPlayerApplications());
+    this.sortedPlayerApplications = this.getSortedPlayerApplications(
+      this.getFilteredPlayerApplications()
+    );
   }
 
   getFilteredPlayerApplications(): PlayerApplication[] {
@@ -156,17 +157,23 @@ export class PlayerApplicationListComponent implements OnDestroy {
     const mselId = this.msel?.id;
     let filteredPlayerApplications: PlayerApplication[] = [];
     if (playerApplications) {
-      playerApplications.forEach(playerApplication => {
-        if ((mselId && playerApplication.mselId === mselId) || (!mselId && !playerApplication.mselId)) {
-          filteredPlayerApplications.push({... playerApplication});
+      playerApplications.forEach((playerApplication) => {
+        if (
+          (mselId && playerApplication.mselId === mselId) ||
+          (!mselId && !playerApplication.mselId)
+        ) {
+          filteredPlayerApplications.push({ ...playerApplication });
         }
       });
-      if (filteredPlayerApplications && filteredPlayerApplications.length > 0 && this.filterString) {
+      if (
+        filteredPlayerApplications &&
+        filteredPlayerApplications.length > 0 &&
+        this.filterString
+      ) {
         const filterString = this.filterString.toLowerCase();
-        filteredPlayerApplications = filteredPlayerApplications
-          .filter((a) =>
-            a.name.toLowerCase().includes(filterString)
-          );
+        filteredPlayerApplications = filteredPlayerApplications.filter((a) =>
+          a.name.toLowerCase().includes(filterString)
+        );
       }
     }
     return filteredPlayerApplications;
@@ -177,11 +184,17 @@ export class PlayerApplicationListComponent implements OnDestroy {
     if (playerApplications) {
       switch (this.sort.active) {
         case 'name':
-          playerApplications.sort((a, b) => (a.name ? a.name : '').toLowerCase() >
-            (b.name ? b.name : '').toLowerCase() ? dir : -dir);
+          playerApplications.sort((a, b) =>
+            (a.name ? a.name : '').toLowerCase() >
+            (b.name ? b.name : '').toLowerCase()
+              ? dir
+              : -dir
+          );
           break;
         default:
-          playerApplications.sort((a, b) => a.name.toLowerCase() > b.name.toLowerCase() ? dir : -dir);
+          playerApplications.sort((a, b) =>
+            a.name.toLowerCase() > b.name.toLowerCase() ? dir : -dir
+          );
           break;
       }
     }

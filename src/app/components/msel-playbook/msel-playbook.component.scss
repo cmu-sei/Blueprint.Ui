@@ -8,7 +8,7 @@
     width: 100%;
     height: calc(100vh - 39px);
     overflow-x: hidden;
-    justify-content: center; 
+    justify-content: center;
     align-items: center;
 }
 
@@ -26,11 +26,11 @@
 }
 
 #eventDetails th, #eventDetails td {
-    padding: 8px; 
-    border: 1px solid lightgray; 
-    word-wrap: break-word; 
-    white-space: normal; 
-    vertical-align: top; 
+    padding: 8px;
+    border: 1px solid lightgray;
+    word-wrap: break-word;
+    white-space: normal;
+    vertical-align: top;
 }
 
 h2 {
@@ -57,26 +57,14 @@ h2 {
   margin-right: 10px;
 }
 
-::ng-deep mat-option:last-child:before{
-    content: 'ALL' !important;
-   visibility: visible !important;
-   display: block !important;
-   position: absolute !important;
-   margin-left: 15px !important;
-  }
+.page-break {
+  page-break-after: always;
+}
 
-  ::ng-deep mat-option:last-child .mat-option-text{
-    display: none;
-  }
-
-  .page-break {
-    page-break-after: always;
-  }
-
-  .table-margin {
-    margin-bottom: 20px;
-  }
-  
+.bottom-div {
+  display: flex;
+  flex-direction: row;
+}
 
 @media print {
   .no-print {
