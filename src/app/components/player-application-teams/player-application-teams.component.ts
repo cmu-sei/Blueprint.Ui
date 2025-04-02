@@ -110,7 +110,11 @@ export class PlayerApplicationTeamsComponent implements OnDestroy, OnInit {
 
 
   addTeamToPlayerApplication(team: Team): void {
-    this.playerApplicationTeamDataService.addTeamToPlayerApplication(this.playerApplicationId, team);
+    this.playerApplicationTeamDataService.addTeamToPlayerApplication(
+      this.playerApplicationId,
+      team,
+      this.playerApplicationTeamDataSource.data.length + 1
+    );
   }
 
   /**

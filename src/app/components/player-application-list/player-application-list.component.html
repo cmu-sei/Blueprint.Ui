@@ -15,7 +15,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           mat-icon-button
           [matMenuTriggerFor]="addMenu"
           style="outline: none; margin-left: 18px; margin-right: 24px;"
-          title="Add playerApplication"
+          title="Add Player Application"
           (click)="$event.stopPropagation();"
         >
           <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
@@ -111,6 +111,18 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </div>
         </div>
       </ng-template>
+    </mat-expansion-panel>
+    <mat-expansion-panel>
+      <mat-expansion-panel-header class="mat-row">
+        <h4>Team Application Order</h4>
+      </mat-expansion-panel-header>
+      <div class="playerApplication-detail" (click)="$event.stopPropagation();">
+        <div class="single-detail">
+          <app-player-team-app-order style="width: 100%;" [mselTeamList]="mselTeamList"
+            [canEdit]="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner">
+          </app-player-team-app-order>
+        </div>
+      </div>
     </mat-expansion-panel>
   </section>
 </div>
