@@ -439,24 +439,12 @@ export class SignalRService implements OnDestroy {
         this.playerApplicationTeamDataService.updateStore(
           playerApplicationTeam
         );
-        console.log(
-          '@@@ updating playerApplicationTeam ' +
-            playerApplicationTeam.id +
-            ' order is ' +
-            playerApplicationTeam.displayOrder
-        );
       }
     );
 
     this.hubConnection.on(
       'PlayerApplicationTeamCreated',
       (playerApplicationTeam: PlayerApplicationTeam) => {
-        console.log(
-          '@@@ created playerApplicationTeam ' +
-            playerApplicationTeam.id +
-            ' order is ' +
-            playerApplicationTeam.displayOrder
-        );
         this.playerApplicationTeamDataService.updateStore(
           playerApplicationTeam
         );
@@ -464,7 +452,6 @@ export class SignalRService implements OnDestroy {
     );
 
     this.hubConnection.on('PlayerApplicationTeamDeleted', (id: string) => {
-      console.log('@@@ deleted playerApplicationTeam ' + id);
       this.playerApplicationTeamDataService.deleteFromStore(id);
     });
   }
