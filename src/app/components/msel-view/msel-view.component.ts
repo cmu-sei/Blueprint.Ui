@@ -110,7 +110,7 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
     defaultParagraphSeparator: '',
     defaultFontName: '',
     defaultFontSize: '',
-    sanitize: true,
+    sanitize: false,
   };
 
   constructor(

@@ -34,7 +34,7 @@ export class MselPageComponent implements OnDestroy {
     defaultParagraphSeparator: '',
     defaultFontName: '',
     defaultFontSize: '',
-    sanitize: true,
+    sanitize: false,
   };
 
   constructor(

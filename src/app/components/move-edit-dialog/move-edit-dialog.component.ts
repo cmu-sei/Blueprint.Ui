@@ -55,18 +55,16 @@ export class MoveEditDialogComponent {
     defaultFontName: '',
     defaultFontSize: '',
     fonts: [
-      {class: 'arial', name: 'Arial'},
-      {class: 'times-new-roman', name: 'Times New Roman'},
-      {class: 'calibri', name: 'Calibri'},
-      {class: 'comic-sans-ms', name: 'Comic Sans MS'}
+      { class: 'arial', name: 'Arial' },
+      { class: 'times-new-roman', name: 'Times New Roman' },
+      { class: 'calibri', name: 'Calibri' },
+      { class: 'comic-sans-ms', name: 'Comic Sans MS' },
     ],
     uploadUrl: '',
     uploadWithCredentials: false,
-    sanitize: true,
+    sanitize: false,
     toolbarPosition: 'top',
-    toolbarHiddenButtons: [
-      ['backgroundColor']
-    ]
+    toolbarHiddenButtons: [['backgroundColor']],
   };
 
   constructor(
@@ -103,5 +101,4 @@ export class MoveEditDialogComponent {
       });
     }
   }
-
 }
