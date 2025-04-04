@@ -118,7 +118,7 @@ export class EventDetailPageComponent {
     defaultParagraphSeparator: '',
     defaultFontName: '',
     defaultFontSize: '',
-    sanitize: true,
+    sanitize: false,
   };
   dataType: typeof DataFieldType = DataFieldType;
   dataValueId = '';

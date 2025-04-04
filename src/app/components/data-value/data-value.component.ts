@@ -55,7 +55,7 @@ export class DataValueComponent {
     ],
     uploadUrl: '',
     uploadWithCredentials: false,
-    sanitize: true,
+    sanitize: false,
     toolbarPosition: 'top',
     toolbarHiddenButtons: [['backgroundColor']],
   };
@@ -72,7 +72,7 @@ export class DataValueComponent {
     defaultParagraphSeparator: '',
     defaultFontName: '',
     defaultFontSize: '',
-    sanitize: true,
+    sanitize: false,
   };
   dataType: typeof DataFieldType = DataFieldType;
   itemStatus = [

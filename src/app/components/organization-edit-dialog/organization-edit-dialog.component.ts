@@ -78,7 +78,7 @@ export class OrganizationEditDialogComponent {
     ],
     uploadUrl: '',
     uploadWithCredentials: false,
-    sanitize: true,
+    sanitize: false,
     toolbarPosition: 'top',
     toolbarHiddenButtons: [['backgroundColor']],
   };

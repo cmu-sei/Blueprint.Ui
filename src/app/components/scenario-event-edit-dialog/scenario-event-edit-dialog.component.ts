@@ -56,7 +56,7 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
     ],
     uploadUrl: '',
     uploadWithCredentials: false,
-    sanitize: true,
+    sanitize: false,
     toolbarPosition: 'top',
     toolbarHiddenButtons: [['backgroundColor']],
   };
@@ -73,7 +73,7 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
     defaultParagraphSeparator: '',
     defaultFontName: '',
     defaultFontSize: '',
-    sanitize: true,
+    sanitize: false,
   };
   dataType: typeof DataFieldType = DataFieldType;
   eventType: typeof EventType = EventType;

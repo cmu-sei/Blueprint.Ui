@@ -111,7 +111,7 @@ export class ScenarioEventListComponent
     defaultParagraphSeparator: '',
     defaultFontName: '',
     defaultFontSize: '',
-    sanitize: true,
+    sanitize: false,
   };
   dataType: typeof DataFieldType = DataFieldType;
   sortableDataTypes = this.scenarioEventDataService.sortableDataTypes;
