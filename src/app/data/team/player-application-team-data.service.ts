@@ -18,7 +18,9 @@ export class PlayerApplicationTeamDataService implements OnDestroy {
   unsubscribe$: Subject<null> = new Subject<null>();
   readonly filterControl = new UntypedFormControl();
   private _playerApplicationTeams: PlayerApplicationTeam[] = [];
-  readonly playerApplicationTeams = new BehaviorSubject<PlayerApplicationTeam[]>(this._playerApplicationTeams);
+  readonly playerApplicationTeams = new BehaviorSubject<
+    PlayerApplicationTeam[]
+  >(this._playerApplicationTeams);
   private filterTerm: Observable<string>;
   private sortColumn: Observable<string>;
   private sortIsAscending: Observable<boolean>;
@@ -47,24 +49,33 @@ export class PlayerApplicationTeamDataService implements OnDestroy {
       );
   }
 
-  addTeamToPlayerApplication(playerApplicationId: string, team: Team) {
-    this.playerApplicationTeamService.createPlayerApplicationTeam({
-      playerApplicationId: playerApplicationId,
-      teamId: team.id
-    }).subscribe(
-      (et) => {
-        this.updateStore(et);
-      },
-      (error) => {
-        this.updatePlayerApplicationTeams(this._playerApplicationTeams);
-      }
-    );
+  addTeamToPlayerApplication(
+    playerApplicationId: string,
+    team: Team,
+    displayOrder: number
+  ) {
+    this.playerApplicationTeamService
+      .createPlayerApplicationTeam({
+        playerApplicationId: playerApplicationId,
+        teamId: team.id,
+        displayOrder: displayOrder,
+      })
+      .subscribe(
+        (et) => {
+          this.updateStore(et);
+        },
+        (error) => {
+          this.updatePlayerApplicationTeams(this._playerApplicationTeams);
+        }
+      );
   }
 
   removePlayerApplicationTeam(id: string) {
     this.playerApplicationTeamService.deletePlayerApplicationTeam(id).subscribe(
       (response) => {
-        this._playerApplicationTeams = this._playerApplicationTeams.filter((u) => u.id !== id);
+        this._playerApplicationTeams = this._playerApplicationTeams.filter(
+          (u) => u.id !== id
+        );
         this.updatePlayerApplicationTeams(this._playerApplicationTeams);
       },
       (error) => {
@@ -74,24 +85,33 @@ export class PlayerApplicationTeamDataService implements OnDestroy {
   }
 
   updatePlayerApplicationTeam(playerApplicationTeam: PlayerApplicationTeam) {
-    this.playerApplicationTeamService.updatePlayerApplicationTeam(playerApplicationTeam.id, playerApplicationTeam).subscribe(
-      (et) => {
-        this.updateStore(et);
-      },
-      (error) => {
-        this.updatePlayerApplicationTeams(this._playerApplicationTeams);
-      }
-    );
+    this.playerApplicationTeamService
+      .updatePlayerApplicationTeam(
+        playerApplicationTeam.id,
+        playerApplicationTeam
+      )
+      .subscribe(
+        (et) => {
+          this.updateStore(et);
+        },
+        (error) => {
+          this.updatePlayerApplicationTeams(this._playerApplicationTeams);
+        }
+      );
   }
 
   updateStore(playerApplicationTeam: PlayerApplicationTeam) {
-    const updatedPlayerApplicationTeams = this._playerApplicationTeams.filter(tu => tu.id !== playerApplicationTeam.id);
+    const updatedPlayerApplicationTeams = this._playerApplicationTeams.filter(
+      (tu) => tu.id !== playerApplicationTeam.id
+    );
     updatedPlayerApplicationTeams.unshift(playerApplicationTeam);
     this.updatePlayerApplicationTeams(updatedPlayerApplicationTeams);
   }
 
   deleteFromStore(id: string) {
-    const updatedPlayerApplicationTeams = this._playerApplicationTeams.filter(tu => tu.id !== id);
+    const updatedPlayerApplicationTeams = this._playerApplicationTeams.filter(
+      (tu) => tu.id !== id
+    );
     this.updatePlayerApplicationTeams(updatedPlayerApplicationTeams);
   }
 
@@ -100,7 +120,9 @@ export class PlayerApplicationTeamDataService implements OnDestroy {
     this.unsubscribe$.complete();
   }
 
-  private updatePlayerApplicationTeams(playerApplicationTeams: PlayerApplicationTeam[]) {
+  private updatePlayerApplicationTeams(
+    playerApplicationTeams: PlayerApplicationTeam[]
+  ) {
     this._playerApplicationTeams = Object.assign([], playerApplicationTeams);
     this.playerApplicationTeams.next(this._playerApplicationTeams);
   }

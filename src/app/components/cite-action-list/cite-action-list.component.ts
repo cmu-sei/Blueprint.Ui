@@ -40,7 +40,7 @@ export class CiteActionListComponent implements OnDestroy {
   filteredCiteActionList: CiteAction[] = [];
   filterControl = new FormControl();
   filterString = '';
-  sort: Sort = {active: 'moveNumber', direction: 'asc'};
+  sort: Sort = { active: 'moveNumber', direction: 'asc' };
   sortedCiteActions: CiteAction[] = [];
   isAddingCiteAction = false;
   editingId = '';
@@ -64,84 +64,105 @@ export class CiteActionListComponent implements OnDestroy {
     public dialogService: DialogService
   ) {
     // subscribe to citeActions
-    this.citeActionQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(citeActions => {
-      this.citeActionList = citeActions;
-      this.sortChanged(this.sort);
-    });
+    this.citeActionQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((citeActions) => {
+        this.citeActionList = citeActions;
+        this.sortChanged(this.sort);
+      });
     // subscribe to the active MSEL
-    (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
-      if (msel && this.msel.id !== msel.id) {
-        if (this.showTemplates) {
-          this.msel = new MselPlus();
-        } else {
-          Object.assign(this.msel, msel);
-        }
-        this.sortedCiteActions = this.getSortedCiteActions(this.getFilteredCiteActions(false));
-      }
-    });
-    // subscribe to moves
-    this.moveQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(moves => {
-      this.moveList = moves
-        .filter(m => m.mselId === this.msel.id)
-        .sort((a, b) => +a.moveNumber < +b.moveNumber ? -1 : 1);
-    });
-    // subscribe to mselTeams
-    this.teamQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(teams => {
-      const mtList: Team[] = [];
-      teams.forEach(mt => {
-        if (mt.mselId === this.msel.id) {
-          mtList.push(mt);
+    (this.mselQuery.selectActive() as Observable<MselPlus>)
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((msel) => {
+        if (msel && this.msel.id !== msel.id) {
+          if (this.showTemplates) {
+            this.msel = new MselPlus();
+          } else {
+            Object.assign(this.msel, msel);
+          }
+          this.sortedCiteActions = this.getSortedCiteActions(
+            this.getFilteredCiteActions(false)
+          );
         }
       });
-      this.mselTeamList = mtList.sort((a, b) => a.shortName.toLowerCase() < b.shortName.toLowerCase() ? -1 : 1);
-    });
+    // subscribe to moves
+    this.moveQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((moves) => {
+        this.moveList = moves
+          .filter((m) => m.mselId === this.msel.id)
+          .sort((a, b) => (+a.moveNumber < +b.moveNumber ? -1 : 1));
+      });
+    // subscribe to mselTeams
+    this.teamQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((teams) => {
+        const mtList: Team[] = [];
+        teams.forEach((mt) => {
+          if (mt.mselId === this.msel.id) {
+            mtList.push(mt);
+          }
+        });
+        this.mselTeamList = mtList.sort((a, b) =>
+          a.shortName.toLowerCase() < b.shortName.toLowerCase() ? -1 : 1
+        );
+      });
     // subscribe to filter changes
     this.filterControl.valueChanges
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((term) => {
         this.filterString = term;
-        this.sortedCiteActions = this.getSortedCiteActions(this.getFilteredCiteActions(false));
+        this.sortedCiteActions = this.getSortedCiteActions(
+          this.getFilteredCiteActions(false)
+        );
       });
     // load CiteAction templates
     this.citeActionDataService.loadTemplates();
   }
 
-  addOrEditCiteAction(citeAction: CiteAction, makeTemplate: boolean, makeFromTemplate: boolean) {
+  addOrEditCiteAction(
+    citeAction: CiteAction,
+    makeTemplate: boolean,
+    makeFromTemplate: boolean
+  ) {
     if (!citeAction) {
       citeAction = {
         mselId: this.showTemplates ? '' : this.msel.id,
         moveNumber: 0,
         isTemplate: this.showTemplates,
         actionNumber: 0,
-        teamId: ''
+        teamId: '',
       };
     } else {
-      const newAction = { ...citeAction};
+      const newAction = { ...citeAction };
       if (makeTemplate) {
         citeAction = {
           description: citeAction.description,
           isTemplate: true,
           moveNumber: 0,
           actionNumber: 0,
-          teamId: ''
+          teamId: '',
         };
       } else if (makeFromTemplate) {
         citeAction = {
           description: citeAction.description,
           mselId: this.msel.id,
-          isTemplate: false
+          isTemplate: false,
         };
       } else {
-        citeAction = { ...citeAction};
+        citeAction = { ...citeAction };
       }
     }
     const dialogRef = this.dialog.open(CiteActionEditDialogComponent, {
       width: '90%',
       maxWidth: '800px',
       data: {
-        citeAction: { ...citeAction},
+        citeAction: { ...citeAction },
         teamList: this.mselTeamList,
-        moveList: this.moveList
+        moveList: this.moveList,
       },
     });
     dialogRef.componentInstance.editComplete.subscribe((result) => {
@@ -163,19 +184,19 @@ export class CiteActionListComponent implements OnDestroy {
       if (citeAction.teamId) {
         teams.push(citeAction.teamId);
       } else if (!citeAction.isTemplate) {
-        this.mselTeamList.forEach(team => {
+        this.mselTeamList.forEach((team) => {
           teams.push(team.id);
         });
       }
       if (+citeAction.moveNumber >= 0) {
         moves.push(citeAction.moveNumber);
       } else if (!citeAction.isTemplate) {
-        this.moveList.forEach(move => {
+        this.moveList.forEach((move) => {
           moves.push(move.moveNumber);
         });
       }
-      teams.forEach(team => {
-        moves.forEach(move => {
+      teams.forEach((team) => {
+        moves.forEach((move) => {
           citeAction.teamId = team;
           citeAction.moveNumber = move;
           this.citeActionDataService.add(citeAction);
@@ -185,7 +206,10 @@ export class CiteActionListComponent implements OnDestroy {
   }
 
   deleteCiteAction(citeAction: CiteAction): void {
-    if (this.isAddingCiteAction || (this.editingId && this.editingId !== citeAction.id)) {
+    if (
+      this.isAddingCiteAction ||
+      (this.editingId && this.editingId !== citeAction.id)
+    ) {
       return;
     }
     this.dialogService
@@ -203,13 +227,19 @@ export class CiteActionListComponent implements OnDestroy {
 
   sortChanged(sort: Sort) {
     this.sort = sort;
-    this.sortedCiteActions = this.getSortedCiteActions(this.getFilteredCiteActions(false));
-    this.templateList = this.getSortedCiteActions(this.getFilteredCiteActions(true));
+    this.sortedCiteActions = this.getSortedCiteActions(
+      this.getFilteredCiteActions(false)
+    );
+    this.templateList = this.getSortedCiteActions(
+      this.getFilteredCiteActions(true)
+    );
   }
 
   getSortedCiteActions(citeActions: CiteAction[]) {
     if (citeActions) {
-      citeActions = citeActions.sort((a, b) => this.sortCiteActions(a, b, this.sort.active, this.sort.direction));
+      citeActions = citeActions.sort((a, b) =>
+        this.sortCiteActions(a, b, this.sort.active, this.sort.direction)
+      );
     }
     return citeActions;
   }
@@ -222,32 +252,39 @@ export class CiteActionListComponent implements OnDestroy {
   ) {
     const isAsc = direction !== 'desc';
     switch (column) {
-      case 'description':  // description, moveNumber, team
+      case 'description': // description, moveNumber, team
         if (a.description.toLowerCase() === b.description.toLowerCase()) {
           if (+a.moveNumber === +b.moveNumber) {
-            return ( (a.team?.name < b.team?.name ? -1 : 1) * (isAsc ? 1 : -1) );
+            return (a.team?.name < b.team?.name ? -1 : 1) * (isAsc ? 1 : -1);
           }
-          return ( (+a.moveNumber < +b.moveNumber ? -1 : 1) * (isAsc ? 1 : -1) );
+          return (+a.moveNumber < +b.moveNumber ? -1 : 1) * (isAsc ? 1 : -1);
         }
-        return ( (a.description.toLowerCase() < b.description.toLowerCase() ? -1 : 1) * (isAsc ? 1 : -1) );
+        return (
+          (a.description.toLowerCase() < b.description.toLowerCase() ? -1 : 1) *
+          (isAsc ? 1 : -1)
+        );
         break;
-      case 'team':  // team, moveNumber, actionNumber
+      case 'team': // team, moveNumber, actionNumber
         if (a.team?.name === b.team?.name) {
           if (+a.moveNumber === +b.moveNumber) {
-            return ( (+a.actionNumber < +b.actionNumber ? -1 : 1) * (isAsc ? 1 : -1) );
+            return (
+              (+a.actionNumber < +b.actionNumber ? -1 : 1) * (isAsc ? 1 : -1)
+            );
           }
-          return ( (+a.moveNumber < +b.moveNumber ? -1 : 1) * (isAsc ? 1 : -1) );
+          return (+a.moveNumber < +b.moveNumber ? -1 : 1) * (isAsc ? 1 : -1);
         }
-        return ( (a.team?.name < b.team?.name ? -1 : 1) * (isAsc ? 1 : -1) );
+        return (a.team?.name < b.team?.name ? -1 : 1) * (isAsc ? 1 : -1);
         break;
-      case 'moveNumber':  // moveNumber, team, actionNumber
+      case 'moveNumber': // moveNumber, team, actionNumber
         if (+a.moveNumber === +b.moveNumber) {
           if (a.team?.name === b.team?.name) {
-            return ( (+a.actionNumber < +b.actionNumber ? -1 : 1) * (isAsc ? 1 : -1) );
+            return (
+              (+a.actionNumber < +b.actionNumber ? -1 : 1) * (isAsc ? 1 : -1)
+            );
           }
-          return ( (a.team?.name < b.team?.name ? -1 : 1) * (isAsc ? 1 : -1) );
+          return (a.team?.name < b.team?.name ? -1 : 1) * (isAsc ? 1 : -1);
         }
-        return ( (+a.moveNumber < +b.moveNumber ? -1 : 1) * (isAsc ? 1 : -1) );
+        return (+a.moveNumber < +b.moveNumber ? -1 : 1) * (isAsc ? 1 : -1);
       default:
         return 0;
     }
@@ -258,25 +295,32 @@ export class CiteActionListComponent implements OnDestroy {
     const mselId = getTemplatesOnly || this.showTemplates ? '' : this.msel.id;
     let filteredCiteActions: CiteAction[] = [];
     if (citeActions) {
-      citeActions.forEach(citeAction => {
-        if ((mselId && citeAction.mselId === mselId) || (!mselId && !citeAction.mselId)) {
-          filteredCiteActions.push({... citeAction});
+      citeActions.forEach((citeAction) => {
+        if (
+          (mselId && citeAction.mselId === mselId) ||
+          (!mselId && !citeAction.mselId)
+        ) {
+          filteredCiteActions.push({ ...citeAction });
         }
       });
       if (filteredCiteActions && filteredCiteActions.length > 0) {
         if (this.filterString) {
           const filterString = this.filterString.toLowerCase();
-          filteredCiteActions = filteredCiteActions
-            .filter((a) =>
+          filteredCiteActions = filteredCiteActions.filter(
+            (a) =>
               a.description.toLowerCase().includes(filterString) ||
               a.team?.name.toLowerCase().includes(filterString)
-            );
+          );
         }
         if (this.selectedMoveNumber >= 0) {
-          filteredCiteActions = filteredCiteActions.filter((a) => +a.moveNumber === +this.selectedMoveNumber);
+          filteredCiteActions = filteredCiteActions.filter(
+            (a) => +a.moveNumber === +this.selectedMoveNumber
+          );
         }
         if (this.selectedTeamId) {
-          filteredCiteActions = filteredCiteActions.filter((a) => a.teamId === this.selectedTeamId);
+          filteredCiteActions = filteredCiteActions.filter(
+            (a) => a.teamId === this.selectedTeamId
+          );
         }
       }
     }
@@ -285,12 +329,21 @@ export class CiteActionListComponent implements OnDestroy {
 
   selectMove(moveNumber: number) {
     this.selectedMoveNumber = moveNumber;
-    this.sortedCiteActions = this.getSortedCiteActions(this.getFilteredCiteActions(false));
+    this.sortedCiteActions = this.getSortedCiteActions(
+      this.getFilteredCiteActions(false)
+    );
   }
 
   selectTeam(teamId: string) {
     this.selectedTeamId = teamId;
-    this.sortedCiteActions = this.getSortedCiteActions(this.getFilteredCiteActions(false));
+    this.sortedCiteActions = this.getSortedCiteActions(
+      this.getFilteredCiteActions(false)
+    );
+  }
+
+  getTeamDisplay(id: string): string {
+    const team = this.mselTeamList.find((m) => m.id === id);
+    return team ? team.shortName + ' - ' + team.name : ' ';
   }
 
   ngOnDestroy() {

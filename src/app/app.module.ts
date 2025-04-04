@@ -101,6 +101,7 @@ import { OrganizationListComponent } from './components/organization-list/organi
 import { PlayerApplicationEditDialogComponent } from './components/player-application-edit-dialog/player-application-edit-dialog.component';
 import { PlayerApplicationListComponent } from './components/player-application-list/player-application-list.component';
 import { PlayerApplicationTeamsComponent } from './components/player-application-teams/player-application-teams.component';
+import { PlayerTeamAppOrderComponent } from './components/player-team-app-order/player-team-app-order.component';
 import { ScenarioEventCopyDialogComponent } from './components/scenario-event-copy-dialog/scenario-event-copy-dialog.component';
 import { ScenarioEventEditDialogComponent } from './components/scenario-event-edit-dialog/scenario-event-edit-dialog.component';
 import { ScenarioEventListComponent } from './components/scenario-event-list/scenario-event-list.component';
@@ -179,6 +180,7 @@ export function getBasePath(settingsSvc: ComnSettingsService) {
     PlayerApplicationEditDialogComponent,
     PlayerApplicationListComponent,
     PlayerApplicationTeamsComponent,
+    PlayerTeamAppOrderComponent,
     ScenarioEventCopyDialogComponent,
     ScenarioEventEditDialogComponent,
     ScenarioEventListComponent,

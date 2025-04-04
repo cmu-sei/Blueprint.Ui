@@ -197,6 +197,7 @@ project root for license information.
         placeholder="{{ dataField.name }}"
         [(ngModel)]="value"
         [disabled]="!canApprove"
+        (ngModelChange)="valueChangeHandler()"
       >
         <mat-option *ngFor="let status of itemStatus" [value]="status">
           {{ status }}
@@ -208,7 +209,8 @@ project root for license information.
       [(ngModel)]="value"
       [disabled]="!canApprove"
       *ngIf="showValueOnly"
-    >
+      (ngModelChange)="valueChangeHandler()"
+      >
       <mat-option *ngFor="let status of itemStatus" [value]="status">
         {{ status }}
       </mat-option>
@@ -222,6 +224,7 @@ project root for license information.
         placeholder="{{ dataField.name }}"
         [(ngModel)]="value"
         [disabled]="!isOwner"
+        (ngModelChange)="valueChangeHandler()"
       >
         <mat-option *ngFor="let unit of unitOptions" [value]="unit.shortName">
           {{ unit.shortName }}
@@ -233,7 +236,8 @@ project root for license information.
       [(ngModel)]="value"
       [disabled]="!isOwner"
       *ngIf="showValueOnly"
-    >
+      (ngModelChange)="valueChangeHandler()"
+      >
       <mat-option *ngFor="let unit of unitOptions" [value]="unit.shortName">
         {{ unit.shortName }}
       </mat-option>
