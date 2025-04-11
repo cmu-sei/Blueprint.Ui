@@ -135,9 +135,9 @@ export class MselInfoComponent implements OnDestroy {
           Object.assign(this.originalMsel, msel);
           Object.assign(this.msel, msel);
           if (isNewMselId) {
-            this.viewUrl = document.baseURI + '/msel/' + this.msel.id + '/view';
+            this.viewUrl = document.baseURI + 'msel/' + this.msel.id + '/view';
             this.starterUrl =
-              document.baseURI + '/starter/?msel=' + this.msel.id;
+              document.baseURI + 'starter/?msel=' + this.msel.id;
             this.mselPageDataService.loadByMsel(msel.id);
             this.newMselPage.mselId = msel.id;
           }

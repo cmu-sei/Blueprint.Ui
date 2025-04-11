@@ -31,6 +31,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
               (click)="$event.stopPropagation();"
               style="margin-right: 20px;"
               [disabled]="!isContentDeveloper && !msel.hasRole(loggedInUserId, null).owner"
+              [matTooltip]="getRoleDescription(mselRole)"
               >{{ mselRole }}</mat-checkbox
             >
           </div>
