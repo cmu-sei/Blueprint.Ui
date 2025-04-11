@@ -33,7 +33,7 @@
             <ng-container *ngFor="let df of allDataFields">
               <tr *ngIf="getScenarioEventValue(scenarioEvent, df.name) && df.name != 'Title'">
                 <td style="font-weight:bold;">{{ df.name }}</td>
-                <td>{{ removeHtmlTags(getScenarioEventValue(scenarioEvent, df.name)) }}</td>
+                <td [innerHTML]="getScenarioEventValue(scenarioEvent, df.name)"></td>
               </tr>
             </ng-container>
           </tbody>

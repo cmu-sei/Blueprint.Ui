@@ -22,6 +22,7 @@ import { MselUnitQuery } from 'src/app/data/msel-unit/msel-unit.query';
 import { MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy-menu';
 import { UserMselRoleDataService } from 'src/app/data/user-msel-role/user-msel-role-data.service';
 import { UserMselRoleQuery } from 'src/app/data/user-msel-role/user-msel-role.query';
+import { DialogService } from 'src/app/services/dialog/dialog.service';
 
 @Component({
   selector: 'app-msel-contributors',
@@ -62,7 +63,8 @@ export class MselContributorsComponent implements OnDestroy {
     private mselUnitDataService: MselUnitDataService,
     private mselUnitQuery: MselUnitQuery,
     private userMselRoleDataService: UserMselRoleDataService,
-    private userMselRoleQuery: UserMselRoleQuery
+    private userMselRoleQuery: UserMselRoleQuery,
+    public dialogService: DialogService
   ) {
     // subscribe to the active MSEL
     (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
@@ -146,10 +148,22 @@ export class MselContributorsComponent implements OnDestroy {
     this.mselUnitDataService.add(mselUnit);
   }
 
-  removeUnitFromMsel(id: string) {
-    this.mselUnitDataService.delete(id);
+  removeUnitFromMsel(id: string): void {
+    const mselUnit = this.mselUnitList.find(u => u.id === id);
+    const unitLabel = mselUnit?.unit?.name;
+  
+    this.dialogService
+      .confirm(
+        'Remove Contributor',
+        `Are you sure that you want to remove ${unitLabel} from the MSEL?`
+      )
+      .subscribe((result) => {
+        if (result['confirm']) {
+          this.mselUnitDataService.delete(id);
+        }
+      });
   }
-
+  
   hasMselRole(userId: string, mselRole: MselRole): boolean {
     const hasRole = this.userMselRoles.some(umr =>
       umr.userId === userId && umr.role === mselRole && umr.mselId === this.msel.id);
@@ -214,4 +228,17 @@ export class MselContributorsComponent implements OnDestroy {
     this.unsubscribe$.next(null);
     this.unsubscribe$.complete();
   }
+
+  getRoleDescription(role: MselRole): string {
+    const descriptions = {
+      [MselRole.Editor]: 'Can edit scenario events within the MSEL.',
+      [MselRole.Approver]: 'Can approve scenario events on the MSEL.',
+      [MselRole.MoveEditor]: 'Can modify the move-related information.',
+      [MselRole.Owner]: 'Holds full control over the MSEL.',
+      [MselRole.Evaluator]: 'Can access the MSEL view and mark items as complete.',
+      [MselRole.Viewer]: 'Can only view MSEL Pages without the ability to make changes.'
+    };
+    return descriptions[role] || 'No description available.';
+  }
+  
 }
