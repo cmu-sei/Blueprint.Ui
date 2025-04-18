@@ -13,7 +13,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     [imageFilePath]="topbarImage"
     (urlNavigate)="topBarNavigate($event)"
   ></app-topbar>
-  <div class="card-container">
+  <div class="card-container" *ngIf="isStarted">
 
     <mat-card
       *ngIf="joinMselList.length > 0"
@@ -63,5 +63,17 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <img class="card-image" src="assets/img/build.png" alt="Build image">
     </mat-card>
 
+  </div>
+  <div class="card-container" *ngIf="!isStarted">
+    <mat-card
+    [ngClass]="buildClass"
+  >
+    <mat-card-header>
+      <mat-card-title>Initializing Data</mat-card-title>
+      <mat-card-subtitle>Please wait ...</mat-card-subtitle>
+    </mat-card-header>
+      <mat-progress-spinner color="primary" mode="indeterminate">
+      </mat-progress-spinner>
+    </mat-card>
   </div>
 </div>

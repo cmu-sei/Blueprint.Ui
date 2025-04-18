@@ -39,6 +39,7 @@ export class DashboardComponent implements OnDestroy {
   joinClass = 'base-card';
   launchClass = 'base-card';
   buildClass = 'base-card';
+  isStarted = false;
   private unsubscribe$ = new Subject();
 
   constructor(
@@ -63,6 +64,19 @@ export class DashboardComponent implements OnDestroy {
     this.topbarTextColor = this.settingsService.settings.AppTopBarHexTextColor
       ? this.settingsService.settings.AppTopBarHexTextColor
       : this.topbarTextColor;
+    this.userDataService.loggedInUser.pipe(takeUntil(this.unsubscribe$)).subscribe((user) => {
+      if (user && user.profile && user.profile.sub) {
+        this.startup();
+      }
+    });
+    setTimeout(() => {
+      if (!this.isStarted) {
+        window.location.reload();
+      }
+    }, 10000);
+  }
+
+  startup() {
     // subscribe to users
     this.userDataService.users
       .pipe(takeUntil(this.unsubscribe$))
@@ -92,6 +106,7 @@ export class DashboardComponent implements OnDestroy {
       .subscribe((msels) => {
         this.buildMselList = msels;
       });
+    this.isStarted = true;
   }
 
   topBarNavigate(url): void {
