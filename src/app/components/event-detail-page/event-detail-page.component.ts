@@ -13,6 +13,7 @@ import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntil } from 'rxjs/operators';
 import { Subject, Observable } from 'rxjs';
+import { CardDataService } from 'src/app/data/card/card-data.service';
 import { MoveDataService } from 'src/app/data/move/move-data.service';
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
 import { TeamDataService } from 'src/app/data/team/team-data.service';
@@ -126,6 +127,7 @@ export class EventDetailPageComponent {
   constructor(
     private settingsService: ComnSettingsService,
     private router: Router,
+    private cardDataService: CardDataService,
     private moveDataService: MoveDataService,
     private organizationDataService: OrganizationDataService,
     private mselDataService: MselDataService,
@@ -169,16 +171,18 @@ export class EventDetailPageComponent {
           // load the selected MSEL and make it active
           this.mselDataService.loadById(mselId);
           this.mselDataService.setActive(mselId);
-          // // load the MSELs moves
+          // load the MSELs moves
           this.moveDataService.loadByMsel(mselId);
-          // // load the MSEL Teams
+          // load the MSEL Teams
           this.teamDataService.loadByMsel(mselId);
-          // // load the MSEL organizations and templates
+          // load the MSEL organizations and templates
           this.organizationDataService.loadByMsel(mselId);
-          // // load data fields and values
+          // load data fields and values
           this.dataFieldDataService.loadByMsel(mselId);
           this.dataValueDataService.loadByMsel(mselId);
-          // // load scenario events
+          // load cards
+          this.cardDataService.loadByMsel(mselId);
+          // load scenario event
           if (scenarioEventId) {
             this.scenarioEventDataService.loadById(scenarioEventId);
           }
