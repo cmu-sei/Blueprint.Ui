@@ -303,7 +303,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <div class="single-detail center-self">
             <div class="sub-detail center-self">
               <mat-checkbox
-                [disabled]="true"
+                [disabled]="msel.status === 'Deployed'"
                 [(ngModel)]="msel.useSteamfitter"
                 (cut)="isChanged = true"
                 (change)="isChanged = true"
