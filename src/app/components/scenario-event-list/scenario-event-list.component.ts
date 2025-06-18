@@ -176,6 +176,7 @@ export class ScenarioEventListComponent
   maxScenarioEventStartSeconds: 0;
   allSelected = false;
   mselListForCopy: Msel[] = [];
+  deliveryMethodDataField: DataField = {};
 
   constructor(
     private router: Router,
@@ -219,6 +220,16 @@ export class ScenarioEventListComponent
           this.msel = this.getEditableMsel(msel) as MselPlus;
           this.mselUsers = this.getMselUsers();
           this.scenarioEventDataService.updateScenarioEventViewUsers(this);
+          this.deliveryMethodDataField = {
+            displayOrder: -1,
+            name: 'Delivery Method',
+            onScenarioEventList: this.msel.showDeliveryMethodOnScenarioEventList,
+            onExerciseView: this.msel.showDeliveryMethodOnExerciseView,
+            galleryArticleParameter: '- - -',
+            dataType: 'DeliveryMethod',
+            description: 'System defined',
+            dataOptions: this.settingsService.settings.DefaultDeliveryMethodOptions
+          };
           // in case the dataFields were received before the msel
           if (this.allDataFields.length > 0) {
             this.setSortedDataFields();
@@ -678,12 +689,14 @@ export class ScenarioEventListComponent
     const isEditor =
       isApprover ||
       this.msel.hasRole(this.loggedInUserId, scenarioEvent.id).editor;
+
     const dialogRef = this.dialog.open(ScenarioEventEditDialogComponent, {
       width: '80%',
       maxWidth: '800px',
       height: '90%',
       data: {
         scenarioEvent: scenarioEvent,
+        deliveryMethodDataField: this.deliveryMethodDataField,
         dataFields: this.mselDataFields,
         organizationList: this.getSortedOrganizationOptions(),
         teamList: this.teamList,

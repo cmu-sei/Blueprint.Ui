@@ -64,6 +64,8 @@ export class MselPlus implements Msel {
   showMoveOnExerciseView?: boolean;
   showGroupOnScenarioEventList?: boolean;
   showGroupOnExerciseView?: boolean;
+  showDeliveryMethodOnScenarioEventList?: boolean;
+  showDeliveryMethodOnExerciseView?: boolean;
   moves?: Array<Move>;
   dataFields?: Array<DataField>;
   scenarioEvents?: Array<ScenarioEvent>;
