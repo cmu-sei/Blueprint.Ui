@@ -195,9 +195,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
               </button>
             </div>
           </th>
-          <!-- DeliveryMethod header -->
-          <th *ngIf="msel.showDeliveryMethodOnScenarioEventList" class="background">
-            <div>Delivery Method</div>
+          <!-- IntegrationTarget header -->
+          <th *ngIf="msel.showIntegrationTargetOnScenarioEventList" class="background">
+            <div>Integration Target</div>
           </th>
           <!-- Data Field headers -->
           <ng-container *ngFor="let df of headerDataFields">
@@ -345,16 +345,16 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 ></app-duration-view>
               </div>
             </td>
-            <!-- Delivery Method value -->
-            <td *ngIf="msel.showDeliveryMethodOnScenarioEventList">
+            <!-- Integration Target value -->
+            <td *ngIf="msel.showIntegrationTargetOnScenarioEventList">
               <app-data-value
-                [value]="item.deliveryMethod"
-                (valueChange)="saveScenarioEvent(item)"
-                [dataField]="deliveryMethodDataField"
+                [value]="item.integrationTarget"
+                (valueChange)="saveIntegrationTarget(item, $event)"
+                [dataField]="integrationTargetDataField"
                 [canEdit]="(isContentDeveloper || msel.hasRole(this.loggedInUserId, item.id).editor) && !isStarterMsel"
                 [canApprove]="(isContentDeveloper || msel.hasRole(this.loggedInUserId, item.id).approver) && !isStarterMsel"
                 [isOwner]="(isContentDeveloper || msel.hasRole(this.loggedInUserId, item.id).owner) && !isStarterMsel"
-                [showValueOnly]="false" [organizationOptions]="getSortedOrganizationOptions()" [teamOptions]="teamList" [unitOptions]="unitList"
+                [showValueOnly]="true" [organizationOptions]="getSortedOrganizationOptions()" [teamOptions]="teamList" [unitOptions]="unitList"
                 [cardOptions]="cardList" [moveOptions]="moveList" [gallerySourceTypeOptions]="msel.gallerySourceTypes"
                 [userOptions]="userList">
               </app-data-value>

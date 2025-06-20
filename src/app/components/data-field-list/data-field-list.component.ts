@@ -215,11 +215,11 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
       },
       {
         displayOrder: -1,
-        name: 'Delivery Method',
-        onScenarioEventList: this.msel.showDeliveryMethodOnScenarioEventList,
-        onExerciseView: this.msel.showDeliveryMethodOnExerciseView,
+        name: 'Integration Target',
+        onScenarioEventList: this.msel.showIntegrationTargetOnScenarioEventList,
+        onExerciseView: this.msel.showIntegrationTargetOnExerciseView,
         galleryArticleParameter: '- - -',
-        dataType: 'DeliveryMethod',
+        dataType: 'IntegrationTarget',
         description: 'System defined',
       },
     ];
@@ -443,9 +443,9 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
           this.msel.showTimeOnExerciseView = dataField.onExerciseView;
           this.msel.showTimeOnScenarioEventList = dataField.onScenarioEventList;
           break;
-        case 'Delivery Method':
-          this.msel.showDeliveryMethodOnExerciseView = dataField.onExerciseView;
-          this.msel.showDeliveryMethodOnScenarioEventList = dataField.onScenarioEventList;
+        case 'Integration Target':
+          this.msel.showIntegrationTargetOnExerciseView = dataField.onExerciseView;
+          this.msel.showIntegrationTargetOnScenarioEventList = dataField.onScenarioEventList;
           break;
       }
       this.saveMsel();

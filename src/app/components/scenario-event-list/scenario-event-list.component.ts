@@ -51,6 +51,7 @@ import {
   ScenarioEventView,
   ScenarioEventViewIndexing,
   DataValuePlus,
+  IntegrationTarget
 } from 'src/app/data/scenario-event/scenario-event-data.service';
 import { ScenarioEventCopyDialogComponent } from '../scenario-event-copy-dialog/scenario-event-copy-dialog.component';
 import { ScenarioEventEditDialogComponent } from '../scenario-event-edit-dialog/scenario-event-edit-dialog.component';
@@ -125,7 +126,7 @@ export class ScenarioEventListComponent
     DataFieldType.User,
     DataFieldType.Checkbox,
     DataFieldType.Card,
-    DataFieldType.DeliveryMethod,
+    DataFieldType.IntegrationTarget,
     DataFieldType.Move,
   ];
   dateFormControls = new Map<string, UntypedFormControl>();
@@ -176,7 +177,7 @@ export class ScenarioEventListComponent
   maxScenarioEventStartSeconds: 0;
   allSelected = false;
   mselListForCopy: Msel[] = [];
-  deliveryMethodDataField: DataField = {};
+  integrationTargetDataField: DataField = {};
 
   constructor(
     private router: Router,
@@ -220,15 +221,19 @@ export class ScenarioEventListComponent
           this.msel = this.getEditableMsel(msel) as MselPlus;
           this.mselUsers = this.getMselUsers();
           this.scenarioEventDataService.updateScenarioEventViewUsers(this);
-          this.deliveryMethodDataField = {
+          this.integrationTargetDataField = {
             displayOrder: -1,
-            name: 'Delivery Method',
-            onScenarioEventList: this.msel.showDeliveryMethodOnScenarioEventList,
-            onExerciseView: this.msel.showDeliveryMethodOnExerciseView,
+            name: 'Integration Target',
+            onScenarioEventList: this.msel.showIntegrationTargetOnScenarioEventList,
+            onExerciseView: this.msel.showIntegrationTargetOnExerciseView,
             galleryArticleParameter: '- - -',
-            dataType: 'DeliveryMethod',
+            dataType: 'IntegrationTarget',
             description: 'System defined',
-            dataOptions: this.settingsService.settings.DefaultDeliveryMethodOptions
+            dataOptions: [
+              { optionName: IntegrationTarget.Email, optionValue: IntegrationTarget.Email},
+              { optionName: IntegrationTarget.Gallery, optionValue: IntegrationTarget.Gallery},
+              { optionName: IntegrationTarget.Notification, optionValue: IntegrationTarget.Notification},
+            ]
           };
           // in case the dataFields were received before the msel
           if (this.allDataFields.length > 0) {
@@ -696,7 +701,7 @@ export class ScenarioEventListComponent
       height: '90%',
       data: {
         scenarioEvent: scenarioEvent,
-        deliveryMethodDataField: this.deliveryMethodDataField,
+        integrationTargetDataField: this.integrationTargetDataField,
         dataFields: this.mselDataFields,
         organizationList: this.getSortedOrganizationOptions(),
         teamList: this.teamList,
@@ -798,6 +803,12 @@ export class ScenarioEventListComponent
     } else {
       this.scenarioEventDataService.updateScenarioEvent(scenarioEvent);
     }
+  }
+
+  saveIntegrationTarget(scenarioEvent: ScenarioEvent, value: string)
+  {
+    scenarioEvent.integrationTarget = value;
+    this.saveScenarioEvent(scenarioEvent);
   }
 
   setHiddenScenarioEvent(scenarioEvent: ScenarioEvent, value: boolean) {

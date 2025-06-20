@@ -49,11 +49,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <mat-tab label="Gallery" *ngIf="data.useGallery">
           </mat-tab>
         </mat-tab-group>
-        <!-- delivery method -->
+        <!-- Integration Target -->
         <div class="full-width">
           <app-data-value
-            [(value)]="data.scenarioEvent.deliveryMethod"
-            [dataField]="data.deliveryMethodDataField"
+            [(value)]="data.scenarioEvent.integrationTarget"
+            [dataField]="data.integrationTargetDataField"
             [canEdit]="data.isEditor && (!data.isEditingRestricted || data.scenarioEvent.scenarioEventType === eventType.Information)"
             [canApprove]="data.isApprover"
             [isOwner]="data.isOwner"

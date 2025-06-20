@@ -67,9 +67,9 @@ export interface Msel {
     showGroupOnScenarioEventList?: boolean;
     showGroupOnExerciseView?: boolean;
     groupDisplayOrder?: number;
-    showDeliveryMethodOnScenarioEventList?: boolean;
-    showDeliveryMethodOnExerciseView?: boolean;
-    deliveryMethodDisplayOrder?: number;
+    showIntegrationTargetOnScenarioEventList?: boolean;
+    showIntegrationTargetOnExerciseView?: boolean;
+    integrationTargetDisplayOrder?: number;
     moves?: Array<Move> | null;
     dataFields?: Array<DataField> | null;
     scenarioEvents?: Array<ScenarioEvent> | null;

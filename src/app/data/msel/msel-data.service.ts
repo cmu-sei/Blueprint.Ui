@@ -60,12 +60,16 @@ export class MselPlus implements Msel {
   durationSeconds?: number;
   showTimeOnScenarioEventList?: boolean;
   showTimeOnExerciseView?: boolean;
+  timeDisplayOrder?: number;
   showMoveOnScenarioEventList?: boolean;
   showMoveOnExerciseView?: boolean;
+  moveDisplayOrder?: number;
   showGroupOnScenarioEventList?: boolean;
   showGroupOnExerciseView?: boolean;
-  showDeliveryMethodOnScenarioEventList?: boolean;
-  showDeliveryMethodOnExerciseView?: boolean;
+  groupDisplayOrder?: number;
+  showIntegrationTargetOnScenarioEventList?: boolean;
+  showIntegrationTargetOnExerciseView?: boolean;
+  integrationTargetDisplayOrder?: number;
   moves?: Array<Move>;
   dataFields?: Array<DataField>;
   scenarioEvents?: Array<ScenarioEvent>;

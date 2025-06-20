@@ -20,6 +20,14 @@ import {
 } from 'src/app/generated/blueprint.api';
 import { take, tap } from 'rxjs/operators';
 
+
+export type IntegrationTarget = 'Gallery' | 'Email' | 'Notification';
+export const IntegrationTarget = {
+    Gallery: 'Gallery' as IntegrationTarget,
+    Email: 'Email' as IntegrationTarget,
+    Notification: 'Notification' as IntegrationTarget
+};
+
 export interface DataValuePlus extends DataValue {
   fieldType: DataFieldType;
   sortAndFilterValue: string | number;
@@ -96,7 +104,7 @@ export class ScenarioEventDataService {
     DataFieldType.Checkbox,
     DataFieldType.User,
     DataFieldType.Url,
-    DataFieldType.DeliveryMethod,
+    DataFieldType.IntegrationTarget,
   ];
 
   loadByMsel(mselId: string) {
