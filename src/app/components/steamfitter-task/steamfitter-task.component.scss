@@ -1,0 +1,38 @@
+// Copyright 2022 Carnegie Mellon University. All Rights Reserved.
+// Released under a MIT (SEI)-style license. See LICENSE.md in the$
+// project root for license information.
+
+.frame {
+  width: 100%;
+  height: calc(100vh - 39px);
+}
+
+.info-detail {
+  width: 90%;
+  margin-left: 20px;
+  margin-top: 20px;
+}
+
+.scrolling-region {
+  overflow: auto;
+  width: 100%;
+  height: calc(100% - 40px);
+}
+
+.single-detail {
+  display: flex;
+  width: 100%;
+  min-height: 45px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.half-width {
+  width: 60%;
+}
+
+.center-self {
+  align-self: center;
+}

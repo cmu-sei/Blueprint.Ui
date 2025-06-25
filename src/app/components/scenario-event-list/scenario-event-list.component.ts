@@ -230,9 +230,8 @@ export class ScenarioEventListComponent
             dataType: 'IntegrationTarget',
             description: 'System defined',
             dataOptions: [
-              { optionName: IntegrationTarget.Email, optionValue: IntegrationTarget.Email},
               { optionName: IntegrationTarget.Gallery, optionValue: IntegrationTarget.Gallery},
-              { optionName: IntegrationTarget.Notification, optionValue: IntegrationTarget.Notification},
+              { optionName: IntegrationTarget.Steamfitter, optionValue: IntegrationTarget.Steamfitter},
             ]
           };
           // in case the dataFields were received before the msel
@@ -651,8 +650,10 @@ export class ScenarioEventListComponent
   }
 
   editScenarioEvent(scenarioEvent: ScenarioEvent) {
+    const editSteamfitterTask = scenarioEvent.steamfitterTask ? { ...scenarioEvent.steamfitterTask } : {};
     const editScenarioEvent = { ...scenarioEvent };
     editScenarioEvent.dataValues = [];
+    editScenarioEvent.steamfitterTask = editSteamfitterTask;
     const seDataValues = this.dataValues.filter(
       (dv) => dv.scenarioEventId === scenarioEvent.id
     );

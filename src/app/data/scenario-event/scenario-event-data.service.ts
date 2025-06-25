@@ -21,9 +21,10 @@ import {
 import { take, tap } from 'rxjs/operators';
 
 
-export type IntegrationTarget = 'Gallery' | 'Email' | 'Notification';
+export type IntegrationTarget = 'Gallery' | 'Steamfitter' | 'Email' | 'Notification';
 export const IntegrationTarget = {
     Gallery: 'Gallery' as IntegrationTarget,
+    Steamfitter: 'Steamfitter' as IntegrationTarget,
     Email: 'Email' as IntegrationTarget,
     Notification: 'Notification' as IntegrationTarget
 };

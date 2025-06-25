@@ -63,7 +63,7 @@ export class DataFieldEditDialogComponent {
       if (selectedDataType === 'IntegrationTarget') {
         this.data.dataField.isChosenFromList = false;
         // Add the default options for Integration Target
-        const defaultOptions = [IntegrationTarget.Email, IntegrationTarget.Gallery, IntegrationTarget.Notification];
+        const defaultOptions = [IntegrationTarget.Gallery, IntegrationTarget.Steamfitter];
         defaultOptions.forEach(defopt => {
           const alreadyExists = this.data.dataField.dataOptions.some(dfo =>
             dfo.optionName === defopt && dfo.optionValue === defopt);

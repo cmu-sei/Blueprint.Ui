@@ -129,6 +129,10 @@ model/scoringOptionSelection.ts
 model/securityRuleSet.ts
 model/serializationFormat.ts
 model/sortVersion.ts
+model/steamfitterIntegrationType.ts
+model/steamfitterTask.ts
+model/steamfitterTaskAction.ts
+model/steamfitterTaskTrigger.ts
 model/structLayoutAttribute.ts
 model/team.ts
 model/teamRole.ts

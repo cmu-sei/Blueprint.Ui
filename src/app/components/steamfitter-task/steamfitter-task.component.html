@@ -1,0 +1,162 @@
+select<!--
+Copyright 2025 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license, please see LICENSE.md in the
+project root for license information or contact permission@sei.cmu.edu for full terms.
+-->
+<div *ngIf="scenarioEvent && scenarioEvent.steamfitterTask">
+  <div class="info-detail">
+    <!-- Name -->
+    <div class="single-detail center-self">
+      <mat-form-field class="full-width">
+        <input
+          type="text"
+          matInput
+          placeholder="Name"
+          [(ngModel)]="scenarioEvent.steamfitterTask.name"
+        />
+      </mat-form-field>
+    </div>
+    <!-- Description -->
+    <div class="single-detail center-self">
+      <mat-form-field class="full-width">
+        <input
+          type="text"
+          matInput
+          placeholder="Description"
+          [(ngModel)]="scenarioEvent.steamfitterTask.description"
+        />
+      </mat-form-field>
+    </div>
+    <!-- Task Type -->
+    <div class="single-detail center-self">
+      <mat-form-field>
+        <mat-select
+          placeholder="Steamfitter Task Type"
+          [(ngModel)]="scenarioEvent.steamfitterTask.taskType"
+        >
+          <mat-option *ngFor="let taskType of taskTypes" value="{{ taskType }}">{{ taskType }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+    <!-- Notification -->
+    <span *ngIf="scenarioEvent.steamfitterTask.taskType === steamfitterIntegrationType.Notification">
+      <div class="single-detail center-self">
+        <mat-form-field class="full-width">
+          <input
+            type="text"
+            matInput
+            placeholder="Notification Text"
+            [(ngModel)]="notificationText"
+            (change)="notificationChange()"
+          />
+        </mat-form-field>
+      </div>
+    </span>
+    <!-- Email -->
+    <span *ngIf="scenarioEvent.steamfitterTask.taskType === steamfitterIntegrationType.Email">
+      <div class="single-detail center-self">
+        <mat-form-field class="full-width">
+          <input
+            type="text"
+            matInput
+            placeholder="From"
+            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['From']"
+          />
+        </mat-form-field>
+      </div>
+      <div class="single-detail center-self">
+        <mat-form-field class="full-width">
+          <input
+            type="text"
+            matInput
+            placeholder="To"
+            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['To']"
+          />
+        </mat-form-field>
+      </div>
+      <div class="single-detail center-self">
+        <mat-form-field class="full-width">
+          <input
+            type="text"
+            matInput
+            placeholder="cc"
+            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['cc']"
+          />
+        </mat-form-field>
+      </div>
+      <div class="single-detail center-self">
+        <mat-form-field class="full-width">
+          <input
+            type="text"
+            matInput
+            placeholder="Subject"
+            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['Subject']"
+          />
+        </mat-form-field>
+      </div>
+      <div class="single-detail center-self">
+        <mat-form-field class="full-width">
+          <input
+            type="text"
+            matInput
+            placeholder="Message"
+            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['Message']"
+          />
+        </mat-form-field>
+      </div>
+      <div class="single-detail center-self">
+        <mat-form-field class="full-width">
+          <input
+            type="text"
+            matInput
+            placeholder="accountText"
+            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['Account']"
+          />
+        </mat-form-field>
+      </div>
+      <div class="single-detail center-self">
+        <mat-form-field class="full-width">
+          <input
+            type="text"
+            matInput
+            placeholder="Mime Type"
+            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['MimeType']"
+          />
+        </mat-form-field>
+      </div>
+    </span>
+    <!-- http -->
+    <span *ngIf="scenarioEvent.steamfitterTask.taskType?.startsWith('http_')">
+      <div class="single-detail center-self">
+        <mat-form-field class="full-width">
+          <input
+            type="text"
+            matInput
+            placeholder="URL"
+            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['Url']"
+          />
+        </mat-form-field>
+      </div>
+      <div class="single-detail center-self">
+        <mat-form-field class="full-width">
+          <input
+            type="text"
+            matInput
+            placeholder="Body"
+            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['Body']"
+          />
+        </mat-form-field>
+      </div>
+      <div class="single-detail center-self">
+        <mat-form-field class="full-width">
+          <input
+            type="text"
+            matInput
+            placeholder="Headers"
+            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['Headers']"
+          />
+        </mat-form-field>
+      </div>
+    </span>
+  </div>
+</div>
