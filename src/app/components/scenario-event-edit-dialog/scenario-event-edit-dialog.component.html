@@ -40,7 +40,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           [selectedIndex]="selectedTab"
           (selectedTabChange)="tabChange($event)"
           style="margin-bottom: 20px;"
-          *ngIf="(showDefaultTab() || data.useGallery) && data.scenarioEvent.scenarioEventType === eventType.Inject"
+          *ngIf="(showDefaultTab() || data.useGallery || data.useSteamfitter) && data.scenarioEvent.scenarioEventType === eventType.Inject"
         >
           <mat-tab label="Default" *ngIf="showDefaultTab()">
           </mat-tab>

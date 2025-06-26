@@ -46,8 +46,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             type="text"
             matInput
             placeholder="Notification Text"
-            [(ngModel)]="notificationText"
-            (change)="notificationChange()"
+            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['notificationText']"
           />
         </mat-form-field>
       </div>
@@ -126,7 +125,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </div>
     </span>
     <!-- http -->
-    <span *ngIf="scenarioEvent.steamfitterTask.taskType?.startsWith('http_')">
+    <span *ngIf="scenarioEvent.steamfitterTask.taskType && scenarioEvent.steamfitterTask.taskType.startsWith('http_')">
       <div class="single-detail center-self">
         <mat-form-field class="full-width">
           <input

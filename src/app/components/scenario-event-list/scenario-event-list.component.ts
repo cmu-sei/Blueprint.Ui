@@ -66,6 +66,10 @@ import { UnitQuery } from 'src/app/data/unit/unit.query';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
 import { AngularEditorConfig } from '@kolkov/angular-editor';
 
+interface StringDictionary {
+  [key: string]: string;
+};
+
 @Component({
   selector: 'app-scenario-event-list',
   templateUrl: './scenario-event-list.component.html',
@@ -650,10 +654,8 @@ export class ScenarioEventListComponent
   }
 
   editScenarioEvent(scenarioEvent: ScenarioEvent) {
-    const editSteamfitterTask = scenarioEvent.steamfitterTask ? { ...scenarioEvent.steamfitterTask } : {};
     const editScenarioEvent = { ...scenarioEvent };
     editScenarioEvent.dataValues = [];
-    editScenarioEvent.steamfitterTask = editSteamfitterTask;
     const seDataValues = this.dataValues.filter(
       (dv) => dv.scenarioEventId === scenarioEvent.id
     );
@@ -664,6 +666,7 @@ export class ScenarioEventListComponent
       }
       editScenarioEvent.dataValues.push({ ...dataValue });
     });
+    this.makeSteamfitterTask(editScenarioEvent);
     this.displayEditDialog(editScenarioEvent);
   }
 
@@ -682,6 +685,7 @@ export class ScenarioEventListComponent
         });
       });
     this.isAddingScenarioEvent = true;
+    this.makeSteamfitterTask(newScenarioEvent);
     this.displayEditDialog(newScenarioEvent);
   }
 
@@ -750,7 +754,23 @@ export class ScenarioEventListComponent
         value: '',
       });
     });
+    this.makeSteamfitterTask(newScenarioEvent);
     return newScenarioEvent;
+  }
+
+  makeSteamfitterTask(scenarioEvent: ScenarioEvent) {
+    const steamfitterTask = scenarioEvent.steamfitterTask ? { ...scenarioEvent.steamfitterTask } : {};
+    const actionParameters: StringDictionary = steamfitterTask.actionParameters ? { ...steamfitterTask.actionParameters} : {};
+    if (actionParameters && actionParameters.keys?.length === 0) {
+      actionParameters['expectedOutput'] = '200';
+      actionParameters['expirationSeconds'] = '120';
+      actionParameters['triggerCondition'] = 'Manual';
+      actionParameters['userExecutable'] = 'true';
+      actionParameters['repeatable'] =  'false';
+    }
+    steamfitterTask.actionParameters = actionParameters;
+    steamfitterTask.scenarioEventId = scenarioEvent.id;
+    scenarioEvent.steamfitterTask = steamfitterTask;
   }
 
   saveDataValue(

@@ -1,7 +1,7 @@
 // Copyright 2025 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import {
   ScenarioEvent,
   SteamfitterTask,
@@ -13,7 +13,7 @@ import {
   templateUrl: './steamfitter-task.component.html',
   styleUrls: ['./steamfitter-task.component.scss'],
 })
-export class SteamfitterTaskComponent implements OnInit {
+export class SteamfitterTaskComponent {
   @Input() scenarioEvent: ScenarioEvent;
   steamfitterIntegrationType = SteamfitterIntegrationType;
   taskTypes = [
@@ -24,45 +24,7 @@ export class SteamfitterTaskComponent implements OnInit {
     SteamfitterIntegrationType.http_put,
     SteamfitterIntegrationType.http_delete
   ];
-  // notification
-  notificationText = '';
-  // email
-  fromText = '';
-  toText = '';
-  ccText = '';
-  subjectText = '';
-  messageText = '';
-  accountText = '';
-  mimeTypeText = '';
-  // http_get, http_post, http_put, http_delete
-  urlText = '';
-  bodyText = '';
-  headersText = '';
-
   constructor(
   ) {}
-
-  ngOnInit() {
-    if (!this.scenarioEvent.steamfitterTask) {
-      this.scenarioEvent.steamfitterTask = {actionParameters: {
-        Url: '',
-        Body: '',
-        Headers: '',
-        From: '',
-        To: '',
-        cc: '',
-        Subject: '',
-        Message: '',
-        Account: '',
-        MimeType: ''
-      }} as SteamfitterTask;
-    }
-  }
-
-  notificationChange() {
-    this.scenarioEvent.steamfitterTask.actionParameters['Url'] = 'http://localhost:4301/views/{viewId}/notifications';
-    this.scenarioEvent.steamfitterTask.actionParameters['Body'] = this.notificationText;
-    this.scenarioEvent.steamfitterTask.actionParameters['Headers'] = '';
-  }
 
 }
