@@ -11,11 +11,12 @@
  */
 
 
-export type SteamfitterIntegrationType = 'Notification' | 'Email' | 'http_get' | 'http_post' | 'http_put' | 'http_delete';
+export type SteamfitterIntegrationType = 'Notification' | 'Email' | 'SituationUpdate' | 'http_get' | 'http_post' | 'http_put' | 'http_delete';
 
 export const SteamfitterIntegrationType = {
     Notification: 'Notification' as SteamfitterIntegrationType,
     Email: 'Email' as SteamfitterIntegrationType,
+    SituationUpdate: 'SituationUpdate' as SteamfitterIntegrationType,
     http_get: 'http_get' as SteamfitterIntegrationType,
     http_post: 'http_post' as SteamfitterIntegrationType,
     http_put: 'http_put' as SteamfitterIntegrationType,

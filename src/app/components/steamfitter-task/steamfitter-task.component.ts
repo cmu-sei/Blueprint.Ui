@@ -19,6 +19,7 @@ export class SteamfitterTaskComponent {
   taskTypes = [
     SteamfitterIntegrationType.Notification,
     SteamfitterIntegrationType.Email,
+    SteamfitterIntegrationType.SituationUpdate,
     SteamfitterIntegrationType.http_get,
     SteamfitterIntegrationType.http_post,
     SteamfitterIntegrationType.http_put,

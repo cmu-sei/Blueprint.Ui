@@ -51,6 +51,29 @@ project root for license information or contact permission@sei.cmu.edu for full 
         </mat-form-field>
       </div>
     </span>
+    <!-- Situation Update -->
+    <span *ngIf="scenarioEvent.steamfitterTask.taskType === steamfitterIntegrationType.SituationUpdate">
+      <div class="single-detail center-self">
+        <mat-form-field class="full-width">
+          <input
+            type="text"
+            matInput
+            placeholder="Situation Time"
+            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['situationTime']"
+          />
+        </mat-form-field>
+      </div>
+      <div class="single-detail center-self">
+        <mat-form-field class="full-width">
+          <input
+            type="text"
+            matInput
+            placeholder="Situation Decsription"
+            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['situationDescription']"
+          />
+        </mat-form-field>
+      </div>
+    </span>
     <!-- Email -->
     <span *ngIf="scenarioEvent.steamfitterTask.taskType === steamfitterIntegrationType.Email">
       <div class="single-detail center-self">
@@ -59,7 +82,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             type="text"
             matInput
             placeholder="From"
-            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['From']"
+            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['EmailFrom']"
           />
         </mat-form-field>
       </div>
@@ -69,7 +92,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             type="text"
             matInput
             placeholder="To"
-            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['To']"
+            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['EmailTo']"
           />
         </mat-form-field>
       </div>
@@ -79,7 +102,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             type="text"
             matInput
             placeholder="cc"
-            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['cc']"
+            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['EmailCC']"
           />
         </mat-form-field>
       </div>
@@ -119,7 +142,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             type="text"
             matInput
             placeholder="Mime Type"
-            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['MimeType']"
+            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['Mime']"
           />
         </mat-form-field>
       </div>
