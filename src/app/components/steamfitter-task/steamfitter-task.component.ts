@@ -4,7 +4,6 @@
 import { Component, Input } from '@angular/core';
 import {
   ScenarioEvent,
-  SteamfitterTask,
   SteamfitterIntegrationType
 } from 'src/app/generated/blueprint.api';
 

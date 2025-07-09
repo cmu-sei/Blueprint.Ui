@@ -31,6 +31,7 @@ import {
   MselRole,
   Organization,
   ScenarioEvent,
+  SteamfitterTask,
   Team,
   Unit,
   User,
@@ -759,15 +760,16 @@ export class ScenarioEventListComponent
   }
 
   makeSteamfitterTask(scenarioEvent: ScenarioEvent) {
-    const steamfitterTask = scenarioEvent.steamfitterTask ? { ...scenarioEvent.steamfitterTask } : {};
+    const steamfitterTask = scenarioEvent.steamfitterTask ? { ...scenarioEvent.steamfitterTask } : {
+      expectedOutput: '',
+      expirationSeconds: 120,
+      triggerCondition: 'Manual',
+      userExecutable: true,
+      repeatable: false,
+      actionParameters: {},
+      scenarioEventId: ''
+    } as SteamfitterTask;
     const actionParameters: StringDictionary = steamfitterTask.actionParameters ? { ...steamfitterTask.actionParameters} : {};
-    if (actionParameters && actionParameters.keys?.length === 0) {
-      actionParameters['expectedOutput'] = '200';
-      actionParameters['expirationSeconds'] = '120';
-      actionParameters['triggerCondition'] = 'Manual';
-      actionParameters['userExecutable'] = 'true';
-      actionParameters['repeatable'] =  'false';
-    }
     steamfitterTask.actionParameters = actionParameters;
     steamfitterTask.scenarioEventId = scenarioEvent.id;
     scenarioEvent.steamfitterTask = steamfitterTask;
