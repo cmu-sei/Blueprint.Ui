@@ -6,6 +6,7 @@ import {
   ScenarioEvent,
   SteamfitterIntegrationType
 } from 'src/app/generated/blueprint.api';
+import { AngularEditorConfig } from '@kolkov/angular-editor';
 
 @Component({
   selector: 'app-steamfitter-task',
@@ -24,6 +25,34 @@ export class SteamfitterTaskComponent {
     SteamfitterIntegrationType.http_put,
     SteamfitterIntegrationType.http_delete
   ];
+  editorConfig: AngularEditorConfig = {
+    editable: true,
+    spellcheck: true,
+    height: 'auto',
+    minHeight: '0',
+    maxHeight: 'auto',
+    width: 'auto',
+    minWidth: '0',
+    translate: 'yes',
+    enableToolbar: true,
+    showToolbar: true,
+    placeholder: 'Enter text here...',
+    defaultParagraphSeparator: '',
+    defaultFontName: '',
+    defaultFontSize: '',
+    fonts: [
+      { class: 'arial', name: 'Arial' },
+      { class: 'times-new-roman', name: 'Times New Roman' },
+      { class: 'calibri', name: 'Calibri' },
+      { class: 'comic-sans-ms', name: 'Comic Sans MS' },
+    ],
+    uploadUrl: '',
+    uploadWithCredentials: false,
+    sanitize: false,
+    toolbarPosition: 'top',
+    toolbarHiddenButtons: [['backgroundColor']],
+  };
+
   constructor(
   ) {}
 

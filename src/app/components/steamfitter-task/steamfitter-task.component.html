@@ -54,24 +54,42 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <!-- Situation Update -->
     <span *ngIf="scenarioEvent.steamfitterTask.taskType === steamfitterIntegrationType.SituationUpdate">
       <div class="single-detail center-self">
-        <mat-form-field class="full-width">
+        <mat-form-field>
           <input
-            type="text"
             matInput
-            placeholder="Situation Time"
+            [ngxMatDatetimePicker]="situationDatePicker"
+            placeholder="Situation Date / Time"
             [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['situationTime']"
-          />
+          >
+          <mat-datepicker-toggle
+            matSuffix
+            [for]="$any(situationDatePicker)"
+            title="Choose Date/Time">
+          </mat-datepicker-toggle>
+          <ngx-mat-datetime-picker #situationDatePicker
+            [showSpinners]=true
+            [showSeconds]=true
+            [stepHour]=1
+            [stepMinute]=1
+            [stepSecond]=1
+            [touchUi]=false
+            [enableMeridian]=true
+            [disableMinute]=false
+            [hideTime]=false>
+          </ngx-mat-datetime-picker>
         </mat-form-field>
       </div>
-      <div class="single-detail center-self">
-        <mat-form-field class="full-width">
-          <input
-            type="text"
-            matInput
-            placeholder="Situation Decsription"
+      <div class="no-form-field-detail center-self">
+        <p style="font-size: 13px; font-weight: 400; line-height: 1.125; font-family: Open Sans, sans-serif; letter-spacing: normal;">
+          Situation Description
+        </p>
+        <div>
+          <angular-editor
+            [placeholder]="'Description'"
             [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['situationDescription']"
-          />
-        </mat-form-field>
+            [config]="editorConfig"
+          ></angular-editor>
+        </div>
       </div>
     </span>
     <!-- Email -->

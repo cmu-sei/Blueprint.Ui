@@ -226,6 +226,13 @@ export class ScenarioEventListComponent
           this.msel = this.getEditableMsel(msel) as MselPlus;
           this.mselUsers = this.getMselUsers();
           this.scenarioEventDataService.updateScenarioEventViewUsers(this);
+          const dataOptions = [];
+          if (msel.useGallery) {
+            dataOptions.push({ optionName: IntegrationTarget.Gallery, optionValue: IntegrationTarget.Gallery});
+          }
+          if (msel.useSteamfitter) {
+            dataOptions.push({ optionName: IntegrationTarget.Steamfitter, optionValue: IntegrationTarget.Steamfitter});
+          }
           this.integrationTargetDataField = {
             displayOrder: -1,
             name: 'Integration Target',
@@ -234,10 +241,7 @@ export class ScenarioEventListComponent
             galleryArticleParameter: '- - -',
             dataType: 'IntegrationTarget',
             description: 'System defined',
-            dataOptions: [
-              { optionName: IntegrationTarget.Gallery, optionValue: IntegrationTarget.Gallery},
-              { optionName: IntegrationTarget.Steamfitter, optionValue: IntegrationTarget.Steamfitter},
-            ]
+            dataOptions: dataOptions
           };
           // in case the dataFields were received before the msel
           if (this.allDataFields.length > 0) {
@@ -772,6 +776,8 @@ export class ScenarioEventListComponent
     const actionParameters: StringDictionary = steamfitterTask.actionParameters ? { ...steamfitterTask.actionParameters} : {};
     steamfitterTask.actionParameters = actionParameters;
     steamfitterTask.scenarioEventId = scenarioEvent.id;
+    steamfitterTask.id = uuidv4();
+    scenarioEvent.steamfitterTaskId = steamfitterTask.id;
     scenarioEvent.steamfitterTask = steamfitterTask;
   }
 

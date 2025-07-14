@@ -25,6 +25,12 @@
   min-height: 45px;
 }
 
+.no-form-field-detail {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
 .full-width {
   width: 100%;
 }

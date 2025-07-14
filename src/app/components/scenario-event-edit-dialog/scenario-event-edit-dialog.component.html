@@ -56,7 +56,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         </mat-tab-group>
         <span *ngIf="selectedTabName !== 'Steamfitter Task'">
           <!-- Integration Target -->
-          <div class="full-width">
+          <div class="full-width" *ngIf="data.integrationTargetDataField.dataOptions.length > 0">
             <app-data-value
               [(value)]="data.scenarioEvent.integrationTarget"
               [dataField]="data.integrationTargetDataField"
