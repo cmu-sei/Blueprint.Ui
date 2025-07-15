@@ -102,7 +102,6 @@ export * from './teamRole';
 export * from './teamType';
 export * from './teamUser';
 export * from './textInfo';
-export * from './timeSpan';
 export * from './type';
 export * from './typeAttributes';
 export * from './typeInfo';

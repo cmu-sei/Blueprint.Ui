@@ -653,12 +653,29 @@ export class ScenarioEventListComponent
   dragEnd(event: CdkDragEnd) {}
 
   addScenarioEvent() {
-    const newScenarioEvent = this.createBlankScenarioEvent();
     this.isAddingScenarioEvent = true;
+    const newScenarioEvent = {
+      id: uuidv4(),
+      mselId: this.msel.id,
+      status: MselItemStatus.Pending,
+      dataValues: [],
+      scenarioEventType: EventType.Inject,
+      deltaSeconds: this.maxScenarioEventStartSeconds,
+    } as ScenarioEvent;
+    this.makeSteamfitterTask(newScenarioEvent, uuidv4());
+    this.mselDataFields.forEach((df) => {
+      newScenarioEvent.dataValues.push({
+        dataFieldId: df.id,
+        id: uuidv4(),
+        scenarioEventId: newScenarioEvent.id,
+        value: '',
+      });
+    });
     this.displayEditDialog(newScenarioEvent);
   }
 
   editScenarioEvent(scenarioEvent: ScenarioEvent) {
+    this.isAddingScenarioEvent = false;
     const editScenarioEvent = { ...scenarioEvent };
     editScenarioEvent.dataValues = [];
     const seDataValues = this.dataValues.filter(
@@ -671,11 +688,17 @@ export class ScenarioEventListComponent
       }
       editScenarioEvent.dataValues.push({ ...dataValue });
     });
-    this.makeSteamfitterTask(editScenarioEvent);
+    if (scenarioEvent.steamfitterTaskId) {
+      editScenarioEvent.steamfitterTask = { ...scenarioEvent.steamfitterTask};
+      editScenarioEvent.steamfitterTask.actionParameters = { ...scenarioEvent.steamfitterTask.actionParameters};
+    } else {
+      this.makeSteamfitterTask(editScenarioEvent, null);
+    }
     this.displayEditDialog(editScenarioEvent);
   }
 
   copyScenarioEvent(scenarioEvent: ScenarioEvent): void {
+    this.isAddingScenarioEvent = true;
     const newScenarioEvent = { ...scenarioEvent };
     newScenarioEvent.id = uuidv4();
     newScenarioEvent.dataValues = [];
@@ -689,8 +712,13 @@ export class ScenarioEventListComponent
           value: dv.value,
         });
       });
-    this.isAddingScenarioEvent = true;
-    this.makeSteamfitterTask(newScenarioEvent);
+    if (scenarioEvent.steamfitterTaskId) {
+      newScenarioEvent.steamfitterTask = { ...scenarioEvent.steamfitterTask};
+      newScenarioEvent.steamfitterTaskId = null;
+      newScenarioEvent.steamfitterTask.id = null;
+    } else {
+      this.makeSteamfitterTask(newScenarioEvent, uuidv4());
+    }
     this.displayEditDialog(newScenarioEvent);
   }
 
@@ -741,43 +769,20 @@ export class ScenarioEventListComponent
     });
   }
 
-  createBlankScenarioEvent(): ScenarioEvent {
-    const seId = uuidv4();
-    const newScenarioEvent = {
-      id: seId,
-      mselId: this.msel.id,
-      status: MselItemStatus.Pending,
-      dataValues: [],
-      scenarioEventType: EventType.Information,
-      deltaSeconds: this.maxScenarioEventStartSeconds,
-    };
-    this.mselDataFields.forEach((df) => {
-      newScenarioEvent.dataValues.push({
-        dataFieldId: df.id,
-        id: uuidv4(),
-        scenarioEventId: seId,
-        value: '',
-      });
-    });
-    this.makeSteamfitterTask(newScenarioEvent);
-    return newScenarioEvent;
-  }
-
-  makeSteamfitterTask(scenarioEvent: ScenarioEvent) {
-    const steamfitterTask = scenarioEvent.steamfitterTask ? { ...scenarioEvent.steamfitterTask } : {
+  makeSteamfitterTask(scenarioEvent: ScenarioEvent, newId: string) {
+    const steamfitterTask = {
       expectedOutput: '',
       expirationSeconds: 120,
       triggerCondition: 'Manual',
       userExecutable: true,
       repeatable: false,
       actionParameters: {},
-      scenarioEventId: ''
+      scenarioEventId: scenarioEvent.id
     } as SteamfitterTask;
-    const actionParameters: StringDictionary = steamfitterTask.actionParameters ? { ...steamfitterTask.actionParameters} : {};
-    steamfitterTask.actionParameters = actionParameters;
-    steamfitterTask.scenarioEventId = scenarioEvent.id;
-    steamfitterTask.id = uuidv4();
-    scenarioEvent.steamfitterTaskId = steamfitterTask.id;
+    if (newId) {
+      steamfitterTask.id = newId;
+      scenarioEvent.steamfitterTaskId = newId;
+    }
     scenarioEvent.steamfitterTask = steamfitterTask;
   }
 
