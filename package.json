@@ -1,6 +1,6 @@
 {
   "name": "blueprint-ui",
-  "version": "1.4.8",
+  "version": "1.5.0",
   "license": "MIT",
   "config": {
     "openapiArgs": "--additional-properties ngVersion=15.1 --additional-properties modelPropertyNaming=original --type-mappings=DateTime=Date",
