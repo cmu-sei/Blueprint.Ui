@@ -12,7 +12,7 @@ import {
   ScenarioEvent,
 } from 'src/app/generated/blueprint.api';
 import { Sort } from '@angular/material/sort';
-import { DataValuePlus } from 'src/app/data/scenario-event/scenario-event-data.service';
+import { DataValuePlus, IntegrationTarget } from 'src/app/data/scenario-event/scenario-event-data.service';
 import {
   MatLegacyDialogRef as MatDialogRef,
   MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
@@ -103,7 +103,9 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
   scenarioEventBackgroundColors: Array<string>;
   sortedDataFields: DataField[] = [];
   selectedTab = 0;
+  selectedTabName = '';
   currentFilterBy = 'all';
+  integrationTarget = IntegrationTarget;
 
   constructor(
     public dialogService: DialogService,
@@ -180,6 +182,10 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
     if (!saveChanges) {
       this.editComplete.emit({ saveChanges: false, organization: null });
     } else {
+      if (!this.data.scenarioEvent.integrationTarget?.includes('Steamfitter')) {
+        this.data.scenarioEvent.steamfitterTask = null;
+        this.data.scenarioEvent.steamfitterTaskId = null;
+      }
       this.editComplete.emit({
         saveChanges: saveChanges,
         scenarioEvent: this.data.scenarioEvent,
@@ -190,6 +196,7 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
   tabChange(event) {
     const injectData = event.tab.textLabel.toLowerCase().replace(' ', '');
     this.sortedDataFields = this.getFilteredDataFields(injectData);
+    this.selectedTabName = event.tab.textLabel;
   }
 
   scenarioEventTypeChange() {

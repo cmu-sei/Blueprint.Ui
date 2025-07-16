@@ -106,6 +106,7 @@ import { ScenarioEventCopyDialogComponent } from './components/scenario-event-co
 import { ScenarioEventEditDialogComponent } from './components/scenario-event-edit-dialog/scenario-event-edit-dialog.component';
 import { ScenarioEventListComponent } from './components/scenario-event-list/scenario-event-list.component';
 import { StarterComponent } from './components/starter/starter.component';
+import { SteamfitterTaskComponent } from './components/steamfitter-task/steamfitter-task.component';
 import { ConfirmDialogComponent } from './components/shared/confirm-dialog/confirm-dialog.component';
 import { SystemMessageComponent } from './components/shared/system-message/system-message.component';
 import { TeamAddDialogComponent } from './components/team-add-dialog/team-add-dialog.component';
@@ -185,6 +186,7 @@ export function getBasePath(settingsSvc: ComnSettingsService) {
     ScenarioEventEditDialogComponent,
     ScenarioEventListComponent,
     StarterComponent,
+    SteamfitterTaskComponent,
     SystemMessageComponent,
     ConfirmDialogComponent,
     TeamAddDialogComponent,

@@ -25,8 +25,6 @@ export class UserErrorStateMatcher implements ErrorStateMatcher {
   }
 }
 
-const MIN_NAME_LENGTH = 3;
-
 @Component({
   selector: 'app-organization-edit-dialog',
   templateUrl: './organization-edit-dialog.component.html',
@@ -37,15 +35,15 @@ export class OrganizationEditDialogComponent {
 
   public organizationNameFormControl = new UntypedFormControl(
     this.data.organization.name,
-    [Validators.required, Validators.minLength(MIN_NAME_LENGTH)]
+    [Validators.required]
   );
   public organizationShortNameFormControl = new UntypedFormControl(
     this.data.organization.shortName,
-    [Validators.required, Validators.minLength(MIN_NAME_LENGTH)]
+    [Validators.required]
   );
   public organizationEmailFormControl = new UntypedFormControl(
     this.data.organization.email,
-    [Validators.required, Validators.minLength(MIN_NAME_LENGTH)]
+    [Validators.required]
   );
   public descriptionFormControl = new UntypedFormControl(
     this.data.organization.description,
@@ -53,7 +51,7 @@ export class OrganizationEditDialogComponent {
   );
   public summaryFormControl = new UntypedFormControl(
     this.data.organization.summary,
-    [Validators.required, Validators.minLength(MIN_NAME_LENGTH)]
+    [Validators.required]
   );
   editorConfig: AngularEditorConfig = {
     editable: true,

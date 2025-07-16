@@ -55,6 +55,7 @@ model/citeAction.ts
 model/citeRole.ts
 model/compareInfo.ts
 model/constructorInfo.ts
+model/createFromInjectsForm.ts
 model/cultureInfo.ts
 model/cultureTypes.ts
 model/customAttributeData.ts
@@ -128,13 +129,16 @@ model/scoringOptionSelection.ts
 model/securityRuleSet.ts
 model/serializationFormat.ts
 model/sortVersion.ts
+model/steamfitterIntegrationType.ts
+model/steamfitterTask.ts
+model/steamfitterTaskAction.ts
+model/steamfitterTaskTrigger.ts
 model/structLayoutAttribute.ts
 model/team.ts
 model/teamRole.ts
 model/teamType.ts
 model/teamUser.ts
 model/textInfo.ts
-model/timeSpan.ts
 model/type.ts
 model/typeAttributes.ts
 model/typeInfo.ts

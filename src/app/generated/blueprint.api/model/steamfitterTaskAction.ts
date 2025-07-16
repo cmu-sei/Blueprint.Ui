@@ -1,5 +1,5 @@
 /*
- Copyright 2024 Carnegie Mellon University. All Rights Reserved.
+ Copyright 2025 Carnegie Mellon University. All Rights Reserved.
  Released under a MIT (SEI)-style license. See LICENSE.md in the
  project root for license information.
 */
@@ -17,17 +17,12 @@
  */
 
 
-export interface TimeSpan { 
-    ticks?: number;
-    days?: number;
-    hours?: number;
-    milliseconds?: number;
-    minutes?: number;
-    seconds?: number;
-    readonly totalDays?: number;
-    readonly totalHours?: number;
-    readonly totalMilliseconds?: number;
-    readonly totalMinutes?: number;
-    readonly totalSeconds?: number;
-}
+export type SteamfitterTaskAction = 'http_get' | 'http_post' | 'http_put' | 'http_delete';
+
+export const SteamfitterTaskAction = {
+    Get: 'http_get' as SteamfitterTaskAction,
+    Post: 'http_post' as SteamfitterTaskAction,
+    Put: 'http_put' as SteamfitterTaskAction,
+    Delete: 'http_delete' as SteamfitterTaskAction
+};
 

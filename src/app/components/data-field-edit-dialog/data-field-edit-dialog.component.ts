@@ -20,6 +20,7 @@ import {
 } from 'src/app/generated/blueprint.api';
 import { DataOptionEditDialogComponent } from '../data-option-edit-dialog/data-option-edit-dialog.component';
 import { v4 as uuidv4 } from 'uuid';
+import { IntegrationTarget } from 'src/app/data/scenario-event/scenario-event-data.service';
 
 /** Error when invalid control is dirty, touched, or submitted. */
 export class UserErrorStateMatcher implements ErrorStateMatcher {
@@ -59,20 +60,20 @@ export class DataFieldEditDialogComponent {
   changeDataFieldDataType(selectedDataType: string) {
     // only process if it changed
     if (this.data.dataField.dataType !== selectedDataType) {
-      if (selectedDataType === 'DeliveryMethod') {
+      if (selectedDataType === 'IntegrationTarget') {
         this.data.dataField.isChosenFromList = false;
-        // Add the default options for DeliveryMethod
-        const defaultOptions = this.settingsService.settings.DefaultDeliveryMethodOptions;
+        // Add the default options for Integration Target
+        const defaultOptions = [IntegrationTarget.Gallery, IntegrationTarget.Steamfitter];
         defaultOptions.forEach(defopt => {
           const alreadyExists = this.data.dataField.dataOptions.some(dfo =>
-            dfo.optionName === defopt.optName && dfo.optionValue === defopt.optionValue);
+            dfo.optionName === defopt && dfo.optionValue === defopt);
           if (!alreadyExists) {
             const newDataOption = {
               id: uuidv4(),
               displayOrder: this.data.dataField.dataOptions.length + 1,
               dataFieldId: this.data.dataField.id,
-              optionName: defopt.optionName,
-              optionValue: defopt.optionValue,
+              optionName: defopt,
+              optionValue: defopt,
             };
             // add to displayed data options
             this.data.dataField.dataOptions.push(newDataOption);

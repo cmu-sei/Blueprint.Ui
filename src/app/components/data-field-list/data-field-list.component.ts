@@ -187,7 +187,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
   createSystemDefinedDataFields() {
     this.systemDefinedDataFields = [
       {
-        displayOrder: -3,
+        displayOrder: -4,
         name: 'Move',
         onScenarioEventList: this.msel.showMoveOnScenarioEventList,
         onExerciseView: this.msel.showMoveOnExerciseView,
@@ -196,7 +196,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
         description: 'System defined',
       },
       {
-        displayOrder: -2,
+        displayOrder: -3,
         name: 'Group',
         onScenarioEventList: this.msel.showGroupOnScenarioEventList,
         onExerciseView: this.msel.showGroupOnExerciseView,
@@ -205,12 +205,21 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
         description: 'System defined',
       },
       {
-        displayOrder: -1,
+        displayOrder: -2,
         name: 'Execution Time',
         onScenarioEventList: this.msel.showTimeOnScenarioEventList,
         onExerciseView: this.msel.showTimeOnExerciseView,
         galleryArticleParameter: '- - -',
         dataType: 'DateTime',
+        description: 'System defined',
+      },
+      {
+        displayOrder: -1,
+        name: 'Integration Target',
+        onScenarioEventList: this.msel.showIntegrationTargetOnScenarioEventList,
+        onExerciseView: this.msel.showIntegrationTargetOnExerciseView,
+        galleryArticleParameter: '- - -',
+        dataType: 'IntegrationTarget',
         description: 'System defined',
       },
     ];
@@ -433,6 +442,10 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
         case 'Execution Time':
           this.msel.showTimeOnExerciseView = dataField.onExerciseView;
           this.msel.showTimeOnScenarioEventList = dataField.onScenarioEventList;
+          break;
+        case 'Integration Target':
+          this.msel.showIntegrationTargetOnExerciseView = dataField.onExerciseView;
+          this.msel.showIntegrationTargetOnScenarioEventList = dataField.onScenarioEventList;
           break;
       }
       this.saveMsel();

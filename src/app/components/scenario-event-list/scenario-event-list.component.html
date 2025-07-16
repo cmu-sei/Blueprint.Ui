@@ -195,6 +195,10 @@ project root for license information or contact permission@sei.cmu.edu for full 
               </button>
             </div>
           </th>
+          <!-- IntegrationTarget header -->
+          <th *ngIf="msel.showIntegrationTargetOnScenarioEventList" class="background">
+            <div>Integration Target</div>
+          </th>
           <!-- Data Field headers -->
           <ng-container *ngFor="let df of headerDataFields">
             <ng-container *ngIf="sortableDataTypes.includes(df.dataType); else noSort">
@@ -340,6 +344,20 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   [showRealTime]="showRealTime"
                 ></app-duration-view>
               </div>
+            </td>
+            <!-- Integration Target value -->
+            <td *ngIf="msel.showIntegrationTargetOnScenarioEventList">
+              <app-data-value
+                [value]="item.integrationTarget"
+                (valueChange)="saveIntegrationTarget(item, $event)"
+                [dataField]="integrationTargetDataField"
+                [canEdit]="(isContentDeveloper || msel.hasRole(this.loggedInUserId, item.id).editor) && !isStarterMsel"
+                [canApprove]="(isContentDeveloper || msel.hasRole(this.loggedInUserId, item.id).approver) && !isStarterMsel"
+                [isOwner]="(isContentDeveloper || msel.hasRole(this.loggedInUserId, item.id).owner) && !isStarterMsel"
+                [showValueOnly]="true" [organizationOptions]="getSortedOrganizationOptions()" [teamOptions]="teamList" [unitOptions]="unitList"
+                [cardOptions]="cardList" [moveOptions]="moveList" [gallerySourceTypeOptions]="msel.gallerySourceTypes"
+                [userOptions]="userList">
+              </app-data-value>
             </td>
             <ng-container *ngIf="item.scenarioEventType === eventType.Inject">
               <td *ngFor="let df of rowDataFields(item)">

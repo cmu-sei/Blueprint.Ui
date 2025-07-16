@@ -24,8 +24,6 @@ export class UserErrorStateMatcher implements ErrorStateMatcher {
   }
 }
 
-const MIN_NAME_LENGTH = 3;
-
 @Component({
   selector: 'app-admin-unit-edit-dialog',
   templateUrl: './admin-unit-edit-dialog.component.html',
@@ -39,14 +37,12 @@ export class AdminUnitEditDialogComponent {
     this.data.unit.name,
     [
       Validators.required,
-      Validators.minLength(MIN_NAME_LENGTH),
     ]
   );
   public unitShortNameFormControl = new UntypedFormControl(
     this.data.unit.shortName,
     [
       Validators.required,
-      Validators.minLength(MIN_NAME_LENGTH),
     ]
   );
 
@@ -57,8 +53,6 @@ export class AdminUnitEditDialogComponent {
   ) {
     dialogRef.disableClose = true;
   }
-
-  readonly MIN_NAME_LENGTH = MIN_NAME_LENGTH;
 
   errorFree() {
     return !(

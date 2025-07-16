@@ -32,6 +32,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </mat-select>
         </mat-form-field>
       </div>
+      <!-- Tabs -->
       <span class="single-edit-dialog">
         <mat-tab-group mat-stretch-tabs
           class="full-width"
@@ -39,61 +40,86 @@ project root for license information or contact permission@sei.cmu.edu for full 
           [selectedIndex]="selectedTab"
           (selectedTabChange)="tabChange($event)"
           style="margin-bottom: 20px;"
-          *ngIf="(showDefaultTab() || data.useGallery) && data.scenarioEvent.scenarioEventType === eventType.Inject"
+          *ngIf="(showDefaultTab() || data.useGallery || data.useSteamfitter) && data.scenarioEvent.scenarioEventType === eventType.Inject"
         >
           <mat-tab label="Default" *ngIf="showDefaultTab()">
           </mat-tab>
           <mat-tab label="All">
           </mat-tab>
-          <mat-tab label="Gallery" *ngIf="data.useGallery">
+          <mat-tab label="Gallery Article" *ngIf="data.useGallery && data.scenarioEvent.integrationTarget?.includes(integrationTarget.Gallery)">
+          </mat-tab>
+          <mat-tab label="Steamfitter Task" *ngIf="data.useSteamfitter && data.scenarioEvent.integrationTarget?.includes(integrationTarget.Steamfitter)">
+            <app-steamfitter-task
+              [scenarioEvent]="data.scenarioEvent"
+            ></app-steamfitter-task>
           </mat-tab>
         </mat-tab-group>
-        <!-- event start time (deltaSeconds) -->
-        <div class="start-time-div"
-          *ngIf="(currentFilterBy === 'all' || data.scenarioEvent.scenarioEventType !== eventType.Inject) && getScenarioTypeDataFields().length > 0">
-          <span>Execution Time</span>
-          <app-duration-edit
-            [startTime]="data.mselStartTime"
-            [(durationSeconds)]="data.scenarioEvent.deltaSeconds"
-            [timeName]="'Execution Date / Time'"
-            [postScript]="''"
-          >
-          </app-duration-edit>
-        </div>
-        <!-- data values for each data field -->
-        <div *ngFor="let df of getScenarioTypeDataFields()" class="full-width">
-          <app-data-value
-            [(value)]="getDataValue(df.name).value"
-            [dataField]="df"
-            [canEdit]="data.isEditor && (!data.isEditingRestricted || data.scenarioEvent.scenarioEventType === eventType.Information)"
-            [canApprove]="data.isApprover"
-            [isOwner]="data.isOwner"
-            [showValueOnly]="false"
-            [organizationOptions]="data.organizationList"
-            [teamOptions]="data.teamList"
-            [unitOptions]="data.unitList"
-            [cardOptions]="data.cardList"
-            [moveOptions]="data.moveList"
-            [gallerySourceTypeOptions]="data.gallerySourceTypes"
-            [userOptions]="data.userList"
-          ></app-data-value>
-        </div>
-        <!-- metadata-->
-        <div class="full-width" *ngIf="currentFilterBy === 'all' && data.scenarioEvent.scenarioEventType === eventType.Inject">
-          <mat-form-field class="full-width">
-            <input
-              type="text"
-              matInput
-              placeholder="row metadata"
-              [(ngModel)]="data.scenarioEvent.rowMetadata"
-            />
-          </mat-form-field>
-        </div>
-        <!-- no data fields message -->
-        <div class="full-width" *ngIf="getScenarioTypeDataFields().length === 0">
-          <br /><br />
-          <b>No data fields have been defined for this scenario event type!</b>
-        </div>
+        <span *ngIf="selectedTabName !== 'Steamfitter Task'">
+          <!-- Integration Target -->
+          <div class="full-width" *ngIf="data.integrationTargetDataField.dataOptions.length > 0">
+            <app-data-value
+              [(value)]="data.scenarioEvent.integrationTarget"
+              [dataField]="data.integrationTargetDataField"
+              [canEdit]="data.isEditor && (!data.isEditingRestricted || data.scenarioEvent.scenarioEventType === eventType.Information)"
+              [canApprove]="data.isApprover"
+              [isOwner]="data.isOwner"
+              [showValueOnly]="false"
+              [organizationOptions]="data.organizationList"
+              [teamOptions]="data.teamList"
+              [unitOptions]="data.unitList"
+              [cardOptions]="data.cardList"
+              [moveOptions]="data.moveList"
+              [gallerySourceTypeOptions]="data.gallerySourceTypes"
+              [userOptions]="data.userList"
+            ></app-data-value>
+          </div>
+          <!-- event start time (deltaSeconds) -->
+          <div class="start-time-div"
+            *ngIf="(currentFilterBy === 'all' || data.scenarioEvent.scenarioEventType !== eventType.Inject) && getScenarioTypeDataFields().length > 0">
+            <span>Execution Time</span>
+            <app-duration-edit
+              [startTime]="data.mselStartTime"
+              [(durationSeconds)]="data.scenarioEvent.deltaSeconds"
+              [timeName]="'Execution Date / Time'"
+              [postScript]="''"
+            >
+            </app-duration-edit>
+          </div>
+          <!-- data values for each data field -->
+          <div *ngFor="let df of getScenarioTypeDataFields()" class="full-width">
+            <app-data-value
+              [(value)]="getDataValue(df.name).value"
+              [dataField]="df"
+              [canEdit]="data.isEditor && (!data.isEditingRestricted || data.scenarioEvent.scenarioEventType === eventType.Information)"
+              [canApprove]="data.isApprover"
+              [isOwner]="data.isOwner"
+              [showValueOnly]="false"
+              [organizationOptions]="data.organizationList"
+              [teamOptions]="data.teamList"
+              [unitOptions]="data.unitList"
+              [cardOptions]="data.cardList"
+              [moveOptions]="data.moveList"
+              [gallerySourceTypeOptions]="data.gallerySourceTypes"
+              [userOptions]="data.userList"
+            ></app-data-value>
+          </div>
+          <!-- metadata-->
+          <div class="full-width" *ngIf="currentFilterBy === 'all' && data.scenarioEvent.scenarioEventType === eventType.Inject">
+            <mat-form-field class="full-width">
+              <input
+                type="text"
+                matInput
+                placeholder="row metadata"
+                [(ngModel)]="data.scenarioEvent.rowMetadata"
+              />
+            </mat-form-field>
+          </div>
+          <!-- no data fields message -->
+          <div class="full-width" *ngIf="getScenarioTypeDataFields().length === 0">
+            <br /><br />
+            <b>No data fields have been defined for this scenario event type!</b>
+          </div>
+        </span>
       </span>
     </div>
   </div>

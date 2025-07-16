@@ -39,14 +39,12 @@ export class TeamEditDialogComponent {
     this.data.team.name,
     [
       Validators.required,
-      Validators.minLength(MIN_NAME_LENGTH),
     ]
   );
   public teamShortNameFormControl = new UntypedFormControl(
     this.data.team.shortName,
     [
       Validators.required,
-      Validators.minLength(MIN_NAME_LENGTH),
     ]
   );
   public emailFormControl = new UntypedFormControl(

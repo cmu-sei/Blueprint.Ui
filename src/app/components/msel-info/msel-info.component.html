@@ -77,6 +77,19 @@ project root for license information or contact permission@sei.cmu.edu for full 
               />
             </mat-form-field>
           </div>
+          <!-- Is a Template -->
+          <div class="single-detail center-self">
+            <div class="sub-detail center-self">
+              <mat-checkbox
+                [(ngModel)]="msel.isTemplate"
+                [disabled]="msel.status === 'Deployed'"
+                (cut)="isChanged = true"
+                (change)="isChanged = true"
+                (paste)="isChanged = true"
+                (keypress)="isChanged = true"
+                >Is a Template</mat-checkbox>
+            </div>
+          </div>
           <!-- MSEL Start Time -->
           <div class="single-checkbox">
             <mat-checkbox [checked]="msel.startTime?.valueOf() > 0"
@@ -125,203 +138,196 @@ project root for license information or contact permission@sei.cmu.edu for full 
             [postScript]="'duration'"
             (change)="isChanged = true;"
           ></app-duration-edit>
-          <!-- Is a Template -->
-          <div class="single-detail center-self">
-            <div class="sub-detail center-self">
-              <mat-checkbox
-                [(ngModel)]="msel.isTemplate"
-                [disabled]="msel.status === 'Deployed'"
-                (cut)="isChanged = true"
-                (change)="isChanged = true"
-                (paste)="isChanged = true"
-                (keypress)="isChanged = true"
-                >Is a Template</mat-checkbox>
-            </div>
-          </div>
-          <!-- Player Integration -->
-          <div class="single-detail center-self">
-            <div class="sub-detail center-self three-cell">
-              <mat-checkbox
-                [(ngModel)]="msel.usePlayer"
-                [disabled]="msel.status === 'Deployed'"
-                (cut)="isChanged = true"
-                (change)="isChanged = true"
-                (paste)="isChanged = true"
-                (keypress)="isChanged = true"
-              ></mat-checkbox>&nbsp;&nbsp;Integrate Player
-            </div>
-            <div class="sub-detail center-self one-cell" *ngIf="msel.usePlayer">
-              <button
-                (click)="pushIntegrations()"
-                title="Push Integrations"
-                class="thin-button"
-                *ngIf="(!msel.playerViewId &&
-                        !msel.citeEvaluationId &&
-                        !msel.galleryCollectionId &&
-                        !msel.steamfitterScenarioId &&
-                        !msel.isTemplate) ||
-                        pushStatus"
-                [disabled]="!(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) ||
-                            (msel.useGallery && galleryToDo()) ||
-                            (msel.useCite && !msel.citeScoringModelId) ||
-                            isBusy || isChanged"
-              ><span *ngIf="pushStatus">{{ pushStatus }} ...</span><span *ngIf="!pushStatus">Push Integrations</span></button>
-              <button
-                (click)="pullIntegrations()"
-                title="Remove Integrations"
-                class="thin-button"
-                *ngIf="(msel.playerViewId ||
-                       msel.citeEvaluationId ||
-                       msel.galleryCollectionId ||
-                       msel.steamfitterScenarioId) &&
-                       !pushStatus"
-                [disabled]="!(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) || isChanged"
-              >Remove Integrations</button>
-            </div>
-          </div>
-          <div *ngIf="!msel.isTemplate && msel.usePlayer && msel.playerViewId" class="single-detail center-self">
-            <div class="sub-detail center-self one-cell">&nbsp;</div>
-            <div class="sub-detail center-self four-cell" *ngIf="msel.usePlayer && msel.playerViewId">
-              <mat-form-field class="guid-field">
-                <input
-                  type="text"
-                  matInput
-                  placeholder="View"
-                  [(ngModel)]="msel.playerViewId"
-                  disabled
-                />
-              </mat-form-field>
-            </div>
-          </div>
-          <!-- Gallery Integration -->
-          <div class="single-detail center-self">
-            <div class="sub-detail center-self three-cell">
-              <mat-checkbox
-                [(ngModel)]="msel.useGallery"
-                [disabled]="msel.status === 'Deployed'"
-                (cut)="isChanged = true"
-                (change)="isChanged = true"
-                (paste)="isChanged = true"
-                (keypress)="isChanged = true"
-              ></mat-checkbox>&nbsp;&nbsp;Integrate Gallery
-            </div>
-            <div class="sub-detail center-self one-cell" *ngIf="msel.useGallery">&nbsp;</div>
-          </div>
-          <div *ngIf="galleryWarningMessage()" class="single-detail center-self">
-            <span class="gallery-warning">{{ galleryWarningMessage() }}</span>
-          </div>
-          <div *ngIf="!msel.isTemplate && msel.useGallery && msel.galleryExhibitId" class="single-detail center-self">
-            <div class="sub-detail center-self one-cell">&nbsp;</div>
-            <div class="sub-detail center-self four-cell" *ngIf="msel.useGallery && msel.galleryCollectionId">
-              <mat-form-field class="guid-field">
-                <input
-                  type="text"
-                  matInput
-                  placeholder="Collection"
-                  [(ngModel)]="msel.galleryCollectionId"
-                  disabled
-                />
-              </mat-form-field>
-            </div>
-            <div class="sub-detail center-self four-cell">
-              <mat-form-field class="guid-field">
-                <input
-                  type="text"
-                  matInput
-                  placeholder="Exhibit"
-                  [(ngModel)]="msel.galleryExhibitId"
-                  disabled
-                />
-              </mat-form-field>
-            </div>
-          </div>
-          <!-- CITE Integration -->
-          <div class="single-detail center-self">
-            <div class="sub-detail center-self one-cell">
-              <mat-checkbox
-                [(ngModel)]="msel.useCite"
-                [disabled]="msel.status === 'Deployed'"
-                (cut)="isChanged = true"
-                (change)="isChanged = true"
-                (paste)="isChanged = true"
-                (keypress)="isChanged = true"
-                ></mat-checkbox>&nbsp;&nbsp;Integrate CITE
-            </div>
-            <div class="sub-detail center-self two-cell" *ngIf="msel.useCite">
-              <mat-form-field class="half-width" *ngIf="scoringModelList.length > 0">
-                <mat-label>Scoring Model</mat-label>
-                <mat-select
-                  [(ngModel)]="msel.citeScoringModelId"
-                  (cut)="isChanged = true"
-                  (selectionChange)="isChanged = true"
-                  (paste)="isChanged = true"
-                  (keypress)="isChanged = true"
+          <!-- Integration Section -->
+          <div class="integration-div">
+            <b>Applications to Integrate</b>
+            <!-- Player Integration -->
+            <div class="single-detail center-self integration-checkbox">
+              <div class="sub-detail center-self three-cell">
+                <mat-checkbox
+                  [(ngModel)]="msel.usePlayer"
                   [disabled]="msel.status === 'Deployed'"
-                >
-                  <mat-option [value]=""></mat-option>
-                  <mat-option *ngFor="let scoringModel of scoringModelList" [value]="scoringModel.id">
-                    {{ scoringModel.description }}
-                  </mat-option>
-                </mat-select>
-              </mat-form-field>
-              <mat-form-field class="half-width guid-field" *ngIf="scoringModelList.length === 0">
-                <input
-                  type="text"
-                  matInput
-                  placeholder="Scoring Model"
-                  [(ngModel)]="msel.citeScoringModelId"
                   (cut)="isChanged = true"
                   (change)="isChanged = true"
                   (paste)="isChanged = true"
                   (keypress)="isChanged = true"
-                  title="CITE Scoring Model"
-                />
-              </mat-form-field>
+                >Integrate Player</mat-checkbox>
               </div>
-              <div class="sub-detail center-self one-cell" *ngIf="msel.useCite">&nbsp;</div>
-          </div>
-          <div *ngIf="citeWarningMessage()" class="single-detail center-self">
-            <span class="gallery-warning">{{ citeWarningMessage() }}</span>
-          </div>
-          <div *ngIf="!msel.isTemplate && msel.useCite && msel.citeEvaluationId" class="single-detail center-self">
-            <div class="sub-detail center-self five-cell">
-              &nbsp;
+              <div class="sub-detail center-self one-cell"
+                *ngIf="(msel.usePlayer || msel.useCite || msel.useGallery || msel.useSteamfitter) && !msel.isTemplate"
+              >
+                <button
+                  (click)="pushIntegrations()"
+                  title="Push Integrations"
+                  class="thin-button"
+                  *ngIf="(!msel.playerViewId &&
+                          !msel.citeEvaluationId &&
+                          !msel.galleryCollectionId &&
+                          !msel.steamfitterScenarioId &&
+                          !msel.isTemplate) ||
+                          pushStatus"
+                  [disabled]="!(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) ||
+                              (msel.useGallery && galleryToDo()) ||
+                              (msel.useCite && !msel.citeScoringModelId) ||
+                              isBusy || isChanged"
+                ><span *ngIf="pushStatus">{{ pushStatus }} ...</span><span *ngIf="!pushStatus">Push Integrations</span></button>
+                <button
+                  (click)="pullIntegrations()"
+                  title="Remove Integrations"
+                  class="thin-button"
+                  *ngIf="(msel.playerViewId ||
+                        msel.citeEvaluationId ||
+                        msel.galleryCollectionId ||
+                        msel.steamfitterScenarioId) &&
+                        !pushStatus"
+                  [disabled]="!(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) || isChanged"
+                >Remove Integrations</button>
+              </div>
             </div>
-            <div class="sub-detail center-self four-cell">
-              <mat-form-field *ngIf="msel.useCite && msel.citeEvaluationId" class="half-width guid-field">
-                <input
-                  type="text"
-                  matInput
-                  placeholder="Evaluation"
-                  [(ngModel)]="msel.citeEvaluationId"
-                  disabled
-                />
-              </mat-form-field>
+            <div *ngIf="!msel.isTemplate && msel.usePlayer && msel.playerViewId" class="single-detail center-self">
+              <div class="sub-detail center-self one-cell">&nbsp;</div>
+              <div class="sub-detail center-self four-cell" *ngIf="msel.usePlayer && msel.playerViewId">
+                <mat-form-field class="guid-field">
+                  <input
+                    type="text"
+                    matInput
+                    placeholder="View"
+                    [(ngModel)]="msel.playerViewId"
+                    disabled
+                  />
+                </mat-form-field>
+              </div>
             </div>
-          </div>
-          <!-- Steamfitter Integration -->
-          <div class="single-detail center-self">
-            <div class="sub-detail center-self">
-              <mat-checkbox
-                [disabled]="true"
-                [(ngModel)]="msel.useSteamfitter"
-                (cut)="isChanged = true"
-                (change)="isChanged = true"
-                (paste)="isChanged = true"
-                (keypress)="isChanged = true"
-                >Integrate Steamfitter</mat-checkbox>
+            <!-- Gallery Integration -->
+            <div class="single-detail center-self integration-checkbox">
+              <div class="sub-detail center-self three-cell">
+                <mat-checkbox
+                  [(ngModel)]="msel.useGallery"
+                  [disabled]="msel.status === 'Deployed'"
+                  (cut)="isChanged = true"
+                  (change)="isChanged = true"
+                  (paste)="isChanged = true"
+                  (keypress)="isChanged = true"
+                >Integrate Gallery</mat-checkbox>
+              </div>
+              <div class="sub-detail center-self one-cell" *ngIf="msel.useGallery">&nbsp;</div>
             </div>
-          </div>
-          <div class="sub-detail center-self">
-            <mat-form-field *ngIf="msel.useSteamfitter" class="full-width">
-              <input
-                type="text"
-                matInput
-                placeholder="Scenario"
-                [(ngModel)]="msel.steamfitterScenarioId"
-                disabled
-              />
-            </mat-form-field>
+            <div *ngIf="galleryWarningMessage()" class="single-detail center-self">
+              <span class="gallery-warning">{{ galleryWarningMessage() }}</span>
+            </div>
+            <div *ngIf="!msel.isTemplate && msel.useGallery && msel.galleryExhibitId" class="single-detail center-self">
+              <div class="sub-detail center-self one-cell">&nbsp;</div>
+              <div class="sub-detail center-self four-cell" *ngIf="msel.useGallery && msel.galleryCollectionId">
+                <mat-form-field class="guid-field">
+                  <input
+                    type="text"
+                    matInput
+                    placeholder="Collection"
+                    [(ngModel)]="msel.galleryCollectionId"
+                    disabled
+                  />
+                </mat-form-field>
+              </div>
+              <div class="sub-detail center-self four-cell">
+                <mat-form-field class="guid-field">
+                  <input
+                    type="text"
+                    matInput
+                    placeholder="Exhibit"
+                    [(ngModel)]="msel.galleryExhibitId"
+                    disabled
+                  />
+                </mat-form-field>
+              </div>
+            </div>
+            <!-- CITE Integration -->
+            <div class="single-detail center-self integration-checkbox">
+              <div class="sub-detail center-self one-cell">
+                <mat-checkbox
+                  [(ngModel)]="msel.useCite"
+                  [disabled]="msel.status === 'Deployed'"
+                  (cut)="isChanged = true"
+                  (change)="isChanged = true"
+                  (paste)="isChanged = true"
+                  (keypress)="isChanged = true"
+                  >Integrate CITE</mat-checkbox>
+              </div>
+              <div class="sub-detail center-self two-cell" *ngIf="msel.useCite">
+                <mat-form-field class="half-width" *ngIf="scoringModelList.length > 0">
+                  <mat-label>Scoring Model</mat-label>
+                  <mat-select
+                    [(ngModel)]="msel.citeScoringModelId"
+                    (cut)="isChanged = true"
+                    (selectionChange)="isChanged = true"
+                    (paste)="isChanged = true"
+                    (keypress)="isChanged = true"
+                    [disabled]="msel.status === 'Deployed'"
+                  >
+                    <mat-option [value]=""></mat-option>
+                    <mat-option *ngFor="let scoringModel of scoringModelList" [value]="scoringModel.id">
+                      {{ scoringModel.description }}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+                <mat-form-field class="half-width guid-field" *ngIf="scoringModelList.length === 0">
+                  <input
+                    type="text"
+                    matInput
+                    placeholder="Scoring Model"
+                    [(ngModel)]="msel.citeScoringModelId"
+                    (cut)="isChanged = true"
+                    (change)="isChanged = true"
+                    (paste)="isChanged = true"
+                    (keypress)="isChanged = true"
+                    title="CITE Scoring Model"
+                  />
+                </mat-form-field>
+                </div>
+                <div class="sub-detail center-self one-cell" *ngIf="msel.useCite">&nbsp;</div>
+            </div>
+            <div *ngIf="citeWarningMessage()" class="single-detail center-self">
+              <span class="gallery-warning">{{ citeWarningMessage() }}</span>
+            </div>
+            <div *ngIf="!msel.isTemplate && msel.useCite && msel.citeEvaluationId" class="single-detail center-self">
+              <div class="sub-detail center-self five-cell">
+                &nbsp;
+              </div>
+              <div class="sub-detail center-self four-cell">
+                <mat-form-field *ngIf="msel.useCite && msel.citeEvaluationId" class="half-width guid-field">
+                  <input
+                    type="text"
+                    matInput
+                    placeholder="Evaluation"
+                    [(ngModel)]="msel.citeEvaluationId"
+                    disabled
+                  />
+                </mat-form-field>
+              </div>
+            </div>
+            <!-- Steamfitter Integration -->
+            <div class="single-detail center-self integration-checkbox">
+              <div class="sub-detail center-self one-cell">
+                <mat-checkbox
+                  [disabled]="msel.status === 'Deployed'"
+                  [(ngModel)]="msel.useSteamfitter"
+                  (cut)="isChanged = true"
+                  (change)="isChanged = true"
+                  (paste)="isChanged = true"
+                  (keypress)="isChanged = true"
+                  >Integrate Steamfitter</mat-checkbox>
+              </div>
+              <div class="sub-detail center-self two-cell">
+                <mat-form-field *ngIf="msel.useSteamfitter && msel.steamfitterScenarioId" class="half-width guid-field">
+                  <input
+                    type="text"
+                    matInput
+                    placeholder="Scenario"
+                    [(ngModel)]="msel.steamfitterScenarioId"
+                    disabled
+                  />
+                </mat-form-field>
+              </div>
+            </div>
           </div>
           <!-- Status -->
           <div class="single-detail center-self">
