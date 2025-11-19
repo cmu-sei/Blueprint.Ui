@@ -26,9 +26,10 @@ export class UserErrorStateMatcher implements ErrorStateMatcher {
 }
 
 @Component({
-  selector: 'app-cite-action-edit-dialog',
-  templateUrl: './cite-action-edit-dialog.component.html',
-  styleUrls: ['./cite-action-edit-dialog.component.scss'],
+    selector: 'app-cite-action-edit-dialog',
+    templateUrl: './cite-action-edit-dialog.component.html',
+    styleUrls: ['./cite-action-edit-dialog.component.scss'],
+    standalone: false
 })
 
 export class CiteActionEditDialogComponent {

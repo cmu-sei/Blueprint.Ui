@@ -24,9 +24,10 @@ import { InvitationEditDialogComponent } from '../invitation-edit-dialog/invitat
 import { v4 as uuidv4 } from 'uuid';
 
 @Component({
-  selector: 'app-invitation-list',
-  templateUrl: './invitation-list.component.html',
-  styleUrls: ['./invitation-list.component.scss'],
+    selector: 'app-invitation-list',
+    templateUrl: './invitation-list.component.html',
+    styleUrls: ['./invitation-list.component.scss'],
+    standalone: false
 })
 export class InvitationListComponent implements OnDestroy {
   @Input() loggedInUserId: string;

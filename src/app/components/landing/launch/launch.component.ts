@@ -22,9 +22,10 @@ import { ApplicationArea, SignalRService } from 'src/app/services/signalr.servic
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
 
 @Component({
-  selector: 'app-launch',
-  templateUrl: './launch.component.html',
-  styleUrls: ['./launch.component.scss'],
+    selector: 'app-launch',
+    templateUrl: './launch.component.html',
+    styleUrls: ['./launch.component.scss'],
+    standalone: false
 })
 export class LaunchComponent implements OnDestroy, OnInit {
   launchMselList: Msel[] = [];

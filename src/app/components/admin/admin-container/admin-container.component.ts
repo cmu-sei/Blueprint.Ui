@@ -21,9 +21,10 @@ import { UIDataService } from 'src/app/data/ui/ui-data.service';
 import { InjectTypeDataService } from 'src/app/data/inject-type/inject-type-data.service';
 
 @Component({
-  selector: 'app-admin-container',
-  templateUrl: './admin-container.component.html',
-  styleUrls: ['./admin-container.component.scss'],
+    selector: 'app-admin-container',
+    templateUrl: './admin-container.component.html',
+    styleUrls: ['./admin-container.component.scss'],
+    standalone: false
 })
 export class AdminContainerComponent implements OnDestroy, OnInit {
   loggedInUser = this.userDataService.loggedInUser;

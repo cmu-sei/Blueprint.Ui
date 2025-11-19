@@ -25,9 +25,10 @@ export class UserErrorStateMatcher implements ErrorStateMatcher {
 }
 
 @Component({
-  selector: 'app-admin-unit-edit-dialog',
-  templateUrl: './admin-unit-edit-dialog.component.html',
-  styleUrls: ['./admin-unit-edit-dialog.component.scss'],
+    selector: 'app-admin-unit-edit-dialog',
+    templateUrl: './admin-unit-edit-dialog.component.html',
+    styleUrls: ['./admin-unit-edit-dialog.component.scss'],
+    standalone: false
 })
 
 export class AdminUnitEditDialogComponent {

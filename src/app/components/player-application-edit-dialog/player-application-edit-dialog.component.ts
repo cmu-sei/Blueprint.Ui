@@ -26,9 +26,10 @@ export class UserErrorStateMatcher implements ErrorStateMatcher {
 const MIN_NAME_LENGTH = 3;
 
 @Component({
-  selector: 'app-player-applicationedit-dialog',
-  templateUrl: './player-application-edit-dialog.component.html',
-  styleUrls: ['./player-application-edit-dialog.component.scss'],
+    selector: 'app-player-applicationedit-dialog',
+    templateUrl: './player-application-edit-dialog.component.html',
+    styleUrls: ['./player-application-edit-dialog.component.scss'],
+    standalone: false
 })
 
 export class PlayerApplicationEditDialogComponent {

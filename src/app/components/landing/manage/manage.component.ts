@@ -22,9 +22,10 @@ import { MselItemStatus } from 'src/app/generated/blueprint.api';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
 
 @Component({
-  selector: 'app-manage',
-  templateUrl: './manage.component.html',
-  styleUrls: ['./manage.component.scss'],
+    selector: 'app-manage',
+    templateUrl: './manage.component.html',
+    styleUrls: ['./manage.component.scss'],
+    standalone: false
 })
 export class ManageComponent implements OnDestroy {
   msel: MselPlus = new MselPlus();

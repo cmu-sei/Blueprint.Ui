@@ -9,9 +9,10 @@ import {
 import { AngularEditorConfig } from '@kolkov/angular-editor';
 
 @Component({
-  selector: 'app-steamfitter-task',
-  templateUrl: './steamfitter-task.component.html',
-  styleUrls: ['./steamfitter-task.component.scss'],
+    selector: 'app-steamfitter-task',
+    templateUrl: './steamfitter-task.component.html',
+    styleUrls: ['./steamfitter-task.component.scss'],
+    standalone: false
 })
 export class SteamfitterTaskComponent {
   @Input() scenarioEvent: ScenarioEvent;

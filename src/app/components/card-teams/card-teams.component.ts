@@ -20,9 +20,10 @@ import { Observable, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 @Component({
-  selector: 'app-card-teams',
-  templateUrl: './card-teams.component.html',
-  styleUrls: ['./card-teams.component.scss'],
+    selector: 'app-card-teams',
+    templateUrl: './card-teams.component.html',
+    styleUrls: ['./card-teams.component.scss'],
+    standalone: false
 })
 
 export class CardTeamsComponent implements OnDestroy, OnInit {

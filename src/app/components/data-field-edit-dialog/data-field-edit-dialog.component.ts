@@ -34,9 +34,10 @@ export class UserErrorStateMatcher implements ErrorStateMatcher {
 }
 
 @Component({
-  selector: 'app-data-field-edit-dialog',
-  templateUrl: './data-field-edit-dialog.component.html',
-  styleUrls: ['./data-field-edit-dialog.component.scss'],
+    selector: 'app-data-field-edit-dialog',
+    templateUrl: './data-field-edit-dialog.component.html',
+    styleUrls: ['./data-field-edit-dialog.component.scss'],
+    standalone: false
 })
 
 export class DataFieldEditDialogComponent {

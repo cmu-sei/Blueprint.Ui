@@ -22,9 +22,10 @@ import { CardEditDialogComponent } from '../card-edit-dialog/card-edit-dialog.co
 import { v4 as uuidv4 } from 'uuid';
 
 @Component({
-  selector: 'app-card-list',
-  templateUrl: './card-list.component.html',
-  styleUrls: ['./card-list.component.scss'],
+    selector: 'app-card-list',
+    templateUrl: './card-list.component.html',
+    styleUrls: ['./card-list.component.scss'],
+    standalone: false
 })
 export class CardListComponent implements OnDestroy {
   @Input() loggedInUserId: string;

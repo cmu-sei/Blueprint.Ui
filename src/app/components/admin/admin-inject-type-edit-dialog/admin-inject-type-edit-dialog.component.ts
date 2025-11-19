@@ -27,9 +27,10 @@ export class UserErrorStateMatcher implements ErrorStateMatcher {
 const MIN_NAME_LENGTH = 3;
 
 @Component({
-  selector: 'app-admin-inject-type-edit-dialog',
-  templateUrl: './admin-inject-type-edit-dialog.component.html',
-  styleUrls: ['./admin-inject-type-edit-dialog.component.scss'],
+    selector: 'app-admin-inject-type-edit-dialog',
+    templateUrl: './admin-inject-type-edit-dialog.component.html',
+    styleUrls: ['./admin-inject-type-edit-dialog.component.scss'],
+    standalone: false
 })
 
 export class AdminInjectTypeEditDialogComponent {

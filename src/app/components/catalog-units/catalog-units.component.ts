@@ -21,9 +21,10 @@ import { CatalogUnitQuery } from 'src/app/data/catalog-unit/catalog-unit.query';
 import { MatMenuTrigger } from '@angular/material/menu';
 
 @Component({
-  selector: 'app-catalog-units',
-  templateUrl: './catalog-units.component.html',
-  styleUrls: ['./catalog-units.component.scss'],
+    selector: 'app-catalog-units',
+    templateUrl: './catalog-units.component.html',
+    styleUrls: ['./catalog-units.component.scss'],
+    standalone: false
 })
 export class CatalogUnitsComponent implements OnDestroy, OnInit {
   @Input() loggedInUserId: string;

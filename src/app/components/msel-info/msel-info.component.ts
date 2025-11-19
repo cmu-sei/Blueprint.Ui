@@ -29,9 +29,10 @@ import { MselUnitQuery } from 'src/app/data/msel-unit/msel-unit.query';
 import { AngularEditorConfig } from '@kolkov/angular-editor';
 
 @Component({
-  selector: 'app-msel-info',
-  templateUrl: './msel-info.component.html',
-  styleUrls: ['./msel-info.component.scss'],
+    selector: 'app-msel-info',
+    templateUrl: './msel-info.component.html',
+    styleUrls: ['./msel-info.component.scss'],
+    standalone: false
 })
 export class MselInfoComponent implements OnDestroy {
   @Input() loggedInUserId: string;

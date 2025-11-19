@@ -17,9 +17,10 @@ import { AdminUnitEditDialogComponent } from 'src/app/components/admin/admin-uni
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 
 @Component({
-  selector: 'app-admin-units',
-  templateUrl: './admin-units.component.html',
-  styleUrls: ['./admin-units.component.scss'],
+    selector: 'app-admin-units',
+    templateUrl: './admin-units.component.html',
+    styleUrls: ['./admin-units.component.scss'],
+    standalone: false
 })
 export class AdminUnitsComponent implements OnDestroy {
   userList: User[] = [];

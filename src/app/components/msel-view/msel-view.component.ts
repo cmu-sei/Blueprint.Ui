@@ -47,9 +47,10 @@ import { UIDataService } from 'src/app/data/ui/ui-data.service';
 import { AngularEditorConfig } from '@kolkov/angular-editor';
 
 @Component({
-  selector: 'app-msel-view',
-  templateUrl: './msel-view.component.html',
-  styleUrls: ['./msel-view.component.scss'],
+    selector: 'app-msel-view',
+    templateUrl: './msel-view.component.html',
+    styleUrls: ['./msel-view.component.scss'],
+    standalone: false
 })
 export class MselViewComponent implements OnDestroy, ScenarioEventView {
   @Input() tabHeight: number;

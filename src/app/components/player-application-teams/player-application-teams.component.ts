@@ -20,9 +20,10 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 @Component({
-  selector: 'app-player-application-teams',
-  templateUrl: './player-application-teams.component.html',
-  styleUrls: ['./player-application-teams.component.scss'],
+    selector: 'app-player-application-teams',
+    templateUrl: './player-application-teams.component.html',
+    styleUrls: ['./player-application-teams.component.scss'],
+    standalone: false
 })
 
 export class PlayerApplicationTeamsComponent implements OnDestroy, OnInit {

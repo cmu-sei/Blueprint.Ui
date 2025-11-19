@@ -21,9 +21,10 @@ import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { AngularEditorConfig } from '@kolkov/angular-editor';
 
 @Component({
-  selector: 'app-scenario-event-edit-dialog',
-  templateUrl: './scenario-event-edit-dialog.component.html',
-  styleUrls: ['./scenario-event-edit-dialog.component.scss'],
+    selector: 'app-scenario-event-edit-dialog',
+    templateUrl: './scenario-event-edit-dialog.component.html',
+    styleUrls: ['./scenario-event-edit-dialog.component.scss'],
+    standalone: false
 })
 export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
   @Output() editComplete = new EventEmitter<any>();

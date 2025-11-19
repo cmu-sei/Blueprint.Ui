@@ -72,9 +72,10 @@ interface StringDictionary {
 };
 
 @Component({
-  selector: 'app-scenario-event-list',
-  templateUrl: './scenario-event-list.component.html',
-  styleUrls: ['./scenario-event-list.component.scss'],
+    selector: 'app-scenario-event-list',
+    templateUrl: './scenario-event-list.component.html',
+    styleUrls: ['./scenario-event-list.component.scss'],
+    standalone: false
 })
 export class ScenarioEventListComponent
   implements OnDestroy, ScenarioEventView {

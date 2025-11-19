@@ -27,9 +27,10 @@ import { OrganizationEditDialogComponent } from '../organization-edit-dialog/org
 import { v4 as uuidv4 } from 'uuid';
 
 @Component({
-  selector: 'app-organization-list',
-  templateUrl: './organization-list.component.html',
-  styleUrls: ['./organization-list.component.scss'],
+    selector: 'app-organization-list',
+    templateUrl: './organization-list.component.html',
+    styleUrls: ['./organization-list.component.scss'],
+    standalone: false
 })
 export class OrganizationListComponent implements OnDestroy, OnInit {
   @Input() loggedInUserId: string;

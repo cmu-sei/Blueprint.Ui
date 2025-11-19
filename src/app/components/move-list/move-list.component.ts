@@ -18,9 +18,10 @@ import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { v4 as uuidv4 } from 'uuid';
 
 @Component({
-  selector: 'app-move-list',
-  templateUrl: './move-list.component.html',
-  styleUrls: ['./move-list.component.scss'],
+    selector: 'app-move-list',
+    templateUrl: './move-list.component.html',
+    styleUrls: ['./move-list.component.scss'],
+    standalone: false
 })
 export class MoveListComponent implements OnDestroy {
   @Input() loggedInUserId: string;

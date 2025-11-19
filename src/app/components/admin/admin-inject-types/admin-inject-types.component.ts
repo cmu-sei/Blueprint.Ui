@@ -26,16 +26,17 @@ import { AdminInjectTypeEditDialogComponent } from '../admin-inject-type-edit-di
 import { v4 as uuidv4 } from 'uuid';
 
 @Component({
-  selector: 'app-admin-inject-types',
-  templateUrl: './admin-inject-types.component.html',
-  styleUrls: ['./admin-inject-types.component.scss'],
-  animations: [
-    trigger('detailExpand', [
-      state('collapsed', style({ height: '0px', minHeight: '0', visibility: 'hidden' })),
-      state('expanded', style({ height: '*', visibility: 'visible' })),
-      transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
-    ]),
-  ],
+    selector: 'app-admin-inject-types',
+    templateUrl: './admin-inject-types.component.html',
+    styleUrls: ['./admin-inject-types.component.scss'],
+    animations: [
+        trigger('detailExpand', [
+            state('collapsed', style({ height: '0px', minHeight: '0', visibility: 'hidden' })),
+            state('expanded', style({ height: '*', visibility: 'visible' })),
+            transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
+        ]),
+    ],
+    standalone: false
 })
 export class AdminInjectTypesComponent implements OnDestroy {
   @Input() loggedInUserId: string;

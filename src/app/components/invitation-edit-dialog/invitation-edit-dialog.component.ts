@@ -27,9 +27,10 @@ export class UserErrorStateMatcher implements ErrorStateMatcher {
 const MIN_NAME_LENGTH = 3;
 
 @Component({
-  selector: 'app-invitation-edit-dialog',
-  templateUrl: './invitation-edit-dialog.component.html',
-  styleUrls: ['./invitation-edit-dialog.component.scss'],
+    selector: 'app-invitation-edit-dialog',
+    templateUrl: './invitation-edit-dialog.component.html',
+    styleUrls: ['./invitation-edit-dialog.component.scss'],
+    standalone: false
 })
 
 export class InvitationEditDialogComponent {

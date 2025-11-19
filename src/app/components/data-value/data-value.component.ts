@@ -13,9 +13,10 @@ import {
 import { AngularEditorConfig } from '@kolkov/angular-editor';
 
 @Component({
-  selector: 'app-data-value',
-  templateUrl: './data-value.component.html',
-  styleUrls: ['./data-value.component.scss'],
+    selector: 'app-data-value',
+    templateUrl: './data-value.component.html',
+    styleUrls: ['./data-value.component.scss'],
+    standalone: false
 })
 export class DataValueComponent {
   @Input() value: any;

@@ -17,9 +17,10 @@ import {
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 
 @Component({
-  selector: 'app-scenario-event-copy-dialog',
-  templateUrl: './scenario-event-copy-dialog.component.html',
-  styleUrls: ['./scenario-event-copy-dialog.component.scss'],
+    selector: 'app-scenario-event-copy-dialog',
+    templateUrl: './scenario-event-copy-dialog.component.html',
+    styleUrls: ['./scenario-event-copy-dialog.component.scss'],
+    standalone: false
 })
 export class ScenarioEventCopyDialogComponent implements OnDestroy, OnInit {
   @Output() editComplete = new EventEmitter<any>();

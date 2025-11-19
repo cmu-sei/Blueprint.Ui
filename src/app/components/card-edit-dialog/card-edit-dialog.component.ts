@@ -26,9 +26,10 @@ export class UserErrorStateMatcher implements ErrorStateMatcher {
 const MIN_NAME_LENGTH = 3;
 
 @Component({
-  selector: 'app-card-edit-dialog',
-  templateUrl: './card-edit-dialog.component.html',
-  styleUrls: ['./card-edit-dialog.component.scss'],
+    selector: 'app-card-edit-dialog',
+    templateUrl: './card-edit-dialog.component.html',
+    styleUrls: ['./card-edit-dialog.component.scss'],
+    standalone: false
 })
 
 export class CardEditDialogComponent {

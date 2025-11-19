@@ -20,9 +20,10 @@ import { ErrorService } from 'src/app/services/error/error.service';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
 
 @Component({
-  selector: 'app-join',
-  templateUrl: './join.component.html',
-  styleUrls: ['./join.component.scss'],
+    selector: 'app-join',
+    templateUrl: './join.component.html',
+    styleUrls: ['./join.component.scss'],
+    standalone: false
 })
 export class JoinComponent implements OnDestroy {
   joinMselList: Msel[] = [];

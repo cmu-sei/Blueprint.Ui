@@ -18,9 +18,10 @@ import { PermissionService } from 'src/app/generated/blueprint.api';
 import { validate as isValidUuid } from 'uuid';
 
 @Component({
-  selector: 'app-admin-users',
-  templateUrl: './admin-users.component.html',
-  styleUrls: ['./admin-users.component.scss'],
+    selector: 'app-admin-users',
+    templateUrl: './admin-users.component.html',
+    styleUrls: ['./admin-users.component.scss'],
+    standalone: false
 })
 export class AdminUsersComponent implements OnDestroy {
   @Input() allUsers: User[];

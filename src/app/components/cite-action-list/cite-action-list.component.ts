@@ -25,9 +25,10 @@ import { CiteActionEditDialogComponent } from '../cite-action-edit-dialog/cite-a
 import { v4 as uuidv4 } from 'uuid';
 
 @Component({
-  selector: 'app-cite-action-list',
-  templateUrl: './cite-action-list.component.html',
-  styleUrls: ['./cite-action-list.component.scss'],
+    selector: 'app-cite-action-list',
+    templateUrl: './cite-action-list.component.html',
+    styleUrls: ['./cite-action-list.component.scss'],
+    standalone: false
 })
 export class CiteActionListComponent implements OnDestroy {
   @Input() loggedInUserId: string;

@@ -27,9 +27,10 @@ export class UserErrorStateMatcher implements ErrorStateMatcher {
 const MIN_NAME_LENGTH = 3;
 
 @Component({
-  selector: 'app-move-edit-dialog',
-  templateUrl: './move-edit-dialog.component.html',
-  styleUrls: ['./move-edit-dialog.component.scss'],
+    selector: 'app-move-edit-dialog',
+    templateUrl: './move-edit-dialog.component.html',
+    styleUrls: ['./move-edit-dialog.component.scss'],
+    standalone: false
 })
 
 export class MoveEditDialogComponent {

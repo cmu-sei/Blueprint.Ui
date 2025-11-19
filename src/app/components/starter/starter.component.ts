@@ -34,9 +34,10 @@ import { UserMselRoleDataService } from 'src/app/data/user-msel-role/user-msel-r
 import { UserTeamRoleDataService } from 'src/app/data/user-team-role/user-team-role-data.service';
 
 @Component({
-  selector: 'app-starter',
-  templateUrl: './starter.component.html',
-  styleUrls: ['./starter.component.scss'],
+    selector: 'app-starter',
+    templateUrl: './starter.component.html',
+    styleUrls: ['./starter.component.scss'],
+    standalone: false
 })
 export class StarterComponent implements OnDestroy, OnInit {
   @Input() isSystemAdmin: boolean;

@@ -26,9 +26,10 @@ export class UserErrorStateMatcher implements ErrorStateMatcher {
 }
 
 @Component({
-  selector: 'app-organization-edit-dialog',
-  templateUrl: './organization-edit-dialog.component.html',
-  styleUrls: ['./organization-edit-dialog.component.scss'],
+    selector: 'app-organization-edit-dialog',
+    templateUrl: './organization-edit-dialog.component.html',
+    styleUrls: ['./organization-edit-dialog.component.scss'],
+    standalone: false
 })
 export class OrganizationEditDialogComponent {
   @Output() editComplete = new EventEmitter<any>();

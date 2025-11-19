@@ -25,9 +25,10 @@ export class UserErrorStateMatcher implements ErrorStateMatcher {
 }
 
 @Component({
-  selector: 'app-cite-role-edit-dialog',
-  templateUrl: './cite-role-edit-dialog.component.html',
-  styleUrls: ['./cite-role-edit-dialog.component.scss'],
+    selector: 'app-cite-role-edit-dialog',
+    templateUrl: './cite-role-edit-dialog.component.html',
+    styleUrls: ['./cite-role-edit-dialog.component.scss'],
+    standalone: false
 })
 
 export class CiteRoleEditDialogComponent {

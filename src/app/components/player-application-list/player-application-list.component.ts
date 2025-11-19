@@ -20,9 +20,10 @@ import { PlayerService } from 'src/app/generated/blueprint.api';
 import { v4 as uuidv4 } from 'uuid';
 
 @Component({
-  selector: 'app-player-application-list',
-  templateUrl: './player-application-list.component.html',
-  styleUrls: ['./player-application-list.component.scss'],
+    selector: 'app-player-application-list',
+    templateUrl: './player-application-list.component.html',
+    styleUrls: ['./player-application-list.component.scss'],
+    standalone: false
 })
 export class PlayerApplicationListComponent implements OnDestroy {
   @Input() loggedInUserId: string;

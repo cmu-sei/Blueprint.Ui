@@ -22,9 +22,10 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { UntypedFormControl } from '@angular/forms';
 @Component({
-  selector: 'app-team-users',
-  templateUrl: './team-users.component.html',
-  styleUrls: ['./team-users.component.scss'],
+    selector: 'app-team-users',
+    templateUrl: './team-users.component.html',
+    styleUrls: ['./team-users.component.scss'],
+    standalone: false
 })
 export class TeamUsersComponent implements OnDestroy, OnInit {
   @Input() team: Team;

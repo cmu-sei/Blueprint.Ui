@@ -9,7 +9,10 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 */
 import { Pipe, PipeTransform } from '@angular/core';
 
-@Pipe({ name: 'plainText' })
+@Pipe({
+    name: 'plainText',
+    standalone: false
+})
 export class PlainTextPipe implements PipeTransform{
 
   constructor() { }

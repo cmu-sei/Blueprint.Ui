@@ -19,9 +19,10 @@ import { Title } from '@angular/platform-browser';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
 
 @Component({
-  selector: 'app-dashboard',
-  templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.scss'],
+    selector: 'app-dashboard',
+    templateUrl: './dashboard.component.html',
+    styleUrls: ['./dashboard.component.scss'],
+    standalone: false
 })
 export class DashboardComponent implements OnDestroy {
   launchMselList: Msel[] = [];

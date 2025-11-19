@@ -29,9 +29,10 @@ import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { v4 as uuidv4 } from 'uuid';
 
 @Component({
-  selector: 'app-data-field-list',
-  templateUrl: './data-field-list.component.html',
-  styleUrls: ['./data-field-list.component.scss'],
+    selector: 'app-data-field-list',
+    templateUrl: './data-field-list.component.html',
+    styleUrls: ['./data-field-list.component.scss'],
+    standalone: false
 })
 export class DataFieldListComponent implements OnDestroy, OnInit {
   @Input() loggedInUserId: string;

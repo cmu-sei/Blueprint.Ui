@@ -28,9 +28,10 @@ export class UserErrorStateMatcher implements ErrorStateMatcher {
 const MIN_NAME_LENGTH = 3;
 
 @Component({
-  selector: 'app-team-add-dialog',
-  templateUrl: './team-add-dialog.component.html',
-  styleUrls: ['./team-add-dialog.component.scss'],
+    selector: 'app-team-add-dialog',
+    templateUrl: './team-add-dialog.component.html',
+    styleUrls: ['./team-add-dialog.component.scss'],
+    standalone: false
 })
 
 export class TeamAddDialogComponent {

@@ -21,9 +21,10 @@ import { User } from 'src/app/generated/blueprint.api';
 import { MselItemStatus } from 'src/app/generated/blueprint.api';
 
 @Component({
-  selector: 'app-msel-list',
-  templateUrl: './msel-list.component.html',
-  styleUrls: ['./msel-list.component.scss'],
+    selector: 'app-msel-list',
+    templateUrl: './msel-list.component.html',
+    styleUrls: ['./msel-list.component.scss'],
+    standalone: false
 })
 export class MselListComponent implements OnDestroy, OnInit {
   @Input() loggedInUserId: string;

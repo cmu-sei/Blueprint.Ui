@@ -6,9 +6,10 @@ import { UntypedFormControl } from '@angular/forms';
 
 
 @Component({
-  selector: 'app-duration-edit',
-  templateUrl: './duration-edit.component.html',
-  styleUrls: ['./duration-edit.component.scss'],
+    selector: 'app-duration-edit',
+    templateUrl: './duration-edit.component.html',
+    styleUrls: ['./duration-edit.component.scss'],
+    standalone: false
 })
 export class DurationEditComponent implements OnChanges {
   @Input() startTime: Date;

@@ -31,9 +31,10 @@ export class UserErrorStateMatcher implements ErrorStateMatcher {
 const MIN_NAME_LENGTH = 3;
 
 @Component({
-  selector: 'app-inject-select-dialog',
-  templateUrl: './inject-select-dialog.component.html',
-  styleUrls: ['./inject-select-dialog.component.scss'],
+    selector: 'app-inject-select-dialog',
+    templateUrl: './inject-select-dialog.component.html',
+    styleUrls: ['./inject-select-dialog.component.scss'],
+    standalone: false
 })
 export class InjectSelectDialogComponent {
   @Output() editComplete = new EventEmitter<any>();

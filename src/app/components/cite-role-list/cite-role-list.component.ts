@@ -22,9 +22,10 @@ import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { CiteRoleEditDialogComponent } from '../cite-role-edit-dialog/cite-role-edit-dialog.component';
 
 @Component({
-  selector: 'app-cite-role-list',
-  templateUrl: './cite-role-list.component.html',
-  styleUrls: ['./cite-role-list.component.scss'],
+    selector: 'app-cite-role-list',
+    templateUrl: './cite-role-list.component.html',
+    styleUrls: ['./cite-role-list.component.scss'],
+    standalone: false
 })
 export class CiteRoleListComponent implements OnDestroy {
   @Input() loggedInUserId: string;

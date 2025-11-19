@@ -13,9 +13,10 @@ import { ComnSettingsService } from '@cmusei/crucible-common';
 import { AngularEditorConfig } from '@kolkov/angular-editor';
 
 @Component({
-  selector: 'app-msel-pageapp',
-  templateUrl: './msel-page.component.html',
-  styleUrls: ['./msel-page.component.scss'],
+    selector: 'app-msel-pageapp',
+    templateUrl: './msel-page.component.html',
+    styleUrls: ['./msel-page.component.scss'],
+    standalone: false
 })
 export class MselPageComponent implements OnDestroy {
   safeContent: SafeHtml = '';

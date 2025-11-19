@@ -31,9 +31,10 @@ export class UserErrorStateMatcher implements ErrorStateMatcher {
 const MIN_NAME_LENGTH = 3;
 
 @Component({
-  selector: 'app-admin-catalog-edit-dialog',
-  templateUrl: './admin-catalog-edit-dialog.component.html',
-  styleUrls: ['./admin-catalog-edit-dialog.component.scss'],
+    selector: 'app-admin-catalog-edit-dialog',
+    templateUrl: './admin-catalog-edit-dialog.component.html',
+    styleUrls: ['./admin-catalog-edit-dialog.component.scss'],
+    standalone: false
 })
 export class AdminCatalogEditDialogComponent {
   @Output() editComplete = new EventEmitter<any>();

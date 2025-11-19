@@ -25,9 +25,10 @@ import { UserMselRoleQuery } from 'src/app/data/user-msel-role/user-msel-role.qu
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 
 @Component({
-  selector: 'app-msel-contributors',
-  templateUrl: './msel-contributors.component.html',
-  styleUrls: ['./msel-contributors.component.scss'],
+    selector: 'app-msel-contributors',
+    templateUrl: './msel-contributors.component.html',
+    styleUrls: ['./msel-contributors.component.scss'],
+    standalone: false
 })
 export class MselContributorsComponent implements OnDestroy {
   @Input() loggedInUserId: string;
