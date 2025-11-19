@@ -5,9 +5,13 @@ project root for license information.
 -->
 <div mat-dialog-container>
   <div mat-dialog-title>
-    <span *ngIf="data.injectType.id">Edit</span>
-    <span *ngIf="!data.injectType.id">Create</span>
-     Inject Type
+    @if (data.injectType.id) {
+      <span>Edit</span>
+    }
+    @if (!data.injectType.id) {
+      <span>Create</span>
+    }
+    Inject Type
     &nbsp;
     <button
       mat-icon-button
@@ -15,41 +19,43 @@ project root for license information.
       title="Cancel"
       class="close-button"
       tabindex="-1"
-    >
+      >
       <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
     </button>
   </div>
-  <div mat-dialog-content *ngIf="!!data && data.injectType !== undefined && data.injectType !== null">
-    <div class="add-margin">
-      <div>
-        <mat-form-field class="full-width">
-          <input
-            type="text"
-            title="The Name of the Inject Type"
-            matInput
-            placeholder="Name (required)"
-            [(ngModel)]="data.injectType.name">
-        </mat-form-field>
+  @if (!!data && data.injectType !== undefined && data.injectType !== null) {
+    <div mat-dialog-content>
+      <div class="add-margin">
+        <div>
+          <mat-form-field class="full-width">
+            <input
+              type="text"
+              title="The Name of the Inject Type"
+              matInput
+              placeholder="Name (required)"
+              [(ngModel)]="data.injectType.name">
+          </mat-form-field>
+        </div>
+      </div>
+      <div class="add-margin">
+        <div>
+          <mat-form-field class="full-width">
+            <input
+              type="text"
+              title="The Description of the Inject Type"
+              matInput
+              placeholder="Description (required)"
+              [(ngModel)]="data.injectType.description">
+          </mat-form-field>
+        </div>
+      </div>
+      <div class="cssLayoutRowStartCenter bottom-button">
+        <div class="delete-button">
+          <button mat-stroked-button (click)="handleEditComplete(true)" [disabled]="!errorFree()" style="margin-left: 40px;">Save</button>
+        </div>
+        <div class="delete-button">
+          <button mat-stroked-button (click)="handleEditComplete(false)">Cancel</button>
+        </div>
       </div>
     </div>
-    <div class="add-margin">
-      <div>
-        <mat-form-field class="full-width">
-          <input
-            type="text"
-            title="The Description of the Inject Type"
-            matInput
-            placeholder="Description (required)"
-            [(ngModel)]="data.injectType.description">
-        </mat-form-field>
-      </div>
-    </div>
-  <div class="cssLayoutRowStartCenter bottom-button">
-    <div class="delete-button">
-      <button mat-stroked-button (click)="handleEditComplete(true)" [disabled]="!errorFree()" style="margin-left: 40px;">Save</button>
-    </div>
-    <div class="delete-button">
-      <button mat-stroked-button (click)="handleEditComplete(false)">Cancel</button>
-    </div>
-  </div>
-</div>
+  }

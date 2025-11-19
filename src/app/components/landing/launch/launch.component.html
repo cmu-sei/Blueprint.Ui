@@ -4,66 +4,77 @@ Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
 <div class="top-container background">
-  <app-topbar
-    *ngIf="!hideTopbar"
-    [title]="topbarText"
-    [topbarView]="TopbarView.BLUEPRINT_HOME"
-    [topbarColor]="topbarColor"
-    [topbarTextColor]="topbarTextColor"
-    [imageFilePath]="topbarImage"
-    (urlNavigate)="topBarNavigate($event)"
-  ></app-topbar>
-  <div class="card-container" *ngIf="showChoices">
-    <mat-card
-      appearance="outlined"
-      *ngFor="let msel of launchMselList"
-      class="base-card"
-      tabindex="0"
-    >
-    <mat-card-header>
-      <mat-card-title>{{ msel.name }}</mat-card-title>
-      <mat-card-subtitle>{{ msel.description }}</mat-card-subtitle>
-    </mat-card-header>
-    <mat-card-content>
-      <div *ngIf="launchingMselId === msel.id">
-        <mat-progress-spinner color="primary" mode="indeterminate">
-        </mat-progress-spinner>
-      </div>&nbsp;
-    </mat-card-content>
-    <mat-card-actions>
-      <button
-        *ngIf="launchingMselId !== msel.id"
-        [disabled]="!!launchingMselId"
-        mat-stroked-button
-        (click)="launch(msel.id, '')"
-        title="Start {{ msel.name }}"
-      >
-        Start {{ msel.name }}
-      </button>
-      <div *ngIf="launchingMselId === msel.id">
-        <label class="status-message">{{ launchStatus }}</label>
+  @if (!hideTopbar) {
+    <app-topbar
+      [title]="topbarText"
+      [topbarView]="TopbarView.BLUEPRINT_HOME"
+      [topbarColor]="topbarColor"
+      [topbarTextColor]="topbarTextColor"
+      [imageFilePath]="topbarImage"
+      (urlNavigate)="topBarNavigate($event)"
+    ></app-topbar>
+  }
+  @if (showChoices) {
+    <div class="card-container">
+      @for (msel of launchMselList; track msel) {
+        <mat-card
+          appearance="outlined"
+          class="base-card"
+          tabindex="0"
+          >
+          <mat-card-header>
+            <mat-card-title>{{ msel.name }}</mat-card-title>
+            <mat-card-subtitle>{{ msel.description }}</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            @if (launchingMselId === msel.id) {
+              <div>
+                <mat-progress-spinner color="primary" mode="indeterminate">
+                </mat-progress-spinner>
+              </div>
+              }&nbsp;
+            </mat-card-content>
+            <mat-card-actions>
+              @if (launchingMselId !== msel.id) {
+                <button
+                  [disabled]="!!launchingMselId"
+                  mat-stroked-button
+                  (click)="launch(msel.id, '')"
+                  title="Start {{ msel.name }}"
+                  >
+                  Start {{ msel.name }}
+                </button>
+              }
+              @if (launchingMselId === msel.id) {
+                <div>
+                  <label class="status-message">{{ launchStatus }}</label>
+                </div>
+              }
+            </mat-card-actions>
+          </mat-card>
+        }
       </div>
-    </mat-card-actions>
-    </mat-card>
+    }
+    @if (!showChoices) {
+      <div class="card-container">
+        <mat-card
+          appearance="outlined"
+          class="base-card"
+          tabindex="0"
+          >
+          <mat-card-header>
+            <mat-card-title>Launching your event!</mat-card-title>
+            <mat-card-subtitle>Please wait until you are redirected to the event.</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <mat-progress-spinner color="primary" mode="indeterminate">
+            </mat-progress-spinner>
+          </mat-card-content>
+          <mat-card-actions>
+            <label class="status-message">{{ launchStatus }}</label>
+          </mat-card-actions>
+        </mat-card>
+      </div>
+    }
   </div>
-  <div class="card-container" *ngIf="!showChoices">
-    <mat-card
-      appearance="outlined"
-      class="base-card"
-      tabindex="0"
-    >
-    <mat-card-header>
-      <mat-card-title>Launching your event!</mat-card-title>
-      <mat-card-subtitle>Please wait until you are redirected to the event.</mat-card-subtitle>
-    </mat-card-header>
-    <mat-card-content>
-      <mat-progress-spinner color="primary" mode="indeterminate">
-      </mat-progress-spinner>
-    </mat-card-content>
-    <mat-card-actions>
-      <label class="status-message">{{ launchStatus }}</label>
-    </mat-card-actions>
-    </mat-card>
-  </div>
-</div>
 

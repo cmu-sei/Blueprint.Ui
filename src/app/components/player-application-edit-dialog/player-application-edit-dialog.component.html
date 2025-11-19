@@ -13,44 +13,46 @@ project root for license information.
       title="Cancel"
       class="close-button"
       tabindex="-1"
-    >
+      >
       <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
     </button>
   </div>
-  <div mat-dialog-content *ngIf="data && data.playerApplication">
-    <div class="add-margin">
-      <div>
-        <mat-form-field class="full-width">
-          <input type="text" matInput [(ngModel)]="data.playerApplication.name" placeholder="Name">
-        </mat-form-field>
+  @if (data && data.playerApplication) {
+    <div mat-dialog-content>
+      <div class="add-margin">
+        <div>
+          <mat-form-field class="full-width">
+            <input type="text" matInput [(ngModel)]="data.playerApplication.name" placeholder="Name">
+          </mat-form-field>
+        </div>
+      </div>
+      <div class="add-margin">
+        <div>
+          <mat-form-field class="full-width">
+            <input type="text" matInput [(ngModel)]="data.playerApplication.url" placeholder="URL">
+          </mat-form-field>
+          <mat-hint>{{ 'Parameters can be used in the above URL (include the braces):  {citeEvaluationId} {galleryExhibitId} {steamFitterScenarioId} and {playerViewId}' }}</mat-hint>
+        </div>
+      </div>
+      <div class="add-icon-url-margin">
+        <div>
+          <mat-form-field class="full-width">
+            <input type="text" matInput [(ngModel)]="data.playerApplication.icon" placeholder="Icon URL">
+          </mat-form-field>
+        </div>
+      </div>
+      <div class="add-margin">
+        <div>
+          <mat-checkbox [(ngModel)]="data.playerApplication.embeddable">Embeddable</mat-checkbox>
+        </div>
+      </div>
+      <div class="add-margin">
+        <div>
+          <mat-checkbox [(ngModel)]="data.playerApplication.loadInBackground">Load in Background</mat-checkbox>
+        </div>
       </div>
     </div>
-    <div class="add-margin">
-      <div>
-        <mat-form-field class="full-width">
-          <input type="text" matInput [(ngModel)]="data.playerApplication.url" placeholder="URL">
-        </mat-form-field>
-        <mat-hint>{{ 'Parameters can be used in the above URL (include the braces):  {citeEvaluationId} {galleryExhibitId} {steamFitterScenarioId} and {playerViewId}' }}</mat-hint>
-      </div>
-    </div>
-    <div class="add-icon-url-margin">
-      <div>
-        <mat-form-field class="full-width">
-          <input type="text" matInput [(ngModel)]="data.playerApplication.icon" placeholder="Icon URL">
-        </mat-form-field>
-      </div>
-    </div>
-    <div class="add-margin">
-      <div>
-        <mat-checkbox [(ngModel)]="data.playerApplication.embeddable">Embeddable</mat-checkbox>
-      </div>
-    </div>
-    <div class="add-margin">
-      <div>
-        <mat-checkbox [(ngModel)]="data.playerApplication.loadInBackground">Load in Background</mat-checkbox>
-      </div>
-    </div>
-  </div>
+  }
   <div class="cssLayoutRowStartCenter bottom-button">
     <div class="delete-button">
       <button mat-stroked-button (click)="handleEditComplete(true)" style="margin-left: 40px;">Save</button>

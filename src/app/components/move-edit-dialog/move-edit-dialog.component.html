@@ -11,50 +11,51 @@ project root for license information.
       <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
     </button>
   </div>
-  <div mat-dialog-content *ngIf="data && data.move">
-
-    <div class="add-margin">
-      <div>
-        <mat-form-field class="full-width">
-          <input type="text" matInput [(ngModel)]="data.move.moveNumber" placeholder="Move Number">
-        </mat-form-field>
-      </div>
-    </div>
-    <!-- move start time (deltaSeconds) -->
-    <div class="add-margin flex-row">
-      <app-duration-edit [startTime]="data.mselStartTime" [(durationSeconds)]="data.move.deltaSeconds"
-        [timeName]="'Start Date / Time'" [postScript]="'from start'">
-      </app-duration-edit>
-    </div>
-    <div class="add-margin">
-      <div>
-        <mat-form-field class="full-width">
-          <input type="text" matInput [(ngModel)]="data.move.description" placeholder="Move Description">
-        </mat-form-field>
-      </div>
-    </div>
-    <div class="add-margin">
-      <div>
-        <mat-form-field>
-          <input matInput placeholder="Situation Date / Time" [formControl]="situationDateFormControl"
-            (inputChange)="saveMove('situationDate')" (dateChange)="saveMove('situationDate')">
-          <!-- <datetime-picker> -->
-        </mat-form-field>
-      </div>
-    </div>
-    <div class="add-margin left">
-      <div>
-        <p
-          style="font-size: 13px; font-weight: 400; line-height: 1.125; font-family: Open Sans, sans-serif; letter-spacing: normal;">
-          Situation Description
-        </p>
+  @if (data && data.move) {
+    <div mat-dialog-content>
+      <div class="add-margin">
         <div>
-          <angular-editor [placeholder]="'Description'" [(ngModel)]="data.move.situationDescription"
+          <mat-form-field class="full-width">
+            <input type="text" matInput [(ngModel)]="data.move.moveNumber" placeholder="Move Number">
+          </mat-form-field>
+        </div>
+      </div>
+      <!-- move start time (deltaSeconds) -->
+      <div class="add-margin flex-row">
+        <app-duration-edit [startTime]="data.mselStartTime" [(durationSeconds)]="data.move.deltaSeconds"
+          [timeName]="'Start Date / Time'" [postScript]="'from start'">
+        </app-duration-edit>
+      </div>
+      <div class="add-margin">
+        <div>
+          <mat-form-field class="full-width">
+            <input type="text" matInput [(ngModel)]="data.move.description" placeholder="Move Description">
+          </mat-form-field>
+        </div>
+      </div>
+      <div class="add-margin">
+        <div>
+          <mat-form-field>
+            <input matInput placeholder="Situation Date / Time" [formControl]="situationDateFormControl"
+              (inputChange)="saveMove('situationDate')" (dateChange)="saveMove('situationDate')">
+            <!-- <datetime-picker> -->
+          </mat-form-field>
+        </div>
+      </div>
+      <div class="add-margin left">
+        <div>
+          <p
+            style="font-size: 13px; font-weight: 400; line-height: 1.125; font-family: Open Sans, sans-serif; letter-spacing: normal;">
+            Situation Description
+          </p>
+          <div>
+            <angular-editor [placeholder]="'Description'" [(ngModel)]="data.move.situationDescription"
             [config]="editorConfig"></angular-editor>
+          </div>
         </div>
       </div>
     </div>
-  </div>
+  }
   <div class="cssLayoutRowStartCenter bottom-button">
     <div class="delete-button">
       <button mat-stroked-button (click)="handleEditComplete(true)" style="margin-left: 40px;">Save</button>

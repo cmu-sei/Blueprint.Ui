@@ -5,15 +5,16 @@ project root for license information or contact permission@sei.cmu.edu for full 
 -->
 
 <div class="background text app-admin-container">
-  <app-topbar
-    *ngIf="!hideTopbar"
-    [title]="topbarText"
-    [topbarView]="TopbarView.BLUEPRINT_ADMIN"
-    [topbarColor]="topbarColor"
-    [topbarTextColor]="topbarTextColor"
-    [imageFilePath]="topbarImage"
-    (urlNavigate)="goToUrl($event)"
-  ></app-topbar>
+  @if (!hideTopbar) {
+    <app-topbar
+      [title]="topbarText"
+      [topbarView]="TopbarView.BLUEPRINT_ADMIN"
+      [topbarColor]="topbarColor"
+      [topbarTextColor]="topbarTextColor"
+      [imageFilePath]="topbarImage"
+      (urlNavigate)="goToUrl($event)"
+    ></app-topbar>
+  }
 
   <mat-sidenav-container class="tall" autosize>
     <mat-sidenav
@@ -21,7 +22,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       #sidenav
       mode="side"
       [(opened)]="isSidebarOpen"
-    >
+      >
       <mat-list>
         <!-- Exit Aministration -->
         <mat-list-item class="appslist" title="Exit Administration">
@@ -30,7 +31,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             mat-icon-button
             (click)="goToUrl('/build/')"
             style="outline: none"
-          >
+            >
             <mat-icon
               class="mdi-24px"
               fontIcon="mdi-close-circle-outline"
@@ -44,70 +45,68 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <mat-divider></mat-divider>
         </mat-list-item>
         <!-- Units -->
-        <mat-list-item
-          *ngIf="isSuperUser"
-          class="showhand highlight"
-          [ngClass]="getSelectedClass(unitsText)"
-          id="wrapper"
-          (click)="gotoSection(unitsText)"
-        >
-          <div class="lefticon">
-            <mat-icon
-              class="mdi-24px"
-              fontIcon="mdi-account-group"
-              [ngStyle]="{ color: topbarColor }"
-            ></mat-icon>
-          </div>
-
-          <div id="unitsText" class="application-name">
-            {{ unitsText }}
-          </div>
-
-          <div>
-            <button aria-labelledby="unitsText" mat-icon-button>
+        @if (isSuperUser) {
+          <mat-list-item
+            class="showhand highlight"
+            [ngClass]="getSelectedClass(unitsText)"
+            id="wrapper"
+            (click)="gotoSection(unitsText)"
+            >
+            <div class="lefticon">
               <mat-icon
-                class="icon-color"
-                fontIcon="mdi-chevron-right"
+                class="mdi-24px"
+                fontIcon="mdi-account-group"
+                [ngStyle]="{ color: topbarColor }"
               ></mat-icon>
-            </button>
-          </div>
-        </mat-list-item>
+            </div>
+            <div id="unitsText" class="application-name">
+              {{ unitsText }}
+            </div>
+            <div>
+              <button aria-labelledby="unitsText" mat-icon-button>
+                <mat-icon
+                  class="icon-color"
+                  fontIcon="mdi-chevron-right"
+                ></mat-icon>
+              </button>
+            </div>
+          </mat-list-item>
+        }
         <!-- Users -->
-        <mat-list-item
-          *ngIf="isSuperUser"
-          class="showhand highlight"
-          [ngClass]="getSelectedClass(usersText)"
-          id="wrapper"
-          (click)="gotoSection(usersText)"
-        >
-          <div class="lefticon">
-            <mat-icon
-              class="mdi-24px"
-              fontIcon="mdi-account"
-              [ngStyle]="{ color: topbarColor }"
-            ></mat-icon>
-          </div>
-
-          <div id="usersText" class="application-name">
-            {{ usersText }}
-          </div>
-
-          <div>
-            <button aria-labelledby="usersText" mat-icon-button>
+        @if (isSuperUser) {
+          <mat-list-item
+            class="showhand highlight"
+            [ngClass]="getSelectedClass(usersText)"
+            id="wrapper"
+            (click)="gotoSection(usersText)"
+            >
+            <div class="lefticon">
               <mat-icon
-                class="icon-color"
-                fontIcon="mdi-chevron-right"
+                class="mdi-24px"
+                fontIcon="mdi-account"
+                [ngStyle]="{ color: topbarColor }"
               ></mat-icon>
-            </button>
-          </div>
-        </mat-list-item>
+            </div>
+            <div id="usersText" class="application-name">
+              {{ usersText }}
+            </div>
+            <div>
+              <button aria-labelledby="usersText" mat-icon-button>
+                <mat-icon
+                  class="icon-color"
+                  fontIcon="mdi-chevron-right"
+                ></mat-icon>
+              </button>
+            </div>
+          </mat-list-item>
+        }
         <!-- Data Fields -->
         <mat-list-item
           class="showhand highlight"
           [ngClass]="getSelectedClass(dataFieldsText)"
           id="wrapper"
           (click)="gotoSection(dataFieldsText)"
-        >
+          >
           <div class="lefticon">
             <mat-icon
               class="mdi-24px"
@@ -135,7 +134,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           [ngClass]="getSelectedClass(injectTypesText)"
           id="wrapper"
           (click)="gotoSection(injectTypesText)"
-        >
+          >
           <div class="lefticon">
             <mat-icon
               class="mdi-24px"
@@ -163,7 +162,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           [ngClass]="getSelectedClass(catalogsText)"
           id="wrapper"
           (click)="gotoSection(catalogsText)"
-        >
+          >
           <div class="lefticon">
             <mat-icon
               class="mdi-24px"
@@ -191,7 +190,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           [ngClass]="getSelectedClass(organizationsText)"
           id="wrapper"
           (click)="gotoSection(organizationsText)"
-        >
+          >
           <div class="lefticon">
             <mat-icon
               class="mdi-24px"
@@ -219,7 +218,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           [ngClass]="getSelectedClass(galleryCardsText)"
           id="wrapper"
           (click)="gotoSection(galleryCardsText)"
-        >
+          >
           <div class="lefticon">
             <mat-icon
               class="mdi-24px"
@@ -247,7 +246,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           [ngClass]="getSelectedClass(citeActionsText)"
           id="wrapper"
           (click)="gotoSection(citeActionsText)"
-        >
+          >
           <div class="lefticon">
             <mat-icon
               class="mdi-24px"
@@ -275,7 +274,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           [ngClass]="getSelectedClass(citeRolesText)"
           id="wrapper"
           (click)="gotoSection(citeRolesText)"
-        >
+          >
           <div class="lefticon">
             <mat-icon
               class="mdi-24px"
@@ -298,12 +297,16 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </div>
         </mat-list-item>
       </mat-list>
-      <div class="app-versions" style="margin-bottom: 58px;" *ngIf="!hideTopbar">
-        Versions: UI {{ uiVersion }},  API {{ apiVersion }}
-      </div>
-      <div class="app-versions" *ngIf="hideTopbar">
-        Versions: UI {{ uiVersion }},  API {{ apiVersion }}
-      </div>
+      @if (!hideTopbar) {
+        <div class="app-versions" style="margin-bottom: 58px;">
+          Versions: UI {{ uiVersion }},  API {{ apiVersion }}
+        </div>
+      }
+      @if (hideTopbar) {
+        <div class="app-versions">
+          Versions: UI {{ uiVersion }},  API {{ apiVersion }}
+        </div>
+      }
       <img
         class="cmu-logo"
         [src]="
@@ -311,65 +314,85 @@ project root for license information or contact permission@sei.cmu.edu for full 
             ? 'assets/img/cmu-red-gray.png'
             : 'assets/img/sei-logo-gray.png'
         "
-      />
-    </mat-sidenav>
-    <mat-sidenav-content>
-      <span *ngIf="isSuperUser && (selectedTab === unitsText)">
-        <app-admin-units></app-admin-units>
-      </span>
-      <span *ngIf="isSuperUser && (selectedTab === usersText)">
-        <app-admin-users></app-admin-users>
-      </span>
-      <span *ngIf="isSuperUser && (selectedTab === dataFieldsText)">
-        <app-data-field-list
-          [loggedInUserId]="loggedInUserId"
-          [isContentDeveloper]="isContentDeveloper$ | async"
-          [showTemplates]="true"
-        ></app-data-field-list>
-      </span>
-      <span *ngIf="isSuperUser && (selectedTab === injectTypesText)">
-        <app-admin-inject-types
-          [loggedInUserId]="loggedInUserId"
-          [isContentDeveloper]="isContentDeveloper$ | async"
-        ></app-admin-inject-types>
-      </span>
-      <span *ngIf="isSuperUser && (selectedTab === catalogsText)">
-        <app-admin-catalog-list
-          [loggedInUserId]="loggedInUserId"
-          [isContentDeveloper]="isContentDeveloper$ | async"
-        >
-        </app-admin-catalog-list>
-      </span>
-      <span *ngIf="isSuperUser && (selectedTab === organizationsText)">
-        <app-organization-list
-          [loggedInUserId]="(loggedInUser | async).profile.sub"
-          [isContentDeveloper]="canAccessAdminSection"
-          [showTemplates]="true"
-        ></app-organization-list>
-      </span>
-      <span *ngIf="isSuperUser && (selectedTab === galleryCardsText)">
-        <app-card-list
-          [loggedInUserId]="(loggedInUser | async).profile.sub"
-          [isContentDeveloper]="true"
-          [showTemplates]="true"
-        ></app-card-list>
-      </span>
-      <span *ngIf="isSuperUser && (selectedTab === citeActionsText)">
-        <app-cite-action-list
-          *ngIf="selectedTab === 'CITE Actions'"
-          [loggedInUserId]="(loggedInUser | async).profile.sub"
-          [isContentDeveloper]="true"
-          [showTemplates]="true"
-        ></app-cite-action-list>
-      </span>
-      <span *ngIf="isSuperUser && (selectedTab === citeRolesText)">
-        <app-cite-role-list
-          *ngIf="selectedTab === 'CITE Roles'"
-          [loggedInUserId]="(loggedInUser | async).profile.sub"
-          [isContentDeveloper]="true"
-          [showTemplates]="true"
-        ></app-cite-role-list>
-      </span>
-    </mat-sidenav-content>
-  </mat-sidenav-container>
-</div>
+        />
+      </mat-sidenav>
+      <mat-sidenav-content>
+        @if (isSuperUser && (selectedTab === unitsText)) {
+          <span>
+            <app-admin-units></app-admin-units>
+          </span>
+        }
+        @if (isSuperUser && (selectedTab === usersText)) {
+          <span>
+            <app-admin-users></app-admin-users>
+          </span>
+        }
+        @if (isSuperUser && (selectedTab === dataFieldsText)) {
+          <span>
+            <app-data-field-list
+              [loggedInUserId]="loggedInUserId"
+              [isContentDeveloper]="isContentDeveloper$ | async"
+              [showTemplates]="true"
+            ></app-data-field-list>
+          </span>
+        }
+        @if (isSuperUser && (selectedTab === injectTypesText)) {
+          <span>
+            <app-admin-inject-types
+              [loggedInUserId]="loggedInUserId"
+              [isContentDeveloper]="isContentDeveloper$ | async"
+            ></app-admin-inject-types>
+          </span>
+        }
+        @if (isSuperUser && (selectedTab === catalogsText)) {
+          <span>
+            <app-admin-catalog-list
+              [loggedInUserId]="loggedInUserId"
+              [isContentDeveloper]="isContentDeveloper$ | async"
+              >
+            </app-admin-catalog-list>
+          </span>
+        }
+        @if (isSuperUser && (selectedTab === organizationsText)) {
+          <span>
+            <app-organization-list
+              [loggedInUserId]="(loggedInUser | async).profile.sub"
+              [isContentDeveloper]="canAccessAdminSection"
+              [showTemplates]="true"
+            ></app-organization-list>
+          </span>
+        }
+        @if (isSuperUser && (selectedTab === galleryCardsText)) {
+          <span>
+            <app-card-list
+              [loggedInUserId]="(loggedInUser | async).profile.sub"
+              [isContentDeveloper]="true"
+              [showTemplates]="true"
+            ></app-card-list>
+          </span>
+        }
+        @if (isSuperUser && (selectedTab === citeActionsText)) {
+          <span>
+            @if (selectedTab === 'CITE Actions') {
+              <app-cite-action-list
+                [loggedInUserId]="(loggedInUser | async).profile.sub"
+                [isContentDeveloper]="true"
+                [showTemplates]="true"
+              ></app-cite-action-list>
+            }
+          </span>
+        }
+        @if (isSuperUser && (selectedTab === citeRolesText)) {
+          <span>
+            @if (selectedTab === 'CITE Roles') {
+              <app-cite-role-list
+                [loggedInUserId]="(loggedInUser | async).profile.sub"
+                [isContentDeveloper]="true"
+                [showTemplates]="true"
+              ></app-cite-role-list>
+            }
+          </span>
+        }
+      </mat-sidenav-content>
+    </mat-sidenav-container>
+  </div>

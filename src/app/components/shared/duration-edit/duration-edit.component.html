@@ -6,20 +6,26 @@ project root for license information.
 
 <div class="single-detail center-self">
   <div class="date-time-picker">
-    <mat-form-field *ngIf="hasStartTime()">
-      <input matInput [placeholder]="timeName" [formControl]="endTimeFormControl" (change)="timeUpdated()">
-      <!-- <datetime-picker> -->
-    </mat-form-field>
+    @if (hasStartTime()) {
+      <mat-form-field>
+        <input matInput [placeholder]="timeName" [formControl]="endTimeFormControl" (change)="timeUpdated()">
+        <!-- <datetime-picker> -->
+      </mat-form-field>
+    }
   </div>
   <div>
     <span style="margin-left: 20px; margin-right: 20px;"> &nbsp; </span>
     <span>
-      <button mat-icon-button (click)="changeSign()" title="Plus" *ngIf="sign > 0">
-        <mat-icon class="mdi-18px self-center" fontIcon="mdi-plus"></mat-icon>
-      </button>
-      <button mat-icon-button (click)="changeSign()" title="Minus" *ngIf="sign < 0">
-        <mat-icon class="mdi-18px self-center" fontIcon="mdi-minus"></mat-icon>
-      </button>
+      @if (sign > 0) {
+        <button mat-icon-button (click)="changeSign()" title="Plus">
+          <mat-icon class="mdi-18px self-center" fontIcon="mdi-plus"></mat-icon>
+        </button>
+      }
+      @if (sign < 0) {
+        <button mat-icon-button (click)="changeSign()" title="Minus">
+          <mat-icon class="mdi-18px self-center" fontIcon="mdi-minus"></mat-icon>
+        </button>
+      }
     </span>
     <mat-form-field class="two-digits">
       <input matInput [value]="days" placeholder="d" type="number" min="0" step="1" (change)="deltaUpdated($event, 'd')"

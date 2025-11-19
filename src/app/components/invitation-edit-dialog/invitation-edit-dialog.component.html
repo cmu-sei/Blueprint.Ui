@@ -5,67 +5,79 @@ project root for license information.
 -->
 <div mat-dialog-container>
   <div mat-dialog-title>
-    <span *ngIf="data.invitation.id">Edit</span>
-    <span *ngIf="!data.invitation.id">Create</span>
+    @if (data.invitation.id) {
+      <span>Edit</span>
+    }
+    @if (!data.invitation.id) {
+      <span>Create</span>
+    }
     an Invitation to this MSEL
     &nbsp;
     <button mat-icon-button (click)="handleEditComplete(false)" title="Cancel" class="close-button" tabindex="-1">
       <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
     </button>
   </div>
-  <div mat-dialog-content *ngIf="!!data && data.invitation !== undefined && data.invitation !== null">
-    <div class="add-margin">
-      <div>
-        <mat-form-field *ngIf="!data.invitation.id" class="full-width">
-          <mat-label>Team</mat-label>
-          <mat-select placeholder="Team" [(ngModel)]="data.invitation.teamId">
-            <mat-option *ngFor="let team of data.teamList" [value]="team.id"
-              title="{{ team.shortName }} - {{ team.name }}">
-              {{ team.shortName }} - {{ team.name }}
-            </mat-option>
-          </mat-select>
-        </mat-form-field>
-        <span *ngIf="data.invitation.id">Team <br />{{ getTeamName(data.invitation.teamId) }}<br />&nbsp;</span>
+  @if (!!data && data.invitation !== undefined && data.invitation !== null) {
+    <div mat-dialog-content>
+      <div class="add-margin">
+        <div>
+          @if (!data.invitation.id) {
+            <mat-form-field class="full-width">
+              <mat-label>Team</mat-label>
+              <mat-select placeholder="Team" [(ngModel)]="data.invitation.teamId">
+                @for (team of data.teamList; track team) {
+                  <mat-option [value]="team.id"
+                    title="{{ team.shortName }} - {{ team.name }}">
+                    {{ team.shortName }} - {{ team.name }}
+                  </mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          }
+          @if (data.invitation.id) {
+            <span>Team <br />{{ getTeamName(data.invitation.teamId) }}<br />&nbsp;</span>
+          }
+        </div>
       </div>
-    </div>
-    <div class="add-margin">
-      <div>
-        <mat-form-field class="full-width">
-          <input type="text"
-            title="If entered, the users email must end with this value.  You can enter the user's specific email address, or any portion of their email address, as long as it contains the complete domain. (i.e. @provider.com)"
-            matInput placeholder="User emails end with ..." [(ngModel)]="data.invitation.emailDomain">
-        </mat-form-field>
+      <div class="add-margin">
+        <div>
+          <mat-form-field class="full-width">
+            <input type="text"
+              title="If entered, the users email must end with this value.  You can enter the user's specific email address, or any portion of their email address, as long as it contains the complete domain. (i.e. @provider.com)"
+              matInput placeholder="User emails end with ..." [(ngModel)]="data.invitation.emailDomain">
+          </mat-form-field>
+        </div>
       </div>
-    </div>
-    <div class="add-margin">
-      <div class="single-detail center-self">
-        <mat-form-field>
-          <input matInput placeholder="Expiration Date / Time" [(ngModel)]="data.invitation.expirationDateTime">
-          <!-- <datetime-picker> -->
-        </mat-form-field>
+      <div class="add-margin">
+        <div class="single-detail center-self">
+          <mat-form-field>
+            <input matInput placeholder="Expiration Date / Time" [(ngModel)]="data.invitation.expirationDateTime">
+            <!-- <datetime-picker> -->
+          </mat-form-field>
+        </div>
       </div>
-    </div>
-    <div class="add-margin">
-      <div>
-        <mat-form-field class="full-width">
-          <input type="text" matInput placeholder="Maximum number of users allowed to use this invitation"
-            [(ngModel)]="data.invitation.maxUsersAllowed">
-        </mat-form-field>
+      <div class="add-margin">
+        <div>
+          <mat-form-field class="full-width">
+            <input type="text" matInput placeholder="Maximum number of users allowed to use this invitation"
+              [(ngModel)]="data.invitation.maxUsersAllowed">
+          </mat-form-field>
+        </div>
       </div>
-    </div>
-    <div class="add-margin">
-      <div>
-        <mat-checkbox [disabled]="true" [(ngModel)]="data.invitation.isTeamLeader">Can invite others to this
+      <div class="add-margin">
+        <div>
+          <mat-checkbox [disabled]="true" [(ngModel)]="data.invitation.isTeamLeader">Can invite others to this
           team</mat-checkbox>
+        </div>
       </div>
-    </div>
-    <div class="cssLayoutRowStartCenter bottom-button">
-      <div class="delete-button">
-        <button mat-stroked-button (click)="handleEditComplete(true)" [disabled]="!errorFree()"
+      <div class="cssLayoutRowStartCenter bottom-button">
+        <div class="delete-button">
+          <button mat-stroked-button (click)="handleEditComplete(true)" [disabled]="!errorFree()"
           style="margin-left: 40px;">Save</button>
-      </div>
-      <div class="delete-button">
-        <button mat-stroked-button (click)="handleEditComplete(false)">Cancel</button>
+        </div>
+        <div class="delete-button">
+          <button mat-stroked-button (click)="handleEditComplete(false)">Cancel</button>
+        </div>
       </div>
     </div>
-  </div>
+  }

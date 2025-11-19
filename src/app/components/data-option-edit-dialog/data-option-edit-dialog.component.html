@@ -12,7 +12,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     title="Cancel"
     class="close-button"
     tabindex="-1"
-  >
+    >
     <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
   </button>
 </div>
@@ -24,30 +24,31 @@ project root for license information or contact permission@sei.cmu.edu for full 
     </mat-form-field>
   </div>
 </div>
-<div mat-dialog-content *ngIf="data && data.dataOption">
-  <div class="add-margin">
-    <div>
-      <mat-form-field class="name-field full-width">
-        <mat-label>Name</mat-label>
-        <input matInput [(ngModel)]="data.dataOption.optionName" />
-      </mat-form-field>
+@if (data && data.dataOption) {
+  <div mat-dialog-content>
+    <div class="add-margin">
+      <div>
+        <mat-form-field class="name-field full-width">
+          <mat-label>Name</mat-label>
+          <input matInput [(ngModel)]="data.dataOption.optionName" />
+        </mat-form-field>
+      </div>
+    </div>
+    <div class="add-margin">
+      <div>
+        <mat-form-field class="name-field full-width">
+          <mat-label>Value</mat-label>
+          <input matInput [(ngModel)]="data.dataOption.optionValue" />
+        </mat-form-field>
+      </div>
+    </div>
+    <div class="cssLayoutRowStartCenter bottom-button">
+      <div class="delete-button">
+        <button mat-stroked-button (click)="handleEditComplete(true)" [disabled]="!errorFree()" style="margin-left: 40px;">Save</button>
+      </div>
+      <div class="delete-button">
+        <button mat-stroked-button (click)="handleEditComplete(false)">Cancel</button>
+      </div>
     </div>
   </div>
-  <div class="add-margin">
-    <div>
-      <mat-form-field class="name-field full-width">
-        <mat-label>Value</mat-label>
-        <input matInput [(ngModel)]="data.dataOption.optionValue" />
-      </mat-form-field>
-    </div>
-  </div>
-  <div class="cssLayoutRowStartCenter bottom-button">
-    <div class="delete-button">
-      <button mat-stroked-button (click)="handleEditComplete(true)" [disabled]="!errorFree()" style="margin-left: 40px;">Save</button>
-    </div>
-    <div class="delete-button">
-      <button mat-stroked-button (click)="handleEditComplete(false)">Cancel</button>
-    </div>
-  </div>
-
-</div>
+}

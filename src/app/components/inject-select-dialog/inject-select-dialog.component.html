@@ -13,20 +13,22 @@ project root for license information.
       title="Cancel"
       class="close-button"
       tabindex="-1"
-    >
+      >
       <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
     </button>
   </div>
-  <div mat-dialog-content *ngIf="!!data && data.catalog">
-    <app-inject-list
-      [catalog]="data.catalog"
-      [injectType]="data.injectType"
-      [injectList]="data.injectList"
-      [isContentDeveloper]="false"
-      [loggedInUserId]="data.loggedInUserId"
-      (selectedInjectIdList)="selectedInjectIdList=$event"
-    ></app-inject-list>
-  </div>
+  @if (!!data && data.catalog) {
+    <div mat-dialog-content>
+      <app-inject-list
+        [catalog]="data.catalog"
+        [injectType]="data.injectType"
+        [injectList]="data.injectList"
+        [isContentDeveloper]="false"
+        [loggedInUserId]="data.loggedInUserId"
+        (selectedInjectIdList)="selectedInjectIdList=$event"
+      ></app-inject-list>
+    </div>
+  }
   <div mat-dialog-actions>
     <div class="delete-button">
       <button mat-stroked-button (click)="handleEditComplete(true)" [disabled]="!errorFree()" style="margin-left: 40px;">Add</button>

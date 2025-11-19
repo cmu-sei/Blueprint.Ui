@@ -7,47 +7,52 @@ project root for license information or contact permission@sei.cmu.edu for full 
 <div class="msel-list-container mat-elevation-z8">
   <div
     class="header-div"
-  >
+    >
     <div class="app-icon">
-      <img
-        *ngIf="imageFilePath"
-        class="title-icon"
-        [src]="imageFilePath"
-        title="Pencil and Ruler Image"
-      />
+      @if (imageFilePath) {
+        <img
+          class="title-icon"
+          [src]="imageFilePath"
+          title="Pencil and Ruler Image"
+          />
+      }
       <div class="msels-title">My MSELs</div>
     </div>
-    <div *ngIf="isSystemAdmin" class="admin-cog-div">
-      <button
-        *ngIf="!allMselsAreLoaded"
-        mat-button
-        class="icon-color admin-cog-button"
-        style="outline: none;"
-        (click)="adminLoadAllMsels()"
-        title="Load ALL MSELs"
-      >
-        <mat-icon aria-hidden="false" class="icon-color admin-cog-icon mdi-24px" fontIcon="mdi-set-all"></mat-icon>
-      </button>
-      <button
-        *ngIf="allMselsAreLoaded"
-        mat-button
-        class="icon-color admin-cog-button"
-        style="outline: none;"
-        (click)="adminLoadMyMsels()"
-        title="Load MY MSELs"
-      >
-        <mat-icon aria-hidden="false" class="icon-color admin-cog-icon mdi-24px" fontIcon="mdi-set-center"></mat-icon>
-      </button>
-      <button
-        mat-button
-        class="icon-color admin-cog-button"
-        style="outline: none;"
-        (click)="goToUrl('/admin')"
-        title="Administration"
-      >
-        <mat-icon aria-hidden="false" class="icon-color admin-cog-icon mdi-24px" fontIcon="mdi-cog-outline"></mat-icon>
-      </button>
-    </div>
+    @if (isSystemAdmin) {
+      <div class="admin-cog-div">
+        @if (!allMselsAreLoaded) {
+          <button
+            mat-button
+            class="icon-color admin-cog-button"
+            style="outline: none;"
+            (click)="adminLoadAllMsels()"
+            title="Load ALL MSELs"
+            >
+            <mat-icon aria-hidden="false" class="icon-color admin-cog-icon mdi-24px" fontIcon="mdi-set-all"></mat-icon>
+          </button>
+        }
+        @if (allMselsAreLoaded) {
+          <button
+            mat-button
+            class="icon-color admin-cog-button"
+            style="outline: none;"
+            (click)="adminLoadMyMsels()"
+            title="Load MY MSELs"
+            >
+            <mat-icon aria-hidden="false" class="icon-color admin-cog-icon mdi-24px" fontIcon="mdi-set-center"></mat-icon>
+          </button>
+        }
+        <button
+          mat-button
+          class="icon-color admin-cog-button"
+          style="outline: none;"
+          (click)="goToUrl('/admin')"
+          title="Administration"
+          >
+          <mat-icon aria-hidden="false" class="icon-color admin-cog-icon mdi-24px" fontIcon="mdi-cog-outline"></mat-icon>
+        </button>
+      </div>
+    }
   </div>
   <div class="buttons-container">
     <div class="button-items">
@@ -90,14 +95,15 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </button>
     </div>
   </div>
-  <mat-card
-    appearance="outlined"
-    *ngIf="isLoading"
-    style="display: flex; justify-content: center; align-items: center"
-  >
-    <mat-progress-spinner color="primary" mode="indeterminate">
-    </mat-progress-spinner>
-  </mat-card>
+  @if (isLoading) {
+    <mat-card
+      appearance="outlined"
+      style="display: flex; justify-content: center; align-items: center"
+      >
+      <mat-progress-spinner color="primary" mode="indeterminate">
+      </mat-progress-spinner>
+    </mat-card>
+  }
   <div class="mat-table">
     <mat-table #table [dataSource]="mselDataSource" matSort>
       <!-- action column -->
@@ -110,7 +116,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
               [matMenuTriggerFor]="download"
               title="Download {{ element.name }}"
               [disabled]="!isReady || !element.hasRole(loggedInUserId, '').owner"
-            >
+              >
               <mat-icon class="mdi-18px" fontIcon="mdi-download" alt="Download .xlsx file"></mat-icon>
             </button>
             <mat-menu #download="matMenu" [overlapTrigger]="false">
@@ -130,7 +136,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
               (click)="uploadFile('xlsx', element.id, null); xlsxInput.click(); $event.stopPropagation();"
               title="Upload .xlsx file to {{ element.name }}"
               [disabled]="!isReady || !(isContentDeveloper || element.hasRole(loggedInUserId, null).owner)"
-            >
+              >
               <mat-icon class="mdi-18px" fontIcon="mdi-upload" alt="Upload .xlsx file"></mat-icon>
             </button>
             <button
@@ -138,7 +144,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
               (click)="delete(element); $event.stopPropagation();"
               title="Delete {{ element.name }}"
               [disabled]="!isReady || !isContentDeveloper"
-            >
+              >
               <mat-icon class="mdi-18px" fontIcon="mdi-delete" alt="Delete"></mat-icon>
             </button>
             <button
@@ -146,7 +152,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
               (click)="copyMsel(element.id); $event.stopPropagation();"
               title="Copy {{ element.name }}"
               [disabled]="!isReady || !isContentDeveloper"
-            >
+              >
               <mat-icon class="mdi-18px" fontIcon="mdi-content-copy" alt="Copy"></mat-icon>
             </button>
           </div>
@@ -158,16 +164,20 @@ project root for license information or contact permission@sei.cmu.edu for full 
           Name
         </mat-header-cell>
         <mat-cell *matCellDef="let element">
-          <div *ngIf="element.hasRole(loggedInUserId, '').editor" class="link-text">
-            <a
-              [routerLink]="['/build']"
-              [queryParams]="{ msel: element.id }"
-              (click)="openMsel(element.id)"
-            >{{ element.name }}</a>
-          </div>
-          <div *ngIf="!element.hasRole(loggedInUserId, '').editor" class="link-text">
-            {{ element.name }}
-          </div>
+          @if (element.hasRole(loggedInUserId, '').editor) {
+            <div class="link-text">
+              <a
+                [routerLink]="['/build']"
+                [queryParams]="{ msel: element.id }"
+                (click)="openMsel(element.id)"
+              >{{ element.name }}</a>
+            </div>
+          }
+          @if (!element.hasRole(loggedInUserId, '').editor) {
+            <div class="link-text">
+              {{ element.name }}
+            </div>
+          }
         </mat-cell>
       </ng-container>
       <!-- isTemplate Column -->
@@ -212,7 +222,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
     </mat-table>
     <!-- No Results Message -->
-    <div class="text no-results" *ngIf="mselDataSource.filteredData.length === 0">No results found</div>
+    @if (mselDataSource.filteredData.length === 0) {
+      <div class="text no-results">No results found</div>
+    }
   </div>
 </div>
 
@@ -222,12 +234,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
   #xlsxInput
   type="file"
   accept=".xlsx"
-/>
+  />
 
-<input
-  hidden
-  (change)="selectFile($event)"
-  #jsonInput
-  type="file"
-  accept=".json"
-/>
+  <input
+    hidden
+    (change)="selectFile($event)"
+    #jsonInput
+    type="file"
+    accept=".json"
+    />

@@ -7,57 +7,60 @@ project root for license information or contact permission@sei.cmu.edu for full 
 <div class="frame">
   <div class="scrolling-region">
     <div class="full-width">
-      <mat-expansion-panel
-        *ngFor="let team of mselTeamList"
-        (opened)="editTeamId = team.id"
-        (closed)="editTeamId = ''"
-      >
-        <mat-expansion-panel-header
-          (click)="$event.stopPropagation();"
-        >
-          <div class="full-width center-self">{{ team.shortName }} - {{ team.name }}</div>
-        </mat-expansion-panel-header>
-        <div class="data-panel">
-          <div class="data-row">
-            <div class="left-order">
-              <h4 style="margin-left: 25px;">Display Order</h4>
-            </div>
-            <div class="right-name">
-              <h4>Application</h4>
-            </div>
-          </div>
-        </div>
-        <div class="data-panel">
-          <div *ngFor="let playerApplicationTeam of getTeamApplications(team.id)" class="data-row">
-            <div class="left-order">
-              <div class="left-buttons">
-                <button
-                  mat-icon-button
-                  (click)="moveUp(playerApplicationTeam)"
-                  style="outline: none; margin-left: 15px;"
-                  title="Move player application up"
-                  [disabled]="+playerApplicationTeam.displayOrder === 1"
-                >
-                  <mat-icon class="mdi-24px self-center" fontIcon="mdi-menu-up"></mat-icon>
-                </button>
-                <button
-                  mat-icon-button
-                  (click)="moveDown(playerApplicationTeam)"
-                  style="outline: none; margin-left: 15px;"
-                  title="Move player application down"
-                  [disabled]="+playerApplicationTeam.displayOrder >= getTeamApplications(team.id).length"
-                >
-                  <mat-icon class="mdi-24px self-center" fontIcon="mdi-menu-down"></mat-icon>
-                </button>
+      @for (team of mselTeamList; track team) {
+        <mat-expansion-panel
+          (opened)="editTeamId = team.id"
+          (closed)="editTeamId = ''"
+          >
+          <mat-expansion-panel-header
+            (click)="$event.stopPropagation();"
+            >
+            <div class="full-width center-self">{{ team.shortName }} - {{ team.name }}</div>
+          </mat-expansion-panel-header>
+          <div class="data-panel">
+            <div class="data-row">
+              <div class="left-order">
+                <h4 style="margin-left: 25px;">Display Order</h4>
               </div>
-              <div class="left-value">{{ playerApplicationTeam.displayOrder }}</div>
-            </div>
-            <div class="right-name">
-              {{ getApplicationName(playerApplicationTeam.playerApplicationId) }}
+              <div class="right-name">
+                <h4>Application</h4>
+              </div>
             </div>
           </div>
-        </div>
-      </mat-expansion-panel>
+          <div class="data-panel">
+            @for (playerApplicationTeam of getTeamApplications(team.id); track playerApplicationTeam) {
+              <div class="data-row">
+                <div class="left-order">
+                  <div class="left-buttons">
+                    <button
+                      mat-icon-button
+                      (click)="moveUp(playerApplicationTeam)"
+                      style="outline: none; margin-left: 15px;"
+                      title="Move player application up"
+                      [disabled]="+playerApplicationTeam.displayOrder === 1"
+                      >
+                      <mat-icon class="mdi-24px self-center" fontIcon="mdi-menu-up"></mat-icon>
+                    </button>
+                    <button
+                      mat-icon-button
+                      (click)="moveDown(playerApplicationTeam)"
+                      style="outline: none; margin-left: 15px;"
+                      title="Move player application down"
+                      [disabled]="+playerApplicationTeam.displayOrder >= getTeamApplications(team.id).length"
+                      >
+                      <mat-icon class="mdi-24px self-center" fontIcon="mdi-menu-down"></mat-icon>
+                    </button>
+                  </div>
+                  <div class="left-value">{{ playerApplicationTeam.displayOrder }}</div>
+                </div>
+                <div class="right-name">
+                  {{ getApplicationName(playerApplicationTeam.playerApplicationId) }}
+                </div>
+              </div>
+            }
+          </div>
+        </mat-expansion-panel>
+      }
     </div>
   </div>
 </div>

@@ -4,64 +4,75 @@ Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
 <div class="top-container background">
-  <app-topbar
-    *ngIf="!hideTopbar"
-    [title]="topbarText"
-    [topbarView]="TopbarView.BLUEPRINT_HOME"
-    [topbarColor]="topbarColor"
-    [topbarTextColor]="topbarTextColor"
-    [imageFilePath]="topbarImage"
-    (urlNavigate)="topBarNavigate($event)"
-  ></app-topbar>
-  <div class="card-container" *ngIf="showChoices">
-    <mat-card
-      appearance="outlined"
-      *ngFor="let msel of joinMselList"
-      class="base-card"
-      tabindex="0"
-    >
-    <mat-card-header>
-      <mat-card-title>{{ msel.name }}</mat-card-title>
-      <mat-card-subtitle>{{ msel.description }}</mat-card-subtitle>
-    </mat-card-header>
-    <mat-card-content>
-      <div *ngIf="joinStatus[msel.id] || isJoined[msel.id]">
-        <mat-progress-spinner color="primary" mode="indeterminate">
-        </mat-progress-spinner>
-      </div>&nbsp;
-    </mat-card-content>
-    <mat-card-actions>
-      <button
-      *ngIf="!joinStatus[msel.id] && !isJoined[msel.id]"
-        mat-stroked-button
-        (click)="join(msel.id, '')"
-        title="Join {{ msel.name }}"
-      >
-        Join {{ msel.name }}
-      </button>
-      <div *ngIf="joinStatus[msel.id]">
-        <label class="status-message">{{ joinStatus[msel.id] }}</label>
+  @if (!hideTopbar) {
+    <app-topbar
+      [title]="topbarText"
+      [topbarView]="TopbarView.BLUEPRINT_HOME"
+      [topbarColor]="topbarColor"
+      [topbarTextColor]="topbarTextColor"
+      [imageFilePath]="topbarImage"
+      (urlNavigate)="topBarNavigate($event)"
+    ></app-topbar>
+  }
+  @if (showChoices) {
+    <div class="card-container">
+      @for (msel of joinMselList; track msel) {
+        <mat-card
+          appearance="outlined"
+          class="base-card"
+          tabindex="0"
+          >
+          <mat-card-header>
+            <mat-card-title>{{ msel.name }}</mat-card-title>
+            <mat-card-subtitle>{{ msel.description }}</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            @if (joinStatus[msel.id] || isJoined[msel.id]) {
+              <div>
+                <mat-progress-spinner color="primary" mode="indeterminate">
+                </mat-progress-spinner>
+              </div>
+              }&nbsp;
+            </mat-card-content>
+            <mat-card-actions>
+              @if (!joinStatus[msel.id] && !isJoined[msel.id]) {
+                <button
+                  mat-stroked-button
+                  (click)="join(msel.id, '')"
+                  title="Join {{ msel.name }}"
+                  >
+                  Join {{ msel.name }}
+                </button>
+              }
+              @if (joinStatus[msel.id]) {
+                <div>
+                  <label class="status-message">{{ joinStatus[msel.id] }}</label>
+                </div>
+              }
+            </mat-card-actions>
+          </mat-card>
+        }
       </div>
-    </mat-card-actions>
-    </mat-card>
+    }
+    @if (!showChoices) {
+      <div class="card-container">
+        <mat-card
+          appearance="outlined"
+          class="base-card"
+          tabindex="0"
+          >
+          <mat-card-header>
+            <mat-card-title>Joining your event!</mat-card-title>
+            <mat-card-subtitle>Please wait until you are directed to your event.</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <mat-progress-spinner color="primary" mode="indeterminate">
+            </mat-progress-spinner>
+          </mat-card-content>
+          <mat-card-actions>
+            <label class="status-message">{{ joinStatus[joiningMselId] }}</label>
+          </mat-card-actions>
+        </mat-card>
+      </div>
+    }
   </div>
-  <div class="card-container" *ngIf="!showChoices">
-    <mat-card
-      appearance="outlined"
-      class="base-card"
-      tabindex="0"
-    >
-    <mat-card-header>
-      <mat-card-title>Joining your event!</mat-card-title>
-      <mat-card-subtitle>Please wait until you are directed to your event.</mat-card-subtitle>
-    </mat-card-header>
-    <mat-card-content>
-      <mat-progress-spinner color="primary" mode="indeterminate">
-      </mat-progress-spinner>
-    </mat-card-content>
-    <mat-card-actions>
-      <label class="status-message">{{ joinStatus[joiningMselId] }}</label>
-    </mat-card-actions>
-    </mat-card>
-  </div>
-</div>
