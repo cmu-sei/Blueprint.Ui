@@ -8,7 +8,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
   <app-topbar *ngIf="!hideTopbar" [title]="topbarText" [topbarView]="TopbarView.BLUEPRINT_HOME"
     [topbarColor]="topbarColor" [topbarTextColor]="topbarTextColor" [imageFilePath]="topbarImage"
     (urlNavigate)="topBarNavigate($event)"></app-topbar>
-  <mat-card class="base-card">
+  <mat-card appearance="outlined" class="base-card">
     <mat-card-header>
       <mat-card-title>{{ msel.name }}</mat-card-title>
       <mat-card-subtitle>{{ msel.description }}</mat-card-subtitle><br />
@@ -31,7 +31,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </button>
     </mat-card-actions>
   </mat-card>
-  <mat-card *ngIf="msel.status === 'Deployed'">
+  <mat-card appearance="outlined" *ngIf="msel.status === 'Deployed'">
     <app-invitation-list [loggedInUserId]="loggedInUserId" [hideSearch]="true"></app-invitation-list>
   </mat-card>
 </div>

@@ -16,6 +16,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
   <div class="card-container" *ngIf="isStarted">
 
     <mat-card
+      appearance="outlined"
       *ngIf="joinMselList.length > 0"
       [ngClass]="joinClass"
       tabindex="1"
@@ -32,6 +33,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     </mat-card>
 
     <mat-card
+      appearance="outlined"
       *ngIf="launchMselList.length > 0"
       [ngClass]="launchClass"
       tabindex="2"
@@ -48,6 +50,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     </mat-card>
 
     <mat-card
+      appearance="outlined"
       *ngIf="buildMselList.length > 0"
       [ngClass]="buildClass"
       tabindex="3"
@@ -66,6 +69,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
   </div>
   <div class="card-container" *ngIf="!isStarted">
     <mat-card
+    appearance="outlined"
     [ngClass]="buildClass"
   >
     <mat-card-header>

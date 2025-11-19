@@ -15,6 +15,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
   ></app-topbar>
   <div class="card-container" *ngIf="showChoices">
     <mat-card
+      appearance="outlined"
       *ngFor="let msel of launchMselList"
       class="base-card"
       tabindex="0"
@@ -47,6 +48,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
   </div>
   <div class="card-container" *ngIf="!showChoices">
     <mat-card
+      appearance="outlined"
       class="base-card"
       tabindex="0"
     >

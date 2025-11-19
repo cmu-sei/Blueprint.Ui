@@ -17,24 +17,24 @@
   width: 100%;
 }
 
-.mat-table {
+.mat-mdc-table {
   font-size: small;
   width: 100%;
   overflow: none;
   background: transparent;
 }
 
-.mat-header-row {
+.mat-mdc-header-row {
   min-height: 18px;
   background: transparent;
 }
 
-.mat-row {
+.mat-mdc-row {
   min-height: 18px;
 }
 
-.mat-row,
-.mat-header-row {
+.mat-mdc-row,
+.mat-mdc-header-row {
   display: flex;
   border-bottom-width: 1px;
   border-bottom-style: solid;
@@ -42,12 +42,12 @@
   box-sizing: border-box;
 }
 
-.mat-header-cell {
+.mat-mdc-header-cell {
   font-weight: bold;
 }
 
-.mat-cell,
-.mat-header-cell {
+.mat-mdc-cell,
+.mat-mdc-header-cell {
   overflow: hidden;
   word-wrap: break-word;
   text-align: left;
