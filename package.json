@@ -79,9 +79,6 @@
     "eslint-plugin-jsdoc": "^39.7.5",
     "jasmine-core": "~3.7.1",
     "jasmine-spec-reporter": "~7.0.0",
-    "karma": "^6.3.3",
-    "karma-chrome-launcher": "~3.1.0",
-    "protractor": "~7.0.0",
     "rimraf": "^5.0.5",
     "ts-node": "~10.0.0",
     "typescript": "~5.5.4"
