@@ -70,19 +70,19 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "blueprint-ui:build",
-            "port": 4725
+            "port": 4725,
+            "buildTarget": "blueprint-ui:build"
           },
           "configurations": {
             "production": {
-              "browserTarget": "blueprint-ui:build:production"
+              "buildTarget": "blueprint-ui:build:production"
             }
           }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "blueprint-ui:build"
+            "buildTarget": "blueprint-ui:build"
           }
         },
         "test": {
