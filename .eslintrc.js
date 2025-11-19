@@ -39,7 +39,6 @@ module.exports = {
   rules: {
     '@angular-eslint/component-class-suffix': 'error',
     '@angular-eslint/directive-class-suffix': 'error',
-    '@angular-eslint/no-host-metadata-property': 'error',
     '@angular-eslint/no-input-rename': 'error',
     '@angular-eslint/no-inputs-metadata-property': 'error',
     '@angular-eslint/no-output-on-prefix': 'error',
@@ -55,7 +54,16 @@ module.exports = {
         accessibility: 'explicit',
       },
     ],
-    // "@typescript-eslint/indent": ["error", 2, {"ignoredNodes": ["FunctionExpression[params]:has(Identifier[decorators])"], "SwitchCase": 1}],
+    '@typescript-eslint/indent': [
+      'error',
+      2,
+      {
+        ignoredNodes: [
+          'FunctionExpression[params]:has(Identifier[decorators])',
+        ],
+        SwitchCase: 1,
+      },
+    ],
     '@typescript-eslint/member-delimiter-style': [
       'error',
       {
@@ -102,7 +110,7 @@ module.exports = {
     '@typescript-eslint/type-annotation-spacing': 'error',
     '@typescript-eslint/unified-signatures': 'error',
     'arrow-body-style': 'error',
-    // 'brace-style': ['error', '1tbs'],
+    'brace-style': ['error', '1tbs'],
     'constructor-super': 'error',
     curly: 'error',
     'dot-notation': 'off',

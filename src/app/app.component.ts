@@ -14,10 +14,10 @@ import { Observable, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 @Component({
-    selector: 'app-root',
-    templateUrl: './app.component.html',
-    styleUrls: ['./app.component.scss'],
-    standalone: false
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.scss'],
+  standalone: false
 })
 export class AppComponent implements OnDestroy {
   @HostBinding('class') componentCssClass: string;
@@ -363,14 +363,10 @@ export class AppComponent implements OnDestroy {
     const classList = this.overlayContainer.getContainerElement().classList;
     switch (theme) {
       case Theme.LIGHT:
-        this.componentCssClass = theme;
-        classList.add(theme);
-        classList.remove(Theme.DARK);
+        document.body.classList.toggle('darkMode', false);
         break;
       case Theme.DARK:
-        this.componentCssClass = theme;
-        classList.add(theme);
-        classList.remove(Theme.LIGHT);
+        document.body.classList.toggle('darkMode', true);
     }
   }
   ngOnDestroy(): void {
