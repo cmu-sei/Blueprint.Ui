@@ -13,11 +13,11 @@ import {
 import { MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { Sort } from '@angular/material/sort';
-import { MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy-menu';
+import { MatMenuTrigger } from '@angular/material/menu';
 import { CiteRoleDataService } from 'src/app/data/cite-role/cite-role-data.service';
 import { CiteRoleQuery } from 'src/app/data/cite-role/cite-role.query';
 import { TeamQuery } from 'src/app/data/team/team.query';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { CiteRoleEditDialogComponent } from '../cite-role-edit-dialog/cite-role-edit-dialog.component';
 
@@ -37,7 +37,7 @@ export class CiteRoleListComponent implements OnDestroy {
   filteredCiteRoleList: CiteRole[] = [];
   filterControl = new FormControl();
   filterString = '';
-  sort: Sort = {active: 'name', direction: 'asc'};
+  sort: Sort = { active: 'name', direction: 'asc' };
   sortedCiteRoles: CiteRole[] = [];
   isAddingCiteRole = false;
   editingId = '';
@@ -115,14 +115,14 @@ export class CiteRoleListComponent implements OnDestroy {
           isTemplate: false
         };
       } else {
-        citeRole = { ...citeRole};
+        citeRole = { ...citeRole };
       }
     }
     const dialogRef = this.dialog.open(CiteRoleEditDialogComponent, {
       width: '90%',
       maxWidth: '800px',
       data: {
-        citeRole: { ...citeRole},
+        citeRole: { ...citeRole },
         teamList: this.mselTeamList
       },
     });
@@ -196,15 +196,15 @@ export class CiteRoleListComponent implements OnDestroy {
     switch (column) {
       case 'name':
         if (a.name.toLowerCase() === b.name.toLowerCase()) {
-          return ( (a.team?.name < b.team?.name ? -1 : 1) * (isAsc ? 1 : -1) );
+          return ((a.team?.name < b.team?.name ? -1 : 1) * (isAsc ? 1 : -1));
         }
-        return ( (a.name < b.name ? -1 : 1) * (isAsc ? 1 : -1) );
+        return ((a.name < b.name ? -1 : 1) * (isAsc ? 1 : -1));
         break;
       case 'team':
         if (a.team?.name === b.team?.name) {
-          return ( (a.name < b.name ? -1 : 1) * (isAsc ? 1 : -1) );
+          return ((a.name < b.name ? -1 : 1) * (isAsc ? 1 : -1));
         }
-        return ( (a.team?.name < b.team?.name ? -1 : 1) * (isAsc ? 1 : -1) );
+        return ((a.team?.name < b.team?.name ? -1 : 1) * (isAsc ? 1 : -1));
         break;
       default:
         return 0;
@@ -218,7 +218,7 @@ export class CiteRoleListComponent implements OnDestroy {
     if (citeRoles) {
       citeRoles.forEach(citeRole => {
         if ((mselId && citeRole.mselId === mselId) || (!mselId && !citeRole.mselId)) {
-          filteredCiteRoles.push({... citeRole});
+          filteredCiteRoles.push({ ...citeRole });
         }
       });
       if (filteredCiteRoles && filteredCiteRoles.length > 0) {

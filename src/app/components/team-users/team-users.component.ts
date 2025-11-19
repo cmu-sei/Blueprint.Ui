@@ -10,7 +10,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import { Sort, MatSortable } from '@angular/material/sort';
-import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
+import { MatTableDataSource } from '@angular/material/table';
 import { TeamQuery } from 'src/app/data/team/team.query';
 import { TeamRole, Team, TeamUser, User, UserTeamRole } from 'src/app/generated/blueprint.api';
 import { TeamUserDataService } from 'src/app/data/team-user/team-user-data.service';
@@ -41,7 +41,7 @@ export class TeamUsersComponent implements OnDestroy, OnInit {
   filterControl = new UntypedFormControl();
   filterString = '';
   isAddMode = false;
-  sort: Sort = {active: 'name', direction: 'asc'};
+  sort: Sort = { active: 'name', direction: 'asc' };
   teamRoles: string[] = ['Inviter', 'Observer', 'Incrementer', 'Modifier', 'Submitter'];
   private unsubscribe$ = new Subject();
 

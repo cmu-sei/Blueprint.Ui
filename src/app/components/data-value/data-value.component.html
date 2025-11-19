@@ -11,10 +11,7 @@ project root for license information.
   </span>
   <!-- dataType.Html -->
   <span *ngIf="dataField.dataType === dataType.Html">
-    <angular-editor
-      [innerHtml]="value"
-      [config]="viewConfig"
-    ></angular-editor>
+    <angular-editor [innerHtml]="value" [config]="viewConfig"></angular-editor>
   </span>
   <!-- dataType.Card -->
   <span *ngIf="dataField.dataType === dataType.Card">
@@ -30,46 +27,34 @@ project root for license information.
   </span>
   <!-- dataType.Boolean or dataType.Checkbox -->
   <span *ngIf="dataField.dataType === dataType.Boolean || dataField.dataType === dataType.Checkbox">
-    <mat-checkbox
-      [checked]="value"
-      [disabled]="true"
-    >
+    <mat-checkbox [checked]="value" [disabled]="true">
     </mat-checkbox><br />&nbsp;
   </span>
   <!-- other dataTypes -->
-  <span *ngIf="dataField.dataType !== dataType.DateTime && dataField.dataType !== dataType.Html && dataField.dataType !== dataType.Card && dataField.dataType !== dataType.Move && dataField.dataType !== dataType.User && dataField.dataType !== dataType.Boolean && dataField.dataType !== dataType.Checkbox">
+  <span
+    *ngIf="dataField.dataType !== dataType.DateTime && dataField.dataType !== dataType.Html && dataField.dataType !== dataType.Card && dataField.dataType !== dataType.Move && dataField.dataType !== dataType.User && dataField.dataType !== dataType.Boolean && dataField.dataType !== dataType.Checkbox">
     {{ value }}
   </span>
 </span>
 <!-- editable display -->
 <ng-template #editable>
   <!-- string input -->
-  <span *ngIf="!dataField.isChosenFromList && (dataField.dataType === dataType.String || dataField.dataType === dataType.Url)">
+  <span
+    *ngIf="!dataField.isChosenFromList && (dataField.dataType === dataType.String || dataField.dataType === dataType.Url)">
     <mat-form-field *ngIf="!showValueOnly" class="full-width">
-      <input
-        type="text"
-        matInput
-        placeholder="{{ dataField.name }}"
-        [(ngModel)]="value"
-        (ngModelChange)="valueChangeHandler()"
-        [disabled]="!canEdit"
-      />
+      <input type="text" matInput placeholder="{{ dataField.name }}" [(ngModel)]="value"
+        (ngModelChange)="valueChangeHandler()" [disabled]="!canEdit" />
     </mat-form-field>
     <span *ngIf="showValueOnly">
       {{ value }}
     </span>
   </span>
   <!-- Numeric input -->
-  <span *ngIf="!dataField.isChosenFromList && dataField.dataType === dataType.Integer || dataField.dataType === dataType.Double">
+  <span
+    *ngIf="!dataField.isChosenFromList && dataField.dataType === dataType.Integer || dataField.dataType === dataType.Double">
     <mat-form-field *ngIf="!showValueOnly" class="full-width">
-      <input
-        matInput
-        placeholder="{{ dataField.name }}"
-        (change)="verifyNumber(value)"
-        [(ngModel)]="value"
-        (ngModelChange)="valueChangeHandler()"
-        [disabled]="!canEdit"
-      />
+      <input matInput placeholder="{{ dataField.name }}" (change)="verifyNumber(value)" [(ngModel)]="value"
+        (ngModelChange)="valueChangeHandler()" [disabled]="!canEdit" />
     </mat-form-field>
     <span *ngIf="showValueOnly">
       {{ value }}
@@ -78,28 +63,8 @@ project root for license information.
   <!-- dateTime input -->
   <span *ngIf="!dataField.isChosenFromList && dataField.dataType === dataType.DateTime">
     <mat-form-field *ngIf="!showValueOnly" class="full-width">
-      <input
-        matInput
-        [ngxMatDatetimePicker]="scenarioEventTimePicker"
-        placeholder={{dataField.name}}
-        [(ngModel)]="value"
-        (ngModelChange)="valueChangeHandler()"
-        >
-      <mat-datepicker-toggle
-        matSuffix
-        [for]="$any(scenarioEventTimePicker)">
-      </mat-datepicker-toggle>
-      <ngx-mat-datetime-picker #scenarioEventTimePicker
-        [showSpinners]=true
-        [showSeconds]=true
-        [stepHour]=1
-        [stepMinute]=1
-        [stepSecond]=1
-        [touchUi]=false
-        [enableMeridian]=true
-        [disableMinute]=false
-        [hideTime]=false>
-      </ngx-mat-datetime-picker>
+      <input matInput placeholder={{dataField.name}} [(ngModel)]="value" (ngModelChange)="valueChangeHandler()">
+      <!-- <datetime-picker> -->
     </mat-form-field>
     <span *ngIf="showValueOnly">
       {{ value | date: 'MM/dd/yyyy HH:mm' }}
@@ -112,60 +77,39 @@ project root for license information.
         {{ dataField.name }}
       </div>
       <div>
-        <angular-editor
-          [placeholder]="'Enter value ...'"
-          [(ngModel)]="value"
-          (ngModelChange)="valueChangeHandler()"
-          [config]="canEdit ? editorConfig : viewConfig"
-        ></angular-editor>
+        <angular-editor [placeholder]="'Enter value ...'" [(ngModel)]="value" (ngModelChange)="valueChangeHandler()"
+          [config]="canEdit ? editorConfig : viewConfig"></angular-editor>
       </div>
       &nbsp;
     </div>
     <div *ngIf="showValueOnly" class="full-width">
-      <angular-editor
-        [innerHtml]="value"
-        [config]="viewConfig"
-      ></angular-editor>
+      <angular-editor [innerHtml]="value" [config]="viewConfig"></angular-editor>
     </div>
   </div>
   <!-- Organization input -->
   <span *ngIf="!dataField.isChosenFromList && dataField.dataType === dataType.Organization">
     <mat-form-field *ngIf="!showValueOnly" class="full-width">
       <mat-label>{{ dataField.name }}</mat-label>
-      <mat-select
-        placeholder="{{ dataField.name }}"
-        [(ngModel)]="value"
-        (ngModelChange)="valueChangeHandler()"
-        [disabled]="!canEdit"
-      >
-      <mat-option *ngIf="organizationOptions && organizationOptions.length > 0" value="None">None</mat-option>
-      <mat-option *ngFor="let organization of organizationOptions" [value]="organization">{{ organization }}</mat-option>
+      <mat-select placeholder="{{ dataField.name }}" [(ngModel)]="value" (ngModelChange)="valueChangeHandler()"
+        [disabled]="!canEdit">
+        <mat-option *ngIf="organizationOptions && organizationOptions.length > 0" value="None">None</mat-option>
+        <mat-option *ngFor="let organization of organizationOptions" [value]="organization">{{ organization
+          }}</mat-option>
       </mat-select>
     </mat-form-field>
-    <mat-select
-      placeholder="{{ dataField.name }}"
-      [(ngModel)]="value"
-      (ngModelChange)="valueChangeHandler()"
-      [disabled]="!canEdit"
-      *ngIf="showValueOnly"
-    >
-    <mat-option *ngIf="organizationOptions && organizationOptions.length > 0" value="None">None</mat-option>
-    <mat-option *ngFor="let organization of organizationOptions" [value]="organization">{{ organization }}</mat-option>
+    <mat-select placeholder="{{ dataField.name }}" [(ngModel)]="value" (ngModelChange)="valueChangeHandler()"
+      [disabled]="!canEdit" *ngIf="showValueOnly">
+      <mat-option *ngIf="organizationOptions && organizationOptions.length > 0" value="None">None</mat-option>
+      <mat-option *ngFor="let organization of organizationOptions" [value]="organization">{{ organization
+        }}</mat-option>
     </mat-select>
   </span>
   <!-- TeamsMultiple value -->
   <span *ngIf="!dataField.isChosenFromList && dataField.dataType === dataType.TeamsMultiple">
     <mat-form-field *ngIf="!showValueOnly" class="full-width">
       <mat-label>{{ dataField.name }}</mat-label>
-      <mat-select
-        multiple
-        autoclose=""
-        placeholder="{{ dataField.name }}"
-        (click)="$event.stopPropagation()"
-        (valueChange)="setDataValueArray($event)"
-        [value]="getValueArray()"
-        [disabled]="!canEdit"
-      >
+      <mat-select multiple autoclose="" placeholder="{{ dataField.name }}" (click)="$event.stopPropagation()"
+        (valueChange)="setDataValueArray($event)" [value]="getValueArray()" [disabled]="!canEdit">
         <mat-option *ngIf="teamOptions && teamOptions.length > 0" value="ALL">ALL</mat-option>
         <mat-option *ngIf="teamOptions && teamOptions.length > 0" value="None">None</mat-option>
         <mat-option *ngFor="let team of teamOptions" [value]="team.shortName">
@@ -173,15 +117,8 @@ project root for license information.
         </mat-option>
       </mat-select>
     </mat-form-field>
-    <mat-select
-      multiple
-      placeholder="{{ dataField.name }}"
-      (click)="$event.stopPropagation()"
-      (valueChange)="setDataValueArray($event)"
-      [value]="getValueArray()"
-      [disabled]="!canEdit"
-      *ngIf="showValueOnly"
-    >
+    <mat-select multiple placeholder="{{ dataField.name }}" (click)="$event.stopPropagation()"
+      (valueChange)="setDataValueArray($event)" [value]="getValueArray()" [disabled]="!canEdit" *ngIf="showValueOnly">
       <mat-option *ngIf="teamOptions && teamOptions.length > 0" value="ALL">ALL</mat-option>
       <mat-option *ngIf="teamOptions && teamOptions.length > 0" value="None">None</mat-option>
       <mat-option *ngFor="let team of teamOptions" [value]="team.shortName">
@@ -193,24 +130,15 @@ project root for license information.
   <span *ngIf="!dataField.isChosenFromList && dataField.dataType === dataType.Status">
     <mat-form-field *ngIf="!showValueOnly" class="full-width">
       <mat-label>{{ dataField.name }}</mat-label>
-      <mat-select
-        placeholder="{{ dataField.name }}"
-        [(ngModel)]="value"
-        [disabled]="!canApprove"
-        (ngModelChange)="valueChangeHandler()"
-      >
+      <mat-select placeholder="{{ dataField.name }}" [(ngModel)]="value" [disabled]="!canApprove"
+        (ngModelChange)="valueChangeHandler()">
         <mat-option *ngFor="let status of itemStatus" [value]="status">
           {{ status }}
         </mat-option>
       </mat-select>
     </mat-form-field>
-    <mat-select
-      placeholder="{{ dataField.name }}"
-      [(ngModel)]="value"
-      [disabled]="!canApprove"
-      *ngIf="showValueOnly"
-      (ngModelChange)="valueChangeHandler()"
-      >
+    <mat-select placeholder="{{ dataField.name }}" [(ngModel)]="value" [disabled]="!canApprove" *ngIf="showValueOnly"
+      (ngModelChange)="valueChangeHandler()">
       <mat-option *ngFor="let status of itemStatus" [value]="status">
         {{ status }}
       </mat-option>
@@ -220,24 +148,15 @@ project root for license information.
   <span *ngIf="!dataField.isChosenFromList && dataField.dataType === dataType.Team">
     <mat-form-field *ngIf="!showValueOnly" class="full-width">
       <mat-label>{{ dataField.name }}</mat-label>
-      <mat-select
-        placeholder="{{ dataField.name }}"
-        [(ngModel)]="value"
-        [disabled]="!isOwner"
-        (ngModelChange)="valueChangeHandler()"
-      >
+      <mat-select placeholder="{{ dataField.name }}" [(ngModel)]="value" [disabled]="!isOwner"
+        (ngModelChange)="valueChangeHandler()">
         <mat-option *ngFor="let unit of unitOptions" [value]="unit.shortName">
           {{ unit.shortName }}
         </mat-option>
       </mat-select>
     </mat-form-field>
-    <mat-select
-      placeholder="{{ dataField.name }}"
-      [(ngModel)]="value"
-      [disabled]="!isOwner"
-      *ngIf="showValueOnly"
-      (ngModelChange)="valueChangeHandler()"
-      >
+    <mat-select placeholder="{{ dataField.name }}" [(ngModel)]="value" [disabled]="!isOwner" *ngIf="showValueOnly"
+      (ngModelChange)="valueChangeHandler()">
       <mat-option *ngFor="let unit of unitOptions" [value]="unit.shortName">
         {{ unit.shortName }}
       </mat-option>
@@ -247,23 +166,14 @@ project root for license information.
   <span *ngIf="!dataField.isChosenFromList && dataField.dataType === dataType.Card">
     <mat-form-field *ngIf="!showValueOnly" class="full-width">
       <mat-label>{{ dataField.name }}</mat-label>
-      <mat-select
-        placeholder="{{ dataField.name }}"
-        [(ngModel)]="value"
-        (ngModelChange)="valueChangeHandler()"
-        [disabled]="!canEdit"
-      >
+      <mat-select placeholder="{{ dataField.name }}" [(ngModel)]="value" (ngModelChange)="valueChangeHandler()"
+        [disabled]="!canEdit">
         <mat-option value="''"> - - - </mat-option>
         <mat-option *ngFor="let card of cardOptions" [value]="card.id">{{ card.name }}</mat-option>
       </mat-select>
     </mat-form-field>
-    <mat-select
-      placeholder="{{ dataField.name }}"
-      [(ngModel)]="value"
-      (ngModelChange)="valueChangeHandler()"
-      [disabled]="!canEdit"
-      *ngIf="showValueOnly"
-    >
+    <mat-select placeholder="{{ dataField.name }}" [(ngModel)]="value" (ngModelChange)="valueChangeHandler()"
+      [disabled]="!canEdit" *ngIf="showValueOnly">
       <mat-option value="''"> - - - </mat-option>
       <mat-option *ngFor="let card of cardOptions" [value]="card.id">{{ card.name }}</mat-option>
     </mat-select>
@@ -272,48 +182,33 @@ project root for license information.
   <span *ngIf="!dataField.isChosenFromList && dataField.dataType === dataType.Move">
     <mat-form-field *ngIf="!showValueOnly" class="full-width">
       <mat-label>{{ dataField.name }}</mat-label>
-      <mat-select
-        placeholder="{{ dataField.name }}"
-        [(ngModel)]="value"
-        (ngModelChange)="valueChangeHandler()"
-        [disabled]="!canEdit"
-      >
+      <mat-select placeholder="{{ dataField.name }}" [(ngModel)]="value" (ngModelChange)="valueChangeHandler()"
+        [disabled]="!canEdit">
         <mat-option value="''"> - - - </mat-option>
-        <mat-option *ngFor="let move of moveOptions" [value]="move.id">{{ move.moveNumber }} - {{ move.title }}</mat-option>
+        <mat-option *ngFor="let move of moveOptions" [value]="move.id">{{ move.moveNumber }} - {{ move.title
+          }}</mat-option>
       </mat-select>
     </mat-form-field>
-    <mat-select
-      placeholder="{{ dataField.name }}"
-      [(ngModel)]="value"
-      (ngModelChange)="valueChangeHandler()"
-      [disabled]="!canEdit"
-      *ngIf="showValueOnly"
-    >
+    <mat-select placeholder="{{ dataField.name }}" [(ngModel)]="value" (ngModelChange)="valueChangeHandler()"
+      [disabled]="!canEdit" *ngIf="showValueOnly">
       <mat-option value="''"> - - - </mat-option>
-      <mat-option *ngFor="let move of moveOptions" [value]="move.id">{{ move.moveNumber }} - {{ move.title }}</mat-option>
+      <mat-option *ngFor="let move of moveOptions" [value]="move.id">{{ move.moveNumber }} - {{ move.title
+        }}</mat-option>
     </mat-select>
   </span>
   <!-- SourceType input -->
   <span *ngIf="!dataField.isChosenFromList && dataField.dataType === dataType.SourceType">
     <mat-form-field *ngIf="!showValueOnly" class="full-width">
       <mat-label>{{ dataField.name }}</mat-label>
-      <mat-select
-        placeholder="{{ dataField.name }}"
-        [(ngModel)]="value"
-        (ngModelChange)="valueChangeHandler()"
-        [disabled]="!canEdit"
-      >
+      <mat-select placeholder="{{ dataField.name }}" [(ngModel)]="value" (ngModelChange)="valueChangeHandler()"
+        [disabled]="!canEdit">
         <mat-option value="''"> </mat-option>
-        <mat-option *ngFor="let sourceType of gallerySourceTypeOptions" [value]="sourceType">{{ sourceType }}</mat-option>
+        <mat-option *ngFor="let sourceType of gallerySourceTypeOptions" [value]="sourceType">{{ sourceType
+          }}</mat-option>
       </mat-select>
     </mat-form-field>
-    <mat-select
-      placeholder="{{ dataField.name }}"
-      [(ngModel)]="value"
-      (ngModelChange)="valueChangeHandler()"
-      [disabled]="!canEdit"
-      *ngIf="showValueOnly"
-    >
+    <mat-select placeholder="{{ dataField.name }}" [(ngModel)]="value" (ngModelChange)="valueChangeHandler()"
+      [disabled]="!canEdit" *ngIf="showValueOnly">
       <mat-option value="''"> </mat-option>
       <mat-option *ngFor="let sourceType of gallerySourceTypeOptions" [value]="sourceType">{{ sourceType }}</mat-option>
     </mat-select>
@@ -322,24 +217,15 @@ project root for license information.
   <span *ngIf="dataField.dataType === dataType.User">
     <mat-form-field *ngIf="!showValueOnly" class="full-width">
       <mat-label>{{ dataField.name }}</mat-label>
-      <mat-select
-        placeholder="{{ dataField.name }}"
-        [(ngModel)]="value"
-        (ngModelChange)="valueChangeHandler()"
-        [disabled]="!canEdit"
-      >
+      <mat-select placeholder="{{ dataField.name }}" [(ngModel)]="value" (ngModelChange)="valueChangeHandler()"
+        [disabled]="!canEdit">
         <mat-option *ngFor="let user of userOptions" [value]="user.id">
           {{ user.name }}
         </mat-option>
       </mat-select>
     </mat-form-field>
-    <mat-select
-      placeholder="{{ dataField.name }}"
-      [(ngModel)]="value"
-      (ngModelChange)="valueChangeHandler()"
-      [disabled]="!canEdit"
-      *ngIf="showValueOnly"
-    >
+    <mat-select placeholder="{{ dataField.name }}" [(ngModel)]="value" (ngModelChange)="valueChangeHandler()"
+      [disabled]="!canEdit" *ngIf="showValueOnly">
       <mat-option *ngFor="let user of userOptions" [value]="user.id">
         {{ user.name }}
       </mat-option>
@@ -351,10 +237,7 @@ project root for license information.
       {{ dataField.name }}
     </div>
     <div>
-      <mat-checkbox
-        [checked]="value"
-        (change)="value = $event.checked.toString(); valueChangeHandler()"
-      >
+      <mat-checkbox [checked]="value" (change)="value = $event.checked.toString(); valueChangeHandler()">
       </mat-checkbox><br />&nbsp;
     </div>
   </div>
@@ -362,28 +245,15 @@ project root for license information.
   <span *ngIf="dataField.dataType === dataType.IntegrationTarget">
     <mat-form-field *ngIf="!showValueOnly" class="full-width">
       <mat-label>{{ dataField.name }}</mat-label>
-      <mat-select
-        multiple
-        (click)="$event.stopPropagation()"
-        placeholder="{{ dataField.name }}"
-        (valueChange)="setDataValueArray($event)"
-        [value]="getValueArray()"
-        [disabled]="!canEdit"
-      >
+      <mat-select multiple (click)="$event.stopPropagation()" placeholder="{{ dataField.name }}"
+        (valueChange)="setDataValueArray($event)" [value]="getValueArray()" [disabled]="!canEdit">
         <mat-option *ngFor="let dataOption of dataField.dataOptions" [value]="dataOption.optionValue">
           {{ dataOption.optionName }}
         </mat-option>
       </mat-select>
     </mat-form-field>
-    <mat-select
-      multiple
-      (click)="$event.stopPropagation()"
-      placeholder="{{ dataField.name }}"
-      (valueChange)="setDataValueArray($event)"
-      [value]="getValueArray()"
-      [disabled]="!canEdit"
-      *ngIf="showValueOnly"
-    >
+    <mat-select multiple (click)="$event.stopPropagation()" placeholder="{{ dataField.name }}"
+      (valueChange)="setDataValueArray($event)" [value]="getValueArray()" [disabled]="!canEdit" *ngIf="showValueOnly">
       <mat-option *ngFor="let dataOption of dataField.dataOptions" [value]="dataOption.optionValue">
         {{ dataOption.optionName }}
       </mat-option>
@@ -394,27 +264,16 @@ project root for license information.
     <mat-form-field *ngIf="!showValueOnly" class="full-width">
       <mat-label>{{ dataField.name }}</mat-label>
       <!-- single select -->
-      <mat-select
-        *ngIf="!dataField.isMultiSelect"
-        placeholder="{{ dataField.name }}"
-        [(ngModel)]="value"
-        (ngModelChange)="valueChangeHandler()"
-        [disabled]="!canEdit"
-      >
+      <mat-select *ngIf="!dataField.isMultiSelect" placeholder="{{ dataField.name }}" [(ngModel)]="value"
+        (ngModelChange)="valueChangeHandler()" [disabled]="!canEdit">
         <mat-option *ngFor="let dataOption of dataField.dataOptions" [value]="dataOption.optionValue">
           {{ dataOption.optionName }}
         </mat-option>
       </mat-select>
       <!-- multi-select -->
-      <mat-select
-        *ngIf="dataField.isMultiSelect"
-        multiple
-        (click)="$event.stopPropagation()"
-        placeholder="{{ dataField.name }}"
-        (valueChange)="setDataValueArray($event)"
-        [value]="getValueArray()"
-        [disabled]="!canEdit"
-      >
+      <mat-select *ngIf="dataField.isMultiSelect" multiple (click)="$event.stopPropagation()"
+        placeholder="{{ dataField.name }}" (valueChange)="setDataValueArray($event)" [value]="getValueArray()"
+        [disabled]="!canEdit">
         <mat-option *ngFor="let dataOption of dataField.dataOptions" [value]="dataOption.optionValue">
           {{ dataOption.optionName }}
         </mat-option>
@@ -422,27 +281,16 @@ project root for license information.
     </mat-form-field>
     <span *ngIf="showValueOnly">
       <!-- single select -->
-      <mat-select
-        *ngIf="!dataField.isMultiSelect"
-        placeholder="{{ dataField.name }}"
-        [(ngModel)]="value"
-        (ngModelChange)="valueChangeHandler()"
-        [disabled]="!canEdit"
-      >
+      <mat-select *ngIf="!dataField.isMultiSelect" placeholder="{{ dataField.name }}" [(ngModel)]="value"
+        (ngModelChange)="valueChangeHandler()" [disabled]="!canEdit">
         <mat-option *ngFor="let dataOption of dataField.dataOptions" [value]="dataOption.optionValue">
           {{ dataOption.optionName }}
         </mat-option>
       </mat-select>
       <!-- multi-select -->
-      <mat-select
-        *ngIf="dataField.isMultiSelect"
-        multiple
-        (click)="$event.stopPropagation()"
-        placeholder="{{ dataField.name }}"
-        (valueChange)="setDataValueArray($event)"
-        [value]="getValueArray()"
-        [disabled]="!canEdit"
-      >
+      <mat-select *ngIf="dataField.isMultiSelect" multiple (click)="$event.stopPropagation()"
+        placeholder="{{ dataField.name }}" (valueChange)="setDataValueArray($event)" [value]="getValueArray()"
+        [disabled]="!canEdit">
         <mat-option *ngFor="let dataOption of dataField.dataOptions" [value]="dataOption.optionValue">
           {{ dataOption.optionName }}
         </mat-option>

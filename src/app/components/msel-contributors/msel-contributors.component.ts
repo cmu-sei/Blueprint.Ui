@@ -19,7 +19,7 @@ import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { MselUnitDataService } from 'src/app/data/msel-unit/msel-unit-data.service';
 import { MselUnitQuery } from 'src/app/data/msel-unit/msel-unit.query';
-import { MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy-menu';
+import { MatMenuTrigger } from '@angular/material/menu';
 import { UserMselRoleDataService } from 'src/app/data/user-msel-role/user-msel-role-data.service';
 import { UserMselRoleQuery } from 'src/app/data/user-msel-role/user-msel-role.query';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
@@ -113,7 +113,7 @@ export class MselContributorsComponent implements OnDestroy {
     const sortedDataFields: DataField[] = [];
     if (dataFields) {
       dataFields.forEach(df => {
-        sortedDataFields.push({... df});
+        sortedDataFields.push({ ...df });
       });
       sortedDataFields.sort((a, b) => +a.displayOrder > +b.displayOrder ? 1 : -1);
     }
@@ -151,7 +151,7 @@ export class MselContributorsComponent implements OnDestroy {
   removeUnitFromMsel(id: string): void {
     const mselUnit = this.mselUnitList.find(u => u.id === id);
     const unitLabel = mselUnit?.unit?.name;
-  
+
     this.dialogService
       .confirm(
         'Remove Contributor',
@@ -163,7 +163,7 @@ export class MselContributorsComponent implements OnDestroy {
         }
       });
   }
-  
+
   hasMselRole(userId: string, mselRole: MselRole): boolean {
     const hasRole = this.userMselRoles.some(umr =>
       umr.userId === userId && umr.role === mselRole && umr.mselId === this.msel.id);
@@ -240,5 +240,5 @@ export class MselContributorsComponent implements OnDestroy {
     };
     return descriptions[role] || 'No description available.';
   }
-  
+
 }

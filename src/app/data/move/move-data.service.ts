@@ -8,7 +8,7 @@ import { MoveStore } from './move.store';
 import { MoveQuery } from './move.query';
 import { Injectable } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
-import { LegacyPageEvent as PageEvent } from '@angular/material/legacy-paginator';
+import { PageEvent } from '@angular/material/paginator';
 import { Router, ActivatedRoute } from '@angular/router';
 import {
   Move,
@@ -91,9 +91,9 @@ export class MoveDataService {
                   ('' + move.description)
                     .toLowerCase()
                     .includes(filterTerm.toLowerCase()) ||
-                    move.id
-                      .toLowerCase()
-                      .includes(filterTerm.toLowerCase())
+                  move.id
+                    .toLowerCase()
+                    .includes(filterTerm.toLowerCase())
               )
             : []
       )

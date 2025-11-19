@@ -24,7 +24,6 @@
   },
   "private": true,
   "dependencies": {
-    "@angular-material-components/datetime-picker": "^9.0.0",
     "@angular/animations": "^15.1.2",
     "@angular/cdk": "^15.1.2",
     "@angular/common": "^15.1.2",
@@ -48,7 +47,6 @@
     "eventsource": "^1.1.1",
     "material-design-icons": "^3.0.1",
     "ngx-clipboard": "^15.1.0",
-    "ngx-material-timepicker": "^13.1.1",
     "oidc-client": "^1.11.5",
     "rxjs": "^7.8.1",
     "rxjs-compat": "^6.6.7",

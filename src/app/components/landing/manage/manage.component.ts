@@ -14,7 +14,7 @@ import { MselQuery } from 'src/app/data/msel/msel.query';
 import { TopbarView } from '../../shared/top-bar/topbar.models';
 import { Title } from '@angular/platform-browser';
 import { ErrorService } from 'src/app/services/error/error.service';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { InvitationDataService } from 'src/app/data/invitation/invitation-data.service';
 import { TeamDataService } from 'src/app/data/team/team-data.service';

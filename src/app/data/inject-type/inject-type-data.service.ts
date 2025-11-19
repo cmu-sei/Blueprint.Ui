@@ -5,7 +5,7 @@ import { InjectTypeStore } from './inject-type.store';
 import { InjectTypeQuery } from './inject-type.query';
 import { Injectable } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
-import { LegacyPageEvent as PageEvent } from '@angular/material/legacy-paginator';
+import { PageEvent } from '@angular/material/paginator';
 import { Router, ActivatedRoute } from '@angular/router';
 import {
   InjectType,
@@ -83,7 +83,7 @@ export class InjectTypeDataService {
                 (injectType) =>
                   injectType.id
                     .toLowerCase()
-                    .includes(filterTerm.toLowerCase())                )
+                    .includes(filterTerm.toLowerCase()))
             : []
       )
     );
@@ -103,7 +103,7 @@ export class InjectTypeDataService {
         (templates) => {
           this.injectTypeStore.upsertMany(templates);
         },
-        (error) => {}
+        (error) => { }
       );
   }
 

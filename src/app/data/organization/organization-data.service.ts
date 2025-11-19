@@ -8,7 +8,7 @@ import { OrganizationStore } from './organization.store';
 import { OrganizationQuery } from './organization.query';
 import { Injectable } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
-import { LegacyPageEvent as PageEvent } from '@angular/material/legacy-paginator';
+import { PageEvent } from '@angular/material/paginator';
 import { Router, ActivatedRoute } from '@angular/router';
 import {
   Organization,
@@ -22,7 +22,7 @@ import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
 })
 export class OrganizationDataService {
   readonly OrganizationList: Observable<Organization[]>;
-  readonly filterControl = new UntypedFormControl();  private _requestedOrganizationId: string;
+  readonly filterControl = new UntypedFormControl(); private _requestedOrganizationId: string;
   private _requestedOrganizationId$ = this.activatedRoute.queryParamMap.pipe(
     map((params) => params.get('organizationId') || '')
   );
@@ -90,9 +90,9 @@ export class OrganizationDataService {
                   ('' + organization.description)
                     .toLowerCase()
                     .includes(filterTerm.toLowerCase()) ||
-                    organization.id
-                      .toLowerCase()
-                      .includes(filterTerm.toLowerCase())
+                  organization.id
+                    .toLowerCase()
+                    .includes(filterTerm.toLowerCase())
               )
             : []
       )
@@ -113,7 +113,7 @@ export class OrganizationDataService {
         (templates) => {
           this.organizationStore.upsertMany(templates);
         },
-        (error) => {}
+        (error) => { }
       );
   }
 
@@ -131,7 +131,7 @@ export class OrganizationDataService {
         (organizations) => {
           this.organizationStore.upsertMany(organizations);
         },
-        (error) => {}
+        (error) => { }
       );
   }
 

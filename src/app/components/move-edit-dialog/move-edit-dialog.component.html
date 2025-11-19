@@ -7,13 +7,7 @@ project root for license information.
 <div mat-dialog-container>
   <div mat-dialog-title>
     &nbsp;
-    <button
-      mat-icon-button
-      (click)="handleEditComplete(false)"
-      title="Cancel"
-      class="close-button"
-      tabindex="-1"
-    >
+    <button mat-icon-button (click)="handleEditComplete(false)" title="Cancel" class="close-button" tabindex="-1">
       <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
     </button>
   </div>
@@ -28,12 +22,8 @@ project root for license information.
     </div>
     <!-- move start time (deltaSeconds) -->
     <div class="add-margin flex-row">
-      <app-duration-edit
-        [startTime]="data.mselStartTime"
-        [(durationSeconds)]="data.move.deltaSeconds"
-        [timeName]="'Start Date / Time'"
-        [postScript]="'from start'"
-      >
+      <app-duration-edit [startTime]="data.mselStartTime" [(durationSeconds)]="data.move.deltaSeconds"
+        [timeName]="'Start Date / Time'" [postScript]="'from start'">
       </app-duration-edit>
     </div>
     <div class="add-margin">
@@ -46,44 +36,21 @@ project root for license information.
     <div class="add-margin">
       <div>
         <mat-form-field>
-          <input
-            matInput
-            [ngxMatDatetimePicker]="situationDatePicker"
-            placeholder="Situation Date / Time"
-            [formControl]="situationDateFormControl"
-            (inputChange)="saveMove('situationDate')"
-            (dateChange)="saveMove('situationDate')"
-            >
-          <mat-datepicker-toggle
-            matSuffix
-            [for]="$any(situationDatePicker)"
-            title="Choose Date/Time">
-          </mat-datepicker-toggle>
-          <ngx-mat-datetime-picker #situationDatePicker
-            [showSpinners]=true
-            [showSeconds]=true
-            [stepHour]=1
-            [stepMinute]=1
-            [stepSecond]=1
-            [touchUi]=false
-            [enableMeridian]=true
-            [disableMinute]=false
-            [hideTime]=false>
-          </ngx-mat-datetime-picker>
+          <input matInput placeholder="Situation Date / Time" [formControl]="situationDateFormControl"
+            (inputChange)="saveMove('situationDate')" (dateChange)="saveMove('situationDate')">
+          <!-- <datetime-picker> -->
         </mat-form-field>
       </div>
     </div>
     <div class="add-margin left">
       <div>
-        <p style="font-size: 13px; font-weight: 400; line-height: 1.125; font-family: Open Sans, sans-serif; letter-spacing: normal;">
+        <p
+          style="font-size: 13px; font-weight: 400; line-height: 1.125; font-family: Open Sans, sans-serif; letter-spacing: normal;">
           Situation Description
         </p>
         <div>
-          <angular-editor
-            [placeholder]="'Description'"
-            [(ngModel)]="data.move.situationDescription"
-            [config]="editorConfig"
-          ></angular-editor>
+          <angular-editor [placeholder]="'Description'" [(ngModel)]="data.move.situationDescription"
+            [config]="editorConfig"></angular-editor>
         </div>
       </div>
     </div>

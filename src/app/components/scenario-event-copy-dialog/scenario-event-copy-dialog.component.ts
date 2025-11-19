@@ -11,9 +11,9 @@ import {
 } from '@angular/core';
 import { Msel } from 'src/app/generated/blueprint.api';
 import {
-  MatLegacyDialogRef as MatDialogRef,
-  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
-} from '@angular/material/legacy-dialog';
+  MatDialogRef,
+  MAT_DIALOG_DATA,
+} from '@angular/material/dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 
 @Component({
@@ -34,7 +34,7 @@ export class ScenarioEventCopyDialogComponent implements OnDestroy, OnInit {
     dialogRef.disableClose = true;
   }
 
-  ngOnInit() {}
+  ngOnInit() { }
 
   /**
    * Closes the edit screen
@@ -49,5 +49,5 @@ export class ScenarioEventCopyDialogComponent implements OnDestroy, OnInit {
     }
   }
 
-  ngOnDestroy() {}
+  ngOnDestroy() { }
 }

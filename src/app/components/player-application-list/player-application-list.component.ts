@@ -9,11 +9,11 @@ import { PlayerApplication, Move, Team } from 'src/app/generated/blueprint.api';
 import { MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { Sort } from '@angular/material/sort';
-import { MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy-menu';
+import { MatMenuTrigger } from '@angular/material/menu';
 import { PlayerApplicationDataService } from 'src/app/data/player-application/player-application-data.service';
 import { PlayerApplicationTeamDataService } from 'src/app/data/team/player-application-team-data.service';
 import { PlayerApplicationQuery } from 'src/app/data/player-application/player-application.query';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { PlayerApplicationEditDialogComponent } from '../player-application-edit-dialog/player-application-edit-dialog.component';
 import { PlayerService } from 'src/app/generated/blueprint.api';
@@ -101,14 +101,14 @@ export class PlayerApplicationListComponent implements OnDestroy {
         loadInBackground: false
       };
     } else {
-      playerApplication = { ...playerApplication};
+      playerApplication = { ...playerApplication };
       playerApplication.mselId = this.msel.id;
     }
     const dialogRef = this.dialog.open(PlayerApplicationEditDialogComponent, {
       width: '90%',
       maxWidth: '800px',
       data: {
-        playerApplication: { ...playerApplication},
+        playerApplication: { ...playerApplication },
         moveList: this.moveList
           .filter(m => m.mselId === this.msel.id)
           .sort((a, b) => +a.moveNumber < +b.moveNumber ? -1 : 1)
@@ -186,7 +186,7 @@ export class PlayerApplicationListComponent implements OnDestroy {
         case 'name':
           playerApplications.sort((a, b) =>
             (a.name ? a.name : '').toLowerCase() >
-            (b.name ? b.name : '').toLowerCase()
+              (b.name ? b.name : '').toLowerCase()
               ? dir
               : -dir
           );

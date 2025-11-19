@@ -5,7 +5,7 @@ import { CatalogInjectStore } from './catalog-inject.store';
 import { CatalogInjectQuery } from './catalog-inject.query';
 import { Injectable } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
-import { LegacyPageEvent as PageEvent } from '@angular/material/legacy-paginator';
+import { PageEvent } from '@angular/material/paginator';
 import { Router, ActivatedRoute } from '@angular/router';
 import {
   CatalogInject,
@@ -81,10 +81,10 @@ export class CatalogInjectDataService {
         ]) =>
           items
             ? (items as CatalogInject[]).filter((catalogInject) =>
-                catalogInject.id
-                  .toLowerCase()
-                  .includes(filterTerm.toLowerCase())
-              )
+              catalogInject.id
+                .toLowerCase()
+                .includes(filterTerm.toLowerCase())
+            )
             : []
       )
     );

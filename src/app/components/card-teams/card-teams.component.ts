@@ -10,9 +10,9 @@ import {
   ElementRef,
   ViewChild,
 } from '@angular/core';
-import { LegacyPageEvent as PageEvent, MatLegacyPaginator as MatPaginator } from '@angular/material/legacy-paginator';
+import { PageEvent, MatPaginator } from '@angular/material/paginator';
 import { MatSort, MatSortable } from '@angular/material/sort';
-import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
+import { MatTableDataSource } from '@angular/material/table';
 import { CardTeam, Msel, Team } from 'src/app/generated/blueprint.api';
 import { CardTeamDataService } from 'src/app/data/team/card-team-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
@@ -30,7 +30,7 @@ export class CardTeamsComponent implements OnDestroy, OnInit {
   mselTeamList: Team[] = [];
   @ViewChild('teamsInput') teamsInput: ElementRef<HTMLInputElement>;
   @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
-  @ViewChild(MatSort, { static: true }) sort: MatSort;  teams: Team[];
+  @ViewChild(MatSort, { static: true }) sort: MatSort; teams: Team[];
   cardTeams: CardTeam[];
   mselTeamColumns: string[] = ['name', 'id'];
   cardTeamColumns: string[] = ['name', 'isShownOnWall', 'canPostArticles', 'id'];

@@ -15,12 +15,12 @@ import {
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { Sort } from '@angular/material/sort';
-import { MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy-menu';
+import { MatMenuTrigger } from '@angular/material/menu';
 import { MatTable } from '@angular/material/table';
 import { InjectTypeDataService } from 'src/app/data/inject-type/inject-type-data.service';
 import { InjectTypeQuery } from 'src/app/data/inject-type/inject-type.query';
 import { TeamQuery } from 'src/app/data/team/team.query';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { AdminInjectTypeEditDialogComponent } from '../admin-inject-type-edit-dialog/admin-inject-type-edit-dialog.component';
 import { v4 as uuidv4 } from 'uuid';
@@ -40,7 +40,7 @@ import { v4 as uuidv4 } from 'uuid';
 export class AdminInjectTypesComponent implements OnDestroy {
   @Input() loggedInUserId: string;
   @Input() isContentDeveloper: boolean;
-  @ViewChild('injectTypeTable', {static: false}) injectTypeTable: MatTable<any>;
+  @ViewChild('injectTypeTable', { static: false }) injectTypeTable: MatTable<any>;
   contextMenuPosition = { x: '0px', y: '0px' };
   msel = new MselPlus();
   adminInjectTypes: InjectType[] = [];
@@ -48,7 +48,7 @@ export class AdminInjectTypesComponent implements OnDestroy {
   filteredAdminInjectTypes: InjectType[] = [];
   filterControl = new UntypedFormControl();
   filterString = '';
-  sort: Sort = {active: 'name', direction: 'asc'};
+  sort: Sort = { active: 'name', direction: 'asc' };
   sortedInjectTypes: InjectType[] = [];
   templateInjectTypes: InjectType[] = [];
   editingId = '';
@@ -151,7 +151,7 @@ export class AdminInjectTypesComponent implements OnDestroy {
     let filteredInjectTypes: InjectType[] = [];
     if (injectTypes) {
       injectTypes.forEach(se => {
-        filteredInjectTypes.push({... se});
+        filteredInjectTypes.push({ ...se });
       });
       if (filteredInjectTypes && filteredInjectTypes.length > 0 && this.filterString) {
         const filterString = this.filterString?.toLowerCase();
@@ -170,10 +170,10 @@ export class AdminInjectTypesComponent implements OnDestroy {
     const isAsc = direction !== 'desc';
     switch (column) {
       case 'name':
-        return ( (a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1) * (isAsc ? 1 : -1) );
+        return ((a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1) * (isAsc ? 1 : -1));
         break;
       case 'description':
-        return ( (a.description.toLowerCase() < b.description.toLowerCase() ? -1 : 1) * (isAsc ? 1 : -1) );
+        return ((a.description.toLowerCase() < b.description.toLowerCase() ? -1 : 1) * (isAsc ? 1 : -1));
         break;
       default:
         return 0;

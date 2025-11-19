@@ -7,15 +7,9 @@ project root for license information.
   <div mat-dialog-title>
     <span *ngIf="data.invitation.id">Edit</span>
     <span *ngIf="!data.invitation.id">Create</span>
-     an Invitation to this MSEL
+    an Invitation to this MSEL
     &nbsp;
-    <button
-      mat-icon-button
-      (click)="handleEditComplete(false)"
-      title="Cancel"
-      class="close-button"
-      tabindex="-1"
-    >
+    <button mat-icon-button (click)="handleEditComplete(false)" title="Cancel" class="close-button" tabindex="-1">
       <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
     </button>
   </div>
@@ -25,7 +19,8 @@ project root for license information.
         <mat-form-field *ngIf="!data.invitation.id" class="full-width">
           <mat-label>Team</mat-label>
           <mat-select placeholder="Team" [(ngModel)]="data.invitation.teamId">
-            <mat-option *ngFor="let team of data.teamList" [value]="team.id" title="{{ team.shortName }} - {{ team.name }}">
+            <mat-option *ngFor="let team of data.teamList" [value]="team.id"
+              title="{{ team.shortName }} - {{ team.name }}">
               {{ team.shortName }} - {{ team.name }}
             </mat-option>
           </mat-select>
@@ -36,67 +31,41 @@ project root for license information.
     <div class="add-margin">
       <div>
         <mat-form-field class="full-width">
-          <input
-            type="text"
+          <input type="text"
             title="If entered, the users email must end with this value.  You can enter the user's specific email address, or any portion of their email address, as long as it contains the complete domain. (i.e. @provider.com)"
-            matInput
-            placeholder="User emails end with ..."
-            [(ngModel)]="data.invitation.emailDomain">
+            matInput placeholder="User emails end with ..." [(ngModel)]="data.invitation.emailDomain">
         </mat-form-field>
       </div>
     </div>
     <div class="add-margin">
       <div class="single-detail center-self">
         <mat-form-field>
-          <input
-            matInput
-            [ngxMatDatetimePicker]="expirationTimePicker"
-            placeholder="Expiration Date / Time"
-            [(ngModel)]="data.invitation.expirationDateTime"
-          >
-          <mat-datepicker-toggle
-            matSuffix
-            [for]="$any(expirationTimePicker)"
-            title = "Choose Date/Time"
-          >
-          </mat-datepicker-toggle>
-          <ngx-mat-datetime-picker #expirationTimePicker
-            [showSpinners]=true
-            [showSeconds]=true
-            [stepHour]=1
-            [stepMinute]=1
-            [stepSecond]=1
-            [touchUi]=false
-            [enableMeridian]=true
-            [disableMinute]=false
-            [hideTime]=false
-          >
-          </ngx-mat-datetime-picker>
+          <input matInput placeholder="Expiration Date / Time" [(ngModel)]="data.invitation.expirationDateTime">
+          <!-- <datetime-picker> -->
         </mat-form-field>
       </div>
     </div>
     <div class="add-margin">
       <div>
         <mat-form-field class="full-width">
-          <input
-            type="text"
-            matInput
-            placeholder="Maximum number of users allowed to use this invitation"
+          <input type="text" matInput placeholder="Maximum number of users allowed to use this invitation"
             [(ngModel)]="data.invitation.maxUsersAllowed">
         </mat-form-field>
       </div>
     </div>
     <div class="add-margin">
       <div>
-        <mat-checkbox [disabled]="true" [(ngModel)]="data.invitation.isTeamLeader">Can invite others to this team</mat-checkbox>
+        <mat-checkbox [disabled]="true" [(ngModel)]="data.invitation.isTeamLeader">Can invite others to this
+          team</mat-checkbox>
       </div>
     </div>
-  <div class="cssLayoutRowStartCenter bottom-button">
-    <div class="delete-button">
-      <button mat-stroked-button (click)="handleEditComplete(true)" [disabled]="!errorFree()" style="margin-left: 40px;">Save</button>
-    </div>
-    <div class="delete-button">
-      <button mat-stroked-button (click)="handleEditComplete(false)">Cancel</button>
+    <div class="cssLayoutRowStartCenter bottom-button">
+      <div class="delete-button">
+        <button mat-stroked-button (click)="handleEditComplete(true)" [disabled]="!errorFree()"
+          style="margin-left: 40px;">Save</button>
+      </div>
+      <div class="delete-button">
+        <button mat-stroked-button (click)="handleEditComplete(false)">Cancel</button>
+      </div>
     </div>
   </div>
-</div>

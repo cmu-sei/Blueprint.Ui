@@ -18,9 +18,9 @@ import {
 } from 'src/app/generated/blueprint.api';
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
-import { MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy-menu';
+import { MatMenuTrigger } from '@angular/material/menu';
 import { CiteService } from 'src/app/generated/blueprint.api';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { TeamAddDialogComponent } from '../team-add-dialog/team-add-dialog.component';
 import { TeamEditDialogComponent } from '../team-edit-dialog/team-edit-dialog.component';
@@ -136,7 +136,7 @@ export class MselTeamsComponent implements OnDestroy {
         mselId: this.msel.id
       };
     } else {
-      team = {... team};
+      team = { ...team };
     }
     const dialogRef = this.dialog.open(TeamEditDialogComponent, {
       width: '800px',
@@ -202,7 +202,7 @@ export class MselTeamsComponent implements OnDestroy {
     });
     const availableUsers = [];
     this.userList.forEach(u => {
-      const availableUser = {...u} as any;
+      const availableUser = { ...u } as any;
       availableUser.onATeam = otherTeamUsers.some(tu => tu.id === u.id);
       availableUsers.push(availableUser);
     });
@@ -216,7 +216,7 @@ export class MselTeamsComponent implements OnDestroy {
       .filter(team =>
         team.mselId === this.msel.id &&
         (team.name.toLowerCase().indexOf(filterValue) >= 0 ||
-        team.shortName.toLowerCase().indexOf(filterValue) >= 0));
+          team.shortName.toLowerCase().indexOf(filterValue) >= 0));
   }
 
   ngOnDestroy() {

@@ -9,7 +9,7 @@ import { DataFieldTemplateStore } from './data-field-template.store';
 import { DataFieldQuery } from './data-field.query';
 import { Injectable } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
-import { LegacyPageEvent as PageEvent } from '@angular/material/legacy-paginator';
+import { PageEvent } from '@angular/material/paginator';
 import { Router, ActivatedRoute } from '@angular/router';
 import {
   DataField,
@@ -31,7 +31,7 @@ export class DataFieldDataService {
   private sortColumn: Observable<string>;
   private sortIsAscending: Observable<boolean>;
   private _pageEvent: PageEvent = { length: 0, pageIndex: 0, pageSize: 10 };
-  readonly pageEvent = new BehaviorSubject<PageEvent>(this._pageEvent);  private _requestedDataFieldId: string;
+  readonly pageEvent = new BehaviorSubject<PageEvent>(this._pageEvent); private _requestedDataFieldId: string;
   private pageSize: Observable<number>;
   private pageIndex: Observable<number>;
 
@@ -112,7 +112,7 @@ export class DataFieldDataService {
         (templates) => {
           this.dataFieldTemplateStore.upsertMany(templates);
         },
-        (error) => {}
+        (error) => { }
       );
   }
 

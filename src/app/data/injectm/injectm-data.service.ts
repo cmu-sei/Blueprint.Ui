@@ -5,7 +5,7 @@ import { InjectmStore } from './injectm.store';
 import { InjectmQuery } from './injectm.query';
 import { Injectable } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
-import { LegacyPageEvent as PageEvent } from '@angular/material/legacy-paginator';
+import { PageEvent } from '@angular/material/paginator';
 import { Router, ActivatedRoute } from '@angular/router';
 import {
   Injectm,
@@ -83,7 +83,7 @@ export class InjectmDataService {
                 (injectm) =>
                   injectm.id
                     .toLowerCase()
-                    .includes(filterTerm.toLowerCase())                )
+                    .includes(filterTerm.toLowerCase()))
             : []
       )
     );

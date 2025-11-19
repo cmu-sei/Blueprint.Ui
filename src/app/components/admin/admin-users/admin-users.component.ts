@@ -3,7 +3,7 @@
 // project root for license information.
 
 import { Component, Input, OnDestroy } from '@angular/core';
-import { LegacyPageEvent as PageEvent } from '@angular/material/legacy-paginator';
+import { PageEvent } from '@angular/material/paginator';
 import { Sort } from '@angular/material/sort';
 import {
   Permission,
@@ -143,7 +143,7 @@ export class AdminUsersComponent implements OnDestroy {
     return isValidUuid(this.newUser.id) && this.newUser.name && this.newUser.name.length > 2;
   }
 
-  handleInput(event: KeyboardEvent): void{
+  handleInput(event: KeyboardEvent): void {
     event.stopPropagation();
   }
 

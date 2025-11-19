@@ -11,7 +11,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import { Sort } from '@angular/material/sort';
-import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
+import { MatTableDataSource } from '@angular/material/table';
 import { User } from 'src/app/generated/blueprint.api';
 import { UnitUserDataService } from 'src/app/data/user/unit-user-data.service';
 import { UserDataService } from 'src/app/data/user/user-data.service';
@@ -36,7 +36,7 @@ export class AdminUnitUsersComponent implements OnDestroy, OnInit {
   filterControl = new UntypedFormControl();
   filterString = '';
   private unsubscribe$ = new Subject();
-  sort: Sort = {active: 'name', direction: 'asc'};
+  sort: Sort = { active: 'name', direction: 'asc' };
   @ViewChild('usersInput') usersInput: ElementRef<HTMLInputElement>;
 
 
