@@ -4,395 +4,179 @@ Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
 
-<div class="background text app-admin-container">
-  @if (!hideTopbar) {
-    <app-topbar
-      [title]="topbarText"
-      [topbarView]="TopbarView.BLUEPRINT_ADMIN"
-      [topbarColor]="topbarColor"
-      [topbarTextColor]="topbarTextColor"
-      [imageFilePath]="topbarImage"
-      (urlNavigate)="goToUrl($event)"
-    ></app-topbar>
-  }
-
-  <mat-sidenav-container class="tall" autosize>
-    <mat-sidenav
-      class="appbarmenu-container background"
-      #sidenav
-      mode="side"
-      [(opened)]="isSidebarOpen"
-      >
-      <mat-list>
-        <!-- Exit Aministration -->
-        <mat-list-item class="appslist" title="Exit Administration">
-          <button
-            aria-label="Exit Administration"
-            mat-icon-button
-            (click)="goToUrl('/build/')"
-            style="outline: none"
-            >
-            <mat-icon
-              class="mdi-24px"
-              fontIcon="mdi-close-circle-outline"
-            ></mat-icon>
-          </button>
-          <a class="nolink" (click)="goToUrl('/build/')">
-            <div class="cssLayoutRowCenterCenter">
-              <h2 class="icon-text">Administration</h2>
-            </div>
-          </a>
-          <mat-divider></mat-divider>
-        </mat-list-item>
-        <!-- Units -->
-        @if (isSuperUser) {
-          <mat-list-item
-            class="showhand highlight"
-            [ngClass]="getSelectedClass(unitsText)"
-            id="wrapper"
-            (click)="gotoSection(unitsText)"
-            >
-            <div class="lefticon">
-              <mat-icon
-                class="mdi-24px"
-                fontIcon="mdi-account-group"
-                [ngStyle]="{ color: topbarColor }"
-              ></mat-icon>
-            </div>
-            <div id="unitsText" class="application-name">
-              {{ unitsText }}
-            </div>
-            <div>
-              <button aria-labelledby="unitsText" mat-icon-button>
-                <mat-icon
-                  class="icon-color"
-                  fontIcon="mdi-chevron-right"
-                ></mat-icon>
-              </button>
-            </div>
-          </mat-list-item>
-        }
-        <!-- Users -->
-        @if (isSuperUser) {
-          <mat-list-item
-            class="showhand highlight"
-            [ngClass]="getSelectedClass(usersText)"
-            id="wrapper"
-            (click)="gotoSection(usersText)"
-            >
-            <div class="lefticon">
-              <mat-icon
-                class="mdi-24px"
-                fontIcon="mdi-account"
-                [ngStyle]="{ color: topbarColor }"
-              ></mat-icon>
-            </div>
-            <div id="usersText" class="application-name">
-              {{ usersText }}
-            </div>
-            <div>
-              <button aria-labelledby="usersText" mat-icon-button>
-                <mat-icon
-                  class="icon-color"
-                  fontIcon="mdi-chevron-right"
-                ></mat-icon>
-              </button>
-            </div>
-          </mat-list-item>
-        }
-        <!-- Data Fields -->
-        <mat-list-item
-          class="showhand highlight"
-          [ngClass]="getSelectedClass(dataFieldsText)"
-          id="wrapper"
-          (click)="gotoSection(dataFieldsText)"
-          >
-          <div class="lefticon">
-            <mat-icon
-              class="mdi-24px"
-              fontIcon="mdi-view-column-outline"
-              [ngStyle]="{ color: topbarColor }"
-            ></mat-icon>
-          </div>
-
-          <div id="dataFieldsText" class="application-name">
-            {{ dataFieldsText }}
-          </div>
-
-          <div>
-            <button aria-labelledby="dataFieldsText" mat-icon-button>
-              <mat-icon
-                class="icon-color"
-                fontIcon="mdi-chevron-right"
-              ></mat-icon>
-            </button>
-          </div>
-        </mat-list-item>
-        <!-- Inject Types -->
-        <mat-list-item
-          class="showhand highlight"
-          [ngClass]="getSelectedClass(injectTypesText)"
-          id="wrapper"
-          (click)="gotoSection(injectTypesText)"
-          >
-          <div class="lefticon">
-            <mat-icon
-              class="mdi-24px"
-              fontIcon="mdi-format-list-group"
-              [ngStyle]="{ color: topbarColor }"
-            ></mat-icon>
-          </div>
-
-          <div id="injectTypesText" class="application-name">
-            {{ injectTypesText }}
-          </div>
-
-          <div>
-            <button aria-labelledby="injectTypesText" mat-icon-button>
-              <mat-icon
-                class="icon-color"
-                fontIcon="mdi-chevron-right"
-              ></mat-icon>
-            </button>
-          </div>
-        </mat-list-item>
-        <!-- Catalogs -->
-        <mat-list-item
-          class="showhand highlight"
-          [ngClass]="getSelectedClass(catalogsText)"
-          id="wrapper"
-          (click)="gotoSection(catalogsText)"
-          >
-          <div class="lefticon">
-            <mat-icon
-              class="mdi-24px"
-              fontIcon="mdi-book-open-outline"
-              [ngStyle]="{ color: topbarColor }"
-            ></mat-icon>
-          </div>
-
-          <div id="catalogsText" class="application-name">
-            {{ catalogsText }}
-          </div>
-
-          <div>
-            <button aria-labelledby="catalogsText" mat-icon-button>
-              <mat-icon
-                class="icon-color"
-                fontIcon="mdi-chevron-right"
-              ></mat-icon>
-            </button>
-          </div>
-        </mat-list-item>
-        <!-- Organizations -->
-        <mat-list-item
-          class="showhand highlight"
-          [ngClass]="getSelectedClass(organizationsText)"
-          id="wrapper"
-          (click)="gotoSection(organizationsText)"
-          >
-          <div class="lefticon">
-            <mat-icon
-              class="mdi-24px"
-              fontIcon="mdi-bank"
-              [ngStyle]="{ color: topbarColor }"
-            ></mat-icon>
-          </div>
-
-          <div id="organizationsText" class="application-name">
-            {{ organizationsText }}
-          </div>
-
-          <div>
-            <button aria-labelledby="organizationsText" mat-icon-button>
-              <mat-icon
-                class="icon-color"
-                fontIcon="mdi-chevron-right"
-              ></mat-icon>
-            </button>
-          </div>
-        </mat-list-item>
-        <!-- Gallery Cards -->
-        <mat-list-item
-          class="showhand highlight"
-          [ngClass]="getSelectedClass(galleryCardsText)"
-          id="wrapper"
-          (click)="gotoSection(galleryCardsText)"
-          >
-          <div class="lefticon">
-            <mat-icon
-              class="mdi-24px"
-              fontIcon="mdi-view-grid-outline"
-              [ngStyle]="{ color: topbarColor }"
-            ></mat-icon>
-          </div>
-
-          <div id="galleryCardsText" class="application-name">
-            {{ galleryCardsText }}
-          </div>
-
-          <div>
-            <button aria-labelledby="galleryCardsText" mat-icon-button>
-              <mat-icon
-                class="icon-color"
-                fontIcon="mdi-chevron-right"
-              ></mat-icon>
-            </button>
-          </div>
-        </mat-list-item>
-        <!-- CITE Actions -->
-        <mat-list-item
-          class="showhand highlight"
-          [ngClass]="getSelectedClass(citeActionsText)"
-          id="wrapper"
-          (click)="gotoSection(citeActionsText)"
-          >
-          <div class="lefticon">
-            <mat-icon
-              class="mdi-24px"
-              fontIcon="mdi-clipboard-check-outline"
-              [ngStyle]="{ color: topbarColor }"
-            ></mat-icon>
-          </div>
-
-          <div id="citeActionsText" class="application-name">
-            {{ citeActionsText }}
-          </div>
-
-          <div>
-            <button aria-labelledby="citeActionsText" mat-icon-button>
-              <mat-icon
-                class="icon-color"
-                fontIcon="mdi-chevron-right"
-              ></mat-icon>
-            </button>
-          </div>
-        </mat-list-item>
-        <!-- CITE Roles -->
-        <mat-list-item
-          class="showhand highlight"
-          [ngClass]="getSelectedClass(citeRolesText)"
-          id="wrapper"
-          (click)="gotoSection(citeRolesText)"
-          >
-          <div class="lefticon">
-            <mat-icon
-              class="mdi-24px"
-              fontIcon="mdi-clipboard-account-outline"
-              [ngStyle]="{ color: topbarColor }"
-            ></mat-icon>
-          </div>
-
-          <div id="citeRolesText" class="application-name">
-            {{ citeRolesText }}
-          </div>
-
-          <div>
-            <button aria-labelledby="citeRolesText" mat-icon-button>
-              <mat-icon
-                class="icon-color"
-                fontIcon="mdi-chevron-right"
-              ></mat-icon>
-            </button>
-          </div>
-        </mat-list-item>
-      </mat-list>
-      @if (!hideTopbar) {
-        <div class="app-versions" style="margin-bottom: 58px;">
-          Versions: UI {{ uiVersion }},  API {{ apiVersion }}
+<mat-sidenav-container class="appcontent-container" autosize>
+  <mat-sidenav class="appbarmenu-container" #sidenav mode="side" [(opened)]="isSidebarOpen">
+    <mat-toolbar class="sidenav-header" title="Exit Administration" (click)="goToUrl('/build/')">
+      <a class="nolink" (click)="goToUrl('/build/')">
+        <div class="cssLayoutRowStartCenter">
+          <mat-icon class="icon-35px" svgIcon="crucible-icon-blueprint"></mat-icon>
+          <h2 class="icon-text">Blueprint Admin</h2>
         </div>
+      </a>
+    </mat-toolbar>
+    <mat-list class="appitems-container">
+      <!-- Units -->
+      @if (isSuperUser) {
+      <mat-list-item [ngClass]="getSelectedClass(unitsText)" id="wrapper showhand" (click)="gotoSection(unitsText)">
+        <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-account-group"></mat-icon>
+        {{ unitsText }}
+        <button aria-labelledby="unitsText" mat-icon-button class="pull-right">
+          <mat-icon fontIcon="mdi-chevron-right"></mat-icon>
+        </button>
+      </mat-list-item>
       }
-      @if (hideTopbar) {
-        <div class="app-versions">
-          Versions: UI {{ uiVersion }},  API {{ apiVersion }}
-        </div>
+      <!-- Users -->
+      @if (isSuperUser) {
+      <mat-list-item [ngClass]="getSelectedClass(usersText)" id="wrapper showhand" (click)="gotoSection(usersText)">
+        <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-account"></mat-icon>
+        {{ usersText }}
+        <button aria-labelledby="usersText" mat-icon-button class="pull-right">
+          <mat-icon fontIcon="mdi-chevron-right"></mat-icon>
+        </button>
+      </mat-list-item>
       }
-      <img
-        class="cmu-logo"
-        [src]="
-          (theme$ | async) === 'light-theme'
-            ? 'assets/img/cmu-red-gray.png'
-            : 'assets/img/sei-logo-gray.png'
-        "
-        />
-      </mat-sidenav>
-      <mat-sidenav-content>
-        @if (isSuperUser && (selectedTab === unitsText)) {
-          <span>
-            <app-admin-units></app-admin-units>
-          </span>
-        }
-        @if (isSuperUser && (selectedTab === usersText)) {
-          <span>
-            <app-admin-users></app-admin-users>
-          </span>
-        }
-        @if (isSuperUser && (selectedTab === dataFieldsText)) {
-          <span>
-            <app-data-field-list
-              [loggedInUserId]="loggedInUserId"
-              [isContentDeveloper]="isContentDeveloper$ | async"
-              [showTemplates]="true"
-            ></app-data-field-list>
-          </span>
-        }
-        @if (isSuperUser && (selectedTab === injectTypesText)) {
-          <span>
-            <app-admin-inject-types
-              [loggedInUserId]="loggedInUserId"
-              [isContentDeveloper]="isContentDeveloper$ | async"
-            ></app-admin-inject-types>
-          </span>
-        }
-        @if (isSuperUser && (selectedTab === catalogsText)) {
-          <span>
-            <app-admin-catalog-list
-              [loggedInUserId]="loggedInUserId"
-              [isContentDeveloper]="isContentDeveloper$ | async"
-              >
-            </app-admin-catalog-list>
-          </span>
-        }
-        @if (isSuperUser && (selectedTab === organizationsText)) {
-          <span>
-            <app-organization-list
-              [loggedInUserId]="(loggedInUser | async).profile.sub"
-              [isContentDeveloper]="canAccessAdminSection"
-              [showTemplates]="true"
-            ></app-organization-list>
-          </span>
-        }
-        @if (isSuperUser && (selectedTab === galleryCardsText)) {
-          <span>
-            <app-card-list
-              [loggedInUserId]="(loggedInUser | async).profile.sub"
-              [isContentDeveloper]="true"
-              [showTemplates]="true"
-            ></app-card-list>
-          </span>
-        }
-        @if (isSuperUser && (selectedTab === citeActionsText)) {
-          <span>
-            @if (selectedTab === 'CITE Actions') {
-              <app-cite-action-list
-                [loggedInUserId]="(loggedInUser | async).profile.sub"
-                [isContentDeveloper]="true"
-                [showTemplates]="true"
-              ></app-cite-action-list>
-            }
-          </span>
-        }
-        @if (isSuperUser && (selectedTab === citeRolesText)) {
-          <span>
-            @if (selectedTab === 'CITE Roles') {
-              <app-cite-role-list
-                [loggedInUserId]="(loggedInUser | async).profile.sub"
-                [isContentDeveloper]="true"
-                [showTemplates]="true"
-              ></app-cite-role-list>
-            }
-          </span>
-        }
-      </mat-sidenav-content>
-    </mat-sidenav-container>
-  </div>
+      <!-- Data Fields -->
+      <mat-list-item [ngClass]="getSelectedClass(dataFieldsText)" id="wrapper showhand"
+        (click)="gotoSection(dataFieldsText)">
+        <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-view-column-outline"></mat-icon>
+        {{ dataFieldsText }}
+        <button aria-labelledby="dataFieldsText" mat-icon-button class="pull-right">
+          <mat-icon fontIcon="mdi-chevron-right"></mat-icon>
+        </button>
+      </mat-list-item>
+      <!-- Inject Types -->
+      <mat-list-item [ngClass]="getSelectedClass(injectTypesText)" id="wrapper showhand"
+        (click)="gotoSection(injectTypesText)">
+        <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-format-list-group"></mat-icon>
+        {{ injectTypesText }}
+        <button aria-labelledby="injectTypesText" mat-icon-button class="pull-right">
+          <mat-icon fontIcon="mdi-chevron-right"></mat-icon>
+        </button>
+      </mat-list-item>
+      <!-- Catalogs -->
+      <mat-list-item [ngClass]="getSelectedClass(catalogsText)" id="wrapper showhand"
+        (click)="gotoSection(catalogsText)">
+        <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-book-open-outline"></mat-icon>
+        {{ catalogsText }}
+        <button aria-labelledby="catalogsText" mat-icon-button class="pull-right">
+          <mat-icon fontIcon="mdi-chevron-right"></mat-icon>
+        </button>
+      </mat-list-item>
+      <!-- Organizations -->
+      <mat-list-item [ngClass]="getSelectedClass(organizationsText)" id="wrapper showhand"
+        (click)="gotoSection(organizationsText)">
+        <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-bank"></mat-icon>
+        {{ organizationsText }}
+        <button aria-labelledby="organizationsText" mat-icon-button class="pull-right">
+          <mat-icon fontIcon="mdi-chevron-right"></mat-icon>
+        </button>
+      </mat-list-item>
+      <!-- Gallery Cards -->
+      <mat-list-item [ngClass]="getSelectedClass(galleryCardsText)" id="wrapper showhand"
+        (click)="gotoSection(galleryCardsText)">
+        <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-view-grid-outline"></mat-icon>
+        {{ galleryCardsText }}
+        <button aria-labelledby="galleryCardsText" mat-icon-button class="pull-right">
+          <mat-icon fontIcon="mdi-chevron-right"></mat-icon>
+        </button>
+      </mat-list-item>
+      <!-- CITE Actions -->
+      <mat-list-item [ngClass]="getSelectedClass(citeActionsText)" id="wrapper showhand"
+        (click)="gotoSection(citeActionsText)">
+        <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-clipboard-check-outline"></mat-icon>
+        {{ citeActionsText }}
+        <button aria-labelledby="citeActionsText" mat-icon-button class="pull-right">
+          <mat-icon fontIcon="mdi-chevron-right"></mat-icon>
+        </button>
+      </mat-list-item>
+      <!-- CITE Roles -->
+      <mat-list-item [ngClass]="getSelectedClass(citeRolesText)" id="wrapper showhand"
+        (click)="gotoSection(citeRolesText)">
+        <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-clipboard-account-outline"></mat-icon>
+        {{ citeRolesText }}
+        <button aria-labelledby="citeRolesText" mat-icon-button class="pull-right">
+          <mat-icon fontIcon="mdi-chevron-right"></mat-icon>
+        </button>
+      </mat-list-item>
+    </mat-list>
+    @if (!hideTopbar) {
+    <div class="app-versions" style="margin-bottom: 58px;">
+      Versions: UI {{ uiVersion }}, API {{ apiVersion }}
+    </div>
+    }
+    @if (hideTopbar) {
+    <div class="app-versions">
+      Versions: UI {{ uiVersion }}, API {{ apiVersion }}
+    </div>
+    }
+    @if (!hideTopbar) {
+    <img class="crucible-logo" [src]="
+                    (theme$ | async) === 'light-theme'
+          ? 'assets/img/crucible-logo-light.png'
+          : 'assets/img/crucible-logo-dark.png'
+      " />
+    }
+  </mat-sidenav>
+  <mat-sidenav-content>
+    @if (!hideTopbar) {
+    <app-topbar [title]="selectedTab" [topbarView]="TopbarView.BLUEPRINT_ADMIN" [topbarColor]="topbarColor"
+      [topbarTextColor]="topbarTextColor" (urlNavigate)="goToUrl($event)"></app-topbar>
+    }
+    @if (isSuperUser && (selectedTab === unitsText)) {
+    <span>
+      <app-admin-units></app-admin-units>
+    </span>
+    }
+    @if (isSuperUser && (selectedTab === usersText)) {
+    <span>
+      <app-admin-users></app-admin-users>
+    </span>
+    }
+    @if (isSuperUser && (selectedTab === dataFieldsText)) {
+    <span>
+      <app-data-field-list [loggedInUserId]="loggedInUserId" [isContentDeveloper]="isContentDeveloper$ | async"
+        [showTemplates]="true"></app-data-field-list>
+    </span>
+    }
+    @if (isSuperUser && (selectedTab === injectTypesText)) {
+    <span>
+      <app-admin-inject-types [loggedInUserId]="loggedInUserId"
+        [isContentDeveloper]="isContentDeveloper$ | async"></app-admin-inject-types>
+    </span>
+    }
+    @if (isSuperUser && (selectedTab === catalogsText)) {
+    <span>
+      <app-admin-catalog-list [loggedInUserId]="loggedInUserId" [isContentDeveloper]="isContentDeveloper$ | async">
+      </app-admin-catalog-list>
+    </span>
+    }
+    @if (isSuperUser && (selectedTab === organizationsText)) {
+    <span>
+      <app-organization-list [loggedInUserId]="(loggedInUser | async).profile.sub"
+        [isContentDeveloper]="canAccessAdminSection" [showTemplates]="true"></app-organization-list>
+    </span>
+    }
+    @if (isSuperUser && (selectedTab === galleryCardsText)) {
+    <span>
+      <app-card-list [loggedInUserId]="(loggedInUser | async).profile.sub" [isContentDeveloper]="true"
+        [showTemplates]="true"></app-card-list>
+    </span>
+    }
+    @if (isSuperUser && (selectedTab === citeActionsText)) {
+    <span>
+      @if (selectedTab === 'CITE Actions') {
+      <app-cite-action-list [loggedInUserId]="(loggedInUser | async).profile.sub" [isContentDeveloper]="true"
+        [showTemplates]="true"></app-cite-action-list>
+      }
+    </span>
+    }
+    @if (isSuperUser && (selectedTab === citeRolesText)) {
+    <span>
+      @if (selectedTab === 'CITE Roles') {
+      <app-cite-role-list [loggedInUserId]="(loggedInUser | async).profile.sub" [isContentDeveloper]="true"
+        [showTemplates]="true"></app-cite-role-list>
+      }
+    </span>
+    }
+  </mat-sidenav-content>
+</mat-sidenav-container>
