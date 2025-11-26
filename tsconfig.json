@@ -23,6 +23,12 @@
   },
   "angularCompilerOptions": {
     "strictTemplates": true,
-    "strictInjectionParameters": true
+    "strictInjectionParameters": true,
+    "_enabledBlockTypes": [
+      "if",
+      "for",
+      "switch",
+      "defer"
+    ]
   }
 }

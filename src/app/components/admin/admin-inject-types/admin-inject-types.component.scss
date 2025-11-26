@@ -2,57 +2,57 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-.frame {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  height: 100%;
-  overflow-y: hidden;
-  margin-left: 5px;
+@use "@angular/material" as mat;
+
+:host {
+  @include mat.form-field-density(-5); // Adjust -3 for this specific form field
 }
 
-.mat-expansion-panel {
+.expansion-panel {
   width: calc(100% - 20px);
   background-color: transparent;
   margin-bottom: 20px;
 }
 
-.mat-expansion-panel-header {
+.expansion-panel-header {
   height: 32px;
   font-size: 14px;
 }
 
-.mat-mdc-table {
+.table {
   font-size: small;
   width: 100%;
   overflow: none;
   background: transparent;
 }
 
-.mat-mdc-header-row {
-  height: 40px;
+.header-row {
+  min-height: 18px;
   background: transparent;
 }
 
-.mat-mdc-row,
-.mat-mdc-header-row {
+.row {
+  min-height: 18px;
+}
+
+.row,
+.header-row {
   display: flex;
   border-bottom-width: 1px;
   border-bottom-style: solid;
-  border-bottom-color: lightslategray;
   align-items: center;
   box-sizing: border-box;
 }
 
-.mat-mdc-cell,
-.mat-mdc-header-cell {
+.header-cell {
+  font-weight: bold;
+}
+
+.cell,
+.header-cell {
   overflow: hidden;
   word-wrap: break-word;
   text-align: left;
-}
-
-.mat-mdc-header-cell {
-  font-weight: bold;
 }
 
 .element-row {
@@ -68,24 +68,24 @@
   border-bottom-color: transparent;
 }
 
-.mat-column-name {
-  flex: 0 0 20%;
+.column-name {
+  flex: 0 0 25%;
   padding: 2px;
 }
 
-.mat-column-action {
+.column-action {
   flex: 0 0 150px;
   flex-direction: row;
   padding: 0px;
   word-wrap: none;
 }
 
-.mat-column-description {
-  flex: 0 0 40%;
+.column-description {
+  flex: 0 0 calc(75% - 150px);
   padding: 2px;
 }
 
-.mat-column-expand-me {
+.column-expand-me {
   flex: 0 0 50px;
   align-self: flex-end;
   padding: 2px;
@@ -107,7 +107,7 @@
 }
 
 .scrolling-region {
-  height: 100%;
+  height: calc(100% - 94px);
   overflow: auto;
   width: 100%;
 }
@@ -115,6 +115,10 @@
 .no-results {
   margin-top: 20px;
   margin-left: 150px;
+}
+
+.spacer-cell {
+  width: 150px;
 }
 
 .action-cell {
@@ -129,33 +133,6 @@
 }
 
 .search-control {
-  width: calc(100% - 32px);
-}
-
-.six-cell {
-  flex: 6;
-}
-
-.five-cell {
-  flex: 5;
-}
-
-.four-cell {
-  flex: 4;
-}
-
-.three-cell {
-  flex: 3;
-}
-
-.two-cell {
-  flex: 2;
-}
-
-.one-cell {
-  flex: 1;
-}
-
-.center-self {
-  align-self: center;
+  width: 100%;
+  margin-left: 60px;
 }

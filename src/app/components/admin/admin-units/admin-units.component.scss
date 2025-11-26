@@ -35,27 +35,42 @@
   width: 150px;
 }
 
-.mat-mdc-header-row {
-  min-height: 36px;
+.header-row {
+  min-height: 56px;
 }
 
-.mat-mdc-row {
+.row {
   min-height: 48px;
 }
 
-.mat-mdc-row, .mat-mdc-header-row {
+.row,
+.header-row {
   display: flex;
-  border-bottom-width: 1px;
-  border-bottom-style: solid;
   align-items: center;
+  justify-content: center;
   padding: 0 24px;
-  box-sizing: border-box;
+  font-family: "Open Sans", sans-serif;
+  font-weight: 400;
 }
 
-.mat-mdc-cell, .mat-mdc-header-cell {
-  flex: 1;
+.cell,
+.header-cell {
   overflow: hidden;
   word-wrap: break-word;
+}
+
+.sp-icon {
+  margin-left: 10px;
+}
+
+.mat-accordion .header-row {
+  padding-left: 1.5rem;
+  padding-right: 2rem;
+  border-bottom: none;
+}
+
+.mat-expansion-panel {
+  text-align: left;
 }
 
 .button-margins {
@@ -71,44 +86,13 @@
   margin-left: 10px;
 }
 
-.mat-accordion .mat-mdc-header-row {
-  padding-left: 1.5rem;
-  padding-right: 2rem;
-  border-bottom: none;
-}
-
-.mat-expansion-panel-header.mat-mdc-row {
-  border-bottom: none;
-}
-
-.mat-expansion-panel {
-  text-align: left;
-}
-
 .pad-top {
   margin-top: 12px;
 }
 
-.five-cell {
-  flex: 5;
-}
-
-.four-cell {
-  flex: 4;
-}
-
-.three-cell {
-  flex: 3;
-}
-
-.two-cell {
-  flex: 2;
-}
-
-.one-cell {
+.first-cell {
   flex: 1;
-}
-
-.center-self {
   align-self: center;
+  min-width: 80px;
+  max-width: 100px;
 }

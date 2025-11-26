@@ -139,7 +139,7 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
   }
 
   getSelectedClass(section: string) {
-    if (section === this.displayedSection) {
+    if (section === this.selectedTab) {
       return 'selected-item';
     } else {
       return 'non-selected-item';

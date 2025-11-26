@@ -107,7 +107,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             </button>
             <button mat-icon-button class="msel-action" (click)="delete(element); $event.stopPropagation();"
               title="Delete {{ element.name }}" [disabled]="!isReady || !isContentDeveloper">
-              <mat-icon class="mdi-18px" fontIcon="mdi-delete" alt="Delete"></mat-icon>
+              <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline" alt="Delete"></mat-icon>
             </button>
             <button mat-icon-button class="msel-action" (click)="copyMsel(element.id); $event.stopPropagation();"
               title="Copy {{ element.name }}" [disabled]="!isReady || !isContentDeveloper">

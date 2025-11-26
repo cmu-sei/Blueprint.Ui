@@ -103,18 +103,16 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <div class="app-versions" style="margin-bottom: 58px;">
       Versions: UI {{ uiVersion }}, API {{ apiVersion }}
     </div>
+    <img class="crucible-logo" [src]="
+                      (theme$ | async) === 'light-theme'
+            ? 'assets/img/crucible-logo-light.png'
+            : 'assets/img/crucible-logo-dark.png'
+        " />
     }
-    @if (hideTopbar) {
+    @else {
     <div class="app-versions">
       Versions: UI {{ uiVersion }}, API {{ apiVersion }}
     </div>
-    }
-    @if (!hideTopbar) {
-    <img class="crucible-logo" [src]="
-                    (theme$ | async) === 'light-theme'
-          ? 'assets/img/crucible-logo-light.png'
-          : 'assets/img/crucible-logo-dark.png'
-      " />
     }
   </mat-sidenav>
   <mat-sidenav-content>

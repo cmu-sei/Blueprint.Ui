@@ -4,122 +4,86 @@ Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
 @if (msel) {
-  <div class="frame">
-    <section
-      matSort
-      (matSortChange)="sortChanged($event)"
-      class="mat-elevation-z2 mat-header-row background-alt"
-      >
-      <span class="mat-header-cell one-cell" mat-sort-header="moveNumber">
-        @if (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner || msel.hasRole(loggedInUserId, null).moveEditor) {
-          <button
-            mat-icon-button
-            (click)="addOrEditMove(null); $event.stopPropagation()"
-            style="outline: none; margin-right: 15px;"
-            title="Add new move"
-            [disabled]="isAddingMove"
-            >
-            <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
-          </button>
-        }
-        Move
-      </span>
-      <span style="width: 40px;">
-        @if (!showRealTime) {
-          <button
-            mat-icon-button
-            (click)="showRealTime = true; $event.stopPropagation()"
-            style="outline: none;"
-            title="Switch to Real Time"
-            [disabled]="!msel || !msel.startTime || msel.startTime.valueOf() < 0"
-            >
-            <mat-icon class="mdi-24px" fontIcon="mdi-timer-outline"></mat-icon>
-          </button>
-        }
-        @if (showRealTime) {
-          <button
-            mat-icon-button
-            (click)="showRealTime = false; $event.stopPropagation()"
-            style="outline: none;"
-            title="Switch to Delta Time"
-            >
-            <mat-icon class="mdi-24px" fontIcon="mdi-clock-time-four-outline"></mat-icon>
-          </button>
-        }
-      </span>
-      <span class="mat-header-cell one-cell" mat-sort-header="moveStartTime">
-        Start
-      </span>
-      <span class="mat-header-cell one-cell" mat-sort-header="situationTime">Situation Time</span>
-      <span class="mat-header-cell two-cell" mat-sort-header="description">Description</span>
-      <span class="mat-header-cell two-cell search-cell">
-        <mat-form-field class="search-control">
-          <input matInput [formControl]="filterControl" placeholder="Search" />
-        </mat-form-field>
-        <div style="width: 30px;">
-          <button
-            mat-icon-button
-            (click)="filterControl.setValue(''); $event.stopPropagation()"
-            style="outline: none;"
-            title="Clear Search"
-            [disabled]="!filterString"
-            >
-            <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
-          </button>
-        </div>
-      </span>
-    </section>
-    <section class="scrolling-region">
-      <!-- existing moves -->
-      @for (item of displayedMoves; track item) {
-        <mat-expansion-panel
-          [expanded]="editingId === item.id"
-          disabled
-          >
-          <mat-expansion-panel-header
-            class="mat-row"
-            >
-            <div class="mat-cell flex-row-cell one-cell">
-              @if (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner || msel.hasRole(loggedInUserId, null).moveEditor) {
-                <button
-                  mat-icon-button
-                  class="move-button"
-                  (click)="addOrEditMove(item)"
-                  title="Edit Move {{ item.moveNumber }}"
-                  >
-                  <mat-icon class="mdi-18px up-12" fontIcon="mdi-square-edit-outline"></mat-icon>
-                </button>
-              }
-              @if (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner || msel.hasRole(loggedInUserId, null).moveEditor) {
-                <button
-                  mat-icon-button
-                  class="move-button"
-                  (click)="deleteMove(item)"
-                  title="Delete Move {{ item.moveNumber }}"
-                  >
-                  <mat-icon class="mdi-18px up-12" fontIcon="mdi-delete"></mat-icon>
-                </button>
-              }
-              &nbsp;{{ item.moveNumber }}
-            </div>
-            <span style="width: 40px;">&nbsp;</span>
-            <div class="mat-cell one-cell center-self">
-              <app-duration-view
-                [startTime]="msel.startTime"
-                [durationSeconds]="item.deltaSeconds"
-                [showRealTime]="showRealTime"
-              ></app-duration-view>
-            </div>
-            <div class="mat-cell one-cell center-self">{{ item.situationTime | date: 'MM/dd/yyyy HH:mm' }}</div>
-            <div class="mat-cell four-cell center-self">{{ item.description }}</div>
-          </mat-expansion-panel-header>
-        </mat-expansion-panel>
+<div class="frame">
+  <section matSort (matSortChange)="sortChanged($event)" class="mat-elevation-z2 mat-header-row background-alt">
+    <span class="mat-header-cell one-cell" mat-sort-header="moveNumber">
+      @if (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner || msel.hasRole(loggedInUserId,
+      null).moveEditor) {
+      <button mat-icon-button (click)="addOrEditMove(null); $event.stopPropagation()"
+        style="outline: none; margin-right: 15px;" title="Add new move" [disabled]="isAddingMove">
+        <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
+      </button>
       }
-      @if (badMoveTimeOrder()) {
-        <div class="warning-message">
-          ** The moves are not in ascending start time order!
-        </div>
+      Move
+    </span>
+    <span style="width: 40px;">
+      @if (!showRealTime) {
+      <button mat-icon-button (click)="showRealTime = true; $event.stopPropagation()" style="outline: none;"
+        title="Switch to Real Time" [disabled]="!msel || !msel.startTime || msel.startTime.valueOf() < 0">
+        <mat-icon class="mdi-24px" fontIcon="mdi-timer-outline"></mat-icon>
+      </button>
       }
-    </section>
-  </div>
+      @if (showRealTime) {
+      <button mat-icon-button (click)="showRealTime = false; $event.stopPropagation()" style="outline: none;"
+        title="Switch to Delta Time">
+        <mat-icon class="mdi-24px" fontIcon="mdi-clock-time-four-outline"></mat-icon>
+      </button>
+      }
+    </span>
+    <span class="mat-header-cell one-cell" mat-sort-header="moveStartTime">
+      Start
+    </span>
+    <span class="mat-header-cell one-cell" mat-sort-header="situationTime">Situation Time</span>
+    <span class="mat-header-cell two-cell" mat-sort-header="description">Description</span>
+    <span class="mat-header-cell two-cell search-cell">
+      <mat-form-field class="search-control">
+        <input matInput [formControl]="filterControl" placeholder="Search" />
+      </mat-form-field>
+      <div style="width: 30px;">
+        <button mat-icon-button (click)="filterControl.setValue(''); $event.stopPropagation()" style="outline: none;"
+          title="Clear Search" [disabled]="!filterString">
+          <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
+        </button>
+      </div>
+    </span>
+  </section>
+  <section class="scrolling-region">
+    <!-- existing moves -->
+    @for (item of displayedMoves; track item) {
+    <mat-expansion-panel [expanded]="editingId === item.id" disabled>
+      <mat-expansion-panel-header class="mat-row">
+        <div class="mat-cell flex-row-cell one-cell">
+          @if (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner || msel.hasRole(loggedInUserId,
+          null).moveEditor) {
+          <button mat-icon-button class="move-button" (click)="addOrEditMove(item)"
+            title="Edit Move {{ item.moveNumber }}">
+            <mat-icon class="mdi-18px up-12" fontIcon="mdi-square-edit-outline"></mat-icon>
+          </button>
+          }
+          @if (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner || msel.hasRole(loggedInUserId,
+          null).moveEditor) {
+          <button mat-icon-button class="move-button" (click)="deleteMove(item)"
+            title="Delete Move {{ item.moveNumber }}">
+            <mat-icon class="mdi-18px up-12" fontIcon="mdi-trash-can-outline"></mat-icon>
+          </button>
+          }
+          &nbsp;{{ item.moveNumber }}
+        </div>
+        <span style="width: 40px;">&nbsp;</span>
+        <div class="mat-cell one-cell center-self">
+          <app-duration-view [startTime]="msel.startTime" [durationSeconds]="item.deltaSeconds"
+            [showRealTime]="showRealTime"></app-duration-view>
+        </div>
+        <div class="mat-cell one-cell center-self">{{ item.situationTime | date: 'MM/dd/yyyy HH:mm' }}</div>
+        <div class="mat-cell four-cell center-self">{{ item.description }}</div>
+      </mat-expansion-panel-header>
+    </mat-expansion-panel>
+    }
+    @if (badMoveTimeOrder()) {
+    <div class="warning-message">
+      ** The moves are not in ascending start time order!
+    </div>
+    }
+  </section>
+</div>
 }
