@@ -3,98 +3,94 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
-@if (msel) {
-<div class="frame">
-  <section matSort (matSortChange)="sortChanged($event)" class="mat-elevation-z2 mat-header-row background-alt">
-    <span class="mat-header-cell first-cell" mat-sort-header="move">
-      @if (showTemplates && isContentDeveloper) {
-      <span>
-        <button mat-icon-button (click)="addOrEditCard(null, false, false); $event.stopPropagation();"
-          title="Add a template card" style="outline: none; margin-left: 18px; margin-right: 24px;">
-          <mat-icon class="mdi-24px center-self little-left" fontIcon="mdi-plus-circle"></mat-icon>
-        </button>
-      </span>
-      } &nbsp;
-      @if (!showTemplates && (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)) {
-      <span>
-        <button mat-icon-button [matMenuTriggerFor]="addMenu"
-          style="outline: none; margin-left: 18px; margin-right: 24px;" title="Add card"
-          (click)="$event.stopPropagation();">
-          <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
-        </button>
-      </span>
-      } &nbsp;
-      <mat-menu #addMenu="matMenu" [overlapTrigger]="false">
-        <button mat-menu-item (click)="addOrEditCard(null, false, false)" title="Add a new card">New Card</button>
-        @for (template of templateList; track template) {
-        <button mat-menu-item (click)="addOrEditCard(template, false, true)" title="{{ template.description }}">{{
-          template.name }}</button>
-        }
-      </mat-menu>
-      @if (!showTemplates) {
-      <span>Move</span>
+
+<section matSort (matSortChange)="sortChanged($event)" class="header-row background-alt">
+  <div class="header-cell first-cell">
+    @if (showTemplates && isContentDeveloper) {
+    <div>
+      <button mat-icon-button (click)="addOrEditCard(null, false, false); $event.stopPropagation();"
+        title="Add a template card" style="outline: none; margin-left: 18px; margin-right: 24px;">
+        <mat-icon class="mdi-24px center-self little-left" fontIcon="mdi-plus-circle"></mat-icon>
+      </button>
+    </div>
+    } &nbsp;
+    @if (!showTemplates && (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)) {
+    <div>
+      <button mat-icon-button [matMenuTriggerFor]="addMenu"
+        style="outline: none; margin-left: 18px; margin-right: 24px;" title="Add card"
+        (click)="$event.stopPropagation();">
+        <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle"></mat-icon>
+      </button>
+    </div>
+    } &nbsp;
+    <mat-menu #addMenu="matMenu" [overlapTrigger]="false">
+      <button mat-menu-item (click)="addOrEditCard(null, false, false)" title="Add a new card">New Card</button>
+      @for (template of templateList; track template) {
+      <button mat-menu-item (click)="addOrEditCard(template, false, true)" title="{{ template.description }}">{{
+        template.name }}</button>
       }
-    </span>
-    <span class="mat-header-cell three-cell" mat-sort-header="name">Name</span>
-    <span class="mat-header-cell two-cell" mat-sort-header="description">Description</span>
-    <span class="mat-header-cell three-cell search-cell">
-      <mat-form-field class="search-control">
-        <input matInput [formControl]="filterControl" placeholder="Search" />
-      </mat-form-field>
-      <div style="width: 30px;">
-        <button mat-icon-button (click)="filterControl.setValue(''); $event.stopPropagation()" style="outline: none;"
-          title="Clear Search" [disabled]="!filterString">
-          <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
+    </mat-menu>
+  </div>
+  @if (!showTemplates) {
+  <div class="header-cell move-column" mat-sort-header="move">Move</div>
+  }
+  <div class="header-cell three-cell" mat-sort-header="name">Name</div>
+  <div class="header-cell two-cell" mat-sort-header="description">Description</div>
+  <div class="header-cell six-cell search-cell">
+    <mat-form-field class="search-control">
+      <input matInput [formControl]="filterControl" placeholder="Search" />
+    </mat-form-field>
+    <div style="width: 30px; margin-right: 30px;">
+      <button mat-icon-button (click)="filterControl.setValue(''); $event.stopPropagation()" style="outline: none;"
+        title="Clear Search" [disabled]="!filterString">
+        <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
+      </button>
+    </div>
+  </div>
+</section>
+<section class="scrolling-region">
+  <!-- existing cards -->
+  @for (item of sortedCards; track item) {
+  <mat-expansion-panel [expanded]="expandedId === item.id" class="top-space">
+    <mat-expansion-panel-header class="row" (click)="expandCard(item.id); $event.stopPropagation();">
+      <div class="cell flex-row-cell first-cell">
+        @if (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) {
+        <button mat-icon-button (click)="addOrEditCard(item, false, false); $event.stopPropagation()"
+          title="Edit {{ item.name }}">
+          <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline"></mat-icon>
         </button>
+        }
+        @if (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) {
+        <button mat-icon-button (click)="deleteCard(item); $event.stopPropagation()" title="Delete {{ item.name }}">
+          <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline"></mat-icon>
+        </button>
+        }
+        @if (!showTemplates && isContentDeveloper) {
+        <button mat-icon-button (click)="addOrEditCard(item, true, false); $event.stopPropagation();"
+          title="Make {{ item.name }} a template">
+          <mat-icon class="mdi-18px" fontIcon="mdi-card-plus-outline"
+            title="Make {{ item.name }} a template"></mat-icon>
+        </button>
+        }
+        &nbsp;
       </div>
-    </span>
-  </section>
-  <section class="scrolling-region">
-    <!-- existing cards -->
-    @for (item of sortedCards; track item) {
-    <mat-expansion-panel [expanded]="expandedId === item.id">
-      <mat-expansion-panel-header class="mat-row" (click)="expandCard(item.id); $event.stopPropagation();">
-        <div class="mat-cell flex-row-cell first-cell">
-          @if (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) {
-          <button mat-icon-button class="card-button"
-            (click)="addOrEditCard(item, false, false); $event.stopPropagation()" title="Edit {{ item.name }}">
-            <mat-icon class="mdi-18px up-12" fontIcon="mdi-square-edit-outline"></mat-icon>
-          </button>
-          }
-          @if (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) {
-          <button mat-icon-button class="card-button" (click)="deleteCard(item); $event.stopPropagation()"
-            title="Delete {{ item.name }}">
-            <mat-icon class="mdi-18px up-12" fontIcon="mdi-trash-can-outline"></mat-icon>
-          </button>
-          }
-          @if (!showTemplates && isContentDeveloper) {
-          <button mat-icon-button class="msel-action"
-            (click)="addOrEditCard(item, true, false); $event.stopPropagation();"
-            title="Make {{ item.name }} a template">
-            <mat-icon class="mdi-18px" fontIcon="mdi-card-plus-outline"
-              title="Make {{ item.name }} a template"></mat-icon>
-          </button>
-          }
-          &nbsp;@if (!showTemplates) {
-          <span>{{ item.move }}</span>
-          }
+      @if (!showTemplates) {
+      <div class="cell move-column center-self">{{ item.move }}</div>
+      }
+      <div class="cell three-cell center-self">{{ item.name }}</div>
+      <div class="cell eight-cell center-self">{{ item.description }}</div>
+    </mat-expansion-panel-header>
+    <ng-template matExpansionPanelContent>
+      <div class="card-detail" (click)="$event.stopPropagation();">
+        <div class="single-detail">
+          <h4>Select Teams</h4>
         </div>
-        <div class="mat-cell three-cell center-self">{{ item.name }}</div>
-        <div class="mat-cell five-cell center-self">{{ item.description }}</div>
-      </mat-expansion-panel-header>
-      <ng-template matExpansionPanelContent>
-        <div class="card-detail" (click)="$event.stopPropagation();">
-          <div class="single-detail">
-            <h4>Select Teams</h4>
-          </div>
-          <div class="single-detail">
-            <app-card-teams style="width: 100%;" [cardId]="item.id">
-            </app-card-teams>
-          </div>
+        <div class="single-detail">
+          <app-card-teams style="width: 100%;" [cardId]="item.id">
+          </app-card-teams>
         </div>
-      </ng-template>
-    </mat-expansion-panel>
-    }
-  </section>
-</div>
-}
+      </div>
+    </ng-template>
+  </mat-expansion-panel>
+  }
+</section>

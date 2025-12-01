@@ -3,133 +3,124 @@ Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
-<div class="frame">
-  <section class="mat-elevation-z2 mat-header-row background-alt">
-    <span class="mat-header-cell three-cell">
-      @if (isContentDeveloper) {
-      <span>
-        <button mat-icon-button (click)="addOrEditCatalog(null)" style="outline: none; margin-left: 15px;"
-          title="Add new Catalog">
-          <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle"></mat-icon>
-          Add
-        </button>
-        <button mat-icon-button style="outline: none; margin-left: 25px;" title="Upload a new catalog from a file"
-          (click)="uploadFile('json', '', ''); jsonInput.click()">
-          <mat-icon class="mdi-24px" fontIcon="mdi-upload"></mat-icon> Upload
-        </button>
-      </span>
-      } &nbsp;
-    </span>
-    <span class="mat-header-cell three-cell search-cell">
-      <mat-form-field class="search-control">
-        <input matInput [formControl]="filterControl" placeholder="Search" />
-      </mat-form-field>
-      <div style="width: 30px;">
-        <button mat-icon-button (click)="filterControl.setValue(''); $event.stopPropagation()" style="outline: none;"
-          title="Clear Search" [disabled]="!filterString">
-          <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
-        </button>
-      </div>
-    </span>
-    <span class="mat-header-cell three-cell search-cell">&nbsp;</span>
-  </section>
 
-  <section class="scrolling-region">
-    <table mat-table #catalogTable [dataSource]="catalogDataSource" matSort multiTemplateDataRows>
-      <!-- action column -->
-      <ng-container matColumnDef="action">
-        <mat-header-cell *matHeaderCellDef class="mat-column-action"></mat-header-cell>
-        <mat-cell *matCellDef="let element" class="mat-column-action">
-          <div>
-            @if (isContentDeveloper) {
-            <button mat-icon-button (click)="addOrEditCatalog(element); $event.stopPropagation();"
-              title="Edit {{ element.name }} catalog">
-              <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline"
-                title="Edit {{ element.name }} catalog"></mat-icon>
-            </button>
-            }
-            <button mat-icon-button (click)="copyCatalog(element); $event.stopPropagation();"
-              title="Copy {{ element.name }}">
-              <mat-icon class="mdi-18px" fontIcon="mdi-content-copy" alt="Copy"></mat-icon>
-            </button>
-            <button mat-icon-button title="Download {{ element.name }}"
-              (click)="downloadJsonFile(element); $event.stopPropagation();">
-              <mat-icon class="mdi-18px" fontIcon="mdi-download" alt="Download catalog"></mat-icon>
-            </button>
-            @if (isContentDeveloper) {
-            <button mat-icon-button (click)="deleteCatalog(element); $event.stopPropagation();"
-              title="Delete {{ element.name }} catalog">
-              <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline"
-                title="Delete {{ element.name }} catalog"></mat-icon>
-            </button>
-            }
-          </div>
-        </mat-cell>
-      </ng-container>
-      <!-- ispublic Column -->
-      <ng-container matColumnDef="ispublic">
-        <mat-header-cell title="Is Public" *matHeaderCellDef class="mat-column-is-public">
-          Public
-        </mat-header-cell>
-        <mat-cell *matCellDef="let element" class="mat-column-is-public">
-          <mat-checkbox [(ngModel)]="element.isPublic" (ngModelChange)="saveCatalog(element)"
-            (click)="$event.stopPropagation();"></mat-checkbox>
-        </mat-cell>
-      </ng-container>
-      <!-- name Column -->
-      <ng-container matColumnDef="name">
-        <mat-header-cell title="Catalog Name" *matHeaderCellDef class="mat-column-name">
-          Name
-        </mat-header-cell>
-        <mat-cell *matCellDef="let element" class="mat-column-name">
-          {{ element.name }}
-        </mat-cell>
-      </ng-container>
-      <!-- inject type Column -->
-      <ng-container matColumnDef="injecttype">
-        <mat-header-cell title="Inject Type" *matHeaderCellDef class="mat-column-inject-type">
-          Inject Type
-        </mat-header-cell>
-        <mat-cell *matCellDef="let element" class="mat-column-inject-type">
-          {{ getInjectTypeName(element.injectTypeId) }}
-        </mat-cell>
-      </ng-container>
-      <!-- description Column -->
-      <ng-container matColumnDef="description">
-        <mat-header-cell title="Catalog Description" *matHeaderCellDef class="mat-column-description">
-          Description
-        </mat-header-cell>
-        <mat-cell *matCellDef="let element" class="mat-column-description">
-          {{ element.description }}
-        </mat-cell>
-      </ng-container>
-      <!-- Expanded Content Column - The detail row is made up of this one column that spans across all columns -->
-      <ng-container matColumnDef="expandedDetail">
-        <mat-cell class="expanded-detail-cell" *matCellDef="let element" [attr.colspan]="displayedColumns.length">
-          <div class="inject-list-div">
-            <app-inject-list [isContentDeveloper]="isContentDeveloper" [loggedInUserId]="loggedInUserId"
-              [catalog]="element" [injectType]="{}" [isEditMode]="true"></app-inject-list>
-          </div>
-          <div class="unit-list-div">
-            <app-catalog-units [isContentDeveloper]="isContentDeveloper" [loggedInUserId]="loggedInUserId"
-              [catalog]="element"></app-catalog-units>
-          </div>
-        </mat-cell>
-      </ng-container>
-      <!-- row definitions -->
-      <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-      <mat-row *matRowDef="let row; columns: displayedColumns;" matRipple [class]="getRowClass(row.id)"
-        (click)="rowClicked(row)">
-      </mat-row>
-      <mat-row *matRowDef="let row; columns: ['expandedDetail']; when: isExpansionDetailRow"
-        [@detailExpand]="row.id == expandedElementId ? 'expanded' : 'collapsed'" style="overflow: hidden">
-      </mat-row>
-    </table>
-    <!-- No Results Message -->
-    @if (catalogDataSource?.filteredData.length === 0) {
-    <div class="no-results">No Catalogs found</div>
-    }
-  </section>
-</div>
+<section class="scrolling-region">
+  <table mat-table #catalogTable [dataSource]="catalogDataSource" matSort multiTemplateDataRows>
+    <!-- action column -->
+    <ng-container matColumnDef="action">
+      <mat-header-cell *matHeaderCellDef class="column-action">
+        @if (isContentDeveloper) {
+        <span>
+          <button mat-icon-button (click)="addOrEditCatalog(null)" style="outline: none; margin-left: 15px;"
+            title="Add new Catalog">
+            <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle"></mat-icon>
+          </button>
+          <button mat-icon-button style="outline: none; margin-left: 25px;" title="Upload a new catalog from a file"
+            (click)="uploadFile('json', '', ''); jsonInput.click()">
+            <mat-icon class="mdi-24px" fontIcon="mdi-upload"></mat-icon>
+          </button>
+        </span>
+        } &nbsp;
+      </mat-header-cell>
+      <mat-cell *matCellDef="let element" class="column-action">
+        <div>
+          @if (isContentDeveloper) {
+          <button mat-icon-button (click)="addOrEditCatalog(element); $event.stopPropagation();"
+            title="Edit {{ element.name }} catalog">
+            <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline"
+              title="Edit {{ element.name }} catalog"></mat-icon>
+          </button>
+          }
+          <button mat-icon-button (click)="copyCatalog(element); $event.stopPropagation();"
+            title="Copy {{ element.name }}">
+            <mat-icon class="mdi-18px" fontIcon="mdi-content-copy" alt="Copy"></mat-icon>
+          </button>
+          <button mat-icon-button title="Download {{ element.name }}"
+            (click)="downloadJsonFile(element); $event.stopPropagation();">
+            <mat-icon class="mdi-18px" fontIcon="mdi-download" alt="Download catalog"></mat-icon>
+          </button>
+          @if (isContentDeveloper) {
+          <button mat-icon-button (click)="deleteCatalog(element); $event.stopPropagation();"
+            title="Delete {{ element.name }} catalog">
+            <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline"
+              title="Delete {{ element.name }} catalog"></mat-icon>
+          </button>
+          }
+        </div>
+      </mat-cell>
+    </ng-container>
+    <!-- ispublic Column -->
+    <ng-container matColumnDef="ispublic">
+      <mat-header-cell title="Is Public" *matHeaderCellDef class="column-is-public">
+        Public
+      </mat-header-cell>
+      <mat-cell *matCellDef="let element" class="column-is-public">
+        <mat-checkbox [(ngModel)]="element.isPublic" (ngModelChange)="saveCatalog(element)"
+          (click)="$event.stopPropagation();"></mat-checkbox>
+      </mat-cell>
+    </ng-container>
+    <!-- name Column -->
+    <ng-container matColumnDef="name">
+      <mat-header-cell title="Catalog Name" *matHeaderCellDef class="column-name">
+        Name
+      </mat-header-cell>
+      <mat-cell *matCellDef="let element" class="column-name">
+        {{ element.name }}
+      </mat-cell>
+    </ng-container>
+    <!-- inject type Column -->
+    <ng-container matColumnDef="injecttype">
+      <mat-header-cell title="Inject Type" *matHeaderCellDef class="column-inject-type">
+        Inject Type
+      </mat-header-cell>
+      <mat-cell *matCellDef="let element" class="column-inject-type">
+        {{ getInjectTypeName(element.injectTypeId) }}
+      </mat-cell>
+    </ng-container>
+    <!-- description Column -->
+    <ng-container matColumnDef="description">
+      <mat-header-cell title="Catalog Description" *matHeaderCellDef class="column-description">
+        Description
+        <mat-form-field class="search-control" (click)="$event.stopPropagation()">
+          <input matInput [formControl]="filterControl" placeholder="Search" />
+        </mat-form-field>
+        <div style="width: 30px; margin-right: 20px;" (click)="$event.stopPropagation()">
+          <button mat-icon-button (click)="filterControl.setValue(''); $event.stopPropagation()" style="outline: none;"
+            title="Clear Search" [disabled]="!filterString">
+            <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
+          </button>
+        </div>
+      </mat-header-cell>
+      <mat-cell *matCellDef="let element" class="column-description">
+        {{ element.description }}
+      </mat-cell>
+    </ng-container>
+    <!-- Expanded Content Column - The detail row is made up of this one column that spans across all columns -->
+    <ng-container matColumnDef="expandedDetail">
+      <mat-cell class="expanded-detail-cell" *matCellDef="let element" [attr.colspan]="displayedColumns.length">
+        <div class="inject-list-div">
+          <app-inject-list [isContentDeveloper]="isContentDeveloper" [loggedInUserId]="loggedInUserId"
+            [catalog]="element" [injectType]="{}" [isEditMode]="true"></app-inject-list>
+        </div>
+        <div class="unit-list-div">
+          <app-catalog-units [isContentDeveloper]="isContentDeveloper" [loggedInUserId]="loggedInUserId"
+            [catalog]="element"></app-catalog-units>
+        </div>
+      </mat-cell>
+    </ng-container>
+    <!-- row definitions -->
+    <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+    <mat-row *matRowDef="let row; columns: displayedColumns;" matRipple [class]="getRowClass(row.id)"
+      (click)="rowClicked(row)">
+    </mat-row>
+    <mat-row *matRowDef="let row; columns: ['expandedDetail']; when: isExpansionDetailRow"
+      [@detailExpand]="row.id == expandedElementId ? 'expanded' : 'collapsed'" style="overflow: hidden">
+    </mat-row>
+  </table>
+  <!-- No Results Message -->
+  @if (catalogDataSource?.filteredData.length === 0) {
+  <div class="no-results">No Catalogs found</div>
+  }
+</section>
 
 <input hidden (change)="selectFile($event)" #jsonInput type="file" accept=".json" />

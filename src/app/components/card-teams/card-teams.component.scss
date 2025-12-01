@@ -14,18 +14,29 @@
   display: inline-block;
   flex-direction: column;
   height: 500px;
-  width: 40%;
+  width: 46%;
   min-width: 300px;
-  margin-left: 5%;
+}
+
+.team-list-header {
+  display: flex;
+  flex-direction: row;
+  width: 95%;
 }
 
 .card-list-container {
   display: inline-block;
   flex-direction: column;
   height: 500px;
-  width: 50%;
+  width: 46%;
   min-width: 400px;
-  margin-left: 5%;
+  margin-left: 8%;
+}
+
+.card-list-header {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
 }
 
 .mat-mdc-table-msel-teams {
@@ -56,11 +67,6 @@
   justify-content: center;
 }
 
-/* TODO(mdc-migration): The following rule targets internal classes of button that may no longer apply for the MDC version.*/
-.mat-button-focus-overlay {
-  background-color: transparent;
-}
-
 .mat-mdc-cell {
   padding-right: 0;
 }
@@ -83,10 +89,15 @@
   text-align: center;
 }
 
-.sp-icon {
+.sp-icon-div {
   display: flex;
   flex-direction: row;
   align-items: flex-start;
+  min-width: 100px;
+}
+
+.sp-icon {
+  color: var(--mat-sys-primary);
 }
 
 .search-div {
@@ -95,7 +106,7 @@
   flex-direction: row;
   align-items: flex-end;
   margin-left: 20px;
-  width: 100%;
+  width: 50%;
 }
 
 .center-self {

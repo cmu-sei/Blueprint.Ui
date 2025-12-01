@@ -52,10 +52,10 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <ng-container matColumnDef="description">
       <mat-header-cell title="Inject Type Description" *matHeaderCellDef class="column-description">
         Description
-        <mat-form-field class="search-control">
+        <mat-form-field class="search-control" (click)="$event.stopPropagation()">
           <input matInput [formControl]="filterControl" placeholder="Search" />
         </mat-form-field>
-        <div style="width: 30px; margin-right: 20px;">
+        <div style="width: 30px; margin-right: 20px;" (click)="$event.stopPropagation()">
           <button mat-icon-button (click)="filterControl.setValue(''); $event.stopPropagation()" style="outline: none;"
             title="Clear Search" [disabled]="!filterString">
             <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>

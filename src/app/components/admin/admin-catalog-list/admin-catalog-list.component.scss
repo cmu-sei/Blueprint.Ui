@@ -2,46 +2,46 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-.frame {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  height: 100%;
-  overflow-y: hidden;
-  margin-left: 5px;
+@use "@angular/material" as mat;
+
+:host {
+  @include mat.form-field-density(-5); // Adjust -3 for this specific form field
 }
 
-.mat-mdc-table {
+.table {
   font-size: small;
   width: 100%;
   overflow: none;
   background: transparent;
 }
 
-.mat-mdc-header-row {
-  height: 40px;
+.header-row {
+  min-height: 18px;
   background: transparent;
 }
 
-.mat-mdc-row,
-.mat-mdc-header-row {
+.row {
+  min-height: 18px;
+}
+
+.row,
+.header-row {
   display: flex;
   border-bottom-width: 1px;
   border-bottom-style: solid;
-  border-bottom-color: lightslategray;
   align-items: center;
   box-sizing: border-box;
 }
 
-.mat-mdc-cell,
-.mat-mdc-header-cell {
+.header-cell {
+  font-weight: bold;
+}
+
+.cell,
+.header-cell {
   overflow: hidden;
   word-wrap: break-word;
   text-align: left;
-}
-
-.mat-mdc-header-cell {
-  font-weight: bold;
 }
 
 .element-row {
@@ -53,22 +53,28 @@
 }
 
 .element-row-expanded {
+  cursor: pointer;
   border-bottom-color: transparent;
 }
 
-.mat-column-name {
+.column-name {
   flex: 0 0 20%;
   padding: 2px;
 }
 
-.mat-column-action {
-  flex: 0 0 80px;
+.column-inject-type {
+  flex: 0 0 20%;
+  padding: 2px;
+}
+
+.column-action {
+  flex: 0 0 160px;
   flex-direction: row;
   padding: 0px;
   word-wrap: none;
 }
 
-.mat-column-is-public {
+.column-is-public {
   flex: 0 0 60px;
   flex-direction: row;
   justify-content: center;
@@ -77,12 +83,12 @@
   word-wrap: none;
 }
 
-.mat-column-description {
-  flex: 0 0 40%;
+.column-description {
+  flex: 0 0 calc(50% - 88px);
   padding: 2px;
 }
 
-.mat-column-expand-me {
+.column-expand-me {
   flex: 0 0 50px;
   align-self: flex-end;
   padding: 2px;
@@ -117,7 +123,7 @@
 }
 
 .scrolling-region {
-  height: 100%;
+  height: calc(100% - 40px);
   overflow: auto;
   width: 100%;
 }
@@ -139,33 +145,7 @@
 }
 
 .search-control {
-  width: calc(100% - 32px);
-}
-
-.six-cell {
-  flex: 6;
-}
-
-.five-cell {
-  flex: 5;
-}
-
-.four-cell {
-  flex: 4;
-}
-
-.three-cell {
-  flex: 3;
-}
-
-.two-cell {
-  flex: 2;
-}
-
-.one-cell {
-  flex: 1;
-}
-
-.center-self {
-  align-self: center;
+  width: calc(100% - 120px);
+  min-width: 100px;
+  margin-left: 60px;
 }

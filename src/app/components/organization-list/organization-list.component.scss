@@ -2,31 +2,30 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-.frame {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  height: calc(100vh - 39px);
+@use "@angular/material" as mat;
+
+:host {
+  @include mat.form-field-density(-5); // Adjust -3 for this specific form field
 }
 
-.mat-mdc-table {
+.table {
   font-size: small;
   width: 100%;
   overflow: none;
   background: transparent;
 }
 
-.mat-mdc-header-row {
-  min-height: 40px;
+.header-row {
+  min-height: 18px;
   background: transparent;
 }
 
-.mat-mdc-row {
-  min-height: 36px;
+.row {
+  min-height: 18px;
 }
 
-.mat-mdc-row,
-.mat-mdc-header-row {
+.row,
+.header-row {
   display: flex;
   border-bottom-width: 1px;
   border-bottom-style: solid;
@@ -34,35 +33,30 @@
   box-sizing: border-box;
 }
 
-.mat-mdc-header-cell {
+.header-cell {
   font-weight: bold;
 }
 
-.mat-mdc-cell,
-.mat-mdc-header-cell {
+.cell,
+.header-cell {
   overflow: hidden;
   word-wrap: break-word;
   text-align: left;
 }
 
-.mat-column-name-name {
-  flex: 0 0 5%;
-  padding: 1%;
-}
-
-.mat-column-name {
+.column-name {
   flex: 0 0 20%;
   padding: 1%;
 }
 
-.mat-column-action {
+.column-action {
   flex: 0 0 150px;
   flex-direction: row;
   padding: 0;
   word-wrap: none;
 }
 
-.mat-column-summary {
+.column-summary {
   flex: 0 0 40%;
   padding: 1%;
 }
@@ -73,7 +67,8 @@
 }
 
 .search-control {
-  width: calc(100% - 32px);
+  width: 100%;
+  margin-left: 60px;
 }
 
 .scrolling-region {
@@ -86,35 +81,7 @@
   width: 50%;
 }
 
-.six-cell {
-  flex: 6;
-}
-
-.five-cell {
-  flex: 5;
-}
-
-.four-cell {
-  flex: 4;
-}
-
-.three-cell {
-  flex: 3;
-}
-
-.two-cell {
-  flex: 2;
-}
-
-.one-cell {
-  flex: 1;
-}
-
-.center-self {
-  align-self: center;
-}
-
-.little-left {
-  margin-left: 8px;
-  margin-right: 5px;
+.no-results {
+  margin-left: 50px;
+  margin-top: 20px;
 }
