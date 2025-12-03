@@ -4,111 +4,113 @@ Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
 
-<section class="scrolling-region">
-  <span>
-    <div class="table">
-      <mat-table #table [dataSource]="showTemplates ? templateDataSource : organizationDataSource" matSort
-        (matSortChange)="sortChanged($event)">
-        <!-- action column -->
-        <ng-container matColumnDef="action">
-          <mat-header-cell *matHeaderCellDef class="column-action">
-            @if (showTemplates && isContentDeveloper) {
-            <span>
-              <button mat-icon-button (click)="addOrEditOrganization(null, true)" title="Add a template organization"
-                style="outline: none; margin-left: 15px;">
-                <mat-icon class="mdi-24px center-self" fontIcon="mdi-plus-circle"></mat-icon>
-              </button>
-            </span>
-            } &nbsp;
-            @if (!showTemplates && (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)) {
-            <span>
-              <button mat-icon-button [matMenuTriggerFor]="addMenu" style="outline: none; margin-left: 15px;"
-                title="Add organization">
-                <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle"></mat-icon>
-              </button>
-            </span>
-            } &nbsp;
-            <mat-menu #addMenu="matMenu" [overlapTrigger]="false">
-              <button mat-menu-item (click)="addOrEditOrganization(null, false)" title="Add a new organization">New
-                Organization</button>
-              @for (template of templateDataSource.data; track template) {
-              <button mat-menu-item (click)="addOrEditOrganization(template, false)"
-                title="{{ template.name }} - {{ template.summary }}">{{ template.shortName }}</button>
-              }
-            </mat-menu>
-          </mat-header-cell>
-          <mat-cell *matCellDef="let element" class="column-action">
-            <div class="action-div">
-              @if (isContentDeveloper || (!showTemplates && msel.hasRole(loggedInUserId, null).owner)) {
-              <button mat-icon-button class="msel-action"
-                (click)="addOrEditOrganization(element, showTemplates); $event.stopPropagation();"
-                title="Edit {{ element.name }}">
-                <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline"
-                  title="Edit {{ element.name }}"></mat-icon>
-              </button>
-              }
-              @if (isContentDeveloper || (!showTemplates && msel.hasRole(loggedInUserId, null).owner)) {
-              <button mat-icon-button class="msel-action"
-                (click)="deleteOrganization(element); $event.stopPropagation();" title="Delete {{ element.name }}">
-                <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline"
-                  title="Delete {{ element.name }}"></mat-icon>
-              </button>
-              }
-              @if (!showTemplates && isContentDeveloper) {
-              <button mat-icon-button class="msel-action"
-                (click)="addOrEditOrganization(element, true); $event.stopPropagation();"
-                title="Make {{ element.name }} a template">
-                <mat-icon class="mdi-18px" fontIcon="mdi-bank" title="Make {{ element.name }} a template"></mat-icon>
-              </button>
-              }
-            </div>
-          </mat-cell>
-        </ng-container>
-        <!-- short name Column -->
-        <ng-container matColumnDef="shortname">
-          <mat-header-cell *matHeaderCellDef mat-sort-header class="column-shortname">
-            Short Name
-          </mat-header-cell>
-          <mat-cell *matCellDef="let element" class="column-shortname">
-            {{ element.shortName }}
-          </mat-cell>
-        </ng-container>
-        <!-- name Column -->
-        <ng-container matColumnDef="name">
-          <mat-header-cell *matHeaderCellDef mat-sort-header class="column-name">
-            Name
-          </mat-header-cell>
-          <mat-cell *matCellDef="let element" class="column-name">
-            {{ element.name }}
-          </mat-cell>
-        </ng-container>
-        <!-- summary Column -->
-        <ng-container matColumnDef="summary">
-          <mat-header-cell *matHeaderCellDef mat-sort-header class="six-cell">
-            Summary
-            <mat-form-field (click)="$event.stopPropagation()" class="search-control">
-              <input matInput [formControl]="filterControl" placeholder="Search" />
-            </mat-form-field>
-            <div style="width: 30px;" (click)="$event.stopPropagation()">
-              <button mat-icon-button (click)="filterControl.setValue(''); $event.stopPropagation()"
-                style="outline: none;" title="Clear Search" [disabled]="!filterString">
-                <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
-              </button>
-            </div>
-          </mat-header-cell>
-          <mat-cell *matCellDef="let element" class="six-cell">
-            <div class="summary-text">{{ element.summary }}</div>
-          </mat-cell>
-        </ng-container>
-        <!-- row definitions -->
-        <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-        <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
-      </mat-table>
-      <!-- No Results Message -->
-      @if ((showTemplates && templateDataSource?.filteredData?.length === 0) ||
-      (!showTemplates && organizationDataSource?.filteredData?.length === 0)) {
-      <div class="text no-results">No results found</div>
-      }
-    </div>
-  </span>
-</section>
+<div class="frame">
+  <section class="scrolling-region">
+    <span>
+      <div class="table">
+        <mat-table #table [dataSource]="showTemplates ? templateDataSource : organizationDataSource" matSort
+          (matSortChange)="sortChanged($event)">
+          <!-- action column -->
+          <ng-container matColumnDef="action">
+            <mat-header-cell *matHeaderCellDef class="column-action">
+              @if (showTemplates && isContentDeveloper) {
+              <span>
+                <button mat-icon-button (click)="addOrEditOrganization(null, true)" title="Add a template organization"
+                  style="outline: none; margin-left: 15px;">
+                  <mat-icon class="mdi-24px center-self" fontIcon="mdi-plus-circle"></mat-icon>
+                </button>
+              </span>
+              } &nbsp;
+              @if (!showTemplates && (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)) {
+              <span>
+                <button mat-icon-button [matMenuTriggerFor]="addMenu" style="outline: none; margin-left: 15px;"
+                  title="Add organization">
+                  <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle"></mat-icon>
+                </button>
+              </span>
+              } &nbsp;
+              <mat-menu #addMenu="matMenu" [overlapTrigger]="false">
+                <button mat-menu-item (click)="addOrEditOrganization(null, false)" title="Add a new organization">New
+                  Organization</button>
+                @for (template of templateDataSource.data; track template) {
+                <button mat-menu-item (click)="addOrEditOrganization(template, false)"
+                  title="{{ template.name }} - {{ template.summary }}">{{ template.shortName }}</button>
+                }
+              </mat-menu>
+            </mat-header-cell>
+            <mat-cell *matCellDef="let element" class="column-action">
+              <div class="action-div">
+                @if (isContentDeveloper || (!showTemplates && msel.hasRole(loggedInUserId, null).owner)) {
+                <button mat-icon-button class="msel-action"
+                  (click)="addOrEditOrganization(element, showTemplates); $event.stopPropagation();"
+                  title="Edit {{ element.name }}">
+                  <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline"
+                    title="Edit {{ element.name }}"></mat-icon>
+                </button>
+                }
+                @if (isContentDeveloper || (!showTemplates && msel.hasRole(loggedInUserId, null).owner)) {
+                <button mat-icon-button class="msel-action"
+                  (click)="deleteOrganization(element); $event.stopPropagation();" title="Delete {{ element.name }}">
+                  <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline"
+                    title="Delete {{ element.name }}"></mat-icon>
+                </button>
+                }
+                @if (!showTemplates && isContentDeveloper) {
+                <button mat-icon-button class="msel-action"
+                  (click)="addOrEditOrganization(element, true); $event.stopPropagation();"
+                  title="Make {{ element.name }} a template">
+                  <mat-icon class="mdi-18px" fontIcon="mdi-bank" title="Make {{ element.name }} a template"></mat-icon>
+                </button>
+                }
+              </div>
+            </mat-cell>
+          </ng-container>
+          <!-- short name Column -->
+          <ng-container matColumnDef="shortname">
+            <mat-header-cell *matHeaderCellDef mat-sort-header class="column-shortname">
+              Short Name
+            </mat-header-cell>
+            <mat-cell *matCellDef="let element" class="column-shortname">
+              {{ element.shortName }}
+            </mat-cell>
+          </ng-container>
+          <!-- name Column -->
+          <ng-container matColumnDef="name">
+            <mat-header-cell *matHeaderCellDef mat-sort-header class="column-name">
+              Name
+            </mat-header-cell>
+            <mat-cell *matCellDef="let element" class="column-name">
+              {{ element.name }}
+            </mat-cell>
+          </ng-container>
+          <!-- summary Column -->
+          <ng-container matColumnDef="summary">
+            <mat-header-cell *matHeaderCellDef mat-sort-header class="six-cell">
+              Summary
+              <mat-form-field (click)="$event.stopPropagation()" class="search-control">
+                <input matInput [formControl]="filterControl" placeholder="Search" />
+              </mat-form-field>
+              <div style="width: 30px;" (click)="$event.stopPropagation()">
+                <button mat-icon-button (click)="filterControl.setValue(''); $event.stopPropagation()"
+                  style="outline: none;" title="Clear Search" [disabled]="!filterString">
+                  <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
+                </button>
+              </div>
+            </mat-header-cell>
+            <mat-cell *matCellDef="let element" class="six-cell">
+              <div class="summary-text">{{ element.summary }}</div>
+            </mat-cell>
+          </ng-container>
+          <!-- row definitions -->
+          <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+          <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
+        </mat-table>
+        <!-- No Results Message -->
+        @if ((showTemplates && templateDataSource?.filteredData?.length === 0) ||
+        (!showTemplates && organizationDataSource?.filteredData?.length === 0)) {
+        <div class="text no-results">No results found</div>
+        }
+      </div>
+    </span>
+  </section>
+</div>

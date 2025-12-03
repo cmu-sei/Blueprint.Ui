@@ -22,10 +22,10 @@ import { CardEditDialogComponent } from '../card-edit-dialog/card-edit-dialog.co
 import { v4 as uuidv4 } from 'uuid';
 
 @Component({
-    selector: 'app-card-list',
-    templateUrl: './card-list.component.html',
-    styleUrls: ['./card-list.component.scss'],
-    standalone: false
+  selector: 'app-card-list',
+  templateUrl: './card-list.component.html',
+  styleUrls: ['./card-list.component.scss'],
+  standalone: false
 })
 export class CardListComponent implements OnDestroy {
   @Input() loggedInUserId: string;
@@ -83,11 +83,12 @@ export class CardListComponent implements OnDestroy {
   }
 
   expandCard(cardId: string) {
-    if (cardId === this.expandedId) {
+    if (this.showTemplates || cardId === this.expandedId) {
       this.expandedId = '';
     } else {
       this.expandedId = cardId;
     }
+    console.log('expandedId: ' + this.expandedId);
   }
 
   addOrEditCard(card: Card, makeTemplate: boolean, makeFromTemplate: boolean) {

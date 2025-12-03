@@ -8,8 +8,23 @@
   @include mat.form-field-density(-5); // Adjust -3 for this specific form field
 }
 
+.frame {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  height: calc(100vh - 39px);
+}
+
 .top-space {
   margin-top: 6px;
+}
+
+.no-clicks {
+  pointer-events: none;
+}
+
+.all-clicks {
+  pointer-events: all;
 }
 
 .header-row {
@@ -79,26 +94,6 @@
   width: 50px;
   text-align: center;
   justify-content: center;
-}
-
-.copy-icon {
-  margin-top: -8px;
-}
-
-.button-end {
-  margin-left: 100px;
-}
-
-.scale-85 {
-  transform: scale(0.85);
-}
-
-.clear-search {
-  width: 50px;
-}
-
-.copy-icon {
-  margin-top: -8px;
 }
 
 .first-cell {

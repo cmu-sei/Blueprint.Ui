@@ -22,13 +22,12 @@ import { CiteActionQuery } from 'src/app/data/cite-action/cite-action.query';
 import { MatDialog } from '@angular/material/dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { CiteActionEditDialogComponent } from '../cite-action-edit-dialog/cite-action-edit-dialog.component';
-import { v4 as uuidv4 } from 'uuid';
 
 @Component({
-    selector: 'app-cite-action-list',
-    templateUrl: './cite-action-list.component.html',
-    styleUrls: ['./cite-action-list.component.scss'],
-    standalone: false
+  selector: 'app-cite-action-list',
+  templateUrl: './cite-action-list.component.html',
+  styleUrls: ['./cite-action-list.component.scss'],
+  standalone: false
 })
 export class CiteActionListComponent implements OnDestroy {
   @Input() loggedInUserId: string;
@@ -164,6 +163,7 @@ export class CiteActionListComponent implements OnDestroy {
         citeAction: { ...citeAction },
         teamList: this.mselTeamList,
         moveList: this.moveList,
+        makeTemplate: makeTemplate,
       },
     });
     dialogRef.componentInstance.editComplete.subscribe((result) => {
@@ -213,9 +213,10 @@ export class CiteActionListComponent implements OnDestroy {
     ) {
       return;
     }
+    const title = this.showTemplates ? 'Delete CITE Action Template' : 'Delete CITE Action';
     this.dialogService
       .confirm(
-        'Delete Cite Action',
+        title,
         'Are you sure that you want to delete ' + citeAction.description + '?'
       )
       .subscribe((result) => {
@@ -310,7 +311,8 @@ export class CiteActionListComponent implements OnDestroy {
           filteredCiteActions = filteredCiteActions.filter(
             (a) =>
               a.description.toLowerCase().includes(filterString) ||
-              a.team?.name.toLowerCase().includes(filterString)
+              a.team?.name.toLowerCase().includes(filterString) ||
+              a.team?.shortName.toLowerCase().includes(filterString)
           );
         }
         if (this.selectedMoveNumber >= 0) {

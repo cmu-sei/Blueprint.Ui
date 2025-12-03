@@ -8,6 +8,13 @@
   @include mat.form-field-density(-5); // Adjust -3 for this specific form field
 }
 
+.frame {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  height: calc(100vh - 39px);
+}
+
 .table {
   font-size: small;
   width: 100%;

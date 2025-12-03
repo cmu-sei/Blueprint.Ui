@@ -2,6 +2,12 @@
 // Released under a MIT (SEI)-style license, please see LICENSE.md in the
 // project root for license information or contact permission@sei.cmu.edu for full terms.
 
+@use "@angular/material" as mat;
+
+:host {
+  @include mat.form-field-density(-5); // Adjust -3 for this specific form field
+}
+
 .frame {
   display: flex;
   flex-direction: column;
@@ -9,46 +15,41 @@
   height: calc(100vh - 39px);
 }
 
-.mat-mdc-header-row {
-  min-height: 40px;
-  padding-left:30px;
-  padding-right: 50px;
-  background: transparent;
+.top-space {
+  margin-top: 6px;
 }
 
-.mat-mdc-row {
-  height: 36px;
+.no-clicks {
+  pointer-events: none;
 }
 
-.mat-mdc-row,
-.mat-mdc-header-row {
+.all-clicks {
+  pointer-events: all;
+}
+
+.header-row {
+  min-height: 56px;
+  border-bottom: 1px solid;
+}
+
+.row {
+  min-height: 48px;
+}
+
+.row,
+.header-row {
   display: flex;
-  border-bottom-width: 1px;
-  border-bottom-style: solid;
   align-items: center;
-  box-sizing: border-box;
+  justify-content: center;
+  padding: 0 24px;
+  font-family: "Open Sans", sans-serif;
+  font-weight: 400;
 }
 
-.mat-mdc-header-cell {
-  font-weight: bold;
-}
-
-.mat-mdc-cell,
-.mat-mdc-header-cell {
-  flex: 1;
+.cell,
+.header-cell {
   overflow: hidden;
   word-wrap: break-word;
-  text-align: left;
-}
-
-.mat-accordion .mat-mdc-header-row {
-  padding-left: 1.5rem;
-  padding-right: 2rem;
-  border-bottom: none;
-}
-
-.mat-expansion-panel-header.mat-mdc-row {
-  border-bottom: none;
 }
 
 .flex-row-cell {
@@ -59,33 +60,12 @@
   text-align: left;
 }
 
-.cite-action-detail {
+.card-detail {
   display: flex;
   flex: 1;
   flex-flow: column;
   justify-content: center;
   align-items: center;
-}
-
-.team-label {
-  display: flex;
-  flex-flow: column;
-  justify-content: flex-start;
-  align-items: flex-start;
-  text-align: left;
-}
-
-.data-options {
-  display: flex;
-  flex: 7;
-  flex-flow: column;
-  align-items: flex-start;
-  text-align: left;;
-}
-
-.data-option {
-  display: flex;
-  flex-flow: row;
 }
 
 .search-cell {
@@ -102,27 +82,7 @@
   flex: 10;
   flex-flow: row;
   align-items: flex-start;
-  width: 60%;
-}
-
-.partial-detail {
-  display: flex;
-  flex: 3;
-}
-
-.more-or-less {
-  padding-right: 40%;
-}
-
-.edit-buttons {
-  display: flex;
-  flex-flow: row;
-  align-items: flex-start;
-  padding-left: 12%;
-}
-
-.full-width {
-  width: 100%;
+  width: 90%;
 }
 
 .scrolling-region {
@@ -130,91 +90,25 @@
   overflow: auto;
 }
 
-.scrolling-details {
-  max-height: calc(100vh - 293px);
-  overflow: auto;
-}
-
-textarea {
-  border: 1px solid;
-  padding: 16px !important;
-  box-sizing: border-box;
-}
-
-.cite-action-button {
-  width: 30px;
-  height: 30px;
+.move-column {
+  width: 140px;
+  text-align: center;
+  justify-content: center;
   align-self: center;
+  margin-right: 10px;
 }
 
-.up-12 {
-  margin-top: -12px;
+.move-field {
+  width: 120px;
+  ;
 }
 
-.copy-icon {
-  margin-top: -8px;
-}
-
-.button-end {
-  margin-left: 100px;
-}
-
-.sp-icon {
-  margin-left: 10px;
-  margin-right: 20px;
-}
-
-.search-icon {
-  margin-left: 50px;
-  transform: scale(0.85);
-  margin-right: 5px;
-}
-
-.scale-85 {
-  transform: scale(0.85);
-}
-
-.search-field {
-  width: 320px;
-}
-
-.clear-search {
-  width: 50px;
-}
-
-.copy-icon {
-  margin-top: -8px;
+.move-select {
+  width: 90px;
 }
 
 .first-cell {
   flex: 1;
-  min-width: 110px;
-}
-
-.eight-cell {
-  flex: 8;
-}
-
-.five-cell {
-  flex: 5;
-}
-
-.four-cell {
-  flex: 4;
-}
-
-.three-cell {
-  flex: 3;
-}
-
-.two-cell {
-  flex: 2;
-}
-
-.one-cell {
-  flex: 1;
-}
-
-.center-self {
-  align-self: center;
+  min-width: 120px;
+  max-width: 120px;
 }

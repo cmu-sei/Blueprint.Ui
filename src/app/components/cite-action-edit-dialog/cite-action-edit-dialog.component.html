@@ -5,78 +5,81 @@ project root for license information or contact permission@sei.cmu.edu for full 
 -->
 
 <div mat-dialog-title>
+  @if(!data.citeAction?.id) {
+  New CITE Action
+  } @else {
+  Edit CITE Action
+  }
+  @if(data.citeAction?.isTemplate) {
+  Template
+  }
   &nbsp;
-  <button
-    mat-icon-button
-    (click)="handleEditComplete(false)"
-    title="Cancel"
-    class="close-button"
-    tabindex="-1"
-    >
+  <button mat-icon-button (click)="handleEditComplete(false)" title="Cancel" class="close-button" tabindex="-1">
     <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
   </button>
 </div>
 @if (data && data.citeAction) {
-  <div mat-dialog-content>
-    @if (!data.citeAction.isTemplate) {
-      <div class="add-margin">
-        <div>
-          <mat-form-field class="button-margins full-width">
-            <mat-label>Move</mat-label>
-            <mat-select placeholder="Move" [(ngModel)]="data.citeAction.moveNumber">
-              @if (!data.citeAction.id && moveList.length > 1) {
-                <mat-option [value]="-1">All Moves</mat-option>
-              }
-              @for (move of moveList; track move) {
-                <mat-option [value]="move.moveNumber">
-                  {{ move.moveNumber }} - {{ move.description }}
-                </mat-option>
-              }
-            </mat-select>
-          </mat-form-field>
-        </div>
-      </div>
-    }
-    @if (!data.citeAction.isTemplate) {
-      <div class="add-margin">
-        <div>
-          <mat-form-field class="button-margins full-width">
-            <mat-label>Team</mat-label>
-            <mat-select placeholder="Team" [(ngModel)]="data.citeAction.teamId">
-              @if (!data.citeAction.id && data.teamList.length > 1) {
-                <mat-option value="">All Teams</mat-option>
-              }
-              @for (team of data.teamList; track team) {
-                <mat-option [value]="team.id">
-                  {{ team.name }}
-                </mat-option>
-              }
-            </mat-select>
-          </mat-form-field>
-        </div>
-      </div>
-    }
-    @if (!data.citeAction.isTemplate) {
-      <div class="add-margin">
-        <div>
-          <mat-form-field class="name-field full-width">
-            <mat-label>Display Order</mat-label>
-            <input matInput [(ngModel)]="data.citeAction.actionNumber" />
-          </mat-form-field>
-        </div>
-      </div>
-    }
-    <div class="add-margin">
-      <div>
-        <mat-form-field class="name-field full-width">
-          <mat-label>Description of the Action</mat-label>
-          <input matInput [(ngModel)]="data.citeAction.description" />
-        </mat-form-field>
-      </div>
+<div mat-dialog-content>
+  @if (!data.citeAction.isTemplate) {
+  <div class="add-margin">
+    <div>
+      <mat-form-field class="button-margins full-width">
+        <mat-label>Move</mat-label>
+        <mat-select placeholder="Move" [(ngModel)]="data.citeAction.moveNumber">
+          @if (!data.citeAction.id && moveList.length > 1) {
+          <mat-option [value]="-1">All Moves</mat-option>
+          }
+          @for (move of moveList; track move) {
+          <mat-option [value]="move.moveNumber">
+            {{ move.moveNumber }} - {{ move.description }}
+          </mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
     </div>
   </div>
+  }
+  @if (!data.citeAction.isTemplate) {
+  <div class="add-margin">
+    <div>
+      <mat-form-field class="button-margins full-width">
+        <mat-label>Team</mat-label>
+        <mat-select placeholder="Team" [(ngModel)]="data.citeAction.teamId">
+          @if (!data.citeAction.id && data.teamList.length > 1) {
+          <mat-option value="">All Teams</mat-option>
+          }
+          @for (team of data.teamList; track team) {
+          <mat-option [value]="team.id">
+            {{ team.name }}
+          </mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+  </div>
+  }
+  @if (!data.citeAction.isTemplate) {
+  <div class="add-margin">
+    <div>
+      <mat-form-field class="name-field full-width">
+        <mat-label>Display Order</mat-label>
+        <input matInput [(ngModel)]="data.citeAction.actionNumber" />
+      </mat-form-field>
+    </div>
+  </div>
+  }
+  <div class="add-margin">
+    <div>
+      <mat-form-field class="name-field full-width">
+        <mat-label>Description of the Action</mat-label>
+        <input matInput [(ngModel)]="data.citeAction.description" />
+      </mat-form-field>
+    </div>
+  </div>
+</div>
 }
 <div mat-dialog-actions>
-  <button mat-stroked-button class="save-button" (click)="handleEditComplete(true)" [disabled]="!errorFree()">Save</button>
+  <button mat-stroked-button class="save-button" (click)="handleEditComplete(true)"
+    [disabled]="!errorFree()">Save</button>
   <button mat-stroked-button (click)="handleEditComplete(false)">Cancel</button>
 </div>

@@ -3,10 +3,10 @@ Copyright 2023 Carnegie Mellon University. All Rights Reserved.
 Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
-@if (msel) {
+
 <div class="frame">
-  <section matSort (matSortChange)="sortChanged($event)" class="mat-elevation-z2 mat-header-row background-alt">
-    <span class="mat-header-cell four-cell" mat-sort-header="name">
+  <section matSort (matSortChange)="sortChanged($event)" class="header-row background-alt">
+    <span class="header-cell four-cell" mat-sort-header="name">
       @if (showTemplates && isContentDeveloper) {
       <span>
         <button mat-icon-button (click)="addOrEditCiteRole(null, false, false); $event.stopPropagation();"
@@ -20,21 +20,23 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <button mat-icon-button [matMenuTriggerFor]="addMenu"
           style="outline: none; margin-left: 18px; margin-right: 24px;" title="Add CITE Role"
           (click)="$event.stopPropagation();">
-          <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
+          <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle"></mat-icon>
         </button>
       </span>
       } &nbsp;
       <mat-menu #addMenu="matMenu" [overlapTrigger]="false">
-        <button mat-menu-item (click)="addOrEditCiteRole(null, false, false)" title="Add a new CITE Role">New CITE
+        <button mat-menu-item (click)="addOrEditCiteRole(null, false, false); $event.stopPropagation();"
+          title="Add a new CITE Role">New CITE
           Role</button>
         @for (template of templateList; track template) {
-        <button mat-menu-item (click)="addOrEditCiteRole(template, false, true)" title="{{ template.name }}">{{
+        <button mat-menu-item (click)="addOrEditCiteRole(template, false, true); $event.stopPropagation();"
+          title="{{ template.name }}">{{
           template.name }}</button>
         }
       </mat-menu>
       Name
     </span>
-    <span class="mat-header-cell three-cell" mat-sort-header="team">
+    <span class="header-cell three-cell" mat-sort-header="team">
       @if (!showTemplates) {
       <mat-form-field class="team-selector">
         <mat-label>Team</mat-label>
@@ -50,32 +52,32 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </mat-form-field>
       }
     </span>
-    <span class="mat-header-cell three-cell search-cell">
+    <span class="header-cell three-cell search-cell">
       <mat-form-field class="search-control">
         <input matInput [formControl]="filterControl" placeholder="Search" />
       </mat-form-field>
       <div style="width: 30px;">
         <button mat-icon-button (click)="filterControl.setValue('')" style="outline: none;" title="Clear Search"
           [disabled]="!filterString">
-          <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
+          <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle"></mat-icon>
         </button>
       </div>
     </span>
   </section>
-  <section class="scrolling-region">
+  <mat-accordion class="scrolling-region">
     <!-- existing citeRoles -->
-    @for (item of sortedCiteRoles; track item) {
-    <mat-expansion-panel disabled>
-      <mat-expansion-panel-header class="mat-row">
-        <div class="mat-cell flex-row-cell four-cell">
+    @for (item of sortedCiteRoles; track item.id) {
+    <mat-expansion-panel class="top-space no-clicks" hideToggle>
+      <mat-expansion-panel-header class="row">
+        <div class="cell flex-row-cell four-cell">
           @if (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) {
-          <button mat-icon-button class="cite-role-button" title="Edit this citeRole"
-            (click)="addOrEditCiteRole(item, false, false)">
+          <button mat-icon-button class="all-clicks" title="Edit this citeRole"
+            (click)="addOrEditCiteRole(item, false, false); $event.stopPropagation();">
             <mat-icon class="mdi-18px up-12" fontIcon="mdi-square-edit-outline"></mat-icon>
           </button>
           }
           @if (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) {
-          <button mat-icon-button class="cite-role-button" (click)="deleteCiteRole(item)"
+          <button mat-icon-button class="all-clicks" (click)="deleteCiteRole(item); $event.stopPropagation();"
             title="Delete {{ item.name }}">
             <mat-icon class="mdi-18px up-12" fontIcon="mdi-trash-can-outline"></mat-icon>
           </button>
@@ -83,14 +85,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
           &nbsp;{{ item.name }}
         </div>
         @if (!showTemplates) {
-        <div class="mat-cell three-cell center-self">
+        <div class="cell three-cell center-self">
           {{ item.team?.shortName }} - {{ item.team?.name }}
         </div>
         }
-        <div class="mat-cell three-cell center-self">&nbsp;</div>
+        <div class="cell three-cell center-self">&nbsp;</div>
       </mat-expansion-panel-header>
     </mat-expansion-panel>
     }
-  </section>
+  </mat-accordion>
 </div>
-}
