@@ -2,23 +2,36 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-.msel-list-container {
-  display: inline-flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  height: 100%;
-  min-width: 300px;
-  margin-top: 40px;
-  width: 80%;
-  min-width: 800px;
+@use "@angular/material" as mat;
+@include mat.elevation-classes();
+@include mat.app-background();
 
+.elevate {
+  @include mat.elevation(2);
+}
+
+.content-under-topbar {
+  text-align: center;
+  overflow: hidden;
+  height: calc(100vh - 38px);
+  background-color: var(--mat-sys-background);
+  color: var(--mat-sys-on-background);
+}
+
+.msel-list-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  max-height: 800px;
+  min-width: 300px;
+  margin: auto;
+  width: 80%;
 }
 
 .header-div {
   display: flex;
   flex-direction: row;
   flex: 7;
-  border-bottom: 1px solid;
 }
 
 .title-icon {
@@ -67,27 +80,8 @@
 }
 
 .admin-cog-div {
-  display: flex;
-  flex-direction: row;
-  margin: auto;
-  margin-right: 10px;
-}
-
-.admin-cog-button {
-  width: 40px !important;
-  height: 30px !important;
-  min-width: unset !important;
-  align-items: center !important;
-  justify-items: center !important;
-}
-
-.admin-cog-icon {
-  display: flex;
-  flex-direction: row;
-  flex: 1;
-  align-items: center;
-  justify-items: center;
-  margin-left: -7px;
+  width: 100%;
+  text-align: right;
 }
 
 .no-results {
@@ -174,7 +168,7 @@
   align-items: center;
 }
 
-.buttons-container{
+.buttons-container {
   display: flex;
   flex-wrap: nowrap;
   align-items: center;
@@ -183,9 +177,27 @@
   font-size: small;
 }
 
-.button-items{
+.button-items {
   flex-grow: 1;
   margin-right: 15px;
 }
 
+/* unvisited link */
+a:link {
+  color: var(--mat-sys-on-background);
+}
 
+/* visited link */
+a:visited {
+  color: var(--mat-sys-on-background);
+}
+
+/* mouse over link */
+a:hover {
+  color: var(--mat-sys-outline);
+}
+
+/* selected link */
+a:active {
+  color: var(--mat-sys-on-background);
+}
