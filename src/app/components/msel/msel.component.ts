@@ -36,10 +36,10 @@ import { UserMselRoleDataService } from 'src/app/data/user-msel-role/user-msel-r
 import { UserTeamRoleDataService } from 'src/app/data/user-team-role/user-team-role-data.service';
 
 @Component({
-    selector: 'app-msel',
-    templateUrl: './msel.component.html',
-    styleUrls: ['./msel.component.scss'],
-    standalone: false
+  selector: 'app-msel',
+  templateUrl: './msel.component.html',
+  styleUrls: ['./msel.component.scss'],
+  standalone: false
 })
 export class MselComponent implements OnDestroy {
   @Input() loggedInUserId: string;
@@ -230,16 +230,10 @@ export class MselComponent implements OnDestroy {
 
   getListItemClass(tab: string) {
     if (tab === this.selectedTab) {
-      return 'list-item background-alt';
+      return 'selected-item';
     } else {
-      return 'list-item background';
+      return 'non-selected-item';
     }
-  }
-
-  getSidebarClass() {
-    return this.sideNavCollapsed
-      ? 'left-content-closed background'
-      : 'left-content-open background';
   }
 
   setCollapsed(value: boolean) {

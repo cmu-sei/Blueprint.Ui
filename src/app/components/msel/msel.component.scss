@@ -2,10 +2,20 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-.content-container {
-  display: flex;
-  flex-direction: row;
-  flex: 1;
+.container {
+  height: 100%;
+  width: 100%;
+}
+
+.side-nav {
+  width: 230px;
+  border-right: solid var(--mat-sys-surface-container);
+  height: 100%;
+}
+
+.side-nav-collapsed {
+  width: 50px;
+  border-right: solid var(--mat-sys-surface-container);
   height: 100%;
 }
 
@@ -16,39 +26,81 @@
   height: 100%;
 }
 
+.appslist {
+  margin-top: 10px;
+  margin-bottom: 20px;
+}
+
+.list-container {
+  width: 100%;
+  height: calc(100% - 140px);
+  overflow-y: auto;
+}
+
+.mat-list-item-icon {
+  color: var(--mat-sys-primary) !important;
+}
+
+.selected-item {
+  display: flex;
+  flex-direction: row;
+  background-color: var(--mat-sys-surface-container);
+  cursor: pointer;
+  height: 44px !important;
+  width: 100%;
+}
+
+.non-selected-item {
+  display: flex;
+  flex-direction: row;
+  background-color: var(--mat-sys-background);
+  cursor: pointer;
+  height: 44px !important;
+  width: 100%;
+}
+
+.non-selected-item:hover {
+  background-color: var(--mat-sys-surface-container) !important;
+}
+
+.item-text {
+  padding-left: 5px;
+  align-self: center;
+}
+
+.pull-right {
+  float: right;
+  margin-right: 10px;
+  color: var(--mat-sys-primary);
+}
+
+.nolink {
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+
 .main-content {
   width: 100%;
   height: 100%;
 }
 
-.left-content-open {
-  width: 100%;
-  height: calc(100% - 8px);
-}
-
-.left-content-closed {
-  width: 100%;
-  height: calc(100% - 8px);
-}
-
-.side-nav {
-  height: 100%;
-  padding-bottom: 100px;
-}
-
-.top-item {
+.top-div {
   display: flex;
   flex-direction: row;
-  flex: 1;
+  align-items: center;
+  height: 40px;
+  width: 100%;
   cursor: pointer;
-  align-items: flex-end;
-  height: 36px;
-  margin-top: -8px;
 }
 
-.list-item {
-  cursor: pointer;
-  text-align: left;
+.top-div:hover {
+  background-color: var(--mat-sys-surface-container) !important;
+}
+
+.bottom-div {
+  height: 80px;
+  width: 100%;
 }
 
 .top-button {
@@ -89,22 +141,16 @@
 
 .application-name {
   width: 100%;
-  margin-left: 8px;
+  margin-left: 7px;
 }
 
 /* TODO(mdc-migration): The following rule targets internal classes of list that may no longer apply for the MDC version.*/
-.mat-mdc-list-item, .mat-list-item-content {
+.mat-mdc-list-item,
+.mat-list-item-content {
   padding: 0px !important;
 }
 
 .full-width {
-  width: 100%;
-}
-
-.bottom-div {
-  position: absolute;
-  left: 0;
-  bottom: 0;
   width: 100%;
 }
 
@@ -129,6 +175,7 @@
 .collapse-section {
   display: flex;
   flex: 1;
+  margin-right: 10px;
 }
 
 .cmu-logo {
@@ -137,4 +184,9 @@
 
 .small-logo {
   width: 300px;
+}
+
+.crucible-logo {
+  height: 40px;
+  width: auto;
 }

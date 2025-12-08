@@ -75,25 +75,21 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <!-- action column -->
         <ng-container matColumnDef="action">
           <mat-header-cell *matHeaderCellDef>
-            <div class="button-items">
-              <button mat-icon-button (click)="addMsel()" title="Add blank MSEL" [disabled]="!isContentDeveloper">
-                <mat-icon class="mdi-24px" fontIcon="mdi-plus-circle"></mat-icon>
-              </button>
-            </div>
-            <div class="button-items">
-              <button mat-icon-button [matMenuTriggerFor]="upload" title="Upload a new MSEL from a file"
-                [disabled]="!isContentDeveloper">
-                <mat-icon class="mdi-24px" fontIcon="mdi-upload"></mat-icon>
-              </button>
-              <mat-menu #upload="matMenu" [overlapTrigger]="false">
-                <button mat-menu-item (click)="uploadFile('json', '', ''); jsonInput.click()"
-                  title="Upload json file">Upload
-                  json file</button>
-                <button mat-menu-item (click)="uploadFile('xlsx', '', ''); xlsxInput.click()"
-                  title="Upload xlsx file">Upload
-                  xlsx file</button>
-              </mat-menu>
-            </div>
+            <button mat-icon-button (click)="addMsel()" title="Add blank MSEL" [disabled]="!isContentDeveloper">
+              <mat-icon class="mdi-24px" fontIcon="mdi-plus-circle"></mat-icon>
+            </button>
+            <button mat-icon-button [matMenuTriggerFor]="upload" title="Upload a new MSEL from a file"
+              [disabled]="!isContentDeveloper">
+              <mat-icon class="mdi-24px" fontIcon="mdi-upload"></mat-icon>
+            </button>
+            <mat-menu #upload="matMenu" [overlapTrigger]="false">
+              <button mat-menu-item (click)="uploadFile('json', '', ''); jsonInput.click()"
+                title="Upload json file">Upload
+                json file</button>
+              <button mat-menu-item (click)="uploadFile('xlsx', '', ''); xlsxInput.click()"
+                title="Upload xlsx file">Upload
+                xlsx file</button>
+            </mat-menu>
           </mat-header-cell>
           <mat-cell *matCellDef="let element">
             <div class="action-div">
