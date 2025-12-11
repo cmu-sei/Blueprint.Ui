@@ -26,13 +26,14 @@
               "src/assets",
               {
                 "glob": "**/*",
-                "input": "./node_modules/@kolkov/angular-editor/assets/",
-                "output": "./assets/fonts/"
+                "input": "./node_modules/@kolkov/angular-editor/assets/icons",
+                "output": "./assets/ae-icons/"
               }
             ],
             "styles": [
               "src/styles/styles.scss",
-              "./node_modules/bootstrap/scss/bootstrap-utilities.scss"
+              "node_modules/@kolkov/angular-editor/themes/default.scss",
+              "node_modules/bootstrap/scss/bootstrap-utilities.scss"
             ],
             "extractLicenses": false,
             "sourceMap": true,
@@ -94,12 +95,18 @@
             "tsConfig": "src/tsconfig.spec.json",
             "karmaConfig": "src/karma.conf.js",
             "styles": [
-              "src/styles.scss"
+              "src/styles.scss",
+              "node_modules/@kolkov/angular-editor/themes/default.scss"
             ],
             "scripts": [],
             "assets": [
               "src/favicon.ico",
-              "src/assets"
+              "src/assets",
+              {
+                "glob": "**/*",
+                "input": "./node_modules/@kolkov/angular-editor/assets/icons/",
+                "output": "./assets/fonts/"
+              }
             ]
           }
         }
@@ -127,7 +134,7 @@
   },
   "schematics": {
     "@schematics/angular:component": {
-      "style": "scss""style": "scss",
+      "style": "scss",
       "type": "component"
     },
     "@angular-eslint/schematics:application": {

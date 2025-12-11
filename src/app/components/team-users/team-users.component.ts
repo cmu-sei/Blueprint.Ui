@@ -22,10 +22,10 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { UntypedFormControl } from '@angular/forms';
 @Component({
-    selector: 'app-team-users',
-    templateUrl: './team-users.component.html',
-    styleUrls: ['./team-users.component.scss'],
-    standalone: false
+  selector: 'app-team-users',
+  templateUrl: './team-users.component.html',
+  styleUrls: ['./team-users.component.scss'],
+  standalone: false
 })
 export class TeamUsersComponent implements OnDestroy, OnInit {
   @Input() team: Team;
@@ -228,6 +228,7 @@ export class TeamUsersComponent implements OnDestroy, OnInit {
     } else {
       this.displayedTeamUserColumns = this.allUserColumns;
     }
+    console.log('add mode set to ' + value);
   }
 
   onAnotherTeam(userId: string): boolean {

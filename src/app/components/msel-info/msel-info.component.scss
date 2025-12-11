@@ -2,6 +2,11 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the$
 // project root for license information.
 
+a {
+  color: var(--mat-sys-on-background);
+}
+
+
 .frame {
   width: 100%;
   height: calc(100vh - 39px);
@@ -81,7 +86,7 @@
 .edit-buttons {
   display: flex;
   flex-flow: row;
-  align-items:flex-start;
+  align-items: flex-start;
   width: 100%;
 }
 
@@ -162,30 +167,6 @@
 
 .copy-icon {
   margin-top: -8px;
-}
-
-.five-cell {
-  flex: 5;
-}
-
-.four-cell {
-  flex: 4;
-}
-
-.three-cell {
-  flex: 3;
-}
-
-.two-cell {
-  flex: 2;
-}
-
-.one-cell {
-  flex: 1;
-}
-
-.center-self {
-  align-self: center;
 }
 
 .gallery-warning {

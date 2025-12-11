@@ -37,13 +37,15 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <!-- MSEL Name -->
           <div class="single-detail center-self">
             <mat-form-field class="full-width">
-              <input type="text" matInput placeholder="Name" [(ngModel)]="msel.name" (cut)="isChanged = true"
-                (change)="isChanged = true" (paste)="isChanged = true" (keypress)="isChanged = true" />
+              <mat-label>Name</mat-label>
+              <input type="text" matInput [(ngModel)]="msel.name" (cut)="isChanged = true" (change)="isChanged = true"
+                (paste)="isChanged = true" (keypress)="isChanged = true" />
             </mat-form-field>
           </div>
           <!-- MSEL Description -->
           <div class="single-detail center-self">
             <mat-form-field class="full-width">
+              <mat-label>Description</mat-label>
               <input type="text" matInput placeholder="Description" [(ngModel)]="msel.description"
                 (cut)="isChanged = true" (change)="isChanged = true" (paste)="isChanged = true"
                 (keypress)="isChanged = true" />
@@ -67,9 +69,19 @@ project root for license information or contact permission@sei.cmu.edu for full 
           @if (hasStartTime()) {
           <div class="single-detail center-self">
             <mat-form-field>
-              <input matInput placeholder="Start Date / Time" [(ngModel)]="msel.startTime" (cut)="isChanged = true"
-                (change)="isChanged = true" (paste)="isChanged = true" (keypress)="isChanged = true">
+              <mat-label>Start Date / Time</mat-label>
+              <input matInput [ngxMatDatetimePicker]="picker" [(ngModel)]="msel.startTime"
+                (dateChange)="isChanged = true" (dateInput)="isChanged = true" style="display: none;">
               <!-- <datetime-picker> -->
+              <span (click)="picker.open()">
+                {{msel.startTime | date: 'MM/dd/yyyy hh:mm a'}}
+              </span>
+              <mat-datepicker-toggle matSuffix title="Choose Date/Time" [for]="picker">
+              </mat-datepicker-toggle>
+              <ngx-mat-datetime-picker #picker [showSpinners]=true [showSeconds]=false [stepHour]=1 [stepMinute]=5
+                [stepSecond]=1 [touchUi]=false [enableMeridian]=true [disableMinute]=false [hideTime]=false
+                [color]="'warn'">
+              </ngx-mat-datetime-picker>
             </mat-form-field>
           </div>
           }
@@ -301,7 +313,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </div>
       }
     </mat-tab>
-    @for (page of mselPages; track page) {
+    @for (page of mselPages; track page.id) {
     <mat-tab label="{{ page.name }}" class="mat-tab">
       <!-- page content -->
       <div class="edit-buttons">

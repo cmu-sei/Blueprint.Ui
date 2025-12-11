@@ -133,6 +133,10 @@ mat-paginator {
   align-self: center;
 }
 
+.elevate {
+  @include mat.elevation(2);
+}
+
 /* The following acts as drop in replacement for the deprecation of Angular FlexLayout */
 .cssLayoutColumnCenterCenter {
   display: flex;

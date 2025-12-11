@@ -29,10 +29,10 @@ import { MselUnitQuery } from 'src/app/data/msel-unit/msel-unit.query';
 import { AngularEditorConfig } from '@kolkov/angular-editor';
 
 @Component({
-    selector: 'app-msel-info',
-    templateUrl: './msel-info.component.html',
-    styleUrls: ['./msel-info.component.scss'],
-    standalone: false
+  selector: 'app-msel-info',
+  templateUrl: './msel-info.component.html',
+  styleUrls: ['./msel-info.component.scss'],
+  standalone: false
 })
 export class MselInfoComponent implements OnDestroy {
   @Input() loggedInUserId: string;
@@ -144,6 +144,7 @@ export class MselInfoComponent implements OnDestroy {
           }
           this.savedStartTime = new Date(msel.startTime);
           this.savedDurationSeconds = msel.durationSeconds;
+          console.log(msel?.startTime);
         }
       });
     // subscribe to MSEL loading flag

@@ -2,6 +2,12 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
+@use "@angular/material" as mat;
+
+:host {
+  @include mat.form-field-density(-5); // Adjust -3 for this specific form field
+}
+
 .frame {
   display: flex;
   flex-direction: column;
@@ -9,24 +15,24 @@
   height: calc(100vh - 39px);
 }
 
-.mat-mdc-table {
+.table {
   font-size: small;
   width: 100%;
   overflow: none;
   background: transparent;
 }
 
-.mat-mdc-header-row {
+.header-row {
   min-height: 40px;
   background: transparent;
 }
 
-.mat-mdc-row {
+.row {
   min-height: 36px;
 }
 
-.mat-mdc-row,
-.mat-mdc-header-row {
+.row,
+.header-row {
   display: flex;
   border-bottom-width: 1px;
   border-bottom-style: solid;
@@ -34,18 +40,20 @@
   box-sizing: border-box;
 }
 
-.mat-mdc-header-cell {
+.header-cell {
   font-weight: bold;
 }
 
-.mat-mdc-cell,
-.mat-mdc-header-cell {
+.cell,
+.header-cell {
+  display: flex;
+  flex-direction: row;
   overflow: hidden;
   word-wrap: break-word;
   text-align: left;
 }
 
-.mat-expansion-panel-header {
+.expansion-panel-header {
   display: flex;
   flex-direction: row;
   text-align: left;
@@ -79,9 +87,10 @@
 
 .section-content {
   width: 100%;
+  min-width: 600px;
 }
 
-.mat-expansion-panel {
+.expansion-panel {
   width: calc(100% - 10px);
   margin: 5px;
 }
@@ -90,26 +99,13 @@
   display: flex;
   flex-direction: row;
   flex: 1;
-  width: 100%;
-  height: 100%;
-}
-
-.user-panel-left {
-  display: flex;
-  flex-direction: row;
-  flex: 2;
-  width: 100%;
-}
-
-.user-panel-right {
-  display: flex;
-  flex-direction: column;
-  flex: 6;
+  align-items: center;
+  justify-items: center;
 }
 
 .team-detail {
   text-align: left;
-  margin-left:50px;
+  margin-left: 50px;
   margin-bottom: 10px;
   width: calc(100% - 50px);
   display: flex;
@@ -119,8 +115,18 @@
 
 .other-teams-div {
   text-align: left;
-  margin-left:50px;
+  margin-left: 50px;
   width: calc(100% - 50px);
+}
+
+.action-buttons {
+  width: 90px;
+}
+
+.header-action-buttons {
+  display: flex;
+  width: 120px;
+  align-items: center;
 }
 
 .user-name {
@@ -135,34 +141,6 @@
   width: 100%;
   text-align: left;
   padding-left: 100px;
-}
-
-.full-width {
-  width: 100%;
-}
-
-.half-width {
-  width: 50%;
-}
-
-.five-cell {
-  flex: 5;
-}
-
-.four-cell {
-  flex: 4;
-}
-
-.three-cell {
-  flex: 3;
-}
-
-.two-cell {
-  flex: 2;
-}
-
-.one-cell {
-  flex: 1;
 }
 
 .center-self {

@@ -2,12 +2,28 @@
 // Released under a MIT (SEI)-style license, please see LICENSE.md in the
 // project root for license information or contact permission@sei.cmu.edu for full terms.
 
+.one-column {
+  display: flex;
+  flex-direction: row;
+  align-self: center;
+  width: 840px;
+  margin-left: 80px;
+  background-color: cyan;
+}
+
+.two-columns {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  margin-left: 80px;
+  width: 100%;
+  background-color: pink;
+}
+
 .user-list-container {
-  display: inline-block;
+  display: flex;
   flex-direction: column;
-  margin-top: 10px;
-  min-width: 400px;
-  min-height: 600px;
+  flex: 1;
 }
 
 .collapsed-div {
@@ -15,11 +31,11 @@
 }
 
 .team-list-container {
-  display: inline-block;
+  display: flex;
   flex-direction: column;
+  flex: 1;
+  margin-right: 20px;
   margin-top: 10px;
-  min-width: 800px;
-  min-height: 600px;
 }
 
 .search-box {
@@ -27,22 +43,22 @@
   margin-left: 10px;
 }
 
-.mat-mdc-table-all-users {
+.table-all-users {
   overflow: auto;
   max-height: 400px;
 }
 
-.mat-mdc-table-team-users {
+.table-team-users {
   overflow: auto;
   max-height: 600px;
 }
 
 /* TODO(mdc-migration): The following rule targets internal classes of button that may no longer apply for the MDC version.*/
-.mat-button-focus-overlay {
+.button-focus-overlay {
   background-color: transparent;
 }
 
-.mat-mdc-cell {
+.cell {
   padding-right: 0;
 }
 
@@ -59,6 +75,7 @@
   flex: 1;
   flex-direction: row;
 }
+
 .special-team-list-container {
   display: inline-block;
   flex-direction: column;
@@ -66,4 +83,3 @@
   min-width: 400px;
   min-height: 600px;
 }
-

@@ -6,10 +6,10 @@ import { UntypedFormControl } from '@angular/forms';
 
 
 @Component({
-    selector: 'app-duration-edit',
-    templateUrl: './duration-edit.component.html',
-    styleUrls: ['./duration-edit.component.scss'],
-    standalone: false
+  selector: 'app-duration-edit',
+  templateUrl: './duration-edit.component.html',
+  styleUrls: ['./duration-edit.component.scss'],
+  standalone: false
 })
 export class DurationEditComponent implements OnChanges {
   @Input() startTime: Date;
@@ -69,6 +69,7 @@ export class DurationEditComponent implements OnChanges {
     durationSeconds = durationSeconds % 60;
     // get the number of seconds
     this.seconds = +durationSeconds;
+    console.log(this.days + ':' + this.hours + ':' + this.minutes)
   }
 
   calculateDurationSeconds() {

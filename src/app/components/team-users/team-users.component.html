@@ -4,10 +4,9 @@ Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
 
-<div class="full-width">
-
+<div [ngClass]="isAddMode ? 'two-columns elevate' : 'one-column elevate'">
   @if (isAddMode) {
-  <div class="user-list-container mat-elevation-z8">
+  <div class="user-list-container elevate">
     <div class="sp-icon">
       <mat-icon class="mdi-24px" fontIcon="mdi-account"></mat-icon>
       <span style="margin-left: 10px">
@@ -28,7 +27,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </mat-progress-spinner>
     </mat-card>
     }
-    <mat-table class="mat-table-all-users" #table [dataSource]="userDataSource" matSort
+    <mat-table class="table-all-users" #table [dataSource]="userDataSource" matSort
       (matSortChange)="onSortChange($event)">
       <ng-container matColumnDef="name">
         <mat-header-cell *matHeaderCellDef mat-sort-header>User</mat-header-cell>
@@ -85,13 +84,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </button>
       }
     </div>
-    @if (false) {
-    <mat-card appearance="outlined" style="display: flex; justify-content: center; align-items: center;">
-      <mat-progress-spinner color="primary" mode="indeterminate">
-      </mat-progress-spinner>
-    </mat-card>
-    }
-    <mat-table class="mat-table-all-users" #table [dataSource]="teamUserDataSource" matSort
+    <mat-table class="table-all-users" #table [dataSource]="teamUserDataSource" matSort
       (matSortChange)="onSortTeamChange($event)">
       <ng-container matColumnDef="name">
         <mat-header-cell *matHeaderCellDef mat-sort-header>User</mat-header-cell>

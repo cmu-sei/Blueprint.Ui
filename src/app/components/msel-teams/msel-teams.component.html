@@ -6,12 +6,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
 
 @if (msel) {
 <div class="frame">
-  <section class="mat-elevation-z2 mat-header-row background-alt">
-    <span class="mat-header-cell three-cell">
-      <button mat-icon-button [matMenuTriggerFor]="addMenu" title="Add a team" style="outline: none; margin-left: 15px;"
+  <section class="header-row background-alt">
+    <div class="header-cell header-action-buttons">
+      <button mat-icon-button [matMenuTriggerFor]="addMenu" title="Add a team" style="outline: none; margin-left: 48px;"
         title="Add team">
-        <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
-        Add Team
+        <mat-icon class="mdi-24px center-self" fontIcon="mdi-plus-circle"></mat-icon>
       </button>
       <mat-menu #addMenu="matMenu" [overlapTrigger]="false">
         <button mat-menu-item (click)="addOrEditTeam(null)" title="Add a new team">New Team</button>
@@ -19,8 +18,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
           Add team from unit
         </button>
       </mat-menu>
-    </span>
-    <span class="mat-header-cell three-cell search-cell">
+    </div>
+    <div class="header-cell three-cell center-self">Teams</div>
+    <div class="header-cell eight-cell search-cell">
       <mat-form-field class="search-control">
         <input matInput [(ngModel)]="filterString" (keyup)="applyFilter($any($event.target).value)"
           placeholder="Search" />
@@ -31,10 +31,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
         </button>
       </div>
-    </span>
-    <span class="mat-header-cell three-cell search-cell">&nbsp;</span>
+    </div>
+    <div class="header-cell three-cell search-cell">&nbsp;</div>
   </section>
-  @if (msel) {
   <div class="scrolling-region">
     <div class="section-content">
       @for (team of teamList; track trackByFn($index, team)) {
@@ -62,17 +61,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </div>
         </mat-expansion-panel-header>
         <div class="user-panel">
-          <div class="user-panel-left">&nbsp;</div>
-          <div class="user-panel-right">
-            @if (team.id === editTeamId) {
-            <app-team-users [team]="team"></app-team-users>
-            }
-          </div>
+          @if (team.id === editTeamId) {
+          <app-team-users [team]="team"></app-team-users>
+          }
         </div>
       </mat-expansion-panel>
       }
     </div>
   </div>
-  }
 </div>
 }
