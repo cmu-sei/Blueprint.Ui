@@ -7,26 +7,18 @@ project root for license information or contact permission@sei.cmu.edu for full 
 <div [ngClass]="isAddMode ? 'two-columns elevate' : 'one-column elevate'">
   @if (isAddMode) {
   <div class="user-list-container elevate">
-    <div class="sp-icon">
+    <div class="users-header">
       <mat-icon class="mdi-24px" fontIcon="mdi-account"></mat-icon>
       <span style="margin-left: 10px">
         All Users
       </span>
-    </div>
-    <div>
-      <mat-form-field class="search-box" style="width: 220px;">
+      <mat-form-field class="search-box">
         <input matInput [formControl]="filterControl" placeholder="Search" />
       </mat-form-field>
       <button mat-icon-button (click)="clearFilter()" style="outline: none;" title="Clear Search">
         <mat-icon class="mdi-18px" fontIcon="mdi-close-circle-outline"></mat-icon>
       </button>
     </div>
-    @if (false) {
-    <mat-card appearance="outlined" style="display: flex; justify-content: center; align-items: center;">
-      <mat-progress-spinner color="primary" mode="indeterminate">
-      </mat-progress-spinner>
-    </mat-card>
-    }
     <mat-table class="table-all-users" #table [dataSource]="userDataSource" matSort
       (matSortChange)="onSortChange($event)">
       <ng-container matColumnDef="name">
@@ -66,9 +58,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
   }
 
   @if (teamList) {
-  <div [class.special-team-list-container]="isAddMode && teamList" style="margin-left: 20px;"
-    class="team-list-container mat-elevation-z8">
-    <div class="sp-icon">
+  <div [class.special-team-list-container]="isAddMode && teamList" class="team-list-container elevate">
+    <div class="users-header">
       <mat-icon class="mdi-24px" fontIcon="mdi-account-group"></mat-icon>
       <span style="margin-left: 10px">
         Team Users

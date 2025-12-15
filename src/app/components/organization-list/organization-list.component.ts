@@ -27,10 +27,10 @@ import { OrganizationEditDialogComponent } from '../organization-edit-dialog/org
 import { v4 as uuidv4 } from 'uuid';
 
 @Component({
-    selector: 'app-organization-list',
-    templateUrl: './organization-list.component.html',
-    styleUrls: ['./organization-list.component.scss'],
-    standalone: false
+  selector: 'app-organization-list',
+  templateUrl: './organization-list.component.html',
+  styleUrls: ['./organization-list.component.scss'],
+  standalone: false
 })
 export class OrganizationListComponent implements OnDestroy, OnInit {
   @Input() loggedInUserId: string;
@@ -94,6 +94,7 @@ export class OrganizationListComponent implements OnDestroy, OnInit {
   }
 
   addOrEditOrganization(organization: Organization, makeTemplate: boolean) {
+    let dialogTitle = 'Add an Organization';
     if (!organization) {
       organization = {
         name: '',
@@ -105,6 +106,14 @@ export class OrganizationListComponent implements OnDestroy, OnInit {
         isTemplate: makeTemplate
       };
     } else {
+      if (makeTemplate === organization.isTemplate) {
+        dialogTitle = dialogTitle.replace('Add an', 'Edit');
+      } else {
+        organization.id = null;
+        if (makeTemplate) {
+          dialogTitle = dialogTitle.replace('Add', 'Make');
+        }
+      }
       organization = {
         id: makeTemplate === organization.isTemplate ? organization.id : null,
         name: organization.name,
@@ -116,10 +125,14 @@ export class OrganizationListComponent implements OnDestroy, OnInit {
         isTemplate: makeTemplate
       };
     }
+    if (organization.isTemplate) {
+      dialogTitle += ' Template';
+    }
     const dialogRef = this.dialog.open(OrganizationEditDialogComponent, {
       width: '800px',
       data: {
-        organization: organization
+        organization: organization,
+        title: dialogTitle,
       },
     });
     dialogRef.componentInstance.editComplete.subscribe((result) => {

@@ -20,10 +20,10 @@ import { PlayerService } from 'src/app/generated/blueprint.api';
 import { v4 as uuidv4 } from 'uuid';
 
 @Component({
-    selector: 'app-player-application-list',
-    templateUrl: './player-application-list.component.html',
-    styleUrls: ['./player-application-list.component.scss'],
-    standalone: false
+  selector: 'app-player-application-list',
+  templateUrl: './player-application-list.component.html',
+  styleUrls: ['./player-application-list.component.scss'],
+  standalone: false
 })
 export class PlayerApplicationListComponent implements OnDestroy {
   @Input() loggedInUserId: string;
@@ -91,7 +91,7 @@ export class PlayerApplicationListComponent implements OnDestroy {
     }
   }
 
-  addOrEditPlayerApplication(playerApplication: PlayerApplication) {
+  addOrEditPlayerApplication(playerApplication: PlayerApplication, dialogTitle: string) {
     if (!playerApplication) {
       playerApplication = {
         mselId: this.msel.id,
@@ -99,7 +99,7 @@ export class PlayerApplicationListComponent implements OnDestroy {
         url: '',
         icon: '',
         embeddable: true,
-        loadInBackground: false
+        loadInBackground: false,
       };
     } else {
       playerApplication = { ...playerApplication };
@@ -110,6 +110,7 @@ export class PlayerApplicationListComponent implements OnDestroy {
       maxWidth: '800px',
       data: {
         playerApplication: { ...playerApplication },
+        title: dialogTitle,
         moveList: this.moveList
           .filter(m => m.mselId === this.msel.id)
           .sort((a, b) => +a.moveNumber < +b.moveNumber ? -1 : 1)

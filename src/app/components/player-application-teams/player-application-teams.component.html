@@ -5,10 +5,10 @@ project root for license information.
 -->
 
 <div class="enchilada">
-  <div class="team-list-container mat-elevation-z8">
+  <div class="team-list-container elevate">
     <div class="sp-icon">
       <div>
-        <img height="35" src="./assets/svg-icons/account-multiple.svg" alt="Teams" />
+        <mat-icon class="mdi-24px" fontIcon="mdi-account-multiple-outline"></mat-icon>
         MSEL Teams
       </div>
       <div class="search-div">
@@ -45,9 +45,6 @@ project root for license information.
             <button mat-icon-button (click)="addTeamToPlayerApplication(element)" title="Add {{ element.name }}">
               <mat-icon class="mdi-18px" fontIcon="mdi-plus-circle-outline" title="Add {{ element.name }}"></mat-icon>
             </button>
-            <button mat-stroked-button (click)="addTeamToPlayerApplication(element)">
-              Add Team
-            </button>
           </div>
         </mat-cell>
       </ng-container>
@@ -59,10 +56,10 @@ project root for license information.
     }
   </div>
 
-  <div class="player-application-list-container mat-elevation-z8">
+  <div class="player-application-list-container elevate">
     <div class="sp-icon center-self">
       <div class="head-name center-self">
-        <img height="35" src="./assets/svg-icons/account-group.svg" alt="PlayerApplication Teams" />
+        <mat-icon class="mdi-24px" fontIcon="mdi-account-group-outline"></mat-icon>
         Player Application Teams
       </div>
       <div class="head-right">&nbsp;</div>

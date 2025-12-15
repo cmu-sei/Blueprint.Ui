@@ -8,7 +8,6 @@ import { takeUntil } from 'rxjs/operators';
 import {
   DataField,
   DataFieldType,
-  InjectType,
 } from 'src/app/generated/blueprint.api';
 import { Theme } from '@cmusei/crucible-common';
 import { MselPlus } from 'src/app/data/msel/msel-data.service';
@@ -29,10 +28,10 @@ import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { v4 as uuidv4 } from 'uuid';
 
 @Component({
-    selector: 'app-data-field-list',
-    templateUrl: './data-field-list.component.html',
-    styleUrls: ['./data-field-list.component.scss'],
-    standalone: false
+  selector: 'app-data-field-list',
+  templateUrl: './data-field-list.component.html',
+  styleUrls: ['./data-field-list.component.scss'],
+  standalone: false
 })
 export class DataFieldListComponent implements OnDestroy, OnInit {
   @Input() loggedInUserId: string;
@@ -227,6 +226,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
   }
 
   addOrEditDataField(dataFieldIn: DataField, makeTemplate: boolean) {
+    let dialogTitle = 'Add a Data Field';
     const dataOptions =
       dataFieldIn && dataFieldIn.isChosenFromList
         ? dataFieldIn.dataOptions.slice()
@@ -243,8 +243,14 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
         isTemplate: makeTemplate,
       } as DataField;
     } else {
-      dataField.id =
-        makeTemplate === dataField.isTemplate ? dataField.id : null;
+      if (makeTemplate === dataField.isTemplate) {
+        dialogTitle = dialogTitle.replace('Add a', 'Edit');
+      } else {
+        dataField.id = null;
+        if (makeTemplate) {
+          dialogTitle = dialogTitle.replace('Add', 'Make');
+        }
+      }
       if (makeTemplate) {
         dataField.mselId = null;
         dataField.injectTypeId = null;
@@ -258,6 +264,9 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
       dataField.isTemplate = makeTemplate;
       dataField.onScenarioEventList = true;
       dataField.onExerciseView = true;
+    }
+    if (dataField.isTemplate) {
+      dialogTitle += ' Template';
     }
     dataField.dataOptions = dataOptions;
     const dialogRef = this.dialog.open(DataFieldEditDialogComponent, {
@@ -273,6 +282,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
         useGallery: this.msel.useGallery,
         useCite: this.msel.useCite,
         dataFieldTypes: this.dataFieldTypes,
+        title: dialogTitle,
       },
     });
     dialogRef.componentInstance.editComplete.subscribe((result) => {

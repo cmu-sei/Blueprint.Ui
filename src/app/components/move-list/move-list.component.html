@@ -5,13 +5,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
 -->
 @if (msel) {
 <div class="frame">
-  <section matSort (matSortChange)="sortChanged($event)" class="mat-elevation-z2 mat-header-row background-alt">
-    <span class="mat-header-cell one-cell" mat-sort-header="moveNumber">
+  <section matSort (matSortChange)="sortChanged($event)" class="header-row elevate background-alt">
+    <span class="header-cell one-cell" mat-sort-header="moveNumber">
       @if (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner || msel.hasRole(loggedInUserId,
       null).moveEditor) {
       <button mat-icon-button (click)="addOrEditMove(null); $event.stopPropagation()"
         style="outline: none; margin-right: 15px;" title="Add new move" [disabled]="isAddingMove">
-        <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
+        <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle"></mat-icon>
       </button>
       }
       Move
@@ -30,12 +30,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </button>
       }
     </span>
-    <span class="mat-header-cell one-cell" mat-sort-header="moveStartTime">
+    <span class="header-cell one-cell" mat-sort-header="moveStartTime">
       Start
     </span>
-    <span class="mat-header-cell one-cell" mat-sort-header="situationTime">Situation Time</span>
-    <span class="mat-header-cell two-cell" mat-sort-header="description">Description</span>
-    <span class="mat-header-cell two-cell search-cell">
+    <span class="header-cell one-cell" mat-sort-header="situationTime">Situation Time</span>
+    <span class="header-cell two-cell" mat-sort-header="description">Description</span>
+    <span class="header-cell two-cell search-cell">
       <mat-form-field class="search-control">
         <input matInput [formControl]="filterControl" placeholder="Search" />
       </mat-form-field>
@@ -51,8 +51,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <!-- existing moves -->
     @for (item of displayedMoves; track item) {
     <mat-expansion-panel [expanded]="editingId === item.id" disabled>
-      <mat-expansion-panel-header class="mat-row">
-        <div class="mat-cell flex-row-cell one-cell">
+      <mat-expansion-panel-header class="row">
+        <div class="cell flex-row-cell one-cell">
           @if (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner || msel.hasRole(loggedInUserId,
           null).moveEditor) {
           <button mat-icon-button class="move-button" (click)="addOrEditMove(item)"
@@ -70,12 +70,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
           &nbsp;{{ item.moveNumber }}
         </div>
         <span style="width: 40px;">&nbsp;</span>
-        <div class="mat-cell one-cell center-self">
+        <div class="cell one-cell center-self">
           <app-duration-view [startTime]="msel.startTime" [durationSeconds]="item.deltaSeconds"
             [showRealTime]="showRealTime"></app-duration-view>
         </div>
-        <div class="mat-cell one-cell center-self">{{ item.situationTime | date: 'MM/dd/yyyy HH:mm' }}</div>
-        <div class="mat-cell four-cell center-self">{{ item.description }}</div>
+        <div class="cell one-cell center-self">{{ item.situationTime | date: 'MM/dd/yyyy HH:mm' }}</div>
+        <div class="cell four-cell center-self">{{ item.description }}</div>
       </mat-expansion-panel-header>
     </mat-expansion-panel>
     }

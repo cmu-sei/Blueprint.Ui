@@ -2,6 +2,12 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
+@use "@angular/material" as mat;
+
+:host {
+  @include mat.form-field-density(-5); // Adjust -3 for this specific form field
+}
+
 .frame {
   display: flex;
   flex-direction: column;
@@ -9,19 +15,19 @@
   height: calc(100vh - 39px);
 }
 
-.mat-mdc-header-row {
+.header-row {
   min-height: 40px;
-  padding-left:30px;
+  padding-left: 30px;
   padding-right: 50px;
   background: transparent;
 }
 
-.mat-mdc-row {
+.row {
   height: 36px;
 }
 
-.mat-mdc-row,
-.mat-mdc-header-row {
+.row,
+.header-row {
   display: flex;
   border-bottom-width: 1px;
   border-bottom-style: solid;
@@ -29,25 +35,25 @@
   box-sizing: border-box;
 }
 
-.mat-mdc-header-cell {
+.header-cell {
   font-weight: bold;
 }
 
-.mat-mdc-cell,
-.mat-mdc-header-cell {
+.cell,
+.header-cell {
   flex: 1;
   overflow: hidden;
   word-wrap: break-word;
   text-align: left;
 }
 
-.mat-accordion .mat-mdc-header-row {
+.mat-accordion .header-row {
   padding-left: 1.5rem;
   padding-right: 2rem;
   border-bottom: none;
 }
 
-.mat-expansion-panel-header.mat-mdc-row {
+.mat-expansion-panel-header.row {
   border-bottom: none;
 }
 
@@ -80,7 +86,8 @@
   flex: 7;
   flex-flow: column;
   align-items: flex-start;
-  text-align: left;;
+  text-align: left;
+  ;
 }
 
 .data-option {

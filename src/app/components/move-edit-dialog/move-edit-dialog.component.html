@@ -6,55 +6,67 @@ project root for license information.
 
 <div mat-dialog-container>
   <div mat-dialog-title>
-    &nbsp;
+    {{ data.title }}
     <button mat-icon-button (click)="handleEditComplete(false)" title="Cancel" class="close-button" tabindex="-1">
       <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
     </button>
   </div>
   @if (data && data.move) {
-    <div mat-dialog-content>
-      <div class="add-margin">
-        <div>
-          <mat-form-field class="full-width">
-            <input type="text" matInput [(ngModel)]="data.move.moveNumber" placeholder="Move Number">
-          </mat-form-field>
-        </div>
+  <div mat-dialog-content>
+    <div class="add-margin">
+      <div>
+        <mat-form-field class="full-width">
+          <mat-label>Move Number</mat-label>
+          <input type="text" matInput [(ngModel)]="data.move.moveNumber" placeholder="Move Number">
+        </mat-form-field>
       </div>
-      <!-- move start time (deltaSeconds) -->
-      <div class="add-margin flex-row">
-        <app-duration-edit [startTime]="data.mselStartTime" [(durationSeconds)]="data.move.deltaSeconds"
-          [timeName]="'Start Date / Time'" [postScript]="'from start'">
-        </app-duration-edit>
+    </div>
+    <!-- move start time (deltaSeconds) -->
+    <div class="add-margin flex-row">
+      <app-duration-edit [startTime]="data.mselStartTime" [(durationSeconds)]="data.move.deltaSeconds"
+        [timeName]="'Start Date / Time'" [postScript]="'from start'">
+      </app-duration-edit>
+    </div>
+    <div class="add-margin">
+      <div>
+        <mat-form-field class="full-width">
+          <mat-label>Move Description</mat-label>
+          <input type="text" matInput [(ngModel)]="data.move.description" placeholder="Move Description">
+        </mat-form-field>
       </div>
-      <div class="add-margin">
-        <div>
-          <mat-form-field class="full-width">
-            <input type="text" matInput [(ngModel)]="data.move.description" placeholder="Move Description">
-          </mat-form-field>
-        </div>
+    </div>
+    <div class="add-margin">
+      <div>
+        <mat-form-field>
+          <mat-label>Situation Date / Time</mat-label>
+          <input matInput [ngxMatDatetimePicker]="picker" [formControl]="situationDateFormControl"
+            (inputChange)="saveMove('situationDate')" (dateChange)="saveMove('situationDate')" style="display: none;">
+          <!-- <datetime-picker> -->
+          <span (click)="picker.open()">
+            {{ situationDateFormControl.value | date: 'MM/dd/yyyy hh:mm a' }}
+          </span>
+          <mat-datepicker-toggle matSuffix title="Choose Date/Time" [for]="picker">
+          </mat-datepicker-toggle>
+          <ngx-mat-datetime-picker #picker [showSpinners]=true [showSeconds]=false [stepHour]=1 [stepMinute]=5
+            [stepSecond]=1 [touchUi]=false [enableMeridian]=true [disableMinute]=false [hideTime]=false
+            [color]="'warn'">
+          </ngx-mat-datetime-picker>
+        </mat-form-field>
       </div>
-      <div class="add-margin">
+    </div>
+    <div class="add-margin left">
+      <div>
+        <p
+          style="font-size: 13px; font-weight: 400; line-height: 1.125; font-family: Open Sans, sans-serif; letter-spacing: normal;">
+          Situation Description
+        </p>
         <div>
-          <mat-form-field>
-            <input matInput placeholder="Situation Date / Time" [formControl]="situationDateFormControl"
-              (inputChange)="saveMove('situationDate')" (dateChange)="saveMove('situationDate')">
-            <!-- <datetime-picker> -->
-          </mat-form-field>
-        </div>
-      </div>
-      <div class="add-margin left">
-        <div>
-          <p
-            style="font-size: 13px; font-weight: 400; line-height: 1.125; font-family: Open Sans, sans-serif; letter-spacing: normal;">
-            Situation Description
-          </p>
-          <div>
-            <angular-editor [placeholder]="'Description'" [(ngModel)]="data.move.situationDescription"
+          <angular-editor [placeholder]="'Description'" [(ngModel)]="data.move.situationDescription"
             [config]="editorConfig"></angular-editor>
-          </div>
         </div>
       </div>
     </div>
+  </div>
   }
   <div class="cssLayoutRowStartCenter bottom-button">
     <div class="delete-button">

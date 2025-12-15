@@ -5,7 +5,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
 -->
 
 <div mat-dialog-title>
-  &nbsp;
+  {{ data.title }}
   <button mat-icon-button (click)="handleEditComplete(false)" title="Cancel" class="close-button" tabindex="-1">
     <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
   </button>
@@ -15,7 +15,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
   <div class="data-field-detail" (click)="$event.stopPropagation();">
     <div class="single-detail">
       <mat-form-field class="full-width">
-        <input type="text" matInput placeholder="Display Order" [(ngModel)]="data.dataField.displayOrder"
+        <mat-label>Display Order</mat-label>
+        <input type="text" matInput [(ngModel)]="data.dataField.displayOrder"
           [disabled]="!data.isContentDeveloper && !data.isOwner" />
       </mat-form-field>
     </div>
@@ -33,8 +34,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
   <div class="data-field-detail" (click)="$event.stopPropagation();">
     <div class="single-detail">
       <mat-form-field class="full-width">
-        <mat-select placeholder="Data Type" [value]="data.dataField.dataType"
-          (selectionChange)="changeDataFieldDataType($event.value)"
+        <mat-label>Data Type</mat-label>
+        <mat-select [value]="data.dataField.dataType" (selectionChange)="changeDataFieldDataType($event.value)"
           [disabled]="!data.isContentDeveloper && !data.isOwner">
           @for (dataFieldType of (data.dataFieldTypes | keyvalue); track dataFieldType) {
           <mat-option value="{{ dataFieldType.key }}">{{ dataFieldType.key }}</mat-option>
@@ -151,7 +152,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
   <div class="data-field-detail" (click)="$event.stopPropagation();">
     <div class="single-detail">
       <mat-form-field class="full-width">
-        <mat-select placeholder="Gallery Article Parameter" [(ngModel)]="data.dataField.galleryArticleParameter"
+        <mat-label>Gallery Article Parameter</mat-label>
+        <mat-select [(ngModel)]="data.dataField.galleryArticleParameter"
           [disabled]="!data.isContentDeveloper && !data.isOwner">
           <mat-option value=""></mat-option>
           @for (parameter of data.galleryArticleParameters; track parameter) {
@@ -166,7 +168,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
   <div class="data-field-detail" (click)="$event.stopPropagation();">
     <div class="single-detail">
       <mat-form-field class="full-width">
-        <input type="text" matInput placeholder="Column Metadata (Width)" [(ngModel)]="data.dataField.columnMetadata" />
+        <mat-label>Column Metadata (Width)</mat-label>
+        <input type="text" matInput [(ngModel)]="data.dataField.columnMetadata" />
       </mat-form-field>
     </div>
   </div>
@@ -175,8 +178,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
   <div class="data-field-detail" (click)="$event.stopPropagation();">
     <div class="single-detail">
       <mat-form-field class="full-width">
-        <input type="text" matInput placeholder="Cell Metadata (Color, Tint, Font-Weight)"
-          [(ngModel)]="data.dataField.cellMetadata" />
+        <mat-label>Cell Metadata (Color, Tint, Font-Weight)</mat-label>
+        <input type="text" matInput [(ngModel)]="data.dataField.cellMetadata" />
       </mat-form-field>
     </div>
   </div>

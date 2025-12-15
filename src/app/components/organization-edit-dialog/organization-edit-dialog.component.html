@@ -5,96 +5,89 @@ project root for license information.
 -->
 <div mat-dialog-container>
   <div mat-dialog-title>
-    &nbsp;
-    <button
-      mat-icon-button
-      (click)="handleEditComplete(false)"
-      title="Cancel"
-      class="close-button"
-      tabindex="-1"
-      >
+    {{ data.title }}
+    <button mat-icon-button (click)="handleEditComplete(false)" title="Cancel" class="close-button" tabindex="-1">
       <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
     </button>
   </div>
   @if (!!data && data.organization !== undefined && data.organization !== null) {
-    <div mat-dialog-content>
-      <div class="add-margin">
-        <div>
-          <mat-form-field class="full-width">
-            <input type="text" matInput [formControl]="organizationNameFormControl" placeholder="Long Name (required)" (blur)="saveOrganization('name')"
-              value="{{data.organization.name}}">
-            @if (organizationNameFormControl.hasError('required')) {
-              <mat-error>
-                Name is <strong>required</strong>
-              </mat-error>
-            }
-          </mat-form-field>
-        </div>
+  <div mat-dialog-content>
+    <div class="add-margin">
+      <div>
+        <mat-form-field class="full-width">
+          <input type="text" matInput [formControl]="organizationNameFormControl" placeholder="Long Name (required)"
+            (blur)="saveOrganization('name')" value="{{data.organization.name}}">
+          @if (organizationNameFormControl.hasError('required')) {
+          <mat-error>
+            Name is <strong>required</strong>
+          </mat-error>
+          }
+        </mat-form-field>
       </div>
-      <div class="add-margin">
-        <div>
-          <mat-form-field class="full-width">
-            <input type="text" matInput [formControl]="organizationShortNameFormControl" placeholder="Short Name (required)" (blur)="saveOrganization('shortName')"
-              value="{{data.organization.shortName}}">
-            @if (organizationShortNameFormControl.hasError('required')) {
-              <mat-error>
-                Short Name is <strong>required</strong>
-              </mat-error>
-            }
-          </mat-form-field>
-        </div>
+    </div>
+    <div class="add-margin">
+      <div>
+        <mat-form-field class="full-width">
+          <input type="text" matInput [formControl]="organizationShortNameFormControl"
+            placeholder="Short Name (required)" (blur)="saveOrganization('shortName')"
+            value="{{data.organization.shortName}}">
+          @if (organizationShortNameFormControl.hasError('required')) {
+          <mat-error>
+            Short Name is <strong>required</strong>
+          </mat-error>
+          }
+        </mat-form-field>
       </div>
-      <div class="add-margin left">
-        <div>
-          <mat-form-field class="full-width">
-            <input type="text" matInput [formControl]="summaryFormControl" placeholder="Summary (required)" (blur)="saveOrganization('summary')"
-              value="{{data.organization.summary}}">
-            @if (summaryFormControl.hasError('required')) {
-              <mat-error>
-                Summary is <strong>required</strong>
-              </mat-error>
-            }
-          </mat-form-field>
-        </div>
+    </div>
+    <div class="add-margin left">
+      <div>
+        <mat-form-field class="full-width">
+          <input type="text" matInput [formControl]="summaryFormControl" placeholder="Summary (required)"
+            (blur)="saveOrganization('summary')" value="{{data.organization.summary}}">
+          @if (summaryFormControl.hasError('required')) {
+          <mat-error>
+            Summary is <strong>required</strong>
+          </mat-error>
+          }
+        </mat-form-field>
       </div>
-      <div class="add-margin left">
-        <div>
-          <mat-form-field class="full-width">
-            <input type="text" matInput [formControl]="organizationEmailFormControl" placeholder="Email" (blur)="saveOrganization('email')"
-              value="{{data.organization.email}}">
-            @if (organizationEmailFormControl.hasError('required')) {
-              <mat-error>
-                Email is <strong>required</strong>
-              </mat-error>
-            }
-          </mat-form-field>
-        </div>
+    </div>
+    <div class="add-margin left">
+      <div>
+        <mat-form-field class="full-width">
+          <input type="text" matInput [formControl]="organizationEmailFormControl" placeholder="Email"
+            (blur)="saveOrganization('email')" value="{{data.organization.email}}">
+          @if (organizationEmailFormControl.hasError('required')) {
+          <mat-error>
+            Email is <strong>required</strong>
+          </mat-error>
+          }
+        </mat-form-field>
       </div>
-      <div class="add-margin left">
+    </div>
+    <div class="add-margin left">
+      <div>
+        <p
+          style="font-size: 13px; font-weight: 400; line-height: 1.125; font-family: Open Sans, sans-serif; letter-spacing: normal;">
+          Description
+        </p>
         <div>
-          <p style="font-size: 13px; font-weight: 400; line-height: 1.125; font-family: Open Sans, sans-serif; letter-spacing: normal;">
-            Description
-          </p>
-          <div>
-            <angular-editor
-              [placeholder]="'Description'"
-              [formControl]="descriptionFormControl"
-              [config]="editorConfig"
-              (blur)="saveOrganization('description')"
-            ></angular-editor>
-            @if (descriptionFormControl.hasError('required')) {
-              <mat-error>
-                Description is <strong>required</strong>
-              </mat-error>
-            }
-          </div>
+          <angular-editor [placeholder]="'Description'" [formControl]="descriptionFormControl" [config]="editorConfig"
+            (blur)="saveOrganization('description')"></angular-editor>
+          @if (descriptionFormControl.hasError('required')) {
+          <mat-error>
+            Description is <strong>required</strong>
+          </mat-error>
+          }
         </div>
       </div>
     </div>
+  </div>
   }
   <div class="cssLayoutRowStartCenter bottom-button">
     <div class="delete-button">
-      <button mat-stroked-button (click)="handleEditComplete(true)" [disabled]="!errorFree()" style="margin-left: 40px;">Save</button>
+      <button mat-stroked-button (click)="handleEditComplete(true)" [disabled]="!errorFree()"
+        style="margin-left: 40px;">Save</button>
     </div>
     <div class="delete-button">
       <button mat-stroked-button (click)="handleEditComplete(false)">Cancel</button>

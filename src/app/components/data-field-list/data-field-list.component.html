@@ -66,7 +66,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <mat-menu #addMenu="matMenu" [overlapTrigger]="false">
               <button mat-menu-item (click)="addOrEditDataField(null, false)" title="Add a new data Field">New Data
                 Field</button>
-              @for (template of templateDataSource.data; track template) {
+              @for (template of templateDataSource.data; track template.id) {
               <button mat-menu-item (click)="addOrEditDataField(template, false)"
                 title="{{ template.name }} - {{ template.description }}">{{ template.name }}</button>
               }

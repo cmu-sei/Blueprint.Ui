@@ -18,10 +18,10 @@ import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { v4 as uuidv4 } from 'uuid';
 
 @Component({
-    selector: 'app-move-list',
-    templateUrl: './move-list.component.html',
-    styleUrls: ['./move-list.component.scss'],
-    standalone: false
+  selector: 'app-move-list',
+  templateUrl: './move-list.component.html',
+  styleUrls: ['./move-list.component.scss'],
+  standalone: false
 })
 export class MoveListComponent implements OnDestroy {
   @Input() loggedInUserId: string;
@@ -99,8 +99,10 @@ export class MoveListComponent implements OnDestroy {
   }
 
   addOrEditMove(move: Move) {
+    let dialogTitle = '';
     let editMove: Move = {};
     if (!move) {
+      dialogTitle = 'Add a Move';
       editMove = {
         moveNumber: this.maxMoveNumber + 1,
         deltaSeconds: this.maxMoveStartSeconds,
@@ -110,6 +112,7 @@ export class MoveListComponent implements OnDestroy {
         mselId: this.msel.id,
       };
     } else {
+      dialogTitle = 'Edit Move';
       // make sure all move dates are actual dates
       editMove = { ...move };
       this.moveDataService.setAsDates(editMove);
@@ -119,6 +122,7 @@ export class MoveListComponent implements OnDestroy {
       data: {
         move: editMove,
         mselStartTime: this.msel.startTime,
+        title: dialogTitle,
       },
     });
     dialogRef.componentInstance.editComplete.subscribe((result) => {
