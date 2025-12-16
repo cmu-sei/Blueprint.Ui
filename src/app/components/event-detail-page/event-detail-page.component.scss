@@ -5,21 +5,20 @@
 */
 
 #eventDetails {
-  font-family: Arial, Helvetica, sans-serif;
   border-collapse: collapse;
   width: 100%;
 }
 
-#eventDetails td, #eventDetails th {
+#eventDetails td,
+#eventDetails th {
   border: 1px solid gray;
   padding: 8px;
 }
 
-h2 {
-  font-family: "Open Sans", sans-serif;
+#eventDetails tr:nth-child(even) {
+  background-color: lightgray;
+  color: black !important;
 }
-
-#eventDetails tr:nth-child(even) {background-color: lightgray; color: black !important;}
 
 .app-event-detail-page {
   top: 0;
@@ -53,6 +52,7 @@ h2 {
   .no-print {
     display: none;
   }
+
   .page {
     margin: 0;
     border: initial;
@@ -62,8 +62,8 @@ h2 {
     box-shadow: initial;
     background: initial;
     page-break-after: always;
-    -webkit-print-color-adjust:exact !important;
-    print-color-adjust:exact !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 }
 

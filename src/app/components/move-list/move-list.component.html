@@ -5,7 +5,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
 -->
 @if (msel) {
 <div class="frame">
-  <section matSort (matSortChange)="sortChanged($event)" class="header-row elevate background-alt">
+  <section matSort (matSortChange)="sortChanged($event)" class="header-row elevate">
     <span class="header-cell one-cell" mat-sort-header="moveNumber">
       @if (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner || msel.hasRole(loggedInUserId,
       null).moveEditor) {
@@ -14,7 +14,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle"></mat-icon>
       </button>
       }
-      Move
+      <span class="move-cell">Move</span>
     </span>
     <span style="width: 40px;">
       @if (!showRealTime) {
@@ -67,7 +67,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <mat-icon class="mdi-18px up-12" fontIcon="mdi-trash-can-outline"></mat-icon>
           </button>
           }
-          &nbsp;{{ item.moveNumber }}
+          &nbsp;<span class="move-cell">{{ item.moveNumber }}</span>
         </div>
         <span style="width: 40px;">&nbsp;</span>
         <div class="cell one-cell center-self">

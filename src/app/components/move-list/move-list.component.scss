@@ -33,7 +33,6 @@
   align-items: center;
   box-sizing: border-box;
   background: transparent;
-  font-family: "Open Sans", sans-serif;
   font-weight: 400;
   color: var(--mat-sys-on-background) !important;
 }
@@ -67,12 +66,8 @@
   text-align: left;
 }
 
-.move-detail {
-  display: flex;
-  flex: 1;
-  flex-flow: column;
-  justify-content: center;
-  align-items: center;
+.move-cell {
+  margin-left: 20px;
 }
 
 .data-options {
