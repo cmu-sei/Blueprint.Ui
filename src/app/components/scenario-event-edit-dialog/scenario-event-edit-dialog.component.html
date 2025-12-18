@@ -6,154 +6,113 @@ project root for license information or contact permission@sei.cmu.edu for full 
 <div mat-dialog-container>
   <div mat-dialog-title>
     @if (data.isNew) {
-      <span>Create Event</span>
+    <span>Create Event</span>
     }
     @if (!data.isNew) {
-      <span>Edit Event</span>
+    <span>Edit Event</span>
     }
-    <button
-      mat-icon-button
-      (click)="handleEditComplete(false)"
-      title="Cancel"
-      class="close-button"
-      tabindex="-1"
-      >
+    <button mat-icon-button (click)="handleEditComplete(false)" title="Cancel" class="close-button" tabindex="-1">
       <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
     </button>
   </div>
   @if (!!data && data.scenarioEvent) {
-    <div mat-dialog-content>
-      <div class="scenario-event-edit-dialog">
-        <!-- Scenario Event Type -->
-        @if (!data.isEditingRestricted) {
-          <div class="single-edit-dialog">
-            <mat-form-field>
-              <mat-select
-                placeholder="Scenario Event Type"
-                [(ngModel)]="data.scenarioEvent.scenarioEventType"
-                (valueChange)="scenarioEventTypeChange()"
-                [disabled]="!data.isContentDeveloper && !data.isOwner"
-                >
-                @for (eventType of eventTypes; track eventType) {
-                  <mat-option value="{{ eventType }}">{{ eventType }}</mat-option>
-                }
-              </mat-select>
+  <div mat-dialog-content>
+    <div class="scenario-event-edit-dialog">
+      <!-- Scenario Event Type -->
+      @if (!data.isEditingRestricted) {
+      <div class="single-edit-dialog">
+        <mat-form-field>
+          <mat-label>Scenario Event Type</mat-label>
+          <mat-select placeholder="Scenario Event Type" [(ngModel)]="data.scenarioEvent.scenarioEventType"
+            (valueChange)="scenarioEventTypeChange()" [disabled]="!data.isContentDeveloper && !data.isOwner">
+            @for (eventType of eventTypes; track eventType) {
+            <mat-option value="{{ eventType }}">{{ eventType }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      </div>
+      }
+      <!-- Tabs -->
+      <span class="single-edit-dialog">
+        @if ((showDefaultTab() || data.useGallery || data.useSteamfitter) && data.scenarioEvent.scenarioEventType ===
+        eventType.Inject) {
+        <mat-tab-group mat-stretch-tabs class="full-width" mat-align-tabs="start" [selectedIndex]="selectedTab"
+          (selectedTabChange)="tabChange($event)" style="margin-bottom: 20px;">
+          @if (showDefaultTab()) {
+          <mat-tab label="Default">
+          </mat-tab>
+          }
+          <mat-tab label="All">
+          </mat-tab>
+          @if (data.useGallery && data.scenarioEvent.integrationTarget?.includes(integrationTarget.Gallery)) {
+          <mat-tab label="Gallery Article">
+          </mat-tab>
+          }
+          @if (data.useSteamfitter && data.scenarioEvent.integrationTarget?.includes(integrationTarget.Steamfitter)) {
+          <mat-tab label="Steamfitter Task">
+            <app-steamfitter-task [scenarioEvent]="data.scenarioEvent"></app-steamfitter-task>
+          </mat-tab>
+          }
+        </mat-tab-group>
+        }
+        @if (selectedTabName !== 'Steamfitter Task') {
+        <span>
+          <!-- Integration Target -->
+          @if (data.integrationTargetDataField.dataOptions.length > 0) {
+          <div class="full-width">
+            <app-data-value [(value)]="data.scenarioEvent.integrationTarget"
+              [dataField]="data.integrationTargetDataField"
+              [canEdit]="data.isEditor && (!data.isEditingRestricted || data.scenarioEvent.scenarioEventType === eventType.Information)"
+              [canApprove]="data.isApprover" [isOwner]="data.isOwner" [showValueOnly]="false"
+              [organizationOptions]="data.organizationList" [teamOptions]="data.teamList" [unitOptions]="data.unitList"
+              [cardOptions]="data.cardList" [moveOptions]="data.moveList"
+              [gallerySourceTypeOptions]="data.gallerySourceTypes" [userOptions]="data.userList"></app-data-value>
+          </div>
+          }
+          <!-- event start time (deltaSeconds) -->
+          @if ((currentFilterBy === 'all' || data.scenarioEvent.scenarioEventType !== eventType.Inject) &&
+          getScenarioTypeDataFields().length > 0) {
+          <div class="start-time-div">
+            <span>Execution Time</span>
+            <app-duration-edit [startTime]="data.mselStartTime" [(durationSeconds)]="data.scenarioEvent.deltaSeconds"
+              [timeName]="'Execution Date / Time'" [postScript]="''">
+            </app-duration-edit>
+          </div>
+          }
+          <!-- data values for each data field -->
+          @for (df of getScenarioTypeDataFields(); track df) {
+          <div class="full-width">
+            <app-data-value [(value)]="getDataValue(df.name).value" [dataField]="df"
+              [canEdit]="data.isEditor && (!data.isEditingRestricted || data.scenarioEvent.scenarioEventType === eventType.Information)"
+              [canApprove]="data.isApprover" [isOwner]="data.isOwner" [showValueOnly]="false"
+              [organizationOptions]="data.organizationList" [teamOptions]="data.teamList" [unitOptions]="data.unitList"
+              [cardOptions]="data.cardList" [moveOptions]="data.moveList"
+              [gallerySourceTypeOptions]="data.gallerySourceTypes" [userOptions]="data.userList"></app-data-value>
+          </div>
+          }
+          <!-- metadata-->
+          @if (currentFilterBy === 'all' && data.scenarioEvent.scenarioEventType === eventType.Inject) {
+          <div class="full-width">
+            <mat-form-field class="full-width">
+              <input type="text" matInput placeholder="row metadata" [(ngModel)]="data.scenarioEvent.rowMetadata" />
             </mat-form-field>
           </div>
-        }
-        <!-- Tabs -->
-        <span class="single-edit-dialog">
-          @if ((showDefaultTab() || data.useGallery || data.useSteamfitter) && data.scenarioEvent.scenarioEventType === eventType.Inject) {
-            <mat-tab-group mat-stretch-tabs
-              class="full-width"
-              mat-align-tabs="start"
-              [selectedIndex]="selectedTab"
-              (selectedTabChange)="tabChange($event)"
-              style="margin-bottom: 20px;"
-              >
-              @if (showDefaultTab()) {
-                <mat-tab label="Default">
-                </mat-tab>
-              }
-              <mat-tab label="All">
-              </mat-tab>
-              @if (data.useGallery && data.scenarioEvent.integrationTarget?.includes(integrationTarget.Gallery)) {
-                <mat-tab label="Gallery Article">
-                </mat-tab>
-              }
-              @if (data.useSteamfitter && data.scenarioEvent.integrationTarget?.includes(integrationTarget.Steamfitter)) {
-                <mat-tab label="Steamfitter Task">
-                  <app-steamfitter-task
-                    [scenarioEvent]="data.scenarioEvent"
-                  ></app-steamfitter-task>
-                </mat-tab>
-              }
-            </mat-tab-group>
           }
-          @if (selectedTabName !== 'Steamfitter Task') {
-            <span>
-              <!-- Integration Target -->
-              @if (data.integrationTargetDataField.dataOptions.length > 0) {
-                <div class="full-width">
-                  <app-data-value
-                    [(value)]="data.scenarioEvent.integrationTarget"
-                    [dataField]="data.integrationTargetDataField"
-                    [canEdit]="data.isEditor && (!data.isEditingRestricted || data.scenarioEvent.scenarioEventType === eventType.Information)"
-                    [canApprove]="data.isApprover"
-                    [isOwner]="data.isOwner"
-                    [showValueOnly]="false"
-                    [organizationOptions]="data.organizationList"
-                    [teamOptions]="data.teamList"
-                    [unitOptions]="data.unitList"
-                    [cardOptions]="data.cardList"
-                    [moveOptions]="data.moveList"
-                    [gallerySourceTypeOptions]="data.gallerySourceTypes"
-                    [userOptions]="data.userList"
-                  ></app-data-value>
-                </div>
-              }
-              <!-- event start time (deltaSeconds) -->
-              @if ((currentFilterBy === 'all' || data.scenarioEvent.scenarioEventType !== eventType.Inject) && getScenarioTypeDataFields().length > 0) {
-                <div class="start-time-div"
-                  >
-                  <span>Execution Time</span>
-                  <app-duration-edit
-                    [startTime]="data.mselStartTime"
-                    [(durationSeconds)]="data.scenarioEvent.deltaSeconds"
-                    [timeName]="'Execution Date / Time'"
-                    [postScript]="''"
-                    >
-                  </app-duration-edit>
-                </div>
-              }
-              <!-- data values for each data field -->
-              @for (df of getScenarioTypeDataFields(); track df) {
-                <div class="full-width">
-                  <app-data-value
-                    [(value)]="getDataValue(df.name).value"
-                    [dataField]="df"
-                    [canEdit]="data.isEditor && (!data.isEditingRestricted || data.scenarioEvent.scenarioEventType === eventType.Information)"
-                    [canApprove]="data.isApprover"
-                    [isOwner]="data.isOwner"
-                    [showValueOnly]="false"
-                    [organizationOptions]="data.organizationList"
-                    [teamOptions]="data.teamList"
-                    [unitOptions]="data.unitList"
-                    [cardOptions]="data.cardList"
-                    [moveOptions]="data.moveList"
-                    [gallerySourceTypeOptions]="data.gallerySourceTypes"
-                    [userOptions]="data.userList"
-                  ></app-data-value>
-                </div>
-              }
-              <!-- metadata-->
-              @if (currentFilterBy === 'all' && data.scenarioEvent.scenarioEventType === eventType.Inject) {
-                <div class="full-width">
-                  <mat-form-field class="full-width">
-                    <input
-                      type="text"
-                      matInput
-                      placeholder="row metadata"
-                      [(ngModel)]="data.scenarioEvent.rowMetadata"
-                      />
-                    </mat-form-field>
-                  </div>
-                }
-                <!-- no data fields message -->
-                @if (getScenarioTypeDataFields().length === 0) {
-                  <div class="full-width">
-                    <br /><br />
-                    <b>No data fields have been defined for this scenario event type!</b>
-                  </div>
-                }
-              </span>
-            }
-          </span>
-        </div>
-      </div>
-    }
-    <div mat-dialog-actions>
-      <button mat-stroked-button (click)="handleEditComplete(true)" [disabled]="hasBadData()">Save</button>
-      <button mat-stroked-button (click)="handleEditComplete(false)">Cancel</button>
+          <!-- no data fields message -->
+          @if (getScenarioTypeDataFields().length === 0) {
+          <div class="full-width">
+            <br /><br />
+            <b>No data fields have been defined for this scenario event type!</b>
+          </div>
+          }
+        </span>
+        }
+      </span>
     </div>
   </div>
+  }
+  <div mat-dialog-actions>
+    <button mat-stroked-button (click)="handleEditComplete(true)" [disabled]="hasBadData()">Save</button>
+    <button mat-stroked-button (click)="handleEditComplete(false)">Cancel</button>
+  </div>
+</div>

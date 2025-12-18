@@ -14,15 +14,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
         @if (showSearch) {
         <tr>
           <th colspan="5">
-            @if (showSearch) {
-            <mat-form-field class="top-search">
-              <input matInput [(ngModel)]="filterString" (keyup)="keyUp.next($event)" placeholder="Search"
-                style="font-size: 10pt;" />
+            <span class="center-self">Search</span>
+            <mat-form-field class="center-self shift-left">
+              <input matInput [(ngModel)]="filterString" (keyup)="keyUp.next($event)" />
             </mat-form-field>
-            }
-            <button [disabled]="filterString === ''" mat-icon-button (click)="applyFilter('')" style="outline: none;"
-              title="Close Search">
-              <mat-icon style="transform: scale(0.85);" fontIcon="mdi-close-circle-outline"></mat-icon>
+            <button [disabled]="!filterString" mat-icon-button (click)="applyFilter('')" style="outline: none;"
+              title="Close Search" class="center-self">
+              <mat-icon class="mdi-18px center-self" fontIcon="mdi-close-circle-outline"></mat-icon>
             </button>
           </th>
         </tr>
@@ -35,10 +33,10 @@ project root for license information or contact permission@sei.cmu.edu for full 
               @if (allowDragAndDrop) {
               <span class="row-index center-self">&nbsp;</span>
               }
-              <span class="row-index center-self">&nbsp;&nbsp;</span>
+              <span class="row-index center-self">&nbsp;</span>
               @if ((isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)) {
               <mat-checkbox [checked]="allSelected" (change)="setAllSelectedState($event.checked)"
-                title="Select All/None" style="margin-top: 7px; margin-right: 7px;"
+                title="Select All/None" style="margin-left: -10px; margin-top: 7px; margin-right: 7px;"
                 [disabled]="displayedScenarioEvents.length === 0"></mat-checkbox>
               }
               @if (selectedEventIdList.length === 0 && (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner))
@@ -175,7 +173,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <td class="center-self">
             <div class="row-start-buttons">
               @if (allowDragAndDrop) {
-              <div cdkDragHandle>
+              <div cdkDragHandle class="center-self">
                 <span><mat-icon class="mdi-24px" fontIcon="mdi-drag-vertical" /></span>
               </div>
               }
@@ -218,7 +216,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 </button>
                 }
                 @if (isContentDeveloper || msel.hasRole(loggedInUserId, item.id).owner) {
-                <button mat-menu-item (click)="deleteScenarioEvent(item)" title="Delete event {{ rowIndex  + 1 }}">
+                <button mat-menu-item (click)="deleteScenarioEvent(item, rowIndex + 1)"
+                  title="Delete event {{ rowIndex  + 1 }}">
                   Delete
                 </button>
                 }

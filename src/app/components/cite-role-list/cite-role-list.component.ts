@@ -161,9 +161,10 @@ export class CiteRoleListComponent implements OnDestroy {
     if (this.isAddingCiteRole || (this.editingId && this.editingId !== citeRole.id)) {
       return;
     }
+    const title = citeRole.mselId ? 'Delete Cite Role' : 'Delete Cite Role Template';
     this.dialogService
       .confirm(
-        'Delete Cite Role',
+        title,
         'Are you sure that you want to delete ' + citeRole.name + '?'
       )
       .subscribe((result) => {

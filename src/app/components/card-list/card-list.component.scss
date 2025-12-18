@@ -5,7 +5,7 @@
 @use "@angular/material" as mat;
 
 :host {
-  @include mat.form-field-density(-5); // Adjust -3 for this specific form field
+  @include mat.form-field-density(-5);
 }
 
 .frame {
@@ -42,13 +42,13 @@
   align-items: center;
   justify-content: center;
   padding: 0 24px;
-  font-weight: 400;
 }
 
 .cell,
 .header-cell {
   overflow: hidden;
   word-wrap: break-word;
+  font-weight: 500;
 }
 
 .flex-row-cell {
@@ -99,4 +99,10 @@
   flex: 1;
   min-width: 120px;
   max-width: 120px;
+}
+
+.select-title {
+  margin-left: 5px;
+  margin-bottom: 15px;
+  font-weight: 500px;
 }

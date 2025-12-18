@@ -41,7 +41,6 @@
 
 .cell,
 .header-cell {
-  flex: 1;
   overflow: hidden;
   word-wrap: break-word;
   text-align: left;
@@ -198,34 +197,9 @@ textarea {
   min-width: 150px;
 }
 
-.eight-cell {
-  flex: 8;
-}
-
-.six-cell {
-  flex: 6;
-}
-
-.five-cell {
-  flex: 5;
-}
-
-.four-cell {
-  flex: 4;
-}
-
-.three-cell {
-  flex: 3;
-}
-
-.two-cell {
-  flex: 2;
-}
-
-.one-cell {
-  flex: 1;
-}
-
-.center-self {
-  align-self: center;
+.title {
+  margin-left: 5%;
+  margin-top: 5px;
+  margin-bottom: 15px;
+  font-weight: 400;
 }

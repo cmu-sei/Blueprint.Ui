@@ -2,6 +2,12 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
+@use "@angular/material" as mat;
+
+:host {
+  @include mat.form-field-density(-5);
+}
+
 .enchilada {
   display: flex;
   flex-direction: row;
@@ -37,6 +43,7 @@
   display: flex;
   flex-direction: row;
   width: 100%;
+  height: 56px;
 }
 
 .mat-mdc-table-msel-teams {
@@ -89,14 +96,15 @@
   text-align: center;
 }
 
-.sp-icon-div {
+.header-icon-div {
   display: flex;
   flex-direction: row;
   align-items: flex-start;
   min-width: 100px;
 }
 
-.sp-icon {
+.header-icon {
+  margin-right: 10px;
   color: var(--mat-sys-primary);
 }
 

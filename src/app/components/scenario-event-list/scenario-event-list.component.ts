@@ -72,10 +72,10 @@ interface StringDictionary {
 };
 
 @Component({
-    selector: 'app-scenario-event-list',
-    templateUrl: './scenario-event-list.component.html',
-    styleUrls: ['./scenario-event-list.component.scss'],
-    standalone: false
+  selector: 'app-scenario-event-list',
+  templateUrl: './scenario-event-list.component.html',
+  styleUrls: ['./scenario-event-list.component.scss'],
+  standalone: false
 })
 export class ScenarioEventListComponent
   implements OnDestroy, ScenarioEventView {
@@ -849,11 +849,11 @@ export class ScenarioEventListComponent
     this.scenarioEventDataService.updateScenarioEvent(scenarioEvent);
   }
 
-  deleteScenarioEvent(scenarioEvent: ScenarioEvent): void {
+  deleteScenarioEvent(scenarioEvent: ScenarioEvent, index: number): void {
     this.dialogService
       .confirm(
         'Delete Event',
-        'Are you sure that you want to delete this event?'
+        'Are you sure that you want to delete event ' + index + '?'
       )
       .subscribe((result) => {
         if (result['confirm']) {

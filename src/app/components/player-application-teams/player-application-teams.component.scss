@@ -19,6 +19,13 @@
   margin-left: 5%;
 }
 
+.team-list-header {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-items: center;
+}
+
 .player-application-list-container {
   display: inline-block;
   flex-direction: column;
@@ -26,6 +33,14 @@
   width: 50%;
   min-width: 400px;
   margin-left: 5%;
+}
+
+.player-application-list-header {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-items: center;
+  height: 56px;
 }
 
 .mat-mdc-table-msel-teams {
@@ -83,10 +98,9 @@
   text-align: center;
 }
 
-.sp-icon {
-  display: flex;
-  flex-direction: row;
-  align-items: flex-start;
+.header-icon {
+  margin-right: 10px;
+  color: var(--mat-sys-primary);
 }
 
 .search-div {

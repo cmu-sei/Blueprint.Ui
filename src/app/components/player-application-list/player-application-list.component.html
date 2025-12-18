@@ -67,7 +67,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <ng-template matExpansionPanelContent>
         <div class="playerApplication-detail" (click)="$event.stopPropagation();">
           <div class="single-detail">
-            <h4>Select Teams</h4>
+            <span class="title">Select the MSEL teams that will see this application</span>
           </div>
           <div class="single-detail">
             <app-player-application-teams style="width: 100%;" [playerApplicationId]="item.id"
