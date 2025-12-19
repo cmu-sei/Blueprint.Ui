@@ -11,7 +11,7 @@ import {
 } from './card.store';
 import { Card } from 'src/app/generated/blueprint.api';
 import { Injectable } from '@angular/core';
-import { LegacyPageEvent as PageEvent } from '@angular/material/legacy-paginator';
+import { PageEvent } from '@angular/material/paginator';
 import { Observable } from 'rxjs';
 
 @QueryConfig({

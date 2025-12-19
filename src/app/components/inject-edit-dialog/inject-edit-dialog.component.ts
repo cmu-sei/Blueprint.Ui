@@ -10,7 +10,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { ErrorStateMatcher } from '@angular/material/core';
-import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { DataValue } from 'src/app/generated/blueprint.api';
 
@@ -28,9 +28,10 @@ export class UserErrorStateMatcher implements ErrorStateMatcher {
 const MIN_NAME_LENGTH = 3;
 
 @Component({
-  selector: 'app-inject-edit-dialog',
-  templateUrl: './inject-edit-dialog.component.html',
-  styleUrls: ['./inject-edit-dialog.component.scss'],
+    selector: 'app-inject-edit-dialog',
+    templateUrl: './inject-edit-dialog.component.html',
+    styleUrls: ['./inject-edit-dialog.component.scss'],
+    standalone: false
 })
 export class InjectEditDialogComponent {
   @Output() editComplete = new EventEmitter<any>();

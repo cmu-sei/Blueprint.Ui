@@ -51,9 +51,10 @@ import { CardQuery } from 'src/app/data/card/card.query';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
 
 @Component({
-  selector: 'app-event-detail-page',
-  templateUrl: './event-detail-page.component.html',
-  styleUrls: ['./event-detail-page.component.scss'],
+    selector: 'app-event-detail-page',
+    templateUrl: './event-detail-page.component.html',
+    styleUrls: ['./event-detail-page.component.scss'],
+    standalone: false
 })
 export class EventDetailPageComponent {
   @Input() userTheme: Theme;

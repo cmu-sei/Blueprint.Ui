@@ -4,186 +4,179 @@ Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
 <div class="container">
-  <div class="tableFixHead" *ngIf="msel">
+  @if (msel) {
+  <div class="tableFixHead">
     <table>
       <thead matSort (matSortChange)="sortChanged($event)">
-        <tr *ngIf="showSearch">
-          <th colspan="5">
-            <mat-form-field *ngIf="showSearch" class="top-search">
-              <input
-                matInput
-                [(ngModel)]="filterString"
-                (keyup)="keyUp.next($event)"
-                placeholder="Search"
-                style="font-size: 10pt;"
-              />
+        @if (showSearch) {
+        <tr>
+          <th colspan="9">
+            <span class="center-self">Search</span>
+            <mat-form-field class="center-self shift-left">
+              <input matInput [(ngModel)]="filterString" (keyup)="keyUp.next($event)" placeholder="Search"
+                style="font-size: 10pt;" />
             </mat-form-field>
-            <button
-              [disabled]="filterString === ''"
-              mat-icon-button
-              (click)="applyFilter('')"
-              style="outline: none;"
-              title="Close Search"
-            >
-              <mat-icon
-                style="transform: scale(0.85);"
-                svgIcon="ic_cancel_circle"
-              ></mat-icon>
+            <button [disabled]="filterString === ''" mat-icon-button (click)="applyFilter('')" style="outline: none;"
+              title="Close Search" class="center-self">
+              <mat-icon class="mdi-18px center-self" fontIcon="mdi-close-circle-outline"></mat-icon>
             </button>
           </th>
         </tr>
+        }
         <tr>
           <th class="background center-self">
             <div class="row-start-buttons">
-              <button
-                mat-icon-button
-                (click)="setSearch(true)"
-                style="outline: none; width: 30px;"
-                title="Search Events"
-                *ngIf="!showSearch"
-              >
+              @if (!showSearch) {
+              <button mat-icon-button (click)="setSearch(true)" style="outline: none; width: 30px;"
+                title="Search Events">
                 <mat-icon class="mdi-24px" fontIcon="mdi-filter-outline"></mat-icon>
               </button>
-              <button
-                mat-icon-button
-                (click)="setSearch(false)"
-                style="outline: none; width: 30px;"
-                title="Clear Search"
-                *ngIf="showSearch"
-              >
+              }
+              @if (showSearch) {
+              <button mat-icon-button (click)="setSearch(false)" style="outline: none; width: 30px;"
+                title="Clear Search">
                 <mat-icon class="mdi-24px" fontIcon="mdi-filter-off-outline"></mat-icon>
               </button>
+              }
             </div>
           </th>
           <!-- Move -->
-          <th *ngIf="msel.showMoveOnExerciseView" class="background move-group">
+          @if (msel.showMoveOnExerciseView) {
+          <th class="background move-group">
             <div>Move</div>
           </th>
+          }
           <!-- Group -->
-          <th *ngIf="msel.showGroupOnExerciseView" class="background move-group">
+          @if (msel.showGroupOnExerciseView) {
+          <th class="background move-group">
             <div>Group</div>
           </th>
+          }
           <!-- Time -->
-          <th *ngIf="msel.showTimeOnExerciseView" class="background">
+          @if (msel.showTimeOnExerciseView) {
+          <th class="background">
             <div>
-              <button
-                mat-icon-button
-                (click)="setRealTime(true)"
-                style="outline: none;"
-                title="Switch to Real Time"
-                *ngIf="!showRealTime"
-                [disabled]="!msel || !msel.startTime || msel.startTime.valueOf() < 0"
-              >
+              @if (!showRealTime) {
+              <button mat-icon-button (click)="setRealTime(true)" style="outline: none;" title="Switch to Real Time"
+                [disabled]="!msel || !msel.startTime || msel.startTime.valueOf() < 0">
                 <mat-icon class="mdi-24px" fontIcon="mdi-timer-outline"></mat-icon>
               </button>
-              <button
-                mat-icon-button
-                (click)="setRealTime(false)"
-                style="outline: none;"
-                title="Switch to Delta Time"
-                *ngIf="showRealTime"
-              >
+              }
+              @if (showRealTime) {
+              <button mat-icon-button (click)="setRealTime(false)" style="outline: none;" title="Switch to Delta Time">
                 <mat-icon class="mdi-24px" fontIcon="mdi-clock-time-four-outline"></mat-icon>
               </button>
+              }
             </div>
           </th>
-          <ng-container *ngFor="let df of sortedDataFields">
-            <ng-container *ngIf="sortableDataTypes.includes(df.dataType); else noSort">
-              <th mat-sort-header="{{ df.name }}" class="background">
-                <div [style]="getStyle(df)">{{ df.name }}</div>
-              </th>
-            </ng-container>
-            <ng-template #noSort>
-              <th class="background">
-                <div [style]="getStyle(df)">{{ df.name }}</div>
-              </th>
-            </ng-template>
-          </ng-container>
+          }
+          @for (df of sortedDataFields; track df) {
+          @if (sortableDataTypes.includes(df.dataType)) {
+          <th mat-sort-header="{{ df.name }}" class="background">
+            <div [style]="getStyle(df)">{{ df.name }}</div>
+          </th>
+          } @else {
+          <th class="background">
+            <div [style]="getStyle(df)">{{ df.name }}</div>
+          </th>
+          }
+          }
         </tr>
       </thead>
       <tbody>
-        <ng-container *ngFor="let item of sortedScenarioEvents; index as rowIndex">
-          <tr class="move-group" [style]="getRowStyle(item)">
-            <!-- row buttons -->
-            <td class="center-self">
-              <div class="row-start-buttons">
-                <span class="row-index center-self">{{ rowIndex  + 1 }}</span>
-              </div>
-            </td>
-            <!-- Move value -->
-            <td *ngIf="msel.showMoveOnExerciseView">
-              <div class="constrainer" style="text-align: center;">
-                {{ moveAndGroupNumbers[item.id][0] }}
-              </div>
-            </td>
-            <!-- Group value -->
-            <td class="move-group" *ngIf="msel.showGroupOnExerciseView">
-              <div class="constrainer" style="text-align: center;">
-                {{ moveAndGroupNumbers[item.id][1] }}
-              </div>
-            </td>
-            <!-- Time value -->
-            <td *ngIf="msel.showTimeOnExerciseView">
-              <div class="time-span center-self">
-                <app-duration-view
-                  [startTime]="msel.startTime"
-                  [durationSeconds]="item.deltaSeconds"
-                  [showRealTime]="showRealTime"
-                ></app-duration-view>
-              </div>
-            </td>
-            <ng-container *ngFor="let df of sortedDataFields">
-              <!-- HTML -->
-              <td *ngIf="df.dataType.toString() === 'Html'">
-                <div class="html-constrainer" [style]="getStyle(df)">
-                  <angular-editor
-                    [placeholder]="'Description'"
-                    [ngModel]="getDisplayValue(item, df.name)"
-                    [config]="viewConfig"
-                  ></angular-editor>
-                </div>
-              </td>
-              <!-- URL -->
-              <td *ngIf="df.dataType.toString() === 'Url'">
-                <div class="constrainer" [style]="getStyle(df)">
-                  <a target="_blank" href="{{ getDisplayValue(item, df.name) }}">{{ getDisplayValue(item, df.name) }}</a>
-                </div>
-              </td>
-              <!-- User -->
-              <td *ngIf="df.dataType.toString() === 'User'">
-                <div class="constrainer" [style]="getStyle(df)">
-                  {{ getDisplayValue(item, df.name) }}
-                </div>
-              </td>
-              <!-- Checkbox -->
-              <td *ngIf="df.dataType.toString() === 'Checkbox'">
-                <div class="constrainer" [style]="getStyle(df)">
-                  <mat-checkbox
-                    [checked]="getDisplayValue(item, df.name)"
-                    (change)="saveDataValue(item, df, $event.checked.toString())"
-                  ></mat-checkbox>
-                </div>
-              </td>
-              <!-- datetime value -->
-              <td *ngIf="df.dataType.toString() === 'DateTime'">
-                <div class="constrainer" [style]="getStyle(df)">
-                  {{ getDisplayValue(item, df.name) }}
-                </div>
-              </td>
-              <!-- All others -->
-              <td *ngIf="df.dataType.toString() !== 'Html' &&
-                          df.dataType.toString() !== 'Url' &&
-                          df.dataType.toString() !== 'User' &&
-                          df.dataType.toString() !== 'Checkbox' &&
-                          df.dataType.toString() !== 'DateTime'">
-                <div class="constrainer" [style]="getStyle(df)">
-                  {{ getDisplayValue(item, df.name) }}
-                </div>
-              </td>
-            </ng-container>
-          </tr>
-        </ng-container>
+        @for (item of sortedScenarioEvents; track item; let rowIndex = $index) {
+        <tr class="move-group" [style]="getRowStyle(item)">
+          <!-- row buttons -->
+          <td class="center-self">
+            <div class="row-start-buttons">
+              <span class="row-index center-self">{{ rowIndex + 1 }}</span>
+            </div>
+          </td>
+          <!-- Move value -->
+          @if (msel.showMoveOnExerciseView) {
+          <td>
+            <div class="constrainer" style="text-align: center;">
+              {{ moveAndGroupNumbers[item.id][0] }}
+            </div>
+          </td>
+          }
+          <!-- Group value -->
+          @if (msel.showGroupOnExerciseView) {
+          <td class="move-group">
+            <div class="constrainer" style="text-align: center;">
+              {{ moveAndGroupNumbers[item.id][1] }}
+            </div>
+          </td>
+          }
+          <!-- Time value -->
+          @if (msel.showTimeOnExerciseView) {
+          <td>
+            <div class="time-span center-self">
+              <app-duration-view [startTime]="msel.startTime" [durationSeconds]="item.deltaSeconds"
+                [showRealTime]="showRealTime"></app-duration-view>
+            </div>
+          </td>
+          }
+          @for (df of sortedDataFields; track df) {
+          <!-- HTML -->
+          @if (df.dataType.toString() === 'Html') {
+          <td>
+            <div class="html-constrainer" [style]="getStyle(df)">
+              <angular-editor [placeholder]="'Description'" [ngModel]="getDisplayValue(item, df.name)"
+                [config]="viewConfig"></angular-editor>
+            </div>
+          </td>
+          }
+          <!-- URL -->
+          @if (df.dataType.toString() === 'Url') {
+          <td>
+            <div class="constrainer" [style]="getStyle(df)">
+              <a target="_blank" href="{{ getDisplayValue(item, df.name) }}">{{ getDisplayValue(item, df.name) }}</a>
+            </div>
+          </td>
+          }
+          <!-- User -->
+          @if (df.dataType.toString() === 'User') {
+          <td>
+            <div class="constrainer" [style]="getStyle(df)">
+              {{ getDisplayValue(item, df.name) }}
+            </div>
+          </td>
+          }
+          <!-- Checkbox -->
+          @if (df.dataType.toString() === 'Checkbox') {
+          <td>
+            <div class="constrainer" [style]="getStyle(df)">
+              <mat-checkbox [checked]="getDisplayValue(item, df.name)"
+                (change)="saveDataValue(item, df, $event.checked.toString())"></mat-checkbox>
+            </div>
+          </td>
+          }
+          <!-- datetime value -->
+          @if (df.dataType.toString() === 'DateTime') {
+          <td>
+            <div class="constrainer" [style]="getStyle(df)">
+              {{ getDisplayValue(item, df.name) }}
+            </div>
+          </td>
+          }
+          <!-- All others -->
+          @if (df.dataType.toString() !== 'Html' &&
+          df.dataType.toString() !== 'Url' &&
+          df.dataType.toString() !== 'User' &&
+          df.dataType.toString() !== 'Checkbox' &&
+          df.dataType.toString() !== 'DateTime') {
+          <td>
+            <div class="constrainer" [style]="getStyle(df)">
+              {{ getDisplayValue(item, df.name) }}
+            </div>
+          </td>
+          }
+          }
+        </tr>
+        }
       </tbody>
     </table>
   </div>
+  }
 </div>

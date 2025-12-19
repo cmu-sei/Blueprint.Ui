@@ -3,200 +3,134 @@ Copyright 2025 Carnegie Mellon University. All Rights Reserved.
 Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
-<div *ngIf="scenarioEvent && scenarioEvent.steamfitterTask">
+@if (scenarioEvent && scenarioEvent.steamfitterTask) {
+<div>
   <div class="info-detail">
     <!-- Name -->
     <div class="single-detail center-self">
       <mat-form-field class="full-width">
-        <input
-          type="text"
-          matInput
-          placeholder="Name"
-          [(ngModel)]="scenarioEvent.steamfitterTask.name"
-        />
+        <input type="text" matInput placeholder="Name" [(ngModel)]="scenarioEvent.steamfitterTask.name" />
       </mat-form-field>
     </div>
     <!-- Description -->
     <div class="single-detail center-self">
       <mat-form-field class="full-width">
-        <input
-          type="text"
-          matInput
-          placeholder="Description"
-          [(ngModel)]="scenarioEvent.steamfitterTask.description"
-        />
+        <input type="text" matInput placeholder="Description" [(ngModel)]="scenarioEvent.steamfitterTask.description" />
       </mat-form-field>
     </div>
     <!-- Task Type -->
     <div class="single-detail center-self">
       <mat-form-field>
-        <mat-select
-          placeholder="Steamfitter Task Type"
-          [(ngModel)]="scenarioEvent.steamfitterTask.taskType"
-        >
-          <mat-option *ngFor="let taskType of taskTypes" value="{{ taskType }}">{{ taskType }}</mat-option>
+        <mat-select placeholder="Steamfitter Task Type" [(ngModel)]="scenarioEvent.steamfitterTask.taskType">
+          @for (taskType of taskTypes; track taskType) {
+          <mat-option value="{{ taskType }}">{{ taskType }}</mat-option>
+          }
         </mat-select>
       </mat-form-field>
     </div>
     <!-- Notification -->
-    <span *ngIf="scenarioEvent.steamfitterTask.taskType === steamfitterIntegrationType.Notification">
+    @if (scenarioEvent.steamfitterTask.taskType === steamfitterIntegrationType.Notification) {
+    <span>
       <div class="single-detail center-self">
         <mat-form-field class="full-width">
-          <input
-            type="text"
-            matInput
-            placeholder="Notification Text"
-            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['notificationText']"
-          />
+          <input type="text" matInput placeholder="Notification Text"
+            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['notificationText']" />
         </mat-form-field>
       </div>
     </span>
+    }
     <!-- Situation Update -->
-    <span *ngIf="scenarioEvent.steamfitterTask.taskType === steamfitterIntegrationType.SituationUpdate">
+    @if (scenarioEvent.steamfitterTask.taskType === steamfitterIntegrationType.SituationUpdate) {
+    <span>
       <div class="single-detail center-self">
         <mat-form-field>
-          <input
-            matInput
-            [ngxMatDatetimePicker]="situationDatePicker"
-            placeholder="Situation Date / Time"
-            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['situationTime']"
-          >
-          <mat-datepicker-toggle
-            matSuffix
-            [for]="$any(situationDatePicker)"
-            title="Choose Date/Time">
-          </mat-datepicker-toggle>
-          <ngx-mat-datetime-picker #situationDatePicker
-            [showSpinners]=true
-            [showSeconds]=true
-            [stepHour]=1
-            [stepMinute]=1
-            [stepSecond]=1
-            [touchUi]=false
-            [enableMeridian]=true
-            [disableMinute]=false
-            [hideTime]=false>
-          </ngx-mat-datetime-picker>
+          <input matInput placeholder="Situation Date / Time"
+            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['situationTime']">
+          <!-- <datetime-picker> -->
         </mat-form-field>
       </div>
       <div class="no-form-field-detail center-self">
-        <p style="font-size: 13px; font-weight: 400; line-height: 1.125; font-family: Open Sans, sans-serif; letter-spacing: normal;">
+        <p style="font-size: 13px; font-weight: 400; line-height: 1.125; letter-spacing: normal;">
           Situation Description
         </p>
         <div>
-          <angular-editor
-            [placeholder]="'Description'"
+          <angular-editor [placeholder]="'Description'"
             [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['situationDescription']"
-            [config]="editorConfig"
-          ></angular-editor>
+            [config]="editorConfig"></angular-editor>
         </div>
       </div>
     </span>
+    }
     <!-- Email -->
-    <span *ngIf="scenarioEvent.steamfitterTask.taskType === steamfitterIntegrationType.Email">
+    @if (scenarioEvent.steamfitterTask.taskType === steamfitterIntegrationType.Email) {
+    <span>
       <div class="single-detail center-self">
         <mat-form-field class="full-width">
-          <input
-            type="text"
-            matInput
-            placeholder="From"
-            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['EmailFrom']"
-          />
+          <input type="text" matInput placeholder="From"
+            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['EmailFrom']" />
         </mat-form-field>
       </div>
       <div class="single-detail center-self">
         <mat-form-field class="full-width">
-          <input
-            type="text"
-            matInput
-            placeholder="To"
-            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['EmailTo']"
-          />
+          <input type="text" matInput placeholder="To"
+            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['EmailTo']" />
         </mat-form-field>
       </div>
       <div class="single-detail center-self">
         <mat-form-field class="full-width">
-          <input
-            type="text"
-            matInput
-            placeholder="cc"
-            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['EmailCC']"
-          />
+          <input type="text" matInput placeholder="cc"
+            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['EmailCC']" />
         </mat-form-field>
       </div>
       <div class="single-detail center-self">
         <mat-form-field class="full-width">
-          <input
-            type="text"
-            matInput
-            placeholder="Subject"
-            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['Subject']"
-          />
+          <input type="text" matInput placeholder="Subject"
+            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['Subject']" />
         </mat-form-field>
       </div>
       <div class="single-detail center-self">
         <mat-form-field class="full-width">
-          <input
-            type="text"
-            matInput
-            placeholder="Message"
-            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['Message']"
-          />
+          <input type="text" matInput placeholder="Message"
+            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['Message']" />
         </mat-form-field>
       </div>
       <div class="single-detail center-self">
         <mat-form-field class="full-width">
-          <input
-            type="text"
-            matInput
-            placeholder="accountText"
-            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['Account']"
-          />
+          <input type="text" matInput placeholder="accountText"
+            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['Account']" />
         </mat-form-field>
       </div>
       <div class="single-detail center-self">
         <mat-form-field class="full-width">
-          <input
-            type="text"
-            matInput
-            placeholder="Mime Type"
-            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['Mime']"
-          />
+          <input type="text" matInput placeholder="Mime Type"
+            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['Mime']" />
         </mat-form-field>
       </div>
     </span>
+    }
     <!-- http -->
-    <span *ngIf="scenarioEvent.steamfitterTask.taskType && scenarioEvent.steamfitterTask.taskType.startsWith('http_')">
+    @if (scenarioEvent.steamfitterTask.taskType && scenarioEvent.steamfitterTask.taskType.startsWith('http_')) {
+    <span>
       <div class="single-detail center-self">
         <mat-form-field class="full-width">
-          <input
-            type="text"
-            matInput
-            placeholder="URL"
-            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['Url']"
-          />
+          <input type="text" matInput placeholder="URL"
+            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['Url']" />
         </mat-form-field>
       </div>
       <div class="single-detail center-self">
         <mat-form-field class="full-width">
-          <input
-            type="text"
-            matInput
-            placeholder="Body"
-            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['Body']"
-          />
+          <input type="text" matInput placeholder="Body"
+            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['Body']" />
         </mat-form-field>
       </div>
       <div class="single-detail center-self">
         <mat-form-field class="full-width">
-          <input
-            type="text"
-            matInput
-            placeholder="Headers"
-            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['Headers']"
-          />
+          <input type="text" matInput placeholder="Headers"
+            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['Headers']" />
         </mat-form-field>
       </div>
     </span>
+    }
   </div>
 </div>
+}

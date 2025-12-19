@@ -10,18 +10,22 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
     </button>
   </div>
-  <div mat-dialog-content *ngIf="!!data && data.mselList">
-    <div class="scenario-event-copy-dialog">
-      <h4>Please select the destination MSEL.</h4>
-      <mat-radio-group [(ngModel)]="selectedMselId">
-        <mat-radio-button *ngFor="let msel of data.mselList" [value]="msel.id">
-          &nbsp;&nbsp;{{ msel.name }}
-        </mat-radio-button><br />
-      </mat-radio-group>
+  @if (!!data && data.mselList) {
+    <div mat-dialog-content>
+      <div class="scenario-event-copy-dialog">
+        <h4>Please select the destination MSEL.</h4>
+        <mat-radio-group [(ngModel)]="selectedMselId">
+          @for (msel of data.mselList; track msel) {
+            <mat-radio-button [value]="msel.id">
+              &nbsp;&nbsp;{{ msel.name }}
+            </mat-radio-button>
+            }<br />
+          </mat-radio-group>
+        </div>
+      </div>
+    }
+    <div mat-dialog-actions>
+      <button mat-stroked-button (click)="handleEditComplete(true)" [disabled]="selectedMselId === ''">Copy</button>
+      <button mat-stroked-button (click)="handleEditComplete(false)">Cancel</button>
     </div>
   </div>
-  <div mat-dialog-actions>
-    <button mat-stroked-button (click)="handleEditComplete(true)" [disabled]="selectedMselId === ''">Copy</button>
-    <button mat-stroked-button (click)="handleEditComplete(false)">Cancel</button>
-  </div>
-</div>

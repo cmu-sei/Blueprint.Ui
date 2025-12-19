@@ -3,7 +3,7 @@
 // project root for license information.
 
 import { Component, Input, OnDestroy } from '@angular/core';
-import { LegacyPageEvent as PageEvent } from '@angular/material/legacy-paginator';
+import { PageEvent } from '@angular/material/paginator';
 import { Sort } from '@angular/material/sort';
 import { Unit, User } from 'src/app/generated/blueprint.api/model/models';
 import { UnitDataService } from 'src/app/data/unit/unit-data.service';
@@ -12,14 +12,15 @@ import { UserDataService } from 'src/app/data/user/user-data.service';
 import { ComnSettingsService } from '@cmusei/crucible-common';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { AdminUnitEditDialogComponent } from 'src/app/components/admin/admin-unit-edit-dialog/admin-unit-edit-dialog.component';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 
 @Component({
-  selector: 'app-admin-units',
-  templateUrl: './admin-units.component.html',
-  styleUrls: ['./admin-units.component.scss'],
+    selector: 'app-admin-units',
+    templateUrl: './admin-units.component.html',
+    styleUrls: ['./admin-units.component.scss'],
+    standalone: false
 })
 export class AdminUnitsComponent implements OnDestroy {
   userList: User[] = [];
@@ -72,7 +73,7 @@ export class AdminUnitsComponent implements OnDestroy {
         shortName: ''
       };
     } else {
-      unit = {... unit};
+      unit = { ...unit };
     }
     const dialogRef = this.dialog.open(AdminUnitEditDialogComponent, {
       width: '800px',
@@ -90,7 +91,7 @@ export class AdminUnitsComponent implements OnDestroy {
   }
 
   togglePanel(unit: Unit) {
-    this.editUnit = this.editUnit.id === unit.id ? this.editUnit = {} : this.editUnit = { ...unit};
+    this.editUnit = this.editUnit.id === unit.id ? this.editUnit = {} : this.editUnit = { ...unit };
   }
 
   selectUnit(unit: Unit) {

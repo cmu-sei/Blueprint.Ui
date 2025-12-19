@@ -2,17 +2,22 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the$
 // project root for license information.
 
+a {
+  color: var(--mat-sys-on-background);
+}
+
+
 .frame {
   width: 100%;
   height: calc(100vh - 39px);
 }
 
-.mat-tab-group {
+.tab-group {
   width: 100%;
   height: 100%;
 }
 
-.mat-tab {
+.tab {
   width: 100%;
   height: 480px;
 }
@@ -33,7 +38,7 @@
 .scrolling-region {
   overflow: auto;
   width: 100%;
-  height: calc(100% - 40px);
+  height: calc(100% - 42px);
 }
 
 .page-content-region {
@@ -81,7 +86,7 @@
 .edit-buttons {
   display: flex;
   flex-flow: row;
-  align-items:flex-start;
+  align-items: flex-start;
   width: 100%;
 }
 
@@ -164,30 +169,6 @@
   margin-top: -8px;
 }
 
-.five-cell {
-  flex: 5;
-}
-
-.four-cell {
-  flex: 4;
-}
-
-.three-cell {
-  flex: 3;
-}
-
-.two-cell {
-  flex: 2;
-}
-
-.one-cell {
-  flex: 1;
-}
-
-.center-self {
-  align-self: center;
-}
-
 .gallery-warning {
   font-size: small;
   color: orangered;
@@ -222,7 +203,6 @@
   font-size: 13px;
   font-weight: 400;
   line-height: 1.125;
-  font-family: Open Sans, sans-serif;
   letter-spacing: normal;
   text-align: left;
 }

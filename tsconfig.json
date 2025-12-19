@@ -2,12 +2,12 @@
   "compileOnSave": false,
   "compilerOptions": {
     "baseUrl": "./",
-    "downlevelIteration": true,
     "outDir": "./dist/out-tsc",
     "sourceMap": true,
+    "esModuleInterop": true,
     "declaration": false,
     "module": "es2020",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "experimentalDecorators": true,
     "importHelpers": true,
     "target": "ES2022",
@@ -20,10 +20,15 @@
     ],
     "useDefineForClassFields": false,
     "resolveJsonModule": true,
-    "allowSyntheticDefaultImports": true,
   },
   "angularCompilerOptions": {
     "strictTemplates": true,
-    "strictInjectionParameters": true
+    "strictInjectionParameters": true,
+    "_enabledBlockTypes": [
+      "if",
+      "for",
+      "switch",
+      "defer"
+    ]
   }
 }

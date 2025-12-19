@@ -3,117 +3,83 @@ Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
-<div *ngIf="msel" class="frame">
-  <section
-    matSort
-    (matSortChange)="sortChanged($event)"
-    class="mat-elevation-z2 mat-header-row background-alt"
-  >
-    <span class="mat-header-cell first-cell" mat-sort-header="name">
-      <span *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner">
-        <button
-          mat-icon-button
-          [matMenuTriggerFor]="addMenu"
-          style="outline: none; margin-left: 18px; margin-right: 24px;"
-          title="Add Player Application"
-          (click)="$event.stopPropagation();"
-        >
-          <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
+@if (msel) {
+<div class="frame">
+  <section matSort (matSortChange)="sortChanged($event)" class="header-row elevate background-alt">
+    <span class="header-cell first-cell" mat-sort-header="name">
+      @if (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) {
+      <span>
+        <button mat-icon-button [matMenuTriggerFor]="addMenu"
+          style="outline: none; margin-left: 18px; margin-right: 24px;" title="Add Player Application"
+          (click)="$event.stopPropagation();">
+          <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle"></mat-icon>
         </button>
-      </span> &nbsp;
+      </span>
+      } &nbsp;
       <mat-menu #addMenu="matMenu" [overlapTrigger]="false">
-        <button
-          mat-menu-item
-          (click)="addOrEditPlayerApplication(null)"
-          title="Add a new player application"
-        >New Player Application</button>
-        <button
-          *ngFor="let template of templateList"
-          mat-menu-item
-          (click)="addOrEditPlayerApplication(template)"
-          title="{{ template.url }}"
-        >{{ template.name }}</button>
+        <button mat-menu-item (click)="addOrEditPlayerApplication(null, 'Add a Player Application')"
+          title="Add a new player application">New Player
+          Application</button>
+        @for (template of templateList; track template) {
+        <button mat-menu-item (click)="addOrEditPlayerApplication(template, 'Add a Player Application')"
+          title="{{ template.url }}">{{ template.name
+          }}</button>
+        }
       </mat-menu>
       <span>Name</span>
     </span>
-    <span class="mat-header-cell three-cell" mat-sort-header="url">URL</span>
-    <span class="mat-header-cell three-cell search-cell">
+    <span class="header-cell three-cell" mat-sort-header="url">URL</span>
+    <span class="header-cell three-cell search-cell">
       <mat-form-field class="search-control">
         <input matInput [formControl]="filterControl" placeholder="Search" />
       </mat-form-field>
       <div style="width: 30px;">
-        <button
-          mat-icon-button
-          (click)="filterControl.setValue(''); $event.stopPropagation()"
-          style="outline: none;"
-          title="Clear Search"
-          [disabled]="!filterString"
-        >
+        <button mat-icon-button (click)="filterControl.setValue(''); $event.stopPropagation()" style="outline: none;"
+          title="Clear Search" [disabled]="!filterString">
           <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
         </button>
       </div>
     </span>
   </section>
-
   <section class="scrolling-region">
     <!-- existing playerApplications -->
-    <mat-expansion-panel
-      *ngFor="let item of sortedPlayerApplications;"
-      [expanded]="expandedId === item.id"
-    >
-      <mat-expansion-panel-header
-        class="mat-row"
-        (click)="expandPlayerApplication(item.id); $event.stopPropagation();"
-      >
-        <div class="mat-cell flex-row-cell first-cell">
-          <button
-            mat-icon-button
-            class="playerApplication-button"
-            (click)="addOrEditPlayerApplication(item); $event.stopPropagation()"
-            title="Edit {{ item.name }}"
-            *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
-          >
+    @for (item of sortedPlayerApplications; track item.id) {
+    <mat-expansion-panel [expanded]="expandedId === item.id">
+      <mat-expansion-panel-header class="row" (click)="expandPlayerApplication(item.id); $event.stopPropagation();">
+        <div class="cell flex-row-cell first-cell">
+          @if (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) {
+          <button mat-icon-button class="playerApplication-button"
+            (click)="addOrEditPlayerApplication(item, 'Edit Player Application'); $event.stopPropagation()"
+            title="Edit {{ item.name }}">
             <mat-icon class="mdi-18px up-12" fontIcon="mdi-square-edit-outline"></mat-icon>
           </button>
-          <button
-            mat-icon-button
-            class="playerApplication-button"
-            (click)="deletePlayerApplication(item); $event.stopPropagation()"
-            title="Delete {{ item.name }}"
-            *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
-          >
-            <mat-icon class="mdi-18px up-12" fontIcon="mdi-delete"></mat-icon>
+          }
+          @if (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) {
+          <button mat-icon-button class="playerApplication-button"
+            (click)="deletePlayerApplication(item); $event.stopPropagation()" title="Delete {{ item.name }}">
+            <mat-icon class="mdi-18px up-12" fontIcon="mdi-trash-can-outline"></mat-icon>
           </button>
-          <button
-            mat-icon-button class="msel-action"
-            (click)="addOrEditPlayerApplication(item); $event.stopPropagation();"
-            title="Make {{ item.name }} a template"
-            *ngIf="isContentDeveloper"
-          >
-            <mat-icon class="mdi-18px" fontIcon="mdi-playerApplication-plus-outline" title="Make {{ item.name }} a template"></mat-icon>
-          </button>
-          &nbsp;<span>{{ item.name }}</span>
+          }
+          <span style="margin-left: 30px;">{{ item.name }}</span>
         </div>
-        <div class="mat-cell six-cell center-self">{{ item.url }}</div>
+        <div class="cell six-cell center-self">{{ item.url }}</div>
       </mat-expansion-panel-header>
       <ng-template matExpansionPanelContent>
         <div class="playerApplication-detail" (click)="$event.stopPropagation();">
           <div class="single-detail">
-            <h4>Select Teams</h4>
+            <span class="title">Select the MSEL teams that will see this application</span>
           </div>
           <div class="single-detail">
-            <app-player-application-teams
-              style="width: 100%;"
-              [playerApplicationId]="item.id"
-              [mselTeamList]="mselTeamList"
-            >
+            <app-player-application-teams style="width: 100%;" [playerApplicationId]="item.id"
+              [mselTeamList]="mselTeamList">
             </app-player-application-teams>
           </div>
         </div>
       </ng-template>
     </mat-expansion-panel>
+    }
     <mat-expansion-panel>
-      <mat-expansion-panel-header class="mat-row">
+      <mat-expansion-panel-header class="row">
         <h4>Team Application Order</h4>
       </mat-expansion-panel-header>
       <div class="playerApplication-detail" (click)="$event.stopPropagation();">
@@ -126,3 +92,4 @@ project root for license information or contact permission@sei.cmu.edu for full 
     </mat-expansion-panel>
   </section>
 </div>
+}

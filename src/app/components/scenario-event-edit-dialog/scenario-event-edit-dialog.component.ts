@@ -14,16 +14,17 @@ import {
 import { Sort } from '@angular/material/sort';
 import { DataValuePlus, IntegrationTarget } from 'src/app/data/scenario-event/scenario-event-data.service';
 import {
-  MatLegacyDialogRef as MatDialogRef,
-  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
-} from '@angular/material/legacy-dialog';
+  MatDialogRef,
+  MAT_DIALOG_DATA,
+} from '@angular/material/dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { AngularEditorConfig } from '@kolkov/angular-editor';
 
 @Component({
-  selector: 'app-scenario-event-edit-dialog',
-  templateUrl: './scenario-event-edit-dialog.component.html',
-  styleUrls: ['./scenario-event-edit-dialog.component.scss'],
+    selector: 'app-scenario-event-edit-dialog',
+    templateUrl: './scenario-event-edit-dialog.component.html',
+    styleUrls: ['./scenario-event-edit-dialog.component.scss'],
+    standalone: false
 })
 export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
   @Output() editComplete = new EventEmitter<any>();

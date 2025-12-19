@@ -5,77 +5,61 @@ project root for license information.
 -->
 
 <div class="enchilada">
-  <div class="team-list-container mat-elevation-z8">
-    <div class="sp-icon">
-      <div>
-        <img height="35" src="./assets/svg-icons/account-multiple.svg" alt="Teams" />
+  <div class="team-list-container elevate">
+    <div class="team-list-header">
+      <div class="header-icon-div center-self">
+        <mat-icon class="mdi-24px header-icon" fontIcon="mdi-account-multiple"></mat-icon>
         MSEL Teams
       </div>
       <div class="search-div">
-        <mat-form-field
-          style="width: 75%; margin-left:10%;"
-        >
-          <input
-            matInput
-            [(ngModel)]="filterString"
-            (keyup)="applyFilter($any($event.target).value)"
-            placeholder="Search"
-          />
+        <mat-form-field style="width: 75%; margin-left:10%;">
+          <input matInput [(ngModel)]="filterString" (keyup)="applyFilter($any($event.target).value)"
+            placeholder="Search" />
         </mat-form-field>
-        <button
-          [disabled]="!filterString"
-          mat-icon-button
-          (click)="clearFilter()"
-          style="outline: none; margin-top: -10px;"
-          title="Clear Search"
-        >
-          <mat-icon
-            class="mdi-24px"
-            fontIcon="mdi-close-circle-outline"
-          ></mat-icon>
+        <button [disabled]="!filterString" mat-icon-button (click)="clearFilter()"
+          style="outline: none; margin-top: -10px;" title="Clear Search">
+          <mat-icon class="mdi-24px" fontIcon="mdi-close-circle-outline"></mat-icon>
         </button>
       </div>
     </div>
     <hr />
 
-    <mat-table
-      class="mat-table-msel-teams"
-      #table
-      [dataSource]="teamDataSource"
-      matSort
-      *ngIf="teamDataSource.filteredData.length > 0"
-    >
+    @if (teamDataSource.filteredData.length > 0) {
+    <mat-table class="mat-table-msel-teams" #table [dataSource]="teamDataSource" matSort>
       <ng-container matColumnDef="name">
         <mat-cell *matCellDef="let element">
-          <div *ngIf="element.shortName">{{ element.shortName }}</div>
-          <div *ngIf="!element.shortName && element.name">{{ element.name }}</div>
-          <div *ngIf="!element.shortName && !element.name">{{ element.id }}</div>
+          @if (element.shortName) {
+          <div>{{ element.shortName }}</div>
+          }
+          @if (!element.shortName && element.name) {
+          <div>{{ element.name }}</div>
+          }
+          @if (!element.shortName && !element.name) {
+          <div>{{ element.id }}</div>
+          }
         </mat-cell>
       </ng-container>
-
       <ng-container matColumnDef="id">
         <mat-cell *matCellDef="let element">
           <div>
-            <button mat-stroked-button (click)="addTeamToCard(element)">
-              Add Team
+            <button mat-icon-button (click)="addTeamToCard(element)" title="Add {{ element.name }}">
+              <mat-icon class="mdi-18px" fontIcon="mdi-plus-circle-outline" title="Add {{ element.name }}"></mat-icon>
             </button>
           </div>
         </mat-cell>
       </ng-container>
-
       <mat-row *matRowDef="let row; columns: mselTeamColumns"></mat-row>
     </mat-table>
-    <div *ngIf="teamDataSource.filteredData.length === 0">No teams found</div>
+    }
+    @if (teamDataSource.filteredData.length === 0) {
+    <div>No teams found</div>
+    }
   </div>
 
-  <div class="card-list-container mat-elevation-z8">
-    <div class="sp-icon center-self">
+  <div class="card-list-container elevate">
+    <div class="card-list-header">
       <div class="head-name center-self">
-        <img
-          height="35"
-          src="./assets/svg-icons/account-group.svg"
-          alt="Card Teams"
-        />
+        <mat-icon class="mdi-24px header-icon" fontIcon="mdi-account-group"></mat-icon>
         Card Teams
       </div>
       <div class="head-check center-self">Is Shown</div>
@@ -84,20 +68,14 @@ project root for license information.
     </div>
     <hr />
 
-    <mat-card
-      *ngIf="false"
-      style="display: flex; justify-content: center; align-items: center;"
-    >
+    @if (false) {
+    <mat-card appearance="outlined" style="display: flex; justify-content: center; align-items: center;">
       <mat-progress-spinner color="primary" mode="indeterminate">
       </mat-progress-spinner>
     </mat-card>
+    }
 
-    <mat-table
-      class="mat-table-card-teams"
-      #table
-      [dataSource]="cardTeamDataSource"
-      matSort
-    >
+    <mat-table class="mat-table-card-teams" #table [dataSource]="cardTeamDataSource" matSort>
       <ng-container matColumnDef="name">
         <mat-cell *matCellDef="let element">
           <div>{{ getTeamShortName(element.teamId) }}</div>
@@ -106,27 +84,24 @@ project root for license information.
 
       <ng-container matColumnDef="isShownOnWall">
         <mat-cell *matCellDef="let element">
-          <mat-checkbox
-            [checked]="element.isShownOnWall"
-            (change)="setIsShownOnWall(element, $event.checked)"
-          ></mat-checkbox>
+          <mat-checkbox [checked]="element.isShownOnWall"
+            (change)="setIsShownOnWall(element, $event.checked)"></mat-checkbox>
         </mat-cell>
       </ng-container>
 
       <ng-container matColumnDef="canPostArticles">
         <mat-cell *matCellDef="let element">
-          <mat-checkbox
-          [checked]="element.canPostArticles"
-          (change)="setCanPostArticles(element, $event.checked)"
-        ></mat-checkbox>
+          <mat-checkbox [checked]="element.canPostArticles"
+            (change)="setCanPostArticles(element, $event.checked)"></mat-checkbox>
         </mat-cell>
       </ng-container>
 
       <ng-container matColumnDef="id">
         <mat-cell *matCellDef="let element">
           <div>
-            <button mat-stroked-button (click)="removeTeamFromCard(element.id)">
-              Remove
+            <button mat-icon-button (click)="removeTeamFromCard(element.id)" title="Remove {{ element.name }}">
+              <mat-icon class="mdi-18px" fontIcon="mdi-minus-circle-outline"
+                title="Remove {{ element.name }}"></mat-icon>
             </button>
           </div>
         </mat-cell>

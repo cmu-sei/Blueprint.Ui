@@ -24,6 +24,7 @@ import { InjectTypeDataService } from 'src/app/data/inject-type/inject-type-data
   selector: 'app-admin-container',
   templateUrl: './admin-container.component.html',
   styleUrls: ['./admin-container.component.scss'],
+  standalone: false
 })
 export class AdminContainerComponent implements OnDestroy, OnInit {
   loggedInUser = this.userDataService.loggedInUser;
@@ -38,7 +39,6 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
   galleryCardsText = 'Gallery Cards';
   citeActionsText = 'CITE Actions';
   citeRolesText = 'CITE Roles';
-  topbarText = 'Set AppTopBarText in Settings';
   selectedTab = 'Organizations';
   displayedSection = '';
   exitSection = '';
@@ -103,8 +103,7 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
       ? this.settingsService.settings.AppTopBarHexTextColor
       : this.topbarTextColor;
     const appTitle = this.settingsService.settings.AppTitle || 'Set AppTitle in Settings';
-    titleService.setTitle(appTitle + ' - Admin');
-    this.topbarText = this.settingsService.settings.AppTopBarText || this.topbarText;
+    titleService.setTitle(appTitle + ' Admin');
     this.getApiVersion();
     // set the selected tab
     let selectedTab = this.uiDataService.getAdminTab();
@@ -143,7 +142,7 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
     if (section === this.selectedTab) {
       return 'selected-item';
     } else {
-      return null;
+      return 'non-selected-item';
     }
   }
 

@@ -11,9 +11,9 @@ import {
 } from '@angular/forms';
 import { ErrorStateMatcher } from '@angular/material/core';
 import {
-  MatLegacyDialogRef as MatDialogRef,
-  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
-} from '@angular/material/legacy-dialog';
+  MatDialogRef,
+  MAT_DIALOG_DATA,
+} from '@angular/material/dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { DataValue } from 'src/app/generated/blueprint.api';
 
@@ -31,9 +31,10 @@ export class UserErrorStateMatcher implements ErrorStateMatcher {
 const MIN_NAME_LENGTH = 3;
 
 @Component({
-  selector: 'app-inject-select-dialog',
-  templateUrl: './inject-select-dialog.component.html',
-  styleUrls: ['./inject-select-dialog.component.scss'],
+    selector: 'app-inject-select-dialog',
+    templateUrl: './inject-select-dialog.component.html',
+    styleUrls: ['./inject-select-dialog.component.scss'],
+    standalone: false
 })
 export class InjectSelectDialogComponent {
   @Output() editComplete = new EventEmitter<any>();

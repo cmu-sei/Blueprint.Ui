@@ -1,227 +1,141 @@
 <!--
 Copyright 2022 Carnegie Mellon University. All Rights Reserved.
- Released under a MIT (SEI)-style license, please see LICENSE.md in the
+Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
 
-<div class="full-width">
-
-  <div *ngIf="isAddMode" class="user-list-container mat-elevation-z8">
-
-    <div class="sp-icon">
-      <mat-icon
-        class="mdi-24px"
-        fontIcon="mdi-account"
-      ></mat-icon>
-    <span style="margin-left: 10px">
-      All Users
-    </span>
-    </div>
-
-    <div>
-      <mat-icon
-        style="transform: scale(0.85); margin-right: 5px; margin-left: 10px;"
-        svgIcon="ic_magnify_search"
-      ></mat-icon>
-      <mat-form-field class="search-box" style="width: 220px;">
+<div [ngClass]="isAddMode ? 'two-columns elevate' : 'one-column elevate'">
+  @if (isAddMode) {
+  <div class="user-list-container elevate">
+    <div class="users-header">
+      <mat-icon class="mdi-24px" fontIcon="mdi-account"></mat-icon>
+      <span style="margin-left: 10px">
+        All Users
+      </span>
+      <mat-form-field class="search-box">
         <input matInput [formControl]="filterControl" placeholder="Search" />
       </mat-form-field>
-      <button
-        mat-icon-button
-        (click)="clearFilter()"
-        style="outline: none;"
-        title="Clear Search"
-      >
-        <mat-icon
-          class="mdi-18px" fontIcon="mdi-close-circle-outline"
-        ></mat-icon>
+      <button mat-icon-button (click)="clearFilter()" style="outline: none;" title="Clear Search">
+        <mat-icon class="mdi-18px" fontIcon="mdi-close-circle-outline"></mat-icon>
       </button>
     </div>
-
-    <mat-card
-      *ngIf="false"
-      style="display: flex; justify-content: center; align-items: center;"
-    >
-      <mat-progress-spinner color="primary" mode="indeterminate">
-      </mat-progress-spinner>
-    </mat-card>
-
-    <mat-table
-      class="mat-table-all-users"
-      #table
-      [dataSource]="userDataSource"
-      matSort
-      (matSortChange)="onSortChange($event)"
-    >
+    <mat-table class="table-all-users" #table [dataSource]="userDataSource" matSort
+      (matSortChange)="onSortChange($event)">
       <ng-container matColumnDef="name">
-        <mat-header-cell *matHeaderCellDef mat-sort-header
-          >User</mat-header-cell
-        >
+        <mat-header-cell *matHeaderCellDef mat-sort-header>User</mat-header-cell>
         <mat-cell *matCellDef="let element">
-          <div *ngIf="element.name !== null">{{ element.name }}</div>
-          <div *ngIf="element.name === null">{{ element.id }}</div>
+          @if (element.name !== null) {
+          <div>{{ element.name }}</div>
+          }
+          @if (element.name === null) {
+          <div>{{ element.id }}</div>
+          }
         </mat-cell>
       </ng-container>
-
       <ng-container matColumnDef="id">
         <mat-header-cell *matHeaderCellDef>&nbsp;</mat-header-cell>
         <mat-cell *matCellDef="let element">
           <div>
-            <button
-              mat-icon-button
-              (click)="addUserToTeam(element)"
-              style="outline: none;"
-              title="Add {{ element.name }} to Team"
-              *ngIf="!onAnotherTeam(element.id)"
-            >
+            @if (!onAnotherTeam(element.id)) {
+            <button mat-icon-button (click)="addUserToTeam(element)" style="outline: none;"
+              title="Add {{ element.name }} to Team">
               <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
             </button>
-            <label *ngIf="onAnotherTeam(element.id)">{{ getUserTeamName(element.id) }}</label>
+            }
+            @if (onAnotherTeam(element.id)) {
+            <label>{{ getUserTeamName(element.id) }}</label>
+            }
           </div>
         </mat-cell>
       </ng-container>
-
       <mat-header-row *matHeaderRowDef="minUserColumns"></mat-header-row>
       <mat-row *matRowDef="let row; columns: minUserColumns"></mat-row>
     </mat-table>
-
-    <div *ngIf="userDataSource.filteredData.length === 0">No results found</div>
+    @if (userDataSource.filteredData.length === 0) {
+    <div>No results found</div>
+    }
   </div>
+  }
 
-  <div *ngIf="teamList" [class.special-team-list-container]="isAddMode && teamList" style="margin-left: 20px;" class="team-list-container mat-elevation-z8">
-
-    <div class="sp-icon">
-      <mat-icon
-          class="mdi-24px"
-          fontIcon="mdi-account-group"
-      ></mat-icon>
+  @if (teamList) {
+  <div [class.special-team-list-container]="isAddMode && teamList" class="team-list-container elevate">
+    <div class="users-header">
+      <mat-icon class="mdi-24px" fontIcon="mdi-account-group"></mat-icon>
       <span style="margin-left: 10px">
         Team Users
       </span>
-      <button
-        *ngIf="!isAddMode"
-        mat-icon-button
-        (click)="toggleAddMode(true)"
-        style="outline: none;"
-        title="Add Users to Team"
-      >
+      @if (!isAddMode) {
+      <button mat-icon-button (click)="toggleAddMode(true)" style="outline: none;" title="Add Users to Team">
         <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
       </button>
-      <button
-        *ngIf="isAddMode"
-        mat-icon-button
-        (click)="toggleAddMode(false)"
-        style="outline: none;"
-        title="Show User Permissions"
-      >
+      }
+      @if (isAddMode) {
+      <button mat-icon-button (click)="toggleAddMode(false)" style="outline: none;" title="Show User Permissions">
         <mat-icon class="mdi-24px self-center" fontIcon="mdi-eye-outline"></mat-icon>
       </button>
+      }
     </div>
-
-    <mat-card
-      *ngIf="false"
-      style="display: flex; justify-content: center; align-items: center;"
-    >
-      <mat-progress-spinner color="primary" mode="indeterminate">
-      </mat-progress-spinner>
-    </mat-card>
-
-    <mat-table
-      class="mat-table-all-users"
-      #table
-      [dataSource]="teamUserDataSource"
-      matSort
-      (matSortChange)="onSortTeamChange($event)"
-    >
+    <mat-table class="table-all-users" #table [dataSource]="teamUserDataSource" matSort
+      (matSortChange)="onSortTeamChange($event)">
       <ng-container matColumnDef="name">
-        <mat-header-cell *matHeaderCellDef mat-sort-header
-          >User</mat-header-cell
-        >
+        <mat-header-cell *matHeaderCellDef mat-sort-header>User</mat-header-cell>
         <mat-cell *matCellDef="let element">
           <div>{{ getUserName(element.userId) }}</div>
         </mat-cell>
       </ng-container>
-
       <ng-container matColumnDef="Inviter">
-        <mat-header-cell *matHeaderCellDef matTooltip="Can invite others to the event."
-          >Inviter</mat-header-cell
-        >
+        <mat-header-cell *matHeaderCellDef matTooltip="Can invite others to the event.">Inviter</mat-header-cell>
         <mat-cell *matCellDef="let element">
-          <mat-checkbox
-            [checked]="hasTeamRole(element.userId, 'Inviter')"
-            (change)="toggleTeamRole(element.userId, element.teamId, 'Inviter', $event.checked)"
-          ></mat-checkbox>
+          <mat-checkbox [checked]="hasTeamRole(element.userId, 'Inviter')"
+            (change)="toggleTeamRole(element.userId, element.teamId, 'Inviter', $event.checked)"></mat-checkbox>
         </mat-cell>
       </ng-container>
-
       <ng-container matColumnDef="Observer">
-        <mat-header-cell *matHeaderCellDef matTooltip="Can observe other teams progress in CITE and Gallery."
-          >Observer</mat-header-cell
-        >
+        <mat-header-cell *matHeaderCellDef
+          matTooltip="Can observe other teams progress in CITE and Gallery.">Observer</mat-header-cell>
         <mat-cell *matCellDef="let element">
-          <mat-checkbox
-            [checked]="hasTeamRole(element.userId, 'Observer')"
-            (change)="toggleTeamRole(element.userId, element.teamId, 'Observer', $event.checked)"
-          ></mat-checkbox>
+          <mat-checkbox [checked]="hasTeamRole(element.userId, 'Observer')"
+            (change)="toggleTeamRole(element.userId, element.teamId, 'Observer', $event.checked)"></mat-checkbox>
         </mat-cell>
       </ng-container>
-
       <ng-container matColumnDef="Incrementer">
-        <mat-header-cell *matHeaderCellDef matTooltip="Can advance scenario progress in CITE."
-          >Incrementer</mat-header-cell
-        >
+        <mat-header-cell *matHeaderCellDef
+          matTooltip="Can advance scenario progress in CITE.">Incrementer</mat-header-cell>
         <mat-cell *matCellDef="let element">
-          <mat-checkbox
-            [checked]="hasTeamRole(element.userId, 'Incrementer')"
-            (change)="toggleTeamRole(element.userId, element.teamId, 'Incrementer', $event.checked)"
-          ></mat-checkbox>
+          <mat-checkbox [checked]="hasTeamRole(element.userId, 'Incrementer')"
+            (change)="toggleTeamRole(element.userId, element.teamId, 'Incrementer', $event.checked)"></mat-checkbox>
         </mat-cell>
       </ng-container>
-
       <ng-container matColumnDef="Submitter">
-        <mat-header-cell *matHeaderCellDef matTooltip="Can submit responses on behalf of their team in CITE."
-          >Submitter</mat-header-cell
-        >
+        <mat-header-cell *matHeaderCellDef
+          matTooltip="Can submit responses on behalf of their team in CITE.">Submitter</mat-header-cell>
         <mat-cell *matCellDef="let element">
-          <mat-checkbox
-            [checked]="hasTeamRole(element.userId, 'Submitter')"
-            (change)="toggleTeamRole(element.userId, element.teamId, 'Submitter', $event.checked)"
-          ></mat-checkbox>
+          <mat-checkbox [checked]="hasTeamRole(element.userId, 'Submitter')"
+            (change)="toggleTeamRole(element.userId, element.teamId, 'Submitter', $event.checked)"></mat-checkbox>
         </mat-cell>
       </ng-container>
-
       <ng-container matColumnDef="Modifier">
-        <mat-header-cell *matHeaderCellDef matTooltip="Can enter team responses in CITE."
-          >Modifier</mat-header-cell
-        >
+        <mat-header-cell *matHeaderCellDef matTooltip="Can enter team responses in CITE.">Modifier</mat-header-cell>
         <mat-cell *matCellDef="let element">
-          <mat-checkbox
-            [checked]="hasTeamRole(element.userId, 'Modifier')"
-            (change)="toggleTeamRole(element.userId, element.teamId, 'Modifier', $event.checked)"
-          ></mat-checkbox>
+          <mat-checkbox [checked]="hasTeamRole(element.userId, 'Modifier')"
+            (change)="toggleTeamRole(element.userId, element.teamId, 'Modifier', $event.checked)"></mat-checkbox>
         </mat-cell>
       </ng-container>
-
       <ng-container matColumnDef="id">
         <mat-header-cell *matHeaderCellDef>&nbsp;</mat-header-cell>
         <mat-cell *matCellDef="let element">
           <div>
-            <button
-              mat-icon-button
-              (click)="removeUserFromTeam(element)"
-              style="outline: none;"
-              title="Remove {{ element.name }} from Team"
-            >
+            <button mat-icon-button (click)="removeUserFromTeam(element)" style="outline: none;"
+              title="Remove {{ element.name }} from Team">
               <mat-icon class="mdi-24px self-center" fontIcon="mdi-minus-circle-outline"></mat-icon>
             </button>
           </div>
         </mat-cell>
       </ng-container>
-
       <mat-header-row *matHeaderRowDef="displayedTeamUserColumns"></mat-header-row>
       <mat-row *matRowDef="let row; columns: displayedTeamUserColumns"></mat-row>
     </mat-table>
-
   </div>
+  }
 
 </div>

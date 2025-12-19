@@ -10,7 +10,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { ErrorStateMatcher } from '@angular/material/core';
-import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { DataFieldDataService } from 'src/app/data/data-field/data-field-data.service';
 import { DataFieldQuery } from 'src/app/data/data-field/data-field.query';
@@ -31,9 +31,10 @@ export class UserErrorStateMatcher implements ErrorStateMatcher {
 const MIN_NAME_LENGTH = 3;
 
 @Component({
-  selector: 'app-admin-catalog-edit-dialog',
-  templateUrl: './admin-catalog-edit-dialog.component.html',
-  styleUrls: ['./admin-catalog-edit-dialog.component.scss'],
+    selector: 'app-admin-catalog-edit-dialog',
+    templateUrl: './admin-catalog-edit-dialog.component.html',
+    styleUrls: ['./admin-catalog-edit-dialog.component.scss'],
+    standalone: false
 })
 export class AdminCatalogEditDialogComponent {
   @Output() editComplete = new EventEmitter<any>();

@@ -34,6 +34,7 @@ export enum Section {
   selector: 'app-home-app',
   templateUrl: './home-app.component.html',
   styleUrls: ['./home-app.component.scss'],
+  standalone: false
 })
 export class HomeAppComponent implements OnDestroy, OnInit {
   @ViewChild('sidenav') sidenav: MatSidenav;
@@ -192,6 +193,7 @@ export class HomeAppComponent implements OnDestroy, OnInit {
 
   deleteMsel(id: string) {
     this.mselDataService.delete(id);
+    this.router.navigate(['/build']);
   }
 
   ngOnDestroy() {

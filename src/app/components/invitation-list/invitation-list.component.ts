@@ -14,19 +14,20 @@ import {
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { Sort } from '@angular/material/sort';
-import { MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy-menu';
+import { MatMenuTrigger } from '@angular/material/menu';
 import { InvitationDataService } from 'src/app/data/invitation/invitation-data.service';
 import { InvitationQuery } from 'src/app/data/invitation/invitation.query';
 import { TeamQuery } from 'src/app/data/team/team.query';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { InvitationEditDialogComponent } from '../invitation-edit-dialog/invitation-edit-dialog.component';
 import { v4 as uuidv4 } from 'uuid';
 
 @Component({
-  selector: 'app-invitation-list',
-  templateUrl: './invitation-list.component.html',
-  styleUrls: ['./invitation-list.component.scss'],
+    selector: 'app-invitation-list',
+    templateUrl: './invitation-list.component.html',
+    styleUrls: ['./invitation-list.component.scss'],
+    standalone: false
 })
 export class InvitationListComponent implements OnDestroy {
   @Input() loggedInUserId: string;
@@ -41,7 +42,7 @@ export class InvitationListComponent implements OnDestroy {
   filteredInvitationList: Invitation[] = [];
   filterControl = new UntypedFormControl();
   filterString = '';
-  sort: Sort = {active: 'name', direction: 'asc'};
+  sort: Sort = { active: 'name', direction: 'asc' };
   sortedInvitations: Invitation[] = [];
   templateInvitations: Invitation[] = [];
   editingId = '';
@@ -156,7 +157,7 @@ export class InvitationListComponent implements OnDestroy {
     if (invitations) {
       invitations.forEach(se => {
         if (se.mselId === mselId) {
-          filteredInvitations.push({... se});
+          filteredInvitations.push({ ...se });
         }
       });
       if (filteredInvitations && filteredInvitations.length > 0 && this.filterString) {
@@ -164,8 +165,8 @@ export class InvitationListComponent implements OnDestroy {
         filteredInvitations = filteredInvitations.filter(invitation => {
           const teamName = this.getTeamName(invitation.teamId)?.toLowerCase() || ''; // Ensuring it's always a string
           return teamName.includes(filterString) ||
-                 invitation.emailDomain?.toLowerCase().includes(filterString) ||
-                 (invitation.teamId && invitation.teamId.toString().includes(filterString));
+            invitation.emailDomain?.toLowerCase().includes(filterString) ||
+            (invitation.teamId && invitation.teamId.toString().includes(filterString));
         });
       }
     }

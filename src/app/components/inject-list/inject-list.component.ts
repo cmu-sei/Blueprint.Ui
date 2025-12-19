@@ -29,7 +29,7 @@ import {
   InjectType,
 } from 'src/app/generated/blueprint.api';
 import { Sort } from '@angular/material/sort';
-import { MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy-menu';
+import { MatMenuTrigger } from '@angular/material/menu';
 import { MatTable } from '@angular/material/table';
 import { CatalogDataService } from 'src/app/data/catalog/catalog-data.service';
 import { CatalogQuery } from 'src/app/data/catalog/catalog.query';
@@ -38,7 +38,7 @@ import { CatalogInjectQuery } from 'src/app/data/catalog-inject/catalog-inject.q
 import { InjectService } from 'src/app/generated/blueprint.api';
 import { InjectmDataService } from 'src/app/data/injectm/injectm-data.service';
 import { InjectmQuery } from 'src/app/data/injectm/injectm.query';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { InjectEditDialogComponent } from '../inject-edit-dialog/inject-edit-dialog.component';
 import { v4 as uuidv4 } from 'uuid';
@@ -50,22 +50,17 @@ import { UserDataService } from 'src/app/data/user/user-data.service';
 import { InjectSelectDialogComponent } from '../inject-select-dialog/inject-select-dialog.component';
 
 @Component({
-  selector: 'app-inject-list',
-  templateUrl: './inject-list.component.html',
-  styleUrls: ['./inject-list.component.scss'],
-  animations: [
-    trigger('detailExpand', [
-      state(
-        'collapsed',
-        style({ height: '0px', minHeight: '0', visibility: 'hidden' })
-      ),
-      state('expanded', style({ height: '*', visibility: 'visible' })),
-      transition(
-        'expanded <=> collapsed',
-        animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')
-      ),
-    ]),
-  ],
+    selector: 'app-inject-list',
+    templateUrl: './inject-list.component.html',
+    styleUrls: ['./inject-list.component.scss'],
+    animations: [
+        trigger('detailExpand', [
+            state('collapsed', style({ height: '0px', minHeight: '0', visibility: 'hidden' })),
+            state('expanded', style({ height: '*', visibility: 'visible' })),
+            transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
+        ]),
+    ],
+    standalone: false
 })
 export class InjectListComponent implements OnDestroy, OnInit {
   @Input() loggedInUserId: string;
@@ -404,10 +399,10 @@ export class InjectListComponent implements OnDestroy, OnInit {
           .confirm(
             'Inject Requires Additional Injects',
             'Adding Inject ' +
-              injectm.name +
-              ' also requires adding inject(s) ' +
-              requiredInjectNames +
-              '.  Add them?'
+            injectm.name +
+            ' also requires adding inject(s) ' +
+            requiredInjectNames +
+            '.  Add them?'
           )
           .subscribe((result) => {
             if (result['confirm']) {

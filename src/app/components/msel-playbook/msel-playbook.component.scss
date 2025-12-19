@@ -5,52 +5,51 @@
 */
 
 .frame {
-    width: 100%;
-    height: calc(100vh - 39px);
-    overflow-x: hidden;
-    justify-content: center;
-    align-items: center;
+  width: 100%;
+  height: calc(100vh - 39px);
+  overflow-x: hidden;
+  justify-content: center;
+  align-items: center;
 }
 
 #eventDetails {
-    font-family: Arial, Helvetica, sans-serif;
-    border-collapse: collapse;
-    width: 100%;
-    table-layout: fixed;
-    margin: 0 auto;
-    margin-bottom: 20px;
+  border-collapse: collapse;
+  width: 100%;
+  table-layout: fixed;
+  margin: 0 auto;
+  margin-bottom: 20px;
 }
 
 #eventDetails td {
-    text-align: left;
+  text-align: left;
 }
 
-#eventDetails th, #eventDetails td {
-    padding: 8px;
-    border: 1px solid lightgray;
-    word-wrap: break-word;
-    white-space: normal;
-    vertical-align: top;
+#eventDetails th,
+#eventDetails td {
+  padding: 8px;
+  border: 1px solid lightgray;
+  word-wrap: break-word;
+  white-space: normal;
+  vertical-align: top;
 }
 
-h2 {
-    font-family: "Open Sans", sans-serif;
+#eventDetails tr:nth-child(even) {
+  background-color: lightgray;
+  color: black !important;
 }
-
-#eventDetails tr:nth-child(even) {background-color: lightgray; color: black !important;}
 
 #eventDetails th {
-    padding-top: 12px;
-    padding-bottom: 12px;
-    text-align: center;
-    background-color: darkgrey;
-    color: black;
+  padding-top: 12px;
+  padding-bottom: 12px;
+  text-align: center;
+  background-color: darkgrey;
+  color: black;
 }
 
 .header-div {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .right-buttons {

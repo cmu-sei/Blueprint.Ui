@@ -2,6 +2,12 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
+@use "@angular/material" as mat;
+
+:host {
+  @include mat.form-field-density(-5);
+}
+
 .enchilada {
   display: flex;
   flex-direction: row;
@@ -14,27 +20,39 @@
   display: inline-block;
   flex-direction: column;
   height: 500px;
-  width: 40%;
+  width: 46%;
   min-width: 300px;
-  margin-left: 5%;
+}
+
+.team-list-header {
+  display: flex;
+  flex-direction: row;
+  width: 95%;
 }
 
 .card-list-container {
   display: inline-block;
   flex-direction: column;
   height: 500px;
-  width: 50%;
+  width: 46%;
   min-width: 400px;
-  margin-left: 5%;
+  margin-left: 8%;
 }
 
-.mat-table-msel-teams {
+.card-list-header {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  height: 56px;
+}
+
+.mat-mdc-table-msel-teams {
   overflow: auto;
   width: 100%;
   height: 422px;
 }
 
-.mat-table-card-teams {
+.mat-mdc-table-card-teams {
   overflow: auto;
   width: 100%;
   height: 444px;
@@ -56,11 +74,7 @@
   justify-content: center;
 }
 
-.mat-button-focus-overlay {
-  background-color: transparent;
-}
-
-.mat-cell {
+.mat-mdc-cell {
   padding-right: 0;
 }
 
@@ -82,10 +96,16 @@
   text-align: center;
 }
 
-.sp-icon {
+.header-icon-div {
   display: flex;
   flex-direction: row;
   align-items: flex-start;
+  min-width: 100px;
+}
+
+.header-icon {
+  margin-right: 10px;
+  color: var(--mat-sys-primary);
 }
 
 .search-div {
@@ -94,7 +114,7 @@
   flex-direction: row;
   align-items: flex-end;
   margin-left: 20px;
-  width: 100%;
+  width: 50%;
 }
 
 .center-self {

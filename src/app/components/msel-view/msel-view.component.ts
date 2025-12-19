@@ -26,7 +26,7 @@ import {
 } from 'src/app/generated/blueprint.api';
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
-import { MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy-menu';
+import { MatMenuTrigger } from '@angular/material/menu';
 import { CardQuery } from 'src/app/data/card/card.query';
 import { DataValueDataService } from 'src/app/data/data-value/data-value-data.service';
 import { DataValueQuery } from 'src/app/data/data-value/data-value.query';
@@ -47,9 +47,10 @@ import { UIDataService } from 'src/app/data/ui/ui-data.service';
 import { AngularEditorConfig } from '@kolkov/angular-editor';
 
 @Component({
-  selector: 'app-msel-view',
-  templateUrl: './msel-view.component.html',
-  styleUrls: ['./msel-view.component.scss'],
+    selector: 'app-msel-view',
+    templateUrl: './msel-view.component.html',
+    styleUrls: ['./msel-view.component.scss'],
+    standalone: false
 })
 export class MselViewComponent implements OnDestroy, ScenarioEventView {
   @Input() tabHeight: number;

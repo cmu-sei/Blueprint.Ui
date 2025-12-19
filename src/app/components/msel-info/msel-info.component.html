@@ -4,328 +4,245 @@ Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
 <div class="frame">
-  <mat-tab-group
-    mat-align-tabs="start"
-    class="mat-tab-group"
-    (selectedTabChange)="tabChange($event)">
-  >
-    <mat-tab label="Config" class="mat-tab">
+  <mat-tab-group mat-align-tabs="start" class="tab-group" (selectedTabChange)="tabChange($event)">
+    >
+    <mat-tab label="Config" class="tab">
       <div class="edit-buttons">
         <span class="edit-buttons-span">
-          <button
-            mat-icon-button
-            (click)="saveChanges()"
-            style="outline: none;"
-            title="Save Changes"
-            [disabled]="!isChanged"
-          >
+          <button mat-icon-button (click)="saveChanges()" style="outline: none;" title="Save Changes"
+            [disabled]="!isChanged">
             <mat-icon class="mdi-24px self-center" fontIcon="mdi-check"></mat-icon>
           </button>
-          <button
-            mat-icon-button
-            (click)="cancelChanges()"
-            style="outline: none;"
-            title="Cancel Changes"
-            [disabled]="!isChanged"
-          >
+          <button mat-icon-button (click)="cancelChanges()" style="outline: none;" title="Cancel Changes"
+            [disabled]="!isChanged">
             <mat-icon class="mdi-24px self-center" fontIcon="mdi-close"></mat-icon>
           </button>
         </span>
         <span class="change-span">
-          <mat-label *ngIf="isChanged">Changes have not been saved!</mat-label>
+          @if (isChanged) {
+          <mat-label>Changes have not been saved!</mat-label>
+          }
         </span>
         <span class="delete-span">
-          <button
-            mat-icon-button
-            (click)="deleteMsel()"
-            title="Delete this MSEL"
-            *ngIf="msel.hasRole(this.loggedInUserId, null).owner || isContentDeveloper"
-          >
-            <mat-icon class="mdi-18px" fontIcon="mdi-delete" alt="Delete"></mat-icon>
+          @if (msel.hasRole(this.loggedInUserId, null).owner || isContentDeveloper) {
+          <button mat-icon-button (click)="deleteMsel()" title="Delete this MSEL">
+            <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline" alt="Delete"></mat-icon>
           </button>
+          }
         </span>
       </div>
-      <div *ngIf="msel" class="scrolling-region">
+      @if (msel) {
+      <div class="scrolling-region">
         <div class="info-detail">
           <!-- MSEL Name -->
           <div class="single-detail center-self">
             <mat-form-field class="full-width">
-              <input
-                type="text"
-                matInput
-                placeholder="Name"
-                [(ngModel)]="msel.name"
-                (cut)="isChanged = true"
-                (change)="isChanged = true"
-                (paste)="isChanged = true"
-                (keypress)="isChanged = true"
-              />
+              <mat-label>Name</mat-label>
+              <input type="text" matInput [(ngModel)]="msel.name" (cut)="isChanged = true" (change)="isChanged = true"
+                (paste)="isChanged = true" (keypress)="isChanged = true" />
             </mat-form-field>
           </div>
           <!-- MSEL Description -->
           <div class="single-detail center-self">
             <mat-form-field class="full-width">
-              <input
-                type="text"
-                matInput
-                placeholder="Description"
-                [(ngModel)]="msel.description"
-                (cut)="isChanged = true"
-                (change)="isChanged = true"
-                (paste)="isChanged = true"
-                (keypress)="isChanged = true"
-              />
+              <mat-label>Description</mat-label>
+              <input type="text" matInput placeholder="Description" [(ngModel)]="msel.description"
+                (cut)="isChanged = true" (change)="isChanged = true" (paste)="isChanged = true"
+                (keypress)="isChanged = true" />
             </mat-form-field>
           </div>
           <!-- Is a Template -->
           <div class="single-detail center-self">
             <div class="sub-detail center-self">
-              <mat-checkbox
-                [(ngModel)]="msel.isTemplate"
-                [disabled]="msel.status === 'Deployed'"
-                (cut)="isChanged = true"
-                (change)="isChanged = true"
-                (paste)="isChanged = true"
-                (keypress)="isChanged = true"
-                >Is a Template</mat-checkbox>
+              <mat-checkbox [(ngModel)]="msel.isTemplate" [disabled]="msel.status === 'Deployed'"
+                (cut)="isChanged = true" (change)="isChanged = true" (paste)="isChanged = true"
+                (keypress)="isChanged = true">Is a Template</mat-checkbox>
             </div>
           </div>
           <!-- MSEL Start Time -->
           <div class="single-checkbox">
             <mat-checkbox [checked]="msel.startTime?.valueOf() > 0"
-              [disabled]="!isContentDeveloper && !msel.hasRole(loggedInUserId, null).owner" (change)="toggleStartTime($event)"
-              title="Set a Start Time">Set a Start Time
+              [disabled]="!isContentDeveloper && !msel.hasRole(loggedInUserId, null).owner"
+              (change)="toggleStartTime($event)" title="Set a Start Time">Set a Start Time
             </mat-checkbox>
           </div>
-          <div class="single-detail center-self" *ngIf="hasStartTime()">
+          @if (hasStartTime()) {
+          <div class="single-detail center-self">
             <mat-form-field>
-              <input
-                matInput
-                [ngxMatDatetimePicker]="startTimePicker"
-                placeholder="Start Date / Time"
-                [(ngModel)]="msel.startTime"
-                (cut)="isChanged = true"
-                (change)="isChanged = true"
-                (paste)="isChanged = true"
-                (keypress)="isChanged = true"
-              >
-              <mat-datepicker-toggle
-                matSuffix
-                [for]="$any(startTimePicker)"
-                title = "Choose Date/Time"
-              >
+              <mat-label>Start Date / Time</mat-label>
+              <input matInput [ngxMatDatetimePicker]="picker" [(ngModel)]="msel.startTime"
+                (dateChange)="isChanged = true" (dateInput)="isChanged = true" style="display: none;">
+              <!-- <datetime-picker> -->
+              <span (click)="picker.open()">
+                {{msel.startTime | date: 'MM/dd/yyyy hh:mm a'}}
+              </span>
+              <mat-datepicker-toggle matSuffix title="Choose Date/Time" [for]="picker">
               </mat-datepicker-toggle>
-              <ngx-mat-datetime-picker #startTimePicker
-                [showSpinners]=true
-                [showSeconds]=true
-                [stepHour]=1
-                [stepMinute]=1
-                [stepSecond]=1
-                [touchUi]=false
-                [enableMeridian]=true
-                [disableMinute]=false
-                [hideTime]=false
-                (closed)="startTimeCheck()"
-              >
+              <ngx-mat-datetime-picker #picker [showSpinners]=true [showSeconds]=false [stepHour]=1 [stepMinute]=5
+                [stepSecond]=1 [touchUi]=false [enableMeridian]=true [disableMinute]=false [hideTime]=false
+                [color]="'warn'">
               </ngx-mat-datetime-picker>
             </mat-form-field>
           </div>
+          }
           <!-- MSEL End/Duration -->
-          <app-duration-edit
-            [startTime]="msel.startTime"
-            [(durationSeconds)]="msel.durationSeconds"
-            [timeName]="'End Date / Time'"
-            [postScript]="'duration'"
-            (change)="isChanged = true;"
-          ></app-duration-edit>
+          <app-duration-edit [startTime]="msel.startTime" [(durationSeconds)]="msel.durationSeconds"
+            [timeName]="'End Date / Time'" [postScript]="'duration'" (change)="isChanged = true;"></app-duration-edit>
           <!-- Integration Section -->
           <div class="integration-div">
             <b>Applications to Integrate</b>
             <!-- Player Integration -->
             <div class="single-detail center-self integration-checkbox">
               <div class="sub-detail center-self three-cell">
-                <mat-checkbox
-                  [(ngModel)]="msel.usePlayer"
-                  [disabled]="msel.status === 'Deployed'"
-                  (cut)="isChanged = true"
-                  (change)="isChanged = true"
-                  (paste)="isChanged = true"
-                  (keypress)="isChanged = true"
-                >Integrate Player</mat-checkbox>
+                <mat-checkbox [(ngModel)]="msel.usePlayer" [disabled]="msel.status === 'Deployed'"
+                  (cut)="isChanged = true" (change)="isChanged = true" (paste)="isChanged = true"
+                  (keypress)="isChanged = true">Integrate Player</mat-checkbox>
               </div>
-              <div class="sub-detail center-self one-cell"
-                *ngIf="(msel.usePlayer || msel.useCite || msel.useGallery || msel.useSteamfitter) && !msel.isTemplate"
-              >
-                <button
-                  (click)="pushIntegrations()"
-                  title="Push Integrations"
-                  class="thin-button"
-                  *ngIf="(!msel.playerViewId &&
-                          !msel.citeEvaluationId &&
-                          !msel.galleryCollectionId &&
-                          !msel.steamfitterScenarioId &&
-                          !msel.isTemplate) ||
-                          pushStatus"
-                  [disabled]="!(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) ||
+              @if ((msel.usePlayer || msel.useCite || msel.useGallery || msel.useSteamfitter) && !msel.isTemplate) {
+              <div class="sub-detail center-self one-cell">
+                @if ((!msel.playerViewId &&
+                !msel.citeEvaluationId &&
+                !msel.galleryCollectionId &&
+                !msel.steamfitterScenarioId &&
+                !msel.isTemplate) ||
+                pushStatus) {
+                <button (click)="pushIntegrations()" title="Push Integrations" class="thin-button" [disabled]="!(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) ||
                               (msel.useGallery && galleryToDo()) ||
                               (msel.useCite && !msel.citeScoringModelId) ||
-                              isBusy || isChanged"
-                ><span *ngIf="pushStatus">{{ pushStatus }} ...</span><span *ngIf="!pushStatus">Push Integrations</span></button>
-                <button
-                  (click)="pullIntegrations()"
-                  title="Remove Integrations"
-                  class="thin-button"
-                  *ngIf="(msel.playerViewId ||
-                        msel.citeEvaluationId ||
-                        msel.galleryCollectionId ||
-                        msel.steamfitterScenarioId) &&
-                        !pushStatus"
-                  [disabled]="!(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) || isChanged"
-                >Remove Integrations</button>
+                              isBusy || isChanged">@if (pushStatus) {
+                  <span>{{ pushStatus }} ...</span>
+                  }@if (!pushStatus) {
+                  <span>Push Integrations</span>
+                  }</button>
+                }
+                @if ((msel.playerViewId ||
+                msel.citeEvaluationId ||
+                msel.galleryCollectionId ||
+                msel.steamfitterScenarioId) &&
+                !pushStatus) {
+                <button (click)="pullIntegrations()" title="Remove Integrations" class="thin-button"
+                  [disabled]="!(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) || isChanged">Remove
+                  Integrations</button>
+                }
               </div>
+              }
             </div>
-            <div *ngIf="!msel.isTemplate && msel.usePlayer && msel.playerViewId" class="single-detail center-self">
+            @if (!msel.isTemplate && msel.usePlayer && msel.playerViewId) {
+            <div class="single-detail center-self">
               <div class="sub-detail center-self one-cell">&nbsp;</div>
-              <div class="sub-detail center-self four-cell" *ngIf="msel.usePlayer && msel.playerViewId">
+              @if (msel.usePlayer && msel.playerViewId) {
+              <div class="sub-detail center-self four-cell">
                 <mat-form-field class="guid-field">
-                  <input
-                    type="text"
-                    matInput
-                    placeholder="View"
-                    [(ngModel)]="msel.playerViewId"
-                    disabled
-                  />
+                  <input type="text" matInput placeholder="View" [(ngModel)]="msel.playerViewId" disabled />
                 </mat-form-field>
               </div>
+              }
             </div>
+            }
             <!-- Gallery Integration -->
             <div class="single-detail center-self integration-checkbox">
               <div class="sub-detail center-self three-cell">
-                <mat-checkbox
-                  [(ngModel)]="msel.useGallery"
-                  [disabled]="msel.status === 'Deployed'"
-                  (cut)="isChanged = true"
-                  (change)="isChanged = true"
-                  (paste)="isChanged = true"
-                  (keypress)="isChanged = true"
-                >Integrate Gallery</mat-checkbox>
+                <mat-checkbox [(ngModel)]="msel.useGallery" [disabled]="msel.status === 'Deployed'"
+                  (cut)="isChanged = true" (change)="isChanged = true" (paste)="isChanged = true"
+                  (keypress)="isChanged = true">Integrate Gallery</mat-checkbox>
               </div>
-              <div class="sub-detail center-self one-cell" *ngIf="msel.useGallery">&nbsp;</div>
+              @if (msel.useGallery) {
+              <div class="sub-detail center-self one-cell">&nbsp;</div>
+              }
             </div>
-            <div *ngIf="galleryWarningMessage()" class="single-detail center-self">
+            @if (galleryWarningMessage()) {
+            <div class="single-detail center-self">
               <span class="gallery-warning">{{ galleryWarningMessage() }}</span>
             </div>
-            <div *ngIf="!msel.isTemplate && msel.useGallery && msel.galleryExhibitId" class="single-detail center-self">
+            }
+            @if (!msel.isTemplate && msel.useGallery && msel.galleryExhibitId) {
+            <div class="single-detail center-self">
               <div class="sub-detail center-self one-cell">&nbsp;</div>
-              <div class="sub-detail center-self four-cell" *ngIf="msel.useGallery && msel.galleryCollectionId">
-                <mat-form-field class="guid-field">
-                  <input
-                    type="text"
-                    matInput
-                    placeholder="Collection"
-                    [(ngModel)]="msel.galleryCollectionId"
-                    disabled
-                  />
-                </mat-form-field>
-              </div>
+              @if (msel.useGallery && msel.galleryCollectionId) {
               <div class="sub-detail center-self four-cell">
                 <mat-form-field class="guid-field">
-                  <input
-                    type="text"
-                    matInput
-                    placeholder="Exhibit"
-                    [(ngModel)]="msel.galleryExhibitId"
-                    disabled
-                  />
+                  <input type="text" matInput placeholder="Collection" [(ngModel)]="msel.galleryCollectionId"
+                    disabled />
+                </mat-form-field>
+              </div>
+              }
+              <div class="sub-detail center-self four-cell">
+                <mat-form-field class="guid-field">
+                  <input type="text" matInput placeholder="Exhibit" [(ngModel)]="msel.galleryExhibitId" disabled />
                 </mat-form-field>
               </div>
             </div>
+            }
             <!-- CITE Integration -->
             <div class="single-detail center-self integration-checkbox">
               <div class="sub-detail center-self one-cell">
-                <mat-checkbox
-                  [(ngModel)]="msel.useCite"
-                  [disabled]="msel.status === 'Deployed'"
-                  (cut)="isChanged = true"
-                  (change)="isChanged = true"
-                  (paste)="isChanged = true"
-                  (keypress)="isChanged = true"
-                  >Integrate CITE</mat-checkbox>
+                <mat-checkbox [(ngModel)]="msel.useCite" [disabled]="msel.status === 'Deployed'"
+                  (cut)="isChanged = true" (change)="isChanged = true" (paste)="isChanged = true"
+                  (keypress)="isChanged = true">Integrate CITE</mat-checkbox>
               </div>
-              <div class="sub-detail center-self two-cell" *ngIf="msel.useCite">
-                <mat-form-field class="half-width" *ngIf="scoringModelList.length > 0">
+              @if (msel.useCite) {
+              <div class="sub-detail center-self two-cell">
+                @if (scoringModelList.length > 0) {
+                <mat-form-field class="half-width">
                   <mat-label>Scoring Model</mat-label>
-                  <mat-select
-                    [(ngModel)]="msel.citeScoringModelId"
-                    (cut)="isChanged = true"
-                    (selectionChange)="isChanged = true"
-                    (paste)="isChanged = true"
-                    (keypress)="isChanged = true"
-                    [disabled]="msel.status === 'Deployed'"
-                  >
+                  <mat-select [(ngModel)]="msel.citeScoringModelId" (cut)="isChanged = true"
+                    (selectionChange)="isChanged = true" (paste)="isChanged = true" (keypress)="isChanged = true"
+                    [disabled]="msel.status === 'Deployed'">
                     <mat-option [value]=""></mat-option>
-                    <mat-option *ngFor="let scoringModel of scoringModelList" [value]="scoringModel.id">
+                    @for (scoringModel of scoringModelList; track scoringModel) {
+                    <mat-option [value]="scoringModel.id">
                       {{ scoringModel.description }}
                     </mat-option>
+                    }
                   </mat-select>
                 </mat-form-field>
-                <mat-form-field class="half-width guid-field" *ngIf="scoringModelList.length === 0">
-                  <input
-                    type="text"
-                    matInput
-                    placeholder="Scoring Model"
-                    [(ngModel)]="msel.citeScoringModelId"
-                    (cut)="isChanged = true"
-                    (change)="isChanged = true"
-                    (paste)="isChanged = true"
-                    (keypress)="isChanged = true"
-                    title="CITE Scoring Model"
-                  />
+                }
+                @if (scoringModelList.length === 0) {
+                <mat-form-field class="half-width guid-field">
+                  <input type="text" matInput placeholder="Scoring Model" [(ngModel)]="msel.citeScoringModelId"
+                    (cut)="isChanged = true" (change)="isChanged = true" (paste)="isChanged = true"
+                    (keypress)="isChanged = true" title="CITE Scoring Model" />
                 </mat-form-field>
-                </div>
-                <div class="sub-detail center-self one-cell" *ngIf="msel.useCite">&nbsp;</div>
+                }
+              </div>
+              }
+              @if (msel.useCite) {
+              <div class="sub-detail center-self one-cell">&nbsp;</div>
+              }
             </div>
-            <div *ngIf="citeWarningMessage()" class="single-detail center-self">
+            @if (citeWarningMessage()) {
+            <div class="single-detail center-self">
               <span class="gallery-warning">{{ citeWarningMessage() }}</span>
             </div>
-            <div *ngIf="!msel.isTemplate && msel.useCite && msel.citeEvaluationId" class="single-detail center-self">
+            }
+            @if (!msel.isTemplate && msel.useCite && msel.citeEvaluationId) {
+            <div class="single-detail center-self">
               <div class="sub-detail center-self five-cell">
                 &nbsp;
               </div>
               <div class="sub-detail center-self four-cell">
-                <mat-form-field *ngIf="msel.useCite && msel.citeEvaluationId" class="half-width guid-field">
-                  <input
-                    type="text"
-                    matInput
-                    placeholder="Evaluation"
-                    [(ngModel)]="msel.citeEvaluationId"
-                    disabled
-                  />
+                @if (msel.useCite && msel.citeEvaluationId) {
+                <mat-form-field class="half-width guid-field">
+                  <input type="text" matInput placeholder="Evaluation" [(ngModel)]="msel.citeEvaluationId" disabled />
                 </mat-form-field>
+                }
               </div>
             </div>
+            }
             <!-- Steamfitter Integration -->
             <div class="single-detail center-self integration-checkbox">
               <div class="sub-detail center-self one-cell">
-                <mat-checkbox
-                  [disabled]="msel.status === 'Deployed'"
-                  [(ngModel)]="msel.useSteamfitter"
-                  (cut)="isChanged = true"
-                  (change)="isChanged = true"
-                  (paste)="isChanged = true"
-                  (keypress)="isChanged = true"
-                  >Integrate Steamfitter</mat-checkbox>
+                <mat-checkbox [disabled]="msel.status === 'Deployed'" [(ngModel)]="msel.useSteamfitter"
+                  (cut)="isChanged = true" (change)="isChanged = true" (paste)="isChanged = true"
+                  (keypress)="isChanged = true">Integrate Steamfitter</mat-checkbox>
               </div>
               <div class="sub-detail center-self two-cell">
-                <mat-form-field *ngIf="msel.useSteamfitter && msel.steamfitterScenarioId" class="half-width guid-field">
-                  <input
-                    type="text"
-                    matInput
-                    placeholder="Scenario"
-                    [(ngModel)]="msel.steamfitterScenarioId"
-                    disabled
-                  />
+                @if (msel.useSteamfitter && msel.steamfitterScenarioId) {
+                <mat-form-field class="half-width guid-field">
+                  <input type="text" matInput placeholder="Scenario" [(ngModel)]="msel.steamfitterScenarioId"
+                    disabled />
                 </mat-form-field>
+                }
               </div>
             </div>
           </div>
@@ -333,17 +250,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <div class="single-detail center-self">
             <mat-form-field class="full-width">
               <mat-label>MSEL Status</mat-label>
-              <mat-select
-                [(ngModel)]="msel.status"
-                [disabled]="msel.status === 'Deployed'"
-                (cut)="isChanged = true"
-                (change)="isChanged = true"
-                (paste)="isChanged = true"
-                (keypress)="isChanged = true"
-              >
-                <mat-option *ngFor="let item of itemStatus" [value]="item">
+              <mat-select [(ngModel)]="msel.status" [disabled]="msel.status === 'Deployed'" (cut)="isChanged = true"
+                (change)="isChanged = true" (paste)="isChanged = true" (keypress)="isChanged = true">
+                @for (item of itemStatus; track item) {
+                <mat-option [value]="item">
                   {{ item }}
                 </mat-option>
+                }
               </mat-select>
             </mat-form-field>
           </div>
@@ -353,13 +266,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
               Exercise View URL
             </div>
             <div class="url-button-link">
-              <button
-                mat-icon-button
-                ngxClipboard
-                [cbContent]="viewUrl"
-                (click)="$event.stopPropagation()"
-                title="Copy Exercise View URL:  {{ viewUrl }}"
-              >
+              <button mat-icon-button ngxClipboard [cbContent]="viewUrl" (click)="$event.stopPropagation()"
+                title="Copy Exercise View URL:  {{ viewUrl }}">
                 <mat-icon class="mdi-24px" fontIcon="mdi-content-copy"></mat-icon>
               </button>
               <a target="_blank" href="{{ viewUrl }}">{{ viewUrl }}</a>
@@ -371,151 +279,102 @@ project root for license information or contact permission@sei.cmu.edu for full 
               MSEL Starter URL
             </div>
             <div class="url-button-link">
-              <button
-                mat-icon-button
-                ngxClipboard
-                [cbContent]="starterUrl"
-                (click)="$event.stopPropagation()"
-                title="Copy MSEL Starter URL:  {{ starterUrl }}"
-              >
+              <button mat-icon-button ngxClipboard [cbContent]="starterUrl" (click)="$event.stopPropagation()"
+                title="Copy MSEL Starter URL:  {{ starterUrl }}">
                 <mat-icon class="mdi-24px" fontIcon="mdi-content-copy"></mat-icon>
               </button>
               <a target="_blank" href="{{ starterUrl }}">{{ starterUrl }}</a>
             </div>
           </div>
           <!-- row meta data -->
-          <div
-            class="single-detail center-self"
-            *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
-          >
-            <mat-form-field
-              class="full-width"
-              title="A numeric value that defines the height of the header row when this MSEL is exported as an xlsx file"
-            >
-              <input
-                type="text"
-                matInput
-                placeholder="Header Row Metadata (Height)"
-                [(ngModel)]="msel.headerRowMetadata"
-                (cut)="isChanged = true"
-                (change)="isChanged = true"
-                (paste)="isChanged = true"
-                (keypress)="isChanged = true"
-                title="An integer value that defines the height of the header row when this MSEL is exported as an xlsx file"
-              />
+          @if (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) {
+          <div class="single-detail center-self">
+            <mat-form-field class="full-width"
+              title="A numeric value that defines the height of the header row when this MSEL is exported as an xlsx file">
+              <input type="text" matInput placeholder="Header Row Metadata (Height)"
+                [(ngModel)]="msel.headerRowMetadata" (cut)="isChanged = true" (change)="isChanged = true"
+                (paste)="isChanged = true" (keypress)="isChanged = true"
+                title="An integer value that defines the height of the header row when this MSEL is exported as an xlsx file" />
+            </mat-form-field>
+          </div>
+          }
+          <div class="single-detail center-self">
+            <mat-form-field class="full-width">
+              <input type="text" matInput placeholder="Date Created" value="{{ msel.dateCreated | date: 'MM/dd/yyyy' }}"
+                disabled />
             </mat-form-field>
           </div>
           <div class="single-detail center-self">
             <mat-form-field class="full-width">
-              <input
-                type="text"
-                matInput
-                placeholder="Date Created"
-                value="{{ msel.dateCreated | date: 'MM/dd/yyyy' }}"
-                disabled
-              />
-            </mat-form-field>
-          </div>
-          <div class="single-detail center-self">
-            <mat-form-field class="full-width">
-              <input
-                type="text"
-                matInput
-                placeholder="Created By"
-                value="{{ getUserName(msel.createdBy) }}"
-                disabled
-              />
+              <input type="text" matInput placeholder="Created By" value="{{ getUserName(msel.createdBy) }}" disabled />
             </mat-form-field>
           </div>
         </div>
       </div>
+      }
     </mat-tab>
-    <mat-tab *ngFor="let page of mselPages" label="{{ page.name }}" class="mat-tab">
+    @for (page of mselPages; track page.id) {
+    <mat-tab label="{{ page.name }}" class="tab">
       <!-- page content -->
       <div class="edit-buttons">
-        <span *ngIf="!editingPageId">
-          <button
-            mat-icon-button
-            (click)="requestPageEdit(page.id)"
-            style="outline: none;"
-            title="Edit Page"
-            *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
-          >
+        @if (!editingPageId) {
+        <span>
+          @if (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) {
+          <button mat-icon-button (click)="requestPageEdit(page.id)" style="outline: none;" title="Edit Page">
             <mat-icon class="mdi-24px self-center" fontIcon="mdi-square-edit-outline"></mat-icon>
           </button>
-          <button
-            mat-icon-button
-            (click)="deletePage(page); $event.stopPropagation()"
-            style="outline: none;"
-            title="Delete {{ page.name }}"
-          >
-            <mat-icon class="mdi-24px self-center" fontIcon="mdi-trash-can"></mat-icon>
+          }
+          <button mat-icon-button (click)="deletePage(page); $event.stopPropagation()" style="outline: none;"
+            title="Delete {{ page.name }}">
+            <mat-icon class="mdi-24px self-center" fontIcon="mdi-trash-can-outline"></mat-icon>
           </button>
-          <button
-            mat-icon-button
-            ngxClipboard
-            [cbContent]="basePageUrl + page.id"
-            (click)="$event.stopPropagation()"
-            title="Copy page URL"
-          >
+          <button mat-icon-button ngxClipboard [cbContent]="basePageUrl + page.id" (click)="$event.stopPropagation()"
+            title="Copy page URL">
             <mat-icon class="mdi-24px" fontIcon="mdi-content-copy"></mat-icon>
           </button>
-          <button
-            mat-icon-button
-            (click)="openContent(page.id)"
-            title="Open page in new tab"
-            class="far-right-button"
-          >
+          <button mat-icon-button (click)="openContent(page.id)" title="Open page in new tab" class="far-right-button">
             <mat-icon class="mdi-24px self-center" fontIcon="mdi-open-in-new"></mat-icon>
           </button>
-          <span *ngIf="page.allCanView">&nbsp;&nbsp;** All MSEL users can view this page</span>
+          @if (page.allCanView) {
+          <span>&nbsp;&nbsp;** All MSEL users can view this page</span>
+          }
         </span>
-        <span *ngIf="editingPageId">
-          <button
-            mat-icon-button
-            (click)="saveMselPageEdits()"
-            style="outline: none;"
-            title="Save Changes"
-          >
+        }
+        @if (editingPageId) {
+        <span>
+          <button mat-icon-button (click)="saveMselPageEdits()" style="outline: none;" title="Save Changes">
             <mat-icon class="mdi-24px self-center" fontIcon="mdi-check"></mat-icon>
           </button>
-          <button
-            mat-icon-button
-            (click)="cancelMselPageEdits()"
-            style="outline: none;"
-            title="Cancel Changes"
-          >
+          <button mat-icon-button (click)="cancelMselPageEdits()" style="outline: none;" title="Cancel Changes">
             <mat-icon class="mdi-24px self-center" fontIcon="mdi-close"></mat-icon>
           </button>
         </span>
+        }
       </div>
-      <div *ngIf="msel" class="page-content-region">
-        <mat-form-field class="full-width" *ngIf="editingPageId">
-          <input
-            type="text"
-            matInput
-            placeholder="Page Name"
-            [(ngModel)]="changedMselPage.name"
-            [disabled]="!editingPageId"
-          />
+      @if (msel) {
+      <div class="page-content-region">
+        @if (editingPageId) {
+        <mat-form-field class="full-width">
+          <input type="text" matInput placeholder="Page Name" [(ngModel)]="changedMselPage.name"
+            [disabled]="!editingPageId" />
         </mat-form-field>
+        }
         <div class="all-can-view-div">
-          <mat-checkbox
-            [(ngModel)]="changedMselPage.allCanView"
-            title="All MSEL users can view this page"
-            *ngIf="editingPageId"
-          >All MSEL users can view this page</mat-checkbox>
+          @if (editingPageId) {
+          <mat-checkbox [(ngModel)]="changedMselPage.allCanView" title="All MSEL users can view this page">All MSEL
+            users can view this page</mat-checkbox>
+          }
         </div>
         <div>
-          <angular-editor
-            [placeholder]="'Content'"
-            [(ngModel)]="changedMselPage.content"
-            [config]="editingPageId ? editorConfig : viewConfig"
-          ></angular-editor>
+          <angular-editor [placeholder]="'Content'" [(ngModel)]="changedMselPage.content"
+            [config]="editingPageId ? editorConfig : viewConfig"></angular-editor>
         </div>
       </div>
+      }
     </mat-tab>
-    <mat-tab *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner">
+    }
+    @if (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) {
+    <mat-tab>
       <ng-template mat-tab-label>
         <mat-icon class="mdi-24px" fontIcon="mdi-plus-circle" title="Add MSEL Notes Page"></mat-icon>
         Add Page
@@ -523,49 +382,32 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <!-- new page content -->
       <div class="edit-buttons">
         <span>
-          <button
-            mat-icon-button
-            (click)="saveMselPageEdits()"
-            style="outline: none;"
-            title="Save Changes"
-            [disabled]="!changedMselPage.name || !changedMselPage.content"
-          >
+          <button mat-icon-button (click)="saveMselPageEdits()" style="outline: none;" title="Save Changes"
+            [disabled]="!changedMselPage.name || !changedMselPage.content">
             <mat-icon class="mdi-24px self-center" fontIcon="mdi-check"></mat-icon>
           </button>
-          <button
-            mat-icon-button
-            (click)="cancelMselPageEdits()"
-            style="outline: none;"
-            title="Cancel Changes"
-            [disabled]="!changedMselPage.name && !changedMselPage.content"
-          >
+          <button mat-icon-button (click)="cancelMselPageEdits()" style="outline: none;" title="Cancel Changes"
+            [disabled]="!changedMselPage.name && !changedMselPage.content">
             <mat-icon class="mdi-24px self-center" fontIcon="mdi-close"></mat-icon>
           </button>
         </span>
       </div>
-      <div *ngIf="msel" class="page-content-region">
+      @if (msel) {
+      <div class="page-content-region">
         <mat-form-field class="full-width">
-          <input
-            type="text"
-            matInput
-            placeholder="Page Name"
-            [(ngModel)]="changedMselPage.name"
-          />
+          <input type="text" matInput placeholder="Page Name" [(ngModel)]="changedMselPage.name" />
         </mat-form-field>
         <div class="all-can-view-div">
-          <mat-checkbox
-            [(ngModel)]="changedMselPage.allCanView"
-            title="All MSEL users can view this page"
-          >All MSEL users can view this page</mat-checkbox>
+          <mat-checkbox [(ngModel)]="changedMselPage.allCanView" title="All MSEL users can view this page">All MSEL
+            users can view this page</mat-checkbox>
         </div>
         <div>
-          <angular-editor
-            [placeholder]="'Content'"
-            [(ngModel)]="changedMselPage.content"
-            [config]="editorConfig"
-          ></angular-editor>
+          <angular-editor [placeholder]="'Content'" [(ngModel)]="changedMselPage.content"
+            [config]="editorConfig"></angular-editor>
         </div>
       </div>
+      }
     </mat-tab>
+    }
   </mat-tab-group>
 </div>

@@ -12,7 +12,7 @@ import { UnitStore } from './unit.store';
 import { UnitQuery } from './unit.query';
 import { Injectable } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
-import { LegacyPageEvent as PageEvent } from '@angular/material/legacy-paginator';
+import { PageEvent } from '@angular/material/paginator';
 import { Router, ActivatedRoute } from '@angular/router';
 import {
   Unit,
@@ -95,12 +95,12 @@ export class UnitDataService {
                   ('' + unit.name)
                     .toLowerCase()
                     .includes(filterTerm.toLowerCase()) ||
-                    ('' + unit.shortName)
-                      .toLowerCase()
-                      .includes(filterTerm.toLowerCase())  ||
-                    unit.id
-                      .toLowerCase()
-                      .includes(filterTerm.toLowerCase())
+                  ('' + unit.shortName)
+                    .toLowerCase()
+                    .includes(filterTerm.toLowerCase()) ||
+                  unit.id
+                    .toLowerCase()
+                    .includes(filterTerm.toLowerCase())
               )
             : []
       )

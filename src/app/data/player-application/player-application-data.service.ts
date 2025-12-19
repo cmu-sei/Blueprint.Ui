@@ -8,7 +8,7 @@ import { PlayerApplicationStore } from './player-application.store';
 import { PlayerApplicationQuery } from './player-application.query';
 import { Injectable } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
-import { LegacyPageEvent as PageEvent } from '@angular/material/legacy-paginator';
+import { PageEvent } from '@angular/material/paginator';
 import { Router, ActivatedRoute } from '@angular/router';
 import {
   PlayerApplication,
@@ -30,7 +30,7 @@ export class PlayerApplicationDataService {
   private sortColumn: Observable<string>;
   private sortIsAscending: Observable<boolean>;
   private _pageEvent: PageEvent = { length: 0, pageIndex: 0, pageSize: 10 };
-  readonly pageEvent = new BehaviorSubject<PageEvent>(this._pageEvent);  private _requestedPlayerApplicationId: string;
+  readonly pageEvent = new BehaviorSubject<PageEvent>(this._pageEvent); private _requestedPlayerApplicationId: string;
   private pageSize: Observable<number>;
   private pageIndex: Observable<number>;
 
@@ -89,9 +89,9 @@ export class PlayerApplicationDataService {
                   ('' + playerApplication.name)
                     .toLowerCase()
                     .includes(filterTerm.toLowerCase()) ||
-                    playerApplication.id
-                      .toLowerCase()
-                      .includes(filterTerm.toLowerCase())
+                  playerApplication.id
+                    .toLowerCase()
+                    .includes(filterTerm.toLowerCase())
               )
             : []
       )

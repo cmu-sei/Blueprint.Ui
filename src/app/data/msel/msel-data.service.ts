@@ -6,7 +6,7 @@ import { MselStore } from './msel.store';
 import { MselQuery } from './msel.query';
 import { Injectable } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
-import { LegacyPageEvent as PageEvent } from '@angular/material/legacy-paginator';
+import { PageEvent } from '@angular/material/paginator';
 import { Router, ActivatedRoute } from '@angular/router';
 import { HttpEventType, HttpResponse } from '@angular/common/http';
 import {
@@ -105,8 +105,8 @@ export class MselPlus implements Msel {
     mselRole.moveEditor = !this.userMselRoles
       ? false
       : this.userMselRoles.some(
-          (umr) => umr.userId === userId && umr.role === MselRole.MoveEditor
-        );
+        (umr) => umr.userId === userId && umr.role === MselRole.MoveEditor
+      );
     // owners can do everything
     if (mselRole.owner) {
       mselRole.approver = true;
@@ -129,8 +129,8 @@ export class MselPlus implements Msel {
       const dataValue =
         assignedToDataField && scenarioEvent
           ? scenarioEvent.dataValues.find(
-              (dv) => dv.dataFieldId === assignedToDataField.id
-            )
+            (dv) => dv.dataFieldId === assignedToDataField.id
+          )
           : null;
       if (dataValue) {
         const unit = this.units.find((t) => t.shortName === dataValue.value);
@@ -243,16 +243,16 @@ export class MselDataService {
         ]) =>
           items
             ? (items as Msel[])
-                .sort((a: Msel, b: Msel) =>
-                  this.sortMsels(a, b, sortColumn, sortIsAscending)
-                )
-                .filter(
-                  (msel) =>
-                    ('' + msel.description)
-                      .toLowerCase()
-                      .includes(filterTerm.toLowerCase()) ||
-                    msel.id.toLowerCase().includes(filterTerm.toLowerCase())
-                )
+              .sort((a: Msel, b: Msel) =>
+                this.sortMsels(a, b, sortColumn, sortIsAscending)
+              )
+              .filter(
+                (msel) =>
+                  ('' + msel.description)
+                    .toLowerCase()
+                    .includes(filterTerm.toLowerCase()) ||
+                  msel.id.toLowerCase().includes(filterTerm.toLowerCase())
+              )
             : []
       )
     );

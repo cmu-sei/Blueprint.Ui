@@ -2,19 +2,19 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-.mat-dialog-container {
+.mat-mdc-dialog-container {
   height: 100vh;
 }
 
-.mat-dialog-title {
+.mat-mdc-dialog-title {
   height: 50px;
 }
 
-.mat-dialog-content {
-  height: 100vh ;
+.mat-mdc-dialog-content {
+  height: 100vh;
 }
 
-.mat-dialog-actions {
+.mat-mdc-dialog-actions {
   height: 60px !important;
   margin: 10px 0 0 75px !important;
 }
@@ -48,7 +48,6 @@
   font-size: 13px;
   font-weight: 400;
   line-height: 1.125;
-  font-family: Open Sans, sans-serif;
   letter-spacing: normal;
   text-align: left;
 }

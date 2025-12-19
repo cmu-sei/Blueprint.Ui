@@ -18,10 +18,10 @@ import {
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { Sort } from '@angular/material/sort';
-import { MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy-menu';
+import { MatMenuTrigger } from '@angular/material/menu';
 import { OrganizationDataService } from 'src/app/data/organization/organization-data.service';
 import { OrganizationQuery } from 'src/app/data/organization/organization.query';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { OrganizationEditDialogComponent } from '../organization-edit-dialog/organization-edit-dialog.component';
 import { v4 as uuidv4 } from 'uuid';
@@ -30,6 +30,7 @@ import { v4 as uuidv4 } from 'uuid';
   selector: 'app-organization-list',
   templateUrl: './organization-list.component.html',
   styleUrls: ['./organization-list.component.scss'],
+  standalone: false
 })
 export class OrganizationListComponent implements OnDestroy, OnInit {
   @Input() loggedInUserId: string;
@@ -44,7 +45,7 @@ export class OrganizationListComponent implements OnDestroy, OnInit {
   filteredOrganizationList: Organization[] = [];
   filterControl = new UntypedFormControl();
   filterString = '';
-  sort: Sort = {active: 'name', direction: 'asc'};
+  sort: Sort = { active: 'name', direction: 'asc' };
   sortedOrganizations: Organization[] = [];
   templateOrganizations: Organization[] = [];
   editingId = '';
@@ -93,6 +94,7 @@ export class OrganizationListComponent implements OnDestroy, OnInit {
   }
 
   addOrEditOrganization(organization: Organization, makeTemplate: boolean) {
+    let dialogTitle = 'Add an Organization';
     if (!organization) {
       organization = {
         name: '',
@@ -104,6 +106,14 @@ export class OrganizationListComponent implements OnDestroy, OnInit {
         isTemplate: makeTemplate
       };
     } else {
+      if (makeTemplate === organization.isTemplate) {
+        dialogTitle = dialogTitle.replace('Add an', 'Edit');
+      } else {
+        organization.id = null;
+        if (makeTemplate) {
+          dialogTitle = dialogTitle.replace('Add', 'Make');
+        }
+      }
       organization = {
         id: makeTemplate === organization.isTemplate ? organization.id : null,
         name: organization.name,
@@ -115,10 +125,14 @@ export class OrganizationListComponent implements OnDestroy, OnInit {
         isTemplate: makeTemplate
       };
     }
+    if (organization.isTemplate) {
+      dialogTitle += ' Template';
+    }
     const dialogRef = this.dialog.open(OrganizationEditDialogComponent, {
       width: '800px',
       data: {
-        organization: organization
+        organization: organization,
+        title: dialogTitle,
       },
     });
     dialogRef.componentInstance.editComplete.subscribe((result) => {
@@ -168,7 +182,7 @@ export class OrganizationListComponent implements OnDestroy, OnInit {
     if (organizations) {
       organizations.forEach(se => {
         if (se.mselId === mselId) {
-          filteredAndSortedOrganizations.push({... se});
+          filteredAndSortedOrganizations.push({ ...se });
         }
       });
       if (filteredAndSortedOrganizations && filteredAndSortedOrganizations.length > 0 && this.filterString) {
@@ -196,13 +210,13 @@ export class OrganizationListComponent implements OnDestroy, OnInit {
     const isAsc = direction !== 'desc';
     switch (column) {
       case 'name':
-        return ( (a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1) * (isAsc ? 1 : -1) );
+        return ((a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1) * (isAsc ? 1 : -1));
         break;
       case 'shortname':
-        return ( (a.shortName.toLowerCase() < b.shortName.toLowerCase() ? -1 : 1) * (isAsc ? 1 : -1) );
+        return ((a.shortName.toLowerCase() < b.shortName.toLowerCase() ? -1 : 1) * (isAsc ? 1 : -1));
         break;
       case 'summary':
-        return ( (a.summary.toLowerCase() < b.summary.toLowerCase() ? -1 : 1) * (isAsc ? 1 : -1) );
+        return ((a.summary.toLowerCase() < b.summary.toLowerCase() ? -1 : 1) * (isAsc ? 1 : -1));
         break;
       default:
         return 0;

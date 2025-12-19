@@ -5,7 +5,7 @@ import { MselUnitStore } from './msel-unit.store';
 import { MselUnitQuery } from './msel-unit.query';
 import { Injectable } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
-import { LegacyPageEvent as PageEvent } from '@angular/material/legacy-paginator';
+import { PageEvent } from '@angular/material/paginator';
 import { Router, ActivatedRoute } from '@angular/router';
 import {
   MselUnit,
@@ -83,7 +83,7 @@ export class MselUnitDataService {
                 (mselUnit) =>
                   mselUnit.id
                     .toLowerCase()
-                    .includes(filterTerm.toLowerCase())                )
+                    .includes(filterTerm.toLowerCase()))
             : []
       )
     );

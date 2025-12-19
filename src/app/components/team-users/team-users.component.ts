@@ -10,7 +10,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import { Sort, MatSortable } from '@angular/material/sort';
-import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
+import { MatTableDataSource } from '@angular/material/table';
 import { TeamQuery } from 'src/app/data/team/team.query';
 import { TeamRole, Team, TeamUser, User, UserTeamRole } from 'src/app/generated/blueprint.api';
 import { TeamUserDataService } from 'src/app/data/team-user/team-user-data.service';
@@ -25,6 +25,7 @@ import { UntypedFormControl } from '@angular/forms';
   selector: 'app-team-users',
   templateUrl: './team-users.component.html',
   styleUrls: ['./team-users.component.scss'],
+  standalone: false
 })
 export class TeamUsersComponent implements OnDestroy, OnInit {
   @Input() team: Team;
@@ -41,7 +42,7 @@ export class TeamUsersComponent implements OnDestroy, OnInit {
   filterControl = new UntypedFormControl();
   filterString = '';
   isAddMode = false;
-  sort: Sort = {active: 'name', direction: 'asc'};
+  sort: Sort = { active: 'name', direction: 'asc' };
   teamRoles: string[] = ['Inviter', 'Observer', 'Incrementer', 'Modifier', 'Submitter'];
   private unsubscribe$ = new Subject();
 
@@ -227,6 +228,7 @@ export class TeamUsersComponent implements OnDestroy, OnInit {
     } else {
       this.displayedTeamUserColumns = this.allUserColumns;
     }
+    console.log('add mode set to ' + value);
   }
 
   onAnotherTeam(userId: string): boolean {

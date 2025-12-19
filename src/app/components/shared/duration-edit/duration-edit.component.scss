@@ -7,12 +7,8 @@
 }
 
 .two-digits {
-  width: 36px;
+  width: 60px;
   text-align: center;
-}
-
-.center-self {
-  align-self: center;
 }
 
 .single-detail {
@@ -21,3 +17,13 @@
   min-height: 45px;
 }
 
+.duration {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.plus-minus {
+  cursor: pointer;
+  align-self: center;
+}

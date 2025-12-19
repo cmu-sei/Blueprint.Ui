@@ -8,14 +8,13 @@ import { takeUntil } from 'rxjs/operators';
 import {
   DataField,
   DataFieldType,
-  InjectType,
 } from 'src/app/generated/blueprint.api';
 import { Theme } from '@cmusei/crucible-common';
 import { MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { Sort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
-import { MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy-menu';
+import { MatMenuTrigger } from '@angular/material/menu';
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { DataFieldDataService } from 'src/app/data/data-field/data-field-data.service';
 import { DataFieldQuery } from 'src/app/data/data-field/data-field.query';
@@ -24,7 +23,7 @@ import { DataFieldEditDialogComponent } from '../data-field-edit-dialog/data-fie
 import { InjectTypeDataService } from 'src/app/data/inject-type/inject-type-data.service';
 import { InjectTypeQuery } from 'src/app/data/inject-type/inject-type.query';
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -32,6 +31,7 @@ import { v4 as uuidv4 } from 'uuid';
   selector: 'app-data-field-list',
   templateUrl: './data-field-list.component.html',
   styleUrls: ['./data-field-list.component.scss'],
+  standalone: false
 })
 export class DataFieldListComponent implements OnDestroy, OnInit {
   @Input() loggedInUserId: string;
@@ -226,6 +226,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
   }
 
   addOrEditDataField(dataFieldIn: DataField, makeTemplate: boolean) {
+    let dialogTitle = 'Add a Data Field';
     const dataOptions =
       dataFieldIn && dataFieldIn.isChosenFromList
         ? dataFieldIn.dataOptions.slice()
@@ -242,8 +243,14 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
         isTemplate: makeTemplate,
       } as DataField;
     } else {
-      dataField.id =
-        makeTemplate === dataField.isTemplate ? dataField.id : null;
+      if (makeTemplate === dataField.isTemplate) {
+        dialogTitle = dialogTitle.replace('Add a', 'Edit');
+      } else {
+        dataField.id = null;
+        if (makeTemplate) {
+          dialogTitle = dialogTitle.replace('Add', 'Make');
+        }
+      }
       if (makeTemplate) {
         dataField.mselId = null;
         dataField.injectTypeId = null;
@@ -257,6 +264,9 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
       dataField.isTemplate = makeTemplate;
       dataField.onScenarioEventList = true;
       dataField.onExerciseView = true;
+    }
+    if (dataField.isTemplate) {
+      dialogTitle += ' Template';
     }
     dataField.dataOptions = dataOptions;
     const dialogRef = this.dialog.open(DataFieldEditDialogComponent, {
@@ -272,6 +282,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
         useGallery: this.msel.useGallery,
         useCite: this.msel.useCite,
         dataFieldTypes: this.dataFieldTypes,
+        title: dialogTitle,
       },
     });
     dialogRef.componentInstance.editComplete.subscribe((result) => {

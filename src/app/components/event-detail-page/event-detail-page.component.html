@@ -1,80 +1,90 @@
 <!--
- Copyright 2024 Carnegie Mellon University. All Rights Reserved.
- Released under a MIT (SEI)-style license. See LICENSE.md in the
- project root for license information.
+Copyright 2024 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license. See LICENSE.md in the
+project root for license information.
 -->
 
-<div *ngIf="!dataValueId" class="container app-event-detail-page background text">
-  <app-topbar
-    *ngIf="!hideTopbar"
-    [title]="topbarText"
-    [topbarView]="TopbarView.BLUEPRINT_HOME"
-    [topbarColor]="topbarColor"
-    [topbarTextColor]="topbarTextColor"
-    [imageFilePath]="topbarImage"
-    (urlNavigate)="topBarNavigate($event)"
-  ></app-topbar>
-  <div id="printable-area">
-    <div class="header-div">
-      <h2>{{msel.name}} Event Details </h2>
-      <div class="right-buttons no-print">
-        <button
-          aria-label="Print Submission Review"
-          mat-icon-button
-          style="outline: none;"
-          title="Print Submission Review"
-          (click)="printpage()"
-        >
-          <mat-icon aria-hidden="false" class="mdi-24px" fontIcon="mdi-printer"></mat-icon>
-        </button>
+@if (!dataValueId) {
+  <div class="container app-event-detail-page background text">
+    @if (!hideTopbar) {
+      <app-topbar
+        [title]="topbarText"
+        [topbarView]="TopbarView.BLUEPRINT_HOME"
+        [topbarColor]="topbarColor"
+        [topbarTextColor]="topbarTextColor"
+        [imageFilePath]="topbarImage"
+        (urlNavigate)="topBarNavigate($event)"
+      ></app-topbar>
+    }
+    <div id="printable-area">
+      <div class="header-div">
+        <h2>{{msel.name}} Event Details </h2>
+        <div class="right-buttons no-print">
+          <button
+            aria-label="Print Submission Review"
+            mat-icon-button
+            style="outline: none;"
+            title="Print Submission Review"
+            (click)="printpage()"
+            >
+            <mat-icon aria-hidden="false" class="mdi-24px" fontIcon="mdi-printer"></mat-icon>
+          </button>
+        </div>
       </div>
-    </div>
-    <div *ngIf="msel">
-      <table id="eventDetails">
-        <tbody>
-          <ng-container *ngFor="let df of sortedDataFields">
-            <tr *ngIf="getScenarioEventValue(df) && scenarioEvent.id === scenarioEventId">
-              <td style="font-weight:bold">
-                {{ df.name }}
-                <button
-                  mat-icon-button
-                  *ngIf="df.dataType === dataType.Html"
-                  (click)="openInNewTab(scenarioEvent.id, df.id)"
-                  title="View in new tab"
-                >
-                  <mat-icon class="mdi-18px self-center" fontIcon="mdi-open-in-new"></mat-icon>
-                </button>
-              </td>
-              <td>
-                <app-data-value
-                  [(value)]="getDataValue(df.id).value"
-                  [dataField]="df"
-                  [canEdit]="false"
-                  [canApprove]="false"
-                  [isOwner]="false"
-                  [showValueOnly]="true"
-                  [organizationOptions]="organizationList"
-                  [teamOptions]="teamList"
-                  [unitOptions]="unitList"
-                  [cardOptions]="cardList"
-                  [moveOptions]="moveList"
-                  [gallerySourceTypeOptions]="gallerySourceTypes"
-                  [userOptions]="userList"
-                ></app-data-value>
-              </td>
-            </tr>
-        </ng-container>
-      </tbody>
-      </table>
+      @if (msel) {
+        <div>
+          <table id="eventDetails">
+            <tbody>
+              @for (df of sortedDataFields; track df) {
+                @if (getScenarioEventValue(df) && scenarioEvent.id === scenarioEventId) {
+                  <tr>
+                    <td style="font-weight:bold">
+                      {{ df.name }}
+                      @if (df.dataType === dataType.Html) {
+                        <button
+                          mat-icon-button
+                          (click)="openInNewTab(scenarioEvent.id, df.id)"
+                          title="View in new tab"
+                          >
+                          <mat-icon class="mdi-18px self-center" fontIcon="mdi-open-in-new"></mat-icon>
+                        </button>
+                      }
+                    </td>
+                    <td>
+                      <app-data-value
+                        [(value)]="getDataValue(df.id).value"
+                        [dataField]="df"
+                        [canEdit]="false"
+                        [canApprove]="false"
+                        [isOwner]="false"
+                        [showValueOnly]="true"
+                        [organizationOptions]="organizationList"
+                        [teamOptions]="teamList"
+                        [unitOptions]="unitList"
+                        [cardOptions]="cardList"
+                        [moveOptions]="moveList"
+                        [gallerySourceTypeOptions]="gallerySourceTypes"
+                        [userOptions]="userList"
+                      ></app-data-value>
+                    </td>
+                  </tr>
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+      }
     </div>
   </div>
-</div>
+}
 
 <!-- Single data value view -->
-<div class="page" *ngIf="dataValueId">
-  <angular-editor
-    [placeholder]="'Enter value ...'"
-    [innerHtml]="getDataValueById()"
-    [config]="viewConfig"
-  ></angular-editor>
-</div>
+@if (dataValueId) {
+  <div class="page">
+    <angular-editor
+      [placeholder]="'Enter value ...'"
+      [innerHtml]="getDataValueById()"
+      [config]="viewConfig"
+    ></angular-editor>
+  </div>
+}

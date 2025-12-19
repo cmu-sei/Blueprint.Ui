@@ -5,9 +5,13 @@ project root for license information.
 -->
 <div mat-dialog-container>
   <div mat-dialog-title>
-    <span *ngIf="!data.isNewInject">Edit</span>
-    <span *ngIf="data.isNewInject">Create</span>
-     an Inject
+    @if (!data.isNewInject) {
+      <span>Edit</span>
+    }
+    @if (data.isNewInject) {
+      <span>Create</span>
+    }
+    an Inject
     &nbsp;
     <button
       mat-icon-button
@@ -15,72 +19,78 @@ project root for license information.
       title="Cancel"
       class="close-button"
       tabindex="-1"
-    >
+      >
       <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
     </button>
   </div>
-  <div mat-dialog-content *ngIf="!!data && data.inject !== undefined && data.inject !== null">
-    <!-- name -->
-    <div class="add-margin">
-      <div>
-        <mat-form-field class="full-width">
-          <input
-            type="text"
-            title="The Name of the Inject"
-            matInput
-            placeholder="Name (required)"
-            [(ngModel)]="data.inject.name">
-        </mat-form-field>
+  @if (!!data && data.inject !== undefined && data.inject !== null) {
+    <div mat-dialog-content>
+      <!-- name -->
+      <div class="add-margin">
+        <div>
+          <mat-form-field class="full-width">
+            <input
+              type="text"
+              title="The Name of the Inject"
+              matInput
+              placeholder="Name (required)"
+              [(ngModel)]="data.inject.name">
+          </mat-form-field>
+        </div>
       </div>
-    </div>
-    <!-- description -->
-    <div class="add-margin">
-      <div>
-        <mat-form-field class="full-width">
-          <input
-            type="text"
-            title="The Description of the Inject"
-            matInput
-            placeholder="Description (required)"
-            [(ngModel)]="data.inject.description">
-        </mat-form-field>
+      <!-- description -->
+      <div class="add-margin">
+        <div>
+          <mat-form-field class="full-width">
+            <input
+              type="text"
+              title="The Description of the Inject"
+              matInput
+              placeholder="Description (required)"
+              [(ngModel)]="data.inject.description">
+          </mat-form-field>
+        </div>
       </div>
-    </div>
-    <!-- requires inject -->
-    <div class="add-margin">
-      <div>
-        <mat-form-field class="full-width">
-          <mat-label>Prerequisite Inject</mat-label>
-          <mat-select placeholder="Prerequisite Inject" [(ngModel)]="data.inject.requiresInjectId">
-            <mat-option [value]="null" title="None"></mat-option>
-            <mat-option *ngFor="let inject of otherInjects(data.inject.id)" [value]="data.inject.id" title="{{ data.inject.name}}">
-              {{ inject.name }}
-            </mat-option>
-          </mat-select>
-        </mat-form-field>
+      <!-- requires inject -->
+      <div class="add-margin">
+        <div>
+          <mat-form-field class="full-width">
+            <mat-label>Prerequisite Inject</mat-label>
+            <mat-select placeholder="Prerequisite Inject" [(ngModel)]="data.inject.requiresInjectId">
+              <mat-option [value]="null" title="None"></mat-option>
+              @for (inject of otherInjects(data.inject.id); track inject) {
+                <mat-option [value]="data.inject.id" title="{{ data.inject.name}}">
+                  {{ inject.name }}
+                </mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
       </div>
+      @for (dataField of data.dataFieldList; track dataField) {
+        <div class="add-margin">
+          <div class="full-width">
+            <app-data-value
+              [(value)]="getDataValue(dataField.id).value"
+              [dataField]="dataField"
+              [canEdit]="data.isEditMode"
+              [canApprove]="false"
+              [isOwner]="false"
+              [showValueOnly]="!data.isEditMode"
+              [organizationOptions]="[]"
+              [teamOptions]="[]"
+              [unitOptions]="data.unitList"
+              [cardOptions]="[]"
+              [moveOptions]="[]"
+              [gallerySourceTypeOptions]="[]"
+              [userOptions]="data.userList"
+            ></app-data-value>
+            <br />
+          </div>
+        </div>
+      }
     </div>
-    <div class="add-margin" *ngFor="let dataField of data.dataFieldList">
-      <div class="full-width">
-        <app-data-value
-          [(value)]="getDataValue(dataField.id).value"
-          [dataField]="dataField"
-          [canEdit]="data.isEditMode"
-          [canApprove]="false"
-          [isOwner]="false"
-          [showValueOnly]="!data.isEditMode"
-          [organizationOptions]="[]"
-          [teamOptions]="[]"
-          [unitOptions]="data.unitList"
-          [cardOptions]="[]"
-          [moveOptions]="[]"
-          [gallerySourceTypeOptions]="[]"
-          [userOptions]="data.userList"
-        ></app-data-value>
-        <br />
-      </div>
-    </div>
-  </div>
+  }
   <div class="cssLayoutRowStartCenter bottom-button">
     <div class="delete-button">
       <button mat-stroked-button (click)="handleEditComplete(true)" [disabled]="!errorFree()" style="margin-left: 40px;">Save</button>

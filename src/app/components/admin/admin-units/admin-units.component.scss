@@ -35,27 +35,41 @@
   width: 150px;
 }
 
-.mat-header-row {
-  min-height: 36px;
+.header-row {
+  min-height: 56px;
 }
 
-.mat-row {
+.row {
   min-height: 48px;
 }
 
-.mat-row, .mat-header-row {
+.row,
+.header-row {
   display: flex;
-  border-bottom-width: 1px;
-  border-bottom-style: solid;
   align-items: center;
+  justify-content: center;
   padding: 0 24px;
-  box-sizing: border-box;
+  font-weight: 400;
 }
 
-.mat-cell, .mat-header-cell {
-  flex: 1;
+.cell,
+.header-cell {
   overflow: hidden;
   word-wrap: break-word;
+}
+
+.sp-icon {
+  margin-left: 10px;
+}
+
+.mat-accordion .header-row {
+  padding-left: 1.5rem;
+  padding-right: 2rem;
+  border-bottom: none;
+}
+
+.mat-expansion-panel {
+  text-align: left;
 }
 
 .button-margins {
@@ -71,44 +85,13 @@
   margin-left: 10px;
 }
 
-.mat-accordion .mat-header-row {
-  padding-left: 1.5rem;
-  padding-right: 2rem;
-  border-bottom: none;
-}
-
-.mat-expansion-panel-header.mat-row {
-  border-bottom: none;
-}
-
-.mat-expansion-panel {
-  text-align: left;
-}
-
 .pad-top {
   margin-top: 12px;
 }
 
-.five-cell {
-  flex: 5;
-}
-
-.four-cell {
-  flex: 4;
-}
-
-.three-cell {
-  flex: 3;
-}
-
-.two-cell {
-  flex: 2;
-}
-
-.one-cell {
+.first-cell {
   flex: 1;
-}
-
-.center-self {
   align-self: center;
+  min-width: 80px;
+  max-width: 100px;
 }

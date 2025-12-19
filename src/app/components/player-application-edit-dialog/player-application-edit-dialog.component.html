@@ -6,21 +6,17 @@ project root for license information.
 
 <div mat-dialog-container>
   <div mat-dialog-title>
-    &nbsp;
-    <button
-      mat-icon-button
-      (click)="handleEditComplete(false)"
-      title="Cancel"
-      class="close-button"
-      tabindex="-1"
-    >
+    {{ data.title }}
+    <button mat-icon-button (click)="handleEditComplete(false)" title="Cancel" class="close-button" tabindex="-1">
       <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
     </button>
   </div>
-  <div mat-dialog-content *ngIf="data && data.playerApplication">
+  @if (data && data.playerApplication) {
+  <div mat-dialog-content>
     <div class="add-margin">
       <div>
         <mat-form-field class="full-width">
+          <mat-label>Name</mat-label>
           <input type="text" matInput [(ngModel)]="data.playerApplication.name" placeholder="Name">
         </mat-form-field>
       </div>
@@ -28,14 +24,17 @@ project root for license information.
     <div class="add-margin">
       <div>
         <mat-form-field class="full-width">
+          <mat-label>URL</mat-label>
           <input type="text" matInput [(ngModel)]="data.playerApplication.url" placeholder="URL">
         </mat-form-field>
-        <mat-hint>{{ 'Parameters can be used in the above URL (include the braces):  {citeEvaluationId} {galleryExhibitId} {steamFitterScenarioId} and {playerViewId}' }}</mat-hint>
+        <mat-hint>{{ 'Parameters can be used in the above URL (include the braces): {citeEvaluationId}
+          {galleryExhibitId} {steamFitterScenarioId} and {playerViewId}' }}</mat-hint>
       </div>
     </div>
     <div class="add-icon-url-margin">
       <div>
         <mat-form-field class="full-width">
+          <mat-label>Icon URL</mat-label>
           <input type="text" matInput [(ngModel)]="data.playerApplication.icon" placeholder="Icon URL">
         </mat-form-field>
       </div>
@@ -51,6 +50,7 @@ project root for license information.
       </div>
     </div>
   </div>
+  }
   <div class="cssLayoutRowStartCenter bottom-button">
     <div class="delete-button">
       <button mat-stroked-button (click)="handleEditComplete(true)" style="margin-left: 40px;">Save</button>

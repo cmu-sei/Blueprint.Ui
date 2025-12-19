@@ -3,35 +3,44 @@ Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
-<div *ngIf="catalog">
-  <div class="units-title">Units with access</div>
-  <div class="units-div">
-    <div *ngFor="let catalogUnit of catalogUnitList; trackBy: trackByFn">
-      <button
-        mat-icon-button
-        (click)="removeUnitFromCatalog(catalogUnit.id); $event.stopPropagation();"
-        title="Remove {{ getUnit(catalogUnit.unitId).shortName }} from this catalog"
-        *ngIf="isContentDeveloper"
-      >
-        <mat-icon class="mdi-24px self-center" fontIcon="mdi-minus-circle-outline"></mat-icon>
-      </button>
-      <span class="center-self">{{ getUnit(catalogUnit.unitId).shortName }} - {{ getUnit(catalogUnit.unitId).name }}</span>
+@if (catalog) {
+  <div>
+    <div class="units-title">Units with access</div>
+    <div class="units-div">
+      @for (catalogUnit of catalogUnitList; track trackByFn($index, catalogUnit)) {
+        <div>
+          @if (isContentDeveloper) {
+            <button
+              mat-icon-button
+              (click)="removeUnitFromCatalog(catalogUnit.id); $event.stopPropagation();"
+              title="Remove {{ getUnit(catalogUnit.unitId).shortName }} from this catalog"
+              >
+              <mat-icon class="mdi-24px self-center" fontIcon="mdi-minus-circle-outline"></mat-icon>
+            </button>
+          }
+          <span class="center-self">{{ getUnit(catalogUnit.unitId).shortName }} - {{ getUnit(catalogUnit.unitId).name }}</span>
+        </div>
+      }
+      @if (catalogUnitList.length === 0) {
+        <div style="margin-left: 45px;">
+          No units have access
+        </div>
+      }
     </div>
-    <div *ngIf="catalogUnitList.length === 0" style="margin-left: 45px;">
-      No units have access
-    </div>
+    <mat-expansion-panel class="units-div">
+      <mat-expansion-panel-header class="units-title">Add a Unit</mat-expansion-panel-header>
+      @for (unit of getUnitList(); track trackByFn($index, unit)) {
+        <div>
+          <button
+            mat-icon-button
+            (click)="addUnitToCatalog(unit.id); $event.stopPropagation();"
+            title="Add {{ unit.shortName }} to this catalog"
+            >
+            <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
+          </button>
+          {{ unit.shortName }} - {{ unit.name }}
+        </div>
+      }
+    </mat-expansion-panel>
   </div>
-  <mat-expansion-panel class="units-div">
-    <mat-expansion-panel-header class="units-title">Add a Unit</mat-expansion-panel-header>
-    <div *ngFor="let unit of getUnitList(); trackBy: trackByFn">
-      <button
-        mat-icon-button
-        (click)="addUnitToCatalog(unit.id); $event.stopPropagation();"
-        title="Add {{ unit.shortName }} to this catalog"
-      >
-        <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
-      </button>
-      {{ unit.shortName }} - {{ unit.name }}
-    </div>
-  </mat-expansion-panel>
-</div>
+}

@@ -5,7 +5,7 @@ import { CatalogStore } from './catalog.store';
 import { CatalogQuery } from './catalog.query';
 import { Injectable } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
-import { LegacyPageEvent as PageEvent } from '@angular/material/legacy-paginator';
+import { PageEvent } from '@angular/material/paginator';
 import { Router, ActivatedRoute } from '@angular/router';
 import {
   Catalog,
@@ -85,8 +85,8 @@ export class CatalogDataService {
         ]) =>
           items
             ? (items as Catalog[]).filter((catalog) =>
-                catalog.id.toLowerCase().includes(filterTerm.toLowerCase())
-              )
+              catalog.id.toLowerCase().includes(filterTerm.toLowerCase())
+            )
             : []
       )
     );
@@ -106,7 +106,7 @@ export class CatalogDataService {
         (templates) => {
           this.catalogStore.upsertMany(templates);
         },
-        (error) => {}
+        (error) => { }
       );
   }
 
@@ -124,7 +124,7 @@ export class CatalogDataService {
         (templates) => {
           this.catalogStore.upsertMany(templates);
         },
-        (error) => {}
+        (error) => { }
       );
   }
 
@@ -209,7 +209,7 @@ export class CatalogDataService {
     this.catalogInjectService
       .createCatalogInject(catalogInject)
       .pipe(take(1))
-      .subscribe((r) => {});
+      .subscribe((r) => { });
   }
 
   downloadJson(id: string) {

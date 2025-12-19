@@ -9,8 +9,8 @@ import {
   NgForm,
 } from '@angular/forms';
 import { ErrorStateMatcher } from '@angular/material/core';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
-import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { ComnSettingsService } from '@cmusei/crucible-common';
 import {
@@ -34,9 +34,10 @@ export class UserErrorStateMatcher implements ErrorStateMatcher {
 }
 
 @Component({
-  selector: 'app-data-field-edit-dialog',
-  templateUrl: './data-field-edit-dialog.component.html',
-  styleUrls: ['./data-field-edit-dialog.component.scss'],
+    selector: 'app-data-field-edit-dialog',
+    templateUrl: './data-field-edit-dialog.component.html',
+    styleUrls: ['./data-field-edit-dialog.component.scss'],
+    standalone: false
 })
 
 export class DataFieldEditDialogComponent {
@@ -93,7 +94,7 @@ export class DataFieldEditDialogComponent {
   }
 
   editDataOption(dataOption: DataOption) {
-    const selected = {... dataOption};
+    const selected = { ...dataOption };
     this.addOrEditDataOption(selected);
   }
 

@@ -17,7 +17,7 @@ import {
 } from 'src/app/generated/blueprint.api';
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
-import { MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy-menu';
+import { MatMenuTrigger } from '@angular/material/menu';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { CiteService } from 'src/app/generated/blueprint.api';
 import { PlayerService } from 'src/app/generated/blueprint.api';
@@ -32,6 +32,7 @@ import { AngularEditorConfig } from '@kolkov/angular-editor';
   selector: 'app-msel-info',
   templateUrl: './msel-info.component.html',
   styleUrls: ['./msel-info.component.scss'],
+  standalone: false
 })
 export class MselInfoComponent implements OnDestroy {
   @Input() loggedInUserId: string;
@@ -143,6 +144,7 @@ export class MselInfoComponent implements OnDestroy {
           }
           this.savedStartTime = new Date(msel.startTime);
           this.savedDurationSeconds = msel.durationSeconds;
+          console.log(msel?.startTime);
         }
       });
     // subscribe to MSEL loading flag

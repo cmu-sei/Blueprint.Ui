@@ -11,15 +11,16 @@ import {
 } from '@angular/core';
 import { Msel } from 'src/app/generated/blueprint.api';
 import {
-  MatLegacyDialogRef as MatDialogRef,
-  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
-} from '@angular/material/legacy-dialog';
+  MatDialogRef,
+  MAT_DIALOG_DATA,
+} from '@angular/material/dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 
 @Component({
-  selector: 'app-scenario-event-copy-dialog',
-  templateUrl: './scenario-event-copy-dialog.component.html',
-  styleUrls: ['./scenario-event-copy-dialog.component.scss'],
+    selector: 'app-scenario-event-copy-dialog',
+    templateUrl: './scenario-event-copy-dialog.component.html',
+    styleUrls: ['./scenario-event-copy-dialog.component.scss'],
+    standalone: false
 })
 export class ScenarioEventCopyDialogComponent implements OnDestroy, OnInit {
   @Output() editComplete = new EventEmitter<any>();
@@ -34,7 +35,7 @@ export class ScenarioEventCopyDialogComponent implements OnDestroy, OnInit {
     dialogRef.disableClose = true;
   }
 
-  ngOnInit() {}
+  ngOnInit() { }
 
   /**
    * Closes the edit screen
@@ -49,5 +50,5 @@ export class ScenarioEventCopyDialogComponent implements OnDestroy, OnInit {
     }
   }
 
-  ngOnDestroy() {}
+  ngOnDestroy() { }
 }

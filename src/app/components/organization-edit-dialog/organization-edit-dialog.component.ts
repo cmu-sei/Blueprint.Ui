@@ -10,7 +10,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { ErrorStateMatcher } from '@angular/material/core';
-import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { AngularEditorConfig } from '@kolkov/angular-editor';
 
@@ -26,9 +26,10 @@ export class UserErrorStateMatcher implements ErrorStateMatcher {
 }
 
 @Component({
-  selector: 'app-organization-edit-dialog',
-  templateUrl: './organization-edit-dialog.component.html',
-  styleUrls: ['./organization-edit-dialog.component.scss'],
+    selector: 'app-organization-edit-dialog',
+    templateUrl: './organization-edit-dialog.component.html',
+    styleUrls: ['./organization-edit-dialog.component.scss'],
+    standalone: false
 })
 export class OrganizationEditDialogComponent {
   @Output() editComplete = new EventEmitter<any>();

@@ -2,6 +2,12 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
+@use "@angular/material" as mat;
+
+:host {
+  @include mat.form-field-density(-5); // Adjust -3 for this specific form field
+}
+
 .frame {
   display: flex;
   flex-direction: column;
@@ -17,24 +23,24 @@
   width: 100%;
 }
 
-.mat-table {
+.table {
   font-size: small;
   width: 100%;
   overflow: none;
   background: transparent;
 }
 
-.mat-header-row {
+.header-row {
   min-height: 18px;
   background: transparent;
 }
 
-.mat-row {
+.row {
   min-height: 18px;
 }
 
-.mat-row,
-.mat-header-row {
+.row,
+.header-row {
   display: flex;
   border-bottom-width: 1px;
   border-bottom-style: solid;
@@ -42,18 +48,18 @@
   box-sizing: border-box;
 }
 
-.mat-header-cell {
+.header-cell {
   font-weight: bold;
 }
 
-.mat-cell,
-.mat-header-cell {
+.cell,
+.header-cell {
   overflow: hidden;
   word-wrap: break-word;
   text-align: left;
 }
 
-.mat-column-display {
+.column-display {
   flex: 0 0 70px;
   justify-content: center;
   justify-self: center;
@@ -61,7 +67,7 @@
   align-items: center;
 }
 
-.mat-column-name {
+.column-name {
   flex: 0 0 20%;
   padding: 1%;
 }
@@ -70,36 +76,58 @@
   width: 20px;
 }
 
-.mat-column-draghandle {
+.column-draghandle {
   flex: 0 0 20px;
   flex-direction: row;
   padding: 0;
   word-wrap: none;
 }
 
-.mat-column-action {
+.action-header {
+  justify-content: center;
+  justify-self: center;
+  align-self: center;
+  align-items: center;
+  width: 100%;
+}
+
+.column-action {
   flex: 0 0 180px;
   flex-direction: row;
   padding: 0;
   word-wrap: none;
+  align-items: center;
+  justify-items: center;
 }
 
 .action-div {
   width: 170px;
 }
 
-.mat-column-summary {
+.column-summary {
   flex: 0 0 40%;
   padding: 1%;
+}
+
+.top-left-cell-templates {
+  width: 490px;
+}
+
+.top-left-cell {
+  width: 350px;
 }
 
 .search-cell {
   display: flex;
   flex-flow: row;
+  align-items: center;
 }
 
 .search-control {
-  width: calc(100% - 32px);
+  width: calc(100% - 50px);
+  min-width: 100px;
+  max-width: 400px;
+  align-self: center;
 }
 
 .flex-row-cell {
@@ -123,7 +151,8 @@
   flex: 7;
   flex-flow: column;
   align-items: flex-start;
-  text-align: left;;
+  text-align: left;
+  ;
 }
 
 .data-option {
@@ -220,39 +249,16 @@
 
 .clear-search {
   width: 50px;
+  align-self: center;
 }
 
 .copy-icon {
   margin-top: -8px;
 }
 
-.five-cell {
-  flex: 5;
-}
-
-.four-cell {
-  flex: 4;
-}
-
-.three-cell {
-  flex: 3;
-}
-
-.two-cell {
-  flex: 2;
-}
-
-.one-cell {
-  flex: 1;
-}
-
 .left-cell {
   flex: 1;
   min-width: 100px;
-}
-
-.center-self {
-  align-self: center;
 }
 
 .bottom-margin {
@@ -269,14 +275,14 @@
   margin-top: 5px;
 }
 
-mat-row.cdk-drag-preview.light-theme {
+row.cdk-drag-preview.light-theme {
   border-top: 1pt solid gray;
   width: 100%;
   background: #f1f1f2 !important;
   color: #242526;
 }
 
-mat-row.cdk-drag-preview.dark-theme {
+row.cdk-drag-preview.dark-theme {
   border-top: 1pt solid gray;
   width: 100%;
   background: #373739 !important;

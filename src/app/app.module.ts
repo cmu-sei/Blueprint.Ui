@@ -7,43 +7,44 @@
 import { CdkTableModule } from '@angular/cdk/table';
 import { CdkTreeModule } from '@angular/cdk/tree';
 import { DragDropModule } from '@angular/cdk/drag-drop';
-import { HttpClientModule } from '@angular/common/http';
-import { ErrorHandler, NgModule } from '@angular/core';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { ApplicationConfig, ErrorHandler, NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { MatLegacyAutocompleteModule as MatAutocompleteModule } from '@angular/material/legacy-autocomplete';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatBottomSheetModule } from '@angular/material/bottom-sheet';
-import { MatLegacyButtonModule as MatButtonModule } from '@angular/material/legacy-button';
+import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
-import { MatLegacyCardModule as MatCardModule } from '@angular/material/legacy-card';
-import { MatLegacyCheckboxModule as MatCheckboxModule } from '@angular/material/legacy-checkbox';
-import { MatLegacyChipsModule as MatChipsModule } from '@angular/material/legacy-chips';
+import { MatCardModule } from '@angular/material/card';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatChipsModule } from '@angular/material/chips';
 import { MatNativeDateModule, MatRippleModule } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatLegacyDialogModule as MatDialogModule } from '@angular/material/legacy-dialog';
+import { MatDialogModule } from '@angular/material/dialog';
 import { MatExpansionModule } from '@angular/material/expansion';
-import { MatLegacyFormFieldModule as MatFormFieldModule } from '@angular/material/legacy-form-field';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatGridListModule } from '@angular/material/grid-list';
 import { MatIconModule } from '@angular/material/icon';
-import { MatLegacyInputModule as MatInputModule } from '@angular/material/legacy-input';
-import { MatLegacyListModule as MatListModule } from '@angular/material/legacy-list';
-import { MatLegacyMenuModule as MatMenuModule } from '@angular/material/legacy-menu';
-import { MatLegacyPaginatorModule as MatPaginatorModule } from '@angular/material/legacy-paginator';
-import { MatLegacyProgressBarModule as MatProgressBarModule } from '@angular/material/legacy-progress-bar';
-import { MatLegacyProgressSpinnerModule as MatProgressSpinnerModule } from '@angular/material/legacy-progress-spinner';
-import { MatLegacyRadioModule as MatRadioModule } from '@angular/material/legacy-radio';
-import { MatLegacySelectModule as MatSelectModule } from '@angular/material/legacy-select';
+import { MatInputModule } from '@angular/material/input';
+import { MatListModule } from '@angular/material/list';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatRadioModule } from '@angular/material/radio';
+import { MatSelectModule } from '@angular/material/select';
 import { MatSidenavModule } from '@angular/material/sidenav';
-import { MatLegacySlideToggleModule as MatSlideToggleModule } from '@angular/material/legacy-slide-toggle';
-import { MatLegacySliderModule as MatSliderModule } from '@angular/material/legacy-slider';
-import { MatLegacySnackBarModule as MatSnackBarModule } from '@angular/material/legacy-snack-bar';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatSliderModule } from '@angular/material/slider';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatSortModule } from '@angular/material/sort';
 import { MatStepperModule } from '@angular/material/stepper';
-import { MatLegacyTableModule as MatTableModule } from '@angular/material/legacy-table';
-import { MatLegacyTabsModule as MatTabsModule } from '@angular/material/legacy-tabs';
+import { MatTableModule } from '@angular/material/table';
+import { MatTabsModule } from '@angular/material/tabs';
 import { MatToolbarModule } from '@angular/material/toolbar';
-import { MatLegacyTooltipModule as MatTooltipModule } from '@angular/material/legacy-tooltip';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatTreeModule } from '@angular/material/tree';
+import { provideNativeDateAdapter } from '@angular/material/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {
@@ -124,10 +125,14 @@ import { DisplayOrderPipe, SortByPipe } from 'src/app/utilities/sort-by-pipe';
 import { AngularEditorModule } from '@kolkov/angular-editor';
 import { PlainTextPipe } from './utilities/plain-text-pipe';
 import {
-  NgxMatDatetimePickerModule,
-  NgxMatTimepickerModule,
-  NgxMatNativeDateModule,
-} from '@angular-material-components/datetime-picker';
+  NgxMatDatepickerActions,
+  NgxMatDatepickerApply,
+  NgxMatDatepickerCancel,
+  NgxMatDatepickerClear,
+  NgxMatDatepickerInput,
+  NgxMatDatepickerToggle,
+  NgxMatDatetimepicker,
+} from '@ngxmc/datetime-picker';
 import { DurationEditComponent } from './components/shared/duration-edit/duration-edit.component';
 import { DurationViewComponent } from './components/shared/duration-view/duration-view.component';
 import { EventDetailPageComponent } from './components/event-detail-page/event-detail-page.component';
@@ -142,6 +147,12 @@ const settings: ComnSettingsConfig = {
 export function getBasePath(settingsSvc: ComnSettingsService) {
   return settingsSvc.settings.ApiUrl;
 }
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideNativeDateAdapter(),
+  ],
+};
 
 @NgModule({
   declarations: [
@@ -211,14 +222,13 @@ export function getBasePath(settingsSvc: ComnSettingsService) {
     MselPlaybookComponent,
     DataValueComponent,
   ],
-  imports: [
-    AkitaNgDevtools,
+  exports: [MatSortModule],
+  bootstrap: [AppComponent], imports: [AkitaNgDevtools,
     AkitaNgRouterStoreModule,
     BrowserModule,
     AppRoutingModule,
     BrowserAnimationsModule,
     SwaggerCodegenApiModule,
-    HttpClientModule,
     FormsModule,
     ReactiveFormsModule,
     MatAutocompleteModule,
@@ -256,9 +266,13 @@ export function getBasePath(settingsSvc: ComnSettingsService) {
     MatBadgeModule,
     MatFormFieldModule,
     MatDatepickerModule,
-    NgxMatTimepickerModule,
-    NgxMatDatetimePickerModule,
-    NgxMatNativeDateModule,
+    NgxMatDatepickerActions,
+    NgxMatDatepickerApply,
+    NgxMatDatepickerCancel,
+    NgxMatDatepickerClear,
+    NgxMatDatepickerInput,
+    NgxMatDatepickerToggle,
+    NgxMatDatetimepicker,
     CdkTableModule,
     MatTreeModule,
     CdkTreeModule,
@@ -266,24 +280,21 @@ export function getBasePath(settingsSvc: ComnSettingsService) {
     ComnAuthModule.forRoot(),
     ComnSettingsModule.forRoot(),
     AngularEditorModule,
-    DragDropModule,
-  ],
-  exports: [MatSortModule],
-  providers: [
-    DialogService,
-    SystemMessageService,
-    UIDataService,
-    UserDataService,
-    {
-      provide: BASE_PATH,
-      useFactory: getBasePath,
-      deps: [ComnSettingsService],
-    },
-    {
-      provide: ErrorHandler,
-      useClass: ErrorService,
-    },
-  ],
-  bootstrap: [AppComponent],
+    DragDropModule], providers: [
+      DialogService,
+      SystemMessageService,
+      UIDataService,
+      UserDataService,
+      {
+        provide: BASE_PATH,
+        useFactory: getBasePath,
+        deps: [ComnSettingsService],
+      },
+      {
+        provide: ErrorHandler,
+        useClass: ErrorService,
+      },
+      provideHttpClient(withInterceptorsFromDi()),
+    ]
 })
-export class AppModule {}
+export class AppModule { }

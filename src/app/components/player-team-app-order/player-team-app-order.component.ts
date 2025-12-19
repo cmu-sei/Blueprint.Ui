@@ -14,9 +14,10 @@ import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { PlayerApplicationTeamDataService } from 'src/app/data/team/player-application-team-data.service';
 
 @Component({
-  selector: 'app-player-team-app-order',
-  templateUrl: './player-team-app-order.component.html',
-  styleUrls: ['./player-team-app-order.component.scss'],
+    selector: 'app-player-team-app-order',
+    templateUrl: './player-team-app-order.component.html',
+    styleUrls: ['./player-team-app-order.component.scss'],
+    standalone: false
 })
 export class PlayerTeamAppOrderComponent implements OnDestroy {
   @Input() loggedInUserId: string;

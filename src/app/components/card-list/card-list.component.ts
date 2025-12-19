@@ -12,11 +12,11 @@ import {
 import { MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { Sort } from '@angular/material/sort';
-import { MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy-menu';
+import { MatMenuTrigger } from '@angular/material/menu';
 import { CardDataService } from 'src/app/data/card/card-data.service';
 import { CardQuery } from 'src/app/data/card/card.query';
 import { MoveQuery } from 'src/app/data/move/move.query';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { CardEditDialogComponent } from '../card-edit-dialog/card-edit-dialog.component';
 import { v4 as uuidv4 } from 'uuid';
@@ -25,6 +25,7 @@ import { v4 as uuidv4 } from 'uuid';
   selector: 'app-card-list',
   templateUrl: './card-list.component.html',
   styleUrls: ['./card-list.component.scss'],
+  standalone: false
 })
 export class CardListComponent implements OnDestroy {
   @Input() loggedInUserId: string;
@@ -38,7 +39,7 @@ export class CardListComponent implements OnDestroy {
   filteredCardList: Card[] = [];
   filterControl = new UntypedFormControl();
   filterString = '';
-  sort: Sort = {active: '', direction: ''};
+  sort: Sort = { active: '', direction: '' };
   sortedCards: Card[] = [];
   expandedId = '';
   contextMenuPosition = { x: '0px', y: '0px' };
@@ -82,11 +83,12 @@ export class CardListComponent implements OnDestroy {
   }
 
   expandCard(cardId: string) {
-    if (cardId === this.expandedId) {
+    if (this.showTemplates || cardId === this.expandedId) {
       this.expandedId = '';
     } else {
       this.expandedId = cardId;
     }
+    console.log('expandedId: ' + this.expandedId);
   }
 
   addOrEditCard(card: Card, makeTemplate: boolean, makeFromTemplate: boolean) {
@@ -116,14 +118,14 @@ export class CardListComponent implements OnDestroy {
           inject: 0
         };
       } else {
-        card = { ...card};
+        card = { ...card };
       }
     }
     const dialogRef = this.dialog.open(CardEditDialogComponent, {
       width: '90%',
       maxWidth: '800px',
       data: {
-        card: { ...card},
+        card: { ...card },
         moveList: this.moveList
           .filter(m => m.mselId === this.msel.id)
           .sort((a, b) => +a.moveNumber < +b.moveNumber ? -1 : 1)
@@ -173,7 +175,7 @@ export class CardListComponent implements OnDestroy {
     if (cards) {
       cards.forEach(card => {
         if ((mselId && card.mselId === mselId) || (!mselId && !card.mselId)) {
-          filteredCards.push({... card});
+          filteredCards.push({ ...card });
         }
       });
       if (filteredCards && filteredCards.length > 0 && this.filterString) {

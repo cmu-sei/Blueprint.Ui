@@ -21,33 +21,28 @@ import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { Catalog, InjectType, Team } from 'src/app/generated/blueprint.api';
 import { Sort } from '@angular/material/sort';
-import { MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy-menu';
+import { MatMenuTrigger } from '@angular/material/menu';
 import { MatTable } from '@angular/material/table';
 import { CatalogDataService } from 'src/app/data/catalog/catalog-data.service';
 import { CatalogQuery } from 'src/app/data/catalog/catalog.query';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { AdminCatalogEditDialogComponent } from '../admin-catalog-edit-dialog/admin-catalog-edit-dialog.component';
 import { v4 as uuidv4 } from 'uuid';
 import { InjectTypeQuery } from 'src/app/data/inject-type/inject-type.query';
 
 @Component({
-  selector: 'app-admin-catalog-list',
-  templateUrl: './admin-catalog-list.component.html',
-  styleUrls: ['./admin-catalog-list.component.scss'],
-  animations: [
-    trigger('detailExpand', [
-      state(
-        'collapsed',
-        style({ height: '0px', minHeight: '0', visibility: 'hidden' })
-      ),
-      state('expanded', style({ height: '*', visibility: 'visible' })),
-      transition(
-        'expanded <=> collapsed',
-        animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')
-      ),
-    ]),
-  ],
+    selector: 'app-admin-catalog-list',
+    templateUrl: './admin-catalog-list.component.html',
+    styleUrls: ['./admin-catalog-list.component.scss'],
+    animations: [
+        trigger('detailExpand', [
+            state('collapsed', style({ height: '0px', minHeight: '0', visibility: 'hidden' })),
+            state('expanded', style({ height: '*', visibility: 'visible' })),
+            transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
+        ]),
+    ],
+    standalone: false
 })
 export class AdminCatalogListComponent implements OnDestroy {
   @Input() loggedInUserId: string;

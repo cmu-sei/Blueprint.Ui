@@ -3,7 +3,7 @@
 // project root for license information.
 import { Component, Input, OnDestroy, ViewChild } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { CdkDragDrop, CdkDragStart, CdkDragEnd } from '@angular/cdk/drag-drop';
 import { Router } from '@angular/router';
 import { Subject, Subscription, Observable, of, take } from 'rxjs';
@@ -39,7 +39,7 @@ import {
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { Sort } from '@angular/material/sort';
-import { MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy-menu';
+import { MatMenuTrigger } from '@angular/material/menu';
 import { CardQuery } from 'src/app/data/card/card.query';
 import { CatalogQuery } from 'src/app/data/catalog/catalog.query';
 import { InjectmDataService } from 'src/app/data/injectm/injectm-data.service';
@@ -75,10 +75,10 @@ interface StringDictionary {
   selector: 'app-scenario-event-list',
   templateUrl: './scenario-event-list.component.html',
   styleUrls: ['./scenario-event-list.component.scss'],
+  standalone: false
 })
 export class ScenarioEventListComponent
-  implements OnDestroy, ScenarioEventView
-{
+  implements OnDestroy, ScenarioEventView {
   @Input() loggedInUserId: string;
   @Input() isContentDeveloper: boolean;
   @Input() userTheme: Theme;
@@ -228,10 +228,10 @@ export class ScenarioEventListComponent
           this.scenarioEventDataService.updateScenarioEventViewUsers(this);
           const dataOptions = [];
           if (msel.useGallery) {
-            dataOptions.push({ optionName: IntegrationTarget.Gallery, optionValue: IntegrationTarget.Gallery});
+            dataOptions.push({ optionName: IntegrationTarget.Gallery, optionValue: IntegrationTarget.Gallery });
           }
           if (msel.useSteamfitter) {
-            dataOptions.push({ optionName: IntegrationTarget.Steamfitter, optionValue: IntegrationTarget.Steamfitter});
+            dataOptions.push({ optionName: IntegrationTarget.Steamfitter, optionValue: IntegrationTarget.Steamfitter });
           }
           this.integrationTargetDataField = {
             displayOrder: -1,
@@ -648,9 +648,9 @@ export class ScenarioEventListComponent
     }
   }
 
-  dragStart(event: CdkDragStart) {}
+  dragStart(event: CdkDragStart) { }
 
-  dragEnd(event: CdkDragEnd) {}
+  dragEnd(event: CdkDragEnd) { }
 
   addScenarioEvent() {
     this.isAddingScenarioEvent = true;
@@ -689,8 +689,8 @@ export class ScenarioEventListComponent
       editScenarioEvent.dataValues.push({ ...dataValue });
     });
     if (scenarioEvent.steamfitterTaskId) {
-      editScenarioEvent.steamfitterTask = { ...scenarioEvent.steamfitterTask};
-      editScenarioEvent.steamfitterTask.actionParameters = { ...scenarioEvent.steamfitterTask.actionParameters};
+      editScenarioEvent.steamfitterTask = { ...scenarioEvent.steamfitterTask };
+      editScenarioEvent.steamfitterTask.actionParameters = { ...scenarioEvent.steamfitterTask.actionParameters };
     } else {
       this.makeSteamfitterTask(editScenarioEvent, null);
     }
@@ -713,7 +713,7 @@ export class ScenarioEventListComponent
         });
       });
     if (scenarioEvent.steamfitterTaskId) {
-      newScenarioEvent.steamfitterTask = { ...scenarioEvent.steamfitterTask};
+      newScenarioEvent.steamfitterTask = { ...scenarioEvent.steamfitterTask };
       newScenarioEvent.steamfitterTaskId = null;
       newScenarioEvent.steamfitterTask.id = null;
     } else {
@@ -839,8 +839,7 @@ export class ScenarioEventListComponent
     }
   }
 
-  saveIntegrationTarget(scenarioEvent: ScenarioEvent, value: string)
-  {
+  saveIntegrationTarget(scenarioEvent: ScenarioEvent, value: string) {
     scenarioEvent.integrationTarget = value;
     this.saveScenarioEvent(scenarioEvent);
   }
@@ -850,11 +849,11 @@ export class ScenarioEventListComponent
     this.scenarioEventDataService.updateScenarioEvent(scenarioEvent);
   }
 
-  deleteScenarioEvent(scenarioEvent: ScenarioEvent): void {
+  deleteScenarioEvent(scenarioEvent: ScenarioEvent, index: number): void {
     this.dialogService
       .confirm(
         'Delete Event',
-        'Are you sure that you want to delete this event?'
+        'Are you sure that you want to delete event ' + index + '?'
       )
       .subscribe((result) => {
         if (result['confirm']) {

@@ -4,396 +4,317 @@ Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
 <div class="container">
-  <div class="tableFixHead" *ngIf="msel">
+  @if (msel) {
+  <div class="tableFixHead">
     <!-- scenario event table -->
     <table>
       <!-- table header -->
       <thead matSort (matSortChange)="sortChanged($event)">
         <!-- search field header row -->
-        <tr *ngIf="showSearch">
+        @if (showSearch) {
+        <tr>
           <th colspan="5">
-            <mat-form-field *ngIf="showSearch" class="top-search">
-              <input
-                matInput
-                [(ngModel)]="filterString"
-                (keyup)="keyUp.next($event)"
-                placeholder="Search"
-                style="font-size: 10pt;"
-              />
+            <span class="center-self">Search</span>
+            <mat-form-field class="center-self shift-left">
+              <input matInput [(ngModel)]="filterString" (keyup)="keyUp.next($event)" />
             </mat-form-field>
-            <button
-              [disabled]="filterString === ''"
-              mat-icon-button
-              (click)="applyFilter('')"
-              style="outline: none;"
-              title="Close Search"
-            >
-              <mat-icon
-                style="transform: scale(0.85);"
-                svgIcon="ic_cancel_circle"
-              ></mat-icon>
+            <button [disabled]="!filterString" mat-icon-button (click)="applyFilter('')" style="outline: none;"
+              title="Close Search" class="center-self">
+              <mat-icon class="mdi-18px center-self" fontIcon="mdi-close-circle-outline"></mat-icon>
             </button>
           </th>
         </tr>
+        }
         <!-- main header row -->
         <tr>
           <!-- action button header -->
           <th class="background center-self">
             <div class="row-start-buttons">
-              <ng-container *ngIf="allowDragAndDrop">
-                <span class="row-index center-self">&nbsp;</span>
-              </ng-container>
-              <span class="row-index center-self">&nbsp;&nbsp;</span>
-              <mat-checkbox
-                [checked]="allSelected"
-                (change)="setAllSelectedState($event.checked)"
-                title="Select All/None"
-                style="margin-top: 7px; margin-right: 7px;"
-                [disabled]="displayedScenarioEvents.length === 0"
-                *ngIf="(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)"
-              ></mat-checkbox>
-              <button
-                mat-icon-button
-                style="outline: none; width: 30px;"
-                title="Action List"
-                [matMenuTriggerFor]="addEventList"
-                *ngIf="selectedEventIdList.length === 0 && (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)"
-              >
+              @if (allowDragAndDrop) {
+              <span class="row-index center-self">&nbsp;</span>
+              }
+              <span class="row-index center-self">&nbsp;</span>
+              @if ((isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)) {
+              <mat-checkbox [checked]="allSelected" (change)="setAllSelectedState($event.checked)"
+                title="Select All/None" style="margin-left: -10px; margin-top: 7px; margin-right: 7px;"
+                [disabled]="displayedScenarioEvents.length === 0"></mat-checkbox>
+              }
+              @if (selectedEventIdList.length === 0 && (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner))
+              {
+              <button mat-icon-button style="outline: none; width: 30px;" title="Action List"
+                [matMenuTriggerFor]="addEventList">
                 <mat-icon class="mdi-24px" fontIcon="mdi-menu"></mat-icon>
               </button>
+              }
               <mat-menu #addEventList="matMenu" [overlapTrigger]="false">
-                <button
-                  mat-menu-item
-                  (click)="addScenarioEvent()"
-                  title="Add an event"
-                  *ngIf="(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) && selectedEventIdList.length === 0"
-                  [disabled]="allDataFields.length === 0"
-                >
+                @if ((isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) && selectedEventIdList.length ===
+                0) {
+                <button mat-menu-item (click)="addScenarioEvent()" title="Add an event"
+                  [disabled]="allDataFields.length === 0">
                   Add New Event
                 </button>
-                <button
-                  mat-menu-item
-                  [matMenuTriggerFor]="addFromCatalog"
-                  title="Add an inject from a catalog"
-                  [disabled]="selectedEventIdList.length > 0"
-                  *ngIf="catalogList.length > 0 && (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)"
-                >
+                }
+                @if (catalogList.length > 0 && (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)) {
+                <button mat-menu-item [matMenuTriggerFor]="addFromCatalog" title="Add an inject from a catalog"
+                  [disabled]="selectedEventIdList.length > 0">
                   Add Inject from Catalog
                 </button>
+                }
               </mat-menu>
               <mat-menu #addFromCatalog="matMenu" [overlapTrigger]="false">
-                <button
-                  mat-menu-item
-                  (click)="selectFromCatalog(catalog)"
-                  title="{{ catalog.name }}"
-                  *ngFor="let catalog of catalogList"
-                >
+                @for (catalog of catalogList; track catalog) {
+                <button mat-menu-item (click)="selectFromCatalog(catalog)" title="{{ catalog.name }}">
                   {{ catalog.name }}
                 </button>
+                }
               </mat-menu>
-              <button
-                mat-icon-button
-                style="outline: none; width: 30px;"
-                title="Action List"
-                [matMenuTriggerFor]="bulkEventList"
-                *ngIf="selectedEventIdList.length > 0 && (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)"
-              >
+              @if (selectedEventIdList.length > 0 && (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)) {
+              <button mat-icon-button style="outline: none; width: 30px;" title="Action List"
+                [matMenuTriggerFor]="bulkEventList">
                 <mat-icon class="mdi-24px" fontIcon="mdi-menu"></mat-icon>
               </button>
+              }
               <mat-menu #bulkEventList="matMenu" [overlapTrigger]="false">
-                <button
-                  mat-menu-item
-                  (click)="copyToAnotherMsel()"
-                  title="Copy Selected Events"
-                  *ngIf="(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)"
-                >
-                Copy Selected Events
+                @if ((isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)) {
+                <button mat-menu-item (click)="copyToAnotherMsel()" title="Copy Selected Events">
+                  Copy Selected Events
                 </button>
-                <button
-                  mat-menu-item
-                  [matMenuTriggerFor]="colorList"
-                  (click)="$event.stopPropagation()"
-                  title="Highlight selected events"
-                  *ngIf="(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)"
-                >
+                }
+                @if ((isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)) {
+                <button mat-menu-item [matMenuTriggerFor]="colorList" (click)="$event.stopPropagation()"
+                  title="Highlight selected events">
                   Highlight selected events
                 </button>
+                }
                 <mat-menu #colorList="matMenu" [overlapTrigger]="false">
-                  <button
-                    mat-menu-item
-                    (click)="selectNewColor('', null)"
-                    class="color-option-button"
-                  >
+                  <button mat-menu-item (click)="selectNewColor('', null)" class="color-option-button">
                     <div class="color-option" [style]="getStyleFromColor('')"></div>
                   </button>
-                  <button
-                    mat-menu-item
-                    *ngFor="let color of scenarioEventBackgroundColors"
-                    (click)="batchSelectNewColor(color)"
-                    class="color-option-button"
-                  >
+                  @for (color of scenarioEventBackgroundColors; track color) {
+                  <button mat-menu-item (click)="batchSelectNewColor(color)" class="color-option-button">
                     <div class="color-option" [style]="getStyleFromColor(color)">&nbsp;</div>
                   </button>
+                  }
                 </mat-menu>
-                <button
-                  mat-menu-item
-                  (click)="batchDeleteScenarioEvents()"
-                  title="Delete selecetd events"
-                >
+                <button mat-menu-item (click)="batchDeleteScenarioEvents()" title="Delete selecetd events">
                   Delete selected events
                 </button>
               </mat-menu>
-              <button
-                mat-icon-button
-                (click)="setSearch(true)"
-                style="outline: none; width: 30px;"
-                title="Search Events"
-                *ngIf="!showSearch"
-              >
+              @if (!showSearch) {
+              <button mat-icon-button (click)="setSearch(true)" style="outline: none; width: 30px;"
+                title="Search Events">
                 <mat-icon class="mdi-24px" fontIcon="mdi-filter-outline"></mat-icon>
               </button>
-              <button
-                mat-icon-button
-                (click)="setSearch(false)"
-                style="outline: none; width: 30px;"
-                title="Clear Search"
-                *ngIf="showSearch"
-              >
+              }
+              @if (showSearch) {
+              <button mat-icon-button (click)="setSearch(false)" style="outline: none; width: 30px;"
+                title="Clear Search">
                 <mat-icon class="mdi-24px" fontIcon="mdi-filter-off-outline"></mat-icon>
               </button>
+              }
             </div>
           </th>
           <!-- Move header -->
-          <th *ngIf="msel.showMoveOnScenarioEventList" class="background">
+          @if (msel.showMoveOnScenarioEventList) {
+          <th class="background">
             <div>Move</div>
           </th>
+          }
           <!-- Group header -->
-          <th *ngIf="msel.showGroupOnScenarioEventList" class="background">
+          @if (msel.showGroupOnScenarioEventList) {
+          <th class="background">
             <div>Group</div>
           </th>
+          }
           <!-- Time header -->
-          <th *ngIf="msel.showTimeOnScenarioEventList" class="background">
+          @if (msel.showTimeOnScenarioEventList) {
+          <th class="background">
             <div>
-              <button
-                mat-icon-button
-                (click)="setRealTime(true)"
-                style="outline: none;"
-                title="Switch to Real Time"
-                *ngIf="!showRealTime"
-                [disabled]="!msel || !msel.startTime || msel.startTime.valueOf() < 0"
-              >
+              @if (!showRealTime) {
+              <button mat-icon-button (click)="setRealTime(true)" style="outline: none;" title="Switch to Real Time"
+                [disabled]="!msel || !msel.startTime || msel.startTime.valueOf() < 0">
                 <mat-icon class="mdi-24px" fontIcon="mdi-timer-outline"></mat-icon>
               </button>
-              <button
-                mat-icon-button
-                (click)="setRealTime(false)"
-                style="outline: none;"
-                title="Switch to Delta Time"
-                *ngIf="showRealTime"
-              >
+              }
+              @if (showRealTime) {
+              <button mat-icon-button (click)="setRealTime(false)" style="outline: none;" title="Switch to Delta Time">
                 <mat-icon class="mdi-24px" fontIcon="mdi-clock-time-four-outline"></mat-icon>
               </button>
+              }
             </div>
           </th>
+          }
           <!-- IntegrationTarget header -->
-          <th *ngIf="msel.showIntegrationTargetOnScenarioEventList" class="background">
+          @if (msel.showIntegrationTargetOnScenarioEventList) {
+          <th class="background">
             <div>Integration Target</div>
           </th>
+          }
           <!-- Data Field headers -->
-          <ng-container *ngFor="let df of headerDataFields">
-            <ng-container *ngIf="sortableDataTypes.includes(df.dataType); else noSort">
-              <th mat-sort-header="{{ df.name }}" class="background">
-                <div [style]="getStyle(df)">{{ df.name }}</div>
-              </th>
-            </ng-container>
-            <ng-template #noSort>
-              <th class="background">
-                <div [style]="getStyle(df)">{{ df.name }}</div>
-              </th>
-            </ng-template>
-          </ng-container>
+          @for (df of headerDataFields; track df) {
+          @if (sortableDataTypes.includes(df.dataType)) {
+          <th mat-sort-header="{{ df.name }}" class="background">
+            <div [style]="getStyle(df)">{{ df.name }}</div>
+          </th>
+          } @else {
+          <th class="background">
+            <div [style]="getStyle(df)">{{ df.name }}</div>
+          </th>
+          }
+          }
         </tr>
       </thead>
       <!-- table body -->
       <tbody cdkDropList [cdkDropListDisabled]="!allowDragAndDrop" (cdkDropListDropped)="dropHandler($event)">
-        <ng-container *ngFor="let item of displayedScenarioEvents; index as rowIndex">
-          <tr [style]="getRowStyle(item)" cdkDrag [cdkDragData]="item" cdkDragLockAxis="y" [cdkDragPreviewClass]="userTheme" (cdkDragStarted)="dragStart($event)" (cdkDragEnded)="dragEnd($event)">
-            <!-- row buttons -->
-            <td class="center-self">
-              <div class="row-start-buttons">
-                <ng-container *ngIf="allowDragAndDrop">
-                  <div cdkDragHandle>
-                    <span><mat-icon class="mdi-24px" fontIcon="mdi-drag-vertical"/></span>
-                  </div>
-                </ng-container>
-                <span class="row-index center-self">{{ rowIndex  + 1 }}</span>
-                <mat-checkbox
-                  [checked]="getSelectedState(item.id)"
-                  (change)="setSelectedState(item.id, $event.checked)"
-                  title="Select event {{ rowIndex  + 1 }}"
-                  *ngIf="(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)"
-                ></mat-checkbox>
-                <button
-                  mat-icon-button
-                  class="scenario-event-button"
-                  [matMenuTriggerFor]="actionList"
-                  (click)="$event.stopPropagation()"
-                  title="Event {{ rowIndex + 1 }} Action List"
-                  [disabled]="selectedEventIdList.length > 0"
-                >
-                  <mat-icon class="mdi-24px up-12" fontIcon="mdi-menu"></mat-icon>
+        @for (item of displayedScenarioEvents; track item; let rowIndex = $index) {
+        <tr [style]="getRowStyle(item)" cdkDrag [cdkDragData]="item" cdkDragLockAxis="y"
+          [cdkDragPreviewClass]="userTheme" (cdkDragStarted)="dragStart($event)" (cdkDragEnded)="dragEnd($event)">
+          <!-- row buttons -->
+          <td class="center-self">
+            <div class="row-start-buttons">
+              @if (allowDragAndDrop) {
+              <div cdkDragHandle class="center-self">
+                <span><mat-icon class="mdi-24px" fontIcon="mdi-drag-vertical" /></span>
+              </div>
+              }
+              <span class="row-index center-self">{{ rowIndex + 1 }}</span>
+              @if ((isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)) {
+              <mat-checkbox [checked]="getSelectedState(item.id)" (change)="setSelectedState(item.id, $event.checked)"
+                title="Select event {{ rowIndex  + 1 }}"></mat-checkbox>
+              }
+              <button mat-icon-button class="scenario-event-button" [matMenuTriggerFor]="actionList"
+                (click)="$event.stopPropagation()" title="Event {{ rowIndex + 1 }} Action List"
+                [disabled]="selectedEventIdList.length > 0">
+                <mat-icon class="mdi-24px up-12" fontIcon="mdi-menu"></mat-icon>
+              </button>
+              <mat-menu #actionList="matMenu" [overlapTrigger]="false">
+                <button mat-menu-item (click)="openContent(item.id)" title="Open page in new tab">
+                  View
                 </button>
-                <mat-menu #actionList="matMenu" [overlapTrigger]="false">
-                  <button
-                    mat-menu-item
-                    (click)="openContent(item.id)"
-                    title="Open page in new tab"
-                  >
-                    View
+                <button mat-menu-item (click)="editScenarioEvent(item)" title="Edit event {{ rowIndex  + 1 }}">
+                  Edit
+                </button>
+                @if ((isContentDeveloper || msel.hasRole(loggedInUserId, item.id).owner)) {
+                <button mat-menu-item [matMenuTriggerFor]="colorList" (click)="$event.stopPropagation()"
+                  title="Highlight event {{ rowIndex  + 1 }}">
+                  Highlight
+                </button>
+                }
+                <mat-menu #colorList="matMenu" [overlapTrigger]="false">
+                  <button mat-menu-item (click)="selectNewColor('', item)" class="color-option-button">
+                    <div class="color-option" [style]="getStyleFromColor('')"></div>
                   </button>
-                  <button
-                    mat-menu-item
-                    (click)="editScenarioEvent(item)"
-                    title="Edit event {{ rowIndex  + 1 }}"
-                  >
-                    Edit
+                  @for (color of scenarioEventBackgroundColors; track color) {
+                  <button mat-menu-item (click)="selectNewColor(color, item)" class="color-option-button">
+                    <div class="color-option" [style]="getStyleFromColor(color)">&nbsp;</div>
                   </button>
-                  <button
-                    mat-menu-item
-                    [matMenuTriggerFor]="colorList"
-                    (click)="$event.stopPropagation()"
-                    title="Highlight event {{ rowIndex  + 1 }}"
-                    *ngIf="(isContentDeveloper || msel.hasRole(loggedInUserId, item.id).owner)"
-                  >
-                    Highlight
-                  </button>
-                  <mat-menu #colorList="matMenu" [overlapTrigger]="false">
-                    <button
-                      mat-menu-item
-                      (click)="selectNewColor('', item)"
-                      class="color-option-button"
-                    >
-                      <div class="color-option" [style]="getStyleFromColor('')"></div>
-                    </button>
-                    <button
-                      mat-menu-item
-                      *ngFor="let color of scenarioEventBackgroundColors"
-                      (click)="selectNewColor(color, item)"
-                      class="color-option-button"
-                    >
-                      <div class="color-option" [style]="getStyleFromColor(color)">&nbsp;</div>
-                    </button>
-                  </mat-menu>
-                  <button
-                    mat-menu-item
-                    (click)="copyScenarioEvent(item)"
-                    title="Copy event {{ rowIndex + 1 }}"
-                    *ngIf="(isContentDeveloper || msel.hasRole(loggedInUserId, item.id).owner) && !isStarterMsel"
-                  >
-                    Copy
-                  </button>
-                  <button
-                    mat-menu-item
-                    (click)="deleteScenarioEvent(item)"
-                    title="Delete event {{ rowIndex  + 1 }}"
-                    *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, item.id).owner"
-                  >
-                    Delete
-                  </button>
+                  }
                 </mat-menu>
-                <button
-                  mat-icon-button
-                  *ngIf="!item.isHidden && !isStarterMsel"
-                  class="scenario-event-button"
-                  (click)="setHiddenScenarioEvent(item, true)"
-                  title="Hide event {{ rowIndex + 1 }} on the Exercise View"
-                  [disabled]="selectedEventIdList.length > 0"
-                >
-                  <mat-icon class="mdi-24px up-12" fontIcon="mdi-eye-outline"></mat-icon>
+                @if ((isContentDeveloper || msel.hasRole(loggedInUserId, item.id).owner) && !isStarterMsel) {
+                <button mat-menu-item (click)="copyScenarioEvent(item)" title="Copy event {{ rowIndex + 1 }}">
+                  Copy
                 </button>
-                <button
-                  mat-icon-button
-                  *ngIf="item.isHidden && !isStarterMsel"
-                  class="scenario-event-button"
-                  (click)="setHiddenScenarioEvent(item, false)"
-                  title="Unhide event {{ rowIndex + 1 }} on the Exercise View"
-                  [disabled]="selectedEventIdList.length > 0"
-                >
-                  <mat-icon class="mdi-24px up-12" fontIcon="mdi-eye-off-outline"></mat-icon>
+                }
+                @if (isContentDeveloper || msel.hasRole(loggedInUserId, item.id).owner) {
+                <button mat-menu-item (click)="deleteScenarioEvent(item, rowIndex + 1)"
+                  title="Delete event {{ rowIndex  + 1 }}">
+                  Delete
                 </button>
-              </div>
-            </td>
-            <!-- Move value -->
-            <td *ngIf="msel.showMoveOnScenarioEventList">
-              <div class="constrainer" style="text-align: center;">
-                {{ moveAndGroupNumbers[item.id][0] }}
-              </div>
-            </td>
-            <!-- Group value -->
-            <td *ngIf="msel.showGroupOnScenarioEventList">
-              <div class="constrainer" style="text-align: center;">
-                {{ moveAndGroupNumbers[item.id][1] }}
-              </div>
-            </td>
-            <!-- Time value -->
-            <td *ngIf="msel.showTimeOnScenarioEventList">
-              <div class="time-span center-self">
-                <app-duration-view
-                  [startTime]="msel.startTime"
-                  [durationSeconds]="item.deltaSeconds"
-                  [showRealTime]="showRealTime"
-                ></app-duration-view>
-              </div>
-            </td>
-            <!-- Integration Target value -->
-            <td *ngIf="msel.showIntegrationTargetOnScenarioEventList">
-              <app-data-value
-                [value]="item.integrationTarget"
-                (valueChange)="saveIntegrationTarget(item, $event)"
-                [dataField]="integrationTargetDataField"
+                }
+              </mat-menu>
+              @if (!item.isHidden && !isStarterMsel) {
+              <button mat-icon-button class="scenario-event-button" (click)="setHiddenScenarioEvent(item, true)"
+                title="Hide event {{ rowIndex + 1 }} on the Exercise View" [disabled]="selectedEventIdList.length > 0">
+                <mat-icon class="mdi-24px up-12" fontIcon="mdi-eye-outline"></mat-icon>
+              </button>
+              }
+              @if (item.isHidden && !isStarterMsel) {
+              <button mat-icon-button class="scenario-event-button" (click)="setHiddenScenarioEvent(item, false)"
+                title="Unhide event {{ rowIndex + 1 }} on the Exercise View"
+                [disabled]="selectedEventIdList.length > 0">
+                <mat-icon class="mdi-24px up-12" fontIcon="mdi-eye-off-outline"></mat-icon>
+              </button>
+              }
+            </div>
+          </td>
+          <!-- Move value -->
+          @if (msel.showMoveOnScenarioEventList) {
+          <td>
+            <div class="constrainer" style="text-align: center;">
+              {{ moveAndGroupNumbers[item.id][0] }}
+            </div>
+          </td>
+          }
+          <!-- Group value -->
+          @if (msel.showGroupOnScenarioEventList) {
+          <td>
+            <div class="constrainer" style="text-align: center;">
+              {{ moveAndGroupNumbers[item.id][1] }}
+            </div>
+          </td>
+          }
+          <!-- Time value -->
+          @if (msel.showTimeOnScenarioEventList) {
+          <td>
+            <div class="time-span center-self">
+              <app-duration-view [startTime]="msel.startTime" [durationSeconds]="item.deltaSeconds"
+                [showRealTime]="showRealTime"></app-duration-view>
+            </div>
+          </td>
+          }
+          <!-- Integration Target value -->
+          @if (msel.showIntegrationTargetOnScenarioEventList) {
+          <td>
+            <app-data-value [value]="item.integrationTarget" (valueChange)="saveIntegrationTarget(item, $event)"
+              [dataField]="integrationTargetDataField"
+              [canEdit]="(isContentDeveloper || msel.hasRole(this.loggedInUserId, item.id).editor) && !isStarterMsel"
+              [canApprove]="(isContentDeveloper || msel.hasRole(this.loggedInUserId, item.id).approver) && !isStarterMsel"
+              [isOwner]="(isContentDeveloper || msel.hasRole(this.loggedInUserId, item.id).owner) && !isStarterMsel"
+              [showValueOnly]="true" [organizationOptions]="getSortedOrganizationOptions()" [teamOptions]="teamList"
+              [unitOptions]="unitList" [cardOptions]="cardList" [moveOptions]="moveList"
+              [gallerySourceTypeOptions]="msel.gallerySourceTypes" [userOptions]="userList">
+            </app-data-value>
+          </td>
+          }
+          @if (item.scenarioEventType === eventType.Inject) {
+          @for (df of rowDataFields(item); track df) {
+          <td>
+            <app-data-value [value]="getDataValue(item, df.name).value"
+              (valueChange)="saveDataValue(item, df.name, $event)" [dataField]="df"
+              [canEdit]="(isContentDeveloper || msel.hasRole(this.loggedInUserId, item.id).editor) && !isStarterMsel"
+              [canApprove]="(isContentDeveloper || msel.hasRole(this.loggedInUserId, item.id).approver) && !isStarterMsel"
+              [isOwner]="(isContentDeveloper || msel.hasRole(this.loggedInUserId, item.id).owner) && !isStarterMsel"
+              [showValueOnly]="true" [organizationOptions]="getSortedOrganizationOptions()" [teamOptions]="teamList"
+              [unitOptions]="unitList" [cardOptions]="cardList" [moveOptions]="moveList"
+              [gallerySourceTypeOptions]="msel.gallerySourceTypes" [userOptions]="userList">
+            </app-data-value>
+          </td>
+          }
+          }
+          @if (item.scenarioEventType !== eventType.Inject) {
+          <td colspan="99">
+            <span style="margin-right: 30px;">{{ item.scenarioEventType }}:</span>
+            @for (df2 of rowDataFields(item); track df2) {
+            <span style="margin-right: 30px;">
+              <app-data-value [value]="getDataValue(item, df2.name).value"
+                (valueChange)="saveDataValue(item, df2.name, $event)" [dataField]="df2"
                 [canEdit]="(isContentDeveloper || msel.hasRole(this.loggedInUserId, item.id).editor) && !isStarterMsel"
                 [canApprove]="(isContentDeveloper || msel.hasRole(this.loggedInUserId, item.id).approver) && !isStarterMsel"
                 [isOwner]="(isContentDeveloper || msel.hasRole(this.loggedInUserId, item.id).owner) && !isStarterMsel"
-                [showValueOnly]="true" [organizationOptions]="getSortedOrganizationOptions()" [teamOptions]="teamList" [unitOptions]="unitList"
-                [cardOptions]="cardList" [moveOptions]="moveList" [gallerySourceTypeOptions]="msel.gallerySourceTypes"
-                [userOptions]="userList">
+                [showValueOnly]="true" [organizationOptions]="getSortedOrganizationOptions()" [teamOptions]="teamList"
+                [unitOptions]="unitList" [cardOptions]="cardList" [moveOptions]="moveList"
+                [gallerySourceTypeOptions]="msel.gallerySourceTypes" [userOptions]="userList">
               </app-data-value>
-            </td>
-            <ng-container *ngIf="item.scenarioEventType === eventType.Inject">
-              <td *ngFor="let df of rowDataFields(item)">
-                <app-data-value [value]="getDataValue(item, df.name).value" (valueChange)="saveDataValue(item, df.name, $event)"
-                  [dataField]="df"
-                  [canEdit]="(isContentDeveloper || msel.hasRole(this.loggedInUserId, item.id).editor) && !isStarterMsel"
-                  [canApprove]="(isContentDeveloper || msel.hasRole(this.loggedInUserId, item.id).approver) && !isStarterMsel"
-                  [isOwner]="(isContentDeveloper || msel.hasRole(this.loggedInUserId, item.id).owner) && !isStarterMsel"
-                  [showValueOnly]="true" [organizationOptions]="getSortedOrganizationOptions()" [teamOptions]="teamList" [unitOptions]="unitList"
-                  [cardOptions]="cardList" [moveOptions]="moveList" [gallerySourceTypeOptions]="msel.gallerySourceTypes"
-                  [userOptions]="userList">
-                </app-data-value>
-              </td>
-            </ng-container>
-            <ng-container *ngIf="item.scenarioEventType !== eventType.Inject">
-              <td colspan="99">
-                <span style="margin-right: 30px;">{{ item.scenarioEventType }}:</span>
-                <span *ngFor="let df2 of rowDataFields(item)" style="margin-right: 30px;">
-                  <app-data-value
-                    [value]="getDataValue(item, df2.name).value"
-                    (valueChange)="saveDataValue(item, df2.name, $event)" [dataField]="df2"
-                    [canEdit]="(isContentDeveloper || msel.hasRole(this.loggedInUserId, item.id).editor) && !isStarterMsel"
-                    [canApprove]="(isContentDeveloper || msel.hasRole(this.loggedInUserId, item.id).approver) && !isStarterMsel"
-                    [isOwner]="(isContentDeveloper || msel.hasRole(this.loggedInUserId, item.id).owner) && !isStarterMsel"
-                    [showValueOnly]="true" [organizationOptions]="getSortedOrganizationOptions()" [teamOptions]="teamList" [unitOptions]="unitList"
-                    [cardOptions]="cardList" [moveOptions]="moveList" [gallerySourceTypeOptions]="msel.gallerySourceTypes"
-                    [userOptions]="userList">
-                  </app-data-value>
-                </span>
-              </td>
-            </ng-container>
-          </tr>
-        </ng-container>
+            </span>
+            }
+          </td>
+          }
+        </tr>
+        }
       </tbody>
     </table>
   </div>
+  }
 
 
 

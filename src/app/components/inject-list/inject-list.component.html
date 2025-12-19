@@ -9,90 +9,63 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <ng-container matColumnDef="action">
       <mat-header-cell *matHeaderCellDef [ngClass]="isEditMode ? 'mat-column-action' : 'mat-column-select'">
         <!-- In InjectType -->
-        <button
-          mat-icon-button
-          (click)="addInject()"
-          style="outline: none;"
-          title="Add new Inject"
-          *ngIf="isContentDeveloper && !catalog.id"
-        >
+        @if (isContentDeveloper && !catalog.id) {
+        <button mat-icon-button (click)="addInject()" style="outline: none;" title="Add new Inject">
           <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
         </button>
+        }
         <!-- In Catalog -->
-        <button
-          mat-icon-button
-          [matMenuTriggerFor]="addMenu"
-          style="outline: none;"
-          title="Add Inject"
-          *ngIf="isContentDeveloper && catalog.id"
-        >
+        @if (isContentDeveloper && catalog.id) {
+        <button mat-icon-button [matMenuTriggerFor]="addMenu" style="outline: none;" title="Add Inject">
           <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
         </button>
+        }
         <mat-menu #addMenu="matMenu" [overlapTrigger]="false">
-          <button
-            mat-menu-item
-            (click)="addInject()"
-            title="Add a new inject"
-          >New Inject</button>
-          <button
-            mat-menu-item
-            [matMenuTriggerFor]="addExistingInject"
-            title="Add an existing inject"
-          >
+          <button mat-menu-item (click)="addInject()" title="Add a new inject">New Inject</button>
+          <button mat-menu-item [matMenuTriggerFor]="addExistingInject" title="Add an existing inject">
             Add Existing Inject
           </button>
         </mat-menu>
         <mat-menu #addExistingInject="matMenu" [overlapTrigger]="false">
-          <button
-            mat-menu-item
-            (click)="selectExisting(catalog)"
-            title="{{ catalog.name }}"
-            *ngFor="let catalog of getFilteredCatalogs()"
-          >
+          @for (catalog of getFilteredCatalogs(); track catalog) {
+          <button mat-menu-item (click)="selectExisting(catalog)" title="{{ catalog.name }}">
             {{ catalog.name }}
           </button>
-          <button
-            mat-menu-item
-            (click)="selectExisting(null)"
-            title="All Injects of Type"
-          >
+          }
+          <button mat-menu-item (click)="selectExisting(null)" title="All Injects of Type">
             All Injects of Type
           </button>
         </mat-menu>
       </mat-header-cell>
       <mat-cell *matCellDef="let element" [ngClass]="isEditMode ? 'mat-column-action' : 'mat-column-select'">
-        <div *ngIf="isEditMode">
-          <button
-            mat-icon-button class="msel-action"
-            (click)="editInject(element)"
-            title="Edit {{ element.name }} inject"
-            *ngIf="isContentDeveloper"
-          >
-            <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline" title="Edit {{ element.name }} inject"></mat-icon>
+        @if (isEditMode) {
+        <div>
+          @if (isContentDeveloper) {
+          <button mat-icon-button class="msel-action" (click)="editInject(element)"
+            title="Edit {{ element.name }} inject">
+            <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline"
+              title="Edit {{ element.name }} inject"></mat-icon>
           </button>
-          <button
-            mat-icon-button
-            (click)="copyInject(element)"
-            title="Copy {{ element.name }}"
-            *ngIf="isContentDeveloper"
-          >
+          }
+          @if (isContentDeveloper) {
+          <button mat-icon-button (click)="copyInject(element)" title="Copy {{ element.name }}">
             <mat-icon class="mdi-18px" fontIcon="mdi-content-copy" alt="Copy"></mat-icon>
           </button>
-          <button
-            mat-icon-button class="msel-action"
-            (click)="deleteInject(element)"
-            title="Delete {{ element.name }} inject"
-            *ngIf="isContentDeveloper"
-          >
-            <mat-icon class="mdi-18px" fontIcon="mdi-delete" title="Delete {{ element.name }} inject"></mat-icon>
+          }
+          @if (isContentDeveloper) {
+          <button mat-icon-button class="msel-action" (click)="deleteInject(element)"
+            title="Delete {{ element.name }} inject">
+            <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline"
+              title="Delete {{ element.name }} inject"></mat-icon>
           </button>
+          }
         </div>
-        <div *ngIf="!isEditMode">
-          <mat-checkbox
-            [checked]="isSelected(element.id)"
-            (change)="select(element, $event)"
-          ></mat-checkbox><br />
+        }
+        @if (!isEditMode) {
+        <div>
+          <mat-checkbox [checked]="isSelected(element.id)" (change)="select(element, $event)"></mat-checkbox><br />
         </div>
+        }
       </mat-cell>
     </ng-container>
     <!-- name Column -->
@@ -114,32 +87,25 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </mat-cell>
     </ng-container>
     <!-- datafield Columns -->
-    <ng-container *ngFor="let df of getDisplayedDataFields()" matColumnDef="{{ df.name }}">
+    @for (df of getDisplayedDataFields(); track df) {
+    <ng-container matColumnDef="{{ df.name }}">
       <mat-header-cell title="{{ df.name }}" *matHeaderCellDef>
         {{ df.name }}
       </mat-header-cell>
       <mat-cell *matCellDef="let element">
-        <app-data-value
-          [(value)]="getDataValue(element, df).value"
-          [dataField]="df"
-          [canEdit]="false"
-          [canApprove]="false"
-          [isOwner]="false"
-          [showValueOnly]="true"
-          [organizationOptions]="[]"
-          [teamOptions]="[]"
-          [unitOptions]="unitList"
-          [cardOptions]="[]"
-          [moveOptions]="[]"
-          [gallerySourceTypeOptions]="[]"
-          [userOptions]="userList"
-        ></app-data-value>
+        <app-data-value [(value)]="getDataValue(element, df).value" [dataField]="df" [canEdit]="false"
+          [canApprove]="false" [isOwner]="false" [showValueOnly]="true" [organizationOptions]="[]" [teamOptions]="[]"
+          [unitOptions]="unitList" [cardOptions]="[]" [moveOptions]="[]" [gallerySourceTypeOptions]="[]"
+          [userOptions]="userList"></app-data-value>
       </mat-cell>
     </ng-container>
+    }
     <!-- row definitions -->
     <mat-header-row *matHeaderRowDef="getDisplayedColumns()"></mat-header-row>
     <mat-row *matRowDef="let row; columns: getDisplayedColumns();"></mat-row>
   </table>
   <!-- No Results Message -->
-  <div class="no-results" *ngIf="injectDataSource?.filteredData.length === 0">No Injects found</div>
+  @if (injectDataSource?.filteredData.length === 0) {
+  <div class="no-results">No Injects found</div>
+  }
 </section>

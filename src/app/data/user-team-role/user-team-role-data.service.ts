@@ -5,7 +5,7 @@ import { UserTeamRoleStore } from './user-team-role.store';
 import { UserTeamRoleQuery } from './user-team-role.query';
 import { Injectable } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
-import { LegacyPageEvent as PageEvent } from '@angular/material/legacy-paginator';
+import { PageEvent } from '@angular/material/paginator';
 import { Router, ActivatedRoute } from '@angular/router';
 import {
   UserTeamRole,

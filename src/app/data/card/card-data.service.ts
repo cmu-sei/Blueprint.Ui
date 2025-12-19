@@ -8,7 +8,7 @@ import { CardStore } from './card.store';
 import { CardQuery } from './card.query';
 import { Injectable } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
-import { LegacyPageEvent as PageEvent } from '@angular/material/legacy-paginator';
+import { PageEvent } from '@angular/material/paginator';
 import { Router, ActivatedRoute } from '@angular/router';
 import {
   Card,
@@ -30,7 +30,7 @@ export class CardDataService {
   private sortColumn: Observable<string>;
   private sortIsAscending: Observable<boolean>;
   private _pageEvent: PageEvent = { length: 0, pageIndex: 0, pageSize: 10 };
-  readonly pageEvent = new BehaviorSubject<PageEvent>(this._pageEvent);  private _requestedCardId: string;
+  readonly pageEvent = new BehaviorSubject<PageEvent>(this._pageEvent); private _requestedCardId: string;
   private pageSize: Observable<number>;
   private pageIndex: Observable<number>;
 
@@ -89,9 +89,9 @@ export class CardDataService {
                   ('' + card.description)
                     .toLowerCase()
                     .includes(filterTerm.toLowerCase()) ||
-                    card.id
-                      .toLowerCase()
-                      .includes(filterTerm.toLowerCase())
+                  card.id
+                    .toLowerCase()
+                    .includes(filterTerm.toLowerCase())
               )
             : []
       )
@@ -112,7 +112,7 @@ export class CardDataService {
         (templates) => {
           this.cardStore.upsertMany(templates);
         },
-        (error) => {}
+        (error) => { }
       );
   }
 

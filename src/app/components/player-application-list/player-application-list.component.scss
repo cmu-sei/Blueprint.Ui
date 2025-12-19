@@ -2,6 +2,12 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
+@use "@angular/material" as mat;
+
+:host {
+  @include mat.form-field-density(-5); // Adjust -3 for this specific form field
+}
+
 .frame {
   display: flex;
   flex-direction: column;
@@ -9,19 +15,19 @@
   height: calc(100vh - 39px);
 }
 
-.mat-header-row {
+.header-row {
   min-height: 40px;
-  padding-left:30px;
+  padding-left: 30px;
   padding-right: 50px;
   background: transparent;
 }
 
-.mat-row {
+.row {
   height: 36px;
 }
 
-.mat-row,
-.mat-header-row {
+.row,
+.header-row {
   display: flex;
   border-bottom-width: 1px;
   border-bottom-style: solid;
@@ -29,25 +35,24 @@
   box-sizing: border-box;
 }
 
-.mat-header-cell {
+.header-cell {
   font-weight: bold;
 }
 
-.mat-cell,
-.mat-header-cell {
-  flex: 1;
+.cell,
+.header-cell {
   overflow: hidden;
   word-wrap: break-word;
   text-align: left;
 }
 
-.mat-accordion .mat-header-row {
+.mat-accordion .header-row {
   padding-left: 1.5rem;
   padding-right: 2rem;
   border-bottom: none;
 }
 
-.mat-expansion-panel-header.mat-row {
+.mat-expansion-panel-header.row {
   border-bottom: none;
 }
 
@@ -80,7 +85,8 @@
   flex: 7;
   flex-flow: column;
   align-items: flex-start;
-  text-align: left;;
+  text-align: left;
+  ;
 }
 
 .data-option {
@@ -191,34 +197,9 @@ textarea {
   min-width: 150px;
 }
 
-.eight-cell {
-  flex: 8;
-}
-
-.six-cell {
-  flex: 6;
-}
-
-.five-cell {
-  flex: 5;
-}
-
-.four-cell {
-  flex: 4;
-}
-
-.three-cell {
-  flex: 3;
-}
-
-.two-cell {
-  flex: 2;
-}
-
-.one-cell {
-  flex: 1;
-}
-
-.center-self {
-  align-self: center;
+.title {
+  margin-left: 5%;
+  margin-top: 5px;
+  margin-bottom: 15px;
+  font-weight: 400;
 }

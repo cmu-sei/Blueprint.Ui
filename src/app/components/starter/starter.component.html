@@ -5,21 +5,23 @@ project root for license information or contact permission@sei.cmu.edu for full 
 -->
 
 <div class="background text app-content-container">
-  <app-topbar
-    *ngIf="!hideTopbar"
-    [title]="topbarText"
-    [topbarView]="TopbarView.BLUEPRINT_HOME"
-    [topbarColor]="topbarColor"
-    [topbarTextColor]="topbarTextColor"
-    [imageFilePath]="topbarImage"
-    (urlNavigate)="goToUrl($event)"
-  ></app-topbar>
+  @if (!hideTopbar) {
+    <app-topbar
+      [title]="topbarText"
+      [topbarView]="TopbarView.BLUEPRINT_HOME"
+      [topbarColor]="topbarColor"
+      [topbarTextColor]="topbarTextColor"
+      [imageFilePath]="topbarImage"
+      (urlNavigate)="goToUrl($event)"
+    ></app-topbar>
+  }
 
-  <app-scenario-event-list
-    *ngIf="selectedMselId"
-    [loggedInUserId]="loggedInUserId"
-    [isContentDeveloper]="isContentDeveloper$ | async"
-    [userTheme]="userTheme$ | async"
-    [isStarterMsel]="true"
-  ></app-scenario-event-list>
+  @if (selectedMselId) {
+    <app-scenario-event-list
+      [loggedInUserId]="loggedInUserId"
+      [isContentDeveloper]="isContentDeveloper$ | async"
+      [userTheme]="userTheme$ | async"
+      [isStarterMsel]="true"
+    ></app-scenario-event-list>
+  }
 </div>

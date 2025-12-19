@@ -32,8 +32,11 @@
 
 // overrides.scss or styles.scss
 // This fixes https://github.com//issues/4609
+/* TODO(mdc-migration): The following rule targets internal classes of dialog that may no longer apply for the MDC version.*/
+/* TODO(mdc-migration): The following rule targets internal classes of dialog that may no longer apply for the MDC version.*/
 .mat-dialog-override {
   height: 0px;
+  /* TODO(mdc-migration): The following rule targets internal classes of dialog that may no longer apply for the MDC version.*/
   mat-dialog-container {
     > :first-child {
       display: flex;

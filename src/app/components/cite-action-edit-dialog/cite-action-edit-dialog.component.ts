@@ -10,7 +10,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { ErrorStateMatcher } from '@angular/material/core';
-import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { MoveQuery } from 'src/app/data/move/move.query';
 
@@ -26,9 +26,10 @@ export class UserErrorStateMatcher implements ErrorStateMatcher {
 }
 
 @Component({
-  selector: 'app-cite-action-edit-dialog',
-  templateUrl: './cite-action-edit-dialog.component.html',
-  styleUrls: ['./cite-action-edit-dialog.component.scss'],
+    selector: 'app-cite-action-edit-dialog',
+    templateUrl: './cite-action-edit-dialog.component.html',
+    styleUrls: ['./cite-action-edit-dialog.component.scss'],
+    standalone: false
 })
 
 export class CiteActionEditDialogComponent {

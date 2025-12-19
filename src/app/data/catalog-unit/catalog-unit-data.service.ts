@@ -5,7 +5,7 @@ import { CatalogUnitStore } from './catalog-unit.store';
 import { CatalogUnitQuery } from './catalog-unit.query';
 import { Injectable } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
-import { LegacyPageEvent as PageEvent } from '@angular/material/legacy-paginator';
+import { PageEvent } from '@angular/material/paginator';
 import { Router, ActivatedRoute } from '@angular/router';
 import {
   CatalogUnit,
@@ -83,7 +83,7 @@ export class CatalogUnitDataService {
                 (catalogUnit) =>
                   catalogUnit.id
                     .toLowerCase()
-                    .includes(filterTerm.toLowerCase())                )
+                    .includes(filterTerm.toLowerCase()))
             : []
       )
     );

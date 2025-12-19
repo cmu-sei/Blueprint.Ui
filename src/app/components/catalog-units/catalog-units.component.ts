@@ -18,12 +18,13 @@ import { CatalogDataService } from 'src/app/data/catalog/catalog-data.service';
 import { CatalogQuery } from 'src/app/data/catalog/catalog.query';
 import { CatalogUnitDataService } from 'src/app/data/catalog-unit/catalog-unit-data.service';
 import { CatalogUnitQuery } from 'src/app/data/catalog-unit/catalog-unit.query';
-import { MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy-menu';
+import { MatMenuTrigger } from '@angular/material/menu';
 
 @Component({
-  selector: 'app-catalog-units',
-  templateUrl: './catalog-units.component.html',
-  styleUrls: ['./catalog-units.component.scss'],
+    selector: 'app-catalog-units',
+    templateUrl: './catalog-units.component.html',
+    styleUrls: ['./catalog-units.component.scss'],
+    standalone: false
 })
 export class CatalogUnitsComponent implements OnDestroy, OnInit {
   @Input() loggedInUserId: string;
@@ -83,7 +84,7 @@ export class CatalogUnitsComponent implements OnDestroy, OnInit {
     const sortedDataFields: DataField[] = [];
     if (dataFields) {
       dataFields.forEach(df => {
-        sortedDataFields.push({... df});
+        sortedDataFields.push({ ...df });
       });
       sortedDataFields.sort((a, b) => +a.displayOrder > +b.displayOrder ? 1 : -1);
     }

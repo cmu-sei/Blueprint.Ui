@@ -9,7 +9,7 @@ import {
   NgForm,
 } from '@angular/forms';
 import { ErrorStateMatcher } from '@angular/material/core';
-import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { AngularEditorConfig } from '@kolkov/angular-editor';
 
@@ -27,9 +27,10 @@ export class UserErrorStateMatcher implements ErrorStateMatcher {
 const MIN_NAME_LENGTH = 3;
 
 @Component({
-  selector: 'app-move-edit-dialog',
-  templateUrl: './move-edit-dialog.component.html',
-  styleUrls: ['./move-edit-dialog.component.scss'],
+    selector: 'app-move-edit-dialog',
+    templateUrl: './move-edit-dialog.component.html',
+    styleUrls: ['./move-edit-dialog.component.scss'],
+    standalone: false
 })
 
 export class MoveEditDialogComponent {

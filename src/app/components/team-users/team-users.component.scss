@@ -2,12 +2,31 @@
 // Released under a MIT (SEI)-style license, please see LICENSE.md in the
 // project root for license information or contact permission@sei.cmu.edu for full terms.
 
+.one-column {
+  display: flex;
+  flex-direction: row;
+  align-self: center;
+  width: 840px;
+  margin-left: 80px;
+}
+
+.two-columns {
+  display: flex;
+  flex-direction: row;
+  flex: 10;
+  margin-left: 80px;
+  width: 100%;
+}
+
 .user-list-container {
-  display: inline-block;
+  display: flex;
   flex-direction: column;
+  flex: 1;
+  width: calc(100% - 40px);
+  margin-left: 10px;
+  margin-right: 10px;
   margin-top: 10px;
-  min-width: 400px;
-  min-height: 600px;
+  margin-bottom: 10px;
 }
 
 .collapsed-div {
@@ -15,37 +34,40 @@
 }
 
 .team-list-container {
-  display: inline-block;
+  display: flex;
   flex-direction: column;
+  flex: 1;
+  margin-left: 10px;
+  margin-right: 10px;
   margin-top: 10px;
-  min-width: 800px;
-  min-height: 600px;
+  margin-bottom: 10px;
 }
 
 .search-box {
   width: 150px;
-  margin-left: 10px;
+  margin-left: 100px;
 }
 
-.mat-table-all-users {
+.table-all-users {
   overflow: auto;
   max-height: 400px;
 }
 
-.mat-table-team-users {
+.table-team-users {
   overflow: auto;
   max-height: 600px;
 }
 
-.mat-button-focus-overlay {
+/* TODO(mdc-migration): The following rule targets internal classes of button that may no longer apply for the MDC version.*/
+.button-focus-overlay {
   background-color: transparent;
 }
 
-.mat-cell {
+.cell {
   padding-right: 0;
 }
 
-.sp-icon {
+.users-header {
   margin-left: 10px;
   margin-right: 20px;
   margin-top: 10px;
@@ -58,6 +80,7 @@
   flex: 1;
   flex-direction: row;
 }
+
 .special-team-list-container {
   display: inline-block;
   flex-direction: column;
@@ -65,4 +88,3 @@
   min-width: 400px;
   min-height: 600px;
 }
-

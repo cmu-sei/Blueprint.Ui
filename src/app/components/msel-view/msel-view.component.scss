@@ -2,6 +2,12 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
+@use "@angular/material" as mat;
+
+:host {
+  @include mat.form-field-density(-5); // Adjust -3 for this specific form field
+}
+
 .container {
   display: flex;
   flex-direction: column;
@@ -11,9 +17,12 @@
 }
 
 .tableFixHead thead th {
-  position: sticky; /* make the table heads sticky */
-  top: 0px; /* table head will be placed from the top of the table and sticks to it */
+  position: sticky;
+  /* make the table heads sticky */
+  top: 0px;
+  /* table head will be placed from the top of the table and sticks to it */
   z-index: 50;
+  background-color: var(--mat-sys-background);
 }
 
 table {
@@ -26,7 +35,8 @@ tr {
   width: 100%;
 }
 
-th, td {
+th,
+td {
   padding-top: 5px;
   padding-bottom: 5px;
   padding-left: 5px;
@@ -51,4 +61,9 @@ th, td {
 
 .move-group {
   width: 50px;
+}
+
+.shift-left {
+  margin-left: 10px;
+  width: 300px;
 }

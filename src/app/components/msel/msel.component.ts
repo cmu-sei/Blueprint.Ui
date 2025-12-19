@@ -23,10 +23,7 @@ import { InvitationDataService } from 'src/app/data/invitation/invitation-data.s
 import { MoveDataService } from 'src/app/data/move/move-data.service';
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
-import {
-  MatLegacyTabGroup as MatTabGroup,
-  MatLegacyTab as MatTab,
-} from '@angular/material/legacy-tabs';
+import { MatTabGroup, MatTab } from '@angular/material/tabs';
 import { MselUnitDataService } from 'src/app/data/msel-unit/msel-unit-data.service';
 import { OrganizationDataService } from 'src/app/data/organization/organization-data.service';
 import { ScenarioEventDataService } from 'src/app/data/scenario-event/scenario-event-data.service';
@@ -42,6 +39,7 @@ import { UserTeamRoleDataService } from 'src/app/data/user-team-role/user-team-r
   selector: 'app-msel',
   templateUrl: './msel.component.html',
   styleUrls: ['./msel.component.scss'],
+  standalone: false
 })
 export class MselComponent implements OnDestroy {
   @Input() loggedInUserId: string;
@@ -232,16 +230,10 @@ export class MselComponent implements OnDestroy {
 
   getListItemClass(tab: string) {
     if (tab === this.selectedTab) {
-      return 'list-item background-alt';
+      return 'selected-item';
     } else {
-      return 'list-item background';
+      return 'non-selected-item';
     }
-  }
-
-  getSidebarClass() {
-    return this.sideNavCollapsed
-      ? 'left-content-closed background'
-      : 'left-content-open background';
   }
 
   setCollapsed(value: boolean) {

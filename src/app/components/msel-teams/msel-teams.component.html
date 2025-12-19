@@ -4,103 +4,70 @@ Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
 
-<div *ngIf="msel" class="frame">
-  <section
-    class="mat-elevation-z2 mat-header-row background-alt"
-  >
-    <span
-      class="mat-header-cell three-cell"
-    >
-      <button
-        mat-icon-button
-        [matMenuTriggerFor]="addMenu"
-        title="Add a team"
-        style="outline: none; margin-left: 15px;"
-        title="Add team"
-      >
-        <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
-        Add Team
+@if (msel) {
+<div class="frame">
+  <section class="header-row background-alt">
+    <div class="header-cell header-action-buttons">
+      <button mat-icon-button [matMenuTriggerFor]="addMenu" title="Add a team" style="outline: none; margin-left: 48px;"
+        title="Add team">
+        <mat-icon class="mdi-24px center-self" fontIcon="mdi-plus-circle"></mat-icon>
       </button>
       <mat-menu #addMenu="matMenu" [overlapTrigger]="false">
-        <button
-          mat-menu-item
-          (click)="addOrEditTeam(null)"
-          title="Add a new team"
-        >New Team</button>
-        <button
-          mat-menu-item
-          (click)="addTeamFromUnit()"
-          title="Add team from unit"
-        >
+        <button mat-menu-item (click)="addOrEditTeam(null)" title="Add a new team">New Team</button>
+        <button mat-menu-item (click)="addTeamFromUnit()" title="Add team from unit">
           Add team from unit
         </button>
       </mat-menu>
-    </span>
-    <span class="mat-header-cell three-cell search-cell">
+    </div>
+    <div class="header-cell three-cell center-self">Teams</div>
+    <div class="header-cell eight-cell search-cell">
       <mat-form-field class="search-control">
-        <input
-          matInput
-          [(ngModel)]="filterString"
-          (keyup)="applyFilter($any($event.target).value)"
-          placeholder="Search"
-        />
+        <input matInput [(ngModel)]="filterString" (keyup)="applyFilter($any($event.target).value)"
+          placeholder="Search" />
       </mat-form-field>
       <div style="width: 30px;">
-        <button
-          mat-icon-button
-          (click)="applyFilter('')"
-          style="outline: none;"
-          title="Clear Search"
-          [disabled]="!filterString"
-        >
+        <button mat-icon-button (click)="applyFilter('')" style="outline: none;" title="Clear Search"
+          [disabled]="!filterString">
           <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
         </button>
       </div>
-    </span>
-    <span class="mat-header-cell three-cell search-cell">&nbsp;</span>
+    </div>
+    <div class="header-cell three-cell search-cell">&nbsp;</div>
   </section>
-  <div *ngIf="msel" class="scrolling-region">
+  <div class="scrolling-region">
     <div class="section-content">
-      <mat-expansion-panel
-        *ngFor="let team of teamList; trackBy: trackByFn"
-        (opened)="editTeamId = team.id"
-        (closed)="editTeamId = ''"
-      >
-        <mat-expansion-panel-header
-          (click)="$event.stopPropagation();"
-        >
+      @for (team of teamList; track trackByFn($index, team)) {
+      <mat-expansion-panel (opened)="editTeamId = team.id" (closed)="editTeamId = ''">
+        <mat-expansion-panel-header (click)="$event.stopPropagation();">
           <div class="action-buttons">
-            <button
-              mat-icon-button class="msel-action"
-              (click)="addOrEditTeam(team); $event.stopPropagation();"
-              title="Edit {{ team.name }}"
-              *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
-            >
+            @if (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) {
+            <button mat-icon-button class="msel-action" (click)="addOrEditTeam(team); $event.stopPropagation();"
+              title="Edit {{ team.name }}">
               <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline" title="Edit {{ team.name }}"></mat-icon>
             </button>
-            <button
-              mat-icon-button
-              (click)="deleteTeam(team); $event.stopPropagation();"
-              title="Delete team"
-              *ngIf="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner"
-            >
-              <mat-icon class="mdi-18px" fontIcon="mdi-delete" title="Delete {{ team.name }}"></mat-icon>
+            }
+            @if (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) {
+            <button mat-icon-button (click)="deleteTeam(team); $event.stopPropagation();" title="Delete team">
+              <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline" title="Delete {{ team.name }}"></mat-icon>
             </button>
+            }
           </div>
           <div class="five-cell center-self">{{ team.shortName }} - {{ team.name }}</div>
           <div class="two-cell center-self">{{ team.email }}</div>
           <div class="two-cell center-self">{{ getCiteTeamTypeName(team.citeTeamTypeId) }}</div>
-          <div class="two-cell center-self"><span *ngIf="team.canTeamMemberInvite">** ALL can invite</span>&nbsp;</div>
+          <div class="two-cell center-self">@if (team.canTeamMemberInvite) {
+            <span>** ALL can invite</span>
+            }&nbsp;
+          </div>
         </mat-expansion-panel-header>
         <div class="user-panel">
-          <div class="user-panel-left">&nbsp;</div>
-          <div class="user-panel-right">
-            <app-team-users *ngIf="team.id === editTeamId"
-              [team]="team"
-            ></app-team-users>
-          </div>
+          @if (team.id === editTeamId) {
+          <app-team-users [team]="team"></app-team-users>
+          }
         </div>
       </mat-expansion-panel>
+      }
     </div>
   </div>
 </div>
+}

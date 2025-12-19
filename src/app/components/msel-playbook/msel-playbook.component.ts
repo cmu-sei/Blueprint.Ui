@@ -44,9 +44,10 @@ import { CardDataService } from 'src/app/data/card/card-data.service';
 import { PageEvent } from '@angular/material/paginator';
 
 @Component({
-  selector: 'app-msel-playbook',
-  templateUrl: './msel-playbook.component.html',
-  styleUrls: ['./msel-playbook.component.scss'],
+    selector: 'app-msel-playbook',
+    templateUrl: './msel-playbook.component.html',
+    styleUrls: ['./msel-playbook.component.scss'],
+    standalone: false
 })
 export class MselPlaybookComponent {
   @Input() userTheme: Theme;

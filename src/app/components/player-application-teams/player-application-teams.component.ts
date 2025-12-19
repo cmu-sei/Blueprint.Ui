@@ -10,9 +10,9 @@ import {
   ElementRef,
   ViewChild,
 } from '@angular/core';
-import { LegacyPageEvent as PageEvent, MatLegacyPaginator as MatPaginator } from '@angular/material/legacy-paginator';
+import { PageEvent, MatPaginator } from '@angular/material/paginator';
 import { MatSort, MatSortable } from '@angular/material/sort';
-import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
+import { MatTableDataSource } from '@angular/material/table';
 import { PlayerApplicationTeam, Team } from 'src/app/generated/blueprint.api';
 import { PlayerApplicationTeamDataService } from 'src/app/data/team/player-application-team-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
@@ -20,9 +20,10 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 @Component({
-  selector: 'app-player-application-teams',
-  templateUrl: './player-application-teams.component.html',
-  styleUrls: ['./player-application-teams.component.scss'],
+    selector: 'app-player-application-teams',
+    templateUrl: './player-application-teams.component.html',
+    styleUrls: ['./player-application-teams.component.scss'],
+    standalone: false
 })
 
 export class PlayerApplicationTeamsComponent implements OnDestroy, OnInit {
@@ -46,7 +47,7 @@ export class PlayerApplicationTeamsComponent implements OnDestroy, OnInit {
   constructor(
     private playerApplicationTeamDataService: PlayerApplicationTeamDataService,
     private mselQuery: MselQuery
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.sort.sort(<MatSortable>{ id: 'name', start: 'asc' });
@@ -59,24 +60,24 @@ export class PlayerApplicationTeamsComponent implements OnDestroy, OnInit {
       .subscribe((playerApplicationTeams) => {
         this.playerApplicationTeams = playerApplicationTeams
           ? playerApplicationTeams
-              .filter(
-                (et) => et.playerApplicationId === this.playerApplicationId
-              )
-              .sort((a, b) => {
-                if (
-                  this.getTeamShortName(a.teamId).toLowerCase() <
-                  this.getTeamShortName(b.teamId).toLowerCase()
-                ) {
-                  return -1;
-                } else if (
-                  this.getTeamShortName(a.teamId).toLowerCase() >
-                  this.getTeamShortName(b.teamId).toLowerCase()
-                ) {
-                  return 1;
-                } else {
-                  return 0;
-                }
-              })
+            .filter(
+              (et) => et.playerApplicationId === this.playerApplicationId
+            )
+            .sort((a, b) => {
+              if (
+                this.getTeamShortName(a.teamId).toLowerCase() <
+                this.getTeamShortName(b.teamId).toLowerCase()
+              ) {
+                return -1;
+              } else if (
+                this.getTeamShortName(a.teamId).toLowerCase() >
+                this.getTeamShortName(b.teamId).toLowerCase()
+              ) {
+                return 1;
+              } else {
+                return 0;
+              }
+            })
           : new Array<PlayerApplicationTeam>();
         this.setDataSources();
       });

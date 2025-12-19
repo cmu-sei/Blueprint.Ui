@@ -7,9 +7,10 @@
 import { Component, Input } from '@angular/core';
 
 @Component({
-  selector: 'app-duration-view',
-  templateUrl: './duration-view.component.html',
-  styleUrls: ['./duration-view.component.scss']
+    selector: 'app-duration-view',
+    templateUrl: './duration-view.component.html',
+    styleUrls: ['./duration-view.component.scss'],
+    standalone: false
 })
 export class DurationViewComponent {
   @Input() startTime: Date;

@@ -13,38 +13,44 @@ project root for license information.
       title="Cancel"
       class="close-button"
       tabindex="-1"
-    >
+      >
       <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
     </button>
   </div>
-  <div mat-dialog-content *ngIf="data && data.card">
-    <div class="add-margin">
-      <div>
-        <mat-form-field class="full-width">
-          <input type="text" matInput [(ngModel)]="data.card.name" placeholder="Name">
-        </mat-form-field>
+  @if (data && data.card) {
+    <div mat-dialog-content>
+      <div class="add-margin">
+        <div>
+          <mat-form-field class="full-width">
+            <input type="text" matInput [(ngModel)]="data.card.name" placeholder="Name">
+          </mat-form-field>
+        </div>
       </div>
-    </div>
-    <div class="add-margin">
-      <div>
-        <mat-form-field class="full-width">
-          <input type="text" matInput [(ngModel)]="data.card.description" placeholder="Card Description">
-        </mat-form-field>
+      <div class="add-margin">
+        <div>
+          <mat-form-field class="full-width">
+            <input type="text" matInput [(ngModel)]="data.card.description" placeholder="Card Description">
+          </mat-form-field>
+        </div>
       </div>
+      @if (!data.card.isTemplate) {
+        <div class="add-margin">
+          <div>
+            <mat-form-field class="full-width">
+              <mat-label>Move</mat-label>
+              <mat-select placeholder="Move" [(ngModel)]="data.card.move">
+                @for (move of data.moveList; track move) {
+                  <mat-option [value]="move.moveNumber" title="{{ move.description}}">
+                    {{ move.moveNumber }}
+                  </mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </div>
+      }
     </div>
-    <div class="add-margin" *ngIf="!data.card.isTemplate">
-      <div>
-        <mat-form-field class="full-width">
-          <mat-label>Move</mat-label>
-          <mat-select placeholder="Move" [(ngModel)]="data.card.move">
-            <mat-option *ngFor="let move of data.moveList" [value]="move.moveNumber" title="{{ move.description}}">
-              {{ move.moveNumber }}
-            </mat-option>
-          </mat-select>
-        </mat-form-field>
-      </div>
-    </div>
-  </div>
+  }
   <div class="cssLayoutRowStartCenter bottom-button">
     <div class="delete-button">
       <button mat-stroked-button (click)="handleEditComplete(true)" style="margin-left: 40px;">Save</button>
