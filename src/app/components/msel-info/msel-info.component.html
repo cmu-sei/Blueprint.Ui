@@ -4,9 +4,9 @@ Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
 <div class="frame">
-  <mat-tab-group mat-align-tabs="start" class="mat-tab-group" (selectedTabChange)="tabChange($event)">
+  <mat-tab-group mat-align-tabs="start" class="tab-group" (selectedTabChange)="tabChange($event)">
     >
-    <mat-tab label="Config" class="mat-tab">
+    <mat-tab label="Config" class="tab">
       <div class="edit-buttons">
         <span class="edit-buttons-span">
           <button mat-icon-button (click)="saveChanges()" style="outline: none;" title="Save Changes"
@@ -314,7 +314,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       }
     </mat-tab>
     @for (page of mselPages; track page.id) {
-    <mat-tab label="{{ page.name }}" class="mat-tab">
+    <mat-tab label="{{ page.name }}" class="tab">
       <!-- page content -->
       <div class="edit-buttons">
         @if (!editingPageId) {

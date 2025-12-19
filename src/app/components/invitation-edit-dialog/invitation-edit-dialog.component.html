@@ -6,10 +6,10 @@ project root for license information.
 <div mat-dialog-container>
   <div mat-dialog-title>
     @if (data.invitation.id) {
-      <span>Edit</span>
+    <span>Edit</span>
     }
     @if (!data.invitation.id) {
-      <span>Create</span>
+    <span>Create</span>
     }
     an Invitation to this MSEL
     &nbsp;
@@ -18,66 +18,77 @@ project root for license information.
     </button>
   </div>
   @if (!!data && data.invitation !== undefined && data.invitation !== null) {
-    <div mat-dialog-content>
-      <div class="add-margin">
-        <div>
-          @if (!data.invitation.id) {
-            <mat-form-field class="full-width">
-              <mat-label>Team</mat-label>
-              <mat-select placeholder="Team" [(ngModel)]="data.invitation.teamId">
-                @for (team of data.teamList; track team) {
-                  <mat-option [value]="team.id"
-                    title="{{ team.shortName }} - {{ team.name }}">
-                    {{ team.shortName }} - {{ team.name }}
-                  </mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
-          }
-          @if (data.invitation.id) {
-            <span>Team <br />{{ getTeamName(data.invitation.teamId) }}<br />&nbsp;</span>
-          }
-        </div>
-      </div>
-      <div class="add-margin">
-        <div>
-          <mat-form-field class="full-width">
-            <input type="text"
-              title="If entered, the users email must end with this value.  You can enter the user's specific email address, or any portion of their email address, as long as it contains the complete domain. (i.e. @provider.com)"
-              matInput placeholder="User emails end with ..." [(ngModel)]="data.invitation.emailDomain">
-          </mat-form-field>
-        </div>
-      </div>
-      <div class="add-margin">
-        <div class="single-detail center-self">
-          <mat-form-field>
-            <input matInput placeholder="Expiration Date / Time" [(ngModel)]="data.invitation.expirationDateTime">
-            <!-- <datetime-picker> -->
-          </mat-form-field>
-        </div>
-      </div>
-      <div class="add-margin">
-        <div>
-          <mat-form-field class="full-width">
-            <input type="text" matInput placeholder="Maximum number of users allowed to use this invitation"
-              [(ngModel)]="data.invitation.maxUsersAllowed">
-          </mat-form-field>
-        </div>
-      </div>
-      <div class="add-margin">
-        <div>
-          <mat-checkbox [disabled]="true" [(ngModel)]="data.invitation.isTeamLeader">Can invite others to this
-          team</mat-checkbox>
-        </div>
-      </div>
-      <div class="cssLayoutRowStartCenter bottom-button">
-        <div class="delete-button">
-          <button mat-stroked-button (click)="handleEditComplete(true)" [disabled]="!errorFree()"
-          style="margin-left: 40px;">Save</button>
-        </div>
-        <div class="delete-button">
-          <button mat-stroked-button (click)="handleEditComplete(false)">Cancel</button>
-        </div>
+  <div mat-dialog-content>
+    <div class="add-margin">
+      <div>
+        @if (!data.invitation.id) {
+        <mat-form-field class="full-width">
+          <mat-label>Team</mat-label>
+          <mat-select placeholder="Team" [(ngModel)]="data.invitation.teamId">
+            @for (team of data.teamList; track team) {
+            <mat-option [value]="team.id" title="{{ team.shortName }} - {{ team.name }}">
+              {{ team.shortName }} - {{ team.name }}
+            </mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        }
+        @if (data.invitation.id) {
+        <span>Team <br />{{ getTeamName(data.invitation.teamId) }}<br />&nbsp;</span>
+        }
       </div>
     </div>
+    <div class="add-margin">
+      <div>
+        <mat-form-field class="full-width">
+          <mat-label>User emails end with ...</mat-label>
+          <input type="text"
+            title="If entered, the users' email addresses must end with this value.  The entered value can be a complete email address or a partial email address that is longer than 3 characters and contains an '@'. (i.e. @provider.com)"
+            matInput [(ngModel)]="data.invitation.emailDomain">
+        </mat-form-field>
+      </div>
+    </div>
+    <div class="add-margin">
+      <div class="single-detail center-self">
+        <mat-form-field>
+          <mat-label>Expiration Date/Time</mat-label>
+          <input matInput [ngxMatDatetimePicker]="picker" [(ngModel)]="data.invitation.expirationDateTime"
+            style="display: none;">
+          <!-- <datetime-picker> -->
+          <span (click)="picker.open()">
+            {{ data.invitation.expirationDateTime | date: 'MM/dd/yyyy hh:mm a' }}
+          </span>
+          <mat-datepicker-toggle matSuffix title="Choose Date/Time" [for]="picker">
+          </mat-datepicker-toggle>
+          <ngx-mat-datetime-picker #picker [showSpinners]=true [showSeconds]=false [stepHour]=1 [stepMinute]=5
+            [stepSecond]=1 [touchUi]=false [enableMeridian]=true [disableMinute]=false [hideTime]=false
+            [color]="'warn'">
+          </ngx-mat-datetime-picker>
+        </mat-form-field>
+      </div>
+    </div>
+    <div class="add-margin">
+      <div>
+        <mat-form-field class="full-width">
+          <mat-label>Maximum number of users allowed to use this invitation</mat-label>
+          <input type="text" matInput [(ngModel)]="data.invitation.maxUsersAllowed">
+        </mat-form-field>
+      </div>
+    </div>
+    <div class="add-margin">
+      <div>
+        <mat-checkbox [disabled]="true" [(ngModel)]="data.invitation.isTeamLeader">Can invite others to this
+          team</mat-checkbox>
+      </div>
+    </div>
+    <div class="cssLayoutRowStartCenter bottom-button">
+      <div class="delete-button">
+        <button mat-stroked-button (click)="handleEditComplete(true)" [disabled]="!errorFree()"
+          style="margin-left: 40px;">Save</button>
+      </div>
+      <div class="delete-button">
+        <button mat-stroked-button (click)="handleEditComplete(false)">Cancel</button>
+      </div>
+    </div>
+  </div>
   }

@@ -121,6 +121,12 @@
   width: 100%;
 }
 
+.sit-time-cell {
+  display: flex;
+  flex: 1;
+  min-width: 140px;
+}
+
 .scrolling-region {
   height: calc(100vh - 89px);
   overflow: auto;

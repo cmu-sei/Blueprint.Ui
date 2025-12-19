@@ -5,30 +5,29 @@ project root for license information or contact permission@sei.cmu.edu for full 
 -->
 @if (msel) {
 <div class="frame">
-  <section class="mat-elevation-z2 mat-header-row background-alt">
-    <span class="mat-header-cell two-cell">
+  <section class="header-row elevate">
+    <span class="header-cell action-cell">
       @if (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) {
       <span>
         <button mat-icon-button (click)="addOrEditInvitation(null, false)" style="outline: none; margin-left: 15px;"
-          title="Add invitation">
-          <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
-          New
+          title="Add an invitation">
+          <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle"></mat-icon>
         </button>
       </span>
       } &nbsp;
     </span>
-    <span class="mat-header-cell two-cell">Team</span>
-    <span class="mat-header-cell three-cell">Email Domain</span>
-    <span class="mat-header-cell two-cell">Expires</span>
-    <span class="mat-header-cell one-cell">Max Uses</span>
-    <span class="mat-header-cell one-cell">Remaining Uses</span>
+    <span class="header-cell two-cell">Team</span>
+    <span class="header-cell three-cell">Email Domain</span>
+    <span class="header-cell two-cell">Expires</span>
+    <span class="header-cell one-cell">Max Uses</span>
+    <span class="header-cell one-cell">Remaining Uses</span>
   </section>
   <section class="scrolling-region">
-    <div class="mat-table">
+    <div class="table">
       <mat-table #table [dataSource]="invitationDataSource" matSort>
         <!-- action column -->
         <ng-container matColumnDef="action">
-          <mat-cell *matCellDef="let element" class="mat-cell action-cell">
+          <mat-cell *matCellDef="let element" class="cell action-cell">
             <div class="action-div">
               @if (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) {
               <button mat-icon-button class="msel-action"
@@ -55,31 +54,31 @@ project root for license information or contact permission@sei.cmu.edu for full 
         </ng-container>
         <!-- teamId Column -->
         <ng-container matColumnDef="teamId">
-          <mat-cell *matCellDef="let element" class="mat-cell two-cell">
+          <mat-cell *matCellDef="let element" class="cell two-cell">
             {{ getTeamName(element.teamId) }}
           </mat-cell>
         </ng-container>
         <!-- emailDomain Column -->
         <ng-container matColumnDef="emailDomain">
-          <mat-cell *matCellDef="let element" class="mat-cell three-cell">
+          <mat-cell *matCellDef="let element" class="cell three-cell">
             {{ element.emailDomain }}
           </mat-cell>
         </ng-container>
         <!-- expirationDateTime Column -->
         <ng-container matColumnDef="expirationDateTime">
-          <mat-cell *matCellDef="let element" class="mat-cell two-cell">
+          <mat-cell *matCellDef="let element" class="cell two-cell">
             {{ element.expirationDateTime | date: 'MM/dd/yyyy HH:mm' }}
           </mat-cell>
         </ng-container>
         <!-- maxUsersAllowed Column -->
         <ng-container matColumnDef="usesAllowed">
-          <mat-cell *matCellDef="let element" class="mat-cell one-cell">
+          <mat-cell *matCellDef="let element" class="cell one-cell">
             <div class="number-cell">{{ element.maxUsersAllowed }}</div>
           </mat-cell>
         </ng-container>
         <!-- userCount Column -->
         <ng-container matColumnDef="usesRemaining">
-          <mat-cell *matCellDef="let element" class="mat-cell one-cell">
+          <mat-cell *matCellDef="let element" class="cell one-cell">
             <div class="number-cell">{{ element.maxUsersAllowed - element.userCount }}</div>
           </mat-cell>
         </ng-container>
