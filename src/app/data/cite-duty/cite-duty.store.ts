@@ -3,16 +3,16 @@
 // project root for license information or contact permission@sei.cmu.edu for full terms.
 
 import { EntityState, EntityStore, Store, StoreConfig } from '@datorama/akita';
-import { CiteRole } from 'src/app/generated/blueprint.api';
+import { CiteDuty } from 'src/app/generated/blueprint.api';
 import { Injectable } from '@angular/core';
 
-export interface CiteRoleState extends EntityState<CiteRole> {}
+export interface CiteDutyState extends EntityState<CiteDuty> {}
 
 @Injectable({
   providedIn: 'root',
 })
-@StoreConfig({ name: 'citeRoles' })
-export class CiteRoleStore extends EntityStore<CiteRoleState> {
+@StoreConfig({ name: 'citeDuties' })
+export class CiteDutyStore extends EntityStore<CiteDutyState> {
   constructor() {
     super();
   }

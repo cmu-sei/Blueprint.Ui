@@ -9,10 +9,10 @@ import {
 import { AngularEditorConfig } from '@kolkov/angular-editor';
 
 @Component({
-    selector: 'app-steamfitter-task',
-    templateUrl: './steamfitter-task.component.html',
-    styleUrls: ['./steamfitter-task.component.scss'],
-    standalone: false
+  selector: 'app-steamfitter-task',
+  templateUrl: './steamfitter-task.component.html',
+  styleUrls: ['./steamfitter-task.component.scss'],
+  standalone: false
 })
 export class SteamfitterTaskComponent {
   @Input() scenarioEvent: ScenarioEvent;
@@ -21,10 +21,10 @@ export class SteamfitterTaskComponent {
     SteamfitterIntegrationType.Notification,
     SteamfitterIntegrationType.Email,
     SteamfitterIntegrationType.SituationUpdate,
-    SteamfitterIntegrationType.http_get,
-    SteamfitterIntegrationType.http_post,
-    SteamfitterIntegrationType.http_put,
-    SteamfitterIntegrationType.http_delete
+    SteamfitterIntegrationType.HttpGet,
+    SteamfitterIntegrationType.HttpPost,
+    SteamfitterIntegrationType.HttpPut,
+    SteamfitterIntegrationType.HttpDelete
   ];
   editorConfig: AngularEditorConfig = {
     editable: true,
@@ -55,6 +55,6 @@ export class SteamfitterTaskComponent {
   };
 
   constructor(
-  ) {}
+  ) { }
 
 }

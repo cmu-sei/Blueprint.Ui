@@ -14,7 +14,7 @@ import { Sort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { User } from 'src/app/generated/blueprint.api';
 import { UnitUserDataService } from 'src/app/data/user/unit-user-data.service';
-import { UserDataService } from 'src/app/data/user/user-data.service';
+import { UserQuery } from 'src/app/data/user/user.query';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { UntypedFormControl } from '@angular/forms';
@@ -43,9 +43,9 @@ export class AdminUnitUsersComponent implements OnDestroy, OnInit {
 
   constructor(
     private unitUserDataService: UnitUserDataService,
-    private userDataService: UserDataService
+    private userQuery: UserQuery
   ) {
-    this.userDataService.userList.pipe(takeUntil(this.unsubscribe$)).subscribe(users => {
+    this.userQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(users => {
       this.userList = users;
       this.setDataSources();
     });

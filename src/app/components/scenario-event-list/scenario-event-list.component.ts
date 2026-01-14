@@ -15,7 +15,7 @@ import {
   delay,
 } from 'rxjs/operators';
 import { ComnSettingsService, Theme } from '@cmusei/crucible-common';
-import { UserDataService } from 'src/app/data/user/user-data.service';
+import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
 import {
   Card,
   Catalog,
@@ -32,6 +32,7 @@ import {
   Organization,
   ScenarioEvent,
   SteamfitterTask,
+  SystemPermission,
   Team,
   Unit,
   User,
@@ -186,7 +187,7 @@ export class ScenarioEventListComponent
 
   constructor(
     private router: Router,
-    private userDataService: UserDataService,
+    private permissionDataService: PermissionDataService,
     private settingsService: ComnSettingsService,
     private cardQuery: CardQuery,
     private catalogQuery: CatalogQuery,
@@ -308,10 +309,10 @@ export class ScenarioEventListComponent
         );
       });
     // is user a contentdeveloper or system admin?
-    this.userDataService.isContentDeveloper
+    this.permissionDataService.load()
       .pipe(takeUntil(this.unsubscribe$))
-      .subscribe((isOne) => {
-        this.canDoAnything = isOne;
+      .subscribe(() => {
+        this.canDoAnything = this.permissionDataService.hasPermission(SystemPermission.CreateMsels);
       });
     // subscribe to organizations
     this.organizationQuery

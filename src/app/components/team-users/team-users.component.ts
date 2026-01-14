@@ -15,7 +15,7 @@ import { TeamQuery } from 'src/app/data/team/team.query';
 import { TeamRole, Team, TeamUser, User, UserTeamRole } from 'src/app/generated/blueprint.api';
 import { TeamUserDataService } from 'src/app/data/team-user/team-user-data.service';
 import { TeamUserQuery } from 'src/app/data/team-user/team-user.query';
-import { UserDataService } from 'src/app/data/user/user-data.service';
+import { UserQuery } from 'src/app/data/user/user.query';
 import { UserTeamRoleDataService } from 'src/app/data/user-team-role/user-team-role-data.service';
 import { UserTeamRoleQuery } from 'src/app/data/user-team-role/user-team-role.query';
 import { Subject } from 'rxjs';
@@ -50,11 +50,11 @@ export class TeamUsersComponent implements OnDestroy, OnInit {
     private teamQuery: TeamQuery,
     private teamUserDataService: TeamUserDataService,
     private teamUserQuery: TeamUserQuery,
-    private userDataService: UserDataService,
+    private userQuery: UserQuery,
     private userTeamRoleDataService: UserTeamRoleDataService,
     private userTeamRoleQuery: UserTeamRoleQuery
   ) {
-    this.userDataService.userList.pipe(takeUntil(this.unsubscribe$)).subscribe(users => {
+    this.userQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(users => {
       this.userList = users;
       this.setDataSources();
     });
@@ -79,7 +79,7 @@ export class TeamUsersComponent implements OnDestroy, OnInit {
       this.filterString = this.filterControl.value;
       this.applyFilter();
     });
-    this.userDataService.userList.pipe(takeUntil(this.unsubscribe$)).subscribe(users => {
+    this.userQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(users => {
       this.userList = users;
       this.applyFilter();
     });

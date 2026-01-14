@@ -21,7 +21,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       }
     </mat-list>
     <div class="bottom-div">
-      @if (isSystemAdmin) {
+      @if (canAccessAdminSection) {
       <button mat-icon-button title="Administration" (click)="goToUrl('/admin')">
         <mat-icon class="mat-list-item-icon" fontIcon="mdi-cog-outline"></mat-icon>
       </button>
@@ -68,7 +68,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <div class="bottom-div">
       <div class="admin-and-collapse">
         <div class="admin-section">
-          @if (isSystemAdmin) {
+          @if (canAccessAdminSection) {
           <button mat-icon-button title="Administration" (click)="goToUrl('/admin')">
             <mat-icon class="mdi-18px" fontIcon="mdi-cog-outline"></mat-icon>
           </button>
@@ -88,7 +88,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     </div>
     } @else {
     <div class="bottom-div">
-      @if (isSystemAdmin) {
+      @if (canAccessAdminSection) {
       <button mat-icon-button title="Administration" (click)="goToUrl('/admin')">
         <mat-icon class="mat-list-item-icon" fontIcon="mdi-cog-outline"></mat-icon>
       </button>
@@ -136,9 +136,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <app-cite-action-list [loggedInUserId]="loggedInUserId"
         [isContentDeveloper]="isContentDeveloper"></app-cite-action-list>
       }
-      @if (selectedTab === 'CITE Roles') {
-      <app-cite-role-list [loggedInUserId]="loggedInUserId"
-        [isContentDeveloper]="isContentDeveloper"></app-cite-role-list>
+      @if (selectedTab === 'CITE Duties') {
+      <app-cite-duty-list [loggedInUserId]="loggedInUserId"
+        [isContentDeveloper]="isContentDeveloper"></app-cite-duty-list>
       }
       @if (selectedTab === 'Scenario Events') {
       <app-scenario-event-list [loggedInUserId]="loggedInUserId" [isContentDeveloper]="isContentDeveloper"

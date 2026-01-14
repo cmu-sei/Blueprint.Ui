@@ -5,7 +5,7 @@ import { Component, EventEmitter, Input, OnDestroy, Output, ViewChild } from '@a
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { TeamQuery } from 'src/app/data/team/team.query';
-import { UserDataService } from 'src/app/data/user/user-data.service';
+import { UserQuery } from 'src/app/data/user/user.query';
 import {
   DataField,
   MselItemStatus,
@@ -117,7 +117,7 @@ export class MselInfoComponent implements OnDestroy {
   constructor(
     public dialogService: DialogService,
     private teamQuery: TeamQuery,
-    private userDataService: UserDataService,
+    private userQuery: UserQuery,
     private dataFieldQuery: DataFieldQuery,
     private mselDataService: MselDataService,
     private mselQuery: MselQuery,
@@ -174,7 +174,7 @@ export class MselInfoComponent implements OnDestroy {
         }
       });
     // subscribe to users
-    this.userDataService.users
+    this.userQuery.selectAll()
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((users) => {
         this.userList = users;

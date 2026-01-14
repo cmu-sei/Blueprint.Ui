@@ -1,10 +1,4 @@
-/*
- Copyright 2024 Carnegie Mellon University. All Rights Reserved.
- Released under a MIT (SEI)-style license. See LICENSE.md in the
- project root for license information.
-*/
-
-import { HttpParameterCodec } from '@angular/common/http';
+import { HttpHeaders, HttpParams, HttpParameterCodec } from '@angular/common/http';
 import { Param } from './param';
 
 export interface ConfigurationParameters {
@@ -72,26 +66,30 @@ export class Configuration {
      */
     credentials: {[ key: string ]: string | (() => string | undefined)};
 
-    constructor(configurationParameters: ConfigurationParameters = {}) {
-        this.apiKeys = configurationParameters.apiKeys;
-        this.username = configurationParameters.username;
-        this.password = configurationParameters.password;
-        this.accessToken = configurationParameters.accessToken;
-        this.basePath = configurationParameters.basePath;
-        this.withCredentials = configurationParameters.withCredentials;
-        this.encoder = configurationParameters.encoder;
-        if (configurationParameters.encodeParam) {
-            this.encodeParam = configurationParameters.encodeParam;
+constructor({ accessToken, apiKeys, basePath, credentials, encodeParam, encoder, password, username, withCredentials }: ConfigurationParameters = {}) {
+        if (apiKeys) {
+            this.apiKeys = apiKeys;
         }
-        else {
-            this.encodeParam = param => this.defaultEncodeParam(param);
+        if (username !== undefined) {
+            this.username = username;
         }
-        if (configurationParameters.credentials) {
-            this.credentials = configurationParameters.credentials;
+        if (password !== undefined) {
+            this.password = password;
         }
-        else {
-            this.credentials = {};
+        if (accessToken !== undefined) {
+            this.accessToken = accessToken;
         }
+        if (basePath !== undefined) {
+            this.basePath = basePath;
+        }
+        if (withCredentials !== undefined) {
+            this.withCredentials = withCredentials;
+        }
+        if (encoder) {
+            this.encoder = encoder;
+        }
+        this.encodeParam = encodeParam ?? (param => this.defaultEncodeParam(param));
+        this.credentials = credentials ?? {};
 
         // init default oauth2 credential
         if (!this.credentials['oauth2']) {
@@ -163,6 +161,20 @@ export class Configuration {
             : value;
     }
 
+    public addCredentialToHeaders(credentialKey: string, headerName: string, headers: HttpHeaders, prefix?: string): HttpHeaders {
+        const value = this.lookupCredential(credentialKey);
+        return value
+            ? headers.set(headerName, (prefix ?? '') + value)
+            : headers;
+    }
+
+    public addCredentialToQuery(credentialKey: string, paramName: string, query: HttpParams): HttpParams {
+        const value = this.lookupCredential(credentialKey);
+        return value
+            ? query.set(paramName, value)
+            : query;
+    }
+
     private defaultEncodeParam(param: Param): string {
         // This implementation exists as fallback for missing configuration
         // and for backwards compatibility to older typescript-angular generator versions.
@@ -172,7 +184,7 @@ export class Configuration {
         //
         // But: if that's all you need (i.e.: the most common use-case): no need for customization!
 
-        const value = param.dataFormat === 'date-time'
+        const value = param.dataFormat === 'date-time' && param.value instanceof Date
             ? (param.value as Date).toISOString()
             : param.value;
 

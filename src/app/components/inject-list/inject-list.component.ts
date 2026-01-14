@@ -46,7 +46,7 @@ import { InjectTypeQuery } from 'src/app/data/inject-type/inject-type.query';
 import { DataFieldDataService } from 'src/app/data/data-field/data-field-data.service';
 import { DataFieldQuery } from 'src/app/data/data-field/data-field.query';
 import { UnitQuery } from 'src/app/data/unit/unit.query';
-import { UserDataService } from 'src/app/data/user/user-data.service';
+import { UserQuery } from 'src/app/data/user/user.query';
 import { InjectSelectDialogComponent } from '../inject-select-dialog/inject-select-dialog.component';
 
 @Component({
@@ -106,7 +106,7 @@ export class InjectListComponent implements OnDestroy, OnInit {
     private dataFieldDataService: DataFieldDataService,
     private dataFieldQuery: DataFieldQuery,
     private unitQuery: UnitQuery,
-    private userDataService: UserDataService
+    private userQuery: UserQuery
   ) {
     // subscribe to injects
     this.injectmQuery
@@ -174,7 +174,7 @@ export class InjectListComponent implements OnDestroy, OnInit {
         this.sortChanged(this.sort);
       });
     // subscribe to users
-    this.userDataService.userList
+    this.userQuery.selectAll()
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((users) => {
         this.userList = users;

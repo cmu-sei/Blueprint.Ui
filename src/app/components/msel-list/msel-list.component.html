@@ -6,7 +6,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
 
 <div class="content-under-topbar">
   <div class="header-div">
-    @if (isSystemAdmin) {
+    @if (canAccessAdminSection) {
     <div class="admin-cog-div">
       <button mat-icon-button style="outline: none;" (click)="goToUrl('/admin')" title="Administration">
         <mat-icon fontIcon="mdi-cog"></mat-icon>
@@ -18,7 +18,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <div class="buttons-container">
       <div class="app-icon">
         <div class="msels-title">
-          @if (isSystemAdmin) {
+          @if (canAccessAdminSection) {
           @if (!allMselsAreLoaded) {
           <button mat-icon-button style="outline: none;" (click)="adminLoadAllMsels()" title="Load ALL MSELs">
             <mat-icon fontIcon="mdi-set-all"></mat-icon>

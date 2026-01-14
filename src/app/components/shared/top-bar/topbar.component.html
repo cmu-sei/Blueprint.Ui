@@ -34,16 +34,10 @@ project root for license information or contact permission@sei.cmu.edu for full 
     @if (currentUser$ | async; as currentUser) {
     <div class="options-text">
       <button mat-button class="menu-trigger" [matMenuTriggerFor]="menu" style="outline: none;">
-        <strong>{{ currentUser.profile.name }}</strong>
+        <strong>{{ currentUser.name }}</strong>
         <mat-icon aria-hidden="false" class="icon-color" fontIcon="mdi-chevron-down"></mat-icon>
       </button>
       <mat-menu #menu="matMenu" [overlapTrigger]="false">
-        @if (
-        currentUser.profile.isSystemAdmin !== null &&
-        currentUser.profile.isSystemAdmin
-        ) {
-        <button mat-menu-item (click)="goToUrl('/admin')" title="Admin Pages">Administration</button>
-        }
         <button mat-menu-item (click)="logout()">Logout</button>
         <mat-slide-toggle class="mat-menu-item" color="primary"
           [checked]="(theme$ | async) === 'dark-theme' ? true : false" (click)="$event.stopPropagation()"

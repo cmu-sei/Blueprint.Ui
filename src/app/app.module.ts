@@ -67,14 +67,17 @@ import { AdminUnitsComponent } from './components/admin/admin-units/admin-units.
 import { AdminUnitEditDialogComponent } from './components/admin/admin-unit-edit-dialog/admin-unit-edit-dialog.component';
 import { AdminUnitUsersComponent } from './components/admin/admin-unit-users/admin-unit-users.component';
 import { AdminUsersComponent } from './components/admin/admin-users/admin-users.component';
+import { AdminUserListComponent } from './components/admin/admin-users/admin-user-list/admin-user-list.component';
+import { AdminRolesComponent } from './components/admin/admin-roles/admin-roles.component';
+import { AdminGroupsComponent } from './components/admin/admin-groups/admin-groups.component';
 import { CardEditDialogComponent } from './components/card-edit-dialog/card-edit-dialog.component';
 import { CardListComponent } from './components/card-list/card-list.component';
 import { CardTeamsComponent } from './components/card-teams/card-teams.component';
 import { CatalogUnitsComponent } from './components/catalog-units/catalog-units.component';
 import { CiteActionEditDialogComponent } from './components/cite-action-edit-dialog/cite-action-edit-dialog.component';
 import { CiteActionListComponent } from './components/cite-action-list/cite-action-list.component';
-import { CiteRoleEditDialogComponent } from './components/cite-role-edit-dialog/cite-role-edit-dialog.component';
-import { CiteRoleListComponent } from './components/cite-role-list/cite-role-list.component';
+import { CiteDutyEditDialogComponent } from './components/cite-duty-edit-dialog/cite-duty-edit-dialog.component';
+import { CiteDutyListComponent } from './components/cite-duty-list/cite-duty-list.component';
 import { DashboardComponent } from './components/landing/dashboard/dashboard.component';
 import { DataFieldEditDialogComponent } from './components/data-field-edit-dialog/data-field-edit-dialog.component';
 import { DataFieldListComponent } from './components/data-field-list/data-field-list.component';
@@ -163,8 +166,8 @@ export const appConfig: ApplicationConfig = {
     CatalogUnitsComponent,
     CiteActionEditDialogComponent,
     CiteActionListComponent,
-    CiteRoleEditDialogComponent,
-    CiteRoleListComponent,
+    CiteDutyEditDialogComponent,
+    CiteDutyListComponent,
     DashboardComponent,
     DataFieldEditDialogComponent,
     DataFieldListComponent,
@@ -212,6 +215,9 @@ export const appConfig: ApplicationConfig = {
     AdminUnitEditDialogComponent,
     AdminUnitUsersComponent,
     AdminUsersComponent,
+    AdminUserListComponent,
+    AdminRolesComponent,
+    AdminGroupsComponent,
     TopbarComponent,
     DisplayOrderPipe,
     SortByPipe,

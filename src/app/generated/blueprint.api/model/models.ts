@@ -1,9 +1,3 @@
-/*
- Copyright 2024 Carnegie Mellon University. All Rights Reserved.
- Released under a MIT (SEI)-style license. See LICENSE.md in the
- project root for license information.
-*/
-
 export * from './applicationTemplate';
 export * from './assembly';
 export * from './calendar';
@@ -16,7 +10,7 @@ export * from './catalog';
 export * from './catalogInject';
 export * from './catalogUnit';
 export * from './citeAction';
-export * from './citeRole';
+export * from './citeDuty';
 export * from './compareInfo';
 export * from './constructorInfo';
 export * from './createFromInjectsForm';
@@ -43,6 +37,8 @@ export * from './exception';
 export * from './fieldAttributes';
 export * from './fieldInfo';
 export * from './genericParameterAttributes';
+export * from './group';
+export * from './groupMembership';
 export * from './healthReport';
 export * from './healthReportEntry';
 export * from './healthStatus';
@@ -80,6 +76,7 @@ export * from './playerApplicationTeam';
 export * from './problemDetails';
 export * from './propertyAttributes';
 export * from './propertyInfo';
+export * from './rightSideDisplay';
 export * from './runtimeFieldHandle';
 export * from './runtimeMethodHandle';
 export * from './runtimeTypeHandle';
@@ -87,6 +84,7 @@ export * from './scenarioEvent';
 export * from './schemaSerializationMode';
 export * from './scoringCategory';
 export * from './scoringModel';
+export * from './scoringModelPermission';
 export * from './scoringOption';
 export * from './scoringOptionSelection';
 export * from './securityRuleSet';
@@ -97,6 +95,8 @@ export * from './steamfitterTask';
 export * from './steamfitterTaskAction';
 export * from './steamfitterTaskTrigger';
 export * from './structLayoutAttribute';
+export * from './systemPermission';
+export * from './systemRole';
 export * from './team';
 export * from './teamRole';
 export * from './teamType';
@@ -109,5 +109,4 @@ export * from './unit';
 export * from './unitUser';
 export * from './user';
 export * from './userMselRole';
-export * from './userPermission';
 export * from './userTeamRole';

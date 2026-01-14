@@ -1,6 +1,6 @@
 .gitignore
-.openapi-generator-ignore
 README.md
+api.base.service.ts
 api.module.ts
 api/api.ts
 api/card.service.ts
@@ -10,10 +10,11 @@ api/catalogInject.service.ts
 api/catalogUnit.service.ts
 api/cite.service.ts
 api/citeAction.service.ts
-api/citeRole.service.ts
+api/citeDuty.service.ts
 api/dataField.service.ts
 api/dataOption.service.ts
 api/dataValue.service.ts
+api/group.service.ts
 api/healthCheck.service.ts
 api/inject.service.ts
 api/injectType.service.ts
@@ -23,18 +24,18 @@ api/msel.service.ts
 api/mselPage.service.ts
 api/mselUnit.service.ts
 api/organization.service.ts
-api/permission.service.ts
 api/player.service.ts
 api/playerApplication.service.ts
 api/playerApplicationTeam.service.ts
 api/scenarioEvent.service.ts
+api/systemPermissions.service.ts
+api/systemRoles.service.ts
 api/team.service.ts
 api/teamUser.service.ts
 api/unit.service.ts
 api/unitUser.service.ts
 api/user.service.ts
 api/userMselRole.service.ts
-api/userPermission.service.ts
 api/userTeamRole.service.ts
 configuration.ts
 encoder.ts
@@ -52,7 +53,7 @@ model/catalog.ts
 model/catalogInject.ts
 model/catalogUnit.ts
 model/citeAction.ts
-model/citeRole.ts
+model/citeDuty.ts
 model/compareInfo.ts
 model/constructorInfo.ts
 model/createFromInjectsForm.ts
@@ -79,6 +80,8 @@ model/exception.ts
 model/fieldAttributes.ts
 model/fieldInfo.ts
 model/genericParameterAttributes.ts
+model/group.ts
+model/groupMembership.ts
 model/healthReport.ts
 model/healthReportEntry.ts
 model/healthStatus.ts
@@ -117,6 +120,7 @@ model/playerApplicationTeam.ts
 model/problemDetails.ts
 model/propertyAttributes.ts
 model/propertyInfo.ts
+model/rightSideDisplay.ts
 model/runtimeFieldHandle.ts
 model/runtimeMethodHandle.ts
 model/runtimeTypeHandle.ts
@@ -124,6 +128,7 @@ model/scenarioEvent.ts
 model/schemaSerializationMode.ts
 model/scoringCategory.ts
 model/scoringModel.ts
+model/scoringModelPermission.ts
 model/scoringOption.ts
 model/scoringOptionSelection.ts
 model/securityRuleSet.ts
@@ -134,6 +139,8 @@ model/steamfitterTask.ts
 model/steamfitterTaskAction.ts
 model/steamfitterTaskTrigger.ts
 model/structLayoutAttribute.ts
+model/systemPermission.ts
+model/systemRole.ts
 model/team.ts
 model/teamRole.ts
 model/teamType.ts
@@ -146,7 +153,7 @@ model/unit.ts
 model/unitUser.ts
 model/user.ts
 model/userMselRole.ts
-model/userPermission.ts
 model/userTeamRole.ts
 param.ts
+provide-api.ts
 variables.ts

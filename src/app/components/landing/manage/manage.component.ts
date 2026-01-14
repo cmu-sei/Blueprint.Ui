@@ -1,14 +1,17 @@
 // Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, Observable } from 'rxjs';
-import { take, takeUntil } from 'rxjs/operators';
+import { takeUntil } from 'rxjs/operators';
 import {
   ComnSettingsService,
+  ComnAuthService,
 } from '@cmusei/crucible-common';
 import { UserDataService } from 'src/app/data/user/user-data.service';
+import { CurrentUserQuery } from 'src/app/data/user/user.query';
+import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { TopbarView } from '../../shared/top-bar/topbar.models';
@@ -18,7 +21,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { InvitationDataService } from 'src/app/data/invitation/invitation-data.service';
 import { TeamDataService } from 'src/app/data/team/team-data.service';
-import { MselItemStatus } from 'src/app/generated/blueprint.api';
+import { MselItemStatus, SystemPermission } from 'src/app/generated/blueprint.api';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
 
 @Component({
@@ -27,7 +30,7 @@ import { UIDataService } from 'src/app/data/ui/ui-data.service';
     styleUrls: ['./manage.component.scss'],
     standalone: false
 })
-export class ManageComponent implements OnDestroy {
+export class ManageComponent implements OnDestroy, OnInit {
   msel: MselPlus = new MselPlus();
   imageFilePath = '';
   hideTopbar = false;
@@ -41,11 +44,14 @@ export class ManageComponent implements OnDestroy {
   startTime = new Date();
   endTime = new Date();
   loggedInUserId = '';
-  isContentDeveloper$ = this.userDataService.isContentDeveloper;
+  canEditMsels = false;
   private unsubscribe$ = new Subject();
 
   constructor(
     private userDataService: UserDataService,
+    private currentUserQuery: CurrentUserQuery,
+    private permissionDataService: PermissionDataService,
+    private authService: ComnAuthService,
     private settingsService: ComnSettingsService,
     private mselDataService: MselDataService,
     private mselQuery: MselQuery,
@@ -107,13 +113,23 @@ export class ManageComponent implements OnDestroy {
           this.mselDataService.loadById(mselId);
         }
       });
-    // subscribe to the logged in user
-    this.userDataService.loggedInUser
+  }
+
+  ngOnInit() {
+    // Set up current user
+    this.userDataService.setCurrentUser();
+    // Subscribe to current user
+    this.currentUserQuery
+      .select()
       .pipe(takeUntil(this.unsubscribe$))
-      .subscribe((user) => {
-        if (user && user.profile && user.profile.sub !== this.loggedInUserId) {
-          this.loggedInUserId = user.profile.sub;
-        }
+      .subscribe((cu) => {
+        this.loggedInUserId = cu.id;
+      });
+    // Load permissions
+    this.permissionDataService.load()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(() => {
+        this.canEditMsels = this.permissionDataService.hasPermission(SystemPermission.EditMsels);
       });
   }
 
@@ -145,7 +161,7 @@ export class ManageComponent implements OnDestroy {
   }
 
   logout() {
-    this.userDataService.logout();
+    this.authService.logout();
   }
 
   ngOnDestroy() {

@@ -1,0 +1,150 @@
+<!--
+Copyright 2025 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
+-->
+
+<div class="groups-container">
+  <div class="toolbar">
+    <mat-icon class="mdi-24px" fontIcon="mdi-account-group"></mat-icon>
+    <mat-form-field class="search-field" appearance="outline">
+      <mat-label>Search Groups</mat-label>
+      <input
+        matInput
+        [(ngModel)]="filterString"
+        (keyup)="applyFilter($event.target.value)"
+        (keydown)="handleInput($event)"
+      />
+      <button
+        mat-icon-button
+        matSuffix
+        (click)="clearFilter()"
+        [disabled]="!filterString"
+        matTooltip="Clear Search"
+      >
+        <mat-icon class="mdi-18px" fontIcon="mdi-close-circle-outline"></mat-icon>
+      </button>
+    </mat-form-field>
+
+    @if (canEdit && !isAddingGroup) {
+      <button
+        mat-raised-button
+        color="primary"
+        (click)="startAddGroup()"
+        matTooltip="Add New Group"
+      >
+        <mat-icon class="mdi-18px" fontIcon="mdi-plus"></mat-icon>
+        Add Group
+      </button>
+    }
+  </div>
+
+  @if (isAddingGroup) {
+    <div class="add-group-row mat-elevation-z2">
+      <mat-form-field class="new-group-field" appearance="outline">
+        <mat-label>Group Name</mat-label>
+        <input
+          matInput
+          [(ngModel)]="newGroupName"
+          (keydown)="handleInput($event)"
+          (keyup.enter)="createGroup()"
+          (keyup.escape)="cancelAddGroup()"
+          placeholder="Enter group name"
+        />
+      </mat-form-field>
+      <button
+        mat-raised-button
+        color="primary"
+        (click)="createGroup()"
+        [disabled]="!newGroupName.trim()"
+      >
+        Save
+      </button>
+      <button mat-button (click)="cancelAddGroup()">Cancel</button>
+    </div>
+  }
+
+  <table
+    mat-table
+    [dataSource]="dataSource$ | async"
+    matSort
+    class="groups-table mat-elevation-z8"
+  >
+    <!-- Name Column -->
+    <ng-container matColumnDef="name">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Group Name</th>
+      <td mat-cell *matCellDef="let group">
+        @if (editingGroupId === group.id) {
+          <div class="edit-row">
+            <mat-form-field class="edit-group-field" appearance="outline">
+              <input
+                matInput
+                [(ngModel)]="editingGroupName"
+                (keydown)="handleInput($event)"
+                (keyup.enter)="saveGroupName(group)"
+                (keyup.escape)="cancelEditGroup()"
+              />
+            </mat-form-field>
+            <button
+              mat-icon-button
+              color="primary"
+              (click)="saveGroupName(group)"
+              [disabled]="!editingGroupName.trim()"
+              matTooltip="Save"
+            >
+              <mat-icon class="mdi-24px" fontIcon="mdi-check"></mat-icon>
+            </button>
+            <button
+              mat-icon-button
+              color="warn"
+              (click)="cancelEditGroup()"
+              matTooltip="Cancel"
+            >
+              <mat-icon class="mdi-24px" fontIcon="mdi-close"></mat-icon>
+            </button>
+          </div>
+        } @else {
+          {{ group.name }}
+        }
+      </td>
+    </ng-container>
+
+    <!-- Actions Column -->
+    <ng-container matColumnDef="actions">
+      <th mat-header-cell *matHeaderCellDef>Actions</th>
+      <td mat-cell *matCellDef="let group">
+        @if (canEdit && editingGroupId !== group.id) {
+          <button
+            mat-icon-button
+            color="primary"
+            (click)="startEditGroup(group)"
+            matTooltip="Rename Group"
+          >
+            <mat-icon class="mdi-18px" fontIcon="mdi-pencil-outline"></mat-icon>
+          </button>
+          <button
+            mat-icon-button
+            color="warn"
+            (click)="deleteGroup(group)"
+            matTooltip="Delete Group"
+          >
+            <mat-icon class="mdi-18px" fontIcon="mdi-trash-can"></mat-icon>
+          </button>
+        }
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+
+    <!-- No Data Row -->
+    <tr class="mat-row" *matNoDataRow>
+      <td class="mat-cell no-data" [attr.colspan]="displayedColumns.length">
+        @if (filterString) {
+          No groups found matching "{{ filterString }}"
+        } @else {
+          No groups found
+        }
+      </td>
+    </tr>
+  </table>
+</div>

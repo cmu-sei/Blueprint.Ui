@@ -6,7 +6,7 @@ import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { TeamDataService } from 'src/app/data/team/team-data.service';
 import { TeamQuery } from 'src/app/data/team/team.query';
-import { UserDataService } from 'src/app/data/user/user-data.service';
+import { UserQuery } from 'src/app/data/user/user.query';
 import {
   DataField,
   TeamRole,
@@ -56,7 +56,7 @@ export class MselTeamsComponent implements OnDestroy {
   constructor(
     private teamQuery: TeamQuery,
     private teamDataService: TeamDataService,
-    private userDataService: UserDataService,
+    private userQuery: UserQuery,
     private mselDataService: MselDataService,
     private mselQuery: MselQuery,
     private citeService: CiteService,
@@ -73,7 +73,7 @@ export class MselTeamsComponent implements OnDestroy {
       }
     });
     // subscribe to users
-    this.userDataService.users.pipe(takeUntil(this.unsubscribe$)).subscribe(users => {
+    this.userQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(users => {
       this.userList = users;
     });
     // subscribe to teams

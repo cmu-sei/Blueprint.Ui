@@ -16,7 +16,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     </mat-toolbar>
     <mat-list class="appitems-container">
       <!-- Units -->
-      @if (isSuperUser) {
+      @if (canAccessAdminSection) {
       <mat-list-item [ngClass]="getSelectedClass(unitsText)" id="wrapper showhand" (click)="gotoSection(unitsText)">
         <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-account-group"></mat-icon>
         {{ unitsText }}
@@ -26,11 +26,31 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </mat-list-item>
       }
       <!-- Users -->
-      @if (isSuperUser) {
+      @if (canViewUsers) {
       <mat-list-item [ngClass]="getSelectedClass(usersText)" id="wrapper showhand" (click)="gotoSection(usersText)">
         <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-account"></mat-icon>
         {{ usersText }}
         <button aria-labelledby="usersText" mat-icon-button class="pull-right">
+          <mat-icon fontIcon="mdi-chevron-right"></mat-icon>
+        </button>
+      </mat-list-item>
+      }
+      <!-- Roles -->
+      @if (canViewRoles) {
+      <mat-list-item [ngClass]="getSelectedClass(rolesText)" id="wrapper showhand" (click)="gotoSection(rolesText)">
+        <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-shield-account"></mat-icon>
+        {{ rolesText }}
+        <button aria-labelledby="rolesText" mat-icon-button class="pull-right">
+          <mat-icon fontIcon="mdi-chevron-right"></mat-icon>
+        </button>
+      </mat-list-item>
+      }
+      <!-- Groups -->
+      @if (canViewGroups) {
+      <mat-list-item [ngClass]="getSelectedClass(groupsText)" id="wrapper showhand" (click)="gotoSection(groupsText)">
+        <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-account-multiple"></mat-icon>
+        {{ groupsText }}
+        <button aria-labelledby="groupsText" mat-icon-button class="pull-right">
           <mat-icon fontIcon="mdi-chevron-right"></mat-icon>
         </button>
       </mat-list-item>
@@ -89,12 +109,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <mat-icon fontIcon="mdi-chevron-right"></mat-icon>
         </button>
       </mat-list-item>
-      <!-- CITE Roles -->
-      <mat-list-item [ngClass]="getSelectedClass(citeRolesText)" id="wrapper showhand"
-        (click)="gotoSection(citeRolesText)">
+      <!-- CITE Duties -->
+      <mat-list-item [ngClass]="getSelectedClass(citeDutiesText)" id="wrapper showhand"
+        (click)="gotoSection(citeDutiesText)">
         <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-clipboard-account-outline"></mat-icon>
-        {{ citeRolesText }}
-        <button aria-labelledby="citeRolesText" mat-icon-button class="pull-right">
+        {{ citeDutiesText }}
+        <button aria-labelledby="citeDutiesText" mat-icon-button class="pull-right">
           <mat-icon fontIcon="mdi-chevron-right"></mat-icon>
         </button>
       </mat-list-item>
@@ -120,60 +140,66 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <app-topbar [title]="selectedTab" [topbarView]="TopbarView.BLUEPRINT_ADMIN" [topbarColor]="topbarColor"
       [topbarTextColor]="topbarTextColor" (urlNavigate)="goToUrl($event)"></app-topbar>
     }
-    @if (isSuperUser && (selectedTab === unitsText)) {
+    @if (canAccessAdminSection && (selectedTab === unitsText)) {
     <span>
       <app-admin-units></app-admin-units>
     </span>
     }
-    @if (isSuperUser && (selectedTab === usersText)) {
+    @if (canViewUsers && (selectedTab === usersText)) {
     <span>
       <app-admin-users></app-admin-users>
     </span>
     }
-    @if (isSuperUser && (selectedTab === dataFieldsText)) {
+    @if (canViewRoles && (selectedTab === rolesText)) {
     <span>
-      <app-data-field-list [loggedInUserId]="loggedInUserId" [isContentDeveloper]="isContentDeveloper$ | async"
+      <app-admin-roles></app-admin-roles>
+    </span>
+    }
+    @if (canViewGroups && (selectedTab === groupsText)) {
+    <span>
+      <app-admin-groups></app-admin-groups>
+    </span>
+    }
+    @if (canAccessAdminSection && (selectedTab === dataFieldsText)) {
+    <span>
+      <app-data-field-list [loggedInUserId]="loggedInUserId" [isContentDeveloper]="canAccessAdminSection"
         [showTemplates]="true"></app-data-field-list>
     </span>
     }
-    @if (isSuperUser && (selectedTab === injectTypesText)) {
+    @if (canAccessAdminSection && (selectedTab === injectTypesText)) {
     <span>
       <app-admin-inject-types [loggedInUserId]="loggedInUserId"
-        [isContentDeveloper]="isContentDeveloper$ | async"></app-admin-inject-types>
+        [isContentDeveloper]="canAccessAdminSection"></app-admin-inject-types>
     </span>
     }
-    @if (isSuperUser && (selectedTab === catalogsText)) {
+    @if (canAccessAdminSection && (selectedTab === catalogsText)) {
     <span>
-      <app-admin-catalog-list [loggedInUserId]="loggedInUserId" [isContentDeveloper]="isContentDeveloper$ | async">
+      <app-admin-catalog-list [loggedInUserId]="loggedInUserId" [isContentDeveloper]="canAccessAdminSection">
       </app-admin-catalog-list>
     </span>
     }
-    @if (isSuperUser && (selectedTab === organizationsText)) {
+    @if (canAccessAdminSection && (selectedTab === organizationsText)) {
     <span>
-      <app-organization-list [loggedInUserId]="(loggedInUser | async).profile.sub"
+      <app-organization-list [loggedInUserId]="loggedInUserId"
         [isContentDeveloper]="canAccessAdminSection" [showTemplates]="true"></app-organization-list>
     </span>
     }
-    @if (isSuperUser && (selectedTab === galleryCardsText)) {
+    @if (canAccessAdminSection && (selectedTab === galleryCardsText)) {
     <span>
-      <app-card-list [loggedInUserId]="(loggedInUser | async).profile.sub" [isContentDeveloper]="true"
+      <app-card-list [loggedInUserId]="loggedInUserId" [isContentDeveloper]="true"
         [showTemplates]="true"></app-card-list>
     </span>
     }
-    @if (isSuperUser && (selectedTab === citeActionsText)) {
+    @if (canAccessAdminSection && (selectedTab === citeActionsText)) {
     <span>
-      @if (selectedTab === 'CITE Actions') {
-      <app-cite-action-list [loggedInUserId]="(loggedInUser | async).profile.sub" [isContentDeveloper]="true"
+      <app-cite-action-list [loggedInUserId]="loggedInUserId" [isContentDeveloper]="true"
         [showTemplates]="true"></app-cite-action-list>
-      }
     </span>
     }
-    @if (isSuperUser && (selectedTab === citeRolesText)) {
+    @if (canAccessAdminSection && (selectedTab === citeDutiesText)) {
     <span>
-      @if (selectedTab === 'CITE Roles') {
-      <app-cite-role-list [loggedInUserId]="(loggedInUser | async).profile.sub" [isContentDeveloper]="true"
-        [showTemplates]="true"></app-cite-role-list>
-      }
+      <app-cite-duty-list [loggedInUserId]="loggedInUserId" [isContentDeveloper]="true"
+        [showTemplates]="true"></app-cite-duty-list>
     </span>
     }
   </mat-sidenav-content>

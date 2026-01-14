@@ -11,7 +11,7 @@ import {
   Theme,
   ComnAuthQuery,
 } from '@cmusei/crucible-common';
-import { Msel } from 'src/app/generated/blueprint.api';
+import { Msel, SystemPermission } from 'src/app/generated/blueprint.api';
 import { CatalogDataService } from 'src/app/data/catalog/catalog-data.service';
 import { DataFieldDataService } from 'src/app/data/data-field/data-field-data.service';
 import { DataOptionDataService } from 'src/app/data/data-option/data-option-data.service';
@@ -20,6 +20,7 @@ import { MoveDataService } from 'src/app/data/move/move-data.service';
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { OrganizationDataService } from 'src/app/data/organization/organization-data.service';
+import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
 import { ScenarioEventDataService } from 'src/app/data/scenario-event/scenario-event-data.service';
 import {
   ApplicationArea,
@@ -30,6 +31,7 @@ import { TeamUserDataService } from 'src/app/data/team-user/team-user-data.servi
 import { TopbarView } from '../shared/top-bar/topbar.models';
 import { UnitDataService } from 'src/app/data/unit/unit-data.service';
 import { UserDataService } from 'src/app/data/user/user-data.service';
+import { CurrentUserQuery } from 'src/app/data/user/user.query';
 import { UserMselRoleDataService } from 'src/app/data/user-msel-role/user-msel-role-data.service';
 import { UserTeamRoleDataService } from 'src/app/data/user-team-role/user-team-role-data.service';
 
@@ -40,14 +42,14 @@ import { UserTeamRoleDataService } from 'src/app/data/user-team-role/user-team-r
     standalone: false
 })
 export class StarterComponent implements OnDestroy, OnInit {
-  @Input() isSystemAdmin: boolean;
+  @Input() canAccessAdminSection: boolean;
   private unsubscribe$ = new Subject();
   private msel: Msel = {};
   selectedIndex = 1;
   selectedMselId = '';
   theme$: Observable<Theme>;
   loggedInUserId: string;
-  isContentDeveloper$ = this.userDataService.isContentDeveloper;
+  isContentDeveloper = false;
   userTheme$ = this.authQuery.userTheme$;
   hideTopbar = false;
   topbarColor = '#ef3a47';
@@ -69,12 +71,14 @@ export class StarterComponent implements OnDestroy, OnInit {
     private mselDataService: MselDataService,
     private mselQuery: MselQuery,
     private organizationDataService: OrganizationDataService,
+    private permissionDataService: PermissionDataService,
     private scenarioEventDataService: ScenarioEventDataService,
     private signalRService: SignalRService,
     private teamDataService: TeamDataService,
     private teamUserDataService: TeamUserDataService,
     private unitDataService: UnitDataService,
     private userDataService: UserDataService,
+    private currentUserQuery: CurrentUserQuery,
     private userMselRoleDataService: UserMselRoleDataService,
     private userTeamRoleDataService: UserTeamRoleDataService,
     private authQuery: ComnAuthQuery,
@@ -114,7 +118,7 @@ export class StarterComponent implements OnDestroy, OnInit {
           // load the Catalogs
           this.catalogDataService.loadMine();
           // load the users
-          this.userDataService.getMselUsers(mselId);
+          this.userDataService.loadByMsel(mselId).subscribe();
           // set the selected MSEL
           this.selectedMselId = mselId;
           this.mselDataService.setActive(mselId);
@@ -138,14 +142,6 @@ export class StarterComponent implements OnDestroy, OnInit {
     this.unitDataService.load();
     // load the organization templates
     this.organizationDataService.loadTemplates();
-    // subscribe to the logged in user
-    this.userDataService.loggedInUser
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe((user) => {
-        if (user && user.profile && user.profile.sub !== this.loggedInUserId) {
-          this.loggedInUserId = user.profile.sub;
-        }
-      });
     // Set the display settings from config file
     this.topbarColor = this.settingsService.settings.AppTopBarHexColor
       ? this.settingsService.settings.AppTopBarHexColor
@@ -162,6 +158,22 @@ export class StarterComponent implements OnDestroy, OnInit {
   }
 
   ngOnInit() {
+    // Set up current user
+    this.userDataService.setCurrentUser();
+    // Subscribe to current user
+    this.currentUserQuery
+      .select()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((cu) => {
+        this.loggedInUserId = cu.id;
+      });
+    // Load permissions
+    this.permissionDataService.load()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(() => {
+        this.isContentDeveloper = this.permissionDataService.hasPermission(SystemPermission.CreateMsels);
+      });
+    // Start SignalR connection
     this.signalRService
       .startConnection(ApplicationArea.home)
       .then(() => {

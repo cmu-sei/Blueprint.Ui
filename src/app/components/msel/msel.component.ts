@@ -15,7 +15,7 @@ import { CardTeamDataService } from 'src/app/data/team/card-team-data.service';
 import { CatalogDataService } from 'src/app/data/catalog/catalog-data.service';
 import { CatalogUnitDataService } from 'src/app/data/catalog-unit/catalog-unit-data.service';
 import { CiteActionDataService } from 'src/app/data/cite-action/cite-action-data.service';
-import { CiteRoleDataService } from 'src/app/data/cite-role/cite-role-data.service';
+import { CiteDutyDataService } from 'src/app/data/cite-duty/cite-duty-data.service';
 import { DataFieldDataService } from 'src/app/data/data-field/data-field-data.service';
 import { DataOptionDataService } from 'src/app/data/data-option/data-option-data.service';
 import { DataValueDataService } from 'src/app/data/data-value/data-value-data.service';
@@ -44,7 +44,7 @@ import { UserTeamRoleDataService } from 'src/app/data/user-team-role/user-team-r
 export class MselComponent implements OnDestroy {
   @Input() loggedInUserId: string;
   @Input() isContentDeveloper: boolean;
-  @Input() isSystemAdmin: boolean;
+  @Input() canAccessAdminSection: boolean;
   @Input() userTheme$: Observable<Theme>;
   @Output() deleteThisMsel = new EventEmitter<string>();
   @ViewChild('tabGroup0', { static: false }) tabGroup0: MatTabGroup;
@@ -59,7 +59,7 @@ export class MselComponent implements OnDestroy {
     'Player Apps',
     'Gallery Cards',
     'CITE Actions',
-    'CITE Roles',
+    'CITE Duties',
     'Scenario Events',
     'Exercise View',
     'MSEL Playbook',
@@ -75,7 +75,7 @@ export class MselComponent implements OnDestroy {
     ['Player Apps', 'mdi-apps'],
     ['Gallery Cards', 'mdi-view-grid-outline'],
     ['CITE Actions', 'mdi-clipboard-check-outline'],
-    ['CITE Roles', 'mdi-clipboard-account-outline'],
+    ['CITE Duties', 'mdi-clipboard-account-outline'],
     ['Scenario Events', 'mdi-chart-timeline'],
     ['Exercise View', 'mdi-eye-outline'],
     ['MSEL Playbook', 'mdi-book'],
@@ -98,7 +98,7 @@ export class MselComponent implements OnDestroy {
     private catalogDataService: CatalogDataService,
     private catalogUnitDataService: CatalogUnitDataService,
     private citeActionDataService: CiteActionDataService,
-    private citeRoleDataService: CiteRoleDataService,
+    private citeDutyDataService: CiteDutyDataService,
     private dataFieldDataService: DataFieldDataService,
     private dataOptionDataService: DataOptionDataService,
     private dataValueDataService: DataValueDataService,
@@ -136,7 +136,7 @@ export class MselComponent implements OnDestroy {
           this.cardTeamDataService.getCardTeamsFromApi(mselId);
           // load CITE Actions and Roles
           this.citeActionDataService.loadByMsel(mselId);
-          this.citeRoleDataService.loadByMsel(mselId);
+          this.citeDutyDataService.loadByMsel(mselId);
           // load the MSEL Teams
           this.teamDataService.loadByMsel(mselId);
           // load the MSEL organizations and templates
@@ -160,7 +160,7 @@ export class MselComponent implements OnDestroy {
           // load the Catalogs
           this.catalogDataService.loadMine();
           // load the users
-          this.userDataService.getMselUsers(mselId);
+          this.userDataService.loadByMsel(mselId).subscribe();
         }
       });
     // subscribe to the active MSEL
@@ -215,7 +215,7 @@ export class MselComponent implements OnDestroy {
           }
           break;
         case 'CITE Actions':
-        case 'CITE Roles':
+        case 'CITE Duties':
           if (this.msel?.useCite) {
             tabList.push(tab);
           }

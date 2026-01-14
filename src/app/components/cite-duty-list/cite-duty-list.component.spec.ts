@@ -3,21 +3,21 @@
 // project root for license information or contact permission@sei.cmu.edu for full terms.
 
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { CiteRoleListComponent } from './cite-role-list.component';
+import { CiteDutyListComponent } from './cite-duty-list.component';
 
-describe('CiteRoleListComponent', () => {
-  let component: CiteRoleListComponent;
-  let fixture: ComponentFixture<CiteRoleListComponent>;
+describe('CiteDutyListComponent', () => {
+  let component: CiteDutyListComponent;
+  let fixture: ComponentFixture<CiteDutyListComponent>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ CiteRoleListComponent ]
+      declarations: [ CiteDutyListComponent ]
     })
       .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(CiteRoleListComponent);
+    fixture = TestBed.createComponent(CiteDutyListComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
@@ -26,4 +26,3 @@ describe('CiteRoleListComponent', () => {
     expect(component).toBeTruthy();
   });
 });
-

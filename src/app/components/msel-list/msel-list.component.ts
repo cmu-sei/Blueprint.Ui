@@ -7,11 +7,12 @@ import { MatSort, MatSortable, Sort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Router } from '@angular/router';
 import { Subject, Observable } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { take, takeUntil } from 'rxjs/operators';
 import {
   ComnSettingsService,
 } from '@cmusei/crucible-common';
 import { UserDataService } from 'src/app/data/user/user-data.service';
+import { UserQuery, CurrentUserQuery } from 'src/app/data/user/user.query';
 import { SignalRService } from 'src/app/services/signalr.service';
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
@@ -29,7 +30,7 @@ import { MselItemStatus } from 'src/app/generated/blueprint.api';
 export class MselListComponent implements OnDestroy, OnInit {
   @Input() loggedInUserId: string;
   @Input() isContentDeveloper: boolean;
-  @Input() isSystemAdmin: boolean;
+  @Input() canAccessAdminSection: boolean;
   @ViewChild('jsonInput') jsonInput: ElementRef<HTMLInputElement>;
   @ViewChild('xlsxInput') xlsxInput: ElementRef<HTMLInputElement>;
   @ViewChild(MatSort, { static: true }) sort: MatSort;
@@ -58,6 +59,7 @@ export class MselListComponent implements OnDestroy, OnInit {
   ];
   imageFilePath = '';
   userList: User[] = [];
+  currentUserName = '';
   selectedMselType = 'all';
   selectedMselStatus = 'all';
   itemStatus = [
@@ -75,6 +77,8 @@ export class MselListComponent implements OnDestroy, OnInit {
     public dialogService: DialogService,
     private router: Router,
     private userDataService: UserDataService,
+    private userQuery: UserQuery,
+    private currentUserQuery: CurrentUserQuery,
     private settingsService: ComnSettingsService,
     private mselDataService: MselDataService,
     private mselQuery: MselQuery,
@@ -87,17 +91,24 @@ export class MselListComponent implements OnDestroy, OnInit {
     );
     // load the MSELs
     this.mselDataService.loadMine();
+  }
+
+  ngOnInit() {
     // subscribe to users
-    this.userDataService.users
+    this.userQuery.selectAll()
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((users) => {
         this.userList = users;
       });
     // load the users
-    this.userDataService.getUsersFromApi();
-  }
-
-  ngOnInit() {
+    this.userDataService.load().pipe(take(1)).subscribe();
+    // Subscribe to current user
+    this.currentUserQuery
+      .select()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((cu) => {
+        this.currentUserName = cu.name;
+      });
     this.sort.sort(<MatSortable>{ id: 'name', start: 'asc' });
     this.mselDataSource.sort = this.sort;
     // subscribe to MSELs loading
@@ -255,8 +266,7 @@ export class MselListComponent implements OnDestroy, OnInit {
     this.mselDataService.add({
       name: 'New MSEL',
       description:
-        'Created from Default Settings by ' +
-        this.userDataService.loggedInUser.value.profile.name,
+        'Created from Default Settings by ' + this.currentUserName,
       status: 'Pending',
       dataFields: this.settingsService.settings.DefaultDataFields,
     });

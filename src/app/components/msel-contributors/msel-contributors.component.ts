@@ -5,7 +5,7 @@ import { Component, Input, OnDestroy, ViewChild } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { UnitQuery } from 'src/app/data/unit/unit.query';
-import { UserDataService } from 'src/app/data/user/user-data.service';
+import { UserQuery } from 'src/app/data/user/user.query';
 import {
   DataField,
   MselRole,
@@ -58,7 +58,7 @@ export class MselContributorsComponent implements OnDestroy {
 
   constructor(
     private unitQuery: UnitQuery,
-    private userDataService: UserDataService,
+    private userQuery: UserQuery,
     private mselDataService: MselDataService,
     private mselQuery: MselQuery,
     private mselUnitDataService: MselUnitDataService,
@@ -76,7 +76,7 @@ export class MselContributorsComponent implements OnDestroy {
       }
     });
     // subscribe to users
-    this.userDataService.users.pipe(takeUntil(this.unsubscribe$)).subscribe(users => {
+    this.userQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(users => {
       this.userList = users;
     });
     // subscribe to units
