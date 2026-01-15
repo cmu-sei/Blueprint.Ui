@@ -10,7 +10,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       @for (mselUnit of mselUnitList; track trackByFn($index, mselUnit)) {
       <mat-expansion-panel>
         <mat-expansion-panel-header (click)="$event.stopPropagation();">
-          @if (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) {
+          @if (canManageMsel()) {
           <button mat-icon-button (click)="removeUnitFromMsel(mselUnit.id); $event.stopPropagation();"
             title="Remove unit from MSEL">
             <mat-icon class="mdi-24px self-center" fontIcon="mdi-minus-circle-outline"></mat-icon>
@@ -26,7 +26,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <div class="msel-role one-cell">
             <mat-checkbox [checked]="hasMselRole(user.id, mselRole)"
               (change)="toggleMselRole(user.id, mselRole, $event.checked)" (click)="$event.stopPropagation();"
-              style="margin-right: 20px;" [disabled]="!isContentDeveloper && !msel.hasRole(loggedInUserId, null).owner"
+              style="margin-right: 20px;" [disabled]="!canManageMsel()"
               [matTooltip]="getRoleDescription(mselRole)">{{ mselRole }}</mat-checkbox>
           </div>
           }
@@ -39,7 +39,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       }
     </div>
   </div>
-  @if (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) {
+  @if (canManageMsel()) {
   <div class="mat-elevation-z2 section-container">
     <div class="section-content">
       <mat-expansion-panel>

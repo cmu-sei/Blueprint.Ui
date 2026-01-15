@@ -1,7 +1,7 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, Input, OnDestroy, ViewChild, ElementRef, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnDestroy, ViewChild, ElementRef, OnInit } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { MatSort, MatSortable, Sort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
@@ -18,18 +18,18 @@ import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
-import { User } from 'src/app/generated/blueprint.api';
+import { User, SystemPermission } from 'src/app/generated/blueprint.api';
 import { MselItemStatus } from 'src/app/generated/blueprint.api';
+import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
 
 @Component({
-    selector: 'app-msel-list',
-    templateUrl: './msel-list.component.html',
-    styleUrls: ['./msel-list.component.scss'],
-    standalone: false
+  selector: 'app-msel-list',
+  templateUrl: './msel-list.component.html',
+  styleUrls: ['./msel-list.component.scss'],
+  standalone: false
 })
 export class MselListComponent implements OnDestroy, OnInit {
   @Input() loggedInUserId: string;
-  @Input() isContentDeveloper: boolean;
   @Input() canAccessAdminSection: boolean;
   @ViewChild('jsonInput') jsonInput: ElementRef<HTMLInputElement>;
   @ViewChild('xlsxInput') xlsxInput: ElementRef<HTMLInputElement>;
@@ -83,7 +83,9 @@ export class MselListComponent implements OnDestroy, OnInit {
     private mselDataService: MselDataService,
     private mselQuery: MselQuery,
     private signalRService: SignalRService,
-    private uiDataService: UIDataService
+    private uiDataService: UIDataService,
+    private permissionDataService: PermissionDataService,
+    private changeDetectorRef: ChangeDetectorRef
   ) {
     // Initial datasource
     this.mselDataSource = new MatTableDataSource<MselPlus>(
@@ -94,6 +96,12 @@ export class MselListComponent implements OnDestroy, OnInit {
   }
 
   ngOnInit() {
+    // Load permissions and trigger change detection when loaded
+    this.permissionDataService.load()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(() => {
+        this.changeDetectorRef.markForCheck();
+      });
     // subscribe to users
     this.userQuery.selectAll()
       .pipe(takeUntil(this.unsubscribe$))
@@ -354,6 +362,25 @@ export class MselListComponent implements OnDestroy, OnInit {
   adminLoadMyMsels() {
     this.mselDataService.loadMine();
     this.allMselsAreLoaded = false;
+  }
+
+  canCreateMsels(): boolean {
+    return this.permissionDataService.hasPermission(SystemPermission.CreateMsels);
+  }
+
+  canViewMsel(msel: MselPlus): boolean {
+    return this.permissionDataService.hasPermission(SystemPermission.ViewMsels) ||
+      msel?.hasRole(this.loggedInUserId, '').editor;
+  }
+
+  canEditMsel(msel: MselPlus): boolean {
+    return this.permissionDataService.hasPermission(SystemPermission.EditMsels) ||
+      msel?.hasRole(this.loggedInUserId, '').editor;
+  }
+
+  canManageMsel(msel: MselPlus): boolean {
+    return this.permissionDataService.hasPermission(SystemPermission.ManageMsels) ||
+      msel?.hasRole(this.loggedInUserId, '').owner;
   }
 
   ngOnDestroy() {

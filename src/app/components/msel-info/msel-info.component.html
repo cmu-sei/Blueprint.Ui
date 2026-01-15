@@ -24,7 +24,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           }
         </span>
         <span class="delete-span">
-          @if (msel.hasRole(this.loggedInUserId, null).owner || isContentDeveloper) {
+          @if (canManageMsel()) {
           <button mat-icon-button (click)="deleteMsel()" title="Delete this MSEL">
             <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline" alt="Delete"></mat-icon>
           </button>
@@ -39,7 +39,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <mat-form-field class="full-width">
               <mat-label>Name</mat-label>
               <input type="text" matInput [(ngModel)]="msel.name" (cut)="isChanged = true" (change)="isChanged = true"
-                (paste)="isChanged = true" (keypress)="isChanged = true" />
+                (paste)="isChanged = true" (keypress)="isChanged = true" [disabled]="!canEditMsel()" />
             </mat-form-field>
           </div>
           <!-- MSEL Description -->
@@ -48,13 +48,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
               <mat-label>Description</mat-label>
               <input type="text" matInput placeholder="Description" [(ngModel)]="msel.description"
                 (cut)="isChanged = true" (change)="isChanged = true" (paste)="isChanged = true"
-                (keypress)="isChanged = true" />
+                (keypress)="isChanged = true" [disabled]="!canEditMsel()" />
             </mat-form-field>
           </div>
           <!-- Is a Template -->
           <div class="single-detail center-self">
             <div class="sub-detail center-self">
-              <mat-checkbox [(ngModel)]="msel.isTemplate" [disabled]="msel.status === 'Deployed'"
+              <mat-checkbox [(ngModel)]="msel.isTemplate" [disabled]="msel.status === 'Deployed' || !canEditMsel()"
                 (cut)="isChanged = true" (change)="isChanged = true" (paste)="isChanged = true"
                 (keypress)="isChanged = true">Is a Template</mat-checkbox>
             </div>
@@ -62,7 +62,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <!-- MSEL Start Time -->
           <div class="single-checkbox">
             <mat-checkbox [checked]="msel.startTime?.valueOf() > 0"
-              [disabled]="!isContentDeveloper && !msel.hasRole(loggedInUserId, null).owner"
+              [disabled]="!canEditMsel()"
               (change)="toggleStartTime($event)" title="Set a Start Time">Set a Start Time
             </mat-checkbox>
           </div>
@@ -71,12 +71,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <mat-form-field>
               <mat-label>Start Date / Time</mat-label>
               <input matInput [ngxMatDatetimePicker]="picker" [(ngModel)]="msel.startTime"
-                (dateChange)="isChanged = true" (dateInput)="isChanged = true" style="display: none;">
+                (dateChange)="isChanged = true" (dateInput)="isChanged = true" style="display: none;" [disabled]="!canEditMsel()">
               <!-- <datetime-picker> -->
-              <span (click)="picker.open()">
+              <span (click)="canEditMsel() && picker.open()">
                 {{msel.startTime | date: 'MM/dd/yyyy hh:mm a'}}
               </span>
-              <mat-datepicker-toggle matSuffix title="Choose Date/Time" [for]="picker">
+              <mat-datepicker-toggle matSuffix title="Choose Date/Time" [for]="picker" [disabled]="!canEditMsel()">
               </mat-datepicker-toggle>
               <ngx-mat-datetime-picker #picker [showSpinners]=true [showSeconds]=false [stepHour]=1 [stepMinute]=5
                 [stepSecond]=1 [touchUi]=false [enableMeridian]=true [disableMinute]=false [hideTime]=false
@@ -87,14 +87,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
           }
           <!-- MSEL End/Duration -->
           <app-duration-edit [startTime]="msel.startTime" [(durationSeconds)]="msel.durationSeconds"
-            [timeName]="'End Date / Time'" [postScript]="'duration'" (change)="isChanged = true;"></app-duration-edit>
+            [timeName]="'End Date / Time'" [postScript]="'duration'" [canEdit]="canEditMsel()" (change)="isChanged = true;"></app-duration-edit>
           <!-- Integration Section -->
           <div class="integration-div">
             <b>Applications to Integrate</b>
             <!-- Player Integration -->
             <div class="single-detail center-self integration-checkbox">
               <div class="sub-detail center-self three-cell">
-                <mat-checkbox [(ngModel)]="msel.usePlayer" [disabled]="msel.status === 'Deployed'"
+                <mat-checkbox [(ngModel)]="msel.usePlayer" [disabled]="msel.status === 'Deployed' || !canEditMsel()"
                   (cut)="isChanged = true" (change)="isChanged = true" (paste)="isChanged = true"
                   (keypress)="isChanged = true">Integrate Player</mat-checkbox>
               </div>
@@ -106,7 +106,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 !msel.steamfitterScenarioId &&
                 !msel.isTemplate) ||
                 pushStatus) {
-                <button (click)="pushIntegrations()" title="Push Integrations" class="thin-button" [disabled]="!(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) ||
+                <button (click)="pushIntegrations()" title="Push Integrations" class="thin-button" [disabled]="!canManageMsel() ||
                               (msel.useGallery && galleryToDo()) ||
                               (msel.useCite && !msel.citeScoringModelId) ||
                               isBusy || isChanged">@if (pushStatus) {
@@ -121,7 +121,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 msel.steamfitterScenarioId) &&
                 !pushStatus) {
                 <button (click)="pullIntegrations()" title="Remove Integrations" class="thin-button"
-                  [disabled]="!(isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) || isChanged">Remove
+                  [disabled]="!canManageMsel() || isChanged">Remove
                   Integrations</button>
                 }
               </div>
@@ -142,7 +142,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <!-- Gallery Integration -->
             <div class="single-detail center-self integration-checkbox">
               <div class="sub-detail center-self three-cell">
-                <mat-checkbox [(ngModel)]="msel.useGallery" [disabled]="msel.status === 'Deployed'"
+                <mat-checkbox [(ngModel)]="msel.useGallery" [disabled]="msel.status === 'Deployed' || !canEditMsel()"
                   (cut)="isChanged = true" (change)="isChanged = true" (paste)="isChanged = true"
                   (keypress)="isChanged = true">Integrate Gallery</mat-checkbox>
               </div>
@@ -176,7 +176,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <!-- CITE Integration -->
             <div class="single-detail center-self integration-checkbox">
               <div class="sub-detail center-self one-cell">
-                <mat-checkbox [(ngModel)]="msel.useCite" [disabled]="msel.status === 'Deployed'"
+                <mat-checkbox [(ngModel)]="msel.useCite" [disabled]="msel.status === 'Deployed' || !canEditMsel()"
                   (cut)="isChanged = true" (change)="isChanged = true" (paste)="isChanged = true"
                   (keypress)="isChanged = true">Integrate CITE</mat-checkbox>
               </div>
@@ -187,7 +187,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   <mat-label>Scoring Model</mat-label>
                   <mat-select [(ngModel)]="msel.citeScoringModelId" (cut)="isChanged = true"
                     (selectionChange)="isChanged = true" (paste)="isChanged = true" (keypress)="isChanged = true"
-                    [disabled]="msel.status === 'Deployed'">
+                    [disabled]="msel.status === 'Deployed' || !canEditMsel()">
                     <mat-option [value]=""></mat-option>
                     @for (scoringModel of scoringModelList; track scoringModel) {
                     <mat-option [value]="scoringModel.id">
@@ -201,7 +201,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 <mat-form-field class="half-width guid-field">
                   <input type="text" matInput placeholder="Scoring Model" [(ngModel)]="msel.citeScoringModelId"
                     (cut)="isChanged = true" (change)="isChanged = true" (paste)="isChanged = true"
-                    (keypress)="isChanged = true" title="CITE Scoring Model" />
+                    (keypress)="isChanged = true" title="CITE Scoring Model" [disabled]="!canEditMsel()" />
                 </mat-form-field>
                 }
               </div>
@@ -232,7 +232,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <!-- Steamfitter Integration -->
             <div class="single-detail center-self integration-checkbox">
               <div class="sub-detail center-self one-cell">
-                <mat-checkbox [disabled]="msel.status === 'Deployed'" [(ngModel)]="msel.useSteamfitter"
+                <mat-checkbox [disabled]="msel.status === 'Deployed' || !canEditMsel()" [(ngModel)]="msel.useSteamfitter"
                   (cut)="isChanged = true" (change)="isChanged = true" (paste)="isChanged = true"
                   (keypress)="isChanged = true">Integrate Steamfitter</mat-checkbox>
               </div>
@@ -250,7 +250,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <div class="single-detail center-self">
             <mat-form-field class="full-width">
               <mat-label>MSEL Status</mat-label>
-              <mat-select [(ngModel)]="msel.status" [disabled]="msel.status === 'Deployed'" (cut)="isChanged = true"
+              <mat-select [(ngModel)]="msel.status" [disabled]="msel.status === 'Deployed' || !canEditMsel()" (cut)="isChanged = true"
                 (change)="isChanged = true" (paste)="isChanged = true" (keypress)="isChanged = true">
                 @for (item of itemStatus; track item) {
                 <mat-option [value]="item">
@@ -287,7 +287,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             </div>
           </div>
           <!-- row meta data -->
-          @if (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) {
+          @if (canManageMsel()) {
           <div class="single-detail center-self">
             <mat-form-field class="full-width"
               title="A numeric value that defines the height of the header row when this MSEL is exported as an xlsx file">
@@ -319,7 +319,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <div class="edit-buttons">
         @if (!editingPageId) {
         <span>
-          @if (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) {
+          @if (canManageMsel()) {
           <button mat-icon-button (click)="requestPageEdit(page.id)" style="outline: none;" title="Edit Page">
             <mat-icon class="mdi-24px self-center" fontIcon="mdi-square-edit-outline"></mat-icon>
           </button>
@@ -373,7 +373,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       }
     </mat-tab>
     }
-    @if (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) {
+    @if (canManageMsel()) {
     <mat-tab>
       <ng-template mat-tab-label>
         <mat-icon class="mdi-24px" fontIcon="mdi-plus-circle" title="Add MSEL Notes Page"></mat-icon>

@@ -13,6 +13,7 @@ import { UntypedFormControl } from '@angular/forms';
 })
 export class DurationEditComponent implements OnChanges {
   @Input() startTime: Date;
+  @Input() canEdit: boolean = true;
   @Input()
   get durationSeconds() {
     return this.durationSecondsValue;

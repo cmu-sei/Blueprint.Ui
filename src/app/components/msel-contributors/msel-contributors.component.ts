@@ -1,7 +1,7 @@
 // Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, Input, OnDestroy, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { UnitQuery } from 'src/app/data/unit/unit.query';
@@ -11,10 +11,12 @@ import {
   MselRole,
   MselUnit,
   ScenarioEvent,
+  SystemPermission,
   Unit,
   User,
   UserMselRole
 } from 'src/app/generated/blueprint.api';
+import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { MselUnitDataService } from 'src/app/data/msel-unit/msel-unit-data.service';
@@ -30,9 +32,8 @@ import { DialogService } from 'src/app/services/dialog/dialog.service';
     styleUrls: ['./msel-contributors.component.scss'],
     standalone: false
 })
-export class MselContributorsComponent implements OnDestroy {
+export class MselContributorsComponent implements OnDestroy, OnInit {
   @Input() loggedInUserId: string;
-  @Input() isContentDeveloper: boolean;
   // context menu
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
   contextMenuPosition = { x: '0px', y: '0px' };
@@ -65,7 +66,9 @@ export class MselContributorsComponent implements OnDestroy {
     private mselUnitQuery: MselUnitQuery,
     private userMselRoleDataService: UserMselRoleDataService,
     private userMselRoleQuery: UserMselRoleQuery,
-    public dialogService: DialogService
+    public dialogService: DialogService,
+    private permissionDataService: PermissionDataService,
+    private changeDetectorRef: ChangeDetectorRef
   ) {
     // subscribe to the active MSEL
     (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
@@ -103,6 +106,15 @@ export class MselContributorsComponent implements OnDestroy {
     this.userMselRoleQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(umrs => {
       this.userMselRoles = umrs;
     });
+  }
+
+  ngOnInit() {
+    // Load permissions and trigger change detection when loaded
+    this.permissionDataService.load()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(() => {
+        this.changeDetectorRef.markForCheck();
+      });
   }
 
   getUserName(userId: string) {
@@ -223,6 +235,16 @@ export class MselContributorsComponent implements OnDestroy {
       }
     });
     return mselRoles;
+  }
+
+  canViewMsel(): boolean {
+    return this.permissionDataService.hasPermission(SystemPermission.ViewMsels) ||
+      this.mselUnitList.some(mu => mu.unit?.users?.some(u => u.id === this.loggedInUserId));
+  }
+
+  canManageMsel(): boolean {
+    return this.permissionDataService.hasPermission(SystemPermission.ManageMsels) ||
+      this.msel.hasRole(this.loggedInUserId, '').owner;
   }
 
   ngOnDestroy() {
