@@ -3,6 +3,7 @@
 // project root for license information or contact permission@sei.cmu.edu for full terms.
 
 import {
+  ChangeDetectorRef,
   Component,
   OnDestroy,
   OnInit,
@@ -12,13 +13,16 @@ import {
 import { Sort, MatSortable } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { TeamQuery } from 'src/app/data/team/team.query';
-import { TeamRole, Team, TeamUser, User, UserTeamRole } from 'src/app/generated/blueprint.api';
+import { SystemPermission, TeamRole, Team, TeamUser, User, UserTeamRole } from 'src/app/generated/blueprint.api';
 import { TeamUserDataService } from 'src/app/data/team-user/team-user-data.service';
 import { TeamUserQuery } from 'src/app/data/team-user/team-user.query';
-import { UserQuery } from 'src/app/data/user/user.query';
+import { CurrentUserQuery, UserQuery } from 'src/app/data/user/user.query';
 import { UserTeamRoleDataService } from 'src/app/data/user-team-role/user-team-role-data.service';
 import { UserTeamRoleQuery } from 'src/app/data/user-team-role/user-team-role.query';
-import { Subject } from 'rxjs';
+import { MselPlus } from 'src/app/data/msel/msel-data.service';
+import { MselQuery } from 'src/app/data/msel/msel.query';
+import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
+import { Observable, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { UntypedFormControl } from '@angular/forms';
 @Component({
@@ -44,6 +48,8 @@ export class TeamUsersComponent implements OnDestroy, OnInit {
   isAddMode = false;
   sort: Sort = { active: 'name', direction: 'asc' };
   teamRoles: string[] = ['Inviter', 'Observer', 'Incrementer', 'Modifier', 'Submitter'];
+  msel = new MselPlus();
+  loggedInUserId = '';
   private unsubscribe$ = new Subject();
 
   constructor(
@@ -51,8 +57,12 @@ export class TeamUsersComponent implements OnDestroy, OnInit {
     private teamUserDataService: TeamUserDataService,
     private teamUserQuery: TeamUserQuery,
     private userQuery: UserQuery,
+    private currentUserQuery: CurrentUserQuery,
     private userTeamRoleDataService: UserTeamRoleDataService,
-    private userTeamRoleQuery: UserTeamRoleQuery
+    private userTeamRoleQuery: UserTeamRoleQuery,
+    private mselQuery: MselQuery,
+    private permissionDataService: PermissionDataService,
+    private changeDetectorRef: ChangeDetectorRef
   ) {
     this.userQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(users => {
       this.userList = users;
@@ -75,6 +85,28 @@ export class TeamUsersComponent implements OnDestroy, OnInit {
   }
 
   ngOnInit() {
+    // Load permissions and trigger change detection when loaded
+    this.permissionDataService.load()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(() => {
+        this.changeDetectorRef.markForCheck();
+      });
+    // Subscribe to the active MSEL
+    (this.mselQuery.selectActive() as Observable<MselPlus>)
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(msel => {
+        if (msel) {
+          Object.assign(this.msel, msel);
+        }
+      });
+    // Subscribe to current user
+    this.currentUserQuery.select()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(cu => {
+        if (cu.id) {
+          this.loggedInUserId = cu.id;
+        }
+      });
     this.filterControl.valueChanges.pipe(takeUntil(this.unsubscribe$)).subscribe(() => {
       this.filterString = this.filterControl.value;
       this.applyFilter();
@@ -87,6 +119,11 @@ export class TeamUsersComponent implements OnDestroy, OnInit {
     this.teamUsers = this.teamUserQuery.getAll().filter(tu => tu.teamId === this.team?.id);
     this.otherTeamUsers = this.teamUserQuery.getAll().filter(tu => tu.teamId !== this.team?.id);
     this.setDataSources();
+  }
+
+  canEditMsel(): boolean {
+    return this.permissionDataService.hasPermission(SystemPermission.EditMsels) ||
+      this.msel.hasRole(this.loggedInUserId, '').editor;
   }
 
   clearFilter() {

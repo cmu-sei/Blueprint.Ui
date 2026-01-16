@@ -36,7 +36,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <mat-header-cell *matHeaderCellDef>&nbsp;</mat-header-cell>
         <mat-cell *matCellDef="let element">
           <div>
-            @if (!onAnotherTeam(element.id)) {
+            @if (!onAnotherTeam(element.id) && canEditMsel()) {
             <button mat-icon-button (click)="addUserToTeam(element)" style="outline: none;"
               title="Add {{ element.name }} to Team">
               <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
@@ -64,7 +64,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <span style="margin-left: 10px">
         Team Users
       </span>
-      @if (!isAddMode) {
+      @if (!isAddMode && canEditMsel()) {
       <button mat-icon-button (click)="toggleAddMode(true)" style="outline: none;" title="Add Users to Team">
         <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
       </button>
@@ -87,6 +87,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <mat-header-cell *matHeaderCellDef matTooltip="Can invite others to the event.">Inviter</mat-header-cell>
         <mat-cell *matCellDef="let element">
           <mat-checkbox [checked]="hasTeamRole(element.userId, 'Inviter')"
+            [disabled]="!canEditMsel()"
             (change)="toggleTeamRole(element.userId, element.teamId, 'Inviter', $event.checked)"></mat-checkbox>
         </mat-cell>
       </ng-container>
@@ -95,6 +96,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           matTooltip="Can observe other teams progress in CITE and Gallery.">Observer</mat-header-cell>
         <mat-cell *matCellDef="let element">
           <mat-checkbox [checked]="hasTeamRole(element.userId, 'Observer')"
+            [disabled]="!canEditMsel()"
             (change)="toggleTeamRole(element.userId, element.teamId, 'Observer', $event.checked)"></mat-checkbox>
         </mat-cell>
       </ng-container>
@@ -103,6 +105,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           matTooltip="Can advance scenario progress in CITE.">Incrementer</mat-header-cell>
         <mat-cell *matCellDef="let element">
           <mat-checkbox [checked]="hasTeamRole(element.userId, 'Incrementer')"
+            [disabled]="!canEditMsel()"
             (change)="toggleTeamRole(element.userId, element.teamId, 'Incrementer', $event.checked)"></mat-checkbox>
         </mat-cell>
       </ng-container>
@@ -111,6 +114,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           matTooltip="Can submit responses on behalf of their team in CITE.">Submitter</mat-header-cell>
         <mat-cell *matCellDef="let element">
           <mat-checkbox [checked]="hasTeamRole(element.userId, 'Submitter')"
+            [disabled]="!canEditMsel()"
             (change)="toggleTeamRole(element.userId, element.teamId, 'Submitter', $event.checked)"></mat-checkbox>
         </mat-cell>
       </ng-container>
@@ -118,6 +122,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <mat-header-cell *matHeaderCellDef matTooltip="Can enter team responses in CITE.">Modifier</mat-header-cell>
         <mat-cell *matCellDef="let element">
           <mat-checkbox [checked]="hasTeamRole(element.userId, 'Modifier')"
+            [disabled]="!canEditMsel()"
             (change)="toggleTeamRole(element.userId, element.teamId, 'Modifier', $event.checked)"></mat-checkbox>
         </mat-cell>
       </ng-container>
@@ -125,10 +130,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <mat-header-cell *matHeaderCellDef>&nbsp;</mat-header-cell>
         <mat-cell *matCellDef="let element">
           <div>
+            @if (canEditMsel()) {
             <button mat-icon-button (click)="removeUserFromTeam(element)" style="outline: none;"
               title="Remove {{ element.name }} from Team">
               <mat-icon class="mdi-24px self-center" fontIcon="mdi-minus-circle-outline"></mat-icon>
             </button>
+            }
           </div>
         </mat-cell>
       </ng-container>

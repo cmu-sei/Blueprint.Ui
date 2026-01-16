@@ -70,8 +70,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <span class="title">Select the MSEL teams that will see this application</span>
           </div>
           <div class="single-detail">
-            <app-player-application-teams style="width: 100%;" [playerApplicationId]="item.id"
-              [mselTeamList]="mselTeamList">
+            <app-player-application-teams style="width: 100%;" [loggedInUserId]="loggedInUserId"
+              [playerApplicationId]="item.id" [mselTeamList]="mselTeamList">
             </app-player-application-teams>
           </div>
         </div>

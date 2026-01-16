@@ -110,10 +110,10 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <app-msel-contributors [loggedInUserId]="loggedInUserId"></app-msel-contributors>
       }
       @if (selectedTab === 'Teams') {
-      <app-msel-roles [loggedInUserId]="loggedInUserId" [isContentDeveloper]="isContentDeveloper"></app-msel-roles>
+      <app-msel-roles [loggedInUserId]="loggedInUserId"></app-msel-roles>
       }
       @if (selectedTab === 'Data Fields') {
-      <app-data-field-list [loggedInUserId]="loggedInUserId" [isContentDeveloper]="isContentDeveloper"
+      <app-data-field-list [loggedInUserId]="loggedInUserId"
         [showTemplates]="false" [userTheme]="userTheme$ | async"></app-data-field-list>
       }
       @if (selectedTab === 'Organizations') {

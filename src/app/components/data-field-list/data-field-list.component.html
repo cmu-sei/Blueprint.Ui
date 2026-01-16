@@ -47,7 +47,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <!-- action column -->
         <ng-container matColumnDef="action">
           <mat-header-cell *matHeaderCellDef class="column-action">
-            @if (showTemplates && isContentDeveloper) {
+            @if (showTemplates && canEditMsel()) {
             <span>
               <button mat-icon-button (click)="addOrEditDataField(null, true)" title="Add a template data Field"
                 style="outline: none; margin-left: 20px;">
@@ -55,7 +55,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
               </button>
             </span>
             } &nbsp;
-            @if (!showTemplates && (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)) {
+            @if (!showTemplates && (canEditMsel())) {
             <span>
               <button mat-icon-button [matMenuTriggerFor]="addMenu" style="outline: none; margin-left: 20px;"
                 title="Add data Field">
@@ -76,7 +76,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <div class="action-div">
               @if (element.displayOrder > 0) {
               <span>
-                @if (isContentDeveloper || (!showTemplates && msel.hasRole(loggedInUserId, null).owner)) {
+                @if (canEditMsel()) {
                 <button mat-icon-button class="msel-action"
                   (click)="addOrEditDataField(element, showTemplates); $event.stopPropagation();"
                   title="Edit {{ element.name }}">
@@ -84,14 +84,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
                     title="Edit {{ element.name }}"></mat-icon>
                 </button>
                 }
-                @if (isContentDeveloper || (!showTemplates && msel.hasRole(loggedInUserId, null).owner)) {
+                @if (canEditMsel()) {
                 <button mat-icon-button class="msel-action"
                   (click)="deleteDataField(element); $event.stopPropagation();" title="Delete {{ element.name }}">
                   <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline"
                     title="Delete {{ element.name }}"></mat-icon>
                 </button>
                 }
-                @if (!injectTypeId && !showTemplates && isContentDeveloper) {
+                @if (!injectTypeId && !showTemplates && canEditMsel()) {
                 <button mat-icon-button class="msel-action"
                   (click)="addOrEditDataField(element, true); $event.stopPropagation();"
                   title="Make {{ element.name }} a template">
@@ -115,7 +115,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </mat-header-cell>
           <mat-cell *matCellDef="let element" class="column-display">
             <mat-checkbox [(ngModel)]="element.onScenarioEventList"
-              [disabled]="!isContentDeveloper && !msel.hasRole(loggedInUserId, null).owner"
+              [disabled]="!canEditMsel()"
               (change)="saveChange(element)" (click)="$event.stopPropagation()"
               title="Display on Scenario Events list?">
             </mat-checkbox>
@@ -129,7 +129,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </mat-header-cell>
           <mat-cell *matCellDef="let element" class="column-display">
             <mat-checkbox [(ngModel)]="element.onExerciseView"
-              [disabled]="!isContentDeveloper && !msel.hasRole(loggedInUserId, null).owner"
+              [disabled]="!canEditMsel()"
               (change)="saveChange(element)" (click)="$event.stopPropagation();" title="Display on the Exercise View?">
             </mat-checkbox>
           </mat-cell>
@@ -143,7 +143,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <mat-cell *matCellDef="let element" class="column-display">
             @if (element.displayOrder >= 0) {
             <mat-checkbox [(ngModel)]="element.isInformationField"
-              [disabled]="!isContentDeveloper && !msel.hasRole(loggedInUserId, null).owner"
+              [disabled]="!canEditMsel()"
               (change)="saveChange(element)" (click)="$event.stopPropagation();"
               title="Display for Information Events?">
             </mat-checkbox>
@@ -159,7 +159,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <mat-cell *matCellDef="let element" class="column-display">
             @if (element.displayOrder >= 0) {
             <mat-checkbox [(ngModel)]="element.isFacilitationField"
-              [disabled]="!isContentDeveloper && !msel.hasRole(loggedInUserId, null).owner"
+              [disabled]="!canEditMsel()"
               (change)="saveChange(element)" (click)="$event.stopPropagation();"
               title="Display for Facilitation Events?">
             </mat-checkbox>
@@ -196,7 +196,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             @if (element.displayOrder > 0) {
             <mat-select class="integration" [(ngModel)]="element.galleryArticleParameter"
               (selectionChange)="saveChange(element)" (click)="$event.stopPropagation();"
-              [disabled]="!isContentDeveloper && !msel.hasRole(this.loggedInUserId, null).owner"
+              [disabled]="!canEditMsel()"
               [compareWith]="compareIntegrationValues">
               <mat-option value="">- - -</mat-option>
               @for (option of getUnusedGalleryOptions(element.galleryArticleParameter); track option) {

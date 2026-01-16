@@ -1,7 +1,7 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, Input, OnDestroy, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { TeamDataService } from 'src/app/data/team/team-data.service';
@@ -11,11 +11,13 @@ import {
   DataField,
   TeamRole,
   ScenarioEvent,
+  SystemPermission,
   Team,
   TeamType,
   Unit,
   User
 } from 'src/app/generated/blueprint.api';
+import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { MatMenuTrigger } from '@angular/material/menu';
@@ -32,9 +34,8 @@ import { UnitQuery } from 'src/app/data/unit/unit.query';
     styleUrls: ['./msel-teams.component.scss'],
     standalone: false
 })
-export class MselTeamsComponent implements OnDestroy {
+export class MselTeamsComponent implements OnDestroy, OnInit {
   @Input() loggedInUserId: string;
-  @Input() isContentDeveloper: boolean;
   @Input() teamTypeList: TeamType[];
   // context menu
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
@@ -63,6 +64,8 @@ export class MselTeamsComponent implements OnDestroy {
     private unitQuery: UnitQuery,
     private dialog: MatDialog,
     public dialogService: DialogService,
+    private permissionDataService: PermissionDataService,
+    private changeDetectorRef: ChangeDetectorRef
   ) {
     // subscribe to the active MSEL
     (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
@@ -95,9 +98,23 @@ export class MselTeamsComponent implements OnDestroy {
     });
   }
 
+  ngOnInit() {
+    // Load permissions and trigger change detection when loaded
+    this.permissionDataService.load()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(() => {
+        this.changeDetectorRef.markForCheck();
+      });
+  }
+
   getUserName(userId: string) {
     const user = this.userList.find(u => u.id === userId);
     return user ? user.name : 'unknown';
+  }
+
+  canEditMsel(): boolean {
+    return this.permissionDataService.hasPermission(SystemPermission.EditMsels) ||
+      this.msel.hasRole(this.loggedInUserId, '').editor;
   }
 
   getTeamList() {

@@ -1,14 +1,16 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import {
   DataField,
   DataFieldType,
+  SystemPermission,
 } from 'src/app/generated/blueprint.api';
+import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
 import { Theme } from '@cmusei/crucible-common';
 import { MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
@@ -35,7 +37,6 @@ import { v4 as uuidv4 } from 'uuid';
 })
 export class DataFieldListComponent implements OnDestroy, OnInit {
   @Input() loggedInUserId: string;
-  @Input() isContentDeveloper: boolean;
   @Input() showTemplates: boolean;
   @Input() userTheme: Theme;
   @Input() injectTypeId: string;
@@ -93,7 +94,9 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
     private injectTypeQuery: InjectTypeQuery,
     private mselDataService: MselDataService,
     public dialog: MatDialog,
-    public dialogService: DialogService
+    public dialogService: DialogService,
+    private permissionDataService: PermissionDataService,
+    private changeDetectorRef: ChangeDetectorRef
   ) {
     this.msel.id = null;
     // subscribe to filter string changes
@@ -125,6 +128,12 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
   }
 
   ngOnInit() {
+    // Load permissions and trigger change detection when loaded
+    this.permissionDataService.load()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(() => {
+        this.changeDetectorRef.markForCheck();
+      });
     if (this.showTemplates) {
       this.displayedColumns.splice(2, 2);
       this.msel = new MselPlus();
@@ -274,7 +283,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
       maxWidth: '900px',
       data: {
         dataField: dataField,
-        isContentDeveloper: this.isContentDeveloper,
+        canEdit: this.canEditMsel(),
         isOwner: this.msel.hasRole(this.loggedInUserId, null).owner,
         galleryArticleParameters: this.getUnusedGalleryOptions(
           dataField.galleryArticleParameter
@@ -525,6 +534,11 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
         displayOrder: targetField.displayOrder,
       });
     }
+  }
+
+  canEditMsel(): boolean {
+    return this.permissionDataService.hasPermission(SystemPermission.EditMsels) ||
+      this.msel.hasRole(this.loggedInUserId, '').editor;
   }
 
   ngOnDestroy() {

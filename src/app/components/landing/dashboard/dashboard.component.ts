@@ -118,8 +118,8 @@ export class DashboardComponent implements OnDestroy, OnInit {
       .pipe(take(1))
       .subscribe((msels) => {
         this.buildMselList = msels;
+        this.isStarted = true;
       });
-    this.isStarted = true;
   }
 
   topBarNavigate(url): void {

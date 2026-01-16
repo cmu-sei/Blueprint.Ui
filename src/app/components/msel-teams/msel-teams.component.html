@@ -8,6 +8,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
 <div class="frame">
   <section class="header-row background-alt">
     <div class="header-cell header-action-buttons">
+      @if (canEditMsel()) {
       <button mat-icon-button [matMenuTriggerFor]="addMenu" title="Add a team" style="outline: none; margin-left: 48px;"
         title="Add team">
         <mat-icon class="mdi-24px center-self" fontIcon="mdi-plus-circle"></mat-icon>
@@ -18,6 +19,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           Add team from unit
         </button>
       </mat-menu>
+      }
     </div>
     <div class="header-cell three-cell center-self">Teams</div>
     <div class="header-cell eight-cell search-cell">
@@ -40,13 +42,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <mat-expansion-panel (opened)="editTeamId = team.id" (closed)="editTeamId = ''">
         <mat-expansion-panel-header (click)="$event.stopPropagation();">
           <div class="action-buttons">
-            @if (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) {
+            @if (canEditMsel()) {
             <button mat-icon-button class="msel-action" (click)="addOrEditTeam(team); $event.stopPropagation();"
               title="Edit {{ team.name }}">
               <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline" title="Edit {{ team.name }}"></mat-icon>
             </button>
             }
-            @if (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) {
+            @if (canEditMsel()) {
             <button mat-icon-button (click)="deleteTeam(team); $event.stopPropagation();" title="Delete team">
               <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline" title="Delete {{ team.name }}"></mat-icon>
             </button>
