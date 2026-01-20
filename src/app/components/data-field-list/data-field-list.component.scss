@@ -28,6 +28,15 @@
   width: 100%;
   overflow: none;
   background: transparent;
+
+  mat-row {
+    align-items: stretch;
+  }
+
+  mat-cell {
+    display: flex;
+    align-items: center;
+  }
 }
 
 .header-row {
@@ -61,14 +70,15 @@
 
 .column-display {
   flex: 0 0 70px;
+  display: flex;
   justify-content: center;
-  justify-self: center;
-  align-self: center;
   align-items: center;
 }
 
 .column-name {
   flex: 0 0 20%;
+  display: flex;
+  align-items: center;
   padding: 1%;
 }
 
@@ -78,7 +88,9 @@
 
 .column-draghandle {
   flex: 0 0 20px;
+  display: flex;
   flex-direction: row;
+  align-items: center;
   padding: 0;
   word-wrap: none;
 }
@@ -93,6 +105,7 @@
 
 .column-action {
   flex: 0 0 180px;
+  display: flex;
   flex-direction: row;
   padding: 0;
   word-wrap: none;
@@ -200,10 +213,24 @@
   width: 100%;
   height: calc(100vh - 89px);
   overflow: auto;
+
+  mat-header-row {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: inherit;
+  }
 }
 
 .inject-type-scrolling-region {
   width: 100%;
+
+  mat-header-row {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: inherit;
+  }
 }
 
 .data-field-button {
