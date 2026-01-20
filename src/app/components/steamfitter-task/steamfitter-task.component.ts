@@ -16,6 +16,7 @@ import { AngularEditorConfig } from '@kolkov/angular-editor';
 })
 export class SteamfitterTaskComponent {
   @Input() scenarioEvent: ScenarioEvent;
+  @Input() canEdit: boolean;
   steamfitterIntegrationType = SteamfitterIntegrationType;
   taskTypes = [
     SteamfitterIntegrationType.Notification,
@@ -52,6 +53,22 @@ export class SteamfitterTaskComponent {
     sanitize: false,
     toolbarPosition: 'top',
     toolbarHiddenButtons: [['backgroundColor']],
+  };
+  viewConfig: AngularEditorConfig = {
+    editable: false,
+    height: 'auto',
+    minHeight: '0',
+    maxHeight: 'auto',
+    width: 'auto',
+    minWidth: '0',
+    translate: 'yes',
+    enableToolbar: false,
+    showToolbar: false,
+    placeholder: '',
+    defaultParagraphSeparator: '',
+    defaultFontName: '',
+    defaultFontSize: '',
+    sanitize: false,
   };
 
   constructor(

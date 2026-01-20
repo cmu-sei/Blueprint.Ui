@@ -51,7 +51,8 @@ export class HomeAppComponent implements OnDestroy, OnInit {
   loggedInUserId = '';
   username = '';
   canAccessAdminSection = false;
-  isContentDeveloper = false;
+  canCreateMsels = false;
+  canEditMsels = false;
   isAuthorizedUser = false;
   isSidebarOpen = true;
   private unsubscribe$ = new Subject();
@@ -67,7 +68,6 @@ export class HomeAppComponent implements OnDestroy, OnInit {
   selectedMselId = '';
   appTitle = '';
   permissions: SystemPermission[] = [];
-  canViewAdministration = false;
   readonly SystemPermission = SystemPermission;
 
   constructor(
@@ -146,8 +146,7 @@ export class HomeAppComponent implements OnDestroy, OnInit {
         (x) => {
           this.permissions = this.permissionDataService.permissions;
           this.canAccessAdminSection = this.permissions.filter(p => !p.endsWith('Msels')).length > 0;
-          this.isContentDeveloper = this.permissionDataService.hasPermission(SystemPermission.CreateMsels);
-          this.canViewAdministration = this.permissions.some((y) => y.startsWith('View'));
+          this.canEditMsels = this.permissionDataService.hasPermission(SystemPermission.EditMsels);
         }
       );
     // Start SignalR connection

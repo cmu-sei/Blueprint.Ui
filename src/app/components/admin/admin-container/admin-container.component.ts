@@ -51,8 +51,27 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
   canAccessAdminSection = false;
   // Permission-based access flags
   canViewUsers = false;
+  canManageUsers = false;
   canViewRoles = false;
+  canManageRoles = false;
   canViewGroups = false;
+  canManageGroups = false;
+  canViewUnits = false;
+  canManageUnits = false;
+  canViewInjectTypes = false;
+  canManageInjectTypes = false;
+  canViewCatalogs = false;
+  canManageCatalogs = false;
+  canViewOrganizations = false;
+  canManageOrganizations = false;
+  canViewGalleryCards = false;
+  canManageGalleryCards = false;
+  canViewCiteActions = false;
+  canManageCiteActions = false;
+  canViewCiteDuties = false;
+  canManageCiteDuties = false;
+  canViewDataFields = false;
+  canManageDataFields = false;
   hideTopbar = false;
   TopbarView = TopbarView;
   topbarColor = '#ef3a47';
@@ -121,10 +140,29 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(() => {
         this.canViewUsers = this.permissionDataService.hasPermission(SystemPermission.ViewUsers);
+        this.canManageUsers = this.permissionDataService.hasPermission(SystemPermission.ManageUsers);
         this.canViewRoles = this.permissionDataService.hasPermission(SystemPermission.ViewRoles);
+        this.canManageRoles = this.permissionDataService.hasPermission(SystemPermission.ManageRoles);
         this.canViewGroups = this.permissionDataService.hasPermission(SystemPermission.ViewGroups);
+        this.canManageGroups = this.permissionDataService.hasPermission(SystemPermission.ManageGroups);
+        this.canViewUnits = this.permissionDataService.hasPermission(SystemPermission.ViewUnits);
+        this.canManageUnits = this.permissionDataService.hasPermission(SystemPermission.ManageUnits);
+        this.canViewInjectTypes = this.permissionDataService.hasPermission(SystemPermission.ViewInjectTypes);
+        this.canManageInjectTypes = this.permissionDataService.hasPermission(SystemPermission.ManageInjectTypes);
+        this.canViewCatalogs = this.permissionDataService.hasPermission(SystemPermission.ViewCatalogs);
+        this.canManageCatalogs = this.permissionDataService.hasPermission(SystemPermission.ManageCatalogs);
+        this.canViewOrganizations = this.permissionDataService.hasPermission(SystemPermission.ViewOrganizations);
+        this.canManageOrganizations = this.permissionDataService.hasPermission(SystemPermission.ManageOrganizations);
+        this.canViewGalleryCards = this.permissionDataService.hasPermission(SystemPermission.ViewGalleryCards);
+        this.canManageGalleryCards = this.permissionDataService.hasPermission(SystemPermission.ManageGalleryCards);
+        this.canViewCiteActions = this.permissionDataService.hasPermission(SystemPermission.ViewCiteActions);
+        this.canManageCiteActions = this.permissionDataService.hasPermission(SystemPermission.ManageCiteActions);
+        this.canViewCiteDuties = this.permissionDataService.hasPermission(SystemPermission.ViewCiteDuties);
+        this.canManageCiteDuties = this.permissionDataService.hasPermission(SystemPermission.ManageCiteDuties);
+        this.canViewDataFields = this.permissionDataService.hasPermission(SystemPermission.ViewDataFields);
+        this.canManageDataFields = this.permissionDataService.hasPermission(SystemPermission.ManageDataFields);
         // Update canAccessAdminSection based on having any admin permission
-        this.canAccessAdminSection = this.canViewUsers || this.canViewRoles || this.canViewGroups;
+        this.canAccessAdminSection = this.canViewUsers || this.canViewRoles || this.canViewGroups || this.canViewUnits || this.canViewInjectTypes || this.canViewCatalogs || this.canViewOrganizations || this.canViewCiteActions || this.canViewCiteDuties || this.canViewDataFields;
         // Load additional data if user has permissions
         if (this.canAccessAdminSection) {
           this.unitDataService.load();

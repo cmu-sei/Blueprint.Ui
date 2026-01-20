@@ -31,7 +31,7 @@ import { v4 as uuidv4 } from 'uuid';
 })
 export class InvitationListComponent implements OnDestroy {
   @Input() loggedInUserId: string;
-  @Input() isContentDeveloper: boolean;
+  @Input() canEditMsel: boolean;
   @Input() hideSearch: boolean;
   // context menu
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;

@@ -92,12 +92,12 @@ project root for license information.
   <mat-form-field class="full-width">
     <mat-label>{{ dataField.name }}</mat-label>
     <input matInput [ngxMatDatetimePicker]="picker" [(ngModel)]="value" (ngModelChange)="valueChangeHandler()"
-      (dateChange)="isChanged = true" (dateInput)="isChanged = true" style="display: none;">
+      (dateChange)="isChanged = true" (dateInput)="isChanged = true" style="display: none;" [disabled]="!canEdit">
     <!-- <datetime-picker> -->
-    <span (click)="picker.open()">
+    <span (click)="canEdit && picker.open()">
       {{ value | date: 'MM/dd/yyyy hh:mm a' }}
     </span>
-    <mat-datepicker-toggle matSuffix title="Choose Date/Time" [for]="picker">
+    <mat-datepicker-toggle matSuffix title="Choose Date/Time" [for]="picker" [disabled]="!canEdit">
     </mat-datepicker-toggle>
     <ngx-mat-datetime-picker #picker [showSpinners]=true [showSeconds]=false [stepHour]=1 [stepMinute]=5 [stepSecond]=1
       [touchUi]=false [enableMeridian]=true [disableMinute]=false [hideTime]=false [color]="'warn'">

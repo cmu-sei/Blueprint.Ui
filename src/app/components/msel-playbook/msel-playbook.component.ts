@@ -51,7 +51,7 @@ import { PageEvent } from '@angular/material/paginator';
 })
 export class MselPlaybookComponent {
   @Input() userTheme: Theme;
-  @Input() isContentDeveloper: boolean;
+  @Input() canEditMsel: boolean;
   @Input() loggedInUserId: string;
   pageIndex = 0;
   pageSize = 1;

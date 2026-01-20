@@ -29,7 +29,7 @@ import { CiteDutyEditDialogComponent } from '../cite-duty-edit-dialog/cite-duty-
 })
 export class CiteDutyListComponent implements OnDestroy {
   @Input() loggedInUserId: string;
-  @Input() isContentDeveloper: boolean;
+  @Input() canEdit: boolean;
   @Input() showTemplates: boolean;
   msel = new MselPlus();
   citeDutyList: CiteDuty[] = [];

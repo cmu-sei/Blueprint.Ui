@@ -25,7 +25,7 @@ import { v4 as uuidv4 } from 'uuid';
 })
 export class MoveListComponent implements OnDestroy {
   @Input() loggedInUserId: string;
-  @Input() isContentDeveloper: boolean;
+  @Input() canEditMsel: boolean;
   msel = new MselPlus();
   moveList: Move[] = [];
   changedMove: Move = {};

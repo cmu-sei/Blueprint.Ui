@@ -23,6 +23,7 @@ import { DialogService } from 'src/app/services/dialog/dialog.service';
     standalone: false
 })
 export class AdminUnitsComponent implements OnDestroy {
+  @Input() canManage: boolean;
   userList: User[] = [];
   allUnits: Unit[] = [];
   unitList: Unit[] = [];

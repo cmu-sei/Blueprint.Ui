@@ -103,8 +103,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
   <mat-drawer-content class="content-frame">
     <div class="main-content">
       @if (selectedTab === 'Info') {
-      <app-msel-info [loggedInUserId]="loggedInUserId"
-        (deleteThisMsel)="deleteMsel($event)"></app-msel-info>
+      <app-msel-info [loggedInUserId]="loggedInUserId" (deleteThisMsel)="deleteMsel($event)"></app-msel-info>
       }
       @if (selectedTab === 'Contributors') {
       <app-msel-contributors [loggedInUserId]="loggedInUserId"></app-msel-contributors>
@@ -113,46 +112,41 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <app-msel-roles [loggedInUserId]="loggedInUserId"></app-msel-roles>
       }
       @if (selectedTab === 'Data Fields') {
-      <app-data-field-list [loggedInUserId]="loggedInUserId"
-        [showTemplates]="false" [userTheme]="userTheme$ | async"></app-data-field-list>
+      <app-data-field-list [loggedInUserId]="loggedInUserId" [showTemplates]="false"
+        [userTheme]="userTheme$ | async"></app-data-field-list>
       }
       @if (selectedTab === 'Organizations') {
-      <app-organization-list [loggedInUserId]="loggedInUserId" [isContentDeveloper]="isContentDeveloper"
+      <app-organization-list [loggedInUserId]="loggedInUserId" [canEdit]="canEditMsel"
         [showTemplates]="false">Organizations</app-organization-list>
       }
       @if (selectedTab === 'Moves') {
-      <app-move-list [loggedInUserId]="loggedInUserId" [isContentDeveloper]="isContentDeveloper"></app-move-list>
+      <app-move-list [loggedInUserId]="loggedInUserId" [canEditMsel]="canEditMsel"></app-move-list>
       }
       @if (selectedTab === 'Player Apps') {
-      <app-player-application-list [loggedInUserId]="loggedInUserId"
-        [isContentDeveloper]="isContentDeveloper"></app-player-application-list>
+      <app-player-application-list [loggedInUserId]="loggedInUserId"></app-player-application-list>
       }
       @if (selectedTab === 'Gallery Cards') {
-      <app-card-list [loggedInUserId]="loggedInUserId" [isContentDeveloper]="isContentDeveloper"
-        [showTemplates]="false"></app-card-list>
+      <app-card-list [loggedInUserId]="loggedInUserId" [canEdit]="canEditMsel" [showTemplates]="false"></app-card-list>
       }
       @if (selectedTab === 'CITE Actions') {
-      <app-cite-action-list [loggedInUserId]="loggedInUserId"
-        [isContentDeveloper]="isContentDeveloper"></app-cite-action-list>
+      <app-cite-action-list [loggedInUserId]="loggedInUserId" [canEdit]="canEditMsel"></app-cite-action-list>
       }
       @if (selectedTab === 'CITE Duties') {
-      <app-cite-duty-list [loggedInUserId]="loggedInUserId"
-        [isContentDeveloper]="isContentDeveloper"></app-cite-duty-list>
+      <app-cite-duty-list [loggedInUserId]="loggedInUserId" [canEdit]="canEditMsel"></app-cite-duty-list>
       }
       @if (selectedTab === 'Scenario Events') {
-      <app-scenario-event-list [loggedInUserId]="loggedInUserId" [isContentDeveloper]="isContentDeveloper"
+      <app-scenario-event-list [loggedInUserId]="loggedInUserId"
         [userTheme]="userTheme$ | async"></app-scenario-event-list>
       }
       @if (selectedTab === 'Exercise View') {
       <app-msel-view [tabHeight]="48" [userTheme]="userTheme$ | async"></app-msel-view>
       }
       @if (selectedTab === 'Invitations') {
-      <app-invitation-list [loggedInUserId]="loggedInUserId" [isContentDeveloper]="isContentDeveloper"
+      <app-invitation-list [loggedInUserId]="loggedInUserId" [canEditMsel]="canEditMsel"
         [hideSearch]="false">Invitations</app-invitation-list>
       }
       @if (selectedTab === 'MSEL Playbook') {
-      <app-msel-playbook [loggedInUserId]="loggedInUserId"
-        [isContentDeveloper]="isContentDeveloper"></app-msel-playbook>
+      <app-msel-playbook [loggedInUserId]="loggedInUserId" [canEditMsel]="canEditMsel"></app-msel-playbook>
       }
     </div>
   </mat-drawer-content>

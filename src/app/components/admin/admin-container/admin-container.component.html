@@ -16,7 +16,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     </mat-toolbar>
     <mat-list class="appitems-container">
       <!-- Units -->
-      @if (canAccessAdminSection) {
+      @if (canViewUnits) {
       <mat-list-item [ngClass]="getSelectedClass(unitsText)" id="wrapper showhand" (click)="gotoSection(unitsText)">
         <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-account-group"></mat-icon>
         {{ unitsText }}
@@ -56,6 +56,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </mat-list-item>
       }
       <!-- Data Fields -->
+      @if (canViewDataFields) {
       <mat-list-item [ngClass]="getSelectedClass(dataFieldsText)" id="wrapper showhand"
         (click)="gotoSection(dataFieldsText)">
         <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-view-column-outline"></mat-icon>
@@ -64,6 +65,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <mat-icon fontIcon="mdi-chevron-right"></mat-icon>
         </button>
       </mat-list-item>
+      }
+      @if (canViewInjectTypes) {
       <!-- Inject Types -->
       <mat-list-item [ngClass]="getSelectedClass(injectTypesText)" id="wrapper showhand"
         (click)="gotoSection(injectTypesText)">
@@ -73,7 +76,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <mat-icon fontIcon="mdi-chevron-right"></mat-icon>
         </button>
       </mat-list-item>
+      }
       <!-- Catalogs -->
+      @if (canViewCatalogs) {
       <mat-list-item [ngClass]="getSelectedClass(catalogsText)" id="wrapper showhand"
         (click)="gotoSection(catalogsText)">
         <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-book-open-outline"></mat-icon>
@@ -82,7 +87,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <mat-icon fontIcon="mdi-chevron-right"></mat-icon>
         </button>
       </mat-list-item>
+      }
       <!-- Organizations -->
+      @if (canViewOrganizations) {
       <mat-list-item [ngClass]="getSelectedClass(organizationsText)" id="wrapper showhand"
         (click)="gotoSection(organizationsText)">
         <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-bank"></mat-icon>
@@ -91,7 +98,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <mat-icon fontIcon="mdi-chevron-right"></mat-icon>
         </button>
       </mat-list-item>
+      }
       <!-- Gallery Cards -->
+      @if (canViewGalleryCards) {
       <mat-list-item [ngClass]="getSelectedClass(galleryCardsText)" id="wrapper showhand"
         (click)="gotoSection(galleryCardsText)">
         <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-view-grid-outline"></mat-icon>
@@ -100,7 +109,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <mat-icon fontIcon="mdi-chevron-right"></mat-icon>
         </button>
       </mat-list-item>
+      }
       <!-- CITE Actions -->
+      @if (canViewCiteActions) {
       <mat-list-item [ngClass]="getSelectedClass(citeActionsText)" id="wrapper showhand"
         (click)="gotoSection(citeActionsText)">
         <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-clipboard-check-outline"></mat-icon>
@@ -109,7 +120,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <mat-icon fontIcon="mdi-chevron-right"></mat-icon>
         </button>
       </mat-list-item>
+      }
       <!-- CITE Duties -->
+      @if (canViewCiteDuties) {
       <mat-list-item [ngClass]="getSelectedClass(citeDutiesText)" id="wrapper showhand"
         (click)="gotoSection(citeDutiesText)">
         <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-clipboard-account-outline"></mat-icon>
@@ -118,6 +131,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <mat-icon fontIcon="mdi-chevron-right"></mat-icon>
         </button>
       </mat-list-item>
+      }
     </mat-list>
     @if (!hideTopbar) {
     <div class="app-versions" style="margin-bottom: 58px;">
@@ -140,9 +154,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <app-topbar [title]="selectedTab" [topbarView]="TopbarView.BLUEPRINT_ADMIN" [topbarColor]="topbarColor"
       [topbarTextColor]="topbarTextColor" (urlNavigate)="goToUrl($event)"></app-topbar>
     }
-    @if (canAccessAdminSection && (selectedTab === unitsText)) {
+    @if (canViewUnits && (selectedTab === unitsText)) {
     <span>
-      <app-admin-units></app-admin-units>
+      <app-admin-units [canManage]="canManageUnits"></app-admin-units>
     </span>
     }
     @if (canViewUsers && (selectedTab === usersText)) {
@@ -160,45 +174,44 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <app-admin-groups></app-admin-groups>
     </span>
     }
-    @if (canAccessAdminSection && (selectedTab === dataFieldsText)) {
+    @if (canViewDataFields && (selectedTab === dataFieldsText)) {
     <span>
-      <app-data-field-list [loggedInUserId]="loggedInUserId"
-        [showTemplates]="true"></app-data-field-list>
+      <app-data-field-list [loggedInUserId]="loggedInUserId" [showTemplates]="true"></app-data-field-list>
     </span>
     }
-    @if (canAccessAdminSection && (selectedTab === injectTypesText)) {
+    @if (canViewInjectTypes && (selectedTab === injectTypesText)) {
     <span>
       <app-admin-inject-types [loggedInUserId]="loggedInUserId"
-        [isContentDeveloper]="canAccessAdminSection"></app-admin-inject-types>
+        [canEdit]="canManageInjectTypes"></app-admin-inject-types>
     </span>
     }
-    @if (canAccessAdminSection && (selectedTab === catalogsText)) {
+    @if (canViewCatalogs && (selectedTab === catalogsText)) {
     <span>
-      <app-admin-catalog-list [loggedInUserId]="loggedInUserId" [isContentDeveloper]="canAccessAdminSection">
+      <app-admin-catalog-list [loggedInUserId]="loggedInUserId" [canEdit]="canManageCatalogs">
       </app-admin-catalog-list>
     </span>
     }
-    @if (canAccessAdminSection && (selectedTab === organizationsText)) {
+    @if (canViewOrganizations && (selectedTab === organizationsText)) {
     <span>
-      <app-organization-list [loggedInUserId]="loggedInUserId"
-        [isContentDeveloper]="canAccessAdminSection" [showTemplates]="true"></app-organization-list>
+      <app-organization-list [loggedInUserId]="loggedInUserId" [canEdit]="canManageOrganizations"
+        [showTemplates]="true"></app-organization-list>
     </span>
     }
-    @if (canAccessAdminSection && (selectedTab === galleryCardsText)) {
+    @if (canViewGalleryCards && (selectedTab === galleryCardsText)) {
     <span>
-      <app-card-list [loggedInUserId]="loggedInUserId" [isContentDeveloper]="true"
+      <app-card-list [loggedInUserId]="loggedInUserId" [canEdit]="canManageGalleryCards"
         [showTemplates]="true"></app-card-list>
     </span>
     }
-    @if (canAccessAdminSection && (selectedTab === citeActionsText)) {
+    @if (canViewCiteActions && (selectedTab === citeActionsText)) {
     <span>
-      <app-cite-action-list [loggedInUserId]="loggedInUserId" [isContentDeveloper]="true"
+      <app-cite-action-list [loggedInUserId]="loggedInUserId" [canEdit]="canManageCiteActions"
         [showTemplates]="true"></app-cite-action-list>
     </span>
     }
-    @if (canAccessAdminSection && (selectedTab === citeDutiesText)) {
+    @if (canViewCiteDuties && (selectedTab === citeDutiesText)) {
     <span>
-      <app-cite-duty-list [loggedInUserId]="loggedInUserId" [isContentDeveloper]="true"
+      <app-cite-duty-list [loggedInUserId]="loggedInUserId" [canEdit]="canManageCiteDuties"
         [showTemplates]="true"></app-cite-duty-list>
     </span>
     }

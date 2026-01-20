@@ -50,21 +50,21 @@ import { UserQuery } from 'src/app/data/user/user.query';
 import { InjectSelectDialogComponent } from '../inject-select-dialog/inject-select-dialog.component';
 
 @Component({
-    selector: 'app-inject-list',
-    templateUrl: './inject-list.component.html',
-    styleUrls: ['./inject-list.component.scss'],
-    animations: [
-        trigger('detailExpand', [
-            state('collapsed', style({ height: '0px', minHeight: '0', visibility: 'hidden' })),
-            state('expanded', style({ height: '*', visibility: 'visible' })),
-            transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
-        ]),
-    ],
-    standalone: false
+  selector: 'app-inject-list',
+  templateUrl: './inject-list.component.html',
+  styleUrls: ['./inject-list.component.scss'],
+  animations: [
+    trigger('detailExpand', [
+      state('collapsed', style({ height: '0px', minHeight: '0', visibility: 'hidden' })),
+      state('expanded', style({ height: '*', visibility: 'visible' })),
+      transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
+    ]),
+  ],
+  standalone: false
 })
 export class InjectListComponent implements OnDestroy, OnInit {
   @Input() loggedInUserId: string;
-  @Input() isContentDeveloper: boolean;
+  @Input() canEdit: boolean;
   @Input() isEditMode: boolean;
   @Input() catalog: Catalog = {};
   @Input() injectType: InjectType = {};
@@ -484,7 +484,7 @@ export class InjectListComponent implements OnDestroy, OnInit {
         injectType: {},
         injectList: existingInjects,
         loggedInUserId: this.loggedInUserId,
-        isContentDeveloper: this.isContentDeveloper,
+        isContentDeveloper: this.canEdit,
       },
     });
     dialogRef.componentInstance.editComplete.subscribe((result) => {

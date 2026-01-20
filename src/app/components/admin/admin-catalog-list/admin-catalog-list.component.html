@@ -9,7 +9,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <!-- action column -->
     <ng-container matColumnDef="action">
       <mat-header-cell *matHeaderCellDef class="column-action">
-        @if (isContentDeveloper) {
+        @if (canEdit) {
         <span>
           <button mat-icon-button (click)="addOrEditCatalog(null)" style="outline: none; margin-left: 15px;"
             title="Add new Catalog">
@@ -24,28 +24,24 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </mat-header-cell>
       <mat-cell *matCellDef="let element" class="column-action">
         <div>
-          @if (isContentDeveloper) {
           <button mat-icon-button (click)="addOrEditCatalog(element); $event.stopPropagation();"
-            title="Edit {{ element.name }} catalog">
+            title="Edit {{ element.name }} catalog" [disabled]="!canEdit">
             <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline"
               title="Edit {{ element.name }} catalog"></mat-icon>
           </button>
-          }
           <button mat-icon-button (click)="copyCatalog(element); $event.stopPropagation();"
-            title="Copy {{ element.name }}">
+            title="Copy {{ element.name }}" [disabled]="!canEdit">
             <mat-icon class="mdi-18px" fontIcon="mdi-content-copy" alt="Copy"></mat-icon>
           </button>
           <button mat-icon-button title="Download {{ element.name }}"
-            (click)="downloadJsonFile(element); $event.stopPropagation();">
+            (click)="downloadJsonFile(element); $event.stopPropagation();" [disabled]="!canEdit">
             <mat-icon class="mdi-18px" fontIcon="mdi-download" alt="Download catalog"></mat-icon>
           </button>
-          @if (isContentDeveloper) {
           <button mat-icon-button (click)="deleteCatalog(element); $event.stopPropagation();"
-            title="Delete {{ element.name }} catalog">
+            title="Delete {{ element.name }} catalog" [disabled]="!canEdit">
             <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline"
               title="Delete {{ element.name }} catalog"></mat-icon>
           </button>
-          }
         </div>
       </mat-cell>
     </ng-container>
@@ -56,7 +52,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </mat-header-cell>
       <mat-cell *matCellDef="let element" class="column-is-public">
         <mat-checkbox [(ngModel)]="element.isPublic" (ngModelChange)="saveCatalog(element)"
-          (click)="$event.stopPropagation();"></mat-checkbox>
+          (click)="$event.stopPropagation();" [disabled]="!canEdit"></mat-checkbox>
       </mat-cell>
     </ng-container>
     <!-- name Column -->
@@ -99,11 +95,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <ng-container matColumnDef="expandedDetail">
       <mat-cell class="expanded-detail-cell" *matCellDef="let element" [attr.colspan]="displayedColumns.length">
         <div class="inject-list-div">
-          <app-inject-list [isContentDeveloper]="isContentDeveloper" [loggedInUserId]="loggedInUserId"
-            [catalog]="element" [injectType]="{}" [isEditMode]="true"></app-inject-list>
+          <app-inject-list [canEdit]="canEdit" [loggedInUserId]="loggedInUserId" [catalog]="element" [injectType]="{}"
+            [isEditMode]="true"></app-inject-list>
         </div>
         <div class="unit-list-div">
-          <app-catalog-units [isContentDeveloper]="isContentDeveloper" [loggedInUserId]="loggedInUserId"
+          <app-catalog-units [canEdit]="canEdit" [loggedInUserId]="loggedInUserId"
             [catalog]="element"></app-catalog-units>
         </div>
       </mat-cell>

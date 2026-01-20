@@ -29,12 +29,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
               <div class="left-buttons">
                 <button mat-icon-button (click)="moveUp(playerApplicationTeam)"
                   style="outline: none; margin-left: 15px;" title="Move player application up"
-                  [disabled]="+playerApplicationTeam.displayOrder === 1">
+                  [disabled]="!canEdit || +playerApplicationTeam.displayOrder === 1">
                   <mat-icon class="mdi-24px self-center" fontIcon="mdi-menu-up"></mat-icon>
                 </button>
                 <button mat-icon-button (click)="moveDown(playerApplicationTeam)"
                   style="outline: none; margin-left: 15px;" title="Move player application down"
-                  [disabled]="+playerApplicationTeam.displayOrder >= getTeamApplications(team.id).length">
+                  [disabled]="!canEdit || +playerApplicationTeam.displayOrder >= getTeamApplications(team.id).length">
                   <mat-icon class="mdi-24px self-center" fontIcon="mdi-menu-down"></mat-icon>
                 </button>
               </div>

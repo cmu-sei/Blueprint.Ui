@@ -14,10 +14,10 @@ import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { PlayerApplicationTeamDataService } from 'src/app/data/team/player-application-team-data.service';
 
 @Component({
-    selector: 'app-player-team-app-order',
-    templateUrl: './player-team-app-order.component.html',
-    styleUrls: ['./player-team-app-order.component.scss'],
-    standalone: false
+  selector: 'app-player-team-app-order',
+  templateUrl: './player-team-app-order.component.html',
+  styleUrls: ['./player-team-app-order.component.scss'],
+  standalone: false
 })
 export class PlayerTeamAppOrderComponent implements OnDestroy {
   @Input() loggedInUserId: string;
@@ -51,7 +51,8 @@ export class PlayerTeamAppOrderComponent implements OnDestroy {
   }
 
   getTeamApplications(teamId: string): PlayerApplicationTeam[] {
-    return this.playerApplicationTeamList.filter(m => m.teamId === teamId).sort((a, b) => +a.displayOrder > +b.displayOrder ? 1 : -1);
+    const tas = this.playerApplicationTeamList.filter(m => m.teamId === teamId).sort((a, b) => +a.displayOrder > +b.displayOrder ? 1 : -1);
+    return tas;
   }
 
   getTeamName(teamId: string): string {

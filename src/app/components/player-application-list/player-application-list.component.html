@@ -7,7 +7,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
 <div class="frame">
   <section matSort (matSortChange)="sortChanged($event)" class="header-row elevate background-alt">
     <span class="header-cell first-cell" mat-sort-header="name">
-      @if (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) {
+      @if (canEditMsel() || msel.hasRole(loggedInUserId, null).owner) {
       <span>
         <button mat-icon-button [matMenuTriggerFor]="addMenu"
           style="outline: none; margin-left: 18px; margin-right: 24px;" title="Add Player Application"
@@ -47,14 +47,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <mat-expansion-panel [expanded]="expandedId === item.id">
       <mat-expansion-panel-header class="row" (click)="expandPlayerApplication(item.id); $event.stopPropagation();">
         <div class="cell flex-row-cell first-cell">
-          @if (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) {
+          @if (canEditMsel() || msel.hasRole(loggedInUserId, null).owner) {
           <button mat-icon-button class="playerApplication-button"
             (click)="addOrEditPlayerApplication(item, 'Edit Player Application'); $event.stopPropagation()"
             title="Edit {{ item.name }}">
             <mat-icon class="mdi-18px up-12" fontIcon="mdi-square-edit-outline"></mat-icon>
           </button>
           }
-          @if (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) {
+          @if (canEditMsel() || msel.hasRole(loggedInUserId, null).owner) {
           <button mat-icon-button class="playerApplication-button"
             (click)="deletePlayerApplication(item); $event.stopPropagation()" title="Delete {{ item.name }}">
             <mat-icon class="mdi-18px up-12" fontIcon="mdi-trash-can-outline"></mat-icon>
@@ -85,7 +85,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <div class="playerApplication-detail" (click)="$event.stopPropagation();">
         <div class="single-detail">
           <app-player-team-app-order style="width: 100%;" [mselTeamList]="mselTeamList"
-            [canEdit]="isContentDeveloper || msel.hasRole(loggedInUserId, null).owner">
+            [canEdit]="canEditMsel() || msel.hasRole(loggedInUserId, null).owner">
           </app-player-team-app-order>
         </div>
       </div>

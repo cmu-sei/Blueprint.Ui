@@ -283,7 +283,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
       maxWidth: '900px',
       data: {
         dataField: dataField,
-        canEdit: this.canEditMsel(),
+        canEdit: this.canEdit(),
         isOwner: this.msel.hasRole(this.loggedInUserId, null).owner,
         galleryArticleParameters: this.getUnusedGalleryOptions(
           dataField.galleryArticleParameter
@@ -536,9 +536,13 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
     }
   }
 
-  canEditMsel(): boolean {
-    return this.permissionDataService.hasPermission(SystemPermission.EditMsels) ||
-      this.msel.hasRole(this.loggedInUserId, '').editor;
+  canEdit(): boolean {
+    if (this.showTemplates) {
+      return this.permissionDataService.hasPermission(SystemPermission.ManageDataFields);
+    } else {
+      return this.permissionDataService.hasPermission(SystemPermission.EditMsels) ||
+        this.msel.hasRole(this.loggedInUserId, '').editor;
+    }
   }
 
   ngOnDestroy() {

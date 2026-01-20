@@ -43,7 +43,7 @@ import { UserTeamRoleDataService } from 'src/app/data/user-team-role/user-team-r
 })
 export class MselComponent implements OnDestroy {
   @Input() loggedInUserId: string;
-  @Input() isContentDeveloper: boolean;
+  @Input() canEditMsel: boolean;
   @Input() canAccessAdminSection: boolean;
   @Input() userTheme$: Observable<Theme>;
   @Output() deleteThisMsel = new EventEmitter<string>();

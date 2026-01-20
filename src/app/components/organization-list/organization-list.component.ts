@@ -33,7 +33,7 @@ import { v4 as uuidv4 } from 'uuid';
 })
 export class OrganizationListComponent implements OnDestroy, OnInit {
   @Input() loggedInUserId: string;
-  @Input() isContentDeveloper: boolean;
+  @Input() canEdit: boolean;
   @Input() showTemplates: boolean;
   // context menu
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;

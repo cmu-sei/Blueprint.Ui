@@ -7,7 +7,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
 <div class="frame">
   <section matSort (matSortChange)="sortChanged($event)" class="header-row background-alt">
     <div class="header-cell first-cell">
-      @if (showTemplates && isContentDeveloper) {
+      @if (showTemplates && canEdit) {
       <div>
         <button mat-icon-button (click)="addOrEditCard(null, false, false); $event.stopPropagation();"
           title="Add a template card" style="outline: none; margin-left: 18px; margin-right: 24px;">
@@ -15,7 +15,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         </button>
       </div>
       } &nbsp;
-      @if (!showTemplates && (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)) {
+      @if (!showTemplates && canEdit) {
       <div>
         <button mat-icon-button [matMenuTriggerFor]="addMenu"
           style="outline: none; margin-left: 18px; margin-right: 24px;" title="Add card"
@@ -57,19 +57,19 @@ project root for license information or contact permission@sei.cmu.edu for full 
       (click)="expandCard(item.id); $event.stopPropagation();" (opened)="expandedId = ''">
       <mat-expansion-panel-header class="row">
         <div class="cell flex-row-cell first-cell">
-          @if (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) {
+          @if (canEdit || msel.hasRole(loggedInUserId, null).owner) {
           <button mat-icon-button (click)="addOrEditCard(item, false, false); $event.stopPropagation()"
             class="all-clicks" title="Edit {{ item.name }}">
             <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline"></mat-icon>
           </button>
           }
-          @if (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) {
+          @if (canEdit || msel.hasRole(loggedInUserId, null).owner) {
           <button mat-icon-button (click)="deleteCard(item); $event.stopPropagation()" class="all-clicks"
             title="Delete {{ item.name }}">
             <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline"></mat-icon>
           </button>
           }
-          @if (!showTemplates && isContentDeveloper) {
+          @if (!showTemplates && canEdit) {
           <button mat-icon-button (click)="addOrEditCard(item, true, false); $event.stopPropagation();"
             title="Make {{ item.name }} a template">
             <mat-icon class="mdi-18px" fontIcon="mdi-card-plus-outline"
@@ -91,7 +91,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <span class="select-title">Select the MSEL teams that will see this card</span>
           </div>
           <div class="single-detail">
-            <app-card-teams style="width: 100%;" [cardId]="item.id">
+            <app-card-teams style="width: 100%;" [cardId]="item.id" [loggedInUserId]="loggedInUserId">
             </app-card-teams>
           </div>
         </div>

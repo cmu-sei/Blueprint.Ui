@@ -1,7 +1,7 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, Input, OnDestroy, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { CdkDragDrop, CdkDragStart, CdkDragEnd } from '@angular/cdk/drag-drop';
@@ -79,9 +79,8 @@ interface StringDictionary {
   standalone: false
 })
 export class ScenarioEventListComponent
-  implements OnDestroy, ScenarioEventView {
+  implements OnDestroy, OnInit, ScenarioEventView {
   @Input() loggedInUserId: string;
-  @Input() isContentDeveloper: boolean;
   @Input() userTheme: Theme;
   @Input() isStarterMsel: boolean;
   msel = new MselPlus();
@@ -206,7 +205,8 @@ export class ScenarioEventListComponent
     private dataValueQuery: DataValueQuery,
     private teamQuery: TeamQuery,
     private unitQuery: UnitQuery,
-    private uiDataService: UIDataService
+    private uiDataService: UIDataService,
+    private changeDetectorRef: ChangeDetectorRef
   ) {
     // load the user's build MSELs for use when copying scenario events
     this.mselDataService
@@ -313,6 +313,7 @@ export class ScenarioEventListComponent
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(() => {
         this.canDoAnything = this.permissionDataService.hasPermission(SystemPermission.CreateMsels);
+        this.changeDetectorRef.markForCheck();
       });
     // subscribe to organizations
     this.organizationQuery
@@ -398,6 +399,15 @@ export class ScenarioEventListComponent
 
   get showHiddenEvents(): boolean {
     return true;
+  }
+
+  ngOnInit() {
+    // Permission loading is handled in the constructor
+  }
+
+  canEditMsel(): boolean {
+    return this.permissionDataService.hasPermission(SystemPermission.EditMsels) ||
+      this.msel.hasRole(this.loggedInUserId, '').editor;
   }
 
   tabChange(event) {
@@ -725,7 +735,7 @@ export class ScenarioEventListComponent
 
   displayEditDialog(scenarioEvent: ScenarioEvent) {
     const isOwner =
-      this.isContentDeveloper ||
+      this.canEditMsel() ||
       this.msel.hasRole(this.loggedInUserId, scenarioEvent.id).owner;
     const isApprover =
       isOwner ||
@@ -1045,7 +1055,7 @@ export class ScenarioEventListComponent
       data: {
         catalog: catalog,
         loggedInUserId: this.loggedInUserId,
-        isContentDeveloper: this.isContentDeveloper,
+        isContentDeveloper: this.canEditMsel(),
         injectList: [],
       },
     });

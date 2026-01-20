@@ -6,48 +6,36 @@ project root for license information or contact permission@sei.cmu.edu for full 
 
 <div class="background text app-content-container">
   @if (!hideTopbar) {
-    <app-topbar
-      [title]="topbarText"
-      [topbarView]="TopbarView.BLUEPRINT_HOME"
-      [topbarColor]="topbarColor"
-      [topbarTextColor]="topbarTextColor"
-      [imageFilePath]="topbarImage"
-      (urlNavigate)="topBarNavigate($event)"
-    ></app-topbar>
+  <app-topbar [title]="topbarText" [topbarView]="TopbarView.BLUEPRINT_HOME" [topbarColor]="topbarColor"
+    [topbarTextColor]="topbarTextColor" [imageFilePath]="topbarImage"
+    (urlNavigate)="topBarNavigate($event)"></app-topbar>
   }
 
   @if (apiIsSick) {
-    <div autosize>
-      <h1>{{ apiMessage }}</h1>
-      <h2>Please refresh this page.</h2>
-      <h2>If the problem persists, please contact the site administrator.</h2>
-    </div>
+  <div autosize>
+    <h1>{{ apiMessage }}</h1>
+    <h2>Please refresh this page.</h2>
+    <h2>If the problem persists, please contact the site administrator.</h2>
+  </div>
   }
 
   @if (!apiIsSick && !selectedMselId) {
-    <section>
-      <app-msel-list
-        [loggedInUserId]="loggedInUserId"
-        [canAccessAdminSection]="canAccessAdminSection"
-      ></app-msel-list>
-    </section>
+  <section>
+    <app-msel-list [loggedInUserId]="loggedInUserId" [canAccessAdminSection]="canAccessAdminSection"></app-msel-list>
+  </section>
   }
 
   @if (!apiIsSick && selectedMselId) {
-    <section>
-      <app-msel
-        [loggedInUserId]="loggedInUserId"
-        [isContentDeveloper]="isContentDeveloper"
-        [canAccessAdminSection]="canAccessAdminSection"
-        [userTheme$]="theme$"
-        (deleteThisMsel)="deleteMsel($event)"
-      ></app-msel>
-    </section>
+  <section>
+    <app-msel [loggedInUserId]="loggedInUserId" [canEditMsel]="canEditMsels"
+      [canAccessAdminSection]="canAccessAdminSection" [userTheme$]="theme$"
+      (deleteThisMsel)="deleteMsel($event)"></app-msel>
+  </section>
   }
 
   @if (isLoading$ | async) {
-    <div>
-      <mat-progress-bar color="primary" mode="indeterminate" style="width: 90%; margin: 20px;"></mat-progress-bar>
-    </div>
+  <div>
+    <mat-progress-bar color="primary" mode="indeterminate" style="width: 90%; margin: 20px;"></mat-progress-bar>
+  </div>
   }
 </div>
