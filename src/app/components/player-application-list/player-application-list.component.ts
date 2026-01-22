@@ -1,11 +1,12 @@
 // Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, Input, OnDestroy, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { PlayerApplication, Move, Team } from 'src/app/generated/blueprint.api';
+import { PlayerApplication, Move, SystemPermission, Team } from 'src/app/generated/blueprint.api';
+import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
 import { MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { Sort } from '@angular/material/sort';
@@ -25,9 +26,8 @@ import { v4 as uuidv4 } from 'uuid';
   styleUrls: ['./player-application-list.component.scss'],
   standalone: false
 })
-export class PlayerApplicationListComponent implements OnDestroy {
+export class PlayerApplicationListComponent implements OnDestroy, OnInit {
   @Input() loggedInUserId: string;
-  @Input() isContentDeveloper: boolean;
   // context menu
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
   msel = new MselPlus();
@@ -51,7 +51,9 @@ export class PlayerApplicationListComponent implements OnDestroy {
     private playerService: PlayerService,
     private playerApplicationTeamDataService: PlayerApplicationTeamDataService,
     public dialog: MatDialog,
-    public dialogService: DialogService
+    public dialogService: DialogService,
+    private permissionDataService: PermissionDataService,
+    private changeDetectorRef: ChangeDetectorRef
   ) {
     // subscribe to playerApplications
     this.playerApplicationQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(playerApplications => {
@@ -81,6 +83,20 @@ export class PlayerApplicationListComponent implements OnDestroy {
       });
       this.templateList = templates;
     });
+  }
+
+  ngOnInit() {
+    // Load permissions and trigger change detection when loaded
+    this.permissionDataService.load()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(() => {
+        this.changeDetectorRef.markForCheck();
+      });
+  }
+
+  canEditMsel(): boolean {
+    return this.permissionDataService.hasPermission(SystemPermission.EditMsels) ||
+      this.msel.hasRole(this.loggedInUserId, '').editor;
   }
 
   expandPlayerApplication(playerApplicationId: string) {

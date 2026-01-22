@@ -27,9 +27,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
 <mat-accordion displayMode="flat">
   <section matSort (matSortChange)="sortChanged($event)" class="header-row">
     <div class="header-cell first-cell">
+      @if (canManage) {
       <button mat-icon-button (click)="addOrEditUnit(null)" style="outline: none; margin-left: 20px;" title="Add Unit">
         <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle"></mat-icon>
       </button>
+      }
     </div>
     <div class="header-cell two-cell" mat-sort-header="shortName">Short Name</div>
     <div class="header-cell five-cell" mat-sort-header="name">Name</div>
@@ -40,6 +42,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     @if (!isLoading) {
     <mat-expansion-panel-header class="row" (click)="togglePanel(unit); $event.stopPropagation()">
       <div class="cell first-cell">
+        @if (canManage) {
         <button mat-icon-button (click)="addOrEditUnit(unit); $event.stopPropagation()" style="outline: none;"
           title="Edit {{ unit.name }}">
           <mat-icon class="mdi-18px self-center" fontIcon="mdi-square-edit-outline"></mat-icon>
@@ -48,6 +51,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           title="Delete {{ unit.name }}">
           <mat-icon class="mdi-18px self-center" fontIcon="mdi-trash-can-outline"></mat-icon>
         </button>
+        }
       </div>
       <div class="cell two-cell center-self">
         <div class="panel-div">
@@ -65,7 +69,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <div class="panel-container">
       <div class="user-div">
         @if (unit.id === editUnit.id) {
-        <app-admin-unit-users [unitId]="unit.id"></app-admin-unit-users>
+        <app-admin-unit-users [unitId]="unit.id" [canManage]="canManage"></app-admin-unit-users>
         }
       </div>
     </div>

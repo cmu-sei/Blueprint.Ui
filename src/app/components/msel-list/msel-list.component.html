@@ -6,7 +6,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
 
 <div class="content-under-topbar">
   <div class="header-div">
-    @if (isSystemAdmin) {
+    @if (canAccessAdminSection) {
     <div class="admin-cog-div">
       <button mat-icon-button style="outline: none;" (click)="goToUrl('/admin')" title="Administration">
         <mat-icon fontIcon="mdi-cog"></mat-icon>
@@ -18,15 +18,17 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <div class="buttons-container">
       <div class="app-icon">
         <div class="msels-title">
-          @if (isSystemAdmin) {
+          @if (canViewMsel(null)) {
           @if (!allMselsAreLoaded) {
-          <button mat-icon-button style="outline: none;" (click)="adminLoadAllMsels()" title="Load ALL MSELs">
-            <mat-icon fontIcon="mdi-set-all"></mat-icon>
+          <button mat-icon-button style="outline: none;" (click)="adminLoadAllMsels()"
+            title="Remove filter to show ALL MSELs">
+            <mat-icon fontIcon="mdi-filter-off-outline"></mat-icon>
           </button>
           }
           @if (allMselsAreLoaded) {
-          <button mat-icon-button style="outline: none;" (click)="adminLoadMyMsels()" title="Load MY MSELs">
-            <mat-icon fontIcon="mdi-set-center"></mat-icon>
+          <button mat-icon-button style="outline: none;" (click)="adminLoadMyMsels()"
+            title="Apply filter to show just MY MSELs">
+            <mat-icon fontIcon="mdi-filter-outline"></mat-icon>
           </button>
           }
           }
@@ -75,11 +77,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <!-- action column -->
         <ng-container matColumnDef="action">
           <mat-header-cell *matHeaderCellDef>
-            <button mat-icon-button (click)="addMsel()" title="Add blank MSEL" [disabled]="!isContentDeveloper">
+            <button mat-icon-button (click)="addMsel()" title="Add blank MSEL" [disabled]="!canCreateMsels()">
               <mat-icon class="mdi-24px" fontIcon="mdi-plus-circle"></mat-icon>
             </button>
             <button mat-icon-button [matMenuTriggerFor]="upload" title="Upload a new MSEL from a file"
-              [disabled]="!isContentDeveloper">
+              [disabled]="!canCreateMsels()">
               <mat-icon class="mdi-24px" fontIcon="mdi-upload"></mat-icon>
             </button>
             <mat-menu #upload="matMenu" [overlapTrigger]="false">
@@ -94,7 +96,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <mat-cell *matCellDef="let element">
             <div class="action-div">
               <button mat-icon-button class="msel-action" [matMenuTriggerFor]="download"
-                title="Download {{ element.name }}" [disabled]="!isReady || !element.hasRole(loggedInUserId, '').owner">
+                title="Download {{ element.name }}" [disabled]="!isReady || !canViewMsel(element)">
                 <mat-icon class="mdi-18px" fontIcon="mdi-download" alt="Download .xlsx file"></mat-icon>
               </button>
               <mat-menu #download="matMenu" [overlapTrigger]="false">
@@ -105,16 +107,15 @@ project root for license information or contact permission@sei.cmu.edu for full 
               </mat-menu>
               <button mat-icon-button class="msel-action"
                 (click)="uploadFile('xlsx', element.id, null); xlsxInput.click(); $event.stopPropagation();"
-                title="Upload .xlsx file to {{ element.name }}"
-                [disabled]="!isReady || !(isContentDeveloper || element.hasRole(loggedInUserId, null).owner)">
+                title="Upload .xlsx file to {{ element.name }}" [disabled]="!isReady || !canEditMsel(element)">
                 <mat-icon class="mdi-18px" fontIcon="mdi-upload" alt="Upload .xlsx file"></mat-icon>
               </button>
               <button mat-icon-button class="msel-action" (click)="delete(element); $event.stopPropagation();"
-                title="Delete {{ element.name }}" [disabled]="!isReady || !isContentDeveloper">
+                title="Delete {{ element.name }}" [disabled]="!isReady || !canManageMsel(element)">
                 <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline" alt="Delete"></mat-icon>
               </button>
               <button mat-icon-button class="msel-action" (click)="copyMsel(element.id); $event.stopPropagation();"
-                title="Copy {{ element.name }}" [disabled]="!isReady || !isContentDeveloper">
+                title="Copy {{ element.name }}" [disabled]="!isReady || !canCreateMsels()">
                 <mat-icon class="mdi-18px" fontIcon="mdi-content-copy" alt="Copy"></mat-icon>
               </button>
             </div>
@@ -126,12 +127,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
             Name
           </mat-header-cell>
           <mat-cell *matCellDef="let element">
-            @if (element.hasRole(loggedInUserId, '').editor) {
+            @if (canViewMsel(element)) {
             <a [routerLink]="['/build']" [queryParams]="{ msel: element.id }" (click)="openMsel(element.id)">
               {{element.name }}
             </a>
             }
-            @if (!element.hasRole(loggedInUserId, '').editor) {
+            @if (!canViewMsel(element)) {
             {{ element.name }}
             }
           </mat-cell>

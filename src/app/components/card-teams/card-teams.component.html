@@ -42,7 +42,8 @@ project root for license information.
       <ng-container matColumnDef="id">
         <mat-cell *matCellDef="let element">
           <div>
-            <button mat-icon-button (click)="addTeamToCard(element)" title="Add {{ element.name }}">
+            <button mat-icon-button (click)="addTeamToCard(element)" title="Add {{ element.name }}"
+              [disabled]="!canEditMsel()">
               <mat-icon class="mdi-18px" fontIcon="mdi-plus-circle-outline" title="Add {{ element.name }}"></mat-icon>
             </button>
           </div>
@@ -85,21 +86,24 @@ project root for license information.
       <ng-container matColumnDef="isShownOnWall">
         <mat-cell *matCellDef="let element">
           <mat-checkbox [checked]="element.isShownOnWall"
-            (change)="setIsShownOnWall(element, $event.checked)"></mat-checkbox>
+            (change)="setIsShownOnWall(element, $event.checked)"
+            [disabled]="!canEditMsel()"></mat-checkbox>
         </mat-cell>
       </ng-container>
 
       <ng-container matColumnDef="canPostArticles">
         <mat-cell *matCellDef="let element">
           <mat-checkbox [checked]="element.canPostArticles"
-            (change)="setCanPostArticles(element, $event.checked)"></mat-checkbox>
+            (change)="setCanPostArticles(element, $event.checked)"
+            [disabled]="!canEditMsel()"></mat-checkbox>
         </mat-cell>
       </ng-container>
 
       <ng-container matColumnDef="id">
         <mat-cell *matCellDef="let element">
           <div>
-            <button mat-icon-button (click)="removeTeamFromCard(element.id)" title="Remove {{ element.name }}">
+            <button mat-icon-button (click)="removeTeamFromCard(element.id)" title="Remove {{ element.name }}"
+              [disabled]="!canEditMsel()">
               <mat-icon class="mdi-18px" fontIcon="mdi-minus-circle-outline"
                 title="Remove {{ element.name }}"></mat-icon>
             </button>

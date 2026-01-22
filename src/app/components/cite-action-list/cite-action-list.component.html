@@ -7,7 +7,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
 <div class="frame">
   <section matSort (matSortChange)="sortChanged($event)" class="header-row background-alt">
     <span class="header-cell first-cell">
-      @if (showTemplates && isContentDeveloper) {
+      @if (showTemplates && canEdit) {
       <span>
         <button mat-icon-button (click)="addOrEditCiteAction(null, false, false); $event.stopPropagation();"
           title="Add a template CITE Action" style="outline: none; margin-left: 18px; margin-right: 24px;">
@@ -15,7 +15,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         </button>
       </span>
       } &nbsp;
-      @if (!showTemplates && (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner)) {
+      @if (!showTemplates && (canEdit || msel.hasRole(loggedInUserId, null).owner)) {
       <span>
         <button mat-icon-button [matMenuTriggerFor]="addMenu"
           style="outline: none; margin-left: 18px; margin-right: 24px;" title="Add CITE Action"
@@ -87,19 +87,19 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <mat-expansion-panel class="top-space no-clicks" hideToggle>
       <mat-expansion-panel-header class="row">
         <div class="cell first-cell">
-          @if (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) {
+          @if (canEdit || msel.hasRole(loggedInUserId, null).owner) {
           <button mat-icon-button title="Edit {{ item.description }}"
             (click)="addOrEditCiteAction(item, false, false); $event.stopPropagation();" class="all-clicks">
             <mat-icon class="mdi-18px up-12" fontIcon="mdi-square-edit-outline"></mat-icon>
           </button>
           }
-          @if (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) {
+          @if (canEdit || msel.hasRole(loggedInUserId, null).owner) {
           <button mat-icon-button (click)="deleteCiteAction(item); $event.stopPropagation();"
             title="Delete {{ item.description }}" class="all-clicks">
             <mat-icon class="mdi-18px up-12" fontIcon="mdi-trash-can-outline"></mat-icon>
           </button>
           }
-          @if (!showTemplates && isContentDeveloper) {
+          @if (!showTemplates && canEdit) {
           <button mat-icon-button class="all-clicks"
             (click)="addOrEditCiteAction(item, true, false); $event.stopPropagation();"
             title="Make {{ item.description }} a template">

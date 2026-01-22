@@ -9,19 +9,22 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <!-- Name -->
     <div class="single-detail center-self">
       <mat-form-field class="full-width">
-        <input type="text" matInput placeholder="Name" [(ngModel)]="scenarioEvent.steamfitterTask.name" />
+        <input type="text" matInput placeholder="Name" [(ngModel)]="scenarioEvent.steamfitterTask.name"
+          [disabled]="!canEdit" />
       </mat-form-field>
     </div>
     <!-- Description -->
     <div class="single-detail center-self">
       <mat-form-field class="full-width">
-        <input type="text" matInput placeholder="Description" [(ngModel)]="scenarioEvent.steamfitterTask.description" />
+        <input type="text" matInput placeholder="Description" [(ngModel)]="scenarioEvent.steamfitterTask.description"
+          [disabled]="!canEdit" />
       </mat-form-field>
     </div>
     <!-- Task Type -->
     <div class="single-detail center-self">
       <mat-form-field>
-        <mat-select placeholder="Steamfitter Task Type" [(ngModel)]="scenarioEvent.steamfitterTask.taskType">
+        <mat-select placeholder="Steamfitter Task Type" [(ngModel)]="scenarioEvent.steamfitterTask.taskType"
+          [disabled]="!canEdit">
           @for (taskType of taskTypes; track taskType) {
           <mat-option value="{{ taskType }}">{{ taskType }}</mat-option>
           }
@@ -34,7 +37,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <div class="single-detail center-self">
         <mat-form-field class="full-width">
           <input type="text" matInput placeholder="Notification Text"
-            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['notificationText']" />
+            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['notificationText']"
+            [disabled]="!canEdit" />
         </mat-form-field>
       </div>
     </span>
@@ -45,7 +49,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <div class="single-detail center-self">
         <mat-form-field>
           <input matInput placeholder="Situation Date / Time"
-            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['situationTime']">
+            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['situationTime']"
+            [disabled]="!canEdit">
           <!-- <datetime-picker> -->
         </mat-form-field>
       </div>
@@ -56,7 +61,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <div>
           <angular-editor [placeholder]="'Description'"
             [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['situationDescription']"
-            [config]="editorConfig"></angular-editor>
+            [config]="canEdit ? editorConfig : viewConfig"></angular-editor>
         </div>
       </div>
     </span>
@@ -67,66 +72,76 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <div class="single-detail center-self">
         <mat-form-field class="full-width">
           <input type="text" matInput placeholder="From"
-            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['EmailFrom']" />
+            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['EmailFrom']"
+            [disabled]="!canEdit" />
         </mat-form-field>
       </div>
       <div class="single-detail center-self">
         <mat-form-field class="full-width">
           <input type="text" matInput placeholder="To"
-            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['EmailTo']" />
+            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['EmailTo']"
+            [disabled]="!canEdit" />
         </mat-form-field>
       </div>
       <div class="single-detail center-self">
         <mat-form-field class="full-width">
           <input type="text" matInput placeholder="cc"
-            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['EmailCC']" />
+            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['EmailCC']"
+            [disabled]="!canEdit" />
         </mat-form-field>
       </div>
       <div class="single-detail center-self">
         <mat-form-field class="full-width">
           <input type="text" matInput placeholder="Subject"
-            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['Subject']" />
+            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['Subject']"
+            [disabled]="!canEdit" />
         </mat-form-field>
       </div>
       <div class="single-detail center-self">
         <mat-form-field class="full-width">
           <input type="text" matInput placeholder="Message"
-            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['Message']" />
+            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['Message']"
+            [disabled]="!canEdit" />
         </mat-form-field>
       </div>
       <div class="single-detail center-self">
         <mat-form-field class="full-width">
           <input type="text" matInput placeholder="accountText"
-            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['Account']" />
+            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['Account']"
+            [disabled]="!canEdit" />
         </mat-form-field>
       </div>
       <div class="single-detail center-self">
         <mat-form-field class="full-width">
           <input type="text" matInput placeholder="Mime Type"
-            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['Mime']" />
+            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['Mime']"
+            [disabled]="!canEdit" />
         </mat-form-field>
       </div>
     </span>
     }
     <!-- http -->
-    @if (scenarioEvent.steamfitterTask.taskType && scenarioEvent.steamfitterTask.taskType.startsWith('http_')) {
+    @if (scenarioEvent.steamfitterTask.taskType && scenarioEvent.steamfitterTask.taskType.startsWith('Http')) {
     <span>
       <div class="single-detail center-self">
         <mat-form-field class="full-width">
           <input type="text" matInput placeholder="URL"
-            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['Url']" />
+            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['Url']"
+            [disabled]="!canEdit" />
         </mat-form-field>
       </div>
       <div class="single-detail center-self">
         <mat-form-field class="full-width">
           <input type="text" matInput placeholder="Body"
-            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['Body']" />
+            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['Body']"
+            [disabled]="!canEdit" />
         </mat-form-field>
       </div>
       <div class="single-detail center-self">
         <mat-form-field class="full-width">
           <input type="text" matInput placeholder="Headers"
-            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['Headers']" />
+            [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['Headers']"
+            [disabled]="!canEdit" />
         </mat-form-field>
       </div>
     </span>

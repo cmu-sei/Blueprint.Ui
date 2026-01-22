@@ -1,170 +1,70 @@
-// Copyright 2022 Carnegie Mellon University. All Rights Reserved.
-// Released under a MIT (SEI)-style license. See LICENSE.md in the
-// project root for license information.
+// Copyright 2025 Carnegie Mellon University. All Rights Reserved.
+// Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
-import { Component, Input, OnDestroy } from '@angular/core';
-import { PageEvent } from '@angular/material/paginator';
-import { Sort } from '@angular/material/sort';
-import {
-  Permission,
-  User,
-  UserPermission,
-} from 'src/app/generated/blueprint.api/model/models';
-import { ComnSettingsService } from '@cmusei/crucible-common';
-import { DialogService } from 'src/app/services/dialog/dialog.service';
+import { Component, OnInit } from '@angular/core';
+import { ErrorStateMatcher } from '@angular/material/core';
+import { UntypedFormControl, FormGroupDirective, NgForm } from '@angular/forms';
 import { UserDataService } from 'src/app/data/user/user-data.service';
-import { Subject, takeUntil } from 'rxjs';
-import { PermissionService } from 'src/app/generated/blueprint.api';
-import { validate as isValidUuid } from 'uuid';
+import { UserQuery } from 'src/app/data/user/user.query';
+import { SystemPermission, User } from 'src/app/generated/blueprint.api';
+import { Observable } from 'rxjs';
+import { take } from 'rxjs/operators';
+import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
+import { ComnSettingsService } from '@cmusei/crucible-common';
 
 @Component({
-    selector: 'app-admin-users',
-    templateUrl: './admin-users.component.html',
-    styleUrls: ['./admin-users.component.scss'],
-    standalone: false
+  selector: 'app-admin-users',
+  templateUrl: './admin-users.component.html',
+  styleUrls: ['./admin-users.component.scss'],
+  standalone: false
 })
-export class AdminUsersComponent implements OnDestroy {
-  @Input() allUsers: User[];
-  @Input() permissionList: Permission[];
-  userList: User[] = [];
-  filterString = '';
-  pageEvent: PageEvent;
-  pageIndex = 0;
-  pageSize = 20;
-  sort: Sort = { active: 'name', direction: 'asc' };
-  addingNewUser = false;
-  newUser: User = { id: '', name: '' };
-  isLoading = false;
-  topbarColor = '#ef3a47';
-  private unsubscribe$ = new Subject();
+export class AdminUsersComponent implements OnInit {
+  matcher = new UserErrorStateMatcher();
+  isLinear = false;
+  users$: Observable<User[]>;
+  isLoading$: Observable<boolean>;
+  canEdit = this.permissionDataService.hasPermission(
+    SystemPermission.ManageUsers
+  );
+  topbarColor;
 
   constructor(
-    public dialogService: DialogService,
-    private settingsService: ComnSettingsService,
     private userDataService: UserDataService,
-    private permissionService: PermissionService
-  ) {
-    this.topbarColor = this.settingsService.settings.AppTopBarHexColor
-      ? this.settingsService.settings.AppTopBarHexColor
-      : this.topbarColor;
-    // subscribe to permissions
-    this.permissionService.getPermissions().pipe(takeUntil(this.unsubscribe$)).subscribe(permissions => {
-      this.permissionList = permissions;
-    });
-    // subscribe to all users
-    this.userDataService.userList.pipe(takeUntil(this.unsubscribe$)).subscribe(users => {
-      this.allUsers = users;
-      this.applyFilter(this.filterString);
-    });
+    private userQuery: UserQuery,
+    private settingsService: ComnSettingsService,
+    private permissionDataService: PermissionDataService
+  ) { }
+
+  /**
+   * Initialize component
+   */
+  ngOnInit() {
+    this.users$ = this.userQuery.selectAll();
+    this.isLoading$ = this.userQuery.selectLoading();
+    this.topbarColor = this.settingsService.settings.AppTopBarHexColor;
   }
 
-  hasPermission(permissionId: string, user: User) {
-    return user.permissions.some((p) => p.id === permissionId);
+  create(newUser: User) {
+    this.userDataService.create(newUser).pipe(take(1)).subscribe();
   }
 
-  toggleUserPermission(user: User, permissionId: string) {
-    const userPermission: UserPermission = {
-      userId: user.id,
-      permissionId: permissionId,
-    };
-    if (this.hasPermission(permissionId, user)) {
-      this.userDataService.deleteUserPermission(userPermission);
-    } else {
-      this.userDataService.addUserPermission(userPermission);
-    }
+  deleteUser(userId: string) {
+    this.userDataService.delete(userId).pipe(take(1)).subscribe();
   }
 
-  addUserRequest(isAdd: boolean) {
-    if (isAdd) {
-      this.userDataService.addUser(this.newUser);
-    }
-    this.newUser.id = '';
-    this.newUser.name = '';
-    this.addingNewUser = false;
+  updateUser(user: User) {
+    this.userDataService.update(user);
   }
 
-  deleteUserRequest(user: User) {
-    this.dialogService
-      .confirm(
-        'Delete User',
-        'Are you sure that you want to delete ' + user.name + '?'
-      )
-      .subscribe((result) => {
-        if (result['confirm']) {
-          this.userDataService.deleteUser(user);
-        }
-      });
-  }
+}
 
-  applyFilter(filterValue: string) {
-    this.filterString = filterValue;
-    this.pageIndex = 0;
-    filterValue = filterValue.toLowerCase(); // MatTableDataSource defaults to lowercase matches
-    this.userList = this.allUsers
-      .filter(user => user.name.toLowerCase().indexOf(filterValue) >= 0)
-      .sort((a, b) => this.sortUsers(a, b));
-  }
-
-  sortChanged(sort: Sort) {
-    this.sort = sort;
-    this.applyFilter(this.filterString);
-  }
-
-  sortUsers(a: User, b: User): number {
-    const dir = this.sort.direction === 'desc' ? -1 : 1;
-    if (!this.sort.direction || this.sort.active === 'name') {
-      this.sort = { active: 'name', direction: 'asc' };
-      return a.name.toLowerCase() < b.name.toLowerCase() ? -dir : dir;
-    } else {
-      const aValue = this.hasPermission(this.sort.active, a).toString();
-      const bValue = this.hasPermission(this.sort.active, b).toString();
-      if (aValue === bValue) {
-        return a.name.toLowerCase() < b.name.toLowerCase() ? -dir : dir;
-      } else {
-        return aValue < bValue ? dir : -dir;
-      }
-    }
-  }
-
-  paginatorEvent(page: PageEvent) {
-    this.pageIndex = page.pageIndex;
-    this.pageSize = page.pageSize;
-  }
-
-  paginateUsers(pageIndex: number, pageSize: number) {
-    if (!this.userList) {
-      return [];
-    }
-    const startIndex = pageIndex * pageSize;
-    const copy = this.userList.slice();
-    return copy.splice(startIndex, pageSize);
-  }
-
-  isValidNewUser() {
-    return isValidUuid(this.newUser.id) && this.newUser.name && this.newUser.name.length > 2;
-  }
-
-  handleInput(event: KeyboardEvent): void {
-    event.stopPropagation();
-  }
-
-  getPermissionTooltip(permission: string): string {
-    let tooltip = '';
-    switch (permission) {
-      case 'SystemAdmin':
-        tooltip = 'A System Admin has permission to modify everything within this application';
-        break;
-      case 'ContentDeveloper':
-        tooltip = 'A Content Developer has permission to modify everything within this application, EXCEPT for these user permissions';
-        break;
-      default:
-        break;
-    }
-    return tooltip;
-  }
-
-  ngOnDestroy() {
-    this.unsubscribe$.next(null);
-    this.unsubscribe$.complete();
+/** Error when invalid control is dirty, touched, or submitted. */
+export class UserErrorStateMatcher implements ErrorStateMatcher {
+  isErrorState(
+    control: UntypedFormControl | null,
+    form: FormGroupDirective | NgForm | null
+  ): boolean {
+    const isSubmitted = form && form.submitted;
+    return !!(control && control.invalid && (control.dirty || isSubmitted));
   }
 }

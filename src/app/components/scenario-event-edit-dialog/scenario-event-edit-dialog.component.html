@@ -50,7 +50,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           }
           @if (data.useSteamfitter && data.scenarioEvent.integrationTarget?.includes(integrationTarget.Steamfitter)) {
           <mat-tab label="Steamfitter Task">
-            <app-steamfitter-task [scenarioEvent]="data.scenarioEvent"></app-steamfitter-task>
+            <app-steamfitter-task [scenarioEvent]="data.scenarioEvent" [canEdit]="data.isEditor"></app-steamfitter-task>
           </mat-tab>
           }
         </mat-tab-group>
@@ -75,7 +75,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <div class="start-time-div">
             <span>Execution Time</span>
             <app-duration-edit [startTime]="data.mselStartTime" [(durationSeconds)]="data.scenarioEvent.deltaSeconds"
-              [timeName]="'Execution Date / Time'" [postScript]="''">
+              [timeName]="'Execution Date / Time'" [postScript]="''" [canEdit]="data.isEditor">
             </app-duration-edit>
           </div>
           }
@@ -112,7 +112,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
   </div>
   }
   <div mat-dialog-actions>
-    <button mat-stroked-button (click)="handleEditComplete(true)" [disabled]="hasBadData()">Save</button>
+    <button mat-stroked-button (click)="handleEditComplete(true)"
+      [disabled]="hasBadData() || !data.isEditor">Save</button>
     <button mat-stroked-button (click)="handleEditComplete(false)">Cancel</button>
   </div>
 </div>

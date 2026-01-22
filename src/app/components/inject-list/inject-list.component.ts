@@ -46,25 +46,25 @@ import { InjectTypeQuery } from 'src/app/data/inject-type/inject-type.query';
 import { DataFieldDataService } from 'src/app/data/data-field/data-field-data.service';
 import { DataFieldQuery } from 'src/app/data/data-field/data-field.query';
 import { UnitQuery } from 'src/app/data/unit/unit.query';
-import { UserDataService } from 'src/app/data/user/user-data.service';
+import { UserQuery } from 'src/app/data/user/user.query';
 import { InjectSelectDialogComponent } from '../inject-select-dialog/inject-select-dialog.component';
 
 @Component({
-    selector: 'app-inject-list',
-    templateUrl: './inject-list.component.html',
-    styleUrls: ['./inject-list.component.scss'],
-    animations: [
-        trigger('detailExpand', [
-            state('collapsed', style({ height: '0px', minHeight: '0', visibility: 'hidden' })),
-            state('expanded', style({ height: '*', visibility: 'visible' })),
-            transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
-        ]),
-    ],
-    standalone: false
+  selector: 'app-inject-list',
+  templateUrl: './inject-list.component.html',
+  styleUrls: ['./inject-list.component.scss'],
+  animations: [
+    trigger('detailExpand', [
+      state('collapsed', style({ height: '0px', minHeight: '0', visibility: 'hidden' })),
+      state('expanded', style({ height: '*', visibility: 'visible' })),
+      transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
+    ]),
+  ],
+  standalone: false
 })
 export class InjectListComponent implements OnDestroy, OnInit {
   @Input() loggedInUserId: string;
-  @Input() isContentDeveloper: boolean;
+  @Input() canEdit: boolean;
   @Input() isEditMode: boolean;
   @Input() catalog: Catalog = {};
   @Input() injectType: InjectType = {};
@@ -106,7 +106,7 @@ export class InjectListComponent implements OnDestroy, OnInit {
     private dataFieldDataService: DataFieldDataService,
     private dataFieldQuery: DataFieldQuery,
     private unitQuery: UnitQuery,
-    private userDataService: UserDataService
+    private userQuery: UserQuery
   ) {
     // subscribe to injects
     this.injectmQuery
@@ -174,7 +174,7 @@ export class InjectListComponent implements OnDestroy, OnInit {
         this.sortChanged(this.sort);
       });
     // subscribe to users
-    this.userDataService.userList
+    this.userQuery.selectAll()
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((users) => {
         this.userList = users;
@@ -484,7 +484,7 @@ export class InjectListComponent implements OnDestroy, OnInit {
         injectType: {},
         injectList: existingInjects,
         loggedInUserId: this.loggedInUserId,
-        isContentDeveloper: this.isContentDeveloper,
+        isContentDeveloper: this.canEdit,
       },
     });
     dialogRef.componentInstance.editComplete.subscribe((result) => {

@@ -1,7 +1,7 @@
 // Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { take, takeUntil } from 'rxjs/operators';
@@ -9,11 +9,12 @@ import {
   ComnSettingsService,
 } from '@cmusei/crucible-common';
 import { UserDataService } from 'src/app/data/user/user-data.service';
+import { UserQuery } from 'src/app/data/user/user.query';
 import {
   Msel,
+  User,
 } from 'src/app/generated/blueprint.api';
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
-import { User } from 'src/app/generated/blueprint.api';
 import { TopbarView } from '../../shared/top-bar/topbar.models';
 import { Title } from '@angular/platform-browser';
 import { ErrorService } from 'src/app/services/error/error.service';
@@ -25,7 +26,7 @@ import { UIDataService } from 'src/app/data/ui/ui-data.service';
     styleUrls: ['./join.component.scss'],
     standalone: false
 })
-export class JoinComponent implements OnDestroy {
+export class JoinComponent implements OnDestroy, OnInit {
   joinMselList: Msel[] = [];
   joiningMselId = '';
   imageFilePath = '';
@@ -44,6 +45,7 @@ export class JoinComponent implements OnDestroy {
 
   constructor(
     private userDataService: UserDataService,
+    private userQuery: UserQuery,
     private settingsService: ComnSettingsService,
     private mselDataService: MselDataService,
     private activatedRoute: ActivatedRoute,
@@ -66,21 +68,6 @@ export class JoinComponent implements OnDestroy {
     this.topbarTextColor = this.settingsService.settings.AppTopBarHexTextColor
       ? this.settingsService.settings.AppTopBarHexTextColor
       : this.topbarTextColor;
-    // subscribe to users
-    this.userDataService.users
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe((users) => {
-        this.userList = users;
-      });
-    // load the users
-    this.userDataService.getUsersFromApi();
-    // load the join MSELs
-    this.mselDataService
-      .getMyJoinMsels()
-      .pipe(take(1))
-      .subscribe((msels) => {
-        this.joinMselList = msels;
-      });
     // subscribe to route changes
     this.activatedRoute.queryParamMap
       .pipe(takeUntil(this.unsubscribe$))
@@ -94,6 +81,24 @@ export class JoinComponent implements OnDestroy {
         } else {
           this.showChoices = true;
         }
+      });
+  }
+
+  ngOnInit() {
+    // subscribe to users
+    this.userQuery.selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((users) => {
+        this.userList = users;
+      });
+    // load the users
+    this.userDataService.load().pipe(take(1)).subscribe();
+    // load the join MSELs
+    this.mselDataService
+      .getMyJoinMsels()
+      .pipe(take(1))
+      .subscribe((msels) => {
+        this.joinMselList = msels;
       });
   }
 

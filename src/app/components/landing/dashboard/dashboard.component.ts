@@ -1,30 +1,32 @@
 // Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, OnDestroy, ElementRef, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { Subject, Observable } from 'rxjs';
+import { Subject } from 'rxjs';
 import { take, takeUntil } from 'rxjs/operators';
 import {
   ComnSettingsService,
 } from '@cmusei/crucible-common';
 import { UserDataService } from 'src/app/data/user/user-data.service';
+import { UserQuery } from 'src/app/data/user/user.query';
+import { CurrentUserQuery } from 'src/app/data/user/user.query';
 import {
   Msel,
+  User,
 } from 'src/app/generated/blueprint.api';
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
-import { User } from 'src/app/generated/blueprint.api';
 import { TopbarView } from '../../shared/top-bar/topbar.models';
 import { Title } from '@angular/platform-browser';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
 
 @Component({
-    selector: 'app-dashboard',
-    templateUrl: './dashboard.component.html',
-    styleUrls: ['./dashboard.component.scss'],
-    standalone: false
+  selector: 'app-dashboard',
+  templateUrl: './dashboard.component.html',
+  styleUrls: ['./dashboard.component.scss'],
+  standalone: false
 })
-export class DashboardComponent implements OnDestroy {
+export class DashboardComponent implements OnDestroy, OnInit {
   launchMselList: Msel[] = [];
   joinMselList: Msel[] = [];
   buildMselList: Msel[] = [];
@@ -45,6 +47,8 @@ export class DashboardComponent implements OnDestroy {
 
   constructor(
     private userDataService: UserDataService,
+    private userQuery: UserQuery,
+    private currentUserQuery: CurrentUserQuery,
     private settingsService: ComnSettingsService,
     private mselDataService: MselDataService,
     private router: Router,
@@ -65,11 +69,19 @@ export class DashboardComponent implements OnDestroy {
     this.topbarTextColor = this.settingsService.settings.AppTopBarHexTextColor
       ? this.settingsService.settings.AppTopBarHexTextColor
       : this.topbarTextColor;
-    this.userDataService.loggedInUser.pipe(takeUntil(this.unsubscribe$)).subscribe((user) => {
-      if (user && user.profile && user.profile.sub) {
-        this.startup();
-      }
-    });
+  }
+
+  ngOnInit() {
+    // Set up current user
+    this.userDataService.setCurrentUser();
+    // Subscribe to current user and start when ready
+    this.currentUserQuery.select()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((cu) => {
+        if (cu && cu.id) {
+          this.startup();
+        }
+      });
     setTimeout(() => {
       if (!this.isStarted) {
         window.location.reload();
@@ -79,13 +91,13 @@ export class DashboardComponent implements OnDestroy {
 
   startup() {
     // subscribe to users
-    this.userDataService.users
+    this.userQuery.selectAll()
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((users) => {
         this.userList = users;
       });
     // load the users
-    this.userDataService.getUsersFromApi();
+    this.userDataService.load().pipe(take(1)).subscribe();
     // load the launch MSELs
     this.mselDataService
       .getMyLaunchMsels()
@@ -106,8 +118,8 @@ export class DashboardComponent implements OnDestroy {
       .pipe(take(1))
       .subscribe((msels) => {
         this.buildMselList = msels;
+        this.isStarted = true;
       });
-    this.isStarted = true;
   }
 
   topBarNavigate(url): void {

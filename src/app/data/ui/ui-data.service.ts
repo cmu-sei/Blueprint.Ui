@@ -9,6 +9,7 @@ import { Injectable } from '@angular/core';
 export class UIState {
   selectedMselTab = '';
   selectedAdminTab = '';
+  selectedTheme = '';
   expandedItems: string[] = [];
   navCollapsed: boolean;
   useRealTime: boolean;
@@ -98,6 +99,18 @@ export class UIDataService {
     this.saveChanges();
   }
   // end real time vs offset time display section
+
+  //
+  // theme section
+  setTheme(theme: string) {
+    this.uiState.selectedTheme = theme;
+    this.saveChanges();
+  }
+
+  getTheme(): string {
+    return this.uiState.selectedTheme;
+  }
+  // end theme
 
   saveChanges() {
     localStorage.setItem('uiState', JSON.stringify(this.uiState));

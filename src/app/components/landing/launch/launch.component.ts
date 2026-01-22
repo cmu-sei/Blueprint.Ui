@@ -7,14 +7,16 @@ import { Subject } from 'rxjs';
 import { take, takeUntil } from 'rxjs/operators';
 import {
   ComnSettingsService,
+  ComnAuthService,
 } from '@cmusei/crucible-common';
 import { UserDataService } from 'src/app/data/user/user-data.service';
+import { UserQuery } from 'src/app/data/user/user.query';
 import {
   Msel,
+  User,
 } from 'src/app/generated/blueprint.api';
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
 import { PlayerApplicationDataService } from 'src/app/data/player-application/player-application-data.service';
-import { User } from 'src/app/generated/blueprint.api';
 import { TopbarView } from '../../shared/top-bar/topbar.models';
 import { Title } from '@angular/platform-browser';
 import { ErrorService } from 'src/app/services/error/error.service';
@@ -46,6 +48,8 @@ export class LaunchComponent implements OnDestroy, OnInit {
 
   constructor(
     private userDataService: UserDataService,
+    private userQuery: UserQuery,
+    private authService: ComnAuthService,
     private settingsService: ComnSettingsService,
     private mselDataService: MselDataService,
     private playerApplicationDataService: PlayerApplicationDataService,
@@ -71,13 +75,13 @@ export class LaunchComponent implements OnDestroy, OnInit {
       ? this.settingsService.settings.AppTopBarHexTextColor
       : this.topbarTextColor;
     // subscribe to users
-    this.userDataService.users
+    this.userQuery.selectAll()
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((users) => {
         this.userList = users;
       });
     // load the users
-    this.userDataService.getUsersFromApi();
+    this.userDataService.load().pipe(take(1)).subscribe();
     // load the join MSELs
     this.mselDataService
       .getMyLaunchMsels()
@@ -190,7 +194,7 @@ export class LaunchComponent implements OnDestroy, OnInit {
   }
 
   logout() {
-    this.userDataService.logout();
+    this.authService.logout();
   }
 
   ngOnDestroy() {

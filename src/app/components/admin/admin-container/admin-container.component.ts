@@ -8,15 +8,18 @@ import { Observable, Subject } from 'rxjs';
 import { take, takeUntil } from 'rxjs/operators';
 import { UnitDataService } from 'src/app/data/unit/unit-data.service';
 import { UserDataService } from 'src/app/data/user/user-data.service';
+import { UserQuery, CurrentUserQuery } from 'src/app/data/user/user.query';
+import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
 import { TopbarView } from 'src/app/components/shared/top-bar/topbar.models';
 import {
   ComnSettingsService,
   ComnAuthQuery,
+  ComnAuthService,
   Theme,
 } from '@cmusei/crucible-common';
 import { ApplicationArea, SignalRService } from 'src/app/services/signalr.service';
 import { environment } from 'src/environments/environment';
-import { HealthCheckService } from 'src/app/generated/blueprint.api/api/api';
+import { HealthCheckService, SystemPermission, User } from 'src/app/generated/blueprint.api';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
 import { InjectTypeDataService } from 'src/app/data/inject-type/inject-type-data.service';
 
@@ -27,10 +30,10 @@ import { InjectTypeDataService } from 'src/app/data/inject-type/inject-type-data
   standalone: false
 })
 export class AdminContainerComponent implements OnDestroy, OnInit {
-  loggedInUser = this.userDataService.loggedInUser;
   usersText = 'Users';
   scoringModelsText = 'Scoring Models';
   rolesText = 'Roles';
+  groupsText = 'Groups';
   unitsText = 'Units';
   dataFieldsText = 'Data Fields';
   injectTypesText = 'Inject Types';
@@ -38,21 +41,44 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
   organizationsText = 'Organizations';
   galleryCardsText = 'Gallery Cards';
   citeActionsText = 'CITE Actions';
-  citeRolesText = 'CITE Roles';
+  citeDutiesText = 'CITE Duties';
   selectedTab = 'Organizations';
   displayedSection = '';
   exitSection = '';
   isSidebarOpen = true;
   loggedInUserId = '';
-  isContentDeveloper$ = this.userDataService.isContentDeveloper;
-  isSuperUser = false;
+  username = '';
   canAccessAdminSection = false;
+  // Permission-based access flags
+  canViewUsers = false;
+  canManageUsers = false;
+  canViewRoles = false;
+  canManageRoles = false;
+  canViewGroups = false;
+  canManageGroups = false;
+  canViewUnits = false;
+  canManageUnits = false;
+  canViewInjectTypes = false;
+  canManageInjectTypes = false;
+  canViewCatalogs = false;
+  canManageCatalogs = false;
+  canViewOrganizations = false;
+  canManageOrganizations = false;
+  canViewGalleryCards = false;
+  canManageGalleryCards = false;
+  canViewCiteActions = false;
+  canManageCiteActions = false;
+  canViewCiteDuties = false;
+  canManageCiteDuties = false;
+  canViewDataFields = false;
+  canManageDataFields = false;
   hideTopbar = false;
   TopbarView = TopbarView;
   topbarColor = '#ef3a47';
   topbarTextColor = '#FFFFFF';
   topbarImage = this.settingsService.settings.AppTopBarImage;
   theme$: Observable<Theme>;
+  userList$: Observable<User[]>;
   uiVersion = environment.VERSION;
   apiVersion = 'API ERROR!';
   private unsubscribe$ = new Subject();
@@ -61,9 +87,13 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
     private router: Router,
     private unitDataService: UnitDataService,
     private userDataService: UserDataService,
+    private userQuery: UserQuery,
+    private currentUserQuery: CurrentUserQuery,
+    private permissionDataService: PermissionDataService,
     private healthCheckService: HealthCheckService,
     private settingsService: ComnSettingsService,
     private authQuery: ComnAuthQuery,
+    private authService: ComnAuthService,
     titleService: Title,
     private signalRService: SignalRService,
     private uiDataService: UIDataService,
@@ -71,30 +101,6 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
   ) {
     this.theme$ = this.authQuery.userTheme$;
     this.hideTopbar = this.uiDataService.inIframe();
-    // subscribe to the logged in user
-    this.userDataService.loggedInUser
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe((user) => {
-        if (user && user.profile && user.profile.sub !== this.loggedInUserId) {
-          this.loggedInUserId = user.profile.sub;
-        }
-      });
-    // subscribe to isSuperUser
-    this.userDataService.isSuperUser
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe((result) => {
-        this.isSuperUser = result;
-        if (this.isSuperUser) {
-          this.unitDataService.load();
-          this.userDataService.getUsersFromApi();
-        }
-      });
-    // subscribe to canAccessAdminSection
-    this.userDataService.canAccessAdminSection
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe((result) => {
-        this.canAccessAdminSection = result;
-      });
     // Set the display settings from config file
     this.topbarColor = this.settingsService.settings.AppTopBarHexColor
       ? this.settingsService.settings.AppTopBarHexColor
@@ -112,11 +118,59 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
       selectedTab = this.organizationsText;
     }
     this.selectedTab = selectedTab;
-    // load injectTypes
-    this.injectTypeDataService.load();
   }
 
   ngOnInit() {
+    // Set up user list observable
+    this.userList$ = this.userQuery.selectAll();
+    // Load users
+    this.userDataService.load().pipe(take(1)).subscribe();
+    // Set up current user
+    this.userDataService.setCurrentUser();
+    // Subscribe to current user
+    this.currentUserQuery
+      .select()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((cu) => {
+        this.username = cu.name;
+        this.loggedInUserId = cu.id;
+      });
+    // Load permissions
+    this.permissionDataService.load()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(() => {
+        this.canViewUsers = this.permissionDataService.hasPermission(SystemPermission.ViewUsers);
+        this.canManageUsers = this.permissionDataService.hasPermission(SystemPermission.ManageUsers);
+        this.canViewRoles = this.permissionDataService.hasPermission(SystemPermission.ViewRoles);
+        this.canManageRoles = this.permissionDataService.hasPermission(SystemPermission.ManageRoles);
+        this.canViewGroups = this.permissionDataService.hasPermission(SystemPermission.ViewGroups);
+        this.canManageGroups = this.permissionDataService.hasPermission(SystemPermission.ManageGroups);
+        this.canViewUnits = this.permissionDataService.hasPermission(SystemPermission.ViewUnits);
+        this.canManageUnits = this.permissionDataService.hasPermission(SystemPermission.ManageUnits);
+        this.canViewInjectTypes = this.permissionDataService.hasPermission(SystemPermission.ViewInjectTypes);
+        this.canManageInjectTypes = this.permissionDataService.hasPermission(SystemPermission.ManageInjectTypes);
+        this.canViewCatalogs = this.permissionDataService.hasPermission(SystemPermission.ViewCatalogs);
+        this.canManageCatalogs = this.permissionDataService.hasPermission(SystemPermission.ManageCatalogs);
+        this.canViewOrganizations = this.permissionDataService.hasPermission(SystemPermission.ViewOrganizations);
+        this.canManageOrganizations = this.permissionDataService.hasPermission(SystemPermission.ManageOrganizations);
+        this.canViewGalleryCards = this.permissionDataService.hasPermission(SystemPermission.ViewGalleryCards);
+        this.canManageGalleryCards = this.permissionDataService.hasPermission(SystemPermission.ManageGalleryCards);
+        this.canViewCiteActions = this.permissionDataService.hasPermission(SystemPermission.ViewCiteActions);
+        this.canManageCiteActions = this.permissionDataService.hasPermission(SystemPermission.ManageCiteActions);
+        this.canViewCiteDuties = this.permissionDataService.hasPermission(SystemPermission.ViewCiteDuties);
+        this.canManageCiteDuties = this.permissionDataService.hasPermission(SystemPermission.ManageCiteDuties);
+        this.canViewDataFields = this.permissionDataService.hasPermission(SystemPermission.ViewDataFields);
+        this.canManageDataFields = this.permissionDataService.hasPermission(SystemPermission.ManageDataFields);
+        // Update canAccessAdminSection based on having any admin permission
+        this.canAccessAdminSection = this.canViewUsers || this.canViewRoles || this.canViewGroups || this.canViewUnits || this.canViewInjectTypes || this.canViewCatalogs || this.canViewOrganizations || this.canViewCiteActions || this.canViewCiteDuties || this.canViewDataFields;
+        // Load additional data if user has permissions
+        if (this.canAccessAdminSection) {
+          this.unitDataService.load();
+        }
+      });
+    // load injectTypes
+    this.injectTypeDataService.load();
+    // Start SignalR connection
     this.signalRService
       .startConnection(ApplicationArea.admin)
       .then(() => {
@@ -147,7 +201,7 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
   }
 
   logout() {
-    this.userDataService.logout();
+    this.authService.logout();
   }
 
   getApiVersion() {

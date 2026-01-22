@@ -7,7 +7,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
 <div class="frame">
   <section class="header-row elevate">
     <span class="header-cell action-cell">
-      @if (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) {
+      @if (canEditMsel || msel.hasRole(loggedInUserId, null).owner) {
       <span>
         <button mat-icon-button (click)="addOrEditInvitation(null, false)" style="outline: none; margin-left: 15px;"
           title="Add an invitation">
@@ -29,7 +29,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <ng-container matColumnDef="action">
           <mat-cell *matCellDef="let element" class="cell action-cell">
             <div class="action-div">
-              @if (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) {
+              @if (canEditMsel || msel.hasRole(loggedInUserId, null).owner) {
               <button mat-icon-button class="msel-action"
                 (click)="addOrEditInvitation(element, true); $event.stopPropagation();"
                 title="Edit {{ element.emailDomain }} invitation">
@@ -42,7 +42,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 [disabled]="getInvitationLink(element.teamId).length === 0">
                 <mat-icon class="mdi-18px" fontIcon="mdi-content-copy"></mat-icon>
               </button>
-              @if (isContentDeveloper || msel.hasRole(loggedInUserId, null).owner) {
+              @if (canEditMsel || msel.hasRole(loggedInUserId, null).owner) {
               <button mat-icon-button class="msel-action" (click)="deleteInvitation(element); $event.stopPropagation();"
                 title="Delete {{ element.emailDomain }} invitation">
                 <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline"

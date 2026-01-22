@@ -11,7 +11,6 @@ import {
   ComnSettingsService,
   ComnAuthQuery,
 } from '@cmusei/crucible-common';
-import { UserDataService } from 'src/app/data/user/user-data.service';
 import {
   Organization
 } from 'src/app/generated/blueprint.api';
@@ -34,7 +33,7 @@ import { v4 as uuidv4 } from 'uuid';
 })
 export class OrganizationListComponent implements OnDestroy, OnInit {
   @Input() loggedInUserId: string;
-  @Input() isContentDeveloper: boolean;
+  @Input() canEdit: boolean;
   @Input() showTemplates: boolean;
   // context menu
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
@@ -57,7 +56,6 @@ export class OrganizationListComponent implements OnDestroy, OnInit {
   constructor(
     activatedRoute: ActivatedRoute,
     private router: Router,
-    private userDataService: UserDataService,
     private settingsService: ComnSettingsService,
     private authQuery: ComnAuthQuery,
     private mselDataService: MselDataService,

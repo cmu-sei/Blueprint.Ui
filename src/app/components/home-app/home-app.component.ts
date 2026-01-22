@@ -11,12 +11,16 @@ import {
   ComnSettingsService,
   Theme,
   ComnAuthQuery,
+  ComnAuthService,
 } from '@cmusei/crucible-common';
 import { UserDataService } from 'src/app/data/user/user-data.service';
+import { CurrentUserQuery } from 'src/app/data/user/user.query';
+import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
 import { TopbarView } from '../shared/top-bar/topbar.models';
 import {
   HealthCheckService,
   Msel,
+  SystemPermission,
   Team
 } from 'src/app/generated/blueprint.api';
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
@@ -45,10 +49,11 @@ export class HomeAppComponent implements OnDestroy, OnInit {
   section = Section;
   selectedSection = Section.injects;
   loggedInUserId = '';
-  canAccessAdminSection$ = this.userDataService.canAccessAdminSection;
+  username = '';
+  canAccessAdminSection = false;
+  canCreateMsels = false;
+  canEditMsels = false;
   isAuthorizedUser = false;
-  isContentDeveloper$ = this.userDataService.isContentDeveloper;
-  isSystemAdmin$ = this.userDataService.isSuperUser;
   isSidebarOpen = true;
   private unsubscribe$ = new Subject();
   hideTopbar = false;
@@ -62,13 +67,18 @@ export class HomeAppComponent implements OnDestroy, OnInit {
   mselList = this.mselQuery.selectAll();
   selectedMselId = '';
   appTitle = '';
+  permissions: SystemPermission[] = [];
+  readonly SystemPermission = SystemPermission;
 
   constructor(
     activatedRoute: ActivatedRoute,
     private router: Router,
     private userDataService: UserDataService,
+    private currentUserQuery: CurrentUserQuery,
+    private permissionDataService: PermissionDataService,
     private settingsService: ComnSettingsService,
     private authQuery: ComnAuthQuery,
+    private authService: ComnAuthService,
     private mselDataService: MselDataService,
     private mselQuery: MselQuery,
     private signalRService: SignalRService,
@@ -85,20 +95,6 @@ export class HomeAppComponent implements OnDestroy, OnInit {
     this.topbarText = this.topbarTextBase;
     this.theme$ = this.authQuery.userTheme$;
     this.hideTopbar = this.uiDataService.inIframe();
-    // subscribe to the logged in user
-    this.userDataService.loggedInUser
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe((user) => {
-        if (user && user.profile && user.profile.sub !== this.loggedInUserId) {
-          this.loggedInUserId = user.profile.sub;
-        }
-      });
-    // subscribe to authorizedUser
-    this.userDataService.isAuthorizedUser
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe((isAuthorized) => {
-        this.isAuthorizedUser = isAuthorized;
-      });
     // subscribe to route changes
     activatedRoute.queryParamMap
       .pipe(takeUntil(this.unsubscribe$))
@@ -132,6 +128,28 @@ export class HomeAppComponent implements OnDestroy, OnInit {
   }
 
   ngOnInit() {
+    this.currentUserQuery
+      .select()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((cu) => {
+        if (cu.name) {
+          this.username = cu.name;
+          this.isAuthorizedUser = !!cu.id;
+          this.loggedInUserId = cu.id;
+        }
+      });
+    this.userDataService.setCurrentUser();
+    // Load permissions
+    this.permissionDataService
+      .load()
+      .subscribe(
+        (x) => {
+          this.permissions = this.permissionDataService.permissions;
+          this.canAccessAdminSection = this.permissions.filter(p => !p.endsWith('Msels')).length > 0;
+          this.canEditMsels = this.permissionDataService.hasPermission(SystemPermission.EditMsels);
+        }
+      );
+    // Start SignalR connection
     this.signalRService
       .startConnection(ApplicationArea.home)
       .then(() => {
@@ -150,7 +168,7 @@ export class HomeAppComponent implements OnDestroy, OnInit {
   }
 
   logout() {
-    this.userDataService.logout();
+    this.authService.logout();
   }
 
   healthCheck() {

@@ -2,15 +2,15 @@
 // Released under a MIT (SEI)-style license, please see LICENSE.md in the
 // project root for license information or contact permission@sei.cmu.edu for full terms.
 
-import { CiteRoleStore } from './cite-role.store';
-import { CiteRoleQuery } from './cite-role.query';
+import { CiteDutyStore } from './cite-duty.store';
+import { CiteDutyQuery } from './cite-duty.query';
 import { Injectable } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { PageEvent } from '@angular/material/paginator';
 import { Router, ActivatedRoute } from '@angular/router';
 import {
-  CiteRole,
-  CiteRoleService,
+  CiteDuty,
+  CiteDutyService,
 } from 'src/app/generated/blueprint.api';
 import { map, take, tap } from 'rxjs/operators';
 import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
@@ -18,12 +18,12 @@ import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
 @Injectable({
   providedIn: 'root',
 })
-export class CiteRoleDataService {
-  private _requestedCiteRoleId: string;
-  private _requestedCiteRoleId$ = this.activatedRoute.queryParamMap.pipe(
-    map((params) => params.get('citeRoleId') || '')
+export class CiteDutyDataService {
+  private _requestedCiteDutyId: string;
+  private _requestedCiteDutyId$ = this.activatedRoute.queryParamMap.pipe(
+    map((params) => params.get('citeDutyId') || '')
   );
-  readonly CiteRoleList: Observable<CiteRole[]>;
+  readonly CiteDutyList: Observable<CiteDuty[]>;
   readonly filterControl = new FormControl();
   private filterTerm: Observable<string>;
   private sortColumn: Observable<string>;
@@ -34,18 +34,18 @@ export class CiteRoleDataService {
   private pageIndex: Observable<number>;
 
   constructor(
-    private citeRoleStore: CiteRoleStore,
-    private citeRoleQuery: CiteRoleQuery,
-    private citeRoleService: CiteRoleService,
+    private citeDutyStore: CiteDutyStore,
+    private citeDutyQuery: CiteDutyQuery,
+    private citeDutyService: CiteDutyService,
     private router: Router,
     private activatedRoute: ActivatedRoute
   ) {
     this.filterTerm = activatedRoute.queryParamMap.pipe(
-      map((params) => params.get('citeRolemask') || '')
+      map((params) => params.get('citeDutymask') || '')
     );
     this.filterControl.valueChanges.subscribe((term) => {
       this.router.navigate([], {
-        queryParams: { citeRolemask: term },
+        queryParams: { citeDutymask: term },
         queryParamsHandling: 'merge',
       });
     });
@@ -61,8 +61,8 @@ export class CiteRoleDataService {
     this.pageIndex = activatedRoute.queryParamMap.pipe(
       map((params) => parseInt(params.get('pageindex') || '0', 10))
     );
-    this.CiteRoleList = combineLatest([
-      this.citeRoleQuery.selectAll(),
+    this.CiteDutyList = combineLatest([
+      this.citeDutyQuery.selectAll(),
       this.filterTerm,
       this.sortColumn,
       this.sortIsAscending,
@@ -79,16 +79,16 @@ export class CiteRoleDataService {
           pageIndex,
         ]) =>
           items
-            ? (items as CiteRole[])
-              .sort((a: CiteRole, b: CiteRole) =>
-                this.sortCiteRoles(a, b, sortColumn, sortIsAscending)
+            ? (items as CiteDuty[])
+              .sort((a: CiteDuty, b: CiteDuty) =>
+                this.sortCiteDuties(a, b, sortColumn, sortIsAscending)
               )
               .filter(
-                (citeRole) =>
-                  ('' + citeRole.name)
+                (citeDuty) =>
+                  ('' + citeDuty.name)
                     .toLowerCase()
                     .includes(filterTerm.toLowerCase()) ||
-                    citeRole.id
+                    citeDuty.id
                       .toLowerCase()
                       .includes(filterTerm.toLowerCase())
               )
@@ -97,9 +97,9 @@ export class CiteRoleDataService {
     );
   }
 
-  private sortCiteRoles(
-    a: CiteRole,
-    b: CiteRole,
+  private sortCiteDuties(
+    a: CiteDuty,
+    b: CiteDuty,
     column: string,
     isAsc: boolean
   ) {
@@ -120,84 +120,84 @@ export class CiteRoleDataService {
   }
 
   loadTemplates() {
-    this.citeRoleStore.setLoading(true);
-    this.citeRoleService
-      .getCiteRoleTemplates()
+    this.citeDutyStore.setLoading(true);
+    this.citeDutyService
+      .getCiteDutyTemplates()
       .pipe(
         tap(() => {
-          this.citeRoleStore.setLoading(false);
+          this.citeDutyStore.setLoading(false);
         }),
         take(1)
       )
       .subscribe(
         (templates) => {
-          this.citeRoleStore.upsertMany(templates);
+          this.citeDutyStore.upsertMany(templates);
         },
         (error) => {}
       );
   }
 
   loadByMsel(mselId: string) {
-    this.citeRoleStore.setLoading(true);
-    this.citeRoleService
-      .getRolesByMsel(mselId)
+    this.citeDutyStore.setLoading(true);
+    this.citeDutyService
+      .getDutiesByMsel(mselId)
       .pipe(
         tap(() => {
-          this.citeRoleStore.setLoading(false);
+          this.citeDutyStore.setLoading(false);
         }),
         take(1)
       )
       .subscribe(
-        (citeRoles) => {
-          this.citeRoleStore.set(citeRoles);
+        (citeDuties) => {
+          this.citeDutyStore.set(citeDuties);
         },
         (error) => {
-          this.citeRoleStore.set([]);
+          this.citeDutyStore.set([]);
         }
       );
   }
 
   loadById(id: string) {
-    this.citeRoleStore.setLoading(true);
-    return this.citeRoleService
-      .getCiteRole(id)
+    this.citeDutyStore.setLoading(true);
+    return this.citeDutyService
+      .getCiteDuty(id)
       .pipe(
         tap(() => {
-          this.citeRoleStore.setLoading(false);
+          this.citeDutyStore.setLoading(false);
         }),
         take(1)
       )
       .subscribe((s) => {
-        this.citeRoleStore.upsert(s.id, { ...s });
+        this.citeDutyStore.upsert(s.id, { ...s });
       });
   }
 
   unload() {
-    this.citeRoleStore.set([]);
+    this.citeDutyStore.set([]);
   }
 
-  add(citeRole: CiteRole) {
-    this.citeRoleStore.setLoading(true);
-    this.citeRoleService
-      .createCiteRole(citeRole)
+  add(citeDuty: CiteDuty) {
+    this.citeDutyStore.setLoading(true);
+    this.citeDutyService
+      .createCiteDuty(citeDuty)
       .pipe(
         tap(() => {
-          this.citeRoleStore.setLoading(false);
+          this.citeDutyStore.setLoading(false);
         }),
         take(1)
       )
       .subscribe((s) => {
-        this.citeRoleStore.add(s);
+        this.citeDutyStore.add(s);
       });
   }
 
-  updateCiteRole(citeRole: CiteRole) {
-    this.citeRoleStore.setLoading(true);
-    this.citeRoleService
-      .updateCiteRole(citeRole.id, citeRole)
+  updateCiteDuty(citeDuty: CiteDuty) {
+    this.citeDutyStore.setLoading(true);
+    this.citeDutyService
+      .updateCiteDuty(citeDuty.id, citeDuty)
       .pipe(
         tap(() => {
-          this.citeRoleStore.setLoading(false);
+          this.citeDutyStore.setLoading(false);
         }),
         take(1)
       )
@@ -207,8 +207,8 @@ export class CiteRoleDataService {
   }
 
   delete(id: string) {
-    this.citeRoleService
-      .deleteCiteRole(id)
+    this.citeDutyService
+      .deleteCiteDuty(id)
       .pipe(take(1))
       .subscribe((r) => {
         this.deleteFromStore(id);
@@ -216,14 +216,14 @@ export class CiteRoleDataService {
   }
 
   setPageEvent(pageEvent: PageEvent) {
-    this.citeRoleStore.update({ pageEvent: pageEvent });
+    this.citeDutyStore.update({ pageEvent: pageEvent });
   }
 
-  updateStore(citeRole: CiteRole) {
-    this.citeRoleStore.upsert(citeRole.id, citeRole);
+  updateStore(citeDuty: CiteDuty) {
+    this.citeDutyStore.upsert(citeDuty.id, citeDuty);
   }
 
   deleteFromStore(id: string) {
-    this.citeRoleStore.remove(id);
+    this.citeDutyStore.remove(id);
   }
 }

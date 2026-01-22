@@ -49,7 +49,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <mat-header-cell *matHeaderCellDef>&nbsp;</mat-header-cell>
         <mat-cell *matCellDef="let element">
           <div>
-            <button mat-icon-button (click)="addUserToUnit(element)" title="Add {{ element.name }}">
+            <button mat-icon-button (click)="addUserToUnit(element)" title="Add {{ element.name }}" [disabled]="!canManage">
               <mat-icon class="mdi-18px" fontIcon="mdi-plus-circle-outline" title="Add {{ element.name }}"></mat-icon>
             </button>
           </div>
@@ -99,7 +99,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <mat-header-cell *matHeaderCellDef>&nbsp;</mat-header-cell>
           <mat-cell *matCellDef="let element">
             <div>
-              <button mat-icon-button (click)="removeUserFromUnit(element)" title="Remove {{ element.name }}">
+              <button mat-icon-button (click)="removeUserFromUnit(element)" title="Remove {{ element.name }}" [disabled]="!canManage">
                 <mat-icon class="mdi-18px" fontIcon="mdi-minus-circle-outline"
                   title="Remove {{ element.name }}"></mat-icon>
               </button>

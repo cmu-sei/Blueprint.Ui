@@ -5,7 +5,7 @@ import { Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { UnitQuery } from 'src/app/data/unit/unit.query';
-import { UserDataService } from 'src/app/data/user/user-data.service';
+import { UserQuery } from 'src/app/data/user/user.query';
 import {
   DataField,
   Catalog,
@@ -21,14 +21,14 @@ import { CatalogUnitQuery } from 'src/app/data/catalog-unit/catalog-unit.query';
 import { MatMenuTrigger } from '@angular/material/menu';
 
 @Component({
-    selector: 'app-catalog-units',
-    templateUrl: './catalog-units.component.html',
-    styleUrls: ['./catalog-units.component.scss'],
-    standalone: false
+  selector: 'app-catalog-units',
+  templateUrl: './catalog-units.component.html',
+  styleUrls: ['./catalog-units.component.scss'],
+  standalone: false
 })
 export class CatalogUnitsComponent implements OnDestroy, OnInit {
   @Input() loggedInUserId: string;
-  @Input() isContentDeveloper: boolean;
+  @Input() canEdit: boolean;
   @Input() catalog: Catalog;
   // context menu
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
@@ -44,13 +44,13 @@ export class CatalogUnitsComponent implements OnDestroy, OnInit {
 
   constructor(
     private unitQuery: UnitQuery,
-    private userDataService: UserDataService,
+    private userQuery: UserQuery,
     private catalogDataService: CatalogDataService,
     private catalogUnitDataService: CatalogUnitDataService,
     private catalogUnitQuery: CatalogUnitQuery,
   ) {
     // subscribe to users
-    this.userDataService.users.pipe(takeUntil(this.unsubscribe$)).subscribe(users => {
+    this.userQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(users => {
       this.userList = users;
     });
     // subscribe to units

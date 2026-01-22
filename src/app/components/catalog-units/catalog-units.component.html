@@ -4,43 +4,38 @@ Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
 @if (catalog) {
-  <div>
-    <div class="units-title">Units with access</div>
-    <div class="units-div">
-      @for (catalogUnit of catalogUnitList; track trackByFn($index, catalogUnit)) {
-        <div>
-          @if (isContentDeveloper) {
-            <button
-              mat-icon-button
-              (click)="removeUnitFromCatalog(catalogUnit.id); $event.stopPropagation();"
-              title="Remove {{ getUnit(catalogUnit.unitId).shortName }} from this catalog"
-              >
-              <mat-icon class="mdi-24px self-center" fontIcon="mdi-minus-circle-outline"></mat-icon>
-            </button>
-          }
-          <span class="center-self">{{ getUnit(catalogUnit.unitId).shortName }} - {{ getUnit(catalogUnit.unitId).name }}</span>
-        </div>
+<div>
+  <div class="units-title">Units with access</div>
+  <div class="units-div">
+    @for (catalogUnit of catalogUnitList; track trackByFn($index, catalogUnit)) {
+    <div>
+      @if (canEdit) {
+      <button mat-icon-button (click)="removeUnitFromCatalog(catalogUnit.id); $event.stopPropagation();"
+        title="Remove {{ getUnit(catalogUnit.unitId).shortName }} from this catalog">
+        <mat-icon class="mdi-24px self-center" fontIcon="mdi-minus-circle-outline"></mat-icon>
+      </button>
       }
-      @if (catalogUnitList.length === 0) {
-        <div style="margin-left: 45px;">
-          No units have access
-        </div>
-      }
+      <span class="center-self">{{ getUnit(catalogUnit.unitId).shortName }} - {{ getUnit(catalogUnit.unitId).name
+        }}</span>
     </div>
-    <mat-expansion-panel class="units-div">
-      <mat-expansion-panel-header class="units-title">Add a Unit</mat-expansion-panel-header>
-      @for (unit of getUnitList(); track trackByFn($index, unit)) {
-        <div>
-          <button
-            mat-icon-button
-            (click)="addUnitToCatalog(unit.id); $event.stopPropagation();"
-            title="Add {{ unit.shortName }} to this catalog"
-            >
-            <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
-          </button>
-          {{ unit.shortName }} - {{ unit.name }}
-        </div>
-      }
-    </mat-expansion-panel>
+    }
+    @if (catalogUnitList.length === 0) {
+    <div style="margin-left: 45px;">
+      No units have access
+    </div>
+    }
   </div>
+  <mat-expansion-panel class="units-div">
+    <mat-expansion-panel-header class="units-title">Add a Unit</mat-expansion-panel-header>
+    @for (unit of getUnitList(); track trackByFn($index, unit)) {
+    <div>
+      <button mat-icon-button (click)="addUnitToCatalog(unit.id); $event.stopPropagation();"
+        title="Add {{ unit.shortName }} to this catalog" [disabled]="!canEdit">
+        <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
+      </button>
+      {{ unit.shortName }} - {{ unit.name }}
+    </div>
+    }
+  </mat-expansion-panel>
+</div>
 }

@@ -8,7 +8,7 @@ import { Sort } from '@angular/material/sort';
 import { Unit, User } from 'src/app/generated/blueprint.api/model/models';
 import { UnitDataService } from 'src/app/data/unit/unit-data.service';
 import { UnitQuery } from 'src/app/data/unit/unit.query';
-import { UserDataService } from 'src/app/data/user/user-data.service';
+import { UserQuery } from 'src/app/data/user/user.query';
 import { ComnSettingsService } from '@cmusei/crucible-common';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -23,6 +23,7 @@ import { DialogService } from 'src/app/services/dialog/dialog.service';
     standalone: false
 })
 export class AdminUnitsComponent implements OnDestroy {
+  @Input() canManage: boolean;
   userList: User[] = [];
   allUnits: Unit[] = [];
   unitList: Unit[] = [];
@@ -48,7 +49,7 @@ export class AdminUnitsComponent implements OnDestroy {
     public dialogService: DialogService,
     private unitDataService: UnitDataService,
     private unitQuery: UnitQuery,
-    private userDataService: UserDataService
+    private userQuery: UserQuery
   ) {
     this.topbarColor = this.settingsService.settings.AppTopBarHexColor
       ? this.settingsService.settings.AppTopBarHexColor
@@ -61,7 +62,7 @@ export class AdminUnitsComponent implements OnDestroy {
     // load the units
     this.unitDataService.load();
     // subscribe to all users
-    this.userDataService.userList.pipe(takeUntil(this.unsubscribe$)).subscribe(users => {
+    this.userQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(users => {
       this.userList = users;
     });
   }

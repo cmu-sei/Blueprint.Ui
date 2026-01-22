@@ -1,5 +1,5 @@
 /*
- Copyright 2024 Carnegie Mellon University. All Rights Reserved.
+ Copyright 2026 Carnegie Mellon University. All Rights Reserved.
  Released under a MIT (SEI)-style license. See LICENSE.md in the
  project root for license information.
 */
@@ -18,14 +18,16 @@ export * from './cite.service';
 import { CiteService } from './cite.service';
 export * from './citeAction.service';
 import { CiteActionService } from './citeAction.service';
-export * from './citeRole.service';
-import { CiteRoleService } from './citeRole.service';
+export * from './citeDuty.service';
+import { CiteDutyService } from './citeDuty.service';
 export * from './dataField.service';
 import { DataFieldService } from './dataField.service';
 export * from './dataOption.service';
 import { DataOptionService } from './dataOption.service';
 export * from './dataValue.service';
 import { DataValueService } from './dataValue.service';
+export * from './group.service';
+import { GroupService } from './group.service';
 export * from './healthCheck.service';
 import { HealthCheckService } from './healthCheck.service';
 export * from './inject.service';
@@ -44,8 +46,6 @@ export * from './mselUnit.service';
 import { MselUnitService } from './mselUnit.service';
 export * from './organization.service';
 import { OrganizationService } from './organization.service';
-export * from './permission.service';
-import { PermissionService } from './permission.service';
 export * from './player.service';
 import { PlayerService } from './player.service';
 export * from './playerApplication.service';
@@ -54,6 +54,10 @@ export * from './playerApplicationTeam.service';
 import { PlayerApplicationTeamService } from './playerApplicationTeam.service';
 export * from './scenarioEvent.service';
 import { ScenarioEventService } from './scenarioEvent.service';
+export * from './systemPermissions.service';
+import { SystemPermissionsService } from './systemPermissions.service';
+export * from './systemRoles.service';
+import { SystemRolesService } from './systemRoles.service';
 export * from './team.service';
 import { TeamService } from './team.service';
 export * from './teamUser.service';
@@ -66,8 +70,6 @@ export * from './user.service';
 import { UserService } from './user.service';
 export * from './userMselRole.service';
 import { UserMselRoleService } from './userMselRole.service';
-export * from './userPermission.service';
-import { UserPermissionService } from './userPermission.service';
 export * from './userTeamRole.service';
 import { UserTeamRoleService } from './userTeamRole.service';
-export const APIS = [CardService, CardTeamService, CatalogService, CatalogInjectService, CatalogUnitService, CiteService, CiteActionService, CiteRoleService, DataFieldService, DataOptionService, DataValueService, HealthCheckService, InjectService, InjectTypeService, InvitationService, MoveService, MselService, MselPageService, MselUnitService, OrganizationService, PermissionService, PlayerService, PlayerApplicationService, PlayerApplicationTeamService, ScenarioEventService, TeamService, TeamUserService, UnitService, UnitUserService, UserService, UserMselRoleService, UserPermissionService, UserTeamRoleService];
+export const APIS = [CardService, CardTeamService, CatalogService, CatalogInjectService, CatalogUnitService, CiteService, CiteActionService, CiteDutyService, DataFieldService, DataOptionService, DataValueService, GroupService, HealthCheckService, InjectService, InjectTypeService, InvitationService, MoveService, MselService, MselPageService, MselUnitService, OrganizationService, PlayerService, PlayerApplicationService, PlayerApplicationTeamService, ScenarioEventService, SystemPermissionsService, SystemRolesService, TeamService, TeamUserService, UnitService, UnitUserService, UserService, UserMselRoleService, UserTeamRoleService];

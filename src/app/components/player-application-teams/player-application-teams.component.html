@@ -43,11 +43,13 @@ project root for license information.
       </ng-container>
       <ng-container matColumnDef="id">
         <mat-cell *matCellDef="let element">
+          @if (canEditMsel()) {
           <div>
             <button mat-icon-button (click)="addTeamToPlayerApplication(element)" title="Add {{ element.name }}">
               <mat-icon class="mdi-18px" fontIcon="mdi-plus-circle-outline" title="Add {{ element.name }}"></mat-icon>
             </button>
           </div>
+          }
         </mat-cell>
       </ng-container>
       <mat-row *matRowDef="let row; columns: mselTeamColumns"></mat-row>
@@ -84,6 +86,7 @@ project root for license information.
 
       <ng-container matColumnDef="id">
         <mat-cell *matCellDef="let element">
+          @if (canEditMsel()) {
           <div>
             <button mat-icon-button (click)="removeTeamFromPlayerApplication(element.id)"
               title="Remove {{ element.name }}">
@@ -91,6 +94,7 @@ project root for license information.
                 title="Remove {{ element.name }}"></mat-icon>
             </button>
           </div>
+          }
         </mat-cell>
       </ng-container>
 

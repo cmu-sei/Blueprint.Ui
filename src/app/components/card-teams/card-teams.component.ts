@@ -3,6 +3,7 @@
 // project root for license information.
 
 import {
+  ChangeDetectorRef,
   Component,
   OnDestroy,
   OnInit,
@@ -13,9 +14,11 @@ import {
 import { PageEvent, MatPaginator } from '@angular/material/paginator';
 import { MatSort, MatSortable } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
-import { CardTeam, Msel, Team } from 'src/app/generated/blueprint.api';
+import { CardTeam, SystemPermission, Team } from 'src/app/generated/blueprint.api';
 import { CardTeamDataService } from 'src/app/data/team/card-team-data.service';
+import { MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
+import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
 import { Observable, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
@@ -28,6 +31,8 @@ import { takeUntil } from 'rxjs/operators';
 
 export class CardTeamsComponent implements OnDestroy, OnInit {
   @Input() cardId: string;
+  @Input() loggedInUserId: string;
+  msel = new MselPlus();
   mselTeamList: Team[] = [];
   @ViewChild('teamsInput') teamsInput: ElementRef<HTMLInputElement>;
   @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
@@ -45,15 +50,26 @@ export class CardTeamsComponent implements OnDestroy, OnInit {
 
   constructor(
     private cardTeamDataService: CardTeamDataService,
-    private mselQuery: MselQuery
+    private mselQuery: MselQuery,
+    private permissionDataService: PermissionDataService,
+    private changeDetectorRef: ChangeDetectorRef
   ) {
     // subscribe to the active MSEL
-    (this.mselQuery.selectActive() as Observable<Msel>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
-      this.mselTeamList = msel?.teams;
+    (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
+      if (msel) {
+        Object.assign(this.msel, msel);
+        this.mselTeamList = msel.teams;
+      }
     });
   }
 
   ngOnInit() {
+    // Load permissions and trigger change detection when loaded
+    this.permissionDataService.load()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(() => {
+        this.changeDetectorRef.markForCheck();
+      });
     this.sort.sort(<MatSortable>{ id: 'name', start: 'asc' });
     this.teamDataSource.sort = this.sort;
     this.pageEvent = new PageEvent();
@@ -132,6 +148,11 @@ export class CardTeamsComponent implements OnDestroy, OnInit {
     } else {
       return (a.toLowerCase() < b.toLowerCase() ? -1 : 1) * (isAsc ? 1 : -1);
     }
+  }
+
+  canEditMsel(): boolean {
+    return this.permissionDataService.hasPermission(SystemPermission.EditMsels) ||
+      this.msel.hasRole(this.loggedInUserId, '').editor;
   }
 
   ngOnDestroy() {

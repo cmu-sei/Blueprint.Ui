@@ -31,7 +31,7 @@ import { CiteActionEditDialogComponent } from '../cite-action-edit-dialog/cite-a
 })
 export class CiteActionListComponent implements OnDestroy {
   @Input() loggedInUserId: string;
-  @Input() isContentDeveloper: boolean;
+  @Input() canEdit: boolean;
   @Input() showTemplates: boolean;
   msel = new MselPlus();
   citeActionList: CiteAction[] = [];

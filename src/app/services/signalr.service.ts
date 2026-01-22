@@ -12,7 +12,7 @@ import {
   CardTeam,
   Catalog,
   CiteAction,
-  CiteRole,
+  CiteDuty,
   DataField,
   DataOption,
   DataValue,
@@ -34,7 +34,7 @@ import { CardDataService } from '../data/card/card-data.service';
 import { CardTeamDataService } from '../data/team/card-team-data.service';
 import { CatalogDataService } from '../data/catalog/catalog-data.service';
 import { CiteActionDataService } from '../data/cite-action/cite-action-data.service';
-import { CiteRoleDataService } from '../data/cite-role/cite-role-data.service';
+import { CiteDutyDataService } from '../data/cite-duty/cite-duty-data.service';
 import { DataFieldDataService } from '../data/data-field/data-field-data.service';
 import { DataOptionDataService } from '../data/data-option/data-option-data.service';
 import { DataValueDataService } from '../data/data-value/data-value-data.service';
@@ -77,7 +77,7 @@ export class SignalRService implements OnDestroy {
     private cardTeamDataService: CardTeamDataService,
     private catalogDataService: CatalogDataService,
     private citeActionDataService: CiteActionDataService,
-    private citeRoleDataService: CiteRoleDataService,
+    private citeDutyDataService: CiteDutyDataService,
     private dataFieldDataService: DataFieldDataService,
     private dataOptionDataService: DataOptionDataService,
     private dataValueDataService: DataValueDataService,
@@ -187,7 +187,7 @@ export class SignalRService implements OnDestroy {
     this.addCardTeamHandlers();
     this.addCatalogHandlers();
     this.addCiteActionHandlers();
-    this.addCiteRoleHandlers();
+    this.addCiteDutyHandlers();
     this.addDataFieldHandlers();
     this.addDataOptionHandlers();
     this.addDataValueHandlers();
@@ -262,17 +262,17 @@ export class SignalRService implements OnDestroy {
     });
   }
 
-  private addCiteRoleHandlers() {
-    this.hubConnection.on('CiteRoleUpdated', (citeRole: CiteRole) => {
-      this.citeRoleDataService.updateStore(citeRole);
+  private addCiteDutyHandlers() {
+    this.hubConnection.on('CiteDutyUpdated', (citeDuty: CiteDuty) => {
+      this.citeDutyDataService.updateStore(citeDuty);
     });
 
-    this.hubConnection.on('CiteRoleCreated', (citeRole: CiteRole) => {
-      this.citeRoleDataService.updateStore(citeRole);
+    this.hubConnection.on('CiteDutyCreated', (citeDuty: CiteDuty) => {
+      this.citeDutyDataService.updateStore(citeDuty);
     });
 
-    this.hubConnection.on('CiteRoleDeleted', (id: string) => {
-      this.citeRoleDataService.deleteFromStore(id);
+    this.hubConnection.on('CiteDutyDeleted', (id: string) => {
+      this.citeDutyDataService.deleteFromStore(id);
     });
   }
 

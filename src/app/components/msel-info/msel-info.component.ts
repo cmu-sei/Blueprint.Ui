@@ -1,20 +1,22 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, EventEmitter, Input, OnDestroy, Output, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { TeamQuery } from 'src/app/data/team/team.query';
-import { UserDataService } from 'src/app/data/user/user-data.service';
+import { UserQuery } from 'src/app/data/user/user.query';
 import {
   DataField,
   MselItemStatus,
   MselPage,
   MselUnit,
   ScenarioEvent,
+  SystemPermission,
   Team,
   User
 } from 'src/app/generated/blueprint.api';
+import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { MatMenuTrigger } from '@angular/material/menu';
@@ -34,9 +36,8 @@ import { AngularEditorConfig } from '@kolkov/angular-editor';
   styleUrls: ['./msel-info.component.scss'],
   standalone: false
 })
-export class MselInfoComponent implements OnDestroy {
+export class MselInfoComponent implements OnDestroy, OnInit {
   @Input() loggedInUserId: string;
-  @Input() isContentDeveloper: boolean;
   @Output() deleteThisMsel = new EventEmitter<string>();
   msel = new MselPlus();
   originalMsel = new MselPlus();
@@ -117,7 +118,7 @@ export class MselInfoComponent implements OnDestroy {
   constructor(
     public dialogService: DialogService,
     private teamQuery: TeamQuery,
-    private userDataService: UserDataService,
+    private userQuery: UserQuery,
     private dataFieldQuery: DataFieldQuery,
     private mselDataService: MselDataService,
     private mselQuery: MselQuery,
@@ -125,7 +126,9 @@ export class MselInfoComponent implements OnDestroy {
     private playerService: PlayerService,
     private mselPageDataService: MselPageDataService,
     private mselPageQuery: MselPageQuery,
-    private mselUnitQuery: MselUnitQuery
+    private mselUnitQuery: MselUnitQuery,
+    private permissionDataService: PermissionDataService,
+    private changeDetectorRef: ChangeDetectorRef
   ) {
     // subscribe to the active MSEL
     (this.mselQuery.selectActive() as Observable<MselPlus>)
@@ -174,7 +177,7 @@ export class MselInfoComponent implements OnDestroy {
         }
       });
     // subscribe to users
-    this.userDataService.users
+    this.userQuery.selectAll()
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((users) => {
         this.userList = users;
@@ -210,6 +213,15 @@ export class MselInfoComponent implements OnDestroy {
     });
   }
 
+  ngOnInit() {
+    // Load permissions and trigger change detection when loaded
+    this.permissionDataService.load()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(() => {
+        this.changeDetectorRef.markForCheck();
+      });
+  }
+
   getUserName(userId: string) {
     const user = this.userList.find((u) => u.id === userId);
     return user ? user.name : 'unknown';
@@ -226,12 +238,19 @@ export class MselInfoComponent implements OnDestroy {
   }
 
   deleteMsel() {
-    if (
-      this.msel.hasRole(this.loggedInUserId, null).owner ||
-      this.isContentDeveloper
-    ) {
+    if (this.canManageMsel()) {
       this.deleteThisMsel.emit(this.msel.id);
     }
+  }
+
+  canEditMsel(): boolean {
+    return this.permissionDataService.hasPermission(SystemPermission.EditMsels) ||
+      this.msel.hasRole(this.loggedInUserId, '').editor;
+  }
+
+  canManageMsel(): boolean {
+    return this.permissionDataService.hasPermission(SystemPermission.ManageMsels) ||
+      this.msel.hasRole(this.loggedInUserId, '').owner;
   }
 
   galleryWarningMessage() {

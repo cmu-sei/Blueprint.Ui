@@ -32,21 +32,21 @@ import { v4 as uuidv4 } from 'uuid';
 import { InjectTypeQuery } from 'src/app/data/inject-type/inject-type.query';
 
 @Component({
-    selector: 'app-admin-catalog-list',
-    templateUrl: './admin-catalog-list.component.html',
-    styleUrls: ['./admin-catalog-list.component.scss'],
-    animations: [
-        trigger('detailExpand', [
-            state('collapsed', style({ height: '0px', minHeight: '0', visibility: 'hidden' })),
-            state('expanded', style({ height: '*', visibility: 'visible' })),
-            transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
-        ]),
-    ],
-    standalone: false
+  selector: 'app-admin-catalog-list',
+  templateUrl: './admin-catalog-list.component.html',
+  styleUrls: ['./admin-catalog-list.component.scss'],
+  animations: [
+    trigger('detailExpand', [
+      state('collapsed', style({ height: '0px', minHeight: '0', visibility: 'hidden' })),
+      state('expanded', style({ height: '*', visibility: 'visible' })),
+      transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
+    ]),
+  ],
+  standalone: false
 })
 export class AdminCatalogListComponent implements OnDestroy {
   @Input() loggedInUserId: string;
-  @Input() isContentDeveloper: boolean;
+  @Input() canEdit: boolean;
   @ViewChild('catalogTable', { static: false }) catalogTable: MatTable<any>;
   @ViewChild('jsonInput') jsonInput: ElementRef<HTMLInputElement>;
   contextMenuPosition = { x: '0px', y: '0px' };

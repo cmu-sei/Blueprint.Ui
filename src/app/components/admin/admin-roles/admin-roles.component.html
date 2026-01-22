@@ -1,0 +1,138 @@
+<!--
+Copyright 2025 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
+-->
+
+<div class="container mat-elevation-z8">
+  <table mat-table [dataSource]="dataSource" class="w-100">
+    <ng-container matColumnDef="permissions">
+      <th mat-header-cell *matHeaderCellDef>
+        <div class="header-cell">
+          <span>Permissions</span>
+          @if (canEdit && !isAddingRole) {
+            <button
+              mat-icon-button
+              color="primary"
+              (click)="startAddRole()"
+              matTooltip="Add New Role"
+            >
+              <mat-icon class="mdi-24px" fontIcon="mdi-plus-circle"></mat-icon>
+            </button>
+          }
+          @if (isAddingRole) {
+            <mat-form-field class="new-role-field" appearance="outline">
+              <input
+                matInput
+                placeholder="Role name"
+                [(ngModel)]="newRoleName"
+                (keydown)="handleInput($event)"
+                (keyup.enter)="addRole()"
+                (keyup.escape)="cancelAddRole()"
+              />
+            </mat-form-field>
+            <button
+              mat-icon-button
+              color="primary"
+              (click)="addRole()"
+              [disabled]="!newRoleName.trim()"
+              matTooltip="Save"
+            >
+              <mat-icon class="mdi-24px" fontIcon="mdi-check"></mat-icon>
+            </button>
+            <button
+              mat-icon-button
+              color="warn"
+              (click)="cancelAddRole()"
+              matTooltip="Cancel"
+            >
+              <mat-icon class="mdi-24px" fontIcon="mdi-close"></mat-icon>
+            </button>
+          }
+        </div>
+      </th>
+      <td mat-cell *matCellDef="let permission">
+        <div class="permission-cell">
+          <button
+            mat-icon-button
+            color="primary"
+            [matTooltip]="getPermissionDescription(permission)"
+            [matTooltipShowDelay]="0"
+          >
+            <mat-icon class="mdi-24px" fontIcon="mdi-information"></mat-icon>
+          </button>
+          <span>{{ permission }}</span>
+        </div>
+      </td>
+    </ng-container>
+
+    @for (role of roles$ | async; track trackById($index, role)) {
+      <ng-container [matColumnDef]="role.name">
+        <th mat-header-cell *matHeaderCellDef>
+          <div class="role-header">
+            @if (editingRoleId === role.id) {
+              <mat-form-field class="edit-role-field" appearance="outline">
+                <input
+                  matInput
+                  [(ngModel)]="editingRoleName"
+                  (keydown)="handleInput($event)"
+                  (keyup.enter)="saveRoleName(role)"
+                  (keyup.escape)="cancelEditRole()"
+                />
+              </mat-form-field>
+              <button
+                mat-icon-button
+                color="primary"
+                (click)="saveRoleName(role)"
+                [disabled]="!editingRoleName.trim()"
+                matTooltip="Save"
+              >
+                <mat-icon class="mdi-24px" fontIcon="mdi-check"></mat-icon>
+              </button>
+              <button
+                mat-icon-button
+                color="warn"
+                (click)="cancelEditRole()"
+                matTooltip="Cancel"
+              >
+                <mat-icon class="mdi-24px" fontIcon="mdi-close"></mat-icon>
+              </button>
+            } @else {
+              <span class="role-name">{{ role.name }}</span>
+              @if (canEdit && !role.immutable) {
+                <button
+                  mat-icon-button
+                  color="primary"
+                  (click)="startEditRole(role)"
+                  matTooltip="Rename Role"
+                >
+                  <mat-icon class="mdi-24px" fontIcon="mdi-pencil-outline"></mat-icon>
+                </button>
+                <button
+                  mat-icon-button
+                  color="warn"
+                  (click)="deleteRole(role)"
+                  matTooltip="Delete Role"
+                >
+                  <mat-icon class="mdi-24px" fontIcon="mdi-delete-forever-outline"></mat-icon>
+                </button>
+              }
+            }
+          </div>
+        </th>
+        <td mat-cell *matCellDef="let permission">
+          @if (permission === allPermission || !role.allPermissions) {
+            <mat-checkbox
+              color="primary"
+              [checked]="hasPermission(permission, role)"
+              (change)="setPermission(permission, role, $event)"
+              [disabled]="role.immutable || !canEdit"
+            ></mat-checkbox>
+          }
+        </td>
+      </ng-container>
+    }
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns$ | async; sticky: true"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns$ | async"></tr>
+  </table>
+</div>

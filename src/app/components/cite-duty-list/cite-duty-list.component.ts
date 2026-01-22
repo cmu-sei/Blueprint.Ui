@@ -7,40 +7,40 @@ import { FormControl } from '@angular/forms';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import {
-  CiteRole,
+  CiteDuty,
   Team
 } from 'src/app/generated/blueprint.api';
 import { MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { Sort } from '@angular/material/sort';
 import { MatMenuTrigger } from '@angular/material/menu';
-import { CiteRoleDataService } from 'src/app/data/cite-role/cite-role-data.service';
-import { CiteRoleQuery } from 'src/app/data/cite-role/cite-role.query';
+import { CiteDutyDataService } from 'src/app/data/cite-duty/cite-duty-data.service';
+import { CiteDutyQuery } from 'src/app/data/cite-duty/cite-duty.query';
 import { TeamQuery } from 'src/app/data/team/team.query';
 import { MatDialog } from '@angular/material/dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
-import { CiteRoleEditDialogComponent } from '../cite-role-edit-dialog/cite-role-edit-dialog.component';
+import { CiteDutyEditDialogComponent } from '../cite-duty-edit-dialog/cite-duty-edit-dialog.component';
 
 @Component({
-  selector: 'app-cite-role-list',
-  templateUrl: './cite-role-list.component.html',
-  styleUrls: ['./cite-role-list.component.scss'],
+  selector: 'app-cite-duty-list',
+  templateUrl: './cite-duty-list.component.html',
+  styleUrls: ['./cite-duty-list.component.scss'],
   standalone: false
 })
-export class CiteRoleListComponent implements OnDestroy {
+export class CiteDutyListComponent implements OnDestroy {
   @Input() loggedInUserId: string;
-  @Input() isContentDeveloper: boolean;
+  @Input() canEdit: boolean;
   @Input() showTemplates: boolean;
   msel = new MselPlus();
-  citeRoleList: CiteRole[] = [];
-  templateList: CiteRole[] = [];
-  changedCiteRole: CiteRole = {};
-  filteredCiteRoleList: CiteRole[] = [];
+  citeDutyList: CiteDuty[] = [];
+  templateList: CiteDuty[] = [];
+  changedCiteDuty: CiteDuty = {};
+  filteredCiteDutyList: CiteDuty[] = [];
   filterControl = new FormControl();
   filterString = '';
   sort: Sort = { active: 'name', direction: 'asc' };
-  sortedCiteRoles: CiteRole[] = [];
-  isAddingCiteRole = false;
+  sortedCiteDuties: CiteDuty[] = [];
+  isAddingCiteDuty = false;
   editingId = '';
   selectedTeamId = '';
   mselTeamList: Team[] = [];
@@ -51,15 +51,15 @@ export class CiteRoleListComponent implements OnDestroy {
 
   constructor(
     private mselQuery: MselQuery,
-    private citeRoleDataService: CiteRoleDataService,
-    private citeRoleQuery: CiteRoleQuery,
+    private citeDutyDataService: CiteDutyDataService,
+    private citeDutyQuery: CiteDutyQuery,
     private teamQuery: TeamQuery,
     public dialog: MatDialog,
     public dialogService: DialogService
   ) {
-    // subscribe to citeRoles
-    this.citeRoleQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(citeRoles => {
-      this.citeRoleList = citeRoles;
+    // subscribe to citeDuties
+    this.citeDutyQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(citeDuties => {
+      this.citeDutyList = citeDuties;
       this.sortChanged(this.sort);
     });
     // subscribe to the active MSEL
@@ -70,7 +70,7 @@ export class CiteRoleListComponent implements OnDestroy {
         } else {
           Object.assign(this.msel, msel);
         }
-        this.sortedCiteRoles = this.getSortedCiteRoles(this.getFilteredCiteRoles(false));
+        this.sortedCiteDuties = this.getSortedCiteDuties(this.getFilteredCiteDuties(false));
       }
     });
     // subscribe to Teams
@@ -88,15 +88,15 @@ export class CiteRoleListComponent implements OnDestroy {
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((term) => {
         this.filterString = term;
-        this.sortedCiteRoles = this.getSortedCiteRoles(this.getFilteredCiteRoles(false));
+        this.sortedCiteDuties = this.getSortedCiteDuties(this.getFilteredCiteDuties(false));
       });
-    // load CiteRole templates
-    this.citeRoleDataService.loadTemplates();
+    // load CiteDuty templates
+    this.citeDutyDataService.loadTemplates();
   }
 
-  addOrEditCiteRole(citeRole: CiteRole, makeTemplate: boolean, makeFromTemplate: boolean) {
-    if (!citeRole) {
-      citeRole = {
+  addOrEditCiteDuty(citeDuty: CiteDuty, makeTemplate: boolean, makeFromTemplate: boolean) {
+    if (!citeDuty) {
+      citeDuty = {
         mselId: this.showTemplates ? '' : this.msel.id,
         name: '',
         isTemplate: this.showTemplates,
@@ -104,72 +104,72 @@ export class CiteRoleListComponent implements OnDestroy {
       };
     } else {
       if (makeTemplate) {
-        citeRole = {
-          name: citeRole.name,
+        citeDuty = {
+          name: citeDuty.name,
           isTemplate: true,
           teamId: ''
         };
       } else if (makeFromTemplate) {
-        citeRole = {
-          name: citeRole.name,
+        citeDuty = {
+          name: citeDuty.name,
           mselId: this.msel.id,
           isTemplate: false
         };
       } else {
-        citeRole = { ...citeRole };
+        citeDuty = { ...citeDuty };
       }
     }
-    const dialogRef = this.dialog.open(CiteRoleEditDialogComponent, {
+    const dialogRef = this.dialog.open(CiteDutyEditDialogComponent, {
       width: '90%',
       maxWidth: '800px',
       data: {
-        citeRole: { ...citeRole },
+        citeDuty: { ...citeDuty },
         teamList: this.mselTeamList
       },
     });
     dialogRef.componentInstance.editComplete.subscribe((result) => {
-      if (result.saveChanges && result.citeRole) {
-        this.saveRole(result.citeRole);
+      if (result.saveChanges && result.citeDuty) {
+        this.saveDuty(result.citeDuty);
       }
       dialogRef.close();
     });
   }
 
-  saveRole(citeRole: CiteRole) {
-    if (citeRole.id) {
-      this.citeRoleDataService.updateCiteRole(citeRole);
-    } else if (citeRole.isTemplate) {
-      this.citeRoleDataService.add(citeRole);
+  saveDuty(citeDuty: CiteDuty) {
+    if (citeDuty.id) {
+      this.citeDutyDataService.updateCiteDuty(citeDuty);
+    } else if (citeDuty.isTemplate) {
+      this.citeDutyDataService.add(citeDuty);
     } else {
       const teams: string[] = [];
       const moves: number[] = [];
-      if (citeRole.teamId) {
-        teams.push(citeRole.teamId);
+      if (citeDuty.teamId) {
+        teams.push(citeDuty.teamId);
       } else {
         this.mselTeamList.forEach(team => {
           teams.push(team.id);
         });
       }
       teams.forEach(team => {
-        citeRole.teamId = team;
-        this.citeRoleDataService.add(citeRole);
+        citeDuty.teamId = team;
+        this.citeDutyDataService.add(citeDuty);
       });
     }
   }
 
-  deleteCiteRole(citeRole: CiteRole): void {
-    if (this.isAddingCiteRole || (this.editingId && this.editingId !== citeRole.id)) {
+  deleteCiteDuty(citeDuty: CiteDuty): void {
+    if (this.isAddingCiteDuty || (this.editingId && this.editingId !== citeDuty.id)) {
       return;
     }
-    const title = citeRole.mselId ? 'Delete Cite Role' : 'Delete Cite Role Template';
+    const title = citeDuty.mselId ? 'Delete CITE Duty' : 'Delete CITE Duty Template';
     this.dialogService
       .confirm(
         title,
-        'Are you sure that you want to delete ' + citeRole.name + '?'
+        'Are you sure that you want to delete ' + citeDuty.name + '?'
       )
       .subscribe((result) => {
         if (result['confirm']) {
-          this.citeRoleDataService.delete(citeRole.id);
+          this.citeDutyDataService.delete(citeDuty.id);
           this.editingId = '';
         }
       });
@@ -177,20 +177,20 @@ export class CiteRoleListComponent implements OnDestroy {
 
   sortChanged(sort: Sort) {
     this.sort = sort;
-    this.sortedCiteRoles = this.getSortedCiteRoles(this.getFilteredCiteRoles(false));
-    this.templateList = this.getSortedCiteRoles(this.getFilteredCiteRoles(true));
+    this.sortedCiteDuties = this.getSortedCiteDuties(this.getFilteredCiteDuties(false));
+    this.templateList = this.getSortedCiteDuties(this.getFilteredCiteDuties(true));
   }
 
-  getSortedCiteRoles(citeRoles: CiteRole[]) {
-    if (citeRoles) {
-      citeRoles = citeRoles.sort((a, b) => this.sortCiteRoles(a, b, this.sort.active, this.sort.direction));
+  getSortedCiteDuties(citeDuties: CiteDuty[]) {
+    if (citeDuties) {
+      citeDuties = citeDuties.sort((a, b) => this.sortCiteDuties(a, b, this.sort.active, this.sort.direction));
     }
-    return citeRoles;
+    return citeDuties;
   }
 
-  private sortCiteRoles(
-    a: CiteRole,
-    b: CiteRole,
+  private sortCiteDuties(
+    a: CiteDuty,
+    b: CiteDuty,
     column: string,
     direction: string
   ) {
@@ -213,36 +213,36 @@ export class CiteRoleListComponent implements OnDestroy {
     }
   }
 
-  getFilteredCiteRoles(getTemplatesOnly: boolean): CiteRole[] {
-    const citeRoles = this.citeRoleList;
+  getFilteredCiteDuties(getTemplatesOnly: boolean): CiteDuty[] {
+    const citeDuties = this.citeDutyList;
     const mselId = getTemplatesOnly || this.showTemplates ? '' : this.msel.id;
-    let filteredCiteRoles: CiteRole[] = [];
-    if (citeRoles) {
-      citeRoles.forEach(citeRole => {
-        if ((mselId && citeRole.mselId === mselId) || (!mselId && !citeRole.mselId)) {
-          filteredCiteRoles.push({ ...citeRole });
+    let filteredCiteDuties: CiteDuty[] = [];
+    if (citeDuties) {
+      citeDuties.forEach(citeDuty => {
+        if ((mselId && citeDuty.mselId === mselId) || (!mselId && !citeDuty.mselId)) {
+          filteredCiteDuties.push({ ...citeDuty });
         }
       });
-      if (filteredCiteRoles && filteredCiteRoles.length > 0) {
+      if (filteredCiteDuties && filteredCiteDuties.length > 0) {
         if (this.filterString) {
           const filterString = this.filterString.toLowerCase();
-          filteredCiteRoles = filteredCiteRoles
+          filteredCiteDuties = filteredCiteDuties
             .filter((a) =>
               a.name.toLowerCase().includes(filterString) ||
               a.team?.name.toLowerCase().includes(filterString)
             );
         }
         if (this.selectedTeamId) {
-          filteredCiteRoles = filteredCiteRoles.filter((a) => a.teamId === this.selectedTeamId);
+          filteredCiteDuties = filteredCiteDuties.filter((a) => a.teamId === this.selectedTeamId);
         }
       }
     }
-    return filteredCiteRoles;
+    return filteredCiteDuties;
   }
 
   selectTeam(teamId: string) {
     this.selectedTeamId = teamId;
-    this.sortedCiteRoles = this.getSortedCiteRoles(this.getFilteredCiteRoles(false));
+    this.sortedCiteDuties = this.getSortedCiteDuties(this.getFilteredCiteDuties(false));
   }
 
   ngOnDestroy() {
