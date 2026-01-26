@@ -64,12 +64,23 @@ project root for license information or contact permission@sei.cmu.edu for full 
         {{ element.description }}
       </mat-cell>
     </ng-container>
+    <!-- expand Column -->
+    <ng-container matColumnDef="expand">
+      <mat-header-cell *matHeaderCellDef class="column-expand">&nbsp;</mat-header-cell>
+      <mat-cell *matCellDef="let element" class="column-expand">
+        @if (expandedElementId === element.id) {
+        <mat-icon class="mdi-24px self-center" fontIcon="mdi-chevron-up"></mat-icon>
+        } @else {
+        <mat-icon class="mdi-24px self-center" fontIcon="mdi-chevron-down"></mat-icon>
+        }
+      </mat-cell>
+    </ng-container>
     <!-- Expanded Content Column - The detail row is made up of this one column that spans across all columns -->
     <ng-container matColumnDef="expandedDetail">
       <mat-cell class="expanded-detail-cell" *matCellDef="let element" [attr.colspan]="displayedColumns.length">
         @if (expandedElementId === element.id) {
-        <mat-expansion-panel>
-          <mat-expansion-panel-header>
+        <mat-expansion-panel class="expansion-panel">
+          <mat-expansion-panel-header class="expansion-panel-header">
             DataFields
           </mat-expansion-panel-header>
           <div class="expanded-detail-div">
@@ -79,8 +90,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
         </mat-expansion-panel>
         }
         @if (expandedElementId === element.id) {
-        <mat-expansion-panel>
-          <mat-expansion-panel-header>
+        <mat-expansion-panel class="expansion-panel">
+          <mat-expansion-panel-header class="expansion-panel-header">
             Injects
           </mat-expansion-panel-header>
           <div class="expanded-detail-div">

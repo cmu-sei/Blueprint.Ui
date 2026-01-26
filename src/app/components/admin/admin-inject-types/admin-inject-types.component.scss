@@ -9,9 +9,9 @@
 }
 
 .expansion-panel {
-  width: calc(100% - 20px);
+  width: 90%;
   background-color: transparent;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
 
 .expansion-panel-header {
@@ -68,6 +68,19 @@
   border-bottom-color: transparent;
 }
 
+::ng-deep mat-row.element-row-expanded,
+::ng-deep .mat-mdc-row.element-row-expanded,
+::ng-deep .mdc-data-table__row.element-row-expanded {
+  border-bottom-style: none !important;
+  border-bottom-width: 0 !important;
+  border-bottom-color: transparent !important;
+}
+
+::ng-deep mat-row.element-row-expanded .mat-mdc-cell,
+::ng-deep mat-row.element-row-expanded .mdc-data-table__cell {
+  border-bottom: none !important;
+}
+
 .column-name {
   flex: 0 0 25%;
   padding: 2px;
@@ -81,8 +94,15 @@
 }
 
 .column-description {
-  flex: 0 0 calc(75% - 150px);
+  flex: 0 0 calc(75% - 190px);
   padding: 2px;
+}
+
+.column-expand {
+  flex: 0 0 60px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .column-expand-me {
@@ -96,6 +116,12 @@
   flex-direction: column;
   width: 100%;
   min-width: 660px;
+  padding: 8px 10px;
+  gap: 8px;
+}
+
+.row:has(.expanded-detail-div) {
+  border-bottom: none;
 }
 
 .expanded-detail-div {
