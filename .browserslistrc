@@ -4,20 +4,10 @@
 #
 # For IE 9-11 support, please remove 'not' from the last line of the file and adjust as needed
 
-> 0.5%
-last 2 versions
+last 2 Chrome versions
+last 2 Firefox versions
+last 2 Edge versions
+last 2 Safari versions
+last 2 iOS versions
 Firefox ESR
 not dead
-not IE 9-11
-not and_qq 14.9
-not and_uc 15.5
-not android 142
-not kaios 2.5-3.1
-not op_mini all
-not op_mob 80
-not opera 122
-not opera 121
-not samsung 29
-not samsung 28
-not samsung 27
-not ios_saf 26.1
