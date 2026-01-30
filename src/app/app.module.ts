@@ -8,7 +8,7 @@ import { CdkTableModule } from '@angular/cdk/table';
 import { CdkTreeModule } from '@angular/cdk/tree';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
-import { ApplicationConfig, ErrorHandler, NgModule } from '@angular/core';
+import { APP_INITIALIZER, ApplicationConfig, ErrorHandler, NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatBadgeModule } from '@angular/material/badge';
@@ -127,6 +127,8 @@ import { ApiModule as SwaggerCodegenApiModule } from './generated/blueprint.api/
 import { DisplayOrderPipe, SortByPipe } from 'src/app/utilities/sort-by-pipe';
 import { AngularEditorModule } from '@kolkov/angular-editor';
 import { PlainTextPipe } from './utilities/plain-text-pipe';
+import { DynamicThemeService } from './services/dynamic-theme.service';
+import { initializeTheme } from './services/theme-initializer.factory';
 import {
   NgxMatDatepickerActions,
   NgxMatDatepickerApply,
@@ -291,6 +293,7 @@ export const appConfig: ApplicationConfig = {
       SystemMessageService,
       UIDataService,
       UserDataService,
+      DynamicThemeService,
       {
         provide: BASE_PATH,
         useFactory: getBasePath,
@@ -299,6 +302,12 @@ export const appConfig: ApplicationConfig = {
       {
         provide: ErrorHandler,
         useClass: ErrorService,
+      },
+      {
+        provide: APP_INITIALIZER,
+        useFactory: initializeTheme,
+        deps: [ComnSettingsService, DynamicThemeService],
+        multi: true,
       },
       provideHttpClient(withInterceptorsFromDi()),
     ]
