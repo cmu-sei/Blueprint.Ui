@@ -143,12 +143,6 @@ export class StarterComponent implements OnDestroy, OnInit {
     // load the organization templates
     this.organizationDataService.loadTemplates();
     // Set the display settings from config file
-    this.topbarColor = this.settingsService.settings.AppTopBarHexColor
-      ? this.settingsService.settings.AppTopBarHexColor
-      : this.topbarColor;
-    this.topbarTextColor = this.settingsService.settings.AppTopBarHexTextColor
-      ? this.settingsService.settings.AppTopBarHexTextColor
-      : this.topbarTextColor;
     this.appTitle =
       this.settingsService.settings.AppTitle || 'Set AppTitle in Settings';
     this.titleService.setTitle(this.appTitle);

@@ -68,12 +68,6 @@ export class LaunchComponent implements OnDestroy, OnInit {
     );
     this.titleService.setTitle(this.appTitle);
     // Set the display settings from config file
-    this.topbarColor = this.settingsService.settings.AppTopBarHexColor
-      ? this.settingsService.settings.AppTopBarHexColor
-      : this.topbarColor;
-    this.topbarTextColor = this.settingsService.settings.AppTopBarHexTextColor
-      ? this.settingsService.settings.AppTopBarHexTextColor
-      : this.topbarTextColor;
     // subscribe to users
     this.userQuery.selectAll()
       .pipe(takeUntil(this.unsubscribe$))

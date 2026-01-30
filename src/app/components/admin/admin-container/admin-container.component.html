@@ -151,8 +151,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
   </mat-sidenav>
   <mat-sidenav-content>
     @if (!hideTopbar) {
-    <app-topbar [title]="selectedTab" [topbarView]="TopbarView.BLUEPRINT_ADMIN" [topbarColor]="topbarColor"
-      [topbarTextColor]="topbarTextColor" (urlNavigate)="goToUrl($event)"></app-topbar>
+    <app-topbar [title]="selectedTab" [topbarView]="TopbarView.BLUEPRINT_ADMIN" (urlNavigate)="goToUrl($event)"></app-topbar>
     }
     @if (canViewUnits && (selectedTab === unitsText)) {
     <span>
