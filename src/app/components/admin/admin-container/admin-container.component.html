@@ -9,7 +9,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <mat-toolbar class="sidenav-header" title="Exit Administration" (click)="goToUrl('/build/')">
       <a class="nolink" (click)="goToUrl('/build/')">
         <div class="cssLayoutRowStartCenter">
-          <mat-icon class="icon-35px" svgIcon="crucible-icon-blueprint"></mat-icon>
+          <mat-icon class="icon-35px crucible-icon-blueprint" svgIcon="crucible-icon-blueprint"></mat-icon>
           <h2 class="icon-text">Blueprint Admin</h2>
         </div>
       </a>
@@ -151,7 +151,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
   </mat-sidenav>
   <mat-sidenav-content>
     @if (!hideTopbar) {
-    <app-topbar [title]="selectedTab" [topbarView]="TopbarView.BLUEPRINT_ADMIN" (urlNavigate)="goToUrl($event)"></app-topbar>
+    <app-topbar [title]="selectedTab" [topbarView]="TopbarView.BLUEPRINT_ADMIN"
+      (urlNavigate)="goToUrl($event)"></app-topbar>
     }
     @if (canViewUnits && (selectedTab === unitsText)) {
     <span>

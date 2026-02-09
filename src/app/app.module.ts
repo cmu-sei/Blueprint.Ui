@@ -128,6 +128,7 @@ import { DisplayOrderPipe, SortByPipe } from 'src/app/utilities/sort-by-pipe';
 import { AngularEditorModule } from '@kolkov/angular-editor';
 import { PlainTextPipe } from './utilities/plain-text-pipe';
 import { DynamicThemeService } from './services/dynamic-theme.service';
+import { FaviconService } from './services/favicon.service';
 import { initializeTheme } from './services/theme-initializer.factory';
 import {
   NgxMatDatepickerActions,
@@ -294,6 +295,7 @@ export const appConfig: ApplicationConfig = {
       UIDataService,
       UserDataService,
       DynamicThemeService,
+      FaviconService,
       {
         provide: BASE_PATH,
         useFactory: getBasePath,
