@@ -9,6 +9,10 @@
   height: 100vh;
 }
 
+.background {
+  background-color: var(--mat-sys-surface);
+}
+
 .card-container {
   display: flex;
   flex-direction: row;
@@ -33,6 +37,7 @@
   max-width: 300px;
   max-height: 350px;
   cursor: pointer;
+  border-width: 4px !important;
 }
 
 .card-image {
@@ -43,6 +48,6 @@
 }
 
 .outline {
-  border-width: 1px;
+  border-width: 4px;
   border-style: solid;
 }

@@ -6,8 +6,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
 @if (msel.id && (msel.hasRole(loggedInUserId, null).owner || canEditMsels)) {
 <div class="top-container background">
   @if (!hideTopbar) {
-  <app-topbar [title]="topbarText" [topbarView]="TopbarView.BLUEPRINT_HOME" [topbarColor]="topbarColor"
-    [topbarTextColor]="topbarTextColor" [imageFilePath]="topbarImage"
+  <app-topbar [title]="topbarText" [topbarView]="TopbarView.BLUEPRINT_HOME" [imageFilePath]="topbarImage"
     (urlNavigate)="topBarNavigate($event)"></app-topbar>
   }
   <mat-card appearance="outlined" class="base-card">

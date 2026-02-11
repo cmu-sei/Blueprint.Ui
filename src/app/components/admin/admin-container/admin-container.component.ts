@@ -74,8 +74,6 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
   canManageDataFields = false;
   hideTopbar = false;
   TopbarView = TopbarView;
-  topbarColor = '#ef3a47';
-  topbarTextColor = '#FFFFFF';
   topbarImage = this.settingsService.settings.AppTopBarImage;
   theme$: Observable<Theme>;
   userList$: Observable<User[]>;
@@ -102,12 +100,6 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
     this.theme$ = this.authQuery.userTheme$;
     this.hideTopbar = this.uiDataService.inIframe();
     // Set the display settings from config file
-    this.topbarColor = this.settingsService.settings.AppTopBarHexColor
-      ? this.settingsService.settings.AppTopBarHexColor
-      : this.topbarColor;
-    this.topbarTextColor = this.settingsService.settings.AppTopBarHexTextColor
-      ? this.settingsService.settings.AppTopBarHexTextColor
-      : this.topbarTextColor;
     const appTitle = this.settingsService.settings.AppTitle || 'Set AppTitle in Settings';
     titleService.setTitle(appTitle + ' Admin');
     this.getApiVersion();

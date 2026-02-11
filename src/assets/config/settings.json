@@ -13,8 +13,6 @@
     "silent_redirect_uri": "http://localhost:4725/auth-callback-silent"
   },
   "AppTitle": "Blueprint",
-  "AppTopBarHexColor": "#E81717",
-  "AppTopBarHexTextColor": "#FFFFFF",
   "AppTopBarText": "Blueprint - Collaborative MSEL Creation",
   "AppTopBarImage": "/assets/img/pencil-ruler-white.png",
   "UseLocalAuthStorage": false,
@@ -74,5 +72,6 @@
   "DarkThemeTint": 0.7,
   "LightThemeTint": 0.4,
   "DefaultXlsxRowHeight": 15,
-  "useAccessTokenExpirationRedirect": true
+  "useAccessTokenExpirationRedirect": true,
+  "AppPrimaryThemeColor": "#E81717"
 }

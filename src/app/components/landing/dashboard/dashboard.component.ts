@@ -63,12 +63,6 @@ export class DashboardComponent implements OnDestroy, OnInit {
     );
     this.titleService.setTitle(this.appTitle);
     // Set the display settings from config file
-    this.topbarColor = this.settingsService.settings.AppTopBarHexColor
-      ? this.settingsService.settings.AppTopBarHexColor
-      : this.topbarColor;
-    this.topbarTextColor = this.settingsService.settings.AppTopBarHexTextColor
-      ? this.settingsService.settings.AppTopBarHexTextColor
-      : this.topbarTextColor;
   }
 
   ngOnInit() {

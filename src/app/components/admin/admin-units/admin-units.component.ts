@@ -51,9 +51,6 @@ export class AdminUnitsComponent implements OnDestroy {
     private unitQuery: UnitQuery,
     private userQuery: UserQuery
   ) {
-    this.topbarColor = this.settingsService.settings.AppTopBarHexColor
-      ? this.settingsService.settings.AppTopBarHexColor
-      : this.topbarColor;
     // subscribe to all units
     this.unitQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(units => {
       this.allUnits = units;
