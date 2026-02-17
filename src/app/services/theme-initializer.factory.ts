@@ -16,9 +16,9 @@ export function initializeTheme(
 ): () => Promise<void> {
   return (): Promise<void> => {
     return new Promise((resolve) => {
-      // Get theme color from settings, fallback to default red
+      // Get theme color from settings, fallback to default blue
       const hexColor =
-        settingsService.settings.AppPrimaryThemeColor || '#E81717';
+        settingsService.settings.AppPrimaryThemeColor || '#007CB5';
 
       // Apply theme to document
       themeService.applyThemeToDocument(hexColor);

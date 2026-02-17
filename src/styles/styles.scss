@@ -36,6 +36,10 @@ html {
       calendar-container-text-color: var(--mat-sys-on-background),
     ));
   @include mat.icon-button-overrides((icon-color: var(--mat-sys-primary)));
+  @include mat.form-field-overrides((filled-container-color: transparent));
+
+  // Override primary color with exact value
+  --mat-sys-primary: #007CB5;
 }
 
 .darkMode {
@@ -54,6 +58,17 @@ html {
       calendar-container-text-color: var(--mat-sys-on-background),
     ));
   @include mat.icon-button-overrides((icon-color: var(--mat-sys-primary)));
+  @include mat.form-field-overrides((filled-container-color: transparent));
+
+  // Override primary color with exact value
+  --mat-sys-primary: #007CB5;
+
+  // Additional CSS for transparent text fields
+  .mat-mdc-text-field-wrapper.mdc-text-field--filled {
+    --mdc-filled-text-field-container-color: transparent !important;
+    --mat-form-field-container-color: transparent !important;
+    background-color: transparent !important;
+  }
 }
 
 body {
