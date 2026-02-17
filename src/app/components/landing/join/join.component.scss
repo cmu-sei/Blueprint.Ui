@@ -8,6 +8,10 @@
   flex: 1;
   height: 100vh;
 }
+
+.background {
+  background-color: var(--mat-sys-background);
+}
 .card-container {
   display: flex;
   flex-direction: row;
@@ -39,4 +43,9 @@
 
 .status-message {
   margin-top: 20px;
+  color: var(--mat-sys-on-surface);
+}
+
+mat-card-title {
+  color: var(--mat-sys-on-surface-variant) !important;
 }
