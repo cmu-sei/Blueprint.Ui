@@ -12,13 +12,13 @@ import { ActivatedRoute, Router } from '@angular/router';
 import {
   ComnAuthQuery,
   ComnAuthService,
+  ComnDynamicThemeService,
+  ComnFaviconService,
   ComnSettingsService,
   Theme,
 } from '@cmusei/crucible-common';
 import { Observable, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { DynamicThemeService } from './services/dynamic-theme.service';
-import { FaviconService } from './services/favicon.service';
 
 @Component({
   selector: 'app-root',
@@ -86,9 +86,9 @@ export class AppComponent implements OnDestroy {
     private activatedRoute: ActivatedRoute,
     private router: Router,
     private authService: ComnAuthService,
-    private themeService: DynamicThemeService,
+    private themeService: ComnDynamicThemeService,
     private settingsService: ComnSettingsService,
-    private faviconService: FaviconService
+    private faviconService: ComnFaviconService
   ) {
     this.registerIcons(iconRegistry, sanitizer);
     this.theme$.pipe(takeUntil(this.unsubscribe$)).subscribe((theme) => {
@@ -126,7 +126,7 @@ export class AppComponent implements OnDestroy {
   setTheme(theme: Theme) {
     const classList = this.overlayContainer.getContainerElement().classList;
     const hexColor =
-      this.settingsService.settings.AppPrimaryThemeColor || '#E81717';
+      this.settingsService.settings.AppPrimaryThemeColor || '#007CB5';
 
     switch (theme) {
       case Theme.LIGHT:
