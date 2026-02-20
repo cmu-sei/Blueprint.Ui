@@ -37,7 +37,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <div class="options-text">
       <button mat-button class="menu-trigger" [matMenuTriggerFor]="menu" style="outline: none;">
         <strong>{{ currentUser.name }}</strong>
-        <mat-icon aria-hidden="false" class="icon-color" fontIcon="mdi-chevron-down"></mat-icon>
+        <mat-icon aria-hidden="false" class="menu-trigger" fontIcon="mdi-chevron-down"></mat-icon>
       </button>
       <mat-menu #menu="matMenu" [overlapTrigger]="false">
         <button mat-menu-item (click)="logout()">Logout</button>
