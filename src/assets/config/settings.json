@@ -13,7 +13,8 @@
     "silent_redirect_uri": "http://localhost:4725/auth-callback-silent"
   },
   "AppTitle": "Blueprint",
-  "AppPrimaryThemeColor": "#007CB5",
+  "AppTopBarHexColor": "#007CB5",
+  "AppTopBarHexTextColor": "#FFFFFF",
   "AppTopBarText": "Blueprint - Collaborative MSEL Creation",
   "AppTopBarImage": "/assets/img/pencil-ruler-white.png",
   "UseLocalAuthStorage": false,

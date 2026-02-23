@@ -6,13 +6,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
 <mat-toolbar class="toolbar" [style.backgroundColor]="'var(--mat-sys-primary)'"
   [style.color]="'var(--mat-sys-on-primary)'">
   <mat-toolbar-row>
-    @if (topbarView !== TopbarView.BLUEPRINT_ADMIN) {
     <span class="margin-auto">
       <button mat-icon-button style="outline: none; background-color: var(--mat-sys-on-primary);" (click)="goToUrl('')">
         <mat-icon svgIcon="crucible-icon-blueprint"></mat-icon>
       </button>
     </span>
-    }
     <span class="view-text">{{ title }}</span>
     @if (teams && team && teams.length > 0) {
     <div class="team-text">Team:</div>
