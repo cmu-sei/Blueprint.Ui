@@ -248,7 +248,8 @@ export class InjectListComponent implements OnDestroy, OnInit {
 
   editInject(inject: Injectm, isNewInject?: boolean) {
     const dialogRef = this.dialog.open(InjectEditDialogComponent, {
-      width: '800px',
+      maxWidth: '90vw',
+      width: 'auto',
       data: {
         inject: inject,
         dataFieldList: this.dataFieldList,
@@ -476,8 +477,8 @@ export class InjectListComponent implements OnDestroy, OnInit {
       .filter((m) => !this.injectList.some((t) => t.id === m.id))
       .sort((a, b) => (a.name?.toLowerCase() > b.name?.toLowerCase() ? 1 : -1));
     const dialogRef = this.dialog.open(InjectSelectDialogComponent, {
-      width: '80%',
-      maxWidth: '800px',
+      maxWidth: '90vw',
+      width: 'auto',
       height: '90%',
       data: {
         catalog: {},

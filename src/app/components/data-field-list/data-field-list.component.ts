@@ -279,8 +279,8 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
     }
     dataField.dataOptions = dataOptions;
     const dialogRef = this.dialog.open(DataFieldEditDialogComponent, {
-      width: '90%',
-      maxWidth: '900px',
+      maxWidth: '90vw',
+      width: 'auto',
       data: {
         dataField: dataField,
         canEdit: this.canEdit(),

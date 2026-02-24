@@ -745,8 +745,8 @@ export class ScenarioEventListComponent
       this.msel.hasRole(this.loggedInUserId, scenarioEvent.id).editor;
 
     const dialogRef = this.dialog.open(ScenarioEventEditDialogComponent, {
-      width: '80%',
-      maxWidth: '800px',
+      maxWidth: '90vw',
+      width: 'auto',
       height: '90%',
       data: {
         scenarioEvent: scenarioEvent,
@@ -1049,8 +1049,8 @@ export class ScenarioEventListComponent
   selectFromCatalog(catalog: Catalog) {
     this.injectmDataService.loadByCatalog(catalog.id);
     const dialogRef = this.dialog.open(InjectSelectDialogComponent, {
-      width: '80%',
-      maxWidth: '800px',
+      maxWidth: '90vw',
+      width: 'auto',
       height: '90%',
       data: {
         catalog: catalog,
@@ -1094,8 +1094,8 @@ export class ScenarioEventListComponent
 
   copyToAnotherMsel() {
     const dialogRef = this.dialog.open(ScenarioEventCopyDialogComponent, {
-      width: '80%',
-      maxWidth: '800px',
+      maxWidth: '90vw',
+      width: 'auto',
       height: '90%',
       data: {
         mselList: this.mselListForCopy,

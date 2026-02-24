@@ -51,3 +51,7 @@
   border-width: 4px;
   border-style: solid;
 }
+
+mat-card-title {
+  color: var(--mat-sys-on-surface-variant) !important;
+}

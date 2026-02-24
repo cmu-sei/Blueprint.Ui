@@ -4,7 +4,6 @@
 // project root for license information.
 */
 
-import { OverlayContainer } from '@angular/cdk/overlay';
 import { Component, HostBinding, HostListener, OnDestroy } from '@angular/core';
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
@@ -17,8 +16,6 @@ import {
 } from '@cmusei/crucible-common';
 import { Observable, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { DynamicThemeService } from './services/dynamic-theme.service';
-import { FaviconService } from './services/favicon.service';
 
 @Component({
   selector: 'app-root',
@@ -81,14 +78,11 @@ export class AppComponent implements OnDestroy {
   constructor(
     iconRegistry: MatIconRegistry,
     sanitizer: DomSanitizer,
-    private overlayContainer: OverlayContainer,
     private authQuery: ComnAuthQuery,
     private activatedRoute: ActivatedRoute,
     private router: Router,
     private authService: ComnAuthService,
-    private themeService: DynamicThemeService,
     private settingsService: ComnSettingsService,
-    private faviconService: FaviconService
   ) {
     this.registerIcons(iconRegistry, sanitizer);
     this.theme$.pipe(takeUntil(this.unsubscribe$)).subscribe((theme) => {
@@ -124,22 +118,30 @@ export class AppComponent implements OnDestroy {
   }
 
   setTheme(theme: Theme) {
-    const classList = this.overlayContainer.getContainerElement().classList;
-    const hexColor =
-      this.settingsService.settings.AppPrimaryThemeColor || '#E81717';
-
-    switch (theme) {
-      case Theme.LIGHT:
-        document.body.classList.toggle('darkMode', false);
-        this.themeService.applyLightTheme(hexColor);
-        this.faviconService.updateFavicon(hexColor);
-        break;
-      case Theme.DARK:
-        document.body.classList.toggle('darkMode', true);
-        this.themeService.applyDarkTheme(hexColor);
-        this.faviconService.updateFavicon(hexColor);
-        break;
+    document.body.classList.toggle('darkMode', theme === Theme.DARK);
+    const topBarColor = this.settingsService.settings?.AppTopBarHexColor || '#C41230';
+    const topBarTextColor = this.settingsService.settings?.AppTopBarHexTextColor || '#FFFFFF';
+    if (topBarColor) {
+      document.documentElement.style.setProperty('--mat-sys-primary', topBarColor);
+      document.body.style.setProperty('--mat-sys-primary', topBarColor);
+      this.updateFavicon(topBarColor);
     }
+    if (topBarTextColor) {
+      document.documentElement.style.setProperty('--mat-sys-on-primary', topBarTextColor);
+      document.body.style.setProperty('--mat-sys-on-primary', topBarTextColor);
+    }
+  }
+
+  private updateFavicon(color: string) {
+    const link = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
+    if (!link) return;
+    fetch(link.href)
+      .then(res => res.text())
+      .then(svg => {
+        const colored = svg.replace(/\.cls-1\{[^}]*\}/, `.cls-1{fill:${color};}`);
+        const blob = new Blob([colored], { type: 'image/svg+xml' });
+        link.href = URL.createObjectURL(blob);
+      });
   }
   ngOnDestroy(): void {
     throw new Error('Method not implemented.');

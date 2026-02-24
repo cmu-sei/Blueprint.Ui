@@ -100,7 +100,8 @@ export class DataFieldEditDialogComponent {
 
   addOrEditDataOption(dataOption: DataOption) {
     const dialogRef = this.dialog.open(DataOptionEditDialogComponent, {
-      width: '800px',
+      maxWidth: '90vw',
+      width: 'auto',
       data: {
         dataOption: dataOption
       },
