@@ -157,8 +157,8 @@ export class CiteActionListComponent implements OnDestroy {
       }
     }
     const dialogRef = this.dialog.open(CiteActionEditDialogComponent, {
-      width: '90%',
-      maxWidth: '800px',
+      maxWidth: '90vw',
+      width: 'auto',
       data: {
         citeAction: { ...citeAction },
         teamList: this.mselTeamList,

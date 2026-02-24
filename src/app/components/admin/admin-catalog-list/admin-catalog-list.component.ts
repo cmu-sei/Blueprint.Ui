@@ -126,7 +126,8 @@ export class AdminCatalogListComponent implements OnDestroy {
       catalog = {};
     }
     const dialogRef = this.dialog.open(AdminCatalogEditDialogComponent, {
-      width: '800px',
+      maxWidth: '90vw',
+      width: 'auto',
       data: {
         catalog: catalog,
         injectTypeList: this.injectTypeList,

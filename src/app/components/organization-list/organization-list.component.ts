@@ -127,7 +127,9 @@ export class OrganizationListComponent implements OnDestroy, OnInit {
       dialogTitle += ' Template';
     }
     const dialogRef = this.dialog.open(OrganizationEditDialogComponent, {
-      width: '800px',
+      maxWidth: '90vw',
+      width: 'auto',
+      minWidth: '900px',
       data: {
         organization: organization,
         title: dialogTitle,

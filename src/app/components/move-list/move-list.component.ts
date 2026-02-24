@@ -118,7 +118,9 @@ export class MoveListComponent implements OnDestroy {
       this.moveDataService.setAsDates(editMove);
     }
     const dialogRef = this.dialog.open(MoveEditDialogComponent, {
-      width: '800px',
+      maxWidth: '90vw',
+      width: 'auto',
+      minWidth: '900px',
       data: {
         move: editMove,
         mselStartTime: this.msel.startTime,

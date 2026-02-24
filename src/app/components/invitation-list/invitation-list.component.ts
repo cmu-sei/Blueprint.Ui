@@ -105,7 +105,8 @@ export class InvitationListComponent implements OnDestroy {
       };
     }
     const dialogRef = this.dialog.open(InvitationEditDialogComponent, {
-      width: '800px',
+      maxWidth: '90vw',
+      width: 'auto',
       data: {
         invitation: invitation,
         teamList: this.teamList
