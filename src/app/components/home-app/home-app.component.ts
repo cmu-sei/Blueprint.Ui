@@ -51,7 +51,6 @@ export class HomeAppComponent implements OnDestroy, OnInit {
   loggedInUserId = '';
   username = '';
   canAccessAdminSection = false;
-  canCreateMsels = false;
   canEditMsels = false;
   isAuthorizedUser = false;
   isSidebarOpen = true;

@@ -30,7 +30,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <img class="card-image" src="assets/img/start.png" alt="Start image">
     </mat-card>
     }
-    @if (buildMselList.length > 0) {
+    @if (buildMselList.length > 0 || canCreateMsels) {
     <mat-card appearance="outlined" [ngClass]="buildClass" tabindex="3" role="button" (click)="gotoUrl('build')"
       (mouseover)="buildClass='base-card outline'" (mouseout)="buildClass='base-card'">
       <mat-card-header>
