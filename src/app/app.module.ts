@@ -70,6 +70,10 @@ import { AdminUsersComponent } from './components/admin/admin-users/admin-users.
 import { AdminUserListComponent } from './components/admin/admin-users/admin-user-list/admin-user-list.component';
 import { AdminRolesComponent } from './components/admin/admin-roles/admin-roles.component';
 import { AdminGroupsComponent } from './components/admin/admin-groups/admin-groups.component';
+import { AdminGroupsDetailComponent } from './components/admin/admin-groups/admin-groups-detail/admin-groups-detail.component';
+import { AdminGroupsMemberListComponent } from './components/admin/admin-groups/admin-groups-member-list/admin-groups-member-list.component';
+import { AdminGroupsMembershipListComponent } from './components/admin/admin-groups/admin-groups-membership-list/admin-groups-membership-list.component';
+import { NameDialogComponent } from './components/shared/name-dialog/name-dialog.component';
 import { CardEditDialogComponent } from './components/card-edit-dialog/card-edit-dialog.component';
 import { CardListComponent } from './components/card-list/card-list.component';
 import { CardTeamsComponent } from './components/card-teams/card-teams.component';
@@ -218,6 +222,10 @@ export const appConfig: ApplicationConfig = {
     AdminUserListComponent,
     AdminRolesComponent,
     AdminGroupsComponent,
+    AdminGroupsDetailComponent,
+    AdminGroupsMemberListComponent,
+    AdminGroupsMembershipListComponent,
+    NameDialogComponent,
     TopbarComponent,
     DisplayOrderPipe,
     SortByPipe,

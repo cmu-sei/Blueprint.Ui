@@ -1,130 +1,133 @@
 // Copyright 2025 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
-import { Component, OnInit, OnDestroy, ViewChild, AfterViewInit } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
-import { Subject } from 'rxjs';
-import { map, takeUntil } from 'rxjs/operators';
+import { forkJoin, Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { Group, SystemPermission } from 'src/app/generated/blueprint.api';
 import { GroupDataService } from 'src/app/data/group/group-data.service';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
-import { DialogService } from 'src/app/services/dialog/dialog.service';
+import { ConfirmDialogComponent } from 'src/app/components/shared/confirm-dialog/confirm-dialog.component';
+import { NameDialogComponent } from 'src/app/components/shared/name-dialog/name-dialog.component';
+import { UserDataService } from 'src/app/data/user/user-data.service';
+
+const NAME_VALUE = 'nameValue';
+const WAS_CANCELLED = 'wasCancelled';
 
 @Component({
-  selector: 'app-admin-groups',
-  templateUrl: './admin-groups.component.html',
-  styleUrls: ['./admin-groups.component.scss'],
-  standalone: false,
+    selector: 'app-admin-groups',
+    templateUrl: './admin-groups.component.html',
+    styleUrls: ['./admin-groups.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
-export class AdminGroupsComponent implements OnInit, OnDestroy, AfterViewInit {
+export class AdminGroupsComponent implements OnInit, AfterViewInit {
   @ViewChild(MatSort) sort: MatSort;
 
-  private unsubscribe$ = new Subject<void>();
-
   filterString = '';
-  displayedColumns: string[] = ['name', 'actions'];
+  displayedColumns: string[] = ['name'];
   dataSource: MatTableDataSource<Group> = new MatTableDataSource();
-  canEdit = false;
 
-  newGroupName = '';
-  isAddingGroup = false;
-  editingGroupId: string | null = null;
-  editingGroupName = '';
+  constructor(
+    private groupDataService: GroupDataService,
+    private userDataService: UserDataService,
+    private dialog: MatDialog,
+    private permissionDataService: PermissionDataService
+  ) {}
 
   dataSource$ = this.groupDataService.groups$.pipe(
-    map((groups) => {
-      this.dataSource.data = groups;
+    map((x) => {
+      this.dataSource.data = x;
       return this.dataSource;
     })
   );
 
-  constructor(
-    private groupDataService: GroupDataService,
-    private permissionDataService: PermissionDataService,
-    private dialogService: DialogService
-  ) {}
+  canEdit = this.permissionDataService.hasPermission(
+    SystemPermission.ManageGroups
+  );
 
-  ngOnInit(): void {
-    this.canEdit = this.permissionDataService.hasPermission(
-      SystemPermission.ManageGroups
-    );
-    this.groupDataService.load().pipe(takeUntil(this.unsubscribe$)).subscribe();
+  ngOnInit() {
+    forkJoin([
+      this.groupDataService.load(),
+      this.userDataService.load(),
+    ]).subscribe();
   }
 
   ngAfterViewInit(): void {
     this.dataSource.sort = this.sort;
   }
 
-  ngOnDestroy(): void {
-    this.unsubscribe$.next();
-    this.unsubscribe$.complete();
-  }
-
-  applyFilter(filterValue: string): void {
+  applyFilter(filterValue: string) {
     this.filterString = filterValue;
     this.dataSource.filter = filterValue.trim().toLowerCase();
   }
 
-  clearFilter(): void {
+  clearFilter() {
     this.applyFilter('');
   }
 
-  startAddGroup(): void {
-    this.isAddingGroup = true;
-    this.newGroupName = '';
-  }
-
-  cancelAddGroup(): void {
-    this.isAddingGroup = false;
-    this.newGroupName = '';
-  }
-
-  createGroup(): void {
-    if (this.newGroupName.trim()) {
-      this.groupDataService
-        .create({ name: this.newGroupName.trim() })
-        .subscribe(() => {
-          this.isAddingGroup = false;
-          this.newGroupName = '';
-        });
-    }
-  }
-
-  startEditGroup(group: Group): void {
-    this.editingGroupId = group.id;
-    this.editingGroupName = group.name || '';
-  }
-
-  cancelEditGroup(): void {
-    this.editingGroupId = null;
-    this.editingGroupName = '';
-  }
-
-  saveGroupName(group: Group): void {
-    if (this.editingGroupName.trim()) {
-      const updatedGroup = { ...group, name: this.editingGroupName.trim() };
-      this.groupDataService.edit(updatedGroup).subscribe(() => {
-        this.editingGroupId = null;
-        this.editingGroupName = '';
-      });
-    }
-  }
-
-  deleteGroup(group: Group): void {
-    this.dialogService
-      .confirm(
-        'Delete Group',
-        `Are you sure you want to delete "${group.name}"?`
-      )
-      .subscribe((result) => {
-        if (result && result['confirm']) {
-          this.groupDataService.delete(group.id).subscribe();
+  createGroup() {
+    this.nameDialog('Create New Group?', '', { nameValue: '' }).subscribe(
+      (result) => {
+        if (!result[WAS_CANCELLED]) {
+          this.groupDataService
+            .create({ name: result[NAME_VALUE] })
+            .subscribe();
         }
-      });
+      }
+    );
   }
 
-  handleInput(event: KeyboardEvent): void {
-    event.stopPropagation();
+  updateGroup(group: Group) {
+    this.nameDialog('Rename ' + group.name, '', {
+      nameValue: group.name,
+    }).subscribe((result) => {
+      if (!result[WAS_CANCELLED]) {
+        this.groupDataService
+          .edit({ id: group.id, name: result[NAME_VALUE] })
+          .subscribe();
+      }
+    });
+  }
+
+  deleteGroup(group: Group) {
+    this.confirmDialog('Delete Group?', 'Delete Group ' + group.name + '?', {}).subscribe((result) => {
+      if (result['confirm']) {
+        this.groupDataService.delete(group.id).subscribe();
+      }
+    });
+  }
+
+  confirmDialog(
+    title: string,
+    message: string,
+    data?: any
+  ): Observable<boolean> {
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      data: data || {},
+    });
+    dialogRef.componentInstance.title = title;
+    dialogRef.componentInstance.message = message;
+
+    return dialogRef.afterClosed();
+  }
+
+  nameDialog(title: string, message: string, data?: any): Observable<boolean> {
+    const dialogRef = this.dialog.open(NameDialogComponent, {
+      data: data || {},
+    });
+    dialogRef.componentInstance.title = title;
+    dialogRef.componentInstance.message = message;
+
+    return dialogRef.afterClosed();
   }
 }
