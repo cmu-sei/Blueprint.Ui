@@ -13,12 +13,14 @@ import { UserQuery } from 'src/app/data/user/user.query';
 import { CurrentUserQuery } from 'src/app/data/user/user.query';
 import {
   Msel,
+  SystemPermission,
   User,
 } from 'src/app/generated/blueprint.api';
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
 import { TopbarView } from '../../shared/top-bar/topbar.models';
 import { Title } from '@angular/platform-browser';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
+import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -43,6 +45,7 @@ export class DashboardComponent implements OnDestroy, OnInit {
   launchClass = 'base-card';
   buildClass = 'base-card';
   isStarted = false;
+  canCreateMsels = false;
   private unsubscribe$ = new Subject();
 
   constructor(
@@ -53,7 +56,8 @@ export class DashboardComponent implements OnDestroy, OnInit {
     private mselDataService: MselDataService,
     private router: Router,
     private titleService: Title,
-    private uiDataService: UIDataService
+    private uiDataService: UIDataService,
+    private permissionDataService: PermissionDataService
   ) {
     this.hideTopbar = this.uiDataService.inIframe();
     // set image
@@ -81,6 +85,14 @@ export class DashboardComponent implements OnDestroy, OnInit {
         window.location.reload();
       }
     }, 10000);
+    // Load permissions
+    this.permissionDataService
+      .load()
+      .subscribe(
+        (x) => {
+          this.canCreateMsels = this.permissionDataService.hasPermission(SystemPermission.CreateMsels);
+        }
+      );
   }
 
   startup() {
