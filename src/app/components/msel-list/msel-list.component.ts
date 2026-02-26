@@ -54,7 +54,7 @@ export class MselListComponent implements OnDestroy, OnInit {
     'isTemplate',
     'status',
     'createdBy',
-    'dateModified',
+    'dateCreated',
     'description',
   ];
   imageFilePath = '';
