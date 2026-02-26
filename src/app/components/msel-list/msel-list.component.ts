@@ -51,11 +51,11 @@ export class MselListComponent implements OnDestroy, OnInit {
   displayedColumns: string[] = [
     'action',
     'name',
+    'description',
     'isTemplate',
     'status',
     'createdBy',
     'dateCreated',
-    'description',
   ];
   imageFilePath = '';
   userList: User[] = [];

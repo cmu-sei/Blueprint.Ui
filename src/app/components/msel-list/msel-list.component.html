@@ -57,10 +57,10 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <mat-option value="Completed">Completed</mat-option>
         </mat-select>
       </div>
-      <div class="button-items search-box">
-        <mat-form-field class="search-control">
+      <div class="searchBox">
+        <mat-form-field style="width: 320px">
           <input matInput [formControl]="filterControl" placeholder="Search" />
-          @if (filterString) {
+          @if (filterString !== '') {
           <button mat-icon-button matSuffix (click)="filterControl.setValue('')" title="Clear Search">
             <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline"></mat-icon>
           </button>
@@ -157,14 +157,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
         </ng-container>
         <!-- dateCreated Column -->
         <ng-container matColumnDef="dateCreated">
-          <mat-header-cell *matHeaderCellDef mat-sort-header> Date Created </mat-header-cell>
-          <mat-cell *matCellDef="let element">
+          <mat-header-cell *matHeaderCellDef mat-sort-header class="no-wrap"> Date Created </mat-header-cell>
+          <mat-cell *matCellDef="let element" class="no-wrap">
             <div class="description-text">{{ element.dateCreated | date }}</div>
           </mat-cell>
         </ng-container>
         <!-- createdBy Column -->
         <ng-container matColumnDef="createdBy">
-          <mat-header-cell *matHeaderCellDef mat-sort-header> Creator </mat-header-cell>
+          <mat-header-cell *matHeaderCellDef mat-sort-header> Created By </mat-header-cell>
           <mat-cell *matCellDef="let element">
             <div class="description-text" [title]="element.createdBy">{{ getUserName(element.createdBy) }}</div>
           </mat-cell>

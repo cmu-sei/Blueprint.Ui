@@ -57,16 +57,10 @@
   min-width: 125px;
 }
 
-.search-box {
+.searchBox {
   display: flex;
   flex-direction: row;
-  flex: 2;
-  align-self: center;
-  padding-left: 30px;
-}
-
-.search-control {
-  width: 75%;
+  align-items: center;
 }
 
 .clear-search-button {
@@ -158,8 +152,12 @@
   min-width: 70px;
 }
 
-.mat-column-dateModified {
-  min-width: 70px;
+.mat-column-dateCreated {
+  min-width: 100px;
+}
+
+.no-wrap {
+  white-space: nowrap;
 }
 
 .app-icon {
