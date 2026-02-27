@@ -4,24 +4,10 @@ Released under a MIT (SEI)-style license. See LICENSE.md in the project root for
 -->
 
 <div class="cssLayoutColumnCenterStart">
-  <div class="move-container">
-    <div>
-      <mat-icon class="mdi-24px sp-icon" fontIcon="mdi-account-group"></mat-icon>
-    </div>
-    <mat-form-field class="search-field">
-      <input matInput [(ngModel)]="filterString" (keyup)="applyFilter($event.target.value)"
-        placeholder="Search Groups" />
-      @if (filterString) {
-      <button matSuffix mat-icon-button aria-label="Clear" (click)="clearFilter()">
-        <mat-icon class="mdi-24px" fontIcon="mdi-close-circle-outline"></mat-icon>
-      </button>
-      }
-    </mat-form-field>
-  </div>
   <mat-table [dataSource]="(dataSource$ | async)!" matSort>
     <!-- Name Column -->
     <ng-container matColumnDef="name">
-      <mat-header-cell *matHeaderCellDef mat-sort-header>
+      <mat-header-cell *matHeaderCellDef mat-sort-header class="name-header-with-search">
         <div class="button-cell">
           <button mat-icon-button matTooltip="Add New Group" (click)="createGroup()" [disabled]="!canEdit">
             <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle"></mat-icon>
@@ -32,8 +18,18 @@ Released under a MIT (SEI)-style license. See LICENSE.md in the project root for
               matTooltipShowDelay="0"></mat-icon>
           </span>
         </div>
-        <div>
-          Group Name
+        <div class="header-text-with-search">
+          <span>Group Name</span>
+          <mat-form-field class="search-control" (click)="$event.stopPropagation()">
+            <input matInput [(ngModel)]="filterString" (keyup)="applyFilter($event.target.value)"
+              placeholder="Search Groups" />
+          </mat-form-field>
+          <div class="clear-search-button" (click)="$event.stopPropagation()">
+            <button mat-icon-button (click)="clearFilter()" style="outline: none;"
+              title="Clear Search" [disabled]="!filterString">
+              <mat-icon class="mdi-24px" fontIcon="mdi-close-circle-outline"></mat-icon>
+            </button>
+          </div>
         </div>
       </mat-header-cell>
       <mat-cell *matCellDef="let element">

@@ -4,20 +4,6 @@ Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
 <div [ngClass]="injectTypeId ? 'inject-type-frame' : 'frame'">
-  <section matSort (matSortChange)="sortChanged($event)" class="header-row background-alt">
-    <span [ngClass]="showTemplates ? 'header-cell top-left-cell' : 'header-cell top-left-cell-templates'">&nbsp;</span>
-    <span class="header-cell six-cell search-cell">
-      <mat-form-field class="search-control">
-        <input matInput [formControl]="filterControl" placeholder="Search" />
-        @if (filterControl.value) {
-        <button mat-icon-button matSuffix (click)="filterControl.setValue(''); $event.stopPropagation()" title="Clear Search">
-          <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline"></mat-icon>
-        </button>
-        }
-      </mat-form-field>
-    </span>
-  </section>
-
   <section [ngClass]="injectTypeId ? 'inject-type-scrolling-region' : 'scrolling-region'">
     @if (!!galleryToDo()) {
     <div class="gallery-warning">** Gallery Parameters not assigned: {{ galleryToDo() }}</div>
@@ -179,9 +165,25 @@ project root for license information or contact permission@sei.cmu.edu for full 
         </ng-container>
         <!-- options Column -->
         <ng-container matColumnDef="options">
-          <mat-header-cell *matHeaderCellDef class="six-cell"> Options </mat-header-cell>
+          <mat-header-cell *matHeaderCellDef class="six-cell column-with-search">
+            Options
+            <mat-form-field class="search-control" (click)="$event.stopPropagation()">
+              <input matInput [formControl]="filterControl" placeholder="Search" />
+            </mat-form-field>
+            <div class="clear-search-button" (click)="$event.stopPropagation()">
+              <button mat-icon-button (click)="filterControl.setValue(''); $event.stopPropagation()" style="outline: none;"
+                title="Clear Search" [disabled]="!filterControl.value">
+                <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
+              </button>
+            </div>
+          </mat-header-cell>
           <mat-cell *matCellDef="let element" class="six-cell">
-            <div class="summary-text">{{ getDataOptionsString(element) }}</div>
+            <div class="summary-text options-link"
+                 (click)="viewDataOptions(element, $event)"
+                 [class.clickable]="element.dataOptions && element.dataOptions.length > 0"
+                 [title]="element.dataOptions && element.dataOptions.length > 0 ? 'Click to view all options' : ''">
+              {{ getDataOptionsString(element) }}
+            </div>
           </mat-cell>
         </ng-container>
         <!-- integration Column -->

@@ -5,17 +5,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
 -->
 
 <div class="cssLayoutRowStartCenter">
-  <div class="sp-icon">
-    <mat-icon class="mdi-24px" fontIcon="mdi-account-group" [ngStyle]="{'color': 'var(--mat-sys-primary)'}"></mat-icon>
-  </div>
-  <mat-form-field style="width: 300px; margin-left: 10px;">
-    <input matInput [(ngModel)]="filterString" (keyup)="applyFilter($any($event.target).value)" placeholder="Search" />
-    @if (filterString) {
-    <button mat-icon-button matSuffix (click)="applyFilter('')" title="Clear Search">
-      <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline"></mat-icon>
-    </button>
-    }
-  </mat-form-field>
   @if (!addingNewUnit) {
   <div class="button-end">
     <mat-paginator #paginator [length]="unitList?.length" [pageIndex]="pageIndex" [pageSize]="pageSize"
@@ -34,7 +23,18 @@ project root for license information or contact permission@sei.cmu.edu for full 
       }
     </div>
     <div class="header-cell two-cell" mat-sort-header="shortName">Short Name</div>
-    <div class="header-cell five-cell" mat-sort-header="name">Name</div>
+    <div class="header-cell five-cell name-header-with-search" mat-sort-header="name">
+      Name
+      <mat-form-field class="search-control" (click)="$event.stopPropagation()">
+        <input matInput [(ngModel)]="filterString" (keyup)="applyFilter($any($event.target).value)" placeholder="Search" />
+      </mat-form-field>
+      <div class="clear-search-button" (click)="$event.stopPropagation()">
+        <button mat-icon-button (click)="applyFilter('')" style="outline: none;"
+          title="Clear Search" [disabled]="!filterString">
+          <mat-icon class="mdi-24px" fontIcon="mdi-close-circle-outline"></mat-icon>
+        </button>
+      </div>
+    </div>
   </section>
 
   @for (unit of paginateUnits(pageIndex, pageSize); track unit.id) {

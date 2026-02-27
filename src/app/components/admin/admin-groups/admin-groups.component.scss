@@ -3,20 +3,6 @@
 
 @use '@angular/material' as mat;
 
-.move-container {
-  display: flex;
-  flex-direction: row;
-  width: 100%;
-  align-items: left;
-  text-align: left;
-  align-items: center;
-}
-
-.search-field {
-  min-width: 100px;
-  margin-left: 10px;
-}
-
 .xpanel {
   width: 100%;
   margin-bottom: 10px;
@@ -33,14 +19,6 @@
 
 .new-group-field {
   width: 300px;
-}
-
-.sp-icon {
-  margin-left: 20px;
-  margin-right: 20px;
-  min-width: 30px;
-  width: 5%;
-  color: var(--mat-sys-primary);
 }
 
 .button-cell {
@@ -77,4 +55,31 @@
 
 .primary-color {
   color: var(--mat-sys-primary);
+}
+
+.name-header-with-search {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: 100%;
+  gap: 12px;
+}
+
+.header-text-with-search {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex: 1;
+  gap: 12px;
+}
+
+.search-control {
+  flex: 1;
+  min-width: 100px;
+  max-width: 400px;
+}
+
+.clear-search-button {
+  flex-shrink: 0;
+  width: 40px;
 }

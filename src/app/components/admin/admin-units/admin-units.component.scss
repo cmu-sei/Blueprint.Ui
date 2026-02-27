@@ -58,10 +58,6 @@
   word-wrap: break-word;
 }
 
-.sp-icon {
-  margin-left: 10px;
-}
-
 .mat-accordion .header-row {
   padding-left: 1.5rem;
   padding-right: 2rem;
@@ -94,4 +90,22 @@
   align-self: center;
   min-width: 80px;
   max-width: 100px;
+}
+
+.name-header-with-search {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+}
+
+.search-control {
+  flex: 1;
+  min-width: 100px;
+  max-width: 400px;
+}
+
+.clear-search-button {
+  flex-shrink: 0;
+  width: 40px;
 }

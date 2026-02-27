@@ -315,3 +315,21 @@ row.cdk-drag-preview.dark-theme {
   background: #373739 !important;
   color: #efefef;
 }
+
+.column-with-search {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+}
+
+.search-control {
+  flex: 1;
+  min-width: 100px;
+  max-width: 400px;
+}
+
+.clear-search-button {
+  flex-shrink: 0;
+  width: 40px;
+}
