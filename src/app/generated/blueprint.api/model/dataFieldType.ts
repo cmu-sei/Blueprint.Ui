@@ -32,7 +32,8 @@ export const DataFieldType = {
     Checkbox: 'Checkbox',
     Url: 'Url',
     Move: 'Move',
-    IntegrationTarget: 'IntegrationTarget'
+    IntegrationTarget: 'IntegrationTarget',
+    Competency: 'Competency'
 } as const;
 export type DataFieldType = typeof DataFieldType[keyof typeof DataFieldType];
 

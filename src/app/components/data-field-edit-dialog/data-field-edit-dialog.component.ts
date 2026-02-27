@@ -19,6 +19,7 @@ import {
   DataOption
 } from 'src/app/generated/blueprint.api';
 import { DataOptionEditDialogComponent } from '../data-option-edit-dialog/data-option-edit-dialog.component';
+import { DataOptionImportDialogComponent } from '../data-option-import-dialog/data-option-import-dialog.component';
 import { v4 as uuidv4 } from 'uuid';
 import { IntegrationTarget } from 'src/app/data/scenario-event/scenario-event-data.service';
 
@@ -130,6 +131,23 @@ export class DataFieldEditDialogComponent {
     this.data.dataField.dataOptions.splice(index, 1);
   }
 
+  importDataOptions(dataField: DataField) {
+    const dialogRef = this.dialog.open(DataOptionImportDialogComponent, {
+      width: '800px',
+      maxWidth: '90vw',
+      data: {
+        dataFieldId: dataField.id,
+        existingOptions: this.data.dataField.dataOptions
+      },
+    });
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result && Array.isArray(result)) {
+        // Add imported options to the displayed list
+        this.data.dataField.dataOptions.push(...result);
+      }
+    });
+  }
+
   sortedDataFieldOptions() {
     return this.data.dataField.dataOptions
       .sort((a, b) => +a.displayOrder < +b.displayOrder ? -1 : 1);
@@ -139,7 +157,8 @@ export class DataFieldEditDialogComponent {
     return !(
       this.data.dataField.dataType === DataFieldType.Double ||
       this.data.dataField.dataType === DataFieldType.Integer ||
-      this.data.dataField.dataType === DataFieldType.String
+      this.data.dataField.dataType === DataFieldType.String ||
+      this.data.dataField.dataType === DataFieldType.Competency
     );
   }
 

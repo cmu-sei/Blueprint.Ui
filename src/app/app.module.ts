@@ -86,6 +86,7 @@ import { DashboardComponent } from './components/landing/dashboard/dashboard.com
 import { DataFieldEditDialogComponent } from './components/data-field-edit-dialog/data-field-edit-dialog.component';
 import { DataFieldListComponent } from './components/data-field-list/data-field-list.component';
 import { DataOptionEditDialogComponent } from './components/data-option-edit-dialog/data-option-edit-dialog.component';
+import { DataOptionImportDialogComponent } from './components/data-option-import-dialog/data-option-import-dialog.component';
 import { HomeAppComponent } from './components/home-app/home-app.component';
 import { InjectEditDialogComponent } from './components/inject-edit-dialog/inject-edit-dialog.component';
 import { InjectListComponent } from './components/inject-list/inject-list.component';
@@ -176,6 +177,7 @@ export const appConfig: ApplicationConfig = {
     DataFieldEditDialogComponent,
     DataFieldListComponent,
     DataOptionEditDialogComponent,
+    DataOptionImportDialogComponent,
     HomeAppComponent,
     InjectEditDialogComponent,
     InjectListComponent,

@@ -1,0 +1,105 @@
+<!--
+Copyright 2025 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license, please see LICENSE.md in the
+project root for license information or contact permission@sei.cmu.edu for full terms.
+-->
+
+<div mat-dialog-title>
+  Import Options
+  <button mat-icon-button (click)="handleCancel()" title="Cancel" class="close-button" tabindex="-1">
+    <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
+  </button>
+</div>
+
+<div mat-dialog-content>
+  <!-- File Upload Section -->
+  <div class="upload-section">
+    <p class="instructions">
+      Upload a JSON file containing options (e.g., NICE Framework for competencies, or custom format).
+    </p>
+    <input
+      type="file"
+      accept=".json"
+      (change)="onFileSelected($event)"
+      #fileInput
+      style="display: none"
+    />
+    <button
+      mat-raised-button
+      color="primary"
+      (click)="fileInput.click()"
+      [disabled]="isProcessing"
+    >
+      <mat-icon fontIcon="mdi-upload"></mat-icon>
+      Choose File
+    </button>
+  </div>
+
+  <!-- Error Message -->
+  @if (parseError) {
+  <mat-error class="error-message">
+    <mat-icon fontIcon="mdi-alert-circle-outline"></mat-icon>
+    {{ parseError }}
+  </mat-error>
+  }
+
+  <!-- Processing Indicator -->
+  @if (isProcessing) {
+  <div class="processing">
+    <mat-spinner diameter="40"></mat-spinner>
+    <span>Processing...</span>
+  </div>
+  }
+
+  <!-- Preview Table -->
+  @if (previewItems.length > 0 && !isProcessing) {
+  <div class="preview-section">
+    <h3>Preview ({{ getImportCount() }} to import, {{ getSkipCount() }} to skip)</h3>
+    <div class="preview-table-container">
+      <table class="preview-table">
+        <thead>
+          <tr>
+            <th class="checkbox-column">
+              <mat-checkbox
+                [checked]="areAllSelected()"
+                [indeterminate]="isSomeSelected()"
+                (change)="toggleAll($event.checked)"
+                [disabled]="getAvailableCount() === 0"
+              ></mat-checkbox>
+            </th>
+            <th>ID</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of previewItems; track item.optionName) {
+          <tr [class.exists]="item.exists">
+            <td class="checkbox-column">
+              <mat-checkbox
+                [(ngModel)]="item.willImport"
+                [disabled]="item.exists"
+                [matTooltip]="item.exists ? 'Already exists - will be skipped' : ''"
+              ></mat-checkbox>
+            </td>
+            <td>{{ item.optionName }}</td>
+            <td>{{ item.optionValue }}</td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+  }
+</div>
+
+<div mat-dialog-actions align="end">
+  <button mat-button (click)="handleCancel()">Cancel</button>
+  <button
+    mat-raised-button
+    color="primary"
+    (click)="handleImport()"
+    [disabled]="getImportCount() === 0 || isProcessing"
+  >
+    Import {{ getImportCount() }} Option{{ getImportCount() !== 1 ? 's' : '' }}
+  </button>
+</div>

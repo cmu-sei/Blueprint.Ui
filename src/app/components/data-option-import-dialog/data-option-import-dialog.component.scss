@@ -1,0 +1,112 @@
+// Copyright 2025 Carnegie Mellon University. All Rights Reserved.
+// Released under a MIT (SEI)-style license. See LICENSE.md in the
+// project root for license information.
+
+.upload-section {
+  margin-bottom: 20px;
+}
+
+.instructions {
+  margin-bottom: 15px;
+  color: var(--mat-sys-on-surface-variant);
+  font-size: 14px;
+}
+
+.error-message {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  margin: 16px 0;
+  background-color: var(--mat-sys-error-container);
+  color: var(--mat-sys-on-error-container);
+  border-radius: 4px;
+}
+
+.processing {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  justify-content: center;
+}
+
+.preview-section {
+  margin-top: 20px;
+
+  h3 {
+    margin-bottom: 12px;
+    font-size: 16px;
+    font-weight: 500;
+  }
+}
+
+.preview-table-container {
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 4px;
+}
+
+.preview-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  thead {
+    position: sticky;
+    top: 0;
+    background-color: var(--mat-sys-surface-variant);
+    z-index: 1;
+
+    th {
+      padding: 12px;
+      text-align: left;
+      font-weight: 500;
+      border-bottom: 2px solid var(--mat-sys-outline);
+
+      &.checkbox-column {
+        width: 60px;
+        text-align: center;
+      }
+    }
+  }
+
+  tbody {
+    tr {
+      border-bottom: 1px solid var(--mat-sys-outline-variant);
+
+      &.exists {
+        opacity: 0.5;
+        background-color: var(--mat-sys-surface-variant);
+      }
+
+      &:hover {
+        background-color: var(--mat-sys-surface-container-highest);
+      }
+
+      td {
+        padding: 12px;
+
+        &.checkbox-column {
+          width: 60px;
+          text-align: center;
+        }
+
+        &:nth-child(2) {
+          font-family: monospace;
+          font-weight: 500;
+          width: 120px;
+        }
+
+        &:nth-child(3) {
+          width: auto;
+        }
+      }
+    }
+  }
+}
+
+.close-button {
+  float: right;
+  margin-top: -8px;
+}

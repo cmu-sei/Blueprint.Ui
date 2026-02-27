@@ -39,6 +39,35 @@
 .data-option {
   display: flex;
   flex-flow: row;
+  align-items: flex-start;
+  margin-bottom: 8px;
+  gap: 12px;
+
+  .option-buttons {
+    flex-shrink: 0;
+  }
+
+  .option-order {
+    flex-shrink: 0;
+    width: 40px;
+    align-self: center;
+  }
+
+  .option-name {
+    flex-shrink: 0;
+    width: 120px;
+    font-weight: 500;
+    align-self: center;
+  }
+
+  .option-value {
+    flex: 1;
+    min-width: 0;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+    align-self: center;
+  }
 }
 
 .single-detail {
