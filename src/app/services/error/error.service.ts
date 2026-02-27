@@ -28,16 +28,38 @@ export class ErrorService implements ErrorHandler {
         );
         console.log('API Error', 'The API could not be reached.');
       } else if (err.error && err.error.title) {
-        messageService.displayMessage(err.statusText, err.error.title);
-        console.log(err.statusText + ' ==> ' + err.error.title);
+        // Enhanced error handling: extract detailed message from error response
+        let detailedMessage = err.error.title;
+
+        // Check for additional detail in the error response
+        if (err.error.detail) {
+          detailedMessage += '\n\n' + err.error.detail;
+        }
+
+        // Check for validation errors (common in API responses)
+        if (err.error.errors && typeof err.error.errors === 'object') {
+          const validationErrors = Object.values(err.error.errors)
+            .flat()
+            .join('\n');
+          if (validationErrors) {
+            detailedMessage += '\n\nValidation errors:\n' + validationErrors;
+          }
+        }
+
+        messageService.displayMessage(err.statusText || 'Error', detailedMessage);
+        console.error(err.statusText + ' ==> ' + detailedMessage, err);
+      } else if (err.error && typeof err.error === 'string') {
+        // Handle case where error is a plain string (from CITE API improvements)
+        messageService.displayMessage(err.statusText || 'Error', err.error);
+        console.error(err.statusText + ' ==> ' + err.error, err);
       } else {
         messageService.displayMessage(err.statusText, err.message);
-        console.log(err.statusText + ' ==> ' + err.message);
+        console.error(err.statusText + ' ==> ' + err.message, err);
       }
-    } else if (err.message.startsWith('Uncaught (in promise)')) {
-      if (err.rejection.statusCode === 401) {
+    } else if (err.message && err.message.startsWith('Uncaught (in promise)')) {
+      if (err.rejection && err.rejection.statusCode === 401) {
         // nothing to do here, the signalR reconnect handles the situation.
-      } else if (err.rejection.message === 'Network Error') {
+      } else if (err.rejection && err.rejection.message === 'Network Error') {
         messageService.displayMessage(
           'Identity Server Error',
           'The Identity Server could not be reached for user authentication.'
@@ -46,15 +68,16 @@ export class ErrorService implements ErrorHandler {
           'Identity Server Error',
           'The Identity Server could not be reached for user authentication.'
         );
-      } else if (err.rejection.message === 'Failed to fetch') {
+      } else if (err.rejection && err.rejection.message === 'Failed to fetch') {
         console.log('SignalR error reaching the Gallery API:  ' + err.rejection.message);
       } else {
-        messageService.displayMessage('Error', err.rejection.message);
-        console.log(err.rejection.message);
+        const rejectionMessage = err.rejection ? err.rejection.message : err.message;
+        messageService.displayMessage('Error', rejectionMessage);
+        console.error(rejectionMessage, err);
       }
     } else {
-      messageService.displayMessage(err.name, err.message);
-      console.log(err.name + ' ==> ' + err.message);
+      messageService.displayMessage(err.name || 'Error', err.message || 'An unexpected error occurred');
+      console.error((err.name || 'Error') + ' ==> ' + (err.message || 'Unknown error'), err);
     }
   }
 }

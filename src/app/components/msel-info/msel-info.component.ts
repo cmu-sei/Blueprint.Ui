@@ -204,9 +204,15 @@ export class MselInfoComponent implements OnDestroy, OnInit {
         this.mselPages = pages;
       });
     // subscribe to scoring models
-    this.citeService.getScoringModels().subscribe((scoringModels) => {
-      this.scoringModelList = scoringModels;
-    });
+    this.citeService.getScoringModels().subscribe(
+      (scoringModels) => {
+        this.scoringModelList = scoringModels;
+      },
+      (error) => {
+        console.error('Failed to load CITE scoring models:', error);
+        this.scoringModelList = [];
+      }
+    );
     // subscribe to data fields
     this.dataFieldQuery.selectAll().subscribe((dataFields) => {
       this.dataFieldList = dataFields;

@@ -87,9 +87,15 @@ export class MselTeamsComponent implements OnDestroy, OnInit {
       }
     });
     // subscribe to TeamTypes
-    this.citeService.getTeamTypes().subscribe(teamTypes => {
-      this.teamTypeList = teamTypes;
-    });
+    this.citeService.getTeamTypes().subscribe(
+      (teamTypes) => {
+        this.teamTypeList = teamTypes;
+      },
+      (error) => {
+        console.error('Failed to load CITE team types:', error);
+        this.teamTypeList = [];
+      }
+    );
     // subscribe to units
     this.unitQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(units => {
       if (units && units.length > 0) {
