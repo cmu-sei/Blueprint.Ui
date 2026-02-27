@@ -147,7 +147,6 @@ export class MselInfoComponent implements OnDestroy, OnInit {
           }
           this.savedStartTime = new Date(msel.startTime);
           this.savedDurationSeconds = msel.durationSeconds;
-          console.log(msel?.startTime);
         }
       });
     // subscribe to MSEL loading flag

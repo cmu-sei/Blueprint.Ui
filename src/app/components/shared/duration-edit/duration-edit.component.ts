@@ -70,7 +70,6 @@ export class DurationEditComponent implements OnChanges {
     durationSeconds = durationSeconds % 60;
     // get the number of seconds
     this.seconds = +durationSeconds;
-    console.log(this.days + ':' + this.hours + ':' + this.minutes)
   }
 
   calculateDurationSeconds() {
