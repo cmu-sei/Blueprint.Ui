@@ -42,6 +42,14 @@ export class DurationEditComponent implements OnChanges {
       );
       this.setDeltaValues();
     }
+
+    // Enable/disable the FormControl based on canEdit
+    // This handles both initial state and changes
+    if (this.canEdit) {
+      this.endTimeFormControl.enable({ emitEvent: false });
+    } else {
+      this.endTimeFormControl.disable({ emitEvent: false });
+    }
   }
 
   getDateFromDurationSeconds(durationSeconds: number): Date {
