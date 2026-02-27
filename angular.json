@@ -108,7 +108,6 @@
             "assets": [
               "src/favicon.ico",
               "src/assets",
-              "src/auth-callback-silent.html",
               {
                 "glob": "**/*",
                 "input": "./node_modules/@kolkov/angular-editor/assets/icons/",
