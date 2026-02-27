@@ -1,0 +1,83 @@
+<!--
+Copyright 2025 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license, please see LICENSE.md in the
+project root for license information or contact permission@sei.cmu.edu for full terms.
+-->
+
+<div mat-dialog-title>
+  Manage Options ({{ data.dataOptions.length }})
+  <button mat-icon-button (click)="handleClose()" title="Close" class="close-button" tabindex="-1">
+    <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
+  </button>
+</div>
+
+<div mat-dialog-content>
+  <!-- Search Box -->
+  <div class="search-section">
+    <mat-form-field class="full-width">
+      <mat-label>Search options</mat-label>
+      <input matInput [(ngModel)]="searchText" placeholder="Filter by ID or description">
+      @if (searchText) {
+      <button matSuffix mat-icon-button (click)="searchText = ''" title="Clear search">
+        <mat-icon fontIcon="mdi-close"></mat-icon>
+      </button>
+      }
+    </mat-form-field>
+  </div>
+
+  <!-- Options Table -->
+  <div class="options-table-container">
+    <table class="options-table">
+      <thead>
+        <tr>
+          @if (data.canEdit) {
+          <th class="actions-column">Actions</th>
+          }
+          <th class="order-column">Order</th>
+          <th class="name-column">ID</th>
+          <th class="value-column">Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (option of filteredOptions; track option.id) {
+        <tr>
+          @if (data.canEdit) {
+          <td class="actions-column">
+            <button mat-icon-button (click)="handleEdit(option)" title="Edit this option">
+              <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline"></mat-icon>
+            </button>
+            <button mat-icon-button (click)="handleDelete(option)" title="Delete this option">
+              <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline"></mat-icon>
+            </button>
+          </td>
+          }
+          <td class="order-column">{{ option.displayOrder }}</td>
+          <td class="name-column">{{ option.optionName }}</td>
+          <td class="value-column">{{ option.optionValue }}</td>
+        </tr>
+        }
+        @if (filteredOptions.length === 0) {
+        <tr>
+          <td [attr.colspan]="data.canEdit ? 4 : 3" class="no-results">
+            No options found
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div mat-dialog-actions>
+  <div style="flex: 1;">
+    @if (data.canEdit) {
+    <button mat-icon-button (click)="handleAdd()" title="Add new option" style="outline: none; margin-right: 8px;">
+      <mat-icon class="mdi-24px" fontIcon="mdi-plus-circle-outline"></mat-icon>
+    </button>
+    <button mat-icon-button (click)="handleImport()" title="Import options from file" style="outline: none;">
+      <mat-icon class="mdi-24px" fontIcon="mdi-upload"></mat-icon>
+    </button>
+    }
+  </div>
+  <button mat-raised-button color="primary" (click)="handleClose()">Close</button>
+</div>

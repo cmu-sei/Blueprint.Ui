@@ -28,48 +28,6 @@
   align-items: center;
 }
 
-.data-options {
-  display: flex;
-  flex: 7;
-  flex-flow: column;
-  align-items: flex-start;
-  text-align: left;;
-}
-
-.data-option {
-  display: flex;
-  flex-flow: row;
-  align-items: flex-start;
-  margin-bottom: 8px;
-  gap: 12px;
-
-  .option-buttons {
-    flex-shrink: 0;
-  }
-
-  .option-order {
-    flex-shrink: 0;
-    width: 40px;
-    align-self: center;
-  }
-
-  .option-name {
-    flex-shrink: 0;
-    width: 120px;
-    font-weight: 500;
-    align-self: center;
-  }
-
-  .option-value {
-    flex: 1;
-    min-width: 0;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-    white-space: normal;
-    align-self: center;
-  }
-}
-
 .single-detail {
   display: flex;
   flex: 10;
@@ -78,20 +36,20 @@
   width: 90%;
 }
 
-.partial-detail {
+.option-list-container {
   display: flex;
   flex-direction: column;
-  flex: 3;
+  width: 100%;
+  gap: 8px;
 }
 
-.center-self {
-  align-self: center;
+.option-list-row {
+  display: flex;
+  flex-flow: row;
+  align-items: center;
+  gap: 15px;
 }
 
 .bottom-margin {
   margin-bottom: 15px;
-}
-
-.left-margin {
-  margin-left: 25px;
 }

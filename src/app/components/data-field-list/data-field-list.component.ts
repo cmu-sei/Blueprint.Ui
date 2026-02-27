@@ -22,6 +22,7 @@ import { DataFieldDataService } from 'src/app/data/data-field/data-field-data.se
 import { DataFieldQuery } from 'src/app/data/data-field/data-field.query';
 import { DataFieldTemplateQuery } from 'src/app/data/data-field/data-field-template.query';
 import { DataFieldEditDialogComponent } from '../data-field-edit-dialog/data-field-edit-dialog.component';
+import { DataOptionListDialogComponent } from '../data-option-list-dialog/data-option-list-dialog.component';
 import { InjectTypeDataService } from 'src/app/data/inject-type/inject-type-data.service';
 import { InjectTypeQuery } from 'src/app/data/inject-type/inject-type.query';
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
@@ -281,6 +282,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
     const dialogRef = this.dialog.open(DataFieldEditDialogComponent, {
       maxWidth: '90vw',
       width: 'auto',
+      minWidth: '650px',
       data: {
         dataField: dataField,
         canEdit: this.canEdit(),
@@ -432,16 +434,45 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
   }
 
   getDataOptionsString(dataField: DataField): string {
-    if (dataField.dataOptions) {
-      const dataOptions = dataField.dataOptions
-        .slice()
-        .sort((a, b) => (+a.displayOrder < +b.displayOrder ? -1 : 1))
-        .map(function (elem) {
-          return elem.optionName;
-        });
-      return dataOptions.join(', ');
+    if (dataField.dataOptions && dataField.dataOptions.length > 0) {
+      const count = dataField.dataOptions.length;
+      return `${count} option${count !== 1 ? 's' : ''}`;
     } else {
       return ' ';
+    }
+  }
+
+  viewDataOptions(dataField: DataField, event: Event) {
+    event.stopPropagation();
+    if (dataField.dataOptions && dataField.dataOptions.length > 0) {
+      const hasEditPermission = this.canEdit() || this.msel.hasRole(this.loggedInUserId, null).owner;
+      const supportsOptionList =
+        dataField.dataType === DataFieldType.Double ||
+        dataField.dataType === DataFieldType.Integer ||
+        dataField.dataType === DataFieldType.String ||
+        dataField.dataType === DataFieldType.Competency;
+      const canAddOptions = hasEditPermission && supportsOptionList;
+      const dialogRef = this.dialog.open(DataOptionListDialogComponent, {
+        width: '900px',
+        maxWidth: '95vw',
+        maxHeight: '90vh',
+        data: {
+          dataOptions: dataField.dataOptions,
+          canEdit: canAddOptions,
+          onEdit: () => {},
+          onDelete: () => {},
+          onAdd: () => {
+            // Close view dialog and open edit dialog to add options
+            dialogRef.close();
+            this.addOrEditDataField(dataField, this.showTemplates);
+          },
+          onImport: () => {
+            // Close view dialog and open edit dialog to import options
+            dialogRef.close();
+            this.addOrEditDataField(dataField, this.showTemplates);
+          }
+        }
+      });
     }
   }
 

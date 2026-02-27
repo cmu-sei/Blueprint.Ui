@@ -20,6 +20,7 @@ import {
 } from 'src/app/generated/blueprint.api';
 import { DataOptionEditDialogComponent } from '../data-option-edit-dialog/data-option-edit-dialog.component';
 import { DataOptionImportDialogComponent } from '../data-option-import-dialog/data-option-import-dialog.component';
+import { DataOptionListDialogComponent } from '../data-option-list-dialog/data-option-list-dialog.component';
 import { v4 as uuidv4 } from 'uuid';
 import { IntegrationTarget } from 'src/app/data/scenario-event/scenario-event-data.service';
 
@@ -144,6 +145,24 @@ export class DataFieldEditDialogComponent {
       if (result && Array.isArray(result)) {
         // Add imported options to the displayed list
         this.data.dataField.dataOptions.push(...result);
+      }
+    });
+  }
+
+  viewAllOptions() {
+    const canEdit = this.data.canEdit || this.data.isOwner;
+    const canAddOptions = canEdit && !this.optionListNotAllowed();
+    this.dialog.open(DataOptionListDialogComponent, {
+      width: '900px',
+      maxWidth: '95vw',
+      maxHeight: '90vh',
+      data: {
+        dataOptions: this.data.dataField.dataOptions,
+        canEdit: canAddOptions,
+        onEdit: (option: DataOption) => this.editDataOption(option),
+        onDelete: (option: DataOption) => this.deleteDataOption(option),
+        onAdd: () => this.addDataOption(this.data.dataField),
+        onImport: () => this.importDataOptions(this.data.dataField)
       }
     });
   }
