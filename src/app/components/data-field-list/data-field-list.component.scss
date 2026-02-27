@@ -333,3 +333,9 @@ row.cdk-drag-preview.dark-theme {
   flex-shrink: 0;
   width: 40px;
 }
+
+.options-link.clickable {
+  cursor: pointer;
+  text-decoration: underline;
+  color: var(--mat-sys-primary);
+}
