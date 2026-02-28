@@ -29,6 +29,8 @@ import { MselPageDataService } from 'src/app/data/msel-page/msel-page-data.servi
 import { MselPageQuery } from 'src/app/data/msel-page/msel-page.query';
 import { MselUnitQuery } from 'src/app/data/msel-unit/msel-unit.query';
 import { AngularEditorConfig } from '@kolkov/angular-editor';
+import { ComnSettingsService } from '@cmusei/crucible-common';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-msel-info',
@@ -115,6 +117,12 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   pushStatus = '';
   savedStartTime: Date;
   savedDurationSeconds = 0;
+  playerViewName = '';
+  galleryCollectionName = '';
+  galleryExhibitName = '';
+  citeEvaluationName = '';
+  citeScoringModelName = '';
+  steamfitterScenarioName = '';
   constructor(
     public dialogService: DialogService,
     private teamQuery: TeamQuery,
@@ -128,7 +136,9 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     private mselPageQuery: MselPageQuery,
     private mselUnitQuery: MselUnitQuery,
     private permissionDataService: PermissionDataService,
-    private changeDetectorRef: ChangeDetectorRef
+    private changeDetectorRef: ChangeDetectorRef,
+    private settingsService: ComnSettingsService,
+    private http: HttpClient
   ) {
     // subscribe to the active MSEL
     (this.mselQuery.selectActive() as Observable<MselPlus>)
@@ -147,6 +157,10 @@ export class MselInfoComponent implements OnDestroy, OnInit {
           }
           this.savedStartTime = new Date(msel.startTime);
           this.savedDurationSeconds = msel.durationSeconds;
+          // Update scoring model name when scoring model ID changes
+          this.updateCiteScoringModelName();
+          // Fetch integration names for deployed integrations
+          this.fetchIntegrationNames();
         }
       });
     // subscribe to MSEL loading flag
@@ -205,7 +219,13 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     // subscribe to scoring models
     this.citeService.getScoringModels().subscribe(
       (scoringModels) => {
-        this.scoringModelList = scoringModels;
+        console.log('CITE scoring models loaded:', scoringModels?.length || 0, 'models');
+        this.scoringModelList = scoringModels || [];
+        if (this.scoringModelList.length === 0) {
+          console.warn('CITE returned an empty scoring model list');
+        }
+        // Update the scoring model name after list is loaded
+        this.updateCiteScoringModelName();
       },
       (error) => {
         console.error('Failed to load CITE scoring models:', error);
@@ -392,6 +412,149 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     this.msel.startTime.setHours(8, 0, 0, 0);
     this.msel.startTime.setDate(this.msel.startTime.getDate() + 1);
     this.startTimeCheck();
+  }
+
+  updateCiteScoringModelName() {
+    if (this.msel.citeScoringModelId && this.scoringModelList.length > 0) {
+      const scoringModel = this.scoringModelList.find(sm => sm.id === this.msel.citeScoringModelId);
+      this.citeScoringModelName = scoringModel ? scoringModel.description : '';
+      if (!scoringModel) {
+        console.warn(`Scoring Model ID ${this.msel.citeScoringModelId} not found in list of ${this.scoringModelList.length} scoring models`);
+      }
+    } else {
+      this.citeScoringModelName = '';
+      if (this.msel.citeScoringModelId && this.scoringModelList.length === 0) {
+        console.warn(`Cannot update scoring model name - scoringModelList is empty but citeScoringModelId is ${this.msel.citeScoringModelId}`);
+      }
+    }
+  }
+
+  getPlayerViewUrl(): string {
+    if (!this.msel.playerViewId) return '';
+    let baseUrl = this.settingsService.settings.PlayerUrl || '';
+    if (baseUrl && baseUrl.slice(-1) !== '/') {
+      baseUrl = baseUrl + '/';
+    }
+    return `${baseUrl}view/${this.msel.playerViewId}`;
+  }
+
+  getGalleryExhibitUrl(): string {
+    if (!this.msel.galleryExhibitId) return '';
+    let baseUrl = this.settingsService.settings.GalleryUrl || '';
+    if (baseUrl && baseUrl.slice(-1) !== '/') {
+      baseUrl = baseUrl + '/';
+    }
+    return `${baseUrl}exhibit/${this.msel.galleryExhibitId}`;
+  }
+
+  getCiteEvaluationUrl(): string {
+    if (!this.msel.citeEvaluationId) return '';
+    let baseUrl = this.settingsService.settings.CiteUrl || '';
+    if (baseUrl && baseUrl.slice(-1) !== '/') {
+      baseUrl = baseUrl + '/';
+    }
+    return `${baseUrl}evaluation/${this.msel.citeEvaluationId}`;
+  }
+
+  getSteamfitterScenarioUrl(): string {
+    if (!this.msel.steamfitterScenarioId) return '';
+    let baseUrl = this.settingsService.settings.SteamfitterUrl || '';
+    if (baseUrl && baseUrl.slice(-1) !== '/') {
+      baseUrl = baseUrl + '/';
+    }
+    return `${baseUrl}scenario/${this.msel.steamfitterScenarioId}`;
+  }
+
+  fetchIntegrationNames() {
+    // Fetch Player View name
+    if (this.msel.playerViewId) {
+      const playerApiUrl = this.settingsService.settings.PlayerApiUrl || '';
+      this.http.get<any>(`${playerApiUrl}/views/${this.msel.playerViewId}`)
+        .pipe(takeUntil(this.unsubscribe$))
+        .subscribe(
+          (view) => {
+            this.playerViewName = view.name || '';
+          },
+          (error) => {
+            console.error('Failed to load Player View name:', error);
+            this.playerViewName = '';
+          }
+        );
+    } else {
+      this.playerViewName = '';
+    }
+
+    // Fetch Gallery Collection name
+    if (this.msel.galleryCollectionId) {
+      const galleryApiUrl = this.settingsService.settings.GalleryApiUrl || '';
+      this.http.get<any>(`${galleryApiUrl}/collections/${this.msel.galleryCollectionId}`)
+        .pipe(takeUntil(this.unsubscribe$))
+        .subscribe(
+          (collection) => {
+            this.galleryCollectionName = collection.name || '';
+          },
+          (error) => {
+            console.error('Failed to load Gallery Collection name:', error);
+            this.galleryCollectionName = '';
+          }
+        );
+    } else {
+      this.galleryCollectionName = '';
+    }
+
+    // Fetch Gallery Exhibit name
+    if (this.msel.galleryExhibitId) {
+      const galleryApiUrl = this.settingsService.settings.GalleryApiUrl || '';
+      this.http.get<any>(`${galleryApiUrl}/exhibits/${this.msel.galleryExhibitId}`)
+        .pipe(takeUntil(this.unsubscribe$))
+        .subscribe(
+          (exhibit) => {
+            this.galleryExhibitName = exhibit.name || '';
+          },
+          (error) => {
+            console.error('Failed to load Gallery Exhibit name:', error);
+            this.galleryExhibitName = '';
+          }
+        );
+    } else {
+      this.galleryExhibitName = '';
+    }
+
+    // Fetch CITE Evaluation name
+    if (this.msel.citeEvaluationId) {
+      const citeApiUrl = this.settingsService.settings.CiteApiUrl || '';
+      this.http.get<any>(`${citeApiUrl}/evaluations/${this.msel.citeEvaluationId}`)
+        .pipe(takeUntil(this.unsubscribe$))
+        .subscribe(
+          (evaluation) => {
+            this.citeEvaluationName = evaluation.description || '';
+          },
+          (error) => {
+            console.error('Failed to load CITE Evaluation name:', error);
+            this.citeEvaluationName = '';
+          }
+        );
+    } else {
+      this.citeEvaluationName = '';
+    }
+
+    // Fetch Steamfitter Scenario name
+    if (this.msel.steamfitterScenarioId) {
+      const steamfitterApiUrl = this.settingsService.settings.SteamfitterApiUrl || '';
+      this.http.get<any>(`${steamfitterApiUrl}/scenarios/${this.msel.steamfitterScenarioId}`)
+        .pipe(takeUntil(this.unsubscribe$))
+        .subscribe(
+          (scenario) => {
+            this.steamfitterScenarioName = scenario.name || '';
+          },
+          (error) => {
+            console.error('Failed to load Steamfitter Scenario name:', error);
+            this.steamfitterScenarioName = '';
+          }
+        );
+    } else {
+      this.steamfitterScenarioName = '';
+    }
   }
 
   ngOnDestroy() {
