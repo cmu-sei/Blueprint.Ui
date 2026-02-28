@@ -440,11 +440,8 @@ export class MselInfoComponent implements OnDestroy, OnInit {
 
   getGalleryExhibitUrl(): string {
     if (!this.msel.galleryExhibitId) return '';
-    let baseUrl = this.settingsService.settings.GalleryUrl || '';
-    if (baseUrl && baseUrl.slice(-1) !== '/') {
-      baseUrl = baseUrl + '/';
-    }
-    return `${baseUrl}exhibit/${this.msel.galleryExhibitId}`;
+    const baseUrl = this.settingsService.settings.GalleryUrl || '';
+    return `${baseUrl}?exhibit=${this.msel.galleryExhibitId}`;
   }
 
   getCiteEvaluationUrl(): string {
