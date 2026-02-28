@@ -449,11 +449,8 @@ export class MselInfoComponent implements OnDestroy, OnInit {
 
   getCiteEvaluationUrl(): string {
     if (!this.msel.citeEvaluationId) return '';
-    let baseUrl = this.settingsService.settings.CiteUrl || '';
-    if (baseUrl && baseUrl.slice(-1) !== '/') {
-      baseUrl = baseUrl + '/';
-    }
-    return `${baseUrl}evaluation/${this.msel.citeEvaluationId}`;
+    const baseUrl = this.settingsService.settings.CiteUrl || '';
+    return `${baseUrl}?evaluation=${this.msel.citeEvaluationId}`;
   }
 
   getSteamfitterScenarioUrl(): string {
