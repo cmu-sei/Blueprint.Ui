@@ -129,7 +129,7 @@
 }
 
 .mat-column-description {
-  flex: 0 0 40%;
+  flex: 0 0 30%;
   padding: 1%;
 }
 
@@ -153,6 +153,10 @@
 }
 
 .mat-column-dateCreated {
+  min-width: 100px;
+}
+
+.mat-column-dateModified {
   min-width: 100px;
 }
 
