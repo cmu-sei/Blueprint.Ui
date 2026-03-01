@@ -6,6 +6,26 @@ a {
   color: var(--mat-sys-on-background);
 }
 
+// Ensure angular-editor content is left-aligned by default
+::ng-deep angular-editor {
+  .angular-editor-wrapper {
+    .angular-editor-textarea {
+      text-align: left !important;
+
+      p, div, span {
+        text-align: left !important;
+      }
+    }
+  }
+}
+
+// Warning message style
+.unsaved-warning {
+  color: #f44336;
+  font-weight: 500;
+  margin-left: 10px;
+}
+
 
 .frame {
   width: 100%;

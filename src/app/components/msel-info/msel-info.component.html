@@ -4,7 +4,7 @@ Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
 <div class="frame">
-  <mat-tab-group mat-align-tabs="start" class="tab-group" [selectedIndex]="currentTabIndex" (selectedTabChange)="tabChange($event)">
+  <mat-tab-group mat-align-tabs="start" class="tab-group" [selectedIndex]="currentTabIndex" (selectedIndexChange)="onTabIndexChange($event)">
     >
     <mat-tab label="Config" class="tab">
       <div class="edit-buttons">
@@ -366,6 +366,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <button mat-icon-button (click)="cancelMselPageEdits()" style="outline: none;" title="Cancel Changes">
             <mat-icon class="mdi-24px self-center" fontIcon="mdi-close"></mat-icon>
           </button>
+          @if (hasUnsavedPageChanges()) {
+          <mat-label class="unsaved-warning">Changes have not been saved!</mat-label>
+          }
         </span>
         }
       </div>
