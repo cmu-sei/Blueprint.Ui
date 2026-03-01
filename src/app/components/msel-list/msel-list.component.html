@@ -4,30 +4,20 @@ Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
 
-<div class="content-under-topbar">
-  <div class="header-div">
-    @if (canAccessAdminSection) {
-    <div class="admin-cog-div">
-      <button mat-icon-button style="outline: none;" (click)="goToUrl('/admin')" title="Administration">
-        <mat-icon fontIcon="mdi-cog"></mat-icon>
-      </button>
-    </div>
-    }
-  </div>
-  <div class="elevate msel-list-container">
+<div class="elevate msel-list-container">
     <div class="buttons-container">
       <div class="app-icon">
         <div class="msels-title">
           @if (canViewMsel(null)) {
           @if (!allMselsAreLoaded) {
           <button mat-icon-button style="outline: none;" (click)="adminLoadAllMsels()"
-            title="Remove filter to show ALL MSELs">
+            title="Show all MSELs from all users">
             <mat-icon fontIcon="mdi-filter-off-outline"></mat-icon>
           </button>
           }
           @if (allMselsAreLoaded) {
           <button mat-icon-button style="outline: none;" (click)="adminLoadMyMsels()"
-            title="Apply filter to show just MY MSELs">
+            title="Show only MSELs I own or have access to">
             <mat-icon fontIcon="mdi-filter-outline"></mat-icon>
           </button>
           }
@@ -157,15 +147,15 @@ project root for license information or contact permission@sei.cmu.edu for full 
         </ng-container>
         <!-- dateCreated Column -->
         <ng-container matColumnDef="dateCreated">
-          <mat-header-cell *matHeaderCellDef mat-sort-header class="no-wrap"> Date Created </mat-header-cell>
-          <mat-cell *matCellDef="let element" class="no-wrap">
+          <mat-header-cell *matHeaderCellDef mat-sort-header> Date Created </mat-header-cell>
+          <mat-cell *matCellDef="let element">
             <div class="description-text">{{ element.dateCreated | date }}</div>
           </mat-cell>
         </ng-container>
         <!-- dateModified Column -->
         <ng-container matColumnDef="dateModified">
-          <mat-header-cell *matHeaderCellDef mat-sort-header class="no-wrap"> Date Modified </mat-header-cell>
-          <mat-cell *matCellDef="let element" class="no-wrap">
+          <mat-header-cell *matHeaderCellDef mat-sort-header> Date Modified </mat-header-cell>
+          <mat-cell *matCellDef="let element">
             <div class="description-text">
               @if (isValidDate(element.dateModified)) {
                 {{ element.dateModified | date }}
@@ -197,7 +187,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
       }
     </div>
   </div>
-</div>
 
 <input hidden (change)="selectFile($event)" #xlsxInput type="file" accept=".xlsx" />
 

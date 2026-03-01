@@ -10,28 +10,16 @@
   @include mat.elevation(2);
 }
 
-.content-under-topbar {
-  text-align: center;
-  overflow: hidden;
-  height: calc(100vh - 38px);
-  background-color: var(--mat-sys-background);
-  color: var(--mat-sys-on-background);
-}
-
 .msel-list-container {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  max-height: 800px;
+  max-height: calc(100vh - 100px);
   min-width: 300px;
   margin: auto;
   width: 80%;
-}
-
-.header-div {
-  display: flex;
-  flex-direction: row;
-  flex: 7;
+  overflow-y: auto;
+  box-shadow: 0 5px 5px -3px #0003, 0 8px 10px 1px #00000024, 0 3px 14px 2px #0000001f;
 }
 
 .title-icon {
@@ -73,20 +61,14 @@
   margin-top: 20px;
 }
 
-.admin-cog-div {
-  width: 100%;
-  text-align: right;
-}
-
 .no-results {
   font-size: x-large;
 }
 
 .mat-mdc-table {
   font-size: small;
-  height: calc(100vh - 200px);
-  min-height: 250px;
-  overflow: auto;
+  overflow-y: auto;
+  max-height: calc(100vh - 300px);
 }
 
 .app-list-item {
@@ -112,11 +94,6 @@
   width: 60px;
 }
 
-.mat-mdc-header-row {
-  height: 40px !important;
-  padding: 0;
-}
-
 .mat-column-name {
   flex: 0 0 20%;
   padding: 1%;
@@ -129,8 +106,9 @@
 }
 
 .mat-column-description {
-  flex: 0 0 30%;
+  flex: 1 1 30%;
   padding: 1%;
+  min-width: 150px;
 }
 
 .is-template-checkbox {
@@ -175,8 +153,8 @@
   flex-wrap: nowrap;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid;
   font-size: small;
+  height: 90px;
 }
 
 .button-items {
