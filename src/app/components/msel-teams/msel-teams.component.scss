@@ -58,6 +58,8 @@
   flex-direction: row;
   text-align: left;
   flex: 1;
+  width: 100%;
+  align-items: center;
 }
 
 .search-cell {
@@ -144,4 +146,45 @@
 
 .center-self {
   align-self: center;
+}
+
+// Cell width definitions for proper alignment
+.five-cell {
+  flex: 5;
+  min-width: 0;
+}
+
+.two-cell {
+  flex: 2;
+  min-width: 0;
+}
+
+.search-cell {
+  flex: 3;
+  min-width: 0;
+}
+
+// Override Material expansion panel header padding to align with header row
+::ng-deep .mat-expansion-panel {
+  .mat-expansion-panel-header {
+    padding: 0 !important;
+    height: 40px;
+  }
+
+  .mat-expansion-panel-header-title {
+    margin: 0 !important;
+    flex-grow: 1 !important;
+    overflow: visible !important;
+  }
+
+  .mat-content {
+    display: flex !important;
+    flex: 1 !important;
+    align-items: center !important;
+    overflow: visible !important;
+  }
+
+  .mat-expansion-indicator {
+    margin-right: 8px !important;
+  }
 }
