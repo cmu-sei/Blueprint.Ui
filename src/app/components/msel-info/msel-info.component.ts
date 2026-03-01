@@ -264,7 +264,16 @@ export class MselInfoComponent implements OnDestroy, OnInit {
 
   deleteMsel() {
     if (this.canManageMsel()) {
-      this.deleteThisMsel.emit(this.msel.id);
+      this.dialogService
+        .confirm(
+          'Delete MSEL',
+          'Are you sure that you want to delete ' + this.msel.name + '?'
+        )
+        .subscribe((result) => {
+          if (result['confirm']) {
+            this.deleteThisMsel.emit(this.msel.id);
+          }
+        });
     }
   }
 

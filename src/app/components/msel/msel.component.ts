@@ -249,7 +249,6 @@ export class MselComponent implements OnDestroy {
 
   deleteMsel(id: string) {
     this.deleteThisMsel.emit(id);
-    this.router.navigate(['/']);
   }
 
   ngOnDestroy() {
