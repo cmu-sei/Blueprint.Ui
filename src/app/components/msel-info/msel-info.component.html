@@ -4,7 +4,7 @@ Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
 <div class="frame">
-  <mat-tab-group mat-align-tabs="start" class="tab-group" (selectedTabChange)="tabChange($event)">
+  <mat-tab-group mat-align-tabs="start" class="tab-group" [selectedIndex]="currentTabIndex" (selectedTabChange)="tabChange($event)">
     >
     <mat-tab label="Config" class="tab">
       <div class="edit-buttons">
@@ -335,7 +335,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <mat-tab label="{{ page.name }}" class="tab">
       <!-- page content -->
       <div class="edit-buttons">
-        @if (!editingPageId) {
+        @if (editingPageId !== page.id) {
         <span>
           @if (canManageMsel()) {
           <button mat-icon-button (click)="requestPageEdit(page.id)" style="outline: none;" title="Edit Page">
@@ -358,7 +358,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           }
         </span>
         }
-        @if (editingPageId) {
+        @if (editingPageId === page.id) {
         <span>
           <button mat-icon-button (click)="saveMselPageEdits()" style="outline: none;" title="Save Changes">
             <mat-icon class="mdi-24px self-center" fontIcon="mdi-check"></mat-icon>
@@ -371,21 +371,28 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </div>
       @if (msel) {
       <div class="page-content-region">
-        @if (editingPageId) {
+        @if (editingPageId === page.id) {
         <mat-form-field class="full-width">
           <input type="text" matInput placeholder="Page Name" [(ngModel)]="changedMselPage.name"
-            [disabled]="!editingPageId" />
+            [disabled]="editingPageId !== page.id" />
         </mat-form-field>
         }
         <div class="all-can-view-div">
-          @if (editingPageId) {
+          @if (editingPageId === page.id) {
           <mat-checkbox [(ngModel)]="changedMselPage.allCanView" title="All MSEL users can view this page">All MSEL
             users can view this page</mat-checkbox>
+          } @else if (page.allCanView) {
+          <span>** All MSEL users can view this page</span>
           }
         </div>
         <div>
+          @if (editingPageId === page.id) {
           <angular-editor [placeholder]="'Content'" [(ngModel)]="changedMselPage.content"
-            [config]="editingPageId ? editorConfig : viewConfig"></angular-editor>
+            [config]="editorConfig"></angular-editor>
+          } @else {
+          <angular-editor [placeholder]="'Content'" [ngModel]="page.content"
+            [config]="viewConfig"></angular-editor>
+          }
         </div>
       </div>
       }
@@ -397,34 +404,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <mat-icon class="mdi-24px" fontIcon="mdi-plus-circle" title="Add MSEL Notes Page"></mat-icon>
         Add Page
       </ng-template>
-      <!-- new page content -->
-      <div class="edit-buttons">
-        <span>
-          <button mat-icon-button (click)="saveMselPageEdits()" style="outline: none;" title="Save Changes"
-            [disabled]="!changedMselPage.name || !changedMselPage.content">
-            <mat-icon class="mdi-24px self-center" fontIcon="mdi-check"></mat-icon>
-          </button>
-          <button mat-icon-button (click)="cancelMselPageEdits()" style="outline: none;" title="Cancel Changes"
-            [disabled]="!changedMselPage.name && !changedMselPage.content">
-            <mat-icon class="mdi-24px self-center" fontIcon="mdi-close"></mat-icon>
-          </button>
-        </span>
-      </div>
-      @if (msel) {
       <div class="page-content-region">
-        <mat-form-field class="full-width">
-          <input type="text" matInput placeholder="Page Name" [(ngModel)]="changedMselPage.name" />
-        </mat-form-field>
-        <div class="all-can-view-div">
-          <mat-checkbox [(ngModel)]="changedMselPage.allCanView" title="All MSEL users can view this page">All MSEL
-            users can view this page</mat-checkbox>
-        </div>
-        <div>
-          <angular-editor [placeholder]="'Content'" [(ngModel)]="changedMselPage.content"
-            [config]="editorConfig"></angular-editor>
-        </div>
+        <p>Click this tab to create a new page.</p>
       </div>
-      }
     </mat-tab>
     }
   </mat-tab-group>

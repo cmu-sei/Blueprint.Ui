@@ -69,6 +69,7 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   changedMselPage = {} as MselPage;
   currentTabIndex = 0;
   editingPageId = '';
+  private newlyAddedPageName = '';
   editorConfig: AngularEditorConfig = {
     editable: true,
     spellcheck: true,
@@ -214,7 +215,33 @@ export class MselInfoComponent implements OnDestroy, OnInit {
       .selectAll()
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((pages) => {
+        const previousLength = this.mselPages.length;
+        const currentPageId = this.changedMselPage?.id;
         this.mselPages = pages;
+
+        // If a new page was added, switch to it and start editing
+        if (this.newlyAddedPageName && pages.length > previousLength) {
+          const newPage = pages.find(p => p.name === this.newlyAddedPageName);
+          if (newPage) {
+            const newPageIndex = pages.findIndex(p => p.id === newPage.id);
+            // Switch to the new page tab
+            setTimeout(() => {
+              this.currentTabIndex = newPageIndex + 1;
+              // Make a copy so it's editable
+              this.changedMselPage = { ...newPage };
+              this.editingPageId = newPage.id;
+            }, 100);
+            this.newlyAddedPageName = '';
+          }
+        }
+        // If we were on an existing page and not switching to a new one, keep the page updated
+        else if (currentPageId && this.currentTabIndex > 0 && this.currentTabIndex <= pages.length && !this.newlyAddedPageName) {
+          // Find the updated page object
+          const updatedPage = pages.find(p => p.id === currentPageId);
+          if (updatedPage) {
+            this.changedMselPage = { ...updatedPage };
+          }
+        }
       });
     // subscribe to scoring models
     this.citeService.getScoringModels().subscribe(
@@ -335,12 +362,51 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   }
 
   tabChange(event: any) {
-    this.currentTabIndex = event.index;
-    if (event.index > 0 && event.index <= this.mselPages.length) {
-      this.changedMselPage = this.mselPages[event.index - 1];
-    } else {
-      this.changedMselPage = {} as MselPage;
+    const previousIndex = this.currentTabIndex;
+    const targetIndex = event.index;
+
+    // Helper function to perform the tab switch
+    const performTabSwitch = () => {
+      this.currentTabIndex = targetIndex;
+      if (targetIndex > 0 && targetIndex <= this.mselPages.length) {
+        this.changedMselPage = { ...this.mselPages[targetIndex - 1] };
+      } else {
+        this.changedMselPage = {} as MselPage;
+      }
+    };
+
+    // Check if clicking on "Add Page" tab (last tab)
+    if (targetIndex === this.mselPages.length + 1) {
+      // Check for unsaved changes first
+      if (this.editingPageId && this.hasUnsavedPageChanges()) {
+        // Reset to previous tab immediately
+        this.currentTabIndex = previousIndex;
+        this.handleUnsavedPageChanges(() => {
+          this.addNewPage();
+        });
+        return;
+      }
+      // Don't switch to Add Page tab, stay on current
+      this.currentTabIndex = previousIndex;
+      this.addNewPage();
+      return;
     }
+
+    // Check if we have unsaved changes before switching tabs
+    if (this.editingPageId && this.hasUnsavedPageChanges()) {
+      // Reset to previous tab immediately to prevent the switch
+      this.currentTabIndex = previousIndex;
+
+      // Show dialog
+      this.handleUnsavedPageChanges(() => {
+        // After handling unsaved changes, perform the switch
+        performTabSwitch();
+      });
+      return;
+    }
+
+    // No unsaved changes, accept the tab change
+    performTabSwitch();
   }
 
   requestPageEdit(id: string) {
@@ -348,15 +414,34 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     this.changedMselPage = { ...this.mselPages.find((p) => p.id === id) };
   }
 
+  addNewPage() {
+    // Create a unique name to avoid conflicts
+    const existingNewPages = this.mselPages.filter(p => p.name.startsWith('New Page'));
+    const pageNumber = existingNewPages.length > 0 ? existingNewPages.length + 1 : '';
+    const pageName = pageNumber ? `New Page ${pageNumber}` : 'New Page';
+
+    // Create a blank page immediately
+    const newPage: MselPage = {
+      mselId: this.originalMsel.id,
+      name: pageName,
+      content: '',
+      allCanView: false
+    } as MselPage;
+    this.newlyAddedPageName = newPage.name;
+    this.mselPageDataService.add(newPage);
+  }
+
   saveMselPageEdits() {
     this.changedMselPage.mselId = this.originalMsel.id;
-    if (this.changedMselPage.id) {
-      this.mselPageDataService.update(this.changedMselPage);
-    } else {
-      this.mselPageDataService.add(this.changedMselPage);
-    }
-    this.changedMselPage = {} as MselPage;
+    // Store the current tab to restore it after save
+    const currentTab = this.currentTabIndex;
+    // Always updating an existing page now
+    this.mselPageDataService.update(this.changedMselPage);
     this.editingPageId = '';
+    // Ensure we stay on the same tab
+    setTimeout(() => {
+      this.currentTabIndex = currentTab;
+    }, 0);
   }
 
   cancelMselPageEdits() {
@@ -380,12 +465,55 @@ export class MselInfoComponent implements OnDestroy, OnInit {
       .subscribe((result) => {
         if (result['confirm']) {
           this.mselPageDataService.delete(page.id);
+          // Switch back to Config tab after deletion
+          this.currentTabIndex = 0;
         }
       });
   }
 
   openContent(id: string) {
     window.open(this.basePageUrl + id);
+  }
+
+  hasUnsavedPageChanges(): boolean {
+    if (!this.editingPageId || !this.changedMselPage) {
+      return false;
+    }
+
+    // Find the original page
+    const originalPage = this.mselPages.find(p => p.id === this.editingPageId);
+    if (!originalPage) {
+      return false;
+    }
+
+    // Compare the changed page with the original
+    return this.changedMselPage.name !== originalPage.name ||
+           this.changedMselPage.content !== originalPage.content ||
+           this.changedMselPage.allCanView !== originalPage.allCanView;
+  }
+
+  handleUnsavedPageChanges(onComplete: () => void) {
+    this.dialogService
+      .confirm(
+        'Unsaved Changes',
+        'You have unsaved changes. Do you want to save them before leaving?'
+      )
+      .subscribe((result) => {
+        if (result['confirm']) {
+          // Save changes
+          this.saveMselPageEdits();
+          // Wait for save to complete before proceeding
+          setTimeout(() => {
+            this.editingPageId = '';
+            onComplete();
+          }, 100);
+        } else {
+          // Discard changes
+          this.editingPageId = '';
+          this.changedMselPage = {} as MselPage;
+          onComplete();
+        }
+      });
   }
 
   galleryToDo(): boolean {
