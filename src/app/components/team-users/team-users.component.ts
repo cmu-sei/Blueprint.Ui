@@ -13,7 +13,7 @@ import {
 import { Sort, MatSortable } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { TeamQuery } from 'src/app/data/team/team.query';
-import { SystemPermission, TeamRole, Team, TeamUser, User, UserTeamRole } from 'src/app/generated/blueprint.api';
+import { SystemPermission, TeamRole, Team, TeamUser, User, UserTeamRole, MselUnit } from 'src/app/generated/blueprint.api';
 import { TeamUserDataService } from 'src/app/data/team-user/team-user-data.service';
 import { TeamUserQuery } from 'src/app/data/team-user/team-user.query';
 import { CurrentUserQuery, UserQuery } from 'src/app/data/user/user.query';
@@ -21,6 +21,7 @@ import { UserTeamRoleDataService } from 'src/app/data/user-team-role/user-team-r
 import { UserTeamRoleQuery } from 'src/app/data/user-team-role/user-team-role.query';
 import { MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
+import { MselUnitQuery } from 'src/app/data/msel-unit/msel-unit.query';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
 import { Observable, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -38,6 +39,7 @@ export class TeamUsersComponent implements OnDestroy, OnInit {
   otherTeamUsers: TeamUser[] = [];
   teamList: Team[] = [];
   userTeamRoles: UserTeamRole[] = [];
+  mselUnits: MselUnit[] = [];
   minUserColumns: string[] = ['name', 'id'];
   allUserColumns: string[] = ['name', 'Inviter', 'Observer', 'Incrementer', 'Modifier', 'Submitter', 'id'];
   displayedTeamUserColumns: string[] = [];
@@ -61,6 +63,7 @@ export class TeamUsersComponent implements OnDestroy, OnInit {
     private userTeamRoleDataService: UserTeamRoleDataService,
     private userTeamRoleQuery: UserTeamRoleQuery,
     private mselQuery: MselQuery,
+    private mselUnitQuery: MselUnitQuery,
     private permissionDataService: PermissionDataService,
     private changeDetectorRef: ChangeDetectorRef
   ) {
@@ -80,6 +83,11 @@ export class TeamUsersComponent implements OnDestroy, OnInit {
     // subscribe to UserTeamRoles
     this.userTeamRoleQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(umrs => {
       this.userTeamRoles = umrs;
+    });
+    // subscribe to MselUnits to know which users are contributors
+    this.mselUnitQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(mselUnits => {
+      this.mselUnits = mselUnits || [];
+      this.applyFilter();
     });
     this.displayedTeamUserColumns = this.allUserColumns;
   }
@@ -158,9 +166,23 @@ export class TeamUsersComponent implements OnDestroy, OnInit {
   applyFilter() {
     const searchTerm = this.filterControl.value ? this.filterControl.value.toLowerCase() : '';
 
+    // Get users who are part of contributor units for this MSEL
+    const contributorUserIds = new Set<string>();
+    this.mselUnits.forEach(mselUnit => {
+      if (mselUnit.unit && mselUnit.unit.users) {
+        mselUnit.unit.users.forEach(user => {
+          contributorUserIds.add(user.id);
+        });
+      }
+    });
+
     // Get users not already on this team
     const teamUserIds = new Set(this.teamUsers.map(tu => tu.userId));
-    const availableUsers = this.userList.filter(user => !teamUserIds.has(user.id));
+
+    // Filter to only contributors who are not already on the team
+    const availableUsers = this.userList.filter(user =>
+      contributorUserIds.has(user.id) && !teamUserIds.has(user.id)
+    );
 
     // Apply search filter
     const filteredData = availableUsers.filter(user =>
