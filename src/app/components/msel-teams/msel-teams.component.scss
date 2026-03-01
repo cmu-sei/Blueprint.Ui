@@ -71,12 +71,11 @@
 
 .scrolling-region {
   width: 100%;
-  height: calc(100vh - 60px);
+  height: calc(100vh - 80px);
   overflow: auto;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  margin-top: 20px;
 }
 
 .section-container {
@@ -125,7 +124,7 @@
 
 .header-action-buttons {
   display: flex;
-  width: 120px;
+  width: 90px;
   align-items: center;
 }
 

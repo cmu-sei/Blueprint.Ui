@@ -29,7 +29,7 @@ import { TeamEditDialogComponent } from '../team-edit-dialog/team-edit-dialog.co
 import { UnitQuery } from 'src/app/data/unit/unit.query';
 
 @Component({
-    selector: 'app-msel-roles',
+    selector: 'app-msel-teams',
     templateUrl: './msel-teams.component.html',
     styleUrls: ['./msel-teams.component.scss'],
     standalone: false

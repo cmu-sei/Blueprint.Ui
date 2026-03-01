@@ -109,7 +109,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <app-msel-contributors [loggedInUserId]="loggedInUserId"></app-msel-contributors>
       }
       @if (selectedTab === 'Teams') {
-      <app-msel-roles [loggedInUserId]="loggedInUserId"></app-msel-roles>
+      <app-msel-teams [loggedInUserId]="loggedInUserId"></app-msel-teams>
       }
       @if (selectedTab === 'Data Fields') {
       <app-data-field-list [loggedInUserId]="loggedInUserId" [showTemplates]="false"
