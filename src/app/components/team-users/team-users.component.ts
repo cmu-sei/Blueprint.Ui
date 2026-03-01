@@ -157,7 +157,13 @@ export class TeamUsersComponent implements OnDestroy, OnInit {
 
   applyFilter() {
     const searchTerm = this.filterControl.value ? this.filterControl.value.toLowerCase() : '';
-    const filteredData = this.userList.filter(user =>
+
+    // Get users not already on this team
+    const teamUserIds = new Set(this.teamUsers.map(tu => tu.userId));
+    const availableUsers = this.userList.filter(user => !teamUserIds.has(user.id));
+
+    // Apply search filter
+    const filteredData = availableUsers.filter(user =>
       !searchTerm || user.name.toLowerCase().includes(searchTerm)
     );
     this.sortUserData(filteredData);
