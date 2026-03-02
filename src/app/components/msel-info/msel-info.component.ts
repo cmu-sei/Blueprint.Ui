@@ -29,6 +29,8 @@ import { MselPageDataService } from 'src/app/data/msel-page/msel-page-data.servi
 import { MselPageQuery } from 'src/app/data/msel-page/msel-page.query';
 import { MselUnitQuery } from 'src/app/data/msel-unit/msel-unit.query';
 import { AngularEditorConfig } from '@kolkov/angular-editor';
+import { ComnSettingsService } from '@cmusei/crucible-common';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-msel-info',
@@ -67,6 +69,9 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   changedMselPage = {} as MselPage;
   currentTabIndex = 0;
   editingPageId = '';
+  private newlyAddedPageName = '';
+  // Map to store unsaved changes for each page
+  private unsavedPageChanges = new Map<string, MselPage>();
   editorConfig: AngularEditorConfig = {
     editable: true,
     spellcheck: true,
@@ -79,7 +84,7 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     enableToolbar: true,
     showToolbar: true,
     placeholder: 'Enter text here...',
-    defaultParagraphSeparator: '',
+    defaultParagraphSeparator: 'p',
     defaultFontName: '',
     defaultFontSize: '',
     fonts: [
@@ -93,6 +98,13 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     sanitize: false,
     toolbarPosition: 'top',
     toolbarHiddenButtons: [['backgroundColor']],
+    customClasses: [
+      {
+        name: 'Left Aligned',
+        class: 'text-left',
+        tag: 'p',
+      }
+    ]
   };
   viewConfig: AngularEditorConfig = {
     editable: false,
@@ -115,6 +127,12 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   pushStatus = '';
   savedStartTime: Date;
   savedDurationSeconds = 0;
+  playerViewName = '';
+  galleryCollectionName = '';
+  galleryExhibitName = '';
+  citeEvaluationName = '';
+  citeScoringModelName = '';
+  steamfitterScenarioName = '';
   constructor(
     public dialogService: DialogService,
     private teamQuery: TeamQuery,
@@ -128,7 +146,9 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     private mselPageQuery: MselPageQuery,
     private mselUnitQuery: MselUnitQuery,
     private permissionDataService: PermissionDataService,
-    private changeDetectorRef: ChangeDetectorRef
+    private changeDetectorRef: ChangeDetectorRef,
+    private settingsService: ComnSettingsService,
+    private http: HttpClient
   ) {
     // subscribe to the active MSEL
     (this.mselQuery.selectActive() as Observable<MselPlus>)
@@ -147,7 +167,10 @@ export class MselInfoComponent implements OnDestroy, OnInit {
           }
           this.savedStartTime = new Date(msel.startTime);
           this.savedDurationSeconds = msel.durationSeconds;
-          console.log(msel?.startTime);
+          // Update scoring model name when scoring model ID changes
+          this.updateCiteScoringModelName();
+          // Fetch integration names for deployed integrations
+          this.fetchIntegrationNames();
         }
       });
     // subscribe to MSEL loading flag
@@ -201,12 +224,50 @@ export class MselInfoComponent implements OnDestroy, OnInit {
       .selectAll()
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((pages) => {
+        const previousLength = this.mselPages.length;
+        const currentPageId = this.changedMselPage?.id;
         this.mselPages = pages;
+
+        // If a new page was added, switch to it and start editing
+        if (this.newlyAddedPageName && pages.length > previousLength) {
+          const newPage = pages.find(p => p.name === this.newlyAddedPageName);
+          if (newPage) {
+            const newPageIndex = pages.findIndex(p => p.id === newPage.id);
+            // Switch to the new page tab
+            setTimeout(() => {
+              this.currentTabIndex = newPageIndex + 1;
+              // Make a copy so it's editable
+              this.changedMselPage = { ...newPage };
+              this.editingPageId = newPage.id;
+            }, 100);
+            this.newlyAddedPageName = '';
+          }
+        }
+        // If we were on an existing page and not switching to a new one, keep the page updated
+        else if (currentPageId && this.currentTabIndex > 0 && this.currentTabIndex <= pages.length && !this.newlyAddedPageName) {
+          // Find the updated page object
+          const updatedPage = pages.find(p => p.id === currentPageId);
+          if (updatedPage) {
+            this.changedMselPage = { ...updatedPage };
+          }
+        }
       });
     // subscribe to scoring models
-    this.citeService.getScoringModels().subscribe((scoringModels) => {
-      this.scoringModelList = scoringModels;
-    });
+    this.citeService.getScoringModels().subscribe(
+      (scoringModels) => {
+        console.log('CITE scoring models loaded:', scoringModels?.length || 0, 'models');
+        this.scoringModelList = scoringModels || [];
+        if (this.scoringModelList.length === 0) {
+          console.warn('CITE returned an empty scoring model list');
+        }
+        // Update the scoring model name after list is loaded
+        this.updateCiteScoringModelName();
+      },
+      (error) => {
+        console.error('Failed to load CITE scoring models:', error);
+        this.scoringModelList = [];
+      }
+    );
     // subscribe to data fields
     this.dataFieldQuery.selectAll().subscribe((dataFields) => {
       this.dataFieldList = dataFields;
@@ -239,7 +300,16 @@ export class MselInfoComponent implements OnDestroy, OnInit {
 
   deleteMsel() {
     if (this.canManageMsel()) {
-      this.deleteThisMsel.emit(this.msel.id);
+      this.dialogService
+        .confirm(
+          'Delete MSEL',
+          'Are you sure that you want to delete ' + this.msel.name + '?'
+        )
+        .subscribe((result) => {
+          if (result['confirm']) {
+            this.deleteThisMsel.emit(this.msel.id);
+          }
+        });
     }
   }
 
@@ -300,41 +370,135 @@ export class MselInfoComponent implements OnDestroy, OnInit {
       });
   }
 
-  tabChange(event: any) {
-    this.currentTabIndex = event.index;
-    if (event.index > 0 && event.index <= this.mselPages.length) {
-      this.changedMselPage = this.mselPages[event.index - 1];
+  onTabIndexChange(targetIndex: number) {
+    // Don't do anything if we're already on this tab
+    if (targetIndex === this.currentTabIndex) {
+      return;
+    }
+
+    // Save current page's unsaved changes to the map if editing
+    if (this.editingPageId && this.changedMselPage && this.changedMselPage.id) {
+      this.unsavedPageChanges.set(this.editingPageId, { ...this.changedMselPage });
+    }
+
+    // Check if clicking on "Add Page" tab (last tab)
+    if (targetIndex === this.mselPages.length + 1) {
+      // Don't actually switch to the Add Page tab
+      // Just create a new page and stay on current tab
+      this.addNewPage();
+      return;
+    }
+
+    // Perform the tab switch
+    this.currentTabIndex = targetIndex;
+
+    // Load the page for the new tab
+    if (targetIndex > 0 && targetIndex <= this.mselPages.length) {
+      const page = this.mselPages[targetIndex - 1];
+      // Check if we have unsaved changes for this page
+      if (this.unsavedPageChanges.has(page.id)) {
+        // Load unsaved changes and set editing mode
+        this.changedMselPage = { ...this.unsavedPageChanges.get(page.id) };
+        this.editingPageId = page.id;
+      } else {
+        // Load the original page and clear editing mode
+        this.changedMselPage = { ...page };
+        this.editingPageId = '';
+      }
     } else {
       this.changedMselPage = {} as MselPage;
+      this.editingPageId = '';
     }
   }
 
   requestPageEdit(id: string) {
+    // If we're already editing this page, do nothing
+    if (this.editingPageId === id) {
+      return;
+    }
+
+    // Save current page's unsaved changes if we're editing something else
+    if (this.editingPageId && this.changedMselPage && this.changedMselPage.id) {
+      this.unsavedPageChanges.set(this.editingPageId, { ...this.changedMselPage });
+    }
+
+    // Start editing the new page
     this.editingPageId = id;
-    this.changedMselPage = { ...this.mselPages.find((p) => p.id === id) };
+
+    // Load unsaved changes if they exist, otherwise load the original page
+    if (this.unsavedPageChanges.has(id)) {
+      this.changedMselPage = { ...this.unsavedPageChanges.get(id) };
+    } else {
+      this.changedMselPage = { ...this.mselPages.find((p) => p.id === id) };
+    }
+  }
+
+  addNewPage() {
+    // Save current page's unsaved changes if we're editing
+    if (this.editingPageId && this.changedMselPage && this.changedMselPage.id) {
+      this.unsavedPageChanges.set(this.editingPageId, { ...this.changedMselPage });
+    }
+
+    // Create a unique name to avoid conflicts
+    const existingNewPages = this.mselPages.filter(p => p.name.startsWith('New Page'));
+    const pageNumber = existingNewPages.length > 0 ? existingNewPages.length + 1 : '';
+    const pageName = pageNumber ? `New Page ${pageNumber}` : 'New Page';
+
+    // Create a blank page immediately
+    const newPage: MselPage = {
+      mselId: this.originalMsel.id,
+      name: pageName,
+      content: '',
+      allCanView: false
+    } as MselPage;
+    this.newlyAddedPageName = newPage.name;
+    this.mselPageDataService.add(newPage);
   }
 
   saveMselPageEdits() {
     this.changedMselPage.mselId = this.originalMsel.id;
-    if (this.changedMselPage.id) {
-      this.mselPageDataService.update(this.changedMselPage);
-    } else {
-      this.mselPageDataService.add(this.changedMselPage);
+    const pageId = this.changedMselPage.id;
+    // Store the current tab to restore it after save
+    const currentTab = this.currentTabIndex;
+
+    // Always updating an existing page now
+    this.mselPageDataService.update(this.changedMselPage);
+
+    // Clear the unsaved changes for this page
+    if (pageId) {
+      this.unsavedPageChanges.delete(pageId);
     }
-    this.changedMselPage = {} as MselPage;
+
+    // Clear the editing state
     this.editingPageId = '';
+
+    // Ensure we stay on the same tab
+    setTimeout(() => {
+      this.currentTabIndex = currentTab;
+      // Reload the saved page
+      if (currentTab > 0 && currentTab <= this.mselPages.length) {
+        this.changedMselPage = { ...this.mselPages[currentTab - 1] };
+      }
+    }, 0);
   }
 
   cancelMselPageEdits() {
+    // Clear unsaved changes for this page if it exists
+    if (this.editingPageId) {
+      this.unsavedPageChanges.delete(this.editingPageId);
+      // Clear the editing state
+      this.editingPageId = '';
+    }
+
+    // Reset changedMselPage to a fresh copy of the current page (original data)
     if (
       this.currentTabIndex > 0 &&
       this.currentTabIndex <= this.mselPages.length
     ) {
-      this.changedMselPage = this.mselPages[this.currentTabIndex - 1];
+      this.changedMselPage = { ...this.mselPages[this.currentTabIndex - 1] };
     } else {
       this.changedMselPage = {} as MselPage;
     }
-    this.editingPageId = '';
   }
 
   deletePage(page: MselPage): void {
@@ -345,7 +509,11 @@ export class MselInfoComponent implements OnDestroy, OnInit {
       )
       .subscribe((result) => {
         if (result['confirm']) {
+          // Clear any unsaved changes for this page
+          this.unsavedPageChanges.delete(page.id);
           this.mselPageDataService.delete(page.id);
+          // Switch back to Config tab after deletion
+          this.currentTabIndex = 0;
         }
       });
   }
@@ -353,6 +521,24 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   openContent(id: string) {
     window.open(this.basePageUrl + id);
   }
+
+  hasUnsavedPageChanges(): boolean {
+    if (!this.editingPageId || !this.changedMselPage) {
+      return false;
+    }
+
+    // Find the original page
+    const originalPage = this.mselPages.find(p => p.id === this.editingPageId);
+    if (!originalPage) {
+      return false;
+    }
+
+    // Compare the changed page with the original
+    return this.changedMselPage.name !== originalPage.name ||
+           this.changedMselPage.content !== originalPage.content ||
+           this.changedMselPage.allCanView !== originalPage.allCanView;
+  }
+
 
   galleryToDo(): boolean {
     let hasToDos = false;
@@ -389,8 +575,148 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     this.startTimeCheck();
   }
 
+  updateCiteScoringModelName() {
+    if (this.msel.citeScoringModelId && this.scoringModelList.length > 0) {
+      const scoringModel = this.scoringModelList.find(sm => sm.id === this.msel.citeScoringModelId);
+      this.citeScoringModelName = scoringModel ? scoringModel.description : '';
+      if (!scoringModel) {
+        console.warn(`Scoring Model ID ${this.msel.citeScoringModelId} not found in list of ${this.scoringModelList.length} scoring models`);
+      }
+    } else {
+      this.citeScoringModelName = '';
+      if (this.msel.citeScoringModelId && this.scoringModelList.length === 0) {
+        console.warn(`Cannot update scoring model name - scoringModelList is empty but citeScoringModelId is ${this.msel.citeScoringModelId}`);
+      }
+    }
+  }
+
+  getPlayerViewUrl(): string {
+    if (!this.msel.playerViewId) return '';
+    let baseUrl = this.settingsService.settings.PlayerUrl || '';
+    if (baseUrl && baseUrl.slice(-1) !== '/') {
+      baseUrl = baseUrl + '/';
+    }
+    return `${baseUrl}view/${this.msel.playerViewId}`;
+  }
+
+  getGalleryExhibitUrl(): string {
+    if (!this.msel.galleryExhibitId) return '';
+    const baseUrl = this.settingsService.settings.GalleryUrl || '';
+    return `${baseUrl}?exhibit=${this.msel.galleryExhibitId}`;
+  }
+
+  getCiteEvaluationUrl(): string {
+    if (!this.msel.citeEvaluationId) return '';
+    const baseUrl = this.settingsService.settings.CiteUrl || '';
+    return `${baseUrl}?evaluation=${this.msel.citeEvaluationId}`;
+  }
+
+  getSteamfitterScenarioUrl(): string {
+    if (!this.msel.steamfitterScenarioId) return '';
+    let baseUrl = this.settingsService.settings.SteamfitterUrl || '';
+    if (baseUrl && baseUrl.slice(-1) !== '/') {
+      baseUrl = baseUrl + '/';
+    }
+    return `${baseUrl}scenario/${this.msel.steamfitterScenarioId}`;
+  }
+
+  fetchIntegrationNames() {
+    // Fetch Player View name
+    if (this.msel.playerViewId) {
+      const playerApiUrl = this.settingsService.settings.PlayerApiUrl || '';
+      this.http.get<any>(`${playerApiUrl}/views/${this.msel.playerViewId}`)
+        .pipe(takeUntil(this.unsubscribe$))
+        .subscribe(
+          (view) => {
+            this.playerViewName = view.name || '';
+          },
+          (error) => {
+            console.error('Failed to load Player View name:', error);
+            this.playerViewName = '';
+          }
+        );
+    } else {
+      this.playerViewName = '';
+    }
+
+    // Fetch Gallery Collection name
+    if (this.msel.galleryCollectionId) {
+      const galleryApiUrl = this.settingsService.settings.GalleryApiUrl || '';
+      this.http.get<any>(`${galleryApiUrl}/collections/${this.msel.galleryCollectionId}`)
+        .pipe(takeUntil(this.unsubscribe$))
+        .subscribe(
+          (collection) => {
+            this.galleryCollectionName = collection.name || '';
+          },
+          (error) => {
+            console.error('Failed to load Gallery Collection name:', error);
+            this.galleryCollectionName = '';
+          }
+        );
+    } else {
+      this.galleryCollectionName = '';
+    }
+
+    // Fetch Gallery Exhibit name
+    if (this.msel.galleryExhibitId) {
+      const galleryApiUrl = this.settingsService.settings.GalleryApiUrl || '';
+      this.http.get<any>(`${galleryApiUrl}/exhibits/${this.msel.galleryExhibitId}`)
+        .pipe(takeUntil(this.unsubscribe$))
+        .subscribe(
+          (exhibit) => {
+            this.galleryExhibitName = exhibit.name || '';
+          },
+          (error) => {
+            console.error('Failed to load Gallery Exhibit name:', error);
+            this.galleryExhibitName = '';
+          }
+        );
+    } else {
+      this.galleryExhibitName = '';
+    }
+
+    // Fetch CITE Evaluation name
+    if (this.msel.citeEvaluationId) {
+      const citeApiUrl = this.settingsService.settings.CiteApiUrl || '';
+      this.http.get<any>(`${citeApiUrl}/evaluations/${this.msel.citeEvaluationId}`)
+        .pipe(takeUntil(this.unsubscribe$))
+        .subscribe(
+          (evaluation) => {
+            this.citeEvaluationName = evaluation.description || '';
+          },
+          (error) => {
+            console.error('Failed to load CITE Evaluation name:', error);
+            this.citeEvaluationName = '';
+          }
+        );
+    } else {
+      this.citeEvaluationName = '';
+    }
+
+    // Fetch Steamfitter Scenario name
+    if (this.msel.steamfitterScenarioId) {
+      const steamfitterApiUrl = this.settingsService.settings.SteamfitterApiUrl || '';
+      this.http.get<any>(`${steamfitterApiUrl}/scenarios/${this.msel.steamfitterScenarioId}`)
+        .pipe(takeUntil(this.unsubscribe$))
+        .subscribe(
+          (scenario) => {
+            this.steamfitterScenarioName = scenario.name || '';
+          },
+          (error) => {
+            console.error('Failed to load Steamfitter Scenario name:', error);
+            this.steamfitterScenarioName = '';
+          }
+        );
+    } else {
+      this.steamfitterScenarioName = '';
+    }
+  }
+
   ngOnDestroy() {
+    // Clear the unsaved changes map to prevent memory leaks
+    this.unsavedPageChanges.clear();
     this.unsubscribe$.next(null);
     this.unsubscribe$.complete();
   }
+
 }

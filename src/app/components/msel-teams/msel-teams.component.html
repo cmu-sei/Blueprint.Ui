@@ -9,7 +9,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
   <section class="header-row background-alt">
     <div class="header-cell header-action-buttons">
       @if (canEditMsel()) {
-      <button mat-icon-button [matMenuTriggerFor]="addMenu" title="Add a team" style="outline: none; margin-left: 48px;"
+      <button mat-icon-button [matMenuTriggerFor]="addMenu" title="Add a team" style="outline: none;"
         title="Add team">
         <mat-icon class="mdi-24px center-self" fontIcon="mdi-plus-circle"></mat-icon>
       </button>
@@ -21,8 +21,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </mat-menu>
       }
     </div>
-    <div class="header-cell three-cell center-self">Teams</div>
-    <div class="header-cell eight-cell search-cell">
+    <div class="header-cell five-cell">Name</div>
+    <div class="header-cell two-cell">Email</div>
+    <div class="header-cell two-cell">Team Type</div>
+    <div class="header-cell two-cell">Invitation</div>
+    <div class="header-cell search-cell">
       <mat-form-field class="search-control">
         <input matInput [(ngModel)]="filterString" (keyup)="applyFilter($any($event.target).value)"
           placeholder="Search" />
@@ -33,32 +36,34 @@ project root for license information or contact permission@sei.cmu.edu for full 
         }
       </mat-form-field>
     </div>
-    <div class="header-cell three-cell search-cell">&nbsp;</div>
   </section>
   <div class="scrolling-region">
     <div class="section-content">
       @for (team of teamList; track trackByFn($index, team)) {
       <mat-expansion-panel (opened)="editTeamId = team.id" (closed)="editTeamId = ''">
         <mat-expansion-panel-header (click)="$event.stopPropagation();">
-          <div class="action-buttons">
-            @if (canEditMsel()) {
-            <button mat-icon-button class="msel-action" (click)="addOrEditTeam(team); $event.stopPropagation();"
-              title="Edit {{ team.name }}">
-              <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline" title="Edit {{ team.name }}"></mat-icon>
-            </button>
-            }
-            @if (canEditMsel()) {
-            <button mat-icon-button (click)="deleteTeam(team); $event.stopPropagation();" title="Delete team">
-              <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline" title="Delete {{ team.name }}"></mat-icon>
-            </button>
-            }
-          </div>
-          <div class="five-cell center-self">{{ team.shortName }} - {{ team.name }}</div>
-          <div class="two-cell center-self">{{ team.email }}</div>
-          <div class="two-cell center-self">{{ getCiteTeamTypeName(team.citeTeamTypeId) }}</div>
-          <div class="two-cell center-self">@if (team.canTeamMemberInvite) {
-            <span>** ALL can invite</span>
-            }&nbsp;
+          <div class="expansion-panel-header">
+            <div class="action-buttons">
+              @if (canEditMsel()) {
+              <button mat-icon-button class="msel-action" (click)="addOrEditTeam(team); $event.stopPropagation();"
+                title="Edit {{ team.name }}">
+                <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline" title="Edit {{ team.name }}"></mat-icon>
+              </button>
+              }
+              @if (canEditMsel()) {
+              <button mat-icon-button (click)="deleteTeam(team); $event.stopPropagation();" title="Delete team">
+                <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline" title="Delete {{ team.name }}"></mat-icon>
+              </button>
+              }
+            </div>
+            <div class="five-cell center-self">{{ team.shortName }} - {{ team.name }}</div>
+            <div class="two-cell center-self">{{ team.email }}</div>
+            <div class="two-cell center-self">{{ getCiteTeamTypeName(team.citeTeamTypeId) }}</div>
+            <div class="two-cell center-self">@if (team.canTeamMemberInvite) {
+              <span>** ALL can invite</span>
+              }&nbsp;
+            </div>
+            <div class="search-cell"></div>
           </div>
         </mat-expansion-panel-header>
         <div class="user-panel">

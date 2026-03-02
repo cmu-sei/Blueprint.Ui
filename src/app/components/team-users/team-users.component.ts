@@ -13,7 +13,7 @@ import {
 import { Sort, MatSortable } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { TeamQuery } from 'src/app/data/team/team.query';
-import { SystemPermission, TeamRole, Team, TeamUser, User, UserTeamRole } from 'src/app/generated/blueprint.api';
+import { SystemPermission, TeamRole, Team, TeamUser, User, UserTeamRole, MselUnit, Unit } from 'src/app/generated/blueprint.api';
 import { TeamUserDataService } from 'src/app/data/team-user/team-user-data.service';
 import { TeamUserQuery } from 'src/app/data/team-user/team-user.query';
 import { CurrentUserQuery, UserQuery } from 'src/app/data/user/user.query';
@@ -21,6 +21,8 @@ import { UserTeamRoleDataService } from 'src/app/data/user-team-role/user-team-r
 import { UserTeamRoleQuery } from 'src/app/data/user-team-role/user-team-role.query';
 import { MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
+import { MselUnitQuery } from 'src/app/data/msel-unit/msel-unit.query';
+import { UnitQuery } from 'src/app/data/unit/unit.query';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
 import { Observable, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -38,6 +40,8 @@ export class TeamUsersComponent implements OnDestroy, OnInit {
   otherTeamUsers: TeamUser[] = [];
   teamList: Team[] = [];
   userTeamRoles: UserTeamRole[] = [];
+  mselUnits: MselUnit[] = [];
+  units: Unit[] = [];
   minUserColumns: string[] = ['name', 'id'];
   allUserColumns: string[] = ['name', 'Inviter', 'Observer', 'Incrementer', 'Modifier', 'Submitter', 'id'];
   displayedTeamUserColumns: string[] = [];
@@ -61,6 +65,8 @@ export class TeamUsersComponent implements OnDestroy, OnInit {
     private userTeamRoleDataService: UserTeamRoleDataService,
     private userTeamRoleQuery: UserTeamRoleQuery,
     private mselQuery: MselQuery,
+    private mselUnitQuery: MselUnitQuery,
+    private unitQuery: UnitQuery,
     private permissionDataService: PermissionDataService,
     private changeDetectorRef: ChangeDetectorRef
   ) {
@@ -80,6 +86,16 @@ export class TeamUsersComponent implements OnDestroy, OnInit {
     // subscribe to UserTeamRoles
     this.userTeamRoleQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(umrs => {
       this.userTeamRoles = umrs;
+    });
+    // subscribe to MselUnits to know which users are contributors
+    this.mselUnitQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(mselUnits => {
+      this.mselUnits = mselUnits || [];
+      this.applyFilter();
+    });
+    // subscribe to Units to get user lists
+    this.unitQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(units => {
+      this.units = units || [];
+      this.applyFilter();
     });
     this.displayedTeamUserColumns = this.allUserColumns;
   }
@@ -157,7 +173,36 @@ export class TeamUsersComponent implements OnDestroy, OnInit {
 
   applyFilter() {
     const searchTerm = this.filterControl.value ? this.filterControl.value.toLowerCase() : '';
-    const filteredData = this.userList.filter(user =>
+
+    // Get users who are part of contributor units for this MSEL
+    const contributorUserIds = new Set<string>();
+    this.mselUnits.forEach(mselUnit => {
+      // Try to get users from the mselUnit.unit relationship first
+      if (mselUnit.unit && mselUnit.unit.users) {
+        mselUnit.unit.users.forEach(user => {
+          contributorUserIds.add(user.id);
+        });
+      } else if (mselUnit.unitId) {
+        // If unit relationship not populated, look up the unit directly
+        const unit = this.units.find(u => u.id === mselUnit.unitId);
+        if (unit && unit.users) {
+          unit.users.forEach(user => {
+            contributorUserIds.add(user.id);
+          });
+        }
+      }
+    });
+
+    // Get users not already on this team
+    const teamUserIds = new Set(this.teamUsers.map(tu => tu.userId));
+
+    // Filter to only contributors who are not already on the team
+    const availableUsers = this.userList.filter(user =>
+      contributorUserIds.has(user.id) && !teamUserIds.has(user.id)
+    );
+
+    // Apply search filter
+    const filteredData = availableUsers.filter(user =>
       !searchTerm || user.name.toLowerCase().includes(searchTerm)
     );
     this.sortUserData(filteredData);
