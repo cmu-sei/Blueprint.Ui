@@ -12,7 +12,9 @@ a {
     .angular-editor-textarea {
       text-align: left !important;
 
-      p, div, span {
+      p,
+      div,
+      span {
         text-align: left !important;
       }
     }
@@ -29,7 +31,7 @@ a {
 
 .frame {
   width: 100%;
-  height: calc(100vh - 39px);
+  height: calc(100vh - 60px);
 }
 
 .tab-group {
