@@ -6,10 +6,32 @@ a {
   color: var(--mat-sys-on-background);
 }
 
+// Ensure angular-editor content is left-aligned by default
+::ng-deep angular-editor {
+  .angular-editor-wrapper {
+    .angular-editor-textarea {
+      text-align: left !important;
+
+      p,
+      div,
+      span {
+        text-align: left !important;
+      }
+    }
+  }
+}
+
+// Warning message style
+.unsaved-warning {
+  color: #f44336;
+  font-weight: 500;
+  margin-left: 10px;
+}
+
 
 .frame {
   width: 100%;
-  height: calc(100vh - 39px);
+  height: calc(100vh - 60px);
 }
 
 .tab-group {
@@ -177,6 +199,8 @@ a {
 
 .thin-button {
   height: 25px;
+  min-width: 140px;
+  white-space: nowrap;
 }
 
 .guid-field {
@@ -210,8 +234,130 @@ a {
 .integration-div {
   text-align: left;
   margin-bottom: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+  padding: 16px;
+}
+
+.integration-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.integration-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.integration-row {
+  display: flex;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.integration-row:last-child {
+  border-bottom: none;
 }
 
 .integration-checkbox {
   margin-left: 30px;
+}
+
+.integration-checkbox-cell {
+  min-width: 180px;
+  display: flex;
+  align-items: center;
+}
+
+.integration-details {
+  display: flex !important;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  padding-left: 16px;
+  visibility: visible !important;
+}
+
+.integration-field {
+  display: flex !important;
+  align-items: center;
+  gap: 12px;
+  visibility: visible !important;
+  min-height: 32px;
+}
+
+.integration-field:first-child {
+  margin-top: 0;
+}
+
+.integration-label {
+  min-width: 120px;
+  font-weight: 500;
+  color: var(--mat-sys-on-surface);
+  font-size: 0.875rem;
+  opacity: 0.7;
+  font-family: 'Open Sans', sans-serif;
+  line-height: 1.5;
+}
+
+.integration-guid {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 0.875rem;
+  color: var(--mat-sys-on-surface);
+  background-color: var(--mat-sys-surface-container);
+  padding: 6px 12px;
+  border-radius: 4px;
+  user-select: all;
+  display: inline-block !important;
+  visibility: visible !important;
+  border: 1px solid var(--mat-sys-outline-variant);
+  line-height: 1.5;
+  width: 320px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.integration-select {
+  width: 400px;
+}
+
+.integration-warning {
+  margin-top: 8px;
+  padding: 8px 12px;
+  background-color: rgba(255, 152, 0, 0.1);
+  border-left: 3px solid orangered;
+  border-radius: 4px;
+}
+
+.integration-name {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 0.875rem;
+  color: var(--mat-sys-on-surface);
+  margin-left: 12px;
+  font-style: italic;
+  opacity: 0.8;
+}
+
+.integration-link {
+  margin-left: 8px;
+  color: var(--mat-sys-primary);
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+
+  &:hover {
+    opacity: 0.7;
+  }
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
 }
