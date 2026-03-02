@@ -451,6 +451,7 @@ export class MselDataService {
         },
         (error) => {
           this.mselStore.setLoading(false);
+          this.errorService.handleError(error);
         }
       );
   }
@@ -586,6 +587,7 @@ export class MselDataService {
           (error) => {
             this.mselStore.setLoading(false);
             this.uploadProgress.next(0);
+            this.errorService.handleError(error);
           }
         );
     } else {
@@ -610,6 +612,7 @@ export class MselDataService {
           (error) => {
             this.mselStore.setLoading(false);
             this.uploadProgress.next(0);
+            this.errorService.handleError(error);
           }
         );
     }
@@ -638,6 +641,7 @@ export class MselDataService {
         (error) => {
           this.mselStore.setLoading(false);
           this.uploadProgress.next(0);
+          this.errorService.handleError(error);
         }
       );
   }

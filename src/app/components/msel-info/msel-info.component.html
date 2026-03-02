@@ -4,7 +4,7 @@ Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
 <div class="frame">
-  <mat-tab-group mat-align-tabs="start" class="tab-group" (selectedTabChange)="tabChange($event)">
+  <mat-tab-group mat-align-tabs="start" class="tab-group" [selectedIndex]="currentTabIndex" (selectedIndexChange)="onTabIndexChange($event)">
     >
     <mat-tab label="Config" class="tab">
       <div class="edit-buttons">
@@ -90,16 +90,10 @@ project root for license information or contact permission@sei.cmu.edu for full 
             [timeName]="'End Date / Time'" [postScript]="'duration'" [canEdit]="canEditMsel()" (change)="isChanged = true;"></app-duration-edit>
           <!-- Integration Section -->
           <div class="integration-div">
-            <b>Applications to Integrate</b>
-            <!-- Player Integration -->
-            <div class="single-detail center-self integration-checkbox">
-              <div class="sub-detail center-self three-cell">
-                <mat-checkbox [(ngModel)]="msel.usePlayer" [disabled]="msel.status === 'Deployed' || !canEditMsel()"
-                  (cut)="isChanged = true" (change)="isChanged = true" (paste)="isChanged = true"
-                  (keypress)="isChanged = true">Integrate Player</mat-checkbox>
-              </div>
+            <div class="integration-header">
+              <b>Applications to Integrate</b>
               @if ((msel.usePlayer || msel.useCite || msel.useGallery || msel.useSteamfitter) && !msel.isTemplate) {
-              <div class="sub-detail center-self one-cell">
+              <div class="integration-actions">
                 @if ((!msel.playerViewId &&
                 !msel.citeEvaluationId &&
                 !msel.galleryCollectionId &&
@@ -109,9 +103,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 <button (click)="pushIntegrations()" title="Push Integrations" class="thin-button" [disabled]="!canManageMsel() ||
                               (msel.useGallery && galleryToDo()) ||
                               (msel.useCite && !msel.citeScoringModelId) ||
-                              isBusy || isChanged">@if (pushStatus) {
+                              isBusy || isChanged || (pushStatus && pushStatus.startsWith('ERROR'))">@if (pushStatus && !pushStatus.startsWith('ERROR')) {
                   <span>{{ pushStatus }} ...</span>
-                  }@if (!pushStatus) {
+                  }@if (!pushStatus || pushStatus.startsWith('ERROR')) {
                   <span>Push Integrations</span>
                   }</button>
                 }
@@ -125,125 +119,149 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   Integrations</button>
                 }
               </div>
+              @if (pushStatus && pushStatus.startsWith('ERROR')) {
+              <div class="integration-error" style="color: red; margin-top: 8px; padding: 8px; background-color: #ffebee; border-radius: 4px;">
+                <strong>Error:</strong> {{ pushStatus.substring(7) }}
+              </div>
+              }
               }
             </div>
-            @if (!msel.isTemplate && msel.usePlayer && msel.playerViewId) {
-            <div class="single-detail center-self">
-              <div class="sub-detail center-self one-cell">&nbsp;</div>
-              @if (msel.usePlayer && msel.playerViewId) {
-              <div class="sub-detail center-self four-cell">
-                <mat-form-field class="guid-field">
-                  <input type="text" matInput placeholder="View" [(ngModel)]="msel.playerViewId" disabled />
-                </mat-form-field>
+
+            <!-- Player Integration -->
+            <div class="integration-row">
+              <div class="integration-checkbox-cell">
+                <mat-checkbox [(ngModel)]="msel.usePlayer" [disabled]="msel.status === 'Deployed' || !canEditMsel()"
+                  (cut)="isChanged = true" (change)="isChanged = true" (paste)="isChanged = true"
+                  (keypress)="isChanged = true">Player</mat-checkbox>
+              </div>
+              @if (!msel.isTemplate && msel.usePlayer && msel.playerViewId) {
+              <div class="integration-details">
+                <div class="integration-field">
+                  <span class="integration-label">View:</span>
+                  <span class="integration-guid" [title]="msel.playerViewId">{{ msel.playerViewId }}</span>
+                  @if (playerViewName) {
+                  <span class="integration-name">{{ playerViewName }}</span>
+                  }
+                  <a [href]="getPlayerViewUrl()" target="_blank" class="integration-link" title="Open in Player">
+                    <mat-icon class="mdi-18px" fontIcon="mdi-open-in-new"></mat-icon>
+                  </a>
+                </div>
               </div>
               }
             </div>
-            }
+
             <!-- Gallery Integration -->
-            <div class="single-detail center-self integration-checkbox">
-              <div class="sub-detail center-self three-cell">
+            <div class="integration-row">
+              <div class="integration-checkbox-cell">
                 <mat-checkbox [(ngModel)]="msel.useGallery" [disabled]="msel.status === 'Deployed' || !canEditMsel()"
                   (cut)="isChanged = true" (change)="isChanged = true" (paste)="isChanged = true"
-                  (keypress)="isChanged = true">Integrate Gallery</mat-checkbox>
+                  (keypress)="isChanged = true">Gallery</mat-checkbox>
               </div>
-              @if (msel.useGallery) {
-              <div class="sub-detail center-self one-cell">&nbsp;</div>
+              @if (!msel.isTemplate && msel.useGallery && msel.galleryExhibitId) {
+              <div class="integration-details">
+                @if (msel.galleryCollectionId) {
+                <div class="integration-field">
+                  <span class="integration-label">Collection:</span>
+                  <span class="integration-guid" [title]="msel.galleryCollectionId">{{ msel.galleryCollectionId }}</span>
+                  @if (galleryCollectionName) {
+                  <span class="integration-name">{{ galleryCollectionName }}</span>
+                  }
+                </div>
+                }
+                <div class="integration-field">
+                  <span class="integration-label">Exhibit:</span>
+                  <span class="integration-guid" [title]="msel.galleryExhibitId">{{ msel.galleryExhibitId }}</span>
+                  @if (galleryExhibitName) {
+                  <span class="integration-name">{{ galleryExhibitName }}</span>
+                  }
+                  <a [href]="getGalleryExhibitUrl()" target="_blank" class="integration-link" title="Open in Gallery">
+                    <mat-icon class="mdi-18px" fontIcon="mdi-open-in-new"></mat-icon>
+                  </a>
+                </div>
+              </div>
               }
             </div>
             @if (galleryWarningMessage()) {
-            <div class="single-detail center-self">
+            <div class="integration-warning">
               <span class="gallery-warning">{{ galleryWarningMessage() }}</span>
             </div>
             }
-            @if (!msel.isTemplate && msel.useGallery && msel.galleryExhibitId) {
-            <div class="single-detail center-self">
-              <div class="sub-detail center-self one-cell">&nbsp;</div>
-              @if (msel.useGallery && msel.galleryCollectionId) {
-              <div class="sub-detail center-self four-cell">
-                <mat-form-field class="guid-field">
-                  <input type="text" matInput placeholder="Collection" [(ngModel)]="msel.galleryCollectionId"
-                    disabled />
-                </mat-form-field>
-              </div>
-              }
-              <div class="sub-detail center-self four-cell">
-                <mat-form-field class="guid-field">
-                  <input type="text" matInput placeholder="Exhibit" [(ngModel)]="msel.galleryExhibitId" disabled />
-                </mat-form-field>
-              </div>
-            </div>
-            }
+
             <!-- CITE Integration -->
-            <div class="single-detail center-self integration-checkbox">
-              <div class="sub-detail center-self one-cell">
+            <div class="integration-row">
+              <div class="integration-checkbox-cell">
                 <mat-checkbox [(ngModel)]="msel.useCite" [disabled]="msel.status === 'Deployed' || !canEditMsel()"
                   (cut)="isChanged = true" (change)="isChanged = true" (paste)="isChanged = true"
-                  (keypress)="isChanged = true">Integrate CITE</mat-checkbox>
+                  (keypress)="isChanged = true">CITE</mat-checkbox>
               </div>
               @if (msel.useCite) {
-              <div class="sub-detail center-self two-cell">
-                @if (scoringModelList.length > 0) {
-                <mat-form-field class="half-width">
-                  <mat-label>Scoring Model</mat-label>
-                  <mat-select [(ngModel)]="msel.citeScoringModelId" (cut)="isChanged = true"
-                    (selectionChange)="isChanged = true" (paste)="isChanged = true" (keypress)="isChanged = true"
-                    [disabled]="msel.status === 'Deployed' || !canEditMsel()">
-                    <mat-option [value]=""></mat-option>
-                    @for (scoringModel of scoringModelList; track scoringModel) {
-                    <mat-option [value]="scoringModel.id">
-                      {{ scoringModel.description }}
-                    </mat-option>
+              <div class="integration-details">
+                <div class="integration-field">
+                  <span class="integration-label">Scoring Model:</span>
+                  @if (scoringModelList.length > 0 && msel.status !== 'Deployed' && canEditMsel()) {
+                  <mat-form-field class="integration-select">
+                    <mat-select [(ngModel)]="msel.citeScoringModelId" (cut)="isChanged = true"
+                      (selectionChange)="isChanged = true; updateCiteScoringModelName()" (paste)="isChanged = true" (keypress)="isChanged = true">
+                      <mat-option [value]=""></mat-option>
+                      @for (scoringModel of scoringModelList; track scoringModel) {
+                      <mat-option [value]="scoringModel.id">
+                        {{ scoringModel.description }}
+                      </mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+                  }
+                  @if (scoringModelList.length === 0 || msel.status === 'Deployed' || !canEditMsel()) {
+                    @if (msel.citeScoringModelId) {
+                    <span class="integration-guid" [title]="msel.citeScoringModelId">{{ msel.citeScoringModelId }}</span>
+                    @if (citeScoringModelName) {
+                    <span class="integration-name">{{ citeScoringModelName }}</span>
                     }
-                  </mat-select>
-                </mat-form-field>
-                }
-                @if (scoringModelList.length === 0) {
-                <mat-form-field class="half-width guid-field">
-                  <input type="text" matInput placeholder="Scoring Model" [(ngModel)]="msel.citeScoringModelId"
-                    (cut)="isChanged = true" (change)="isChanged = true" (paste)="isChanged = true"
-                    (keypress)="isChanged = true" title="CITE Scoring Model" [disabled]="!canEditMsel()" />
-                </mat-form-field>
+                    }
+                  }
+                </div>
+                @if (!msel.isTemplate && msel.citeEvaluationId) {
+                <div class="integration-field">
+                  <span class="integration-label">Evaluation:</span>
+                  <span class="integration-guid" [title]="msel.citeEvaluationId">{{ msel.citeEvaluationId }}</span>
+                  @if (citeEvaluationName) {
+                  <span class="integration-name">{{ citeEvaluationName }}</span>
+                  }
+                  <a [href]="getCiteEvaluationUrl()" target="_blank" class="integration-link" title="Open in CITE">
+                    <mat-icon class="mdi-18px" fontIcon="mdi-open-in-new"></mat-icon>
+                  </a>
+                </div>
                 }
               </div>
-              }
-              @if (msel.useCite) {
-              <div class="sub-detail center-self one-cell">&nbsp;</div>
               }
             </div>
             @if (citeWarningMessage()) {
-            <div class="single-detail center-self">
+            <div class="integration-warning">
               <span class="gallery-warning">{{ citeWarningMessage() }}</span>
             </div>
             }
-            @if (!msel.isTemplate && msel.useCite && msel.citeEvaluationId) {
-            <div class="single-detail center-self">
-              <div class="sub-detail center-self five-cell">
-                &nbsp;
-              </div>
-              <div class="sub-detail center-self four-cell">
-                @if (msel.useCite && msel.citeEvaluationId) {
-                <mat-form-field class="half-width guid-field">
-                  <input type="text" matInput placeholder="Evaluation" [(ngModel)]="msel.citeEvaluationId" disabled />
-                </mat-form-field>
-                }
-              </div>
-            </div>
-            }
+
             <!-- Steamfitter Integration -->
-            <div class="single-detail center-self integration-checkbox">
-              <div class="sub-detail center-self one-cell">
+            <div class="integration-row">
+              <div class="integration-checkbox-cell">
                 <mat-checkbox [disabled]="msel.status === 'Deployed' || !canEditMsel()" [(ngModel)]="msel.useSteamfitter"
                   (cut)="isChanged = true" (change)="isChanged = true" (paste)="isChanged = true"
-                  (keypress)="isChanged = true">Integrate Steamfitter</mat-checkbox>
+                  (keypress)="isChanged = true">Steamfitter</mat-checkbox>
               </div>
-              <div class="sub-detail center-self two-cell">
-                @if (msel.useSteamfitter && msel.steamfitterScenarioId) {
-                <mat-form-field class="half-width guid-field">
-                  <input type="text" matInput placeholder="Scenario" [(ngModel)]="msel.steamfitterScenarioId"
-                    disabled />
-                </mat-form-field>
-                }
+              @if (!msel.isTemplate && msel.useSteamfitter && msel.steamfitterScenarioId) {
+              <div class="integration-details">
+                <div class="integration-field">
+                  <span class="integration-label">Scenario:</span>
+                  <span class="integration-guid" [title]="msel.steamfitterScenarioId">{{ msel.steamfitterScenarioId }}</span>
+                  @if (steamfitterScenarioName) {
+                  <span class="integration-name">{{ steamfitterScenarioName }}</span>
+                  }
+                  <a [href]="getSteamfitterScenarioUrl()" target="_blank" class="integration-link" title="Open in Steamfitter">
+                    <mat-icon class="mdi-18px" fontIcon="mdi-open-in-new"></mat-icon>
+                  </a>
+                </div>
               </div>
+              }
             </div>
           </div>
           <!-- Status -->
@@ -317,7 +335,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <mat-tab label="{{ page.name }}" class="tab">
       <!-- page content -->
       <div class="edit-buttons">
-        @if (!editingPageId) {
+        @if (editingPageId !== page.id) {
         <span>
           @if (canManageMsel()) {
           <button mat-icon-button (click)="requestPageEdit(page.id)" style="outline: none;" title="Edit Page">
@@ -340,7 +358,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           }
         </span>
         }
-        @if (editingPageId) {
+        @if (editingPageId === page.id) {
         <span>
           <button mat-icon-button (click)="saveMselPageEdits()" style="outline: none;" title="Save Changes">
             <mat-icon class="mdi-24px self-center" fontIcon="mdi-check"></mat-icon>
@@ -348,26 +366,36 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <button mat-icon-button (click)="cancelMselPageEdits()" style="outline: none;" title="Cancel Changes">
             <mat-icon class="mdi-24px self-center" fontIcon="mdi-close"></mat-icon>
           </button>
+          @if (hasUnsavedPageChanges()) {
+          <mat-label class="unsaved-warning">Changes have not been saved!</mat-label>
+          }
         </span>
         }
       </div>
       @if (msel) {
       <div class="page-content-region">
-        @if (editingPageId) {
+        @if (editingPageId === page.id) {
         <mat-form-field class="full-width">
           <input type="text" matInput placeholder="Page Name" [(ngModel)]="changedMselPage.name"
-            [disabled]="!editingPageId" />
+            [disabled]="editingPageId !== page.id" />
         </mat-form-field>
         }
         <div class="all-can-view-div">
-          @if (editingPageId) {
+          @if (editingPageId === page.id) {
           <mat-checkbox [(ngModel)]="changedMselPage.allCanView" title="All MSEL users can view this page">All MSEL
             users can view this page</mat-checkbox>
+          } @else if (page.allCanView) {
+          <span>** All MSEL users can view this page</span>
           }
         </div>
         <div>
+          @if (editingPageId === page.id) {
           <angular-editor [placeholder]="'Content'" [(ngModel)]="changedMselPage.content"
-            [config]="editingPageId ? editorConfig : viewConfig"></angular-editor>
+            [config]="editorConfig"></angular-editor>
+          } @else {
+          <angular-editor [placeholder]="'Content'" [ngModel]="page.content"
+            [config]="viewConfig"></angular-editor>
+          }
         </div>
       </div>
       }
@@ -379,34 +407,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <mat-icon class="mdi-24px" fontIcon="mdi-plus-circle" title="Add MSEL Notes Page"></mat-icon>
         Add Page
       </ng-template>
-      <!-- new page content -->
-      <div class="edit-buttons">
-        <span>
-          <button mat-icon-button (click)="saveMselPageEdits()" style="outline: none;" title="Save Changes"
-            [disabled]="!changedMselPage.name || !changedMselPage.content">
-            <mat-icon class="mdi-24px self-center" fontIcon="mdi-check"></mat-icon>
-          </button>
-          <button mat-icon-button (click)="cancelMselPageEdits()" style="outline: none;" title="Cancel Changes"
-            [disabled]="!changedMselPage.name && !changedMselPage.content">
-            <mat-icon class="mdi-24px self-center" fontIcon="mdi-close"></mat-icon>
-          </button>
-        </span>
-      </div>
-      @if (msel) {
       <div class="page-content-region">
-        <mat-form-field class="full-width">
-          <input type="text" matInput placeholder="Page Name" [(ngModel)]="changedMselPage.name" />
-        </mat-form-field>
-        <div class="all-can-view-div">
-          <mat-checkbox [(ngModel)]="changedMselPage.allCanView" title="All MSEL users can view this page">All MSEL
-            users can view this page</mat-checkbox>
-        </div>
-        <div>
-          <angular-editor [placeholder]="'Content'" [(ngModel)]="changedMselPage.content"
-            [config]="editorConfig"></angular-editor>
-        </div>
+        <p>Click this tab to create a new page.</p>
       </div>
-      }
     </mat-tab>
     }
   </mat-tab-group>

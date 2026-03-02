@@ -104,16 +104,16 @@ export class TeamEditDialogComponent {
   saveTeam(changedField): void {
     switch (changedField) {
       case 'name':
-        this.data.team.name = this.teamNameFormControl.value.toString();
+        this.data.team.name = this.teamNameFormControl.value?.toString() || '';
         break;
       case 'shortName':
-        this.data.team.shortName = this.teamShortNameFormControl.value.toString();
+        this.data.team.shortName = this.teamShortNameFormControl.value?.toString() || '';
         break;
       case 'email':
-        this.data.team.email = this.emailFormControl.value.toString();
+        this.data.team.email = this.emailFormControl.value?.toString() || '';
         break;
       case 'citeTeamTypeId':
-        this.data.team.citeTeamTypeId = this.citeTeamTypeIdFormControl.value.toString();
+        this.data.team.citeTeamTypeId = this.citeTeamTypeIdFormControl.value?.toString() || '';
         break;
       default:
         break;

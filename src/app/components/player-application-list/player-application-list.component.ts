@@ -77,12 +77,18 @@ export class PlayerApplicationListComponent implements OnDestroy, OnInit {
         this.sortedPlayerApplications = this.getSortedPlayerApplications(this.getFilteredPlayerApplications());
       });
     // load playerApplication templates
-    this.playerService.getApplicationTemplates().subscribe(templates => {
-      templates.forEach(t => {
-        t.id = '';
-      });
-      this.templateList = templates;
-    });
+    this.playerService.getApplicationTemplates().subscribe(
+      (templates) => {
+        templates.forEach(t => {
+          t.id = '';
+        });
+        this.templateList = templates;
+      },
+      (error) => {
+        console.error('Failed to load Player application templates:', error);
+        this.templateList = [];
+      }
+    );
   }
 
   ngOnInit() {

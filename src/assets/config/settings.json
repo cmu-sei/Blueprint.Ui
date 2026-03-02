@@ -1,7 +1,13 @@
 {
   "ApiUrl": "http://localhost:4724",
-  "GalleryApiUrl": "http://localhost:4722",
   "PlayerUrl": "http://localhost:4301",
+  "PlayerApiUrl": "http://localhost:4300/api",
+  "GalleryUrl": "http://localhost:4723",
+  "GalleryApiUrl": "http://localhost:4722/api",
+  "CiteUrl": "http://localhost:4721",
+  "CiteApiUrl": "http://localhost:4720/api",
+  "SteamfitterUrl": "http://localhost:4401",
+  "SteamfitterApiUrl": "http://localhost:4400/api",
   "OIDCSettings": {
     "authority": "http://localhost:8080/realms/crucible/",
     "client_id": "blueprint-ui",
