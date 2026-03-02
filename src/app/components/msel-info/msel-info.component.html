@@ -47,6 +47,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <mat-form-field class="full-width">
               <mat-label>Description</mat-label>
               <input type="text" matInput placeholder="Description" [(ngModel)]="msel.description"
+                maxlength="1200"
                 (cut)="isChanged = true" (change)="isChanged = true" (paste)="isChanged = true"
                 (keypress)="isChanged = true" [disabled]="!canEditMsel()" />
             </mat-form-field>
