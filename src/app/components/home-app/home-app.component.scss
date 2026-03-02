@@ -2,6 +2,41 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
+.app-content-container {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  text-align: center;
+  overflow: hidden;
+  background-color: var(--mat-sys-background);
+  color: var(--mat-sys-on-background);
+}
+
+.content-under-topbar {
+  height: calc(100% - 40px);
+}
+
+.top-row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.one-cell {
+  flex: 1;
+}
+
+.last-cell {
+  text-align: right;
+}
+
+.center-self {
+  align-self: center;
+}
+
 .icon-text {
   margin-left: 10px;
 }

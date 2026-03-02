@@ -51,11 +51,12 @@ export class MselListComponent implements OnDestroy, OnInit {
   displayedColumns: string[] = [
     'action',
     'name',
+    'description',
     'isTemplate',
     'status',
     'createdBy',
+    'dateCreated',
     'dateModified',
-    'description',
   ];
   imageFilePath = '';
   userList: User[] = [];
@@ -381,6 +382,13 @@ export class MselListComponent implements OnDestroy, OnInit {
   canManageMsel(msel: MselPlus): boolean {
     return this.permissionDataService.hasPermission(SystemPermission.ManageMsels) ||
       msel?.hasRole(this.loggedInUserId, '').owner;
+  }
+
+  isValidDate(date: Date | null | undefined): boolean {
+    if (!date) return false;
+    const year = new Date(date).getFullYear();
+    // Check for null, undefined, or invalid dates like 1969 (Unix epoch default)
+    return year > 1970;
   }
 
   ngOnDestroy() {
