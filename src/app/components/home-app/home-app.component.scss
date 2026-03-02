@@ -19,6 +19,24 @@
   height: calc(100% - 40px);
 }
 
+.top-row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.one-cell {
+  flex: 1;
+}
+
+.last-cell {
+  text-align: right;
+}
+
+.center-self {
+  align-self: center;
+}
+
 .icon-text {
   margin-left: 10px;
 }
