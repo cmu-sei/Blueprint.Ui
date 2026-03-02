@@ -15,24 +15,22 @@
 .card-container {
   display: flex;
   flex-direction: row;
-  justify-content: flex-start;
-  flex: 1;
+  justify-content: center;
+  align-items: flex-start;
   padding-top: 40px;
-  max-height: 440px;
+  gap: 4%;
 }
 
 .base-card {
   display: flex;
   flex-direction: column;
-  flex: 3;
   align-items: center;
   text-align: center;
   margin-top: 10px;
-  margin-left: 5%;
-  margin-right: 5%;
   margin-bottom: 10px;
-  max-width: 30%;
-  max-height: 250px;
+  width: 30%;
+  max-width: 400px;
+  height: 550px;
 }
 
 .card-image {
@@ -41,11 +39,39 @@
   margin-right: 5%;
 }
 
-.status-message {
-  margin-top: 20px;
-  color: var(--mat-sys-on-surface);
-}
-
 mat-card-title {
   color: var(--mat-sys-on-surface-variant) !important;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  min-height: 60px;
+  display: flex;
+  align-items: flex-start;
+}
+
+mat-card-subtitle {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  text-align: left;
+  margin-top: 12px;
+  line-height: 1.5;
+}
+
+.base-card mat-card-header {
+  padding-top: 16px;
+  padding-bottom: 0;
+  padding-left: 16px;
+  padding-right: 16px;
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+.base-card mat-card-actions {
+  padding-top: 24px;
+  padding-bottom: 16px;
+  padding-left: 16px;
+  padding-right: 16px;
+  margin: 0;
+  margin-top: auto;
 }
