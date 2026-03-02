@@ -19,17 +19,29 @@ project root for license information or contact permission@sei.cmu.edu for full 
   }
 
   @if (!apiIsSick && !selectedMselId) {
+
   <section>
-    <app-msel-list [loggedInUserId]="loggedInUserId" [canAccessAdminSection]="canAccessAdminSection"></app-msel-list>
+    <div class="top-row">
+      <div class="one-cell last-cell">
+        @if (canAccessAdminSection) {
+        <button mat-icon-button style="outline: none;" (click)="topBarNavigate('/admin')" title="Administration">
+          <mat-icon class="mdi-24px center-self" fontIcon="mdi-cog"></mat-icon>
+        </button>
+        }
+      </div>
+    </div>
+    <div>
+      <app-msel-list [loggedInUserId]="loggedInUserId" [canAccessAdminSection]="canAccessAdminSection"></app-msel-list>
+    </div>
   </section>
   }
 
   @if (!apiIsSick && selectedMselId) {
-  <section>
+  <div class="content-under-topbar">
     <app-msel [loggedInUserId]="loggedInUserId" [canEditMsel]="canEditMsels"
       [canAccessAdminSection]="canAccessAdminSection" [userTheme$]="theme$"
       (deleteThisMsel)="deleteMsel($event)"></app-msel>
-  </section>
+  </div>
   }
 
   @if (isLoading$ | async) {
