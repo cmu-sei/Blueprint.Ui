@@ -57,3 +57,11 @@ mat-card-subtitle {
   text-align: left;
   margin-top: 12px;
 }
+
+.base-card mat-card-header {
+  padding-top: 16px;
+}
+
+.base-card mat-card-actions {
+  padding-bottom: 16px;
+}
