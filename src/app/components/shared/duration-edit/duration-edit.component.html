@@ -10,7 +10,7 @@ project root for license information.
     <mat-form-field>
       <mat-label>{{ timeName }}</mat-label>
       <input matInput [ngxMatDatetimePicker]="picker" [formControl]="endTimeFormControl" (dateChange)="timeUpdated()"
-        (dateInput)="timeUpdated()" style="display: none;" [disabled]="!canEdit">
+        (dateInput)="timeUpdated()" style="display: none;">
       <!-- <datetime-picker> -->
       <span (click)="canEdit && picker.open()">
         {{ endTimeFormControl.value | date: 'MM/dd/yyyy hh:mm a'}}

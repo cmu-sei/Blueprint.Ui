@@ -25,6 +25,7 @@ import { MselDataService } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { MatTabGroup, MatTab } from '@angular/material/tabs';
 import { MselUnitDataService } from 'src/app/data/msel-unit/msel-unit-data.service';
+import { MselUnitQuery } from 'src/app/data/msel-unit/msel-unit.query';
 import { OrganizationDataService } from 'src/app/data/organization/organization-data.service';
 import { ScenarioEventDataService } from 'src/app/data/scenario-event/scenario-event-data.service';
 import { TeamDataService } from 'src/app/data/team/team-data.service';
@@ -107,6 +108,7 @@ export class MselComponent implements OnDestroy {
     private mselDataService: MselDataService,
     private mselUnitDataService: MselUnitDataService,
     private mselQuery: MselQuery,
+    private mselUnitQuery: MselUnitQuery,
     private organizationDataService: OrganizationDataService,
     private scenarioEventDataService: ScenarioEventDataService,
     private teamDataService: TeamDataService,
@@ -171,6 +173,16 @@ export class MselComponent implements OnDestroy {
           this.msel = msel;
         } else {
           this.msel = {};
+        }
+      });
+    // subscribe to mselUnits to reload users when contributors change
+    this.mselUnitQuery.selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((mselUnits) => {
+        const mselId = this.activatedRoute.snapshot.queryParamMap.get('msel');
+        if (mselId && mselUnits !== null) {
+          // Reload users whenever contributor units change
+          this.userDataService.loadByMsel(mselId).subscribe();
         }
       });
     // load units
@@ -249,7 +261,6 @@ export class MselComponent implements OnDestroy {
 
   deleteMsel(id: string) {
     this.deleteThisMsel.emit(id);
-    this.router.navigate(['/']);
   }
 
   ngOnDestroy() {

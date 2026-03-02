@@ -23,7 +23,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <div class="bottom-div">
       @if (canAccessAdminSection) {
       <button mat-icon-button title="Administration" (click)="goToUrl('/admin')">
-        <mat-icon class="mat-list-item-icon" fontIcon="mdi-cog-outline"></mat-icon>
+        <mat-icon class="mdi-24px" fontIcon="mdi-cog-outline"></mat-icon>
       </button>
       }
       <button mat-icon-button title="Expand Navigation Panel" (click)="setCollapsed(false)">
@@ -70,7 +70,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <div class="admin-section">
           @if (canAccessAdminSection) {
           <button mat-icon-button title="Administration" (click)="goToUrl('/admin')">
-            <mat-icon class="mdi-18px" fontIcon="mdi-cog-outline"></mat-icon>
+            <mat-icon class="mdi-24px" fontIcon="mdi-cog-outline"></mat-icon>
           </button>
           }&nbsp;
         </div>
@@ -90,7 +90,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <div class="bottom-div">
       @if (canAccessAdminSection) {
       <button mat-icon-button title="Administration" (click)="goToUrl('/admin')">
-        <mat-icon class="mat-list-item-icon" fontIcon="mdi-cog-outline"></mat-icon>
+        <mat-icon class="mdi-24px" fontIcon="mdi-cog-outline"></mat-icon>
       </button>
       }
       <button mat-icon-button title="Expand Navigation Panel" (click)="setCollapsed(false)">
@@ -109,7 +109,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <app-msel-contributors [loggedInUserId]="loggedInUserId"></app-msel-contributors>
       }
       @if (selectedTab === 'Teams') {
-      <app-msel-roles [loggedInUserId]="loggedInUserId"></app-msel-roles>
+      <app-msel-teams [loggedInUserId]="loggedInUserId"></app-msel-teams>
       }
       @if (selectedTab === 'Data Fields') {
       <app-data-field-list [loggedInUserId]="loggedInUserId" [showTemplates]="false"
