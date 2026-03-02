@@ -18,7 +18,7 @@
   justify-content: flex-start;
   flex: 1;
   padding-top: 40px;
-  max-height: 440px;
+  max-height: 80vh;
 }
 
 .base-card {
@@ -32,7 +32,8 @@
   margin-right: 5%;
   margin-bottom: 10px;
   max-width: 30%;
-  max-height: 250px;
+  max-height: 75vh;
+  overflow-y: auto;
 }
 
 .card-image {
@@ -48,4 +49,11 @@
 
 mat-card-title {
   color: var(--mat-sys-on-surface-variant) !important;
+}
+
+mat-card-subtitle {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  text-align: left;
+  margin-top: 12px;
 }
