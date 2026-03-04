@@ -1,13 +1,10 @@
 // Copyright 2025 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
-@use '@angular/material' as mat;
-
 .move-container {
   display: flex;
   flex-direction: row;
   width: 100%;
-  align-items: left;
   text-align: left;
   align-items: center;
 }
@@ -17,22 +14,44 @@
   margin-left: 10px;
 }
 
-.xpanel {
+table {
   width: 100%;
-  margin-bottom: 10px;
 }
 
-.add-group-row {
+.mat-mdc-header-row {
+  min-height: 56px;
+}
+
+.mat-mdc-row {
+  min-height: 48px;
+}
+
+.mat-mdc-cell,
+.mat-mdc-header-cell {
+  flex: 1;
+  overflow: hidden;
+  word-wrap: break-word;
+  padding-right: 10px;
+}
+
+.mat-column-actions {
+  flex: 0 0 140px !important;
+  width: 140px;
+  max-width: 140px;
+}
+
+td.mat-column-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 12px 16px;
-  width: 94%;
-  margin-left: 3%;
 }
 
-.new-group-field {
-  width: 300px;
+tr.detail-row {
+  height: 0;
+}
+
+.element-row td {
+  border-bottom-width: 0;
+  cursor: pointer;
 }
 
 .sp-icon {
@@ -44,35 +63,8 @@
 }
 
 .button-cell {
-  width: 100px;
-  text-align: center;
-  margin-left: 24px;
-}
-
-.mat-mdc-cell {
-  border-bottom-style: none;
-  border-top-style: none;
-}
-
-.mat-column-actions {
-  width: 120px;
-  text-align: center;
-}
-
-.edit-row {
   display: flex;
   align-items: center;
-  gap: 8px;
-}
-
-.edit-group-field {
-  width: 200px;
-}
-
-.no-data {
-  text-align: center;
-  padding: 24px;
-  color: rgba(0, 0, 0, 0.54);
 }
 
 .primary-color {
