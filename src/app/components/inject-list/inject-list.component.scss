@@ -30,16 +30,6 @@
   background: transparent;
 }
 
-.mat-mdc-row,
-.mat-mdc-header-row {
-  display: flex;
-  border-bottom-width: 1px;
-  border-bottom-style: solid;
-  border-bottom-color: lightslategray;
-  align-items: center;
-  box-sizing: border-box;
-}
-
 .mat-mdc-cell,
 .mat-mdc-header-cell {
   overflow: hidden;
@@ -64,22 +54,19 @@
 }
 
 .mat-column-action {
-  flex: 0 0 150px;
-  flex-direction: row;
+  width: 150px;
   padding: 0px;
   word-wrap: none;
 }
 
 .mat-column-select {
-  flex: 0 0 50px;
-  flex-direction: row;
+  width: 50px;
   padding: 0px;
   word-wrap: none;
 }
 
 .mat-column-expand-me {
-  flex: 0 0 50px;
-  align-self: flex-end;
+  width: 50px;
   padding: 2px;
 }
 

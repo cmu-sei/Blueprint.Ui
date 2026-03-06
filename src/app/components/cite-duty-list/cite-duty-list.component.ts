@@ -120,6 +120,7 @@ export class CiteDutyListComponent implements OnDestroy {
       }
     }
     const dialogRef = this.dialog.open(CiteDutyEditDialogComponent, {
+      minWidth: '400px',
       maxWidth: '90vw',
       width: 'auto',
       data: {
