@@ -97,6 +97,7 @@ export class AdminInjectTypesComponent implements OnDestroy {
       };
     }
     const dialogRef = this.dialog.open(AdminInjectTypeEditDialogComponent, {
+      minWidth: '400px',
       maxWidth: '90vw',
       width: 'auto',
       data: {

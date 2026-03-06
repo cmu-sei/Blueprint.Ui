@@ -163,6 +163,7 @@ export class MselTeamsComponent implements OnDestroy, OnInit {
       team = { ...team };
     }
     const dialogRef = this.dialog.open(TeamEditDialogComponent, {
+      minWidth: '400px',
       maxWidth: '90vw',
       width: 'auto',
       data: {
@@ -202,6 +203,7 @@ export class MselTeamsComponent implements OnDestroy, OnInit {
 
   addTeamFromUnit() {
     const dialogRef = this.dialog.open(TeamAddDialogComponent, {
+      minWidth: '400px',
       maxWidth: '90vw',
       width: 'auto',
       height: '80%',

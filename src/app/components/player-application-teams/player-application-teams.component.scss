@@ -56,19 +56,19 @@
 }
 
 .mat-column-isShownOnWall {
-  flex: 0 0 15%;
-  justify-content: center;
+  width: 15%;
+  text-align: center;
 }
 
 .mat-column-canPostArticles {
-  flex: 0 0 15%;
-  justify-content: center;
+  width: 15%;
+  text-align: center;
 }
 
 .mat-column-id {
-  flex: 0 0 20%;
+  width: 20%;
   min-width: 120px;
-  justify-content: center;
+  text-align: center;
 }
 
 /* TODO(mdc-migration): The following rule targets internal classes of button that may no longer apply for the MDC version.*/
