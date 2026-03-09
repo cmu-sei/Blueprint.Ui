@@ -157,6 +157,7 @@ export class CiteActionListComponent implements OnDestroy {
       }
     }
     const dialogRef = this.dialog.open(CiteActionEditDialogComponent, {
+      minWidth: '400px',
       maxWidth: '90vw',
       width: 'auto',
       data: {

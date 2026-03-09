@@ -248,6 +248,7 @@ export class InjectListComponent implements OnDestroy, OnInit {
 
   editInject(inject: Injectm, isNewInject?: boolean) {
     const dialogRef = this.dialog.open(InjectEditDialogComponent, {
+      minWidth: '400px',
       maxWidth: '90vw',
       width: 'auto',
       data: {

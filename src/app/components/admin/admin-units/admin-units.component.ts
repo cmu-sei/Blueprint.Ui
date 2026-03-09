@@ -74,6 +74,7 @@ export class AdminUnitsComponent implements OnDestroy {
       unit = { ...unit };
     }
     const dialogRef = this.dialog.open(AdminUnitEditDialogComponent, {
+      minWidth: '400px',
       maxWidth: '90vw',
       width: 'auto',
       data: {
