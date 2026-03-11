@@ -25,7 +25,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         </span>
         <span class="delete-span">
           @if (canManageMsel()) {
-          <button mat-icon-button (click)="deleteMsel()" title="Delete this MSEL">
+          <button mat-icon-button (click)="deleteMsel()" title="Delete this MSEL" [disabled]="msel && msel.status === 'Deployed'">
             <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline" alt="Delete"></mat-icon>
           </button>
           }
