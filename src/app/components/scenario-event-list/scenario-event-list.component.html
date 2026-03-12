@@ -63,7 +63,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 }
               </mat-menu>
               <mat-menu #addFromCatalog="matMenu" [overlapTrigger]="false">
-                @for (catalog of catalogList; track catalog) {
+                @for (catalog of catalogList; track catalog.id) {
                 <button mat-menu-item (click)="selectFromCatalog(catalog)" title="{{ catalog.name }}">
                   {{ catalog.name }}
                 </button>
@@ -168,7 +168,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <!-- table body -->
       <tbody cdkDropList [cdkDropListDisabled]="!allowDragAndDrop || !canEditMsel()"
         (cdkDropListDropped)="dropHandler($event)">
-        @for (item of displayedScenarioEvents; track item; let rowIndex = $index) {
+        @for (item of displayedScenarioEvents; track item.id; let rowIndex = $index) {
         <tr [style]="getRowStyle(item)" cdkDrag [cdkDragData]="item" cdkDragLockAxis="y"
           [cdkDragPreviewClass]="userTheme" (cdkDragStarted)="dragStart($event)" (cdkDragEnded)="dragEnd($event)">
           <!-- row buttons -->
