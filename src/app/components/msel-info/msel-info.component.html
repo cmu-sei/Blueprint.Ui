@@ -64,6 +64,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 (keypress)="isChanged = true">Is a Template</mat-checkbox>
             </div>
           </div>
+          <!-- Email Enabled -->
+          <div class="single-detail center-self">
+            <div class="sub-detail center-self">
+              <mat-checkbox [(ngModel)]="msel.emailEnabled" [disabled]="msel.status === 'Deployed' || !canEditMsel()"
+                (cut)="isChanged = true" (change)="isChanged = true" (paste)="isChanged = true"
+                (keypress)="isChanged = true" title="Enable email functionality for this MSEL">Enable Email</mat-checkbox>
+            </div>
+          </div>
           <!-- MSEL Start Time -->
           <div class="single-checkbox">
             <mat-checkbox [checked]="msel.startTime?.valueOf() > 0"

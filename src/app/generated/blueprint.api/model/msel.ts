@@ -54,6 +54,7 @@ export interface Msel {
     steamfitterScenarioId?: string | null;
     steamfitterIntegrationType?: IntegrationType;
     isTemplate?: boolean;
+    emailEnabled?: boolean;
     startTime?: Date;
     durationSeconds?: number;
     showTimeOnScenarioEventList?: boolean;

@@ -22,7 +22,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
       }
     </div>
     <div class="header-cell five-cell">Name</div>
+    @if (msel.emailEnabled) {
     <div class="header-cell two-cell">Email</div>
+    }
     <div class="header-cell two-cell">Team Type</div>
     <div class="header-cell two-cell">Invitation</div>
     <div class="header-cell search-cell">
@@ -57,7 +59,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
               }
             </div>
             <div class="five-cell center-self">{{ team.shortName }} - {{ team.name }}</div>
+            @if (msel.emailEnabled) {
             <div class="two-cell center-self">{{ team.email }}</div>
+            }
             <div class="two-cell center-self">{{ getCiteTeamTypeName(team.citeTeamTypeId) }}</div>
             <div class="two-cell center-self">@if (team.canTeamMemberInvite) {
               <span>** ALL can invite</span>

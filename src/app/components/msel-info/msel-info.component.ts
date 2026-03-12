@@ -158,6 +158,13 @@ export class MselInfoComponent implements OnDestroy, OnInit {
           const isNewMselId = this.msel.id !== msel.id;
           Object.assign(this.originalMsel, msel);
           Object.assign(this.msel, msel);
+          // Ensure emailEnabled defaults to true if undefined
+          if (this.msel.emailEnabled === undefined || this.msel.emailEnabled === null) {
+            this.msel.emailEnabled = true;
+          }
+          if (this.originalMsel.emailEnabled === undefined || this.originalMsel.emailEnabled === null) {
+            this.originalMsel.emailEnabled = true;
+          }
           if (isNewMselId) {
             this.viewUrl = document.baseURI + 'msel/' + this.msel.id + '/view';
             this.starterUrl =

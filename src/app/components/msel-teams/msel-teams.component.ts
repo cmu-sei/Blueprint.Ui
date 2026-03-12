@@ -69,9 +69,13 @@ export class MselTeamsComponent implements OnDestroy, OnInit {
   ) {
     // subscribe to the active MSEL
     (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
-      if (msel && this.msel.id !== msel.id) {
+      if (msel) {
         Object.assign(this.originalMsel, msel);
         Object.assign(this.msel, msel);
+        // Ensure emailEnabled defaults to true if undefined
+        if (this.msel.emailEnabled === undefined || this.msel.emailEnabled === null) {
+          this.msel.emailEnabled = true;
+        }
         this.teamList = this.allTeams.filter(t => t.mselId === this.msel.id);
       }
     });
@@ -169,6 +173,7 @@ export class MselTeamsComponent implements OnDestroy, OnInit {
       data: {
         team: team,
         useCite: this.msel.useCite,
+        emailEnabled: this.msel.emailEnabled,
         teamTypeList: this.teamTypeList
       },
     });
