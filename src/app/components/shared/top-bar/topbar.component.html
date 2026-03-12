@@ -38,8 +38,15 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <mat-icon aria-hidden="false" class="menu-trigger" fontIcon="mdi-chevron-down"></mat-icon>
       </button>
       <mat-menu #menu="matMenu" [overlapTrigger]="false">
-        @if (canAccessAdminSection) {
-        <button mat-menu-item (click)="goToAdmin()">Administration</button>
+        @if (topbarView === TopbarView.BLUEPRINT_ADMIN) {
+        <button [routerLink]="['/']" mat-menu-item>
+          Exit Administration
+        </button>
+        }
+        @if (topbarView !== TopbarView.BLUEPRINT_ADMIN && canViewAdmin) {
+        <button [routerLink]="['/admin']" mat-menu-item>
+          Administration
+        </button>
         }
         <button mat-menu-item (click)="logout()">Logout</button>
         <mat-slide-toggle class="mat-menu-item" color="primary"

@@ -122,6 +122,7 @@ export class CardListComponent implements OnDestroy {
       }
     }
     const dialogRef = this.dialog.open(CardEditDialogComponent, {
+      minWidth: '400px',
       maxWidth: '90vw',
       width: 'auto',
       data: {

@@ -745,6 +745,7 @@ export class ScenarioEventListComponent
       this.msel.hasRole(this.loggedInUserId, scenarioEvent.id).editor;
 
     const dialogRef = this.dialog.open(ScenarioEventEditDialogComponent, {
+      minWidth: '400px',
       maxWidth: '90vw',
       width: 'auto',
       height: '90%',

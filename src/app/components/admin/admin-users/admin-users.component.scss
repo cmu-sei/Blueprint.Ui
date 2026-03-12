@@ -1,57 +1,8 @@
 // Copyright 2025 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
-.component-container {
-  margin: 16px;
-}
-
-.add-margin {
-  margin: 16px;
-}
-
-.mat-mdc-table {
-  display: block;
-}
-
-.mat-mdc-header-row {
-  min-height: 56px;
-}
-
-.mat-mdc-row {
-  min-height: 48px;
-}
-
-.mat-mdc-row,
-.mat-mdc-header-row {
+:host {
   display: flex;
-  border-bottom-width: 1px;
-  border-bottom-style: solid;
-  align-items: center;
-  padding: 0 24px;
-  box-sizing: border-box;
-}
-
-.mat-mdc-cell,
-.mat-mdc-header-cell {
-  flex: 1;
-  overflow: hidden;
-  word-wrap: break-word;
-}
-
-.button-end {
-  margin-left: 100px;
-}
-
-.sp-icon {
-  margin-left: 10px;
-}
-
-.mat-accordion .mat-mdc-header-row {
-  padding-left: 1.5rem;
-  padding-right: 2rem;
-  border-bottom: none;
-}
-
-.mat-expansion-panel-header.mat-mdc-row {
-  border-bottom: none;
+  flex-direction: column;
+  height: calc(100vh - 44px);
 }

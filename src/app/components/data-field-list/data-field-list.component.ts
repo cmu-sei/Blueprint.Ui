@@ -280,6 +280,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
     }
     dataField.dataOptions = dataOptions;
     const dialogRef = this.dialog.open(DataFieldEditDialogComponent, {
+      minWidth: '400px',
       maxWidth: '90vw',
       width: 'auto',
       minWidth: '650px',

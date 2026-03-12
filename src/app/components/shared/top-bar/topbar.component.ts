@@ -19,7 +19,6 @@ import { CurrentUserQuery } from 'src/app/data/user/user.query';
 import { TopbarView } from './topbar.models';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
-import { Router } from '@angular/router';
 
 @Component({
     selector: 'app-topbar',
@@ -45,29 +44,31 @@ export class TopbarComponent implements OnInit, OnDestroy {
   theme$: Observable<Theme>;
   unsubscribe$: Subject<null> = new Subject<null>();
   TopbarView = TopbarView;
-  canAccessAdminSection = false;
+  canViewAdmin = false;
+
   constructor(
     private authService: ComnAuthService,
     private currentUserQuery: CurrentUserQuery,
     private authQuery: ComnAuthQuery,
     private uiDataService: UIDataService,
-    private permissionDataService: PermissionDataService,
-    private router: Router
+    private permissionDataService: PermissionDataService
   ) {}
 
   ngOnInit() {
+    this.permissionDataService
+      .load()
+      .subscribe(
+        () =>
+          (this.canViewAdmin =
+            this.permissionDataService.canViewAdministration())
+      );
+
     this.currentUser$ = this.currentUserQuery.select().pipe(
       filter((user) => user !== null),
       takeUntil(this.unsubscribe$)
     );
     this.theme$ = this.authQuery.userTheme$;
     this.authService.setUserTheme(<Theme>this.uiDataService.getTheme() || Theme.LIGHT);
-
-    // Check if user has admin permissions
-    this.permissionDataService.load().subscribe(() => {
-      const permissions = this.permissionDataService.permissions;
-      this.canAccessAdminSection = permissions.filter(p => !p.endsWith('Msels')).length > 0;
-    });
   }
 
   setTeamFn(id: string) {
@@ -91,10 +92,6 @@ export class TopbarComponent implements OnInit, OnDestroy {
 
   logout(): void {
     this.authService.logout();
-  }
-
-  goToAdmin(): void {
-    this.router.navigate(['/admin']);
   }
 
   goToUrl(url): void {
