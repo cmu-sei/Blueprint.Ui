@@ -8,9 +8,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
   @if (sideNavCollapsed) {
   <mat-drawer #sidenav mode="side" opened class="side-nav-collapsed">
     <div class="top-div">
-      <button mat-icon-button (click)="tabChange('Back')">
+      <a mat-icon-button [routerLink]="['/build/']" title="Back to My MSELs">
         <mat-icon class="mat-list-item-icon mdi-24px" fontIcon="mdi-arrow-left-thin-circle-outline"></mat-icon>
-      </button>
+      </a>
     </div>
     <mat-list class="list-container">
       <mat-divider></mat-divider>
@@ -34,7 +34,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
   }
   @if (!sideNavCollapsed) {
   <mat-drawer #sidenav mode="side" opened class="side-nav">
-    <div class="top-div" (click)="tabChange('Back')">
+    <a class="top-div" [routerLink]="['/build/']" title="Back to My MSELs">
       <div class="one-cell center-self">
         <mat-icon class="mat-list-item-icon mdi-24px" fontIcon="mdi-arrow-left-thin-circle-outline"></mat-icon>
       </div>
@@ -43,7 +43,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         back to My MSELs
       </div>
       }
-    </div>
+    </a>
     <mat-list class="list-container">
       <mat-divider></mat-divider>
       @for (tabName of getTabListItems(); track tabName) {
