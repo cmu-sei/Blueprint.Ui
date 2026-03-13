@@ -73,7 +73,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <app-duration-view [startTime]="msel.startTime" [durationSeconds]="item.deltaSeconds"
             [showRealTime]="showRealTime"></app-duration-view>
         </div>
-        <div class="cell  sit-time-cell center-self">{{ item.situationTime | date: 'MM/dd/yyyy HH:mm' }}</div>
+        <div class="cell  sit-time-cell center-self">{{ item.situationTime | date: 'dd MMM yyyy HH:mm' }}</div>
         <div class="cell four-cell center-self">{{ item.description }}</div>
       </mat-expansion-panel-header>
     </mat-expansion-panel>

@@ -1113,6 +1113,22 @@ export class ScenarioEventListComponent
     });
   }
 
+  getUserTimezone(): string {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone;
+  }
+
+  getTimezoneAbbr(): string {
+    const date = new Date();
+    const timeZone = this.getUserTimezone();
+    const formatted = date.toLocaleTimeString('en-US', {
+      timeZoneName: 'short',
+      timeZone
+    });
+    // Extract timezone abbreviation (e.g., "EST", "PST")
+    const parts = formatted.split(' ');
+    return parts[parts.length - 1];
+  }
+
   ngOnDestroy() {
     this.unsubscribe$.next(null);
     this.unsubscribe$.complete();

@@ -142,6 +142,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 <mat-icon class="mdi-24px" fontIcon="mdi-clock-time-four-outline"></mat-icon>
               </button>
               }
+              @if (showRealTime) {
+              <span class="timezone-hint" [title]="getUserTimezone()">({{ getTimezoneAbbr() }})</span>
+              }
             </div>
           </th>
           }

@@ -9,7 +9,7 @@ project root for license information.
   <!-- dataType.DateTime -->
   @if (dataField.dataType === dataType.DateTime) {
   <span>
-    {{ value | date: 'MM/dd/yyyy HH:mm' }}
+    {{ value | date: 'dd MMM yyyy HH:mm' }}
   </span>
   }
   <!-- dataType.Html -->
@@ -89,13 +89,13 @@ project root for license information.
 @if (!dataField.isChosenFromList && dataField.dataType === dataType.DateTime) {
 <span>
   @if (!showValueOnly) {
-  <mat-form-field class="full-width">
+  <mat-form-field class="datetime-field">
     <mat-label>{{ dataField.name }}</mat-label>
     <input matInput [ngxMatDatetimePicker]="picker" [(ngModel)]="value" (ngModelChange)="valueChangeHandler()"
       (dateChange)="isChanged = true" (dateInput)="isChanged = true" style="display: none;" [disabled]="!canEdit">
     <!-- <datetime-picker> -->
     <span (click)="canEdit && picker.open()">
-      {{ value | date: 'MM/dd/yyyy hh:mm a' }}
+      {{ value | date: 'dd MMM yyyy HH:mm' }} {{ getTimezoneAbbr() }}
     </span>
     <mat-datepicker-toggle matSuffix title="Choose Date/Time" [for]="picker" [disabled]="!canEdit">
     </mat-datepicker-toggle>
@@ -110,7 +110,7 @@ project root for license information.
   }
   @if (showValueOnly) {
   <span>
-    {{ value | date: 'MM/dd/yyyy HH:mm' }}
+    {{ value | date: 'dd MMM yyyy HH:mm' }}
   </span>
   }
 </span>
