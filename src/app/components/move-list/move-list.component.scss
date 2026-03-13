@@ -144,13 +144,23 @@ textarea {
 }
 
 .move-button {
-  width: 30px;
-  height: 30px;
-  align-self: center;
+  width: 30px !important;
+  height: 30px !important;
+  align-self: center !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
 }
 
-.up-12 {
-  margin-top: -12px;
+.header-button {
+  width: 40px !important;
+  height: 40px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+  outline: none !important;
 }
 
 .copy-icon {

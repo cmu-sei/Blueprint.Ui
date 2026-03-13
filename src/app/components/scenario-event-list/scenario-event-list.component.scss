@@ -106,14 +106,25 @@ td {
   width: 30px !important;
   height: 30px !important;
   align-self: center !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+}
+
+.header-button {
+  width: 30px !important;
+  height: 30px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+  outline: none !important;
+  align-self: center !important;
 }
 
 .header-dropdown {
   width: calc(100% - 10px);
-}
-
-.up-12 {
-  margin-top: -18px;
 }
 
 .color-option-button {

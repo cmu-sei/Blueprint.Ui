@@ -42,7 +42,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
               }
               @if (selectedEventIdList.length === 0 && (canEditMsel() || msel.hasRole(loggedInUserId, null).owner))
               {
-              <button mat-icon-button style="outline: none; width: 30px;" title="Action List"
+              <button mat-icon-button class="header-button" title="Action List"
                 [matMenuTriggerFor]="addEventList">
                 <mat-icon class="mdi-24px" fontIcon="mdi-menu"></mat-icon>
               </button>
@@ -70,7 +70,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 }
               </mat-menu>
               @if (selectedEventIdList.length > 0 && (canEditMsel() || msel.hasRole(loggedInUserId, null).owner)) {
-              <button mat-icon-button style="outline: none; width: 30px;" title="Action List"
+              <button mat-icon-button class="header-button" title="Action List"
                 [matMenuTriggerFor]="bulkEventList">
                 <mat-icon class="mdi-24px" fontIcon="mdi-menu"></mat-icon>
               </button>
@@ -102,13 +102,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 </button>
               </mat-menu>
               @if (!showSearch) {
-              <button mat-icon-button (click)="setSearch(true)" style="outline: none; width: 30px;"
+              <button mat-icon-button (click)="setSearch(true)" class="header-button"
                 title="Search Events">
                 <mat-icon class="mdi-24px" fontIcon="mdi-filter-outline"></mat-icon>
               </button>
               }
               @if (showSearch) {
-              <button mat-icon-button (click)="setSearch(false)" style="outline: none; width: 30px;"
+              <button mat-icon-button (click)="setSearch(false)" class="header-button"
                 title="Clear Search">
                 <mat-icon class="mdi-24px" fontIcon="mdi-filter-off-outline"></mat-icon>
               </button>
@@ -187,7 +187,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
               <button mat-icon-button class="scenario-event-button" [matMenuTriggerFor]="actionList"
                 (click)="$event.stopPropagation()" title="Event {{ rowIndex + 1 }} Action List"
                 [disabled]="selectedEventIdList.length > 0">
-                <mat-icon class="mdi-24px up-12" fontIcon="mdi-menu"></mat-icon>
+                <mat-icon class="mdi-24px" fontIcon="mdi-menu"></mat-icon>
               </button>
               <mat-menu #actionList="matMenu" [overlapTrigger]="false">
                 <button mat-menu-item (click)="openContent(item.id)" title="Open page in new tab">
@@ -228,14 +228,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
               <button mat-icon-button class="scenario-event-button" (click)="setHiddenScenarioEvent(item, true)"
                 title="Hide event {{ rowIndex + 1 }} on the Exercise View"
                 [disabled]="selectedEventIdList.length > 0 || !canEditMsel()">
-                <mat-icon class="mdi-24px up-12" fontIcon="mdi-eye-outline"></mat-icon>
+                <mat-icon class="mdi-24px" fontIcon="mdi-eye-outline"></mat-icon>
               </button>
               }
               @if (item.isHidden && !isStarterMsel) {
               <button mat-icon-button class="scenario-event-button" (click)="setHiddenScenarioEvent(item, false)"
                 title="Unhide event {{ rowIndex + 1 }} on the Exercise View"
                 [disabled]="selectedEventIdList.length > 0">
-                <mat-icon class="mdi-24px up-12" fontIcon="mdi-eye-off-outline"></mat-icon>
+                <mat-icon class="mdi-24px" fontIcon="mdi-eye-off-outline"></mat-icon>
               </button>
               }
             </div>
