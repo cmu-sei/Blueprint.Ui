@@ -9,7 +9,9 @@ project root for license information.
   <!-- dataType.DateTime -->
   @if (dataField.dataType === dataType.DateTime) {
   <span>
-    {{ value | date: 'dd MMM yyyy HH:mm' }}
+    @if (value) {
+    {{ value | date: 'dd MMM yyyy HH:mm' }} {{ getTimezoneAbbr() }}
+    }
   </span>
   }
   <!-- dataType.Html -->
@@ -58,6 +60,7 @@ project root for license information.
 <span>
   @if (!showValueOnly) {
   <mat-form-field class="full-width">
+    <mat-label>{{ dataField.name }}</mat-label>
     <input type="text" matInput placeholder="{{ dataField.name }}" [(ngModel)]="value"
       (ngModelChange)="valueChangeHandler()" [disabled]="!canEdit" />
   </mat-form-field>
@@ -74,6 +77,7 @@ project root for license information.
 <span>
   @if (!showValueOnly) {
   <mat-form-field class="full-width">
+    <mat-label>{{ dataField.name }}</mat-label>
     <input matInput placeholder="{{ dataField.name }}" (change)="verifyNumber(value)" [(ngModel)]="value"
       (ngModelChange)="valueChangeHandler()" [disabled]="!canEdit" />
   </mat-form-field>
@@ -95,7 +99,9 @@ project root for license information.
       (dateChange)="isChanged = true" (dateInput)="isChanged = true" style="display: none;" [disabled]="!canEdit">
     <!-- <datetime-picker> -->
     <span (click)="canEdit && picker.open()">
+      @if (value) {
       {{ value | date: 'dd MMM yyyy HH:mm' }} {{ getTimezoneAbbr() }}
+      }
     </span>
     <mat-datepicker-toggle matSuffix title="Choose Date/Time" [for]="picker" [disabled]="!canEdit">
     </mat-datepicker-toggle>
@@ -110,7 +116,9 @@ project root for license information.
   }
   @if (showValueOnly) {
   <span>
-    {{ value | date: 'dd MMM yyyy HH:mm' }}
+    @if (value) {
+    {{ value | date: 'dd MMM yyyy HH:mm' }} {{ getTimezoneAbbr() }}
+    }
   </span>
   }
 </span>
@@ -148,7 +156,7 @@ project root for license information.
       @if (organizationOptions && organizationOptions.length > 0) {
       <mat-option value="None">None</mat-option>
       }
-      @for (organization of organizationOptions; track organization) {
+      @for (organization of organizationOptions; track $index) {
       <mat-option [value]="organization">{{ organization
         }}</mat-option>
       }
@@ -161,7 +169,7 @@ project root for license information.
     @if (organizationOptions && organizationOptions.length > 0) {
     <mat-option value="None">None</mat-option>
     }
-    @for (organization of organizationOptions; track organization) {
+    @for (organization of organizationOptions; track $index) {
     <mat-option [value]="organization">{{ organization
       }}</mat-option>
     }
@@ -183,7 +191,7 @@ project root for license information.
       @if (teamOptions && teamOptions.length > 0) {
       <mat-option value="None">None</mat-option>
       }
-      @for (team of teamOptions; track team) {
+      @for (team of teamOptions; track team.id) {
       <mat-option [value]="team.shortName">
         {{ team.shortName }}
       </mat-option>
@@ -200,7 +208,7 @@ project root for license information.
     @if (teamOptions && teamOptions.length > 0) {
     <mat-option value="None">None</mat-option>
     }
-    @for (team of teamOptions; track team) {
+    @for (team of teamOptions; track team.id) {
     <mat-option [value]="team.shortName">
       {{ team.shortName }}
     </mat-option>
@@ -217,7 +225,7 @@ project root for license information.
     <mat-label>{{ dataField.name }}</mat-label>
     <mat-select placeholder="{{ dataField.name }}" [(ngModel)]="value" [disabled]="!canApprove"
       (ngModelChange)="valueChangeHandler()">
-      @for (status of itemStatus; track status) {
+      @for (status of itemStatus; track $index) {
       <mat-option [value]="status">
         {{ status }}
       </mat-option>
@@ -228,7 +236,7 @@ project root for license information.
   @if (showValueOnly) {
   <mat-select placeholder="{{ dataField.name }}" [(ngModel)]="value" [disabled]="!canApprove"
     (ngModelChange)="valueChangeHandler()">
-    @for (status of itemStatus; track status) {
+    @for (status of itemStatus; track $index) {
     <mat-option [value]="status">
       {{ status }}
     </mat-option>
@@ -245,7 +253,7 @@ project root for license information.
     <mat-label>{{ dataField.name }}</mat-label>
     <mat-select placeholder="{{ dataField.name }}" [(ngModel)]="value" [disabled]="!isOwner"
       (ngModelChange)="valueChangeHandler()">
-      @for (unit of unitOptions; track unit) {
+      @for (unit of unitOptions; track unit.id) {
       <mat-option [value]="unit.shortName">
         {{ unit.shortName }}
       </mat-option>
@@ -256,7 +264,7 @@ project root for license information.
   @if (showValueOnly) {
   <mat-select placeholder="{{ dataField.name }}" [(ngModel)]="value" [disabled]="!isOwner"
     (ngModelChange)="valueChangeHandler()">
-    @for (unit of unitOptions; track unit) {
+    @for (unit of unitOptions; track unit.id) {
     <mat-option [value]="unit.shortName">
       {{ unit.shortName }}
     </mat-option>
@@ -274,7 +282,7 @@ project root for license information.
     <mat-select placeholder="{{ dataField.name }}" [(ngModel)]="value" (ngModelChange)="valueChangeHandler()"
       [disabled]="!canEdit">
       <mat-option value="''"> - - - </mat-option>
-      @for (card of cardOptions; track card) {
+      @for (card of cardOptions; track card.id) {
       <mat-option [value]="card.id">{{ card.name }}</mat-option>
       }
     </mat-select>
@@ -284,7 +292,7 @@ project root for license information.
   <mat-select placeholder="{{ dataField.name }}" [(ngModel)]="value" (ngModelChange)="valueChangeHandler()"
     [disabled]="!canEdit">
     <mat-option value="''"> - - - </mat-option>
-    @for (card of cardOptions; track card) {
+    @for (card of cardOptions; track card.id) {
     <mat-option [value]="card.id">{{ card.name }}</mat-option>
     }
   </mat-select>
@@ -300,7 +308,7 @@ project root for license information.
     <mat-select placeholder="{{ dataField.name }}" [(ngModel)]="value" (ngModelChange)="valueChangeHandler()"
       [disabled]="!canEdit">
       <mat-option value="''"> - - - </mat-option>
-      @for (move of moveOptions; track move) {
+      @for (move of moveOptions; track move.id) {
       <mat-option [value]="move.id">{{ move.moveNumber }} - {{ move.title
         }}</mat-option>
       }
@@ -311,7 +319,7 @@ project root for license information.
   <mat-select placeholder="{{ dataField.name }}" [(ngModel)]="value" (ngModelChange)="valueChangeHandler()"
     [disabled]="!canEdit">
     <mat-option value="''"> - - - </mat-option>
-    @for (move of moveOptions; track move) {
+    @for (move of moveOptions; track move.id) {
     <mat-option [value]="move.id">{{ move.moveNumber }} - {{ move.title
       }}</mat-option>
     }
@@ -328,7 +336,7 @@ project root for license information.
     <mat-select placeholder="{{ dataField.name }}" [(ngModel)]="value" (ngModelChange)="valueChangeHandler()"
       [disabled]="!canEdit">
       <mat-option value="''"> </mat-option>
-      @for (sourceType of gallerySourceTypeOptions; track sourceType) {
+      @for (sourceType of gallerySourceTypeOptions; track $index) {
       <mat-option [value]="sourceType">{{ sourceType
         }}</mat-option>
       }
@@ -339,7 +347,7 @@ project root for license information.
   <mat-select placeholder="{{ dataField.name }}" [(ngModel)]="value" (ngModelChange)="valueChangeHandler()"
     [disabled]="!canEdit">
     <mat-option value="''"> </mat-option>
-    @for (sourceType of gallerySourceTypeOptions; track sourceType) {
+    @for (sourceType of gallerySourceTypeOptions; track $index) {
     <mat-option [value]="sourceType">{{ sourceType }}</mat-option>
     }
   </mat-select>
@@ -354,7 +362,7 @@ project root for license information.
     <mat-label>{{ dataField.name }}</mat-label>
     <mat-select placeholder="{{ dataField.name }}" [(ngModel)]="value" (ngModelChange)="valueChangeHandler()"
       [disabled]="!canEdit">
-      @for (user of userOptions; track user) {
+      @for (user of userOptions; track user.id) {
       <mat-option [value]="user.id">
         {{ user.name }}
       </mat-option>
@@ -365,7 +373,7 @@ project root for license information.
   @if (showValueOnly) {
   <mat-select placeholder="{{ dataField.name }}" [(ngModel)]="value" (ngModelChange)="valueChangeHandler()"
     [disabled]="!canEdit">
-    @for (user of userOptions; track user) {
+    @for (user of userOptions; track user.id) {
     <mat-option [value]="user.id">
       {{ user.name }}
     </mat-option>
@@ -396,7 +404,7 @@ project root for license information.
     <mat-label>{{ dataField.name }}</mat-label>
     <mat-select multiple (click)="$event.stopPropagation()" placeholder="{{ dataField.name }}"
       (valueChange)="setDataValueArray($event)" [value]="getValueArray()" [disabled]="!canEdit">
-      @for (dataOption of dataField.dataOptions; track dataOption) {
+      @for (dataOption of dataField.dataOptions; track $index) {
       <mat-option [value]="dataOption.optionValue">
         {{ dataOption.optionName }}
       </mat-option>
@@ -407,7 +415,7 @@ project root for license information.
   @if (showValueOnly) {
   <mat-select multiple (click)="$event.stopPropagation()" placeholder="{{ dataField.name }}"
     (valueChange)="setDataValueArray($event)" [value]="getValueArray()" [disabled]="!canEdit">
-    @for (dataOption of dataField.dataOptions; track dataOption) {
+    @for (dataOption of dataField.dataOptions; track dataOption.id) {
     <mat-option [value]="dataOption.optionValue">
       {{ dataOption.optionName }}
     </mat-option>
@@ -426,7 +434,7 @@ project root for license information.
     @if (!dataField.isMultiSelect) {
     <mat-select placeholder="{{ dataField.name }}" [(ngModel)]="value" (ngModelChange)="valueChangeHandler()"
       [disabled]="!canEdit">
-      @for (dataOption of dataField.dataOptions; track dataOption) {
+      @for (dataOption of dataField.dataOptions; track $index) {
       <mat-option [value]="dataOption.optionValue">
         {{ dataOption.optionName }}
       </mat-option>
@@ -437,7 +445,7 @@ project root for license information.
     @if (dataField.isMultiSelect) {
     <mat-select multiple (click)="$event.stopPropagation()" placeholder="{{ dataField.name }}"
       (valueChange)="setDataValueArray($event)" [value]="getValueArray()" [disabled]="!canEdit">
-      @for (dataOption of dataField.dataOptions; track dataOption) {
+      @for (dataOption of dataField.dataOptions; track $index) {
       <mat-option [value]="dataOption.optionValue">
         {{ dataOption.optionName }}
       </mat-option>
@@ -452,7 +460,7 @@ project root for license information.
     @if (!dataField.isMultiSelect) {
     <mat-select placeholder="{{ dataField.name }}" [(ngModel)]="value" (ngModelChange)="valueChangeHandler()"
       [disabled]="!canEdit">
-      @for (dataOption of dataField.dataOptions; track dataOption) {
+      @for (dataOption of dataField.dataOptions; track $index) {
       <mat-option [value]="dataOption.optionValue">
         {{ dataOption.optionName }}
       </mat-option>
@@ -463,7 +471,7 @@ project root for license information.
     @if (dataField.isMultiSelect) {
     <mat-select multiple (click)="$event.stopPropagation()" placeholder="{{ dataField.name }}"
       (valueChange)="setDataValueArray($event)" [value]="getValueArray()" [disabled]="!canEdit">
-      @for (dataOption of dataField.dataOptions; track dataOption) {
+      @for (dataOption of dataField.dataOptions; track $index) {
       <mat-option [value]="dataOption.optionValue">
         {{ dataOption.optionName }}
       </mat-option>

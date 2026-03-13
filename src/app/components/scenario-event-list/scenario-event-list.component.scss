@@ -82,9 +82,9 @@ td {
 }
 
 .row-start-buttons {
-  width: 180px;
+  min-width: 180px;
   display: flex;
-  flex: 1;
+  flex-shrink: 0;
 }
 
 .order-header {

@@ -13,7 +13,9 @@ project root for license information.
         (dateInput)="timeUpdated()" style="display: none;">
       <!-- <datetime-picker> -->
       <span (click)="canEdit && picker.open()">
+        @if (endTimeFormControl.value) {
         {{ endTimeFormControl.value | date: 'dd MMM yyyy HH:mm'}} {{ getTimezoneAbbr() }}
+        }
       </span>
       <mat-datepicker-toggle matSuffix title="Choose Date/Time" [for]="picker" [disabled]="!canEdit">
       </mat-datepicker-toggle>

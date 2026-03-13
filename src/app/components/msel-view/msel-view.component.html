@@ -42,19 +42,19 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </th>
           <!-- Move -->
           @if (msel.showMoveOnExerciseView) {
-          <th class="background move-group">
+          <th mat-sort-header="moveNumber" class="background move-group">
             <div>Move</div>
           </th>
           }
           <!-- Group -->
           @if (msel.showGroupOnExerciseView) {
-          <th class="background move-group">
+          <th mat-sort-header="groupOrder" class="background move-group">
             <div>Group</div>
           </th>
           }
           <!-- Time -->
           @if (msel.showTimeOnExerciseView) {
-          <th class="background">
+          <th mat-sort-header="deltaSeconds" class="background">
             <div>
               @if (!showRealTime) {
               <button mat-icon-button (click)="setRealTime(true)" style="outline: none;" title="Switch to Real Time"
@@ -66,6 +66,10 @@ project root for license information or contact permission@sei.cmu.edu for full 
               <button mat-icon-button (click)="setRealTime(false)" style="outline: none;" title="Switch to Delta Time">
                 <mat-icon class="mdi-24px" fontIcon="mdi-clock-time-four-outline"></mat-icon>
               </button>
+              }
+              <span>Execution Time</span>
+              @if (showRealTime) {
+              <span class="timezone-hint" [title]="getUserTimezone()"> ({{ getTimezoneAbbr() }})</span>
               }
             </div>
           </th>

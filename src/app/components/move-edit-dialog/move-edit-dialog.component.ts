@@ -77,12 +77,11 @@ export class MoveEditDialogComponent {
   }
 
   saveMove(which: string) {
-    let timeParts: string[];
     switch (which) {
       case 'situationDate':
-        const newPosted = new Date(this.situationDateFormControl.value);
-        const oldPosted = new Date(this.data.move.situationTime);
-        this.data.move.situationTime = newPosted;
+        if (this.situationDateFormControl.value) {
+          this.data.move.situationTime = new Date(this.situationDateFormControl.value);
+        }
         break;
       default:
         break;

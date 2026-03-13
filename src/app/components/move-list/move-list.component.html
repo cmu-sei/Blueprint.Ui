@@ -31,7 +31,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       }
     </span>
     <span class="header-cell one-cell" mat-sort-header="moveStartTime">
-      Start
+      Start Time
     </span>
     <span class="header-cell sit-time-cell" mat-sort-header="situationTime">Situation Time</span>
     <span class="header-cell two-cell" mat-sort-header="description">Description</span>
@@ -73,7 +73,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <app-duration-view [startTime]="msel.startTime" [durationSeconds]="item.deltaSeconds"
             [showRealTime]="showRealTime"></app-duration-view>
         </div>
-        <div class="cell  sit-time-cell center-self">{{ item.situationTime | date: 'dd MMM yyyy HH:mm' }}</div>
+        <div class="cell  sit-time-cell center-self">{{ item.situationTime | date: 'dd MMM yyyy HH:mm' }} {{ getTimezoneAbbr() }}</div>
         <div class="cell four-cell center-self">{{ item.description }}</div>
       </mat-expansion-panel-header>
     </mat-expansion-panel>

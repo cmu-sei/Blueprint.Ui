@@ -31,9 +31,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <!-- action button header -->
           <th class="background center-self">
             <div class="row-start-buttons">
-              @if (allowDragAndDrop && canEditMsel()) {
-              <span class="row-index center-self">&nbsp;</span>
-              }
+              <span class="row-index center-self" [style.visibility]="allowDragAndDrop && canEditMsel() ? 'visible' : 'hidden'">&nbsp;</span>
               <span class="row-index center-self">&nbsp;</span>
               @if ((canEditMsel() || msel.hasRole(loggedInUserId, null).owner)) {
               <mat-checkbox [checked]="allSelected" (change)="setAllSelectedState($event.checked)"
@@ -117,19 +115,19 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </th>
           <!-- Move header -->
           @if (msel.showMoveOnScenarioEventList) {
-          <th class="background">
+          <th mat-sort-header="moveNumber" class="background">
             <div>Move</div>
           </th>
           }
           <!-- Group header -->
           @if (msel.showGroupOnScenarioEventList) {
-          <th class="background">
+          <th mat-sort-header="groupOrder" class="background">
             <div>Group</div>
           </th>
           }
           <!-- Time header -->
           @if (msel.showTimeOnScenarioEventList) {
-          <th class="background">
+          <th mat-sort-header="deltaSeconds" class="background">
             <div>
               @if (!showRealTime) {
               <button mat-icon-button (click)="setRealTime(true)" style="outline: none;" title="Switch to Real Time"
@@ -142,15 +140,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 <mat-icon class="mdi-24px" fontIcon="mdi-clock-time-four-outline"></mat-icon>
               </button>
               }
-              @if (showRealTime) {
-              <span class="timezone-hint" [title]="getUserTimezone()">({{ getTimezoneAbbr() }})</span>
-              }
+              <span>Execution Time</span>
             </div>
           </th>
           }
           <!-- IntegrationTarget header -->
           @if (msel.showIntegrationTargetOnScenarioEventList) {
-          <th class="background">
+          <th mat-sort-header="integrationTarget" class="background">
             <div>Integration Target</div>
           </th>
           }
@@ -177,11 +173,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <!-- row buttons -->
           <td class="center-self">
             <div class="row-start-buttons">
-              @if (allowDragAndDrop && canEditMsel()) {
-              <div cdkDragHandle class="center-self">
+              <div cdkDragHandle class="center-self" [style.visibility]="allowDragAndDrop && canEditMsel() ? 'visible' : 'hidden'">
                 <span><mat-icon class="mdi-24px" fontIcon="mdi-drag-vertical" /></span>
               </div>
-              }
               <span class="row-index center-self">{{ rowIndex + 1 }}</span>
               @if ((canEditMsel() || msel.hasRole(loggedInUserId, null).owner)) {
               <mat-checkbox [checked]="getSelectedState(item.id)" (change)="setSelectedState(item.id, $event.checked)"

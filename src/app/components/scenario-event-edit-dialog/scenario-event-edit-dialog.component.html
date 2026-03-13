@@ -73,7 +73,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
           @if ((currentFilterBy === 'all' || data.scenarioEvent.scenarioEventType !== eventType.Inject) &&
           getScenarioTypeDataFields().length > 0) {
           <div class="start-time-div">
-            <span>Execution Time</span>
             <app-duration-edit [startTime]="data.mselStartTime" [(durationSeconds)]="data.scenarioEvent.deltaSeconds"
               [timeName]="'Execution Date / Time'" [postScript]="''" [canEdit]="data.isEditor">
             </app-duration-edit>
@@ -94,7 +93,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
           @if (currentFilterBy === 'all' && data.scenarioEvent.scenarioEventType === eventType.Inject) {
           <div class="full-width">
             <mat-form-field class="full-width">
-              <input type="text" matInput placeholder="row metadata" [(ngModel)]="data.scenarioEvent.rowMetadata" />
+              <mat-label>Row Metadata (height,red,green,blue)</mat-label>
+              <input type="text" matInput placeholder="e.g., 15,255,200,100" [(ngModel)]="data.scenarioEvent.rowMetadata" />
             </mat-form-field>
           </div>
           }
