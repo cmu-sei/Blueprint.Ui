@@ -33,10 +33,20 @@
   border-bottom-style: solid;
   align-items: center;
   box-sizing: border-box;
+  background: transparent;
+  font-weight: 400;
+  color: var(--mat-sys-on-background) !important;
 }
 
 .header-cell {
   font-weight: bold;
+}
+
+.cell,
+.header-cell {
+  overflow: hidden;
+  word-wrap: break-word;
+  text-align: left;
 }
 
 .cell,
@@ -62,6 +72,10 @@
   justify-content: flex-start;
   align-items: center;
   text-align: left;
+}
+
+.move-cell {
+  margin-left: 20px;
 }
 
 .playerApplication-detail {
