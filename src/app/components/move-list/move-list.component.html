@@ -48,7 +48,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
   </section>
   <section class="scrolling-region">
     <!-- existing moves -->
-    @for (item of displayedMoves; track item) {
+    @for (item of displayedMoves; track item.id) {
     <mat-expansion-panel [expanded]="editingId === item.id" disabled>
       <mat-expansion-panel-header class="row">
         <div class="cell flex-row-cell one-cell">

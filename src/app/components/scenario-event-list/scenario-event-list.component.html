@@ -152,7 +152,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </th>
           }
           <!-- Data Field headers -->
-          @for (df of headerDataFields; track df) {
+          @for (df of headerDataFields; track df.id) {
           @if (sortableDataTypes.includes(df.dataType)) {
           <th mat-sort-header="{{ df.name }}" class="background">
             <div [style]="getStyle(df)">{{ df.name }}</div>
@@ -280,7 +280,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </td>
           }
           @if (item.scenarioEventType === eventType.Inject) {
-          @for (df of rowDataFields(item); track df) {
+          @for (df of rowDataFields(item); track df.id) {
           <td>
             <app-data-value [value]="getDataValue(item, df.name).value"
               (valueChange)="saveDataValue(item, df.name, $event)" [dataField]="df"
@@ -297,7 +297,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           @if (item.scenarioEventType !== eventType.Inject) {
           <td colspan="99">
             <span style="margin-right: 30px;">{{ item.scenarioEventType }}:</span>
-            @for (df2 of rowDataFields(item); track df2) {
+            @for (df2 of rowDataFields(item); track df2.id) {
             <span style="margin-right: 30px;">
               <app-data-value [value]="getDataValue(item, df2.name).value"
                 (valueChange)="saveDataValue(item, df2.name, $event)" [dataField]="df2"

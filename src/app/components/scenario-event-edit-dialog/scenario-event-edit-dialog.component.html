@@ -80,7 +80,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </div>
           }
           <!-- data values for each data field -->
-          @for (df of getScenarioTypeDataFields(); track df) {
+          @for (df of getScenarioTypeDataFields(); track df.id) {
           <div class="full-width">
             <app-data-value [(value)]="getDataValue(df.name).value" [dataField]="df"
               [canEdit]="data.isEditor && (!data.isEditingRestricted || data.scenarioEvent.scenarioEventType === eventType.Information)"

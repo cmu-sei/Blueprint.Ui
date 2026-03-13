@@ -70,7 +70,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             </div>
           </th>
           }
-          @for (df of sortedDataFields; track df) {
+          @for (df of sortedDataFields; track df.id) {
           @if (sortableDataTypes.includes(df.dataType)) {
           <th mat-sort-header="{{ df.name }}" class="background">
             <div [style]="getStyle(df)">{{ df.name }}</div>
@@ -84,7 +84,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         </tr>
       </thead>
       <tbody>
-        @for (item of sortedScenarioEvents; track item; let rowIndex = $index) {
+        @for (item of sortedScenarioEvents; track item.id; let rowIndex = $index) {
         <tr class="move-group" [style]="getRowStyle(item)">
           <!-- row buttons -->
           <td class="center-self">
@@ -117,7 +117,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             </div>
           </td>
           }
-          @for (df of sortedDataFields; track df) {
+          @for (df of sortedDataFields; track df.id) {
           <!-- HTML -->
           @if (df.dataType.toString() === 'Html') {
           <td>
