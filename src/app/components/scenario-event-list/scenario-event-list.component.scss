@@ -132,3 +132,7 @@ td {
   margin-left: 10px;
   width: 300px;
 }
+
+::ng-deep .mat-mdc-select-panel {
+  min-width: 200px !important;
+}
