@@ -50,6 +50,10 @@ project root for license information.
           <ngx-mat-datetime-picker #picker [showSpinners]=true [showSeconds]=false [stepHour]=1 [stepMinute]=5
             [stepSecond]=1 [touchUi]=false [enableMeridian]=true [disableMinute]=false [hideTime]=false
             [color]="'warn'">
+            <ngx-mat-datepicker-actions>
+              <button mat-stroked-button ngxMatDatepickerApply>Save</button>
+              <button mat-stroked-button ngxMatDatepickerCancel>Cancel</button>
+            </ngx-mat-datepicker-actions>
           </ngx-mat-datetime-picker>
         </mat-form-field>
       </div>
