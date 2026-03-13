@@ -3,16 +3,23 @@
 // project root for license information or contact permission@sei.cmu.edu for full terms.
 
 .full-width {
-    width: 80%;
+    width: 90%;
 }
 
 .add-margin {
     margin-top: 8px;
     margin-bottom: 8px;
+    margin-right: 65px;
 }
 
-.save-button {
-  margin-right: 60%;
+.bottom-button {
+  margin-bottom: 10px;
+  margin-top: 10px;
+}
+
+.delete-button {
+  margin-top: 10px;
+  margin-right: 50px;
 }
 
 .close-button {

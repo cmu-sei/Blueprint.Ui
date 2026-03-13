@@ -10,28 +10,28 @@ project root for license information or contact permission@sei.cmu.edu for full 
       @if (canEditMsel || msel.hasRole(loggedInUserId, null).owner || msel.hasRole(loggedInUserId,
       null).moveEditor) {
       <button mat-icon-button (click)="addOrEditMove(null); $event.stopPropagation()"
-        style="outline: none; margin-right: 15px;" title="Add new move" [disabled]="isAddingMove">
-        <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle"></mat-icon>
+        class="header-button" style="margin-right: 15px;" title="Add new move" [disabled]="isAddingMove">
+        <mat-icon class="mdi-24px" fontIcon="mdi-plus-circle"></mat-icon>
       </button>
       }
       <span class="move-cell">Move</span>
     </span>
     <span style="width: 40px;">
       @if (!showRealTime) {
-      <button mat-icon-button (click)="showRealTime = true; $event.stopPropagation()" style="outline: none;"
+      <button mat-icon-button (click)="showRealTime = true; $event.stopPropagation()" class="header-button"
         title="Switch to Real Time" [disabled]="!msel || !msel.startTime || msel.startTime.valueOf() < 0">
         <mat-icon class="mdi-24px" fontIcon="mdi-timer-outline"></mat-icon>
       </button>
       }
       @if (showRealTime) {
-      <button mat-icon-button (click)="showRealTime = false; $event.stopPropagation()" style="outline: none;"
+      <button mat-icon-button (click)="showRealTime = false; $event.stopPropagation()" class="header-button"
         title="Switch to Delta Time">
         <mat-icon class="mdi-24px" fontIcon="mdi-clock-time-four-outline"></mat-icon>
       </button>
       }
     </span>
     <span class="header-cell one-cell" mat-sort-header="moveStartTime">
-      Start
+      Start Time
     </span>
     <span class="header-cell sit-time-cell" mat-sort-header="situationTime">Situation Time</span>
     <span class="header-cell two-cell" mat-sort-header="description">Description</span>
@@ -48,7 +48,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
   </section>
   <section class="scrolling-region">
     <!-- existing moves -->
-    @for (item of displayedMoves; track item) {
+    @for (item of displayedMoves; track item.id) {
     <mat-expansion-panel [expanded]="editingId === item.id" disabled>
       <mat-expansion-panel-header class="row">
         <div class="cell flex-row-cell one-cell">
@@ -56,14 +56,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
           null).moveEditor) {
           <button mat-icon-button class="move-button" (click)="addOrEditMove(item)"
             title="Edit Move {{ item.moveNumber }}">
-            <mat-icon class="mdi-18px up-12" fontIcon="mdi-square-edit-outline"></mat-icon>
+            <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline"></mat-icon>
           </button>
           }
           @if (canEditMsel || msel.hasRole(loggedInUserId, null).owner || msel.hasRole(loggedInUserId,
           null).moveEditor) {
-          <button mat-icon-button class="move-button" (click)="deleteMove(item)"
+          <button mat-icon-button class="move-button" style="margin-left: 5px;" (click)="deleteMove(item)"
             title="Delete Move {{ item.moveNumber }}">
-            <mat-icon class="mdi-18px up-12" fontIcon="mdi-trash-can-outline"></mat-icon>
+            <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline"></mat-icon>
           </button>
           }
           &nbsp;<span class="move-cell">{{ item.moveNumber }}</span>
@@ -73,7 +73,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <app-duration-view [startTime]="msel.startTime" [durationSeconds]="item.deltaSeconds"
             [showRealTime]="showRealTime"></app-duration-view>
         </div>
-        <div class="cell  sit-time-cell center-self">{{ item.situationTime | date: 'MM/dd/yyyy HH:mm' }}</div>
+        <div class="cell  sit-time-cell center-self">{{ item.situationTime | date: 'dd MMM yyyy HH:mm' }} {{ getTimezoneAbbr() }}</div>
         <div class="cell four-cell center-self">{{ item.description }}</div>
       </mat-expansion-panel-header>
     </mat-expansion-panel>

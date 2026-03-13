@@ -12,6 +12,7 @@ import {
 import { PlayerApplicationQuery } from 'src/app/data/player-application/player-application.query';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { PlayerApplicationTeamDataService } from 'src/app/data/team/player-application-team-data.service';
+import { TeamQuery } from 'src/app/data/team/team.query';
 
 @Component({
   selector: 'app-player-team-app-order',
@@ -28,11 +29,13 @@ export class PlayerTeamAppOrderComponent implements OnDestroy {
   playerApplicationTeamList: PlayerApplicationTeam[] = [];
   filterString = '';
   private allTeams: Team[] = [];
+  activeTeams: Team[] = [];
   private unsubscribe$ = new Subject();
 
   constructor(
     private playerApplicationQuery: PlayerApplicationQuery,
     private playerApplicationTeamDataService: PlayerApplicationTeamDataService,
+    private teamQuery: TeamQuery,
     public dialogService: DialogService,
   ) {
     this.playerApplicationTeamDataService.playerApplicationTeams
@@ -44,6 +47,14 @@ export class PlayerTeamAppOrderComponent implements OnDestroy {
     this.playerApplicationQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(playerApplications => {
       this.playerApplicationList = playerApplications;
     });
+    // subscribe to teams directly from the store
+    this.teamQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(teams => {
+      this.activeTeams = teams;
+    });
+  }
+
+  getActiveTeams(): Team[] {
+    return this.activeTeams;
   }
 
   trackByFn(index, item) {
@@ -56,7 +67,7 @@ export class PlayerTeamAppOrderComponent implements OnDestroy {
   }
 
   getTeamName(teamId: string): string {
-    const team = this.mselTeamList.find(m => m.id === teamId);
+    const team = this.activeTeams.find(m => m.id === teamId);
     return team ? team.shortName + ' - ' + team.name : '';
   }
 

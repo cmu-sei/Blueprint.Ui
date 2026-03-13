@@ -44,6 +44,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <mat-option value="Pending">Pending</mat-option>
           <mat-option value="Entered">Entered</mat-option>
           <mat-option value="Approved">Approved</mat-option>
+          <mat-option value="Deployed">Deployed</mat-option>
           <mat-option value="Completed">Completed</mat-option>
         </mat-select>
       </div>
@@ -103,7 +104,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 <mat-icon class="mdi-18px" fontIcon="mdi-upload" alt="Upload .xlsx file"></mat-icon>
               </button>
               <button mat-icon-button class="msel-action" (click)="delete(element); $event.stopPropagation();"
-                title="Delete {{ element.name }}" [disabled]="!isReady || !canManageMsel(element)">
+                title="Delete {{ element.name }}" [disabled]="!isReady || !canManageMsel(element) || element.status === 'Deployed'">
                 <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline" alt="Delete"></mat-icon>
               </button>
               <button mat-icon-button class="msel-action" (click)="copyMsel(element.id); $event.stopPropagation();"
@@ -149,7 +150,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <ng-container matColumnDef="dateCreated">
           <mat-header-cell *matHeaderCellDef mat-sort-header> Date Created </mat-header-cell>
           <mat-cell *matCellDef="let element">
-            <div class="description-text">{{ element.dateCreated | date }}</div>
+            <div class="description-text">{{ element.dateCreated | date: 'yyyy-MM-dd' }}</div>
           </mat-cell>
         </ng-container>
         <!-- dateModified Column -->
@@ -158,7 +159,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <mat-cell *matCellDef="let element">
             <div class="description-text">
               @if (isValidDate(element.dateModified)) {
-                {{ element.dateModified | date }}
+                {{ element.dateModified | date: 'yyyy-MM-dd' }}
               }
             </div>
           </mat-cell>

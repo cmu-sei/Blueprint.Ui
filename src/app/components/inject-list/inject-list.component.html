@@ -87,7 +87,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </mat-cell>
     </ng-container>
     <!-- datafield Columns -->
-    @for (df of getDisplayedDataFields(); track df) {
+    @for (df of getDisplayedDataFields(); track df.id) {
     <ng-container matColumnDef="{{ df.name }}">
       <mat-header-cell title="{{ df.name }}" *matHeaderCellDef>
         {{ df.name }}

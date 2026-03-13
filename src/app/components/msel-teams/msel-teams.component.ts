@@ -206,7 +206,7 @@ export class MselTeamsComponent implements OnDestroy, OnInit {
       minWidth: '400px',
       maxWidth: '90vw',
       width: 'auto',
-      height: '80%',
+      maxHeight: '80vh',
       data: {
         unitList: this.unitList
       },

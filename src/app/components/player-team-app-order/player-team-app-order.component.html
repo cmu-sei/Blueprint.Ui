@@ -7,7 +7,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
 <div class="frame">
   <div class="scrolling-region">
     <div class="full-width">
-      @for (team of mselTeamList; track team.id) {
+      @for (team of getActiveTeams(); track team.id) {
       <mat-expansion-panel (opened)="editTeamId = team.id" (closed)="editTeamId = ''">
         <mat-expansion-panel-header (click)="$event.stopPropagation();">
           <div class="full-width center-self">{{ team.shortName }} - {{ team.name }}</div>

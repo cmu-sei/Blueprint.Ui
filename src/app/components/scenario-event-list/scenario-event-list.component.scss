@@ -82,9 +82,9 @@ td {
 }
 
 .row-start-buttons {
-  width: 180px;
+  min-width: 180px;
   display: flex;
-  flex: 1;
+  flex-shrink: 0;
 }
 
 .order-header {
@@ -106,14 +106,25 @@ td {
   width: 30px !important;
   height: 30px !important;
   align-self: center !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+}
+
+.header-button {
+  width: 30px !important;
+  height: 30px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+  outline: none !important;
+  align-self: center !important;
 }
 
 .header-dropdown {
   width: calc(100% - 10px);
-}
-
-.up-12 {
-  margin-top: -18px;
 }
 
 .color-option-button {
@@ -131,4 +142,15 @@ td {
 .shift-left {
   margin-left: 10px;
   width: 300px;
+}
+
+::ng-deep .mat-mdc-select-panel {
+  min-width: 200px !important;
+}
+
+.timezone-hint {
+  font-size: 11px;
+  font-style: italic;
+  opacity: 0.8;
+  margin-left: 8px;
 }

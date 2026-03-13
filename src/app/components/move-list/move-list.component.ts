@@ -178,8 +178,17 @@ export class MoveListComponent implements OnDestroy {
       case 'deltaSeconds':
         return (a.deltaSeconds < b.deltaSeconds ? -1 : 1) * (isAsc ? 1 : -1);
         break;
+      case 'moveStartTime':
+        return (a.moveStartTime < b.moveStartTime ? -1 : 1) * (isAsc ? 1 : -1);
+        break;
       case 'situationTime':
         return (a.situationTime < b.situationTime ? -1 : 1) * (isAsc ? 1 : -1);
+        break;
+      case 'description':
+        return (
+          (a.description < b.description ? -1 : 1) *
+          (isAsc ? 1 : -1)
+        );
         break;
       case 'situationDescription':
         return (
@@ -224,6 +233,21 @@ export class MoveListComponent implements OnDestroy {
       deltaSeconds = orderedMoves[index].deltaSeconds;
     }
     return false;
+  }
+
+  getTimezoneAbbr(): string {
+    try {
+      const date = new Date();
+      const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+      const formatted = date.toLocaleTimeString('en-US', {
+        timeZoneName: 'short',
+        timeZone
+      });
+      const parts = formatted.split(' ');
+      return parts[parts.length - 1] || 'UTC';
+    } catch (error) {
+      return 'UTC';
+    }
   }
 
   ngOnDestroy() {
