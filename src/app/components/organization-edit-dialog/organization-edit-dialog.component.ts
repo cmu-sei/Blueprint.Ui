@@ -44,7 +44,7 @@ export class OrganizationEditDialogComponent {
   );
   public organizationEmailFormControl = new UntypedFormControl(
     this.data.organization.email,
-    [Validators.required]
+    this.data.emailEnabled ? [Validators.required] : []
   );
   public descriptionFormControl = new UntypedFormControl(
     this.data.organization.description,
@@ -91,13 +91,16 @@ export class OrganizationEditDialogComponent {
   }
 
   errorFree() {
+    const emailError = this.data.emailEnabled && (
+      this.organizationEmailFormControl.hasError('required') ||
+      this.organizationEmailFormControl.hasError('minlength')
+    );
     return !(
       this.organizationNameFormControl.hasError('required') ||
       this.organizationNameFormControl.hasError('minlength') ||
       this.organizationShortNameFormControl.hasError('required') ||
       this.organizationShortNameFormControl.hasError('minlength') ||
-      this.organizationEmailFormControl.hasError('required') ||
-      this.organizationEmailFormControl.hasError('minlength') ||
+      emailError ||
       this.summaryFormControl.hasError('required') ||
       this.summaryFormControl.hasError('minlength')
     );

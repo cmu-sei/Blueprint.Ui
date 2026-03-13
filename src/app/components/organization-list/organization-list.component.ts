@@ -133,6 +133,7 @@ export class OrganizationListComponent implements OnDestroy, OnInit {
       data: {
         organization: organization,
         title: dialogTitle,
+        emailEnabled: makeTemplate || !this.msel ? true : this.msel.emailEnabled,
       },
     });
     dialogRef.componentInstance.editComplete.subscribe((result) => {
