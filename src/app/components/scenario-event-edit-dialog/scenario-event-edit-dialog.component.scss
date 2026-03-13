@@ -2,16 +2,18 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-.mat-mdc-dialog-container {
-  height: 100vh;
+::ng-deep .mat-mdc-dialog-container {
+  height: auto !important;
+  max-height: 90vh !important;
 }
 
 .mat-mdc-dialog-title {
-  height: 50px;
+  min-height: 50px;
 }
 
 .mat-mdc-dialog-content {
-  height: 100vh;
+  max-height: calc(90vh - 150px) !important;
+  overflow-y: auto !important;
 }
 
 .mat-mdc-dialog-actions {
