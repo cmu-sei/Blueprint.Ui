@@ -3,92 +3,109 @@ Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
+
+<mat-menu #addMenu="matMenu" [overlapTrigger]="false">
+  <button mat-menu-item (click)="addOrEditPlayerApplication(null, 'Add a Player Application')"
+    title="Add a new player application">New Player
+    Application</button>
+  @for (template of templateList; track template) {
+  <button mat-menu-item (click)="addOrEditPlayerApplication(template, 'Add a Player Application')"
+    title="{{ template.url }}">{{ template.name
+    }}</button>
+  }
+</mat-menu>
+
 @if (msel) {
 <div class="frame">
-  <section matSort (matSortChange)="sortChanged($event)" class="header-row elevate background-alt">
-    <span class="header-cell first-cell" mat-sort-header="name">
-      @if (canEditMsel() || msel.hasRole(loggedInUserId, null).owner) {
-      <span>
-        <button mat-icon-button [matMenuTriggerFor]="addMenu"
-          style="outline: none; margin-left: 18px; margin-right: 24px;" title="Add Player Application"
-          (click)="$event.stopPropagation();">
-          <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle"></mat-icon>
-        </button>
-      </span>
-      } &nbsp;
-      <mat-menu #addMenu="matMenu" [overlapTrigger]="false">
-        <button mat-menu-item (click)="addOrEditPlayerApplication(null, 'Add a Player Application')"
-          title="Add a new player application">New Player
-          Application</button>
-        @for (template of templateList; track template) {
-        <button mat-menu-item (click)="addOrEditPlayerApplication(template, 'Add a Player Application')"
-          title="{{ template.url }}">{{ template.name
-          }}</button>
-        }
-      </mat-menu>
-      <span>Name</span>
-    </span>
-    <span class="header-cell three-cell" mat-sort-header="url">URL</span>
-    <span class="header-cell three-cell search-cell">
-      <mat-form-field class="search-control">
-        <input matInput [formControl]="filterControl" placeholder="Search" />
-        @if (filterControl.value) {
-        <button mat-icon-button matSuffix (click)="filterControl.setValue(''); $event.stopPropagation()" title="Clear Search">
-          <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline"></mat-icon>
-        </button>
-        }
-      </mat-form-field>
-    </span>
-  </section>
-  <section class="scrolling-region">
-    <!-- existing playerApplications -->
-    @for (item of sortedPlayerApplications; track item.id) {
-    <mat-expansion-panel [expanded]="expandedId === item.id">
-      <mat-expansion-panel-header class="row" (click)="expandPlayerApplication(item.id); $event.stopPropagation();">
-        <div class="cell flex-row-cell first-cell">
+  <div class="table-container">
+    <table mat-table #appTable [dataSource]="appDataSource" matSort (matSortChange)="sortChanged($event)" multiTemplateDataRows>
+      <!-- action column -->
+      <ng-container matColumnDef="action">
+        <th mat-header-cell *matHeaderCellDef class="column-action">
           @if (canEditMsel() || msel.hasRole(loggedInUserId, null).owner) {
-          <button mat-icon-button class="playerApplication-button"
-            (click)="addOrEditPlayerApplication(item, 'Edit Player Application'); $event.stopPropagation()"
-            title="Edit {{ item.name }}">
-            <mat-icon class="mdi-18px up-12" fontIcon="mdi-square-edit-outline"></mat-icon>
+          <button mat-icon-button [matMenuTriggerFor]="addMenu"
+            style="outline: none;" title="Add Player Application"
+            (click)="$event.stopPropagation();">
+            <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle"></mat-icon>
+          </button>
+          }
+        </th>
+        <td mat-cell *matCellDef="let element" class="column-action">
+          @if (canEditMsel() || msel.hasRole(loggedInUserId, null).owner) {
+          <button mat-icon-button
+            (click)="addOrEditPlayerApplication(element, 'Edit Player Application'); $event.stopPropagation()"
+            title="Edit {{ element.name }}">
+            <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline"></mat-icon>
           </button>
           }
           @if (canEditMsel() || msel.hasRole(loggedInUserId, null).owner) {
-          <button mat-icon-button class="playerApplication-button"
-            (click)="deletePlayerApplication(item); $event.stopPropagation()" title="Delete {{ item.name }}">
-            <mat-icon class="mdi-18px up-12" fontIcon="mdi-trash-can-outline"></mat-icon>
+          <button mat-icon-button
+            (click)="deletePlayerApplication(element); $event.stopPropagation()" title="Delete {{ element.name }}">
+            <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline"></mat-icon>
           </button>
           }
-          <span class="move-cell">{{ item.name }}</span>
-        </div>
-        <div class="cell three-cell center-self">{{ item.url }}</div>
-      </mat-expansion-panel-header>
-      <ng-template matExpansionPanelContent>
-        <div class="playerApplication-detail" (click)="$event.stopPropagation();">
-          <div class="single-detail">
-            <span class="title">Select the MSEL teams that will see this application</span>
+        </td>
+      </ng-container>
+      <!-- name column -->
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header class="column-name">Name</th>
+        <td mat-cell *matCellDef="let element" class="column-name">{{ element.name }}</td>
+      </ng-container>
+      <!-- url column -->
+      <ng-container matColumnDef="url">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header class="column-url">URL</th>
+        <td mat-cell *matCellDef="let element" class="column-url">{{ element.url }}</td>
+      </ng-container>
+      <!-- search column -->
+      <ng-container matColumnDef="search">
+        <th mat-header-cell *matHeaderCellDef class="column-search">
+          <mat-form-field class="search-control">
+            <input matInput [formControl]="filterControl" placeholder="Search" />
+            @if (filterControl.value) {
+            <button mat-icon-button matSuffix (click)="filterControl.setValue(''); $event.stopPropagation()" title="Clear Search">
+              <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline"></mat-icon>
+            </button>
+            }
+          </mat-form-field>
+        </th>
+        <td mat-cell *matCellDef="let element" class="column-search"></td>
+      </ng-container>
+      <!-- Expanded Content Column -->
+      <ng-container matColumnDef="expandedDetail">
+        <td mat-cell *matCellDef="let element" [attr.colspan]="displayedColumns.length">
+          @if (expandedId === element.id) {
+          <div class="expanded-detail-div" (click)="$event.stopPropagation();">
+            <div class="single-detail">
+              <span class="title">Select the MSEL teams that will see this application</span>
+            </div>
+            <div class="single-detail">
+              <app-player-application-teams style="width: 100%;" [loggedInUserId]="loggedInUserId"
+                [playerApplicationId]="element.id" [mselTeamList]="mselTeamList">
+              </app-player-application-teams>
+            </div>
           </div>
-          <div class="single-detail">
-            <app-player-application-teams style="width: 100%;" [loggedInUserId]="loggedInUserId"
-              [playerApplicationId]="item.id" [mselTeamList]="mselTeamList">
-            </app-player-application-teams>
-          </div>
-        </div>
-      </ng-template>
-    </mat-expansion-panel>
-    }
-    <mat-expansion-panel>
-      <mat-expansion-panel-header class="row">
-        <h4>Team Application Order</h4>
-      </mat-expansion-panel-header>
-      <div class="playerApplication-detail" (click)="$event.stopPropagation();">
-        <div class="single-detail">
-          <app-player-team-app-order style="width: 100%;" [mselTeamList]="mselTeamList"
-            [canEdit]="canEditMsel() || msel.hasRole(loggedInUserId, null).owner">
-          </app-player-team-app-order>
-        </div>
+          }
+        </td>
+      </ng-container>
+      <!-- row definitions -->
+      <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;" [class]="getRowClass(row.id)"
+        (click)="rowClicked(row)"></tr>
+      <tr mat-row *matRowDef="let row; columns: ['expandedDetail']; when: isExpansionDetailRow"
+        [@detailExpand]="row.id == expandedId ? 'expanded' : 'collapsed'" style="overflow: hidden"></tr>
+    </table>
+  </div>
+  <mat-expansion-panel>
+    <mat-expansion-panel-header class="team-app-order-header">
+      <h4>Team Application Order</h4>
+    </mat-expansion-panel-header>
+    <div class="playerApplication-detail" (click)="$event.stopPropagation();">
+      <div class="single-detail">
+        <app-player-team-app-order style="width: 100%;" [mselTeamList]="mselTeamList"
+          [canEdit]="canEditMsel() || msel.hasRole(loggedInUserId, null).owner">
+        </app-player-team-app-order>
       </div>
-    </mat-expansion-panel>
-  </section>
+    </div>
+  </mat-expansion-panel>
 </div>
 }

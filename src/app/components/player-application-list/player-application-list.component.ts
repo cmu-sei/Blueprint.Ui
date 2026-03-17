@@ -19,17 +19,27 @@ import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { PlayerApplicationEditDialogComponent } from '../player-application-edit-dialog/player-application-edit-dialog.component';
 import { PlayerService } from 'src/app/generated/blueprint.api';
 import { v4 as uuidv4 } from 'uuid';
+import { MatTable, MatTableDataSource } from '@angular/material/table';
+import { animate, state, style, transition, trigger } from '@angular/animations';
 
 @Component({
   selector: 'app-player-application-list',
   templateUrl: './player-application-list.component.html',
   styleUrls: ['./player-application-list.component.scss'],
+  animations: [
+    trigger('detailExpand', [
+      state('collapsed', style({ height: '0px', minHeight: '0', visibility: 'hidden' })),
+      state('expanded', style({ height: '*', visibility: 'visible' })),
+      transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
+    ]),
+  ],
   standalone: false
 })
 export class PlayerApplicationListComponent implements OnDestroy, OnInit {
   @Input() loggedInUserId: string;
   // context menu
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
+  @ViewChild('appTable', { static: false }) appTable: MatTable<any>;
   msel = new MselPlus();
   mselTeamList: Team[] = [];
   templateList: PlayerApplication[] = [];
@@ -39,7 +49,10 @@ export class PlayerApplicationListComponent implements OnDestroy, OnInit {
   filterString = '';
   sort: Sort = { active: '', direction: '' };
   sortedPlayerApplications: PlayerApplication[] = [];
+  appDataSource = new MatTableDataSource<PlayerApplication>(new Array<PlayerApplication>());
+  displayedColumns: string[] = ['action', 'name', 'url', 'search'];
   expandedId = '';
+  isExpansionDetailRow = (i: number, row: Object) => (row as PlayerApplication).id === this.expandedId;
   contextMenuPosition = { x: '0px', y: '0px' };
   moveList: Move[] = [];
   private unsubscribe$ = new Subject();
@@ -111,6 +124,17 @@ export class PlayerApplicationListComponent implements OnDestroy, OnInit {
     } else {
       this.expandedId = playerApplicationId;
     }
+  }
+
+  rowClicked(row: PlayerApplication) {
+    this.expandPlayerApplication(row.id);
+    this.appTable.renderRows();
+  }
+
+  getRowClass(id: string) {
+    return this.expandedId === id
+      ? 'element-row element-row-expanded'
+      : 'element-row element-row-not-expanded';
   }
 
   addOrEditPlayerApplication(playerApplication: PlayerApplication, dialogTitle: string) {
@@ -223,6 +247,7 @@ export class PlayerApplicationListComponent implements OnDestroy, OnInit {
           break;
       }
     }
+    this.appDataSource.data = playerApplications || [];
     return playerApplications;
   }
 

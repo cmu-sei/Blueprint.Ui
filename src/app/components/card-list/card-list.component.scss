@@ -62,15 +62,8 @@ table {
 }
 
 .column-description {
-  flex: 0 0 calc(75% - 240px);
+  flex: 0 0 calc(75% - 180px);
   padding: 2px;
-}
-
-.column-expand {
-  flex: 0 0 60px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
 }
 
 .expanded-detail-div {

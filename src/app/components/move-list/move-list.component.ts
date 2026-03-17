@@ -3,6 +3,7 @@
 // project root for license information.
 import { Component, Input, OnDestroy, ViewChild } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
+import { MatTableDataSource } from '@angular/material/table';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { Move } from 'src/app/generated/blueprint.api';
@@ -34,6 +35,8 @@ export class MoveListComponent implements OnDestroy {
   filterString = '';
   sort: Sort = { active: 'moveNumber', direction: 'asc' };
   displayedMoves: Move[] = [];
+  moveDataSource = new MatTableDataSource<Move>(new Array<Move>());
+  displayedColumns: string[] = ['action', 'moveNumber', 'timeToggle', 'moveStartTime', 'situationTime', 'description'];
   isAddingMove = false;
   editingId = '';
   showRealTime = false;
@@ -95,6 +98,7 @@ export class MoveListComponent implements OnDestroy {
         this.sortMoves(a, b, this.sort.active, this.sort.direction)
       );
     }
+    this.moveDataSource.data = moves || [];
     return moves;
   }
 
@@ -167,6 +171,7 @@ export class MoveListComponent implements OnDestroy {
     this.displayedMoves = this.displayedMoves.sort((a, b) =>
       this.sortMoves(a, b, sort.active, sort.direction)
     );
+    this.moveDataSource.data = this.displayedMoves;
   }
 
   private sortMoves(a: Move, b: Move, column: string, direction: string) {

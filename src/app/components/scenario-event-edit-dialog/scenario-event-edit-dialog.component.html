@@ -79,7 +79,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </div>
           }
           <!-- data values for each data field -->
-          @for (df of getScenarioTypeDataFields(); track df.id) {
+          @for (df of getScenarioTypeDataFields(); track df) {
           <div class="full-width">
             <app-data-value [(value)]="getDataValue(df.name).value" [dataField]="df"
               [canEdit]="data.isEditor && (!data.isEditingRestricted || data.scenarioEvent.scenarioEventType === eventType.Information)"
@@ -93,8 +93,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           @if (currentFilterBy === 'all' && data.scenarioEvent.scenarioEventType === eventType.Inject) {
           <div class="full-width">
             <mat-form-field class="full-width">
-              <mat-label>Row Metadata (height,red,green,blue)</mat-label>
-              <input type="text" matInput placeholder="e.g., 15,255,200,100" [(ngModel)]="data.scenarioEvent.rowMetadata" />
+              <input type="text" matInput placeholder="row metadata" [(ngModel)]="data.scenarioEvent.rowMetadata" />
             </mat-form-field>
           </div>
           }

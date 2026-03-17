@@ -5,84 +5,98 @@ project root for license information or contact permission@sei.cmu.edu for full 
 -->
 @if (msel) {
 <div class="frame">
-  <section matSort (matSortChange)="sortChanged($event)" class="header-row elevate">
-    <span class="header-cell one-cell" mat-sort-header="moveNumber">
-      @if (canEditMsel || msel.hasRole(loggedInUserId, null).owner || msel.hasRole(loggedInUserId,
-      null).moveEditor) {
-      <button mat-icon-button (click)="addOrEditMove(null); $event.stopPropagation()"
-        class="header-button" style="margin-right: 15px;" title="Add new move" [disabled]="isAddingMove">
-        <mat-icon class="mdi-24px" fontIcon="mdi-plus-circle"></mat-icon>
-      </button>
-      }
-      <span class="move-cell">Move</span>
-    </span>
-    <span style="width: 40px;">
-      @if (!showRealTime) {
-      <button mat-icon-button (click)="showRealTime = true; $event.stopPropagation()" class="header-button"
-        title="Switch to Real Time" [disabled]="!msel || !msel.startTime || msel.startTime.valueOf() < 0">
-        <mat-icon class="mdi-24px" fontIcon="mdi-timer-outline"></mat-icon>
-      </button>
-      }
-      @if (showRealTime) {
-      <button mat-icon-button (click)="showRealTime = false; $event.stopPropagation()" class="header-button"
-        title="Switch to Delta Time">
-        <mat-icon class="mdi-24px" fontIcon="mdi-clock-time-four-outline"></mat-icon>
-      </button>
-      }
-    </span>
-    <span class="header-cell one-cell" mat-sort-header="moveStartTime">
-      Start Time
-    </span>
-    <span class="header-cell sit-time-cell" mat-sort-header="situationTime">Situation Time</span>
-    <span class="header-cell two-cell" mat-sort-header="description">Description</span>
-    <span class="header-cell two-cell search-cell">
-      <mat-form-field class="search-control">
-        <input matInput [formControl]="filterControl" placeholder="Search" />
-        @if (filterControl.value) {
-        <button mat-icon-button matSuffix (click)="filterControl.setValue(''); $event.stopPropagation()" title="Clear Search">
-          <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline"></mat-icon>
-        </button>
-        }
-      </mat-form-field>
-    </span>
-  </section>
-  <section class="scrolling-region">
-    <!-- existing moves -->
-    @for (item of displayedMoves; track item.id) {
-    <mat-expansion-panel [expanded]="editingId === item.id" disabled>
-      <mat-expansion-panel-header class="row">
-        <div class="cell flex-row-cell one-cell">
+  <div class="table-container">
+    <table mat-table [dataSource]="moveDataSource" matSort (matSortChange)="sortChanged($event)">
+      <!-- action column -->
+      <ng-container matColumnDef="action">
+        <th mat-header-cell *matHeaderCellDef class="column-action">
           @if (canEditMsel || msel.hasRole(loggedInUserId, null).owner || msel.hasRole(loggedInUserId,
           null).moveEditor) {
-          <button mat-icon-button class="move-button" (click)="addOrEditMove(item)"
-            title="Edit Move {{ item.moveNumber }}">
+          <button mat-icon-button (click)="addOrEditMove(null); $event.stopPropagation()"
+            style="outline: none;" title="Add new move" [disabled]="isAddingMove">
+            <mat-icon class="mdi-24px" fontIcon="mdi-plus-circle"></mat-icon>
+          </button>
+          }
+        </th>
+        <td mat-cell *matCellDef="let element" class="column-action">
+          @if (canEditMsel || msel.hasRole(loggedInUserId, null).owner || msel.hasRole(loggedInUserId,
+          null).moveEditor) {
+          <button mat-icon-button (click)="addOrEditMove(element); $event.stopPropagation()"
+            title="Edit Move {{ element.moveNumber }}">
             <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline"></mat-icon>
           </button>
           }
           @if (canEditMsel || msel.hasRole(loggedInUserId, null).owner || msel.hasRole(loggedInUserId,
           null).moveEditor) {
-          <button mat-icon-button class="move-button" style="margin-left: 5px;" (click)="deleteMove(item)"
-            title="Delete Move {{ item.moveNumber }}">
+          <button mat-icon-button (click)="deleteMove(element); $event.stopPropagation()"
+            title="Delete Move {{ element.moveNumber }}">
             <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline"></mat-icon>
           </button>
           }
-          &nbsp;<span class="move-cell">{{ item.moveNumber }}</span>
-        </div>
-        <span style="width: 40px;">&nbsp;</span>
-        <div class="cell one-cell center-self">
-          <app-duration-view [startTime]="msel.startTime" [durationSeconds]="item.deltaSeconds"
+        </td>
+      </ng-container>
+      <!-- moveNumber column -->
+      <ng-container matColumnDef="moveNumber">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header class="column-move-number">Move</th>
+        <td mat-cell *matCellDef="let element" class="column-move-number">{{ element.moveNumber }}</td>
+      </ng-container>
+      <!-- time toggle column -->
+      <ng-container matColumnDef="timeToggle">
+        <th mat-header-cell *matHeaderCellDef class="column-time-toggle">
+          @if (!showRealTime) {
+          <button mat-icon-button (click)="showRealTime = true; $event.stopPropagation()"
+            title="Switch to Real Time" [disabled]="!msel || !msel.startTime || msel.startTime.valueOf() < 0">
+            <mat-icon class="mdi-24px" fontIcon="mdi-timer-outline"></mat-icon>
+          </button>
+          }
+          @if (showRealTime) {
+          <button mat-icon-button (click)="showRealTime = false; $event.stopPropagation()"
+            title="Switch to Delta Time">
+            <mat-icon class="mdi-24px" fontIcon="mdi-clock-time-four-outline"></mat-icon>
+          </button>
+          }
+        </th>
+        <td mat-cell *matCellDef="let element" class="column-time-toggle">&nbsp;</td>
+      </ng-container>
+      <!-- startTime column -->
+      <ng-container matColumnDef="moveStartTime">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header class="column-start-time">Start Time</th>
+        <td mat-cell *matCellDef="let element" class="column-start-time">
+          <app-duration-view [startTime]="msel.startTime" [durationSeconds]="element.deltaSeconds"
             [showRealTime]="showRealTime"></app-duration-view>
-        </div>
-        <div class="cell  sit-time-cell center-self">{{ item.situationTime | date: 'dd MMM yyyy HH:mm' }} {{ getTimezoneAbbr() }}</div>
-        <div class="cell four-cell center-self">{{ item.description }}</div>
-      </mat-expansion-panel-header>
-    </mat-expansion-panel>
-    }
-    @if (badMoveTimeOrder()) {
-    <div class="warning-message">
-      ** The moves are not in ascending start time order!
-    </div>
-    }
-  </section>
+        </td>
+      </ng-container>
+      <!-- situationTime column -->
+      <ng-container matColumnDef="situationTime">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header class="column-sit-time">Situation Time</th>
+        <td mat-cell *matCellDef="let element" class="column-sit-time">
+          {{ element.situationTime | date: 'dd MMM yyyy HH:mm' }} {{ getTimezoneAbbr() }}
+        </td>
+      </ng-container>
+      <!-- description column -->
+      <ng-container matColumnDef="description">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header class="column-description">
+          Description
+          <mat-form-field class="search-control" (click)="$event.stopPropagation()">
+            <input matInput [formControl]="filterControl" placeholder="Search" />
+            @if (filterControl.value) {
+            <button mat-icon-button matSuffix (click)="filterControl.setValue(''); $event.stopPropagation()" title="Clear Search">
+              <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline"></mat-icon>
+            </button>
+            }
+          </mat-form-field>
+        </th>
+        <td mat-cell *matCellDef="let element" class="column-description">{{ element.description }}</td>
+      </ng-container>
+      <!-- row definitions -->
+      <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+  </div>
+  @if (badMoveTimeOrder()) {
+  <div class="warning-message">
+    ** The moves are not in ascending start time order!
+  </div>
+  }
 </div>
 }

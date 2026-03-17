@@ -27,11 +27,20 @@ import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { TeamAddDialogComponent } from '../team-add-dialog/team-add-dialog.component';
 import { TeamEditDialogComponent } from '../team-edit-dialog/team-edit-dialog.component';
 import { UnitQuery } from 'src/app/data/unit/unit.query';
+import { MatTable, MatTableDataSource } from '@angular/material/table';
+import { animate, state, style, transition, trigger } from '@angular/animations';
 
 @Component({
     selector: 'app-msel-teams',
     templateUrl: './msel-teams.component.html',
     styleUrls: ['./msel-teams.component.scss'],
+    animations: [
+      trigger('detailExpand', [
+        state('collapsed', style({ height: '0px', minHeight: '0', visibility: 'hidden' })),
+        state('expanded', style({ height: '*', visibility: 'visible' })),
+        transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
+      ]),
+    ],
     standalone: false
 })
 export class MselTeamsComponent implements OnDestroy, OnInit {
@@ -39,6 +48,7 @@ export class MselTeamsComponent implements OnDestroy, OnInit {
   @Input() teamTypeList: TeamType[];
   // context menu
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
+  @ViewChild('teamTable', { static: false }) teamTable: MatTable<any>;
   contextMenuPosition = { x: '0px', y: '0px' };
   msel = new MselPlus();
   originalMsel = new MselPlus();
@@ -51,6 +61,10 @@ export class MselTeamsComponent implements OnDestroy, OnInit {
   teamList: Team[] = [];
   unitList: Unit[] = [];
   filterString = '';
+  teamDataSource = new MatTableDataSource<Team>(new Array<Team>());
+  displayedColumns: string[] = ['action', 'name', 'email', 'teamType', 'invitation', 'search'];
+  expandedElementId = '';
+  isExpansionDetailRow = (i: number, row: Object) => (row as Team).id === this.expandedElementId;
   private allTeams: Team[] = [];
   private unsubscribe$ = new Subject();
 
@@ -73,6 +87,7 @@ export class MselTeamsComponent implements OnDestroy, OnInit {
         Object.assign(this.originalMsel, msel);
         Object.assign(this.msel, msel);
         this.teamList = this.allTeams.filter(t => t.mselId === this.msel.id);
+        this.teamDataSource.data = this.teamList;
       }
     });
     // subscribe to users
@@ -84,6 +99,7 @@ export class MselTeamsComponent implements OnDestroy, OnInit {
       if (teams && teams.length > 0) {
         this.allTeams = teams.sort((a, b) => a.shortName?.toLowerCase() > b.shortName?.toLowerCase() ? 1 : -1);
         this.teamList = this.allTeams.filter(t => t.mselId === this.msel.id);
+        this.teamDataSource.data = this.teamList;
       }
     });
     // subscribe to TeamTypes
@@ -239,12 +255,28 @@ export class MselTeamsComponent implements OnDestroy, OnInit {
 
   applyFilter(filterValue: string) {
     this.filterString = filterValue;
-    filterValue = filterValue.toLowerCase(); // MatTableDataSource defaults to lowercase matches
+    filterValue = filterValue.toLowerCase();
     this.teamList = this.allTeams
       .filter(team =>
         team.mselId === this.msel.id &&
         (team.name.toLowerCase().indexOf(filterValue) >= 0 ||
           team.shortName.toLowerCase().indexOf(filterValue) >= 0));
+    this.teamDataSource.data = this.teamList;
+  }
+
+  rowClicked(row: Team) {
+    if (this.expandedElementId === row.id) {
+      this.expandedElementId = '';
+    } else {
+      this.expandedElementId = row.id;
+    }
+    this.teamTable.renderRows();
+  }
+
+  getRowClass(id: string) {
+    return this.expandedElementId === id
+      ? 'element-row element-row-expanded'
+      : 'element-row element-row-not-expanded';
   }
 
   ngOnDestroy() {

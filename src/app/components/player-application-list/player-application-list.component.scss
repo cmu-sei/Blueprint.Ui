@@ -5,77 +5,100 @@
 @use "@angular/material" as mat;
 
 :host {
-  @include mat.form-field-density(-5); // Adjust -3 for this specific form field
+  @include mat.form-field-density(-5);
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 60px);
 }
 
 .frame {
   display: flex;
   flex-direction: column;
   flex: 1;
-  height: calc(100vh - 60px);
+  min-height: 0;
 }
 
-.header-row {
-  min-height: 40px;
-  padding-left: 30px;
-  padding-right: 50px;
-  background: transparent;
+.table-container {
+  flex: 1;
+  overflow: auto;
+  padding-bottom: 20px;
+  min-height: 200px;
 }
 
-.row {
-  height: 36px;
+table {
+  width: 100%;
 }
 
-.row,
-.header-row {
+.element-row {
+  cursor: pointer;
+}
+
+.element-row:hover {
+  background-color: var(--mat-sys-surface-variant);
+}
+
+.element-row-not-expanded {}
+
+.element-row-expanded {
+  border-bottom-color: transparent;
+}
+
+::ng-deep tr.element-row-expanded,
+::ng-deep .mat-mdc-row.element-row-expanded,
+::ng-deep .mdc-data-table__row.element-row-expanded {
+  border-bottom-style: none !important;
+  border-bottom-width: 0 !important;
+  border-bottom-color: transparent !important;
+}
+
+::ng-deep tr.element-row-expanded .mat-mdc-cell,
+::ng-deep tr.element-row-expanded .mdc-data-table__cell {
+  border-bottom: none !important;
+}
+
+.column-action {
+  flex: 0 0 120px;
+  width: 120px;
+}
+
+.column-name {
+  flex: 3;
+  min-width: 150px;
+}
+
+.column-url {
+  flex: 3;
+  min-width: 0;
+}
+
+.column-search {
+  flex: 3;
+  min-width: 0;
+}
+
+.search-control {
+  width: calc(100% - 32px);
+}
+
+.expanded-detail-div {
   display: flex;
-  border-bottom-width: 1px;
-  border-bottom-style: solid;
-  align-items: center;
-  box-sizing: border-box;
-  background: transparent;
-  font-weight: 400;
-  color: var(--mat-sys-on-background) !important;
+  flex-direction: column;
+  width: 90%;
+  margin: 8px auto;
 }
 
-.header-cell {
-  font-weight: bold;
-}
-
-.cell,
-.header-cell {
-  overflow: hidden;
-  word-wrap: break-word;
-  text-align: left;
-}
-
-.cell,
-.header-cell {
-  overflow: hidden;
-  word-wrap: break-word;
-  text-align: left;
-}
-
-.mat-accordion .header-row {
-  padding-left: 1.5rem;
-  padding-right: 2rem;
-  border-bottom: none;
-}
-
-.mat-expansion-panel-header.row {
-  border-bottom: none;
-}
-
-.flex-row-cell {
+.single-detail {
   display: flex;
   flex-flow: row;
-  justify-content: flex-start;
-  align-items: center;
-  text-align: left;
+  align-items: flex-start;
+  width: 100%;
 }
 
-.move-cell {
-  margin-left: 20px;
+.title {
+  margin-left: 5%;
+  margin-top: 5px;
+  margin-bottom: 15px;
+  font-weight: 400;
 }
 
 .playerApplication-detail {
@@ -86,134 +109,16 @@
   align-items: center;
 }
 
-.team-label {
+::ng-deep .frame > mat-expansion-panel {
+  flex-shrink: 1;
+  min-height: 0;
   display: flex;
-  flex-flow: column;
-  justify-content: flex-start;
-  align-items: flex-start;
-  text-align: left;
+  flex-direction: column;
 }
 
-.data-options {
-  display: flex;
-  flex: 7;
-  flex-flow: column;
-  align-items: flex-start;
-  text-align: left;
-  ;
-}
-
-.data-option {
-  display: flex;
-  flex-flow: row;
-}
-
-.search-cell {
-  display: flex;
-  flex-flow: row;
-}
-
-.search-control {
-  width: calc(100% - 32px);
-}
-
-.single-detail {
-  display: flex;
-  flex: 10;
-  flex-flow: row;
-  align-items: flex-start;
-  width: 90%;
-}
-
-.partial-detail {
-  display: flex;
-  flex: 3;
-}
-
-.more-or-less {
-  padding-right: 40%;
-}
-
-.edit-buttons {
-  display: flex;
-  flex-flow: row;
-  align-items: flex-start;
-  padding-left: 12%;
-}
-
-.full-width {
-  width: 100%;
-}
-
-.scrolling-region {
-  height: calc(100vh - 89px);
+::ng-deep .frame > mat-expansion-panel .mat-expansion-panel-content {
   overflow: auto;
+  flex: 1;
+  min-height: 0;
 }
 
-.scrolling-details {
-  max-height: calc(100vh - 293px);
-  overflow: auto;
-}
-
-textarea {
-  border: 1px solid;
-  padding: 16px !important;
-  box-sizing: border-box;
-}
-
-.playerApplication-button {
-  width: 30px;
-  height: 30px;
-  align-self: center;
-}
-
-.up-12 {
-  margin-top: -12px;
-}
-
-.copy-icon {
-  margin-top: -8px;
-}
-
-.button-end {
-  margin-left: 100px;
-}
-
-.sp-icon {
-  margin-left: 10px;
-  margin-right: 20px;
-}
-
-.search-icon {
-  margin-left: 50px;
-  transform: scale(0.85);
-  margin-right: 5px;
-}
-
-.scale-85 {
-  transform: scale(0.85);
-}
-
-.search-field {
-  width: 320px;
-}
-
-.clear-search {
-  width: 50px;
-}
-
-.copy-icon {
-  margin-top: -8px;
-}
-
-.first-cell {
-  flex: 3;
-  min-width: 150px;
-}
-
-.title {
-  margin-left: 5%;
-  margin-top: 5px;
-  margin-bottom: 15px;
-  font-weight: 400;
-}

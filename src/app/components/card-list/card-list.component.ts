@@ -63,7 +63,7 @@ export class CardListComponent implements OnDestroy {
     if (this.showTemplates) {
       return ['action', 'name', 'description'];
     }
-    return ['action', 'move', 'name', 'description', 'expand'];
+    return ['action', 'move', 'name', 'description'];
   }
 
   constructor(
