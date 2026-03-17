@@ -25,36 +25,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
         </button>
       </mat-list-item>
       }
-      <!-- Users -->
-      @if (canViewUsers) {
-      <mat-list-item [ngClass]="getSelectedClass(usersText)" id="wrapper showhand" (click)="gotoSection(usersText)">
-        <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-account"></mat-icon>
-        {{ usersText }}
-        <button aria-labelledby="usersText" mat-icon-button class="pull-right">
-          <mat-icon fontIcon="mdi-chevron-right"></mat-icon>
-        </button>
-      </mat-list-item>
-      }
-      <!-- Roles -->
-      @if (canViewRoles) {
-      <mat-list-item [ngClass]="getSelectedClass(rolesText)" id="wrapper showhand" (click)="gotoSection(rolesText)">
-        <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-shield-account"></mat-icon>
-        {{ rolesText }}
-        <button aria-labelledby="rolesText" mat-icon-button class="pull-right">
-          <mat-icon fontIcon="mdi-chevron-right"></mat-icon>
-        </button>
-      </mat-list-item>
-      }
-      <!-- Groups -->
-      @if (canViewGroups) {
-      <mat-list-item [ngClass]="getSelectedClass(groupsText)" id="wrapper showhand" (click)="gotoSection(groupsText)">
-        <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-account-multiple"></mat-icon>
-        {{ groupsText }}
-        <button aria-labelledby="groupsText" mat-icon-button class="pull-right">
-          <mat-icon fontIcon="mdi-chevron-right"></mat-icon>
-        </button>
-      </mat-list-item>
-      }
       <!-- Data Fields -->
       @if (canViewDataFields) {
       <mat-list-item [ngClass]="getSelectedClass(dataFieldsText)" id="wrapper showhand"
@@ -128,6 +98,36 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-clipboard-account-outline"></mat-icon>
         {{ citeDutiesText }}
         <button aria-labelledby="citeDutiesText" mat-icon-button class="pull-right">
+          <mat-icon fontIcon="mdi-chevron-right"></mat-icon>
+        </button>
+      </mat-list-item>
+      }
+      <!-- Users -->
+      @if (canViewUsers) {
+      <mat-list-item [ngClass]="getSelectedClass(usersText)" id="wrapper showhand" (click)="gotoSection(usersText)">
+        <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-account"></mat-icon>
+        {{ usersText }}
+        <button aria-labelledby="usersText" mat-icon-button class="pull-right">
+          <mat-icon fontIcon="mdi-chevron-right"></mat-icon>
+        </button>
+      </mat-list-item>
+      }
+      <!-- Roles -->
+      @if (canViewRoles) {
+      <mat-list-item [ngClass]="getSelectedClass(rolesText)" id="wrapper showhand" (click)="gotoSection(rolesText)">
+        <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-shield-account"></mat-icon>
+        {{ rolesText }}
+        <button aria-labelledby="rolesText" mat-icon-button class="pull-right">
+          <mat-icon fontIcon="mdi-chevron-right"></mat-icon>
+        </button>
+      </mat-list-item>
+      }
+      <!-- Groups -->
+      @if (canViewGroups) {
+      <mat-list-item [ngClass]="getSelectedClass(groupsText)" id="wrapper showhand" (click)="gotoSection(groupsText)">
+        <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-account-multiple"></mat-icon>
+        {{ groupsText }}
+        <button aria-labelledby="groupsText" mat-icon-button class="pull-right">
           <mat-icon fontIcon="mdi-chevron-right"></mat-icon>
         </button>
       </mat-list-item>
