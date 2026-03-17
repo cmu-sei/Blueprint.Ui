@@ -2,96 +2,83 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-.panel-container {
+:host {
   display: flex;
-  flex-flow: column;
-  justify-content: flex-start;
-  align-items: flex-start;
-  text-align: left;
-  margin-left: 10%;
+  flex-direction: column;
+  height: calc(100vh - 44px);
 }
 
-.panel-div {
+.table-container {
+  flex: 1;
+  overflow: auto;
+  padding-bottom: 20px;
+}
+
+table {
+  width: 100%;
+}
+
+.element-row {
+  cursor: pointer;
+}
+
+.element-row:hover {
+  background-color: var(--mat-sys-surface-variant);
+}
+
+.element-row-not-expanded {}
+
+.element-row-expanded {
+  border-bottom-color: transparent;
+}
+
+::ng-deep tr.element-row-expanded,
+::ng-deep .mat-mdc-row.element-row-expanded,
+::ng-deep .mdc-data-table__row.element-row-expanded {
+  border-bottom-style: none !important;
+  border-bottom-width: 0 !important;
+  border-bottom-color: transparent !important;
+}
+
+::ng-deep tr.element-row-expanded .mat-mdc-cell,
+::ng-deep tr.element-row-expanded .mdc-data-table__cell {
+  border-bottom: none !important;
+}
+
+.column-action {
+  flex: 0 0 120px;
+  width: 120px;
+}
+
+.column-short-name {
+  flex: 0 0 20%;
+  padding: 2px;
+}
+
+.column-name {
+  flex: 0 0 calc(80% - 160px);
+  padding: 2px;
+}
+
+.column-expand {
+  flex: 0 0 60px;
   display: flex;
-  flex-flow: row;
-  justify-content: flex-start;
-  align-items: center;
-  text-align: left;
-}
-
-.user-div {
-  display: flex;
-  flex-flow: column;
-  justify-content: flex-start;
-  align-items: flex-start;
-  text-align: left;
-}
-
-.name-width {
-  width: 600px;
-}
-
-.short-width {
-  width: 150px;
-}
-
-.header-row {
-  min-height: 56px;
-}
-
-.row {
-  min-height: 48px;
-}
-
-.row,
-.header-row {
-  display: flex;
-  align-items: center;
   justify-content: center;
-  padding: 0 24px;
-  font-weight: 400;
+  align-items: center;
 }
 
-.cell,
-.header-cell {
-  overflow: hidden;
-  word-wrap: break-word;
+.expanded-detail-div {
+  width: calc(100% - 20px);
+  min-width: 660px;
+  margin-left: 20px;
+  max-height: 500px;
+  overflow: auto;
 }
 
 .sp-icon {
   margin-left: 10px;
-}
-
-.mat-accordion .header-row {
-  padding-left: 1.5rem;
-  padding-right: 2rem;
-  border-bottom: none;
-}
-
-.mat-expansion-panel {
-  text-align: left;
-}
-
-.button-margins {
-  margin-left: 20px;
-  margin-right: 20px;
 }
 
 .button-end {
   margin-left: 100px;
-}
-
-.sp-icon {
-  margin-left: 10px;
-}
-
-.pad-top {
-  margin-top: 12px;
-}
-
-.first-cell {
-  flex: 1;
-  align-self: center;
-  min-width: 80px;
-  max-width: 100px;
 }

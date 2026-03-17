@@ -10,7 +10,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <ng-container matColumnDef="action">
       <mat-header-cell *matHeaderCellDef class="column-action">
         @if (canEdit) {
-        <button mat-icon-button (click)="addOrEditInjectType(null)" style="outline: none; margin-left: 40px;"
+        <button mat-icon-button (click)="addOrEditInjectType(null)" style="outline: none;"
           title="Add new inject type">
           <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle"></mat-icon>
         </button>
@@ -62,17 +62,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </mat-header-cell>
       <mat-cell *matCellDef="let element" class="column-description">
         {{ element.description }}
-      </mat-cell>
-    </ng-container>
-    <!-- expand Column -->
-    <ng-container matColumnDef="expand">
-      <mat-header-cell *matHeaderCellDef class="column-expand">&nbsp;</mat-header-cell>
-      <mat-cell *matCellDef="let element" class="column-expand">
-        @if (expandedElementId === element.id) {
-        <mat-icon class="mdi-24px self-center" fontIcon="mdi-chevron-up"></mat-icon>
-        } @else {
-        <mat-icon class="mdi-24px self-center" fontIcon="mdi-chevron-down"></mat-icon>
-        }
       </mat-cell>
     </ng-container>
     <!-- Expanded Content Column - The detail row is made up of this one column that spans across all columns -->

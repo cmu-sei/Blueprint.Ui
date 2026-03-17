@@ -48,12 +48,18 @@
   position: relative;
 }
 
-.element-row-not-expanded {
+.element-row {
   cursor: pointer;
 }
 
+.element-row:hover {
+  background-color: var(--mat-sys-surface-variant);
+}
+
+.element-row-not-expanded {
+}
+
 .element-row-expanded {
-  cursor: pointer;
   border-bottom-color: transparent;
 }
 
@@ -68,10 +74,8 @@
 }
 
 .column-action {
-  flex: 0 0 160px;
-  flex-direction: row;
-  padding: 0px;
-  word-wrap: none;
+  flex: 0 0 200px;
+  width: 200px;
 }
 
 .column-is-public {

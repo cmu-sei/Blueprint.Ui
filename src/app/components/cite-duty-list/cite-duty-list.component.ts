@@ -14,6 +14,7 @@ import { MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { Sort } from '@angular/material/sort';
 import { MatMenuTrigger } from '@angular/material/menu';
+import { MatTableDataSource } from '@angular/material/table';
 import { CiteDutyDataService } from 'src/app/data/cite-duty/cite-duty-data.service';
 import { CiteDutyQuery } from 'src/app/data/cite-duty/cite-duty.query';
 import { TeamQuery } from 'src/app/data/team/team.query';
@@ -40,6 +41,8 @@ export class CiteDutyListComponent implements OnDestroy {
   filterString = '';
   sort: Sort = { active: 'name', direction: 'asc' };
   sortedCiteDuties: CiteDuty[] = [];
+  citeDutyDataSource = new MatTableDataSource<CiteDuty>(new Array<CiteDuty>());
+  displayedColumns: string[] = ['action', 'name'];
   isAddingCiteDuty = false;
   editingId = '';
   selectedTeamId = '';
@@ -70,7 +73,9 @@ export class CiteDutyListComponent implements OnDestroy {
         } else {
           Object.assign(this.msel, msel);
         }
+        this.displayedColumns = this.showTemplates ? ['action', 'name'] : ['action', 'name', 'team'];
         this.sortedCiteDuties = this.getSortedCiteDuties(this.getFilteredCiteDuties(false));
+        this.citeDutyDataSource.data = this.sortedCiteDuties;
       }
     });
     // subscribe to Teams
@@ -89,6 +94,7 @@ export class CiteDutyListComponent implements OnDestroy {
       .subscribe((term) => {
         this.filterString = term;
         this.sortedCiteDuties = this.getSortedCiteDuties(this.getFilteredCiteDuties(false));
+        this.citeDutyDataSource.data = this.sortedCiteDuties;
       });
     // load CiteDuty templates
     this.citeDutyDataService.loadTemplates();
@@ -179,6 +185,7 @@ export class CiteDutyListComponent implements OnDestroy {
   sortChanged(sort: Sort) {
     this.sort = sort;
     this.sortedCiteDuties = this.getSortedCiteDuties(this.getFilteredCiteDuties(false));
+    this.citeDutyDataSource.data = this.sortedCiteDuties;
     this.templateList = this.getSortedCiteDuties(this.getFilteredCiteDuties(true));
   }
 
@@ -244,6 +251,7 @@ export class CiteDutyListComponent implements OnDestroy {
   selectTeam(teamId: string) {
     this.selectedTeamId = teamId;
     this.sortedCiteDuties = this.getSortedCiteDuties(this.getFilteredCiteDuties(false));
+    this.citeDutyDataSource.data = this.sortedCiteDuties;
   }
 
   ngOnDestroy() {

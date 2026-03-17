@@ -5,25 +5,21 @@ project root for license information or contact permission@sei.cmu.edu for full 
 -->
 
 <div class="frame">
-  <section matSort (matSortChange)="sortChanged($event)" class="header-row background-alt">
-    <span class="header-cell first-cell">
+  <div class="filter-row">
+    <div class="action-cell">
       @if (showTemplates && canEdit) {
-      <span>
-        <button mat-icon-button (click)="addOrEditCiteAction(null, false, false); $event.stopPropagation();"
-          title="Add a template CITE Action" style="outline: none; margin-left: 18px; margin-right: 24px;">
-          <mat-icon class="mdi-24px center-self little-left" fontIcon="mdi-plus-circle"></mat-icon>
-        </button>
-      </span>
-      } &nbsp;
+      <button mat-icon-button (click)="addOrEditCiteAction(null, false, false); $event.stopPropagation();"
+        title="Add a template CITE Action" style="outline: none; margin-left: 18px; margin-right: 24px;">
+        <mat-icon class="mdi-24px center-self little-left" fontIcon="mdi-plus-circle"></mat-icon>
+      </button>
+      }
       @if (!showTemplates && (canEdit || msel.hasRole(loggedInUserId, null).owner)) {
-      <span>
-        <button mat-icon-button [matMenuTriggerFor]="addMenu"
-          style="outline: none; margin-left: 18px; margin-right: 24px;" title="Add CITE Action"
-          (click)="$event.stopPropagation();">
-          <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle"></mat-icon>
-        </button>
-      </span>
-      } &nbsp;
+      <button mat-icon-button [matMenuTriggerFor]="addMenu"
+        style="outline: none; margin-left: 18px; margin-right: 24px;" title="Add CITE Action"
+        (click)="$event.stopPropagation();">
+        <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle"></mat-icon>
+      </button>
+      }
       <mat-menu #addMenu="matMenu" [overlapTrigger]="false">
         <button mat-menu-item (click)="addOrEditCiteAction(null, false, false)" title="Add a new CITE Action">New CITE
           Action</button>
@@ -32,9 +28,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
           template.description }}</button>
         }
       </mat-menu>
-    </span>
+    </div>
     @if (!showTemplates) {
-    <span class="header-cell move-column" mat-sort-header="moveNumber">
+    <div class="move-filter">
       <mat-form-field class="move-field">
         <mat-label>Move</mat-label>
         <mat-select placeholder="Move" [value]="selectedMoveNumber" (selectionChange)="selectMove($event.value)"
@@ -47,10 +43,10 @@ project root for license information or contact permission@sei.cmu.edu for full 
           }
         </mat-select>
       </mat-form-field>
-    </span>
+    </div>
     }
     @if (!showTemplates) {
-    <span class="header-cell four-cell" mat-sort-header="team">
+    <div class="team-filter">
       <mat-form-field class="team-selector">
         <mat-label>Team</mat-label>
         <mat-select placeholder="Team" [value]="selectedTeamId" (selectionChange)="selectTeam($event.value)"
@@ -63,13 +59,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
           }
         </mat-select>
       </mat-form-field>
-    </span>
+    </div>
     }
-    @if (!showTemplates) {
-    <span class="header-cell one-cell">Display Order</span>
-    }
-    <span class="header-cell two-cell" mat-sort-header="description">Description</span>
-    <span class="header-cell two-cell search-cell">
+    <div class="search-cell">
       <mat-form-field class="search-control">
         <input matInput [formControl]="filterControl" placeholder="Search" />
         @if (filterControl.value) {
@@ -78,47 +70,57 @@ project root for license information or contact permission@sei.cmu.edu for full 
         </button>
         }
       </mat-form-field>
-    </span>
-  </section>
-  <mat-accordion class="scrolling-region">
-    <!-- existing citeActions -->
-    @for (item of sortedCiteActions; track item.id) {
-    <mat-expansion-panel class="top-space no-clicks" hideToggle>
-      <mat-expansion-panel-header class="row">
-        <div class="cell first-cell">
+    </div>
+  </div>
+  <div class="table-container">
+    <table mat-table [dataSource]="citeActionDataSource" matSort (matSortChange)="sortChanged($event)">
+      <!-- action column -->
+      <ng-container matColumnDef="action">
+        <th mat-header-cell *matHeaderCellDef class="column-action">&nbsp;</th>
+        <td mat-cell *matCellDef="let element" class="column-action">
           @if (canEdit || msel.hasRole(loggedInUserId, null).owner) {
-          <button mat-icon-button title="Edit {{ item.description }}"
-            (click)="addOrEditCiteAction(item, false, false); $event.stopPropagation();" class="all-clicks">
-            <mat-icon class="mdi-18px up-12" fontIcon="mdi-square-edit-outline"></mat-icon>
+          <button mat-icon-button title="Edit {{ element.description }}"
+            (click)="addOrEditCiteAction(element, false, false); $event.stopPropagation();">
+            <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline"></mat-icon>
           </button>
           }
           @if (canEdit || msel.hasRole(loggedInUserId, null).owner) {
-          <button mat-icon-button (click)="deleteCiteAction(item); $event.stopPropagation();"
-            title="Delete {{ item.description }}" class="all-clicks">
-            <mat-icon class="mdi-18px up-12" fontIcon="mdi-trash-can-outline"></mat-icon>
+          <button mat-icon-button (click)="deleteCiteAction(element); $event.stopPropagation();"
+            title="Delete {{ element.description }}">
+            <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline"></mat-icon>
           </button>
           }
           @if (!showTemplates && canEdit) {
-          <button mat-icon-button class="all-clicks"
-            (click)="addOrEditCiteAction(item, true, false); $event.stopPropagation();"
-            title="Make {{ item.description }} a template">
-            <mat-icon class="mdi-18px" fontIcon="mdi-card-plus-outline"
-              title="Make {{ item.name }} a template"></mat-icon>
+          <button mat-icon-button (click)="addOrEditCiteAction(element, true, false); $event.stopPropagation();"
+            title="Make {{ element.description }} a template">
+            <mat-icon class="mdi-18px" fontIcon="mdi-card-plus-outline"></mat-icon>
           </button>
           }
-        </div>
-        @if (!showTemplates) {
-        <div class="cell move-column">{{ item.moveNumber }}</div>
-        }
-        @if (!showTemplates) {
-        <div class="cell four-cell center-self">{{ getTeamDisplay(item.teamId) }}</div>
-        }
-        @if (!showTemplates) {
-        <div class="cell one-cell center-self">{{ item.actionNumber }}</div>
-        }
-        <div class="cell four-cell center-self">{{ item.description }}</div>
-      </mat-expansion-panel-header>
-    </mat-expansion-panel>
-    }
-  </mat-accordion>
+        </td>
+      </ng-container>
+      <!-- moveNumber column -->
+      <ng-container matColumnDef="moveNumber">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header class="column-move">Move</th>
+        <td mat-cell *matCellDef="let element" class="column-move">{{ element.moveNumber }}</td>
+      </ng-container>
+      <!-- team column -->
+      <ng-container matColumnDef="team">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header class="column-team">Team</th>
+        <td mat-cell *matCellDef="let element" class="column-team">{{ getTeamDisplay(element.teamId) }}</td>
+      </ng-container>
+      <!-- actionNumber column -->
+      <ng-container matColumnDef="actionNumber">
+        <th mat-header-cell *matHeaderCellDef class="column-order">Display Order</th>
+        <td mat-cell *matCellDef="let element" class="column-order">{{ element.actionNumber }}</td>
+      </ng-container>
+      <!-- description column -->
+      <ng-container matColumnDef="description">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header class="column-description">Description</th>
+        <td mat-cell *matCellDef="let element" class="column-description">{{ element.description }}</td>
+      </ng-container>
+      <!-- row definitions -->
+      <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+  </div>
 </div>

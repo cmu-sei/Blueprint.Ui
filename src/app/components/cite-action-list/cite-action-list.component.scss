@@ -5,109 +5,88 @@
 @use "@angular/material" as mat;
 
 :host {
-  @include mat.form-field-density(-5); // Adjust -3 for this specific form field
+  @include mat.form-field-density(-5);
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 44px);
 }
 
 .frame {
   display: flex;
   flex-direction: column;
   flex: 1;
-  height: calc(100vh - 60px);
+  min-height: 0;
 }
 
-.top-space {
-  margin-top: 6px;
-}
-
-.no-clicks {
-  pointer-events: none;
-}
-
-.all-clicks {
-  pointer-events: all;
-}
-
-.header-row {
-  min-height: 56px;
-  border-bottom: 1px solid;
-}
-
-.row {
-  min-height: 48px;
-}
-
-.row,
-.header-row {
+.filter-row {
   display: flex;
   align-items: center;
-  justify-content: center;
   padding: 0 24px;
-  font-weight: 400;
+  min-height: 56px;
+  flex-shrink: 0;
 }
 
-.cell,
-.header-cell {
-  overflow: hidden;
-  word-wrap: break-word;
-}
-
-.flex-row-cell {
-  display: flex;
-  flex-flow: row;
-  justify-content: flex-start;
-  align-items: center;
-  text-align: left;
-}
-
-.card-detail {
-  display: flex;
+.table-container {
   flex: 1;
-  flex-flow: column;
-  justify-content: center;
+  overflow: auto;
+  padding-bottom: 20px;
+}
+
+table {
+  width: 100%;
+}
+
+.action-cell {
+  display: flex;
   align-items: center;
+}
+
+.move-filter {
+  margin: 0 10px;
+}
+
+.team-filter {
+  margin: 0 10px;
 }
 
 .search-cell {
+  flex: 1;
   display: flex;
-  flex-flow: row;
 }
 
 .search-control {
-  width: calc(100% - 32px);
-}
-
-.single-detail {
-  display: flex;
-  flex: 10;
-  flex-flow: row;
-  align-items: flex-start;
-  width: 90%;
-}
-
-.scrolling-region {
-  height: calc(100vh - 89px);
-  overflow: auto;
-}
-
-.move-column {
-  width: 140px;
-  text-align: center;
-  justify-content: center;
-  align-self: center;
-  margin-right: 10px;
+  width: 100%;
 }
 
 .move-field {
   width: 120px;
-  ;
 }
 
-.move-select {
-  width: 90px;
+.team-selector {
+  width: 150px;
 }
 
-.first-cell {
+.column-action {
+  flex: 0 0 160px;
+  width: 160px;
+}
+
+.column-move {
+  flex: 0 0 80px;
+  text-align: center;
+}
+
+.column-team {
+  flex: 0 0 20%;
+  padding: 2px;
+}
+
+.column-order {
+  flex: 0 0 100px;
+  text-align: center;
+}
+
+.column-description {
   flex: 1;
-  min-width: 120px;
-  max-width: 120px;
+  padding: 2px;
 }
