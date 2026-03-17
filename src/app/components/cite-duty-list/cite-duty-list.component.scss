@@ -5,109 +5,70 @@
 @use "@angular/material" as mat;
 
 :host {
-  @include mat.form-field-density(-5); // Adjust -3 for this specific form field
+  @include mat.form-field-density(-5);
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 44px);
 }
 
 .frame {
   display: flex;
   flex-direction: column;
   flex: 1;
-  height: calc(100vh - 60px);
+  min-height: 0;
 }
 
-.top-space {
-  margin-top: 6px;
-}
-
-.no-clicks {
-  pointer-events: none;
-}
-
-.all-clicks {
-  pointer-events: all;
-}
-
-.header-row {
-  min-height: 56px;
-  border-bottom: 1px solid;
-}
-
-.row {
-  min-height: 48px;
-}
-
-.row,
-.header-row {
+.filter-row {
   display: flex;
   align-items: center;
-  justify-content: center;
   padding: 0 24px;
-  font-weight: 400;
+  min-height: 56px;
+  flex-shrink: 0;
 }
 
-.cell,
-.header-cell {
-  overflow: hidden;
-  word-wrap: break-word;
-}
-
-.flex-row-cell {
-  display: flex;
-  flex-flow: row;
-  justify-content: flex-start;
-  align-items: center;
-  text-align: left;
-}
-
-.card-detail {
-  display: flex;
+.table-container {
   flex: 1;
-  flex-flow: column;
-  justify-content: center;
+  overflow: auto;
+  padding-bottom: 20px;
+}
+
+table {
+  width: 100%;
+}
+
+.action-cell {
+  display: flex;
   align-items: center;
+}
+
+.team-filter {
+  margin: 0 10px;
 }
 
 .search-cell {
+  flex: 1;
   display: flex;
-  flex-flow: row;
 }
 
 .search-control {
-  width: calc(100% - 32px);
+  width: 100%;
 }
 
-.single-detail {
-  display: flex;
-  flex: 10;
-  flex-flow: row;
-  align-items: flex-start;
-  width: 90%;
+.team-selector {
+  width: 150px;
 }
 
-.scrolling-region {
-  height: calc(100vh - 89px);
-  overflow: auto;
-}
-
-.move-column {
-  width: 140px;
-  text-align: center;
-  justify-content: center;
-  align-self: center;
-  margin-right: 10px;
-}
-
-.move-field {
+.column-action {
+  flex: 0 0 120px;
   width: 120px;
-  ;
 }
 
-.move-select {
-  width: 90px;
-}
-
-.first-cell {
+.column-name {
   flex: 1;
-  min-width: 120px;
-  max-width: 120px;
+  padding: 2px;
+}
+
+.column-team {
+  flex: 1;
+  padding: 2px;
 }

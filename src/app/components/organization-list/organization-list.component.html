@@ -16,14 +16,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
               @if (showTemplates && canEdit) {
               <span>
                 <button mat-icon-button (click)="addOrEditOrganization(null, true)" title="Add a template organization"
-                  style="outline: none; margin-left: 15px;">
+                  style="outline: none;">
                   <mat-icon class="mdi-24px center-self" fontIcon="mdi-plus-circle"></mat-icon>
                 </button>
               </span>
               } &nbsp;
               @if (!showTemplates && (canEdit || msel.hasRole(loggedInUserId, null).owner)) {
               <span>
-                <button mat-icon-button [matMenuTriggerFor]="addMenu" style="outline: none; margin-left: 15px;"
+                <button mat-icon-button [matMenuTriggerFor]="addMenu" style="outline: none;"
                   title="Add organization">
                   <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle"></mat-icon>
                 </button>

@@ -155,17 +155,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
       (urlNavigate)="goToUrl($event)"></app-topbar>
     }
     @if (canViewUnits && (selectedTab === unitsText)) {
-    <span>
       <app-admin-units [canManage]="canManageUnits"></app-admin-units>
-    </span>
     }
     @if (canViewUsers && (selectedTab === usersText)) {
       <app-admin-users></app-admin-users>
     }
     @if (canViewRoles && (selectedTab === rolesText)) {
-    <span>
       <app-admin-roles></app-admin-roles>
-    </span>
     }
     @if (canViewGroups && (selectedTab === groupsText)) {
     <span>
@@ -196,22 +192,16 @@ project root for license information or contact permission@sei.cmu.edu for full 
     </span>
     }
     @if (canViewGalleryCards && (selectedTab === galleryCardsText)) {
-    <span>
       <app-card-list [loggedInUserId]="loggedInUserId" [canEdit]="canManageGalleryCards"
         [showTemplates]="true"></app-card-list>
-    </span>
     }
     @if (canViewCiteActions && (selectedTab === citeActionsText)) {
-    <span>
       <app-cite-action-list [loggedInUserId]="loggedInUserId" [canEdit]="canManageCiteActions"
         [showTemplates]="true"></app-cite-action-list>
-    </span>
     }
     @if (canViewCiteDuties && (selectedTab === citeDutiesText)) {
-    <span>
       <app-cite-duty-list [loggedInUserId]="loggedInUserId" [canEdit]="canManageCiteDuties"
         [showTemplates]="true"></app-cite-duty-list>
-    </span>
     }
   </mat-sidenav-content>
 </mat-sidenav-container>
