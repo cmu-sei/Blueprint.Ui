@@ -187,7 +187,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
         (df.mselId && df.mselId === this.msel.id) ||
         (df.injectTypeId && df.injectTypeId === this.injectTypeId)
       ) {
-        this.dataFieldList.push({ ...df });
+        this.dataFieldList.push(JSON.parse(JSON.stringify(df)));
       }
     });
     this.sortChanged(this.sort);
@@ -200,6 +200,8 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
         name: 'Move',
         onScenarioEventList: this.msel.showMoveOnScenarioEventList,
         onExerciseView: this.msel.showMoveOnExerciseView,
+        isInformationField: false,
+        isFacilitationField: false,
         galleryArticleParameter: 'Gallery Move',
         dataType: 'Move',
         description: 'System defined',
@@ -209,6 +211,8 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
         name: 'Group',
         onScenarioEventList: this.msel.showGroupOnScenarioEventList,
         onExerciseView: this.msel.showGroupOnExerciseView,
+        isInformationField: false,
+        isFacilitationField: false,
         galleryArticleParameter: 'Gallery Inject',
         dataType: 'Integer',
         description: 'System defined',
@@ -218,6 +222,8 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
         name: 'Execution Time',
         onScenarioEventList: this.msel.showTimeOnScenarioEventList,
         onExerciseView: this.msel.showTimeOnExerciseView,
+        isInformationField: false,
+        isFacilitationField: false,
         galleryArticleParameter: '- - -',
         dataType: 'DateTime',
         description: 'System defined',
@@ -227,6 +233,8 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
         name: 'Integration Target',
         onScenarioEventList: this.msel.showIntegrationTargetOnScenarioEventList,
         onExerciseView: this.msel.showIntegrationTargetOnExerciseView,
+        isInformationField: false,
+        isFacilitationField: false,
         galleryArticleParameter: '- - -',
         dataType: 'IntegrationTarget',
         description: 'System defined',
@@ -413,7 +421,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
   ): DataField[] {
     let filteredDataFields: DataField[] = [];
     if (dataFields && dataFields.length > 0) {
-      filteredDataFields = dataFields.slice();
+      filteredDataFields = dataFields.map(df => JSON.parse(JSON.stringify(df)));
       if (this.filterString) {
         const filterString = this.filterString?.toLowerCase();
         filteredDataFields = filteredDataFields.filter((a) =>
@@ -428,7 +436,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
     const returnArray =
       this.showTemplates || (!mselId && !injectTypeId)
         ? filteredDataFields
-        : this.systemDefinedDataFields.concat(filteredDataFields);
+        : this.systemDefinedDataFields.map(df => JSON.parse(JSON.stringify(df))).concat(filteredDataFields);
     return returnArray;
   }
 
