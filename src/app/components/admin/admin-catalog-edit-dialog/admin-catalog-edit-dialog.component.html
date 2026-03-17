@@ -54,7 +54,7 @@ project root for license information.
           <mat-form-field class="full-width">
             <mat-label>Inject Type (required)</mat-label>
             <mat-select placeholder="Inject Type (required)" [(ngModel)]="data.catalog.injectTypeId" (ngModelChange)="loadDataFields()">
-              @for (injectType of data.injectTypeList; track injectType) {
+              @for (injectType of data.injectTypeList; track injectType.id) {
                 <mat-option [value]="injectType.id" title="{{ injectType.name}}">
                   {{ injectType.name }}
                 </mat-option>
@@ -77,7 +77,7 @@ project root for license information.
         <div class="add-margin">
           <div class="full-width">
             <mat-label>Data Fields to Show on Inject List</mat-label>
-            @for (dataField of getInjectTypeDataFields(); track dataField) {
+            @for (dataField of getInjectTypeDataFields(); track dataField.id) {
               <div class="datafield-div">
                 <mat-checkbox
                   [checked]="isInListDataFields(dataField.id)"
