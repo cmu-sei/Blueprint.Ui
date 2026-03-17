@@ -6,7 +6,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
 
 <mat-menu #addMenu="matMenu" [overlapTrigger]="false">
   <button mat-menu-item (click)="addOrEditCard(null, false, false)" title="Add a new card">New Card</button>
-  @for (template of templateList; track template) {
+  @for (template of templateList; track template.id) {
   <button mat-menu-item (click)="addOrEditCard(template, false, true)" title="{{ template.description }}">{{
     template.name }}</button>
   }

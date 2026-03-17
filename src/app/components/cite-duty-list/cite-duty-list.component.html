@@ -23,7 +23,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <mat-menu #addMenu="matMenu" [overlapTrigger]="false">
         <button mat-menu-item (click)="addOrEditCiteDuty(null, false, false); $event.stopPropagation();"
           title="Add a new CITE Duty">New CITE Duty</button>
-        @for (template of templateList; track template) {
+        @for (template of templateList; track template.id) {
         <button mat-menu-item (click)="addOrEditCiteDuty(template, false, true); $event.stopPropagation();"
           title="{{ template.name }}">{{ template.name }}</button>
         }
@@ -35,7 +35,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <mat-label>Team</mat-label>
         <mat-select placeholder="Team" [value]="selectedTeamId" (selectionChange)="selectTeam($event.value)">
           <mat-option value="">All Teams</mat-option>
-          @for (team of mselTeamList; track team) {
+          @for (team of mselTeamList; track team.id) {
           <mat-option [value]="team.id">{{ team.shortName }}</mat-option>
           }
         </mat-select>

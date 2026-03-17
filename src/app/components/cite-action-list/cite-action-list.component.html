@@ -23,7 +23,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <mat-menu #addMenu="matMenu" [overlapTrigger]="false">
         <button mat-menu-item (click)="addOrEditCiteAction(null, false, false)" title="Add a new CITE Action">New CITE
           Action</button>
-        @for (template of templateList; track template) {
+        @for (template of templateList; track template.id) {
         <button mat-menu-item (click)="addOrEditCiteAction(template, false, true)" title="{{ template.description }}">{{
           template.description }}</button>
         }
@@ -36,7 +36,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <mat-select placeholder="Move" [value]="selectedMoveNumber" (selectionChange)="selectMove($event.value)"
           (click)="$event.stopPropagation()" class="move-select">
           <mat-option [value]="-1">All Moves</mat-option>
-          @for (move of moveList; track move) {
+          @for (move of moveList; track move.id) {
           <mat-option [value]="move.moveNumber" title="{{ move.description }}">
             {{ move.moveNumber }}
           </mat-option>
