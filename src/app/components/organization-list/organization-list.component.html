@@ -32,7 +32,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
               <mat-menu #addMenu="matMenu" [overlapTrigger]="false">
                 <button mat-menu-item (click)="addOrEditOrganization(null, false)" title="Add a new organization">New
                   Organization</button>
-                @for (template of templateDataSource.data; track template) {
+                @for (template of templateDataSource.data; track template.id) {
                 <button mat-menu-item (click)="addOrEditOrganization(template, false)"
                   title="{{ template.name }} - {{ template.summary }}">{{ template.shortName }}</button>
                 }
