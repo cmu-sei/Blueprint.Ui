@@ -7,6 +7,8 @@
   flex-direction: row;
   flex: 1;
   height: 100%;
+  background-color: var(--mat-sys-background);
+  color: var(--mat-sys-on-background);
 }
 
 .content-frame {

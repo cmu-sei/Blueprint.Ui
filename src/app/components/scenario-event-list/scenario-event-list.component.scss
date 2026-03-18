@@ -14,6 +14,8 @@
   flex: 1;
   height: calc(100vh - 60px);
   overflow: auto;
+  background-color: var(--mat-sys-background);
+  color: var(--mat-sys-on-background);
 }
 
 .tableFixHead thead th {
@@ -28,10 +30,12 @@
 table {
   border-collapse: collapse;
   width: 100%;
+  background-color: var(--mat-sys-background);
+  color: var(--mat-sys-on-background);
 }
 
 tr {
-  border-bottom: 1pt solid gray;
+  border-bottom: 1pt solid var(--mat-sys-outline-variant);
   width: 100%;
 }
 
@@ -57,6 +61,7 @@ td {
   padding-right: 5px;
   text-align: left;
   word-wrap: normal;
+  color: var(--mat-sys-on-background);
 }
 
 .constrainer {
@@ -134,7 +139,7 @@ td {
 .color-option {
   width: 100%;
   height: 12px;
-  border-color: rgb(187, 187, 187);
+  border-color: var(--mat-sys-outline-variant);
   border-style: solid;
   border-width: 0.001in;
 }
