@@ -22,14 +22,19 @@ project root for license information.
       </div>
     </div>
     <div class="add-margin">
+      <b>Parameters can be used in the following URLs (include the braces):</b> <br />
+      {{ '{citeUrl}, {galleryUrl}, {steamfitterUrl}, {playerUrl}, {blueprintUrl}' }} <br />
+      {{ '{citeEvaluationId}, {galleryExhibitId}, {steamFitterScenarioId}, {playerViewId}, {blueprintMselId}' }}<br />
+      <b>For example:</b><br />
+      {{ '{galleryUrl}?section=archive&exhibit={galleryExhibitId}{theme}' }}<br />
+      {{ '{galleryUrl}/assets/img/archive-blue.png' }}<br />
+      &nbsp;
+    </div>
+    <div class="add-margin">
       <div>
         <mat-form-field class="full-width">
           <mat-label>URL</mat-label>
           <input type="text" matInput [(ngModel)]="data.playerApplication.url" placeholder="URL">
-          <mat-hint>
-            {{ 'Parameters can be used in the above URL (include the braces): {citeEvaluationId}, {galleryExhibitId},
-            {steamFitterScenarioId}, and {playerViewId}' }}
-          </mat-hint>
         </mat-form-field>
       </div>
     </div>
