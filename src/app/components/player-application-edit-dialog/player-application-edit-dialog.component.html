@@ -26,9 +26,11 @@ project root for license information.
         <mat-form-field class="full-width">
           <mat-label>URL</mat-label>
           <input type="text" matInput [(ngModel)]="data.playerApplication.url" placeholder="URL">
+          <mat-hint>
+            {{ 'Parameters can be used in the above URL (include the braces): {citeEvaluationId}, {galleryExhibitId},
+            {steamFitterScenarioId}, and {playerViewId}' }}
+          </mat-hint>
         </mat-form-field>
-        <mat-hint>{{ 'Parameters can be used in the above URL (include the braces): {citeEvaluationId}
-          {galleryExhibitId} {steamFitterScenarioId} and {playerViewId}' }}</mat-hint>
       </div>
     </div>
     <div class="add-icon-url-margin">

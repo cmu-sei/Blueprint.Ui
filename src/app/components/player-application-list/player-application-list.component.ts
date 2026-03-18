@@ -158,7 +158,7 @@ export class PlayerApplicationListComponent implements OnDestroy, OnInit, AfterV
       playerApplication.mselId = this.msel.id;
     }
     const dialogRef = this.dialog.open(PlayerApplicationEditDialogComponent, {
-      minWidth: '400px',
+      minWidth: '700px',
       maxWidth: '90vw',
       width: 'auto',
       data: {
