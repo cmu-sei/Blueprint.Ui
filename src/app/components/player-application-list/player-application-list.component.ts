@@ -1,7 +1,7 @@
 // Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild, AfterViewInit } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -20,6 +20,7 @@ import { PlayerApplicationEditDialogComponent } from '../player-application-edit
 import { PlayerService } from 'src/app/generated/blueprint.api';
 import { v4 as uuidv4 } from 'uuid';
 import { MatTable, MatTableDataSource } from '@angular/material/table';
+import { MatPaginator } from '@angular/material/paginator';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 
 @Component({
@@ -35,11 +36,12 @@ import { animate, state, style, transition, trigger } from '@angular/animations'
   ],
   standalone: false
 })
-export class PlayerApplicationListComponent implements OnDestroy, OnInit {
+export class PlayerApplicationListComponent implements OnDestroy, OnInit, AfterViewInit {
   @Input() loggedInUserId: string;
   // context menu
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
   @ViewChild('appTable', { static: false }) appTable: MatTable<any>;
+  @ViewChild(MatPaginator) paginator: MatPaginator;
   msel = new MselPlus();
   mselTeamList: Team[] = [];
   templateList: PlayerApplication[] = [];
@@ -50,7 +52,7 @@ export class PlayerApplicationListComponent implements OnDestroy, OnInit {
   sort: Sort = { active: '', direction: '' };
   sortedPlayerApplications: PlayerApplication[] = [];
   appDataSource = new MatTableDataSource<PlayerApplication>(new Array<PlayerApplication>());
-  displayedColumns: string[] = ['action', 'name', 'url', 'search'];
+  displayedColumns: string[] = ['action', 'name', 'url'];
   expandedId = '';
   isExpansionDetailRow = (i: number, row: Object) => (row as PlayerApplication).id === this.expandedId;
   contextMenuPosition = { x: '0px', y: '0px' };
@@ -111,6 +113,10 @@ export class PlayerApplicationListComponent implements OnDestroy, OnInit {
       .subscribe(() => {
         this.changeDetectorRef.markForCheck();
       });
+  }
+
+  ngAfterViewInit() {
+    this.appDataSource.paginator = this.paginator;
   }
 
   canEditMsel(): boolean {

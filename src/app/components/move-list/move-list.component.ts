@@ -1,9 +1,10 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, Input, OnDestroy, ViewChild } from '@angular/core';
+import { Component, Input, OnDestroy, ViewChild, AfterViewInit } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
+import { MatPaginator } from '@angular/material/paginator';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { Move } from 'src/app/generated/blueprint.api';
@@ -24,7 +25,7 @@ import { v4 as uuidv4 } from 'uuid';
   styleUrls: ['./move-list.component.scss'],
   standalone: false
 })
-export class MoveListComponent implements OnDestroy {
+export class MoveListComponent implements OnDestroy, AfterViewInit {
   @Input() loggedInUserId: string;
   @Input() canEditMsel: boolean;
   msel = new MselPlus();
@@ -46,6 +47,7 @@ export class MoveListComponent implements OnDestroy {
   private unsubscribe$ = new Subject();
   // context menu
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
+  @ViewChild(MatPaginator) paginator: MatPaginator;
   contextMenuPosition = { x: '0px', y: '0px' };
 
   constructor(
@@ -90,6 +92,10 @@ export class MoveListComponent implements OnDestroy {
         this.filterString = term;
         this.displayedMoves = this.getSortedMoves(this.getFilteredMoves());
       });
+  }
+
+  ngAfterViewInit() {
+    this.moveDataSource.paginator = this.paginator;
   }
 
   getSortedMoves(moves: Move[]) {

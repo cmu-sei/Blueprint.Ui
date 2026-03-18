@@ -1,10 +1,11 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, Input, OnDestroy, ViewChild } from '@angular/core';
+import { Component, Input, OnDestroy, ViewChild, AfterViewInit } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatTable } from '@angular/material/table';
+import { MatPaginator } from '@angular/material/paginator';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -37,13 +38,14 @@ import { v4 as uuidv4 } from 'uuid';
   ],
   standalone: false
 })
-export class CardListComponent implements OnDestroy {
+export class CardListComponent implements OnDestroy, AfterViewInit {
   @Input() loggedInUserId: string;
   @Input() canEdit: boolean;
   @Input() showTemplates: boolean;
   // context menu
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
   @ViewChild('cardTable', { static: false }) cardTable: MatTable<any>;
+  @ViewChild(MatPaginator) paginator: MatPaginator;
   msel = new MselPlus();
   templateList: Card[] = [];
   cardList: Card[] = [];
@@ -102,6 +104,10 @@ export class CardListComponent implements OnDestroy {
       });
     // load card templates
     this.cardDataService.loadTemplates();
+  }
+
+  ngAfterViewInit() {
+    this.cardDataSource.paginator = this.paginator;
   }
 
   rowClicked(row: Card) {
@@ -203,6 +209,9 @@ export class CardListComponent implements OnDestroy {
     this.sortedCards = this.getSortedCards(this.getFilteredCards(false));
     this.templateList = this.getSortedCards(this.getFilteredCards(true));
     this.cardDataSource.data = this.sortedCards;
+    if (this.paginator) {
+      this.paginator.length = this.sortedCards.length;
+    }
   }
 
   getFilteredCards(getTemplatesOnly: boolean): Card[] {

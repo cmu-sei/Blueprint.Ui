@@ -1,7 +1,7 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild, AfterViewInit } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { TeamDataService } from 'src/app/data/team/team-data.service';
@@ -28,6 +28,7 @@ import { TeamAddDialogComponent } from '../team-add-dialog/team-add-dialog.compo
 import { TeamEditDialogComponent } from '../team-edit-dialog/team-edit-dialog.component';
 import { UnitQuery } from 'src/app/data/unit/unit.query';
 import { MatTable, MatTableDataSource } from '@angular/material/table';
+import { MatPaginator } from '@angular/material/paginator';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 
 @Component({
@@ -43,12 +44,13 @@ import { animate, state, style, transition, trigger } from '@angular/animations'
     ],
     standalone: false
 })
-export class MselTeamsComponent implements OnDestroy, OnInit {
+export class MselTeamsComponent implements OnDestroy, OnInit, AfterViewInit {
   @Input() loggedInUserId: string;
   @Input() teamTypeList: TeamType[];
   // context menu
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
   @ViewChild('teamTable', { static: false }) teamTable: MatTable<any>;
+  @ViewChild(MatPaginator) paginator: MatPaginator;
   contextMenuPosition = { x: '0px', y: '0px' };
   msel = new MselPlus();
   originalMsel = new MselPlus();
@@ -62,7 +64,7 @@ export class MselTeamsComponent implements OnDestroy, OnInit {
   unitList: Unit[] = [];
   filterString = '';
   teamDataSource = new MatTableDataSource<Team>(new Array<Team>());
-  displayedColumns: string[] = ['action', 'name', 'email', 'teamType', 'invitation', 'search'];
+  displayedColumns: string[] = ['action', 'name', 'email', 'teamType', 'invitation'];
   expandedElementId = '';
   isExpansionDetailRow = (i: number, row: Object) => (row as Team).id === this.expandedElementId;
   private allTeams: Team[] = [];
@@ -127,6 +129,10 @@ export class MselTeamsComponent implements OnDestroy, OnInit {
       .subscribe(() => {
         this.changeDetectorRef.markForCheck();
       });
+  }
+
+  ngAfterViewInit() {
+    this.teamDataSource.paginator = this.paginator;
   }
 
   getUserName(userId: string) {

@@ -4,60 +4,64 @@ Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
 
-<div class="frame">
-  <div class="filter-row">
-    <div class="action-cell">
-      @if (showTemplates && canEdit) {
-      <button mat-icon-button (click)="addOrEditCiteDuty(null, false, false); $event.stopPropagation();"
-        title="Add a template CITE Duty" style="outline: none;">
-        <mat-icon class="mdi-24px center-self" fontIcon="mdi-plus-circle"></mat-icon>
-      </button>
-      }
-      @if (!showTemplates && (canEdit || msel.hasRole(loggedInUserId, null).owner)) {
-      <button mat-icon-button [matMenuTriggerFor]="addMenu"
-        style="outline: none;" title="Add CITE Duty"
-        (click)="$event.stopPropagation();">
-        <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle"></mat-icon>
-      </button>
-      }
-      <mat-menu #addMenu="matMenu" [overlapTrigger]="false">
-        <button mat-menu-item (click)="addOrEditCiteDuty(null, false, false); $event.stopPropagation();"
-          title="Add a new CITE Duty">New CITE Duty</button>
-        @for (template of templateList; track template.id) {
-        <button mat-menu-item (click)="addOrEditCiteDuty(template, false, true); $event.stopPropagation();"
-          title="{{ template.name }}">{{ template.name }}</button>
-        }
-      </mat-menu>
-    </div>
-    @if (!showTemplates) {
-    <div class="team-filter">
-      <mat-form-field class="team-selector">
-        <mat-label>Team</mat-label>
-        <mat-select placeholder="Team" [value]="selectedTeamId" (selectionChange)="selectTeam($event.value)">
-          <mat-option value="">All Teams</mat-option>
-          @for (team of mselTeamList; track team.id) {
-          <mat-option [value]="team.id">{{ team.shortName }}</mat-option>
-          }
-        </mat-select>
-      </mat-form-field>
-    </div>
-    }
-    <div class="search-cell">
-      <mat-form-field class="search-control">
-        <input matInput [formControl]="filterControl" placeholder="Search" />
-        @if (filterString) {
-        <button mat-icon-button matSuffix (click)="filterControl.setValue('')" title="Clear Search">
-          <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline"></mat-icon>
-        </button>
-        }
-      </mat-form-field>
-    </div>
+<div class="cssLayoutRowStartCenter">
+  <div class="sp-icon">
+    <mat-icon class="mdi-24px" fontIcon="mdi-clipboard-account-outline" [ngStyle]="{'color': 'var(--mat-sys-primary)'}"></mat-icon>
   </div>
+  <mat-form-field style="width: 300px; margin-left: 10px;">
+    <input matInput [formControl]="filterControl" placeholder="Search" />
+    @if (filterString) {
+    <button mat-icon-button matSuffix (click)="filterControl.setValue('')" title="Clear Search">
+      <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline"></mat-icon>
+    </button>
+    }
+  </mat-form-field>
+  @if (!showTemplates) {
+  <mat-form-field style="width: 150px; margin-left: 10px;">
+    <mat-label>Team</mat-label>
+    <mat-select placeholder="Team" [value]="selectedTeamId" (selectionChange)="selectTeam($event.value)">
+      <mat-option value="">All Teams</mat-option>
+      @for (team of mselTeamList; track team.id) {
+      <mat-option [value]="team.id">{{ team.shortName }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+  }
+  <div class="button-end">
+    <mat-paginator #paginator [pageIndex]="0" [pageSize]="20"
+      [pageSizeOptions]="[5, 10, 15, 20, 25, 50, 100, 200]"></mat-paginator>
+  </div>
+</div>
+
+<mat-menu #addMenu="matMenu" [overlapTrigger]="false">
+  <button mat-menu-item (click)="addOrEditCiteDuty(null, false, false); $event.stopPropagation();"
+    title="Add a new CITE Duty">New CITE Duty</button>
+  @for (template of templateList; track template.id) {
+  <button mat-menu-item (click)="addOrEditCiteDuty(template, false, true); $event.stopPropagation();"
+    title="{{ template.name }}">{{ template.name }}</button>
+  }
+</mat-menu>
+
+<div class="frame">
   <div class="table-container">
     <table mat-table [dataSource]="citeDutyDataSource" matSort (matSortChange)="sortChanged($event)">
       <!-- action column -->
       <ng-container matColumnDef="action">
-        <th mat-header-cell *matHeaderCellDef class="column-action">&nbsp;</th>
+        <th mat-header-cell *matHeaderCellDef class="column-action">
+          @if (showTemplates && canEdit) {
+          <button mat-icon-button (click)="addOrEditCiteDuty(null, false, false); $event.stopPropagation();"
+            title="Add a template CITE Duty" style="outline: none;">
+            <mat-icon class="mdi-24px center-self" fontIcon="mdi-plus-circle"></mat-icon>
+          </button>
+          }
+          @if (!showTemplates && (canEdit || msel.hasRole(loggedInUserId, null).owner)) {
+          <button mat-icon-button [matMenuTriggerFor]="addMenu"
+            style="outline: none;" title="Add CITE Duty"
+            (click)="$event.stopPropagation();">
+            <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle"></mat-icon>
+          </button>
+          }
+        </th>
         <td mat-cell *matCellDef="let element" class="column-action">
           @if (canEdit || msel.hasRole(loggedInUserId, null).owner) {
           <button mat-icon-button title="Edit this duty" (click)="addOrEditCiteDuty(element, false, false); $event.stopPropagation();">

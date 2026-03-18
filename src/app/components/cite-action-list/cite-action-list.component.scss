@@ -5,10 +5,14 @@
 @use "@angular/material" as mat;
 
 :host {
-  @include mat.form-field-density(-5);
   display: flex;
   flex-direction: column;
   height: calc(100vh - 44px);
+}
+
+.cssLayoutRowStartCenter {
+  min-height: 76px;
+  flex-shrink: 0;
 }
 
 .frame {
@@ -89,4 +93,8 @@ table {
 .column-description {
   flex: 1;
   padding: 2px;
+}
+
+.button-end {
+  margin-left: auto;
 }

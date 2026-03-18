@@ -5,9 +5,9 @@ Released under a MIT (SEI)-style license. See LICENSE.md in the project root for
 
 <div class="cssLayoutRowStartCenter">
   <div class="sp-icon">
-    <mat-icon class="mdi-24px" fontIcon="mdi-account-multiple"></mat-icon>
+    <mat-icon class="mdi-24px" fontIcon="mdi-account-multiple" [ngStyle]="{'color': 'var(--mat-sys-primary)'}"></mat-icon>
   </div>
-  <mat-form-field style="width: 300px">
+  <mat-form-field style="width: 300px; margin-left: 10px;">
     <input matInput [(ngModel)]="filterString" (keyup)="applyFilter($event.target.value)" placeholder="Search" />
     @if (filterString) {
     <button mat-icon-button matSuffix (click)="applyFilter('')" title="Clear Search">

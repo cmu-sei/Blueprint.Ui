@@ -4,79 +4,81 @@ Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
 
-<div class="frame">
-  <div class="filter-row">
-    <div class="action-cell">
-      @if (showTemplates && canEdit) {
-      <button mat-icon-button (click)="addOrEditCiteAction(null, false, false); $event.stopPropagation();"
-        title="Add a template CITE Action" style="outline: none; margin-left: 18px; margin-right: 24px;">
-        <mat-icon class="mdi-24px center-self little-left" fontIcon="mdi-plus-circle"></mat-icon>
-      </button>
-      }
-      @if (!showTemplates && (canEdit || msel.hasRole(loggedInUserId, null).owner)) {
-      <button mat-icon-button [matMenuTriggerFor]="addMenu"
-        style="outline: none; margin-left: 18px; margin-right: 24px;" title="Add CITE Action"
-        (click)="$event.stopPropagation();">
-        <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle"></mat-icon>
-      </button>
-      }
-      <mat-menu #addMenu="matMenu" [overlapTrigger]="false">
-        <button mat-menu-item (click)="addOrEditCiteAction(null, false, false)" title="Add a new CITE Action">New CITE
-          Action</button>
-        @for (template of templateList; track template.id) {
-        <button mat-menu-item (click)="addOrEditCiteAction(template, false, true)" title="{{ template.description }}">{{
-          template.description }}</button>
-        }
-      </mat-menu>
-    </div>
-    @if (!showTemplates) {
-    <div class="move-filter">
-      <mat-form-field class="move-field">
-        <mat-label>Move</mat-label>
-        <mat-select placeholder="Move" [value]="selectedMoveNumber" (selectionChange)="selectMove($event.value)"
-          (click)="$event.stopPropagation()" class="move-select">
-          <mat-option [value]="-1">All Moves</mat-option>
-          @for (move of moveList; track move.id) {
-          <mat-option [value]="move.moveNumber" title="{{ move.description }}">
-            {{ move.moveNumber }}
-          </mat-option>
-          }
-        </mat-select>
-      </mat-form-field>
-    </div>
-    }
-    @if (!showTemplates) {
-    <div class="team-filter">
-      <mat-form-field class="team-selector">
-        <mat-label>Team</mat-label>
-        <mat-select placeholder="Team" [value]="selectedTeamId" (selectionChange)="selectTeam($event.value)"
-          (click)="$event.stopPropagation()">
-          <mat-option value="">All Teams</mat-option>
-          @for (team of mselTeamList; track team) {
-          <mat-option [value]="team.id">
-            {{ team.shortName }}
-          </mat-option>
-          }
-        </mat-select>
-      </mat-form-field>
-    </div>
-    }
-    <div class="search-cell">
-      <mat-form-field class="search-control">
-        <input matInput [formControl]="filterControl" placeholder="Search" />
-        @if (filterControl.value) {
-        <button mat-icon-button matSuffix (click)="filterControl.setValue('')" title="Clear Search">
-          <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline"></mat-icon>
-        </button>
-        }
-      </mat-form-field>
-    </div>
+<div class="cssLayoutRowStartCenter">
+  <div class="sp-icon">
+    <mat-icon class="mdi-24px" fontIcon="mdi-clipboard-check-outline" [ngStyle]="{'color': 'var(--mat-sys-primary)'}"></mat-icon>
   </div>
+  <mat-form-field style="width: 300px; margin-left: 10px;">
+    <input matInput [formControl]="filterControl" placeholder="Search" />
+    @if (filterControl.value) {
+    <button mat-icon-button matSuffix (click)="filterControl.setValue('')" title="Clear Search">
+      <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline"></mat-icon>
+    </button>
+    }
+  </mat-form-field>
+  @if (!showTemplates) {
+  <mat-form-field style="width: 120px; margin-left: 10px;">
+    <mat-label>Move</mat-label>
+    <mat-select placeholder="Move" [value]="selectedMoveNumber" (selectionChange)="selectMove($event.value)"
+      (click)="$event.stopPropagation()">
+      <mat-option [value]="-1">All Moves</mat-option>
+      @for (move of moveList; track move.id) {
+      <mat-option [value]="move.moveNumber" title="{{ move.description }}">
+        {{ move.moveNumber }}
+      </mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+  }
+  @if (!showTemplates) {
+  <mat-form-field style="width: 150px; margin-left: 10px;">
+    <mat-label>Team</mat-label>
+    <mat-select placeholder="Team" [value]="selectedTeamId" (selectionChange)="selectTeam($event.value)"
+      (click)="$event.stopPropagation()">
+      <mat-option value="">All Teams</mat-option>
+      @for (team of mselTeamList; track team.id) {
+      <mat-option [value]="team.id">
+        {{ team.shortName }}
+      </mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+  }
+  <div class="button-end">
+    <mat-paginator #paginator [pageIndex]="0" [pageSize]="20"
+      [pageSizeOptions]="[5, 10, 15, 20, 25, 50, 100, 200]"></mat-paginator>
+  </div>
+</div>
+
+<mat-menu #addMenu="matMenu" [overlapTrigger]="false">
+  <button mat-menu-item (click)="addOrEditCiteAction(null, false, false)" title="Add a new CITE Action">New CITE
+    Action</button>
+  @for (template of templateList; track template.id) {
+  <button mat-menu-item (click)="addOrEditCiteAction(template, false, true)" title="{{ template.description }}">{{
+    template.description }}</button>
+  }
+</mat-menu>
+
+<div class="frame">
   <div class="table-container">
     <table mat-table [dataSource]="citeActionDataSource" matSort (matSortChange)="sortChanged($event)">
       <!-- action column -->
       <ng-container matColumnDef="action">
-        <th mat-header-cell *matHeaderCellDef class="column-action">&nbsp;</th>
+        <th mat-header-cell *matHeaderCellDef class="column-action">
+          @if (showTemplates && canEdit) {
+          <button mat-icon-button (click)="addOrEditCiteAction(null, false, false); $event.stopPropagation();"
+            title="Add a template CITE Action" style="outline: none;">
+            <mat-icon class="mdi-24px center-self" fontIcon="mdi-plus-circle"></mat-icon>
+          </button>
+          }
+          @if (!showTemplates && (canEdit || msel.hasRole(loggedInUserId, null).owner)) {
+          <button mat-icon-button [matMenuTriggerFor]="addMenu"
+            style="outline: none;" title="Add CITE Action"
+            (click)="$event.stopPropagation();">
+            <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle"></mat-icon>
+          </button>
+          }
+        </th>
         <td mat-cell *matCellDef="let element" class="column-action">
           @if (canEdit || msel.hasRole(loggedInUserId, null).owner) {
           <button mat-icon-button title="Edit {{ element.description }}"

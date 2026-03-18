@@ -4,6 +4,24 @@ Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
 
+<div class="cssLayoutRowStartCenter">
+  <div class="sp-icon">
+    <mat-icon class="mdi-24px" fontIcon="mdi-account-group" [ngStyle]="{'color': 'var(--mat-sys-primary)'}"></mat-icon>
+  </div>
+  <mat-form-field style="width: 300px; margin-left: 10px;">
+    <input matInput [(ngModel)]="filterString" (keyup)="applyFilter($any($event.target).value)" placeholder="Search" />
+    @if (filterString) {
+    <button mat-icon-button matSuffix (click)="applyFilter('')" title="Clear Search">
+      <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline"></mat-icon>
+    </button>
+    }
+  </mat-form-field>
+  <div class="button-end">
+    <mat-paginator #paginator [pageIndex]="0" [pageSize]="20"
+      [pageSizeOptions]="[5, 10, 15, 20, 25, 50, 100, 200]"></mat-paginator>
+  </div>
+</div>
+
 <mat-menu #addMenu="matMenu" [overlapTrigger]="false">
   <button mat-menu-item (click)="addOrEditTeam(null)" title="Add a new team">New Team</button>
   <button mat-menu-item (click)="addTeamFromUnit()" title="Add team from unit">
@@ -65,21 +83,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <span>** ALL can invite</span>
           }&nbsp;
         </td>
-      </ng-container>
-      <!-- search column -->
-      <ng-container matColumnDef="search">
-        <th mat-header-cell *matHeaderCellDef class="column-search">
-          <mat-form-field class="search-control">
-            <input matInput [(ngModel)]="filterString" (keyup)="applyFilter($any($event.target).value)"
-              placeholder="Search" />
-            @if (filterString) {
-            <button mat-icon-button matSuffix (click)="applyFilter('')" title="Clear Search">
-              <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline"></mat-icon>
-            </button>
-            }
-          </mat-form-field>
-        </th>
-        <td mat-cell *matCellDef="let element" class="column-search"></td>
       </ng-container>
       <!-- Expanded Content Column -->
       <ng-container matColumnDef="expandedDetail">

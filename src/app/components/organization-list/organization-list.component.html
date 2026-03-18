@@ -4,6 +4,24 @@ Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
 
+<div class="cssLayoutRowStartCenter">
+  <div class="sp-icon">
+    <mat-icon class="mdi-24px" fontIcon="mdi-bank" [ngStyle]="{'color': 'var(--mat-sys-primary)'}"></mat-icon>
+  </div>
+  <mat-form-field style="width: 300px; margin-left: 10px;">
+    <input matInput [formControl]="filterControl" placeholder="Search" />
+    @if (filterControl.value) {
+    <button mat-icon-button matSuffix (click)="filterControl.setValue(''); $event.stopPropagation()" title="Clear Search">
+      <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline"></mat-icon>
+    </button>
+    }
+  </mat-form-field>
+  <div class="button-end">
+    <mat-paginator #paginator [pageIndex]="0" [pageSize]="20"
+      [pageSizeOptions]="[5, 10, 15, 20, 25, 50, 100, 200]"></mat-paginator>
+  </div>
+</div>
+
 <div class="frame">
   <section class="scrolling-region">
     <span>
@@ -87,14 +105,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <ng-container matColumnDef="summary">
             <mat-header-cell *matHeaderCellDef mat-sort-header class="six-cell">
               Summary
-              <mat-form-field (click)="$event.stopPropagation()" class="search-control">
-                <input matInput [formControl]="filterControl" placeholder="Search" />
-                @if (filterControl.value) {
-                <button mat-icon-button matSuffix (click)="filterControl.setValue(''); $event.stopPropagation()" title="Clear Search">
-                  <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline"></mat-icon>
-                </button>
-                }
-              </mat-form-field>
             </mat-header-cell>
             <mat-cell *matCellDef="let element" class="six-cell">
               <div class="summary-text">{{ element.summary }}</div>

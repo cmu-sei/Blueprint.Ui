@@ -5,10 +5,14 @@
 @use "@angular/material" as mat;
 
 :host {
-  @include mat.form-field-density(-5);
   display: flex;
   flex-direction: column;
   height: calc(100vh - 44px);
+}
+
+.cssLayoutRowStartCenter {
+  min-height: 76px;
+  flex-shrink: 0;
 }
 
 .table-container {
@@ -97,4 +101,8 @@ table {
 .search-control {
   width: 100%;
   margin-left: 20px;
+}
+
+.button-end {
+  margin-left: auto;
 }

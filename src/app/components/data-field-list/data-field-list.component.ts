@@ -1,7 +1,7 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild, AfterViewInit } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -17,6 +17,7 @@ import { MselQuery } from 'src/app/data/msel/msel.query';
 import { Sort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatMenuTrigger } from '@angular/material/menu';
+import { MatPaginator } from '@angular/material/paginator';
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { DataFieldDataService } from 'src/app/data/data-field/data-field-data.service';
 import { DataFieldQuery } from 'src/app/data/data-field/data-field.query';
@@ -35,7 +36,7 @@ import { v4 as uuidv4 } from 'uuid';
   styleUrls: ['./data-field-list.component.scss'],
   standalone: false
 })
-export class DataFieldListComponent implements OnDestroy, OnInit {
+export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit {
   @Input() loggedInUserId: string;
   @Input() showTemplates: boolean;
   @Input() userTheme: Theme;
@@ -83,6 +84,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
   private unsubscribe$ = new Subject();
   // context menu
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
+  @ViewChild(MatPaginator) paginator: MatPaginator;
   contextMenuPosition = { x: '0px', y: '0px' };
 
   constructor(
@@ -178,6 +180,10 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
           });
       }
     }
+  }
+
+  ngAfterViewInit() {
+    this.dataFieldDataSource.paginator = this.paginator;
   }
 
   setDataFieldList() {
@@ -344,11 +350,15 @@ export class DataFieldListComponent implements OnDestroy, OnInit {
     } else {
       this.allowDragAndDrop = !this.showTemplates;
     }
-    this.dataFieldDataSource.data = this.getFilteredDataFields(
+    const filteredData = this.getFilteredDataFields(
       this.msel.id,
       this.injectTypeId,
       this.dataFieldList
     );
+    this.dataFieldDataSource.data = filteredData;
+    if (this.paginator) {
+      this.paginator.length = filteredData.length;
+    }
     this.templateDataSource.data = this.templateList.sort((a, b) =>
       this.sortDataFields(a, b)
     );

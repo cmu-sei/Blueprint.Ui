@@ -3,28 +3,32 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
-<div [ngClass]="injectTypeId ? 'inject-type-frame' : 'frame'">
-  <section matSort (matSortChange)="sortChanged($event)" class="header-row background-alt">
-    <span [ngClass]="showTemplates ? 'header-cell top-left-cell' : 'header-cell top-left-cell-templates'">&nbsp;</span>
-    <span class="header-cell six-cell search-cell">
-      <mat-form-field class="search-control">
-        <input matInput [formControl]="filterControl" placeholder="Search" />
-        @if (filterControl.value) {
-        <button mat-icon-button matSuffix (click)="filterControl.setValue(''); $event.stopPropagation()" title="Clear Search">
-          <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline"></mat-icon>
-        </button>
-        }
-      </mat-form-field>
-    </span>
-  </section>
-
-  <section [ngClass]="injectTypeId ? 'inject-type-scrolling-region' : 'scrolling-region'">
-    @if (!!galleryToDo()) {
-    <div class="gallery-warning">** Gallery Parameters not assigned: {{ galleryToDo() }}</div>
+<div class="cssLayoutRowStartCenter">
+  <div class="sp-icon">
+    <mat-icon class="mdi-24px" fontIcon="mdi-view-column-outline" [ngStyle]="{'color': 'var(--mat-sys-primary)'}"></mat-icon>
+  </div>
+  <mat-form-field style="width: 300px; margin-left: 10px;">
+    <input matInput [formControl]="filterControl" placeholder="Search" />
+    @if (filterControl.value) {
+    <button mat-icon-button matSuffix (click)="filterControl.setValue(''); $event.stopPropagation()" title="Clear Search">
+      <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline"></mat-icon>
+    </button>
     }
-    <div class="table">
-      <mat-table #table [dataSource]="dataFieldDataSource" matSort (matSortChange)="sortChanged($event)" cdkDropList
-        [cdkDropListDisabled]="!allowDragAndDrop" (cdkDropListDropped)="dropHandler($event)">
+  </mat-form-field>
+  <div class="button-end">
+    <mat-paginator #paginator [pageIndex]="0" [pageSize]="20"
+      [pageSizeOptions]="[5, 10, 15, 20, 25, 50, 100, 200]"></mat-paginator>
+  </div>
+</div>
+
+@if (!!galleryToDo()) {
+<div class="gallery-warning">** Gallery Parameters not assigned: {{ galleryToDo() }}</div>
+}
+
+<div class="frame">
+  <div class="table-container">
+    <mat-table #table [dataSource]="dataFieldDataSource" matSort (matSortChange)="sortChanged($event)" cdkDropList
+      [cdkDropListDisabled]="!allowDragAndDrop" (cdkDropListDropped)="dropHandler($event)">
         <!-- Drag Handler column -->
         <ng-container matColumnDef="draghandle">
           <mat-header-cell *matHeaderCellDef class="column-draghandle"></mat-header-cell>
@@ -206,11 +210,10 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
         <mat-row *matRowDef="let row; columns: systemFieldDisplayedColumns when: fieldIsSystemDefined"></mat-row>
         <mat-row *matRowDef="let row; columns: displayedColumns; when: !fieldIsSystemDefined"></mat-row>
-      </mat-table>
-      <!-- No Results Message -->
-      @if (dataFieldDataSource?.filteredData.length === 0) {
-      <div class="text no-results">No results found</div>
-      }
-    </div>
-  </section>
+    </mat-table>
+    <!-- No Results Message -->
+    @if (dataFieldDataSource?.filteredData.length === 0) {
+    <div class="text no-results">No results found</div>
+    }
+  </div>
 </div>
