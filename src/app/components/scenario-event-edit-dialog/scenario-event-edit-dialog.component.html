@@ -93,7 +93,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           @if (currentFilterBy === 'all' && data.scenarioEvent.scenarioEventType === eventType.Inject) {
           <div class="full-width">
             <mat-form-field class="full-width">
-              <input type="text" matInput placeholder="row metadata" [(ngModel)]="data.scenarioEvent.rowMetadata" />
+              <input type="text" matInput placeholder="row metadata" [(ngModel)]="data.scenarioEvent.rowMetadata" [disabled]="!data.isEditor" />
             </mat-form-field>
           </div>
           }
