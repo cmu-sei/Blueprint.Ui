@@ -193,7 +193,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
         (df.mselId && df.mselId === this.msel.id) ||
         (df.injectTypeId && df.injectTypeId === this.injectTypeId)
       ) {
-        this.dataFieldList.push(JSON.parse(JSON.stringify(df)));
+        this.dataFieldList.push({ ...df });
       }
     });
     this.sortChanged(this.sort);
@@ -431,7 +431,9 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
   ): DataField[] {
     let filteredDataFields: DataField[] = [];
     if (dataFields && dataFields.length > 0) {
-      filteredDataFields = dataFields.map(df => JSON.parse(JSON.stringify(df)));
+      dataFields.forEach(m => {
+        filteredDataFields.push({ ...m });
+      });
       if (this.filterString) {
         const filterString = this.filterString?.toLowerCase();
         filteredDataFields = filteredDataFields.filter((a) =>
@@ -446,7 +448,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
     const returnArray =
       this.showTemplates || (!mselId && !injectTypeId)
         ? filteredDataFields
-        : this.systemDefinedDataFields.map(df => JSON.parse(JSON.stringify(df))).concat(filteredDataFields);
+        : this.systemDefinedDataFields.concat(filteredDataFields);
     return returnArray;
   }
 
