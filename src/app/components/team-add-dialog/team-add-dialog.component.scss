@@ -9,7 +9,9 @@
 
 .all-content {
   width: 100%;
-  height: 55vh;
+  height: auto;
+  max-height: 60vh;
+  overflow-y: auto;
 }
 
 .unit-div {

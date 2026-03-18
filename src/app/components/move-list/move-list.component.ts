@@ -1,8 +1,10 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, Input, OnDestroy, ViewChild } from '@angular/core';
+import { Component, Input, OnDestroy, ViewChild, AfterViewInit } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
+import { MatTableDataSource } from '@angular/material/table';
+import { MatPaginator } from '@angular/material/paginator';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { Move } from 'src/app/generated/blueprint.api';
@@ -23,7 +25,7 @@ import { v4 as uuidv4 } from 'uuid';
   styleUrls: ['./move-list.component.scss'],
   standalone: false
 })
-export class MoveListComponent implements OnDestroy {
+export class MoveListComponent implements OnDestroy, AfterViewInit {
   @Input() loggedInUserId: string;
   @Input() canEditMsel: boolean;
   msel = new MselPlus();
@@ -34,6 +36,8 @@ export class MoveListComponent implements OnDestroy {
   filterString = '';
   sort: Sort = { active: 'moveNumber', direction: 'asc' };
   displayedMoves: Move[] = [];
+  moveDataSource = new MatTableDataSource<Move>(new Array<Move>());
+  displayedColumns: string[] = ['action', 'moveNumber', 'timeToggle', 'moveStartTime', 'situationTime', 'description'];
   isAddingMove = false;
   editingId = '';
   showRealTime = false;
@@ -43,6 +47,7 @@ export class MoveListComponent implements OnDestroy {
   private unsubscribe$ = new Subject();
   // context menu
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
+  @ViewChild(MatPaginator) paginator: MatPaginator;
   contextMenuPosition = { x: '0px', y: '0px' };
 
   constructor(
@@ -89,12 +94,17 @@ export class MoveListComponent implements OnDestroy {
       });
   }
 
+  ngAfterViewInit() {
+    this.moveDataSource.paginator = this.paginator;
+  }
+
   getSortedMoves(moves: Move[]) {
     if (moves) {
       moves.sort((a, b) =>
         this.sortMoves(a, b, this.sort.active, this.sort.direction)
       );
     }
+    this.moveDataSource.data = moves || [];
     return moves;
   }
 
@@ -167,6 +177,7 @@ export class MoveListComponent implements OnDestroy {
     this.displayedMoves = this.displayedMoves.sort((a, b) =>
       this.sortMoves(a, b, sort.active, sort.direction)
     );
+    this.moveDataSource.data = this.displayedMoves;
   }
 
   private sortMoves(a: Move, b: Move, column: string, direction: string) {
@@ -178,8 +189,17 @@ export class MoveListComponent implements OnDestroy {
       case 'deltaSeconds':
         return (a.deltaSeconds < b.deltaSeconds ? -1 : 1) * (isAsc ? 1 : -1);
         break;
+      case 'moveStartTime':
+        return (a.moveStartTime < b.moveStartTime ? -1 : 1) * (isAsc ? 1 : -1);
+        break;
       case 'situationTime':
         return (a.situationTime < b.situationTime ? -1 : 1) * (isAsc ? 1 : -1);
+        break;
+      case 'description':
+        return (
+          (a.description < b.description ? -1 : 1) *
+          (isAsc ? 1 : -1)
+        );
         break;
       case 'situationDescription':
         return (
@@ -224,6 +244,21 @@ export class MoveListComponent implements OnDestroy {
       deltaSeconds = orderedMoves[index].deltaSeconds;
     }
     return false;
+  }
+
+  getTimezoneAbbr(): string {
+    try {
+      const date = new Date();
+      const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+      const formatted = date.toLocaleTimeString('en-US', {
+        timeZoneName: 'short',
+        timeZone
+      });
+      const parts = formatted.split(' ');
+      return parts[parts.length - 1] || 'UTC';
+    } catch (error) {
+      return 'UTC';
+    }
   }
 
   ngOnDestroy() {

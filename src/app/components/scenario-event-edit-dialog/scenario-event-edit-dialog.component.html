@@ -73,7 +73,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
           @if ((currentFilterBy === 'all' || data.scenarioEvent.scenarioEventType !== eventType.Inject) &&
           getScenarioTypeDataFields().length > 0) {
           <div class="start-time-div">
-            <span>Execution Time</span>
             <app-duration-edit [startTime]="data.mselStartTime" [(durationSeconds)]="data.scenarioEvent.deltaSeconds"
               [timeName]="'Execution Date / Time'" [postScript]="''" [canEdit]="data.isEditor">
             </app-duration-edit>

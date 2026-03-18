@@ -440,4 +440,10 @@ export class MselPlaybookComponent {
     newOptions.push(max);
     this.pageSizeOptions = newOptions;
   }
+
+  getMoveNumber(scenarioEventId: string): number {
+    return this.moveAndGroupNumbers[scenarioEventId]
+      ? this.moveAndGroupNumbers[scenarioEventId][0]
+      : -1;
+  }
 }

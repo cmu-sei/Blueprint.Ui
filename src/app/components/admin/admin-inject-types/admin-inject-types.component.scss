@@ -4,8 +4,13 @@
 
 @use "@angular/material" as mat;
 
-:host {
-  @include mat.form-field-density(-5); // Adjust -3 for this specific form field
+.cssLayoutRowStartCenter {
+  min-height: 76px;
+  flex-shrink: 0;
+}
+
+.button-end {
+  margin-left: auto;
 }
 
 .expansion-panel {
@@ -59,12 +64,18 @@
   position: relative;
 }
 
-.element-row-not-expanded {
+.element-row {
   cursor: pointer;
 }
 
+.element-row:hover {
+  background-color: var(--mat-sys-surface-variant);
+}
+
+.element-row-not-expanded {
+}
+
 .element-row-expanded {
-  cursor: pointer;
   border-bottom-color: transparent;
 }
 
@@ -87,10 +98,8 @@
 }
 
 .column-action {
-  flex: 0 0 150px;
-  flex-direction: row;
-  padding: 0px;
-  word-wrap: none;
+  flex: 0 0 160px;
+  width: 160px;
 }
 
 .column-description {

@@ -25,17 +25,27 @@ import { MatMenuTrigger } from '@angular/material/menu';
 import { UserMselRoleDataService } from 'src/app/data/user-msel-role/user-msel-role-data.service';
 import { UserMselRoleQuery } from 'src/app/data/user-msel-role/user-msel-role.query';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
+import { MatTable, MatTableDataSource } from '@angular/material/table';
+import { animate, state, style, transition, trigger } from '@angular/animations';
 
 @Component({
     selector: 'app-msel-contributors',
     templateUrl: './msel-contributors.component.html',
     styleUrls: ['./msel-contributors.component.scss'],
+    animations: [
+      trigger('detailExpand', [
+        state('collapsed', style({ height: '0px', minHeight: '0', visibility: 'hidden' })),
+        state('expanded', style({ height: '*', visibility: 'visible' })),
+        transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
+      ]),
+    ],
     standalone: false
 })
 export class MselContributorsComponent implements OnDestroy, OnInit {
   @Input() loggedInUserId: string;
   // context menu
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
+  @ViewChild('contributorTable', { static: false }) contributorTable: MatTable<any>;
   contextMenuPosition = { x: '0px', y: '0px' };
   msel = new MselPlus();
   originalMsel = new MselPlus();
@@ -54,6 +64,10 @@ export class MselContributorsComponent implements OnDestroy, OnInit {
   userList: User[] = [];
   mselUnitList: MselUnit[] = [];
   userMselRoles: UserMselRole[] = [];
+  mselUnitDataSource = new MatTableDataSource<MselUnit>(new Array<MselUnit>());
+  displayedColumns: string[] = ['action', 'shortName', 'name'];
+  expandedElementId = '';
+  isExpansionDetailRow = (i: number, row: Object) => (row as MselUnit).id === this.expandedElementId;
   private allUnits: Unit[] = [];
   private unsubscribe$ = new Subject();
 
@@ -101,6 +115,7 @@ export class MselContributorsComponent implements OnDestroy, OnInit {
         this.mselUnitList = this.mselUnitList.sort((a, b) =>
           a.unit.shortName?.toLowerCase() > b.unit.shortName?.toLowerCase() ? 1 : -1);
       }
+      this.mselUnitDataSource.data = this.mselUnitList;
     });
     // subscribe to UserMselRoles
     this.userMselRoleQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(umrs => {
@@ -217,6 +232,21 @@ export class MselContributorsComponent implements OnDestroy, OnInit {
 
   trackByFn(index, item) {
     return item.id;
+  }
+
+  rowClicked(row: MselUnit) {
+    if (this.expandedElementId === row.id) {
+      this.expandedElementId = '';
+    } else {
+      this.expandedElementId = row.id;
+    }
+    this.contributorTable.renderRows();
+  }
+
+  getRowClass(id: string) {
+    return this.expandedElementId === id
+      ? 'element-row element-row-expanded'
+      : 'element-row element-row-not-expanded';
   }
 
   getMselRolesToDisplay(): MselRole[] {

@@ -712,6 +712,21 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     }
   }
 
+  getUserTimezone(): string {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone;
+  }
+
+  getTimezoneAbbr(): string {
+    const date = new Date();
+    const timeZone = this.getUserTimezone();
+    const formatted = date.toLocaleTimeString('en-US', {
+      timeZoneName: 'short',
+      timeZone
+    });
+    const parts = formatted.split(' ');
+    return parts[parts.length - 1];
+  }
+
   ngOnDestroy() {
     // Clear the unsaved changes map to prevent memory leaks
     this.unsavedPageChanges.clear();

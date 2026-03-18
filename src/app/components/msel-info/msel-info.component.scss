@@ -231,6 +231,14 @@ a {
   text-align: left;
 }
 
+.field-hint {
+  font-size: 12px;
+  font-weight: normal;
+  color: var(--mat-sys-on-background);
+  opacity: 0.6;
+  margin-top: 4px;
+}
+
 .integration-div {
   text-align: left;
   margin-bottom: 20px;
@@ -360,4 +368,8 @@ a {
     width: 18px;
     height: 18px;
   }
+}
+
+.datetime-field {
+  width: 300px;
 }

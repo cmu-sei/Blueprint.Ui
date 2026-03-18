@@ -25,7 +25,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         </span>
         <span class="delete-span">
           @if (canManageMsel()) {
-          <button mat-icon-button (click)="deleteMsel()" title="Delete this MSEL">
+          <button mat-icon-button (click)="deleteMsel()" title="Delete this MSEL" [disabled]="msel && msel.status === 'Deployed'">
             <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline" alt="Delete"></mat-icon>
           </button>
           }
@@ -61,31 +61,35 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <div class="sub-detail center-self">
               <mat-checkbox [(ngModel)]="msel.isTemplate" [disabled]="msel.status === 'Deployed' || !canEditMsel()"
                 (cut)="isChanged = true" (change)="isChanged = true" (paste)="isChanged = true"
-                (keypress)="isChanged = true">Is a Template</mat-checkbox>
+                (keypress)="isChanged = true" title="Mark this MSEL as a reusable template for creating new MSELs">Is a Template</mat-checkbox>
             </div>
           </div>
           <!-- MSEL Start Time -->
           <div class="single-checkbox">
             <mat-checkbox [checked]="msel.startTime?.valueOf() > 0"
               [disabled]="!canEditMsel()"
-              (change)="toggleStartTime($event)" title="Set a Start Time">Set a Start Time
+              (change)="toggleStartTime($event)" title="Schedule a specific start date and time for this MSEL">Set a Start Time
             </mat-checkbox>
           </div>
           @if (hasStartTime()) {
           <div class="single-detail center-self">
-            <mat-form-field>
+            <mat-form-field class="datetime-field">
               <mat-label>Start Date / Time</mat-label>
               <input matInput [ngxMatDatetimePicker]="picker" [(ngModel)]="msel.startTime"
                 (dateChange)="isChanged = true" (dateInput)="isChanged = true" style="display: none;" [disabled]="!canEditMsel()">
               <!-- <datetime-picker> -->
               <span (click)="canEditMsel() && picker.open()">
-                {{msel.startTime | date: 'MM/dd/yyyy hh:mm a'}}
+                {{msel.startTime | date: 'dd MMM yyyy HH:mm'}} {{ getTimezoneAbbr() }}
               </span>
               <mat-datepicker-toggle matSuffix title="Choose Date/Time" [for]="picker" [disabled]="!canEditMsel()">
               </mat-datepicker-toggle>
               <ngx-mat-datetime-picker #picker [showSpinners]=true [showSeconds]=false [stepHour]=1 [stepMinute]=5
                 [stepSecond]=1 [touchUi]=false [enableMeridian]=true [disableMinute]=false [hideTime]=false
                 [color]="'warn'">
+                <ngx-mat-datepicker-actions>
+                  <button mat-stroked-button ngxMatDatepickerApply>Save</button>
+                  <button mat-stroked-button ngxMatDatepickerCancel>Cancel</button>
+                </ngx-mat-datepicker-actions>
               </ngx-mat-datetime-picker>
             </mat-form-field>
           </div>
@@ -287,6 +291,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <div class="url-form-field">
             <div class="editor-label">
               Exercise View URL
+              <div class="field-hint">
+                Use this URL for direct access to view the Exercise MSEL
+              </div>
             </div>
             <div class="url-button-link">
               <button mat-icon-button ngxClipboard [cbContent]="viewUrl" (click)="$event.stopPropagation()"
@@ -300,6 +307,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <div class="url-form-field">
             <div class="editor-label">
               MSEL Starter URL
+              <div class="field-hint">
+                Use this URL for direct access to edit the Scenario Events
+              </div>
             </div>
             <div class="url-button-link">
               <button mat-icon-button ngxClipboard [cbContent]="starterUrl" (click)="$event.stopPropagation()"
@@ -314,7 +324,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <div class="single-detail center-self">
             <mat-form-field class="full-width"
               title="A numeric value that defines the height of the header row when this MSEL is exported as an xlsx file">
-              <input type="text" matInput placeholder="Header Row Metadata (Height)"
+              <mat-label>Header Row Metadata (Height) when exported as an Excel file</mat-label>
+              <input type="text" matInput
                 [(ngModel)]="msel.headerRowMetadata" (cut)="isChanged = true" (change)="isChanged = true"
                 (paste)="isChanged = true" (keypress)="isChanged = true"
                 title="An integer value that defines the height of the header row when this MSEL is exported as an xlsx file" />
@@ -323,13 +334,15 @@ project root for license information or contact permission@sei.cmu.edu for full 
           }
           <div class="single-detail center-self">
             <mat-form-field class="full-width">
-              <input type="text" matInput placeholder="Date Created" value="{{ msel.dateCreated | date: 'MM/dd/yyyy' }}"
+              <mat-label>Date Created</mat-label>
+              <input type="text" matInput value="{{ msel.dateCreated | date: 'yyyy-MM-dd' }}"
                 disabled />
             </mat-form-field>
           </div>
           <div class="single-detail center-self">
             <mat-form-field class="full-width">
-              <input type="text" matInput placeholder="Created By" value="{{ getUserName(msel.createdBy) }}" disabled />
+              <mat-label>Created By</mat-label>
+              <input type="text" matInput value="{{ getUserName(msel.createdBy) }}" disabled />
             </mat-form-field>
           </div>
         </div>
