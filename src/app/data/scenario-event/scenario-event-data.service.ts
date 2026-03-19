@@ -243,8 +243,20 @@ export class ScenarioEventDataService {
         return value.sortAndFilterValue.toString();
       case DataFieldType.DateTime:
         const dateValue = value.value ? value.value : '';
-        const formattedValue = new Date(dateValue).toLocaleString();
-        return formattedValue === 'Invalid Date' ? ' ' : formattedValue;
+        if (!dateValue) return ' ';
+        const date = new Date(dateValue);
+        if (isNaN(date.getTime())) return ' ';
+
+        // Format as: dd MMM yyyy HH:mm TZ
+        const day = String(date.getDate()).padStart(2, '0');
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const month = months[date.getMonth()];
+        const year = date.getFullYear();
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const tz = this.getTimezoneAbbr();
+
+        return `${day} ${month} ${year} ${hours}:${minutes} ${tz}`;
       default:
         return value.value ? value.value : '';
     }
@@ -602,5 +614,20 @@ export class ScenarioEventDataService {
       this.sortScenarioEventImpl(a, b, sorts, valueMap)
     );
     return scenarioEvents;
+  }
+
+  private getTimezoneAbbr(): string {
+    try {
+      const date = new Date();
+      const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+      const formatted = date.toLocaleTimeString('en-US', {
+        timeZoneName: 'short',
+        timeZone
+      });
+      const parts = formatted.split(' ');
+      return parts[parts.length - 1] || 'UTC';
+    } catch (error) {
+      return 'UTC';
+    }
   }
 }

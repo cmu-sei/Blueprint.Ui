@@ -5,38 +5,31 @@
 @use "@angular/material" as mat;
 
 :host {
-  @include mat.form-field-density(-5); // Adjust -3 for this specific form field
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 44px);
+}
+
+.cssLayoutRowStartCenter {
+  min-height: 76px;
+  flex-shrink: 0;
 }
 
 .frame {
   display: flex;
   flex-direction: column;
   flex: 1;
-  height: calc(100vh - 60px);
-  width: 100%;
+  min-height: 0;
 }
 
-.inject-type-frame {
-  display: flex;
-  flex-direction: column;
+.table-container {
   flex: 1;
-  width: 100%;
+  overflow: auto;
+  padding-bottom: 20px;
 }
 
-.table {
-  font-size: small;
+mat-table {
   width: 100%;
-  overflow: none;
-  background: transparent;
-
-  mat-row {
-    align-items: stretch;
-  }
-
-  mat-cell {
-    display: flex;
-    align-items: center;
-  }
 }
 
 .header-row {
@@ -104,17 +97,17 @@
 }
 
 .column-action {
-  flex: 0 0 180px;
+  flex: 0 0 160px;
+  width: 160px;
   display: flex;
   flex-direction: row;
-  padding: 0;
   word-wrap: none;
   align-items: center;
   justify-items: center;
 }
 
 .action-div {
-  width: 170px;
+  width: 150px;
 }
 
 .column-summary {
@@ -209,28 +202,11 @@
   width: 95%;
 }
 
-.scrolling-region {
-  width: 100%;
-  height: calc(100vh - 89px);
-  overflow: auto;
-
-  mat-header-row {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    background: inherit;
-  }
-}
-
-.inject-type-scrolling-region {
-  width: 100%;
-
-  mat-header-row {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    background: inherit;
-  }
+mat-header-row {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: inherit;
 }
 
 .data-field-button {
@@ -252,12 +228,7 @@
 }
 
 .button-end {
-  margin-left: 100px;
-}
-
-.sp-icon {
-  margin-left: 10px;
-  margin-right: 20px;
+  margin-left: auto;
 }
 
 .search-icon {

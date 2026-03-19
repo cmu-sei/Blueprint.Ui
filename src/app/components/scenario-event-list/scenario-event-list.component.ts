@@ -501,6 +501,8 @@ export class ScenarioEventListComponent
     this.msel.teams.forEach((t) => {
       orgs.push(t.shortName);
     });
+    // Remove duplicates
+    orgs = [...new Set(orgs)];
     orgs = orgs.sort((a, b) => (a?.toLowerCase() < b?.toLowerCase() ? -1 : 1));
     return orgs;
   }
@@ -745,7 +747,7 @@ export class ScenarioEventListComponent
       this.msel.hasRole(this.loggedInUserId, scenarioEvent.id).editor;
 
     const dialogRef = this.dialog.open(ScenarioEventEditDialogComponent, {
-      minWidth: '400px',
+      minWidth: '900px',
       maxWidth: '90vw',
       width: 'auto',
       height: '90%',
@@ -1111,6 +1113,22 @@ export class ScenarioEventListComponent
       }
       dialogRef.close();
     });
+  }
+
+  getUserTimezone(): string {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone;
+  }
+
+  getTimezoneAbbr(): string {
+    const date = new Date();
+    const timeZone = this.getUserTimezone();
+    const formatted = date.toLocaleTimeString('en-US', {
+      timeZoneName: 'short',
+      timeZone
+    });
+    // Extract timezone abbreviation (e.g., "EST", "PST")
+    const parts = formatted.split(' ');
+    return parts[parts.length - 1];
   }
 
   ngOnDestroy() {

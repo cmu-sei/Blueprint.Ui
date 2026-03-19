@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, Input, OnDestroy, ViewChild } from '@angular/core';
+import { Component, Input, OnDestroy, ViewChild, AfterViewInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -14,6 +14,8 @@ import { MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { Sort } from '@angular/material/sort';
 import { MatMenuTrigger } from '@angular/material/menu';
+import { MatTableDataSource } from '@angular/material/table';
+import { MatPaginator } from '@angular/material/paginator';
 import { CiteDutyDataService } from 'src/app/data/cite-duty/cite-duty-data.service';
 import { CiteDutyQuery } from 'src/app/data/cite-duty/cite-duty.query';
 import { TeamQuery } from 'src/app/data/team/team.query';
@@ -27,7 +29,7 @@ import { CiteDutyEditDialogComponent } from '../cite-duty-edit-dialog/cite-duty-
   styleUrls: ['./cite-duty-list.component.scss'],
   standalone: false
 })
-export class CiteDutyListComponent implements OnDestroy {
+export class CiteDutyListComponent implements OnDestroy, AfterViewInit {
   @Input() loggedInUserId: string;
   @Input() canEdit: boolean;
   @Input() showTemplates: boolean;
@@ -40,6 +42,8 @@ export class CiteDutyListComponent implements OnDestroy {
   filterString = '';
   sort: Sort = { active: 'name', direction: 'asc' };
   sortedCiteDuties: CiteDuty[] = [];
+  citeDutyDataSource = new MatTableDataSource<CiteDuty>(new Array<CiteDuty>());
+  displayedColumns: string[] = ['action', 'name'];
   isAddingCiteDuty = false;
   editingId = '';
   selectedTeamId = '';
@@ -47,6 +51,7 @@ export class CiteDutyListComponent implements OnDestroy {
   private unsubscribe$ = new Subject();
   // context menu
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
+  @ViewChild(MatPaginator) paginator: MatPaginator;
   contextMenuPosition = { x: '0px', y: '0px' };
 
   constructor(
@@ -70,7 +75,9 @@ export class CiteDutyListComponent implements OnDestroy {
         } else {
           Object.assign(this.msel, msel);
         }
+        this.displayedColumns = this.showTemplates ? ['action', 'name'] : ['action', 'name', 'team'];
         this.sortedCiteDuties = this.getSortedCiteDuties(this.getFilteredCiteDuties(false));
+        this.citeDutyDataSource.data = this.sortedCiteDuties;
       }
     });
     // subscribe to Teams
@@ -89,9 +96,14 @@ export class CiteDutyListComponent implements OnDestroy {
       .subscribe((term) => {
         this.filterString = term;
         this.sortedCiteDuties = this.getSortedCiteDuties(this.getFilteredCiteDuties(false));
+        this.citeDutyDataSource.data = this.sortedCiteDuties;
       });
     // load CiteDuty templates
     this.citeDutyDataService.loadTemplates();
+  }
+
+  ngAfterViewInit() {
+    this.citeDutyDataSource.paginator = this.paginator;
   }
 
   addOrEditCiteDuty(citeDuty: CiteDuty, makeTemplate: boolean, makeFromTemplate: boolean) {
@@ -179,6 +191,10 @@ export class CiteDutyListComponent implements OnDestroy {
   sortChanged(sort: Sort) {
     this.sort = sort;
     this.sortedCiteDuties = this.getSortedCiteDuties(this.getFilteredCiteDuties(false));
+    this.citeDutyDataSource.data = this.sortedCiteDuties;
+    if (this.paginator) {
+      this.paginator.length = this.sortedCiteDuties.length;
+    }
     this.templateList = this.getSortedCiteDuties(this.getFilteredCiteDuties(true));
   }
 
@@ -244,6 +260,7 @@ export class CiteDutyListComponent implements OnDestroy {
   selectTeam(teamId: string) {
     this.selectedTeamId = teamId;
     this.sortedCiteDuties = this.getSortedCiteDuties(this.getFilteredCiteDuties(false));
+    this.citeDutyDataSource.data = this.sortedCiteDuties;
   }
 
   ngOnDestroy() {

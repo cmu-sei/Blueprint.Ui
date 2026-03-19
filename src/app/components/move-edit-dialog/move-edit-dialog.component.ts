@@ -77,12 +77,11 @@ export class MoveEditDialogComponent {
   }
 
   saveMove(which: string) {
-    let timeParts: string[];
     switch (which) {
       case 'situationDate':
-        const newPosted = new Date(this.situationDateFormControl.value);
-        const oldPosted = new Date(this.data.move.situationTime);
-        this.data.move.situationTime = newPosted;
+        if (this.situationDateFormControl.value) {
+          this.data.move.situationTime = new Date(this.situationDateFormControl.value);
+        }
         break;
       default:
         break;
@@ -100,6 +99,25 @@ export class MoveEditDialogComponent {
         saveChanges: saveChanges,
         move: this.data.move,
       });
+    }
+  }
+
+  getUserTimezone(): string {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+  }
+
+  getTimezoneAbbr(): string {
+    try {
+      const date = new Date();
+    const timeZone = this.getUserTimezone();
+    const formatted = date.toLocaleTimeString('en-US', {
+      timeZoneName: 'short',
+      timeZone
+    });
+    const parts = formatted.split(' ');
+    return parts[parts.length - 1] || 'UTC';
+    } catch (error) {
+      return 'UTC';
     }
   }
 }

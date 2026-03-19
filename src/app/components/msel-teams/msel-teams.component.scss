@@ -5,186 +5,106 @@
 @use "@angular/material" as mat;
 
 :host {
-  @include mat.form-field-density(-5); // Adjust -3 for this specific form field
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 60px);
+}
+
+.cssLayoutRowStartCenter {
+  min-height: 76px;
+  flex-shrink: 0;
 }
 
 .frame {
   display: flex;
   flex-direction: column;
   flex: 1;
-  height: calc(100vh - 60px);
+  min-height: 0;
 }
 
-.table {
-  font-size: small;
-  width: 100%;
-  overflow: none;
-  background: transparent;
-}
-
-.header-row {
-  min-height: 40px;
-  background: transparent;
-}
-
-.row {
-  min-height: 36px;
-}
-
-.row,
-.header-row {
-  display: flex;
-  border-bottom-width: 1px;
-  border-bottom-style: solid;
-  align-items: center;
-  box-sizing: border-box;
-}
-
-.header-cell {
-  font-weight: bold;
-}
-
-.cell,
-.header-cell {
-  display: flex;
-  flex-direction: row;
-  overflow: hidden;
-  word-wrap: break-word;
-  text-align: left;
-}
-
-.expansion-panel-header {
-  display: flex;
-  flex-direction: row;
-  text-align: left;
+.table-container {
   flex: 1;
-  width: 100%;
-  align-items: center;
+  overflow: auto;
+  padding-bottom: 20px;
 }
 
-.search-cell {
-  display: flex;
-  flex-flow: row;
+table {
+  width: 100%;
+}
+
+.element-row {
+  cursor: pointer;
+}
+
+.element-row:hover {
+  background-color: var(--mat-sys-surface-variant);
+}
+
+.element-row-not-expanded {}
+
+.element-row-expanded {
+  border-bottom-color: transparent;
+}
+
+::ng-deep tr.element-row-expanded,
+::ng-deep .mat-mdc-row.element-row-expanded,
+::ng-deep .mdc-data-table__row.element-row-expanded {
+  border-bottom-style: none !important;
+  border-bottom-width: 0 !important;
+  border-bottom-color: transparent !important;
+}
+
+::ng-deep tr.element-row-expanded .mat-mdc-cell,
+::ng-deep tr.element-row-expanded .mdc-data-table__cell {
+  border-bottom: none !important;
+}
+
+.column-action {
+  flex: 0 0 120px;
+  width: 120px;
+}
+
+.column-name {
+  flex: 5;
+  min-width: 0;
+}
+
+.column-email {
+  flex: 2;
+  min-width: 0;
+}
+
+.column-team-type {
+  flex: 2;
+  min-width: 0;
+}
+
+.column-invitation {
+  flex: 2;
+  min-width: 0;
+}
+
+.column-search {
+  flex: 3;
+  min-width: 0;
 }
 
 .search-control {
   width: calc(100% - 32px);
 }
 
-.scrolling-region {
-  width: 100%;
-  height: calc(100vh - 80px);
+.expanded-detail-div {
+  width: calc(100% - 20px);
+  margin-left: 20px;
+  max-height: 500px;
   overflow: auto;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-}
-
-.section-container {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-}
-
-.section-content {
-  width: 100%;
-  min-width: 600px;
-}
-
-.expansion-panel {
-  width: calc(100% - 10px);
-  margin: 5px;
-}
-
-.user-panel {
-  display: flex;
-  flex-direction: row;
-  flex: 1;
-  align-items: center;
-  justify-items: center;
-}
-
-.team-detail {
-  text-align: left;
-  margin-left: 50px;
-  margin-bottom: 10px;
-  width: calc(100% - 50px);
-  display: flex;
-  flex-direction: row;
-  flex: 1;
-}
-
-.other-teams-div {
-  text-align: left;
-  margin-left: 50px;
-  width: calc(100% - 50px);
-}
-
-.action-buttons {
-  width: 90px;
-}
-
-.header-action-buttons {
-  display: flex;
-  width: 90px;
-  align-items: center;
-}
-
-.user-name {
-  display: flex;
-}
-
-.msel-role {
-  display: flex;
-}
-
-.no-users {
-  width: 100%;
-  text-align: left;
-  padding-left: 100px;
+  padding: 8px 0;
 }
 
 .center-self {
   align-self: center;
 }
 
-// Cell width definitions for proper alignment
-.five-cell {
-  flex: 5;
-  min-width: 0;
-}
-
-.two-cell {
-  flex: 2;
-  min-width: 0;
-}
-
-.search-cell {
-  flex: 3;
-  min-width: 0;
-}
-
-// Override Material expansion panel header padding to align with header row
-::ng-deep .mat-expansion-panel {
-  .mat-expansion-panel-header {
-    padding: 0 !important;
-    height: 40px;
-  }
-
-  .mat-expansion-panel-header-title {
-    margin: 0 !important;
-    flex-grow: 1 !important;
-    overflow: visible !important;
-  }
-
-  .mat-content {
-    display: flex !important;
-    flex: 1 !important;
-    align-items: center !important;
-    overflow: visible !important;
-  }
-
-  .mat-expansion-indicator {
-    margin-right: 8px !important;
-  }
+.button-end {
+  margin-left: auto;
 }
