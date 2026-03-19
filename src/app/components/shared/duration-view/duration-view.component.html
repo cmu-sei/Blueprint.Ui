@@ -7,6 +7,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
   <span>{{ getDeltaTime(durationSeconds) }}</span>
 }
 @if (showRealTime) {
-  <span>{{ getDate(durationSeconds) }}</span>
+  <span [title]="'Time shown in your browser timezone'">{{ getDate(durationSeconds) }}</span>
 }
 

@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, Input, OnDestroy, ViewChild } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit, ViewChild, AfterViewInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -16,6 +16,8 @@ import { MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { TeamQuery } from 'src/app/data/team/team.query';
 import { Sort } from '@angular/material/sort';
+import { MatTableDataSource } from '@angular/material/table';
+import { MatPaginator } from '@angular/material/paginator';
 import { MatMenuTrigger } from '@angular/material/menu';
 import { CiteActionDataService } from 'src/app/data/cite-action/cite-action-data.service';
 import { CiteActionQuery } from 'src/app/data/cite-action/cite-action.query';
@@ -29,7 +31,7 @@ import { CiteActionEditDialogComponent } from '../cite-action-edit-dialog/cite-a
   styleUrls: ['./cite-action-list.component.scss'],
   standalone: false
 })
-export class CiteActionListComponent implements OnDestroy {
+export class CiteActionListComponent implements OnInit, OnDestroy, AfterViewInit {
   @Input() loggedInUserId: string;
   @Input() canEdit: boolean;
   @Input() showTemplates: boolean;
@@ -42,6 +44,8 @@ export class CiteActionListComponent implements OnDestroy {
   filterString = '';
   sort: Sort = { active: 'moveNumber', direction: 'asc' };
   sortedCiteActions: CiteAction[] = [];
+  citeActionDataSource = new MatTableDataSource<CiteAction>(new Array<CiteAction>());
+  displayedColumns: string[] = [];
   isAddingCiteAction = false;
   editingId = '';
   selectedMoveNumber = -1;
@@ -52,6 +56,7 @@ export class CiteActionListComponent implements OnDestroy {
   private unsubscribe$ = new Subject();
   // context menu
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
+  @ViewChild(MatPaginator) paginator: MatPaginator;
   contextMenuPosition = { x: '0px', y: '0px' };
 
   constructor(
@@ -84,6 +89,7 @@ export class CiteActionListComponent implements OnDestroy {
           this.sortedCiteActions = this.getSortedCiteActions(
             this.getFilteredCiteActions(false)
           );
+          this.citeActionDataSource.data = this.sortedCiteActions;
         }
       });
     // subscribe to moves
@@ -118,9 +124,20 @@ export class CiteActionListComponent implements OnDestroy {
         this.sortedCiteActions = this.getSortedCiteActions(
           this.getFilteredCiteActions(false)
         );
+        this.citeActionDataSource.data = this.sortedCiteActions;
       });
     // load CiteAction templates
     this.citeActionDataService.loadTemplates();
+  }
+
+  ngOnInit() {
+    this.displayedColumns = this.showTemplates
+      ? ['action', 'description']
+      : ['action', 'moveNumber', 'team', 'actionNumber', 'description'];
+  }
+
+  ngAfterViewInit() {
+    this.citeActionDataSource.paginator = this.paginator;
   }
 
   addOrEditCiteAction(
@@ -233,6 +250,10 @@ export class CiteActionListComponent implements OnDestroy {
     this.sortedCiteActions = this.getSortedCiteActions(
       this.getFilteredCiteActions(false)
     );
+    this.citeActionDataSource.data = this.sortedCiteActions;
+    if (this.paginator) {
+      this.paginator.length = this.sortedCiteActions.length;
+    }
     this.templateList = this.getSortedCiteActions(
       this.getFilteredCiteActions(true)
     );
@@ -336,6 +357,7 @@ export class CiteActionListComponent implements OnDestroy {
     this.sortedCiteActions = this.getSortedCiteActions(
       this.getFilteredCiteActions(false)
     );
+    this.citeActionDataSource.data = this.sortedCiteActions;
   }
 
   selectTeam(teamId: string) {
@@ -343,6 +365,7 @@ export class CiteActionListComponent implements OnDestroy {
     this.sortedCiteActions = this.getSortedCiteActions(
       this.getFilteredCiteActions(false)
     );
+    this.citeActionDataSource.data = this.sortedCiteActions;
   }
 
   getTeamDisplay(id: string): string {

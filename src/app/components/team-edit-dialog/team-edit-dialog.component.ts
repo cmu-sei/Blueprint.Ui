@@ -63,17 +63,25 @@ export class TeamEditDialogComponent {
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {
     dialogRef.disableClose = true;
+    // Make CITE Team Type required when CITE is being used
+    if (this.data.useCite) {
+      this.citeTeamTypeIdFormControl.setValidators([Validators.required]);
+      this.citeTeamTypeIdFormControl.updateValueAndValidity();
+    }
   }
 
   readonly MIN_NAME_LENGTH = MIN_NAME_LENGTH;
 
   errorFree() {
-    return !(
-      this.teamNameFormControl.hasError('required') ||
+    const hasNameErrors = this.teamNameFormControl.hasError('required') ||
       this.teamNameFormControl.hasError('minlength') ||
       this.teamShortNameFormControl.hasError('required') ||
-      this.teamShortNameFormControl.hasError('minlength')
-    );
+      this.teamShortNameFormControl.hasError('minlength');
+
+    const hasCiteTeamTypeError = this.data.useCite &&
+      this.citeTeamTypeIdFormControl.hasError('required');
+
+    return !(hasNameErrors || hasCiteTeamTypeError);
   }
 
   /**

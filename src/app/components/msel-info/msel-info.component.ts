@@ -263,9 +263,11 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     this.citeService.getScoringModels().subscribe(
       (scoringModels) => {
         console.log('CITE scoring models loaded:', scoringModels?.length || 0, 'models');
-        this.scoringModelList = scoringModels || [];
+        // Filter out evaluation-specific scoring models (keep only templates with evaluationId == null)
+        this.scoringModelList = (scoringModels || []).filter(sm => !sm.evaluationId);
+        console.log('Filtered to', this.scoringModelList.length, 'template scoring models (excluded evaluation-specific copies)');
         if (this.scoringModelList.length === 0) {
-          console.warn('CITE returned an empty scoring model list');
+          console.warn('CITE returned no template scoring models');
         }
         // Update the scoring model name after list is loaded
         this.updateCiteScoringModelName();
@@ -717,6 +719,21 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     } else {
       this.steamfitterScenarioName = '';
     }
+  }
+
+  getUserTimezone(): string {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone;
+  }
+
+  getTimezoneAbbr(): string {
+    const date = new Date();
+    const timeZone = this.getUserTimezone();
+    const formatted = date.toLocaleTimeString('en-US', {
+      timeZoneName: 'short',
+      timeZone
+    });
+    const parts = formatted.split(' ');
+    return parts[parts.length - 1];
   }
 
   ngOnDestroy() {

@@ -1,7 +1,7 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild, AfterViewInit } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { TeamDataService } from 'src/app/data/team/team-data.service';
@@ -27,18 +27,30 @@ import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { TeamAddDialogComponent } from '../team-add-dialog/team-add-dialog.component';
 import { TeamEditDialogComponent } from '../team-edit-dialog/team-edit-dialog.component';
 import { UnitQuery } from 'src/app/data/unit/unit.query';
+import { MatTable, MatTableDataSource } from '@angular/material/table';
+import { MatPaginator } from '@angular/material/paginator';
+import { animate, state, style, transition, trigger } from '@angular/animations';
 
 @Component({
     selector: 'app-msel-teams',
     templateUrl: './msel-teams.component.html',
     styleUrls: ['./msel-teams.component.scss'],
+    animations: [
+      trigger('detailExpand', [
+        state('collapsed', style({ height: '0px', minHeight: '0', visibility: 'hidden' })),
+        state('expanded', style({ height: '*', visibility: 'visible' })),
+        transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
+      ]),
+    ],
     standalone: false
 })
-export class MselTeamsComponent implements OnDestroy, OnInit {
+export class MselTeamsComponent implements OnDestroy, OnInit, AfterViewInit {
   @Input() loggedInUserId: string;
   @Input() teamTypeList: TeamType[];
   // context menu
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
+  @ViewChild('teamTable', { static: false }) teamTable: MatTable<any>;
+  @ViewChild(MatPaginator) paginator: MatPaginator;
   contextMenuPosition = { x: '0px', y: '0px' };
   msel = new MselPlus();
   originalMsel = new MselPlus();
@@ -51,8 +63,20 @@ export class MselTeamsComponent implements OnDestroy, OnInit {
   teamList: Team[] = [];
   unitList: Unit[] = [];
   filterString = '';
+  teamDataSource = new MatTableDataSource<Team>(new Array<Team>());
+  displayedColumns: string[] = ['action', 'name', 'email', 'teamType', 'invitation'];
+  expandedElementId = '';
+  isExpansionDetailRow = (i: number, row: Object) => (row as Team).id === this.expandedElementId;
   private allTeams: Team[] = [];
   private unsubscribe$ = new Subject();
+
+  private updateDisplayedColumns() {
+    if (this.msel.emailEnabled) {
+      this.displayedColumns = ['action', 'name', 'email', 'teamType', 'invitation'];
+    } else {
+      this.displayedColumns = ['action', 'name', 'teamType', 'invitation'];
+    }
+  }
 
   constructor(
     private teamQuery: TeamQuery,
@@ -76,7 +100,9 @@ export class MselTeamsComponent implements OnDestroy, OnInit {
         if (this.msel.emailEnabled === undefined || this.msel.emailEnabled === null) {
           this.msel.emailEnabled = true;
         }
+        this.updateDisplayedColumns();
         this.teamList = this.allTeams.filter(t => t.mselId === this.msel.id);
+        this.teamDataSource.data = this.teamList;
       }
     });
     // subscribe to users
@@ -88,6 +114,7 @@ export class MselTeamsComponent implements OnDestroy, OnInit {
       if (teams && teams.length > 0) {
         this.allTeams = teams.sort((a, b) => a.shortName?.toLowerCase() > b.shortName?.toLowerCase() ? 1 : -1);
         this.teamList = this.allTeams.filter(t => t.mselId === this.msel.id);
+        this.teamDataSource.data = this.teamList;
       }
     });
     // subscribe to TeamTypes
@@ -115,6 +142,10 @@ export class MselTeamsComponent implements OnDestroy, OnInit {
       .subscribe(() => {
         this.changeDetectorRef.markForCheck();
       });
+  }
+
+  ngAfterViewInit() {
+    this.teamDataSource.paginator = this.paginator;
   }
 
   getUserName(userId: string) {
@@ -211,7 +242,7 @@ export class MselTeamsComponent implements OnDestroy, OnInit {
       minWidth: '400px',
       maxWidth: '90vw',
       width: 'auto',
-      height: '80%',
+      maxHeight: '80vh',
       data: {
         unitList: this.unitList
       },
@@ -244,12 +275,28 @@ export class MselTeamsComponent implements OnDestroy, OnInit {
 
   applyFilter(filterValue: string) {
     this.filterString = filterValue;
-    filterValue = filterValue.toLowerCase(); // MatTableDataSource defaults to lowercase matches
+    filterValue = filterValue.toLowerCase();
     this.teamList = this.allTeams
       .filter(team =>
         team.mselId === this.msel.id &&
         (team.name.toLowerCase().indexOf(filterValue) >= 0 ||
           team.shortName.toLowerCase().indexOf(filterValue) >= 0));
+    this.teamDataSource.data = this.teamList;
+  }
+
+  rowClicked(row: Team) {
+    if (this.expandedElementId === row.id) {
+      this.expandedElementId = '';
+    } else {
+      this.expandedElementId = row.id;
+    }
+    this.teamTable.renderRows();
+  }
+
+  getRowClass(id: string) {
+    return this.expandedElementId === id
+      ? 'element-row element-row-expanded'
+      : 'element-row element-row-not-expanded';
   }
 
   ngOnDestroy() {

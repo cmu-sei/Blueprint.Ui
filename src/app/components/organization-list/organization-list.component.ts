@@ -1,9 +1,10 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit, ViewChild, AfterViewInit } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
+import { MatPaginator } from '@angular/material/paginator';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -31,12 +32,13 @@ import { v4 as uuidv4 } from 'uuid';
   styleUrls: ['./organization-list.component.scss'],
   standalone: false
 })
-export class OrganizationListComponent implements OnDestroy, OnInit {
+export class OrganizationListComponent implements OnDestroy, OnInit, AfterViewInit {
   @Input() loggedInUserId: string;
   @Input() canEdit: boolean;
   @Input() showTemplates: boolean;
   // context menu
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
+  @ViewChild(MatPaginator) paginator: MatPaginator;
   contextMenuPosition = { x: '0px', y: '0px' };
   msel = new MselPlus();
   organizationList: Organization[] = [];
@@ -88,6 +90,14 @@ export class OrganizationListComponent implements OnDestroy, OnInit {
   ngOnInit() {
     if (this.showTemplates) {
       this.organizationDataService.loadTemplates();
+    }
+  }
+
+  ngAfterViewInit() {
+    if (this.showTemplates) {
+      this.templateDataSource.paginator = this.paginator;
+    } else {
+      this.organizationDataSource.paginator = this.paginator;
     }
   }
 
@@ -169,8 +179,13 @@ export class OrganizationListComponent implements OnDestroy, OnInit {
 
   sortChanged(sort: Sort) {
     this.sort = sort;
-    this.organizationDataSource.data = this.getFilteredAndSortedOrganizations(this.msel.id, this.organizationList);
-    this.templateDataSource.data = this.getFilteredAndSortedOrganizations(null, this.organizationList);
+    const mselData = this.getFilteredAndSortedOrganizations(this.msel.id, this.organizationList);
+    const templateData = this.getFilteredAndSortedOrganizations(null, this.organizationList);
+    this.organizationDataSource.data = mselData;
+    this.templateDataSource.data = templateData;
+    if (this.paginator) {
+      this.paginator.length = this.showTemplates ? templateData.length : mselData.length;
+    }
   }
 
   ngOnDestroy() {
