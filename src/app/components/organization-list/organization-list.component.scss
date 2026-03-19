@@ -4,8 +4,9 @@
 
 @use "@angular/material" as mat;
 
-:host {
-  @include mat.form-field-density(-5); // Adjust -3 for this specific form field
+.cssLayoutRowStartCenter {
+  min-height: 76px;
+  flex-shrink: 0;
 }
 
 .frame {
@@ -57,9 +58,9 @@
 }
 
 .column-action {
-  flex: 0 0 150px;
+  flex: 0 0 160px;
+  width: 160px;
   flex-direction: row;
-  padding: 0;
   word-wrap: none;
 }
 
@@ -91,4 +92,8 @@
 .no-results {
   margin-left: 50px;
   margin-top: 20px;
+}
+
+.button-end {
+  margin-left: auto;
 }

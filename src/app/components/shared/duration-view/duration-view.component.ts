@@ -55,7 +55,31 @@ export class DurationViewComponent {
   getDate(deltaSeconds: number) {
     const startDate = new Date(this.startTime);
     const scenarioEventDate = new Date(startDate.getTime() + deltaSeconds * 1000);
-    return scenarioEventDate.toLocaleString();
+
+    // Format as: dd MMM yyyy HH:mm
+    const day = String(scenarioEventDate.getDate()).padStart(2, '0');
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const month = months[scenarioEventDate.getMonth()];
+    const year = scenarioEventDate.getFullYear();
+    const hours = String(scenarioEventDate.getHours()).padStart(2, '0');
+    const minutes = String(scenarioEventDate.getMinutes()).padStart(2, '0');
+
+    return `${day} ${month} ${year} ${hours}:${minutes} ${this.getTimezoneAbbr()}`;
+  }
+
+  getTimezoneAbbr(): string {
+    try {
+      const date = new Date();
+      const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+      const formatted = date.toLocaleTimeString('en-US', {
+        timeZoneName: 'short',
+        timeZone
+      });
+      const parts = formatted.split(' ');
+      return parts[parts.length - 1] || 'UTC';
+    } catch (error) {
+      return 'UTC';
+    }
   }
 
 }

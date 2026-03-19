@@ -79,7 +79,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <div class="add-margin">
           <div>
             <mat-form-field class="button-margins half-width">
-              <mat-label>CITE Team Type</mat-label>
+              <mat-label>CITE Team Type (required)</mat-label>
               <mat-select
                 [value]="data.team.citeTeamTypeId"
                 [formControl]="citeTeamTypeIdFormControl"
@@ -92,6 +92,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   </mat-option>
                 }
               </mat-select>
+              @if (citeTeamTypeIdFormControl.hasError('required')) {
+                <mat-error>
+                  CITE Team Type is <strong>required</strong>
+                </mat-error>
+              }
             </mat-form-field>
           </div>
         </div>

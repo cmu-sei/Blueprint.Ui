@@ -15,11 +15,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <mat-form-field class="center-self shift-left">
               <input matInput [(ngModel)]="filterString" (keyup)="keyUp.next($event)" placeholder="Search"
                 style="font-size: 10pt;" />
+              @if (filterString) {
+              <button mat-icon-button matSuffix (click)="applyFilter('')" title="Clear Search">
+                <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline"></mat-icon>
+              </button>
+              }
             </mat-form-field>
-            <button [disabled]="filterString === ''" mat-icon-button (click)="applyFilter('')" style="outline: none;"
-              title="Close Search" class="center-self">
-              <mat-icon class="mdi-18px center-self" fontIcon="mdi-close-circle-outline"></mat-icon>
-            </button>
           </th>
         </tr>
         }
@@ -42,19 +43,19 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </th>
           <!-- Move -->
           @if (msel.showMoveOnExerciseView) {
-          <th class="background move-group">
+          <th mat-sort-header="moveNumber" class="background move-group">
             <div>Move</div>
           </th>
           }
           <!-- Group -->
           @if (msel.showGroupOnExerciseView) {
-          <th class="background move-group">
+          <th mat-sort-header="groupOrder" class="background move-group">
             <div>Group</div>
           </th>
           }
           <!-- Time -->
           @if (msel.showTimeOnExerciseView) {
-          <th class="background">
+          <th mat-sort-header="deltaSeconds" class="background">
             <div>
               @if (!showRealTime) {
               <button mat-icon-button (click)="setRealTime(true)" style="outline: none;" title="Switch to Real Time"
@@ -67,10 +68,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 <mat-icon class="mdi-24px" fontIcon="mdi-clock-time-four-outline"></mat-icon>
               </button>
               }
+              <span>Execution Time</span>
             </div>
           </th>
           }
-          @for (df of sortedDataFields; track df) {
+          @for (df of sortedDataFields; track df.id) {
           @if (sortableDataTypes.includes(df.dataType)) {
           <th mat-sort-header="{{ df.name }}" class="background">
             <div [style]="getStyle(df)">{{ df.name }}</div>
@@ -84,7 +86,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         </tr>
       </thead>
       <tbody>
-        @for (item of sortedScenarioEvents; track item; let rowIndex = $index) {
+        @for (item of sortedScenarioEvents; track item.id; let rowIndex = $index) {
         <tr class="move-group" [style]="getRowStyle(item)">
           <!-- row buttons -->
           <td class="center-self">
@@ -117,7 +119,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             </div>
           </td>
           }
-          @for (df of sortedDataFields; track df) {
+          @for (df of sortedDataFields; track df.id) {
           <!-- HTML -->
           @if (df.dataType.toString() === 'Html') {
           <td>

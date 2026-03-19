@@ -4,6 +4,24 @@ Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
 
+<div class="cssLayoutRowStartCenter">
+  <div class="sp-icon">
+    <mat-icon class="mdi-24px" fontIcon="mdi-book-open-outline" [ngStyle]="{'color': 'var(--mat-sys-primary)'}"></mat-icon>
+  </div>
+  <mat-form-field style="width: 300px; margin-left: 10px;">
+    <input matInput [formControl]="filterControl" placeholder="Search" />
+    @if (filterString) {
+    <button mat-icon-button matSuffix (click)="filterControl.setValue('')" title="Clear Search">
+      <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline"></mat-icon>
+    </button>
+    }
+  </mat-form-field>
+  <div class="button-end">
+    <mat-paginator #paginator [pageIndex]="0" [pageSize]="20"
+      [pageSizeOptions]="[5, 10, 15, 20, 25, 50, 100, 200]"></mat-paginator>
+  </div>
+</div>
+
 <section class="scrolling-region">
   <table mat-table #catalogTable [dataSource]="catalogDataSource" matSort multiTemplateDataRows>
     <!-- action column -->
@@ -11,11 +29,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <mat-header-cell *matHeaderCellDef class="column-action">
         @if (canEdit) {
         <span>
-          <button mat-icon-button (click)="addOrEditCatalog(null)" style="outline: none; margin-left: 15px;"
+          <button mat-icon-button (click)="addOrEditCatalog(null)" style="outline: none;"
             title="Add new Catalog">
             <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle"></mat-icon>
           </button>
-          <button mat-icon-button style="outline: none; margin-left: 25px;" title="Upload a new catalog from a file"
+          <button mat-icon-button style="outline: none;" title="Upload a new catalog from a file"
             (click)="uploadFile('json', '', ''); jsonInput.click()">
             <mat-icon class="mdi-24px" fontIcon="mdi-upload"></mat-icon>
           </button>
@@ -77,15 +95,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <ng-container matColumnDef="description">
       <mat-header-cell title="Catalog Description" *matHeaderCellDef class="column-description">
         Description
-        <mat-form-field class="search-control" (click)="$event.stopPropagation()">
-          <input matInput [formControl]="filterControl" placeholder="Search" />
-        </mat-form-field>
-        <div style="width: 30px; margin-right: 20px;" (click)="$event.stopPropagation()">
-          <button mat-icon-button (click)="filterControl.setValue(''); $event.stopPropagation()" style="outline: none;"
-            title="Clear Search" [disabled]="!filterString">
-            <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
-          </button>
-        </div>
       </mat-header-cell>
       <mat-cell *matCellDef="let element" class="column-description">
         {{ element.description }}

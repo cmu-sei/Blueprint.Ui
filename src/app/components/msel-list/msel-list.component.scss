@@ -14,7 +14,7 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  max-height: calc(100vh - 100px);
+  max-height: calc(100vh - 20px);
   min-width: 300px;
   margin: auto;
   width: 80%;
@@ -68,7 +68,7 @@
 .mat-mdc-table {
   font-size: small;
   overflow-y: auto;
-  max-height: calc(100vh - 300px);
+  max-height: calc(100vh - 220px);
 }
 
 .app-list-item {

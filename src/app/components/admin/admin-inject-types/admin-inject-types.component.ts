@@ -1,7 +1,7 @@
 // Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, Input, OnDestroy, ViewChild } from '@angular/core';
+import { Component, Input, OnDestroy, ViewChild, AfterViewInit } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { animate, state, style, transition, trigger } from '@angular/animations';
@@ -17,6 +17,7 @@ import { MselQuery } from 'src/app/data/msel/msel.query';
 import { Sort } from '@angular/material/sort';
 import { MatMenuTrigger } from '@angular/material/menu';
 import { MatTable } from '@angular/material/table';
+import { MatPaginator } from '@angular/material/paginator';
 import { InjectTypeDataService } from 'src/app/data/inject-type/inject-type-data.service';
 import { InjectTypeQuery } from 'src/app/data/inject-type/inject-type.query';
 import { TeamQuery } from 'src/app/data/team/team.query';
@@ -38,10 +39,11 @@ import { v4 as uuidv4 } from 'uuid';
   ],
   standalone: false
 })
-export class AdminInjectTypesComponent implements OnDestroy {
+export class AdminInjectTypesComponent implements OnDestroy, AfterViewInit {
   @Input() loggedInUserId: string;
   @Input() canEdit: boolean;
   @ViewChild('injectTypeTable', { static: false }) injectTypeTable: MatTable<any>;
+  @ViewChild(MatPaginator) paginator: MatPaginator;
   contextMenuPosition = { x: '0px', y: '0px' };
   msel = new MselPlus();
   adminInjectTypes: InjectType[] = [];
@@ -54,7 +56,7 @@ export class AdminInjectTypesComponent implements OnDestroy {
   templateInjectTypes: InjectType[] = [];
   editingId = '';
   injectTypeDataSource = new MatTableDataSource<InjectType>(new Array<InjectType>());
-  displayedColumns: string[] = ['action', 'name', 'description', 'expand'];
+  displayedColumns: string[] = ['action', 'name', 'description'];
   teamList: Team[] = [];
   private unsubscribe$ = new Subject();
   isExpansionDetailRow = (i: number, row: Object) => (row as InjectType).id === this.expandedElementId;
@@ -143,6 +145,10 @@ export class AdminInjectTypesComponent implements OnDestroy {
   sortChanged(sort: Sort) {
     this.sort = sort;
     this.injectTypeDataSource.data = this.getSortedInjectTypes(this.getFilteredInjectTypes(this.msel.id, this.adminInjectTypes));
+  }
+
+  ngAfterViewInit() {
+    this.injectTypeDataSource.paginator = this.paginator;
   }
 
   ngOnDestroy() {

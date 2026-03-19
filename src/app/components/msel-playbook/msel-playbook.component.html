@@ -22,7 +22,7 @@ project root for license information.
     </div>
     @if (msel) {
       <div class="table-container">
-        @for (scenarioEvent of getPagedScenarioEvents(); track scenarioEvent; let i = $index) {
+        @for (scenarioEvent of getPagedScenarioEvents(); track scenarioEvent.id; let i = $index) {
           <table id="eventDetails" class="page-break">
             <thead>
               <tr>
@@ -31,7 +31,11 @@ project root for license information.
               </tr>
             </thead>
             <tbody>
-              @for (df of allDataFields; track df) {
+              <tr>
+                <td style="font-weight:bold;">Move</td>
+                <td>{{ getMoveNumber(scenarioEvent.id) }}</td>
+              </tr>
+              @for (df of allDataFields; track df.id) {
                 @if (getScenarioEventValue(scenarioEvent, df.name) && df.name != 'Title') {
                   <tr>
                     <td style="font-weight:bold;">{{ df.name }}</td>

@@ -5,187 +5,64 @@
 @use "@angular/material" as mat;
 
 :host {
-  @include mat.form-field-density(-5); // Adjust -3 for this specific form field
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 60px);
+}
+
+.cssLayoutRowStartCenter {
+  min-height: 76px;
+  flex-shrink: 0;
 }
 
 .frame {
   display: flex;
   flex-direction: column;
   flex: 1;
-  height: calc(100vh - 60px);
+  min-height: 0;
 }
 
-.header-row {
-  min-height: 40px;
-  padding-left: 30px;
-  padding-right: 50px;
+.table-container {
+  flex: 1;
+  overflow: auto;
+  padding-bottom: 20px;
 }
 
-.row {
-  height: 36px;
-}
-
-.row,
-.header-row {
-  display: flex;
-  border-bottom-width: 1px;
-  border-bottom-style: solid;
-  align-items: center;
-  box-sizing: border-box;
-  background: transparent;
-  font-weight: 400;
-  color: var(--mat-sys-on-background) !important;
-}
-
-.header-cell {
-  font-weight: bold;
-}
-
-.cell,
-.header-cell {
-  overflow: hidden;
-  word-wrap: break-word;
-  text-align: left;
-}
-
-.mat-accordion .header-row {
-  padding-left: 1.5rem;
-  padding-right: 2rem;
-  border-bottom: none;
-}
-
-.mat-expansion-panel-header.row {
-  border-bottom: none;
-}
-
-.flex-row-cell {
-  display: flex;
-  flex-flow: row;
-  justify-content: flex-start;
-  align-items: center;
-  text-align: left;
-}
-
-.move-cell {
-  margin-left: 20px;
-}
-
-.data-options {
-  display: flex;
-  flex: 7;
-  flex-flow: column;
-  align-items: flex-start;
-  text-align: left;
-  ;
-}
-
-.data-option {
-  display: flex;
-  flex-flow: row;
-}
-
-.search-cell {
-  display: flex;
-  flex-flow: row;
-}
-
-.search-control {
-  width: calc(100% - 32px);
-}
-
-.single-detail {
-  display: flex;
-  flex: 10;
-  flex-flow: row;
-  align-items: flex-start;
-  width: 60%;
-}
-
-.partial-detail {
-  display: flex;
-  flex: 3;
-}
-
-.more-or-less {
-  padding-right: 40%;
-}
-
-.edit-buttons {
-  display: flex;
-  flex-flow: row;
-  align-items: flex-start;
-  padding-left: 12%;
-}
-
-.full-width {
+table {
   width: 100%;
 }
 
-.sit-time-cell {
-  display: flex;
+.column-action {
+  flex: 0 0 120px;
+  width: 120px;
+}
+
+.column-move-number {
+  flex: 0 0 80px;
+}
+
+.column-time-toggle {
+  flex: 0 0 50px;
+}
+
+.column-start-time {
+  flex: 1;
+  min-width: 0;
+}
+
+.column-sit-time {
   flex: 1;
   min-width: 140px;
 }
 
-.scrolling-region {
-  height: calc(100vh - 89px);
-  overflow: auto;
+.column-description {
+  flex: 2;
+  min-width: 0;
 }
 
-.scrolling-details {
-  max-height: calc(100vh - 293px);
-  overflow: auto;
-}
-
-textarea {
-  border: 1px solid;
-  padding: 16px !important;
-  box-sizing: border-box;
-}
-
-.move-button {
-  width: 30px;
-  height: 30px;
-  align-self: center;
-}
-
-.up-12 {
-  margin-top: -12px;
-}
-
-.copy-icon {
-  margin-top: -8px;
-}
-
-.button-end {
-  margin-left: 100px;
-}
-
-.sp-icon {
-  margin-left: 10px;
-  margin-right: 20px;
-}
-
-.search-icon {
-  margin-left: 50px;
-  transform: scale(0.85);
-  margin-right: 5px;
-}
-
-.scale-85 {
-  transform: scale(0.85);
-}
-
-.search-field {
-  width: 320px;
-}
-
-.clear-search {
-  width: 50px;
-}
-
-.copy-icon {
-  margin-top: -8px;
+.search-control {
+  width: 100%;
+  margin-left: 20px;
 }
 
 .warning-message {
@@ -193,4 +70,8 @@ textarea {
   margin-left: 10%;
   color: orangered;
   text-align: left;
+}
+
+.button-end {
+  margin-left: auto;
 }
