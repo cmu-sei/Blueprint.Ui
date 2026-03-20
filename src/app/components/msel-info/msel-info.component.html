@@ -112,6 +112,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 <button (click)="pushIntegrations()" title="Push Integrations" class="thin-button" [disabled]="!canManageMsel() ||
                               (msel.useGallery && galleryToDo()) ||
                               (msel.useCite && !msel.citeScoringModelId) ||
+                              (msel.useCite && hasCiteTeamsWithoutType()) ||
                               isBusy || isChanged || (pushStatus && pushStatus.startsWith('ERROR'))">@if (pushStatus && !pushStatus.startsWith('ERROR')) {
                   <span>{{ pushStatus }} ...</span>
                   }@if (!pushStatus || pushStatus.startsWith('ERROR')) {
