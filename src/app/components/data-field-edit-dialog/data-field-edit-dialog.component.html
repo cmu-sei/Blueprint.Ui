@@ -17,7 +17,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <mat-form-field class="full-width">
         <mat-label>Display Order</mat-label>
         <input type="text" matInput [(ngModel)]="data.dataField.displayOrder"
-          [disabled]="!data.canEdit && !data.isOwner" />
+          [disabled]="!data.canEdit && !data.isOwner"
+          matTooltip="The numeric order in which this field is displayed relative to other fields" />
       </mat-form-field>
     </div>
   </div>
@@ -26,7 +27,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <div class="single-detail">
       <mat-form-field class="full-width">
         <mat-label>Name</mat-label>
-        <input type="text" matInput [(ngModel)]="data.dataField.name" [disabled]="!data.canEdit && !data.isOwner" />
+        <input type="text" matInput [(ngModel)]="data.dataField.name" [disabled]="!data.canEdit && !data.isOwner"
+          matTooltip="The display name of this data field" />
       </mat-form-field>
     </div>
   </div>
@@ -35,7 +37,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <mat-form-field class="full-width">
         <mat-label>Data Type</mat-label>
         <mat-select [value]="data.dataField.dataType" (selectionChange)="changeDataFieldDataType($event.value)"
-          [disabled]="!data.canEdit && !data.isOwner">
+          [disabled]="!data.canEdit && !data.isOwner"
+          matTooltip="The type of data this field stores (e.g. String, Integer, Double, Boolean, etc.)">
           @for (dataFieldType of (data.dataFieldTypes | keyvalue); track dataFieldType) {
           <mat-option value="{{ dataFieldType.key }}">{{ dataFieldType.key }}</mat-option>
           }
@@ -48,14 +51,16 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <div class="partial-detail">
         <div>
           <mat-checkbox [(ngModel)]="data.dataField.isChosenFromList"
-            [disabled]="(!data.canEdit && !data.isOwner) || optionListNotAllowed()" class="bottom-margin">
+            [disabled]="(!data.canEdit && !data.isOwner) || optionListNotAllowed()" class="bottom-margin"
+            matTooltip="When enabled, users select from a predefined list of options instead of entering free text. Only available for String, Integer, and Double data types.">
             Use Option List
           </mat-checkbox>
         </div>
         @if (data.dataField.isChosenFromList) {
         <div>
           <mat-checkbox [(ngModel)]="data.dataField.isMultiSelect"
-            [disabled]="(!data.canEdit && !data.isOwner) || optionListNotAllowed()" class="bottom-margin left-margin">
+            [disabled]="(!data.canEdit && !data.isOwner) || optionListNotAllowed()" class="bottom-margin left-margin"
+            matTooltip="When enabled, users can select multiple options from the option list simultaneously">
             Multi-select
           </mat-checkbox>
         </div>
@@ -97,7 +102,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
   <div class="data-field-detail" (click)="$event.stopPropagation();">
     <div class="single-detail">
       <mat-checkbox [(ngModel)]="data.dataField.onScenarioEventList" [disabled]="!data.canEdit && !data.isOwner"
-        class="bottom-margin">Display on the Events
+        class="bottom-margin"
+        matTooltip="When enabled, this field will be visible on the scenario events list view">Display on the Events
         list</mat-checkbox><br />
     </div>
   </div>
@@ -106,7 +112,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
   <div class="data-field-detail" (click)="$event.stopPropagation();">
     <div class="single-detail">
       <mat-checkbox [(ngModel)]="data.dataField.onExerciseView" [disabled]="!data.canEdit && !data.isOwner"
-        class="bottom-margin">Display on the Exercise View</mat-checkbox><br />
+        class="bottom-margin" matTooltip="When enabled, this field will be visible on the exercise view">Display on the
+        Exercise View</mat-checkbox><br />
     </div>
   </div>
   }
@@ -114,7 +121,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
   <div class="data-field-detail" (click)="$event.stopPropagation();">
     <div class="single-detail">
       <mat-checkbox [(ngModel)]="data.dataField.isShownOnDefaultTab" [disabled]="!data.canEdit && !data.isOwner"
-        class="bottom-margin">Display on "Default" edit
+        class="bottom-margin" matTooltip="When enabled, this field will appear on the default editing tab">Display on
+        "Default" edit
         tab</mat-checkbox><br />
     </div>
   </div>
@@ -123,7 +131,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
   <div class="data-field-detail" (click)="$event.stopPropagation();">
     <div class="single-detail">
       <mat-checkbox [(ngModel)]="data.dataField.isInformationField" [disabled]="!data.canEdit && !data.isOwner"
-        class="bottom-margin">Information Data
+        class="bottom-margin"
+        matTooltip="Marks this field as informational, used to provide context or reference data rather than actionable input">Information
+        Data
         Field</mat-checkbox><br />
     </div>
   </div>
@@ -132,7 +142,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
   <div class="data-field-detail" (click)="$event.stopPropagation();">
     <div class="single-detail">
       <mat-checkbox [(ngModel)]="data.dataField.isFacilitationField" [disabled]="!data.canEdit && !data.isOwner"
-        class="bottom-margin">Facilitation Data
+        class="bottom-margin"
+        matTooltip="Marks this field as a facilitation field, used by facilitators to manage and guide the exercise.  Not seen by other users.">Facilitation
+        Data
         Field</mat-checkbox><br />
     </div>
   </div>
@@ -141,7 +153,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
   <div class="data-field-detail" (click)="$event.stopPropagation();">
     <div class="single-detail">
       <mat-checkbox [(ngModel)]="data.dataField.isOnlyShownToOwners" [disabled]="!data.canEdit && !data.isOwner"
-        class="bottom-margin">Display for Content Developers and
+        class="bottom-margin"
+        matTooltip="Restricts visibility of this field to content developers and MSEL owners only; other users will not see it">Display
+        for Content Developers and
         MSEL Owners ONLY !!!</mat-checkbox><br />
     </div>
   </div>
@@ -151,7 +165,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <div class="single-detail">
       <mat-form-field class="full-width">
         <mat-label>Gallery Article Parameter</mat-label>
-        <mat-select [(ngModel)]="data.dataField.galleryArticleParameter" [disabled]="!data.canEdit && !data.isOwner">
+        <mat-select [(ngModel)]="data.dataField.galleryArticleParameter" [disabled]="!data.canEdit && !data.isOwner"
+          matTooltip="Maps this data field to a Gallery article parameter for integration with the Gallery application">
           <mat-option value=""></mat-option>
           @for (parameter of data.galleryArticleParameters; track parameter) {
           <mat-option value="{{ parameter }}">{{ parameter }}</mat-option>
@@ -166,7 +181,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <div class="single-detail">
       <mat-form-field class="full-width">
         <mat-label>Column Metadata (Width)</mat-label>
-        <input type="text" matInput [(ngModel)]="data.dataField.columnMetadata" />
+        <input type="text" matInput [(ngModel)]="data.dataField.columnMetadata"
+          matTooltip="Sets the column width for this field when displayed in a table (e.g. '200px' or '10%') and used to style the cell when exported to a .xlsx file" />
       </mat-form-field>
     </div>
   </div>
@@ -176,7 +192,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <div class="single-detail">
       <mat-form-field class="full-width">
         <mat-label>Cell Metadata (Color, Tint, Font-Weight)</mat-label>
-        <input type="text" matInput [(ngModel)]="data.dataField.cellMetadata" />
+        <input type="text" matInput [(ngModel)]="data.dataField.cellMetadata"
+          matTooltip="Sets cell styling metadata such as background color, tint, and font weight for this field when exported to a .xlsx file" />
       </mat-form-field>
     </div>
   </div>
