@@ -256,9 +256,11 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     this.citeService.getScoringModels().subscribe(
       (scoringModels) => {
         console.log('CITE scoring models loaded:', scoringModels?.length || 0, 'models');
-        this.scoringModelList = scoringModels || [];
+        // Filter out evaluation-specific scoring models (keep only templates with evaluationId == null)
+        this.scoringModelList = (scoringModels || []).filter(sm => !sm.evaluationId);
+        console.log('Filtered to', this.scoringModelList.length, 'template scoring models (excluded evaluation-specific copies)');
         if (this.scoringModelList.length === 0) {
-          console.warn('CITE returned an empty scoring model list');
+          console.warn('CITE returned no template scoring models');
         }
         // Update the scoring model name after list is loaded
         this.updateCiteScoringModelName();
@@ -336,11 +338,28 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   citeWarningMessage() {
     let warningMessage = '';
     if (this.msel.useCite && !this.msel.citeEvaluationId) {
-      warningMessage = this.teamList.some((t) => t.citeTeamTypeId)
-        ? ''
-        : '** WARNING: No teams have a CITE Team Type selected, so no teams will be pushed to CITE! **  ';
+      const teamsWithType = this.teamList.filter((t) => t.citeTeamTypeId);
+      const teamsWithoutType = this.teamList.filter((t) => !t.citeTeamTypeId);
+
+      if (teamsWithoutType.length > 0 && teamsWithType.length > 0) {
+        // Some teams missing types - this blocks the push
+        warningMessage = `** ERROR: ${teamsWithoutType.length} team(s) are missing a CITE Team Type. All teams must have a team type selected before pushing to CITE. **`;
+      } else if (teamsWithoutType.length > 0 && teamsWithType.length === 0) {
+        // No teams have types - warning only
+        warningMessage = '** WARNING: No teams have a CITE Team Type selected, so no teams will be pushed to CITE! **';
+      }
     }
     return warningMessage;
+  }
+
+  hasCiteTeamsWithoutType() {
+    // Returns true if CITE is enabled and there are teams without a CITE team type
+    // This blocks the push button similar to the scoring model requirement
+    if (!this.msel.useCite || this.msel.citeEvaluationId) {
+      return false; // CITE not enabled or already deployed, no validation needed
+    }
+    // Check if ANY teams exist without a citeTeamTypeId
+    return this.teamList.some((t) => !t.citeTeamTypeId);
   }
 
   pushIntegrations() {
