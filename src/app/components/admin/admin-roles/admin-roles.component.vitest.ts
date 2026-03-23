@@ -108,4 +108,93 @@ describe('AdminRolesComponent', () => {
     await renderAdminRoles({ roles });
     expect(screen.getByText('SuperAdmin')).toBeInTheDocument();
   });
+
+  it('should show Rename and Delete buttons for non-immutable role when canEdit', async () => {
+    const roles: SystemRole[] = [
+      {
+        id: 'role-2',
+        name: 'CustomRole',
+        permissions: [],
+        allPermissions: false,
+        immutable: false,
+      },
+    ];
+    const { fixture } = await renderAdminRoles({ canEdit: true, roles });
+    fixture.detectChanges();
+    const renameButton = fixture.nativeElement.querySelector(
+      'button[mattooltip="Rename Role"]',
+    );
+    const deleteButton = fixture.nativeElement.querySelector(
+      'button[mattooltip="Delete Role"]',
+    );
+    expect(renameButton).toBeTruthy();
+    expect(deleteButton).toBeTruthy();
+  });
+
+  it('should hide Rename and Delete buttons when canEdit is false', async () => {
+    const roles: SystemRole[] = [
+      {
+        id: 'role-2',
+        name: 'CustomRole',
+        permissions: [],
+        allPermissions: false,
+        immutable: false,
+      },
+    ];
+    const { fixture } = await renderAdminRoles({ canEdit: false, roles });
+    fixture.detectChanges();
+    const renameButton = fixture.nativeElement.querySelector(
+      'button[mattooltip="Rename Role"]',
+    );
+    const deleteButton = fixture.nativeElement.querySelector(
+      'button[mattooltip="Delete Role"]',
+    );
+    expect(renameButton).toBeNull();
+    expect(deleteButton).toBeNull();
+  });
+
+  it('should hide Rename and Delete buttons for immutable role even with canEdit', async () => {
+    const roles: SystemRole[] = [
+      {
+        id: 'role-1',
+        name: 'SuperAdmin',
+        permissions: [],
+        allPermissions: true,
+        immutable: true,
+      },
+    ];
+    const { fixture } = await renderAdminRoles({ canEdit: true, roles });
+    fixture.detectChanges();
+    const renameButton = fixture.nativeElement.querySelector(
+      'button[mattooltip="Rename Role"]',
+    );
+    const deleteButton = fixture.nativeElement.querySelector(
+      'button[mattooltip="Delete Role"]',
+    );
+    expect(renameButton).toBeNull();
+    expect(deleteButton).toBeNull();
+  });
+
+  it('should disable checkboxes when canEdit is false', async () => {
+    const roles: SystemRole[] = [
+      {
+        id: 'role-2',
+        name: 'CustomRole',
+        permissions: [],
+        allPermissions: false,
+        immutable: false,
+      },
+    ];
+    const { fixture } = await renderAdminRoles({ canEdit: false, roles });
+    fixture.detectChanges();
+    const checkboxInputs = fixture.nativeElement.querySelectorAll(
+      'mat-checkbox input[type="checkbox"]',
+    );
+    // All checkboxes should be disabled when canEdit is false
+    const disabledCount = Array.from(checkboxInputs).filter(
+      (input: any) => input.disabled,
+    ).length;
+    expect(disabledCount).toBe(checkboxInputs.length);
+    expect(checkboxInputs.length).toBeGreaterThan(0);
+  });
 });

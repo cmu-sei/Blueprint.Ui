@@ -158,6 +158,61 @@ describe('AdminContainerComponent', () => {
     expect(screen.getByText('CITE Duties')).toBeInTheDocument();
   });
 
+  it('should hide Roles nav when user lacks ViewRoles', async () => {
+    await renderAdminContainer({ permissions: [] });
+    expect(screen.queryByText('Roles')).not.toBeInTheDocument();
+  });
+
+  it('should hide Groups nav when user lacks ViewGroups', async () => {
+    await renderAdminContainer({ permissions: [] });
+    expect(screen.queryByText('Groups')).not.toBeInTheDocument();
+  });
+
+  it('should hide Data Fields nav when user lacks ViewDataFields', async () => {
+    await renderAdminContainer({ permissions: [] });
+    expect(screen.queryByText('Data Fields')).not.toBeInTheDocument();
+  });
+
+  it('should hide Inject Types nav when user lacks ViewInjectTypes', async () => {
+    await renderAdminContainer({ permissions: [] });
+    expect(screen.queryByText('Inject Types')).not.toBeInTheDocument();
+  });
+
+  it('should hide Catalogs nav when user lacks ViewCatalogs', async () => {
+    await renderAdminContainer({ permissions: [] });
+    expect(screen.queryByText('Catalogs')).not.toBeInTheDocument();
+  });
+
+  it('should hide Organizations nav when user lacks ViewOrganizations', async () => {
+    await renderAdminContainer({ permissions: [] });
+    expect(screen.queryByText('Organizations')).not.toBeInTheDocument();
+  });
+
+  it('should hide Gallery Cards nav when user lacks ViewGalleryCards', async () => {
+    await renderAdminContainer({ permissions: [] });
+    expect(screen.queryByText('Gallery Cards')).not.toBeInTheDocument();
+  });
+
+  it('should hide CITE Actions nav when user lacks ViewCiteActions', async () => {
+    await renderAdminContainer({ permissions: [] });
+    expect(screen.queryByText('CITE Actions')).not.toBeInTheDocument();
+  });
+
+  it('should hide CITE Duties nav when user lacks ViewCiteDuties', async () => {
+    await renderAdminContainer({ permissions: [] });
+    expect(screen.queryByText('CITE Duties')).not.toBeInTheDocument();
+  });
+
+  it('should show only the specific tab whose View permission is granted', async () => {
+    await renderAdminContainer({ permissions: ['ViewCatalogs'] });
+    expect(screen.getByText('Catalogs')).toBeInTheDocument();
+    expect(screen.queryByText('Units')).not.toBeInTheDocument();
+    expect(screen.queryByText('Users')).not.toBeInTheDocument();
+    expect(screen.queryByText('Roles')).not.toBeInTheDocument();
+    expect(screen.queryByText('Groups')).not.toBeInTheDocument();
+    expect(screen.queryByText('Organizations')).not.toBeInTheDocument();
+  });
+
   it('should show all nav items when all permissions present', async () => {
     await renderAdminContainer({
       permissions: [
