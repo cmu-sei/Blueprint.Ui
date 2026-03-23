@@ -26,7 +26,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
   <button mat-menu-item (click)="addOrEditPlayerApplication(null, 'Add a Player Application')"
     title="Add a new player application">New Player
     Application</button>
-  @for (template of templateList; track template.id) {
+  @for (template of templateList; track $index) {
   <button mat-menu-item (click)="addOrEditPlayerApplication(template, 'Add a Player Application')"
     title="{{ template.url }}">{{ template.name
     }}</button>
