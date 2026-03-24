@@ -141,8 +141,8 @@ export class MselTeamsComponent implements OnDestroy, OnInit, AfterViewInit {
   }
 
   canEditMsel(): boolean {
-    return this.permissionDataService.hasPermission(SystemPermission.EditMsels) ||
-      this.msel.hasRole(this.loggedInUserId, '').editor;
+    return this.permissionDataService.hasPermission(SystemPermission.ManageMsels) ||
+      this.msel.hasRole(this.loggedInUserId, '').owner;
   }
 
   getTeamList() {
