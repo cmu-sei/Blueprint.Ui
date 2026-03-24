@@ -138,8 +138,8 @@ export class TeamUsersComponent implements OnDestroy, OnInit {
   }
 
   canEditMsel(): boolean {
-    return this.permissionDataService.hasPermission(SystemPermission.EditMsels) ||
-      this.msel.hasRole(this.loggedInUserId, '').editor;
+    return this.permissionDataService.hasPermission(SystemPermission.ManageMsels) ||
+      this.msel.hasRole(this.loggedInUserId, '').owner;
   }
 
   clearFilter() {
