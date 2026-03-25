@@ -9,7 +9,6 @@ import { TeamQuery } from 'src/app/data/team/team.query';
 import { UserQuery } from 'src/app/data/user/user.query';
 import {
   DataField,
-  TeamRole,
   ScenarioEvent,
   SystemPermission,
   Team,
@@ -141,8 +140,8 @@ export class MselTeamsComponent implements OnDestroy, OnInit, AfterViewInit {
   }
 
   canEditMsel(): boolean {
-    return this.permissionDataService.hasPermission(SystemPermission.EditMsels) ||
-      this.msel.hasRole(this.loggedInUserId, '').editor;
+    return this.permissionDataService.hasPermission(SystemPermission.ManageMsels) ||
+      this.msel.hasRole(this.loggedInUserId, '').owner;
   }
 
   getTeamList() {

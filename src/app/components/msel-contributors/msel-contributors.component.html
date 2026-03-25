@@ -45,7 +45,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
               <div class="msel-role one-cell">
                 <mat-checkbox [checked]="hasMselRole(user.id, mselRole)"
                   (change)="toggleMselRole(user.id, mselRole, $event.checked)" (click)="$event.stopPropagation();"
-                  style="margin-right: 20px;" [disabled]="!canManageMsel()"
+                  style="margin-right: 20px;" [disabled]="!canManageMsel() || isOwnOwnerRole(user.id, mselRole)"
                   [matTooltip]="getRoleDescription(mselRole)">{{ mselRole }}</mat-checkbox>
               </div>
               }
