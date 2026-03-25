@@ -4,27 +4,30 @@ Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
 
-<div [ngClass]="isAddMode ? 'two-columns elevate' : 'one-column elevate'">
-  @if (isAddMode) {
-  <div class="user-list-container elevate">
-    <div class="users-header">
-      <mat-icon class="mdi-24px" fontIcon="mdi-account"></mat-icon>
-      <span style="margin-left: 10px">
-        All Users
-      </span>
-      <mat-form-field class="search-box">
-        <input matInput [formControl]="filterControl" placeholder="Search" />
-        @if (filterControl.value) {
-        <button mat-icon-button matSuffix (click)="clearFilter()" title="Clear Search">
-          <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline"></mat-icon>
-        </button>
-        }
-      </mat-form-field>
-    </div>
+<div class="full-width">
+  <div class="user-list-container mat-elevation-z8">
+    <mat-toolbar class="background">
+      <mat-toolbar-row>
+        <mat-icon class="mdi-24px" fontIcon="mdi-account-multiple"></mat-icon>
+        <p>All Users</p>
+      </mat-toolbar-row>
+      <mat-toolbar-row>
+        <mat-form-field class="w-50">
+          <mat-label>Search</mat-label>
+          <input matInput [formControl]="filterControl" placeholder="Search" autocomplete="off" />
+          @if (filterControl.value) {
+          <button mat-icon-button matSuffix (click)="clearFilter()" title="Clear Search">
+            <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline"></mat-icon>
+          </button>
+          }
+        </mat-form-field>
+      </mat-toolbar-row>
+    </mat-toolbar>
+
     <mat-table class="table-all-users" #table [dataSource]="userDataSource" matSort
       (matSortChange)="onSortChange($event)">
       <ng-container matColumnDef="name">
-        <mat-header-cell *matHeaderCellDef mat-sort-header>User</mat-header-cell>
+        <mat-header-cell *matHeaderCellDef mat-sort-header>User Name</mat-header-cell>
         <mat-cell *matCellDef="let element">
           @if (element.name !== null) {
           <div>{{ element.name }}</div>
@@ -34,6 +37,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           }
         </mat-cell>
       </ng-container>
+
       <ng-container matColumnDef="id">
         <mat-header-cell *matHeaderCellDef>&nbsp;</mat-header-cell>
         <mat-cell *matCellDef="let element">
@@ -50,82 +54,44 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </div>
         </mat-cell>
       </ng-container>
+
       <mat-header-row *matHeaderRowDef="minUserColumns"></mat-header-row>
       <mat-row *matRowDef="let row; columns: minUserColumns"></mat-row>
     </mat-table>
+
     @if (userDataSource.filteredData.length === 0) {
     <div>No results found</div>
     }
   </div>
-  }
+
+  <div class="spacer">&nbsp;</div>
 
   @if (teamList) {
-  <div [class.special-team-list-container]="isAddMode && teamList" class="team-list-container elevate">
-    <div class="users-header">
-      <mat-icon class="mdi-24px" fontIcon="mdi-account-group"></mat-icon>
-      <span style="margin-left: 10px">
-        Team Users
-      </span>
-      @if (!isAddMode && canEditMsel()) {
-      <button mat-icon-button (click)="toggleAddMode(true)" style="outline: none;" title="Add Users to Team">
-        <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle"></mat-icon>
-      </button>
-      }
-      @if (isAddMode) {
-      <button mat-icon-button (click)="toggleAddMode(false)" style="outline: none;" title="Show User Permissions">
-        <mat-icon class="mdi-24px self-center" fontIcon="mdi-eye-outline"></mat-icon>
-      </button>
-      }
-    </div>
+  <div class="team-list-container mat-elevation-z8">
+    <mat-toolbar class="background">
+      <mat-toolbar-row>
+        <mat-icon class="mdi-24px" fontIcon="mdi-account-group"></mat-icon>
+        <p>Team Users</p>
+      </mat-toolbar-row>
+    </mat-toolbar>
+
     <mat-table class="table-all-users" #table [dataSource]="teamUserDataSource" matSort
       (matSortChange)="onSortTeamChange($event)">
       <ng-container matColumnDef="name">
-        <mat-header-cell *matHeaderCellDef mat-sort-header>User</mat-header-cell>
+        <mat-header-cell *matHeaderCellDef mat-sort-header>User Name</mat-header-cell>
         <mat-cell *matCellDef="let element">
           <div>{{ getUserName(element.userId) }}</div>
         </mat-cell>
       </ng-container>
-      <ng-container matColumnDef="Inviter">
-        <mat-header-cell *matHeaderCellDef matTooltip="Can invite others to the event.">Inviter</mat-header-cell>
+      <ng-container matColumnDef="type">
+        <mat-header-cell *matHeaderCellDef>Type</mat-header-cell>
         <mat-cell *matCellDef="let element">
-          <mat-checkbox [checked]="hasTeamRole(element.userId, 'Inviter')"
-            [disabled]="!canEditMsel()"
-            (change)="toggleTeamRole(element.userId, element.teamId, 'Inviter', $event.checked)"></mat-checkbox>
-        </mat-cell>
-      </ng-container>
-      <ng-container matColumnDef="Observer">
-        <mat-header-cell *matHeaderCellDef
-          matTooltip="Can observe other teams progress in CITE and Gallery.">Observer</mat-header-cell>
-        <mat-cell *matCellDef="let element">
-          <mat-checkbox [checked]="hasTeamRole(element.userId, 'Observer')"
-            [disabled]="!canEditMsel()"
-            (change)="toggleTeamRole(element.userId, element.teamId, 'Observer', $event.checked)"></mat-checkbox>
-        </mat-cell>
-      </ng-container>
-      <ng-container matColumnDef="Incrementer">
-        <mat-header-cell *matHeaderCellDef
-          matTooltip="Can advance scenario progress in CITE.">Incrementer</mat-header-cell>
-        <mat-cell *matCellDef="let element">
-          <mat-checkbox [checked]="hasTeamRole(element.userId, 'Incrementer')"
-            [disabled]="!canEditMsel()"
-            (change)="toggleTeamRole(element.userId, element.teamId, 'Incrementer', $event.checked)"></mat-checkbox>
-        </mat-cell>
-      </ng-container>
-      <ng-container matColumnDef="Submitter">
-        <mat-header-cell *matHeaderCellDef
-          matTooltip="Can submit responses on behalf of their team in CITE.">Submitter</mat-header-cell>
-        <mat-cell *matCellDef="let element">
-          <mat-checkbox [checked]="hasTeamRole(element.userId, 'Submitter')"
-            [disabled]="!canEditMsel()"
-            (change)="toggleTeamRole(element.userId, element.teamId, 'Submitter', $event.checked)"></mat-checkbox>
-        </mat-cell>
-      </ng-container>
-      <ng-container matColumnDef="Modifier">
-        <mat-header-cell *matHeaderCellDef matTooltip="Can enter team responses in CITE.">Modifier</mat-header-cell>
-        <mat-cell *matCellDef="let element">
-          <mat-checkbox [checked]="hasTeamRole(element.userId, 'Modifier')"
-            [disabled]="!canEditMsel()"
-            (change)="toggleTeamRole(element.userId, element.teamId, 'Modifier', $event.checked)"></mat-checkbox>
+          <mat-select [value]="getUserTeamRole(element.userId)" (selectionChange)="setUserTeamRole(element.userId, element.teamId, $event.value)" [disabled]="!canEditMsel()">
+            <mat-option value="">-- None --</mat-option>
+            @for (role of teamRoles; track role) {
+            <mat-option [value]="role">{{ role }}</mat-option>
+            }
+          </mat-select>
         </mat-cell>
       </ng-container>
       <ng-container matColumnDef="id">
