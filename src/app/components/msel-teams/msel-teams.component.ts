@@ -9,7 +9,6 @@ import { TeamQuery } from 'src/app/data/team/team.query';
 import { UserQuery } from 'src/app/data/user/user.query';
 import {
   DataField,
-  TeamRole,
   ScenarioEvent,
   SystemPermission,
   Team,
