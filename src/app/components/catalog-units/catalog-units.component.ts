@@ -33,6 +33,7 @@ export class CatalogUnitsComponent implements OnDestroy, OnInit {
   // context menu
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
   contextMenuPosition = { x: '0px', y: '0px' };
+  displayedColumns: string[] = ['action', 'shortName', 'name'];
   expandedSectionIds: string[] = [];
   sortedScenarioEvents: ScenarioEvent[];
   sortedDataFields: DataField[];
