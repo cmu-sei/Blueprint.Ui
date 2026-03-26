@@ -9,23 +9,22 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <mat-toolbar class="background">
       <mat-toolbar-row>
         <mat-icon class="mdi-24px" fontIcon="mdi-account-multiple"></mat-icon>
-        <p>All Users</p>
+        <p>Users</p>
       </mat-toolbar-row>
       <mat-toolbar-row>
         <mat-form-field class="w-50">
-          <mat-label>Search</mat-label>
-          <input matInput [(ngModel)]="filterString" (keyup)="applyFilter($any($event.target).value)"
-            placeholder="Search" autocomplete="off" />
-          @if (filterString != '') {
+          <input matInput [formControl]="filterControl" placeholder="Search" autocomplete="off" />
+          @if (filterControl.value) {
           <button mat-icon-button matSuffix (click)="clearFilter()" title="Clear Search">
             <mat-icon style="transform: scale(0.85);" fontIcon="mdi-close-circle-outline"></mat-icon>
           </button>
           }
         </mat-form-field>
+        <mat-paginator #userPaginator [pageSizeOptions]="[10, 25, 50, 100]" aria-label="Select page of users"></mat-paginator>
       </mat-toolbar-row>
     </mat-toolbar>
 
-    <mat-table class="mat-table-all-users" #table [dataSource]="userDataSource" matSort
+    <mat-table class="table-all-users" #table [dataSource]="userDataSource" matSort
       (matSortChange)="onSortChange($event)">
       <ng-container matColumnDef="name">
         <mat-header-cell *matHeaderCellDef mat-sort-header>User Name</mat-header-cell>
@@ -65,11 +64,22 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <mat-toolbar class="background">
       <mat-toolbar-row>
         <mat-icon class="mdi-24px" fontIcon="mdi-account-group"></mat-icon>
-        <p>Unit Users</p>
+        <p>Unit Members</p>
+      </mat-toolbar-row>
+      <mat-toolbar-row>
+        <mat-form-field class="w-50">
+          <input matInput [formControl]="unitUserFilterControl" placeholder="Search" autocomplete="off" />
+          @if (unitUserFilterControl.value) {
+          <button mat-icon-button matSuffix (click)="clearUnitUserFilter()" title="Clear Search">
+            <mat-icon style="transform: scale(0.85);" fontIcon="mdi-close-circle-outline"></mat-icon>
+          </button>
+          }
+        </mat-form-field>
+        <mat-paginator #unitUserPaginator [pageSizeOptions]="[10, 25, 50, 100]" aria-label="Select page of unit users"></mat-paginator>
       </mat-toolbar-row>
     </mat-toolbar>
 
-    <mat-table class="mat-table-all-users" #table [dataSource]="unitUserDataSource" matSort
+    <mat-table class="table-all-users" #table [dataSource]="unitUserDataSource" matSort
       (matSortChange)="onSortUnitChange($event)">
       <ng-container matColumnDef="name">
         <mat-header-cell *matHeaderCellDef mat-sort-header>User Name</mat-header-cell>

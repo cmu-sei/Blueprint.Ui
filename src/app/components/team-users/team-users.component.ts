@@ -9,7 +9,9 @@ import {
   OnInit,
   Input,
   ViewChild,
+  AfterViewInit,
 } from '@angular/core';
+import { MatPaginator } from '@angular/material/paginator';
 import { Sort, MatSortable } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { TeamQuery } from 'src/app/data/team/team.query';
@@ -33,8 +35,10 @@ import { UntypedFormControl } from '@angular/forms';
   styleUrls: ['./team-users.component.scss'],
   standalone: false
 })
-export class TeamUsersComponent implements OnDestroy, OnInit {
+export class TeamUsersComponent implements OnDestroy, OnInit, AfterViewInit {
   @Input() team: Team;
+  @ViewChild('userPaginator') userPaginator: MatPaginator;
+  @ViewChild('teamMemberPaginator') teamMemberPaginator: MatPaginator;
   userList: User[] = [];
   teamUsers: TeamUser[] = [];
   otherTeamUsers: TeamUser[] = [];
@@ -47,7 +51,9 @@ export class TeamUsersComponent implements OnDestroy, OnInit {
   userDataSource = new MatTableDataSource<User>(new Array<User>());
   teamUserDataSource = new MatTableDataSource<TeamUser>(new Array<TeamUser>());
   filterControl = new UntypedFormControl();
+  teamMemberFilterControl = new UntypedFormControl();
   filterString = '';
+  teamMemberFilterString = '';
   sort: Sort = { active: 'name', direction: 'asc' };
   teamRoles: string[] = [];
   msel = new MselPlus();
@@ -134,9 +140,18 @@ export class TeamUsersComponent implements OnDestroy, OnInit {
       this.applyFilter();
     });
     this.filterControl.setValue('');
+    this.teamMemberFilterControl.valueChanges.pipe(takeUntil(this.unsubscribe$)).subscribe(() => {
+      this.teamMemberFilterString = this.teamMemberFilterControl.value;
+      this.applyTeamMemberFilter();
+    });
     this.teamUsers = this.teamUserQuery.getAll().filter(tu => tu.teamId === this.team?.id);
     this.otherTeamUsers = this.teamUserQuery.getAll().filter(tu => tu.teamId !== this.team?.id);
     this.setDataSources();
+  }
+
+  ngAfterViewInit() {
+    this.userDataSource.paginator = this.userPaginator;
+    this.teamUserDataSource.paginator = this.teamMemberPaginator;
   }
 
   canEditMsel(): boolean {
@@ -146,6 +161,18 @@ export class TeamUsersComponent implements OnDestroy, OnInit {
 
   clearFilter() {
     this.filterControl.setValue('');
+  }
+
+  clearTeamMemberFilter() {
+    this.teamMemberFilterControl.setValue('');
+  }
+
+  applyTeamMemberFilter() {
+    const searchTerm = this.teamMemberFilterControl.value ? this.teamMemberFilterControl.value.toLowerCase() : '';
+    const filteredTeamUsers = this.teamUsers.filter(tu =>
+      !searchTerm || this.getUserName(tu.userId).toLowerCase().includes(searchTerm)
+    );
+    this.sortTeamUserData(filteredTeamUsers);
   }
 
   setDataSources() {
@@ -171,6 +198,12 @@ export class TeamUsersComponent implements OnDestroy, OnInit {
       }
     });
     this.userDataSource = new MatTableDataSource(newAllUsers);
+    if (this.userPaginator) {
+      this.userDataSource.paginator = this.userPaginator;
+    }
+    if (this.teamMemberPaginator) {
+      this.teamUserDataSource.paginator = this.teamMemberPaginator;
+    }
   }
 
   applyFilter() {
@@ -223,6 +256,9 @@ export class TeamUsersComponent implements OnDestroy, OnInit {
       }
     });
     this.userDataSource.data = data;
+    if (this.userPaginator) {
+      this.userDataSource.paginator = this.userPaginator;
+    }
   }
 
   sortTeamUserData(teamUserData: TeamUser[]) {
@@ -238,6 +274,9 @@ export class TeamUsersComponent implements OnDestroy, OnInit {
       }
     });
     this.teamUserDataSource.data = teamUserData;
+    if (this.teamMemberPaginator) {
+      this.teamUserDataSource.paginator = this.teamMemberPaginator;
+    }
   }
 
   compare(a: string, b: string, isAsc: boolean) {

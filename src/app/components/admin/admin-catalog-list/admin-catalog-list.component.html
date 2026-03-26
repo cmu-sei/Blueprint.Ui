@@ -103,14 +103,20 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <!-- Expanded Content Column - The detail row is made up of this one column that spans across all columns -->
     <ng-container matColumnDef="expandedDetail">
       <mat-cell class="expanded-detail-cell" *matCellDef="let element" [attr.colspan]="displayedColumns.length">
-        <div class="inject-list-div">
-          <app-inject-list [canEdit]="canEdit" [loggedInUserId]="loggedInUserId" [catalog]="element" [injectType]="{}"
-            [isEditMode]="true"></app-inject-list>
-        </div>
-        <div class="unit-list-div">
-          <app-catalog-units [canEdit]="canEdit" [loggedInUserId]="loggedInUserId"
-            [catalog]="element"></app-catalog-units>
-        </div>
+        <mat-expansion-panel class="detail-expansion-panel">
+          <mat-expansion-panel-header>Injects</mat-expansion-panel-header>
+          <div class="inject-list-div">
+            <app-inject-list [canEdit]="canEdit" [loggedInUserId]="loggedInUserId" [catalog]="element" [injectType]="{}"
+              [isEditMode]="true"></app-inject-list>
+          </div>
+        </mat-expansion-panel>
+        <mat-expansion-panel class="detail-expansion-panel">
+          <mat-expansion-panel-header>Units with access</mat-expansion-panel-header>
+          <div class="unit-list-div">
+            <app-catalog-units [canEdit]="canEdit" [loggedInUserId]="loggedInUserId"
+              [catalog]="element"></app-catalog-units>
+          </div>
+        </mat-expansion-panel>
       </mat-cell>
     </ng-container>
     <!-- row definitions -->
