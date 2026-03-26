@@ -61,23 +61,12 @@
   background-color: var(--mat-sys-surface-variant);
 }
 
-.element-row-not-expanded {
+.detail-row {
+  height: 0;
 }
 
-.element-row-expanded {
-  border-bottom-color: transparent;
-}
-
-::ng-deep .mat-mdc-row.element-row-expanded,
-::ng-deep .mdc-data-table__row.element-row-expanded {
-  border-bottom-style: none !important;
-  border-bottom-width: 0 !important;
-  border-bottom-color: transparent !important;
-}
-
-::ng-deep .element-row-expanded .mat-mdc-cell,
-::ng-deep .element-row-expanded .mdc-data-table__cell {
-  border-bottom: none !important;
+.element-row td {
+  border-bottom-width: 0;
 }
 
 .column-name {
