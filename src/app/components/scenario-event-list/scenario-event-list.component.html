@@ -86,7 +86,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 </button>
                 }
                 <mat-menu #colorList="matMenu" [overlapTrigger]="false">
-                  <button mat-menu-item (click)="selectNewColor('', null)" class="color-option-button">
+                  <button mat-menu-item (click)="batchSelectNewColor('')" class="color-option-button">
                     <div class="color-option" [style]="getStyleFromColor('')"></div>
                   </button>
                   @for (color of scenarioEventBackgroundColors; track color) {
@@ -265,15 +265,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <!-- Integration Target value -->
           @if (msel.showIntegrationTargetOnScenarioEventList) {
           <td>
-            <app-data-value [value]="item.integrationTarget" (valueChange)="saveIntegrationTarget(item, $event)"
-              [dataField]="integrationTargetDataField"
-              [canEdit]="(canEditMsel() || msel.hasRole(this.loggedInUserId, item.id).editor) && !isStarterMsel"
-              [canApprove]="(canEditMsel() || msel.hasRole(this.loggedInUserId, item.id).approver) && !isStarterMsel"
-              [isOwner]="(canEditMsel() || msel.hasRole(this.loggedInUserId, item.id).owner) && !isStarterMsel"
-              [showValueOnly]="true" [organizationOptions]="getSortedOrganizationOptions()" [teamOptions]="teamList"
-              [unitOptions]="unitList" [cardOptions]="cardList" [moveOptions]="moveList"
-              [gallerySourceTypeOptions]="msel.gallerySourceTypes" [userOptions]="userList">
-            </app-data-value>
+            <mat-select multiple placeholder="Integration Target" (click)="$event.stopPropagation()"
+              [value]="getIntegrationTargetArray(item)"
+              (valueChange)="onIntegrationTargetChange(item, $event)"
+              [disabled]="!((canEditMsel() || msel.hasRole(this.loggedInUserId, item.id).editor) && !isStarterMsel)">
+              @for (opt of integrationTargetOptions; track opt) {
+              <mat-option [value]="opt">{{ opt }}</mat-option>
+              }
+            </mat-select>
           </td>
           }
           @if (item.scenarioEventType === eventType.Inject) {

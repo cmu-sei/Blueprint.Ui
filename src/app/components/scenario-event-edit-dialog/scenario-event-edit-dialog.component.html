@@ -31,6 +31,21 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </mat-select>
         </mat-form-field>
       </div>
+      <!-- Integration Target -->
+      @if (data.integrationTargetOptions.length > 0 && data.scenarioEvent.scenarioEventType === eventType.Inject) {
+      <div class="single-edit-dialog">
+        <mat-form-field class="full-width">
+          <mat-label>Integration Target</mat-label>
+          <mat-select multiple placeholder="Integration Target" (click)="$event.stopPropagation()"
+            [value]="getIntegrationTargetArray()" (valueChange)="onIntegrationTargetChange($event)"
+            [disabled]="!(data.isEditor && (!data.isEditingRestricted || data.scenarioEvent.scenarioEventType === eventType.Information))">
+            @for (opt of data.integrationTargetOptions; track opt) {
+            <mat-option [value]="opt">{{ opt }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      </div>
+      }
       }
       <!-- Tabs -->
       <span class="single-edit-dialog">
@@ -57,18 +72,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
         }
         @if (selectedTabName !== 'Steamfitter Task') {
         <span>
-          <!-- Integration Target -->
-          @if (data.integrationTargetDataField.dataOptions.length > 0) {
-          <div class="full-width">
-            <app-data-value [(value)]="data.scenarioEvent.integrationTarget"
-              [dataField]="data.integrationTargetDataField"
-              [canEdit]="data.isEditor && (!data.isEditingRestricted || data.scenarioEvent.scenarioEventType === eventType.Information)"
-              [canApprove]="data.isApprover" [isOwner]="data.isOwner" [showValueOnly]="false"
-              [organizationOptions]="data.organizationList" [teamOptions]="data.teamList" [unitOptions]="data.unitList"
-              [cardOptions]="data.cardList" [moveOptions]="data.moveList"
-              [gallerySourceTypeOptions]="data.gallerySourceTypes" [userOptions]="data.userList"></app-data-value>
-          </div>
-          }
           <!-- event start time (deltaSeconds) -->
           @if ((currentFilterBy === 'all' || data.scenarioEvent.scenarioEventType !== eventType.Inject) &&
           getScenarioTypeDataFields().length > 0) {
@@ -94,7 +97,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <div class="full-width">
             <mat-form-field class="full-width">
               <mat-label>Row Metadata</mat-label>
-              <input type="text" matInput placeholder="row metadata" [(ngModel)]="data.scenarioEvent.rowMetadata" [disabled]="!data.isEditor" />
+              <input type="text" matInput placeholder="row metadata" [(ngModel)]="data.scenarioEvent.rowMetadata"
+                [disabled]="!data.isEditor" />
             </mat-form-field>
           </div>
           }
