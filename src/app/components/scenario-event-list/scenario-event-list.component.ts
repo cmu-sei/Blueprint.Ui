@@ -131,7 +131,6 @@ export class ScenarioEventListComponent
     DataFieldType.User,
     DataFieldType.Checkbox,
     DataFieldType.Card,
-    DataFieldType.IntegrationTarget,
     DataFieldType.Move,
   ];
   dateFormControls = new Map<string, UntypedFormControl>();
@@ -240,7 +239,7 @@ export class ScenarioEventListComponent
             onScenarioEventList: this.msel.showIntegrationTargetOnScenarioEventList,
             onExerciseView: this.msel.showIntegrationTargetOnExerciseView,
             galleryArticleParameter: '- - -',
-            dataType: 'IntegrationTarget',
+            dataType: 'IntegrationTarget' as any,
             description: 'System defined',
             dataOptions: dataOptions
           };
