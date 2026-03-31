@@ -22,7 +22,27 @@ project root for license information.
     </div>
     @if (msel) {
       <div class="table-container">
+        <div class="msel-header print-only">
+          <h2>{{ msel.name }}</h2>
+          @if (msel.description) {
+            <div>{{ msel.description }}</div>
+          }
+        </div>
         @for (scenarioEvent of getPagedScenarioEvents(); track scenarioEvent.id; let i = $index) {
+          @let move = getMoveForEvent(scenarioEvent.id);
+          @let prevEvent = i > 0 ? getPagedScenarioEvents()[i - 1] : null;
+          @if (i === 0 || isMoveBoundary(scenarioEvent.id, prevEvent.id)) {
+            <div class="move-header print-only">
+              <h3>Move {{ getMoveNumber(scenarioEvent.id) }}@if (move?.description) {: {{ move.description }}}</h3>
+              @if (move?.situationTime) {
+                <p><strong>Situation Date/Time:</strong> {{ move.situationTime | date:'medium' }}</p>
+              }
+              @if (move?.situationDescription) {
+                <p><strong>Situation:</strong></p>
+                <p [innerHTML]="move.situationDescription"></p>
+              }
+            </div>
+          }
           <table id="eventDetails" class="page-break">
             <thead>
               <tr>
@@ -36,6 +56,8 @@ project root for license information.
                 <td>
                   <app-duration-view [startTime]="msel.startTime" [durationSeconds]="scenarioEvent.deltaSeconds"
                     [showRealTime]="true"></app-duration-view>
+                  (<app-duration-view [startTime]="msel.startTime" [durationSeconds]="scenarioEvent.deltaSeconds"
+                    [showRealTime]="false"></app-duration-view>)
                 </td>
               </tr>
               <tr>
