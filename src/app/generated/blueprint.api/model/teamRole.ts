@@ -15,12 +15,5 @@
  */
 
 
-export const TeamRole = {
-    Observer: 'Observer',
-    Inviter: 'Inviter',
-    Incrementer: 'Incrementer',
-    Modifier: 'Modifier',
-    Submitter: 'Submitter'
-} as const;
-export type TeamRole = typeof TeamRole[keyof typeof TeamRole];
+export type TeamRole = string;
 

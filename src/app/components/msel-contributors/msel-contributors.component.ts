@@ -277,6 +277,10 @@ export class MselContributorsComponent implements OnDestroy, OnInit {
       this.msel.hasRole(this.loggedInUserId, '').owner;
   }
 
+  isOwnOwnerRole(userId: string, mselRole: MselRole): boolean {
+    return userId === this.loggedInUserId && mselRole === MselRole.Owner;
+  }
+
   ngOnDestroy() {
     this.unsubscribe$.next(null);
     this.unsubscribe$.complete();

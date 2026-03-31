@@ -9,7 +9,9 @@ import {
   Input,
   ElementRef,
   ViewChild,
+  AfterViewInit,
 } from '@angular/core';
+import { MatPaginator } from '@angular/material/paginator';
 import { Sort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { User } from 'src/app/generated/blueprint.api';
@@ -25,22 +27,24 @@ import { UntypedFormControl } from '@angular/forms';
     styleUrls: ['./admin-unit-users.component.scss'],
     standalone: false
 })
-export class AdminUnitUsersComponent implements OnDestroy, OnInit {
+export class AdminUnitUsersComponent implements OnDestroy, OnInit, AfterViewInit {
   @Input() unitId: string;
   @Input() canManage: boolean;
+  @ViewChild('userPaginator') userPaginator: MatPaginator;
+  @ViewChild('unitUserPaginator') unitUserPaginator: MatPaginator;
   userList: User[] = [];
   users: User[] = [];
   unitUsers: User[] = [];
   displayedUserColumns: string[] = ['name', 'id'];
-  displayedUnitColumns: string[] = ['name', 'user'];
   userDataSource = new MatTableDataSource<User>(new Array<User>());
   unitUserDataSource = new MatTableDataSource<User>(new Array<User>());
   filterControl = new UntypedFormControl();
+  unitUserFilterControl = new UntypedFormControl();
   filterString = '';
+  unitUserFilterString = '';
   private unsubscribe$ = new Subject();
   sort: Sort = { active: 'name', direction: 'asc' };
   @ViewChild('usersInput') usersInput: ElementRef<HTMLInputElement>;
-
 
   constructor(
     private unitUserDataService: UnitUserDataService,
@@ -62,16 +66,40 @@ export class AdminUnitUsersComponent implements OnDestroy, OnInit {
       this.setDataSources();
     });
     this.unitUserDataService.getUnitUsersFromApi(this.unitId);
+    this.filterControl.valueChanges.pipe(takeUntil(this.unsubscribe$)).subscribe(() => {
+      this.filterString = this.filterControl.value;
+      this.applyFilter();
+    });
+    this.unitUserFilterControl.valueChanges.pipe(takeUntil(this.unsubscribe$)).subscribe(() => {
+      this.unitUserFilterString = this.unitUserFilterControl.value;
+      this.applyUnitUserFilter();
+    });
   }
 
-  applyFilter(filterValue: string) {
-    this.filterString = filterValue;
-    filterValue = filterValue.toLowerCase(); // MatTableDataSource defaults to lowercase matches
+  ngAfterViewInit() {
+    this.userDataSource.paginator = this.userPaginator;
+    this.unitUserDataSource.paginator = this.unitUserPaginator;
+  }
+
+  applyFilter() {
+    const filterValue = this.filterControl.value ? this.filterControl.value.toLowerCase() : '';
     this.userDataSource.filter = filterValue;
   }
 
   clearFilter() {
-    this.applyFilter('');
+    this.filterControl.setValue('');
+  }
+
+  applyUnitUserFilter() {
+    const searchTerm = this.unitUserFilterControl.value ? this.unitUserFilterControl.value.toLowerCase() : '';
+    const filteredUnitUsers = this.unitUsers.filter(user =>
+      !searchTerm || (user.name && user.name.toLowerCase().includes(searchTerm))
+    );
+    this.sortUserUnitData(filteredUnitUsers);
+  }
+
+  clearUnitUserFilter() {
+    this.unitUserFilterControl.setValue('');
   }
 
   getUserName(id: string) {
@@ -99,6 +127,12 @@ export class AdminUnitUsersComponent implements OnDestroy, OnInit {
       }
     });
     this.userDataSource = new MatTableDataSource(newAllUsers);
+    if (this.userPaginator) {
+      this.userDataSource.paginator = this.userPaginator;
+    }
+    if (this.unitUserPaginator) {
+      this.unitUserDataSource.paginator = this.unitUserPaginator;
+    }
   }
 
   addUserToUnit(user: User): void {
@@ -128,6 +162,9 @@ export class AdminUnitUsersComponent implements OnDestroy, OnInit {
       }
     });
     this.userDataSource.data = data;
+    if (this.userPaginator) {
+      this.userDataSource.paginator = this.userPaginator;
+    }
   }
 
   onSortUnitChange(sort: Sort) {
@@ -148,6 +185,9 @@ export class AdminUnitUsersComponent implements OnDestroy, OnInit {
       }
     });
     this.unitUserDataSource.data = data;
+    if (this.unitUserPaginator) {
+      this.unitUserDataSource.paginator = this.unitUserPaginator;
+    }
   }
 
   /**

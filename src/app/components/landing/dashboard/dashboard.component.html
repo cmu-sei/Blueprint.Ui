@@ -39,7 +39,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </mat-card-header>
       <img class="card-image" src="assets/img/build.png" alt="Build image">
     </mat-card>
-    } @else {
+    }
+    @if (joinMselList.length === 0 && launchMselList.length === 0 && buildMselList.length === 0 && !canCreateMsels) {
     <mat-card appearance="outlined" [ngClass]="buildClass" tabindex="3" role="button">
       <mat-card-header>
         <mat-card-title>Nothing to see here!</mat-card-title>
