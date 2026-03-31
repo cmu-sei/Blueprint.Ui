@@ -26,15 +26,32 @@ project root for license information.
           <table id="eventDetails" class="page-break">
             <thead>
               <tr>
-                <th style="width: 100px;">Title</th>
+                <th style="width: 180px;">Title</th>
                 <th>{{ getTitleForScenarioEvent(scenarioEvent.id) }}</th>
               </tr>
             </thead>
             <tbody>
               <tr>
+                <td style="font-weight:bold;">Execution Time</td>
+                <td>
+                  <app-duration-view [startTime]="msel.startTime" [durationSeconds]="scenarioEvent.deltaSeconds"
+                    [showRealTime]="true"></app-duration-view>
+                </td>
+              </tr>
+              <tr>
                 <td style="font-weight:bold;">Move</td>
                 <td>{{ getMoveNumber(scenarioEvent.id) }}</td>
               </tr>
+              <tr>
+                <td style="font-weight:bold;">Group</td>
+                <td>{{ getGroupNumber(scenarioEvent.id) }}</td>
+              </tr>
+              @if (scenarioEvent.integrationTarget) {
+                <tr>
+                  <td style="font-weight:bold;">Integration Target</td>
+                  <td>{{ scenarioEvent.integrationTarget }}</td>
+                </tr>
+              }
               @for (df of allDataFields; track df.id) {
                 @if (getScenarioEventValue(scenarioEvent, df.name) && df.name != 'Title') {
                   <tr>

@@ -446,4 +446,10 @@ export class MselPlaybookComponent {
       ? this.moveAndGroupNumbers[scenarioEventId][0]
       : -1;
   }
+
+  getGroupNumber(scenarioEventId: string): number {
+    return this.moveAndGroupNumbers[scenarioEventId]
+      ? this.moveAndGroupNumbers[scenarioEventId][1]
+      : 0;
+  }
 }
