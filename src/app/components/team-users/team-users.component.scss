@@ -2,50 +2,45 @@
 // Released under a MIT (SEI)-style license, please see LICENSE.md in the
 // project root for license information or contact permission@sei.cmu.edu for full terms.
 
-.one-column {
-  display: flex;
-  flex-direction: row;
-  align-self: center;
-  width: 840px;
-  margin-left: 80px;
+@use "@angular/material" as mat;
+
+:host {
+  @include mat.form-field-density(-5);
 }
 
-.two-columns {
+.full-width {
   display: flex;
+  flex: 1;
   flex-direction: row;
-  flex: 10;
-  margin-left: 80px;
-  width: 100%;
+  align-items: flex-start;
+  width: 80%;
+  margin: 0 auto;
 }
 
 .user-list-container {
   display: flex;
   flex-direction: column;
-  flex: 1;
-  width: calc(100% - 40px);
-  margin-left: 10px;
-  margin-right: 10px;
+  flex: 8;
+  min-width: 300px;
   margin-top: 10px;
-  margin-bottom: 10px;
-}
-
-.collapsed-div {
-  width: 50px;
+  max-height: 500px;
+  align-self: flex-start;
 }
 
 .team-list-container {
   display: flex;
   flex-direction: column;
-  flex: 1;
-  margin-left: 10px;
-  margin-right: 10px;
+  flex: 8;
+  min-width: 300px;
   margin-top: 10px;
-  margin-bottom: 10px;
+  max-height: 500px;
+  align-self: flex-start;
 }
 
-.search-box {
-  width: 150px;
-  margin-left: 100px;
+.spacer {
+  display: flex;
+  flex: 1;
+  min-width: 40px;
 }
 
 .table-all-users {
@@ -53,38 +48,34 @@
   max-height: 400px;
 }
 
-.table-team-users {
-  overflow: auto;
-  max-height: 600px;
-}
-
 /* TODO(mdc-migration): The following rule targets internal classes of button that may no longer apply for the MDC version.*/
 .button-focus-overlay {
   background-color: transparent;
 }
 
-.cell {
+.mat-mdc-cell {
   padding-right: 0;
 }
 
-.users-header {
-  margin-left: 10px;
-  margin-right: 20px;
-  margin-top: 10px;
-  display: inline-flex;
-  align-items: center;
-}
-
-.full-width {
+.mat-toolbar-row {
   display: flex;
-  flex: 1;
-  flex-direction: row;
+  align-items: center;
+  gap: 10px;
 }
 
-.special-team-list-container {
-  display: inline-block;
-  flex-direction: column;
-  margin-top: 10px;
-  min-width: 400px;
-  min-height: 600px;
+.mat-toolbar-row mat-icon {
+  color: var(--mat-sys-primary);
+}
+
+.mat-toolbar-row p {
+  font-size: 16px;
+  margin: 0;
+}
+
+mat-paginator {
+  background-color: transparent;
+}
+
+.w-50 {
+  width: 50%;
 }

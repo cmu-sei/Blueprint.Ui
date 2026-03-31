@@ -4,34 +4,27 @@ Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
 
-<div class="cssLayoutRowStartCenter">
+<div class="full-width">
   <div class="user-list-container mat-elevation-z8">
-    <div class="sp-icon">
-      <mat-icon class="mdi-24px" fontIcon="mdi-account-multiple"></mat-icon>
-      <span style="margin-left: 10px">
-        All Users
-      </span>
-    </div>
-    <div>
-      <mat-form-field style="width: 220px;">
-        <input matInput [(ngModel)]="filterString" (keyup)="applyFilter($any($event.target).value)"
-          placeholder="Search" />
-      </mat-form-field>
-      @if (filterString != '') {
-      <button mat-icon-button (click)="clearFilter()" style="outline: none;" title="Clear Search">
-        <mat-icon style="transform: scale(0.85);" fontIcon="mdi-close-circle-outline"></mat-icon>
-      </button>
-      }
-    </div>
+    <mat-toolbar class="background">
+      <mat-toolbar-row>
+        <mat-icon class="mdi-24px" fontIcon="mdi-account-multiple"></mat-icon>
+        <p>Users</p>
+      </mat-toolbar-row>
+      <mat-toolbar-row>
+        <mat-form-field class="w-50">
+          <input matInput [formControl]="filterControl" placeholder="Search" autocomplete="off" />
+          @if (filterControl.value) {
+          <button mat-icon-button matSuffix (click)="clearFilter()" title="Clear Search">
+            <mat-icon style="transform: scale(0.85);" fontIcon="mdi-close-circle-outline"></mat-icon>
+          </button>
+          }
+        </mat-form-field>
+        <mat-paginator #userPaginator [pageSizeOptions]="[10, 25, 50, 100]" aria-label="Select page of users"></mat-paginator>
+      </mat-toolbar-row>
+    </mat-toolbar>
 
-    @if (false) {
-    <mat-card appearance="outlined" style="display: flex; justify-content: center; align-items: center;">
-      <mat-progress-spinner color="primary" mode="indeterminate">
-      </mat-progress-spinner>
-    </mat-card>
-    }
-
-    <mat-table class="mat-table-all-users" #table [dataSource]="userDataSource" matSort
+    <mat-table class="table-all-users" #table [dataSource]="userDataSource" matSort
       (matSortChange)="onSortChange($event)">
       <ng-container matColumnDef="name">
         <mat-header-cell *matHeaderCellDef mat-sort-header>User Name</mat-header-cell>
@@ -50,7 +43,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <mat-cell *matCellDef="let element">
           <div>
             <button mat-icon-button (click)="addUserToUnit(element)" title="Add {{ element.name }}" [disabled]="!canManage">
-              <mat-icon class="mdi-18px" fontIcon="mdi-plus-circle-outline" title="Add {{ element.name }}"></mat-icon>
+              <mat-icon class="mdi-24px" fontIcon="mdi-plus-circle-outline" title="Add {{ element.name }}"></mat-icon>
             </button>
           </div>
         </mat-cell>
@@ -65,52 +58,55 @@ project root for license information or contact permission@sei.cmu.edu for full 
     }
   </div>
 
-  <div style="margin-left: 20px;">
-    <div class="unit-list-container mat-elevation-z8">
-      <div class="sp-icon">
+  <div class="spacer">&nbsp;</div>
+
+  <div class="unit-list-container mat-elevation-z8">
+    <mat-toolbar class="background">
+      <mat-toolbar-row>
         <mat-icon class="mdi-24px" fontIcon="mdi-account-group"></mat-icon>
-        <span style="margin-left: 10px">
-          Unit Users
-        </span>
-      </div>
+        <p>Unit Members</p>
+      </mat-toolbar-row>
+      <mat-toolbar-row>
+        <mat-form-field class="w-50">
+          <input matInput [formControl]="unitUserFilterControl" placeholder="Search" autocomplete="off" />
+          @if (unitUserFilterControl.value) {
+          <button mat-icon-button matSuffix (click)="clearUnitUserFilter()" title="Clear Search">
+            <mat-icon style="transform: scale(0.85);" fontIcon="mdi-close-circle-outline"></mat-icon>
+          </button>
+          }
+        </mat-form-field>
+        <mat-paginator #unitUserPaginator [pageSizeOptions]="[10, 25, 50, 100]" aria-label="Select page of unit users"></mat-paginator>
+      </mat-toolbar-row>
+    </mat-toolbar>
 
-      @if (false) {
-      <mat-card appearance="outlined" style="display: flex; justify-content: center; align-items: center;">
-        <mat-progress-spinner color="primary" mode="indeterminate">
-        </mat-progress-spinner>
-      </mat-card>
-      }
+    <mat-table class="table-all-users" #table [dataSource]="unitUserDataSource" matSort
+      (matSortChange)="onSortUnitChange($event)">
+      <ng-container matColumnDef="name">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>User Name</mat-header-cell>
+        <mat-cell *matCellDef="let element">
+          @if (element.name !== null) {
+          <div>{{ element.name }}</div>
+          }
+          @if (element.name === null) {
+          <div>{{ element.id }}</div>
+          }
+        </mat-cell>
+      </ng-container>
 
-      <mat-table class="mat-table-all-users" #table [dataSource]="unitUserDataSource" matSort
-        (matSortChange)="onSortUnitChange($event)">
-        <ng-container matColumnDef="name">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>User Name</mat-header-cell>
-          <mat-cell *matCellDef="let element">
-            @if (element.name !== null) {
-            <div>{{ element.name }}</div>
-            }
-            @if (element.name === null) {
-            <div>{{ element.id }}</div>
-            }
-          </mat-cell>
-        </ng-container>
+      <ng-container matColumnDef="id">
+        <mat-header-cell *matHeaderCellDef>&nbsp;</mat-header-cell>
+        <mat-cell *matCellDef="let element">
+          <div>
+            <button mat-icon-button (click)="removeUserFromUnit(element)" title="Remove {{ element.name }}" [disabled]="!canManage">
+              <mat-icon class="mdi-24px" fontIcon="mdi-minus-circle-outline"
+                title="Remove {{ element.name }}"></mat-icon>
+            </button>
+          </div>
+        </mat-cell>
+      </ng-container>
 
-        <ng-container matColumnDef="id">
-          <mat-header-cell *matHeaderCellDef>&nbsp;</mat-header-cell>
-          <mat-cell *matCellDef="let element">
-            <div>
-              <button mat-icon-button (click)="removeUserFromUnit(element)" title="Remove {{ element.name }}" [disabled]="!canManage">
-                <mat-icon class="mdi-18px" fontIcon="mdi-minus-circle-outline"
-                  title="Remove {{ element.name }}"></mat-icon>
-              </button>
-            </div>
-          </mat-cell>
-        </ng-container>
-
-        <mat-header-row *matHeaderRowDef="displayedUserColumns"></mat-header-row>
-        <mat-row *matRowDef="let row; columns: displayedUserColumns"></mat-row>
-      </mat-table>
-
-    </div>
+      <mat-header-row *matHeaderRowDef="displayedUserColumns"></mat-header-row>
+      <mat-row *matRowDef="let row; columns: displayedUserColumns"></mat-row>
+    </mat-table>
   </div>
 </div>

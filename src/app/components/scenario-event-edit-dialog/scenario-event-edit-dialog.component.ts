@@ -260,6 +260,15 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
     );
   }
 
+  getIntegrationTargetArray(): string[] {
+    const val = this.data.scenarioEvent.integrationTarget;
+    return val ? val.split(', ').filter(s => s.length > 0) : [];
+  }
+
+  onIntegrationTargetChange(newValues: string[]) {
+    this.data.scenarioEvent.integrationTarget = newValues.join(', ');
+  }
+
   ngOnDestroy() {
     this.unsubscribe$.next(null);
     this.unsubscribe$.complete();

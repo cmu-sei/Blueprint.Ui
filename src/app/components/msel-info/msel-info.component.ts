@@ -31,6 +31,7 @@ import { MselUnitQuery } from 'src/app/data/msel-unit/msel-unit.query';
 import { AngularEditorConfig } from '@kolkov/angular-editor';
 import { ComnSettingsService } from '@cmusei/crucible-common';
 import { HttpClient } from '@angular/common/http';
+import { ScenarioEventQuery } from 'src/app/data/scenario-event/scenario-event.query';
 
 @Component({
   selector: 'app-msel-info',
@@ -123,6 +124,7 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   };
   isBusy = true;
   dataFieldList: DataField[] = [];
+  scenarioEventList: ScenarioEvent[] = [];
   basePageUrl = document.baseURI + '/mselpage/';
   pushStatus = '';
   savedStartTime: Date;
@@ -148,7 +150,8 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     private permissionDataService: PermissionDataService,
     private changeDetectorRef: ChangeDetectorRef,
     private settingsService: ComnSettingsService,
-    private http: HttpClient
+    private http: HttpClient,
+    private scenarioEventQuery: ScenarioEventQuery
   ) {
     // subscribe to the active MSEL
     (this.mselQuery.selectActive() as Observable<MselPlus>)
@@ -262,13 +265,8 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     // subscribe to scoring models
     this.citeService.getScoringModels().subscribe(
       (scoringModels) => {
-        console.log('CITE scoring models loaded:', scoringModels?.length || 0, 'models');
         // Filter out evaluation-specific scoring models (keep only templates with evaluationId == null)
         this.scoringModelList = (scoringModels || []).filter(sm => !sm.evaluationId);
-        console.log('Filtered to', this.scoringModelList.length, 'template scoring models (excluded evaluation-specific copies)');
-        if (this.scoringModelList.length === 0) {
-          console.warn('CITE returned no template scoring models');
-        }
         // Update the scoring model name after list is loaded
         this.updateCiteScoringModelName();
       },
@@ -281,6 +279,13 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     this.dataFieldQuery.selectAll().subscribe((dataFields) => {
       this.dataFieldList = dataFields;
     });
+    // subscribe to scenario events
+    this.scenarioEventQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((scenarioEvents) => {
+        this.scenarioEventList = scenarioEvents;
+      });
   }
 
   ngOnInit() {
@@ -345,18 +350,59 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   citeWarningMessage() {
     let warningMessage = '';
     if (this.msel.useCite && !this.msel.citeEvaluationId) {
-      warningMessage = this.teamList.some((t) => t.citeTeamTypeId)
-        ? ''
-        : '** WARNING: No teams have a CITE Team Type selected, so no teams will be pushed to CITE! **  ';
+      const teamsWithType = this.teamList.filter((t) => t.citeTeamTypeId);
+      const teamsWithoutType = this.teamList.filter((t) => !t.citeTeamTypeId);
+
+      if (teamsWithoutType.length > 0 && teamsWithType.length > 0) {
+        // Some teams missing types - this blocks the push
+        warningMessage = `** ERROR: ${teamsWithoutType.length} team(s) are missing a CITE Team Type. All teams must have a team type selected before pushing to CITE. **`;
+      } else if (teamsWithoutType.length > 0 && teamsWithType.length === 0) {
+        // No teams have types - warning only
+        warningMessage = '** WARNING: No teams have a CITE Team Type selected, so no teams will be pushed to CITE! **';
+      }
     }
     return warningMessage;
   }
 
+  hasCiteTeamsWithoutType() {
+    // Returns true if CITE is enabled and there are teams without a CITE team type
+    // This blocks the push button similar to the scoring model requirement
+    if (!this.msel.useCite || this.msel.citeEvaluationId) {
+      return false; // CITE not enabled or already deployed, no validation needed
+    }
+    // Check if ANY teams exist without a citeTeamTypeId
+    return this.teamList.some((t) => !t.citeTeamTypeId);
+  }
+
+  hasGalleryEventsWithMissingData(): boolean {
+    // Get the IDs of data fields that have a galleryArticleParameter assigned
+    const galleryDataFieldIds = this.dataFieldList
+      .filter((df) => df.galleryArticleParameter && df.galleryArticleParameter !== '- - -')
+      .map((df) => df.id);
+    if (galleryDataFieldIds.length === 0) {
+      return false;
+    }
+    // Check scenario events that target Gallery
+    const galleryEvents = this.scenarioEventList.filter(
+      (se) => se.integrationTarget?.includes('Gallery')
+    );
+    return galleryEvents.some((se) => {
+      return galleryDataFieldIds.some((dfId) => {
+        const dataValue = se.dataValues?.find((dv) => dv.dataFieldId === dfId);
+        return !dataValue || !dataValue.value;
+      });
+    });
+  }
+
   pushIntegrations() {
+    let message = 'Are you sure that you want to push MSEL data to the selected applications?';
+    if (this.msel.useGallery && this.hasGalleryEventsWithMissingData()) {
+      message += '\n\n** WARNING: One or more Scenario Events marked as a Gallery integration is missing required fields. **';
+    }
     this.dialogService
       .confirm(
         'Push Integrations',
-        'Are you sure that you want to push MSEL data to the selected applications?'
+        message
       )
       .subscribe((result) => {
         if (result['confirm']) {
@@ -544,8 +590,8 @@ export class MselInfoComponent implements OnDestroy, OnInit {
 
     // Compare the changed page with the original
     return this.changedMselPage.name !== originalPage.name ||
-           this.changedMselPage.content !== originalPage.content ||
-           this.changedMselPage.allCanView !== originalPage.allCanView;
+      this.changedMselPage.content !== originalPage.content ||
+      this.changedMselPage.allCanView !== originalPage.allCanView;
   }
 
 
@@ -593,9 +639,8 @@ export class MselInfoComponent implements OnDestroy, OnInit {
       }
     } else {
       this.citeScoringModelName = '';
-      if (this.msel.citeScoringModelId && this.scoringModelList.length === 0) {
-        console.warn(`Cannot update scoring model name - scoringModelList is empty but citeScoringModelId is ${this.msel.citeScoringModelId}`);
-      }
+      // scoringModelList may not be loaded yet; updateCiteScoringModelName
+      // is called again once the list arrives, so this is not an error.
     }
   }
 

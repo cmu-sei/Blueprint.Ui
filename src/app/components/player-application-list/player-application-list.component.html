@@ -26,7 +26,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
   <button mat-menu-item (click)="addOrEditPlayerApplication(null, 'Add a Player Application')"
     title="Add a new player application">New Player
     Application</button>
-  @for (template of templateList; track template.id) {
+  @for (template of templateList; track $index) {
   <button mat-menu-item (click)="addOrEditPlayerApplication(template, 'Add a Player Application')"
     title="{{ template.url }}">{{ template.name
     }}</button>
@@ -77,26 +77,27 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <!-- Expanded Content Column -->
       <ng-container matColumnDef="expandedDetail">
         <td mat-cell *matCellDef="let element" [attr.colspan]="displayedColumns.length">
-          @if (expandedId === element.id) {
-          <div class="expanded-detail-div" (click)="$event.stopPropagation();">
-            <div class="single-detail">
-              <span class="title">Select the MSEL teams that will see this application</span>
+          <div [@detailExpand]="element.id == expandedId ? 'expanded' : 'collapsed'" style="overflow: hidden">
+            @if (expandedId === element.id) {
+            <div class="expanded-detail-div" (click)="$event.stopPropagation();">
+              <div class="single-detail">
+                <span class="title">Select the MSEL teams that will see this application</span>
+              </div>
+              <div class="single-detail">
+                <app-player-application-teams style="width: 100%;" [loggedInUserId]="loggedInUserId"
+                  [playerApplicationId]="element.id" [mselTeamList]="mselTeamList">
+                </app-player-application-teams>
+              </div>
             </div>
-            <div class="single-detail">
-              <app-player-application-teams style="width: 100%;" [loggedInUserId]="loggedInUserId"
-                [playerApplicationId]="element.id" [mselTeamList]="mselTeamList">
-              </app-player-application-teams>
-            </div>
+            }
           </div>
-          }
         </td>
       </ng-container>
       <!-- row definitions -->
       <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
       <tr mat-row *matRowDef="let row; columns: displayedColumns;" [class]="getRowClass(row.id)"
         (click)="rowClicked(row)"></tr>
-      <tr mat-row *matRowDef="let row; columns: ['expandedDetail']; when: isExpansionDetailRow"
-        [@detailExpand]="row.id == expandedId ? 'expanded' : 'collapsed'" style="overflow: hidden"></tr>
+      <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="detail-row"></tr>
     </table>
   </div>
   <mat-expansion-panel>

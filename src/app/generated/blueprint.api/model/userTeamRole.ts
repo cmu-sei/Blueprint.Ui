@@ -13,10 +13,7 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-import { TeamRole } from './teamRole';
-
-
-export interface UserTeamRole { 
+export interface UserTeamRole {
     dateCreated?: Date;
     dateModified?: Date | null;
     createdBy?: string;
@@ -24,9 +21,7 @@ export interface UserTeamRole {
     id?: string;
     teamId?: string;
     userId?: string;
-    role?: TeamRole;
-}
-export namespace UserTeamRole {
+    role?: string;
 }
 
 
