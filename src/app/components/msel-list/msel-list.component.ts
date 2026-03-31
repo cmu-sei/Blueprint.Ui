@@ -295,7 +295,7 @@ export class MselListComponent implements OnDestroy, OnInit {
       )
       .subscribe((result) => {
         if (result['confirm']) {
-          this.mselDataService.delete(msel.id).subscribe();
+          this.mselDataService.delete(msel.id);
         }
       });
   }
