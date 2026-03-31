@@ -201,10 +201,11 @@ export class HomeAppComponent implements OnDestroy, OnInit {
   }
 
   deleteMsel(id: string) {
-    this.mselDataService.delete(id);
-    this.selectedMselId = '';
-    this.mselDataService.setActive('');
-    this.router.navigateByUrl('/build');
+    this.mselDataService.delete(id).subscribe(() => {
+      this.selectedMselId = '';
+      this.mselDataService.setActive('');
+      this.router.navigateByUrl('/build');
+    });
   }
 
   ngOnDestroy() {

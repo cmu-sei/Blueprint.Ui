@@ -492,13 +492,15 @@ export class MselDataService {
       );
   }
 
-  delete(id: string) {
-    this.mselService
+  delete(id: string): Observable<any> {
+    return this.mselService
       .deleteMsel(id)
-      .pipe(take(1))
-      .subscribe((r) => {
-        this.deleteFromStore(id);
-      });
+      .pipe(
+        take(1),
+        tap(() => {
+          this.deleteFromStore(id);
+        })
+      );
   }
 
   addUserMselRole(userId: string, mselId: string, mselRole: MselRole) {
