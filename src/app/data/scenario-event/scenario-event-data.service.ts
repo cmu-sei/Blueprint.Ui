@@ -105,7 +105,6 @@ export class ScenarioEventDataService {
     DataFieldType.Checkbox,
     DataFieldType.User,
     DataFieldType.Url,
-    DataFieldType.IntegrationTarget,
   ];
 
   loadByMsel(mselId: string) {

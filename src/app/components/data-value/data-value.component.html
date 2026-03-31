@@ -396,34 +396,6 @@ project root for license information.
   </div>
 </div>
 }
-<!-- IntegrationTarget input -->
-@if (dataField.dataType === dataType.IntegrationTarget) {
-<span>
-  @if (!showValueOnly) {
-  <mat-form-field class="full-width">
-    <mat-label>{{ dataField.name }}</mat-label>
-    <mat-select multiple (click)="$event.stopPropagation()" placeholder="{{ dataField.name }}"
-      (valueChange)="setDataValueArray($event)" [value]="getValueArray()" [disabled]="!canEdit">
-      @for (dataOption of dataField.dataOptions; track $index) {
-      <mat-option [value]="dataOption.optionValue">
-        {{ dataOption.optionName }}
-      </mat-option>
-      }
-    </mat-select>
-  </mat-form-field>
-  }
-  @if (showValueOnly) {
-  <mat-select multiple (click)="$event.stopPropagation()" placeholder="{{ dataField.name }}"
-    (valueChange)="setDataValueArray($event)" [value]="getValueArray()" [disabled]="!canEdit">
-    @for (dataOption of dataField.dataOptions; track dataOption.id) {
-    <mat-option [value]="dataOption.optionValue">
-      {{ dataOption.optionName }}
-    </mat-option>
-    }
-  </mat-select>
-  }
-</span>
-}
 <!-- dropdown input -->
 @if (dataField.isChosenFromList) {
 <span>

@@ -242,7 +242,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
         isInformationField: false,
         isFacilitationField: false,
         galleryArticleParameter: '- - -',
-        dataType: 'IntegrationTarget',
+        dataType: 'IntegrationTarget' as any,
         description: 'System defined',
       },
     ];
