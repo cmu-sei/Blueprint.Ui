@@ -8,6 +8,7 @@ import { takeUntil } from 'rxjs/operators';
 import {
   DataField,
   DataFieldType,
+  DataOption,
   SystemPermission,
 } from 'src/app/generated/blueprint.api';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
@@ -24,6 +25,7 @@ import { DataFieldQuery } from 'src/app/data/data-field/data-field.query';
 import { DataFieldTemplateQuery } from 'src/app/data/data-field/data-field-template.query';
 import { DataFieldEditDialogComponent } from '../data-field-edit-dialog/data-field-edit-dialog.component';
 import { CompetencyOptionsDialogComponent } from '../competency-options-dialog/competency-options-dialog.component';
+import { DataOptionEditDialogComponent } from '../data-option-edit-dialog/data-option-edit-dialog.component';
 import { DataOptionListDialogComponent } from '../data-option-list-dialog/data-option-list-dialog.component';
 import { InjectTypeDataService } from 'src/app/data/inject-type/inject-type-data.service';
 import { InjectTypeQuery } from 'src/app/data/inject-type/inject-type.query';
@@ -486,27 +488,64 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
           }
         });
       } else {
-        const dialogRef = this.dialog.open(DataOptionListDialogComponent, {
+        this.dialog.open(DataOptionListDialogComponent, {
           width: '900px',
           maxWidth: '95vw',
           maxHeight: '90vh',
           data: {
             dataOptions: dataField.dataOptions,
             canEdit: canAddOptions,
-            onEdit: () => {},
-            onDelete: () => {},
-            onAdd: () => {
-              dialogRef.close();
-              this.addOrEditDataField(dataField, this.showTemplates);
-            },
-            onImport: () => {
-              dialogRef.close();
-              this.addOrEditDataField(dataField, this.showTemplates);
-            }
+            onEdit: (option: DataOption) => this.editDataOption(option, dataField),
+            onDelete: (option: DataOption) => this.deleteDataOption(option, dataField),
+            onAdd: () => this.addDataOption(dataField),
+            onImport: () => {}
           }
         });
       }
     }
+  }
+
+  addDataOption(dataField: DataField) {
+    const dataOption: DataOption = {
+      displayOrder: dataField.dataOptions.length + 1,
+      dataFieldId: dataField.id
+    };
+    this.openDataOptionEditDialog(dataOption, dataField);
+  }
+
+  editDataOption(option: DataOption, dataField: DataField) {
+    const selected = { ...option };
+    this.openDataOptionEditDialog(selected, dataField);
+  }
+
+  deleteDataOption(option: DataOption, dataField: DataField) {
+    const index = dataField.dataOptions.findIndex(x => x.id === option.id);
+    if (index >= 0) {
+      dataField.dataOptions.splice(index, 1);
+      this.dataFieldDataService.updateDataField(dataField);
+    }
+  }
+
+  private openDataOptionEditDialog(dataOption: DataOption, dataField: DataField) {
+    const dialogRef = this.dialog.open(DataOptionEditDialogComponent, {
+      minWidth: '400px',
+      maxWidth: '90vw',
+      width: 'auto',
+      data: { dataOption }
+    });
+    dialogRef.componentInstance.editComplete.subscribe((result) => {
+      if (result.saveChanges && result.dataOption) {
+        if (dataOption.id) {
+          const index = dataField.dataOptions.findIndex(x => x.id === dataOption.id);
+          dataField.dataOptions[index] = dataOption;
+        } else {
+          dataOption.id = uuidv4();
+          dataField.dataOptions.push(dataOption);
+        }
+        this.dataFieldDataService.updateDataField(dataField);
+      }
+      dialogRef.close();
+    });
   }
 
   saveChange(dataField: DataField) {
