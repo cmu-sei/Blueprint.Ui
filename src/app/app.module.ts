@@ -85,6 +85,7 @@ import { CiteDutyListComponent } from './components/cite-duty-list/cite-duty-lis
 import { DashboardComponent } from './components/landing/dashboard/dashboard.component';
 import { DataFieldEditDialogComponent } from './components/data-field-edit-dialog/data-field-edit-dialog.component';
 import { DataFieldListComponent } from './components/data-field-list/data-field-list.component';
+import { CompetencyOptionsDialogComponent } from './components/competency-options-dialog/competency-options-dialog.component';
 import { DataOptionEditDialogComponent } from './components/data-option-edit-dialog/data-option-edit-dialog.component';
 import { DataOptionImportDialogComponent } from './components/data-option-import-dialog/data-option-import-dialog.component';
 import { DataOptionListDialogComponent } from './components/data-option-list-dialog/data-option-list-dialog.component';
@@ -177,6 +178,7 @@ export const appConfig: ApplicationConfig = {
     DashboardComponent,
     DataFieldEditDialogComponent,
     DataFieldListComponent,
+    CompetencyOptionsDialogComponent,
     DataOptionEditDialogComponent,
     DataOptionImportDialogComponent,
     DataOptionListDialogComponent,

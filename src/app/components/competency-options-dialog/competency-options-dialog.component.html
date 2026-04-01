@@ -1,0 +1,134 @@
+<!--
+Copyright 2025 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license, please see LICENSE.md in the
+project root for license information or contact permission@sei.cmu.edu for full terms.
+-->
+
+<div mat-dialog-title>
+  Manage Competencies ({{ data.dataOptions.length }})
+  <button mat-icon-button (click)="handleClose()" title="Close" class="close-button" tabindex="-1">
+    <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
+  </button>
+</div>
+
+<div mat-dialog-content>
+  <!-- Search Box -->
+  <div class="search-section">
+    <mat-form-field class="full-width">
+      <mat-label>Search competencies</mat-label>
+      <input matInput [(ngModel)]="searchText" placeholder="Filter by ID or description">
+      @if (searchText) {
+      <button matSuffix mat-icon-button (click)="searchText = ''" title="Clear search">
+        <mat-icon fontIcon="mdi-close"></mat-icon>
+      </button>
+      }
+    </mat-form-field>
+  </div>
+
+  <!-- Action Buttons -->
+  @if (data.canEdit) {
+  <div class="action-buttons">
+    <button mat-icon-button (click)="handleAdd()" title="Add new competency" style="outline: none;">
+      <mat-icon class="mdi-24px" fontIcon="mdi-plus-circle-outline"></mat-icon>
+    </button>
+    <input type="file" accept=".json" (change)="onFileSelected($event)" #fileInput style="display: none" />
+    <button mat-icon-button (click)="fileInput.click()" title="Import from NICE Framework JSON" style="outline: none;"
+      [disabled]="isProcessing">
+      <mat-icon class="mdi-24px" fontIcon="mdi-file-import-outline"></mat-icon>
+    </button>
+  </div>
+  }
+
+  <!-- Error Message -->
+  @if (parseError) {
+  <mat-error class="error-message">
+    <mat-icon fontIcon="mdi-alert-circle-outline"></mat-icon>
+    {{ parseError }}
+  </mat-error>
+  }
+
+  <!-- Import Preview -->
+  @if (previewItems.length > 0 && !isProcessing) {
+  <div class="preview-section">
+    <h3>Import Preview ({{ getImportCount() }} to import, {{ getSkipCount() }} to skip)</h3>
+    <div class="preview-table-container">
+      <table class="preview-table">
+        <thead>
+          <tr>
+            <th class="checkbox-column">
+              <mat-checkbox
+                [checked]="areAllSelected()"
+                [indeterminate]="isSomeSelected()"
+                (change)="toggleAll($event.checked)"
+                [disabled]="getAvailableCount() === 0">
+              </mat-checkbox>
+            </th>
+            <th>ID</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of previewItems; track item.optionName) {
+          <tr [class.exists]="item.exists">
+            <td class="checkbox-column">
+              <mat-checkbox
+                [(ngModel)]="item.willImport"
+                [disabled]="item.exists"
+                [matTooltip]="item.exists ? 'Already exists - will be skipped' : ''">
+              </mat-checkbox>
+            </td>
+            <td>{{ item.optionName }}</td>
+            <td>{{ item.optionValue }}</td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <div class="preview-actions">
+      <button mat-raised-button color="primary" (click)="handleImport()"
+        [disabled]="getImportCount() === 0">
+        Import {{ getImportCount() }} Competenc{{ getImportCount() !== 1 ? 'ies' : 'y' }}
+      </button>
+      <button mat-button (click)="previewItems = []">Cancel Import</button>
+    </div>
+  </div>
+  }
+
+  <!-- Existing Options Table -->
+  @if (previewItems.length === 0) {
+  <div class="options-table-container">
+    <mat-table [dataSource]="filteredOptions">
+      <ng-container matColumnDef="actions">
+        <mat-header-cell *matHeaderCellDef class="actions-column"></mat-header-cell>
+        <mat-cell *matCellDef="let option" class="actions-column">
+          <button mat-icon-button (click)="handleEdit(option)" title="Edit">
+            <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline"></mat-icon>
+          </button>
+          <button mat-icon-button (click)="handleDelete(option)" title="Delete">
+            <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline"></mat-icon>
+          </button>
+        </mat-cell>
+      </ng-container>
+      <ng-container matColumnDef="displayOrder">
+        <mat-header-cell *matHeaderCellDef class="order-column">Order</mat-header-cell>
+        <mat-cell *matCellDef="let option" class="order-column">{{ option.displayOrder }}</mat-cell>
+      </ng-container>
+      <ng-container matColumnDef="optionName">
+        <mat-header-cell *matHeaderCellDef class="name-column">ID</mat-header-cell>
+        <mat-cell *matCellDef="let option" class="name-column">{{ option.optionName }}</mat-cell>
+      </ng-container>
+      <ng-container matColumnDef="optionValue">
+        <mat-header-cell *matHeaderCellDef class="value-column">Description</mat-header-cell>
+        <mat-cell *matCellDef="let option" class="value-column">{{ option.optionValue }}</mat-cell>
+      </ng-container>
+      <mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></mat-header-row>
+      <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+    </mat-table>
+  </div>
+  }
+</div>
+
+<div mat-dialog-actions>
+  <div style="flex: 1;"></div>
+  <button mat-raised-button color="primary" (click)="handleClose()">Close</button>
+</div>

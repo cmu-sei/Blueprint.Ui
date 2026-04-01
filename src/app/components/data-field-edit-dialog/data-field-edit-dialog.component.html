@@ -53,8 +53,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </mat-checkbox>
           @if (data.dataField.isChosenFromList && !optionListNotAllowed()) {
           <span class="options-link clickable" (click)="viewAllOptions()"
-            title="Click to manage all options">
-            {{ data.dataField.dataOptions.length }} options
+            title="Click to manage options">
+            {{ data.dataField.dataOptions.length }} {{ isCompetency() ? 'competencies' : 'options' }}
           </span>
           }
         </div>

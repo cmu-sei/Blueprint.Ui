@@ -23,6 +23,7 @@ import { DataFieldDataService } from 'src/app/data/data-field/data-field-data.se
 import { DataFieldQuery } from 'src/app/data/data-field/data-field.query';
 import { DataFieldTemplateQuery } from 'src/app/data/data-field/data-field-template.query';
 import { DataFieldEditDialogComponent } from '../data-field-edit-dialog/data-field-edit-dialog.component';
+import { CompetencyOptionsDialogComponent } from '../competency-options-dialog/competency-options-dialog.component';
 import { DataOptionListDialogComponent } from '../data-option-list-dialog/data-option-list-dialog.component';
 import { InjectTypeDataService } from 'src/app/data/inject-type/inject-type-data.service';
 import { InjectTypeQuery } from 'src/app/data/inject-type/inject-type.query';
@@ -472,27 +473,39 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
         dataField.dataType === DataFieldType.String ||
         dataField.dataType === DataFieldType.Competency;
       const canAddOptions = hasEditPermission && supportsOptionList;
-      const dialogRef = this.dialog.open(DataOptionListDialogComponent, {
-        width: '900px',
-        maxWidth: '95vw',
-        maxHeight: '90vh',
-        data: {
-          dataOptions: dataField.dataOptions,
-          canEdit: canAddOptions,
-          onEdit: () => {},
-          onDelete: () => {},
-          onAdd: () => {
-            // Close view dialog and open edit dialog to add options
-            dialogRef.close();
-            this.addOrEditDataField(dataField, this.showTemplates);
-          },
-          onImport: () => {
-            // Close view dialog and open edit dialog to import options
-            dialogRef.close();
-            this.addOrEditDataField(dataField, this.showTemplates);
+
+      if (dataField.dataType === DataFieldType.Competency) {
+        this.dialog.open(CompetencyOptionsDialogComponent, {
+          width: '900px',
+          maxWidth: '95vw',
+          maxHeight: '90vh',
+          data: {
+            dataFieldId: dataField.id,
+            dataOptions: dataField.dataOptions,
+            canEdit: canAddOptions
           }
-        }
-      });
+        });
+      } else {
+        const dialogRef = this.dialog.open(DataOptionListDialogComponent, {
+          width: '900px',
+          maxWidth: '95vw',
+          maxHeight: '90vh',
+          data: {
+            dataOptions: dataField.dataOptions,
+            canEdit: canAddOptions,
+            onEdit: () => {},
+            onDelete: () => {},
+            onAdd: () => {
+              dialogRef.close();
+              this.addOrEditDataField(dataField, this.showTemplates);
+            },
+            onImport: () => {
+              dialogRef.close();
+              this.addOrEditDataField(dataField, this.showTemplates);
+            }
+          }
+        });
+      }
     }
   }
 
