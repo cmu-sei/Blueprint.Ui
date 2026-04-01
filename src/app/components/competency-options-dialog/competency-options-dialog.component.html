@@ -31,73 +31,15 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <button mat-icon-button (click)="handleAdd()" title="Add new competency" style="outline: none;">
       <mat-icon class="mdi-24px" fontIcon="mdi-plus-circle-outline"></mat-icon>
     </button>
-    <input type="file" accept=".json" (change)="onFileSelected($event)" #fileInput style="display: none" />
-    <button mat-icon-button (click)="fileInput.click()" title="Import from NICE Framework JSON" style="outline: none;"
-      [disabled]="isProcessing">
-      <mat-icon class="mdi-24px" fontIcon="mdi-file-import-outline"></mat-icon>
+    <button mat-icon-button (click)="handleImport()" title="Import competencies from file" style="outline: none;">
+      <mat-icon class="mdi-24px" fontIcon="mdi-upload"></mat-icon>
     </button>
   </div>
   }
 
-  <!-- Error Message -->
-  @if (parseError) {
-  <mat-error class="error-message">
-    <mat-icon fontIcon="mdi-alert-circle-outline"></mat-icon>
-    {{ parseError }}
-  </mat-error>
-  }
-
-  <!-- Import Preview -->
-  @if (previewItems.length > 0 && !isProcessing) {
-  <div class="preview-section">
-    <h3>Import Preview ({{ getImportCount() }} to import, {{ getSkipCount() }} to skip)</h3>
-    <div class="preview-table-container">
-      <table class="preview-table">
-        <thead>
-          <tr>
-            <th class="checkbox-column">
-              <mat-checkbox
-                [checked]="areAllSelected()"
-                [indeterminate]="isSomeSelected()"
-                (change)="toggleAll($event.checked)"
-                [disabled]="getAvailableCount() === 0">
-              </mat-checkbox>
-            </th>
-            <th>ID</th>
-            <th>Description</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (item of previewItems; track item.optionName) {
-          <tr [class.exists]="item.exists">
-            <td class="checkbox-column">
-              <mat-checkbox
-                [(ngModel)]="item.willImport"
-                [disabled]="item.exists"
-                [matTooltip]="item.exists ? 'Already exists - will be skipped' : ''">
-              </mat-checkbox>
-            </td>
-            <td>{{ item.optionName }}</td>
-            <td>{{ item.optionValue }}</td>
-          </tr>
-          }
-        </tbody>
-      </table>
-    </div>
-    <div class="preview-actions">
-      <button mat-raised-button color="primary" (click)="handleImport()"
-        [disabled]="getImportCount() === 0">
-        Import {{ getImportCount() }} Competenc{{ getImportCount() !== 1 ? 'ies' : 'y' }}
-      </button>
-      <button mat-button (click)="previewItems = []">Cancel Import</button>
-    </div>
-  </div>
-  }
-
   <!-- Existing Options Table -->
-  @if (previewItems.length === 0) {
   <div class="options-table-container">
-    <mat-table [dataSource]="filteredOptions">
+    <mat-table [dataSource]="filteredOptions" matSort matSortActive="displayOrder" matSortDirection="asc" (matSortChange)="onSortChange($event)">
       <ng-container matColumnDef="actions">
         <mat-header-cell *matHeaderCellDef class="actions-column"></mat-header-cell>
         <mat-cell *matCellDef="let option" class="actions-column">
@@ -110,22 +52,21 @@ project root for license information or contact permission@sei.cmu.edu for full 
         </mat-cell>
       </ng-container>
       <ng-container matColumnDef="displayOrder">
-        <mat-header-cell *matHeaderCellDef class="order-column">Order</mat-header-cell>
+        <mat-header-cell *matHeaderCellDef mat-sort-header class="order-column">Order</mat-header-cell>
         <mat-cell *matCellDef="let option" class="order-column">{{ option.displayOrder }}</mat-cell>
       </ng-container>
       <ng-container matColumnDef="optionName">
-        <mat-header-cell *matHeaderCellDef class="name-column">ID</mat-header-cell>
+        <mat-header-cell *matHeaderCellDef mat-sort-header class="name-column">ID</mat-header-cell>
         <mat-cell *matCellDef="let option" class="name-column">{{ option.optionName }}</mat-cell>
       </ng-container>
       <ng-container matColumnDef="optionValue">
-        <mat-header-cell *matHeaderCellDef class="value-column">Description</mat-header-cell>
+        <mat-header-cell *matHeaderCellDef mat-sort-header class="value-column">Description</mat-header-cell>
         <mat-cell *matCellDef="let option" class="value-column">{{ option.optionValue }}</mat-cell>
       </ng-container>
       <mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></mat-header-row>
       <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
     </mat-table>
   </div>
-  }
 </div>
 
 <div mat-dialog-actions>

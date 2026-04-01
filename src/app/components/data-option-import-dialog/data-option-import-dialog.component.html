@@ -15,11 +15,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
   <!-- File Upload Section -->
   <div class="upload-section">
     <p class="instructions">
-      Upload a JSON file containing options (e.g., NICE Framework for competencies, or custom format).
+      {{ data.instructions || 'Upload a file containing options. Supported formats: JSON, CSV, or XLSX. The file should have columns for ID and Description.' }}
     </p>
     <input
       type="file"
-      accept=".json"
+      accept=".json,.csv,.xlsx,.xls"
       (change)="onFileSelected($event)"
       #fileInput
       style="display: none"
@@ -33,6 +33,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <mat-icon fontIcon="mdi-upload"></mat-icon>
       Choose File
     </button>
+    @if (fileName) {
+    <span class="file-name">{{ fileName }}</span>
+    }
   </div>
 
   <!-- Error Message -->

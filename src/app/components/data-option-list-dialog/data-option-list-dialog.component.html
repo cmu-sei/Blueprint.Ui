@@ -39,7 +39,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
 
   <!-- Options Table -->
   <div class="options-table-container">
-    <mat-table [dataSource]="filteredOptions">
+    <mat-table [dataSource]="filteredOptions" matSort matSortActive="displayOrder" matSortDirection="asc" (matSortChange)="onSortChange($event)">
       <ng-container matColumnDef="actions">
         <mat-header-cell *matHeaderCellDef class="actions-column"></mat-header-cell>
         <mat-cell *matCellDef="let option" class="actions-column">
@@ -52,15 +52,15 @@ project root for license information or contact permission@sei.cmu.edu for full 
         </mat-cell>
       </ng-container>
       <ng-container matColumnDef="displayOrder">
-        <mat-header-cell *matHeaderCellDef class="order-column">Order</mat-header-cell>
+        <mat-header-cell *matHeaderCellDef mat-sort-header class="order-column">Order</mat-header-cell>
         <mat-cell *matCellDef="let option" class="order-column">{{ option.displayOrder }}</mat-cell>
       </ng-container>
       <ng-container matColumnDef="optionName">
-        <mat-header-cell *matHeaderCellDef class="name-column">ID</mat-header-cell>
+        <mat-header-cell *matHeaderCellDef mat-sort-header class="name-column">ID</mat-header-cell>
         <mat-cell *matCellDef="let option" class="name-column">{{ option.optionName }}</mat-cell>
       </ng-container>
       <ng-container matColumnDef="optionValue">
-        <mat-header-cell *matHeaderCellDef class="value-column">Description</mat-header-cell>
+        <mat-header-cell *matHeaderCellDef mat-sort-header class="value-column">Description</mat-header-cell>
         <mat-cell *matCellDef="let option" class="value-column">{{ option.optionValue }}</mat-cell>
       </ng-container>
       <mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></mat-header-row>

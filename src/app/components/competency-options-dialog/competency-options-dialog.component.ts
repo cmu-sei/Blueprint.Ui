@@ -4,16 +4,11 @@
 
 import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialog } from '@angular/material/dialog';
+import { Sort } from '@angular/material/sort';
 import { DataOption } from 'src/app/generated/blueprint.api';
 import { DataOptionEditDialogComponent } from '../data-option-edit-dialog/data-option-edit-dialog.component';
+import { DataOptionImportDialogComponent } from '../data-option-import-dialog/data-option-import-dialog.component';
 import { v4 as uuidv4 } from 'uuid';
-
-export interface CompetencyPreviewItem {
-  optionName: string;
-  optionValue: string;
-  willImport: boolean;
-  exists: boolean;
-}
 
 @Component({
     selector: 'app-competency-options-dialog',
@@ -23,9 +18,8 @@ export interface CompetencyPreviewItem {
 })
 export class CompetencyOptionsDialogComponent {
   searchText = '';
-  parseError = '';
-  isProcessing = false;
-  previewItems: CompetencyPreviewItem[] = [];
+  sortActive = 'displayOrder';
+  sortDirection = 'asc';
 
   displayedColumns: string[];
 
@@ -56,117 +50,50 @@ export class CompetencyOptionsDialogComponent {
   }
 
   get sortedOptions(): DataOption[] {
-    return [...this.data.dataOptions].sort((a, b) =>
-      +a.displayOrder < +b.displayOrder ? -1 : 1
-    );
-  }
-
-  // --- File Import ---
-
-  onFileSelected(event: any) {
-    const file = event.target.files[0];
-    if (file) {
-      this.isProcessing = true;
-      this.parseError = '';
-      this.previewItems = [];
-      const reader = new FileReader();
-      reader.onload = (e: any) => {
-        try {
-          this.parseNiceFramework(e.target.result);
-        } catch (error) {
-          this.parseError = `Error reading file: ${error.message}`;
-        } finally {
-          this.isProcessing = false;
-        }
-      };
-      reader.readAsText(file);
-    }
-  }
-
-  parseNiceFramework(jsonContent: string) {
-    try {
-      const parsed = JSON.parse(jsonContent);
-      const items: CompetencyPreviewItem[] = [];
-
-      if (parsed.response && parsed.response.elements && parsed.response.elements.elements) {
-        // NICE v2.0.0 format
-        const elements = parsed.response.elements.elements;
-        for (const element of elements) {
-          if (element.element_type === 'task' && element.element_identifier) {
-            items.push(this.createPreviewItem(element.element_identifier, element.text || ''));
-          }
-        }
-      } else if (parsed.elements && Array.isArray(parsed.elements)) {
-        // NICE v1.0.0 format
-        for (const element of parsed.elements) {
-          if (element.element_type === 'task' && element.element_identifier) {
-            items.push(this.createPreviewItem(element.element_identifier, element.text || ''));
-          }
-        }
-      } else {
-        this.parseError = 'Unrecognized JSON format. Expected NICE Framework format.';
-        return;
+    const data = [...this.data.dataOptions];
+    const direction = this.sortDirection === 'asc' ? 1 : -1;
+    return data.sort((a, b) => {
+      let valA: any, valB: any;
+      switch (this.sortActive) {
+        case 'optionName':
+          valA = (a.optionName || '').toLowerCase();
+          valB = (b.optionName || '').toLowerCase();
+          break;
+        case 'optionValue':
+          valA = (a.optionValue || '').toLowerCase();
+          valB = (b.optionValue || '').toLowerCase();
+          break;
+        default:
+          valA = +a.displayOrder;
+          valB = +b.displayOrder;
+          break;
       }
-
-      if (items.length === 0) {
-        this.parseError = 'No tasks/competencies found in JSON.';
-      } else {
-        this.previewItems = items;
-      }
-    } catch (error) {
-      this.parseError = `Error parsing JSON: ${error.message}`;
-    }
-  }
-
-  private createPreviewItem(optionName: string, optionValue: string): CompetencyPreviewItem {
-    const exists = this.data.dataOptions.some(opt => opt.optionName === optionName);
-    return { optionName, optionValue, willImport: !exists, exists };
-  }
-
-  getImportCount(): number {
-    return this.previewItems.filter(item => item.willImport).length;
-  }
-
-  getSkipCount(): number {
-    return this.previewItems.filter(item => !item.willImport).length;
-  }
-
-  getAvailableCount(): number {
-    return this.previewItems.filter(item => !item.exists).length;
-  }
-
-  areAllSelected(): boolean {
-    const available = this.previewItems.filter(item => !item.exists);
-    return available.length > 0 && available.every(item => item.willImport);
-  }
-
-  isSomeSelected(): boolean {
-    const available = this.previewItems.filter(item => !item.exists);
-    const selected = available.filter(item => item.willImport);
-    return selected.length > 0 && selected.length < available.length;
-  }
-
-  toggleAll(checked: boolean) {
-    this.previewItems.forEach(item => {
-      if (!item.exists) {
-        item.willImport = checked;
-      }
+      return (valA < valB ? -1 : valA > valB ? 1 : 0) * direction;
     });
   }
 
-  handleImport() {
-    const itemsToImport = this.previewItems
-      .filter(item => item.willImport)
-      .map((item, index) => ({
-        id: uuidv4(),
-        dataFieldId: this.data.dataFieldId,
-        optionName: item.optionName,
-        optionValue: item.optionValue,
-        displayOrder: this.data.dataOptions.length + index + 1
-      } as DataOption));
+  onSortChange(sort: Sort) {
+    this.sortActive = sort.active;
+    this.sortDirection = sort.direction || 'asc';
+  }
 
-    this.data.dataOptions.push(...itemsToImport);
-    this.previewItems = [];
+  // --- Import ---
+
+  handleImport() {
+    const dialogRef = this.dialog.open(DataOptionImportDialogComponent, {
+      width: '800px',
+      maxWidth: '90vw',
+      data: {
+        dataFieldId: this.data.dataFieldId,
+        existingOptions: this.data.dataOptions,
+        instructions: 'Upload a file containing competencies (e.g., NICE Framework JSON). Supported formats: JSON, CSV, or XLSX. The file should have columns for ID and Description.'
+      },
+    });
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result && Array.isArray(result)) {
+        this.data.dataOptions.push(...result);
+      }
+    });
   }
 
   // --- Option Management ---

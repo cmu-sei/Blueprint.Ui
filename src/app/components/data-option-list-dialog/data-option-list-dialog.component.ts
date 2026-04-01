@@ -4,6 +4,7 @@
 
 import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { Sort } from '@angular/material/sort';
 import { DataOption } from 'src/app/generated/blueprint.api';
 
 @Component({
@@ -14,6 +15,8 @@ import { DataOption } from 'src/app/generated/blueprint.api';
 })
 export class DataOptionListDialogComponent {
   searchText = '';
+  sortActive = 'displayOrder';
+  sortDirection = 'asc';
 
   constructor(
     public dialogRef: MatDialogRef<DataOptionListDialogComponent>,
@@ -45,9 +48,31 @@ export class DataOptionListDialogComponent {
   }
 
   get sortedOptions(): DataOption[] {
-    return [...this.data.dataOptions].sort((a, b) =>
-      +a.displayOrder < +b.displayOrder ? -1 : 1
-    );
+    const data = [...this.data.dataOptions];
+    const direction = this.sortDirection === 'asc' ? 1 : -1;
+    return data.sort((a, b) => {
+      let valA: any, valB: any;
+      switch (this.sortActive) {
+        case 'optionName':
+          valA = (a.optionName || '').toLowerCase();
+          valB = (b.optionName || '').toLowerCase();
+          break;
+        case 'optionValue':
+          valA = (a.optionValue || '').toLowerCase();
+          valB = (b.optionValue || '').toLowerCase();
+          break;
+        default:
+          valA = +a.displayOrder;
+          valB = +b.displayOrder;
+          break;
+      }
+      return (valA < valB ? -1 : valA > valB ? 1 : 0) * direction;
+    });
+  }
+
+  onSortChange(sort: Sort) {
+    this.sortActive = sort.active;
+    this.sortDirection = sort.direction || 'asc';
   }
 
   handleEdit(option: DataOption) {

@@ -27,6 +27,7 @@ import { DataFieldEditDialogComponent } from '../data-field-edit-dialog/data-fie
 import { CompetencyOptionsDialogComponent } from '../competency-options-dialog/competency-options-dialog.component';
 import { DataOptionEditDialogComponent } from '../data-option-edit-dialog/data-option-edit-dialog.component';
 import { DataOptionListDialogComponent } from '../data-option-list-dialog/data-option-list-dialog.component';
+import { DataOptionImportDialogComponent } from '../data-option-import-dialog/data-option-import-dialog.component';
 import { InjectTypeDataService } from 'src/app/data/inject-type/inject-type-data.service';
 import { InjectTypeQuery } from 'src/app/data/inject-type/inject-type.query';
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
@@ -498,7 +499,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
             onEdit: (option: DataOption) => this.editDataOption(option, dataField),
             onDelete: (option: DataOption) => this.deleteDataOption(option, dataField),
             onAdd: () => this.addDataOption(dataField),
-            onImport: () => {}
+            onImport: () => this.importDataOptions(dataField)
           }
         });
       }
@@ -545,6 +546,23 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
         this.dataFieldDataService.updateDataField(dataField);
       }
       dialogRef.close();
+    });
+  }
+
+  importDataOptions(dataField: DataField) {
+    const dialogRef = this.dialog.open(DataOptionImportDialogComponent, {
+      width: '800px',
+      maxWidth: '90vw',
+      data: {
+        dataFieldId: dataField.id,
+        existingOptions: dataField.dataOptions
+      },
+    });
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result && Array.isArray(result)) {
+        dataField.dataOptions.push(...result);
+        this.dataFieldDataService.updateDataField(dataField);
+      }
     });
   }
 
