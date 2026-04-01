@@ -5,7 +5,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
 -->
 
 <div mat-dialog-title>
-  &nbsp;
+  Edit Option
   <button
     mat-icon-button
     (click)="handleEditComplete(false)"
@@ -29,7 +29,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <div class="add-margin">
       <div>
         <mat-form-field class="name-field full-width">
-          <mat-label>Name</mat-label>
+          <mat-label>ID</mat-label>
           <input matInput [(ngModel)]="data.dataOption.optionName" />
         </mat-form-field>
       </div>
@@ -37,7 +37,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <div class="add-margin">
       <div>
         <mat-form-field class="name-field full-width">
-          <mat-label>Value</mat-label>
+          <mat-label>Description</mat-label>
           <input matInput [(ngModel)]="data.dataOption.optionValue" />
         </mat-form-field>
       </div>

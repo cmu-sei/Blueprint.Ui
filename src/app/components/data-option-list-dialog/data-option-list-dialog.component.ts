@@ -27,6 +27,12 @@ export class DataOptionListDialogComponent {
     }
   ) {}
 
+  get displayedColumns(): string[] {
+    return this.data.canEdit
+      ? ['actions', 'displayOrder', 'optionName', 'optionValue']
+      : ['displayOrder', 'optionName', 'optionValue'];
+  }
+
   get filteredOptions(): DataOption[] {
     if (!this.searchText) {
       return this.sortedOptions;

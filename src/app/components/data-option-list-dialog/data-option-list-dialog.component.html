@@ -25,59 +25,51 @@ project root for license information or contact permission@sei.cmu.edu for full 
     </mat-form-field>
   </div>
 
-  <!-- Options Table -->
-  <div class="options-table-container">
-    <table class="options-table">
-      <thead>
-        <tr>
-          @if (data.canEdit) {
-          <th class="actions-column">Actions</th>
-          }
-          <th class="order-column">Order</th>
-          <th class="name-column">ID</th>
-          <th class="value-column">Description</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (option of filteredOptions; track option.id) {
-        <tr>
-          @if (data.canEdit) {
-          <td class="actions-column">
-            <button mat-icon-button (click)="handleEdit(option)" title="Edit this option">
-              <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline"></mat-icon>
-            </button>
-            <button mat-icon-button (click)="handleDelete(option)" title="Delete this option">
-              <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline"></mat-icon>
-            </button>
-          </td>
-          }
-          <td class="order-column">{{ option.displayOrder }}</td>
-          <td class="name-column">{{ option.optionName }}</td>
-          <td class="value-column">{{ option.optionValue }}</td>
-        </tr>
-        }
-        @if (filteredOptions.length === 0) {
-        <tr>
-          <td [attr.colspan]="data.canEdit ? 4 : 3" class="no-results">
-            No options found
-          </td>
-        </tr>
-        }
-      </tbody>
-    </table>
-  </div>
-</div>
-
-<div mat-dialog-actions>
-  <div style="flex: 1;">
-    @if (data.canEdit) {
-    <button mat-icon-button (click)="handleAdd()" title="Add new option" style="outline: none; margin-right: 8px;">
+  <!-- Action Buttons -->
+  @if (data.canEdit) {
+  <div class="action-buttons">
+    <button mat-icon-button (click)="handleAdd()" title="Add new option" style="outline: none;">
       <mat-icon class="mdi-24px" fontIcon="mdi-plus-circle-outline"></mat-icon>
     </button>
     <button mat-icon-button (click)="handleImport()" title="Import options from file" style="outline: none;">
       <mat-icon class="mdi-24px" fontIcon="mdi-upload"></mat-icon>
     </button>
-    }
   </div>
+  }
+
+  <!-- Options Table -->
+  <div class="options-table-container">
+    <mat-table [dataSource]="filteredOptions">
+      <ng-container matColumnDef="actions">
+        <mat-header-cell *matHeaderCellDef class="actions-column"></mat-header-cell>
+        <mat-cell *matCellDef="let option" class="actions-column">
+          <button mat-icon-button (click)="handleEdit(option)" title="Edit this option">
+            <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline"></mat-icon>
+          </button>
+          <button mat-icon-button (click)="handleDelete(option)" title="Delete this option">
+            <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline"></mat-icon>
+          </button>
+        </mat-cell>
+      </ng-container>
+      <ng-container matColumnDef="displayOrder">
+        <mat-header-cell *matHeaderCellDef class="order-column">Order</mat-header-cell>
+        <mat-cell *matCellDef="let option" class="order-column">{{ option.displayOrder }}</mat-cell>
+      </ng-container>
+      <ng-container matColumnDef="optionName">
+        <mat-header-cell *matHeaderCellDef class="name-column">ID</mat-header-cell>
+        <mat-cell *matCellDef="let option" class="name-column">{{ option.optionName }}</mat-cell>
+      </ng-container>
+      <ng-container matColumnDef="optionValue">
+        <mat-header-cell *matHeaderCellDef class="value-column">Description</mat-header-cell>
+        <mat-cell *matCellDef="let option" class="value-column">{{ option.optionValue }}</mat-cell>
+      </ng-container>
+      <mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></mat-header-row>
+      <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+    </mat-table>
+  </div>
+</div>
+
+<div mat-dialog-actions>
+  <div style="flex: 1;"></div>
   <button mat-raised-button color="primary" (click)="handleClose()">Close</button>
 </div>
