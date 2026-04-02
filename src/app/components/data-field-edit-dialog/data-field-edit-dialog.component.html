@@ -48,14 +48,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <div class="partial-detail">
         <div>
           <mat-checkbox [(ngModel)]="data.dataField.isChosenFromList"
-            [disabled]="(!data.canEdit && !data.isOwner) || optionListNotAllowed()" class="bottom-margin">
+            [disabled]="(!data.canEdit && !data.isOwner) || (optionListNotAllowed() && !data.dataField.isChosenFromList)" class="bottom-margin">
             Use Option List
           </mat-checkbox>
         </div>
         @if (data.dataField.isChosenFromList) {
         <div>
           <mat-checkbox [(ngModel)]="data.dataField.isMultiSelect"
-            [disabled]="(!data.canEdit && !data.isOwner) || optionListNotAllowed()" class="bottom-margin left-margin">
+            [disabled]="(!data.canEdit && !data.isOwner) || (optionListNotAllowed() && !data.dataField.isChosenFromList)" class="bottom-margin left-margin">
             Multi-select
           </mat-checkbox>
         </div>
