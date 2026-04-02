@@ -56,8 +56,12 @@ export class DataFieldEditDialogComponent {
   }
 
   errorFree() {
-    return this.data.dataField.name && this.data.dataField.name.length > 0 &&
+    const base = this.data.dataField.name && this.data.dataField.name.length > 0 &&
       this.data.dataField.displayOrder > 0;
+    if (this.isCompetency()) {
+      return base && this.data.dataField.dataOptions && this.data.dataField.dataOptions.length > 0;
+    }
+    return base;
   }
 
   changeDataFieldDataType(selectedDataType: string) {
@@ -65,6 +69,12 @@ export class DataFieldEditDialogComponent {
     if (this.data.dataField.dataType !== selectedDataType) {
       // set the new value
       this.data.dataField.dataType = selectedDataType;
+      // Competency fields are always option-list + multi-select
+      if (selectedDataType === DataFieldType.Competency) {
+        this.data.dataField.isChosenFromList = true;
+        this.data.dataField.isMultiSelect = true;
+        this.data.dataField.isFacilitationField = true;
+      }
     }
   }
 
@@ -135,7 +145,7 @@ export class DataFieldEditDialogComponent {
     const canAddOptions = canEdit && !this.optionListNotAllowed();
 
     if (this.data.dataField.dataType === DataFieldType.Competency) {
-      this.dialog.open(CompetencyOptionsDialogComponent, {
+      const compDialogRef = this.dialog.open(CompetencyOptionsDialogComponent, {
         width: '900px',
         maxWidth: '95vw',
         maxHeight: '90vh',
@@ -143,6 +153,11 @@ export class DataFieldEditDialogComponent {
           dataFieldId: this.data.dataField.id,
           dataOptions: this.data.dataField.dataOptions,
           canEdit: canAddOptions
+        }
+      });
+      compDialogRef.afterClosed().subscribe((updatedOptions) => {
+        if (updatedOptions) {
+          this.data.dataField = { ...this.data.dataField, dataOptions: updatedOptions };
         }
       });
     } else {

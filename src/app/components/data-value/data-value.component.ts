@@ -85,6 +85,52 @@ export class DataValueComponent {
     MselItemStatus.Archived,
   ];
 
+  // --- Competency chips + search list ---
+  competencyFilter = '';
+
+  get selectedCompetencies(): string[] {
+    return this.value ? this.value.split(', ').filter(v => v) : [];
+  }
+
+  get filteredCompetencyOptions() {
+    if (!this.competencyFilter) return [];
+    const options = this.dataField?.dataOptions || [];
+    const s = this.competencyFilter.toLowerCase();
+    return options.filter(o =>
+      o.optionName?.toLowerCase().includes(s) ||
+      o.optionValue?.toLowerCase().includes(s) ||
+      o.optionDescription?.toLowerCase().includes(s)
+    );
+  }
+
+  displayCompetency = (val: string): string => {
+    if (!val || !this.dataField?.dataOptions) return val || '';
+    const opt = this.dataField.dataOptions.find(o => o.optionName === val);
+    return opt ? `${opt.optionName} - ${opt.optionValue}` : val;
+  }
+
+  isCompetencySelected(optionName: string): boolean {
+    return this.selectedCompetencies.includes(optionName);
+  }
+
+  toggleCompetency(optionName: string) {
+    const current = this.selectedCompetencies;
+    const idx = current.indexOf(optionName);
+    if (idx >= 0) {
+      current.splice(idx, 1);
+    } else {
+      current.push(optionName);
+    }
+    this.value = current.join(', ');
+    this.valueChangeHandler();
+  }
+
+  removeCompetency(id: string) {
+    const current = this.selectedCompetencies.filter(v => v !== id);
+    this.value = current.join(', ');
+    this.valueChangeHandler();
+  }
+
   valueChangeHandler() {
     this.valueChange.emit(this.value);
   }

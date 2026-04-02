@@ -68,6 +68,7 @@ import { AdminCompetencyFrameworkEditDialogComponent } from './components/admin/
 import { AdminProficiencyScaleEditDialogComponent } from './components/admin/admin-proficiency-scale-edit-dialog/admin-proficiency-scale-edit-dialog.component';
 import { AdminCompetencyElementEditDialogComponent } from './components/admin/admin-competency-element-edit-dialog/admin-competency-element-edit-dialog.component';
 import { AdminProficiencyLevelEditDialogComponent } from './components/admin/admin-proficiency-level-edit-dialog/admin-proficiency-level-edit-dialog.component';
+import { AdminCompetencyFrameworkImportDialogComponent } from './components/admin/admin-competency-framework-import-dialog/admin-competency-framework-import-dialog.component';
 import { AdminUnitsComponent } from './components/admin/admin-units/admin-units.component';
 import { AdminUnitEditDialogComponent } from './components/admin/admin-unit-edit-dialog/admin-unit-edit-dialog.component';
 import { AdminUnitUsersComponent } from './components/admin/admin-unit-users/admin-unit-users.component';
@@ -231,6 +232,7 @@ export const appConfig: ApplicationConfig = {
     AdminProficiencyScaleEditDialogComponent,
     AdminCompetencyElementEditDialogComponent,
     AdminProficiencyLevelEditDialogComponent,
+    AdminCompetencyFrameworkImportDialogComponent,
     AdminUnitsComponent,
     AdminUnitEditDialogComponent,
     AdminUnitUsersComponent,

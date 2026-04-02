@@ -2,12 +2,18 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, Inject } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA, MatDialog } from '@angular/material/dialog';
-import { Sort } from '@angular/material/sort';
-import { DataOption } from 'src/app/generated/blueprint.api';
-import { DataOptionEditDialogComponent } from '../data-option-edit-dialog/data-option-edit-dialog.component';
-import { DataOptionImportDialogComponent } from '../data-option-import-dialog/data-option-import-dialog.component';
+import { Component, Inject, OnDestroy } from '@angular/core';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { Subject } from 'rxjs';
+import { filter, take, takeUntil } from 'rxjs/operators';
+import {
+  DataOption,
+  CompetencyFramework,
+  CompetencyElement,
+  CompetencyElementService,
+} from 'src/app/generated/blueprint.api';
+import { CompetencyFrameworkQuery } from 'src/app/data/competency-framework/competency-framework.query';
+import { CompetencyFrameworkDataService } from 'src/app/data/competency-framework/competency-framework-data.service';
 import { v4 as uuidv4 } from 'uuid';
 
 @Component({
@@ -16,16 +22,21 @@ import { v4 as uuidv4 } from 'uuid';
     styleUrls: ['./competency-options-dialog.component.scss'],
     standalone: false
 })
-export class CompetencyOptionsDialogComponent {
+export class CompetencyOptionsDialogComponent implements OnDestroy {
   searchText = '';
-  sortActive = 'displayOrder';
-  sortDirection = 'asc';
-
-  displayedColumns: string[];
+  typeFilter = '';
+  frameworks: CompetencyFramework[] = [];
+  selectedFramework: CompetencyFramework | null = null;
+  elements: CompetencyElement[] = [];
+  selected = new Set<string>(); // tracks by elementIdentifier
+  loading = false;
+  private unsubscribe$ = new Subject();
 
   constructor(
     public dialogRef: MatDialogRef<CompetencyOptionsDialogComponent>,
-    public dialog: MatDialog,
+    private competencyFrameworkQuery: CompetencyFrameworkQuery,
+    private competencyFrameworkDataService: CompetencyFrameworkDataService,
+    private competencyElementService: CompetencyElementService,
     @Inject(MAT_DIALOG_DATA) public data: {
       dataFieldId: string;
       dataOptions: DataOption[];
@@ -33,119 +44,164 @@ export class CompetencyOptionsDialogComponent {
     }
   ) {
     dialogRef.disableClose = true;
-    this.displayedColumns = this.data.canEdit
-      ? ['actions', 'displayOrder', 'optionName', 'optionValue', 'optionDescription']
-      : ['displayOrder', 'optionName', 'optionValue', 'optionDescription'];
-  }
-
-  get filteredOptions(): DataOption[] {
-    if (!this.searchText) {
-      return this.sortedOptions;
+    // Initialize selected set from existing data options
+    for (const opt of this.data.dataOptions) {
+      this.selected.add(opt.optionName);
     }
-    const search = this.searchText.toLowerCase();
-    return this.sortedOptions.filter(option =>
-      option.optionName?.toLowerCase().includes(search) ||
-      option.optionValue?.toLowerCase().includes(search) ||
-      option.optionDescription?.toLowerCase().includes(search)
-    );
-  }
-
-  get sortedOptions(): DataOption[] {
-    const data = [...this.data.dataOptions];
-    const direction = this.sortDirection === 'asc' ? 1 : -1;
-    return data.sort((a, b) => {
-      let valA: any, valB: any;
-      switch (this.sortActive) {
-        case 'optionName':
-          valA = (a.optionName || '').toLowerCase();
-          valB = (b.optionName || '').toLowerCase();
-          break;
-        case 'optionValue':
-          valA = (a.optionValue || '').toLowerCase();
-          valB = (b.optionValue || '').toLowerCase();
-          break;
-        case 'optionDescription':
-          valA = (a.optionDescription || '').toLowerCase();
-          valB = (b.optionDescription || '').toLowerCase();
-          break;
-        default:
-          valA = +a.displayOrder;
-          valB = +b.displayOrder;
-          break;
-      }
-      return (valA < valB ? -1 : valA > valB ? 1 : 0) * direction;
-    });
-  }
-
-  onSortChange(sort: Sort) {
-    this.sortActive = sort.active;
-    this.sortDirection = sort.direction || 'asc';
-  }
-
-  // --- Import ---
-
-  handleImport() {
-    const dialogRef = this.dialog.open(DataOptionImportDialogComponent, {
-      width: '800px',
-      maxWidth: '90vw',
-      data: {
-        dataFieldId: this.data.dataFieldId,
-        existingOptions: this.data.dataOptions,
-        instructions: 'Upload a file containing competencies (e.g., NICE Framework JSON). Supported formats: JSON, CSV, or XLSX. The file should have columns for ID, Name, and Description.',
-        showDescription: true
-      },
-    });
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result && Array.isArray(result)) {
-        this.data.dataOptions.push(...result);
+    // Load frameworks
+    this.competencyFrameworkDataService.load();
+    this.competencyFrameworkQuery.selectAll().pipe(
+      filter(fw => fw.length > 0),
+      take(1)
+    ).subscribe(fw => {
+      this.frameworks = fw;
+      // Auto-select if only one framework
+      if (fw.length === 1) {
+        this.selectFramework(fw[0]);
       }
     });
-  }
-
-  // --- Option Management ---
-
-  handleAdd() {
-    const dataOption: DataOption = {
-      displayOrder: this.data.dataOptions.length + 1,
-      dataFieldId: this.data.dataFieldId
-    };
-    this.openEditDialog(dataOption);
-  }
-
-  handleEdit(option: DataOption) {
-    const selected = { ...option };
-    this.openEditDialog(selected);
-  }
-
-  handleDelete(option: DataOption) {
-    const index = this.data.dataOptions.findIndex(x => x.id === option.id);
-    if (index >= 0) {
-      this.data.dataOptions.splice(index, 1);
-    }
-  }
-
-  private openEditDialog(dataOption: DataOption) {
-    const dialogRef = this.dialog.open(DataOptionEditDialogComponent, {
-      minWidth: '400px',
-      maxWidth: '90vw',
-      width: 'auto',
-      data: { dataOption, showDescription: true }
+    // Keep frameworks list updated
+    this.competencyFrameworkQuery.selectAll().pipe(
+      takeUntil(this.unsubscribe$)
+    ).subscribe(fw => {
+      this.frameworks = fw;
     });
-    dialogRef.componentInstance.editComplete.subscribe((result) => {
-      if (result.saveChanges && result.dataOption) {
-        if (dataOption.id) {
-          const index = this.data.dataOptions.findIndex(x => x.id === dataOption.id);
-          this.data.dataOptions[index] = dataOption;
-        } else {
-          dataOption.id = uuidv4();
-          this.data.dataOptions.push(dataOption);
+  }
+
+  ngOnDestroy() {
+    this.unsubscribe$.next(null);
+    this.unsubscribe$.complete();
+  }
+
+  getFrameworkById(id: string): CompetencyFramework {
+    return this.frameworks.find(fw => fw.id === id);
+  }
+
+  selectFramework(fw: CompetencyFramework) {
+    this.selectedFramework = fw;
+    this.loading = true;
+    this.searchText = '';
+    this.typeFilter = '';
+    this.competencyElementService.getCompetencyElementsByFramework(fw.id)
+      .pipe(take(1))
+      .subscribe({
+        next: (elements) => {
+          this.elements = elements;
+          this.loading = false;
+        },
+        error: () => {
+          this.elements = [];
+          this.loading = false;
         }
+      });
+  }
+
+  get availableTypes(): string[] {
+    const types = new Set<string>();
+    for (const el of this.elements) {
+      if (el.elementType) types.add(el.elementType);
+    }
+    return [...types].sort();
+  }
+
+  get filteredElements(): CompetencyElement[] {
+    let results = this.elements;
+    if (this.typeFilter) {
+      results = results.filter(el => el.elementType === this.typeFilter);
+    }
+    if (this.searchText) {
+      const s = this.searchText.toLowerCase();
+      results = results.filter(el =>
+        el.elementIdentifier?.toLowerCase().includes(s) ||
+        el.elementType?.toLowerCase().includes(s) ||
+        el.name?.toLowerCase().includes(s) ||
+        el.description?.toLowerCase().includes(s)
+      );
+    }
+    return results;
+  }
+
+  get selectedCount(): number {
+    return this.selected.size;
+  }
+
+  get allFilteredSelected(): boolean {
+    const filtered = this.filteredElements;
+    return filtered.length > 0 && filtered.every(el => this.selected.has(el.elementIdentifier));
+  }
+
+  get someFilteredSelected(): boolean {
+    const filtered = this.filteredElements;
+    const some = filtered.some(el => this.selected.has(el.elementIdentifier));
+    const all = filtered.every(el => this.selected.has(el.elementIdentifier));
+    return some && !all;
+  }
+
+  isSelected(el: CompetencyElement): boolean {
+    return this.selected.has(el.elementIdentifier);
+  }
+
+  toggleAll(): void {
+    if (this.allFilteredSelected) {
+      for (const el of this.filteredElements) {
+        this.selected.delete(el.elementIdentifier);
       }
-      dialogRef.close();
-    });
+    } else {
+      for (const el of this.filteredElements) {
+        this.selected.add(el.elementIdentifier);
+      }
+    }
+  }
+
+  toggleElement(el: CompetencyElement): void {
+    if (this.selected.has(el.elementIdentifier)) {
+      this.selected.delete(el.elementIdentifier);
+    } else {
+      this.selected.add(el.elementIdentifier);
+    }
+  }
+
+  selectAll(): void {
+    for (const el of this.elements) {
+      this.selected.add(el.elementIdentifier);
+    }
+  }
+
+  deselectAll(): void {
+    this.selected.clear();
   }
 
   handleClose() {
-    this.dialogRef.close();
+    // Build new dataOptions from selected elements
+    const elementMap = new Map<string, CompetencyElement>();
+    for (const el of this.elements) {
+      elementMap.set(el.elementIdentifier, el);
+    }
+    // Also keep existing option data for elements we still have selected
+    const existingMap = new Map<string, DataOption>();
+    for (const opt of this.data.dataOptions) {
+      existingMap.set(opt.optionName, opt);
+    }
+    const newOptions: DataOption[] = [];
+    let order = 1;
+    for (const identifier of this.selected) {
+      const existing = existingMap.get(identifier);
+      if (existing) {
+        newOptions.push({ ...existing, displayOrder: order++ });
+      } else {
+        const el = elementMap.get(identifier);
+        if (el) {
+          newOptions.push({
+            id: uuidv4(),
+            dataFieldId: this.data.dataFieldId,
+            optionName: el.elementIdentifier,
+            optionValue: el.name,
+            optionDescription: el.description,
+            displayOrder: order++,
+          });
+        }
+      }
+    }
+    this.dialogRef.close(newOptions);
   }
 }

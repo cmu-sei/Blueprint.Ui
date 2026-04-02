@@ -48,20 +48,24 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <div class="partial-detail">
         <div>
           <mat-checkbox [(ngModel)]="data.dataField.isChosenFromList"
-            [disabled]="(!data.canEdit && !data.isOwner) || optionListNotAllowed()" class="bottom-margin">
+            [disabled]="(!data.canEdit && !data.isOwner) || optionListNotAllowed() || isCompetency()" class="bottom-margin">
             Use Option List
           </mat-checkbox>
           @if (data.dataField.isChosenFromList && !optionListNotAllowed()) {
           <span class="options-link clickable" (click)="viewAllOptions()"
             title="Click to manage options">
-            {{ data.dataField.dataOptions.length }} {{ isCompetency() ? 'competencies' : 'options' }}
+            @if (isCompetency()) {
+            {{ data.dataField.dataOptions.length > 0 ? data.dataField.dataOptions.length + ' competencies' : 'Manage' }}
+            } @else {
+            {{ data.dataField.dataOptions.length }} options
+            }
           </span>
           }
         </div>
         @if (data.dataField.isChosenFromList) {
         <div>
           <mat-checkbox [(ngModel)]="data.dataField.isMultiSelect"
-            [disabled]="(!data.canEdit && !data.isOwner) || optionListNotAllowed()" class="bottom-margin left-margin">
+            [disabled]="(!data.canEdit && !data.isOwner) || optionListNotAllowed() || isCompetency()" class="bottom-margin left-margin">
             Multi-select
           </mat-checkbox>
         </div>

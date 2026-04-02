@@ -45,12 +45,26 @@ project root for license information.
     </mat-checkbox><br />&nbsp;
   </span>
   }
+  <!-- dataType.Competency -->
+  @if (dataField.dataType === dataType.Competency) {
+  <span>
+    @for (id of selectedCompetencies; track id) {
+    {{ displayCompetency(id) }}<br>
+    }
+  </span>
+  }
   <!-- other dataTypes -->
   @if (dataField.dataType !== dataType.DateTime && dataField.dataType !== dataType.Html && dataField.dataType !==
   dataType.Card && dataField.dataType !== dataType.Move && dataField.dataType !== dataType.User && dataField.dataType
-  !== dataType.Boolean && dataField.dataType !== dataType.Checkbox) {
+  !== dataType.Boolean && dataField.dataType !== dataType.Checkbox && dataField.dataType !== dataType.Competency) {
   <span>
+    @if (dataField.isMultiSelect) {
+    @for (val of getValueArray(); track val) {
+    {{ val }}<br>
+    }
+    } @else {
     {{ value }}
+    }
   </span>
   }
 </span>
@@ -200,20 +214,11 @@ project root for license information.
   </mat-form-field>
   }
   @if (showValueOnly) {
-  <mat-select multiple placeholder="{{ dataField.name }}" (click)="$event.stopPropagation()"
-    (valueChange)="setDataValueArray($event)" [value]="getValueArray()" [disabled]="!canEdit">
-    @if (teamOptions && teamOptions.length > 0) {
-    <mat-option value="ALL">ALL</mat-option>
+  <span>
+    @for (val of getValueArray(); track val) {
+    {{ val }}<br>
     }
-    @if (teamOptions && teamOptions.length > 0) {
-    <mat-option value="None">None</mat-option>
-    }
-    @for (team of teamOptions; track team.id) {
-    <mat-option [value]="team.shortName">
-      {{ team.shortName }}
-    </mat-option>
-    }
-  </mat-select>
+  </span>
   }
 </span>
 }
@@ -396,8 +401,60 @@ project root for license information.
   </div>
 </div>
 }
+<!-- Competency input (chips + search list) -->
+@if (dataField.dataType === dataType.Competency) {
+<span>
+  @if (!showValueOnly) {
+  <div class="competency-field">
+    <label class="competency-label">{{ dataField.name }}</label>
+    <mat-chip-set>
+      @for (id of selectedCompetencies; track id) {
+      <mat-chip (removed)="removeCompetency(id)">
+        {{ displayCompetency(id) }}
+        @if (canEdit) {
+        <button matChipRemove>
+          <mat-icon fontIcon="mdi-close-circle-outline" style="transform: scale(0.85)"></mat-icon>
+        </button>
+        }
+      </mat-chip>
+      }
+    </mat-chip-set>
+    @if (canEdit) {
+    <mat-form-field class="full-width">
+      <mat-label>Search competencies</mat-label>
+      <input matInput [(ngModel)]="competencyFilter" placeholder="Type to filter...">
+      @if (competencyFilter) {
+      <button matSuffix mat-icon-button (click)="competencyFilter = ''" title="Clear">
+        <mat-icon fontIcon="mdi-close"></mat-icon>
+      </button>
+      }
+    </mat-form-field>
+    @if (filteredCompetencyOptions.length > 0) {
+    <div class="competency-options-list">
+      @for (option of filteredCompetencyOptions; track option.optionName) {
+      <div class="competency-option" (click)="toggleCompetency(option.optionName)">
+        <mat-checkbox [checked]="isCompetencySelected(option.optionName)"
+          (click)="$event.stopPropagation()" (change)="toggleCompetency(option.optionName)">
+        </mat-checkbox>
+        <span>{{ option.optionName }} - {{ option.optionValue }}</span>
+      </div>
+      }
+    </div>
+    }
+    }
+  </div>
+  }
+  @if (showValueOnly) {
+  <span>
+    @for (id of selectedCompetencies; track id) {
+    {{ displayCompetency(id) }}<br>
+    }
+  </span>
+  }
+</span>
+}
 <!-- dropdown input -->
-@if (dataField.isChosenFromList) {
+@if (dataField.isChosenFromList && dataField.dataType !== dataType.Competency) {
 <span>
   @if (!showValueOnly) {
   <mat-form-field class="full-width">
@@ -428,27 +485,12 @@ project root for license information.
   }
   @if (showValueOnly) {
   <span>
-    <!-- single select -->
     @if (!dataField.isMultiSelect) {
-    <mat-select placeholder="{{ dataField.name }}" [(ngModel)]="value" (ngModelChange)="valueChangeHandler()"
-      [disabled]="!canEdit">
-      @for (dataOption of dataField.dataOptions; track $index) {
-      <mat-option [value]="dataOption.optionValue">
-        {{ dataOption.optionName }}
-      </mat-option>
-      }
-    </mat-select>
+    {{ value }}
+    } @else {
+    @for (val of getValueArray(); track val) {
+    {{ val }}<br>
     }
-    <!-- multi-select -->
-    @if (dataField.isMultiSelect) {
-    <mat-select multiple (click)="$event.stopPropagation()" placeholder="{{ dataField.name }}"
-      (valueChange)="setDataValueArray($event)" [value]="getValueArray()" [disabled]="!canEdit">
-      @for (dataOption of dataField.dataOptions; track $index) {
-      <mat-option [value]="dataOption.optionValue">
-        {{ dataOption.optionName }}
-      </mat-option>
-      }
-    </mat-select>
     }
   </span>
   }

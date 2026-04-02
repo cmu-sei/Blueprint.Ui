@@ -17,10 +17,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
     }
   </mat-form-field>
   @if (canEdit) {
-  <button mat-stroked-button (click)="importFramework()" title="Import framework from JSON or XLSX" style="margin-left: 10px;">
+  <button mat-stroked-button (click)="importFramework()" [disabled]="importing" title="Import framework from JSON" style="margin-left: 10px;">
     <mat-icon fontIcon="mdi-upload"></mat-icon>
-    Import
+    @if (importing) { Importing... } @else { Import }
   </button>
+  }
+  @if (importError) {
+  <span style="color: var(--mat-sys-error); margin-left: 10px; font-size: 13px;">{{ importError }}</span>
   }
   <div class="button-end">
     <mat-paginator #paginator [pageIndex]="0" [pageSize]="20"
@@ -229,7 +232,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 }
               </mat-form-field>
               <div class="button-end">
-                <mat-paginator #elementPaginator [pageIndex]="0" [pageSize]="20"
+                <mat-paginator #elementPaginator [pageIndex]="0" [pageSize]="10"
                   [pageSizeOptions]="[10, 20, 50, 100, 200]"></mat-paginator>
               </div>
             </div>

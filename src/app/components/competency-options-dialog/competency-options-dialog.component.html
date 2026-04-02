@@ -5,73 +5,120 @@ project root for license information or contact permission@sei.cmu.edu for full 
 -->
 
 <div mat-dialog-title>
-  Manage Competencies ({{ data.dataOptions.length }})
+  Manage Competencies ({{ selectedCount }} selected)
   <button mat-icon-button (click)="handleClose()" title="Close" class="close-button" tabindex="-1">
     <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
   </button>
 </div>
 
-<div mat-dialog-content>
-  <!-- Search Box -->
-  <div class="search-section">
-    <mat-form-field class="full-width">
-      <mat-label>Search competencies</mat-label>
-      <input matInput [(ngModel)]="searchText" placeholder="Filter by ID or description">
-      @if (searchText) {
-      <button matSuffix mat-icon-button (click)="searchText = ''" title="Clear search">
-        <mat-icon fontIcon="mdi-close"></mat-icon>
-      </button>
+<!-- Framework selector -->
+@if (frameworks.length > 1) {
+<div class="framework-section">
+  <mat-form-field class="full-width">
+    <mat-label>Framework</mat-label>
+    <mat-select [value]="selectedFramework?.id" (selectionChange)="selectFramework(getFrameworkById($event.value))">
+      @for (fw of frameworks; track fw.id) {
+      <mat-option [value]="fw.id">
+        {{ fw.name }} {{ fw.version ? '(' + fw.version + ')' : '' }}
+      </mat-option>
       }
-    </mat-form-field>
-  </div>
-
-  <!-- Action Buttons -->
-  @if (data.canEdit) {
-  <div class="action-buttons">
-    <button mat-icon-button (click)="handleAdd()" title="Add new competency" style="outline: none;">
-      <mat-icon class="mdi-24px" fontIcon="mdi-plus-circle-outline"></mat-icon>
-    </button>
-    <button mat-icon-button (click)="handleImport()" title="Import competencies from file" style="outline: none;">
-      <mat-icon class="mdi-24px" fontIcon="mdi-upload"></mat-icon>
-    </button>
-  </div>
-  }
-
-  <!-- Existing Options Table -->
-  <div class="options-table-container">
-    <mat-table [dataSource]="filteredOptions" matSort matSortActive="displayOrder" matSortDirection="asc" (matSortChange)="onSortChange($event)">
-      <ng-container matColumnDef="actions">
-        <mat-header-cell *matHeaderCellDef class="actions-column"></mat-header-cell>
-        <mat-cell *matCellDef="let option" class="actions-column">
-          <button mat-icon-button (click)="handleEdit(option)" title="Edit">
-            <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline"></mat-icon>
-          </button>
-          <button mat-icon-button (click)="handleDelete(option)" title="Delete">
-            <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline"></mat-icon>
-          </button>
-        </mat-cell>
-      </ng-container>
-      <ng-container matColumnDef="displayOrder">
-        <mat-header-cell *matHeaderCellDef mat-sort-header class="order-column">Order</mat-header-cell>
-        <mat-cell *matCellDef="let option" class="order-column">{{ option.displayOrder }}</mat-cell>
-      </ng-container>
-      <ng-container matColumnDef="optionName">
-        <mat-header-cell *matHeaderCellDef mat-sort-header class="name-column">ID</mat-header-cell>
-        <mat-cell *matCellDef="let option" class="name-column">{{ option.optionName }}</mat-cell>
-      </ng-container>
-      <ng-container matColumnDef="optionValue">
-        <mat-header-cell *matHeaderCellDef mat-sort-header class="value-column">Name</mat-header-cell>
-        <mat-cell *matCellDef="let option" class="value-column">{{ option.optionValue }}</mat-cell>
-      </ng-container>
-      <ng-container matColumnDef="optionDescription">
-        <mat-header-cell *matHeaderCellDef mat-sort-header class="description-column">Description</mat-header-cell>
-        <mat-cell *matCellDef="let option" class="description-column">{{ option.optionDescription }}</mat-cell>
-      </ng-container>
-      <mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></mat-header-row>
-      <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
-    </mat-table>
-  </div>
+    </mat-select>
+  </mat-form-field>
 </div>
+}
+
+@if (selectedFramework) {
+<!-- Filters -->
+<div class="filter-section">
+  <mat-form-field class="search-field">
+    <mat-label>Search</mat-label>
+    <input matInput [(ngModel)]="searchText" placeholder="Filter by ID, type, name, or description">
+    @if (searchText) {
+    <button matSuffix mat-icon-button (click)="searchText = ''" title="Clear search">
+      <mat-icon fontIcon="mdi-close"></mat-icon>
+    </button>
+    }
+  </mat-form-field>
+  @if (availableTypes.length > 0) {
+  <mat-form-field class="type-filter-field">
+    <mat-label>Type</mat-label>
+    <mat-select [(ngModel)]="typeFilter">
+      <mat-option value="">All</mat-option>
+      @for (t of availableTypes; track t) {
+      <mat-option [value]="t">{{ t }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+  }
+</div>
+
+<!-- Bulk actions -->
+@if (data.canEdit) {
+<div class="action-buttons">
+  <button mat-stroked-button (click)="selectAll()" title="Select all elements">
+    Select All
+  </button>
+  <button mat-stroked-button (click)="deselectAll()" title="Deselect all elements" style="margin-left: 8px;">
+    Deselect All
+  </button>
+  <span class="selection-count">{{ selectedCount }} of {{ elements.length }} selected</span>
+</div>
+}
+
+<!-- Elements table -->
+<div mat-dialog-content class="table-content">
+  @if (loading) {
+  <div class="loading-message">Loading elements...</div>
+  } @else {
+  <table class="element-table">
+    <thead>
+      <tr>
+        @if (data.canEdit) {
+        <th class="check-column">
+          <mat-checkbox
+            [checked]="allFilteredSelected"
+            [indeterminate]="someFilteredSelected"
+            (change)="toggleAll()">
+          </mat-checkbox>
+        </th>
+        }
+        <th>ID</th>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (el of filteredElements; track el.elementIdentifier) {
+      <tr (click)="data.canEdit && toggleElement(el)" [class.clickable-row]="data.canEdit" [class.selected-row]="isSelected(el)">
+        @if (data.canEdit) {
+        <td class="check-column">
+          <mat-checkbox
+            [checked]="isSelected(el)"
+            (click)="$event.stopPropagation()"
+            (change)="toggleElement(el)">
+          </mat-checkbox>
+        </td>
+        }
+        <td class="id-column">{{ el.elementIdentifier }}</td>
+        <td>{{ el.elementType }}</td>
+        <td>{{ el.name }}</td>
+        <td class="description-column">{{ el.description }}</td>
+      </tr>
+      }
+    </tbody>
+  </table>
+  }
+</div>
+} @else {
+<div mat-dialog-content class="table-content">
+  @if (frameworks.length === 0) {
+  <div class="loading-message">No competency frameworks available. Import a framework from the Admin page first.</div>
+  } @else {
+  <div class="loading-message">Select a framework above to manage competencies.</div>
+  }
+</div>
+}
 
 <div mat-dialog-actions>
   <div style="flex: 1;"></div>

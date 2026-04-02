@@ -460,7 +460,12 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
   getDataOptionsString(dataField: DataField): string {
     if (dataField.dataOptions && dataField.dataOptions.length > 0) {
       const count = dataField.dataOptions.length;
+      if (dataField.dataType === DataFieldType.Competency) {
+        return `${count} competenc${count !== 1 ? 'ies' : 'y'}`;
+      }
       return `${count} option${count !== 1 ? 's' : ''}`;
+    } else if (dataField.dataType === DataFieldType.Competency) {
+      return 'Manage';
     } else {
       return ' ';
     }
@@ -468,7 +473,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
 
   viewDataOptions(dataField: DataField, event: Event) {
     event.stopPropagation();
-    if (dataField.dataOptions && dataField.dataOptions.length > 0) {
+    if (dataField.dataType === DataFieldType.Competency || (dataField.dataOptions && dataField.dataOptions.length > 0)) {
       const hasEditPermission = this.canEdit() || this.msel.hasRole(this.loggedInUserId, null).owner;
       const supportsOptionList =
         dataField.dataType === DataFieldType.Double ||
@@ -478,7 +483,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
       const canAddOptions = hasEditPermission && supportsOptionList;
 
       if (dataField.dataType === DataFieldType.Competency) {
-        this.dialog.open(CompetencyOptionsDialogComponent, {
+        const compDialogRef = this.dialog.open(CompetencyOptionsDialogComponent, {
           width: '900px',
           maxWidth: '95vw',
           maxHeight: '90vh',
@@ -487,6 +492,10 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
             dataOptions: dataField.dataOptions,
             canEdit: canAddOptions
           }
+        });
+        compDialogRef.afterClosed().subscribe((updatedOptions) => {
+          const updated = { ...dataField, dataOptions: updatedOptions || dataField.dataOptions };
+          this.dataFieldDataService.updateDataField(updated);
         });
       } else {
         this.dialog.open(DataOptionListDialogComponent, {

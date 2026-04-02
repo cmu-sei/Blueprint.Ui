@@ -12,6 +12,7 @@ import {
   CompetencyElement,
   ProficiencyScale,
   ProficiencyLevel,
+  CompetencyFrameworkService,
   CompetencyElementService,
   ProficiencyScaleService,
   ProficiencyLevelService,
@@ -26,6 +27,7 @@ import { AdminCompetencyFrameworkEditDialogComponent } from '../admin-competency
 import { AdminProficiencyScaleEditDialogComponent } from '../admin-proficiency-scale-edit-dialog/admin-proficiency-scale-edit-dialog.component';
 import { AdminCompetencyElementEditDialogComponent } from '../admin-competency-element-edit-dialog/admin-competency-element-edit-dialog.component';
 import { AdminProficiencyLevelEditDialogComponent } from '../admin-proficiency-level-edit-dialog/admin-proficiency-level-edit-dialog.component';
+import { AdminCompetencyFrameworkImportDialogComponent } from '../admin-competency-framework-import-dialog/admin-competency-framework-import-dialog.component';
 import { v4 as uuidv4 } from 'uuid';
 
 @Component({
@@ -74,9 +76,13 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
   elementSort: Sort = { active: 'elementIdentifier', direction: 'asc' };
   levelSort: Sort = { active: 'displayOrder', direction: 'asc' };
 
+  importing = false;
+  importError = '';
+
   constructor(
     private competencyFrameworkDataService: CompetencyFrameworkDataService,
     private competencyFrameworkQuery: CompetencyFrameworkQuery,
+    private competencyFrameworkService: CompetencyFrameworkService,
     private competencyElementService: CompetencyElementService,
     private proficiencyScaleService: ProficiencyScaleService,
     private proficiencyLevelService: ProficiencyLevelService,
@@ -152,30 +158,29 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
   }
 
   importFramework(): void {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.json,.xlsx';
-    input.onchange = (event: any) => {
-      const file = event.target.files[0];
-      if (file) {
-        // TODO: Implement server-side import endpoint
-        // For now, handle JSON client-side
-        if (file.name.endsWith('.json')) {
-          const reader = new FileReader();
-          reader.onload = (e: any) => {
-            try {
-              const data = JSON.parse(e.target.result);
-              console.log('Import data loaded:', data);
-              // TODO: POST to import endpoint when available
-            } catch (err) {
-              console.error('Invalid JSON file', err);
+    const dialogRef = this.dialog.open(AdminCompetencyFrameworkImportDialogComponent, {
+      width: '600px',
+      maxWidth: '90vw',
+    });
+    dialogRef.componentInstance.importComplete.subscribe((framework) => {
+      if (framework) {
+        this.importing = true;
+        this.importError = '';
+        this.competencyFrameworkService.createCompetencyFramework(framework)
+          .pipe(take(1))
+          .subscribe({
+            next: (created) => {
+              this.importing = false;
+              this.competencyFrameworkDataService.updateStore(created);
+            },
+            error: (err) => {
+              this.importing = false;
+              this.importError = 'Import failed: ' + (err.error?.title || err.message || 'Unknown error');
             }
-          };
-          reader.readAsText(file);
-        }
+          });
       }
-    };
-    input.click();
+      dialogRef.close();
+    });
   }
 
   sortChanged(sort: Sort) {

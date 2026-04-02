@@ -198,8 +198,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <mat-cell *matCellDef="let element" class="six-cell">
             <div class="summary-text options-link"
                  (click)="viewDataOptions(element, $event)"
-                 [class.clickable]="element.dataOptions && element.dataOptions.length > 0"
-                 [title]="element.dataOptions && element.dataOptions.length > 0 ? 'Click to view all options' : ''">
+                 [class.clickable]="element.dataType === 'Competency' || (element.dataOptions && element.dataOptions.length > 0)"
+                 [title]="element.dataType === 'Competency' || (element.dataOptions && element.dataOptions.length > 0) ? 'Click to manage options' : ''">
               {{ getDataOptionsString(element) }}
             </div>
           </mat-cell>
