@@ -1,0 +1,182 @@
+// Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+// Released under a MIT (SEI)-style license. See LICENSE.md in the
+// project root for license information.
+
+@use "@angular/material" as mat;
+
+.cssLayoutRowStartCenter {
+  min-height: 76px;
+  flex-shrink: 0;
+}
+
+.button-end {
+  margin-left: auto;
+}
+
+.expansion-panel {
+  width: 90%;
+  background-color: transparent;
+  margin-bottom: 10px;
+}
+
+.expansion-panel-header {
+  height: 32px;
+  font-size: 14px;
+}
+
+.element-row {
+  position: relative;
+  cursor: pointer;
+}
+
+.element-row:hover {
+  background-color: var(--mat-sys-surface-variant);
+}
+
+.detail-row {
+  height: 0;
+}
+
+.element-row td {
+  border-bottom-width: 0;
+}
+
+.column-name {
+  flex: 0 0 20%;
+  padding: 2px;
+}
+
+.column-action {
+  flex: 0 0 120px;
+  width: 120px;
+}
+
+.column-version {
+  flex: 0 0 10%;
+  padding: 2px;
+}
+
+.column-source {
+  flex: 0 0 10%;
+  padding: 2px;
+}
+
+.column-description {
+  flex: 0 0 calc(60% - 150px);
+  padding: 2px;
+}
+
+.expanded-detail-cell {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-width: 660px;
+  padding: 8px 10px;
+  gap: 8px;
+}
+
+.row:has(.expanded-detail-div) {
+  border-bottom: none;
+}
+
+.expanded-detail-div {
+  width: calc(100% - 20px);
+  min-width: 660px;
+  margin-left: 20px;
+  max-height: 500px;
+  overflow: auto;
+}
+
+.scrolling-region {
+  height: calc(100% - 94px);
+  overflow: auto;
+  width: 100%;
+}
+
+.no-results {
+  margin-top: 20px;
+  margin-left: 150px;
+}
+
+.no-results-inline {
+  padding: 8px 0;
+  color: var(--mat-sys-on-surface-variant);
+  font-style: italic;
+}
+
+// Sub-table column widths (scales and elements)
+.sub-col-action {
+  flex: 0 0 100px;
+  width: 100px;
+}
+
+.sub-col-name {
+  flex: 1 1 25%;
+}
+
+.sub-col-desc {
+  flex: 2 1 45%;
+}
+
+.sub-col-levels {
+  flex: 0 0 80px;
+}
+
+.el-col-action {
+  flex: 0 0 100px;
+  width: 100px;
+}
+
+.el-col-id {
+  flex: 1 1 20%;
+}
+
+.el-col-type {
+  flex: 0 0 12%;
+}
+
+.el-col-name {
+  flex: 2 1 50%;
+}
+
+// Level sub-table column widths
+.lv-col-name {
+  flex: 1 1 20%;
+}
+
+.lv-col-value {
+  flex: 0 0 80px;
+}
+
+.lv-col-order {
+  flex: 0 0 80px;
+}
+
+.lv-col-desc {
+  flex: 2 1 50%;
+}
+
+// Levels detail section
+.levels-detail {
+  margin: 8px 0 8px 16px;
+  padding: 8px;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 4px;
+}
+
+.levels-title {
+  font-weight: bold;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.element-row-expanded {
+  background-color: var(--mat-sys-surface-variant);
+}
+
+.element-toolbar {
+  display: flex;
+  align-items: center;
+  min-height: 56px;
+  flex-shrink: 0;
+}

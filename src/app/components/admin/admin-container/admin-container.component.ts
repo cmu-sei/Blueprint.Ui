@@ -22,6 +22,7 @@ import { environment } from 'src/environments/environment';
 import { HealthCheckService, SystemPermission, User } from 'src/app/generated/blueprint.api';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
 import { InjectTypeDataService } from 'src/app/data/inject-type/inject-type-data.service';
+import { CompetencyFrameworkDataService } from 'src/app/data/competency-framework/competency-framework-data.service';
 
 @Component({
   selector: 'app-admin-container',
@@ -42,6 +43,7 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
   galleryCardsText = 'Gallery Cards';
   citeActionsText = 'CITE Actions';
   citeDutiesText = 'CITE Duties';
+  competencyFrameworksText = 'Competencies';
   selectedTab = 'Organizations';
   displayedSection = '';
   exitSection = '';
@@ -72,6 +74,8 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
   canManageCiteDuties = false;
   canViewDataFields = false;
   canManageDataFields = false;
+  canViewCompetencyFrameworks = false;
+  canManageCompetencyFrameworks = false;
   hideTopbar = false;
   TopbarView = TopbarView;
   topbarImage = this.settingsService.settings.AppTopBarImage;
@@ -96,6 +100,7 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
     private signalRService: SignalRService,
     private uiDataService: UIDataService,
     private injectTypeDataService: InjectTypeDataService,
+    private competencyFrameworkDataService: CompetencyFrameworkDataService,
   ) {
     this.theme$ = this.authQuery.userTheme$;
     this.hideTopbar = this.uiDataService.inIframe();
@@ -153,8 +158,10 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
         this.canManageCiteDuties = this.permissionDataService.hasPermission(SystemPermission.ManageCiteDuties);
         this.canViewDataFields = this.permissionDataService.hasPermission(SystemPermission.ViewDataFields);
         this.canManageDataFields = this.permissionDataService.hasPermission(SystemPermission.ManageDataFields);
+        this.canViewCompetencyFrameworks = this.permissionDataService.hasPermission(SystemPermission.ViewCompetencyFrameworks);
+        this.canManageCompetencyFrameworks = this.permissionDataService.hasPermission(SystemPermission.ManageCompetencyFrameworks);
         // Update canAccessAdminSection based on having any admin permission
-        this.canAccessAdminSection = this.canViewUsers || this.canViewRoles || this.canViewGroups || this.canViewUnits || this.canViewInjectTypes || this.canViewCatalogs || this.canViewOrganizations || this.canViewCiteActions || this.canViewCiteDuties || this.canViewDataFields;
+        this.canAccessAdminSection = this.canViewUsers || this.canViewRoles || this.canViewGroups || this.canViewUnits || this.canViewInjectTypes || this.canViewCatalogs || this.canViewOrganizations || this.canViewCiteActions || this.canViewCiteDuties || this.canViewDataFields || this.canViewCompetencyFrameworks;
         // Load additional data if user has permissions
         if (this.canAccessAdminSection) {
           this.unitDataService.load();
@@ -162,6 +169,8 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
       });
     // load injectTypes
     this.injectTypeDataService.load();
+    // load competencyFrameworks
+    this.competencyFrameworkDataService.load();
     // Start SignalR connection
     this.signalRService
       .startConnection(ApplicationArea.admin)

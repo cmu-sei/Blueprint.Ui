@@ -11,6 +11,7 @@ import * as XLSX from 'xlsx';
 export interface ImportPreviewItem {
   optionName: string;
   optionValue: string;
+  optionDescription: string;
   willImport: boolean;
   exists: boolean;
 }
@@ -33,9 +34,14 @@ export class DataOptionImportDialogComponent {
       dataFieldId: string;
       existingOptions: DataOption[];
       instructions?: string;
+      showDescription?: boolean;
     }
   ) {
     dialogRef.disableClose = true;
+  }
+
+  get hasDescription(): boolean {
+    return this.data.showDescription === true;
   }
 
   onFileSelected(event: any) {
@@ -101,43 +107,44 @@ export class DataOptionImportDialogComponent {
       for (const item of elements) {
         if (skipTypes.includes(item.element_type)) continue;
         if (item.element_identifier) {
-          const description = item.text || item.title || '';
-          items.push(this.createPreviewItem(item.element_identifier, description));
+          const name = item.title || '';
+          const description = item.text || '';
+          items.push(this.createPreviewItem(item.element_identifier, name, description));
         }
       }
     } else if (Array.isArray(parsed)) {
       for (const item of parsed) {
-        const pair = this.extractPair(item);
-        if (pair) {
-          items.push(this.createPreviewItem(pair.id, pair.value));
+        const extracted = this.extractFields(item);
+        if (extracted) {
+          items.push(this.createPreviewItem(extracted.id, extracted.name, extracted.description));
         }
       }
     } else if (typeof parsed === 'object') {
-      // Generic object — try to find an array property
       const arrayProp = Object.values(parsed).find(v => Array.isArray(v)) as any[];
       if (arrayProp) {
         for (const item of arrayProp) {
-          const pair = this.extractPair(item);
-          if (pair) {
-            items.push(this.createPreviewItem(pair.id, pair.value));
+          const extracted = this.extractFields(item);
+          if (extracted) {
+            items.push(this.createPreviewItem(extracted.id, extracted.name, extracted.description));
           }
         }
       }
     }
 
     if (items.length === 0) {
-      this.parseError = 'No options found. Expected an array of objects with ID and description fields.';
+      this.parseError = 'No options found. Expected an array of objects with ID and name fields.';
     } else {
       this.previewItems = items;
     }
   }
 
-  private extractPair(item: any): { id: string; value: string } | null {
+  private extractFields(item: any): { id: string; name: string; description: string } | null {
     if (typeof item !== 'object' || !item) return null;
-    const id = item.id || item.identifier || item.code || item.optionName || item.name || item.element_identifier;
-    const value = item.description || item.text || item.value || item.optionValue || item.name;
+    const id = item.id || item.identifier || item.code || item.optionName || item.element_identifier;
+    const name = item.name || item.title || item.optionValue || item.value || '';
+    const description = item.description || item.text || item.optionDescription || '';
     if (id) {
-      return { id: String(id), value: value ? String(value) : '' };
+      return { id: String(id), name: name ? String(name) : '', description: description ? String(description) : '' };
     }
     return null;
   }
@@ -150,33 +157,26 @@ export class DataOptionImportDialogComponent {
     }
 
     const headers = this.parseCsvLine(lines[0]).map(h => h.toLowerCase().trim());
-    const idCol = this.findColumn(headers, ['id', 'identifier', 'code', 'optionname', 'name']);
-    const valueCol = this.findColumn(headers, ['description', 'text', 'value', 'optionvalue']);
-
-    if (idCol < 0) {
-      // Fall back to positional: first column = ID, second = description
-      if (headers.length >= 1) {
-        const items: ImportPreviewItem[] = [];
-        for (let i = 1; i < lines.length; i++) {
-          const cols = this.parseCsvLine(lines[i]);
-          if (cols[0]?.trim()) {
-            items.push(this.createPreviewItem(cols[0].trim(), (cols[1] || '').trim()));
-          }
-        }
-        this.setPreviewItems(items);
-        return;
-      }
-      this.parseError = 'Could not identify columns. Use headers like "ID" and "Description".';
-      return;
-    }
+    const idCol = this.findColumn(headers, ['id', 'identifier', 'code', 'optionname']);
+    const nameCol = this.findColumn(headers, ['name', 'title', 'optionvalue']);
+    const descCol = this.findColumn(headers, ['description', 'text', 'optiondescription']);
 
     const items: ImportPreviewItem[] = [];
     for (let i = 1; i < lines.length; i++) {
       const cols = this.parseCsvLine(lines[i]);
-      const id = cols[idCol]?.trim();
-      const value = valueCol >= 0 ? (cols[valueCol] || '').trim() : '';
+      let id: string, name: string, description: string;
+      if (idCol >= 0) {
+        id = (cols[idCol] || '').trim();
+        name = nameCol >= 0 ? (cols[nameCol] || '').trim() : '';
+        description = descCol >= 0 ? (cols[descCol] || '').trim() : '';
+      } else {
+        // Positional fallback
+        id = (cols[0] || '').trim();
+        name = (cols[1] || '').trim();
+        description = (cols[2] || '').trim();
+      }
       if (id) {
-        items.push(this.createPreviewItem(id, value));
+        items.push(this.createPreviewItem(id, name, description));
       }
     }
     this.setPreviewItems(items);
@@ -232,23 +232,26 @@ export class DataOptionImportDialogComponent {
     }
 
     const headers = rows[0].map((h: any) => String(h || '').toLowerCase().trim());
-    const idCol = this.findColumn(headers, ['id', 'identifier', 'code', 'optionname', 'name']);
-    const valueCol = this.findColumn(headers, ['description', 'text', 'value', 'optionvalue']);
+    const idCol = this.findColumn(headers, ['id', 'identifier', 'code', 'optionname']);
+    const nameCol = this.findColumn(headers, ['name', 'title', 'optionvalue']);
+    const descCol = this.findColumn(headers, ['description', 'text', 'optiondescription']);
 
     const items: ImportPreviewItem[] = [];
     for (let i = 1; i < rows.length; i++) {
       const cols = rows[i];
-      let id: string, value: string;
+      let id: string, name: string, description: string;
       if (idCol >= 0) {
         id = String(cols[idCol] || '').trim();
-        value = valueCol >= 0 ? String(cols[valueCol] || '').trim() : '';
+        name = nameCol >= 0 ? String(cols[nameCol] || '').trim() : '';
+        description = descCol >= 0 ? String(cols[descCol] || '').trim() : '';
       } else {
         // Positional fallback
         id = String(cols[0] || '').trim();
-        value = String(cols[1] || '').trim();
+        name = String(cols[1] || '').trim();
+        description = String(cols[2] || '').trim();
       }
       if (id) {
-        items.push(this.createPreviewItem(id, value));
+        items.push(this.createPreviewItem(id, name, description));
       }
     }
     this.setPreviewItems(items);
@@ -262,13 +265,14 @@ export class DataOptionImportDialogComponent {
     }
   }
 
-  private createPreviewItem(optionName: string, optionValue: string): ImportPreviewItem {
+  private createPreviewItem(optionName: string, optionValue: string, optionDescription: string): ImportPreviewItem {
     const exists = this.data.existingOptions.some(
       opt => opt.optionName === optionName
     );
     return {
       optionName,
       optionValue,
+      optionDescription,
       willImport: !exists,
       exists
     };
@@ -313,6 +317,7 @@ export class DataOptionImportDialogComponent {
         dataFieldId: this.data.dataFieldId,
         optionName: item.optionName,
         optionValue: item.optionValue,
+        optionDescription: item.optionDescription || null,
         displayOrder: this.data.existingOptions.length + index + 1
       }));
 

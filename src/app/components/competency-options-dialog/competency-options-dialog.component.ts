@@ -34,8 +34,8 @@ export class CompetencyOptionsDialogComponent {
   ) {
     dialogRef.disableClose = true;
     this.displayedColumns = this.data.canEdit
-      ? ['actions', 'displayOrder', 'optionName', 'optionValue']
-      : ['displayOrder', 'optionName', 'optionValue'];
+      ? ['actions', 'displayOrder', 'optionName', 'optionValue', 'optionDescription']
+      : ['displayOrder', 'optionName', 'optionValue', 'optionDescription'];
   }
 
   get filteredOptions(): DataOption[] {
@@ -45,7 +45,8 @@ export class CompetencyOptionsDialogComponent {
     const search = this.searchText.toLowerCase();
     return this.sortedOptions.filter(option =>
       option.optionName?.toLowerCase().includes(search) ||
-      option.optionValue?.toLowerCase().includes(search)
+      option.optionValue?.toLowerCase().includes(search) ||
+      option.optionDescription?.toLowerCase().includes(search)
     );
   }
 
@@ -62,6 +63,10 @@ export class CompetencyOptionsDialogComponent {
         case 'optionValue':
           valA = (a.optionValue || '').toLowerCase();
           valB = (b.optionValue || '').toLowerCase();
+          break;
+        case 'optionDescription':
+          valA = (a.optionDescription || '').toLowerCase();
+          valB = (b.optionDescription || '').toLowerCase();
           break;
         default:
           valA = +a.displayOrder;
@@ -86,7 +91,8 @@ export class CompetencyOptionsDialogComponent {
       data: {
         dataFieldId: this.data.dataFieldId,
         existingOptions: this.data.dataOptions,
-        instructions: 'Upload a file containing competencies (e.g., NICE Framework JSON). Supported formats: JSON, CSV, or XLSX. The file should have columns for ID and Description.'
+        instructions: 'Upload a file containing competencies (e.g., NICE Framework JSON). Supported formats: JSON, CSV, or XLSX. The file should have columns for ID, Name, and Description.',
+        showDescription: true
       },
     });
     dialogRef.afterClosed().subscribe((result) => {
@@ -123,7 +129,7 @@ export class CompetencyOptionsDialogComponent {
       minWidth: '400px',
       maxWidth: '90vw',
       width: 'auto',
-      data: { dataOption }
+      data: { dataOption, showDescription: true }
     });
     dialogRef.componentInstance.editComplete.subscribe((result) => {
       if (result.saveChanges && result.dataOption) {

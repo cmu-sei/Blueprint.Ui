@@ -15,7 +15,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
   <!-- File Upload Section -->
   <div class="upload-section">
     <p class="instructions">
-      {{ data.instructions || 'Upload a file containing options. Supported formats: JSON, CSV, or XLSX. The file should have columns for ID and Description.' }}
+      {{ data.instructions || 'Upload a file containing options. Supported formats: JSON, CSV, or XLSX. The file should have columns for ID and Name.' }}
     </p>
     <input
       type="file"
@@ -71,7 +71,10 @@ project root for license information or contact permission@sei.cmu.edu for full 
               ></mat-checkbox>
             </th>
             <th>ID</th>
+            <th>Name</th>
+            @if (hasDescription) {
             <th>Description</th>
+            }
           </tr>
         </thead>
         <tbody>
@@ -86,6 +89,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
             </td>
             <td>{{ item.optionName }}</td>
             <td>{{ item.optionValue }}</td>
+            @if (hasDescription) {
+            <td class="description-column">{{ item.optionDescription }}</td>
+            }
           </tr>
           }
         </tbody>

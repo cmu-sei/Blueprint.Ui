@@ -6,6 +6,14 @@
 
 export * from './card.service';
 import { CardService } from './card.service';
+export * from './competencyElement.service';
+import { CompetencyElementService } from './competencyElement.service';
+export * from './competencyFramework.service';
+import { CompetencyFrameworkService } from './competencyFramework.service';
+export * from './proficiencyLevel.service';
+import { ProficiencyLevelService } from './proficiencyLevel.service';
+export * from './proficiencyScale.service';
+import { ProficiencyScaleService } from './proficiencyScale.service';
 export * from './cardTeam.service';
 import { CardTeamService } from './cardTeam.service';
 export * from './catalog.service';
@@ -72,4 +80,4 @@ export * from './userMselRole.service';
 import { UserMselRoleService } from './userMselRole.service';
 export * from './userTeamRole.service';
 import { UserTeamRoleService } from './userTeamRole.service';
-export const APIS = [CardService, CardTeamService, CatalogService, CatalogInjectService, CatalogUnitService, CiteService, CiteActionService, CiteDutyService, DataFieldService, DataOptionService, DataValueService, GroupService, HealthCheckService, InjectService, InjectTypeService, InvitationService, MoveService, MselService, MselPageService, MselUnitService, OrganizationService, PlayerService, PlayerApplicationService, PlayerApplicationTeamService, ScenarioEventService, SystemPermissionsService, SystemRolesService, TeamService, TeamUserService, UnitService, UnitUserService, UserService, UserMselRoleService, UserTeamRoleService];
+export const APIS = [CardService, CompetencyElementService, CompetencyFrameworkService, ProficiencyLevelService, ProficiencyScaleService, CardTeamService, CatalogService, CatalogInjectService, CatalogUnitService, CiteService, CiteActionService, CiteDutyService, DataFieldService, DataOptionService, DataValueService, GroupService, HealthCheckService, InjectService, InjectTypeService, InvitationService, MoveService, MselService, MselPageService, MselUnitService, OrganizationService, PlayerService, PlayerApplicationService, PlayerApplicationTeamService, ScenarioEventService, SystemPermissionsService, SystemRolesService, TeamService, TeamUserService, UnitService, UnitUserService, UserService, UserMselRoleService, UserTeamRoleService];

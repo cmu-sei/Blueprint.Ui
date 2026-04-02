@@ -102,6 +102,17 @@ project root for license information or contact permission@sei.cmu.edu for full 
         </button>
       </mat-list-item>
       }
+      @if (canViewCompetencyFrameworks) {
+      <!-- Competency Frameworks -->
+      <mat-list-item [ngClass]="getSelectedClass(competencyFrameworksText)" id="wrapper showhand"
+        (click)="gotoSection(competencyFrameworksText)">
+        <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-certificate-outline"></mat-icon>
+        {{ competencyFrameworksText }}
+        <button aria-labelledby="competencyFrameworksText" mat-icon-button class="pull-right">
+          <mat-icon fontIcon="mdi-chevron-right"></mat-icon>
+        </button>
+      </mat-list-item>
+      }
       <!-- Users -->
       @if (canViewUsers) {
       <mat-list-item [ngClass]="getSelectedClass(usersText)" id="wrapper showhand" (click)="gotoSection(usersText)">
@@ -177,6 +188,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <span>
       <app-admin-inject-types [loggedInUserId]="loggedInUserId"
         [canEdit]="canManageInjectTypes"></app-admin-inject-types>
+    </span>
+    }
+    @if (canViewCompetencyFrameworks && (selectedTab === competencyFrameworksText)) {
+    <span>
+      <app-admin-competency-frameworks [loggedInUserId]="loggedInUserId"
+        [canEdit]="canManageCompetencyFrameworks"></app-admin-competency-frameworks>
     </span>
     }
     @if (canViewCatalogs && (selectedTab === catalogsText)) {

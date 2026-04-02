@@ -106,6 +106,13 @@
   }
 }
 
+.description-column {
+  max-width: 400px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
+}
+
 .file-name {
   margin-left: 12px;
   font-size: 14px;

@@ -63,6 +63,11 @@ import { AdminCatalogListComponent } from './components/admin/admin-catalog-list
 import { AdminContainerComponent } from './components/admin/admin-container/admin-container.component';
 import { AdminInjectTypesComponent } from './components/admin/admin-inject-types/admin-inject-types.component';
 import { AdminInjectTypeEditDialogComponent } from './components/admin/admin-inject-type-edit-dialog/admin-inject-type-edit-dialog.component';
+import { AdminCompetencyFrameworksComponent } from './components/admin/admin-competency-frameworks/admin-competency-frameworks.component';
+import { AdminCompetencyFrameworkEditDialogComponent } from './components/admin/admin-competency-framework-edit-dialog/admin-competency-framework-edit-dialog.component';
+import { AdminProficiencyScaleEditDialogComponent } from './components/admin/admin-proficiency-scale-edit-dialog/admin-proficiency-scale-edit-dialog.component';
+import { AdminCompetencyElementEditDialogComponent } from './components/admin/admin-competency-element-edit-dialog/admin-competency-element-edit-dialog.component';
+import { AdminProficiencyLevelEditDialogComponent } from './components/admin/admin-proficiency-level-edit-dialog/admin-proficiency-level-edit-dialog.component';
 import { AdminUnitsComponent } from './components/admin/admin-units/admin-units.component';
 import { AdminUnitEditDialogComponent } from './components/admin/admin-unit-edit-dialog/admin-unit-edit-dialog.component';
 import { AdminUnitUsersComponent } from './components/admin/admin-unit-users/admin-unit-users.component';
@@ -221,6 +226,11 @@ export const appConfig: ApplicationConfig = {
     AdminContainerComponent,
     AdminInjectTypesComponent,
     AdminInjectTypeEditDialogComponent,
+    AdminCompetencyFrameworksComponent,
+    AdminCompetencyFrameworkEditDialogComponent,
+    AdminProficiencyScaleEditDialogComponent,
+    AdminCompetencyElementEditDialogComponent,
+    AdminProficiencyLevelEditDialogComponent,
     AdminUnitsComponent,
     AdminUnitEditDialogComponent,
     AdminUnitUsersComponent,
