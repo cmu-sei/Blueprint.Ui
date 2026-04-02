@@ -231,6 +231,15 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 </button>
                 }
               </mat-form-field>
+              <mat-form-field style="width: 150px; margin-left: 10px;">
+                <mat-label>Type</mat-label>
+                <mat-select [value]="elementTypeFilter" (selectionChange)="onElementTypeFilterChange($event.value)">
+                  <mat-option value="">All</mat-option>
+                  @for (t of elementTypes; track t) {
+                  <mat-option [value]="t">{{ t }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
               <div class="button-end">
                 <mat-paginator #elementPaginator [pageIndex]="0" [pageSize]="10"
                   [pageSizeOptions]="[10, 20, 50, 100, 200]"></mat-paginator>
@@ -274,6 +283,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 <ng-container matColumnDef="name">
                   <mat-header-cell mat-sort-header="name" *matHeaderCellDef class="el-col-name">Name</mat-header-cell>
                   <mat-cell *matCellDef="let el" class="el-col-name">{{ el.name }}</mat-cell>
+                </ng-container>
+                <!-- description column -->
+                <ng-container matColumnDef="description">
+                  <mat-header-cell mat-sort-header="description" *matHeaderCellDef class="el-col-desc">Description</mat-header-cell>
+                  <mat-cell *matCellDef="let el" class="el-col-desc">{{ el.description }}</mat-cell>
                 </ng-container>
                 <!-- row definitions -->
                 <mat-header-row *matHeaderRowDef="elementDisplayedColumns"></mat-header-row>

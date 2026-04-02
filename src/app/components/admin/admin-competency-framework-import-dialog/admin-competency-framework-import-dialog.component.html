@@ -9,11 +9,10 @@ project root for license information or contact permission@sei.cmu.edu for full 
 <div mat-dialog-content>
   <div class="upload-section">
     <p class="instructions">
-      Upload a NICE Framework JSON file. Both the 2017 and v1.0.0+ formats are supported.
+      Supported formats: NICE Framework JSON, DCWF XLSX
     </p>
     <input
       type="file"
-      accept=".json"
       (change)="onFileSelected($event)"
       #fileInput
       style="display: none" />

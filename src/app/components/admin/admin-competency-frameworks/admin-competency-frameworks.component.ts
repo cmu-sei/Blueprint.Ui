@@ -64,11 +64,13 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
   scaleDataSource = new MatTableDataSource<ProficiencyScale>([]);
   elementDataSource = new MatTableDataSource<CompetencyElement>([]);
   scaleDisplayedColumns: string[] = ['action', 'name', 'description', 'levels'];
-  elementDisplayedColumns: string[] = ['action', 'elementIdentifier', 'elementType', 'name'];
+  elementDisplayedColumns: string[] = ['action', 'elementIdentifier', 'elementType', 'name', 'description'];
   levelDisplayedColumns: string[] = ['action', 'name', 'value', 'displayOrder', 'description'];
   // Element search/filter
   elementFilterControl = new UntypedFormControl();
   elementFilterString = '';
+  elementTypeFilter = '';
+  elementTypes: string[] = [];
   // Scale expansion
   expandedScaleId = '';
   // Sub-table sorting
@@ -285,8 +287,16 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
     this.applyElementFilter();
   }
 
+  onElementTypeFilterChange(value: string) {
+    this.elementTypeFilter = value;
+    this.applyElementFilter();
+  }
+
   applyElementFilter() {
     let filtered = [...this.expandedElements];
+    if (this.elementTypeFilter) {
+      filtered = filtered.filter(el => el.elementType === this.elementTypeFilter);
+    }
     if (this.elementFilterString) {
       const fs = this.elementFilterString.toLowerCase();
       filtered = filtered.filter(el =>
@@ -430,10 +440,12 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
 
   loadElements(frameworkId: string) {
     this.elementFilterControl.setValue('');
+    this.elementTypeFilter = '';
     this.competencyElementService.getCompetencyElementsByFramework(frameworkId)
       .pipe(take(1))
       .subscribe(elements => {
         this.expandedElements = elements;
+        this.elementTypes = [...new Set(elements.map(e => e.elementType).filter(t => !!t))].sort();
         this.applyElementFilter();
         setTimeout(() => {
           if (this.elementPaginator) {

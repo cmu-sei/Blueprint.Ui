@@ -14,7 +14,7 @@
 }
 
 .expansion-panel {
-  width: 90%;
+  width: 100%;
   background-color: transparent;
   margin-bottom: 10px;
 }
@@ -71,7 +71,7 @@
   flex-direction: column;
   width: 100%;
   min-width: 660px;
-  padding: 8px 10px;
+  padding: 8px 0;
   gap: 8px;
 }
 
@@ -80,9 +80,8 @@
 }
 
 .expanded-detail-div {
-  width: calc(100% - 20px);
+  width: 100%;
   min-width: 660px;
-  margin-left: 20px;
   max-height: 500px;
   overflow: auto;
 }
@@ -128,15 +127,19 @@
 }
 
 .el-col-id {
-  flex: 1 1 20%;
+  flex: 0 0 8%;
 }
 
 .el-col-type {
-  flex: 0 0 12%;
+  flex: 0 0 10%;
 }
 
 .el-col-name {
-  flex: 2 1 50%;
+  flex: 1 1 25%;
+}
+
+.el-col-desc {
+  flex: 2 1 45%;
 }
 
 // Level sub-table column widths
