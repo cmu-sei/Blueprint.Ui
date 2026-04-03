@@ -1,0 +1,62 @@
+// Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+// Released under a MIT (SEI)-style license. See LICENSE.md in the
+// project root for license information.
+
+.integration-status-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  min-height: 300px;
+  padding: 24px;
+}
+
+.status-card {
+  text-align: center;
+  max-width: 500px;
+  width: 100%;
+}
+
+.status-heading {
+  margin-bottom: 24px;
+  font-weight: 500;
+  color: var(--sys-mat-on-surface);
+}
+
+.progress-bar {
+  margin-bottom: 16px;
+}
+
+.status-message {
+  font-size: 14px;
+  color: var(--sys-mat-on-surface);
+  margin-bottom: 24px;
+}
+
+.error-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--sys-mat-error, #d32f2f);
+  margin-bottom: 24px;
+  padding: 12px;
+  background-color: var(--sys-mat-error-container, #ffebee);
+  border-radius: 4px;
+}
+
+.error-icon {
+  color: var(--sys-mat-error, #d32f2f);
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.cancelling-text {
+  font-style: italic;
+  color: var(--sys-mat-on-surface);
+}
