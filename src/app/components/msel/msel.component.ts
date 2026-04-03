@@ -3,6 +3,8 @@
 // project root for license information.
 import { Component, EventEmitter, Input, OnDestroy, Output, ViewChild, ViewChildren, QueryList } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { DialogService } from 'src/app/services/dialog/dialog.service';
+import { MselInfoComponent } from '../msel-info/msel-info.component';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import {
@@ -50,6 +52,7 @@ export class MselComponent implements OnDestroy {
   @Output() deleteThisMsel = new EventEmitter<string>();
   @ViewChild('tabGroup0', { static: false }) tabGroup0: MatTabGroup;
   @ViewChildren('MatTab') tabs: QueryList<MatTab>;
+  @ViewChild(MselInfoComponent) mselInfoComponent: MselInfoComponent;
   tabList: string[] = [
     'Info',
     'Contributors',
@@ -118,7 +121,8 @@ export class MselComponent implements OnDestroy {
     private userDataService: UserDataService,
     private userMselRoleDataService: UserMselRoleDataService,
     private userTeamRoleDataService: UserTeamRoleDataService,
-    private authQuery: ComnAuthQuery
+    private authQuery: ComnAuthQuery,
+    private dialogService: DialogService
   ) {
     this.theme$ = this.authQuery.userTheme$;
     // subscribe to route changes
@@ -201,14 +205,49 @@ export class MselComponent implements OnDestroy {
   }
 
   tabChange(tabName: string) {
-    if (tabName === 'Back') {
+    const doTabChange = () => {
+      if (tabName === 'Back') {
+        this.uiDataService.setMselTab(this.defaultTab);
+        this.router.navigate([], {
+          queryParams: {},
+        });
+      } else {
+        this.uiDataService.setMselTab(tabName);
+        this.selectedTab = tabName;
+      }
+    };
+
+    if (this.selectedTab === 'Info' && tabName !== 'Info' && this.mselInfoComponent?.hasPendingChanges()) {
+      this.dialogService
+        .confirm('Unsaved Changes', 'You have unsaved changes on the MSEL Info page. Are you sure you want to discard them?')
+        .subscribe((result) => {
+          if (result['confirm']) {
+            doTabChange();
+          }
+        });
+    } else {
+      doTabChange();
+    }
+  }
+
+  navigateBack() {
+    const doNavigate = () => {
       this.uiDataService.setMselTab(this.defaultTab);
       this.router.navigate([], {
         queryParams: {},
       });
+    };
+
+    if (this.selectedTab === 'Info' && this.mselInfoComponent?.hasPendingChanges()) {
+      this.dialogService
+        .confirm('Unsaved Changes', 'You have unsaved changes on the MSEL Info page. Are you sure you want to discard them?')
+        .subscribe((result) => {
+          if (result['confirm']) {
+            doNavigate();
+          }
+        });
     } else {
-      this.uiDataService.setMselTab(tabName);
-      this.selectedTab = tabName;
+      doNavigate();
     }
   }
 
