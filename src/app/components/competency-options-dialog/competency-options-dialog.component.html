@@ -32,43 +32,32 @@ project root for license information or contact permission@sei.cmu.edu for full 
 <div class="filter-section">
   <mat-form-field class="search-field">
     <mat-label>Search</mat-label>
-    <input matInput [(ngModel)]="searchText" placeholder="Filter by ID, type, name, or description">
+    <input matInput [(ngModel)]="searchText" placeholder="Filter by ID, name, or description">
     @if (searchText) {
     <button matSuffix mat-icon-button (click)="searchText = ''" title="Clear search">
       <mat-icon fontIcon="mdi-close"></mat-icon>
     </button>
     }
   </mat-form-field>
-  @if (availableTypes.length > 0) {
-  <mat-form-field class="type-filter-field">
-    <mat-label>Type</mat-label>
-    <mat-select [(ngModel)]="typeFilter">
-      <mat-option value="">All</mat-option>
-      @for (t of availableTypes; track t) {
-      <mat-option [value]="t">{{ t }}</mat-option>
-      }
-    </mat-select>
-  </mat-form-field>
-  }
 </div>
 
 <!-- Bulk actions -->
 @if (data.canEdit) {
 <div class="action-buttons">
-  <button mat-stroked-button (click)="selectAll()" title="Select all elements">
+  <button mat-stroked-button (click)="selectAll()" title="Select all competencies">
     Select All
   </button>
-  <button mat-stroked-button (click)="deselectAll()" title="Deselect all elements" style="margin-left: 8px;">
+  <button mat-stroked-button (click)="deselectAll()" title="Deselect all competencies" style="margin-left: 8px;">
     Deselect All
   </button>
-  <span class="selection-count">{{ selectedCount }} of {{ elements.length }} selected</span>
+  <span class="selection-count">{{ selectedCount }} of {{ competencies.length }} selected</span>
 </div>
 }
 
-<!-- Elements table -->
+<!-- Competencies table -->
 <div mat-dialog-content class="table-content">
   @if (loading) {
-  <div class="loading-message">Loading elements...</div>
+  <div class="loading-message">Loading competencies...</div>
   } @else {
   <table class="element-table">
     <thead>
@@ -83,27 +72,25 @@ project root for license information or contact permission@sei.cmu.edu for full 
         </th>
         }
         <th>ID</th>
-        <th>Type</th>
         <th>Name</th>
         <th>Description</th>
       </tr>
     </thead>
     <tbody>
-      @for (el of filteredElements; track el.elementIdentifier) {
-      <tr (click)="data.canEdit && toggleElement(el)" [class.clickable-row]="data.canEdit" [class.selected-row]="isSelected(el)">
+      @for (c of filteredCompetencies; track c.idNumber) {
+      <tr (click)="data.canEdit && toggleCompetency(c)" [class.clickable-row]="data.canEdit" [class.selected-row]="isSelected(c)">
         @if (data.canEdit) {
         <td class="check-column">
           <mat-checkbox
-            [checked]="isSelected(el)"
+            [checked]="isSelected(c)"
             (click)="$event.stopPropagation()"
-            (change)="toggleElement(el)">
+            (change)="toggleCompetency(c)">
           </mat-checkbox>
         </td>
         }
-        <td class="id-column">{{ el.elementIdentifier }}</td>
-        <td>{{ el.elementType }}</td>
-        <td>{{ el.name }}</td>
-        <td class="description-column">{{ el.description }}</td>
+        <td class="id-column">{{ c.idNumber }}</td>
+        <td>{{ c.shortName }}</td>
+        <td class="description-column">{{ c.description }}</td>
       </tr>
       }
     </tbody>

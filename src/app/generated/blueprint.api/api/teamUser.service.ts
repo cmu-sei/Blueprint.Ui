@@ -1,9 +1,3 @@
-/*
- Copyright 2026 Carnegie Mellon University. All Rights Reserved.
- Released under a MIT (SEI)-style license. See LICENSE.md in the
- project root for license information.
-*/
-
 /**
  * Blueprint API
  *
@@ -45,7 +39,7 @@ export class TeamUserService extends BaseService {
 
     /**
      * Creates a new TeamUser
-     * Creates a new TeamUser with the attributes specified &lt;para /&gt; Accessible only to a SuperUser
+     * Creates a new TeamUser with the attributes specified &lt;para /&gt; Accessible to a SuperUser or a MSEL Owner
      * @param teamUser The data to create the TeamUser with
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
@@ -114,7 +108,7 @@ export class TeamUserService extends BaseService {
 
     /**
      * Deletes a TeamUser
-     * Deletes a TeamUser with the specified id &lt;para /&gt; Accessible only to a SuperUser
+     * Deletes a TeamUser with the specified id &lt;para /&gt; Accessible to a SuperUser or a MSEL Owner
      * @param id The id of the TeamUser to delete
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
@@ -172,7 +166,7 @@ export class TeamUserService extends BaseService {
 
     /**
      * Deletes a TeamUser by user ID and team ID
-     * Deletes a TeamUser with the specified user ID and team ID &lt;para /&gt; Accessible only to a SuperUser
+     * Deletes a TeamUser with the specified user ID and team ID &lt;para /&gt; Accessible to a SuperUser or a MSEL Owner
      * @param teamId ID of a team.
      * @param userId ID of a user.
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.

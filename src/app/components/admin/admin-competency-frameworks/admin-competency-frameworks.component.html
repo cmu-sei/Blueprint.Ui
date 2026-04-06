@@ -99,202 +99,89 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <mat-cell class="expanded-detail-cell" *matCellDef="let element" [attr.colspan]="displayedColumns.length">
         <div [@detailExpand]="element.id == expandedElementId ? 'expanded' : 'collapsed'" style="overflow: hidden">
           @if (expandedElementId === element.id) {
+          <!-- Competencies -->
           <mat-expansion-panel class="expansion-panel">
             <mat-expansion-panel-header class="expansion-panel-header">
-              Proficiency Scales
-            </mat-expansion-panel-header>
-            <div class="expanded-detail-div">
-              <mat-table [dataSource]="scaleDataSource" matSort #scaleTableSort="matSort" (matSortChange)="scaleSortChanged($event)">
-                <!-- action column -->
-                <ng-container matColumnDef="action">
-                  <mat-header-cell *matHeaderCellDef class="sub-col-action">
-                    @if (canEdit) {
-                    <button mat-icon-button (click)="addOrEditScale(null); $event.stopPropagation();" title="Add proficiency scale" style="outline: none;">
-                      <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle"></mat-icon>
-                    </button>
-                    } &nbsp;
-                  </mat-header-cell>
-                  <mat-cell *matCellDef="let scale" class="sub-col-action">
-                    @if (canEdit) {
-                    <button mat-icon-button class="msel-action" (click)="addOrEditScale(scale); $event.stopPropagation();"
-                      title="Edit {{ scale.name }}">
-                      <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline"></mat-icon>
-                    </button>
-                    <button mat-icon-button class="msel-action" (click)="deleteScale(scale); $event.stopPropagation();"
-                      title="Delete {{ scale.name }}">
-                      <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline"></mat-icon>
-                    </button>
-                    }
-                  </mat-cell>
-                </ng-container>
-                <!-- name column -->
-                <ng-container matColumnDef="name">
-                  <mat-header-cell mat-sort-header="name" *matHeaderCellDef class="sub-col-name">Name</mat-header-cell>
-                  <mat-cell *matCellDef="let scale" class="sub-col-name">{{ scale.name }}</mat-cell>
-                </ng-container>
-                <!-- description column -->
-                <ng-container matColumnDef="description">
-                  <mat-header-cell mat-sort-header="description" *matHeaderCellDef class="sub-col-desc">Description</mat-header-cell>
-                  <mat-cell *matCellDef="let scale" class="sub-col-desc">{{ scale.description }}</mat-cell>
-                </ng-container>
-                <!-- levels column -->
-                <ng-container matColumnDef="levels">
-                  <mat-header-cell *matHeaderCellDef class="sub-col-levels">Levels</mat-header-cell>
-                  <mat-cell *matCellDef="let scale" class="sub-col-levels">{{ scale.proficiencyLevels?.length || 0 }}</mat-cell>
-                </ng-container>
-                <!-- row definitions -->
-                <mat-header-row *matHeaderRowDef="scaleDisplayedColumns"></mat-header-row>
-                <mat-row *matRowDef="let row; columns: scaleDisplayedColumns;" (click)="toggleScaleExpand(row.id); $event.stopPropagation();"
-                  [class]="expandedScaleId === row.id ? 'element-row element-row-expanded' : 'element-row'">
-                </mat-row>
-              </mat-table>
-              <!-- Expanded scale levels -->
-              @if (expandedScaleId) {
-              @for (scale of expandedScales; track scale.id) {
-                @if (expandedScaleId === scale.id) {
-                <div class="levels-detail">
-                  <div class="levels-title">
-                    Levels for "{{ scale.name }}"
-                  </div>
-                  <mat-table [dataSource]="getLevelDataSource(scale)" matSort (matSortChange)="levelSortChanged($event)">
-                    <!-- action column -->
-                    <ng-container matColumnDef="action">
-                      <mat-header-cell *matHeaderCellDef class="sub-col-action">
-                        @if (canEdit) {
-                        <button mat-icon-button (click)="addOrEditLevel(scale, null); $event.stopPropagation();" title="Add level" style="outline: none;">
-                          <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle"></mat-icon>
-                        </button>
-                        } &nbsp;
-                      </mat-header-cell>
-                      <mat-cell *matCellDef="let level" class="sub-col-action">
-                        @if (canEdit) {
-                        <button mat-icon-button class="msel-action" (click)="addOrEditLevel(scale, level); $event.stopPropagation();"
-                          title="Edit {{ level.name }}">
-                          <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline"></mat-icon>
-                        </button>
-                        <button mat-icon-button class="msel-action" (click)="deleteLevel(scale, level); $event.stopPropagation();"
-                          title="Delete {{ level.name }}">
-                          <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline"></mat-icon>
-                        </button>
-                        }
-                      </mat-cell>
-                    </ng-container>
-                    <!-- name column -->
-                    <ng-container matColumnDef="name">
-                      <mat-header-cell mat-sort-header="name" *matHeaderCellDef class="lv-col-name">Name</mat-header-cell>
-                      <mat-cell *matCellDef="let level" class="lv-col-name">{{ level.name }}</mat-cell>
-                    </ng-container>
-                    <!-- value column -->
-                    <ng-container matColumnDef="value">
-                      <mat-header-cell mat-sort-header="value" *matHeaderCellDef class="lv-col-value">Value</mat-header-cell>
-                      <mat-cell *matCellDef="let level" class="lv-col-value">{{ level.value }}</mat-cell>
-                    </ng-container>
-                    <!-- displayOrder column -->
-                    <ng-container matColumnDef="displayOrder">
-                      <mat-header-cell mat-sort-header="displayOrder" *matHeaderCellDef class="lv-col-order">Order</mat-header-cell>
-                      <mat-cell *matCellDef="let level" class="lv-col-order">{{ level.displayOrder }}</mat-cell>
-                    </ng-container>
-                    <!-- description column -->
-                    <ng-container matColumnDef="description">
-                      <mat-header-cell mat-sort-header="description" *matHeaderCellDef class="lv-col-desc">Description</mat-header-cell>
-                      <mat-cell *matCellDef="let level" class="lv-col-desc">{{ level.description }}</mat-cell>
-                    </ng-container>
-                    <!-- row definitions -->
-                    <mat-header-row *matHeaderRowDef="levelDisplayedColumns"></mat-header-row>
-                    <mat-row *matRowDef="let row; columns: levelDisplayedColumns;"></mat-row>
-                  </mat-table>
-                  @if (scale.proficiencyLevels?.length === 0) {
-                    <div class="no-results-inline">No levels defined</div>
-                  }
-                </div>
-                }
-              }
-              }
-              @if (scaleDataSource.data.length === 0) {
-                <div class="no-results-inline">No proficiency scales defined</div>
-              }
-            </div>
-          </mat-expansion-panel>
-          }
-          @if (expandedElementId === element.id) {
-          <!-- Competency Elements -->
-          <mat-expansion-panel class="expansion-panel">
-            <mat-expansion-panel-header class="expansion-panel-header">
-              Competency Elements ({{ expandedElements.length }})
+              Competencies ({{ expandedCompetencies.length }})
             </mat-expansion-panel-header>
             <div class="element-toolbar" (click)="$event.stopPropagation();">
               <mat-form-field style="width: 250px; margin-left: 10px;">
-                <input matInput [formControl]="elementFilterControl" placeholder="Search elements" />
-                @if (elementFilterString) {
-                <button mat-icon-button matSuffix (click)="elementFilterControl.setValue('')" title="Clear Search">
+                <input matInput [formControl]="competencyFilterControl" placeholder="Search competencies" />
+                @if (competencyFilterString) {
+                <button mat-icon-button matSuffix (click)="competencyFilterControl.setValue('')" title="Clear Search">
                   <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline"></mat-icon>
                 </button>
                 }
               </mat-form-field>
-              <mat-form-field style="width: 150px; margin-left: 10px;">
+              @if (competencyTypes.length > 1) {
+              <mat-form-field style="width: 180px; margin-left: 10px;">
                 <mat-label>Type</mat-label>
-                <mat-select [value]="elementTypeFilter" (selectionChange)="onElementTypeFilterChange($event.value)">
+                <mat-select [value]="selectedCompetencyType" (selectionChange)="onTypeFilterChange($event.value)">
                   <mat-option value="">All</mat-option>
-                  @for (t of elementTypes; track t) {
+                  @for (t of competencyTypes; track t) {
                   <mat-option [value]="t">{{ t }}</mat-option>
                   }
                 </mat-select>
               </mat-form-field>
+              }
               <div class="button-end">
-                <mat-paginator #elementPaginator [pageIndex]="0" [pageSize]="10"
+                <mat-paginator #competencyPaginator [pageIndex]="0" [pageSize]="10"
                   [pageSizeOptions]="[10, 20, 50, 100, 200]"></mat-paginator>
               </div>
             </div>
             <div class="expanded-detail-div">
-              <mat-table [dataSource]="elementDataSource" matSort #elementTableSort="matSort" (matSortChange)="elementSortChanged($event)">
+              <mat-table [dataSource]="competencyDataSource" matSort #competencyTableSort="matSort" (matSortChange)="competencySortChanged($event)">
                 <!-- action column -->
                 <ng-container matColumnDef="action">
-                  <mat-header-cell *matHeaderCellDef class="sub-col-action">
+                  <mat-header-cell *matHeaderCellDef class="comp-col-action">
                     @if (canEdit) {
-                    <button mat-icon-button (click)="addOrEditElement(null); $event.stopPropagation();" title="Add competency element" style="outline: none;">
-                      <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle"></mat-icon>
+                    <button mat-icon-button (click)="addOrEditCompetency(null); $event.stopPropagation();" title="Add competency">
+                      <mat-icon class="mdi-18px" fontIcon="mdi-plus-circle"></mat-icon>
                     </button>
-                    } &nbsp;
+                    }
                   </mat-header-cell>
-                  <mat-cell *matCellDef="let el" class="sub-col-action">
+                  <mat-cell *matCellDef="let c" class="comp-col-action">
                     @if (canEdit) {
-                    <button mat-icon-button class="msel-action" (click)="addOrEditElement(el); $event.stopPropagation();"
-                      title="Edit {{ el.name }}">
+                    <button mat-icon-button class="msel-action" (click)="addOrEditCompetency(c); $event.stopPropagation();" title="Edit {{ c.idNumber }}">
                       <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline"></mat-icon>
                     </button>
-                    <button mat-icon-button class="msel-action" (click)="deleteElement(el); $event.stopPropagation();"
-                      title="Delete {{ el.name }}">
+                    <button mat-icon-button class="msel-action" (click)="deleteCompetency(c); $event.stopPropagation();" title="Delete {{ c.idNumber }}">
                       <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline"></mat-icon>
                     </button>
                     }
                   </mat-cell>
                 </ng-container>
-                <!-- elementIdentifier column -->
-                <ng-container matColumnDef="elementIdentifier">
-                  <mat-header-cell mat-sort-header="elementIdentifier" *matHeaderCellDef class="el-col-id">Identifier</mat-header-cell>
-                  <mat-cell *matCellDef="let el" class="el-col-id">{{ el.elementIdentifier }}</mat-cell>
+                <!-- idNumber column -->
+                <ng-container matColumnDef="idNumber">
+                  <mat-header-cell mat-sort-header="idNumber" *matHeaderCellDef class="comp-col-id">ID</mat-header-cell>
+                  <mat-cell *matCellDef="let c" class="comp-col-id">{{ c.idNumber }}</mat-cell>
                 </ng-container>
-                <!-- elementType column -->
-                <ng-container matColumnDef="elementType">
-                  <mat-header-cell mat-sort-header="elementType" *matHeaderCellDef class="el-col-type">Type</mat-header-cell>
-                  <mat-cell *matCellDef="let el" class="el-col-type">{{ el.elementType }}</mat-cell>
+                <!-- type column -->
+                <ng-container matColumnDef="type">
+                  <mat-header-cell mat-sort-header="type" *matHeaderCellDef class="comp-col-type">Type</mat-header-cell>
+                  <mat-cell *matCellDef="let c" class="comp-col-type">{{ getCompetencyType(c) }}</mat-cell>
                 </ng-container>
-                <!-- name column -->
-                <ng-container matColumnDef="name">
-                  <mat-header-cell mat-sort-header="name" *matHeaderCellDef class="el-col-name">Name</mat-header-cell>
-                  <mat-cell *matCellDef="let el" class="el-col-name">{{ el.name }}</mat-cell>
+                <!-- shortName column -->
+                <ng-container matColumnDef="shortName">
+                  <mat-header-cell mat-sort-header="shortName" *matHeaderCellDef class="comp-col-name">Short Name</mat-header-cell>
+                  <mat-cell *matCellDef="let c" class="comp-col-name">{{ c.shortName }}</mat-cell>
                 </ng-container>
                 <!-- description column -->
                 <ng-container matColumnDef="description">
-                  <mat-header-cell mat-sort-header="description" *matHeaderCellDef class="el-col-desc">Description</mat-header-cell>
-                  <mat-cell *matCellDef="let el" class="el-col-desc">{{ el.description }}</mat-cell>
+                  <mat-header-cell mat-sort-header="description" *matHeaderCellDef class="comp-col-desc">Description</mat-header-cell>
+                  <mat-cell *matCellDef="let c" class="comp-col-desc">{{ c.description }}</mat-cell>
+                </ng-container>
+                <!-- relatedIdNumbers column -->
+                <ng-container matColumnDef="relatedIdNumbers">
+                  <mat-header-cell *matHeaderCellDef class="comp-col-related">Related</mat-header-cell>
+                  <mat-cell *matCellDef="let c" class="comp-col-related">{{ c.relatedIdNumbers?.join(', ') }}</mat-cell>
                 </ng-container>
                 <!-- row definitions -->
-                <mat-header-row *matHeaderRowDef="elementDisplayedColumns"></mat-header-row>
-                <mat-row *matRowDef="let row; columns: elementDisplayedColumns;"></mat-row>
+                <mat-header-row *matHeaderRowDef="competencyDisplayedColumns"></mat-header-row>
+                <mat-row *matRowDef="let row; columns: competencyDisplayedColumns;"></mat-row>
               </mat-table>
-              @if (elementDataSource.filteredData.length === 0) {
-                <div class="no-results-inline">No competency elements found</div>
+              @if (competencyDataSource.filteredData.length === 0) {
+                <div class="no-results-inline">No competencies found</div>
               }
             </div>
           </mat-expansion-panel>

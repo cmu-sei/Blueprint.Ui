@@ -1,9 +1,3 @@
-/*
- Copyright 2026 Carnegie Mellon University. All Rights Reserved.
- Released under a MIT (SEI)-style license. See LICENSE.md in the
- project root for license information.
-*/
-
 export * from './applicationTemplate';
 export * from './assembly';
 export * from './calendar';
@@ -17,9 +11,10 @@ export * from './catalogInject';
 export * from './catalogUnit';
 export * from './citeAction';
 export * from './citeDuty';
+export * from './compareInfo';
+export * from './competency';
 export * from './competencyElement';
 export * from './competencyFramework';
-export * from './compareInfo';
 export * from './constructorInfo';
 export * from './createFromInjectsForm';
 export * from './cultureInfo';
@@ -79,11 +74,11 @@ export * from './organization';
 export * from './parameterAttributes';
 export * from './parameterInfo';
 export * from './permission';
-export * from './proficiencyLevel';
-export * from './proficiencyScale';
 export * from './playerApplication';
 export * from './playerApplicationTeam';
 export * from './problemDetails';
+export * from './proficiencyLevel';
+export * from './proficiencyScale';
 export * from './propertyAttributes';
 export * from './propertyInfo';
 export * from './rightSideDisplay';
@@ -108,6 +103,7 @@ export * from './structLayoutAttribute';
 export * from './systemPermission';
 export * from './systemRole';
 export * from './team';
+export * from './teamPermission';
 export * from './teamRole';
 export * from './teamType';
 export * from './teamUser';

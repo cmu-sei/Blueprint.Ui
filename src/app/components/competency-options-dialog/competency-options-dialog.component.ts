@@ -9,8 +9,8 @@ import { filter, take, takeUntil } from 'rxjs/operators';
 import {
   DataOption,
   CompetencyFramework,
-  CompetencyElement,
-  CompetencyElementService,
+  Competency,
+  CompetencyFrameworkService,
 } from 'src/app/generated/blueprint.api';
 import { CompetencyFrameworkQuery } from 'src/app/data/competency-framework/competency-framework.query';
 import { CompetencyFrameworkDataService } from 'src/app/data/competency-framework/competency-framework-data.service';
@@ -24,11 +24,10 @@ import { v4 as uuidv4 } from 'uuid';
 })
 export class CompetencyOptionsDialogComponent implements OnDestroy {
   searchText = '';
-  typeFilter = '';
   frameworks: CompetencyFramework[] = [];
   selectedFramework: CompetencyFramework | null = null;
-  elements: CompetencyElement[] = [];
-  selected = new Set<string>(); // tracks by elementIdentifier
+  competencies: Competency[] = [];
+  selected = new Set<string>(); // tracks by idNumber
   loading = false;
   private unsubscribe$ = new Subject();
 
@@ -36,7 +35,7 @@ export class CompetencyOptionsDialogComponent implements OnDestroy {
     public dialogRef: MatDialogRef<CompetencyOptionsDialogComponent>,
     private competencyFrameworkQuery: CompetencyFrameworkQuery,
     private competencyFrameworkDataService: CompetencyFrameworkDataService,
-    private competencyElementService: CompetencyElementService,
+    private competencyFrameworkService: CompetencyFrameworkService,
     @Inject(MAT_DIALOG_DATA) public data: {
       dataFieldId: string;
       dataOptions: DataOption[];
@@ -55,12 +54,10 @@ export class CompetencyOptionsDialogComponent implements OnDestroy {
       take(1)
     ).subscribe(fw => {
       this.frameworks = fw;
-      // Auto-select if only one framework
       if (fw.length === 1) {
         this.selectFramework(fw[0]);
       }
     });
-    // Keep frameworks list updated
     this.competencyFrameworkQuery.selectAll().pipe(
       takeUntil(this.unsubscribe$)
     ).subscribe(fw => {
@@ -81,41 +78,28 @@ export class CompetencyOptionsDialogComponent implements OnDestroy {
     this.selectedFramework = fw;
     this.loading = true;
     this.searchText = '';
-    this.typeFilter = '';
-    this.competencyElementService.getCompetencyElementsByFramework(fw.id)
+    this.competencyFrameworkService.getCompetencyFramework(fw.id)
       .pipe(take(1))
       .subscribe({
-        next: (elements) => {
-          this.elements = elements;
+        next: (framework) => {
+          this.competencies = framework.competencies || [];
           this.loading = false;
         },
         error: () => {
-          this.elements = [];
+          this.competencies = [];
           this.loading = false;
         }
       });
   }
 
-  get availableTypes(): string[] {
-    const types = new Set<string>();
-    for (const el of this.elements) {
-      if (el.elementType) types.add(el.elementType);
-    }
-    return [...types].sort();
-  }
-
-  get filteredElements(): CompetencyElement[] {
-    let results = this.elements;
-    if (this.typeFilter) {
-      results = results.filter(el => el.elementType === this.typeFilter);
-    }
+  get filteredCompetencies(): Competency[] {
+    let results = this.competencies;
     if (this.searchText) {
       const s = this.searchText.toLowerCase();
-      results = results.filter(el =>
-        el.elementIdentifier?.toLowerCase().includes(s) ||
-        el.elementType?.toLowerCase().includes(s) ||
-        el.name?.toLowerCase().includes(s) ||
-        el.description?.toLowerCase().includes(s)
+      results = results.filter(c =>
+        c.idNumber?.toLowerCase().includes(s) ||
+        c.shortName?.toLowerCase().includes(s) ||
+        c.description?.toLowerCase().includes(s)
       );
     }
     return results;
@@ -126,44 +110,44 @@ export class CompetencyOptionsDialogComponent implements OnDestroy {
   }
 
   get allFilteredSelected(): boolean {
-    const filtered = this.filteredElements;
-    return filtered.length > 0 && filtered.every(el => this.selected.has(el.elementIdentifier));
+    const filtered = this.filteredCompetencies;
+    return filtered.length > 0 && filtered.every(c => this.selected.has(c.idNumber));
   }
 
   get someFilteredSelected(): boolean {
-    const filtered = this.filteredElements;
-    const some = filtered.some(el => this.selected.has(el.elementIdentifier));
-    const all = filtered.every(el => this.selected.has(el.elementIdentifier));
+    const filtered = this.filteredCompetencies;
+    const some = filtered.some(c => this.selected.has(c.idNumber));
+    const all = filtered.every(c => this.selected.has(c.idNumber));
     return some && !all;
   }
 
-  isSelected(el: CompetencyElement): boolean {
-    return this.selected.has(el.elementIdentifier);
+  isSelected(c: Competency): boolean {
+    return this.selected.has(c.idNumber);
   }
 
   toggleAll(): void {
     if (this.allFilteredSelected) {
-      for (const el of this.filteredElements) {
-        this.selected.delete(el.elementIdentifier);
+      for (const c of this.filteredCompetencies) {
+        this.selected.delete(c.idNumber);
       }
     } else {
-      for (const el of this.filteredElements) {
-        this.selected.add(el.elementIdentifier);
+      for (const c of this.filteredCompetencies) {
+        this.selected.add(c.idNumber);
       }
     }
   }
 
-  toggleElement(el: CompetencyElement): void {
-    if (this.selected.has(el.elementIdentifier)) {
-      this.selected.delete(el.elementIdentifier);
+  toggleCompetency(c: Competency): void {
+    if (this.selected.has(c.idNumber)) {
+      this.selected.delete(c.idNumber);
     } else {
-      this.selected.add(el.elementIdentifier);
+      this.selected.add(c.idNumber);
     }
   }
 
   selectAll(): void {
-    for (const el of this.elements) {
-      this.selected.add(el.elementIdentifier);
+    for (const c of this.competencies) {
+      this.selected.add(c.idNumber);
     }
   }
 
@@ -172,31 +156,29 @@ export class CompetencyOptionsDialogComponent implements OnDestroy {
   }
 
   handleClose() {
-    // Build new dataOptions from selected elements
-    const elementMap = new Map<string, CompetencyElement>();
-    for (const el of this.elements) {
-      elementMap.set(el.elementIdentifier, el);
+    const competencyMap = new Map<string, Competency>();
+    for (const c of this.competencies) {
+      competencyMap.set(c.idNumber, c);
     }
-    // Also keep existing option data for elements we still have selected
     const existingMap = new Map<string, DataOption>();
     for (const opt of this.data.dataOptions) {
       existingMap.set(opt.optionName, opt);
     }
     const newOptions: DataOption[] = [];
     let order = 1;
-    for (const identifier of this.selected) {
-      const existing = existingMap.get(identifier);
+    for (const idNumber of this.selected) {
+      const existing = existingMap.get(idNumber);
       if (existing) {
         newOptions.push({ ...existing, displayOrder: order++ });
       } else {
-        const el = elementMap.get(identifier);
-        if (el) {
+        const c = competencyMap.get(idNumber);
+        if (c) {
           newOptions.push({
             id: uuidv4(),
             dataFieldId: this.data.dataFieldId,
-            optionName: el.elementIdentifier,
-            optionValue: el.name,
-            optionDescription: el.description,
+            optionName: c.idNumber,
+            optionValue: c.shortName,
+            optionDescription: c.description,
             displayOrder: order++,
           });
         }

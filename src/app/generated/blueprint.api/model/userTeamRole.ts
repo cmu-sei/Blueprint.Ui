@@ -1,9 +1,3 @@
-/*
- Copyright 2026 Carnegie Mellon University. All Rights Reserved.
- Released under a MIT (SEI)-style license. See LICENSE.md in the
- project root for license information.
-*/
-
 /**
  * Blueprint API
  *
@@ -13,7 +7,9 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-export interface UserTeamRole {
+
+
+export interface UserTeamRole { 
     dateCreated?: Date;
     dateModified?: Date | null;
     createdBy?: string;
@@ -21,7 +17,6 @@ export interface UserTeamRole {
     id?: string;
     teamId?: string;
     userId?: string;
-    role?: string;
+    role?: string | null;
 }
-
 

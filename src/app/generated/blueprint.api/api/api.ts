@@ -1,19 +1,5 @@
-/*
- Copyright 2026 Carnegie Mellon University. All Rights Reserved.
- Released under a MIT (SEI)-style license. See LICENSE.md in the
- project root for license information.
-*/
-
 export * from './card.service';
 import { CardService } from './card.service';
-export * from './competencyElement.service';
-import { CompetencyElementService } from './competencyElement.service';
-export * from './competencyFramework.service';
-import { CompetencyFrameworkService } from './competencyFramework.service';
-export * from './proficiencyLevel.service';
-import { ProficiencyLevelService } from './proficiencyLevel.service';
-export * from './proficiencyScale.service';
-import { ProficiencyScaleService } from './proficiencyScale.service';
 export * from './cardTeam.service';
 import { CardTeamService } from './cardTeam.service';
 export * from './catalog.service';
@@ -28,6 +14,10 @@ export * from './citeAction.service';
 import { CiteActionService } from './citeAction.service';
 export * from './citeDuty.service';
 import { CiteDutyService } from './citeDuty.service';
+export * from './competencyElement.service';
+import { CompetencyElementService } from './competencyElement.service';
+export * from './competencyFramework.service';
+import { CompetencyFrameworkService } from './competencyFramework.service';
 export * from './dataField.service';
 import { DataFieldService } from './dataField.service';
 export * from './dataOption.service';
@@ -60,6 +50,10 @@ export * from './playerApplication.service';
 import { PlayerApplicationService } from './playerApplication.service';
 export * from './playerApplicationTeam.service';
 import { PlayerApplicationTeamService } from './playerApplicationTeam.service';
+export * from './proficiencyLevel.service';
+import { ProficiencyLevelService } from './proficiencyLevel.service';
+export * from './proficiencyScale.service';
+import { ProficiencyScaleService } from './proficiencyScale.service';
 export * from './scenarioEvent.service';
 import { ScenarioEventService } from './scenarioEvent.service';
 export * from './systemPermissions.service';
@@ -80,4 +74,4 @@ export * from './userMselRole.service';
 import { UserMselRoleService } from './userMselRole.service';
 export * from './userTeamRole.service';
 import { UserTeamRoleService } from './userTeamRole.service';
-export const APIS = [CardService, CompetencyElementService, CompetencyFrameworkService, ProficiencyLevelService, ProficiencyScaleService, CardTeamService, CatalogService, CatalogInjectService, CatalogUnitService, CiteService, CiteActionService, CiteDutyService, DataFieldService, DataOptionService, DataValueService, GroupService, HealthCheckService, InjectService, InjectTypeService, InvitationService, MoveService, MselService, MselPageService, MselUnitService, OrganizationService, PlayerService, PlayerApplicationService, PlayerApplicationTeamService, ScenarioEventService, SystemPermissionsService, SystemRolesService, TeamService, TeamUserService, UnitService, UnitUserService, UserService, UserMselRoleService, UserTeamRoleService];
+export const APIS = [CardService, CardTeamService, CatalogService, CatalogInjectService, CatalogUnitService, CiteService, CiteActionService, CiteDutyService, CompetencyElementService, CompetencyFrameworkService, DataFieldService, DataOptionService, DataValueService, GroupService, HealthCheckService, InjectService, InjectTypeService, InvitationService, MoveService, MselService, MselPageService, MselUnitService, OrganizationService, PlayerService, PlayerApplicationService, PlayerApplicationTeamService, ProficiencyLevelService, ProficiencyScaleService, ScenarioEventService, SystemPermissionsService, SystemRolesService, TeamService, TeamUserService, UnitService, UnitUserService, UserService, UserMselRoleService, UserTeamRoleService];

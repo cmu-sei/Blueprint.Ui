@@ -1,9 +1,3 @@
-/*
- Copyright 2026 Carnegie Mellon University. All Rights Reserved.
- Released under a MIT (SEI)-style license. See LICENSE.md in the
- project root for license information.
-*/
-
 /**
  * Blueprint API
  *
@@ -13,7 +7,12 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
+import { TeamPermission } from './teamPermission';
 
 
-export type TeamRole = string;
+export interface TeamRole { 
+    id?: string;
+    name?: string | null;
+    permissions?: Array<TeamPermission> | null;
+}
 

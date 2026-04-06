@@ -4,12 +4,20 @@
 
 import { Component, EventEmitter, Output } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
-import { CompetencyFramework, CompetencyElement } from 'src/app/generated/blueprint.api';
+import { CompetencyFramework, Competency } from 'src/app/generated/blueprint.api';
 import * as XLSX from 'xlsx';
 
 interface ElementTypeCount {
   type: string;
   count: number;
+}
+
+export interface ImportResult {
+  type: 'csv' | 'json' | 'parsed';
+  file?: File;
+  source: string;
+  version: string;
+  framework?: CompetencyFramework;
 }
 
 @Component({
@@ -19,13 +27,19 @@ interface ElementTypeCount {
     standalone: false
 })
 export class AdminCompetencyFrameworkImportDialogComponent {
-  @Output() importComplete = new EventEmitter<CompetencyFramework | null>();
+  @Output() importComplete = new EventEmitter<ImportResult | null>();
   fileName = '';
   parseError = '';
+  source = '';
+  version = '';
+  selectedFile: File | null = null;
+  fileType: 'csv' | 'json' | 'xlsx' | null = null;
   framework: CompetencyFramework | null = null;
   elementTypeCounts: ElementTypeCount[] = [];
   totalElements = 0;
   skippedTypes = ['sort', 'opm_code'];
+  totalRelationships = 0;
+  jsonPreviewName = '';
 
   constructor(
     public dialogRef: MatDialogRef<AdminCompetencyFrameworkImportDialogComponent>
@@ -40,8 +54,35 @@ export class AdminCompetencyFrameworkImportDialogComponent {
     this.parseError = '';
     this.framework = null;
     this.elementTypeCounts = [];
+    this.totalElements = 0;
+    this.selectedFile = file;
 
-    if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
+    if (file.name.endsWith('.csv')) {
+      this.fileType = 'csv';
+      // CSV files are uploaded directly to the server for parsing
+      const versionMatch = file.name.match(/_v([\d.]+)/i);
+      if (versionMatch && !this.version) {
+        this.version = versionMatch[1];
+      }
+      const sourceMatch = file.name.match(/^([A-Z]+)/i);
+      if (sourceMatch && !this.source) {
+        this.source = sourceMatch[1].toUpperCase();
+      }
+    } else if (file.name.endsWith('.json')) {
+      this.fileType = 'json';
+      // JSON files are uploaded directly to the server for parsing (like CSV)
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        try {
+          const data = JSON.parse(e.target.result);
+          this.previewJson(data);
+        } catch (err) {
+          this.parseError = 'Invalid JSON file.';
+        }
+      };
+      reader.readAsText(file);
+    } else if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
+      this.fileType = 'xlsx';
       const reader = new FileReader();
       reader.onload = (e: any) => {
         try {
@@ -53,23 +94,14 @@ export class AdminCompetencyFrameworkImportDialogComponent {
         }
       };
       reader.readAsArrayBuffer(file);
-    } else if (file.name.endsWith('.json')) {
-      const reader = new FileReader();
-      reader.onload = (e: any) => {
-        try {
-          const data = JSON.parse(e.target.result);
-          this.processJson(data);
-        } catch (err) {
-          this.parseError = 'Invalid JSON file.';
-        }
-      };
-      reader.readAsText(file);
     } else {
-      this.parseError = 'Supported formats: .json, .xlsx';
+      this.parseError = 'Supported formats: .csv (Moodle), .json (NICE), .xlsx (DCWF)';
+      this.selectedFile = null;
+      this.fileType = null;
     }
   }
 
-  private processJson(data: any): void {
+  private previewJson(data: any): void {
     const docs = data.documents || data.response?.elements?.documents || [];
     const doc = docs[0] || {};
 
@@ -79,7 +111,7 @@ export class AdminCompetencyFrameworkImportDialogComponent {
       return;
     }
 
-    // Count by type
+    // Count by type for preview
     const typeCounts: Record<string, number> = {};
     for (const el of elements) {
       const t = el.element_type || 'unknown';
@@ -89,24 +121,12 @@ export class AdminCompetencyFrameworkImportDialogComponent {
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([type, count]) => ({ type, count }));
 
-    const competencyElements: CompetencyElement[] = elements
-      .filter((el: any) => !this.skippedTypes.includes(el.element_type))
-      .map((el: any) => ({
-        elementIdentifier: el.element_identifier || '',
-        elementType: el.element_type || '',
-        name: (el.title && el.title !== 'N/A') ? el.title : (el.element_identifier + ' - ' + (el.text || '')),
-        description: el.text || '',
-      }));
-
-    this.totalElements = competencyElements.length;
-
-    this.framework = {
-      name: doc.name || 'Imported Framework',
-      version: doc.version || '',
-      source: doc.doc_identifier || '',
-      description: `Imported from ${this.fileName}`,
-      competencyElements: competencyElements,
-    };
+    const relationships = data.relationships || data.response?.elements?.relationships || [];
+    this.totalElements = elements.filter((el: any) => !this.skippedTypes.includes(el.element_type)).length;
+    this.totalRelationships = relationships.length;
+    this.source = doc.doc_identifier || '';
+    this.version = doc.version || '';
+    this.jsonPreviewName = doc.name || 'Imported Framework';
   }
 
   private processXlsx(workbook: XLSX.WorkBook): void {
@@ -117,13 +137,12 @@ export class AdminCompetencyFrameworkImportDialogComponent {
     }
 
     const typeCounts: Record<string, number> = {};
-    const elements: CompetencyElement[] = [];
+    const competencies: Competency[] = [];
 
     // Parse work roles from "DCWF Roles" sheet
     const rolesSheet = workbook.Sheets['DCWF Roles'];
     if (rolesSheet) {
       const roleRows: any[][] = XLSX.utils.sheet_to_json(rolesSheet, { header: 1, defval: '' });
-      // Data starts at row 2; col 3=name, col 4=code, col 5=NCWF ID, col 6=definition
       for (let i = 2; i < roleRows.length; i++) {
         const row = roleRows[i];
         const roleName = String(row[3] || '').trim();
@@ -131,18 +150,18 @@ export class AdminCompetencyFrameworkImportDialogComponent {
         const description = String(row[6] || '').trim();
         if (!roleName || !dcwfCode) continue;
         typeCounts['work_role'] = (typeCounts['work_role'] || 0) + 1;
-        elements.push({
-          elementIdentifier: 'WRL-' + dcwfCode,
-          elementType: 'work_role',
-          name: 'WRL-' + dcwfCode + ' - ' + roleName,
+        competencies.push({
+          idNumber: 'WRL-' + dcwfCode,
+          shortName: 'WRL-' + dcwfCode + ' - ' + roleName,
           description: description,
         });
       }
     }
 
     // Parse tasks and KSAs from Master Task & KSA List
-    // Row 0 is header: DCWF # | # | A | Task/KSA | description | ...
     const masterRows: any[][] = XLSX.utils.sheet_to_json(masterSheet, { header: 1, defval: '' });
+    const prefixMap: Record<string, string> = { task: 'T', knowledge: 'K', skill: 'S', ability: 'A' };
+    const seenIds = new Set<string>(competencies.map(c => c.idNumber));
     for (let i = 1; i < masterRows.length; i++) {
       const row = masterRows[i];
       const dcwfNum = String(row[0] || '').trim();
@@ -156,40 +175,116 @@ export class AdminCompetencyFrameworkImportDialogComponent {
         if (firstWord === 'knowledge') elementType = 'knowledge';
         else if (firstWord === 'skill') elementType = 'skill';
         else if (firstWord === 'ability' || firstWord === 'abiltiy') elementType = 'ability';
+        else elementType = 'knowledge'; // default KSA to knowledge
       }
       typeCounts[elementType] = (typeCounts[elementType] || 0) + 1;
-      elements.push({
-        elementIdentifier: dcwfNum,
-        elementType: elementType,
-        name: dcwfNum + ' - ' + description,
+      const prefix = prefixMap[elementType] || 'T';
+      const idNumber = `${prefix}-${dcwfNum}`;
+      if (seenIds.has(idNumber)) continue; // skip duplicates
+      seenIds.add(idNumber);
+      competencies.push({
+        idNumber: idNumber,
+        shortName: `${idNumber} - ${description}`,
         description: description,
       });
     }
 
-    if (elements.length === 0) {
+    // Parse per-role sheets to build work role → TKSA relationships
+    const roleIdByCode = new Map<string, string>();
+    for (const c of competencies) {
+      if (c.idNumber.startsWith('WRL-')) {
+        roleIdByCode.set(c.idNumber.replace('WRL-', ''), c.idNumber);
+      }
+    }
+    const tksaIdSet = new Set(competencies.filter(c => !c.idNumber.startsWith('WRL-')).map(c => c.idNumber));
+
+    for (const sheetName of workbook.SheetNames) {
+      const codeMatch = sheetName.match(/\([\w]+-(\d+)\)/);
+      if (!codeMatch) continue;
+      const roleCode = codeMatch[1];
+      const roleIdNumber = roleIdByCode.get(roleCode);
+      if (!roleIdNumber) continue;
+
+      const roleComp = competencies.find(c => c.idNumber === roleIdNumber);
+      if (!roleComp) continue;
+
+      const ws = workbook.Sheets[sheetName];
+      const rows: any[][] = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+      const relatedIds: string[] = [];
+      for (let i = 5; i < rows.length; i++) {
+        const dcwfNum = String(rows[i][0] || '').trim();
+        if (!dcwfNum) continue;
+        // Find the matching TKSA competency by checking all prefixes
+        for (const p of ['T', 'K', 'S', 'A']) {
+          const candidate = `${p}-${dcwfNum}`;
+          if (tksaIdSet.has(candidate)) {
+            relatedIds.push(candidate);
+            break;
+          }
+        }
+      }
+      const uniqueRelated = [...new Set(relatedIds)];
+      if (uniqueRelated.length > 0) {
+        roleComp.relatedIdNumbers = uniqueRelated;
+      }
+    }
+
+    if (competencies.length === 0) {
       this.parseError = 'No elements found in XLSX file.';
       return;
     }
 
+    const totalRels = competencies.reduce((sum, c) => sum + (c.relatedIdNumbers?.length || 0), 0);
     this.elementTypeCounts = Object.entries(typeCounts)
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([type, count]) => ({ type, count }));
-    this.totalElements = elements.length;
+    this.totalElements = competencies.length;
+    this.totalRelationships = totalRels;
 
-    // Try to extract version from filename (e.g., "_v5.1.xlsx" -> "5.1")
     const versionMatch = this.fileName.match(/_v([\d.]+)\./i);
+    this.source = 'DCWF';
+    this.version = versionMatch ? versionMatch[1] : '';
 
     this.framework = {
       name: 'DoD Cyber Workforce Framework (DCWF)',
-      version: versionMatch ? versionMatch[1] : '',
-      source: 'DCWF',
+      version: this.version,
+      source: this.source,
       description: `Imported from ${this.fileName}`,
-      competencyElements: elements,
+      competencies: competencies,
     };
   }
 
+  get ready(): boolean {
+    if (this.fileType === 'csv') return !!this.selectedFile;
+    if (this.fileType === 'json') return !!this.selectedFile && this.totalElements > 0;
+    return !!this.framework;
+  }
+
   handleImport(): void {
-    this.importComplete.emit(this.framework);
+    if (this.fileType === 'csv' && this.selectedFile) {
+      this.importComplete.emit({
+        type: 'csv',
+        file: this.selectedFile,
+        source: this.source,
+        version: this.version,
+      });
+    } else if (this.fileType === 'json' && this.selectedFile) {
+      this.importComplete.emit({
+        type: 'json',
+        file: this.selectedFile,
+        source: this.source,
+        version: this.version,
+      });
+    } else if (this.framework) {
+      this.framework.source = this.source;
+      this.framework.version = this.version;
+      this.importComplete.emit({
+        type: 'parsed',
+        source: this.source,
+        version: this.version,
+        framework: this.framework,
+      });
+    }
   }
 
   handleCancel(): void {

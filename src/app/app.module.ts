@@ -65,10 +65,11 @@ import { AdminInjectTypesComponent } from './components/admin/admin-inject-types
 import { AdminInjectTypeEditDialogComponent } from './components/admin/admin-inject-type-edit-dialog/admin-inject-type-edit-dialog.component';
 import { AdminCompetencyFrameworksComponent } from './components/admin/admin-competency-frameworks/admin-competency-frameworks.component';
 import { AdminCompetencyFrameworkEditDialogComponent } from './components/admin/admin-competency-framework-edit-dialog/admin-competency-framework-edit-dialog.component';
+import { AdminCompetencyEditDialogComponent } from './components/admin/admin-competency-edit-dialog/admin-competency-edit-dialog.component';
 import { AdminProficiencyScaleEditDialogComponent } from './components/admin/admin-proficiency-scale-edit-dialog/admin-proficiency-scale-edit-dialog.component';
-import { AdminCompetencyElementEditDialogComponent } from './components/admin/admin-competency-element-edit-dialog/admin-competency-element-edit-dialog.component';
 import { AdminProficiencyLevelEditDialogComponent } from './components/admin/admin-proficiency-level-edit-dialog/admin-proficiency-level-edit-dialog.component';
 import { AdminCompetencyFrameworkImportDialogComponent } from './components/admin/admin-competency-framework-import-dialog/admin-competency-framework-import-dialog.component';
+import { AdminProficiencyScalesComponent } from './components/admin/admin-proficiency-scales/admin-proficiency-scales.component';
 import { AdminUnitsComponent } from './components/admin/admin-units/admin-units.component';
 import { AdminUnitEditDialogComponent } from './components/admin/admin-unit-edit-dialog/admin-unit-edit-dialog.component';
 import { AdminUnitUsersComponent } from './components/admin/admin-unit-users/admin-unit-users.component';
@@ -229,10 +230,11 @@ export const appConfig: ApplicationConfig = {
     AdminInjectTypeEditDialogComponent,
     AdminCompetencyFrameworksComponent,
     AdminCompetencyFrameworkEditDialogComponent,
+    AdminCompetencyEditDialogComponent,
     AdminProficiencyScaleEditDialogComponent,
-    AdminCompetencyElementEditDialogComponent,
     AdminProficiencyLevelEditDialogComponent,
     AdminCompetencyFrameworkImportDialogComponent,
+    AdminProficiencyScalesComponent,
     AdminUnitsComponent,
     AdminUnitEditDialogComponent,
     AdminUnitUsersComponent,

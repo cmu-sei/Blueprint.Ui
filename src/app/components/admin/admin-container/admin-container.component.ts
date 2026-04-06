@@ -44,6 +44,7 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
   citeActionsText = 'CITE Actions';
   citeDutiesText = 'CITE Duties';
   competencyFrameworksText = 'Competencies';
+  proficiencyScalesText = 'Proficiency Scales';
   selectedTab = 'Organizations';
   displayedSection = '';
   exitSection = '';

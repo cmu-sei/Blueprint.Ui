@@ -11,6 +11,8 @@ api/catalogUnit.service.ts
 api/cite.service.ts
 api/citeAction.service.ts
 api/citeDuty.service.ts
+api/competencyElement.service.ts
+api/competencyFramework.service.ts
 api/dataField.service.ts
 api/dataOption.service.ts
 api/dataValue.service.ts
@@ -27,6 +29,8 @@ api/organization.service.ts
 api/player.service.ts
 api/playerApplication.service.ts
 api/playerApplicationTeam.service.ts
+api/proficiencyLevel.service.ts
+api/proficiencyScale.service.ts
 api/scenarioEvent.service.ts
 api/systemPermissions.service.ts
 api/systemRoles.service.ts
@@ -55,6 +59,9 @@ model/catalogUnit.ts
 model/citeAction.ts
 model/citeDuty.ts
 model/compareInfo.ts
+model/competency.ts
+model/competencyElement.ts
+model/competencyFramework.ts
 model/constructorInfo.ts
 model/createFromInjectsForm.ts
 model/cultureInfo.ts
@@ -118,6 +125,8 @@ model/permission.ts
 model/playerApplication.ts
 model/playerApplicationTeam.ts
 model/problemDetails.ts
+model/proficiencyLevel.ts
+model/proficiencyScale.ts
 model/propertyAttributes.ts
 model/propertyInfo.ts
 model/rightSideDisplay.ts
@@ -142,6 +151,7 @@ model/structLayoutAttribute.ts
 model/systemPermission.ts
 model/systemRole.ts
 model/team.ts
+model/teamPermission.ts
 model/teamRole.ts
 model/teamType.ts
 model/teamUser.ts

@@ -9,10 +9,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
 <div mat-dialog-content>
   <div class="upload-section">
     <p class="instructions">
-      Supported formats: NICE Framework JSON, DCWF XLSX
+      Supported formats: Moodle CSV (<code>lpimportcsv</code>), NICE Framework JSON, DCWF XLSX
     </p>
     <input
       type="file"
+      accept=".csv,.json,.xlsx,.xls"
       (change)="onFileSelected($event)"
       #fileInput
       style="display: none" />
@@ -29,24 +30,26 @@ project root for license information or contact permission@sei.cmu.edu for full 
   <div class="error-message">{{ parseError }}</div>
   }
 
-  @if (framework) {
+  @if (selectedFile) {
   <div class="preview-section">
-    <div class="preview-header">Preview</div>
+    <mat-form-field class="full-width" style="margin-top: 16px;">
+      <mat-label>Source</mat-label>
+      <input matInput [(ngModel)]="source" placeholder="e.g. NICE, DCWF" />
+    </mat-form-field>
+    <mat-form-field class="full-width">
+      <mat-label>Version</mat-label>
+      <input matInput [(ngModel)]="version" placeholder="e.g. 5.1" />
+    </mat-form-field>
+
+    @if (framework) {
     <div class="preview-field">
       <span class="preview-label">Name:</span>
       <input matInput [(ngModel)]="framework.name" class="preview-input" />
     </div>
-    <div class="preview-field">
-      <span class="preview-label">Version:</span>
-      <input matInput [(ngModel)]="framework.version" class="preview-input" />
-    </div>
-    <div class="preview-field">
-      <span class="preview-label">Source:</span>
-      <input matInput [(ngModel)]="framework.source" class="preview-input" />
-    </div>
 
     <div class="element-summary">
-      <div class="preview-header">Elements to import: {{ totalElements }}</div>
+      <div class="preview-header">Competencies to import: {{ totalElements }}</div>
+      @if (elementTypeCounts.length > 0) {
       <table class="type-table">
         <thead>
           <tr>
@@ -65,14 +68,52 @@ project root for license information or contact permission@sei.cmu.edu for full 
           }
         </tbody>
       </table>
+      }
     </div>
+    }
+
+    @if (fileType === 'json' && jsonPreviewName) {
+    <div class="preview-field">
+      <span class="preview-label">Name:</span> {{ jsonPreviewName }}
+    </div>
+    <div class="element-summary">
+      <div class="preview-header">Competencies to import: {{ totalElements }}</div>
+      @if (totalRelationships > 0) {
+      <div class="preview-header">Relationships: {{ totalRelationships }}</div>
+      }
+      @if (elementTypeCounts.length > 0) {
+      <table class="type-table">
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>Count</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (tc of elementTypeCounts; track tc.type) {
+          <tr [class.skipped]="skippedTypes.includes(tc.type)">
+            <td>{{ tc.type }}</td>
+            <td>{{ tc.count }}</td>
+            <td>@if (skippedTypes.includes(tc.type)) { <em>skipped</em> }</td>
+          </tr>
+          }
+        </tbody>
+      </table>
+      }
+    </div>
+    }
+
+    @if (fileType === 'csv') {
+    <p class="csv-note">CSV will be parsed on the server using Moodle lpimportcsv format.</p>
+    }
   </div>
   }
 </div>
 
 <div mat-dialog-actions align="end">
   <button mat-stroked-button (click)="handleCancel()">Cancel</button>
-  <button mat-raised-button color="primary" [disabled]="!framework" (click)="handleImport()" style="margin-left: 10px;">
+  <button mat-raised-button color="primary" [disabled]="!ready" (click)="handleImport()" style="margin-left: 10px;">
     Import
   </button>
 </div>

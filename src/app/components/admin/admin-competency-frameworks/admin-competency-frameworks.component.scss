@@ -127,7 +127,8 @@
 }
 
 .el-col-id {
-  flex: 0 0 8%;
+  flex: 0 0 120px;
+  white-space: nowrap;
 }
 
 .el-col-type {
@@ -175,6 +176,33 @@
 
 .element-row-expanded {
   background-color: var(--mat-sys-surface-variant);
+}
+
+// Competency (Moodle-imported) sub-table column widths
+.comp-col-action {
+  flex: 0 0 100px;
+  width: 100px;
+}
+
+.comp-col-id {
+  flex: 0 0 120px;
+  white-space: nowrap;
+}
+
+.comp-col-type {
+  flex: 0 0 10%;
+}
+
+.comp-col-name {
+  flex: 1 1 20%;
+}
+
+.comp-col-desc {
+  flex: 2 1 40%;
+}
+
+.comp-col-related {
+  flex: 1 1 15%;
 }
 
 .element-toolbar {

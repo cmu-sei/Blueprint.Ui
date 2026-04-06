@@ -1,0 +1,97 @@
+<!--
+Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license, please see LICENSE.md in the
+project root for license information.
+-->
+<div mat-dialog-container>
+  <div mat-dialog-title>
+    @if (data.competency.id) {
+      <span>Edit</span>
+    }
+    @if (!data.competency.id) {
+      <span>Add</span>
+    }
+    Competency
+    &nbsp;
+    <button
+      mat-icon-button
+      (click)="handleEditComplete(false)"
+      title="Cancel"
+      class="close-button"
+      tabindex="-1"
+      >
+      <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
+    </button>
+  </div>
+  @if (!!data && data.competency !== undefined && data.competency !== null) {
+    <div mat-dialog-content>
+      <div class="add-margin">
+        <mat-form-field class="full-width">
+          <mat-label>ID Number</mat-label>
+          <input
+            type="text"
+            matInput
+            placeholder="ID Number"
+            [(ngModel)]="data.competency.idNumber">
+        </mat-form-field>
+      </div>
+      <div class="add-margin">
+        <mat-form-field class="full-width">
+          <mat-label>Short Name</mat-label>
+          <input
+            type="text"
+            matInput
+            placeholder="Short Name"
+            [(ngModel)]="data.competency.shortName">
+        </mat-form-field>
+      </div>
+      <div class="add-margin">
+        <mat-form-field class="full-width">
+          <mat-label>Description</mat-label>
+          <textarea
+            matInput
+            rows="3"
+            placeholder="Description"
+            [(ngModel)]="data.competency.description">
+          </textarea>
+        </mat-form-field>
+      </div>
+      <div class="add-margin related-section">
+        <label class="related-label">Related Competencies</label>
+        <mat-chip-set>
+          @for (id of data.competency.relatedIdNumbers; track id) {
+          <mat-chip (removed)="removeRelated(id)">
+            {{ id }}
+            <button matChipRemove>
+              <mat-icon fontIcon="mdi-close-circle-outline" style="transform: scale(0.85)"></mat-icon>
+            </button>
+          </mat-chip>
+          }
+        </mat-chip-set>
+        <mat-form-field class="full-width">
+          <mat-label>Search competencies to add</mat-label>
+          <input matInput
+            [(ngModel)]="searchText"
+            (ngModelChange)="onSearchChanged()"
+            (keydown.enter)="$event.preventDefault()"
+            placeholder="Type ID or name to search..."
+            [matAutocomplete]="auto">
+          <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn" (optionSelected)="selectCompetency($event.option.value)">
+            @for (c of filteredCompetencies; track c.id) {
+            <mat-option [value]="c">
+              <strong>{{ c.idNumber }}</strong> — {{ c.shortName }}
+            </mat-option>
+            }
+          </mat-autocomplete>
+        </mat-form-field>
+      </div>
+      <div class="cssLayoutRowStartCenter bottom-button">
+        <div class="delete-button">
+          <button mat-stroked-button (click)="handleEditComplete(true)" [disabled]="!errorFree()" style="margin-left: 40px;">Save</button>
+        </div>
+        <div class="delete-button">
+          <button mat-stroked-button (click)="handleEditComplete(false)">Cancel</button>
+        </div>
+      </div>
+    </div>
+  }

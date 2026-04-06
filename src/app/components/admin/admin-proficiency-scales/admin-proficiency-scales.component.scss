@@ -1,0 +1,84 @@
+// Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+// Released under a MIT (SEI)-style license. See LICENSE.md in the
+// project root for license information.
+
+.cssLayoutRowStartCenter {
+  min-height: 76px;
+  flex-shrink: 0;
+}
+
+.scrolling-region {
+  height: calc(100% - 94px);
+  overflow: auto;
+  width: 100%;
+}
+
+.element-row {
+  position: relative;
+  cursor: pointer;
+}
+
+.element-row:hover {
+  background-color: var(--mat-sys-surface-variant);
+}
+
+.element-row-expanded {
+  background-color: var(--mat-sys-surface-variant);
+}
+
+.sub-col-action {
+  flex: 0 0 100px;
+  width: 100px;
+}
+
+.sub-col-name {
+  flex: 1 1 25%;
+}
+
+.sub-col-desc {
+  flex: 2 1 45%;
+}
+
+.sub-col-levels {
+  flex: 0 0 80px;
+}
+
+.lv-col-name {
+  flex: 1 1 20%;
+}
+
+.lv-col-value {
+  flex: 0 0 80px;
+}
+
+.lv-col-order {
+  flex: 0 0 80px;
+}
+
+.lv-col-desc {
+  flex: 2 1 50%;
+}
+
+.levels-detail {
+  margin: 8px 0 8px 16px;
+  padding: 8px;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 4px;
+}
+
+.levels-title {
+  font-weight: bold;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.no-results {
+  margin-top: 20px;
+  margin-left: 150px;
+}
+
+.no-results-inline {
+  padding: 8px 0;
+  color: var(--mat-sys-on-surface-variant);
+  font-style: italic;
+}
