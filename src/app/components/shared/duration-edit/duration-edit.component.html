@@ -7,19 +7,25 @@ project root for license information.
 <div class="single-detail center-self">
   <div class="date-time-picker">
     @if (hasStartTime()) {
-    <mat-form-field>
+    <mat-form-field class="datetime-field">
       <mat-label>{{ timeName }}</mat-label>
       <input matInput [ngxMatDatetimePicker]="picker" [formControl]="endTimeFormControl" (dateChange)="timeUpdated()"
         (dateInput)="timeUpdated()" style="display: none;">
       <!-- <datetime-picker> -->
       <span (click)="canEdit && picker.open()">
-        {{ endTimeFormControl.value | date: 'MM/dd/yyyy hh:mm a'}}
+        @if (endTimeFormControl.value) {
+        {{ endTimeFormControl.value | date: 'dd MMM yyyy HH:mm'}} {{ getTimezoneAbbr() }}
+        }
       </span>
       <mat-datepicker-toggle matSuffix title="Choose Date/Time" [for]="picker" [disabled]="!canEdit">
       </mat-datepicker-toggle>
       <ngx-mat-datetime-picker #picker [showSpinners]=true [showSeconds]=false [stepHour]=1 [stepMinute]=5
         [stepSecond]=1 [touchUi]=false [enableMeridian]=true [disableMinute]=false [hideTime]=false [color]="'warn'"
         (close)="alert('woah!')">
+        <ngx-mat-datepicker-actions>
+          <button mat-stroked-button ngxMatDatepickerApply>Save</button>
+          <button mat-stroked-button ngxMatDatepickerCancel>Cancel</button>
+        </ngx-mat-datepicker-actions>
       </ngx-mat-datetime-picker>
     </mat-form-field>
     }

@@ -120,4 +120,23 @@ export class DataValueComponent {
     const user = this.userOptions?.find((m) => m.id === id);
     return user ? user.name : '';
   }
+
+  getUserTimezone(): string {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+  }
+
+  getTimezoneAbbr(): string {
+    try {
+      const date = new Date();
+    const timeZone = this.getUserTimezone();
+    const formatted = date.toLocaleTimeString('en-US', {
+      timeZoneName: 'short',
+      timeZone
+    });
+    const parts = formatted.split(' ');
+    return parts[parts.length - 1] || 'UTC';
+    } catch (error) {
+      return 'UTC';
+    }
+  }
 }

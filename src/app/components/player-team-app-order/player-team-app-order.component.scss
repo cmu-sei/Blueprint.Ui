@@ -2,33 +2,57 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
 .frame {
   display: flex;
   flex-direction: column;
   flex: 1;
-  max-height: 400px;
+  min-height: 0;
+  width: 100%;
 }
 
-.mat-expansion-panel {
-  width: calc(100% - 10px);
-  margin: 5px;
+.table-container {
+  flex: 1;
+  width: 100%;
+  overflow: auto;
+  min-height: 0;
 }
 
-.mat-expansion-panel-header {
-  display: flex;
-  flex-direction: row;
-  text-align: left;
+table {
+  width: 100%;
+}
+
+.element-row {
+  cursor: pointer;
+}
+
+.element-row:hover {
+  background-color: var(--mat-sys-surface-variant);
+}
+
+.detail-row {
+  height: 0;
+}
+
+.element-row td {
+  border-bottom-width: 0;
+}
+
+.column-name {
   flex: 1;
 }
 
-.scrolling-region {
-  width: 100%;
-  height: calc(100vh - 60px);
-  overflow: auto;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  margin-top: 20px;
+.expanded-detail-div {
+  width: calc(100% - 20px);
+  margin-left: 20px;
+  padding: 8px 0;
 }
 
 .data-panel {
@@ -75,16 +99,4 @@
   flex: 9;
   text-align: left;
   align-items: center;
-}
-
-.full-width {
-  width: 100%;
-}
-
-.half-width {
-  width: 50%;
-}
-
-.center-self {
-  align-self: center;
 }

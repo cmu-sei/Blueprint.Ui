@@ -131,7 +131,6 @@ export class ScenarioEventListComponent
     DataFieldType.User,
     DataFieldType.Checkbox,
     DataFieldType.Card,
-    DataFieldType.IntegrationTarget,
     DataFieldType.Move,
   ];
   dateFormControls = new Map<string, UntypedFormControl>();
@@ -182,7 +181,7 @@ export class ScenarioEventListComponent
   maxScenarioEventStartSeconds: 0;
   allSelected = false;
   mselListForCopy: Msel[] = [];
-  integrationTargetDataField: DataField = {};
+  integrationTargetOptions: string[] = [];
 
   constructor(
     private router: Router,
@@ -227,23 +226,14 @@ export class ScenarioEventListComponent
           this.msel = this.getEditableMsel(msel) as MselPlus;
           this.mselUsers = this.getMselUsers();
           this.scenarioEventDataService.updateScenarioEventViewUsers(this);
-          const dataOptions = [];
+          const options = [];
           if (msel.useGallery) {
-            dataOptions.push({ optionName: IntegrationTarget.Gallery, optionValue: IntegrationTarget.Gallery });
+            options.push(IntegrationTarget.Gallery);
           }
           if (msel.useSteamfitter) {
-            dataOptions.push({ optionName: IntegrationTarget.Steamfitter, optionValue: IntegrationTarget.Steamfitter });
+            options.push(IntegrationTarget.Steamfitter);
           }
-          this.integrationTargetDataField = {
-            displayOrder: -1,
-            name: 'Integration Target',
-            onScenarioEventList: this.msel.showIntegrationTargetOnScenarioEventList,
-            onExerciseView: this.msel.showIntegrationTargetOnExerciseView,
-            galleryArticleParameter: '- - -',
-            dataType: 'IntegrationTarget',
-            description: 'System defined',
-            dataOptions: dataOptions
-          };
+          this.integrationTargetOptions = options;
           // in case the dataFields were received before the msel
           if (this.allDataFields.length > 0) {
             this.setSortedDataFields();
@@ -501,6 +491,8 @@ export class ScenarioEventListComponent
     this.msel.teams.forEach((t) => {
       orgs.push(t.shortName);
     });
+    // Remove duplicates
+    orgs = [...new Set(orgs)];
     orgs = orgs.sort((a, b) => (a?.toLowerCase() < b?.toLowerCase() ? -1 : 1));
     return orgs;
   }
@@ -745,13 +737,13 @@ export class ScenarioEventListComponent
       this.msel.hasRole(this.loggedInUserId, scenarioEvent.id).editor;
 
     const dialogRef = this.dialog.open(ScenarioEventEditDialogComponent, {
-      minWidth: '400px',
+      minWidth: '900px',
       maxWidth: '90vw',
       width: 'auto',
       height: '90%',
       data: {
         scenarioEvent: scenarioEvent,
-        integrationTargetDataField: this.integrationTargetDataField,
+        integrationTargetOptions: this.integrationTargetOptions,
         dataFields: this.mselDataFields,
         organizationList: this.getSortedOrganizationOptions(),
         teamList: this.teamList,
@@ -854,6 +846,16 @@ export class ScenarioEventListComponent
   saveIntegrationTarget(scenarioEvent: ScenarioEvent, value: string) {
     scenarioEvent.integrationTarget = value;
     this.saveScenarioEvent(scenarioEvent);
+  }
+
+  getIntegrationTargetArray(scenarioEvent: ScenarioEvent): string[] {
+    return scenarioEvent.integrationTarget
+      ? scenarioEvent.integrationTarget.split(', ').filter(s => s.length > 0)
+      : [];
+  }
+
+  onIntegrationTargetChange(scenarioEvent: ScenarioEvent, newValues: string[]) {
+    this.saveIntegrationTarget(scenarioEvent, newValues.join(', '));
   }
 
   setHiddenScenarioEvent(scenarioEvent: ScenarioEvent, value: boolean) {
@@ -1111,6 +1113,22 @@ export class ScenarioEventListComponent
       }
       dialogRef.close();
     });
+  }
+
+  getUserTimezone(): string {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone;
+  }
+
+  getTimezoneAbbr(): string {
+    const date = new Date();
+    const timeZone = this.getUserTimezone();
+    const formatted = date.toLocaleTimeString('en-US', {
+      timeZoneName: 'short',
+      timeZone
+    });
+    // Extract timezone abbreviation (e.g., "EST", "PST")
+    const parts = formatted.split(' ');
+    return parts[parts.length - 1];
   }
 
   ngOnDestroy() {

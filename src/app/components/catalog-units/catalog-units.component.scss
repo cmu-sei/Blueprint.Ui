@@ -2,6 +2,61 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
+:host {
+  display: block;
+  width: 100%;
+  overflow: hidden;
+}
+
+.table-container {
+  width: 100%;
+}
+
+table {
+  width: 100%;
+  table-layout: fixed;
+}
+
+.element-row {
+  cursor: default;
+}
+
+.element-row:hover {
+  background-color: var(--mat-sys-surface-variant);
+}
+
+.column-action {
+  flex: 0 0 60px;
+  max-width: 60px;
+}
+
+.column-short-name {
+  flex: 1;
+  padding: 2px;
+}
+
+.column-name {
+  flex: 3;
+  padding: 2px;
+}
+
+.no-units {
+  margin: 10px 0 10px 45px;
+}
+
+.other-units-div {
+  display: flex;
+  flex-direction: row;
+  text-align: left;
+  margin-left: 50px;
+  width: calc(100% - 50px);
+}
+
+.add-unit-container {
+  width: 100%;
+  padding: 10px;
+}
+
 .mat-expansion-panel {
   width: calc(100% - 20px);
   background-color: transparent;
@@ -10,45 +65,6 @@
 .mat-expansion-panel-header {
   height: 32px;
   font-size: 14px;
-}
-
-.units-title {
-  margin-top: 12px;
-  font-weight: bold;
-  height: 30px;
-}
-
-.units-div {
-  text-align: left;
-  width: calc(100% - 20px);
-}
-
-.full-width {
-  width: 100%;
-}
-
-.half-width {
-  width: 50%;
-}
-
-.five-cell {
-  flex: 5;
-}
-
-.four-cell {
-  flex: 4;
-}
-
-.three-cell {
-  flex: 3;
-}
-
-.two-cell {
-  flex: 2;
-}
-
-.one-cell {
-  flex: 1;
 }
 
 .center-self {

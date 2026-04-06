@@ -8,12 +8,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <!-- action column -->
     <ng-container matColumnDef="action">
       <mat-header-cell *matHeaderCellDef [ngClass]="isEditMode ? 'mat-column-action' : 'mat-column-select'">
-        <!-- In InjectType -->
-        @if (canEdit && !catalog.id) {
-        <button mat-icon-button (click)="addInject()" style="outline: none;" title="Add new Inject">
-          <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle"></mat-icon>
-        </button>
-        }
         <!-- In Catalog -->
         @if (canEdit && catalog.id) {
         <button mat-icon-button [matMenuTriggerFor]="addMenu" style="outline: none;" title="Add Inject">
@@ -87,7 +81,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </mat-cell>
     </ng-container>
     <!-- datafield Columns -->
-    @for (df of getDisplayedDataFields(); track df) {
+    @for (df of getDisplayedDataFields(); track df.id) {
     <ng-container matColumnDef="{{ df.name }}">
       <mat-header-cell title="{{ df.name }}" *matHeaderCellDef>
         {{ df.name }}

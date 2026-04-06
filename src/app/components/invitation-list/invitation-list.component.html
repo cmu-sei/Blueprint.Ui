@@ -67,7 +67,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <!-- expirationDateTime Column -->
         <ng-container matColumnDef="expirationDateTime">
           <mat-cell *matCellDef="let element" class="cell two-cell">
-            {{ element.expirationDateTime | date: 'MM/dd/yyyy HH:mm' }}
+            {{ element.expirationDateTime | date: 'dd MMM yyyy HH:mm' }}
           </mat-cell>
         </ng-container>
         <!-- maxUsersAllowed Column -->

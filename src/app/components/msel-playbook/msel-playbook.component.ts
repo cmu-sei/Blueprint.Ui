@@ -440,4 +440,25 @@ export class MselPlaybookComponent {
     newOptions.push(max);
     this.pageSizeOptions = newOptions;
   }
+
+  getMoveNumber(scenarioEventId: string): number {
+    return this.moveAndGroupNumbers[scenarioEventId]
+      ? this.moveAndGroupNumbers[scenarioEventId][0]
+      : -1;
+  }
+
+  getGroupNumber(scenarioEventId: string): number {
+    return this.moveAndGroupNumbers[scenarioEventId]
+      ? this.moveAndGroupNumbers[scenarioEventId][1]
+      : 0;
+  }
+
+  getMoveForEvent(scenarioEventId: string): Move | undefined {
+    const moveNumber = this.getMoveNumber(scenarioEventId);
+    return this.moveList.find((m) => +m.moveNumber === moveNumber);
+  }
+
+  isMoveBoundary(scenarioEventId: string, previousScenarioEventId: string): boolean {
+    return this.getMoveNumber(scenarioEventId) !== this.getMoveNumber(previousScenarioEventId);
+  }
 }

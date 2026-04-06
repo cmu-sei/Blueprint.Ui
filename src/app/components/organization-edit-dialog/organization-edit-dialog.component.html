@@ -15,6 +15,7 @@ project root for license information.
     <div class="add-margin">
       <div>
         <mat-form-field class="full-width">
+          <mat-label>Long Name</mat-label>
           <input type="text" matInput [formControl]="organizationNameFormControl" placeholder="Long Name (required)"
             (blur)="saveOrganization('name')" value="{{data.organization.name}}">
           @if (organizationNameFormControl.hasError('required')) {
@@ -28,6 +29,7 @@ project root for license information.
     <div class="add-margin">
       <div>
         <mat-form-field class="full-width">
+          <mat-label>Short Name</mat-label>
           <input type="text" matInput [formControl]="organizationShortNameFormControl"
             placeholder="Short Name (required)" (blur)="saveOrganization('shortName')"
             value="{{data.organization.shortName}}">
@@ -42,6 +44,7 @@ project root for license information.
     <div class="add-margin left">
       <div>
         <mat-form-field class="full-width">
+          <mat-label>Summary</mat-label>
           <input type="text" matInput [formControl]="summaryFormControl" placeholder="Summary (required)"
             (blur)="saveOrganization('summary')" value="{{data.organization.summary}}">
           @if (summaryFormControl.hasError('required')) {
@@ -55,6 +58,7 @@ project root for license information.
     <div class="add-margin left">
       <div>
         <mat-form-field class="full-width">
+          <mat-label>Email</mat-label>
           <input type="text" matInput [formControl]="organizationEmailFormControl" placeholder="Email"
             (blur)="saveOrganization('email')" value="{{data.organization.email}}">
           @if (organizationEmailFormControl.hasError('required')) {
