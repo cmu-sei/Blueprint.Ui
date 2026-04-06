@@ -281,7 +281,6 @@ export const appConfig: ApplicationConfig = {
     MatBottomSheetModule,
     MatBadgeModule,
     MatFormFieldModule,
-    MatDatepickerModule,
     NgxMatDatepickerActions,
     NgxMatDatepickerApply,
     NgxMatDatepickerCancel,
