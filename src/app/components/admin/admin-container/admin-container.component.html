@@ -112,6 +112,15 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <mat-icon fontIcon="mdi-chevron-right"></mat-icon>
         </button>
       </mat-list-item>
+      <!-- Proficiency Scales -->
+      <mat-list-item [ngClass]="getSelectedClass(proficiencyScalesText)" id="wrapper showhand"
+        (click)="gotoSection(proficiencyScalesText)">
+        <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-tune-variant"></mat-icon>
+        {{ proficiencyScalesText }}
+        <button aria-labelledby="proficiencyScalesText" mat-icon-button class="pull-right">
+          <mat-icon fontIcon="mdi-chevron-right"></mat-icon>
+        </button>
+      </mat-list-item>
       }
       <!-- Users -->
       @if (canViewUsers) {
@@ -144,21 +153,22 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </mat-list-item>
       }
     </mat-list>
-    @if (!hideTopbar) {
-    <div class="app-versions" style="margin-bottom: 58px;">
-      Versions: UI {{ uiVersion }}, API {{ apiVersion }}
+    <div class="bottom-div">
+      @if (!hideTopbar) {
+      <div class="app-versions">
+        Versions: UI {{ uiVersion }}, API {{ apiVersion }}
+      </div>
+      <img class="crucible-logo" [src]="
+                        (theme$ | async) === 'light-theme'
+              ? 'assets/img/crucible-logo-light.png'
+              : 'assets/img/crucible-logo-dark.png'
+          " />
+      } @else {
+      <div class="app-versions">
+        Versions: UI {{ uiVersion }}, API {{ apiVersion }}
+      </div>
+      }
     </div>
-    <img class="crucible-logo" [src]="
-                      (theme$ | async) === 'light-theme'
-            ? 'assets/img/crucible-logo-light.png'
-            : 'assets/img/crucible-logo-dark.png'
-        " />
-    }
-    @else {
-    <div class="app-versions">
-      Versions: UI {{ uiVersion }}, API {{ apiVersion }}
-    </div>
-    }
   </mat-sidenav>
   <mat-sidenav-content>
     @if (!hideTopbar) {
@@ -194,6 +204,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <span>
       <app-admin-competency-frameworks [loggedInUserId]="loggedInUserId"
         [canEdit]="canManageCompetencyFrameworks"></app-admin-competency-frameworks>
+    </span>
+    }
+    @if (canViewCompetencyFrameworks && (selectedTab === proficiencyScalesText)) {
+    <span>
+      <app-admin-proficiency-scales [loggedInUserId]="loggedInUserId"
+        [canEdit]="canManageCompetencyFrameworks"></app-admin-proficiency-scales>
     </span>
     }
     @if (canViewCatalogs && (selectedTab === catalogsText)) {

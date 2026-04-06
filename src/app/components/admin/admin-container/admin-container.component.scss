@@ -47,6 +47,13 @@
   border-bottom: 2px solid var(--mat-sys-surface-container);
 }
 
+// Scrollable list — same pattern as msel.component.scss .list-container
+.appitems-container {
+  width: 100%;
+  height: calc(100% - 142px);
+  overflow-y: auto;
+}
+
 .pull-right {
   position: absolute;
   right: 0px;
@@ -80,21 +87,22 @@
   padding: 0.5em;
 }
 
+.bottom-div {
+  height: 80px;
+  width: 100%;
+}
+
 .crucible-logo {
-  position: absolute;
-  bottom: 0;
+  height: 40px;
+  width: auto;
 }
 
 .app-versions {
   width: 100%;
-  position: absolute;
-  bottom: 0;
   padding-bottom: 5px;
   padding-top: 5px;
   text-align: center;
   font-size: x-small;
-  border-bottom: 2px;
-  border-bottom-style: solid;
   border-top: 2px;
   border-top-style: solid;
   border-color: var(--mat-sys-surface-container);
