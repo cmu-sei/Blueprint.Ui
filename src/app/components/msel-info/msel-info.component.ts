@@ -1,7 +1,7 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, HostListener, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { TeamQuery } from 'src/app/data/team/team.query';
@@ -757,6 +757,17 @@ export class MselInfoComponent implements OnDestroy, OnInit {
         );
     } else {
       this.steamfitterScenarioName = '';
+    }
+  }
+
+  hasPendingChanges(): boolean {
+    return this.isChanged || this.hasUnsavedPageChanges();
+  }
+
+  @HostListener('window:beforeunload', ['$event'])
+  onBeforeUnload(event: BeforeUnloadEvent) {
+    if (this.hasPendingChanges()) {
+      event.preventDefault();
     }
   }
 
