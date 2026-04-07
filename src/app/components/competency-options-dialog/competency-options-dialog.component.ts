@@ -24,9 +24,15 @@ import { v4 as uuidv4 } from 'uuid';
 })
 export class CompetencyOptionsDialogComponent implements OnDestroy {
   searchText = '';
+  typeFilter = '';
+  pageIndex = 0;
+  pageSize = 50;
   frameworks: CompetencyFramework[] = [];
   selectedFramework: CompetencyFramework | null = null;
   competencies: Competency[] = [];
+  competencyTypes: string[] = [];
+  private competencyTypeMap = new Map<string, string>();
+  private taxonomyLevels: string[] = [];
   selected = new Set<string>(); // tracks by idNumber
   loading = false;
   private unsubscribe$ = new Subject();
@@ -78,15 +84,19 @@ export class CompetencyOptionsDialogComponent implements OnDestroy {
     this.selectedFramework = fw;
     this.loading = true;
     this.searchText = '';
+    this.typeFilter = '';
     this.competencyFrameworkService.getCompetencyFramework(fw.id)
       .pipe(take(1))
       .subscribe({
         next: (framework) => {
           this.competencies = framework.competencies || [];
+          this.buildTypeMap(framework);
           this.loading = false;
         },
         error: () => {
           this.competencies = [];
+          this.competencyTypes = [];
+          this.competencyTypeMap.clear();
           this.loading = false;
         }
       });
@@ -94,6 +104,9 @@ export class CompetencyOptionsDialogComponent implements OnDestroy {
 
   get filteredCompetencies(): Competency[] {
     let results = this.competencies;
+    if (this.typeFilter) {
+      results = results.filter(c => this.competencyTypeMap.get(c.id) === this.typeFilter);
+    }
     if (this.searchText) {
       const s = this.searchText.toLowerCase();
       results = results.filter(c =>
@@ -103,6 +116,24 @@ export class CompetencyOptionsDialogComponent implements OnDestroy {
       );
     }
     return results;
+  }
+
+  get paginatedCompetencies(): Competency[] {
+    const start = this.pageIndex * this.pageSize;
+    return this.filteredCompetencies.slice(start, start + this.pageSize);
+  }
+
+  onPageChanged(event: any): void {
+    this.pageIndex = event.pageIndex;
+    this.pageSize = event.pageSize;
+  }
+
+  onFilterChanged(): void {
+    this.pageIndex = 0;
+  }
+
+  getType(c: Competency): string {
+    return this.competencyTypeMap.get(c.id) || 'Other';
   }
 
   get selectedCount(): number {
@@ -146,13 +177,75 @@ export class CompetencyOptionsDialogComponent implements OnDestroy {
   }
 
   selectAll(): void {
-    for (const c of this.competencies) {
+    for (const c of this.filteredCompetencies) {
       this.selected.add(c.idNumber);
     }
   }
 
   deselectAll(): void {
-    this.selected.clear();
+    if (this.typeFilter || this.searchText) {
+      for (const c of this.filteredCompetencies) {
+        this.selected.delete(c.idNumber);
+      }
+    } else {
+      this.selected.clear();
+    }
+  }
+
+  private buildTypeMap(fw: CompetencyFramework) {
+    this.competencyTypeMap.clear();
+    const comps = fw.competencies || [];
+    const byId = new Map<string, Competency>();
+    comps.forEach(c => byId.set(c.id, c));
+
+    const hasHierarchy = comps.some(c => c.parentId && byId.has(c.parentId));
+
+    this.taxonomyLevels = (fw.taxonomies || '')
+      .split(',')
+      .map(t => t.trim())
+      .filter(t => t.length > 0);
+
+    for (const c of comps) {
+      const idType = this.deriveTypeFromId(c.idNumber);
+      if (idType !== 'Other') {
+        this.competencyTypeMap.set(c.id, idType);
+      } else if (hasHierarchy && this.taxonomyLevels.length > 0) {
+        const depth = this.getDepth(c, byId);
+        this.competencyTypeMap.set(c.id, this.taxonomyLevels[Math.min(depth, this.taxonomyLevels.length - 1)]);
+      } else if (hasHierarchy) {
+        const isRoot = !c.parentId || !byId.has(c.parentId);
+        this.competencyTypeMap.set(c.id, isRoot ? 'Category' : 'Other');
+      } else {
+        this.competencyTypeMap.set(c.id, 'Other');
+      }
+    }
+
+    this.competencyTypes = [...new Set(this.competencyTypeMap.values())].sort();
+  }
+
+  private deriveTypeFromId(idNumber: string): string {
+    if (!idNumber) return 'Other';
+    if (idNumber.includes('WRL')) return 'Work Role';
+    if (/^[TKSA][\d-]/.test(idNumber)) {
+      const prefixMap: Record<string, string> = {
+        'T': 'Task', 'K': 'Knowledge', 'S': 'Skill', 'A': 'Ability',
+      };
+      return prefixMap[idNumber.charAt(0)] || 'Other';
+    }
+    if (/^[A-Z]{2}-[A-Z]{3}-\d+$/.test(idNumber)) return 'Work Role';
+    if (/^[A-Z]{3}$/.test(idNumber)) return 'Specialty Area';
+    if (/^[A-Z]{2}$/.test(idNumber)) return 'Category';
+    return 'Other';
+  }
+
+  private getDepth(comp: Competency, byId: Map<string, Competency>): number {
+    let depth = 0;
+    let current = comp;
+    while (current.parentId && byId.has(current.parentId)) {
+      depth++;
+      current = byId.get(current.parentId);
+    }
+    return depth;
   }
 
   handleClose() {
