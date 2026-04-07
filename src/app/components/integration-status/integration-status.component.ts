@@ -14,6 +14,7 @@ import { DialogService } from 'src/app/services/dialog/dialog.service';
 export class IntegrationStatusComponent {
   @Input() msel: MselPlus;
   @Output() closed = new EventEmitter<void>();
+  cancelClicked = false;
 
   constructor(
     private mselDataService: MselDataService,
@@ -25,7 +26,7 @@ export class IntegrationStatusComponent {
   }
 
   get isCancelling(): boolean {
-    return this.msel?.integrationStatus?.startsWith('Cancelling') || false;
+    return this.cancelClicked || this.msel?.integrationStatus?.startsWith('Cancelling') || false;
   }
 
   get isPulling(): boolean {
@@ -40,6 +41,7 @@ export class IntegrationStatusComponent {
   }
 
   cancelPush() {
+    this.cancelClicked = true;
     this.mselDataService.cancelIntegrations(this.msel.id);
   }
 
