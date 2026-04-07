@@ -644,6 +644,10 @@ export class MselDataService {
     this.mselStore.upsert(msel.id, msel);
   }
 
+  updateIntegrationStatus(mselId: string, integrationStatus: string) {
+    this.mselStore.update(mselId, { integrationStatus });
+  }
+
   deleteFromStore(id: string) {
     this.mselStore.remove(id);
   }
