@@ -100,6 +100,7 @@ export class HomeAppComponent implements OnDestroy, OnInit {
         if (!this.selectedMselId) {
           // set appTitle and topbarText for top level
           this.mselDataService.setActive('');
+          this.signalRService.clearPresence();
           this.topbarText = this.topbarTextBase;
           this.titleService.setTitle(this.appTitle);
         }
