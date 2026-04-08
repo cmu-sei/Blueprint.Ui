@@ -4,7 +4,7 @@
 
 .scrolling-region {
   width: 100%;
-  height: calc(100vh - 60px);
+  height: calc(100% - 60px);
   overflow: auto;
   display: flex;
   flex-direction: column;

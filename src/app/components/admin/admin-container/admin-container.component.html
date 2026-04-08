@@ -6,6 +6,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
 
 <mat-sidenav-container class="appcontent-container" autosize>
   <mat-sidenav class="appbarmenu-container" #sidenav mode="side" [(opened)]="isSidebarOpen">
+    <div class="sidenav-content-wrapper">
     <mat-toolbar class="sidenav-header" title="Exit Administration" [routerLink]="['/build/']">
       <a class="nolink" [routerLink]="['/build/']">
         <div class="cssLayoutRowStartCenter">
@@ -134,7 +135,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       }
     </mat-list>
     @if (!hideTopbar) {
-    <div class="app-versions" style="margin-bottom: 58px;">
+    <div class="app-versions">
       Versions: UI {{ uiVersion }}, API {{ apiVersion }}
     </div>
     <img class="crucible-logo" [src]="
@@ -148,6 +149,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       Versions: UI {{ uiVersion }}, API {{ apiVersion }}
     </div>
     }
+    </div>
   </mat-sidenav>
   <mat-sidenav-content>
     @if (!hideTopbar) {
