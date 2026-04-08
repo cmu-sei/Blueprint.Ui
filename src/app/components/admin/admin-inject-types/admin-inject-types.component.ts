@@ -139,7 +139,16 @@ export class AdminInjectTypesComponent implements OnDestroy, AfterViewInit {
   }
 
   copyInjectType(injectType: InjectType): void {
-    // this.injectTypeDataService.copy(id);
+    const newId = uuidv4();
+    const copy: InjectType = {
+      ...injectType,
+      id: newId,
+      name: 'Copy of ' + injectType.name,
+      dataFields: injectType.dataFields
+        ? injectType.dataFields.map(df => ({ ...df, id: uuidv4(), injectTypeId: newId }))
+        : [],
+    };
+    this.injectTypeDataService.add(copy);
   }
 
   sortChanged(sort: Sort) {

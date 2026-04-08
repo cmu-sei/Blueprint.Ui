@@ -63,6 +63,8 @@
 
 .detail-row {
   height: 0;
+  min-height: 0;
+  --mat-table-row-item-outline-width: 0px;
 }
 
 .element-row td {
