@@ -17,6 +17,16 @@ export class AdminCompetencyEditDialogComponent {
   searchText = '';
   filteredCompetencies: Competency[] = [];
   private allCompetencies: Competency[] = [];
+  typeHint = '';
+  typeHintLocked = false;
+  availableTypes: string[] = [];
+  private typePrefixMap: Record<string, string> = {
+    'Work Role': 'WRL-',
+    'Task': 'T',
+    'Knowledge': 'K',
+    'Skill': 'S',
+    'Ability': 'A',
+  };
 
   constructor(
     dialogRef: MatDialogRef<AdminCompetencyEditDialogComponent>,
@@ -27,6 +37,30 @@ export class AdminCompetencyEditDialogComponent {
       this.data.competency.relatedIdNumbers = [];
     }
     this.allCompetencies = this.data.allCompetencies || [];
+    this.typeHint = this.data.typeHint || '';
+    this.typeHintLocked = !!this.data.typeHint;
+    this.availableTypes = this.data.availableTypes || [];
+    if (this.typeHintLocked && !this.data.competency.id) {
+      this.onTypeChange(this.typeHint);
+    }
+  }
+
+  onTypeChange(type: string) {
+    const oldPrefix = this.typePrefixMap[this.typeHint] || '';
+    this.typeHint = type;
+    const newPrefix = this.typePrefixMap[type] || '';
+    const current = this.data.competency.idNumber || '';
+    if (!current) {
+      // Empty — set new prefix
+      this.data.competency.idNumber = newPrefix;
+    } else if (oldPrefix && newPrefix && current.startsWith(oldPrefix)) {
+      // Both types have prefixes — swap old for new
+      this.data.competency.idNumber = newPrefix + current.substring(oldPrefix.length);
+    } else if (!oldPrefix && newPrefix && !current) {
+      // Old type had no prefix, new does, field empty — set prefix
+      this.data.competency.idNumber = newPrefix;
+    }
+    // Otherwise leave the ID as-is
   }
 
   errorFree() {

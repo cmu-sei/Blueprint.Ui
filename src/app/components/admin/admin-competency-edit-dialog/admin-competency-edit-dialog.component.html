@@ -11,7 +11,7 @@ project root for license information.
     @if (!data.competency.id) {
       <span>Add</span>
     }
-    Competency
+    {{ typeHint || 'Competency' }}
     &nbsp;
     <button
       mat-icon-button
@@ -25,6 +25,18 @@ project root for license information.
   </div>
   @if (!!data && data.competency !== undefined && data.competency !== null) {
     <div mat-dialog-content>
+      @if (availableTypes.length > 0) {
+      <div class="add-margin">
+        <mat-form-field class="full-width">
+          <mat-label>Type</mat-label>
+          <mat-select [value]="typeHint" (selectionChange)="onTypeChange($event.value)" [disabled]="typeHintLocked">
+            @for (t of availableTypes; track t) {
+            <mat-option [value]="t">{{ t }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      </div>
+      }
       <div class="add-margin">
         <mat-form-field class="full-width">
           <mat-label>ID Number</mat-label>

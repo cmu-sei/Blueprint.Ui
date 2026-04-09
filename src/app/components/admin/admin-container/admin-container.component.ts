@@ -43,7 +43,7 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
   galleryCardsText = 'Gallery Cards';
   citeActionsText = 'CITE Actions';
   citeDutiesText = 'CITE Duties';
-  competencyFrameworksText = 'Competencies';
+  competencyFrameworksText = 'Competency Frameworks';
   proficiencyScalesText = 'Proficiency Scales';
   selectedTab = 'Organizations';
   displayedSection = '';

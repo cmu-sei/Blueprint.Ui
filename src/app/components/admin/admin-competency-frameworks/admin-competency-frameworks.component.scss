@@ -24,6 +24,42 @@
   font-size: 14px;
 }
 
+.table {
+  font-size: small;
+  width: 100%;
+  overflow: none;
+  background: transparent;
+}
+
+.header-row {
+  min-height: 18px;
+  background: transparent;
+}
+
+.row {
+  min-height: 18px;
+}
+
+.row,
+.header-row {
+  display: flex;
+  border-bottom-width: 1px;
+  border-bottom-style: solid;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.header-cell {
+  font-weight: bold;
+}
+
+.cell,
+.header-cell {
+  overflow: hidden;
+  word-wrap: break-word;
+  text-align: left;
+}
+
 .element-row {
   position: relative;
   cursor: pointer;
@@ -35,6 +71,14 @@
 
 .detail-row {
   height: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+::ng-deep .detail-row > .mat-mdc-cell {
+  padding: 0 !important;
+  min-height: 0;
+  border-bottom-width: 0;
 }
 
 .element-row td {
@@ -71,7 +115,7 @@
   flex-direction: column;
   width: 100%;
   min-width: 660px;
-  padding: 8px 0;
+  padding: 0;
   gap: 8px;
 }
 
@@ -201,8 +245,71 @@
   flex: 2 1 40%;
 }
 
+.comp-col-category {
+  flex: 0 0 15%;
+}
+
 .comp-col-related {
   flex: 1 1 15%;
+}
+
+// Sub-table expandable rows
+.sub-element-row {
+  cursor: pointer;
+}
+
+.sub-element-row:hover {
+  background-color: var(--mat-sys-surface-variant);
+}
+
+.sub-element-row-expanded {
+  background-color: var(--mat-sys-surface-variant);
+}
+
+.sub-detail-row {
+  height: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+::ng-deep .sub-detail-row > .mat-mdc-cell {
+  padding: 0 !important;
+  min-height: 0;
+  border-bottom-width: 0;
+}
+
+
+.sub-expanded-detail-cell {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 0;
+}
+
+.sub-detail-content {
+  padding: 8px 16px 8px 32px;
+}
+
+.sub-detail-section {
+  margin-bottom: 8px;
+}
+
+.sub-detail-label {
+  font-weight: bold;
+  font-size: 12px;
+  margin-bottom: 2px;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.sub-detail-item {
+  font-size: 13px;
+  padding: 2px 0;
+}
+
+.sub-detail-type {
+  color: var(--mat-sys-on-surface-variant);
+  font-size: 12px;
+  margin-left: 4px;
 }
 
 .element-toolbar {

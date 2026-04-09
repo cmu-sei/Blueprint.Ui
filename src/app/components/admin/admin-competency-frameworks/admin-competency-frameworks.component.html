@@ -87,7 +87,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     </ng-container>
     <!-- description Column -->
     <ng-container matColumnDef="description">
-      <mat-header-cell title="Description" *matHeaderCellDef class="column-description">
+      <mat-header-cell mat-sort-header="description" title="Description" *matHeaderCellDef class="column-description">
         Description
       </mat-header-cell>
       <mat-cell *matCellDef="let element" class="column-description">
@@ -99,6 +99,111 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <mat-cell class="expanded-detail-cell" *matCellDef="let element" [attr.colspan]="displayedColumns.length">
         <div [@detailExpand]="element.id == expandedElementId ? 'expanded' : 'collapsed'" style="overflow: hidden">
           @if (expandedElementId === element.id) {
+          <!-- Work Roles -->
+          @if (workRoles.length > 0) {
+          <mat-expansion-panel class="expansion-panel">
+            <mat-expansion-panel-header class="expansion-panel-header">
+              Work Roles ({{ workRoles.length }})
+            </mat-expansion-panel-header>
+            <div class="element-toolbar" (click)="$event.stopPropagation();">
+              <mat-form-field style="width: 250px; margin-left: 10px;">
+                <input matInput [formControl]="workRoleFilterControl" placeholder="Search work roles" />
+                @if (workRoleFilterString) {
+                <button mat-icon-button matSuffix (click)="workRoleFilterControl.setValue('')" title="Clear Search">
+                  <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline"></mat-icon>
+                </button>
+                }
+              </mat-form-field>
+              <div class="button-end">
+                <mat-paginator #workRolePaginator [pageIndex]="0" [pageSize]="10"
+                  [pageSizeOptions]="[10, 20, 50, 100]"></mat-paginator>
+              </div>
+            </div>
+            <div class="expanded-detail-div">
+              <mat-table [dataSource]="workRoleDataSource" matSort (matSortChange)="workRoleSortChanged($event)" multiTemplateDataRows>
+                <!-- action column -->
+                <ng-container matColumnDef="action">
+                  <mat-header-cell *matHeaderCellDef class="comp-col-action">
+                    @if (canEdit) {
+                    <button mat-icon-button (click)="addOrEditCompetency(null, 'Work Role'); $event.stopPropagation();" title="Add work role">
+                      <mat-icon class="mdi-18px" fontIcon="mdi-plus-circle"></mat-icon>
+                    </button>
+                    }
+                  </mat-header-cell>
+                  <mat-cell *matCellDef="let c" class="comp-col-action">
+                    @if (canEdit) {
+                    <button mat-icon-button class="msel-action" (click)="addOrEditCompetency(c, 'Work Role'); $event.stopPropagation();" title="Edit {{ c.idNumber }}">
+                      <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline"></mat-icon>
+                    </button>
+                    <button mat-icon-button class="msel-action" (click)="deleteCompetency(c); $event.stopPropagation();" title="Delete {{ c.idNumber }}">
+                      <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline"></mat-icon>
+                    </button>
+                    }
+                  </mat-cell>
+                </ng-container>
+                <!-- idNumber column -->
+                <ng-container matColumnDef="idNumber">
+                  <mat-header-cell mat-sort-header="idNumber" *matHeaderCellDef class="comp-col-id">ID</mat-header-cell>
+                  <mat-cell *matCellDef="let c" class="comp-col-id">{{ c.idNumber }}</mat-cell>
+                </ng-container>
+                <!-- shortName column -->
+                <ng-container matColumnDef="shortName">
+                  <mat-header-cell mat-sort-header="shortName" *matHeaderCellDef class="comp-col-name">Name</mat-header-cell>
+                  <mat-cell *matCellDef="let c" class="comp-col-name">{{ c.shortName }}</mat-cell>
+                </ng-container>
+                <!-- category column -->
+                <ng-container matColumnDef="category">
+                  <mat-header-cell mat-sort-header="category" *matHeaderCellDef class="comp-col-category">Category</mat-header-cell>
+                  <mat-cell *matCellDef="let c" class="comp-col-category">{{ getWorkRoleCategory(c) }}</mat-cell>
+                </ng-container>
+                <!-- description column -->
+                <ng-container matColumnDef="description">
+                  <mat-header-cell mat-sort-header="description" *matHeaderCellDef class="comp-col-desc">Description</mat-header-cell>
+                  <mat-cell *matCellDef="let c" class="comp-col-desc">{{ c.description }}</mat-cell>
+                </ng-container>
+                <!-- Expanded detail -->
+                <ng-container matColumnDef="expandedDetail">
+                  <mat-cell *matCellDef="let c" class="sub-expanded-detail-cell" [attr.colspan]="workRoleDisplayedColumns.length">
+                    <div [@subDetailExpand]="c.id === expandedWorkRoleId ? 'expanded' : 'collapsed'" style="overflow: hidden">
+                      @if (expandedWorkRoleId === c.id) {
+                      <div class="sub-detail-content">
+                        @if (getRelatedCompetencies(c).length > 0) {
+                        <div class="sub-detail-section">
+                          <div class="sub-detail-label">Related ({{ getRelatedCompetencies(c).length }})</div>
+                          @for (r of getRelatedCompetencies(c); track r.id) {
+                          <div class="sub-detail-item"><strong>{{ r.idNumber }}</strong> — {{ r.shortName }}</div>
+                          }
+                        </div>
+                        }
+                        @if (getChildCompetencies(c).length > 0) {
+                        <div class="sub-detail-section">
+                          <div class="sub-detail-label">Children ({{ getChildCompetencies(c).length }})</div>
+                          @for (ch of getChildCompetencies(c); track ch.id) {
+                          <div class="sub-detail-item"><strong>{{ ch.idNumber }}</strong> — {{ ch.shortName }}</div>
+                          }
+                        </div>
+                        }
+                        @if (getRelatedCompetencies(c).length === 0 && getChildCompetencies(c).length === 0) {
+                        <div class="sub-detail-item" style="font-style: italic;">No related or child competencies</div>
+                        }
+                      </div>
+                      }
+                    </div>
+                  </mat-cell>
+                </ng-container>
+                <!-- row definitions -->
+                <mat-header-row *matHeaderRowDef="workRoleDisplayedColumns"></mat-header-row>
+                <mat-row *matRowDef="let row; columns: workRoleDisplayedColumns;"
+                  [class]="expandedWorkRoleId === row.id ? 'sub-element-row sub-element-row-expanded' : 'sub-element-row'"
+                  (click)="toggleWorkRoleExpand(row)"></mat-row>
+                <mat-row *matRowDef="let row; columns: ['expandedDetail']" class="sub-detail-row"></mat-row>
+              </mat-table>
+              @if (workRoleDataSource.filteredData.length === 0) {
+                <div class="no-results-inline">No work roles found</div>
+              }
+            </div>
+          </mat-expansion-panel>
+          }
           <!-- Competencies -->
           <mat-expansion-panel class="expansion-panel">
             <mat-expansion-panel-header class="expansion-panel-header">
@@ -130,7 +235,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
               </div>
             </div>
             <div class="expanded-detail-div">
-              <mat-table [dataSource]="competencyDataSource" matSort #competencyTableSort="matSort" (matSortChange)="competencySortChanged($event)">
+              <mat-table [dataSource]="competencyDataSource" matSort #competencyTableSort="matSort" (matSortChange)="competencySortChanged($event)" multiTemplateDataRows>
                 <!-- action column -->
                 <ng-container matColumnDef="action">
                   <mat-header-cell *matHeaderCellDef class="comp-col-action">
@@ -171,14 +276,42 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   <mat-header-cell mat-sort-header="description" *matHeaderCellDef class="comp-col-desc">Description</mat-header-cell>
                   <mat-cell *matCellDef="let c" class="comp-col-desc">{{ c.description }}</mat-cell>
                 </ng-container>
-                <!-- relatedIdNumbers column -->
-                <ng-container matColumnDef="relatedIdNumbers">
-                  <mat-header-cell *matHeaderCellDef class="comp-col-related">Related</mat-header-cell>
-                  <mat-cell *matCellDef="let c" class="comp-col-related">{{ c.relatedIdNumbers?.join(', ') }}</mat-cell>
+                <!-- Expanded detail -->
+                <ng-container matColumnDef="expandedDetail">
+                  <mat-cell *matCellDef="let c" class="sub-expanded-detail-cell" [attr.colspan]="competencyDisplayedColumns.length">
+                    <div [@subDetailExpand]="c.id === expandedCompetencyId ? 'expanded' : 'collapsed'" style="overflow: hidden">
+                      @if (expandedCompetencyId === c.id) {
+                      <div class="sub-detail-content">
+                        @if (getRelatedCompetencies(c).length > 0) {
+                        <div class="sub-detail-section">
+                          <div class="sub-detail-label">Related ({{ getRelatedCompetencies(c).length }})</div>
+                          @for (r of getRelatedCompetencies(c); track r.id) {
+                          <div class="sub-detail-item"><strong>{{ r.idNumber }}</strong> — {{ r.shortName }} <span class="sub-detail-type">{{ getCompetencyType(r) }}</span></div>
+                          }
+                        </div>
+                        }
+                        @if (getChildCompetencies(c).length > 0) {
+                        <div class="sub-detail-section">
+                          <div class="sub-detail-label">Children ({{ getChildCompetencies(c).length }})</div>
+                          @for (ch of getChildCompetencies(c); track ch.id) {
+                          <div class="sub-detail-item"><strong>{{ ch.idNumber }}</strong> — {{ ch.shortName }} <span class="sub-detail-type">{{ getCompetencyType(ch) }}</span></div>
+                          }
+                        </div>
+                        }
+                        @if (getRelatedCompetencies(c).length === 0 && getChildCompetencies(c).length === 0) {
+                        <div class="sub-detail-item" style="font-style: italic;">No related or child competencies</div>
+                        }
+                      </div>
+                      }
+                    </div>
+                  </mat-cell>
                 </ng-container>
                 <!-- row definitions -->
                 <mat-header-row *matHeaderRowDef="competencyDisplayedColumns"></mat-header-row>
-                <mat-row *matRowDef="let row; columns: competencyDisplayedColumns;"></mat-row>
+                <mat-row *matRowDef="let row; columns: competencyDisplayedColumns;"
+                  [class]="expandedCompetencyId === row.id ? 'sub-element-row sub-element-row-expanded' : 'sub-element-row'"
+                  (click)="toggleCompetencyExpand(row)"></mat-row>
+                <mat-row *matRowDef="let row; columns: ['expandedDetail']" class="sub-detail-row"></mat-row>
               </mat-table>
               @if (competencyDataSource.filteredData.length === 0) {
                 <div class="no-results-inline">No competencies found</div>
