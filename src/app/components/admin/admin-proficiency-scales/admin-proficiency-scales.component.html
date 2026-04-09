@@ -8,13 +8,22 @@ project root for license information or contact permission@sei.cmu.edu for full 
   <div class="sp-icon">
     <mat-icon class="mdi-24px" fontIcon="mdi-tune-variant" [ngStyle]="{'color': 'var(--mat-sys-primary)'}"></mat-icon>
   </div>
-  <span style="margin-left: 10px; font-size: 14px; color: var(--mat-sys-on-surface-variant);">
-    Define reusable proficiency scales (e.g. Basic / Intermediate / Advanced) for competency rating.
-  </span>
+  <mat-form-field style="width: 300px; margin-left: 10px;">
+    <input matInput [formControl]="filterControl" placeholder="Search" />
+    @if (filterString) {
+    <button mat-icon-button matSuffix (click)="filterControl.setValue('')" title="Clear Search">
+      <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline"></mat-icon>
+    </button>
+    }
+  </mat-form-field>
+  <div class="button-end">
+    <mat-paginator #paginator [pageIndex]="0" [pageSize]="20"
+      [pageSizeOptions]="[5, 10, 15, 20, 25, 50, 100, 200]"></mat-paginator>
+  </div>
 </div>
 
 <section class="scrolling-region">
-  <mat-table [dataSource]="scaleDataSource" matSort (matSortChange)="scaleSortChanged($event)">
+  <table mat-table #scaleTable [dataSource]="scaleDataSource" matSort (matSortChange)="scaleSortChanged($event)" multiTemplateDataRows>
     <!-- action column -->
     <ng-container matColumnDef="action">
       <mat-header-cell *matHeaderCellDef class="sub-col-action">
@@ -49,76 +58,81 @@ project root for license information or contact permission@sei.cmu.edu for full 
     </ng-container>
     <!-- levels column -->
     <ng-container matColumnDef="levels">
-      <mat-header-cell *matHeaderCellDef class="sub-col-levels">Levels</mat-header-cell>
+      <mat-header-cell mat-sort-header="levels" *matHeaderCellDef class="sub-col-levels">Levels</mat-header-cell>
       <mat-cell *matCellDef="let scale" class="sub-col-levels">{{ scale.proficiencyLevels?.length || 0 }}</mat-cell>
+    </ng-container>
+    <!-- Expanded Content Column -->
+    <ng-container matColumnDef="expandedDetail">
+      <mat-cell class="expanded-detail-cell" *matCellDef="let scale" [attr.colspan]="scaleDisplayedColumns.length">
+        <div [@detailExpand]="scale.id == expandedScaleId ? 'expanded' : 'collapsed'" style="overflow: hidden">
+          @if (expandedScaleId === scale.id) {
+          <div class="levels-detail">
+            <div class="levels-title">
+              Levels for "{{ scale.name }}"
+            </div>
+            <mat-table [dataSource]="getLevelDataSource(scale)" matSort (matSortChange)="levelSortChanged($event)">
+              <!-- action column -->
+              <ng-container matColumnDef="action">
+                <mat-header-cell *matHeaderCellDef class="lv-col-action">
+                  @if (canEdit) {
+                  <button mat-icon-button (click)="addOrEditLevel(scale, null)" title="Add level" style="outline: none;">
+                    <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle"></mat-icon>
+                  </button>
+                  } &nbsp;
+                </mat-header-cell>
+                <mat-cell *matCellDef="let level" class="lv-col-action">
+                  @if (canEdit) {
+                  <button mat-icon-button class="msel-action" (click)="addOrEditLevel(scale, level); $event.stopPropagation();"
+                    title="Edit {{ level.name }}">
+                    <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline"></mat-icon>
+                  </button>
+                  <button mat-icon-button class="msel-action" (click)="deleteLevel(scale, level); $event.stopPropagation();"
+                    title="Delete {{ level.name }}">
+                    <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline"></mat-icon>
+                  </button>
+                  }
+                </mat-cell>
+              </ng-container>
+              <!-- name column -->
+              <ng-container matColumnDef="name">
+                <mat-header-cell mat-sort-header="name" *matHeaderCellDef class="lv-col-name">Name</mat-header-cell>
+                <mat-cell *matCellDef="let level" class="lv-col-name">{{ level.name }}</mat-cell>
+              </ng-container>
+              <!-- value column -->
+              <ng-container matColumnDef="value">
+                <mat-header-cell mat-sort-header="value" *matHeaderCellDef class="lv-col-value">Value</mat-header-cell>
+                <mat-cell *matCellDef="let level" class="lv-col-value">{{ level.value }}</mat-cell>
+              </ng-container>
+              <!-- displayOrder column -->
+              <ng-container matColumnDef="displayOrder">
+                <mat-header-cell mat-sort-header="displayOrder" *matHeaderCellDef class="lv-col-order">Order</mat-header-cell>
+                <mat-cell *matCellDef="let level" class="lv-col-order">{{ level.displayOrder }}</mat-cell>
+              </ng-container>
+              <!-- description column -->
+              <ng-container matColumnDef="description">
+                <mat-header-cell mat-sort-header="description" *matHeaderCellDef class="lv-col-desc">Description</mat-header-cell>
+                <mat-cell *matCellDef="let level" class="lv-col-desc">{{ level.description }}</mat-cell>
+              </ng-container>
+              <!-- row definitions -->
+              <mat-header-row *matHeaderRowDef="levelDisplayedColumns"></mat-header-row>
+              <mat-row *matRowDef="let row; columns: levelDisplayedColumns;"></mat-row>
+            </mat-table>
+            @if (scale.proficiencyLevels?.length === 0) {
+              <div class="no-results-inline">No levels defined</div>
+            }
+          </div>
+          }
+        </div>
+      </mat-cell>
     </ng-container>
     <!-- row definitions -->
     <mat-header-row *matHeaderRowDef="scaleDisplayedColumns"></mat-header-row>
-    <mat-row *matRowDef="let row; columns: scaleDisplayedColumns;" (click)="toggleScaleExpand(row.id)"
+    <mat-row *matRowDef="let row; columns: scaleDisplayedColumns;" matRipple (click)="toggleScaleExpand(row)"
       [class]="expandedScaleId === row.id ? 'element-row element-row-expanded' : 'element-row'">
     </mat-row>
-  </mat-table>
-
-  <!-- Expanded scale levels -->
-  @for (scale of scales; track scale.id) {
-    @if (expandedScaleId === scale.id) {
-    <div class="levels-detail">
-      <div class="levels-title">
-        Levels for "{{ scale.name }}"
-      </div>
-      <mat-table [dataSource]="getLevelDataSource(scale)" matSort (matSortChange)="levelSortChanged($event)">
-        <!-- action column -->
-        <ng-container matColumnDef="action">
-          <mat-header-cell *matHeaderCellDef class="sub-col-action">
-            @if (canEdit) {
-            <button mat-icon-button (click)="addOrEditLevel(scale, null)" title="Add level" style="outline: none;">
-              <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle"></mat-icon>
-            </button>
-            } &nbsp;
-          </mat-header-cell>
-          <mat-cell *matCellDef="let level" class="sub-col-action">
-            @if (canEdit) {
-            <button mat-icon-button class="msel-action" (click)="addOrEditLevel(scale, level); $event.stopPropagation();"
-              title="Edit {{ level.name }}">
-              <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline"></mat-icon>
-            </button>
-            <button mat-icon-button class="msel-action" (click)="deleteLevel(scale, level); $event.stopPropagation();"
-              title="Delete {{ level.name }}">
-              <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline"></mat-icon>
-            </button>
-            }
-          </mat-cell>
-        </ng-container>
-        <!-- name column -->
-        <ng-container matColumnDef="name">
-          <mat-header-cell mat-sort-header="name" *matHeaderCellDef class="lv-col-name">Name</mat-header-cell>
-          <mat-cell *matCellDef="let level" class="lv-col-name">{{ level.name }}</mat-cell>
-        </ng-container>
-        <!-- value column -->
-        <ng-container matColumnDef="value">
-          <mat-header-cell mat-sort-header="value" *matHeaderCellDef class="lv-col-value">Value</mat-header-cell>
-          <mat-cell *matCellDef="let level" class="lv-col-value">{{ level.value }}</mat-cell>
-        </ng-container>
-        <!-- displayOrder column -->
-        <ng-container matColumnDef="displayOrder">
-          <mat-header-cell mat-sort-header="displayOrder" *matHeaderCellDef class="lv-col-order">Order</mat-header-cell>
-          <mat-cell *matCellDef="let level" class="lv-col-order">{{ level.displayOrder }}</mat-cell>
-        </ng-container>
-        <!-- description column -->
-        <ng-container matColumnDef="description">
-          <mat-header-cell mat-sort-header="description" *matHeaderCellDef class="lv-col-desc">Description</mat-header-cell>
-          <mat-cell *matCellDef="let level" class="lv-col-desc">{{ level.description }}</mat-cell>
-        </ng-container>
-        <!-- row definitions -->
-        <mat-header-row *matHeaderRowDef="levelDisplayedColumns"></mat-header-row>
-        <mat-row *matRowDef="let row; columns: levelDisplayedColumns;"></mat-row>
-      </mat-table>
-      @if (scale.proficiencyLevels?.length === 0) {
-        <div class="no-results-inline">No levels defined</div>
-      }
-    </div>
-    }
-  }
+    <mat-row *matRowDef="let row; columns: ['expandedDetail']" class="detail-row">
+    </mat-row>
+  </table>
 
   @if (scaleDataSource.data.length === 0) {
     <div class="no-results">No proficiency scales defined</div>

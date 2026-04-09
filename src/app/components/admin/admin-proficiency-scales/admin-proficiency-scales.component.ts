@@ -1,8 +1,11 @@
 // Copyright 2026 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
-import { MatTableDataSource } from '@angular/material/table';
+import { Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { UntypedFormControl } from '@angular/forms';
+import { MatPaginator } from '@angular/material/paginator';
+import { MatTable, MatTableDataSource } from '@angular/material/table';
+import { animate, state, style, transition, trigger } from '@angular/animations';
 import { Subject } from 'rxjs';
 import { take, takeUntil } from 'rxjs/operators';
 import {
@@ -21,6 +24,13 @@ import { AdminProficiencyLevelEditDialogComponent } from '../admin-proficiency-l
   selector: 'app-admin-proficiency-scales',
   templateUrl: './admin-proficiency-scales.component.html',
   styleUrls: ['./admin-proficiency-scales.component.scss'],
+  animations: [
+    trigger('detailExpand', [
+      state('collapsed', style({ height: '0px', minHeight: '0', visibility: 'hidden' })),
+      state('expanded', style({ height: '*', visibility: 'visible' })),
+      transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
+    ]),
+  ],
   standalone: false
 })
 export class AdminProficiencyScalesComponent implements OnInit, OnDestroy {
@@ -32,7 +42,11 @@ export class AdminProficiencyScalesComponent implements OnInit, OnDestroy {
   levelDisplayedColumns: string[] = ['action', 'name', 'value', 'displayOrder', 'description'];
   scaleSort: Sort = { active: 'name', direction: 'asc' };
   levelSort: Sort = { active: 'displayOrder', direction: 'asc' };
+  @ViewChild('scaleTable', { static: false }) scaleTable: MatTable<any>;
+  @ViewChild('paginator') paginator: MatPaginator;
   expandedScaleId = '';
+  filterControl = new UntypedFormControl();
+  filterString = '';
   private unsubscribe$ = new Subject();
 
   constructor(
@@ -44,6 +58,12 @@ export class AdminProficiencyScalesComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.loadScales();
+    this.filterControl.valueChanges
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((term) => {
+        this.filterString = term;
+        this.applySorting();
+      });
   }
 
   loadScales() {
@@ -58,11 +78,28 @@ export class AdminProficiencyScalesComponent implements OnInit, OnDestroy {
   applySorting() {
     const col = this.scaleSort.active;
     const isAsc = this.scaleSort.direction !== 'desc';
-    this.scaleDataSource.data = [...this.scales].sort((a, b) => {
-      const aVal = (a[col] || '').toString().toLowerCase();
-      const bVal = (b[col] || '').toString().toLowerCase();
+    let filtered = [...this.scales];
+    if (this.filterString) {
+      const term = this.filterString.toLowerCase();
+      filtered = filtered.filter(s =>
+        s.name?.toLowerCase().includes(term) ||
+        s.description?.toLowerCase().includes(term));
+    }
+    this.scaleDataSource.data = filtered.sort((a, b) => {
+      let aVal: string;
+      let bVal: string;
+      if (col === 'levels') {
+        aVal = (a.proficiencyLevels?.length || 0).toString();
+        bVal = (b.proficiencyLevels?.length || 0).toString();
+        return (Number(aVal) - Number(bVal)) * (isAsc ? 1 : -1);
+      }
+      aVal = (a[col] || '').toString().toLowerCase();
+      bVal = (b[col] || '').toString().toLowerCase();
       return (aVal < bVal ? -1 : aVal > bVal ? 1 : 0) * (isAsc ? 1 : -1);
     });
+    if (this.paginator) {
+      this.scaleDataSource.paginator = this.paginator;
+    }
   }
 
   scaleSortChanged(sort: Sort) {
@@ -70,8 +107,9 @@ export class AdminProficiencyScalesComponent implements OnInit, OnDestroy {
     this.applySorting();
   }
 
-  toggleScaleExpand(scaleId: string) {
-    this.expandedScaleId = this.expandedScaleId === scaleId ? '' : scaleId;
+  toggleScaleExpand(row: ProficiencyScale) {
+    this.expandedScaleId = this.expandedScaleId === row.id ? '' : row.id;
+    this.scaleTable.renderRows();
   }
 
   getLevelDataSource(scale: ProficiencyScale): MatTableDataSource<ProficiencyLevel> {

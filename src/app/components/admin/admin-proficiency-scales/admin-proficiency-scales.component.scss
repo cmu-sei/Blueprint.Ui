@@ -7,6 +7,10 @@
   flex-shrink: 0;
 }
 
+.button-end {
+  margin-left: auto;
+}
+
 .scrolling-region {
   height: calc(100% - 94px);
   overflow: auto;
@@ -26,6 +30,29 @@
   background-color: var(--mat-sys-surface-variant);
 }
 
+.detail-row {
+  height: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+::ng-deep .detail-row .mat-mdc-cell {
+  padding: 0 !important;
+  min-height: 0;
+  border-bottom-width: 0;
+}
+
+.element-row td {
+  border-bottom-width: 0;
+}
+
+.expanded-detail-cell {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 8px 10px;
+}
+
 .sub-col-action {
   flex: 0 0 100px;
   width: 100px;
@@ -43,8 +70,13 @@
   flex: 0 0 80px;
 }
 
+.lv-col-action {
+  flex: 0 0 100px;
+  width: 100px;
+}
+
 .lv-col-name {
-  flex: 1 1 20%;
+  flex: 1 1 30%;
 }
 
 .lv-col-value {
@@ -56,7 +88,7 @@
 }
 
 .lv-col-desc {
-  flex: 2 1 50%;
+  flex: 3 1 55%;
 }
 
 .levels-detail {
