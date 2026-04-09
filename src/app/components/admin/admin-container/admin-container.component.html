@@ -107,7 +107,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <mat-list-item [ngClass]="getSelectedClass(competencyFrameworksText)" id="wrapper showhand"
         (click)="gotoSection(competencyFrameworksText)">
         <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-certificate-outline"></mat-icon>
-        {{ competencyFrameworksText }}
+        {{ competencyFrameworksSidebarText }}
         <button aria-labelledby="competencyFrameworksText" mat-icon-button class="pull-right">
           <mat-icon fontIcon="mdi-chevron-right"></mat-icon>
         </button>
@@ -155,18 +155,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
     </mat-list>
     <div class="bottom-div">
       @if (!hideTopbar) {
-      <div class="app-versions">
-        Versions: UI {{ uiVersion }}, API {{ apiVersion }}
-      </div>
       <img class="crucible-logo" [src]="
                         (theme$ | async) === 'light-theme'
               ? 'assets/img/crucible-logo-light.png'
               : 'assets/img/crucible-logo-dark.png'
           " />
-      } @else {
-      <div class="app-versions">
-        Versions: UI {{ uiVersion }}, API {{ apiVersion }}
-      </div>
       }
     </div>
   </mat-sidenav>
@@ -201,10 +194,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
     </span>
     }
     @if (canViewCompetencyFrameworks && (selectedTab === competencyFrameworksText)) {
-    <span>
       <app-admin-competency-frameworks [loggedInUserId]="loggedInUserId"
         [canEdit]="canManageCompetencyFrameworks"></app-admin-competency-frameworks>
-    </span>
     }
     @if (canViewCompetencyFrameworks && (selectedTab === proficiencyScalesText)) {
     <span>
