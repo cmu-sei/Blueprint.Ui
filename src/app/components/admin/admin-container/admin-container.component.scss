@@ -42,6 +42,46 @@
   border-right: solid var(--mat-sys-surface-container);
 }
 
+.appbarmenu-container-collapsed {
+  width: 50px;
+  border-right: solid var(--mat-sys-surface-container);
+  overflow: hidden;
+}
+
+::ng-deep .appbarmenu-container-collapsed .mat-drawer-inner-container {
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+}
+
+.appbarmenu-container-collapsed .appitems-container {
+  width: 50px;
+  height: calc(100% - 142px);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.appbarmenu-container-collapsed .sidenav-header {
+  justify-content: center;
+  padding: 0;
+}
+
+.appbarmenu-container-collapsed .bottom-div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding-bottom: 10px;
+  height: 80px;
+}
+
+.appbarmenu-container-collapsed .crucible-logo {
+  width: 40px;
+  height: auto;
+  margin-top: 5px;
+}
+
 .sidenav-header {
   height: 40px;
   border-bottom: 2px solid var(--mat-sys-surface-container);
@@ -90,6 +130,12 @@
 .bottom-div {
   height: 80px;
   width: 100%;
+}
+
+.collapse-section {
+  display: flex;
+  justify-content: flex-end;
+  margin-right: 10px;
 }
 
 .crucible-logo {

@@ -44,11 +44,28 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
   citeActionsText = 'CITE Actions';
   citeDutiesText = 'CITE Duties';
   competencyFrameworksText = 'Competency Frameworks';
+  competencyFrameworksSidebarText = 'Competencies';
   proficiencyScalesText = 'Proficiency Scales';
   selectedTab = 'Organizations';
   displayedSection = '';
   exitSection = '';
   isSidebarOpen = true;
+  sideNavCollapsed = false;
+  fontIconMap = new Map<string, string>([
+    ['Units', 'mdi-account-group'],
+    ['Data Fields', 'mdi-view-column-outline'],
+    ['Inject Types', 'mdi-format-list-group'],
+    ['Catalogs', 'mdi-book-open-outline'],
+    ['Organizations', 'mdi-bank'],
+    ['Gallery Cards', 'mdi-view-grid-outline'],
+    ['CITE Actions', 'mdi-clipboard-check-outline'],
+    ['CITE Duties', 'mdi-clipboard-account-outline'],
+    ['Competency Frameworks', 'mdi-certificate-outline'],
+    ['Proficiency Scales', 'mdi-tune-variant'],
+    ['Users', 'mdi-account'],
+    ['Roles', 'mdi-shield-account'],
+    ['Groups', 'mdi-account-multiple'],
+  ]);
   loggedInUserId = '';
   username = '';
   canAccessAdminSection = false;
@@ -200,6 +217,15 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
     } else {
       return 'non-selected-item';
     }
+  }
+
+  setCollapsed(value: boolean) {
+    this.sideNavCollapsed = value;
+  }
+
+  getSidebarLabel(section: string): string {
+    if (section === this.competencyFrameworksText) return this.competencyFrameworksSidebarText;
+    return section;
   }
 
   logout() {
