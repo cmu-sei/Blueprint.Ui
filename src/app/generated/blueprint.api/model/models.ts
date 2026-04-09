@@ -15,6 +15,7 @@ export * from './compareInfo';
 export * from './competency';
 export * from './competencyElement';
 export * from './competencyFramework';
+export * from './mselCompetency';
 export * from './constructorInfo';
 export * from './createFromInjectsForm';
 export * from './cultureInfo';

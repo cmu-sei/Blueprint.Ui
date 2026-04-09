@@ -262,7 +262,8 @@ export class CompetencyOptionsDialogComponent implements OnDestroy {
     for (const idNumber of this.selected) {
       const existing = existingMap.get(idNumber);
       if (existing) {
-        newOptions.push({ ...existing, displayOrder: order++ });
+        const c = competencyMap.get(idNumber);
+        newOptions.push({ ...existing, displayOrder: order++, competencyId: c?.id || (existing as any).competencyId } as any);
       } else {
         const c = competencyMap.get(idNumber);
         if (c) {
@@ -273,7 +274,8 @@ export class CompetencyOptionsDialogComponent implements OnDestroy {
             optionValue: c.shortName,
             optionDescription: c.description,
             displayOrder: order++,
-          });
+            competencyId: c.id,
+          } as any);
         }
       }
     }

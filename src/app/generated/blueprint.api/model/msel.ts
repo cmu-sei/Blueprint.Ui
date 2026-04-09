@@ -78,6 +78,12 @@ export interface Msel {
     playerApplications?: Array<PlayerApplication> | null;
     pages?: Array<MselPage> | null;
     invitations?: Array<Invitation> | null;
+    educationalLevel?: string | null;
+    subject?: string | null;
+    keywords?: string | null;
+    educationalUse?: string | null;
+    courseMode?: string | null;
+    language?: string | null;
 }
 export namespace Msel {
 }

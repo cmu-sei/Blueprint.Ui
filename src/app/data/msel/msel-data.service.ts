@@ -84,6 +84,12 @@ export class MselPlus implements Msel {
   galleryIntegrationType?: IntegrationType;
   citeIntegrationType?: IntegrationType;
   steamfitterIntegrationType?: IntegrationType;
+  educationalLevel?: string;
+  subject?: string;
+  keywords?: string;
+  educationalUse?: string;
+  courseMode?: string;
+  language?: string;
 
   hasRole(userId: string, scenarioEventId: string) {
     // initialize to no roles
