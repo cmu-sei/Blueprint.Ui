@@ -298,6 +298,78 @@ project root for license information or contact permission@sei.cmu.edu for full 
               </mat-select>
             </mat-form-field>
           </div>
+          <!-- Competencies -->
+          <div class="competency-section">
+            <div class="editor-label">
+              Competencies ({{ mselCompetencyList.length }})
+              @if (canEditMsel()) {
+              <button mat-icon-button (click)="openCompetencyPicker()" title="Manage Competencies">
+                <mat-icon class="mdi-24px" fontIcon="mdi-pencil"></mat-icon>
+              </button>
+              }
+            </div>
+          </div>
+          <!-- LMT Metadata -->
+          <div class="single-detail center-self">
+            <mat-form-field class="full-width">
+              <mat-label>Educational Level</mat-label>
+              <mat-select [(ngModel)]="msel.educationalLevel" [disabled]="!canEditMsel()"
+                (selectionChange)="isChanged = true">
+                <mat-option [value]="null"></mat-option>
+                @for (level of educationalLevels; track level) {
+                <mat-option [value]="level">{{ level }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+          <div class="single-detail center-self">
+            <mat-form-field class="full-width">
+              <mat-label>Educational Use</mat-label>
+              <mat-select [(ngModel)]="msel.educationalUse" [disabled]="!canEditMsel()"
+                (selectionChange)="isChanged = true">
+                <mat-option [value]="null"></mat-option>
+                @for (use of educationalUses; track use) {
+                <mat-option [value]="use">{{ use }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+          <div class="single-detail center-self">
+            <mat-form-field class="full-width">
+              <mat-label>Course Mode</mat-label>
+              <mat-select [(ngModel)]="msel.courseMode" [disabled]="!canEditMsel()"
+                (selectionChange)="isChanged = true">
+                <mat-option [value]="null"></mat-option>
+                @for (mode of courseModes; track mode) {
+                <mat-option [value]="mode">{{ mode }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+          <div class="single-detail center-self">
+            <mat-form-field class="full-width">
+              <mat-label>Subject</mat-label>
+              <input type="text" matInput placeholder="e.g., incident response, network defense"
+                [(ngModel)]="msel.subject" (cut)="isChanged = true" (change)="isChanged = true"
+                (paste)="isChanged = true" (keypress)="isChanged = true" [disabled]="!canEditMsel()" />
+            </mat-form-field>
+          </div>
+          <div class="single-detail center-self">
+            <mat-form-field class="full-width">
+              <mat-label>Keywords</mat-label>
+              <input type="text" matInput placeholder="Searchable tags"
+                [(ngModel)]="msel.keywords" (cut)="isChanged = true" (change)="isChanged = true"
+                (paste)="isChanged = true" (keypress)="isChanged = true" [disabled]="!canEditMsel()" />
+            </mat-form-field>
+          </div>
+          <div class="single-detail center-self">
+            <mat-form-field class="full-width">
+              <mat-label>Language</mat-label>
+              <input type="text" matInput placeholder="e.g., en, en-US"
+                [(ngModel)]="msel.language" (cut)="isChanged = true" (change)="isChanged = true"
+                (paste)="isChanged = true" (keypress)="isChanged = true" [disabled]="!canEditMsel()" />
+            </mat-form-field>
+          </div>
           <!-- Exercise View URL -->
           <div class="url-form-field">
             <div class="editor-label">

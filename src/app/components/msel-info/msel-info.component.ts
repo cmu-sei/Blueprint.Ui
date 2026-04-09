@@ -8,6 +8,7 @@ import { TeamQuery } from 'src/app/data/team/team.query';
 import { UserQuery } from 'src/app/data/user/user.query';
 import {
   DataField,
+  MselCompetency,
   MselItemStatus,
   MselPage,
   MselUnit,
@@ -28,6 +29,10 @@ import { DataFieldQuery } from 'src/app/data/data-field/data-field.query';
 import { MselPageDataService } from 'src/app/data/msel-page/msel-page-data.service';
 import { MselPageQuery } from 'src/app/data/msel-page/msel-page.query';
 import { MselUnitQuery } from 'src/app/data/msel-unit/msel-unit.query';
+import { MselCompetencyDataService } from 'src/app/data/msel-competency/msel-competency-data.service';
+import { MselCompetencyQuery } from 'src/app/data/msel-competency/msel-competency.query';
+import { MatDialog } from '@angular/material/dialog';
+import { CompetencyOptionsDialogComponent } from '../competency-options-dialog/competency-options-dialog.component';
 import { AngularEditorConfig } from '@kolkov/angular-editor';
 import { ComnSettingsService } from '@cmusei/crucible-common';
 import { HttpClient } from '@angular/common/http';
@@ -54,6 +59,7 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   userList: User[] = [];
   teamList: Team[] = [];
   mselUnitList: MselUnit[] = [];
+  mselCompetencyList: MselCompetency[] = [];
   scoringModelList: ScoringModel[] = [];
   itemStatus: MselItemStatus[] = [
     MselItemStatus.Pending,
@@ -63,6 +69,9 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     MselItemStatus.Complete,
     MselItemStatus.Archived,
   ];
+  educationalLevels: string[] = ['Beginner', 'Intermediate', 'Advanced'];
+  educationalUses: string[] = ['Assessment', 'Instruction', 'Professional Support'];
+  courseModes: string[] = ['Online', 'Onsite', 'Blended'];
   viewUrl: string;
   starterUrl: string;
   mselPages: MselPage[] = [];
@@ -147,6 +156,9 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     private mselPageDataService: MselPageDataService,
     private mselPageQuery: MselPageQuery,
     private mselUnitQuery: MselUnitQuery,
+    private mselCompetencyDataService: MselCompetencyDataService,
+    private mselCompetencyQuery: MselCompetencyQuery,
+    private dialog: MatDialog,
     private permissionDataService: PermissionDataService,
     private changeDetectorRef: ChangeDetectorRef,
     private settingsService: ComnSettingsService,
@@ -166,6 +178,7 @@ export class MselInfoComponent implements OnDestroy, OnInit {
             this.starterUrl =
               document.baseURI + 'starter/?msel=' + this.msel.id;
             this.mselPageDataService.loadByMsel(msel.id);
+            this.mselCompetencyDataService.loadByMsel(msel.id);
             this.newMselPage.mselId = msel.id;
           }
           this.savedStartTime = new Date(msel.startTime);
@@ -221,6 +234,13 @@ export class MselInfoComponent implements OnDestroy, OnInit {
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((mselUnits) => {
         this.mselUnitList = mselUnits;
+      });
+    // subscribe to mselCompetencies
+    this.mselCompetencyQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((mselCompetencies) => {
+        this.mselCompetencyList = mselCompetencies;
       });
     // subscribe to MselPages
     this.mselPageQuery
@@ -328,6 +348,47 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   canManageMsel(): boolean {
     return this.permissionDataService.hasPermission(SystemPermission.ManageMsels) ||
       this.msel.hasRole(this.loggedInUserId, '').owner;
+  }
+
+  openCompetencyPicker(): void {
+    const existingIdNumbers = this.mselCompetencyList.map(mc => mc.competency?.idNumber).filter(Boolean);
+    const dialogRef = this.dialog.open(CompetencyOptionsDialogComponent, {
+      width: '900px',
+      maxWidth: '95vw',
+      maxHeight: '90vh',
+      data: {
+        dataFieldId: null,
+        dataOptions: existingIdNumbers.map(idNumber => ({ optionName: idNumber })),
+        canEdit: this.canEditMsel()
+      }
+    });
+    dialogRef.afterClosed().subscribe((updatedOptions) => {
+      if (!updatedOptions) return;
+      const newIdNumbers = new Set(updatedOptions.map((o: any) => o.optionName));
+      const existingMap = new Map<string, MselCompetency>();
+      for (const mc of this.mselCompetencyList) {
+        if (mc.competency?.idNumber) {
+          existingMap.set(mc.competency.idNumber, mc);
+        }
+      }
+      // Remove deselected
+      for (const [idNumber, mc] of existingMap) {
+        if (!newIdNumbers.has(idNumber)) {
+          this.mselCompetencyDataService.delete(mc.id);
+        }
+      }
+      // Add newly selected — need to resolve idNumber to competencyId
+      // The dialog returns DataOption-shaped objects with optionName = idNumber
+      // We need the competency ID, which we can get from the dialog's competencies
+      for (const opt of updatedOptions) {
+        if (!existingMap.has(opt.optionName) && opt.competencyId) {
+          this.mselCompetencyDataService.add({
+            mselId: this.msel.id,
+            competencyId: opt.competencyId
+          });
+        }
+      }
+    });
   }
 
   galleryWarningMessage() {
