@@ -70,17 +70,17 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <div class="levels-title">
               Levels for "{{ scale.name }}"
             </div>
-            <mat-table [dataSource]="getLevelDataSource(scale)" matSort (matSortChange)="levelSortChanged($event)">
+            <table mat-table [dataSource]="getLevelDataSource(scale)" matSort (matSortChange)="levelSortChanged($event)">
               <!-- action column -->
               <ng-container matColumnDef="action">
-                <mat-header-cell *matHeaderCellDef class="lv-col-action">
+                <th mat-header-cell *matHeaderCellDef class="lv-col-action">
                   @if (canEdit) {
                   <button mat-icon-button (click)="addOrEditLevel(scale, null)" title="Add level" style="outline: none;">
                     <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle"></mat-icon>
                   </button>
                   } &nbsp;
-                </mat-header-cell>
-                <mat-cell *matCellDef="let level" class="lv-col-action">
+                </th>
+                <td mat-cell *matCellDef="let level" class="lv-col-action">
                   @if (canEdit) {
                   <button mat-icon-button class="msel-action" (click)="addOrEditLevel(scale, level); $event.stopPropagation();"
                     title="Edit {{ level.name }}">
@@ -91,32 +91,32 @@ project root for license information or contact permission@sei.cmu.edu for full 
                     <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline"></mat-icon>
                   </button>
                   }
-                </mat-cell>
+                </td>
               </ng-container>
               <!-- name column -->
               <ng-container matColumnDef="name">
-                <mat-header-cell mat-sort-header="name" *matHeaderCellDef class="lv-col-name">Name</mat-header-cell>
-                <mat-cell *matCellDef="let level" class="lv-col-name">{{ level.name }}</mat-cell>
+                <th mat-header-cell mat-sort-header="name" *matHeaderCellDef class="lv-col-name">Name</th>
+                <td mat-cell *matCellDef="let level" class="lv-col-name">{{ level.name }}</td>
               </ng-container>
               <!-- value column -->
               <ng-container matColumnDef="value">
-                <mat-header-cell mat-sort-header="value" *matHeaderCellDef class="lv-col-value">Value</mat-header-cell>
-                <mat-cell *matCellDef="let level" class="lv-col-value">{{ level.value }}</mat-cell>
+                <th mat-header-cell mat-sort-header="value" *matHeaderCellDef class="lv-col-value">Value</th>
+                <td mat-cell *matCellDef="let level" class="lv-col-value">{{ level.value }}</td>
               </ng-container>
               <!-- displayOrder column -->
               <ng-container matColumnDef="displayOrder">
-                <mat-header-cell mat-sort-header="displayOrder" *matHeaderCellDef class="lv-col-order">Order</mat-header-cell>
-                <mat-cell *matCellDef="let level" class="lv-col-order">{{ level.displayOrder }}</mat-cell>
+                <th mat-header-cell mat-sort-header="displayOrder" *matHeaderCellDef class="lv-col-order">Order</th>
+                <td mat-cell *matCellDef="let level" class="lv-col-order">{{ level.displayOrder }}</td>
               </ng-container>
               <!-- description column -->
               <ng-container matColumnDef="description">
-                <mat-header-cell mat-sort-header="description" *matHeaderCellDef class="lv-col-desc">Description</mat-header-cell>
-                <mat-cell *matCellDef="let level" class="lv-col-desc">{{ level.description }}</mat-cell>
+                <th mat-header-cell mat-sort-header="description" *matHeaderCellDef class="lv-col-desc">Description</th>
+                <td mat-cell *matCellDef="let level" class="lv-col-desc">{{ level.description }}</td>
               </ng-container>
               <!-- row definitions -->
-              <mat-header-row *matHeaderRowDef="levelDisplayedColumns"></mat-header-row>
-              <mat-row *matRowDef="let row; columns: levelDisplayedColumns;"></mat-row>
-            </mat-table>
+              <tr mat-header-row *matHeaderRowDef="levelDisplayedColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: levelDisplayedColumns;"></tr>
+            </table>
             @if (scale.proficiencyLevels?.length === 0) {
               <div class="no-results-inline">No levels defined</div>
             }
