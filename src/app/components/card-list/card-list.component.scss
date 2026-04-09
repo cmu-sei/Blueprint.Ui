@@ -19,81 +19,138 @@
   flex: 1;
   overflow: auto;
   padding-bottom: 20px;
+  overflow: auto;
+  padding-bottom: 20px;
 }
 
 table {
   width: 100%;
-}
 
-.element-row {
-  cursor: pointer;
-}
+  table {
+    width: 100%;
+  }
 
-.element-row:hover {
-  background-color: var(--mat-sys-surface-variant);
-}
+  .element-row {
+    cursor: pointer;
 
-.detail-row {
-  height: 0;
-}
+    .element-row {
+      cursor: pointer;
+    }
 
-.element-row td {
-  border-bottom-width: 0;
-}
+    .element-row:hover {
+      background-color: var(--mat-sys-surface-variant);
 
-.column-action {
-  flex: 0 0 160px;
-  width: 160px;
-}
+      .element-row:hover {
+        background-color: var(--mat-sys-surface-variant);
+      }
 
-.column-move {
-  flex: 0 0 60px;
-  text-align: center;
-}
+      .detail-row {
+        height: 0;
 
-.column-name {
-  flex: 0 0 25%;
-  padding: 2px;
-}
+        .detail-row {
+          height: 0;
+        }
 
-.column-description {
-  flex: 0 0 calc(75% - 180px);
-  padding: 2px;
-}
+        .element-row td {
+          border-bottom-width: 0;
 
-.expanded-detail-div {
-  display: flex;
-  flex-direction: column;
-  width: 90%;
-  margin: 8px auto;
-}
+          .element-row td {
+            border-bottom-width: 0;
+          }
 
-.single-detail {
-  display: flex;
-  flex-flow: row;
-  align-items: flex-start;
-  width: 100%;
-}
+          .column-action {
+            flex: 0 0 160px;
+            width: 160px;
 
-.select-title {
-  margin-left: 5px;
-  margin-bottom: 15px;
-  font-weight: 500;
-}
+            .column-action {
+              flex: 0 0 160px;
+              width: 160px;
+            }
 
-.no-clicks {
-  pointer-events: none;
-}
+            .column-move {
+              flex: 0 0 60px;
+              text-align: center;
 
-.all-clicks {
-  pointer-events: all;
-}
+              .column-move {
+                flex: 0 0 60px;
+                text-align: center;
+              }
 
-.search-control {
-  width: 100%;
-  margin-left: 20px;
-}
+              .column-name {
+                flex: 0 0 25%;
+                padding: 2px;
+              }
 
-.button-end {
-  margin-left: auto;
-}
+              .column-description {
+                flex: 0 0 calc(75% - 180px);
+                padding: 2px;
+
+                .column-name {
+                  flex: 0 0 25%;
+                  padding: 2px;
+                }
+
+                .column-description {
+                  flex: 0 0 calc(75% - 180px);
+                  padding: 2px;
+                }
+
+                .expanded-detail-div {
+                  .expanded-detail-div {
+                    display: flex;
+                    flex-direction: column;
+                    width: 90%;
+                    margin: 8px auto;
+                    flex-direction: column;
+                    width: 90%;
+                    margin: 8px auto;
+                  }
+
+                  .single-detail {
+                    display: flex;
+                    flex-flow: row;
+                    align-items: flex-start;
+                    width: 100%;
+                    width: 100%;
+                  }
+
+                  .select-title {
+                    margin-left: 5px;
+                    margin-bottom: 15px;
+                    font-weight: 500;
+                  }
+
+                  .no-clicks {
+                    pointer-events: none;
+                  }
+
+                  .all-clicks {
+                    pointer-events: all;
+                  }
+
+                  .search-control {
+                    width: 100%;
+                    margin-left: 20px;
+                  }
+
+                  .button-end {
+                    margin-left: auto;
+                    font-weight: 500;
+                  }
+
+                  .no-clicks {
+                    pointer-events: none;
+                  }
+
+                  .all-clicks {
+                    pointer-events: all;
+                  }
+
+                  .search-control {
+                    width: 100%;
+                    margin-left: 20px;
+                  }
+
+                  .button-end {
+                    margin-left: auto;
+                  }

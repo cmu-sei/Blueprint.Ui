@@ -7,148 +7,148 @@ project root for license information or contact permission@sei.cmu.edu for full 
 <mat-sidenav-container class="appcontent-container" autosize>
   <mat-sidenav class="appbarmenu-container" #sidenav mode="side" [(opened)]="isSidebarOpen">
     <div class="sidenav-content-wrapper">
-    <mat-toolbar class="sidenav-header" title="Exit Administration" [routerLink]="['/build/']">
-      <a class="nolink" [routerLink]="['/build/']">
-        <div class="cssLayoutRowStartCenter">
-          <mat-icon class="icon-35px crucible-icon-blueprint" svgIcon="crucible-icon-blueprint"></mat-icon>
-          <h2 class="icon-text">Administration</h2>
-        </div>
-      </a>
-    </mat-toolbar>
-    <mat-list class="appitems-container">
-      <!-- Units -->
-      @if (canViewUnits) {
-      <mat-list-item [ngClass]="getSelectedClass(unitsText)" id="wrapper showhand" (click)="gotoSection(unitsText)">
-        <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-account-group"></mat-icon>
-        {{ unitsText }}
-        <button aria-labelledby="unitsText" mat-icon-button class="pull-right">
-          <mat-icon fontIcon="mdi-chevron-right"></mat-icon>
-        </button>
-      </mat-list-item>
-      }
-      <!-- Data Fields -->
-      @if (canViewDataFields) {
-      <mat-list-item [ngClass]="getSelectedClass(dataFieldsText)" id="wrapper showhand"
-        (click)="gotoSection(dataFieldsText)">
-        <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-view-column-outline"></mat-icon>
-        {{ dataFieldsText }}
-        <button aria-labelledby="dataFieldsText" mat-icon-button class="pull-right">
-          <mat-icon fontIcon="mdi-chevron-right"></mat-icon>
-        </button>
-      </mat-list-item>
-      }
-      @if (canViewInjectTypes) {
-      <!-- Inject Types -->
-      <mat-list-item [ngClass]="getSelectedClass(injectTypesText)" id="wrapper showhand"
-        (click)="gotoSection(injectTypesText)">
-        <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-format-list-group"></mat-icon>
-        {{ injectTypesText }}
-        <button aria-labelledby="injectTypesText" mat-icon-button class="pull-right">
-          <mat-icon fontIcon="mdi-chevron-right"></mat-icon>
-        </button>
-      </mat-list-item>
-      }
-      <!-- Catalogs -->
-      @if (canViewCatalogs) {
-      <mat-list-item [ngClass]="getSelectedClass(catalogsText)" id="wrapper showhand"
-        (click)="gotoSection(catalogsText)">
-        <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-book-open-outline"></mat-icon>
-        {{ catalogsText }}
-        <button aria-labelledby="catalogsText" mat-icon-button class="pull-right">
-          <mat-icon fontIcon="mdi-chevron-right"></mat-icon>
-        </button>
-      </mat-list-item>
-      }
-      <!-- Organizations -->
-      @if (canViewOrganizations) {
-      <mat-list-item [ngClass]="getSelectedClass(organizationsText)" id="wrapper showhand"
-        (click)="gotoSection(organizationsText)">
-        <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-bank"></mat-icon>
-        {{ organizationsText }}
-        <button aria-labelledby="organizationsText" mat-icon-button class="pull-right">
-          <mat-icon fontIcon="mdi-chevron-right"></mat-icon>
-        </button>
-      </mat-list-item>
-      }
-      <!-- Gallery Cards -->
-      @if (canViewGalleryCards) {
-      <mat-list-item [ngClass]="getSelectedClass(galleryCardsText)" id="wrapper showhand"
-        (click)="gotoSection(galleryCardsText)">
-        <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-view-grid-outline"></mat-icon>
-        {{ galleryCardsText }}
-        <button aria-labelledby="galleryCardsText" mat-icon-button class="pull-right">
-          <mat-icon fontIcon="mdi-chevron-right"></mat-icon>
-        </button>
-      </mat-list-item>
-      }
-      <!-- CITE Actions -->
-      @if (canViewCiteActions) {
-      <mat-list-item [ngClass]="getSelectedClass(citeActionsText)" id="wrapper showhand"
-        (click)="gotoSection(citeActionsText)">
-        <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-clipboard-check-outline"></mat-icon>
-        {{ citeActionsText }}
-        <button aria-labelledby="citeActionsText" mat-icon-button class="pull-right">
-          <mat-icon fontIcon="mdi-chevron-right"></mat-icon>
-        </button>
-      </mat-list-item>
-      }
-      <!-- CITE Duties -->
-      @if (canViewCiteDuties) {
-      <mat-list-item [ngClass]="getSelectedClass(citeDutiesText)" id="wrapper showhand"
-        (click)="gotoSection(citeDutiesText)">
-        <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-clipboard-account-outline"></mat-icon>
-        {{ citeDutiesText }}
-        <button aria-labelledby="citeDutiesText" mat-icon-button class="pull-right">
-          <mat-icon fontIcon="mdi-chevron-right"></mat-icon>
-        </button>
-      </mat-list-item>
-      }
-      <!-- Users -->
-      @if (canViewUsers) {
-      <mat-list-item [ngClass]="getSelectedClass(usersText)" id="wrapper showhand" (click)="gotoSection(usersText)">
-        <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-account"></mat-icon>
-        {{ usersText }}
-        <button aria-labelledby="usersText" mat-icon-button class="pull-right">
-          <mat-icon fontIcon="mdi-chevron-right"></mat-icon>
-        </button>
-      </mat-list-item>
-      }
-      <!-- Roles -->
-      @if (canViewRoles) {
-      <mat-list-item [ngClass]="getSelectedClass(rolesText)" id="wrapper showhand" (click)="gotoSection(rolesText)">
-        <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-shield-account"></mat-icon>
-        {{ rolesText }}
-        <button aria-labelledby="rolesText" mat-icon-button class="pull-right">
-          <mat-icon fontIcon="mdi-chevron-right"></mat-icon>
-        </button>
-      </mat-list-item>
-      }
-      <!-- Groups -->
-      @if (canViewGroups) {
-      <mat-list-item [ngClass]="getSelectedClass(groupsText)" id="wrapper showhand" (click)="gotoSection(groupsText)">
-        <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-account-multiple"></mat-icon>
-        {{ groupsText }}
-        <button aria-labelledby="groupsText" mat-icon-button class="pull-right">
-          <mat-icon fontIcon="mdi-chevron-right"></mat-icon>
-        </button>
-      </mat-list-item>
-      }
-    </mat-list>
-    @if (!hideTopbar) {
-    <div class="app-versions">
-      Versions: UI {{ uiVersion }}, API {{ apiVersion }}
-    </div>
-    <img class="crucible-logo" [src]="
+      <mat-toolbar class="sidenav-header" title="Exit Administration" [routerLink]="['/build/']">
+        <a class="nolink" [routerLink]="['/build/']">
+          <div class="cssLayoutRowStartCenter">
+            <mat-icon class="icon-35px crucible-icon-blueprint" svgIcon="crucible-icon-blueprint"></mat-icon>
+            <h2 class="icon-text">Administration</h2>
+          </div>
+        </a>
+      </mat-toolbar>
+      <mat-list class="appitems-container">
+        <!-- Units -->
+        @if (canViewUnits) {
+        <mat-list-item [ngClass]="getSelectedClass(unitsText)" id="wrapper showhand" (click)="gotoSection(unitsText)">
+          <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-account-group"></mat-icon>
+          {{ unitsText }}
+          <button aria-labelledby="unitsText" mat-icon-button class="pull-right">
+            <mat-icon fontIcon="mdi-chevron-right"></mat-icon>
+          </button>
+        </mat-list-item>
+        }
+        <!-- Data Fields -->
+        @if (canViewDataFields) {
+        <mat-list-item [ngClass]="getSelectedClass(dataFieldsText)" id="wrapper showhand"
+          (click)="gotoSection(dataFieldsText)">
+          <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-view-column-outline"></mat-icon>
+          {{ dataFieldsText }}
+          <button aria-labelledby="dataFieldsText" mat-icon-button class="pull-right">
+            <mat-icon fontIcon="mdi-chevron-right"></mat-icon>
+          </button>
+        </mat-list-item>
+        }
+        @if (canViewInjectTypes) {
+        <!-- Inject Types -->
+        <mat-list-item [ngClass]="getSelectedClass(injectTypesText)" id="wrapper showhand"
+          (click)="gotoSection(injectTypesText)">
+          <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-format-list-group"></mat-icon>
+          {{ injectTypesText }}
+          <button aria-labelledby="injectTypesText" mat-icon-button class="pull-right">
+            <mat-icon fontIcon="mdi-chevron-right"></mat-icon>
+          </button>
+        </mat-list-item>
+        }
+        <!-- Catalogs -->
+        @if (canViewCatalogs) {
+        <mat-list-item [ngClass]="getSelectedClass(catalogsText)" id="wrapper showhand"
+          (click)="gotoSection(catalogsText)">
+          <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-book-open-outline"></mat-icon>
+          {{ catalogsText }}
+          <button aria-labelledby="catalogsText" mat-icon-button class="pull-right">
+            <mat-icon fontIcon="mdi-chevron-right"></mat-icon>
+          </button>
+        </mat-list-item>
+        }
+        <!-- Organizations -->
+        @if (canViewOrganizations) {
+        <mat-list-item [ngClass]="getSelectedClass(organizationsText)" id="wrapper showhand"
+          (click)="gotoSection(organizationsText)">
+          <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-bank"></mat-icon>
+          {{ organizationsText }}
+          <button aria-labelledby="organizationsText" mat-icon-button class="pull-right">
+            <mat-icon fontIcon="mdi-chevron-right"></mat-icon>
+          </button>
+        </mat-list-item>
+        }
+        <!-- Gallery Cards -->
+        @if (canViewGalleryCards) {
+        <mat-list-item [ngClass]="getSelectedClass(galleryCardsText)" id="wrapper showhand"
+          (click)="gotoSection(galleryCardsText)">
+          <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-view-grid-outline"></mat-icon>
+          {{ galleryCardsText }}
+          <button aria-labelledby="galleryCardsText" mat-icon-button class="pull-right">
+            <mat-icon fontIcon="mdi-chevron-right"></mat-icon>
+          </button>
+        </mat-list-item>
+        }
+        <!-- CITE Actions -->
+        @if (canViewCiteActions) {
+        <mat-list-item [ngClass]="getSelectedClass(citeActionsText)" id="wrapper showhand"
+          (click)="gotoSection(citeActionsText)">
+          <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-clipboard-check-outline"></mat-icon>
+          {{ citeActionsText }}
+          <button aria-labelledby="citeActionsText" mat-icon-button class="pull-right">
+            <mat-icon fontIcon="mdi-chevron-right"></mat-icon>
+          </button>
+        </mat-list-item>
+        }
+        <!-- CITE Duties -->
+        @if (canViewCiteDuties) {
+        <mat-list-item [ngClass]="getSelectedClass(citeDutiesText)" id="wrapper showhand"
+          (click)="gotoSection(citeDutiesText)">
+          <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-clipboard-account-outline"></mat-icon>
+          {{ citeDutiesText }}
+          <button aria-labelledby="citeDutiesText" mat-icon-button class="pull-right">
+            <mat-icon fontIcon="mdi-chevron-right"></mat-icon>
+          </button>
+        </mat-list-item>
+        }
+        <!-- Users -->
+        @if (canViewUsers) {
+        <mat-list-item [ngClass]="getSelectedClass(usersText)" id="wrapper showhand" (click)="gotoSection(usersText)">
+          <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-account"></mat-icon>
+          {{ usersText }}
+          <button aria-labelledby="usersText" mat-icon-button class="pull-right">
+            <mat-icon fontIcon="mdi-chevron-right"></mat-icon>
+          </button>
+        </mat-list-item>
+        }
+        <!-- Roles -->
+        @if (canViewRoles) {
+        <mat-list-item [ngClass]="getSelectedClass(rolesText)" id="wrapper showhand" (click)="gotoSection(rolesText)">
+          <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-shield-account"></mat-icon>
+          {{ rolesText }}
+          <button aria-labelledby="rolesText" mat-icon-button class="pull-right">
+            <mat-icon fontIcon="mdi-chevron-right"></mat-icon>
+          </button>
+        </mat-list-item>
+        }
+        <!-- Groups -->
+        @if (canViewGroups) {
+        <mat-list-item [ngClass]="getSelectedClass(groupsText)" id="wrapper showhand" (click)="gotoSection(groupsText)">
+          <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-account-multiple"></mat-icon>
+          {{ groupsText }}
+          <button aria-labelledby="groupsText" mat-icon-button class="pull-right">
+            <mat-icon fontIcon="mdi-chevron-right"></mat-icon>
+          </button>
+        </mat-list-item>
+        }
+      </mat-list>
+      @if (!hideTopbar) {
+      <div class="app-versions">
+        Versions: UI {{ uiVersion }}, API {{ apiVersion }}
+      </div>
+      <img class="crucible-logo" [src]="
                       (theme$ | async) === 'light-theme'
             ? 'assets/img/crucible-logo-light.png'
             : 'assets/img/crucible-logo-dark.png'
         " />
-    }
-    @else {
-    <div class="app-versions">
-      Versions: UI {{ uiVersion }}, API {{ apiVersion }}
-    </div>
-    }
+      }
+      @else {
+      <div class="app-versions">
+        Versions: UI {{ uiVersion }}, API {{ apiVersion }}
+      </div>
+      }
     </div>
   </mat-sidenav>
   <mat-sidenav-content>
@@ -157,13 +157,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
       (urlNavigate)="goToUrl($event)"></app-topbar>
     }
     @if (canViewUnits && (selectedTab === unitsText)) {
-      <app-admin-units [canManage]="canManageUnits"></app-admin-units>
+    <app-admin-units [canManage]="canManageUnits"></app-admin-units>
     }
     @if (canViewUsers && (selectedTab === usersText)) {
-      <app-admin-users></app-admin-users>
+    <app-admin-users></app-admin-users>
     }
     @if (canViewRoles && (selectedTab === rolesText)) {
-      <app-admin-roles></app-admin-roles>
+    <app-admin-roles></app-admin-roles>
     }
     @if (canViewGroups && (selectedTab === groupsText)) {
     <span>
@@ -194,16 +194,16 @@ project root for license information or contact permission@sei.cmu.edu for full 
     </span>
     }
     @if (canViewGalleryCards && (selectedTab === galleryCardsText)) {
-      <app-card-list [loggedInUserId]="loggedInUserId" [canEdit]="canManageGalleryCards"
-        [showTemplates]="true"></app-card-list>
+    <app-card-list [loggedInUserId]="loggedInUserId" [canEdit]="canManageGalleryCards"
+      [showTemplates]="true"></app-card-list>
     }
     @if (canViewCiteActions && (selectedTab === citeActionsText)) {
-      <app-cite-action-list [loggedInUserId]="loggedInUserId" [canEdit]="canManageCiteActions"
-        [showTemplates]="true"></app-cite-action-list>
+    <app-cite-action-list [loggedInUserId]="loggedInUserId" [canEdit]="canManageCiteActions"
+      [showTemplates]="true"></app-cite-action-list>
     }
     @if (canViewCiteDuties && (selectedTab === citeDutiesText)) {
-      <app-cite-duty-list [loggedInUserId]="loggedInUserId" [canEdit]="canManageCiteDuties"
-        [showTemplates]="true"></app-cite-duty-list>
+    <app-cite-duty-list [loggedInUserId]="loggedInUserId" [canEdit]="canManageCiteDuties"
+      [showTemplates]="true"></app-cite-duty-list>
     }
   </mat-sidenav-content>
 </mat-sidenav-container>
