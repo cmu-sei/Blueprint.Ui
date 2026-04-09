@@ -312,7 +312,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <!-- LMT Metadata -->
           <div class="single-detail center-self">
             <mat-form-field class="full-width">
-              <mat-label>Educational Level</mat-label>
+              <mat-label>Difficulty Rating</mat-label>
               <mat-select [(ngModel)]="msel.educationalLevel" [disabled]="!canEditMsel()"
                 (selectionChange)="isChanged = true">
                 <mat-option [value]="null"></mat-option>
@@ -324,7 +324,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </div>
           <div class="single-detail center-self">
             <mat-form-field class="full-width">
-              <mat-label>Educational Use</mat-label>
+              <mat-label>Exercise Purpose</mat-label>
               <mat-select [(ngModel)]="msel.educationalUse" [disabled]="!canEditMsel()"
                 (selectionChange)="isChanged = true">
                 <mat-option [value]="null"></mat-option>
@@ -336,7 +336,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </div>
           <div class="single-detail center-self">
             <mat-form-field class="full-width">
-              <mat-label>Course Mode</mat-label>
+              <mat-label>Exercise Mode</mat-label>
               <mat-select [(ngModel)]="msel.courseMode" [disabled]="!canEditMsel()"
                 (selectionChange)="isChanged = true">
                 <mat-option [value]="null"></mat-option>
@@ -359,14 +359,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
               <mat-label>Keywords</mat-label>
               <input type="text" matInput placeholder="Searchable tags"
                 [(ngModel)]="msel.keywords" (cut)="isChanged = true" (change)="isChanged = true"
-                (paste)="isChanged = true" (keypress)="isChanged = true" [disabled]="!canEditMsel()" />
-            </mat-form-field>
-          </div>
-          <div class="single-detail center-self">
-            <mat-form-field class="full-width">
-              <mat-label>Language</mat-label>
-              <input type="text" matInput placeholder="e.g., en, en-US"
-                [(ngModel)]="msel.language" (cut)="isChanged = true" (change)="isChanged = true"
                 (paste)="isChanged = true" (keypress)="isChanged = true" [disabled]="!canEditMsel()" />
             </mat-form-field>
           </div>
