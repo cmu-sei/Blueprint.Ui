@@ -112,6 +112,7 @@ import { MselContributorsComponent } from './components/msel-contributors/msel-c
 import { MselInfoComponent } from './components/msel-info/msel-info.component';
 import { MselListComponent } from './components/msel-list/msel-list.component';
 import { MselPageComponent } from './components/msel-page/msel-page.component';
+import { MselCompetenciesComponent } from './components/msel-competencies/msel-competencies.component';
 import { MselTeamsComponent } from './components/msel-teams/msel-teams.component';
 import { MselViewComponent } from './components/msel-view/msel-view.component';
 import { OrganizationEditDialogComponent } from './components/organization-edit-dialog/organization-edit-dialog.component';
@@ -205,6 +206,7 @@ export const appConfig: ApplicationConfig = {
     MselInfoComponent,
     MselListComponent,
     MselPageComponent,
+    MselCompetenciesComponent,
     MselTeamsComponent,
     MselViewComponent,
     OrganizationEditDialogComponent,
