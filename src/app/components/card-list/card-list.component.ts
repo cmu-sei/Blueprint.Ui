@@ -1,8 +1,12 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, Input, OnDestroy, ViewChild } from '@angular/core';
+import { Component, Input, OnDestroy, ViewChild, AfterViewInit } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
+import { MatTableDataSource } from '@angular/material/table';
+import { MatTable } from '@angular/material/table';
+import { MatPaginator } from '@angular/material/paginator';
+import { animate, state, style, transition, trigger } from '@angular/animations';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import {
@@ -25,14 +29,23 @@ import { v4 as uuidv4 } from 'uuid';
   selector: 'app-card-list',
   templateUrl: './card-list.component.html',
   styleUrls: ['./card-list.component.scss'],
+  animations: [
+    trigger('detailExpand', [
+      state('collapsed', style({ height: '0px', minHeight: '0', visibility: 'hidden' })),
+      state('expanded', style({ height: '*', visibility: 'visible' })),
+      transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
+    ]),
+  ],
   standalone: false
 })
-export class CardListComponent implements OnDestroy {
+export class CardListComponent implements OnDestroy, AfterViewInit {
   @Input() loggedInUserId: string;
   @Input() canEdit: boolean;
   @Input() showTemplates: boolean;
   // context menu
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
+  @ViewChild('cardTable', { static: false }) cardTable: MatTable<any>;
+  @ViewChild(MatPaginator) paginator: MatPaginator;
   msel = new MselPlus();
   templateList: Card[] = [];
   cardList: Card[] = [];
@@ -41,10 +54,19 @@ export class CardListComponent implements OnDestroy {
   filterString = '';
   sort: Sort = { active: '', direction: '' };
   sortedCards: Card[] = [];
-  expandedId = '';
+  cardDataSource = new MatTableDataSource<Card>(new Array<Card>());
+  expandedElementId = '';
   contextMenuPosition = { x: '0px', y: '0px' };
   moveList: Move[] = [];
   private unsubscribe$ = new Subject();
+  isExpansionDetailRow = (i: number, row: Object) => (row as Card).id === this.expandedElementId;
+
+  get displayedColumns(): string[] {
+    if (this.showTemplates) {
+      return ['action', 'name', 'description'];
+    }
+    return ['action', 'move', 'name', 'description'];
+  }
 
   constructor(
     private mselQuery: MselQuery,
@@ -71,24 +93,43 @@ export class CardListComponent implements OnDestroy {
         Object.assign(this.msel, msel);
       }
       this.sortedCards = this.getSortedCards(this.getFilteredCards(false));
+      this.cardDataSource.data = this.sortedCards;
     });
     this.filterControl.valueChanges
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((term) => {
         this.filterString = term;
         this.sortedCards = this.getSortedCards(this.getFilteredCards(false));
+        this.cardDataSource.data = this.sortedCards;
       });
     // load card templates
     this.cardDataService.loadTemplates();
   }
 
-  expandCard(cardId: string) {
-    if (this.showTemplates || cardId === this.expandedId) {
-      this.expandedId = '';
-    } else {
-      this.expandedId = cardId;
+  ngAfterViewInit() {
+    this.cardDataSource.paginator = this.paginator;
+  }
+
+  rowClicked(row: Card) {
+    if (this.showTemplates) {
+      return;
     }
-    console.log('expandedId: ' + this.expandedId);
+    if (this.expandedElementId === row.id) {
+      this.expandedElementId = '';
+    } else {
+      this.expandedElementId = row.id;
+    }
+    this.cardTable.renderRows();
+  }
+
+  getRowClass(id: string) {
+    if (this.showTemplates) {
+      return 'element-row no-clicks';
+    }
+    const rowClass = this.expandedElementId === id
+      ? 'element-row element-row-expanded'
+      : 'element-row element-row-not-expanded';
+    return rowClass;
   }
 
   addOrEditCard(card: Card, makeTemplate: boolean, makeFromTemplate: boolean) {
@@ -158,7 +199,7 @@ export class CardListComponent implements OnDestroy {
       .subscribe((result) => {
         if (result['confirm']) {
           this.cardDataService.delete(card.id);
-          this.expandedId = '';
+          this.expandedElementId = '';
         }
       });
   }
@@ -167,6 +208,10 @@ export class CardListComponent implements OnDestroy {
     this.sort = sort;
     this.sortedCards = this.getSortedCards(this.getFilteredCards(false));
     this.templateList = this.getSortedCards(this.getFilteredCards(true));
+    this.cardDataSource.data = this.sortedCards;
+    if (this.paginator) {
+      this.paginator.length = this.sortedCards.length;
+    }
   }
 
   getFilteredCards(getTemplatesOnly: boolean): Card[] {

@@ -106,8 +106,8 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
     // set the selected tab
     let selectedTab = this.uiDataService.getAdminTab();
     if (!selectedTab) {
-      this.uiDataService.setAdminTab(this.organizationsText);
-      selectedTab = this.organizationsText;
+      this.uiDataService.setAdminTab(this.unitsText);
+      selectedTab = this.unitsText;
     }
     this.selectedTab = selectedTab;
   }

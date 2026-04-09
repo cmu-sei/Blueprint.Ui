@@ -7,6 +7,7 @@ import {
   Input,
   OnDestroy,
   ViewChild,
+  AfterViewInit,
 } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
@@ -23,6 +24,7 @@ import { Catalog, InjectType, Team } from 'src/app/generated/blueprint.api';
 import { Sort } from '@angular/material/sort';
 import { MatMenuTrigger } from '@angular/material/menu';
 import { MatTable } from '@angular/material/table';
+import { MatPaginator } from '@angular/material/paginator';
 import { CatalogDataService } from 'src/app/data/catalog/catalog-data.service';
 import { CatalogQuery } from 'src/app/data/catalog/catalog.query';
 import { MatDialog } from '@angular/material/dialog';
@@ -44,10 +46,11 @@ import { InjectTypeQuery } from 'src/app/data/inject-type/inject-type.query';
   ],
   standalone: false
 })
-export class AdminCatalogListComponent implements OnDestroy {
+export class AdminCatalogListComponent implements OnDestroy, AfterViewInit {
   @Input() loggedInUserId: string;
   @Input() canEdit: boolean;
   @ViewChild('catalogTable', { static: false }) catalogTable: MatTable<any>;
+  @ViewChild(MatPaginator) paginator: MatPaginator;
   @ViewChild('jsonInput') jsonInput: ElementRef<HTMLInputElement>;
   contextMenuPosition = { x: '0px', y: '0px' };
   catalogList: Catalog[] = [];
@@ -183,6 +186,10 @@ export class AdminCatalogListComponent implements OnDestroy {
     this.catalogDataSource.data = this.getSortedCatalogs(
       this.getFilteredCatalogs(this.catalogList)
     );
+  }
+
+  ngAfterViewInit() {
+    this.catalogDataSource.paginator = this.paginator;
   }
 
   ngOnDestroy() {

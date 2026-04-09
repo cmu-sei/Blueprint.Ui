@@ -6,7 +6,7 @@
   display: flex;
   flex-direction: column;
   flex: 1;
-  height: calc(100vh - 60px);
+  height: calc(100% - 60px);
   overflow-y: hidden;
   margin-left: 5px;
 }
@@ -37,7 +37,7 @@
 }
 
 .header-cell {
-  font-weight: bold;
+  font-size: 14px;
 }
 
 .cell,
@@ -71,7 +71,7 @@
 }
 
 .scrolling-region {
-  height: calc(100vh - 89px);
+  height: calc(100% - 89px);
   overflow: auto;
   width: 100%;
 }

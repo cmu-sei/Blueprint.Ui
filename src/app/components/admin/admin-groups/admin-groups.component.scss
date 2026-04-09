@@ -4,7 +4,7 @@
 :host {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 44px);
+  height: calc(100% - 44px);
 }
 
 .cssLayoutColumnCenterStart {
@@ -47,8 +47,8 @@ table {
 }
 
 .mat-column-actions {
-  width: 140px;
-  max-width: 140px;
+  width: 120px;
+  max-width: 120px;
   white-space: nowrap;
 }
 

@@ -2,36 +2,50 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-.users-container {
-  width: 800px;
-  min-height: 900px;
-  max-height: 900px;
+@use "@angular/material" as mat;
+
+:host {
+  @include mat.form-field-density(-5);
+}
+
+.full-width {
+  display: flex;
+  flex: 1;
+  flex-direction: row;
+  align-items: flex-start;
+  width: 80%;
+  margin: 0 auto;
 }
 
 .user-list-container {
-  display: inline-block;
+  display: flex;
   flex-direction: column;
+  flex: 8;
+  min-width: 300px;
   margin-top: 10px;
-  width: 400px;
-  height: 600px;
+  max-height: 500px;
+  align-self: flex-start;
 }
 
 .unit-list-container {
-  display: inline-block;
+  display: flex;
   flex-direction: column;
+  flex: 8;
+  min-width: 300px;
   margin-top: 10px;
-  width: 400px;
-  height: 600px;
+  max-height: 500px;
+  align-self: flex-start;
 }
 
-.mat-mdc-table-all-users {
+.spacer {
+  display: flex;
+  flex: 1;
+  min-width: 40px;
+}
+
+.table-all-users {
   overflow: auto;
   max-height: 400px;
-}
-
-.mat-mdc-table-unit-users {
-  overflow: auto;
-  max-height: 600px;
 }
 
 /* TODO(mdc-migration): The following rule targets internal classes of button that may no longer apply for the MDC version.*/
@@ -43,10 +57,25 @@
   padding-right: 0;
 }
 
-.sp-icon {
-  margin-left: 10px;
-  margin-right: 20px;
-  margin-top: 10px;
-  display: inline-flex;
+.mat-toolbar-row {
+  display: flex;
   align-items: center;
+  gap: 10px;
+}
+
+.mat-toolbar-row mat-icon {
+  color: var(--mat-sys-primary);
+}
+
+.mat-toolbar-row p {
+  font-size: 16px;
+  margin: 0;
+}
+
+mat-paginator {
+  background-color: transparent;
+}
+
+.w-50 {
+  width: 50%;
 }

@@ -2,9 +2,11 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, Input, OnDestroy } from '@angular/core';
-import { PageEvent } from '@angular/material/paginator';
+import { Component, Input, OnDestroy, ViewChild } from '@angular/core';
+import { MatPaginator } from '@angular/material/paginator';
 import { Sort } from '@angular/material/sort';
+import { MatTable, MatTableDataSource } from '@angular/material/table';
+import { animate, state, style, transition, trigger } from '@angular/animations';
 import { Unit, User } from 'src/app/generated/blueprint.api/model/models';
 import { UnitDataService } from 'src/app/data/unit/unit-data.service';
 import { UnitQuery } from 'src/app/data/unit/unit.query';
@@ -20,27 +22,35 @@ import { DialogService } from 'src/app/services/dialog/dialog.service';
     selector: 'app-admin-units',
     templateUrl: './admin-units.component.html',
     styleUrls: ['./admin-units.component.scss'],
+    animations: [
+      trigger('detailExpand', [
+        state('collapsed', style({ height: '0px', minHeight: '0', visibility: 'hidden' })),
+        state('expanded', style({ height: '*', visibility: 'visible' })),
+        transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
+      ]),
+    ],
     standalone: false
 })
 export class AdminUnitsComponent implements OnDestroy {
   @Input() canManage: boolean;
+  @ViewChild('unitTable', { static: false }) unitTable: MatTable<any>;
+  @ViewChild(MatPaginator) set matPaginator(paginator: MatPaginator) {
+    this.unitDataSource.paginator = paginator;
+  }
   userList: User[] = [];
   allUnits: Unit[] = [];
   unitList: Unit[] = [];
   filterString = '';
-  pageEvent: PageEvent;
-  pageIndex = 0;
-  pageSize = 20;
   sort: Sort = { active: 'shortName', direction: 'asc' };
-  newUnit: Unit = { id: '', name: '' };
   isLoading = false;
   topbarColor = '#ef3a47';
   addingNewUnit = false;
   newUnitName = '';
-  editUnit: Unit = {};
-  originalUnitName = '';
-  originalUnitShortName = '';
   defaultScoringModelId = this.settingsService.settings.DefaultScoringModelId;
+  unitDataSource = new MatTableDataSource<Unit>(new Array<Unit>());
+  displayedColumns: string[] = ['action', 'shortName', 'name'];
+  expandedElementId = '';
+  isExpansionDetailRow = (i: number, row: Object) => (row as Unit).id === this.expandedElementId;
   private unsubscribe$ = new Subject();
 
   constructor(
@@ -90,17 +100,6 @@ export class AdminUnitsComponent implements OnDestroy {
     });
   }
 
-  togglePanel(unit: Unit) {
-    this.editUnit = this.editUnit.id === unit.id ? this.editUnit = {} : this.editUnit = { ...unit };
-  }
-
-  selectUnit(unit: Unit) {
-    this.editUnit = { ...unit };
-    this.originalUnitName = unit.name;
-    this.originalUnitShortName = unit.shortName;
-    return false;
-  }
-
   saveUnit(unit: Unit) {
     if (unit.id) {
       this.unitDataService.updateUnit(unit);
@@ -124,13 +123,13 @@ export class AdminUnitsComponent implements OnDestroy {
 
   applyFilter(filterValue: string) {
     this.filterString = filterValue;
-    this.pageIndex = 0;
-    filterValue = filterValue.toLowerCase(); // MatTableDataSource defaults to lowercase matches
+    filterValue = filterValue.toLowerCase();
     this.unitList = this.allUnits
       .filter(unit =>
         unit.name.toLowerCase().indexOf(filterValue) >= 0 ||
         unit.shortName.toLowerCase().indexOf(filterValue) >= 0)
       .sort((a, b) => this.sortUnits(a, b));
+    this.unitDataSource.data = this.unitList;
   }
 
   sortChanged(sort: Sort) {
@@ -150,18 +149,20 @@ export class AdminUnitsComponent implements OnDestroy {
     }
   }
 
-  paginatorEvent(page: PageEvent) {
-    this.pageIndex = page.pageIndex;
-    this.pageSize = page.pageSize;
+  rowClicked(row: Unit) {
+    if (this.expandedElementId === row.id) {
+      this.expandedElementId = '';
+    } else {
+      this.expandedElementId = row.id;
+    }
+    this.unitTable.renderRows();
   }
 
-  paginateUnits(pageIndex: number, pageSize: number) {
-    if (!this.unitList) {
-      return [];
-    }
-    const startIndex = pageIndex * pageSize;
-    const copy = this.unitList.slice();
-    return copy.splice(startIndex, pageSize);
+  getRowClass(id: string) {
+    const rowClass = this.expandedElementId === id
+      ? 'element-row element-row-expanded'
+      : 'element-row element-row-not-expanded';
+    return rowClass;
   }
 
   ngOnDestroy() {

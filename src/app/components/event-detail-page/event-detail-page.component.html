@@ -33,7 +33,7 @@ project root for license information.
         <div>
           <table id="eventDetails">
             <tbody>
-              @for (df of sortedDataFields; track df) {
+              @for (df of sortedDataFields; track df.id) {
                 @if (getScenarioEventValue(df) && scenarioEvent.id === scenarioEventId) {
                   <tr>
                     <td style="font-weight:bold">

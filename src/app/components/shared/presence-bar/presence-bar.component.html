@@ -1,0 +1,15 @@
+<!--
+Copyright 2024 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license, please see LICENSE.md in the
+project root for license information or contact permission@sei.cmu.edu for full terms.
+-->
+@if (actors.length > 0) {
+<div class="presence-container">
+  @for (actor of actors; track actor.id) {
+  <span class="presence-chip" [class.presence-offline]="!actor.online">
+    <mat-icon class="presence-icon" fontIcon="mdi-account"></mat-icon>
+    <span class="presence-name">{{ actor.name || 'Anonymous' }}</span>
+  </span>
+  }
+</div>
+}

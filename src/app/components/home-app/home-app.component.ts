@@ -100,6 +100,7 @@ export class HomeAppComponent implements OnDestroy, OnInit {
         if (!this.selectedMselId) {
           // set appTitle and topbarText for top level
           this.mselDataService.setActive('');
+          this.signalRService.clearPresence();
           this.topbarText = this.topbarTextBase;
           this.titleService.setTitle(this.appTitle);
         }
@@ -113,6 +114,12 @@ export class HomeAppComponent implements OnDestroy, OnInit {
           const prefix = this.appTitle + ' - ';
           this.topbarText = m ? prefix + m.name : this.topbarTextBase;
           this.titleService.setTitle(prefix + m.name);
+        } else if (this.selectedMselId) {
+          // active MSEL was deleted, navigate back to the list
+          this.selectedMselId = '';
+          this.topbarText = this.topbarTextBase;
+          this.titleService.setTitle(this.appTitle);
+          this.router.navigate(['/build']);
         }
       });
     // Set the display settings from config file
@@ -202,9 +209,6 @@ export class HomeAppComponent implements OnDestroy, OnInit {
 
   deleteMsel(id: string) {
     this.mselDataService.delete(id);
-    this.selectedMselId = '';
-    this.mselDataService.setActive('');
-    this.router.navigateByUrl('/build');
   }
 
   ngOnDestroy() {

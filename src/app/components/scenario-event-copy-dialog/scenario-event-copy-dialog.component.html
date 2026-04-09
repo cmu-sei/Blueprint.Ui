@@ -15,7 +15,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <div class="scenario-event-copy-dialog">
         <h4>Please select the destination MSEL.</h4>
         <mat-radio-group [(ngModel)]="selectedMselId">
-          @for (msel of data.mselList; track msel) {
+          @for (msel of data.mselList; track msel.id) {
             <mat-radio-button [value]="msel.id">
               &nbsp;&nbsp;{{ msel.name }}
             </mat-radio-button>

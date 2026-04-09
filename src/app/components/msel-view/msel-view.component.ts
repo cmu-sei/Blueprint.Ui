@@ -401,7 +401,7 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
     const topHeight = this.tabHeight
       ? this.myTopHeight + this.tabHeight
       : this.myTopHeight;
-    return 'calc(100vh - ' + topHeight + 'px)';
+    return 'calc(100% - ' + topHeight + 'px)';
   }
 
   blankDataValuePlus(): DataValuePlus {
@@ -479,6 +479,25 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
   setRealTime(value: boolean) {
     this.showRealTime = value;
     this.uiDataService.setUseRealTime(value);
+  }
+
+  getUserTimezone(): string {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+  }
+
+  getTimezoneAbbr(): string {
+    try {
+      const date = new Date();
+      const timeZone = this.getUserTimezone();
+      const formatted = date.toLocaleTimeString('en-US', {
+        timeZoneName: 'short',
+        timeZone
+      });
+      const parts = formatted.split(' ');
+      return parts[parts.length - 1] || 'UTC';
+    } catch (error) {
+      return 'UTC';
+    }
   }
 
   ngOnDestroy() {

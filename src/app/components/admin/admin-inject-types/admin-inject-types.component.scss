@@ -4,13 +4,19 @@
 
 @use "@angular/material" as mat;
 
-:host {
-  @include mat.form-field-density(-5); // Adjust -3 for this specific form field
+.cssLayoutRowStartCenter {
+  min-height: 76px;
+  flex-shrink: 0;
+}
+
+.button-end {
+  margin-left: auto;
 }
 
 .expansion-panel {
   width: 90%;
   background-color: transparent;
+  margin-top: 8px;
   margin-bottom: 10px;
 }
 
@@ -59,26 +65,23 @@
   position: relative;
 }
 
-.element-row-not-expanded {
+.element-row {
   cursor: pointer;
 }
 
-.element-row-expanded {
-  cursor: pointer;
-  border-bottom-color: transparent;
+.element-row:hover {
+  background-color: var(--mat-sys-surface-variant);
 }
 
-::ng-deep mat-row.element-row-expanded,
-::ng-deep .mat-mdc-row.element-row-expanded,
-::ng-deep .mdc-data-table__row.element-row-expanded {
-  border-bottom-style: none !important;
-  border-bottom-width: 0 !important;
-  border-bottom-color: transparent !important;
+.detail-row {
+  height: 0;
+  min-height: 0;
+  overflow: hidden;
+  --mat-table-row-item-outline-width: 0px;
 }
 
-::ng-deep mat-row.element-row-expanded .mat-mdc-cell,
-::ng-deep mat-row.element-row-expanded .mdc-data-table__cell {
-  border-bottom: none !important;
+.element-row td {
+  border-bottom-width: 0;
 }
 
 .column-name {
@@ -87,10 +90,8 @@
 }
 
 .column-action {
-  flex: 0 0 150px;
-  flex-direction: row;
-  padding: 0px;
-  word-wrap: none;
+  flex: 0 0 160px;
+  width: 160px;
 }
 
 .column-description {
@@ -116,8 +117,6 @@
   flex-direction: column;
   width: 100%;
   min-width: 660px;
-  padding: 8px 10px;
-  gap: 8px;
 }
 
 .row:has(.expanded-detail-div) {

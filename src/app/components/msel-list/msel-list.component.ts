@@ -329,6 +329,11 @@ export class MselListComponent implements OnDestroy, OnInit {
           (m) => m.status.toString() === 'Approved'
         );
         break;
+      case 'Deployed':
+        filteredMselList = filteredMselList.filter(
+          (m) => m.status.toString() === 'Deployed'
+        );
+        break;
       case 'Completed':
         filteredMselList = filteredMselList.filter(
           (m) => m.status.toString() === 'Completed'

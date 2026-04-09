@@ -134,7 +134,7 @@ export class InvitationListComponent implements OnDestroy {
     this.dialogService
       .confirm(
         'Delete Invitation',
-        'Are you sure that you want to delete ' + invitation + '?'
+        'Are you sure that you want to delete the invitation for ' + invitation.emailDomain + '?'
       )
       .subscribe((result) => {
         if (result['confirm']) {

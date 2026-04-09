@@ -210,4 +210,23 @@ export class DurationEditComponent implements OnChanges {
   hasStartTime(): boolean {
     return this.startTime && this.startTime.valueOf() > 0;
   }
+
+  getUserTimezone(): string {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+  }
+
+  getTimezoneAbbr(): string {
+    try {
+      const date = new Date();
+    const timeZone = this.getUserTimezone();
+    const formatted = date.toLocaleTimeString('en-US', {
+      timeZoneName: 'short',
+      timeZone
+    });
+    const parts = formatted.split(' ');
+    return parts[parts.length - 1] || 'UTC';
+    } catch (error) {
+      return 'UTC';
+    }
+  }
 }

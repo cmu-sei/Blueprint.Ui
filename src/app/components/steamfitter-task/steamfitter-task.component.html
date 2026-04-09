@@ -9,6 +9,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <!-- Name -->
     <div class="single-detail center-self">
       <mat-form-field class="full-width">
+        <mat-label>Name</mat-label>
         <input type="text" matInput placeholder="Name" [(ngModel)]="scenarioEvent.steamfitterTask.name"
           [disabled]="!canEdit" />
       </mat-form-field>
@@ -16,6 +17,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <!-- Description -->
     <div class="single-detail center-self">
       <mat-form-field class="full-width">
+        <mat-label>Description</mat-label>
         <input type="text" matInput placeholder="Description" [(ngModel)]="scenarioEvent.steamfitterTask.description"
           [disabled]="!canEdit" />
       </mat-form-field>
@@ -23,6 +25,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <!-- Task Type -->
     <div class="single-detail center-self">
       <mat-form-field>
+        <mat-label>Steamfitter Task Type</mat-label>
         <mat-select placeholder="Steamfitter Task Type" [(ngModel)]="scenarioEvent.steamfitterTask.taskType"
           [disabled]="!canEdit">
           @for (taskType of taskTypes; track taskType) {
@@ -36,6 +39,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <span>
       <div class="single-detail center-self">
         <mat-form-field class="full-width">
+          <mat-label>Notification Text</mat-label>
           <input type="text" matInput placeholder="Notification Text"
             [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['notificationText']"
             [disabled]="!canEdit" />
@@ -48,6 +52,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <span>
       <div class="single-detail center-self">
         <mat-form-field>
+          <mat-label>Situation Date / Time</mat-label>
           <input matInput placeholder="Situation Date / Time"
             [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['situationTime']"
             [disabled]="!canEdit">
@@ -71,6 +76,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <span>
       <div class="single-detail center-self">
         <mat-form-field class="full-width">
+          <mat-label>From</mat-label>
           <input type="text" matInput placeholder="From"
             [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['EmailFrom']"
             [disabled]="!canEdit" />
@@ -78,6 +84,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </div>
       <div class="single-detail center-self">
         <mat-form-field class="full-width">
+          <mat-label>To</mat-label>
           <input type="text" matInput placeholder="To"
             [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['EmailTo']"
             [disabled]="!canEdit" />
@@ -85,6 +92,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </div>
       <div class="single-detail center-self">
         <mat-form-field class="full-width">
+          <mat-label>cc</mat-label>
           <input type="text" matInput placeholder="cc"
             [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['EmailCC']"
             [disabled]="!canEdit" />
@@ -92,6 +100,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </div>
       <div class="single-detail center-self">
         <mat-form-field class="full-width">
+          <mat-label>Subject</mat-label>
           <input type="text" matInput placeholder="Subject"
             [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['Subject']"
             [disabled]="!canEdit" />
@@ -99,6 +108,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </div>
       <div class="single-detail center-self">
         <mat-form-field class="full-width">
+          <mat-label>Message</mat-label>
           <input type="text" matInput placeholder="Message"
             [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['Message']"
             [disabled]="!canEdit" />
@@ -106,13 +116,15 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </div>
       <div class="single-detail center-self">
         <mat-form-field class="full-width">
-          <input type="text" matInput placeholder="accountText"
+          <mat-label>Account</mat-label>
+          <input type="text" matInput placeholder="Account"
             [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['Account']"
             [disabled]="!canEdit" />
         </mat-form-field>
       </div>
       <div class="single-detail center-self">
         <mat-form-field class="full-width">
+          <mat-label>Mime Type</mat-label>
           <input type="text" matInput placeholder="Mime Type"
             [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['Mime']"
             [disabled]="!canEdit" />
@@ -125,6 +137,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <span>
       <div class="single-detail center-self">
         <mat-form-field class="full-width">
+          <mat-label>URL</mat-label>
           <input type="text" matInput placeholder="URL"
             [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['Url']"
             [disabled]="!canEdit" />
@@ -132,6 +145,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </div>
       <div class="single-detail center-self">
         <mat-form-field class="full-width">
+          <mat-label>Body</mat-label>
           <input type="text" matInput placeholder="Body"
             [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['Body']"
             [disabled]="!canEdit" />
@@ -139,6 +153,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </div>
       <div class="single-detail center-self">
         <mat-form-field class="full-width">
+          <mat-label>Headers</mat-label>
           <input type="text" matInput placeholder="Headers"
             [(ngModel)]="scenarioEvent.steamfitterTask.actionParameters['Headers']"
             [disabled]="!canEdit" />

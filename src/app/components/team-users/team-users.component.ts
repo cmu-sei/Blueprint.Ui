@@ -9,11 +9,13 @@ import {
   OnInit,
   Input,
   ViewChild,
+  AfterViewInit,
 } from '@angular/core';
+import { MatPaginator } from '@angular/material/paginator';
 import { Sort, MatSortable } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { TeamQuery } from 'src/app/data/team/team.query';
-import { SystemPermission, TeamRole, Team, TeamUser, User, UserTeamRole, MselUnit, Unit } from 'src/app/generated/blueprint.api';
+import { SystemPermission, Team, TeamUser, User, UserTeamRole, MselUnit, Unit, CiteService } from 'src/app/generated/blueprint.api';
 import { TeamUserDataService } from 'src/app/data/team-user/team-user-data.service';
 import { TeamUserQuery } from 'src/app/data/team-user/team-user.query';
 import { CurrentUserQuery, UserQuery } from 'src/app/data/user/user.query';
@@ -33,8 +35,10 @@ import { UntypedFormControl } from '@angular/forms';
   styleUrls: ['./team-users.component.scss'],
   standalone: false
 })
-export class TeamUsersComponent implements OnDestroy, OnInit {
+export class TeamUsersComponent implements OnDestroy, OnInit, AfterViewInit {
   @Input() team: Team;
+  @ViewChild('userPaginator') userPaginator: MatPaginator;
+  @ViewChild('teamMemberPaginator') teamMemberPaginator: MatPaginator;
   userList: User[] = [];
   teamUsers: TeamUser[] = [];
   otherTeamUsers: TeamUser[] = [];
@@ -43,15 +47,15 @@ export class TeamUsersComponent implements OnDestroy, OnInit {
   mselUnits: MselUnit[] = [];
   units: Unit[] = [];
   minUserColumns: string[] = ['name', 'id'];
-  allUserColumns: string[] = ['name', 'Inviter', 'Observer', 'Incrementer', 'Modifier', 'Submitter', 'id'];
-  displayedTeamUserColumns: string[] = [];
+  displayedTeamUserColumns: string[] = ['name', 'type', 'id'];
   userDataSource = new MatTableDataSource<User>(new Array<User>());
   teamUserDataSource = new MatTableDataSource<TeamUser>(new Array<TeamUser>());
   filterControl = new UntypedFormControl();
+  teamMemberFilterControl = new UntypedFormControl();
   filterString = '';
-  isAddMode = false;
+  teamMemberFilterString = '';
   sort: Sort = { active: 'name', direction: 'asc' };
-  teamRoles: string[] = ['Inviter', 'Observer', 'Incrementer', 'Modifier', 'Submitter'];
+  teamRoles: string[] = [];
   msel = new MselPlus();
   loggedInUserId = '';
   private unsubscribe$ = new Subject();
@@ -68,8 +72,13 @@ export class TeamUsersComponent implements OnDestroy, OnInit {
     private mselUnitQuery: MselUnitQuery,
     private unitQuery: UnitQuery,
     private permissionDataService: PermissionDataService,
+    private citeService: CiteService,
     private changeDetectorRef: ChangeDetectorRef
   ) {
+    // Fetch CITE team roles dynamically
+    this.citeService.getTeamRoles().pipe(takeUntil(this.unsubscribe$)).subscribe(roles => {
+      this.teamRoles = roles.map(r => r.name).filter(n => !!n);
+    });
     this.userQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(users => {
       this.userList = users;
       this.setDataSources();
@@ -97,7 +106,6 @@ export class TeamUsersComponent implements OnDestroy, OnInit {
       this.units = units || [];
       this.applyFilter();
     });
-    this.displayedTeamUserColumns = this.allUserColumns;
   }
 
   ngOnInit() {
@@ -132,18 +140,39 @@ export class TeamUsersComponent implements OnDestroy, OnInit {
       this.applyFilter();
     });
     this.filterControl.setValue('');
+    this.teamMemberFilterControl.valueChanges.pipe(takeUntil(this.unsubscribe$)).subscribe(() => {
+      this.teamMemberFilterString = this.teamMemberFilterControl.value;
+      this.applyTeamMemberFilter();
+    });
     this.teamUsers = this.teamUserQuery.getAll().filter(tu => tu.teamId === this.team?.id);
     this.otherTeamUsers = this.teamUserQuery.getAll().filter(tu => tu.teamId !== this.team?.id);
     this.setDataSources();
   }
 
+  ngAfterViewInit() {
+    this.userDataSource.paginator = this.userPaginator;
+    this.teamUserDataSource.paginator = this.teamMemberPaginator;
+  }
+
   canEditMsel(): boolean {
-    return this.permissionDataService.hasPermission(SystemPermission.EditMsels) ||
-      this.msel.hasRole(this.loggedInUserId, '').editor;
+    return this.permissionDataService.hasPermission(SystemPermission.ManageMsels) ||
+      this.msel.hasRole(this.loggedInUserId, '').owner;
   }
 
   clearFilter() {
     this.filterControl.setValue('');
+  }
+
+  clearTeamMemberFilter() {
+    this.teamMemberFilterControl.setValue('');
+  }
+
+  applyTeamMemberFilter() {
+    const searchTerm = this.teamMemberFilterControl.value ? this.teamMemberFilterControl.value.toLowerCase() : '';
+    const filteredTeamUsers = this.teamUsers.filter(tu =>
+      !searchTerm || this.getUserName(tu.userId).toLowerCase().includes(searchTerm)
+    );
+    this.sortTeamUserData(filteredTeamUsers);
   }
 
   setDataSources() {
@@ -169,6 +198,12 @@ export class TeamUsersComponent implements OnDestroy, OnInit {
       }
     });
     this.userDataSource = new MatTableDataSource(newAllUsers);
+    if (this.userPaginator) {
+      this.userDataSource.paginator = this.userPaginator;
+    }
+    if (this.teamMemberPaginator) {
+      this.teamUserDataSource.paginator = this.teamMemberPaginator;
+    }
   }
 
   applyFilter() {
@@ -221,11 +256,14 @@ export class TeamUsersComponent implements OnDestroy, OnInit {
       }
     });
     this.userDataSource.data = data;
+    if (this.userPaginator) {
+      this.userDataSource.paginator = this.userPaginator;
+    }
   }
 
   sortTeamUserData(teamUserData: TeamUser[]) {
     teamUserData.sort((a, b) => {
-      const aName = this.getUserName(a.userId).toLowerCase(); // Assumption: getUserName resolves the user's name by ID
+      const aName = this.getUserName(a.userId).toLowerCase();
       const bName = this.getUserName(b.userId).toLowerCase();
       const isAsc = this.sort.direction === 'asc';
       switch (this.sort.active) {
@@ -236,6 +274,9 @@ export class TeamUsersComponent implements OnDestroy, OnInit {
       }
     });
     this.teamUserDataSource.data = teamUserData;
+    if (this.teamMemberPaginator) {
+      this.teamUserDataSource.paginator = this.teamMemberPaginator;
+    }
   }
 
   compare(a: string, b: string, isAsc: boolean) {
@@ -273,44 +314,30 @@ export class TeamUsersComponent implements OnDestroy, OnInit {
     this.teamUserDataService.delete(teamUser.id);
   }
 
-  hasTeamRole(userId: string, teamRole: string): boolean {
-    // if all members can invite, don't have to check each user
-    if (this.team.canTeamMemberInvite && teamRole === TeamRole.Inviter) {
-      return true;
-    } else {
-      const hasRole = this.userTeamRoles.some(utr =>
-        utr.userId === userId && utr.role === teamRole && utr.teamId === this.team?.id);
-      return hasRole;
-    }
+  getUserTeamRole(userId: string): string {
+    const role = this.userTeamRoles.find(utr =>
+      utr.userId === userId && utr.teamId === this.team?.id
+    );
+    return role ? role.role : '';
   }
 
-  toggleTeamRole(userId: string, teamId: string, teamRole: string, addIt: boolean) {
-    if (addIt) {
+  setUserTeamRole(userId: string, teamId: string, newRole: string) {
+    // Remove existing role for this user on this team
+    const existingRole = this.userTeamRoles.find(utr =>
+      utr.userId === userId && utr.teamId === teamId
+    );
+    if (existingRole) {
+      this.userTeamRoleDataService.delete(existingRole.id);
+    }
+    // Add the new role if one was selected
+    if (newRole) {
       const umr = {
         userId: userId,
         teamId: teamId,
-        role: teamRole
+        role: newRole
       } as UserTeamRole;
       this.userTeamRoleDataService.add(umr);
-    } else {
-      const umrId = this.userTeamRoles.find(umr =>
-        umr.userId === userId &&
-        umr.teamId === teamId &&
-        umr.role === teamRole
-      ).id;
-      this.userTeamRoleDataService.delete(umrId);
     }
-  }
-
-  toggleAddMode(value: boolean) {
-    this.isAddMode = value;
-    if (value) {
-      this.displayedTeamUserColumns = this.minUserColumns;
-
-    } else {
-      this.displayedTeamUserColumns = this.allUserColumns;
-    }
-    console.log('add mode set to ' + value);
   }
 
   onAnotherTeam(userId: string): boolean {
