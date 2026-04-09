@@ -20,7 +20,6 @@
   flex-direction: column;
   flex: 1;
   min-height: 0;
-  min-height: 0;
 }
 
 .table-container {
@@ -28,162 +27,94 @@
   overflow: auto;
   padding-bottom: 20px;
   min-height: 200px;
+}
 
-  .table-container {
-    flex: 1;
-    overflow: auto;
-    padding-bottom: 20px;
-    min-height: 200px;
-  }
+table {
+  width: 100%;
+}
 
-  table {
-    width: 100%;
-  }
+.element-row {
+  cursor: pointer;
+}
 
-  .element-row {
-    cursor: pointer;
+.element-row:hover {
+  background-color: var(--mat-sys-surface-variant);
+}
 
-    table {
-      width: 100%;
-    }
+.detail-row {
+  height: 0;
+}
 
-    .element-row {
-      cursor: pointer;
-    }
+.element-row td {
+  border-bottom-width: 0;
+}
 
-    .element-row:hover {
-      background-color: var(--mat-sys-surface-variant);
+.column-action {
+  flex: 0 0 120px;
+  width: 120px;
+}
 
-      .element-row:hover {
-        background-color: var(--mat-sys-surface-variant);
-      }
+.column-name {
+  flex: 3;
+  min-width: 150px;
+}
 
-      .detail-row {
-        height: 0;
+.column-url {
+  flex: 3;
+  min-width: 0;
+}
 
-        .detail-row {
-          height: 0;
-        }
+.column-search {
+  flex: 3;
+  min-width: 0;
+}
 
-        .element-row td {
-          border-bottom-width: 0;
+.search-control {
+  width: calc(100% - 32px);
+}
 
-          .element-row td {
-            border-bottom-width: 0;
-          }
+.expanded-detail-div {
+  display: flex;
+  flex-direction: column;
+  width: 90%;
+  margin: 8px auto;
+}
 
-          .column-action {
-            flex: 0 0 120px;
-            width: 120px;
+.single-detail {
+  display: flex;
+  flex-flow: row;
+  align-items: flex-start;
+  width: 100%;
+}
 
-            .column-action {
-              flex: 0 0 120px;
-              width: 120px;
-            }
+.title {
+  margin-left: 5%;
+  margin-top: 5px;
+  margin-bottom: 15px;
+  font-weight: 400;
+}
 
-            .column-name {
-              flex: 3;
-              min-width: 150px;
+.playerApplication-detail {
+  display: flex;
+  flex: 1;
+  flex-flow: column;
+  justify-content: center;
+  align-items: center;
+}
 
-              .column-name {
-                flex: 3;
-                min-width: 150px;
-              }
+::ng-deep .frame>mat-expansion-panel {
+  flex-shrink: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
 
-              .column-url {
-                flex: 3;
-                min-width: 0;
+::ng-deep .frame>mat-expansion-panel .mat-expansion-panel-content {
+  overflow: auto;
+  flex: 1;
+  min-height: 0;
+}
 
-                .column-url {
-                  flex: 3;
-                  min-width: 0;
-                }
-
-                .column-search {
-                  flex: 3;
-                  min-width: 0;
-
-                  .column-search {
-                    flex: 3;
-                    min-width: 0;
-                  }
-
-                  .search-control {
-                    width: calc(100% - 32px);
-                  }
-
-                  .expanded-detail-div {
-                    .expanded-detail-div {
-                      display: flex;
-                      flex-direction: column;
-                      flex-direction: column;
-                      width: 90%;
-                      margin: 8px auto;
-                      margin: 8px auto;
-                    }
-
-                    .single-detail {
-                      .single-detail {
-                        display: flex;
-                        flex-flow: row;
-                        align-items: flex-start;
-                        width: 100%;
-                      }
-
-                      .title {
-                        margin-left: 5%;
-                        margin-top: 5px;
-                        margin-bottom: 15px;
-                        font-weight: 400;
-                      }
-
-                      .playerApplication-detail {
-                        display: flex;
-                        flex: 1;
-                        flex-flow: column;
-                        justify-content: center;
-                        align-items: center;
-                      }
-
-                      ::ng-deep .frame>mat-expansion-panel {
-                        flex-shrink: 1;
-                        min-height: 0;
-                        display: flex;
-                        flex-direction: column;
-                      }
-
-                      ::ng-deep .frame>mat-expansion-panel .mat-expansion-panel-content {
-                        overflow: auto;
-                        flex: 1;
-                        min-height: 0;
-                      }
-
-                      .button-end {
-                        margin-left: auto;
-                      }
-
-
-                      .playerApplication-detail {
-                        display: flex;
-                        flex: 1;
-                        flex-flow: column;
-                        justify-content: center;
-                        align-items: center;
-                      }
-
-                      ::ng-deep .frame>mat-expansion-panel {
-                        flex-shrink: 1;
-                        min-height: 0;
-                        display: flex;
-                        flex-direction: column;
-                      }
-
-                      ::ng-deep .frame>mat-expansion-panel .mat-expansion-panel-content {
-                        overflow: auto;
-                        flex: 1;
-                        min-height: 0;
-                      }
-
-                      .button-end {
-                        margin-left: auto;
-                      }
+.button-end {
+  margin-left: auto;
+}
