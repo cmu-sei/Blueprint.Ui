@@ -5,12 +5,13 @@ import { Component, Input, OnDestroy, ViewChild, AfterViewInit } from '@angular/
 import { UntypedFormControl } from '@angular/forms';
 import { MatTableDataSource, MatTable } from '@angular/material/table';
 import { animate, state, style, transition, trigger } from '@angular/animations';
-import { Subject } from 'rxjs';
+import { Subject, Subscription } from 'rxjs';
 import { take, takeUntil } from 'rxjs/operators';
 import {
   Competency,
   CompetencyFramework,
   CompetencyFrameworkService,
+  ProficiencyScaleService,
 } from 'src/app/generated/blueprint.api';
 import { Sort } from '@angular/material/sort';
 import { MatPaginator } from '@angular/material/paginator';
@@ -21,6 +22,7 @@ import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { AdminCompetencyFrameworkEditDialogComponent } from '../admin-competency-framework-edit-dialog/admin-competency-framework-edit-dialog.component';
 import { AdminCompetencyFrameworkImportDialogComponent, ImportResult } from '../admin-competency-framework-import-dialog/admin-competency-framework-import-dialog.component';
 import { AdminCompetencyEditDialogComponent } from '../admin-competency-edit-dialog/admin-competency-edit-dialog.component';
+import { AdminCompetencyDetailDialogComponent } from '../admin-competency-detail-dialog/admin-competency-detail-dialog.component';
 import { v4 as uuidv4 } from 'uuid';
 
 @Component({
@@ -29,11 +31,6 @@ import { v4 as uuidv4 } from 'uuid';
   styleUrls: ['./admin-competency-frameworks.component.scss'],
   animations: [
     trigger('detailExpand', [
-      state('collapsed', style({ height: '0px', minHeight: '0', visibility: 'hidden' })),
-      state('expanded', style({ height: '*', visibility: 'visible' })),
-      transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
-    ]),
-    trigger('subDetailExpand', [
       state('collapsed', style({ height: '0px', minHeight: '0', visibility: 'hidden' })),
       state('expanded', style({ height: '*', visibility: 'visible' })),
       transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
@@ -53,7 +50,8 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
   filterString = '';
   sort: Sort = { active: 'name', direction: 'asc' };
   competencyFrameworkDataSource = new MatTableDataSource<CompetencyFramework>(new Array<CompetencyFramework>());
-  displayedColumns: string[] = ['action', 'name', 'version', 'source', 'description'];
+  displayedColumns: string[] = ['action', 'name', 'version', 'source', 'scale', 'description'];
+  private scaleMap = new Map<string, string>();
   private unsubscribe$ = new Subject();
   isExpansionDetailRow = (i: number, row: Object) => (row as CompetencyFramework).id === this.expandedElementId;
   expandedElementId = '';
@@ -61,7 +59,6 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
   expandedCompetencies: Competency[] = [];
   competencyDataSource = new MatTableDataSource<Competency>([]);
   competencyDisplayedColumns: string[] = ['action', 'idNumber', 'type', 'shortName', 'description'];
-  expandedCompetencyId = '';
   competencyFilterControl = new UntypedFormControl();
   competencyFilterString = '';
   competencySort: Sort = { active: 'idNumber', direction: 'asc' };
@@ -74,10 +71,30 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
   workRoles: Competency[] = [];
   workRoleDataSource = new MatTableDataSource<Competency>([]);
   workRoleDisplayedColumns: string[] = ['action', 'idNumber', 'shortName', 'category', 'description'];
-  expandedWorkRoleId = '';
   workRoleFilterControl = new UntypedFormControl();
   workRoleFilterString = '';
   workRoleSort: Sort = { active: 'idNumber', direction: 'asc' };
+  workRoleCategories: string[] = [];
+  selectedWorkRoleCategory = '';
+  // Inline related competency management
+  expandedCompetencyId = '';
+  availableRelatedDataSource = new MatTableDataSource<Competency>([]);
+  relatedDataSource = new MatTableDataSource<Competency>([]);
+  availableRelatedColumns: string[] = ['name', 'view', 'add'];
+  relatedColumns: string[] = ['name', 'view', 'remove'];
+  relatedFilterControl = new UntypedFormControl();
+  relatedSideFilterControl = new UntypedFormControl();
+  availableTypeFilter = '';
+  relatedTypeFilter = '';
+  availableTypes: string[] = [];
+  relatedTypes: string[] = [];
+  @ViewChild('availablePaginator') availablePaginator: MatPaginator;
+  @ViewChild('relatedPaginator') relatedPaginator: MatPaginator;
+  private expandedComp: Competency = null;
+  private relatedChanged = false;
+  private currentRelatedIdNumbers: string[] = [];
+  private relatedFilterSub: Subscription;
+  private relatedSideFilterSub: Subscription;
 
   importing = false;
   importError = '';
@@ -86,9 +103,15 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
     private competencyFrameworkDataService: CompetencyFrameworkDataService,
     private competencyFrameworkQuery: CompetencyFrameworkQuery,
     private competencyFrameworkService: CompetencyFrameworkService,
+    private proficiencyScaleService: ProficiencyScaleService,
     public dialog: MatDialog,
     public dialogService: DialogService
   ) {
+    this.proficiencyScaleService.getProficiencyScales()
+      .pipe(take(1))
+      .subscribe(scales => {
+        scales.forEach(s => this.scaleMap.set(s.id, s.name));
+      });
     this.competencyFrameworkQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(competencyFrameworks => {
       this.adminCompetencyFrameworks = competencyFrameworks;
       this.sortChanged(this.sort);
@@ -262,6 +285,10 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
         return (((a.version || '').toLowerCase() < (b.version || '').toLowerCase() ? -1 : 1) * (isAsc ? 1 : -1));
       case 'source':
         return (((a.source || '').toLowerCase() < (b.source || '').toLowerCase() ? -1 : 1) * (isAsc ? 1 : -1));
+      case 'scale':
+        const aScale = (this.scaleMap.get(a.defaultProficiencyScaleId) || '').toLowerCase();
+        const bScale = (this.scaleMap.get(b.defaultProficiencyScaleId) || '').toLowerCase();
+        return ((aScale < bScale ? -1 : aScale > bScale ? 1 : 0) * (isAsc ? 1 : -1));
       case 'description':
         return (((a.description || '').toLowerCase() < (b.description || '').toLowerCase() ? -1 : 1) * (isAsc ? 1 : -1));
       default:
@@ -271,18 +298,21 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
 
   rowClicked(row: CompetencyFramework) {
     if (this.expandedElementId === row.id) {
+      this.collapseCompetencyDetail();
       this.expandedElementId = '';
       this.expandedCompetencies = [];
       this.competencyDataSource.data = [];
       this.workRoles = [];
       this.workRoleDataSource.data = [];
-      this.expandedCompetencyId = '';
-      this.expandedWorkRoleId = '';
     } else {
       this.expandedElementId = row.id;
       this.loadCompetencies(row.id);
     }
     this.competencyFrameworkTable.renderRows();
+  }
+
+  getScaleName(fw: CompetencyFramework): string {
+    return this.scaleMap.get(fw.defaultProficiencyScaleId) || '';
   }
 
   getRowClass(id: string) {
@@ -297,6 +327,7 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
     this.competencyFilterControl.setValue('');
     this.workRoleFilterControl.setValue('');
     this.selectedCompetencyType = '';
+    this.selectedWorkRoleCategory = '';
     this.competencyFrameworkService.getCompetencyFramework(frameworkId)
       .pipe(take(1))
       .subscribe(fw => {
@@ -305,6 +336,7 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
         // Separate work roles from other competencies
         this.workRoles = allComps.filter(c => this.competencyTypeMap.get(c.id) === 'Work Role');
         this.expandedCompetencies = allComps.filter(c => this.competencyTypeMap.get(c.id) !== 'Work Role');
+        this.workRoleCategories = [...new Set(this.workRoles.map(wr => this.getWorkRoleCategory(wr)).filter(c => c))].sort();
         this.applyWorkRoleFilter();
         this.applyCompetencyFilter();
         setTimeout(() => {
@@ -450,8 +482,16 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
     return current.shortName || current.idNumber || '';
   }
 
+  onWorkRoleCategoryFilterChange(category: string): void {
+    this.selectedWorkRoleCategory = category;
+    this.applyWorkRoleFilter();
+  }
+
   applyWorkRoleFilter() {
     let filtered = [...this.workRoles];
+    if (this.selectedWorkRoleCategory) {
+      filtered = filtered.filter(c => this.getWorkRoleCategory(c) === this.selectedWorkRoleCategory);
+    }
     if (this.workRoleFilterString) {
       const fs = this.workRoleFilterString.toLowerCase();
       filtered = filtered.filter(c =>
@@ -480,12 +520,134 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
     this.applyWorkRoleFilter();
   }
 
-  toggleWorkRoleExpand(row: Competency) {
-    this.expandedWorkRoleId = this.expandedWorkRoleId === row.id ? '' : row.id;
+  toggleCompetencyExpand(comp: Competency): void {
+    if (this.expandedCompetencyId === comp.id) {
+      this.collapseCompetencyDetail();
+    } else {
+      this.expandCompetencyDetail(comp);
+    }
   }
 
-  toggleCompetencyExpand(row: Competency) {
-    this.expandedCompetencyId = this.expandedCompetencyId === row.id ? '' : row.id;
+  private expandCompetencyDetail(comp: Competency): void {
+    this.expandedCompetencyId = comp.id;
+    this.expandedComp = comp;
+    this.relatedChanged = false;
+    this.currentRelatedIdNumbers = [...(comp.relatedIdNumbers || [])];
+    this.relatedFilterControl.setValue('');
+    this.relatedSideFilterControl.setValue('');
+    this.availableTypeFilter = '';
+    this.relatedTypeFilter = '';
+    this.updateRelatedDataSources();
+    this.availableTypes = [...new Set(
+      this.availableRelatedDataSource.data.map(c => this.competencyTypeMap.get(c.id) || '').filter(t => t)
+    )].sort();
+    this.relatedTypes = [...new Set(
+      this.relatedDataSource.data.map(c => this.competencyTypeMap.get(c.id) || '').filter(t => t)
+    )].sort();
+    this.availableRelatedDataSource.filterPredicate = (c: Competency, filter: string): boolean => {
+      if (this.availableTypeFilter) {
+        const type = this.competencyTypeMap?.get(c.id) || '';
+        if (type !== this.availableTypeFilter) return false;
+      }
+      const term = (this.relatedFilterControl.value || '').toLowerCase();
+      if (!term) return true;
+      return c.idNumber?.toLowerCase().includes(term) ||
+        c.shortName?.toLowerCase().includes(term) ||
+        c.description?.toLowerCase().includes(term);
+    };
+    this.relatedDataSource.filterPredicate = (c: Competency, filter: string): boolean => {
+      if (this.relatedTypeFilter) {
+        const type = this.competencyTypeMap?.get(c.id) || '';
+        if (type !== this.relatedTypeFilter) return false;
+      }
+      const term = (this.relatedSideFilterControl.value || '').toLowerCase();
+      if (!term) return true;
+      return c.idNumber?.toLowerCase().includes(term) ||
+        c.shortName?.toLowerCase().includes(term) ||
+        c.description?.toLowerCase().includes(term);
+    };
+    this.relatedFilterSub?.unsubscribe();
+    this.relatedFilterSub = this.relatedFilterControl.valueChanges.subscribe(() => {
+      this.applyAvailableFilter();
+    });
+    this.relatedSideFilterSub?.unsubscribe();
+    this.relatedSideFilterSub = this.relatedSideFilterControl.valueChanges.subscribe(() => {
+      this.applyRelatedFilter();
+    });
+    setTimeout(() => {
+      if (this.availablePaginator) {
+        this.availableRelatedDataSource.paginator = this.availablePaginator;
+      }
+      if (this.relatedPaginator) {
+        this.relatedDataSource.paginator = this.relatedPaginator;
+      }
+    });
+  }
+
+  private collapseCompetencyDetail(): void {
+    if (this.relatedChanged && this.expandedComp) {
+      const updated = { ...this.expandedComp, relatedIdNumbers: this.currentRelatedIdNumbers };
+      this.saveCompetency(updated);
+    }
+    this.expandedCompetencyId = '';
+    this.expandedComp = null;
+  }
+
+  private updateRelatedDataSources(): void {
+    const relatedSet = new Set(this.currentRelatedIdNumbers);
+    const selfId = this.expandedComp?.idNumber;
+    this.relatedDataSource.data = [...this.competencyById.values()]
+      .filter(c => relatedSet.has(c.idNumber));
+    this.availableRelatedDataSource.data = [...this.competencyById.values()]
+      .filter(c => c.idNumber !== selfId && !relatedSet.has(c.idNumber));
+  }
+
+  onAvailableTypeFilterChange(type: string): void {
+    this.availableTypeFilter = type;
+    this.applyAvailableFilter();
+  }
+
+  private applyAvailableFilter(): void {
+    const term = (this.relatedFilterControl.value || '').toLowerCase();
+    // Trigger re-evaluation — use term or type or space to force filter
+    this.availableRelatedDataSource.filter = term || this.availableTypeFilter || ' ';
+    if (!term && !this.availableTypeFilter) {
+      this.availableRelatedDataSource.filter = '';
+    }
+  }
+
+  onRelatedTypeFilterChange(type: string): void {
+    this.relatedTypeFilter = type;
+    this.applyRelatedFilter();
+  }
+
+  private applyRelatedFilter(): void {
+    const term = (this.relatedSideFilterControl.value || '').toLowerCase();
+    this.relatedDataSource.filter = term || this.relatedTypeFilter || ' ';
+    if (!term && !this.relatedTypeFilter) {
+      this.relatedDataSource.filter = '';
+    }
+  }
+
+  addRelatedCompetency(comp: Competency): void {
+    if (!this.currentRelatedIdNumbers.includes(comp.idNumber)) {
+      this.currentRelatedIdNumbers.push(comp.idNumber);
+      this.relatedChanged = true;
+      this.updateRelatedDataSources();
+    }
+  }
+
+  removeRelatedCompetency(comp: Competency): void {
+    this.currentRelatedIdNumbers = this.currentRelatedIdNumbers.filter(id => id !== comp.idNumber);
+    this.relatedChanged = true;
+    this.updateRelatedDataSources();
+  }
+
+  viewCompetencyDetail(comp: Competency): void {
+    this.dialog.open(AdminCompetencyDetailDialogComponent, {
+      width: '600px',
+      data: { competency: comp, competencyTypeMap: this.competencyTypeMap },
+    });
   }
 
   getRelatedCompetencies(comp: Competency): Competency[] {
@@ -508,9 +670,8 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
       width: '600px',
       data: {
         competency: { ...competency },
-        allCompetencies: [...this.workRoles, ...this.expandedCompetencies],
         typeHint: typeHint || '',
-        availableTypes: ['Work Role', ...this.competencyTypes],
+        availableTypes: [...new Set(['Work Role', 'Task', 'Knowledge', 'Skill', 'Ability', ...this.competencyTypes])],
       },
     });
     dialogRef.componentInstance.editComplete.subscribe((result: any) => {

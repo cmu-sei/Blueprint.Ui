@@ -77,6 +77,19 @@ project root for license information.
           </mat-form-field>
         </div>
       </div>
+      <div class="add-margin">
+        <div>
+          <mat-form-field class="full-width">
+            <mat-label>Proficiency Scale</mat-label>
+            <mat-select [(ngModel)]="data.competencyFramework.defaultProficiencyScaleId">
+              <mat-option [value]="null">None</mat-option>
+              @for (scale of proficiencyScales; track scale.id) {
+              <mat-option [value]="scale.id">{{ scale.name }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
       <div class="cssLayoutRowStartCenter bottom-button">
         <div class="delete-button">
           <button mat-stroked-button (click)="handleEditComplete(true)" [disabled]="!errorFree()" style="margin-left: 40px;">Save</button>

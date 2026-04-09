@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, EventEmitter, Inject, Output } from '@angular/core';
+import { Component, EventEmitter, Inject, OnInit, Output } from '@angular/core';
 import {
   UntypedFormControl,
   FormGroupDirective,
@@ -12,6 +12,8 @@ import {
 import { ErrorStateMatcher } from '@angular/material/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
+import { ProficiencyScale, ProficiencyScaleService } from 'src/app/generated/blueprint.api';
+import { take } from 'rxjs/operators';
 
 /** Error when invalid control is dirty, touched, or submitted. */
 export class UserErrorStateMatcher implements ErrorStateMatcher {
@@ -31,16 +33,26 @@ export class UserErrorStateMatcher implements ErrorStateMatcher {
     standalone: false
 })
 
-export class AdminCompetencyFrameworkEditDialogComponent {
+export class AdminCompetencyFrameworkEditDialogComponent implements OnInit {
   @Output() editComplete = new EventEmitter<any>();
   isChanged = false;
+  proficiencyScales: ProficiencyScale[] = [];
 
   constructor(
     public dialogService: DialogService,
     dialogRef: MatDialogRef<AdminCompetencyFrameworkEditDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: any
+    @Inject(MAT_DIALOG_DATA) public data: any,
+    private proficiencyScaleService: ProficiencyScaleService
   ) {
     dialogRef.disableClose = true;
+  }
+
+  ngOnInit() {
+    this.proficiencyScaleService.getProficiencyScales()
+      .pipe(take(1))
+      .subscribe(scales => {
+        this.proficiencyScales = scales;
+      });
   }
 
   errorFree() {

@@ -2,6 +2,12 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
+:host {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 44px);
+}
+
 .cssLayoutRowStartCenter {
   min-height: 76px;
   flex-shrink: 0;

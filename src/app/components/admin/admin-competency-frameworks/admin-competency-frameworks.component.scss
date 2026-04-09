@@ -4,6 +4,12 @@
 
 @use "@angular/material" as mat;
 
+:host {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 44px);
+}
+
 .cssLayoutRowStartCenter {
   min-height: 76px;
   flex-shrink: 0;
@@ -14,9 +20,9 @@
 }
 
 .expansion-panel {
-  width: 100%;
+  width: 90%;
+  margin: 10px auto;
   background-color: transparent;
-  margin-bottom: 10px;
 }
 
 .expansion-panel-header {
@@ -105,8 +111,13 @@
   padding: 2px;
 }
 
+.column-scale {
+  flex: 0 0 12%;
+  padding: 2px;
+}
+
 .column-description {
-  flex: 0 0 calc(60% - 150px);
+  flex: 0 0 calc(48% - 150px);
   padding: 2px;
 }
 
@@ -131,7 +142,7 @@
 }
 
 .scrolling-region {
-  height: calc(100% - 94px);
+  height: calc(100% - 40px);
   overflow: auto;
   width: 100%;
 }
@@ -224,8 +235,8 @@
 
 // Competency (Moodle-imported) sub-table column widths
 .comp-col-action {
-  flex: 0 0 100px;
-  width: 100px;
+  flex: 0 0 140px;
+  width: 140px;
 }
 
 .comp-col-id {
@@ -253,64 +264,6 @@
   flex: 1 1 15%;
 }
 
-// Sub-table expandable rows
-.sub-element-row {
-  cursor: pointer;
-}
-
-.sub-element-row:hover {
-  background-color: var(--mat-sys-surface-variant);
-}
-
-.sub-element-row-expanded {
-  background-color: var(--mat-sys-surface-variant);
-}
-
-.sub-detail-row {
-  height: 0;
-  min-height: 0;
-  overflow: hidden;
-}
-
-::ng-deep .sub-detail-row > .mat-mdc-cell {
-  padding: 0 !important;
-  min-height: 0;
-  border-bottom-width: 0;
-}
-
-
-.sub-expanded-detail-cell {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  padding: 0;
-}
-
-.sub-detail-content {
-  padding: 8px 16px 8px 32px;
-}
-
-.sub-detail-section {
-  margin-bottom: 8px;
-}
-
-.sub-detail-label {
-  font-weight: bold;
-  font-size: 12px;
-  margin-bottom: 2px;
-  color: var(--mat-sys-on-surface-variant);
-}
-
-.sub-detail-item {
-  font-size: 13px;
-  padding: 2px 0;
-}
-
-.sub-detail-type {
-  color: var(--mat-sys-on-surface-variant);
-  font-size: 12px;
-  margin-left: 4px;
-}
 
 .element-toolbar {
   display: flex;
@@ -318,3 +271,92 @@
   min-height: 56px;
   flex-shrink: 0;
 }
+
+// Sticky header background for sub-tables
+::ng-deep .expanded-detail-div .mat-mdc-header-row {
+  background-color: var(--mat-sys-surface);
+}
+
+// Competency row expand
+.comp-row {
+  cursor: pointer;
+}
+
+.comp-row:hover {
+  background-color: var(--mat-sys-surface-variant);
+}
+
+.comp-row-expanded {
+  background-color: var(--mat-sys-surface-variant);
+}
+
+// Related detail cell
+::ng-deep .related-detail-cell {
+  padding: 0 !important;
+  min-height: 0;
+  border-bottom-width: 0;
+}
+
+// Card-teams-style two-table layout
+.related-enchilada {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  width: 100%;
+  padding: 8px 0;
+  gap: 4%;
+}
+
+.related-list-container {
+  display: flex;
+  flex-direction: column;
+  width: 48%;
+  min-width: 250px;
+}
+
+.related-toolbar {
+  background: transparent;
+  overflow: visible;
+
+  @include mat.form-field-density(-5);
+
+  p {
+    margin-left: 8px;
+  }
+}
+
+::ng-deep .related-toolbar .mat-toolbar-row {
+  overflow: visible;
+}
+
+.header-icon {
+  margin-right: 10px;
+  color: var(--mat-sys-primary);
+}
+
+.related-search {
+  width: 40%;
+}
+
+.related-type-filter {
+  width: 140px;
+  margin-left: 8px;
+}
+
+::ng-deep .related-type-filter .mat-mdc-select-panel {
+  min-width: 200px;
+}
+
+.related-table-scroll {
+  max-height: 400px;
+  overflow: auto;
+}
+
+.related-col-btn {
+  flex: 0 0 48px;
+  width: 48px;
+  justify-content: center;
+}
+
+
+

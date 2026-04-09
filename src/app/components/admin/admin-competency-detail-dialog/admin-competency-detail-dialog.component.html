@@ -1,0 +1,36 @@
+<!--
+Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license, please see LICENSE.md in the
+project root for license information.
+-->
+<div mat-dialog-container>
+  <div mat-dialog-title>
+    Competency Detail
+    &nbsp;
+    <button mat-icon-button (click)="close()" title="Close" class="close-button" tabindex="-1">
+      <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
+    </button>
+  </div>
+  <div mat-dialog-content>
+    <div class="detail-row">
+      <span class="detail-label">ID</span>
+      <span>{{ data.competency.idNumber }}</span>
+    </div>
+    <div class="detail-row">
+      <span class="detail-label">Name</span>
+      <span>{{ data.competency.shortName }}</span>
+    </div>
+    @if (getType()) {
+    <div class="detail-row">
+      <span class="detail-label">Type</span>
+      <span>{{ getType() }}</span>
+    </div>
+    }
+    @if (data.competency.description) {
+    <div class="detail-row">
+      <span class="detail-label">Description</span>
+      <span>{{ data.competency.description }}</span>
+    </div>
+    }
+  </div>
+</div>

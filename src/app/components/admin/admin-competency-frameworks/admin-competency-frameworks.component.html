@@ -85,6 +85,15 @@ project root for license information or contact permission@sei.cmu.edu for full 
         {{ element.source }}
       </mat-cell>
     </ng-container>
+    <!-- scale Column -->
+    <ng-container matColumnDef="scale">
+      <mat-header-cell mat-sort-header="scale" title="Proficiency Scale" *matHeaderCellDef class="column-scale">
+        Scale
+      </mat-header-cell>
+      <mat-cell *matCellDef="let element" class="column-scale">
+        {{ getScaleName(element) }}
+      </mat-cell>
+    </ng-container>
     <!-- description Column -->
     <ng-container matColumnDef="description">
       <mat-header-cell mat-sort-header="description" title="Description" *matHeaderCellDef class="column-description">
@@ -100,7 +109,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <div [@detailExpand]="element.id == expandedElementId ? 'expanded' : 'collapsed'" style="overflow: hidden">
           @if (expandedElementId === element.id) {
           <!-- Work Roles -->
-          @if (workRoles.length > 0) {
+          @if (workRoles.length > 0 || canEdit) {
           <mat-expansion-panel class="expansion-panel">
             <mat-expansion-panel-header class="expansion-panel-header">
               Work Roles ({{ workRoles.length }})
@@ -114,6 +123,17 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 </button>
                 }
               </mat-form-field>
+              @if (workRoleCategories.length > 1) {
+              <mat-form-field style="width: 200px; margin-left: 10px;">
+                <mat-label>Category</mat-label>
+                <mat-select [value]="selectedWorkRoleCategory" (selectionChange)="onWorkRoleCategoryFilterChange($event.value)">
+                  <mat-option value="">All</mat-option>
+                  @for (cat of workRoleCategories; track cat) {
+                  <mat-option [value]="cat">{{ cat }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+              }
               <div class="button-end">
                 <mat-paginator #workRolePaginator [pageIndex]="0" [pageSize]="10"
                   [pageSizeOptions]="[10, 20, 50, 100]"></mat-paginator>
@@ -161,42 +181,135 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   <mat-header-cell mat-sort-header="description" *matHeaderCellDef class="comp-col-desc">Description</mat-header-cell>
                   <mat-cell *matCellDef="let c" class="comp-col-desc">{{ c.description }}</mat-cell>
                 </ng-container>
-                <!-- Expanded detail -->
-                <ng-container matColumnDef="expandedDetail">
-                  <mat-cell *matCellDef="let c" class="sub-expanded-detail-cell" [attr.colspan]="workRoleDisplayedColumns.length">
-                    <div [@subDetailExpand]="c.id === expandedWorkRoleId ? 'expanded' : 'collapsed'" style="overflow: hidden">
-                      @if (expandedWorkRoleId === c.id) {
-                      <div class="sub-detail-content">
-                        @if (getRelatedCompetencies(c).length > 0) {
-                        <div class="sub-detail-section">
-                          <div class="sub-detail-label">Related ({{ getRelatedCompetencies(c).length }})</div>
-                          @for (r of getRelatedCompetencies(c); track r.id) {
-                          <div class="sub-detail-item"><strong>{{ r.idNumber }}</strong> — {{ r.shortName }}</div>
+                <!-- expanded related detail -->
+                <ng-container matColumnDef="relatedDetail">
+                  <mat-cell *matCellDef="let c" [attr.colspan]="workRoleDisplayedColumns.length" class="related-detail-cell">
+                    @if (expandedCompetencyId === c.id) {
+                    <div class="related-enchilada" (click)="$event.stopPropagation();">
+                      <div class="related-list-container mat-elevation-z8">
+                        <mat-toolbar class="related-toolbar">
+                          <mat-toolbar-row>
+                            <mat-icon class="mdi-24px header-icon" fontIcon="mdi-certificate-outline"></mat-icon>
+                            <p>Available</p>
+                          </mat-toolbar-row>
+                          <mat-toolbar-row>
+                            <mat-form-field class="related-search">
+                              <input matInput [formControl]="relatedFilterControl" placeholder="Search" autocomplete="off" />
+                              @if (relatedFilterControl.value) {
+                              <button mat-icon-button matSuffix (click)="relatedFilterControl.setValue('')" title="Clear">
+                                <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline"></mat-icon>
+                              </button>
+                              }
+                            </mat-form-field>
+                            @if (availableTypes.length > 1) {
+                            <mat-form-field class="related-type-filter">
+                              <mat-label>Type</mat-label>
+                              <mat-select [value]="availableTypeFilter" (selectionChange)="onAvailableTypeFilterChange($event.value)">
+                                <mat-option value="">All</mat-option>
+                                @for (t of availableTypes; track t) {
+                                <mat-option [value]="t">{{ t }}</mat-option>
+                                }
+                              </mat-select>
+                            </mat-form-field>
+                            }
+                            <mat-paginator #availablePaginator [pageSize]="10" [pageSizeOptions]="[10, 25, 50, 100]"></mat-paginator>
+                          </mat-toolbar-row>
+                        </mat-toolbar>
+                        <div class="related-table-scroll">
+                          <mat-table [dataSource]="availableRelatedDataSource">
+                            <ng-container matColumnDef="name">
+                              <mat-cell *matCellDef="let r" [matTooltip]="r.description" matTooltipShowDelay="800">
+                                <strong>{{ r.idNumber }}</strong>&nbsp;— {{ r.shortName }}
+                              </mat-cell>
+                            </ng-container>
+                            <ng-container matColumnDef="view">
+                              <mat-cell *matCellDef="let r" class="related-col-btn">
+                                <button mat-icon-button (click)="viewCompetencyDetail(r)" title="View details">
+                                  <mat-icon class="mdi-18px" fontIcon="mdi-magnify"></mat-icon>
+                                </button>
+                              </mat-cell>
+                            </ng-container>
+                            <ng-container matColumnDef="add">
+                              <mat-cell *matCellDef="let r" class="related-col-btn">
+                                <button mat-icon-button (click)="addRelatedCompetency(r)" title="Add {{ r.idNumber }}" [disabled]="!canEdit">
+                                  <mat-icon class="mdi-18px" fontIcon="mdi-plus-circle-outline"></mat-icon>
+                                </button>
+                              </mat-cell>
+                            </ng-container>
+                            <mat-row *matRowDef="let row; columns: availableRelatedColumns"></mat-row>
+                          </mat-table>
+                          @if (availableRelatedDataSource.filteredData.length === 0) {
+                          <div class="no-results-inline">No competencies available</div>
                           }
                         </div>
-                        }
-                        @if (getChildCompetencies(c).length > 0) {
-                        <div class="sub-detail-section">
-                          <div class="sub-detail-label">Children ({{ getChildCompetencies(c).length }})</div>
-                          @for (ch of getChildCompetencies(c); track ch.id) {
-                          <div class="sub-detail-item"><strong>{{ ch.idNumber }}</strong> — {{ ch.shortName }}</div>
-                          }
-                        </div>
-                        }
-                        @if (getRelatedCompetencies(c).length === 0 && getChildCompetencies(c).length === 0) {
-                        <div class="sub-detail-item" style="font-style: italic;">No related or child competencies</div>
-                        }
                       </div>
-                      }
+                      <div class="related-list-container mat-elevation-z8">
+                        <mat-toolbar class="related-toolbar">
+                          <mat-toolbar-row>
+                            <mat-icon class="mdi-24px header-icon" fontIcon="mdi-link-variant"></mat-icon>
+                            <p>Related ({{ relatedDataSource.data.length }})</p>
+                          </mat-toolbar-row>
+                          <mat-toolbar-row>
+                            <mat-form-field class="related-search">
+                              <input matInput [formControl]="relatedSideFilterControl" placeholder="Search" autocomplete="off" />
+                              @if (relatedSideFilterControl.value) {
+                              <button mat-icon-button matSuffix (click)="relatedSideFilterControl.setValue('')" title="Clear">
+                                <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline"></mat-icon>
+                              </button>
+                              }
+                            </mat-form-field>
+                            @if (relatedTypes.length > 1) {
+                            <mat-form-field class="related-type-filter">
+                              <mat-label>Type</mat-label>
+                              <mat-select [value]="relatedTypeFilter" (selectionChange)="onRelatedTypeFilterChange($event.value)">
+                                <mat-option value="">All</mat-option>
+                                @for (t of relatedTypes; track t) {
+                                <mat-option [value]="t">{{ t }}</mat-option>
+                                }
+                              </mat-select>
+                            </mat-form-field>
+                            }
+                            <mat-paginator #relatedPaginator [pageSize]="10" [pageSizeOptions]="[10, 25, 50, 100]"></mat-paginator>
+                          </mat-toolbar-row>
+                        </mat-toolbar>
+                        <div class="related-table-scroll">
+                          <mat-table [dataSource]="relatedDataSource">
+                            <ng-container matColumnDef="name">
+                              <mat-cell *matCellDef="let r" [matTooltip]="r.description" matTooltipShowDelay="800">
+                                <strong>{{ r.idNumber }}</strong>&nbsp;— {{ r.shortName }}
+                              </mat-cell>
+                            </ng-container>
+                            <ng-container matColumnDef="view">
+                              <mat-cell *matCellDef="let r" class="related-col-btn">
+                                <button mat-icon-button (click)="viewCompetencyDetail(r)" title="View details">
+                                  <mat-icon class="mdi-18px" fontIcon="mdi-magnify"></mat-icon>
+                                </button>
+                              </mat-cell>
+                            </ng-container>
+                            <ng-container matColumnDef="remove">
+                              <mat-cell *matCellDef="let r" class="related-col-btn">
+                                <button mat-icon-button (click)="removeRelatedCompetency(r)" title="Remove {{ r.idNumber }}" [disabled]="!canEdit">
+                                  <mat-icon class="mdi-18px" fontIcon="mdi-minus-circle-outline"></mat-icon>
+                                </button>
+                              </mat-cell>
+                            </ng-container>
+                            <mat-row *matRowDef="let row; columns: relatedColumns"></mat-row>
+                          </mat-table>
+                          @if (relatedDataSource.data.length === 0) {
+                          <div class="no-results-inline">No related competencies</div>
+                          }
+                        </div>
+                      </div>
                     </div>
+                    }
                   </mat-cell>
                 </ng-container>
                 <!-- row definitions -->
-                <mat-header-row *matHeaderRowDef="workRoleDisplayedColumns"></mat-header-row>
-                <mat-row *matRowDef="let row; columns: workRoleDisplayedColumns;"
-                  [class]="expandedWorkRoleId === row.id ? 'sub-element-row sub-element-row-expanded' : 'sub-element-row'"
-                  (click)="toggleWorkRoleExpand(row)"></mat-row>
-                <mat-row *matRowDef="let row; columns: ['expandedDetail']" class="sub-detail-row"></mat-row>
+                <mat-header-row *matHeaderRowDef="workRoleDisplayedColumns; sticky: true"></mat-header-row>
+                <mat-row *matRowDef="let row; columns: workRoleDisplayedColumns;" class="comp-row"
+                  [class.comp-row-expanded]="expandedCompetencyId === row.id"
+                  (click)="toggleCompetencyExpand(row)"></mat-row>
+                <mat-row *matRowDef="let row; columns: ['relatedDetail']" class="detail-row"></mat-row>
               </mat-table>
               @if (workRoleDataSource.filteredData.length === 0) {
                 <div class="no-results-inline">No work roles found</div>
@@ -276,42 +389,135 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   <mat-header-cell mat-sort-header="description" *matHeaderCellDef class="comp-col-desc">Description</mat-header-cell>
                   <mat-cell *matCellDef="let c" class="comp-col-desc">{{ c.description }}</mat-cell>
                 </ng-container>
-                <!-- Expanded detail -->
-                <ng-container matColumnDef="expandedDetail">
-                  <mat-cell *matCellDef="let c" class="sub-expanded-detail-cell" [attr.colspan]="competencyDisplayedColumns.length">
-                    <div [@subDetailExpand]="c.id === expandedCompetencyId ? 'expanded' : 'collapsed'" style="overflow: hidden">
-                      @if (expandedCompetencyId === c.id) {
-                      <div class="sub-detail-content">
-                        @if (getRelatedCompetencies(c).length > 0) {
-                        <div class="sub-detail-section">
-                          <div class="sub-detail-label">Related ({{ getRelatedCompetencies(c).length }})</div>
-                          @for (r of getRelatedCompetencies(c); track r.id) {
-                          <div class="sub-detail-item"><strong>{{ r.idNumber }}</strong> — {{ r.shortName }} <span class="sub-detail-type">{{ getCompetencyType(r) }}</span></div>
+                <!-- expanded related detail -->
+                <ng-container matColumnDef="relatedDetail">
+                  <mat-cell *matCellDef="let c" [attr.colspan]="competencyDisplayedColumns.length" class="related-detail-cell">
+                    @if (expandedCompetencyId === c.id) {
+                    <div class="related-enchilada" (click)="$event.stopPropagation();">
+                      <div class="related-list-container mat-elevation-z8">
+                        <mat-toolbar class="related-toolbar">
+                          <mat-toolbar-row>
+                            <mat-icon class="mdi-24px header-icon" fontIcon="mdi-certificate-outline"></mat-icon>
+                            <p>Available</p>
+                          </mat-toolbar-row>
+                          <mat-toolbar-row>
+                            <mat-form-field class="related-search">
+                              <input matInput [formControl]="relatedFilterControl" placeholder="Search" autocomplete="off" />
+                              @if (relatedFilterControl.value) {
+                              <button mat-icon-button matSuffix (click)="relatedFilterControl.setValue('')" title="Clear">
+                                <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline"></mat-icon>
+                              </button>
+                              }
+                            </mat-form-field>
+                            @if (availableTypes.length > 1) {
+                            <mat-form-field class="related-type-filter">
+                              <mat-label>Type</mat-label>
+                              <mat-select [value]="availableTypeFilter" (selectionChange)="onAvailableTypeFilterChange($event.value)">
+                                <mat-option value="">All</mat-option>
+                                @for (t of availableTypes; track t) {
+                                <mat-option [value]="t">{{ t }}</mat-option>
+                                }
+                              </mat-select>
+                            </mat-form-field>
+                            }
+                            <mat-paginator #availablePaginator [pageSize]="10" [pageSizeOptions]="[10, 25, 50, 100]"></mat-paginator>
+                          </mat-toolbar-row>
+                        </mat-toolbar>
+                        <div class="related-table-scroll">
+                          <mat-table [dataSource]="availableRelatedDataSource">
+                            <ng-container matColumnDef="name">
+                              <mat-cell *matCellDef="let r" [matTooltip]="r.description" matTooltipShowDelay="800">
+                                <strong>{{ r.idNumber }}</strong>&nbsp;— {{ r.shortName }}
+                              </mat-cell>
+                            </ng-container>
+                            <ng-container matColumnDef="view">
+                              <mat-cell *matCellDef="let r" class="related-col-btn">
+                                <button mat-icon-button (click)="viewCompetencyDetail(r)" title="View details">
+                                  <mat-icon class="mdi-18px" fontIcon="mdi-magnify"></mat-icon>
+                                </button>
+                              </mat-cell>
+                            </ng-container>
+                            <ng-container matColumnDef="add">
+                              <mat-cell *matCellDef="let r" class="related-col-btn">
+                                <button mat-icon-button (click)="addRelatedCompetency(r)" title="Add {{ r.idNumber }}" [disabled]="!canEdit">
+                                  <mat-icon class="mdi-18px" fontIcon="mdi-plus-circle-outline"></mat-icon>
+                                </button>
+                              </mat-cell>
+                            </ng-container>
+                            <mat-row *matRowDef="let row; columns: availableRelatedColumns"></mat-row>
+                          </mat-table>
+                          @if (availableRelatedDataSource.filteredData.length === 0) {
+                          <div class="no-results-inline">No competencies available</div>
                           }
                         </div>
-                        }
-                        @if (getChildCompetencies(c).length > 0) {
-                        <div class="sub-detail-section">
-                          <div class="sub-detail-label">Children ({{ getChildCompetencies(c).length }})</div>
-                          @for (ch of getChildCompetencies(c); track ch.id) {
-                          <div class="sub-detail-item"><strong>{{ ch.idNumber }}</strong> — {{ ch.shortName }} <span class="sub-detail-type">{{ getCompetencyType(ch) }}</span></div>
-                          }
-                        </div>
-                        }
-                        @if (getRelatedCompetencies(c).length === 0 && getChildCompetencies(c).length === 0) {
-                        <div class="sub-detail-item" style="font-style: italic;">No related or child competencies</div>
-                        }
                       </div>
-                      }
+                      <div class="related-list-container mat-elevation-z8">
+                        <mat-toolbar class="related-toolbar">
+                          <mat-toolbar-row>
+                            <mat-icon class="mdi-24px header-icon" fontIcon="mdi-link-variant"></mat-icon>
+                            <p>Related ({{ relatedDataSource.data.length }})</p>
+                          </mat-toolbar-row>
+                          <mat-toolbar-row>
+                            <mat-form-field class="related-search">
+                              <input matInput [formControl]="relatedSideFilterControl" placeholder="Search" autocomplete="off" />
+                              @if (relatedSideFilterControl.value) {
+                              <button mat-icon-button matSuffix (click)="relatedSideFilterControl.setValue('')" title="Clear">
+                                <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline"></mat-icon>
+                              </button>
+                              }
+                            </mat-form-field>
+                            @if (relatedTypes.length > 1) {
+                            <mat-form-field class="related-type-filter">
+                              <mat-label>Type</mat-label>
+                              <mat-select [value]="relatedTypeFilter" (selectionChange)="onRelatedTypeFilterChange($event.value)">
+                                <mat-option value="">All</mat-option>
+                                @for (t of relatedTypes; track t) {
+                                <mat-option [value]="t">{{ t }}</mat-option>
+                                }
+                              </mat-select>
+                            </mat-form-field>
+                            }
+                            <mat-paginator #relatedPaginator [pageSize]="10" [pageSizeOptions]="[10, 25, 50, 100]"></mat-paginator>
+                          </mat-toolbar-row>
+                        </mat-toolbar>
+                        <div class="related-table-scroll">
+                          <mat-table [dataSource]="relatedDataSource">
+                            <ng-container matColumnDef="name">
+                              <mat-cell *matCellDef="let r" [matTooltip]="r.description" matTooltipShowDelay="800">
+                                <strong>{{ r.idNumber }}</strong>&nbsp;— {{ r.shortName }}
+                              </mat-cell>
+                            </ng-container>
+                            <ng-container matColumnDef="view">
+                              <mat-cell *matCellDef="let r" class="related-col-btn">
+                                <button mat-icon-button (click)="viewCompetencyDetail(r)" title="View details">
+                                  <mat-icon class="mdi-18px" fontIcon="mdi-magnify"></mat-icon>
+                                </button>
+                              </mat-cell>
+                            </ng-container>
+                            <ng-container matColumnDef="remove">
+                              <mat-cell *matCellDef="let r" class="related-col-btn">
+                                <button mat-icon-button (click)="removeRelatedCompetency(r)" title="Remove {{ r.idNumber }}" [disabled]="!canEdit">
+                                  <mat-icon class="mdi-18px" fontIcon="mdi-minus-circle-outline"></mat-icon>
+                                </button>
+                              </mat-cell>
+                            </ng-container>
+                            <mat-row *matRowDef="let row; columns: relatedColumns"></mat-row>
+                          </mat-table>
+                          @if (relatedDataSource.data.length === 0) {
+                          <div class="no-results-inline">No related competencies</div>
+                          }
+                        </div>
+                      </div>
                     </div>
+                    }
                   </mat-cell>
                 </ng-container>
                 <!-- row definitions -->
-                <mat-header-row *matHeaderRowDef="competencyDisplayedColumns"></mat-header-row>
-                <mat-row *matRowDef="let row; columns: competencyDisplayedColumns;"
-                  [class]="expandedCompetencyId === row.id ? 'sub-element-row sub-element-row-expanded' : 'sub-element-row'"
+                <mat-header-row *matHeaderRowDef="competencyDisplayedColumns; sticky: true"></mat-header-row>
+                <mat-row *matRowDef="let row; columns: competencyDisplayedColumns;" class="comp-row"
+                  [class.comp-row-expanded]="expandedCompetencyId === row.id"
                   (click)="toggleCompetencyExpand(row)"></mat-row>
-                <mat-row *matRowDef="let row; columns: ['expandedDetail']" class="sub-detail-row"></mat-row>
+                <mat-row *matRowDef="let row; columns: ['relatedDetail']" class="detail-row"></mat-row>
               </mat-table>
               @if (competencyDataSource.filteredData.length === 0) {
                 <div class="no-results-inline">No competencies found</div>

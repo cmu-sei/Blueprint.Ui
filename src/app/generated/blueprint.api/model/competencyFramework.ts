@@ -25,6 +25,7 @@ export interface CompetencyFramework {
     scaleValues?: string | null;
     scaleConfiguration?: string | null;
     taxonomies?: string | null;
+    defaultProficiencyScaleId?: string | null;
     competencies?: Array<Competency> | null;
 }
 
