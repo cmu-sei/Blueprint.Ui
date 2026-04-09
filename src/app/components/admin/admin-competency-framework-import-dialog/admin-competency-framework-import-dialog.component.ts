@@ -6,6 +6,7 @@ import { Component, EventEmitter, Output } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
 import { CompetencyFramework, Competency } from 'src/app/generated/blueprint.api';
 import * as XLSX from 'xlsx';
+import { v4 as uuidv4 } from 'uuid';
 
 interface ElementTypeCount {
   type: string;
@@ -139,21 +140,44 @@ export class AdminCompetencyFrameworkImportDialogComponent {
     const typeCounts: Record<string, number> = {};
     const competencies: Competency[] = [];
 
-    // Parse work roles from "DCWF Roles" sheet
+    // Parse work roles and categories from "DCWF Roles" sheet
     const rolesSheet = workbook.Sheets['DCWF Roles'];
+    // Map category code prefix (IT, CS, etc.) → category competency id
+    const categoryIdByPrefix = new Map<string, string>();
     if (rolesSheet) {
       const roleRows: any[][] = XLSX.utils.sheet_to_json(rolesSheet, { header: 1, defval: '' });
+      let currentCategoryId: string = null;
       for (let i = 2; i < roleRows.length; i++) {
         const row = roleRows[i];
+        const catCell = String(row[1] || '').trim();
         const roleName = String(row[3] || '').trim();
         const dcwfCode = String(row[4] || '').trim();
         const description = String(row[6] || '').trim();
+
+        // New category row (column B has text like "Information Technology\r\n(IT)")
+        if (catCell) {
+          const catCodeMatch = catCell.match(/\((\w+)\)/);
+          const catCode = catCodeMatch ? catCodeMatch[1] : '';
+          const catName = catCell.replace(/\r?\n.*/, '').trim();
+          const catId = uuidv4();
+          currentCategoryId = catId;
+          if (catCode) categoryIdByPrefix.set(catCode, catId);
+          typeCounts['category'] = (typeCounts['category'] || 0) + 1;
+          competencies.push({
+            id: catId,
+            idNumber: catCode,
+            shortName: catName,
+            description: catCell.replace(/\r?\n/g, ' ').trim(),
+          });
+        }
+
         if (!roleName || !dcwfCode) continue;
         typeCounts['work_role'] = (typeCounts['work_role'] || 0) + 1;
         competencies.push({
           idNumber: 'WRL-' + dcwfCode,
-          shortName: 'WRL-' + dcwfCode + ' - ' + roleName,
+          shortName: roleName,
           description: description,
+          parentId: currentCategoryId,
         });
       }
     }
@@ -184,7 +208,7 @@ export class AdminCompetencyFrameworkImportDialogComponent {
       seenIds.add(idNumber);
       competencies.push({
         idNumber: idNumber,
-        shortName: `${idNumber} - ${description}`,
+        shortName: description,
         description: description,
       });
     }
@@ -250,6 +274,7 @@ export class AdminCompetencyFrameworkImportDialogComponent {
       version: this.version,
       source: this.source,
       description: `Imported from ${this.fileName}`,
+      taxonomies: 'Category, Work Role',
       competencies: competencies,
     };
   }
