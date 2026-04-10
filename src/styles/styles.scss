@@ -205,3 +205,32 @@ mat-paginator {
 }
 
 /* end of FlexLayout replacements */
+
+/* Competency select panel (rendered outside component as overlay) */
+.competency-select-panel {
+  .competency-search-box {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 12px;
+    position: sticky;
+    top: 0;
+    background: var(--mat-sys-surface);
+    z-index: 1;
+
+    input {
+      border: none;
+      outline: none;
+      flex: 1;
+      font-size: 14px;
+      background: transparent;
+      color: var(--mat-sys-on-surface);
+    }
+  }
+
+  .competency-no-results {
+    padding: 12px 16px;
+    font-size: 13px;
+    color: var(--mat-sys-on-surface-variant);
+  }
+}

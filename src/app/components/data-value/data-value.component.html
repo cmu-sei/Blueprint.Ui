@@ -421,26 +421,26 @@ project root for license information.
     </mat-chip-set>
     @if (canEdit) {
     <mat-form-field class="full-width">
-      <mat-label>Search competencies</mat-label>
-      <input matInput [(ngModel)]="competencyFilter" placeholder="Type to filter...">
-      @if (competencyFilter) {
-      <button matSuffix mat-icon-button (click)="competencyFilter = ''" title="Clear">
-        <mat-icon fontIcon="mdi-close"></mat-icon>
-      </button>
-      }
+      <mat-label>Select competencies</mat-label>
+      <mat-select multiple [value]="selectedCompetencies" (selectionChange)="setDataValueArray($event.value)" (openedChange)="$event || (competencyFilter = '')" panelClass="competency-select-panel">
+        <div class="competency-search-box">
+          <mat-icon fontIcon="mdi-magnify"></mat-icon>
+          <input [(ngModel)]="competencyFilter" placeholder="Search competencies..." (keydown)="$event.stopPropagation()">
+          @if (competencyFilter) {
+          <button mat-icon-button (click)="competencyFilter = ''; $event.stopPropagation()" title="Clear">
+            <mat-icon fontIcon="mdi-close"></mat-icon>
+          </button>
+          }
+        </div>
+        <hr style="margin: 0; border-color: var(--mat-sys-outline-variant);">
+        @for (option of filteredCompetencyOptions; track option.optionName) {
+        <mat-option [value]="option.optionName">{{ option.optionName }} - {{ option.optionValue }}</mat-option>
+        }
+        @if (filteredCompetencyOptions.length === 0) {
+        <div class="competency-no-results">No matching competencies</div>
+        }
+      </mat-select>
     </mat-form-field>
-    @if (filteredCompetencyOptions.length > 0) {
-    <div class="competency-options-list">
-      @for (option of filteredCompetencyOptions; track option.optionName) {
-      <div class="competency-option" (click)="toggleCompetency(option.optionName)">
-        <mat-checkbox [checked]="isCompetencySelected(option.optionName)"
-          (click)="$event.stopPropagation()" (change)="toggleCompetency(option.optionName)">
-        </mat-checkbox>
-        <span>{{ option.optionName }} - {{ option.optionValue }}</span>
-      </div>
-      }
-    </div>
-    }
     }
   </div>
   }

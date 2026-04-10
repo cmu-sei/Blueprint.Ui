@@ -93,8 +93,8 @@ export class DataValueComponent {
   }
 
   get filteredCompetencyOptions() {
-    if (!this.competencyFilter) return [];
     const options = this.dataField?.dataOptions || [];
+    if (!this.competencyFilter) return options;
     const s = this.competencyFilter.toLowerCase();
     return options.filter(o =>
       o.optionName?.toLowerCase().includes(s) ||

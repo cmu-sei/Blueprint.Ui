@@ -29,26 +29,6 @@
   color: var(--mat-sys-on-surface-variant);
 }
 
-.competency-options-list {
-  max-height: 200px;
-  overflow-y: auto;
-  border: 1px solid var(--mat-sys-outline-variant);
-  border-radius: 4px;
-  margin-bottom: 8px;
-}
-
-.competency-option {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 4px 8px;
-  cursor: pointer;
-  font-size: 13px;
-
-  &:hover {
-    background: var(--mat-sys-surface-variant);
-  }
-}
 
 .competency-chip-view {
   display: inline-block;
