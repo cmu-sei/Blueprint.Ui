@@ -332,10 +332,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </div>
           <!-- Competencies summary -->
           <div class="competency-section">
-            <div class="competency-header">
+            <div class="section-header">
               <mat-icon class="mdi-18px" fontIcon="mdi-certificate-outline" style="color: var(--mat-sys-primary); vertical-align: middle; margin-right: 4px;"></mat-icon>
-              <span class="competency-title">Competencies</span>
-              <span class="competency-count">{{ mselCompetencyList.length }} competencies</span>
+              <b>Competencies</b>
             </div>
             <div class="competency-panels-row">
               @if (workRoleCompetencies.length > 0) {
@@ -376,8 +375,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <div class="competency-hint">Manage on the Competencies tab</div>
           </div>
           <!-- LMT Metadata -->
+          <div class="section-header">
+            <mat-icon class="mdi-18px" fontIcon="mdi-tag-outline" style="color: var(--mat-sys-primary); vertical-align: middle; margin-right: 4px;"></mat-icon>
+            <b>Metadata</b>
+          </div>
           <div class="lmt-dropdown-row">
-            <mat-form-field class="lmt-dropdown-width">
+            <mat-form-field class="lmt-dropdown-width" matTooltip="Beginner, Intermediate, or Advanced — maps to lrmi:educationalLevel" matTooltipShowDelay="800">
               <mat-label>Difficulty Rating</mat-label>
               <mat-select [(ngModel)]="msel.educationalLevel" [disabled]="!canEditMsel()"
                 (selectionChange)="isChanged = true">
@@ -387,7 +390,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 }
               </mat-select>
             </mat-form-field>
-            <mat-form-field class="lmt-dropdown-width">
+            <mat-form-field class="lmt-dropdown-width" matTooltip="Assessment, Instruction, or Professional Support — maps to lrmi:educationalUse" matTooltipShowDelay="800">
               <mat-label>Exercise Purpose</mat-label>
               <mat-select [(ngModel)]="msel.educationalUse" [disabled]="!canEditMsel()"
                 (selectionChange)="isChanged = true">
@@ -397,7 +400,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 }
               </mat-select>
             </mat-form-field>
-            <mat-form-field class="lmt-dropdown-width">
+            <mat-form-field class="lmt-dropdown-width" matTooltip="Online, Onsite, or Blended delivery mode — maps to schema:courseMode" matTooltipShowDelay="800">
               <mat-label>Exercise Mode</mat-label>
               <mat-select [(ngModel)]="msel.courseMode" [disabled]="!canEditMsel()"
                 (selectionChange)="isChanged = true">
@@ -409,7 +412,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             </mat-form-field>
           </div>
           <div class="single-detail center-self">
-            <mat-form-field class="full-width">
+            <mat-form-field class="full-width" matTooltip="Topic areas covered by this exercise — maps to dcterms:subject" matTooltipShowDelay="800">
               <mat-label>Subject</mat-label>
               <input type="text" matInput placeholder="e.g., incident response, network defense"
                 [(ngModel)]="msel.subject" (cut)="isChanged = true" (change)="isChanged = true"
@@ -417,7 +420,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             </mat-form-field>
           </div>
           <div class="single-detail center-self">
-            <mat-form-field class="full-width">
+            <mat-form-field class="full-width" matTooltip="Searchable tags for catalog discovery — maps to schema:keywords" matTooltipShowDelay="800">
               <mat-label>Keywords</mat-label>
               <input type="text" matInput placeholder="Searchable tags"
                 [(ngModel)]="msel.keywords" (cut)="isChanged = true" (change)="isChanged = true"
