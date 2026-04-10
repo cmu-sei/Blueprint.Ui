@@ -16,6 +16,7 @@ export class AdminCompetencyEditDialogComponent {
   typeHint = '';
   typeHintLocked = false;
   availableTypes: string[] = [];
+  availableParents: { id: string; label: string }[] = [];
   private typePrefixMap: Record<string, string> = {
     'Work Role': 'WRL-',
     'Task': 'T',
@@ -32,6 +33,7 @@ export class AdminCompetencyEditDialogComponent {
     this.typeHint = this.data.typeHint || '';
     this.typeHintLocked = !!this.data.typeHint;
     this.availableTypes = this.data.availableTypes || [];
+    this.availableParents = this.data.availableParents || [];
     if (this.typeHintLocked && !this.data.competency.id) {
       this.onTypeChange(this.typeHint);
     }

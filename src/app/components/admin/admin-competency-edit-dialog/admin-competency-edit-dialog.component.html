@@ -37,6 +37,19 @@ project root for license information.
         </mat-form-field>
       </div>
       }
+      @if (availableParents.length > 0) {
+      <div class="add-margin">
+        <mat-form-field class="full-width">
+          <mat-label>Category</mat-label>
+          <mat-select [(ngModel)]="data.competency.parentId">
+            <mat-option [value]="null">None</mat-option>
+            @for (p of availableParents; track p.id) {
+            <mat-option [value]="p.id">{{ p.label }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      </div>
+      }
       <div class="add-margin">
         <mat-form-field class="full-width">
           <mat-label>ID Number</mat-label>

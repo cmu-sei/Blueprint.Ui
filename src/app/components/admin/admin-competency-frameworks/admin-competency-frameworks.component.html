@@ -110,9 +110,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
           @if (expandedElementId === element.id) {
           <!-- Work Roles -->
           @if (workRoles.length > 0 || canEdit) {
-          <mat-expansion-panel class="expansion-panel">
-            <mat-expansion-panel-header class="expansion-panel-header">
-              Work Roles ({{ workRoles.length }})
+          <mat-expansion-panel class="section-panel">
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                <mat-icon class="mdi-18px panel-icon" fontIcon="mdi-account-hard-hat"></mat-icon>
+                Work Roles ({{ workRoles.length }})
+              </mat-panel-title>
             </mat-expansion-panel-header>
             <div class="element-toolbar" (click)="$event.stopPropagation();">
               <mat-form-field style="width: 250px; margin-left: 10px;">
@@ -123,7 +126,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 </button>
                 }
               </mat-form-field>
-              @if (workRoleCategories.length > 1) {
+              @if (workRoleCategories.length > 0) {
               <mat-form-field style="width: 200px; margin-left: 10px;">
                 <mat-label>Category</mat-label>
                 <mat-select [value]="selectedWorkRoleCategory" (selectionChange)="onWorkRoleCategoryFilterChange($event.value)">
@@ -190,7 +193,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                         <mat-toolbar class="related-toolbar">
                           <mat-toolbar-row>
                             <mat-icon class="mdi-24px header-icon" fontIcon="mdi-certificate-outline"></mat-icon>
-                            <p>Available</p>
+                            <p matTooltip="Competencies in this framework that can be linked" matTooltipShowDelay="800">Available</p>
                           </mat-toolbar-row>
                           <mat-toolbar-row>
                             <mat-form-field class="related-search">
@@ -247,7 +250,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                         <mat-toolbar class="related-toolbar">
                           <mat-toolbar-row>
                             <mat-icon class="mdi-24px header-icon" fontIcon="mdi-link-variant"></mat-icon>
-                            <p>Related ({{ relatedDataSource.data.length }})</p>
+                            <p matTooltip="Competencies linked to this item" matTooltipShowDelay="800">Related ({{ relatedDataSource.data.length }})</p>
                           </mat-toolbar-row>
                           <mat-toolbar-row>
                             <mat-form-field class="related-search">
@@ -318,9 +321,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </mat-expansion-panel>
           }
           <!-- Competencies -->
-          <mat-expansion-panel class="expansion-panel">
-            <mat-expansion-panel-header class="expansion-panel-header">
-              Competencies ({{ expandedCompetencies.length }})
+          <mat-expansion-panel class="section-panel">
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                <mat-icon class="mdi-18px panel-icon" fontIcon="mdi-certificate-outline"></mat-icon>
+                Competencies ({{ expandedCompetencies.length }})
+              </mat-panel-title>
             </mat-expansion-panel-header>
             <div class="element-toolbar" (click)="$event.stopPropagation();">
               <mat-form-field style="width: 250px; margin-left: 10px;">
@@ -398,7 +404,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                         <mat-toolbar class="related-toolbar">
                           <mat-toolbar-row>
                             <mat-icon class="mdi-24px header-icon" fontIcon="mdi-certificate-outline"></mat-icon>
-                            <p>Available</p>
+                            <p matTooltip="Competencies in this framework that can be linked" matTooltipShowDelay="800">Available</p>
                           </mat-toolbar-row>
                           <mat-toolbar-row>
                             <mat-form-field class="related-search">
@@ -455,7 +461,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                         <mat-toolbar class="related-toolbar">
                           <mat-toolbar-row>
                             <mat-icon class="mdi-24px header-icon" fontIcon="mdi-link-variant"></mat-icon>
-                            <p>Related ({{ relatedDataSource.data.length }})</p>
+                            <p matTooltip="Competencies linked to this item" matTooltipShowDelay="800">Related ({{ relatedDataSource.data.length }})</p>
                           </mat-toolbar-row>
                           <mat-toolbar-row>
                             <mat-form-field class="related-search">

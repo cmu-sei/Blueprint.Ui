@@ -148,9 +148,9 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
       competencyFramework = {};
     }
     const dialogRef = this.dialog.open(AdminCompetencyFrameworkEditDialogComponent, {
-      minWidth: '400px',
+      minWidth: '500px',
       maxWidth: '90vw',
-      width: 'auto',
+      width: '700px',
       data: {
         competencyFramework: { ...competencyFramework },
       },
@@ -339,6 +339,14 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
         this.workRoleCategories = [...new Set(this.workRoles.map(wr => this.getWorkRoleCategory(wr)).filter(c => c))].sort();
         this.applyWorkRoleFilter();
         this.applyCompetencyFilter();
+        // Refresh expanded row's related data with updated inverse relationships
+        if (this.expandedCompetencyId && this.competencyById.has(this.expandedCompetencyId)) {
+          const fresh = this.competencyById.get(this.expandedCompetencyId);
+          this.expandedComp = fresh;
+          this.currentRelatedIdNumbers = [...(fresh.relatedIdNumbers || [])];
+          this.relatedChanged = false;
+          this.updateRelatedDataSources();
+        }
         setTimeout(() => {
           if (this.competencyPaginator) {
             this.competencyDataSource.paginator = this.competencyPaginator;
@@ -529,6 +537,7 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
   }
 
   private expandCompetencyDetail(comp: Competency): void {
+    this.collapseCompetencyDetail();
     this.expandedCompetencyId = comp.id;
     this.expandedComp = comp;
     this.relatedChanged = false;
@@ -664,6 +673,11 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
     if (!competency) {
       competency = { competencyFrameworkId: this.expandedElementId };
     }
+    // Build available parents: all competencies in this framework except self
+    const availableParents = [...this.competencyById.values()]
+      .filter(c => c.id !== competency.id)
+      .map(c => ({ id: c.id, label: (c.idNumber ? c.idNumber + ' — ' : '') + (c.shortName || '') }))
+      .sort((a, b) => a.label.localeCompare(b.label));
     const dialogRef = this.dialog.open(AdminCompetencyEditDialogComponent, {
       minWidth: '500px',
       maxWidth: '90vw',
@@ -671,7 +685,8 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
       data: {
         competency: { ...competency },
         typeHint: typeHint || '',
-        availableTypes: [...new Set(['Work Role', 'Task', 'Knowledge', 'Skill', 'Ability', ...this.competencyTypes])],
+        availableTypes: [...new Set(['Category', 'Work Role', 'Task', 'Knowledge', 'Skill', 'Ability', ...this.competencyTypes])],
+        availableParents,
       },
     });
     dialogRef.componentInstance.editComplete.subscribe((result: any) => {

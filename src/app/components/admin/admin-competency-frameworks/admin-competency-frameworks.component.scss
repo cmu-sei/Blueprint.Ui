@@ -19,15 +19,16 @@
   margin-left: auto;
 }
 
-.expansion-panel {
-  width: 90%;
-  margin: 10px auto;
+.section-panel {
+  margin-bottom: 12px;
   background-color: transparent;
+  width: 100%;
+  min-width: 660px;
 }
 
-.expansion-panel-header {
-  height: 32px;
-  font-size: 14px;
+.panel-icon {
+  margin-right: 8px;
+  color: var(--mat-sys-primary);
 }
 
 .table {
@@ -79,12 +80,16 @@
   height: 0;
   min-height: 0;
   overflow: hidden;
+  --mat-table-row-item-outline-width: 0px;
 }
 
-::ng-deep .detail-row > .mat-mdc-cell {
+::ng-deep .detail-row .mat-mdc-cell.expanded-detail-cell {
   padding: 0 !important;
   min-height: 0;
   border-bottom-width: 0;
+  flex: 0 0 100%;
+  width: 100%;
+  max-width: 100%;
 }
 
 .element-row td {
@@ -124,6 +129,7 @@
 .expanded-detail-cell {
   display: flex;
   flex-direction: column;
+  align-items: stretch;
   width: 100%;
   min-width: 660px;
   padding: 0;
@@ -275,11 +281,17 @@
 // Sticky header background for sub-tables
 ::ng-deep .expanded-detail-div .mat-mdc-header-row {
   background-color: var(--mat-sys-surface);
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+}
+
+::ng-deep .expanded-detail-div .mat-mdc-row {
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
 }
 
 // Competency row expand
 .comp-row {
   cursor: pointer;
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
 }
 
 .comp-row:hover {
@@ -291,10 +303,13 @@
 }
 
 // Related detail cell
-::ng-deep .related-detail-cell {
+::ng-deep .detail-row .mat-mdc-cell.related-detail-cell {
   padding: 0 !important;
   min-height: 0;
   border-bottom-width: 0;
+  flex: 0 0 100%;
+  width: 100%;
+  max-width: 100%;
 }
 
 // Card-teams-style two-table layout
@@ -312,6 +327,8 @@
   flex-direction: column;
   width: 48%;
   min-width: 250px;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 4px;
 }
 
 .related-toolbar {

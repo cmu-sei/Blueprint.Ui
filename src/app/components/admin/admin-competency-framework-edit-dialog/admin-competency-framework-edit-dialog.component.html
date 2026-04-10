@@ -68,12 +68,13 @@ project root for license information.
         <div>
           <mat-form-field class="full-width">
             <mat-label>Description</mat-label>
-            <input
-              type="text"
-              title="The Description of the Competency Framework"
+            <textarea
               matInput
+              rows="4"
+              title="The Description of the Competency Framework"
               placeholder="Description"
               [(ngModel)]="data.competencyFramework.description">
+            </textarea>
           </mat-form-field>
         </div>
       </div>
