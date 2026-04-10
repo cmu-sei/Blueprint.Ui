@@ -335,6 +335,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <div class="section-header">
               <mat-icon class="mdi-18px" fontIcon="mdi-certificate-outline" style="color: var(--mat-sys-primary); vertical-align: middle; margin-right: 4px;"></mat-icon>
               <b>Competencies</b>
+              @if (competencyFrameworkNames.length > 0) {
+              <span style="margin-left: 8px; font-weight: normal; color: var(--mat-sys-on-surface-variant); font-size: 13px;">
+                ({{ competencyFrameworkNames.join(', ') }})
+              </span>
+              }
             </div>
             <div class="competency-panels-row">
               @if (workRoleCompetencies.length > 0) {
@@ -348,7 +353,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 <div class="competency-list">
                   @for (c of workRoleCompetencies; track c.id) {
                   <div class="competency-list-item">
-                    <strong>{{ c.idNumber }}</strong>&nbsp;— {{ c.shortName }}
+                    <span class="competency-list-id">{{ c.idNumber }}</span>
+                    <span class="competency-list-name">{{ c.shortName }}</span>
                   </div>
                   }
                 </div>
@@ -365,7 +371,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 <div class="competency-list">
                   @for (c of nonWorkRoleCompetencies; track c.id) {
                   <div class="competency-list-item">
-                    <strong>{{ c.idNumber }}</strong>&nbsp;— {{ c.shortName }}
+                    <span class="competency-list-id">{{ c.idNumber }}</span>
+                    <span class="competency-list-name">{{ c.shortName }}</span>
                   </div>
                   }
                 </div>

@@ -104,6 +104,7 @@ export * from './structLayoutAttribute';
 export * from './systemPermission';
 export * from './systemRole';
 export * from './team';
+export * from './teamCompetency';
 export * from './teamPermission';
 export * from './teamRole';
 export * from './teamType';

@@ -33,6 +33,8 @@ import { MselPageQuery } from 'src/app/data/msel-page/msel-page.query';
 import { MselUnitQuery } from 'src/app/data/msel-unit/msel-unit.query';
 import { MselCompetencyDataService } from 'src/app/data/msel-competency/msel-competency-data.service';
 import { MselCompetencyQuery } from 'src/app/data/msel-competency/msel-competency.query';
+import { CompetencyFrameworkQuery } from 'src/app/data/competency-framework/competency-framework.query';
+import { CompetencyFrameworkDataService } from 'src/app/data/competency-framework/competency-framework-data.service';
 import { MatDialog } from '@angular/material/dialog';
 import { CompetencyOptionsDialogComponent } from '../competency-options-dialog/competency-options-dialog.component';
 import { AngularEditorConfig } from '@kolkov/angular-editor';
@@ -65,6 +67,7 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   workRoleCount = 0;
   workRoleCompetencies: Competency[] = [];
   nonWorkRoleCompetencies: Competency[] = [];
+  competencyFrameworkNames: string[] = [];
   creatorName = 'unknown';
   scoringModelList: ScoringModel[] = [];
   itemStatus: MselItemStatus[] = [
@@ -165,6 +168,8 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     private mselUnitQuery: MselUnitQuery,
     private mselCompetencyDataService: MselCompetencyDataService,
     private mselCompetencyQuery: MselCompetencyQuery,
+    private competencyFrameworkQuery: CompetencyFrameworkQuery,
+    private competencyFrameworkDataService: CompetencyFrameworkDataService,
     private dialog: MatDialog,
     private permissionDataService: PermissionDataService,
     private changeDetectorRef: ChangeDetectorRef,
@@ -263,6 +268,7 @@ export class MselInfoComponent implements OnDestroy, OnInit {
           .map(mc => mc.competency)
           .sort((a, b) => (a.idNumber || '').localeCompare(b.idNumber || ''));
         this.workRoleCount = this.workRoleCompetencies.length;
+        this.updateFrameworkNames();
       });
     // subscribe to MselPages
     this.mselPageQuery
@@ -330,6 +336,24 @@ export class MselInfoComponent implements OnDestroy, OnInit {
       .subscribe(() => {
         this.changeDetectorRef.markForCheck();
       });
+    this.competencyFrameworkDataService.load();
+    this.competencyFrameworkQuery.selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(() => this.updateFrameworkNames());
+  }
+
+  private updateFrameworkNames() {
+    const fwIds = new Set<string>();
+    for (const mc of this.mselCompetencyList) {
+      if (mc.competency?.competencyFrameworkId) {
+        fwIds.add(mc.competency.competencyFrameworkId);
+      }
+    }
+    const frameworks = this.competencyFrameworkQuery.getAll();
+    this.competencyFrameworkNames = [...fwIds]
+      .map(id => frameworks.find(f => f.id === id)?.name || '')
+      .filter(n => n)
+      .sort();
   }
 
   getUserName(userId: string) {

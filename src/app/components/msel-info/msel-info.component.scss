@@ -121,6 +121,7 @@ a {
   }
 
   .competency-list-item {
+    display: flex;
     padding: 4px 8px;
     font-size: 13px;
     border-bottom: 1px solid var(--mat-sys-outline-variant);
@@ -128,6 +129,17 @@ a {
     &:last-child {
       border-bottom: none;
     }
+  }
+
+  .competency-list-id {
+    flex: 0 0 100px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .competency-list-name {
+    flex: 1 1 auto;
+    min-width: 0;
   }
 
   .competency-hint {
