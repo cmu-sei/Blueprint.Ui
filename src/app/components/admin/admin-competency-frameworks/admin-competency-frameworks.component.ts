@@ -605,10 +605,14 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
   private updateRelatedDataSources(): void {
     const relatedSet = new Set(this.currentRelatedIdNumbers);
     const selfId = this.expandedComp?.idNumber;
+    const sortByIdNumber = (a: Competency, b: Competency) =>
+      (a.idNumber || '').localeCompare(b.idNumber || '');
     this.relatedDataSource.data = [...this.competencyById.values()]
-      .filter(c => relatedSet.has(c.idNumber));
+      .filter(c => relatedSet.has(c.idNumber))
+      .sort(sortByIdNumber);
     this.availableRelatedDataSource.data = [...this.competencyById.values()]
-      .filter(c => c.idNumber !== selfId && !relatedSet.has(c.idNumber));
+      .filter(c => c.idNumber !== selfId && !relatedSet.has(c.idNumber))
+      .sort(sortByIdNumber);
   }
 
   onAvailableTypeFilterChange(type: string): void {

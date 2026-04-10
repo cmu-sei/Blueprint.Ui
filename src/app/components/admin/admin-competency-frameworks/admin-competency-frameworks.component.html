@@ -188,14 +188,15 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 <ng-container matColumnDef="relatedDetail">
                   <mat-cell *matCellDef="let c" [attr.colspan]="workRoleDisplayedColumns.length" class="related-detail-cell">
                     @if (expandedCompetencyId === c.id) {
+                    <div class="related-hint">Link competencies related to <strong>{{ c.idNumber || c.shortName }}</strong></div>
                     <div class="related-enchilada" (click)="$event.stopPropagation();">
                       <div class="related-list-container mat-elevation-z8">
                         <mat-toolbar class="related-toolbar">
-                          <mat-toolbar-row>
-                            <mat-icon class="mdi-24px header-icon" fontIcon="mdi-certificate-outline"></mat-icon>
-                            <p matTooltip="Competencies in this framework that can be linked" matTooltipShowDelay="800">Available</p>
+                          <mat-toolbar-row >
+                            <mat-icon class="mdi-18px header-icon" fontIcon="mdi-certificate-outline"></mat-icon>
+                            <p matTooltip="Competencies in this framework that can be linked" matTooltipShowDelay="800">Available to Link</p>
                           </mat-toolbar-row>
-                          <mat-toolbar-row>
+                          <mat-toolbar-row >
                             <mat-form-field class="related-search">
                               <input matInput [formControl]="relatedFilterControl" placeholder="Search" autocomplete="off" />
                               @if (relatedFilterControl.value) {
@@ -248,11 +249,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
                       </div>
                       <div class="related-list-container mat-elevation-z8">
                         <mat-toolbar class="related-toolbar">
-                          <mat-toolbar-row>
-                            <mat-icon class="mdi-24px header-icon" fontIcon="mdi-link-variant"></mat-icon>
-                            <p matTooltip="Competencies linked to this item" matTooltipShowDelay="800">Related ({{ relatedDataSource.data.length }})</p>
+                          <mat-toolbar-row >
+                            <mat-icon class="mdi-18px header-icon" fontIcon="mdi-link-variant"></mat-icon>
+                            <p matTooltip="Parent, child, and cross-referenced competencies" matTooltipShowDelay="800">Related ({{ relatedDataSource.data.length }})</p>
                           </mat-toolbar-row>
-                          <mat-toolbar-row>
+                          <mat-toolbar-row >
                             <mat-form-field class="related-search">
                               <input matInput [formControl]="relatedSideFilterControl" placeholder="Search" autocomplete="off" />
                               @if (relatedSideFilterControl.value) {
@@ -399,14 +400,15 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 <ng-container matColumnDef="relatedDetail">
                   <mat-cell *matCellDef="let c" [attr.colspan]="competencyDisplayedColumns.length" class="related-detail-cell">
                     @if (expandedCompetencyId === c.id) {
+                    <div class="related-hint">Link competencies related to <strong>{{ c.idNumber || c.shortName }}</strong></div>
                     <div class="related-enchilada" (click)="$event.stopPropagation();">
                       <div class="related-list-container mat-elevation-z8">
                         <mat-toolbar class="related-toolbar">
-                          <mat-toolbar-row>
-                            <mat-icon class="mdi-24px header-icon" fontIcon="mdi-certificate-outline"></mat-icon>
-                            <p matTooltip="Competencies in this framework that can be linked" matTooltipShowDelay="800">Available</p>
+                          <mat-toolbar-row >
+                            <mat-icon class="mdi-18px header-icon" fontIcon="mdi-certificate-outline"></mat-icon>
+                            <p matTooltip="Competencies in this framework that can be linked" matTooltipShowDelay="800">Available to Link</p>
                           </mat-toolbar-row>
-                          <mat-toolbar-row>
+                          <mat-toolbar-row >
                             <mat-form-field class="related-search">
                               <input matInput [formControl]="relatedFilterControl" placeholder="Search" autocomplete="off" />
                               @if (relatedFilterControl.value) {
@@ -459,11 +461,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
                       </div>
                       <div class="related-list-container mat-elevation-z8">
                         <mat-toolbar class="related-toolbar">
-                          <mat-toolbar-row>
-                            <mat-icon class="mdi-24px header-icon" fontIcon="mdi-link-variant"></mat-icon>
-                            <p matTooltip="Competencies linked to this item" matTooltipShowDelay="800">Related ({{ relatedDataSource.data.length }})</p>
+                          <mat-toolbar-row >
+                            <mat-icon class="mdi-18px header-icon" fontIcon="mdi-link-variant"></mat-icon>
+                            <p matTooltip="Parent, child, and cross-referenced competencies" matTooltipShowDelay="800">Related ({{ relatedDataSource.data.length }})</p>
                           </mat-toolbar-row>
-                          <mat-toolbar-row>
+                          <mat-toolbar-row >
                             <mat-form-field class="related-search">
                               <input matInput [formControl]="relatedSideFilterControl" placeholder="Search" autocomplete="off" />
                               @if (relatedSideFilterControl.value) {

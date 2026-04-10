@@ -304,12 +304,21 @@
 
 // Related detail cell
 ::ng-deep .detail-row .mat-mdc-cell.related-detail-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
   padding: 0 !important;
   min-height: 0;
   border-bottom-width: 0;
   flex: 0 0 100%;
   width: 100%;
   max-width: 100%;
+}
+
+.related-hint {
+  padding: 8px 4px 0;
+  font-size: 13px;
+  color: var(--mat-sys-on-surface-variant);
 }
 
 // Card-teams-style two-table layout
@@ -365,7 +374,7 @@
 }
 
 .related-table-scroll {
-  max-height: 400px;
+  max-height: 600px;
   overflow: auto;
 }
 
