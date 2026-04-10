@@ -11,23 +11,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
   </button>
 </div>
 
-<!-- Framework selector -->
-@if (frameworks.length > 1) {
-<div class="framework-section">
-  <mat-form-field class="full-width">
-    <mat-label>Framework</mat-label>
-    <mat-select [value]="selectedFramework?.id" (selectionChange)="selectFramework(getFrameworkById($event.value))">
-      @for (fw of frameworks; track fw.id) {
-      <mat-option [value]="fw.id">
-        {{ fw.name }} {{ fw.version ? '(' + fw.version + ')' : '' }}
-      </mat-option>
-      }
-    </mat-select>
-  </mat-form-field>
-</div>
-}
-
-@if (selectedFramework) {
 <!-- Filters -->
 <div class="filter-section">
   @if (competencyTypes.length > 1) {
@@ -54,14 +37,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
 
 @if (data.canEdit) {
 <div class="action-buttons">
-  <span class="selection-count">{{ selectedCount }} of {{ competencies.length }} selected{{ typeFilter || searchText ? ' (' + filteredCompetencies.length + ' shown)' : '' }}</span>
+  <span class="selection-count">{{ selectedCount }} of {{ mselCompetencies.length }} selected{{ typeFilter || searchText ? ' (' + filteredCompetencies.length + ' shown)' : '' }}</span>
 </div>
 }
 
 <!-- Competencies table -->
 <div mat-dialog-content class="table-content">
-  @if (loading) {
-  <div class="loading-message">Loading competencies...</div>
+  @if (mselCompetencies.length === 0) {
+  <div class="loading-message">No competencies in this MSEL's pool. Add competencies from the Competencies tab first.</div>
   } @else {
   <table class="element-table">
     <thead>
@@ -82,21 +65,21 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </tr>
     </thead>
     <tbody>
-      @for (c of paginatedCompetencies; track c.idNumber) {
-      <tr (click)="data.canEdit && toggleCompetency(c)" [class.clickable-row]="data.canEdit" [class.selected-row]="isSelected(c)">
+      @for (mc of paginatedCompetencies; track mc.competency?.idNumber) {
+      <tr (click)="data.canEdit && toggleCompetency(mc)" [class.clickable-row]="data.canEdit" [class.selected-row]="isSelected(mc)">
         @if (data.canEdit) {
         <td class="check-column">
           <mat-checkbox
-            [checked]="isSelected(c)"
+            [checked]="isSelected(mc)"
             (click)="$event.stopPropagation()"
-            (change)="toggleCompetency(c)">
+            (change)="toggleCompetency(mc)">
           </mat-checkbox>
         </td>
         }
-        <td class="id-column">{{ c.idNumber }}</td>
-        <td class="type-column">{{ getType(c) }}</td>
-        <td>{{ c.shortName }}</td>
-        <td class="description-column">{{ c.description }}</td>
+        <td class="id-column">{{ mc.competency?.idNumber }}</td>
+        <td class="type-column">{{ getType(mc) }}</td>
+        <td>{{ mc.competency?.shortName }}</td>
+        <td class="description-column">{{ mc.competency?.description }}</td>
       </tr>
       }
     </tbody>
@@ -111,15 +94,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
   (page)="onPageChanged($event)"
   showFirstLastButtons>
 </mat-paginator>
-} @else {
-<div mat-dialog-content class="table-content">
-  @if (frameworks.length === 0) {
-  <div class="loading-message">No competency frameworks available. Import a framework from the Admin page first.</div>
-  } @else {
-  <div class="loading-message">Select a framework above to manage competencies.</div>
-  }
-</div>
-}
 
 <div mat-dialog-actions>
   <div style="flex: 1;"></div>
