@@ -1,7 +1,7 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild, AfterViewInit } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { TeamDataService } from 'src/app/data/team/team-data.service';
@@ -25,9 +25,11 @@ import { MatDialog } from '@angular/material/dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { TeamAddDialogComponent } from '../team-add-dialog/team-add-dialog.component';
 import { TeamEditDialogComponent } from '../team-edit-dialog/team-edit-dialog.component';
+import { UnitDataService } from 'src/app/data/unit/unit-data.service';
 import { UnitQuery } from 'src/app/data/unit/unit.query';
 import { MatTable, MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
+import { Sort } from '@angular/material/sort';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 
 @Component({
@@ -43,14 +45,17 @@ import { animate, state, style, transition, trigger } from '@angular/animations'
     ],
     standalone: false
 })
-export class MselTeamsComponent implements OnDestroy, OnInit, AfterViewInit {
+export class MselTeamsComponent implements OnDestroy, OnInit {
   @Input() loggedInUserId: string;
   @Input() teamTypeList: TeamType[];
   // context menu
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
   @ViewChild('teamTable', { static: false }) teamTable: MatTable<any>;
-  @ViewChild(MatPaginator) paginator: MatPaginator;
+  @ViewChild(MatPaginator) set matPaginator(paginator: MatPaginator) {
+    this.teamDataSource.paginator = paginator;
+  }
   contextMenuPosition = { x: '0px', y: '0px' };
+  sort: Sort = { active: 'name', direction: 'asc' };
   msel = new MselPlus();
   originalMsel = new MselPlus();
   expandedSectionIds: string[] = [];
@@ -63,7 +68,7 @@ export class MselTeamsComponent implements OnDestroy, OnInit, AfterViewInit {
   unitList: Unit[] = [];
   filterString = '';
   teamDataSource = new MatTableDataSource<Team>(new Array<Team>());
-  displayedColumns: string[] = ['action', 'name', 'email', 'teamType', 'invitation'];
+  displayedColumns: string[] = ['action', 'shortName', 'name', 'email', 'teamType', 'invitation'];
   expandedElementId = '';
   isExpansionDetailRow = (i: number, row: Object) => (row as Team).id === this.expandedElementId;
   private allTeams: Team[] = [];
@@ -76,6 +81,7 @@ export class MselTeamsComponent implements OnDestroy, OnInit, AfterViewInit {
     private mselDataService: MselDataService,
     private mselQuery: MselQuery,
     private citeService: CiteService,
+    private unitDataService: UnitDataService,
     private unitQuery: UnitQuery,
     private dialog: MatDialog,
     public dialogService: DialogService,
@@ -87,8 +93,7 @@ export class MselTeamsComponent implements OnDestroy, OnInit, AfterViewInit {
       if (msel && this.msel.id !== msel.id) {
         Object.assign(this.originalMsel, msel);
         Object.assign(this.msel, msel);
-        this.teamList = this.allTeams.filter(t => t.mselId === this.msel.id);
-        this.teamDataSource.data = this.teamList;
+        this.applyFilter(this.filterString);
       }
     });
     // subscribe to users
@@ -98,9 +103,8 @@ export class MselTeamsComponent implements OnDestroy, OnInit, AfterViewInit {
     // subscribe to teams
     this.teamQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(teams => {
       if (teams && teams.length > 0) {
-        this.allTeams = teams.sort((a, b) => a.shortName?.toLowerCase() > b.shortName?.toLowerCase() ? 1 : -1);
-        this.teamList = this.allTeams.filter(t => t.mselId === this.msel.id);
-        this.teamDataSource.data = this.teamList;
+        this.allTeams = teams;
+        this.applyFilter(this.filterString);
       }
     });
     // subscribe to TeamTypes
@@ -130,9 +134,6 @@ export class MselTeamsComponent implements OnDestroy, OnInit, AfterViewInit {
       });
   }
 
-  ngAfterViewInit() {
-    this.teamDataSource.paginator = this.paginator;
-  }
 
   getUserName(userId: string) {
     const user = this.userList.find(u => u.id === userId);
@@ -222,11 +223,15 @@ export class MselTeamsComponent implements OnDestroy, OnInit, AfterViewInit {
       });
   }
 
+  refreshUnits() {
+    this.unitDataService.load();
+  }
+
   addTeamFromUnit() {
     const dialogRef = this.dialog.open(TeamAddDialogComponent, {
-      minWidth: '400px',
+      minWidth: '500px',
       maxWidth: '90vw',
-      width: 'auto',
+      width: '600px',
       maxHeight: '80vh',
       data: {
         unitList: this.unitList
@@ -265,8 +270,29 @@ export class MselTeamsComponent implements OnDestroy, OnInit, AfterViewInit {
       .filter(team =>
         team.mselId === this.msel.id &&
         (team.name.toLowerCase().indexOf(filterValue) >= 0 ||
-          team.shortName.toLowerCase().indexOf(filterValue) >= 0));
+          team.shortName.toLowerCase().indexOf(filterValue) >= 0))
+      .sort((a, b) => this.sortTeams(a, b));
     this.teamDataSource.data = this.teamList;
+  }
+
+  sortChanged(sort: Sort) {
+    this.sort = sort;
+    this.applyFilter(this.filterString);
+  }
+
+  sortTeams(a: Team, b: Team): number {
+    const dir = this.sort.direction === 'desc' ? -1 : 1;
+    switch (this.sort.active) {
+      case 'name':
+        return (a.name?.toLowerCase() ?? '') < (b.name?.toLowerCase() ?? '') ? -dir : dir;
+      case 'email':
+        return (a.email?.toLowerCase() ?? '') < (b.email?.toLowerCase() ?? '') ? -dir : dir;
+      case 'teamType':
+        return (this.getCiteTeamTypeName(a.citeTeamTypeId)?.toLowerCase() ?? '') <
+          (this.getCiteTeamTypeName(b.citeTeamTypeId)?.toLowerCase() ?? '') ? -dir : dir;
+      default:
+        return (a.shortName?.toLowerCase() ?? '') < (b.shortName?.toLowerCase() ?? '') ? -dir : dir;
+    }
   }
 
   rowClicked(row: Team) {

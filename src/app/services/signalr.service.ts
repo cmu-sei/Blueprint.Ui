@@ -27,6 +27,7 @@ import {
   ScenarioEvent,
   Team,
   TeamUser,
+  Unit,
   User,
   UserMselRole,
 } from 'src/app/generated/blueprint.api';
@@ -43,6 +44,7 @@ import { InjectTypeDataService } from '../data/inject-type/inject-type-data.serv
 import { MoveDataService } from '../data/move/move-data.service';
 import { MselDataService } from '../data/msel/msel-data.service';
 import { MselUnitDataService } from '../data/msel-unit/msel-unit-data.service';
+import { UnitDataService } from '../data/unit/unit-data.service';
 import { OrganizationDataService } from '../data/organization/organization-data.service';
 import { PlayerApplicationDataService } from '../data/player-application/player-application-data.service';
 import { PlayerApplicationTeamDataService } from '../data/team/player-application-team-data.service';
@@ -96,6 +98,7 @@ export class SignalRService implements OnDestroy {
     private moveDataService: MoveDataService,
     private mselDataService: MselDataService,
     private mselUnitDataService: MselUnitDataService,
+    private unitDataService: UnitDataService,
     private organizationDataService: OrganizationDataService,
     private playerApplicationDataService: PlayerApplicationDataService,
     private playerApplicationTeamDataService: PlayerApplicationTeamDataService,
@@ -230,6 +233,8 @@ export class SignalRService implements OnDestroy {
     this.addMoveHandlers();
     this.addMselHandlers();
     this.addMselUnitHandlers();
+    this.addUnitHandlers();
+    this.addUnitUserHandlers();
     this.addOrganizationHandlers();
     this.addPlayerApplicationHandlers();
     this.addPlayerApplicationTeamHandlers();
@@ -424,6 +429,40 @@ export class SignalRService implements OnDestroy {
 
     this.hubConnection.on('MselUnitDeleted', (id: string) => {
       this.mselUnitDataService.deleteFromStore(id);
+    });
+  }
+
+  private addUnitHandlers() {
+    this.hubConnection.on('UnitCreated', (unit: Unit) => {
+      this.unitDataService.updateStore(unit);
+    });
+
+    this.hubConnection.on('UnitUpdated', (unit: Unit) => {
+      this.unitDataService.updateStore(unit);
+      if (this.mselId) {
+        this.mselUnitDataService.loadByMsel(this.mselId);
+      }
+    });
+
+    this.hubConnection.on('UnitDeleted', (id: string) => {
+      this.unitDataService.deleteFromStore(id);
+      if (this.mselId) {
+        this.mselUnitDataService.loadByMsel(this.mselId);
+      }
+    });
+  }
+
+  private addUnitUserHandlers() {
+    this.hubConnection.on('UnitUserCreated', (unitUser: any) => {
+      if (this.mselId) {
+        this.mselUnitDataService.loadByMsel(this.mselId);
+      }
+    });
+
+    this.hubConnection.on('UnitUserDeleted', (unitUser: any) => {
+      if (this.mselId) {
+        this.mselUnitDataService.loadByMsel(this.mselId);
+      }
     });
   }
 
