@@ -6,7 +6,9 @@ import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { TeamQuery } from 'src/app/data/team/team.query';
 import { UserQuery } from 'src/app/data/user/user.query';
+import { UserDataService } from 'src/app/data/user/user-data.service';
 import {
+  Competency,
   DataField,
   MselCompetency,
   MselItemStatus,
@@ -60,6 +62,10 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   teamList: Team[] = [];
   mselUnitList: MselUnit[] = [];
   mselCompetencyList: MselCompetency[] = [];
+  workRoleCount = 0;
+  workRoleCompetencies: Competency[] = [];
+  nonWorkRoleCompetencies: Competency[] = [];
+  creatorName = 'unknown';
   scoringModelList: ScoringModel[] = [];
   itemStatus: MselItemStatus[] = [
     MselItemStatus.Pending,
@@ -148,6 +154,7 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     public dialogService: DialogService,
     private teamQuery: TeamQuery,
     private userQuery: UserQuery,
+    private userDataService: UserDataService,
     private dataFieldQuery: DataFieldQuery,
     private mselDataService: MselDataService,
     private mselQuery: MselQuery,
@@ -187,6 +194,7 @@ export class MselInfoComponent implements OnDestroy, OnInit {
           this.updateCiteScoringModelName();
           // Fetch integration names for deployed integrations
           this.fetchIntegrationNames();
+          this.resolveCreatorName();
         }
       });
     // subscribe to MSEL loading flag
@@ -220,6 +228,7 @@ export class MselInfoComponent implements OnDestroy, OnInit {
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((users) => {
         this.userList = users;
+        this.resolveCreatorName();
       });
     // subscribe to teams
     this.teamQuery
@@ -241,6 +250,19 @@ export class MselInfoComponent implements OnDestroy, OnInit {
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((mselCompetencies) => {
         this.mselCompetencyList = mselCompetencies;
+        const isWorkRole = (mc: MselCompetency) => {
+          const id = mc.competency?.idNumber || '';
+          return id.includes('WRL') || /^[A-Z]{2}-[A-Z]{3}-\d+$/.test(id);
+        };
+        this.workRoleCompetencies = mselCompetencies
+          .filter(mc => isWorkRole(mc) && mc.competency)
+          .map(mc => mc.competency)
+          .sort((a, b) => (a.idNumber || '').localeCompare(b.idNumber || ''));
+        this.nonWorkRoleCompetencies = mselCompetencies
+          .filter(mc => !isWorkRole(mc) && mc.competency)
+          .map(mc => mc.competency)
+          .sort((a, b) => (a.idNumber || '').localeCompare(b.idNumber || ''));
+        this.workRoleCount = this.workRoleCompetencies.length;
       });
     // subscribe to MselPages
     this.mselPageQuery
@@ -313,6 +335,24 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   getUserName(userId: string) {
     const user = this.userList.find((u) => u.id === userId);
     return user ? user.name : 'unknown';
+  }
+
+  private resolveCreatorName(): void {
+    if (!this.msel?.createdBy) {
+      this.creatorName = 'unknown';
+      return;
+    }
+    const user = this.userList.find(u => u.id === this.msel.createdBy);
+    if (user) {
+      this.creatorName = user.name;
+    } else {
+      this.userDataService.loadById(this.msel.createdBy)
+        .pipe(takeUntil(this.unsubscribe$))
+        .subscribe({
+          next: (u) => { this.creatorName = u?.name || 'unknown'; },
+          error: () => { this.creatorName = 'unknown'; }
+        });
+    }
   }
 
   saveChanges() {
