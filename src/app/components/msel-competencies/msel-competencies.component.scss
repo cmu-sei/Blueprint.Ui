@@ -40,6 +40,7 @@
 .section-panel {
   margin-bottom: 12px;
   background-color: transparent;
+  flex-shrink: 0;
 }
 
 .panel-icon {
@@ -181,20 +182,20 @@ table {
 // =============================================
 
 .pool-table-scroll {
-  flex: 1;
+  max-height: calc(100vh - 400px);
   overflow: auto;
   padding-bottom: 20px;
 }
 
 // Pool table columns
 .pool-col-select {
-  flex: 0 0 48px;
-  width: 48px;
+  flex: 0 0 56px;
+  width: 56px;
 }
 
 .pool-col-action {
-  flex: 0 0 60px;
-  width: 60px;
+  flex: 0 0 72px;
+  width: 72px;
 }
 
 .pool-col-id {
@@ -283,6 +284,8 @@ table {
 // Team assignment enchilada (Panel 2 expand)
 // =============================================
 
+// TODO: standardize team enchilada widths across all pages
+// (card-teams, player-application-teams, competencies, etc.)
 .related-enchilada {
   display: flex;
   flex-direction: row;

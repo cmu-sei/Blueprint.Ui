@@ -116,10 +116,15 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   </mat-select>
                 </mat-form-field>
                 }
-                <span class="browser-children-count">{{ getFilteredChildren(wr).length }} items</span>
+                <mat-paginator [length]="getFilteredChildren(wr).length"
+                  [pageSize]="browserChildrenPageSize"
+                  [pageIndex]="browserChildrenPageIndex"
+                  [pageSizeOptions]="[25, 50, 100]"
+                  (page)="onBrowserChildrenPage($event)">
+                </mat-paginator>
               </div>
               <div class="browser-children-list">
-                @for (child of getFilteredChildren(wr); track child.id) {
+                @for (child of getPaginatedChildren(wr); track child.id) {
                 <div class="browser-child-row">
                   @if (canEditMsel()) {
                   <mat-checkbox (click)="$event.stopPropagation()" (change)="togglePoolItem(child)"

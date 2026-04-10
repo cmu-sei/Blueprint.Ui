@@ -75,6 +75,8 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
   browserAutoExpandedIds = new Set<string>();
   browserChildTypeFilter = '';
   browserChildTypes: string[] = [];
+  browserChildrenPageIndex = 0;
+  browserChildrenPageSize = 25;
 
   // --- Panel 2: MSEL Competencies (pool) ---
   filterControl = new UntypedFormControl();
@@ -115,10 +117,9 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
       }
     });
     this.mselCompetencyQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(mselCompetencies => {
-      const isFirstLoad = this.mselCompetencyList.length === 0 && !this.selectedFrameworkId;
       this.mselCompetencyList = mselCompetencies;
-      if (isFirstLoad && mselCompetencies.length === 0) {
-        this.addPanelExpanded = true;
+      if (!this.selectedFrameworkId) {
+        this.addPanelExpanded = mselCompetencies.length === 0;
       }
       this.selection.clear();
       this.buildPoolTypes();
@@ -274,7 +275,16 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
   togglePoolItem(comp: Competency) {
     if (this.isInPool(comp.id)) {
       const mc = this.mselCompetencyList.find(m => m.competencyId === comp.id);
-      if (mc) this.mselCompetencyDataService.delete(mc.id);
+      if (mc) {
+        this.dialogService.confirm(
+          'Remove Competency',
+          `Remove ${comp.idNumber} (${comp.shortName}) from this MSEL?`
+        ).subscribe(result => {
+          if (result['confirm']) {
+            this.mselCompetencyDataService.delete(mc.id);
+          }
+        });
+      }
     } else {
       this.mselCompetencyDataService.add({
         mselId: this.msel.id,
@@ -350,6 +360,7 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
     } else {
       this.browserExpandedId = workRole.id;
       this.browserChildTypeFilter = '';
+      this.browserChildrenPageIndex = 0;
       this.buildBrowserChildTypes(workRole);
     }
   }
@@ -400,8 +411,20 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
     return children;
   }
 
+  getPaginatedChildren(workRole: Competency): Competency[] {
+    const all = this.getFilteredChildren(workRole);
+    const start = this.browserChildrenPageIndex * this.browserChildrenPageSize;
+    return all.slice(start, start + this.browserChildrenPageSize);
+  }
+
+  onBrowserChildrenPage(event: any) {
+    this.browserChildrenPageIndex = event.pageIndex;
+    this.browserChildrenPageSize = event.pageSize;
+  }
+
   onBrowserChildTypeChange(type: string) {
     this.browserChildTypeFilter = type;
+    this.browserChildrenPageIndex = 0;
   }
 
   selectAllChildren(workRole: Competency) {
