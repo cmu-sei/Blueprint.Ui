@@ -2,97 +2,69 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
+:host {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 60px);
+}
+
+.cssLayoutRowStartCenter {
+  min-height: 76px;
+  flex-shrink: 0;
+}
+
 .frame {
   display: flex;
   flex-direction: column;
   flex: 1;
-  height: calc(100vh - 60px);
-  overflow-y: hidden;
-  margin-left: 5px;
+  min-height: 0;
 }
 
-.table {
-  font-size: small;
+.table-container {
+  flex: 1;
+  overflow: auto;
+  padding-bottom: 20px;
+}
+
+table {
   width: 100%;
-  overflow: none;
-  background: transparent;
-}
-
-.header-row {
-  min-height: 40px;
-  background: transparent;
-}
-
-.row {
-  min-height: 36px;
-}
-
-.row,
-.header-row {
-  display: flex;
-  border-bottom-width: 1px;
-  border-bottom-style: solid;
-  align-items: center;
-  box-sizing: border-box;
-}
-
-.header-cell {
-  font-size: 14px;
-}
-
-.cell,
-.header-cell {
-  overflow: hidden;
-  word-wrap: break-word;
-  text-align: left;
-  min-width: 120px;
-}
-
-.column-name-name {
-  flex: 0 0 5%;
-  padding: 1%;
-}
-
-.column-name {
-  flex: 0 0 20%;
-  padding: 1%;
 }
 
 .column-action {
   flex: 0 0 150px;
-  flex-direction: row;
-  padding: 0;
-  word-wrap: none;
+  width: 150px;
+  white-space: nowrap;
 }
 
-.column-summary {
-  flex: 0 0 40%;
-  padding: 1%;
-}
-
-.scrolling-region {
-  height: calc(100vh - 89px);
-  overflow: auto;
-  width: 100%;
-}
-
-.template-title {
-  width: 50%;
-}
-
-.action-cell {
+.column-team {
   flex: 2;
-  min-width: 165px;
-  max-width: 165px;
-  text-align: center;
+  min-width: 0;
 }
 
-.number-cell {
+.column-email-domain {
+  flex: 3;
+  min-width: 0;
+}
+
+.column-expires {
+  flex: 2;
+  min-width: 0;
+}
+
+.column-uses {
   flex: 1;
-  text-align: center;
+  min-width: 0;
 }
 
-.little-left {
-  margin-left: 8px;
-  margin-right: 5px;
+.center-self {
+  align-self: center;
+}
+
+.button-end {
+  margin-left: auto;
+}
+
+.no-results {
+  padding: 20px;
+  text-align: center;
 }

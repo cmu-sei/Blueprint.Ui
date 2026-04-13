@@ -32,12 +32,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
 @if (msel) {
 <div class="frame">
   <div class="table-container">
-    <table mat-table #teamTable [dataSource]="teamDataSource" multiTemplateDataRows>
+    <table mat-table #teamTable [dataSource]="teamDataSource" matSort (matSortChange)="sortChanged($event)" multiTemplateDataRows>
       <!-- action column -->
       <ng-container matColumnDef="action">
         <th mat-header-cell *matHeaderCellDef class="column-action">
           @if (canEditMsel()) {
-          <button mat-icon-button [matMenuTriggerFor]="addMenu" title="Add a team" style="outline: none;">
+          <button mat-icon-button [matMenuTriggerFor]="addMenu" (menuOpened)="refreshUnits()" title="Add a team" style="outline: none;">
             <mat-icon class="mdi-24px center-self" fontIcon="mdi-plus-circle"></mat-icon>
           </button>
           }
@@ -56,32 +56,38 @@ project root for license information or contact permission@sei.cmu.edu for full 
           }
         </td>
       </ng-container>
+      <!-- shortName column -->
+      <ng-container matColumnDef="shortName">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header class="column-short-name">Short Name</th>
+        <td mat-cell *matCellDef="let element" class="column-short-name">
+          {{ element.shortName }}
+        </td>
+      </ng-container>
       <!-- name column -->
       <ng-container matColumnDef="name">
-        <th mat-header-cell *matHeaderCellDef class="column-name">Name</th>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header class="column-name">Name</th>
         <td mat-cell *matCellDef="let element" class="column-name">
-          {{ element.shortName }} - {{ element.name }}
+          {{ element.name }}
         </td>
       </ng-container>
       <!-- email column -->
       <ng-container matColumnDef="email">
-        <th mat-header-cell *matHeaderCellDef class="column-email">Email</th>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header class="column-email">Email</th>
         <td mat-cell *matCellDef="let element" class="column-email">{{ element.email }}</td>
       </ng-container>
       <!-- teamType column -->
       <ng-container matColumnDef="teamType">
-        <th mat-header-cell *matHeaderCellDef class="column-team-type">Team Type</th>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header class="column-team-type">Team Type</th>
         <td mat-cell *matCellDef="let element" class="column-team-type">
           {{ getCiteTeamTypeName(element.citeTeamTypeId) }}
         </td>
       </ng-container>
       <!-- invitation column -->
       <ng-container matColumnDef="invitation">
-        <th mat-header-cell *matHeaderCellDef class="column-invitation">Invitation</th>
+        <th mat-header-cell *matHeaderCellDef class="column-invitation">Open Invite</th>
         <td mat-cell *matCellDef="let element" class="column-invitation">
-          @if (element.canTeamMemberInvite) {
-          <span>** ALL can invite</span>
-          }&nbsp;
+          <mat-checkbox [checked]="element.canTeamMemberInvite" disabled
+            (click)="$event.stopPropagation();" matTooltip="Any team member can invite"></mat-checkbox>
         </td>
       </ng-container>
       <!-- Expanded Content Column -->
