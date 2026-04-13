@@ -91,7 +91,6 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
   @ViewChild('availablePaginator') availablePaginator: MatPaginator;
   @ViewChild('relatedPaginator') relatedPaginator: MatPaginator;
   private expandedComp: Competency = null;
-  private relatedChanged = false;
   private currentRelatedIdNumbers: string[] = [];
   private relatedFilterSub: Subscription;
   private relatedSideFilterSub: Subscription;
@@ -344,7 +343,7 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
           const fresh = this.competencyById.get(this.expandedCompetencyId);
           this.expandedComp = fresh;
           this.currentRelatedIdNumbers = [...(fresh.relatedIdNumbers || [])];
-          this.relatedChanged = false;
+
           this.updateRelatedDataSources();
         }
         setTimeout(() => {
@@ -540,7 +539,6 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
     this.collapseCompetencyDetail();
     this.expandedCompetencyId = comp.id;
     this.expandedComp = comp;
-    this.relatedChanged = false;
     this.currentRelatedIdNumbers = [...(comp.relatedIdNumbers || [])];
     this.relatedFilterControl.setValue('');
     this.relatedSideFilterControl.setValue('');
@@ -594,10 +592,6 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
   }
 
   private collapseCompetencyDetail(): void {
-    if (this.relatedChanged && this.expandedComp) {
-      const updated = { ...this.expandedComp, relatedIdNumbers: this.currentRelatedIdNumbers };
-      this.saveCompetency(updated);
-    }
     this.expandedCompetencyId = '';
     this.expandedComp = null;
   }
@@ -645,15 +639,22 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
   addRelatedCompetency(comp: Competency): void {
     if (!this.currentRelatedIdNumbers.includes(comp.idNumber)) {
       this.currentRelatedIdNumbers.push(comp.idNumber);
-      this.relatedChanged = true;
       this.updateRelatedDataSources();
+      this.saveCurrentRelated();
     }
   }
 
   removeRelatedCompetency(comp: Competency): void {
     this.currentRelatedIdNumbers = this.currentRelatedIdNumbers.filter(id => id !== comp.idNumber);
-    this.relatedChanged = true;
     this.updateRelatedDataSources();
+    this.saveCurrentRelated();
+  }
+
+  private saveCurrentRelated(): void {
+    if (this.expandedComp) {
+      const updated = { ...this.expandedComp, relatedIdNumbers: this.currentRelatedIdNumbers };
+      this.saveCompetency(updated);
+    }
   }
 
   viewCompetencyDetail(comp: Competency): void {
