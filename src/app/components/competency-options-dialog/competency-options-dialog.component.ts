@@ -40,10 +40,6 @@ export class CompetencyOptionsDialogComponent implements OnDestroy {
     }
   ) {
     dialogRef.disableClose = true;
-    // Initialize selected set from existing data options
-    for (const opt of this.data.dataOptions) {
-      this.selected.add(opt.optionName);
-    }
     // Subscribe to MSEL competency pool
     this.mselCompetencyQuery.selectAll().pipe(
       takeUntil(this.unsubscribe$)
@@ -51,6 +47,15 @@ export class CompetencyOptionsDialogComponent implements OnDestroy {
       this.mselCompetencies = mselCompetencies;
       this.buildTypeMap();
     });
+    // Initialize selected set — only include options still in the pool
+    const poolIdNumbers = new Set(
+      this.mselCompetencies.map(mc => mc.competency?.idNumber).filter(n => n)
+    );
+    for (const opt of this.data.dataOptions) {
+      if (poolIdNumbers.has(opt.optionName)) {
+        this.selected.add(opt.optionName);
+      }
+    }
   }
 
   ngOnDestroy() {
@@ -178,6 +183,8 @@ export class CompetencyOptionsDialogComponent implements OnDestroy {
     const newOptions: DataOption[] = [];
     let order = 1;
     for (const idNumber of this.selected) {
+      // Skip stale options for competencies no longer in the pool
+      if (!competencyMap.has(idNumber)) continue;
       const existing = existingMap.get(idNumber);
       if (existing) {
         const mc = competencyMap.get(idNumber);

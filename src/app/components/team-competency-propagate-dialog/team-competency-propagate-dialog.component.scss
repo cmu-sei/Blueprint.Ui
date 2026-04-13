@@ -1,0 +1,28 @@
+.propagate-table {
+  max-height: 300px;
+  overflow: auto;
+  margin-top: 8px;
+}
+
+.col-select {
+  max-width: 48px;
+  flex: 0 0 48px;
+}
+
+.col-id {
+  max-width: 120px;
+  flex: 0 0 120px;
+}
+
+.col-name {
+  flex: 1;
+}
+
+.action-spacer {
+  flex: 1;
+}
+
+mat-dialog-actions {
+  gap: 8px;
+  padding: 8px 24px 16px;
+}

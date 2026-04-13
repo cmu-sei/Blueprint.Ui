@@ -271,7 +271,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <!-- events column -->
         <ng-container matColumnDef="events">
           <mat-header-cell mat-sort-header *matHeaderCellDef class="pool-col-events">Events</mat-header-cell>
-          <mat-cell *matCellDef="let element" class="pool-col-events">—</mat-cell>
+          <mat-cell *matCellDef="let element" class="pool-col-events">{{ getEventCount(element) }}</mat-cell>
         </ng-container>
         <!-- Expanded detail row: team assignment -->
         <ng-container matColumnDef="expandedDetail">
