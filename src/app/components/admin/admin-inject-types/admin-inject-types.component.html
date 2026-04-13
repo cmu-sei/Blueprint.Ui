@@ -23,7 +23,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
 </div>
 
 <section class="scrolling-region">
-  <table mat-table #injectTypeTable [dataSource]="injectTypeDataSource" matSort multiTemplateDataRows>
+  <table mat-table #injectTypeTable [dataSource]="injectTypeDataSource" matSort (matSortChange)="sortChanged($event)" multiTemplateDataRows>
     <!-- action column -->
     <ng-container matColumnDef="action">
       <mat-header-cell *matHeaderCellDef class="column-action">
@@ -57,7 +57,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     </ng-container>
     <!-- name Column -->
     <ng-container matColumnDef="name">
-      <mat-header-cell title="Inject Type Name" *matHeaderCellDef class="column-name">
+      <mat-header-cell title="Inject Type Name" *matHeaderCellDef mat-sort-header class="column-name">
         Name
       </mat-header-cell>
       <mat-cell *matCellDef="let element" class="column-name">
@@ -66,7 +66,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     </ng-container>
     <!-- description Column -->
     <ng-container matColumnDef="description">
-      <mat-header-cell title="Inject Type Description" *matHeaderCellDef class="column-description">
+      <mat-header-cell title="Inject Type Description" *matHeaderCellDef mat-sort-header class="column-description">
         Description
       </mat-header-cell>
       <mat-cell *matCellDef="let element" class="column-description">

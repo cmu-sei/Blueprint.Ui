@@ -66,6 +66,7 @@ export class HomeAppComponent implements OnDestroy, OnInit {
   appTitle = '';
   permissions: SystemPermission[] = [];
   readonly SystemPermission = SystemPermission;
+  private mselWasActive = false;
 
   constructor(
     activatedRoute: ActivatedRoute,
@@ -110,11 +111,12 @@ export class HomeAppComponent implements OnDestroy, OnInit {
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((m) => {
         if (m) {
+          this.mselWasActive = true;
           // set appTitle and topbarText for the selected MSEL
           const prefix = this.appTitle + ' - ';
           this.topbarText = m ? prefix + m.name : this.topbarTextBase;
           this.titleService.setTitle(prefix + m.name);
-        } else if (this.selectedMselId) {
+        } else if (this.selectedMselId && this.mselWasActive) {
           // active MSEL was deleted, navigate back to the list
           this.selectedMselId = '';
           this.topbarText = this.topbarTextBase;
