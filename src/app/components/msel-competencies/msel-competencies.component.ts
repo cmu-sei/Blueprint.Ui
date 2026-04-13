@@ -629,7 +629,6 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
   }
 
   private buildRemoveMessage(idNumber: string, name: string, eventCount: number, optionCount: number): string {
-    const label = `${idNumber} (${name})`;
     const parts: string[] = [];
     if (eventCount > 0) {
       parts.push(`${eventCount} scenario event${eventCount === 1 ? '' : 's'}`);
@@ -638,9 +637,9 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
       parts.push(`${optionCount} data field${optionCount === 1 ? '' : 's'}`);
     }
     if (parts.length > 0) {
-      return `${label} is referenced by ${parts.join(' and ')}. Those references will be removed. Continue?`;
+      return `The following competency is referenced by ${parts.join(' and ')}. Those references will be removed. Continue?\n\n${idNumber} — ${name}`;
     }
-    return `Remove ${label} from this MSEL?`;
+    return `Remove the following competency from this MSEL?\n\n${idNumber} — ${name}`;
   }
 
   private removeCompetencyReferences(idNumber: string) {
