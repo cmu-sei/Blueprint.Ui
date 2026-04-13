@@ -49,6 +49,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {
   ComnAuthModule,
+  ComnHeaderBarModule,
   ComnSettingsConfig,
   ComnSettingsModule,
   ComnSettingsService,
@@ -162,6 +163,7 @@ import { DataValueComponent } from './components/data-value/data-value.component
 
 const settings: ComnSettingsConfig = {
   url: 'assets/config/settings.json',
+  sharedUrl: 'assets/config/settings.shared.json',
   envUrl: 'assets/config/settings.env.json',
 };
 
@@ -307,7 +309,6 @@ export const appConfig: ApplicationConfig = {
     MatBottomSheetModule,
     MatBadgeModule,
     MatFormFieldModule,
-    MatDatepickerModule,
     NgxMatDatepickerActions,
     NgxMatDatepickerApply,
     NgxMatDatepickerCancel,
@@ -322,7 +323,8 @@ export const appConfig: ApplicationConfig = {
     ComnAuthModule.forRoot(),
     ComnSettingsModule.forRoot(),
     AngularEditorModule,
-    DragDropModule], providers: [
+    DragDropModule,
+    ComnHeaderBarModule], providers: [
       DialogService,
       SystemMessageService,
       UIDataService,

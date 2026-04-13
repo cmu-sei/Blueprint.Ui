@@ -2,76 +2,50 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-.frame {
+:host {
   display: flex;
   flex-direction: column;
   flex: 1;
-  height: calc(100vh - 60px);
+  height: calc(100% - 60px);
   overflow-y: hidden;
   margin-left: 5px;
 }
 
-.table {
-  font-size: small;
-  width: 100%;
-  overflow: none;
-  background: transparent;
+.cssLayoutRowStartCenter {
+  min-height: 76px;
+  flex-shrink: 0;
 }
 
-.header-row {
-  min-height: 40px;
-  background: transparent;
-}
-
-.row {
-  min-height: 36px;
-}
-
-.row,
-.header-row {
+.frame {
   display: flex;
-  border-bottom-width: 1px;
-  border-bottom-style: solid;
-  align-items: center;
-  box-sizing: border-box;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
 }
 
-.header-cell {
-  font-size: 14px;
+.table-container {
+  flex: 1;
+  overflow: auto;
+  padding-bottom: 20px;
 }
 
-.cell,
-.header-cell {
-  overflow: hidden;
-  word-wrap: break-word;
-  text-align: left;
-  min-width: 120px;
-}
-
-.column-name-name {
-  flex: 0 0 5%;
-  padding: 1%;
-}
-
-.column-name {
-  flex: 0 0 20%;
-  padding: 1%;
+table {
+  width: 100%;
 }
 
 .column-action {
   flex: 0 0 150px;
-  flex-direction: row;
-  padding: 0;
-  word-wrap: none;
+  width: 150px;
+  white-space: nowrap;
 }
 
-.column-summary {
-  flex: 0 0 40%;
-  padding: 1%;
+.column-team {
+  flex: 2;
+  min-width: 0;
 }
 
 .scrolling-region {
-  height: calc(100vh - 89px);
+  height: calc(100% - 89px);
   overflow: auto;
   width: 100%;
 }
@@ -80,19 +54,25 @@
   width: 50%;
 }
 
-.action-cell {
+.column-expires {
   flex: 2;
-  min-width: 165px;
-  max-width: 165px;
-  text-align: center;
+  min-width: 0;
 }
 
-.number-cell {
+.column-uses {
   flex: 1;
-  text-align: center;
+  min-width: 0;
 }
 
-.little-left {
-  margin-left: 8px;
-  margin-right: 5px;
+.center-self {
+  align-self: center;
+}
+
+.button-end {
+  margin-left: auto;
+}
+
+.no-results {
+  padding: 20px;
+  text-align: center;
 }

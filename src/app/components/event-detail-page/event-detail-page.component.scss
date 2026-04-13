@@ -4,6 +4,12 @@
  project root for license information.
 */
 
+:host {
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+
 #eventDetails {
   border-collapse: collapse;
   width: 100%;

@@ -31,7 +31,7 @@ a {
 
 .frame {
   width: 100%;
-  height: calc(100vh - 60px);
+  height: calc(100% - 60px);
 }
 
 .tab-group {
@@ -64,7 +64,7 @@ a {
 }
 
 .page-content-region {
-  height: calc(100vh - 198px);
+  height: calc(100% - 198px);
   width: 90%;
   margin-left: 5%;
 }

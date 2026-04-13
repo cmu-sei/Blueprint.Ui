@@ -15,7 +15,6 @@ import {
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { Sort } from '@angular/material/sort';
-import { MatMenuTrigger } from '@angular/material/menu';
 import { MatTable } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 import { InjectTypeDataService } from 'src/app/data/inject-type/inject-type-data.service';
@@ -188,10 +187,10 @@ export class AdminInjectTypesComponent implements OnDestroy, AfterViewInit {
     const isAsc = direction !== 'desc';
     switch (column) {
       case 'name':
-        return ((a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1) * (isAsc ? 1 : -1));
+        return (((a.name ?? '').toLowerCase() < (b.name ?? '').toLowerCase() ? -1 : 1) * (isAsc ? 1 : -1));
         break;
       case 'description':
-        return ((a.description.toLowerCase() < b.description.toLowerCase() ? -1 : 1) * (isAsc ? 1 : -1));
+        return (((a.description ?? '').toLowerCase() < (b.description ?? '').toLowerCase() ? -1 : 1) * (isAsc ? 1 : -1));
         break;
       default:
         return 0;
