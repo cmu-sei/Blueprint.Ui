@@ -2,18 +2,10 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-:host {
-  display: flex;
-  flex-direction: column;
-  height: calc(100vh - 60px);
-}
-
-.cssLayoutRowStartCenter {
-  min-height: 76px;
-  flex-shrink: 0;
-}
-
-.frame {
+.scrolling-region {
+  width: 100%;
+  height: calc(100% - 60px);
+  overflow: auto;
   display: flex;
   flex-direction: column;
   flex: 1;

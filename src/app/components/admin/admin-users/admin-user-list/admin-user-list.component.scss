@@ -8,6 +8,7 @@ Released under a MIT (SEI)-style license. See LICENSE.md in the project root for
   flex-direction: column;
   flex: 1;
   min-height: 0;
+  overflow: hidden;
 }
 
 .cssLayoutRowStartCenter {
@@ -27,6 +28,7 @@ Released under a MIT (SEI)-style license. See LICENSE.md in the project root for
 table {
   width: 100%;
   --mat-table-row-item-container-height: auto;
+  overflow: auto;
 }
 
 .mat-mdc-cell,

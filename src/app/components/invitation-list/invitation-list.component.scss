@@ -5,7 +5,10 @@
 :host {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 60px);
+  flex: 1;
+  height: calc(100% - 60px);
+  overflow-y: hidden;
+  margin-left: 5px;
 }
 
 .cssLayoutRowStartCenter {
@@ -41,9 +44,14 @@ table {
   min-width: 0;
 }
 
-.column-email-domain {
-  flex: 3;
-  min-width: 0;
+.scrolling-region {
+  height: calc(100% - 89px);
+  overflow: auto;
+  width: 100%;
+}
+
+.template-title {
+  width: 50%;
 }
 
 .column-expires {

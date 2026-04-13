@@ -4,12 +4,14 @@
 :host {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 44px);
+  height: calc(100% - 44px);
 }
 
 .container {
   margin: 8px;
   overflow: auto;
+  flex: 1;
+  min-height: 0;
   flex: 1;
   min-height: 0;
 }
@@ -60,6 +62,7 @@
 }
 
 table {
+
   th,
   td {
     padding: 8px 12px;
