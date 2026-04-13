@@ -204,6 +204,9 @@ export class MselContributorsComponent implements OnDestroy, OnInit {
   }
 
   hasMselRole(userId: string, mselRole: MselRole): boolean {
+    if (mselRole === MselRole.Owner && userId === this.msel.createdBy) {
+      return true;
+    }
     const hasRole = this.userMselRoles.some(umr =>
       umr.userId === userId && umr.role === mselRole && umr.mselId === this.msel.id);
     return hasRole;
@@ -289,6 +292,9 @@ export class MselContributorsComponent implements OnDestroy, OnInit {
   }
 
   isOwnOwnerRole(userId: string, mselRole: MselRole): boolean {
+    if (mselRole === MselRole.Owner && userId === this.msel.createdBy) {
+      return true;
+    }
     return userId === this.loggedInUserId && mselRole === MselRole.Owner && this.hasMselRole(userId, mselRole);
   }
 
