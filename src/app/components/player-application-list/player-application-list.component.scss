@@ -7,7 +7,7 @@
 :host {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 60px);
+  height: calc(100% - 60px);
 }
 
 .cssLayoutRowStartCenter {
@@ -102,14 +102,14 @@ table {
   align-items: center;
 }
 
-::ng-deep .frame > mat-expansion-panel {
+::ng-deep .frame>mat-expansion-panel {
   flex-shrink: 1;
   min-height: 0;
   display: flex;
   flex-direction: column;
 }
 
-::ng-deep .frame > mat-expansion-panel .mat-expansion-panel-content {
+::ng-deep .frame>mat-expansion-panel .mat-expansion-panel-content {
   overflow: auto;
   flex: 1;
   min-height: 0;
@@ -118,4 +118,3 @@ table {
 .button-end {
   margin-left: auto;
 }
-

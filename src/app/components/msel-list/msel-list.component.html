@@ -179,7 +179,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </mat-cell>
         </ng-container>
         <!-- row definitions -->
-        <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+        <mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></mat-header-row>
         <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
       </mat-table>
       <!-- No Results Message -->
