@@ -62,7 +62,7 @@ mat-table {
 }
 
 .column-display {
-  flex: 0 0 70px;
+  flex: 0 0 50px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -70,6 +70,7 @@ mat-table {
 
 .column-name {
   flex: 0 0 20%;
+  min-width: 60px;
   display: flex;
   align-items: center;
   padding: 1%;
@@ -196,6 +197,14 @@ mat-table {
 
 .integration-header {
   text-align: left;
+}
+
+.column-min60 {
+  min-width: 60px;
+}
+
+.column-integration {
+  min-width: 236px;
 }
 
 .integration {

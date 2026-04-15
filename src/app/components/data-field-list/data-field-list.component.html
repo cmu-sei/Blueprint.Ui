@@ -165,6 +165,36 @@ project root for license information or contact permission@sei.cmu.edu for full 
             }
           </mat-cell>
         </ng-container>
+        <!-- default Column -->
+        <ng-container matColumnDef="default">
+          <mat-header-cell mat-sort-header="isShownOnDefaultTab" title="Display on the default tab of the scenario event edit dialog"
+            *matHeaderCellDef class="column-display">
+            &nbsp;&nbsp;&nbsp;&nbsp;Default
+          </mat-header-cell>
+          <mat-cell *matCellDef="let element" class="column-display">
+            @if (element.displayOrder >= 0) {
+            <mat-checkbox [(ngModel)]="element.isShownOnDefaultTab" [disabled]="!canEdit()"
+              (change)="saveChange(element)" (click)="$event.stopPropagation();"
+              title="Display on the default tab of the scenario event edit dialog">
+            </mat-checkbox>
+            }
+          </mat-cell>
+        </ng-container>
+        <!-- devs Column -->
+        <ng-container matColumnDef="devs">
+          <mat-header-cell mat-sort-header="isOnlyShownToOwners" title="Display for Content Developers and MSEL Owners ONLY?"
+            *matHeaderCellDef class="column-display">
+            &nbsp;&nbsp;&nbsp;&nbsp;Devs
+          </mat-header-cell>
+          <mat-cell *matCellDef="let element" class="column-display">
+            @if (element.displayOrder >= 0) {
+            <mat-checkbox [(ngModel)]="element.isOnlyShownToOwners" [disabled]="!canEdit()"
+              (change)="saveChange(element)" (click)="$event.stopPropagation();"
+              title="Display for Content Developers and MSEL Owners ONLY?">
+            </mat-checkbox>
+            }
+          </mat-cell>
+        </ng-container>
         <!-- name Column -->
         <ng-container matColumnDef="name">
           <mat-header-cell mat-sort-header="name" *matHeaderCellDef class="column-name">
@@ -176,22 +206,22 @@ project root for license information or contact permission@sei.cmu.edu for full 
         </ng-container>
         <!-- datatype Column -->
         <ng-container matColumnDef="datatype">
-          <mat-header-cell mat-sort-header="dataType" *matHeaderCellDef class="six-cell"> Data Type </mat-header-cell>
-          <mat-cell *matCellDef="let element" class="six-cell">
+          <mat-header-cell mat-sort-header="dataType" *matHeaderCellDef class="six-cell column-min60"> Data Type </mat-header-cell>
+          <mat-cell *matCellDef="let element" class="six-cell column-min60">
             <div class="summary-text">{{ element.dataType }}</div>
           </mat-cell>
         </ng-container>
         <!-- options Column -->
         <ng-container matColumnDef="options">
-          <mat-header-cell *matHeaderCellDef class="six-cell"> Options </mat-header-cell>
-          <mat-cell *matCellDef="let element" class="six-cell">
+          <mat-header-cell *matHeaderCellDef class="six-cell column-min60"> Options </mat-header-cell>
+          <mat-cell *matCellDef="let element" class="six-cell column-min60">
             <div class="summary-text">{{ getDataOptionsString(element) }}</div>
           </mat-cell>
         </ng-container>
         <!-- integration Column -->
         <ng-container matColumnDef="integration">
-          <mat-header-cell *matHeaderCellDef class="six-cell"> Integration </mat-header-cell>
-          <mat-cell *matCellDef="let element" class="six-cell">
+          <mat-header-cell *matHeaderCellDef class="six-cell column-integration"> Integration </mat-header-cell>
+          <mat-cell *matCellDef="let element" class="six-cell column-integration">
             @if (element.displayOrder > 0) {
             <mat-select class="integration" [(ngModel)]="element.galleryArticleParameter"
               (selectionChange)="saveChange(element)" (click)="$event.stopPropagation();" [disabled]="!canEdit()"
