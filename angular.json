@@ -71,6 +71,9 @@
                   "maximumWarning": "6kb"
                 }
               ]
+            },
+            "localNPM": {
+              "tsConfig": "tsconfig.local-npm.json"
             }
           },
           "defaultConfiguration": ""
@@ -84,6 +87,9 @@
           "configurations": {
             "production": {
               "buildTarget": "blueprint-ui:build:production"
+            },
+            "localNPM": {
+              "buildTarget": "blueprint-ui:build:development,localNPM"
             }
           }
         },
