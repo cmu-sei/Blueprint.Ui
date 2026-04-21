@@ -70,6 +70,10 @@ export class MselPlus implements Msel {
   showIntegrationTargetOnScenarioEventList?: boolean;
   showIntegrationTargetOnExerciseView?: boolean;
   integrationTargetDisplayOrder?: number;
+  showTimeOnAssessorView?: boolean;
+  showMoveOnAssessorView?: boolean;
+  showGroupOnAssessorView?: boolean;
+  showIntegrationTargetOnAssessorView?: boolean;
   moves?: Array<Move>;
   dataFields?: Array<DataField>;
   scenarioEvents?: Array<ScenarioEvent>;

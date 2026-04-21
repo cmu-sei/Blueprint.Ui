@@ -171,6 +171,7 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
       .subscribe((dataFields) => {
         this.sortedDataFields = this.getSortedDataFields(dataFields);
         this.scenarioEventDataService.updateScenarioEventViewDataFields(this);
+        this.scenarioEventDataService.updateScenarioEventViewDataValues(this);
         this.scenarioEventDataService.updateScenarioEventViewDisplayedEvents(
           this
         );

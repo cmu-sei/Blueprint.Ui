@@ -330,6 +330,22 @@ project root for license information or contact permission@sei.cmu.edu for full 
               <a target="_blank" href="{{ starterUrl }}">{{ starterUrl }}</a>
             </div>
           </div>
+          <!-- Assessor View URL -->
+          <div class="url-form-field">
+            <div class="editor-label">
+              Assessor View URL
+              <div class="field-hint">
+                Use this URL for direct access to the Assessor View
+              </div>
+            </div>
+            <div class="url-button-link">
+              <button mat-icon-button ngxClipboard [cbContent]="assessorUrl" (click)="$event.stopPropagation()"
+                title="Copy Assessor View URL:  {{ assessorUrl }}">
+                <mat-icon class="mdi-24px" fontIcon="mdi-content-copy"></mat-icon>
+              </button>
+              <a target="_blank" href="{{ assessorUrl }}">{{ assessorUrl }}</a>
+            </div>
+          </div>
           <!-- Competencies summary -->
           <div class="competency-section">
             <div class="section-header">

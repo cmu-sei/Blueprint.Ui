@@ -120,6 +120,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
   @if (!data.dataField.isTemplate) {
   <div class="data-field-detail" (click)="$event.stopPropagation();">
     <div class="single-detail">
+      <mat-checkbox [(ngModel)]="data.dataField.isAssessorVisible" [disabled]="!data.canEdit && !data.isOwner"
+        class="bottom-margin">Assessor View</mat-checkbox><br />
+    </div>
+  </div>
+  }
+  @if (!data.dataField.isTemplate) {
+  <div class="data-field-detail" (click)="$event.stopPropagation();">
+    <div class="single-detail">
       <mat-checkbox [(ngModel)]="data.dataField.isOnlyShownToOwners" [disabled]="!data.canEdit && !data.isOwner"
         class="bottom-margin">Display for Content Developers and
         MSEL Owners ONLY !!!</mat-checkbox><br />

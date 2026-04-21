@@ -165,6 +165,19 @@ project root for license information or contact permission@sei.cmu.edu for full 
             }
           </mat-cell>
         </ng-container>
+        <!-- assessor Column -->
+        <ng-container matColumnDef="assessor">
+          <mat-header-cell mat-sort-header="isAssessorVisible" title="Display on the Assessor View?"
+            *matHeaderCellDef class="column-display">
+            &nbsp;&nbsp;&nbsp;&nbsp;Assess
+          </mat-header-cell>
+          <mat-cell *matCellDef="let element" class="column-display">
+            <mat-checkbox [(ngModel)]="element.isAssessorVisible" [disabled]="!canEdit()"
+              (change)="saveChange(element)" (click)="$event.stopPropagation();"
+              title="Display on the Assessor View?">
+            </mat-checkbox>
+          </mat-cell>
+        </ng-container>
         <!-- name Column -->
         <ng-container matColumnDef="name">
           <mat-header-cell mat-sort-header="name" *matHeaderCellDef class="column-name">

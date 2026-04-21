@@ -15,6 +15,7 @@ import { JoinComponent } from './components/landing/join/join.component';
 import { LaunchComponent } from './components/landing/launch/launch.component';
 import { ManageComponent } from './components/landing/manage/manage.component';
 import { StarterComponent } from './components/starter/starter.component';
+import { AssessorPageComponent } from './components/assessor-page/assessor-page.component';
 import { EventDetailPageComponent } from './components/event-detail-page/event-detail-page.component';
 
 export const ROUTES: Routes = [
@@ -46,6 +47,11 @@ export const ROUTES: Routes = [
   {
     path: 'starter',
     component: StarterComponent,
+    canActivate: [ComnAuthGuardService],
+  },
+  {
+    path: 'assess',
+    component: AssessorPageComponent,
     canActivate: [ComnAuthGuardService],
   },
   {

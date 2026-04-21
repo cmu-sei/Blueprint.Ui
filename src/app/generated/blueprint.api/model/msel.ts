@@ -62,6 +62,10 @@ export interface Msel {
     showIntegrationTargetOnScenarioEventList?: boolean;
     showIntegrationTargetOnExerciseView?: boolean;
     integrationTargetDisplayOrder?: number;
+    showTimeOnAssessorView?: boolean;
+    showMoveOnAssessorView?: boolean;
+    showGroupOnAssessorView?: boolean;
+    showIntegrationTargetOnAssessorView?: boolean;
     moves?: Array<Move> | null;
     dataFields?: Array<DataField> | null;
     scenarioEvents?: Array<ScenarioEvent> | null;

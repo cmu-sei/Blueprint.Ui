@@ -5,14 +5,17 @@
 @use "@angular/material" as mat;
 
 :host {
-  @include mat.form-field-density(-5); // Adjust -3 for this specific form field
+  @include mat.form-field-density(-5);
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
 }
 
 .container {
   display: flex;
   flex-direction: column;
   flex: 1;
-  height: calc(100% - 60px);
+  height: 100%;
   overflow: auto;
   background-color: var(--mat-sys-background);
   color: var(--mat-sys-on-background);

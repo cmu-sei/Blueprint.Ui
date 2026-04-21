@@ -67,6 +67,7 @@ export class MselComponent implements OnDestroy {
     'CITE Duties',
     'Scenario Events',
     'Exercise View',
+    'Assessor View',
     'MSEL Playbook',
     'Invitations',
   ];
@@ -84,6 +85,7 @@ export class MselComponent implements OnDestroy {
     ['Competencies', 'mdi-certificate-outline'],
     ['Scenario Events', 'mdi-chart-timeline'],
     ['Exercise View', 'mdi-eye-outline'],
+    ['Assessor View', 'mdi-clipboard-check-multiple-outline'],
     ['MSEL Playbook', 'mdi-book'],
     ['Invitations', 'mdi-email-open-outline'],
   ]);

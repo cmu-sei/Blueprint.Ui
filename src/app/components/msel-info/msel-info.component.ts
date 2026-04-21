@@ -83,6 +83,7 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   courseModes: string[] = ['Online', 'Onsite', 'Blended'];
   viewUrl: string;
   starterUrl: string;
+  assessorUrl: string;
   mselPages: MselPage[] = [];
   newMselPage = {} as MselPage;
   changedMselPage = {} as MselPage;
@@ -189,6 +190,7 @@ export class MselInfoComponent implements OnDestroy, OnInit {
             this.viewUrl = document.baseURI + 'msel/' + this.msel.id + '/view';
             this.starterUrl =
               document.baseURI + 'starter/?msel=' + this.msel.id;
+            this.assessorUrl = document.baseURI + 'assess/?msel=' + this.msel.id;
             this.mselPageDataService.loadByMsel(msel.id);
             this.mselCompetencyDataService.loadByMsel(msel.id);
             this.newMselPage.mselId = msel.id;

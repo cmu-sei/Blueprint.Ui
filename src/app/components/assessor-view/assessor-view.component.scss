@@ -1,0 +1,178 @@
+// Copyright 2024 Carnegie Mellon University. All Rights Reserved.
+// Released under a MIT (SEI)-style license. See LICENSE.md in the
+// project root for license information.
+
+:host {
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  height: 100%;
+  overflow: auto;
+  background-color: var(--mat-sys-background);
+  color: var(--mat-sys-on-background);
+}
+
+.tableFixHead thead th {
+  position: sticky;
+  top: 0px;
+  z-index: 50;
+  background-color: var(--mat-sys-background);
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  background-color: var(--mat-sys-background);
+  color: var(--mat-sys-on-background);
+}
+
+tr {
+  border-bottom: 1pt solid var(--mat-sys-outline-variant);
+  width: 100%;
+}
+
+th,
+td {
+  padding-top: 5px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  text-align: left;
+  word-wrap: normal;
+  color: var(--mat-sys-on-background);
+}
+
+.constrainer {
+  max-height: 300px;
+}
+
+.time-span {
+  min-width: 90px;
+}
+
+.expand-col {
+  width: 36px;
+  min-width: 36px;
+  max-width: 36px;
+}
+
+.row-num-col {
+  text-align: right;
+}
+
+.row-index {
+  width: 15px;
+  text-align: right;
+  margin-right: 20px;
+}
+
+.center-self {
+  align-self: center;
+}
+
+.row-start-buttons {
+  display: flex;
+  flex-shrink: 0;
+}
+
+.header-button {
+  width: 30px !important;
+  height: 30px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+}
+
+.shift-left {
+  margin-left: 10px;
+  width: 300px;
+}
+
+.scenario-event-button {
+  width: 30px !important;
+  height: 30px !important;
+  align-self: center !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  color: var(--mat-sys-on-surface-variant);
+  text-align: center;
+
+  p {
+    margin: 4px 0;
+  }
+}
+
+.detail-row {
+  td {
+    padding: 0 !important;
+  }
+}
+
+.event-detail {
+  padding: 12px 16px;
+  background-color: var(--mat-sys-surface-container-lowest);
+  border-top: 1px solid var(--mat-sys-outline-variant);
+}
+
+.statements-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: var(--mat-sys-on-surface);
+}
+
+.no-statements {
+  font-size: 13px;
+  color: var(--mat-sys-on-surface-variant);
+  font-style: italic;
+  padding: 8px 0;
+}
+
+.statements-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.statement-row {
+  display: flex;
+  gap: 12px;
+  padding: 4px 8px;
+  font-size: 13px;
+  border-radius: 2px;
+
+  &:hover {
+    background-color: var(--mat-sys-surface-container);
+  }
+}
+
+.statement-time {
+  flex-shrink: 0;
+  color: var(--mat-sys-on-surface-variant);
+  font-family: monospace;
+  font-size: 12px;
+  min-width: 80px;
+}
+
+.statement-text {
+  color: var(--mat-sys-on-surface);
+}

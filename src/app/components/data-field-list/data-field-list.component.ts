@@ -71,6 +71,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
     'exercise',
     'information',
     'facilitation',
+    'assessor',
     'name',
     'datatype',
     'options',
@@ -82,6 +83,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
     'exercise',
     'information',
     'facilitation',
+    'assessor',
     'name',
     'datatype',
     'options',
@@ -211,6 +213,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
         name: 'Move',
         onScenarioEventList: this.msel.showMoveOnScenarioEventList,
         onExerciseView: this.msel.showMoveOnExerciseView,
+        isAssessorVisible: this.msel.showMoveOnAssessorView,
         isInformationField: false,
         isFacilitationField: false,
         galleryArticleParameter: 'Gallery Move',
@@ -222,6 +225,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
         name: 'Group',
         onScenarioEventList: this.msel.showGroupOnScenarioEventList,
         onExerciseView: this.msel.showGroupOnExerciseView,
+        isAssessorVisible: this.msel.showGroupOnAssessorView,
         isInformationField: false,
         isFacilitationField: false,
         galleryArticleParameter: 'Gallery Inject',
@@ -233,6 +237,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
         name: 'Execution Time',
         onScenarioEventList: this.msel.showTimeOnScenarioEventList,
         onExerciseView: this.msel.showTimeOnExerciseView,
+        isAssessorVisible: this.msel.showTimeOnAssessorView,
         isInformationField: false,
         isFacilitationField: false,
         galleryArticleParameter: '- - -',
@@ -244,6 +249,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
         name: 'Integration Target',
         onScenarioEventList: this.msel.showIntegrationTargetOnScenarioEventList,
         onExerciseView: this.msel.showIntegrationTargetOnExerciseView,
+        isAssessorVisible: this.msel.showIntegrationTargetOnAssessorView,
         isInformationField: false,
         isFacilitationField: false,
         galleryArticleParameter: '- - -',
@@ -583,19 +589,23 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
         case 'Move':
           this.msel.showMoveOnExerciseView = dataField.onExerciseView;
           this.msel.showMoveOnScenarioEventList = dataField.onScenarioEventList;
+          this.msel.showMoveOnAssessorView = dataField.isAssessorVisible;
           break;
         case 'Group':
           this.msel.showGroupOnExerciseView = dataField.onExerciseView;
           this.msel.showGroupOnScenarioEventList =
             dataField.onScenarioEventList;
+          this.msel.showGroupOnAssessorView = dataField.isAssessorVisible;
           break;
         case 'Execution Time':
           this.msel.showTimeOnExerciseView = dataField.onExerciseView;
           this.msel.showTimeOnScenarioEventList = dataField.onScenarioEventList;
+          this.msel.showTimeOnAssessorView = dataField.isAssessorVisible;
           break;
         case 'Integration Target':
           this.msel.showIntegrationTargetOnExerciseView = dataField.onExerciseView;
           this.msel.showIntegrationTargetOnScenarioEventList = dataField.onScenarioEventList;
+          this.msel.showIntegrationTargetOnAssessorView = dataField.isAssessorVisible;
           break;
       }
       this.saveMsel();

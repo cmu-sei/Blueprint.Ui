@@ -149,6 +149,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
       @if (selectedTab === 'Exercise View') {
       <app-msel-view [tabHeight]="48" [userTheme]="userTheme$ | async"></app-msel-view>
       }
+      @if (selectedTab === 'Assessor View') {
+      <app-assessor-view [loggedInUserId]="loggedInUserId" [userTheme]="userTheme$ | async"></app-assessor-view>
+      }
       @if (selectedTab === 'Invitations') {
       <app-invitation-list [loggedInUserId]="loggedInUserId" [canEditMsel]="canEditMsel"
         [hideSearch]="false">Invitations</app-invitation-list>

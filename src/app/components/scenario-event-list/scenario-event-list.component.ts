@@ -254,6 +254,7 @@ export class ScenarioEventListComponent
         this.allDataFields = dataFields;
         this.setSortedDataFields();
         this.scenarioEventDataService.updateScenarioEventViewDataFields(this);
+        this.scenarioEventDataService.updateScenarioEventViewDataValues(this);
         this.scenarioEventDataService.updateScenarioEventViewDisplayedEvents(
           this
         );
@@ -453,7 +454,7 @@ export class ScenarioEventListComponent
 
   getMselUsers(): User[] {
     let users = [];
-    this.msel.teams.forEach((team) => {
+    this.msel.teams?.forEach((team) => {
       team.users.forEach((user) => {
         users.push({ ...user });
       });
@@ -488,7 +489,7 @@ export class ScenarioEventListComponent
     this.organizationList.forEach((o) => {
       orgs.push(o.shortName);
     });
-    this.msel.teams.forEach((t) => {
+    this.msel.teams?.forEach((t) => {
       orgs.push(t.shortName);
     });
     // Remove duplicates
@@ -499,7 +500,7 @@ export class ScenarioEventListComponent
 
   getSortedTeamOptions(): string[] {
     let teams: string[] = [];
-    this.msel.teams.forEach((t) => {
+    this.msel.teams?.forEach((t) => {
       teams.push(t.shortName);
     });
     teams = teams.sort((a, b) => (a < b ? -1 : 1));
