@@ -43,7 +43,7 @@ export interface XApiStatement {
   object?: { id?: string; definition?: { name?: { 'en-US'?: string }; type?: string } };
   result?: { score?: { raw?: number }; completion?: boolean; success?: boolean };
   timestamp?: string;
-  context?: { team?: { name?: string }; extensions?: Record<string, any> };
+  context?: { team?: { name?: string }; platform?: string; extensions?: Record<string, any> };
 }
 
 @Component({
@@ -310,7 +310,8 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
       this.expandedEventId = '';
     } else {
       this.expandedEventId = eventId;
-      if (!this.eventStatements.has(eventId)) {
+      const cached = this.eventStatements.get(eventId);
+      if (!cached || cached.length === 0) {
         this.loadStatementsForEvent(eventId);
       }
     }
@@ -324,8 +325,8 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
     const nextEvent = this.displayedScenarioEvents[sortedIndex + 1];
 
     const params: any = { mselId: this.msel.id };
-    if (event.deltaSeconds != null && this.msel.dateCreated) {
-      const baseTime = new Date(this.msel.dateCreated);
+    if (event.deltaSeconds != null && this.msel.startTime) {
+      const baseTime = new Date(this.msel.startTime);
       const since = new Date(baseTime.getTime() + (event.deltaSeconds * 1000));
       params.since = since.toISOString();
       if (nextEvent?.deltaSeconds != null) {
@@ -334,8 +335,12 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
       }
     }
 
+    const baseUrl = this.apiUrl.endsWith('/') ? this.apiUrl : this.apiUrl + '/';
+    if (params.since && params.until && params.since > params.until) {
+      delete params.until;
+    }
     this.loadingStatements.add(eventId);
-    this.http.get<any>(`${this.apiUrl}xapi/statements`, { params })
+    this.http.get<any>(`${baseUrl}api/xapi/statements`, { params })
       .subscribe({
         next: (response) => {
           const statements = response?.statements || response || [];
@@ -362,7 +367,8 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
     const team = stmt.context?.team?.name ? ` (${stmt.context.team.name})` : '';
     const verb = stmt.verb?.display?.['en-US'] || stmt.verb?.id?.split('/').pop() || '?';
     const object = stmt.object?.definition?.name?.['en-US'] || stmt.object?.id || '?';
-    return `${actor}${team} ${verb} ${object}`;
+    const platform = stmt.context?.platform ? `[${stmt.context.platform}]` : '';
+    return `${platform} ${actor}${team} ${verb} ${object}`.trim();
   }
 
   formatTimestamp(timestamp: string): string {
