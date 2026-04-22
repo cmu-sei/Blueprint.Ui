@@ -18,15 +18,47 @@ project root for license information or contact permission@sei.cmu.edu for full 
         @if (showSearch) {
         <tr>
           <th colspan="5">
-            <span class="center-self">Search</span>
-            <mat-form-field class="center-self shift-left">
-              <input matInput [(ngModel)]="filterString" (keyup)="keyUp.next($event)" />
-              @if (filterString) {
-              <button mat-icon-button matSuffix (click)="applyFilter('')" title="Clear Search">
-                <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline"></mat-icon>
-              </button>
-              }
-            </mat-form-field>
+            <div class="filter-bar">
+              <span class="center-self">Search</span>
+              <mat-form-field class="center-self shift-left">
+                <input matInput [(ngModel)]="filterString" (keyup)="keyUp.next($event)" />
+                @if (filterString) {
+                <button mat-icon-button matSuffix (click)="applyFilter('')" title="Clear Search">
+                  <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline"></mat-icon>
+                </button>
+                }
+              </mat-form-field>
+              <mat-form-field class="top-filter-field" subscriptSizing="dynamic">
+                <mat-label>Source</mat-label>
+                <mat-select [value]="topSourceFilter" (selectionChange)="setTopSourceFilter($event.value)">
+                  <mat-option [value]="null">All</mat-option>
+                  <mat-option value="blueprint">Blueprint</mat-option>
+                  <mat-option value="cite">CITE</mat-option>
+                  <mat-option value="steamfitter">Steamfitter</mat-option>
+                  <mat-option value="player">Player</mat-option>
+                  <mat-option value="gallery">Gallery</mat-option>
+                </mat-select>
+              </mat-form-field>
+              <mat-form-field class="top-filter-field" subscriptSizing="dynamic">
+                <mat-label>Exclude</mat-label>
+                <mat-select [value]="excludedSources" (selectionChange)="setExcludedSources($event.value)" multiple>
+                  <mat-option value="blueprint">Blueprint</mat-option>
+                  <mat-option value="cite">CITE</mat-option>
+                  <mat-option value="steamfitter">Steamfitter</mat-option>
+                  <mat-option value="player">Player</mat-option>
+                  <mat-option value="gallery">Gallery</mat-option>
+                </mat-select>
+              </mat-form-field>
+              <mat-form-field class="top-filter-field" subscriptSizing="dynamic">
+                <mat-label>Verb</mat-label>
+                <mat-select [value]="topVerbFilter" (selectionChange)="setTopVerbFilter($event.value)">
+                  <mat-option [value]="null">All</mat-option>
+                  @for (verb of availableVerbs; track verb) {
+                    <mat-option [value]="verb">{{ verb }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+            </div>
           </th>
         </tr>
         }
@@ -180,6 +212,48 @@ project root for license information or contact permission@sei.cmu.edu for full 
               <div class="statements-header">
                 <mat-icon fontIcon="mdi-clipboard-text-outline" class="mdi-18px"></mat-icon>
                 <span>xAPI Evidence</span>
+                @if (getStatements(item.id).length > 0) {
+                  <span class="statement-count">{{ getFilteredStatements(item.id).length }} / {{ getStatements(item.id).length }}</span>
+                }
+                <div class="evidence-filters">
+                  @if (moveList.length > 0) {
+                  <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
+                    <mat-label>Move</mat-label>
+                    <mat-select [value]="selectedMoveNumber" (selectionChange)="filterByMove($event.value)">
+                      <mat-option [value]="null">All</mat-option>
+                      @for (move of moveList; track move.id) {
+                        <mat-option [value]="move.moveNumber">{{ move.moveNumber }} - {{ move.description }}</mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+                  }
+                  @if (teamList.length > 0) {
+                  <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
+                    <mat-label>Team</mat-label>
+                    <mat-select [value]="selectedTeamId" (selectionChange)="filterByTeam($event.value)">
+                      <mat-option [value]="null">All</mat-option>
+                      @for (team of teamList; track team.id) {
+                        <mat-option [value]="team.id">{{ team.shortName }}</mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+                  }
+                  <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
+                    <mat-label>Source</mat-label>
+                    <mat-select [value]="selectedSource" (selectionChange)="filterBySource($event.value)">
+                      <mat-option [value]="null">All</mat-option>
+                      <mat-option value="blueprint">Blueprint</mat-option>
+                      <mat-option value="cite">CITE</mat-option>
+                      <mat-option value="steamfitter">Steamfitter</mat-option>
+                      <mat-option value="player">Player</mat-option>
+                      <mat-option value="gallery">Gallery</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+                <button mat-icon-button class="refresh-button" (click)="refreshStatements()"
+                  title="Refresh xAPI statements" [disabled]="isLoading(item.id)">
+                  <mat-icon class="mdi-18px" fontIcon="mdi-refresh"></mat-icon>
+                </button>
               </div>
               @if (isLoading(item.id)) {
                 <mat-progress-bar mode="indeterminate"></mat-progress-bar>
@@ -187,10 +261,31 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 <div class="no-statements">No xAPI statements found for this time window.</div>
               } @else {
                 <div class="statements-list">
-                  @for (stmt of getStatements(item.id); track $index) {
-                    <div class="statement-row">
-                      <span class="statement-time">{{ formatTimestamp(stmt.timestamp) }}</span>
-                      <span class="statement-text">{{ formatStatement(stmt) }}</span>
+                  @for (stmt of getFilteredStatements(item.id); track $index) {
+                    <div class="statement-entry">
+                      <div class="statement-row" (click)="toggleStatement(stmt.id)"
+                        [class.statement-expanded]="expandedStatementId === stmt.id">
+                        <button mat-icon-button class="copy-button" (click)="copyStatement(stmt, $event)" title="Copy JSON">
+                          <mat-icon class="mdi-14px" fontIcon="mdi-content-copy"></mat-icon>
+                        </button>
+                        <span class="statement-time">{{ formatTimestamp(stmt.timestamp) }}</span>
+                        <span class="platform-badge" [ngClass]="getPlatformClass(stmt)">{{ stmt.context?.platform || '?' }}</span>
+                        @if (getMovePart(stmt)) {
+                          <span class="stmt-move">[{{ getMovePart(stmt) }}]</span>
+                        }
+                        <span class="stmt-actor">{{ stmt.actor?.name || stmt.actor?.account?.name || 'Unknown' }}</span>
+                        @if (stmt.context?.team?.name) {
+                          <span class="stmt-team">({{ stmt.context.team.name }})</span>
+                        }
+                        <span class="stmt-verb">{{ stmt.verb?.display?.['en-US'] || stmt.verb?.id?.split('/').pop() || '?' }}</span>
+                        <span class="stmt-object">{{ stmt.object?.definition?.name?.['en-US'] || stmt.object?.id || '?' }}</span>
+                        @if (getObjectType(stmt)) {
+                          <span class="stmt-object-type">({{ getObjectType(stmt) }})</span>
+                        }
+                      </div>
+                      @if (expandedStatementId === stmt.id) {
+                        <pre class="statement-json">{{ formatStatementJson(stmt) }}</pre>
+                      }
                     </div>
                   }
                 </div>

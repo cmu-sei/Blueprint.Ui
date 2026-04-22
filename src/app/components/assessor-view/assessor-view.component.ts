@@ -38,12 +38,20 @@ import { UIDataService } from 'src/app/data/ui/ui-data.service';
 import { AngularEditorConfig } from '@kolkov/angular-editor';
 
 export interface XApiStatement {
+  id?: string;
   actor?: { name?: string; account?: { name?: string } };
   verb?: { id?: string; display?: { 'en-US'?: string } };
   object?: { id?: string; definition?: { name?: { 'en-US'?: string }; type?: string } };
   result?: { score?: { raw?: number }; completion?: boolean; success?: boolean };
   timestamp?: string;
-  context?: { team?: { name?: string }; platform?: string; extensions?: Record<string, any> };
+  context?: {
+    team?: { name?: string };
+    platform?: string;
+    extensions?: Record<string, any>;
+    contextActivities?: {
+      grouping?: { id?: string; definition?: { name?: { 'en-US'?: string }; type?: string } }[];
+    };
+  };
 }
 
 @Component({
@@ -104,6 +112,13 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
   sortableDataTypes = this.scenarioEventDataService.sortableDataTypes;
   showRealTime = false;
   showSearch = false;
+  selectedMoveNumber: number | null = null;
+  selectedTeamId: string | null = null;
+  selectedSource: string | null = null;
+  topSourceFilter: string | null = null;
+  topVerbFilter: string | null = null;
+  excludedSources: string[] = [];
+  availableVerbs: string[] = [];
   keyUp = new Subject<KeyboardEvent>();
   private subscription: Subscription;
   expandedEventId = '';
@@ -187,7 +202,7 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
           +a.moveNumber < +b.moveNumber ? -1 : 1
         );
         this.moveAndGroupNumbers = this.scenarioEventDataService.getMoveAndGroupNumbers(
-          this.displayedScenarioEvents, this.moveList
+          this.mselScenarioEvents, this.moveList
         );
       });
 
@@ -300,81 +315,377 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
     this.uiDataService.setUseRealTime(value);
   }
 
+  filterByMove(moveNumber: number | null) {
+    this.selectedMoveNumber = moveNumber;
+  }
+
+  filterByTeam(teamId: string | null) {
+    this.selectedTeamId = teamId;
+  }
+
+  filterBySource(source: string | null) {
+    this.selectedSource = source;
+  }
+
+  setTopSourceFilter(source: string | null) {
+    this.topSourceFilter = source;
+  }
+
+  setTopVerbFilter(verb: string | null) {
+    this.topVerbFilter = verb;
+  }
+
+  setExcludedSources(sources: string[]) {
+    this.excludedSources = sources;
+  }
+
+  refreshStatements() {
+    if (this.statementsLoading || !this.msel.id) return;
+    this.statementsLoading = true;
+    this.loadingStatements.add('_all');
+
+    const baseUrl = this.apiUrl.endsWith('/') ? this.apiUrl : this.apiUrl + '/';
+    const params: any = { mselId: this.msel.id };
+    if (this.allMselStatements.length > 0) {
+      const latest = this.allMselStatements[this.allMselStatements.length - 1];
+      if (latest.timestamp) {
+        params.since = latest.timestamp;
+      }
+    }
+    this.http.get<any>(`${baseUrl}api/xapi/statements`, { params })
+      .subscribe({
+        next: (response) => {
+          const statements = response?.statements || response || [];
+          const newStmts: XApiStatement[] = Array.isArray(statements) ? statements : [];
+          const existingIds = new Set(this.allMselStatements.map(s => s.id));
+          const added = newStmts.filter(s => !s.id || !existingIds.has(s.id));
+          if (added.length > 0) {
+            this.allMselStatements.push(...added);
+            this.allMselStatements.sort((a, b) =>
+              (a.timestamp || '').localeCompare(b.timestamp || '')
+            );
+            this.distributeStatements();
+            this.buildVerbList();
+          }
+          this.statementsLoading = false;
+          this.loadingStatements.delete('_all');
+        },
+        error: () => {
+          this.statementsLoading = false;
+          this.loadingStatements.delete('_all');
+        }
+      });
+  }
+
+  getPlatformClass(stmt: XApiStatement): string {
+    const platform = (stmt.context?.platform || '').toLowerCase();
+    return `platform-${platform || 'unknown'}`;
+  }
+
   trackByFn(index, item) {
     return item.id;
   }
 
+  private buildVerbList() {
+    const verbs = new Set<string>();
+    for (const stmt of this.allMselStatements) {
+      const verb = stmt.verb?.display?.['en-US'] || stmt.verb?.id?.split('/').pop() || '';
+      if (verb) verbs.add(verb);
+    }
+    this.availableVerbs = Array.from(verbs).sort();
+  }
+
   // xAPI evidence
+  private allMselStatements: XApiStatement[] = [];
+  private statementsLoaded = false;
+  private statementsLoading = false;
+
   toggleEvent(eventId: string) {
     if (this.expandedEventId === eventId) {
       this.expandedEventId = '';
     } else {
       this.expandedEventId = eventId;
-      const cached = this.eventStatements.get(eventId);
-      if (!cached || cached.length === 0) {
-        this.loadStatementsForEvent(eventId);
+      if (!this.statementsLoaded) {
+        this.loadAllStatements();
       }
     }
   }
 
-  private loadStatementsForEvent(eventId: string) {
-    const event = this.mselScenarioEvents.find(e => e.id === eventId);
-    if (!event || !this.msel.id) return;
-
-    const sortedIndex = this.displayedScenarioEvents.indexOf(event);
-    const nextEvent = this.displayedScenarioEvents[sortedIndex + 1];
-
-    const params: any = { mselId: this.msel.id };
-    if (event.deltaSeconds != null && this.msel.startTime) {
-      const baseTime = new Date(this.msel.startTime);
-      const since = new Date(baseTime.getTime() + (event.deltaSeconds * 1000));
-      params.since = since.toISOString();
-      if (nextEvent?.deltaSeconds != null) {
-        const until = new Date(baseTime.getTime() + (nextEvent.deltaSeconds * 1000));
-        params.until = until.toISOString();
-      }
-    }
+  private loadAllStatements() {
+    if (this.statementsLoading || !this.msel.id) return;
+    this.statementsLoading = true;
+    this.loadingStatements.add('_all');
 
     const baseUrl = this.apiUrl.endsWith('/') ? this.apiUrl : this.apiUrl + '/';
-    if (params.since && params.until && params.since > params.until) {
-      delete params.until;
-    }
-    this.loadingStatements.add(eventId);
-    this.http.get<any>(`${baseUrl}api/xapi/statements`, { params })
+    this.http.get<any>(`${baseUrl}api/xapi/statements`, { params: { mselId: this.msel.id } })
       .subscribe({
         next: (response) => {
           const statements = response?.statements || response || [];
-          this.eventStatements.set(eventId, Array.isArray(statements) ? statements : []);
-          this.loadingStatements.delete(eventId);
+          this.allMselStatements = Array.isArray(statements) ? statements : [];
+          this.allMselStatements.sort((a, b) =>
+            (a.timestamp || '').localeCompare(b.timestamp || '')
+          );
+          this.statementsLoaded = true;
+          this.statementsLoading = false;
+          this.loadingStatements.delete('_all');
+          this.filterToCurrentSession();
+          this.distributeStatements();
+          this.buildVerbList();
         },
         error: () => {
-          this.eventStatements.set(eventId, []);
-          this.loadingStatements.delete(eventId);
+          this.allMselStatements = [];
+          this.statementsLoaded = true;
+          this.statementsLoading = false;
+          this.loadingStatements.delete('_all');
         }
       });
+  }
+
+  private filterToCurrentSession() {
+    let launchTimestamp = '';
+    for (const stmt of this.allMselStatements) {
+      const verb = stmt.verb?.id || '';
+      const platform = (stmt.context?.platform || '').toLowerCase();
+      if (platform === 'blueprint' && verb.endsWith('/launched') && (stmt.timestamp || '') > launchTimestamp) {
+        launchTimestamp = stmt.timestamp || '';
+      }
+    }
+    if (launchTimestamp) {
+      this.allMselStatements = this.allMselStatements.filter(s =>
+        (s.timestamp || '') >= launchTimestamp
+      );
+    }
+  }
+
+  private distributeStatements() {
+    this.eventStatements.clear();
+    for (const event of this.mselScenarioEvents) {
+      this.eventStatements.set(event.id, []);
+    }
+    if (this.mselScenarioEvents.length === 0 || this.allMselStatements.length === 0) return;
+
+    const moveNameToEvents = new Map<string, ScenarioEvent[]>();
+    for (const event of this.mselScenarioEvents) {
+      const nums = this.moveAndGroupNumbers[event.id];
+      if (nums) {
+        const move = this.moveList.find(m => +m.moveNumber === +nums[0]);
+        if (move?.description) {
+          const key = move.description.toLowerCase();
+          if (!moveNameToEvents.has(key)) {
+            moveNameToEvents.set(key, []);
+          }
+          moveNameToEvents.get(key).push(event);
+        }
+      }
+    }
+
+    const moveNumToEvents = new Map<number, ScenarioEvent[]>();
+    for (const event of this.mselScenarioEvents) {
+      const nums = this.moveAndGroupNumbers[event.id];
+      if (nums) {
+        const moveNum = +nums[0];
+        if (!moveNumToEvents.has(moveNum)) {
+          moveNumToEvents.set(moveNum, []);
+        }
+        moveNumToEvents.get(moveNum).push(event);
+      }
+    }
+
+    const unmatched: XApiStatement[] = [];
+    const matchedTimeline: { timestamp: string; moveNumber: number }[] = [];
+
+    for (const stmt of this.allMselStatements) {
+      const moveInfo = this.extractMoveFromStatement(stmt);
+      let matched = false;
+
+      if (moveInfo.name && moveNameToEvents.has(moveInfo.name)) {
+        for (const event of moveNameToEvents.get(moveInfo.name)) {
+          this.eventStatements.get(event.id).push(stmt);
+        }
+        if (moveInfo.number != null) {
+          matchedTimeline.push({ timestamp: stmt.timestamp || '', moveNumber: moveInfo.number });
+        }
+        matched = true;
+      } else if (moveInfo.number != null && moveNumToEvents.has(moveInfo.number)) {
+        for (const event of moveNumToEvents.get(moveInfo.number)) {
+          this.eventStatements.get(event.id).push(stmt);
+        }
+        matchedTimeline.push({ timestamp: stmt.timestamp || '', moveNumber: moveInfo.number });
+        matched = true;
+      }
+
+      if (!matched) {
+        unmatched.push(stmt);
+      }
+    }
+
+    if (unmatched.length > 0 && matchedTimeline.length > 0) {
+      matchedTimeline.sort((a, b) => a.timestamp.localeCompare(b.timestamp));
+      for (const stmt of unmatched) {
+        const ts = stmt.timestamp || '';
+        let moveNum = matchedTimeline[0].moveNumber;
+        for (let i = matchedTimeline.length - 1; i >= 0; i--) {
+          if (matchedTimeline[i].timestamp <= ts) {
+            moveNum = matchedTimeline[i].moveNumber;
+            break;
+          }
+        }
+        if (moveNumToEvents.has(moveNum)) {
+          for (const event of moveNumToEvents.get(moveNum)) {
+            this.eventStatements.get(event.id).push(stmt);
+          }
+        }
+      }
+    } else if (unmatched.length > 0) {
+      for (const event of this.mselScenarioEvents) {
+        this.eventStatements.get(event.id).push(...unmatched);
+      }
+    }
+
+    for (const bucket of this.eventStatements.values()) {
+      bucket.sort((a, b) => (a.timestamp || '').localeCompare(b.timestamp || ''));
+    }
+  }
+
+  private extractMoveFromStatement(stmt: XApiStatement): { name: string | null; number: number | null } {
+    const grouping = stmt.context?.contextActivities?.grouping || [];
+    for (const g of grouping) {
+      const id = g.id || '';
+      const name = g.definition?.name?.['en-US'] || '';
+      if (id.includes('/move/')) {
+        const numMatch = id.match(/\/move\/(\d+)$/);
+        if (numMatch) {
+          return { name: name.toLowerCase() || null, number: parseInt(numMatch[1], 10) };
+        }
+        const uuidMatch = id.match(/\/move\/([0-9a-f-]{36})$/i);
+        const move = (uuidMatch && this.moveList.find(m => m.id === uuidMatch[1]))
+          || this.moveList.find(m => m.description?.toLowerCase() === name.toLowerCase());
+        if (move) {
+          return { name: (move.description || '').toLowerCase() || null, number: +move.moveNumber };
+        }
+        return { name: name.toLowerCase() || null, number: null };
+      }
+    }
+    return { name: null, number: null };
   }
 
   getStatements(eventId: string): XApiStatement[] {
     return this.eventStatements.get(eventId) || [];
   }
 
-  isLoading(eventId: string): boolean {
-    return this.loadingStatements.has(eventId);
+  getFilteredStatements(eventId: string): XApiStatement[] {
+    let stmts = this.getStatements(eventId);
+    if (this.excludedSources.length > 0) {
+      stmts = stmts.filter(s =>
+        !this.excludedSources.includes((s.context?.platform || '').toLowerCase())
+      );
+    }
+    if (this.topSourceFilter) {
+      stmts = stmts.filter(s =>
+        (s.context?.platform || '').toLowerCase() === this.topSourceFilter
+      );
+    }
+    if (this.topVerbFilter) {
+      stmts = stmts.filter(s => {
+        const verb = s.verb?.display?.['en-US'] || s.verb?.id?.split('/').pop() || '';
+        return verb === this.topVerbFilter;
+      });
+    }
+    if (this.selectedSource) {
+      stmts = stmts.filter(s =>
+        (s.context?.platform || '').toLowerCase() === this.selectedSource
+      );
+    }
+    if (this.selectedTeamId) {
+      const team = this.teamList.find(t => t.id === this.selectedTeamId);
+      if (team) {
+        stmts = stmts.filter(s =>
+          s.context?.team?.name === team.shortName || s.context?.team?.name === team.name
+        );
+      }
+    }
+    if (this.selectedMoveNumber != null) {
+      const move = this.moveList.find(m => +m.moveNumber === +this.selectedMoveNumber);
+      const targetName = move?.description?.toLowerCase();
+      const targetNum = +this.selectedMoveNumber;
+      stmts = stmts.filter(s => {
+        const info = this.extractMoveFromStatement(s);
+        return (targetName && info.name === targetName) || (info.number != null && info.number === targetNum);
+      });
+    }
+    return stmts;
   }
 
-  formatStatement(stmt: XApiStatement): string {
-    const actor = stmt.actor?.name || stmt.actor?.account?.name || 'Unknown';
-    const team = stmt.context?.team?.name ? ` (${stmt.context.team.name})` : '';
-    const verb = stmt.verb?.display?.['en-US'] || stmt.verb?.id?.split('/').pop() || '?';
-    const object = stmt.object?.definition?.name?.['en-US'] || stmt.object?.id || '?';
-    const platform = stmt.context?.platform ? `[${stmt.context.platform}]` : '';
-    return `${platform} ${actor}${team} ${verb} ${object}`.trim();
+  isLoading(eventId: string): boolean {
+    return this.loadingStatements.has('_all');
+  }
+
+  expandedStatementId = '';
+
+  toggleStatement(stmtId: string) {
+    this.expandedStatementId = this.expandedStatementId === stmtId ? '' : stmtId;
+  }
+
+  getMovePart(stmt: XApiStatement): string {
+    const grouping = stmt.context?.contextActivities?.grouping || [];
+    let movePart = '';
+    let injectPart = '';
+    for (const g of grouping) {
+      const id = g.id || '';
+      const name = g.definition?.name?.['en-US'] || '';
+      if (id.includes('/move/')) {
+        const numMatch = id.match(/\/move\/(\d+)$/);
+        if (numMatch) {
+          movePart = `M${numMatch[1]}`;
+        } else {
+          const uuidMatch = id.match(/\/move\/([0-9a-f-]{36})$/i);
+          const move = (uuidMatch && this.moveList.find(m => m.id === uuidMatch[1]))
+            || this.moveList.find(m => m.description?.toLowerCase() === name.toLowerCase());
+          movePart = move ? `M${move.moveNumber}` : name;
+        }
+      } else if (id.includes('/inject/')) {
+        const numMatch = id.match(/\/inject\/(\d+)$/);
+        injectPart = numMatch ? `I${numMatch[1]}` : name;
+      }
+    }
+    return [movePart, injectPart].filter(Boolean).join('.');
+  }
+
+  getObjectType(stmt: XApiStatement): string {
+    return stmt.object?.definition?.type?.split('/').pop() || '';
+  }
+
+  copyStatement(stmt: XApiStatement, event: MouseEvent) {
+    event.stopPropagation();
+    navigator.clipboard.writeText(JSON.stringify(stmt, null, 2));
+  }
+
+  formatStatementJson(stmt: XApiStatement): string {
+    return JSON.stringify(stmt, null, 2);
   }
 
   formatTimestamp(timestamp: string): string {
     if (!timestamp) return '';
     const d = new Date(timestamp);
-    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const day = String(d.getDate()).padStart(2, '0');
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const month = months[d.getMonth()];
+    const year = d.getFullYear();
+    const hours = String(d.getHours()).padStart(2, '0');
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    return `${day} ${month} ${year} ${hours}:${minutes} ${this.getTimezoneAbbr()}`;
+  }
+
+  private getTimezoneAbbr(): string {
+    try {
+      const date = new Date();
+      const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+      const formatted = date.toLocaleTimeString('en-US', { timeZoneName: 'short', timeZone });
+      const parts = formatted.split(' ');
+      return parts[parts.length - 1] || 'UTC';
+    } catch {
+      return 'UTC';
+    }
   }
 
   ngOnDestroy() {
