@@ -194,7 +194,7 @@ td {
   color: var(--mat-sys-on-surface-variant);
   font-family: monospace;
   font-size: 12px;
-  min-width: 180px;
+  width: 180px;
 }
 
 .stmt-move {
@@ -203,31 +203,67 @@ td {
   font-weight: 600;
   font-size: 12px;
   color: var(--mat-sys-primary);
+  width: 30px;
+  text-align: center;
+}
+
+.stmt-group {
+  flex-shrink: 0;
+  font-family: monospace;
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--mat-sys-primary);
+  width: 30px;
+  text-align: center;
 }
 
 .stmt-actor {
+  flex-shrink: 0;
   font-weight: 500;
   color: var(--mat-sys-on-surface);
+  width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .stmt-team {
+  flex-shrink: 0;
   color: var(--mat-sys-on-surface-variant);
   font-size: 12px;
+  width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .stmt-verb {
+  flex-shrink: 0;
   font-weight: 600;
   color: var(--mat-sys-tertiary);
+  width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .stmt-object {
   color: var(--mat-sys-on-surface);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .stmt-object-type {
+  flex-shrink: 0;
   color: var(--mat-sys-on-surface-variant);
   font-size: 11px;
   font-style: italic;
+  width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .copy-button {
@@ -301,7 +337,7 @@ td {
   padding: 1px 6px;
   border-radius: 3px;
   text-transform: uppercase;
-  min-width: 60px;
+  width: 90px;
   text-align: center;
 }
 

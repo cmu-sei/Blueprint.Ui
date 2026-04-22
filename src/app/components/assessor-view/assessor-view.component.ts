@@ -662,27 +662,40 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
 
   getMovePart(stmt: XApiStatement): string {
     const grouping = stmt.context?.contextActivities?.grouping || [];
-    let movePart = '';
-    let injectPart = '';
     for (const g of grouping) {
       const id = g.id || '';
       const name = g.definition?.name?.['en-US'] || '';
-      if (id.includes('/move/')) {
+      if (id.includes('/move/') && !id.includes('/group/') && !id.includes('/inject/')) {
         const numMatch = id.match(/\/move\/(\d+)$/);
-        if (numMatch) {
-          movePart = `M${numMatch[1]}`;
-        } else {
-          const uuidMatch = id.match(/\/move\/([0-9a-f-]{36})$/i);
-          const move = (uuidMatch && this.moveList.find(m => m.id === uuidMatch[1]))
-            || this.moveList.find(m => m.description?.toLowerCase() === name.toLowerCase());
-          movePart = move ? `M${move.moveNumber}` : name;
-        }
-      } else if (id.includes('/inject/')) {
-        const numMatch = id.match(/\/inject\/(\d+)$/);
-        injectPart = numMatch ? `I${numMatch[1]}` : name;
+        if (numMatch) return `M${numMatch[1]}`;
+        const uuidMatch = id.match(/\/move\/([0-9a-f-]{36})$/i);
+        const move = (uuidMatch && this.moveList.find(m => m.id === uuidMatch[1]))
+          || this.moveList.find(m => m.description?.toLowerCase() === name.toLowerCase());
+        return move ? `M${move.moveNumber}` : name;
       }
     }
-    return [movePart, injectPart].filter(Boolean).join('.');
+    const objectName = stmt.object?.definition?.name?.['en-US'] || '';
+    const prefixMatch = objectName.match(/^(\d+)-\d+\s/);
+    if (prefixMatch) return `M${parseInt(prefixMatch[1], 10)}`;
+    return '';
+  }
+
+  getGroupPart(stmt: XApiStatement): string {
+    const grouping = stmt.context?.contextActivities?.grouping || [];
+    for (const g of grouping) {
+      const id = g.id || '';
+      if (id.includes('/group/')) {
+        const numMatch = id.match(/\/group\/(\d+)$/);
+        if (numMatch) return `G${numMatch[1]}`;
+      } else if (id.includes('/inject/')) {
+        const numMatch = id.match(/\/inject\/(\d+)$/);
+        if (numMatch) return `G${numMatch[1]}`;
+      }
+    }
+    const objectName = stmt.object?.definition?.name?.['en-US'] || '';
+    const prefixMatch = objectName.match(/^\d+-(\d+)\s/);
+    if (prefixMatch) return `G${parseInt(prefixMatch[1], 10)}`;
+    return '';
   }
 
   getObjectType(stmt: XApiStatement): string {

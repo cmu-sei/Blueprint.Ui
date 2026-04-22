@@ -258,19 +258,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
                           <mat-icon class="mdi-14px" fontIcon="mdi-content-copy"></mat-icon>
                         </button>
                         <span class="statement-time">{{ formatTimestamp(stmt.timestamp) }}</span>
+                        <span class="stmt-move">{{ getMovePart(stmt) }}</span>
+                        <span class="stmt-group">{{ getGroupPart(stmt) }}</span>
                         <span class="platform-badge" [ngClass]="getPlatformClass(stmt)">{{ stmt.context?.platform || '?' }}</span>
-                        @if (getMovePart(stmt)) {
-                          <span class="stmt-move">[{{ getMovePart(stmt) }}]</span>
-                        }
                         <span class="stmt-actor">{{ stmt.actor?.name || stmt.actor?.account?.name || 'Unknown' }}</span>
-                        @if (stmt.context?.team?.name) {
-                          <span class="stmt-team">({{ stmt.context.team.name }})</span>
-                        }
+                        <span class="stmt-team">{{ stmt.context?.team?.name || '' }}</span>
                         <span class="stmt-verb">{{ stmt.verb?.display?.['en-US'] || stmt.verb?.id?.split('/').pop() || '?' }}</span>
                         <span class="stmt-object">{{ stmt.object?.definition?.name?.['en-US'] || stmt.object?.id || '?' }}</span>
-                        @if (getObjectType(stmt)) {
-                          <span class="stmt-object-type">({{ getObjectType(stmt) }})</span>
-                        }
                       </div>
                       @if (expandedStatementId === stmt.id) {
                         <pre class="statement-json">{{ formatStatementJson(stmt) }}</pre>
