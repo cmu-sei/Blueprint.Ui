@@ -121,8 +121,12 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
   availableVerbs: string[] = [];
   keyUp = new Subject<KeyboardEvent>();
   private subscription: Subscription;
-  expandedEventId = '';
+  expandedEventIds = new Set<string>();
+  expandedMoveNumbers = new Set<number>();
+  expandedGroupKeys = new Set<string>();
   eventStatements: Map<string, XApiStatement[]> = new Map();
+  moveStatements: Map<number, XApiStatement[]> = new Map();
+  groupStatements: Map<string, XApiStatement[]> = new Map();
   loadingStatements: Set<string> = new Set();
   private apiUrl: string;
   private unsubscribe$ = new Subject();
@@ -398,17 +402,122 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
   // xAPI evidence
   private allMselStatements: XApiStatement[] = [];
   private statementsLoaded = false;
-  private statementsLoading = false;
+  statementsLoading = false;
 
   toggleEvent(eventId: string) {
-    if (this.expandedEventId === eventId) {
-      this.expandedEventId = '';
+    if (this.expandedEventIds.has(eventId)) {
+      this.expandedEventIds.delete(eventId);
     } else {
-      this.expandedEventId = eventId;
+      this.expandedEventIds.add(eventId);
       if (!this.statementsLoaded) {
         this.loadAllStatements();
       }
     }
+  }
+
+  toggleMoveExpand(moveNumber: number) {
+    if (this.expandedMoveNumbers.has(moveNumber)) {
+      this.expandedMoveNumbers.delete(moveNumber);
+    } else {
+      this.expandedMoveNumbers.add(moveNumber);
+      if (!this.statementsLoaded) {
+        this.loadAllStatements();
+      }
+    }
+  }
+
+  toggleGroupExpand(groupKey: string) {
+    if (this.expandedGroupKeys.has(groupKey)) {
+      this.expandedGroupKeys.delete(groupKey);
+    } else {
+      this.expandedGroupKeys.add(groupKey);
+      if (!this.statementsLoaded) {
+        this.loadAllStatements();
+      }
+    }
+  }
+
+  getMoveStatements(moveNumber: number): XApiStatement[] {
+    return this.moveStatements.get(moveNumber) || [];
+  }
+
+  getGroupStatements(groupKey: string): XApiStatement[] {
+    return this.groupStatements.get(groupKey) || [];
+  }
+
+  getFilteredMoveStatements(moveNumber: number): XApiStatement[] {
+    return this.applyStatementFilters(this.getMoveStatements(moveNumber));
+  }
+
+  getFilteredGroupStatements(groupKey: string): XApiStatement[] {
+    return this.applyStatementFilters(this.getGroupStatements(groupKey));
+  }
+
+  getMoveDescription(moveNumber: number): string {
+    const move = this.moveList.find(m => +m.moveNumber === moveNumber);
+    return move?.description || `Move ${moveNumber}`;
+  }
+
+  getGroupDescription(moveNumber: number, groupNumber: number): string {
+    return `Group ${groupNumber}`;
+  }
+
+  get displayRows(): { type: 'move' | 'group' | 'event'; moveNumber?: number; groupNumber?: number; groupKey?: string; event?: ScenarioEvent; rowIndex?: number }[] {
+    const rows: { type: 'move' | 'group' | 'event'; moveNumber?: number; groupNumber?: number; groupKey?: string; event?: ScenarioEvent; rowIndex?: number }[] = [];
+    let lastMove = -1;
+    let lastGroup = '';
+    let rowIndex = 0;
+    for (const event of this.displayedScenarioEvents) {
+      const nums = this.moveAndGroupNumbers[event.id];
+      const moveNum = nums ? +nums[0] : 0;
+      const groupNum = nums ? +nums[1] : 0;
+      const groupKey = `${moveNum}-${groupNum}`;
+
+      if (moveNum !== lastMove) {
+        rows.push({ type: 'move', moveNumber: moveNum });
+        lastMove = moveNum;
+        lastGroup = '';
+      }
+      if (groupKey !== lastGroup) {
+        rows.push({ type: 'group', moveNumber: moveNum, groupNumber: groupNum, groupKey });
+        lastGroup = groupKey;
+      }
+      rows.push({ type: 'event', event, rowIndex: ++rowIndex, moveNumber: moveNum, groupNumber: groupNum, groupKey });
+    }
+    return rows;
+  }
+
+  private applyStatementFilters(stmts: XApiStatement[]): XApiStatement[] {
+    if (this.excludedSources.length > 0) {
+      stmts = stmts.filter(s =>
+        !this.excludedSources.includes((s.context?.platform || '').toLowerCase())
+      );
+    }
+    if (this.topSourceFilter) {
+      stmts = stmts.filter(s =>
+        (s.context?.platform || '').toLowerCase() === this.topSourceFilter
+      );
+    }
+    if (this.topVerbFilter) {
+      stmts = stmts.filter(s => {
+        const verb = s.verb?.display?.['en-US'] || s.verb?.id?.split('/').pop() || '';
+        return verb === this.topVerbFilter;
+      });
+    }
+    if (this.selectedSource) {
+      stmts = stmts.filter(s =>
+        (s.context?.platform || '').toLowerCase() === this.selectedSource
+      );
+    }
+    if (this.selectedTeamId) {
+      const team = this.teamList.find(t => t.id === this.selectedTeamId);
+      if (team) {
+        stmts = stmts.filter(s =>
+          s.context?.team?.name === team.shortName || s.context?.team?.name === team.name
+        );
+      }
+    }
+    return stmts;
   }
 
   private loadAllStatements() {
@@ -459,101 +568,107 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
 
   private distributeStatements() {
     this.eventStatements.clear();
+    this.moveStatements.clear();
+    this.groupStatements.clear();
     for (const event of this.mselScenarioEvents) {
       this.eventStatements.set(event.id, []);
     }
     if (this.mselScenarioEvents.length === 0 || this.allMselStatements.length === 0) return;
 
-    const moveNameToEvents = new Map<string, ScenarioEvent[]>();
-    const moveNumToEvents = new Map<number, ScenarioEvent[]>();
     const moveGroupToEvents = new Map<string, ScenarioEvent[]>();
+    const knownMoveNumbers = new Set<number>();
 
     for (const event of this.mselScenarioEvents) {
       const nums = this.moveAndGroupNumbers[event.id];
       if (!nums) continue;
       const moveNum = +nums[0];
       const groupNum = +nums[1];
-
-      if (!moveNumToEvents.has(moveNum)) moveNumToEvents.set(moveNum, []);
-      moveNumToEvents.get(moveNum).push(event);
+      knownMoveNumbers.add(moveNum);
 
       const mgKey = `${moveNum}-${groupNum}`;
       if (!moveGroupToEvents.has(mgKey)) moveGroupToEvents.set(mgKey, []);
       moveGroupToEvents.get(mgKey).push(event);
-
-      const move = this.moveList.find(m => +m.moveNumber === moveNum);
-      if (move?.description) {
-        const key = move.description.toLowerCase();
-        if (!moveNameToEvents.has(key)) moveNameToEvents.set(key, []);
-        moveNameToEvents.get(key).push(event);
-      }
     }
 
-    const unmatched: XApiStatement[] = [];
     const matchedTimeline: { timestamp: string; moveNumber: number }[] = [];
 
     for (const stmt of this.allMselStatements) {
       const moveInfo = this.extractMoveFromStatement(stmt);
-      let matched = false;
 
-      if (moveInfo.group != null && moveInfo.number != null) {
-        const mgKey = `${moveInfo.number}-${moveInfo.group}`;
-        if (moveGroupToEvents.has(mgKey)) {
-          for (const event of moveGroupToEvents.get(mgKey)) {
-            this.eventStatements.get(event.id).push(stmt);
+      // Resolve move number (explicit, by name, or null)
+      let moveNum = moveInfo.number;
+      if (moveNum == null && moveInfo.name) {
+        const move = this.moveList.find(m => m.description?.toLowerCase() === moveInfo.name);
+        if (move) moveNum = +move.moveNumber;
+      }
+
+      if (moveNum != null && knownMoveNumbers.has(moveNum)) {
+        matchedTimeline.push({ timestamp: stmt.timestamp || '', moveNumber: moveNum });
+
+        // If we have a group, add to group bucket only (not move)
+        if (moveInfo.group != null) {
+          const gk = `${moveNum}-${moveInfo.group}`;
+          if (!this.groupStatements.has(gk)) this.groupStatements.set(gk, []);
+          this.groupStatements.get(gk).push(stmt);
+
+          const stmtPlatform = (stmt.context?.platform || '').toLowerCase();
+          const stmtObjectName = (stmt.object?.definition?.name?.['en-US'] || '').toLowerCase();
+          if (moveGroupToEvents.has(gk)) {
+            for (const event of moveGroupToEvents.get(gk)) {
+              const eventTarget = (event.integrationTarget || '').toLowerCase();
+              if (eventTarget && stmtPlatform && eventTarget === stmtPlatform) {
+                // Only attach if there's one matching event or object name matches an event data value
+                const groupEvents = moveGroupToEvents.get(gk).filter(e =>
+                  (e.integrationTarget || '').toLowerCase() === stmtPlatform
+                );
+                if (groupEvents.length === 1) {
+                  this.eventStatements.get(event.id).push(stmt);
+                } else if (stmtObjectName && this.eventNameContains(event, stmtObjectName)) {
+                  this.eventStatements.get(event.id).push(stmt);
+                }
+              }
+            }
           }
-          matchedTimeline.push({ timestamp: stmt.timestamp || '', moveNumber: moveInfo.number });
-          matched = true;
+        } else {
+          // Move-only (no group) — add to move bucket
+          if (!this.moveStatements.has(moveNum)) this.moveStatements.set(moveNum, []);
+          this.moveStatements.get(moveNum).push(stmt);
         }
-      }
-
-      if (!matched && moveInfo.name && moveNameToEvents.has(moveInfo.name)) {
-        for (const event of moveNameToEvents.get(moveInfo.name)) {
-          this.eventStatements.get(event.id).push(stmt);
-        }
-        if (moveInfo.number != null) {
-          matchedTimeline.push({ timestamp: stmt.timestamp || '', moveNumber: moveInfo.number });
-        }
-        matched = true;
-      }
-
-      if (!matched && moveInfo.number != null && moveNumToEvents.has(moveInfo.number)) {
-        for (const event of moveNumToEvents.get(moveInfo.number)) {
-          this.eventStatements.get(event.id).push(stmt);
-        }
-        matchedTimeline.push({ timestamp: stmt.timestamp || '', moveNumber: moveInfo.number });
-        matched = true;
-      }
-
-      if (!matched) {
-        unmatched.push(stmt);
       }
     }
 
-    if (unmatched.length > 0 && matchedTimeline.length > 0) {
+    // Second pass: statements with no move context — infer move by timestamp
+    if (matchedTimeline.length > 0) {
       matchedTimeline.sort((a, b) => a.timestamp.localeCompare(b.timestamp));
-      for (const stmt of unmatched) {
+      for (const stmt of this.allMselStatements) {
+        const moveInfo = this.extractMoveFromStatement(stmt);
+        let moveNum = moveInfo.number;
+        if (moveNum == null && moveInfo.name) {
+          const move = this.moveList.find(m => m.description?.toLowerCase() === moveInfo.name);
+          if (move) moveNum = +move.moveNumber;
+        }
+        if (moveNum != null) continue; // already handled
+
         const ts = stmt.timestamp || '';
-        let moveNum = matchedTimeline[0].moveNumber;
+        let inferredMove = matchedTimeline[0].moveNumber;
         for (let i = matchedTimeline.length - 1; i >= 0; i--) {
           if (matchedTimeline[i].timestamp <= ts) {
-            moveNum = matchedTimeline[i].moveNumber;
+            inferredMove = matchedTimeline[i].moveNumber;
             break;
           }
         }
-        if (moveNumToEvents.has(moveNum)) {
-          for (const event of moveNumToEvents.get(moveNum)) {
-            this.eventStatements.get(event.id).push(stmt);
-          }
-        }
-      }
-    } else if (unmatched.length > 0) {
-      for (const event of this.mselScenarioEvents) {
-        this.eventStatements.get(event.id).push(...unmatched);
+        if (!this.moveStatements.has(inferredMove)) this.moveStatements.set(inferredMove, []);
+        this.moveStatements.get(inferredMove).push(stmt);
       }
     }
 
     for (const bucket of this.eventStatements.values()) {
+      bucket.sort((a, b) => (a.timestamp || '').localeCompare(b.timestamp || ''));
+    }
+    for (const bucket of this.moveStatements.values()) {
+      bucket.sort((a, b) => (a.timestamp || '').localeCompare(b.timestamp || ''));
+    }
+    for (const bucket of this.groupStatements.values()) {
       bucket.sort((a, b) => (a.timestamp || '').localeCompare(b.timestamp || ''));
     }
   }
@@ -603,41 +718,21 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
     return { name: null, number: null, group: null };
   }
 
+  private eventNameContains(event: ScenarioEvent, needle: string): boolean {
+    for (const df of this.assessorDataFields) {
+      const dv = this.getDataValue(event, df.name);
+      if (dv.value && dv.value.toLowerCase().includes(needle)) return true;
+    }
+    return false;
+  }
+
   getStatements(eventId: string): XApiStatement[] {
     return this.eventStatements.get(eventId) || [];
   }
 
   getFilteredStatements(eventId: string): XApiStatement[] {
     let stmts = this.getStatements(eventId);
-    if (this.excludedSources.length > 0) {
-      stmts = stmts.filter(s =>
-        !this.excludedSources.includes((s.context?.platform || '').toLowerCase())
-      );
-    }
-    if (this.topSourceFilter) {
-      stmts = stmts.filter(s =>
-        (s.context?.platform || '').toLowerCase() === this.topSourceFilter
-      );
-    }
-    if (this.topVerbFilter) {
-      stmts = stmts.filter(s => {
-        const verb = s.verb?.display?.['en-US'] || s.verb?.id?.split('/').pop() || '';
-        return verb === this.topVerbFilter;
-      });
-    }
-    if (this.selectedSource) {
-      stmts = stmts.filter(s =>
-        (s.context?.platform || '').toLowerCase() === this.selectedSource
-      );
-    }
-    if (this.selectedTeamId) {
-      const team = this.teamList.find(t => t.id === this.selectedTeamId);
-      if (team) {
-        stmts = stmts.filter(s =>
-          s.context?.team?.name === team.shortName || s.context?.team?.name === team.name
-        );
-      }
-    }
+    stmts = this.applyStatementFilters(stmts);
     if (this.selectedMoveNumber != null) {
       const move = this.moveList.find(m => +m.moveNumber === +this.selectedMoveNumber);
       const targetName = move?.description?.toLowerCase();
@@ -654,10 +749,14 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
     return this.loadingStatements.has('_all');
   }
 
-  expandedStatementId = '';
+  expandedStatementIds = new Set<string>();
 
   toggleStatement(stmtId: string) {
-    this.expandedStatementId = this.expandedStatementId === stmtId ? '' : stmtId;
+    if (this.expandedStatementIds.has(stmtId)) {
+      this.expandedStatementIds.delete(stmtId);
+    } else {
+      this.expandedStatementIds.add(stmtId);
+    }
   }
 
   getMovePart(stmt: XApiStatement): string {

@@ -134,25 +134,176 @@ project root for license information or contact permission@sei.cmu.edu for full 
         </tr>
       </thead>
       <tbody>
-        @for (item of displayedScenarioEvents; track item.id; let rowIndex = $index) {
-        <tr [style]="getRowStyle(item)">
+        @for (row of displayRows; track $index) {
+        <!-- Move header row -->
+        @if (row.type === 'move') {
+        <tr class="move-header-row">
+          <td class="expand-col">
+            <button mat-icon-button class="scenario-event-button" (click)="toggleMoveExpand(row.moveNumber)"
+              title="Show move xAPI evidence">
+              <mat-icon class="mdi-24px"
+                [fontIcon]="expandedMoveNumbers.has(row.moveNumber) ? 'mdi-chevron-down' : 'mdi-chevron-right'"></mat-icon>
+            </button>
+          </td>
+          <td [attr.colspan]="assessorDataFields.length + 1
+            + (msel.showMoveOnAssessorView ? 1 : 0)
+            + (msel.showGroupOnAssessorView ? 1 : 0)
+            + (msel.showTimeOnAssessorView ? 1 : 0)
+            + (msel.showIntegrationTargetOnAssessorView ? 1 : 0)">
+            <div class="section-header-content">
+              <mat-icon fontIcon="mdi-folder-outline" class="mdi-18px"></mat-icon>
+              <span class="section-label">Move {{ row.moveNumber }}</span>
+              <span class="section-description">{{ getMoveDescription(row.moveNumber) }}</span>
+            </div>
+          </td>
+        </tr>
+        @if (expandedMoveNumbers.has(row.moveNumber)) {
+        <tr class="detail-row">
+          <td [attr.colspan]="assessorDataFields.length + 2
+            + (msel.showMoveOnAssessorView ? 1 : 0)
+            + (msel.showGroupOnAssessorView ? 1 : 0)
+            + (msel.showTimeOnAssessorView ? 1 : 0)
+            + (msel.showIntegrationTargetOnAssessorView ? 1 : 0)">
+            <div class="event-detail">
+              <div class="statements-header">
+                <mat-icon fontIcon="mdi-clipboard-text-outline" class="mdi-18px"></mat-icon>
+                <span>xAPI Evidence — Move {{ row.moveNumber }}</span>
+                @if (getMoveStatements(row.moveNumber).length > 0) {
+                  <span class="statement-count">{{ getFilteredMoveStatements(row.moveNumber).length }} / {{ getMoveStatements(row.moveNumber).length }}</span>
+                }
+                <button mat-icon-button class="refresh-button" (click)="refreshStatements()"
+                  title="Refresh xAPI statements" [disabled]="statementsLoading">
+                  <mat-icon class="mdi-18px" fontIcon="mdi-refresh"></mat-icon>
+                </button>
+              </div>
+              @if (loadingStatements.has('_all')) {
+                <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+              } @else if (getMoveStatements(row.moveNumber).length === 0) {
+                <div class="no-statements">No xAPI statements found for this move.</div>
+              } @else {
+                <div class="statements-list">
+                  @for (stmt of getFilteredMoveStatements(row.moveNumber); track $index) {
+                    <div class="statement-entry">
+                      <div class="statement-row" (click)="toggleStatement(stmt.id)"
+                        [class.statement-expanded]="expandedStatementIds.has(stmt.id)">
+                        <button mat-icon-button class="copy-button" (click)="copyStatement(stmt, $event)" title="Copy JSON">
+                          <mat-icon class="mdi-14px" fontIcon="mdi-content-copy"></mat-icon>
+                        </button>
+                        <span class="statement-time">{{ formatTimestamp(stmt.timestamp) }}</span>
+                        <span class="stmt-move">{{ getMovePart(stmt) }}</span>
+                        <span class="stmt-group">{{ getGroupPart(stmt) }}</span>
+                        <span class="platform-badge" [ngClass]="getPlatformClass(stmt)">{{ stmt.context?.platform || '?' }}</span>
+                        <span class="stmt-actor">{{ stmt.actor?.name || stmt.actor?.account?.name || 'Unknown' }}</span>
+                        <span class="stmt-team">{{ stmt.context?.team?.name || '' }}</span>
+                        <span class="stmt-verb">{{ stmt.verb?.display?.['en-US'] || stmt.verb?.id?.split('/').pop() || '?' }}</span>
+                        <span class="stmt-object">{{ stmt.object?.definition?.name?.['en-US'] || stmt.object?.id || '?' }}</span>
+                      </div>
+                      @if (expandedStatementIds.has(stmt.id)) {
+                        <pre class="statement-json">{{ formatStatementJson(stmt) }}</pre>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          </td>
+        </tr>
+        }
+        }
+        <!-- Group header row -->
+        @if (row.type === 'group') {
+        <tr class="group-header-row">
+          <td class="expand-col">
+            <button mat-icon-button class="scenario-event-button" (click)="toggleGroupExpand(row.groupKey)"
+              title="Show group xAPI evidence">
+              <mat-icon class="mdi-24px"
+                [fontIcon]="expandedGroupKeys.has(row.groupKey) ? 'mdi-chevron-down' : 'mdi-chevron-right'"></mat-icon>
+            </button>
+          </td>
+          <td [attr.colspan]="assessorDataFields.length + 1
+            + (msel.showMoveOnAssessorView ? 1 : 0)
+            + (msel.showGroupOnAssessorView ? 1 : 0)
+            + (msel.showTimeOnAssessorView ? 1 : 0)
+            + (msel.showIntegrationTargetOnAssessorView ? 1 : 0)">
+            <div class="section-header-content">
+              <mat-icon fontIcon="mdi-group" class="mdi-18px"></mat-icon>
+              <span class="section-label">Group {{ row.groupNumber }}</span>
+            </div>
+          </td>
+        </tr>
+        @if (expandedGroupKeys.has(row.groupKey)) {
+        <tr class="detail-row">
+          <td [attr.colspan]="assessorDataFields.length + 2
+            + (msel.showMoveOnAssessorView ? 1 : 0)
+            + (msel.showGroupOnAssessorView ? 1 : 0)
+            + (msel.showTimeOnAssessorView ? 1 : 0)
+            + (msel.showIntegrationTargetOnAssessorView ? 1 : 0)">
+            <div class="event-detail">
+              <div class="statements-header">
+                <mat-icon fontIcon="mdi-clipboard-text-outline" class="mdi-18px"></mat-icon>
+                <span>xAPI Evidence — Group {{ row.groupNumber }}</span>
+                @if (getGroupStatements(row.groupKey).length > 0) {
+                  <span class="statement-count">{{ getFilteredGroupStatements(row.groupKey).length }} / {{ getGroupStatements(row.groupKey).length }}</span>
+                }
+                <button mat-icon-button class="refresh-button" (click)="refreshStatements()"
+                  title="Refresh xAPI statements" [disabled]="statementsLoading">
+                  <mat-icon class="mdi-18px" fontIcon="mdi-refresh"></mat-icon>
+                </button>
+              </div>
+              @if (loadingStatements.has('_all')) {
+                <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+              } @else if (getGroupStatements(row.groupKey).length === 0) {
+                <div class="no-statements">No xAPI statements found for this group.</div>
+              } @else {
+                <div class="statements-list">
+                  @for (stmt of getFilteredGroupStatements(row.groupKey); track $index) {
+                    <div class="statement-entry">
+                      <div class="statement-row" (click)="toggleStatement(stmt.id)"
+                        [class.statement-expanded]="expandedStatementIds.has(stmt.id)">
+                        <button mat-icon-button class="copy-button" (click)="copyStatement(stmt, $event)" title="Copy JSON">
+                          <mat-icon class="mdi-14px" fontIcon="mdi-content-copy"></mat-icon>
+                        </button>
+                        <span class="statement-time">{{ formatTimestamp(stmt.timestamp) }}</span>
+                        <span class="stmt-move">{{ getMovePart(stmt) }}</span>
+                        <span class="stmt-group">{{ getGroupPart(stmt) }}</span>
+                        <span class="platform-badge" [ngClass]="getPlatformClass(stmt)">{{ stmt.context?.platform || '?' }}</span>
+                        <span class="stmt-actor">{{ stmt.actor?.name || stmt.actor?.account?.name || 'Unknown' }}</span>
+                        <span class="stmt-team">{{ stmt.context?.team?.name || '' }}</span>
+                        <span class="stmt-verb">{{ stmt.verb?.display?.['en-US'] || stmt.verb?.id?.split('/').pop() || '?' }}</span>
+                        <span class="stmt-object">{{ stmt.object?.definition?.name?.['en-US'] || stmt.object?.id || '?' }}</span>
+                      </div>
+                      @if (expandedStatementIds.has(stmt.id)) {
+                        <pre class="statement-json">{{ formatStatementJson(stmt) }}</pre>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          </td>
+        </tr>
+        }
+        }
+        <!-- Event row -->
+        @if (row.type === 'event') {
+        <tr [style]="getRowStyle(row.event)">
           <!-- expand button -->
           <td class="expand-col">
-            <button mat-icon-button class="scenario-event-button" (click)="toggleEvent(item.id)"
+            <button mat-icon-button class="scenario-event-button" (click)="toggleEvent(row.event.id)"
               title="Show xAPI evidence">
               <mat-icon class="mdi-24px"
-                [fontIcon]="expandedEventId === item.id ? 'mdi-chevron-down' : 'mdi-chevron-right'"></mat-icon>
+                [fontIcon]="expandedEventIds.has(row.event.id) ? 'mdi-chevron-down' : 'mdi-chevron-right'"></mat-icon>
             </button>
           </td>
           <!-- row number -->
           <td class="row-num-col">
-            <span class="row-index center-self">{{ rowIndex + 1 }}</span>
+            <span class="row-index center-self">{{ row.rowIndex }}</span>
           </td>
           <!-- Move value -->
           @if (msel.showMoveOnAssessorView) {
           <td>
             <div class="constrainer" style="text-align: center;">
-              {{ moveAndGroupNumbers[item.id] ? moveAndGroupNumbers[item.id][0] : '' }}
+              {{ moveAndGroupNumbers[row.event.id] ? moveAndGroupNumbers[row.event.id][0] : '' }}
             </div>
           </td>
           }
@@ -160,7 +311,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           @if (msel.showGroupOnAssessorView) {
           <td>
             <div class="constrainer" style="text-align: center;">
-              {{ moveAndGroupNumbers[item.id] ? moveAndGroupNumbers[item.id][1] : '' }}
+              {{ moveAndGroupNumbers[row.event.id] ? moveAndGroupNumbers[row.event.id][1] : '' }}
             </div>
           </td>
           }
@@ -168,7 +319,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           @if (msel.showTimeOnAssessorView) {
           <td>
             <div class="time-span center-self">
-              <app-duration-view [startTime]="msel.startTime" [durationSeconds]="item.deltaSeconds"
+              <app-duration-view [startTime]="msel.startTime" [durationSeconds]="row.event.deltaSeconds"
                 [showRealTime]="showRealTime"></app-duration-view>
             </div>
           </td>
@@ -177,7 +328,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           @if (msel.showIntegrationTargetOnAssessorView) {
           <td>
             <div class="constrainer">
-              {{ item.integrationTarget || '' }}
+              {{ row.event.integrationTarget || '' }}
             </div>
           </td>
           }
@@ -185,7 +336,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           @for (df of assessorDataFields; track df.id) {
           <td>
             <app-data-value
-              [value]="getDataValue(item, df.name).value"
+              [value]="getDataValue(row.event, df.name).value"
               [dataField]="df"
               [canEdit]="false"
               [canApprove]="false"
@@ -201,7 +352,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           }
         </tr>
         <!-- xAPI evidence detail row -->
-        @if (expandedEventId === item.id) {
+        @if (expandedEventIds.has(row.event.id)) {
         <tr class="detail-row">
           <td [attr.colspan]="assessorDataFields.length + 2
             + (msel.showMoveOnAssessorView ? 1 : 0)
@@ -212,8 +363,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
               <div class="statements-header">
                 <mat-icon fontIcon="mdi-clipboard-text-outline" class="mdi-18px"></mat-icon>
                 <span>xAPI Evidence</span>
-                @if (getStatements(item.id).length > 0) {
-                  <span class="statement-count">{{ getFilteredStatements(item.id).length }} / {{ getStatements(item.id).length }}</span>
+                @if (getStatements(row.event.id).length > 0) {
+                  <span class="statement-count">{{ getFilteredStatements(row.event.id).length }} / {{ getStatements(row.event.id).length }}</span>
                 }
                 <div class="evidence-filters">
                   @if (teamList.length > 0) {
@@ -240,20 +391,20 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   </mat-form-field>
                 </div>
                 <button mat-icon-button class="refresh-button" (click)="refreshStatements()"
-                  title="Refresh xAPI statements" [disabled]="isLoading(item.id)">
+                  title="Refresh xAPI statements" [disabled]="isLoading(row.event.id)">
                   <mat-icon class="mdi-18px" fontIcon="mdi-refresh"></mat-icon>
                 </button>
               </div>
-              @if (isLoading(item.id)) {
+              @if (isLoading(row.event.id)) {
                 <mat-progress-bar mode="indeterminate"></mat-progress-bar>
-              } @else if (getStatements(item.id).length === 0) {
-                <div class="no-statements">No xAPI statements found for this time window.</div>
+              } @else if (getStatements(row.event.id).length === 0) {
+                <div class="no-statements">No xAPI statements found for this event.</div>
               } @else {
                 <div class="statements-list">
-                  @for (stmt of getFilteredStatements(item.id); track $index) {
+                  @for (stmt of getFilteredStatements(row.event.id); track $index) {
                     <div class="statement-entry">
                       <div class="statement-row" (click)="toggleStatement(stmt.id)"
-                        [class.statement-expanded]="expandedStatementId === stmt.id">
+                        [class.statement-expanded]="expandedStatementIds.has(stmt.id)">
                         <button mat-icon-button class="copy-button" (click)="copyStatement(stmt, $event)" title="Copy JSON">
                           <mat-icon class="mdi-14px" fontIcon="mdi-content-copy"></mat-icon>
                         </button>
@@ -266,7 +417,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                         <span class="stmt-verb">{{ stmt.verb?.display?.['en-US'] || stmt.verb?.id?.split('/').pop() || '?' }}</span>
                         <span class="stmt-object">{{ stmt.object?.definition?.name?.['en-US'] || stmt.object?.id || '?' }}</span>
                       </div>
-                      @if (expandedStatementId === stmt.id) {
+                      @if (expandedStatementIds.has(stmt.id)) {
                         <pre class="statement-json">{{ formatStatementJson(stmt) }}</pre>
                       }
                     </div>
@@ -276,6 +427,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             </div>
           </td>
         </tr>
+        }
         }
         }
       </tbody>

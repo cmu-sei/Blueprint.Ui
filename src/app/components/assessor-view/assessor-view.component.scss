@@ -119,6 +119,39 @@ td {
   }
 }
 
+.move-header-row {
+  td {
+    padding: 6px 8px;
+    background-color: var(--mat-sys-surface-container);
+  }
+  border-bottom: 2px solid var(--mat-sys-outline);
+}
+
+.group-header-row {
+  td {
+    padding: 4px 8px;
+    background-color: var(--mat-sys-surface-container-low);
+  }
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+}
+
+.section-header-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+
+.section-label {
+  font-weight: 600;
+  color: var(--mat-sys-primary);
+}
+
+.section-description {
+  color: var(--mat-sys-on-surface-variant);
+  font-weight: 400;
+}
+
 .detail-row {
   td {
     padding: 0 !important;
