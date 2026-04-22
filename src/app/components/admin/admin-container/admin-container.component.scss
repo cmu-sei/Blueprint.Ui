@@ -6,6 +6,22 @@
 @include mat.elevation-classes();
 @include mat.app-background();
 
+:host {
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.sidenav-content-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.appitems-container {
+  flex: 1;
+}
+
 .appitems-container .mat-list-item {
   height: auto;
 }
@@ -26,14 +42,11 @@
 }
 
 .appcontent-container {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
   ::ng-deep .mat-sidenav-content {
-    overflow: hidden;
+    overflow-y: hidden;
   }
 }
 
@@ -81,23 +94,17 @@
 }
 
 .crucible-logo {
-  position: absolute;
-  bottom: 0;
+  align-self: flex-start;
 }
 
 .app-versions {
   width: 100%;
-  position: absolute;
-  bottom: 0;
   padding-bottom: 5px;
   padding-top: 5px;
   text-align: center;
   font-size: x-small;
-  border-bottom: 2px;
-  border-bottom-style: solid;
-  border-top: 2px;
-  border-top-style: solid;
-  border-color: var(--mat-sys-surface-container);
+  border-bottom: 2px solid var(--mat-sys-surface-container);
+  border-top: 2px solid var(--mat-sys-surface-container);
   font-weight: 400;
 }
 

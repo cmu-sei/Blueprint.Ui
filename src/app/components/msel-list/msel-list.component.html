@@ -59,12 +59,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
         </mat-form-field>
       </div>
     </div>
-    @if (isLoading) {
-    <mat-card appearance="outlined" style="display: flex; justify-content: center; align-items: center">
-      <mat-progress-spinner color="primary" mode="indeterminate">
-      </mat-progress-spinner>
-    </mat-card>
-    }
     <div class="mat-table">
       <mat-table #table [dataSource]="mselDataSource" matSort>
         <!-- action column -->
@@ -179,7 +173,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </mat-cell>
         </ng-container>
         <!-- row definitions -->
-        <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+        <mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></mat-header-row>
         <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
       </mat-table>
       <!-- No Results Message -->
@@ -187,6 +181,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <div class="text no-results">No results found</div>
       }
     </div>
+    @if (isLoading) {
+    <mat-card appearance="outlined" style="display: flex; justify-content: center; align-items: center">
+      <mat-progress-spinner color="primary" mode="indeterminate">
+      </mat-progress-spinner>
+    </mat-card>
+    }
   </div>
 
 <input hidden (change)="selectFile($event)" #xlsxInput type="file" accept=".xlsx" />

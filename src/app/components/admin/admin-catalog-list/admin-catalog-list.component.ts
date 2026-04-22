@@ -22,7 +22,6 @@ import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { Catalog, InjectType, Team } from 'src/app/generated/blueprint.api';
 import { Sort } from '@angular/material/sort';
-import { MatMenuTrigger } from '@angular/material/menu';
 import { MatTable } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 import { CatalogDataService } from 'src/app/data/catalog/catalog-data.service';
@@ -227,13 +226,13 @@ export class AdminCatalogListComponent implements OnDestroy, AfterViewInit {
     switch (column) {
       case 'name':
         return (
-          (a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1) *
+          ((a.name ?? '').toLowerCase() < (b.name ?? '').toLowerCase() ? -1 : 1) *
           (isAsc ? 1 : -1)
         );
         break;
       case 'description':
         return (
-          (a.description.toLowerCase() < b.description.toLowerCase() ? -1 : 1) *
+          ((a.description ?? '').toLowerCase() < (b.description ?? '').toLowerCase() ? -1 : 1) *
           (isAsc ? 1 : -1)
         );
         break;

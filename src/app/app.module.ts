@@ -49,6 +49,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {
   ComnAuthModule,
+  ComnHeaderBarModule,
   ComnSettingsConfig,
   ComnSettingsModule,
   ComnSettingsService,
@@ -122,6 +123,7 @@ import { TeamAddDialogComponent } from './components/team-add-dialog/team-add-di
 import { TeamEditDialogComponent } from './components/team-edit-dialog/team-edit-dialog.component';
 import { TeamUsersComponent } from './components/team-users/team-users.component';
 import { TopbarComponent } from './components/shared/top-bar/topbar.component';
+import { PresenceBarComponent } from './components/shared/presence-bar/presence-bar.component';
 import { UIDataService } from './data/ui/ui-data.service';
 import { UserDataService } from './data/user/user-data.service';
 import { DialogService } from './services/dialog/dialog.service';
@@ -149,6 +151,7 @@ import { DataValueComponent } from './components/data-value/data-value.component
 
 const settings: ComnSettingsConfig = {
   url: 'assets/config/settings.json',
+  sharedUrl: 'assets/config/settings.shared.json',
   envUrl: 'assets/config/settings.env.json',
 };
 
@@ -229,6 +232,7 @@ export const appConfig: ApplicationConfig = {
     AdminGroupsMembershipListComponent,
     NameDialogComponent,
     TopbarComponent,
+    PresenceBarComponent,
     DisplayOrderPipe,
     SortByPipe,
     PlainTextPipe,
@@ -281,7 +285,6 @@ export const appConfig: ApplicationConfig = {
     MatBottomSheetModule,
     MatBadgeModule,
     MatFormFieldModule,
-    MatDatepickerModule,
     NgxMatDatepickerActions,
     NgxMatDatepickerApply,
     NgxMatDatepickerCancel,
@@ -296,7 +299,8 @@ export const appConfig: ApplicationConfig = {
     ComnAuthModule.forRoot(),
     ComnSettingsModule.forRoot(),
     AngularEditorModule,
-    DragDropModule], providers: [
+    DragDropModule,
+    ComnHeaderBarModule], providers: [
       DialogService,
       SystemMessageService,
       UIDataService,

@@ -401,7 +401,7 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
     const topHeight = this.tabHeight
       ? this.myTopHeight + this.tabHeight
       : this.myTopHeight;
-    return 'calc(100vh - ' + topHeight + 'px)';
+    return 'calc(100% - ' + topHeight + 'px)';
   }
 
   blankDataValuePlus(): DataValuePlus {

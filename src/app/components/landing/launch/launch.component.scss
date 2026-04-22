@@ -2,11 +2,16 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
+:host {
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+
 .top-container {
   display: flex;
   flex-direction: column;
   flex: 1;
-  height: 100vh;
 }
 .card-container {
   display: flex;

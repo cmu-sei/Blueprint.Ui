@@ -27,6 +27,7 @@ import {
   ScenarioEvent,
   Team,
   TeamUser,
+  Unit,
   User,
   UserMselRole,
 } from 'src/app/generated/blueprint.api';
@@ -43,6 +44,7 @@ import { InjectTypeDataService } from '../data/inject-type/inject-type-data.serv
 import { MoveDataService } from '../data/move/move-data.service';
 import { MselDataService } from '../data/msel/msel-data.service';
 import { MselUnitDataService } from '../data/msel-unit/msel-unit-data.service';
+import { UnitDataService } from '../data/unit/unit-data.service';
 import { OrganizationDataService } from '../data/organization/organization-data.service';
 import { PlayerApplicationDataService } from '../data/player-application/player-application-data.service';
 import { PlayerApplicationTeamDataService } from '../data/team/player-application-team-data.service';
@@ -51,8 +53,15 @@ import { TeamDataService } from 'src/app/data/team/team-data.service';
 import { TeamUserDataService } from '../data/team-user/team-user-data.service';
 import { UserDataService } from 'src/app/data/user/user-data.service';
 import { UserMselRoleDataService } from '../data/user-msel-role/user-msel-role-data.service';
-import { Subject } from 'rxjs';
+import { BehaviorSubject, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+
+export interface PresenceActor {
+  id: string;
+  name: string;
+  online: boolean;
+  color: string;
+}
 
 export enum ApplicationArea {
   home = '',
@@ -69,6 +78,9 @@ export class SignalRService implements OnDestroy {
   private mselId = '';
   private token = '';
   private unsubscribe$ = new Subject();
+  private presenceActors: PresenceActor[] = [];
+  private presenceColorMap = ['primary', 'accent', 'green', 'orange', 'purple'];
+  actors$ = new BehaviorSubject<PresenceActor[]>([]);
 
   constructor(
     private authService: ComnAuthService,
@@ -86,6 +98,7 @@ export class SignalRService implements OnDestroy {
     private moveDataService: MoveDataService,
     private mselDataService: MselDataService,
     private mselUnitDataService: MselUnitDataService,
+    private unitDataService: UnitDataService,
     private organizationDataService: OrganizationDataService,
     private playerApplicationDataService: PlayerApplicationDataService,
     private playerApplicationTeamDataService: PlayerApplicationTeamDataService,
@@ -151,6 +164,9 @@ export class SignalRService implements OnDestroy {
       this.hubConnection.invoke('Leave' + this.applicationArea);
     }
     this.isJoined = false;
+    this.mselId = '';
+    this.presenceActors = [];
+    this.actors$.next([]);
   }
 
   public selectMsel(mselId: string) {
@@ -158,10 +174,31 @@ export class SignalRService implements OnDestroy {
       setTimeout(() => this.selectMsel(mselId), 500);
     } else if (this.isJoined) {
       if (this.applicationArea !== ApplicationArea.admin) {
+        this.presenceActors = [];
+        this.actors$.next([]);
         this.hubConnection.invoke('selectMsel', [mselId]);
         this.mselId = mselId;
+        // fetch current presence so we don't rely solely on greet-back
+        this.hubConnection.invoke('GetPresence', mselId).then(
+          (actors: { id: string; name: string }[]) => {
+            if (actors) {
+              for (const actor of actors) {
+                this.updatePresence(actor, true);
+              }
+            }
+          }
+        );
       }
     }
+  }
+
+  public clearPresence() {
+    if (this.hubConnection?.state === signalR.HubConnectionState.Connected && this.mselId) {
+      this.hubConnection.invoke('selectMsel', []);
+    }
+    this.mselId = '';
+    this.presenceActors = [];
+    this.actors$.next([]);
   }
 
   private reconnect() {
@@ -196,6 +233,8 @@ export class SignalRService implements OnDestroy {
     this.addMoveHandlers();
     this.addMselHandlers();
     this.addMselUnitHandlers();
+    this.addUnitHandlers();
+    this.addUnitUserHandlers();
     this.addOrganizationHandlers();
     this.addPlayerApplicationHandlers();
     this.addPlayerApplicationTeamHandlers();
@@ -204,6 +243,7 @@ export class SignalRService implements OnDestroy {
     this.addTeamUserHandlers();
     this.addUserHandlers();
     this.addUserMselRoleHandlers();
+    this.addPresenceHandlers();
   }
 
   private addCardHandlers() {
@@ -393,6 +433,40 @@ export class SignalRService implements OnDestroy {
     });
   }
 
+  private addUnitHandlers() {
+    this.hubConnection.on('UnitCreated', (unit: Unit) => {
+      this.unitDataService.updateStore(unit);
+    });
+
+    this.hubConnection.on('UnitUpdated', (unit: Unit) => {
+      this.unitDataService.updateStore(unit);
+      if (this.mselId) {
+        this.mselUnitDataService.loadByMsel(this.mselId);
+      }
+    });
+
+    this.hubConnection.on('UnitDeleted', (id: string) => {
+      this.unitDataService.deleteFromStore(id);
+      if (this.mselId) {
+        this.mselUnitDataService.loadByMsel(this.mselId);
+      }
+    });
+  }
+
+  private addUnitUserHandlers() {
+    this.hubConnection.on('UnitUserCreated', (unitUser: any) => {
+      if (this.mselId) {
+        this.mselUnitDataService.loadByMsel(this.mselId);
+      }
+    });
+
+    this.hubConnection.on('UnitUserDeleted', (unitUser: any) => {
+      if (this.mselId) {
+        this.mselUnitDataService.loadByMsel(this.mselId);
+      }
+    });
+  }
+
   private addOrganizationHandlers() {
     this.hubConnection.on(
       'OrganizationUpdated',
@@ -530,6 +604,41 @@ export class SignalRService implements OnDestroy {
     this.hubConnection.on('UserMselRoleDeleted', (id: string) => {
       this.userMselRoleDataService.deleteFromStore(id);
     });
+  }
+
+  private addPresenceHandlers() {
+    this.hubConnection.on('PresenceArrived', (actor: { id: string; name: string }) => {
+      this.updatePresence(actor, true);
+      // greet back so the newcomer sees us
+      if (this.mselId) {
+        this.hubConnection.invoke('Greet', this.mselId);
+      }
+    });
+
+    this.hubConnection.on('PresenceGreeted', (actor: { id: string; name: string }) => {
+      this.updatePresence(actor, true);
+    });
+
+    this.hubConnection.on('PresenceDeparted', (actor: { id: string; name: string }) => {
+      this.presenceActors = this.presenceActors.filter(a => a.id !== actor.id);
+      this.actors$.next([...this.presenceActors]);
+    });
+  }
+
+  private updatePresence(actor: { id: string; name: string }, online: boolean) {
+    const existing = this.presenceActors.find(a => a.id === actor.id);
+    if (existing) {
+      existing.online = online;
+      existing.name = actor.name;
+    } else {
+      this.presenceActors.push({
+        id: actor.id,
+        name: actor.name,
+        online,
+        color: this.presenceColorMap[this.presenceActors.length % this.presenceColorMap.length],
+      });
+    }
+    this.actors$.next([...this.presenceActors]);
   }
 
   ngOnDestroy() {
