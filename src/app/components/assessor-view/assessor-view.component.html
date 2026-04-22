@@ -216,17 +216,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   <span class="statement-count">{{ getFilteredStatements(item.id).length }} / {{ getStatements(item.id).length }}</span>
                 }
                 <div class="evidence-filters">
-                  @if (moveList.length > 0) {
-                  <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
-                    <mat-label>Move</mat-label>
-                    <mat-select [value]="selectedMoveNumber" (selectionChange)="filterByMove($event.value)">
-                      <mat-option [value]="null">All</mat-option>
-                      @for (move of moveList; track move.id) {
-                        <mat-option [value]="move.moveNumber">{{ move.moveNumber }} - {{ move.description }}</mat-option>
-                      }
-                    </mat-select>
-                  </mat-form-field>
-                  }
                   @if (teamList.length > 0) {
                   <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
                     <mat-label>Team</mat-label>

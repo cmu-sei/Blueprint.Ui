@@ -465,29 +465,27 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
     if (this.mselScenarioEvents.length === 0 || this.allMselStatements.length === 0) return;
 
     const moveNameToEvents = new Map<string, ScenarioEvent[]>();
-    for (const event of this.mselScenarioEvents) {
-      const nums = this.moveAndGroupNumbers[event.id];
-      if (nums) {
-        const move = this.moveList.find(m => +m.moveNumber === +nums[0]);
-        if (move?.description) {
-          const key = move.description.toLowerCase();
-          if (!moveNameToEvents.has(key)) {
-            moveNameToEvents.set(key, []);
-          }
-          moveNameToEvents.get(key).push(event);
-        }
-      }
-    }
-
     const moveNumToEvents = new Map<number, ScenarioEvent[]>();
+    const moveGroupToEvents = new Map<string, ScenarioEvent[]>();
+
     for (const event of this.mselScenarioEvents) {
       const nums = this.moveAndGroupNumbers[event.id];
-      if (nums) {
-        const moveNum = +nums[0];
-        if (!moveNumToEvents.has(moveNum)) {
-          moveNumToEvents.set(moveNum, []);
-        }
-        moveNumToEvents.get(moveNum).push(event);
+      if (!nums) continue;
+      const moveNum = +nums[0];
+      const groupNum = +nums[1];
+
+      if (!moveNumToEvents.has(moveNum)) moveNumToEvents.set(moveNum, []);
+      moveNumToEvents.get(moveNum).push(event);
+
+      const mgKey = `${moveNum}-${groupNum}`;
+      if (!moveGroupToEvents.has(mgKey)) moveGroupToEvents.set(mgKey, []);
+      moveGroupToEvents.get(mgKey).push(event);
+
+      const move = this.moveList.find(m => +m.moveNumber === moveNum);
+      if (move?.description) {
+        const key = move.description.toLowerCase();
+        if (!moveNameToEvents.has(key)) moveNameToEvents.set(key, []);
+        moveNameToEvents.get(key).push(event);
       }
     }
 
@@ -498,7 +496,18 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
       const moveInfo = this.extractMoveFromStatement(stmt);
       let matched = false;
 
-      if (moveInfo.name && moveNameToEvents.has(moveInfo.name)) {
+      if (moveInfo.group != null && moveInfo.number != null) {
+        const mgKey = `${moveInfo.number}-${moveInfo.group}`;
+        if (moveGroupToEvents.has(mgKey)) {
+          for (const event of moveGroupToEvents.get(mgKey)) {
+            this.eventStatements.get(event.id).push(stmt);
+          }
+          matchedTimeline.push({ timestamp: stmt.timestamp || '', moveNumber: moveInfo.number });
+          matched = true;
+        }
+      }
+
+      if (!matched && moveInfo.name && moveNameToEvents.has(moveInfo.name)) {
         for (const event of moveNameToEvents.get(moveInfo.name)) {
           this.eventStatements.get(event.id).push(stmt);
         }
@@ -506,7 +515,9 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
           matchedTimeline.push({ timestamp: stmt.timestamp || '', moveNumber: moveInfo.number });
         }
         matched = true;
-      } else if (moveInfo.number != null && moveNumToEvents.has(moveInfo.number)) {
+      }
+
+      if (!matched && moveInfo.number != null && moveNumToEvents.has(moveInfo.number)) {
         for (const event of moveNumToEvents.get(moveInfo.number)) {
           this.eventStatements.get(event.id).push(stmt);
         }
@@ -547,26 +558,49 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
     }
   }
 
-  private extractMoveFromStatement(stmt: XApiStatement): { name: string | null; number: number | null } {
+  private extractMoveFromStatement(stmt: XApiStatement): { name: string | null; number: number | null; group: number | null } {
     const grouping = stmt.context?.contextActivities?.grouping || [];
+    let moveNumber: number | null = null;
+    let moveName: string | null = null;
+    let groupNumber: number | null = null;
+
     for (const g of grouping) {
       const id = g.id || '';
       const name = g.definition?.name?.['en-US'] || '';
-      if (id.includes('/move/')) {
+      if (id.includes('/group/')) {
+        const numMatch = id.match(/\/group\/(\d+)$/);
+        if (numMatch) groupNumber = parseInt(numMatch[1], 10);
+      } else if (id.includes('/inject/')) {
+        const numMatch = id.match(/\/inject\/(\d+)$/);
+        if (numMatch) groupNumber = parseInt(numMatch[1], 10);
+      } else if (id.includes('/move/')) {
         const numMatch = id.match(/\/move\/(\d+)$/);
         if (numMatch) {
-          return { name: name.toLowerCase() || null, number: parseInt(numMatch[1], 10) };
+          moveNumber = parseInt(numMatch[1], 10);
+          moveName = name.toLowerCase() || null;
+        } else {
+          const uuidMatch = id.match(/\/move\/([0-9a-f-]{36})$/i);
+          const move = (uuidMatch && this.moveList.find(m => m.id === uuidMatch[1]))
+            || this.moveList.find(m => m.description?.toLowerCase() === name.toLowerCase());
+          if (move) {
+            moveNumber = +move.moveNumber;
+            moveName = (move.description || '').toLowerCase() || null;
+          } else {
+            moveName = name.toLowerCase() || null;
+          }
         }
-        const uuidMatch = id.match(/\/move\/([0-9a-f-]{36})$/i);
-        const move = (uuidMatch && this.moveList.find(m => m.id === uuidMatch[1]))
-          || this.moveList.find(m => m.description?.toLowerCase() === name.toLowerCase());
-        if (move) {
-          return { name: (move.description || '').toLowerCase() || null, number: +move.moveNumber };
-        }
-        return { name: name.toLowerCase() || null, number: null };
       }
     }
-    return { name: null, number: null };
+    if (moveNumber != null || moveName != null) {
+      return { name: moveName, number: moveNumber, group: groupNumber };
+    }
+
+    const objectName = stmt.object?.definition?.name?.['en-US'] || '';
+    const prefixMatch = objectName.match(/^(\d+)-(\d+)\s/);
+    if (prefixMatch) {
+      return { name: null, number: parseInt(prefixMatch[1], 10), group: parseInt(prefixMatch[2], 10) };
+    }
+    return { name: null, number: null, group: null };
   }
 
   getStatements(eventId: string): XApiStatement[] {
