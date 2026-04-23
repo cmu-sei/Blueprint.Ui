@@ -175,7 +175,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   @if (teamList.length > 0) {
                   <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
                     <mat-label>Team</mat-label>
-                    <mat-select [value]="selectedTeamId" (selectionChange)="filterByTeam($event.value)">
+                    <mat-select [value]="getSectionTeam('move-' + row.moveNumber)" (selectionChange)="filterByTeam('move-' + row.moveNumber, $event.value)">
                       <mat-option [value]="null">All</mat-option>
                       @for (team of teamList; track team.id) {
                         <mat-option [value]="team.id">{{ team.shortName }}</mat-option>
@@ -185,7 +185,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   }
                   <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
                     <mat-label>Source</mat-label>
-                    <mat-select [value]="selectedSource" (selectionChange)="filterBySource($event.value)">
+                    <mat-select [value]="getSectionSource('move-' + row.moveNumber)" (selectionChange)="filterBySource('move-' + row.moveNumber, $event.value)">
                       <mat-option [value]="null">All</mat-option>
                       <mat-option value="blueprint">Blueprint</mat-option>
                       <mat-option value="cite">CITE</mat-option>
@@ -273,7 +273,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   @if (teamList.length > 0) {
                   <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
                     <mat-label>Team</mat-label>
-                    <mat-select [value]="selectedTeamId" (selectionChange)="filterByTeam($event.value)">
+                    <mat-select [value]="getSectionTeam('group-' + row.groupKey)" (selectionChange)="filterByTeam('group-' + row.groupKey, $event.value)">
                       <mat-option [value]="null">All</mat-option>
                       @for (team of teamList; track team.id) {
                         <mat-option [value]="team.id">{{ team.shortName }}</mat-option>
@@ -283,7 +283,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   }
                   <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
                     <mat-label>Source</mat-label>
-                    <mat-select [value]="selectedSource" (selectionChange)="filterBySource($event.value)">
+                    <mat-select [value]="getSectionSource('group-' + row.groupKey)" (selectionChange)="filterBySource('group-' + row.groupKey, $event.value)">
                       <mat-option [value]="null">All</mat-option>
                       <mat-option value="blueprint">Blueprint</mat-option>
                       <mat-option value="cite">CITE</mat-option>
@@ -418,7 +418,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   @if (teamList.length > 0) {
                   <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
                     <mat-label>Team</mat-label>
-                    <mat-select [value]="selectedTeamId" (selectionChange)="filterByTeam($event.value)">
+                    <mat-select [value]="getSectionTeam('event-' + row.event.id)" (selectionChange)="filterByTeam('event-' + row.event.id, $event.value)">
                       <mat-option [value]="null">All</mat-option>
                       @for (team of teamList; track team.id) {
                         <mat-option [value]="team.id">{{ team.shortName }}</mat-option>
@@ -428,7 +428,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   }
                   <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
                     <mat-label>Source</mat-label>
-                    <mat-select [value]="selectedSource" (selectionChange)="filterBySource($event.value)">
+                    <mat-select [value]="getSectionSource('event-' + row.event.id)" (selectionChange)="filterBySource('event-' + row.event.id, $event.value)">
                       <mat-option [value]="null">All</mat-option>
                       <mat-option value="blueprint">Blueprint</mat-option>
                       <mat-option value="cite">CITE</mat-option>

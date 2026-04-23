@@ -113,8 +113,8 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
   showRealTime = false;
   showSearch = false;
   selectedMoveNumber: number | null = null;
-  selectedTeamId: string | null = null;
-  selectedSource: string | null = null;
+  sectionTeamFilter = new Map<string, string | null>();
+  sectionSourceFilter = new Map<string, string | null>();
   topSourceFilter: string | null = null;
   topVerbFilter: string | null = null;
   excludedSources: string[] = [];
@@ -323,12 +323,20 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
     this.selectedMoveNumber = moveNumber;
   }
 
-  filterByTeam(teamId: string | null) {
-    this.selectedTeamId = teamId;
+  filterByTeam(sectionKey: string, teamId: string | null) {
+    this.sectionTeamFilter.set(sectionKey, teamId);
   }
 
-  filterBySource(source: string | null) {
-    this.selectedSource = source;
+  filterBySource(sectionKey: string, source: string | null) {
+    this.sectionSourceFilter.set(sectionKey, source);
+  }
+
+  getSectionTeam(sectionKey: string): string | null {
+    return this.sectionTeamFilter.get(sectionKey) ?? null;
+  }
+
+  getSectionSource(sectionKey: string): string | null {
+    return this.sectionSourceFilter.get(sectionKey) ?? null;
   }
 
   setTopSourceFilter(source: string | null) {
@@ -446,11 +454,11 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
   }
 
   getFilteredMoveStatements(moveNumber: number): XApiStatement[] {
-    return this.applyStatementFilters(this.getMoveStatements(moveNumber));
+    return this.applyStatementFilters(this.getMoveStatements(moveNumber), `move-${moveNumber}`);
   }
 
   getFilteredGroupStatements(groupKey: string): XApiStatement[] {
-    return this.applyStatementFilters(this.getGroupStatements(groupKey));
+    return this.applyStatementFilters(this.getGroupStatements(groupKey), `group-${groupKey}`);
   }
 
   getMoveDescription(moveNumber: number): string {
@@ -487,7 +495,7 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
     return rows;
   }
 
-  private applyStatementFilters(stmts: XApiStatement[]): XApiStatement[] {
+  private applyStatementFilters(stmts: XApiStatement[], sectionKey?: string): XApiStatement[] {
     if (this.excludedSources.length > 0) {
       stmts = stmts.filter(s =>
         !this.excludedSources.includes((s.context?.platform || '').toLowerCase())
@@ -504,13 +512,15 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
         return verb === this.topVerbFilter;
       });
     }
-    if (this.selectedSource) {
+    const source = sectionKey ? this.sectionSourceFilter.get(sectionKey) : null;
+    if (source) {
       stmts = stmts.filter(s =>
-        (s.context?.platform || '').toLowerCase() === this.selectedSource
+        (s.context?.platform || '').toLowerCase() === source
       );
     }
-    if (this.selectedTeamId) {
-      const team = this.teamList.find(t => t.id === this.selectedTeamId);
+    const teamId = sectionKey ? this.sectionTeamFilter.get(sectionKey) : null;
+    if (teamId) {
+      const team = this.teamList.find(t => t.id === teamId);
       if (team) {
         stmts = stmts.filter(s =>
           s.context?.team?.name === team.shortName || s.context?.team?.name === team.name
@@ -737,7 +747,7 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
 
   getFilteredStatements(eventId: string): XApiStatement[] {
     let stmts = this.getStatements(eventId);
-    stmts = this.applyStatementFilters(stmts);
+    stmts = this.applyStatementFilters(stmts, `event-${eventId}`);
     if (this.selectedMoveNumber != null) {
       const move = this.moveList.find(m => +m.moveNumber === +this.selectedMoveNumber);
       const targetName = move?.description?.toLowerCase();
