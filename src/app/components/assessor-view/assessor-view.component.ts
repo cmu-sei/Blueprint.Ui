@@ -113,9 +113,10 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
   showRealTime = false;
   showSearch = false;
   selectedMoveNumber: number | null = null;
-  sectionTeamFilter = new Map<string, string | null>();
+  sectionTeamFilter = new Map<string, string[]>();
   sectionSourceFilter = new Map<string, string[]>();
-  sectionVerbFilter = new Map<string, string | null>();
+  sectionVerbFilter = new Map<string, string[]>();
+  sectionTeamInitialized = new Set<string>();
   availableVerbs: string[] = [];
   keyUp = new Subject<KeyboardEvent>();
   private subscription: Subscription;
@@ -321,28 +322,59 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
     this.selectedMoveNumber = moveNumber;
   }
 
-  filterByTeam(sectionKey: string, teamId: string | null) {
-    this.sectionTeamFilter.set(sectionKey, teamId);
+  filterByTeams(sectionKey: string, teamIds: string[]) {
+    this.sectionTeamFilter.set(sectionKey, teamIds);
+    this.sectionTeamInitialized.add(sectionKey);
   }
 
   filterBySources(sectionKey: string, sources: string[]) {
     this.sectionSourceFilter.set(sectionKey, sources);
   }
 
-  filterByVerb(sectionKey: string, verb: string | null) {
-    this.sectionVerbFilter.set(sectionKey, verb);
+  filterByVerbs(sectionKey: string, verbs: string[]) {
+    this.sectionVerbFilter.set(sectionKey, verbs);
   }
 
-  getSectionTeam(sectionKey: string): string | null {
-    return this.sectionTeamFilter.get(sectionKey) ?? null;
+  getSectionTeams(sectionKey: string): string[] {
+    return this.sectionTeamFilter.get(sectionKey) ?? [];
   }
 
   getSectionSources(sectionKey: string): string[] {
     return this.sectionSourceFilter.get(sectionKey) ?? [];
   }
 
-  getSectionVerb(sectionKey: string): string | null {
-    return this.sectionVerbFilter.get(sectionKey) ?? null;
+  getSectionVerbs(sectionKey: string): string[] {
+    return this.sectionVerbFilter.get(sectionKey) ?? [];
+  }
+
+  initEventTeamDefault(eventId: string) {
+    const sectionKey = `event-${eventId}`;
+    if (this.sectionTeamInitialized.has(sectionKey)) return;
+    this.sectionTeamInitialized.add(sectionKey);
+
+    const event = this.mselScenarioEvents.find(e => e.id === eventId);
+    if (!event) return;
+
+    const orgField = this.assessorDataFields.find(df =>
+      df.dataType?.toString().toLowerCase() === 'organization'
+    );
+    if (!orgField) return;
+
+    const dv = this.getDataValue(event, orgField.name);
+    const orgValue = (dv.value || '').trim();
+    if (!orgValue || orgValue.toUpperCase() === 'ALL') return;
+
+    const orgNames = orgValue.split(',').map(s => s.trim().toLowerCase()).filter(s => s);
+    const matchedIds = this.teamList
+      .filter(t =>
+        orgNames.includes((t.shortName || '').toLowerCase()) ||
+        orgNames.includes((t.name || '').toLowerCase())
+      )
+      .map(t => t.id);
+
+    if (matchedIds.length > 0) {
+      this.sectionTeamFilter.set(sectionKey, matchedIds);
+    }
   }
 
 
@@ -412,6 +444,7 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
       this.expandedEventIds.delete(eventId);
     } else {
       this.expandedEventIds.add(eventId);
+      this.initEventTeamDefault(eventId);
       if (!this.statementsLoaded) {
         this.loadAllStatements();
       }
@@ -498,21 +531,24 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
           sources.includes((s.context?.platform || '').toLowerCase())
         );
       }
-      const verb = this.sectionVerbFilter.get(sectionKey);
-      if (verb) {
+      const verbs = this.sectionVerbFilter.get(sectionKey);
+      if (verbs && verbs.length > 0) {
         stmts = stmts.filter(s => {
           const v = s.verb?.display?.['en-US'] || s.verb?.id?.split('/').pop() || '';
-          return v === verb;
+          return verbs.includes(v);
         });
       }
-      const teamId = this.sectionTeamFilter.get(sectionKey);
-      if (teamId) {
-        const team = this.teamList.find(t => t.id === teamId);
-        if (team) {
-          stmts = stmts.filter(s =>
-            s.context?.team?.name === team.shortName || s.context?.team?.name === team.name
-          );
+      const teamIds = this.sectionTeamFilter.get(sectionKey);
+      if (teamIds && teamIds.length > 0) {
+        const teamNames = new Set<string>();
+        for (const id of teamIds) {
+          const team = this.teamList.find(t => t.id === id);
+          if (team) {
+            if (team.shortName) teamNames.add(team.shortName);
+            if (team.name) teamNames.add(team.name);
+          }
         }
+        stmts = stmts.filter(s => teamNames.has(s.context?.team?.name || ''));
       }
     }
     return stmts;

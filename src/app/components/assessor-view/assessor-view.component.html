@@ -145,8 +145,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   @if (teamList.length > 0) {
                   <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
                     <mat-label>Team</mat-label>
-                    <mat-select [value]="getSectionTeam('move-' + row.moveNumber)" (selectionChange)="filterByTeam('move-' + row.moveNumber, $event.value)">
-                      <mat-option [value]="null">All</mat-option>
+                    <mat-select [value]="getSectionTeams('move-' + row.moveNumber)" (selectionChange)="filterByTeams('move-' + row.moveNumber, $event.value)" multiple>
                       @for (team of teamList; track team.id) {
                         <mat-option [value]="team.id">{{ team.shortName }}</mat-option>
                       }
@@ -165,8 +164,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   </mat-form-field>
                   <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
                     <mat-label>Verb</mat-label>
-                    <mat-select [value]="getSectionVerb('move-' + row.moveNumber)" (selectionChange)="filterByVerb('move-' + row.moveNumber, $event.value)">
-                      <mat-option [value]="null">All</mat-option>
+                    <mat-select [value]="getSectionVerbs('move-' + row.moveNumber)" (selectionChange)="filterByVerbs('move-' + row.moveNumber, $event.value)" multiple>
                       @for (verb of availableVerbs; track verb) {
                         <mat-option [value]="verb">{{ verb }}</mat-option>
                       }
@@ -251,8 +249,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   @if (teamList.length > 0) {
                   <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
                     <mat-label>Team</mat-label>
-                    <mat-select [value]="getSectionTeam('group-' + row.groupKey)" (selectionChange)="filterByTeam('group-' + row.groupKey, $event.value)">
-                      <mat-option [value]="null">All</mat-option>
+                    <mat-select [value]="getSectionTeams('group-' + row.groupKey)" (selectionChange)="filterByTeams('group-' + row.groupKey, $event.value)" multiple>
                       @for (team of teamList; track team.id) {
                         <mat-option [value]="team.id">{{ team.shortName }}</mat-option>
                       }
@@ -271,8 +268,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   </mat-form-field>
                   <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
                     <mat-label>Verb</mat-label>
-                    <mat-select [value]="getSectionVerb('group-' + row.groupKey)" (selectionChange)="filterByVerb('group-' + row.groupKey, $event.value)">
-                      <mat-option [value]="null">All</mat-option>
+                    <mat-select [value]="getSectionVerbs('group-' + row.groupKey)" (selectionChange)="filterByVerbs('group-' + row.groupKey, $event.value)" multiple>
                       @for (verb of availableVerbs; track verb) {
                         <mat-option [value]="verb">{{ verb }}</mat-option>
                       }
@@ -404,8 +400,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   @if (teamList.length > 0) {
                   <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
                     <mat-label>Team</mat-label>
-                    <mat-select [value]="getSectionTeam('event-' + row.event.id)" (selectionChange)="filterByTeam('event-' + row.event.id, $event.value)">
-                      <mat-option [value]="null">All</mat-option>
+                    <mat-select [value]="getSectionTeams('event-' + row.event.id)" (selectionChange)="filterByTeams('event-' + row.event.id, $event.value)" multiple>
                       @for (team of teamList; track team.id) {
                         <mat-option [value]="team.id">{{ team.shortName }}</mat-option>
                       }
@@ -424,8 +419,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   </mat-form-field>
                   <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
                     <mat-label>Verb</mat-label>
-                    <mat-select [value]="getSectionVerb('event-' + row.event.id)" (selectionChange)="filterByVerb('event-' + row.event.id, $event.value)">
-                      <mat-option [value]="null">All</mat-option>
+                    <mat-select [value]="getSectionVerbs('event-' + row.event.id)" (selectionChange)="filterByVerbs('event-' + row.event.id, $event.value)" multiple>
                       @for (verb of availableVerbs; track verb) {
                         <mat-option [value]="verb">{{ verb }}</mat-option>
                       }
