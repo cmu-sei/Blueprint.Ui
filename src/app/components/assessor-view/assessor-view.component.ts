@@ -9,11 +9,16 @@ import { HttpClient } from '@angular/common/http';
 import { ComnSettingsService, Theme } from '@cmusei/crucible-common';
 import {
   Card,
+  Competency,
+  CompetencyFramework,
   DataField,
   DataValue,
   Move,
   Msel,
+  MselCompetency,
   Organization,
+  ProficiencyLevel,
+  ProficiencyScale,
   ScenarioEvent,
   Team,
   User,
@@ -27,6 +32,9 @@ import { MoveQuery } from 'src/app/data/move/move.query';
 import { CardQuery } from 'src/app/data/card/card.query';
 import { OrganizationQuery } from 'src/app/data/organization/organization.query';
 import { TeamQuery } from 'src/app/data/team/team.query';
+import { MselCompetencyQuery } from 'src/app/data/msel-competency/msel-competency.query';
+import { MselCompetencyDataService } from 'src/app/data/msel-competency/msel-competency-data.service';
+import { CompetencyFrameworkService, ProficiencyScaleService } from 'src/app/generated/blueprint.api/api/api';
 import {
   DataValuePlus,
   ScenarioEventDataService,
@@ -42,10 +50,10 @@ export interface XApiStatement {
   actor?: { name?: string; account?: { name?: string } };
   verb?: { id?: string; display?: { 'en-US'?: string } };
   object?: { id?: string; definition?: { name?: { 'en-US'?: string }; type?: string } };
-  result?: { score?: { raw?: number }; completion?: boolean; success?: boolean };
+  result?: { score?: { raw?: number }; completion?: boolean; success?: boolean; response?: string };
   timestamp?: string;
   context?: {
-    team?: { name?: string };
+    team?: { name?: string; account?: { name?: string } };
     platform?: string;
     extensions?: Record<string, any>;
     contextActivities?: {
@@ -133,6 +141,16 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
   moveStatements: Map<number, XApiStatement[]> = new Map();
   groupStatements: Map<string, XApiStatement[]> = new Map();
   loadingStatements: Set<string> = new Set();
+
+  // Competency assessment
+  mselCompetencies: MselCompetency[] = [];
+  proficiencyScale: ProficiencyScale | null = null;
+  proficiencyLevels: ProficiencyLevel[] = [];
+  eventRatings = new Map<string, Map<string, { levelId: string; comment: string }>>();
+  submittedAssertions = new Set<string>();
+  submittingAssertions = new Set<string>();
+  assertionTeam = new Map<string, string>();
+
   private apiUrl: string;
   private unsubscribe$ = new Subject();
 
@@ -149,7 +167,11 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
     private scenarioEventQuery: ScenarioEventQuery,
     private uiDataService: UIDataService,
     private http: HttpClient,
-    private settingsService: ComnSettingsService
+    private settingsService: ComnSettingsService,
+    private mselCompetencyQuery: MselCompetencyQuery,
+    private mselCompetencyDataService: MselCompetencyDataService,
+    private competencyFrameworkService: CompetencyFrameworkService,
+    private proficiencyScaleService: ProficiencyScaleService
   ) {
     this.apiUrl = this.settingsService.settings.ApiUrl;
     this.showRealTime = this.uiDataService.useRealTime();
@@ -158,13 +180,21 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(msel => {
         if (msel) {
+          const mselChanged = this.msel.id !== msel.id;
           this.msel = { ...msel } as MselPlus;
+          if (mselChanged && msel.id) {
+            this.mselCompetencyDataService.loadByMsel(msel.id);
+          }
         }
       });
 
     this.dataFieldQuery.selectAll()
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(dataFields => {
+        this.allDataFields = dataFields;
+        this.competencyFieldIds = dataFields
+          .filter(df => df.dataType?.toString() === 'Competency')
+          .map(df => df.id);
         this.assessorDataFields = dataFields
           .filter(df => df.isAssessorVisible)
           .sort((a, b) => (+a.displayOrder > +b.displayOrder ? 1 : -1));
@@ -227,6 +257,13 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(teams => {
         this.teamList = teams;
+      });
+
+    this.mselCompetencyQuery.selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(mcs => {
+        this.mselCompetencies = mcs;
+        this.loadProficiencyScale();
       });
 
     this.subscription = this.keyUp
@@ -689,8 +726,20 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
     }
 
     const matchedTimeline: { timestamp: string; moveNumber: number }[] = [];
+    const directRouted = new Set<string>();
 
     for (const stmt of this.allMselStatements) {
+      const grouping = stmt.context?.contextActivities?.grouping || [];
+      const eventGrouping = grouping.find(g => (g.id || '').includes('scenarioevents/'));
+      if (eventGrouping) {
+        const eventId = eventGrouping.id.split('scenarioevents/').pop();
+        if (this.eventStatements.has(eventId)) {
+          this.eventStatements.get(eventId).push(stmt);
+          directRouted.add(stmt.id);
+          continue;
+        }
+      }
+
       const moveInfo = this.extractMoveFromStatement(stmt);
 
       // Resolve move number (explicit, by name, or null)
@@ -751,6 +800,7 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
           if (move) moveNum = +move.moveNumber;
         }
         if (moveNum != null) continue; // already handled
+        if (directRouted.has(stmt.id)) continue;
 
         const ts = stmt.timestamp || '';
         let inferredMove = matchedTimeline[0].moveNumber;
@@ -773,6 +823,57 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
     }
     for (const bucket of this.groupStatements.values()) {
       bucket.sort((a, b) => (a.timestamp || '').localeCompare(b.timestamp || ''));
+    }
+
+    this.syncAssertionsFromStatements();
+  }
+
+  private syncAssertionsFromStatements() {
+    if (this.mselCompetencies.length === 0 || this.proficiencyLevels.length === 0) return;
+
+    for (const stmt of this.allMselStatements) {
+      if (stmt.verb?.id !== 'https://w3id.org/xapi/dod-isd/verbs/asserted') continue;
+      if (stmt.object?.definition?.type !== 'http://adlnet.gov/expapi/activities/competency') continue;
+
+      const grouping = stmt.context?.contextActivities?.grouping || [];
+      const eventGrouping = grouping.find(g => (g.id || '').includes('scenarioevents/'));
+      if (!eventGrouping) continue;
+      const eventId = eventGrouping.id.split('scenarioevents/').pop();
+      if (!this.eventStatements.has(eventId)) continue;
+
+      const objectId = stmt.object?.id || '';
+      const mc = this.mselCompetencies.find(mc => {
+        const comp = mc.competency;
+        if (!comp) return false;
+        if (comp.idNumber?.startsWith('http') && objectId === comp.idNumber) return true;
+        if (objectId.includes('competencies/' + comp.id)) return true;
+        return false;
+      });
+      if (!mc?.competency) continue;
+
+      const scoreRaw = stmt.result?.score?.raw;
+      const matchedLevel = scoreRaw != null
+        ? this.proficiencyLevels.find(pl => pl.value === scoreRaw)
+        : null;
+
+      const teamId = stmt.context?.team?.account?.name || '';
+      const key = `${eventId}:${mc.competency.id}:${teamId}`;
+
+      if (this.submittedAssertions.has(key)) continue;
+
+      if (!this.eventRatings.has(eventId)) this.eventRatings.set(eventId, new Map());
+      const existing = this.eventRatings.get(eventId).get(mc.competency.id);
+      if (!existing || !existing.levelId) {
+        this.eventRatings.get(eventId).set(mc.competency.id, {
+          levelId: matchedLevel?.id || '',
+          comment: stmt.result?.response || '',
+        });
+      }
+      this.submittedAssertions.add(key);
+
+      if (teamId) {
+        this.assertionTeam.set(eventId, teamId);
+      }
     }
   }
 
@@ -935,6 +1036,144 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
     } catch {
       return 'UTC';
     }
+  }
+
+  // --- Competency assessment methods ---
+
+  private loadProficiencyScale() {
+    if (this.mselCompetencies.length === 0 || this.proficiencyScale) return;
+    const firstComp = this.mselCompetencies[0]?.competency;
+    if (!firstComp?.competencyFrameworkId) return;
+
+    this.competencyFrameworkService.getCompetencyFramework(firstComp.competencyFrameworkId)
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(fw => {
+        if (fw?.defaultProficiencyScaleId) {
+          this.proficiencyScaleService.getProficiencyScale(fw.defaultProficiencyScaleId)
+            .pipe(takeUntil(this.unsubscribe$))
+            .subscribe(scale => {
+              this.proficiencyScale = scale;
+              this.proficiencyLevels = (scale?.proficiencyLevels || [])
+                .sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0));
+            });
+        }
+      });
+  }
+
+  private allDataFields: DataField[] = [];
+  private competencyFieldIds: string[] = [];
+
+  getEventCompetencies(eventId: string): Competency[] {
+    if (this.competencyFieldIds.length === 0 || this.mselCompetencies.length === 0) return [];
+    const allIdNumbers = new Set<string>();
+    for (const fieldId of this.competencyFieldIds) {
+      const dv = this.dataValues.find(v =>
+        v.scenarioEventId === eventId && v.dataFieldId === fieldId
+      );
+      if (dv?.value) {
+        dv.value.split(',').map(s => s.trim()).filter(s => s).forEach(s => allIdNumbers.add(s));
+      }
+    }
+    if (allIdNumbers.size === 0) return [];
+    return Array.from(allIdNumbers)
+      .map(idNum => this.mselCompetencies.find(mc => mc.competency?.idNumber === idNum)?.competency)
+      .filter(c => !!c);
+  }
+
+  getRating(eventId: string, competencyId: string): { levelId: string; comment: string } {
+    const eventMap = this.eventRatings.get(eventId);
+    return eventMap?.get(competencyId) ?? { levelId: '', comment: '' };
+  }
+
+  setRatingLevel(eventId: string, competencyId: string, levelId: string) {
+    if (!this.eventRatings.has(eventId)) this.eventRatings.set(eventId, new Map());
+    const existing = this.getRating(eventId, competencyId);
+    this.eventRatings.get(eventId).set(competencyId, { ...existing, levelId });
+  }
+
+  setRatingComment(eventId: string, competencyId: string, comment: string) {
+    if (!this.eventRatings.has(eventId)) this.eventRatings.set(eventId, new Map());
+    const existing = this.getRating(eventId, competencyId);
+    this.eventRatings.get(eventId).set(competencyId, { ...existing, comment });
+  }
+
+  getAssertionTeam(eventId: string): string {
+    if (!this.assertionTeam.has(eventId)) {
+      const teamIds = this.getSectionTeams('event-' + eventId);
+      if (teamIds.length === 1) {
+        this.assertionTeam.set(eventId, teamIds[0]);
+      }
+    }
+    return this.assertionTeam.get(eventId) ?? '';
+  }
+
+  setAssertionTeam(eventId: string, teamId: string) {
+    this.assertionTeam.set(eventId, teamId);
+  }
+
+  assertionKey(eventId: string, competencyId: string): string {
+    const teamId = this.getAssertionTeam(eventId);
+    return `${eventId}:${competencyId}:${teamId}`;
+  }
+
+  canSubmitRating(eventId: string, competencyId: string): boolean {
+    const rating = this.getRating(eventId, competencyId);
+    return !!rating.levelId && !this.submittingAssertions.has(this.assertionKey(eventId, competencyId));
+  }
+
+  isRatingSubmitted(eventId: string, competencyId: string): boolean {
+    return this.submittedAssertions.has(this.assertionKey(eventId, competencyId));
+  }
+
+  submitRating(eventId: string, competencyId: string) {
+    const rating = this.getRating(eventId, competencyId);
+    if (!rating.levelId) return;
+    const teamId = this.getAssertionTeam(eventId);
+    const key = this.assertionKey(eventId, competencyId);
+    this.submittingAssertions.add(key);
+
+    const baseUrl = this.apiUrl.endsWith('/') ? this.apiUrl : this.apiUrl + '/';
+    const body = {
+      mselId: this.msel.id,
+      competencyId: competencyId,
+      scenarioEventId: eventId,
+      teamId: teamId || null,
+      proficiencyLevelId: rating.levelId,
+      comment: rating.comment || null,
+    };
+
+    this.http.post(`${baseUrl}api/xapi/assertions`, body).subscribe({
+      next: () => {
+        this.submittingAssertions.delete(key);
+        this.submittedAssertions.add(key);
+      },
+      error: () => {
+        this.submittingAssertions.delete(key);
+      }
+    });
+  }
+
+  submitAllRatings(eventId: string) {
+    const comps = this.getEventCompetencies(eventId);
+    for (const comp of comps) {
+      if (this.canSubmitRating(eventId, comp.id)) {
+        this.submitRating(eventId, comp.id);
+      }
+    }
+  }
+
+  hasAnyRatings(eventId: string): boolean {
+    const eventMap = this.eventRatings.get(eventId);
+    if (!eventMap) return false;
+    for (const r of eventMap.values()) {
+      if (r.levelId) return true;
+    }
+    return false;
+  }
+
+  getLevelName(levelId: string): string {
+    const level = this.proficiencyLevels.find(l => l.id === levelId);
+    return level ? `${level.name} (${level.value})` : '';
   }
 
   ngOnDestroy() {

@@ -153,77 +153,86 @@ project root for license information or contact permission@sei.cmu.edu for full 
             + (msel.showGroupOnAssessorView ? 1 : 0)
             + (msel.showTimeOnAssessorView ? 1 : 0)
             + (msel.showIntegrationTargetOnAssessorView ? 1 : 0)">
-            <div class="event-detail">
-              <div class="statements-header">
-                <mat-icon fontIcon="mdi-clipboard-text-outline" class="mdi-18px"></mat-icon>
-                <span>xAPI Evidence — Move {{ row.moveNumber }}</span>
-                @if (getMoveStatements(row.moveNumber).length > 0) {
-                  <span class="statement-count">{{ getFilteredMoveStatements(row.moveNumber).length }} / {{ getMoveStatements(row.moveNumber).length }}</span>
-                }
-                <div class="evidence-filters">
-                  @if (teamList.length > 0) {
-                  <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
-                    <mat-label>Team</mat-label>
-                    <mat-select [value]="getSectionTeams('move-' + row.moveNumber)" (selectionChange)="filterByTeams('move-' + row.moveNumber, $event.value)" multiple>
-                      @for (team of teamList; track team.id) {
-                        <mat-option [value]="team.id">{{ team.shortName }}</mat-option>
-                      }
-                    </mat-select>
-                  </mat-form-field>
+            <div class="event-detail-split">
+              <div class="evidence-panel">
+                <div class="statements-header">
+                  <mat-icon fontIcon="mdi-clipboard-text-outline" class="mdi-18px"></mat-icon>
+                  <span>xAPI Evidence — Move {{ row.moveNumber }}</span>
+                  @if (getMoveStatements(row.moveNumber).length > 0) {
+                    <span class="statement-count">{{ getFilteredMoveStatements(row.moveNumber).length }} / {{ getMoveStatements(row.moveNumber).length }}</span>
                   }
-                  <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
-                    <mat-label>Source</mat-label>
-                    <mat-select [value]="getSectionSources('move-' + row.moveNumber)" (selectionChange)="filterBySources('move-' + row.moveNumber, $event.value)" multiple>
-                      <mat-option value="blueprint">Blueprint</mat-option>
-                      <mat-option value="cite">CITE</mat-option>
-                      <mat-option value="steamfitter">Steamfitter</mat-option>
-                      <mat-option value="player">Player</mat-option>
-                      <mat-option value="gallery">Gallery</mat-option>
-                    </mat-select>
-                  </mat-form-field>
-                  <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
-                    <mat-label>Verb</mat-label>
-                    <mat-select [value]="getSectionVerbs('move-' + row.moveNumber)" (selectionChange)="filterByVerbs('move-' + row.moveNumber, $event.value)" multiple>
-                      @for (verb of availableVerbs; track verb) {
-                        <mat-option [value]="verb">{{ verb }}</mat-option>
-                      }
-                    </mat-select>
-                  </mat-form-field>
+                  <div class="evidence-filters">
+                    @if (teamList.length > 0) {
+                    <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
+                      <mat-label>Team</mat-label>
+                      <mat-select [value]="getSectionTeams('move-' + row.moveNumber)" (selectionChange)="filterByTeams('move-' + row.moveNumber, $event.value)" multiple>
+                        @for (team of teamList; track team.id) {
+                          <mat-option [value]="team.id">{{ team.shortName }}</mat-option>
+                        }
+                      </mat-select>
+                    </mat-form-field>
+                    }
+                    <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
+                      <mat-label>Source</mat-label>
+                      <mat-select [value]="getSectionSources('move-' + row.moveNumber)" (selectionChange)="filterBySources('move-' + row.moveNumber, $event.value)" multiple>
+                        <mat-option value="blueprint">Blueprint</mat-option>
+                        <mat-option value="cite">CITE</mat-option>
+                        <mat-option value="steamfitter">Steamfitter</mat-option>
+                        <mat-option value="player">Player</mat-option>
+                        <mat-option value="gallery">Gallery</mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                    <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
+                      <mat-label>Verb</mat-label>
+                      <mat-select [value]="getSectionVerbs('move-' + row.moveNumber)" (selectionChange)="filterByVerbs('move-' + row.moveNumber, $event.value)" multiple>
+                        @for (verb of availableVerbs; track verb) {
+                          <mat-option [value]="verb">{{ verb }}</mat-option>
+                        }
+                      </mat-select>
+                    </mat-form-field>
+                  </div>
+                  <button mat-icon-button class="refresh-button" (click)="refreshStatements()"
+                    title="Refresh xAPI statements" [disabled]="statementsLoading">
+                    <mat-icon class="mdi-18px" fontIcon="mdi-refresh"></mat-icon>
+                  </button>
                 </div>
-                <button mat-icon-button class="refresh-button" (click)="refreshStatements()"
-                  title="Refresh xAPI statements" [disabled]="statementsLoading">
-                  <mat-icon class="mdi-18px" fontIcon="mdi-refresh"></mat-icon>
-                </button>
-              </div>
-              @if (loadingStatements.has('_all')) {
-                <mat-progress-bar mode="indeterminate"></mat-progress-bar>
-              } @else if (getMoveStatements(row.moveNumber).length === 0) {
-                <div class="no-statements">No xAPI statements found for this move.</div>
-              } @else {
-                <div class="statements-list">
-                  @for (stmt of getFilteredMoveStatements(row.moveNumber); track $index) {
-                    <div class="statement-entry">
-                      <div class="statement-row" (click)="toggleStatement(stmt.id)"
-                        [class.statement-expanded]="expandedStatementIds.has(stmt.id)">
-                        <button mat-icon-button class="copy-button" (click)="copyStatement(stmt, $event)" title="Copy JSON">
-                          <mat-icon class="mdi-14px" fontIcon="mdi-content-copy"></mat-icon>
-                        </button>
-                        <span class="statement-time">{{ formatTimestamp(stmt.timestamp) }}</span>
-                        <span class="stmt-move">{{ getMovePart(stmt) }}</span>
-                        <span class="stmt-group">{{ getGroupPart(stmt) }}</span>
-                        <span class="platform-badge" [ngClass]="getPlatformClass(stmt)">{{ stmt.context?.platform || '?' }}</span>
-                        <span class="stmt-actor">{{ stmt.actor?.name || stmt.actor?.account?.name || 'Unknown' }}</span>
-                        <span class="stmt-team">{{ stmt.context?.team?.name || '' }}</span>
-                        <span class="stmt-verb">{{ stmt.verb?.display?.['en-US'] || stmt.verb?.id?.split('/').pop() || '?' }}</span>
-                        <span class="stmt-object">{{ stmt.object?.definition?.name?.['en-US'] || stmt.object?.id || '?' }}</span>
+                @if (loadingStatements.has('_all')) {
+                  <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+                } @else if (getMoveStatements(row.moveNumber).length === 0) {
+                  <div class="no-statements">No xAPI statements found for this move.</div>
+                } @else {
+                  <div class="statements-list">
+                    @for (stmt of getFilteredMoveStatements(row.moveNumber); track $index) {
+                      <div class="statement-entry">
+                        <div class="statement-row" (click)="toggleStatement(stmt.id)"
+                          [class.statement-expanded]="expandedStatementIds.has(stmt.id)">
+                          <button mat-icon-button class="copy-button" (click)="copyStatement(stmt, $event)" title="Copy JSON">
+                            <mat-icon class="mdi-14px" fontIcon="mdi-content-copy"></mat-icon>
+                          </button>
+                          <span class="statement-time">{{ formatTimestamp(stmt.timestamp) }}</span>
+                          <span class="stmt-move">{{ getMovePart(stmt) }}</span>
+                          <span class="stmt-group">{{ getGroupPart(stmt) }}</span>
+                          <span class="platform-badge" [ngClass]="getPlatformClass(stmt)">{{ stmt.context?.platform || '?' }}</span>
+                          <span class="stmt-actor">{{ stmt.actor?.name || stmt.actor?.account?.name || 'Unknown' }}</span>
+                          <span class="stmt-team">{{ stmt.context?.team?.name || '' }}</span>
+                          <span class="stmt-verb">{{ stmt.verb?.display?.['en-US'] || stmt.verb?.id?.split('/').pop() || '?' }}</span>
+                          <span class="stmt-object">{{ stmt.object?.definition?.name?.['en-US'] || stmt.object?.id || '?' }}</span>
+                        </div>
+                        @if (expandedStatementIds.has(stmt.id)) {
+                          <pre class="statement-json">{{ formatStatementJson(stmt) }}</pre>
+                        }
                       </div>
-                      @if (expandedStatementIds.has(stmt.id)) {
-                        <pre class="statement-json">{{ formatStatementJson(stmt) }}</pre>
-                      }
-                    </div>
-                  }
+                    }
+                  </div>
+                }
+              </div>
+              <div class="assessment-panel assessment-panel-empty">
+                <div class="assessment-header assessment-header-inactive">
+                  <mat-icon fontIcon="mdi-clipboard-check-outline" class="mdi-18px"></mat-icon>
+                  <span>Competency Assessment</span>
                 </div>
-              }
+                <div class="no-competencies">No competencies at the move level.</div>
+              </div>
             </div>
           </td>
         </tr>
@@ -257,77 +266,86 @@ project root for license information or contact permission@sei.cmu.edu for full 
             + (msel.showGroupOnAssessorView ? 1 : 0)
             + (msel.showTimeOnAssessorView ? 1 : 0)
             + (msel.showIntegrationTargetOnAssessorView ? 1 : 0)">
-            <div class="event-detail">
-              <div class="statements-header">
-                <mat-icon fontIcon="mdi-clipboard-text-outline" class="mdi-18px"></mat-icon>
-                <span>xAPI Evidence — Group {{ row.groupNumber }}</span>
-                @if (getGroupStatements(row.groupKey).length > 0) {
-                  <span class="statement-count">{{ getFilteredGroupStatements(row.groupKey).length }} / {{ getGroupStatements(row.groupKey).length }}</span>
-                }
-                <div class="evidence-filters">
-                  @if (teamList.length > 0) {
-                  <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
-                    <mat-label>Team</mat-label>
-                    <mat-select [value]="getSectionTeams('group-' + row.groupKey)" (selectionChange)="filterByTeams('group-' + row.groupKey, $event.value)" multiple>
-                      @for (team of teamList; track team.id) {
-                        <mat-option [value]="team.id">{{ team.shortName }}</mat-option>
-                      }
-                    </mat-select>
-                  </mat-form-field>
+            <div class="event-detail-split">
+              <div class="evidence-panel">
+                <div class="statements-header">
+                  <mat-icon fontIcon="mdi-clipboard-text-outline" class="mdi-18px"></mat-icon>
+                  <span>xAPI Evidence — Group {{ row.groupNumber }}</span>
+                  @if (getGroupStatements(row.groupKey).length > 0) {
+                    <span class="statement-count">{{ getFilteredGroupStatements(row.groupKey).length }} / {{ getGroupStatements(row.groupKey).length }}</span>
                   }
-                  <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
-                    <mat-label>Source</mat-label>
-                    <mat-select [value]="getSectionSources('group-' + row.groupKey)" (selectionChange)="filterBySources('group-' + row.groupKey, $event.value)" multiple>
-                      <mat-option value="blueprint">Blueprint</mat-option>
-                      <mat-option value="cite">CITE</mat-option>
-                      <mat-option value="steamfitter">Steamfitter</mat-option>
-                      <mat-option value="player">Player</mat-option>
-                      <mat-option value="gallery">Gallery</mat-option>
-                    </mat-select>
-                  </mat-form-field>
-                  <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
-                    <mat-label>Verb</mat-label>
-                    <mat-select [value]="getSectionVerbs('group-' + row.groupKey)" (selectionChange)="filterByVerbs('group-' + row.groupKey, $event.value)" multiple>
-                      @for (verb of availableVerbs; track verb) {
-                        <mat-option [value]="verb">{{ verb }}</mat-option>
-                      }
-                    </mat-select>
-                  </mat-form-field>
+                  <div class="evidence-filters">
+                    @if (teamList.length > 0) {
+                    <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
+                      <mat-label>Team</mat-label>
+                      <mat-select [value]="getSectionTeams('group-' + row.groupKey)" (selectionChange)="filterByTeams('group-' + row.groupKey, $event.value)" multiple>
+                        @for (team of teamList; track team.id) {
+                          <mat-option [value]="team.id">{{ team.shortName }}</mat-option>
+                        }
+                      </mat-select>
+                    </mat-form-field>
+                    }
+                    <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
+                      <mat-label>Source</mat-label>
+                      <mat-select [value]="getSectionSources('group-' + row.groupKey)" (selectionChange)="filterBySources('group-' + row.groupKey, $event.value)" multiple>
+                        <mat-option value="blueprint">Blueprint</mat-option>
+                        <mat-option value="cite">CITE</mat-option>
+                        <mat-option value="steamfitter">Steamfitter</mat-option>
+                        <mat-option value="player">Player</mat-option>
+                        <mat-option value="gallery">Gallery</mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                    <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
+                      <mat-label>Verb</mat-label>
+                      <mat-select [value]="getSectionVerbs('group-' + row.groupKey)" (selectionChange)="filterByVerbs('group-' + row.groupKey, $event.value)" multiple>
+                        @for (verb of availableVerbs; track verb) {
+                          <mat-option [value]="verb">{{ verb }}</mat-option>
+                        }
+                      </mat-select>
+                    </mat-form-field>
+                  </div>
+                  <button mat-icon-button class="refresh-button" (click)="refreshStatements()"
+                    title="Refresh xAPI statements" [disabled]="statementsLoading">
+                    <mat-icon class="mdi-18px" fontIcon="mdi-refresh"></mat-icon>
+                  </button>
                 </div>
-                <button mat-icon-button class="refresh-button" (click)="refreshStatements()"
-                  title="Refresh xAPI statements" [disabled]="statementsLoading">
-                  <mat-icon class="mdi-18px" fontIcon="mdi-refresh"></mat-icon>
-                </button>
-              </div>
-              @if (loadingStatements.has('_all')) {
-                <mat-progress-bar mode="indeterminate"></mat-progress-bar>
-              } @else if (getGroupStatements(row.groupKey).length === 0) {
-                <div class="no-statements">No xAPI statements found for this group.</div>
-              } @else {
-                <div class="statements-list">
-                  @for (stmt of getFilteredGroupStatements(row.groupKey); track $index) {
-                    <div class="statement-entry">
-                      <div class="statement-row" (click)="toggleStatement(stmt.id)"
-                        [class.statement-expanded]="expandedStatementIds.has(stmt.id)">
-                        <button mat-icon-button class="copy-button" (click)="copyStatement(stmt, $event)" title="Copy JSON">
-                          <mat-icon class="mdi-14px" fontIcon="mdi-content-copy"></mat-icon>
-                        </button>
-                        <span class="statement-time">{{ formatTimestamp(stmt.timestamp) }}</span>
-                        <span class="stmt-move">{{ getMovePart(stmt) }}</span>
-                        <span class="stmt-group">{{ getGroupPart(stmt) }}</span>
-                        <span class="platform-badge" [ngClass]="getPlatformClass(stmt)">{{ stmt.context?.platform || '?' }}</span>
-                        <span class="stmt-actor">{{ stmt.actor?.name || stmt.actor?.account?.name || 'Unknown' }}</span>
-                        <span class="stmt-team">{{ stmt.context?.team?.name || '' }}</span>
-                        <span class="stmt-verb">{{ stmt.verb?.display?.['en-US'] || stmt.verb?.id?.split('/').pop() || '?' }}</span>
-                        <span class="stmt-object">{{ stmt.object?.definition?.name?.['en-US'] || stmt.object?.id || '?' }}</span>
+                @if (loadingStatements.has('_all')) {
+                  <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+                } @else if (getGroupStatements(row.groupKey).length === 0) {
+                  <div class="no-statements">No xAPI statements found for this group.</div>
+                } @else {
+                  <div class="statements-list">
+                    @for (stmt of getFilteredGroupStatements(row.groupKey); track $index) {
+                      <div class="statement-entry">
+                        <div class="statement-row" (click)="toggleStatement(stmt.id)"
+                          [class.statement-expanded]="expandedStatementIds.has(stmt.id)">
+                          <button mat-icon-button class="copy-button" (click)="copyStatement(stmt, $event)" title="Copy JSON">
+                            <mat-icon class="mdi-14px" fontIcon="mdi-content-copy"></mat-icon>
+                          </button>
+                          <span class="statement-time">{{ formatTimestamp(stmt.timestamp) }}</span>
+                          <span class="stmt-move">{{ getMovePart(stmt) }}</span>
+                          <span class="stmt-group">{{ getGroupPart(stmt) }}</span>
+                          <span class="platform-badge" [ngClass]="getPlatformClass(stmt)">{{ stmt.context?.platform || '?' }}</span>
+                          <span class="stmt-actor">{{ stmt.actor?.name || stmt.actor?.account?.name || 'Unknown' }}</span>
+                          <span class="stmt-team">{{ stmt.context?.team?.name || '' }}</span>
+                          <span class="stmt-verb">{{ stmt.verb?.display?.['en-US'] || stmt.verb?.id?.split('/').pop() || '?' }}</span>
+                          <span class="stmt-object">{{ stmt.object?.definition?.name?.['en-US'] || stmt.object?.id || '?' }}</span>
+                        </div>
+                        @if (expandedStatementIds.has(stmt.id)) {
+                          <pre class="statement-json">{{ formatStatementJson(stmt) }}</pre>
+                        }
                       </div>
-                      @if (expandedStatementIds.has(stmt.id)) {
-                        <pre class="statement-json">{{ formatStatementJson(stmt) }}</pre>
-                      }
-                    </div>
-                  }
+                    }
+                  </div>
+                }
+              </div>
+              <div class="assessment-panel assessment-panel-empty">
+                <div class="assessment-header assessment-header-inactive">
+                  <mat-icon fontIcon="mdi-clipboard-check-outline" class="mdi-18px"></mat-icon>
+                  <span>Competency Assessment</span>
                 </div>
-              }
+                <div class="no-competencies">No competencies at the group level.</div>
+              </div>
             </div>
           </td>
         </tr>
@@ -400,7 +418,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </td>
           }
         </tr>
-        <!-- xAPI evidence detail row -->
+        <!-- xAPI evidence + competency assessment detail row -->
         @if (expandedEventIds.has(row.event.id)) {
         <tr class="detail-row">
           <td [attr.colspan]="assessorDataFields.length + 2
@@ -408,75 +426,150 @@ project root for license information or contact permission@sei.cmu.edu for full 
             + (msel.showGroupOnAssessorView ? 1 : 0)
             + (msel.showTimeOnAssessorView ? 1 : 0)
             + (msel.showIntegrationTargetOnAssessorView ? 1 : 0)">
-            <div class="event-detail">
-              <div class="statements-header">
-                <mat-icon fontIcon="mdi-clipboard-text-outline" class="mdi-18px"></mat-icon>
-                <span>xAPI Evidence</span>
-                @if (getStatements(row.event.id).length > 0) {
-                  <span class="statement-count">{{ getFilteredStatements(row.event.id).length }} / {{ getStatements(row.event.id).length }}</span>
-                }
-                <div class="evidence-filters">
-                  @if (teamList.length > 0) {
-                  <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
-                    <mat-label>Team</mat-label>
-                    <mat-select [value]="getSectionTeams('event-' + row.event.id)" (selectionChange)="filterByTeams('event-' + row.event.id, $event.value)" multiple>
-                      @for (team of teamList; track team.id) {
-                        <mat-option [value]="team.id">{{ team.shortName }}</mat-option>
-                      }
-                    </mat-select>
-                  </mat-form-field>
+            <div class="event-detail-split">
+              <!-- Left: xAPI Evidence -->
+              <div class="evidence-panel">
+                <div class="statements-header">
+                  <mat-icon fontIcon="mdi-clipboard-text-outline" class="mdi-18px"></mat-icon>
+                  <span>xAPI Evidence</span>
+                  @if (getStatements(row.event.id).length > 0) {
+                    <span class="statement-count">{{ getFilteredStatements(row.event.id).length }} / {{ getStatements(row.event.id).length }}</span>
                   }
-                  <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
-                    <mat-label>Source</mat-label>
-                    <mat-select [value]="getSectionSources('event-' + row.event.id)" (selectionChange)="filterBySources('event-' + row.event.id, $event.value)" multiple>
-                      <mat-option value="blueprint">Blueprint</mat-option>
-                      <mat-option value="cite">CITE</mat-option>
-                      <mat-option value="steamfitter">Steamfitter</mat-option>
-                      <mat-option value="player">Player</mat-option>
-                      <mat-option value="gallery">Gallery</mat-option>
-                    </mat-select>
-                  </mat-form-field>
-                  <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
-                    <mat-label>Verb</mat-label>
-                    <mat-select [value]="getSectionVerbs('event-' + row.event.id)" (selectionChange)="filterByVerbs('event-' + row.event.id, $event.value)" multiple>
-                      @for (verb of availableVerbs; track verb) {
-                        <mat-option [value]="verb">{{ verb }}</mat-option>
-                      }
-                    </mat-select>
-                  </mat-form-field>
+                  <div class="evidence-filters">
+                    @if (teamList.length > 0) {
+                    <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
+                      <mat-label>Team</mat-label>
+                      <mat-select [value]="getSectionTeams('event-' + row.event.id)" (selectionChange)="filterByTeams('event-' + row.event.id, $event.value)" multiple>
+                        @for (team of teamList; track team.id) {
+                          <mat-option [value]="team.id">{{ team.shortName }}</mat-option>
+                        }
+                      </mat-select>
+                    </mat-form-field>
+                    }
+                    <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
+                      <mat-label>Source</mat-label>
+                      <mat-select [value]="getSectionSources('event-' + row.event.id)" (selectionChange)="filterBySources('event-' + row.event.id, $event.value)" multiple>
+                        <mat-option value="blueprint">Blueprint</mat-option>
+                        <mat-option value="cite">CITE</mat-option>
+                        <mat-option value="steamfitter">Steamfitter</mat-option>
+                        <mat-option value="player">Player</mat-option>
+                        <mat-option value="gallery">Gallery</mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                    <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
+                      <mat-label>Verb</mat-label>
+                      <mat-select [value]="getSectionVerbs('event-' + row.event.id)" (selectionChange)="filterByVerbs('event-' + row.event.id, $event.value)" multiple>
+                        @for (verb of availableVerbs; track verb) {
+                          <mat-option [value]="verb">{{ verb }}</mat-option>
+                        }
+                      </mat-select>
+                    </mat-form-field>
+                  </div>
+                  <button mat-icon-button class="refresh-button" (click)="refreshStatements()"
+                    title="Refresh xAPI statements" [disabled]="isLoading(row.event.id)">
+                    <mat-icon class="mdi-18px" fontIcon="mdi-refresh"></mat-icon>
+                  </button>
                 </div>
-                <button mat-icon-button class="refresh-button" (click)="refreshStatements()"
-                  title="Refresh xAPI statements" [disabled]="isLoading(row.event.id)">
-                  <mat-icon class="mdi-18px" fontIcon="mdi-refresh"></mat-icon>
-                </button>
-              </div>
-              @if (isLoading(row.event.id)) {
-                <mat-progress-bar mode="indeterminate"></mat-progress-bar>
-              } @else if (getStatements(row.event.id).length === 0) {
-                <div class="no-statements">No xAPI statements found for this event.</div>
-              } @else {
-                <div class="statements-list">
-                  @for (stmt of getFilteredStatements(row.event.id); track $index) {
-                    <div class="statement-entry">
-                      <div class="statement-row" (click)="toggleStatement(stmt.id)"
-                        [class.statement-expanded]="expandedStatementIds.has(stmt.id)">
-                        <button mat-icon-button class="copy-button" (click)="copyStatement(stmt, $event)" title="Copy JSON">
-                          <mat-icon class="mdi-14px" fontIcon="mdi-content-copy"></mat-icon>
-                        </button>
-                        <span class="statement-time">{{ formatTimestamp(stmt.timestamp) }}</span>
-                        <span class="stmt-move">{{ getMovePart(stmt) }}</span>
-                        <span class="stmt-group">{{ getGroupPart(stmt) }}</span>
-                        <span class="platform-badge" [ngClass]="getPlatformClass(stmt)">{{ stmt.context?.platform || '?' }}</span>
-                        <span class="stmt-actor">{{ stmt.actor?.name || stmt.actor?.account?.name || 'Unknown' }}</span>
-                        <span class="stmt-team">{{ stmt.context?.team?.name || '' }}</span>
-                        <span class="stmt-verb">{{ stmt.verb?.display?.['en-US'] || stmt.verb?.id?.split('/').pop() || '?' }}</span>
-                        <span class="stmt-object">{{ stmt.object?.definition?.name?.['en-US'] || stmt.object?.id || '?' }}</span>
+                @if (isLoading(row.event.id)) {
+                  <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+                } @else if (getStatements(row.event.id).length === 0) {
+                  <div class="no-statements">No xAPI statements found for this event.</div>
+                } @else {
+                  <div class="statements-list">
+                    @for (stmt of getFilteredStatements(row.event.id); track $index) {
+                      <div class="statement-entry">
+                        <div class="statement-row" (click)="toggleStatement(stmt.id)"
+                          [class.statement-expanded]="expandedStatementIds.has(stmt.id)">
+                          <button mat-icon-button class="copy-button" (click)="copyStatement(stmt, $event)" title="Copy JSON">
+                            <mat-icon class="mdi-14px" fontIcon="mdi-content-copy"></mat-icon>
+                          </button>
+                          <span class="statement-time">{{ formatTimestamp(stmt.timestamp) }}</span>
+                          <span class="stmt-move">{{ getMovePart(stmt) }}</span>
+                          <span class="stmt-group">{{ getGroupPart(stmt) }}</span>
+                          <span class="platform-badge" [ngClass]="getPlatformClass(stmt)">{{ stmt.context?.platform || '?' }}</span>
+                          <span class="stmt-actor">{{ stmt.actor?.name || stmt.actor?.account?.name || 'Unknown' }}</span>
+                          <span class="stmt-team">{{ stmt.context?.team?.name || '' }}</span>
+                          <span class="stmt-verb">{{ stmt.verb?.display?.['en-US'] || stmt.verb?.id?.split('/').pop() || '?' }}</span>
+                          <span class="stmt-object">{{ stmt.object?.definition?.name?.['en-US'] || stmt.object?.id || '?' }}</span>
+                        </div>
+                        @if (expandedStatementIds.has(stmt.id)) {
+                          <pre class="statement-json">{{ formatStatementJson(stmt) }}</pre>
+                        }
                       </div>
-                      @if (expandedStatementIds.has(stmt.id)) {
-                        <pre class="statement-json">{{ formatStatementJson(stmt) }}</pre>
-                      }
+                    }
+                  </div>
+                }
+              </div>
+              <!-- Right: Competency Assessment -->
+              @if (getEventCompetencies(row.event.id).length > 0) {
+                <div class="assessment-panel">
+                  <div class="assessment-header">
+                    <mat-icon fontIcon="mdi-clipboard-check-outline" class="mdi-18px"></mat-icon>
+                    <span>Competency Assessment</span>
+                  </div>
+                  @if (teamList.length > 0) {
+                    <mat-form-field class="assessment-team-field" subscriptSizing="dynamic">
+                      <mat-label>Assess Team</mat-label>
+                      <mat-select [value]="getAssertionTeam(row.event.id)" (selectionChange)="setAssertionTeam(row.event.id, $event.value)">
+                        <mat-option value="">None</mat-option>
+                        @for (team of teamList; track team.id) {
+                          <mat-option [value]="team.id">{{ team.shortName }}</mat-option>
+                        }
+                      </mat-select>
+                    </mat-form-field>
+                  }
+                  <div class="competency-ratings">
+                    @for (comp of getEventCompetencies(row.event.id); track comp.id) {
+                      <div class="rating-card" [class.rating-submitted]="isRatingSubmitted(row.event.id, comp.id)">
+                        <div class="rating-comp-id">{{ comp.idNumber }}</div>
+                        <div class="rating-comp-name">{{ comp.shortName }}</div>
+                        <mat-form-field class="rating-level-field" subscriptSizing="dynamic">
+                          <mat-label>Rating</mat-label>
+                          <mat-select [value]="getRating(row.event.id, comp.id).levelId"
+                            (selectionChange)="setRatingLevel(row.event.id, comp.id, $event.value)">
+                            @for (level of proficiencyLevels; track level.id) {
+                              <mat-option [value]="level.id" [title]="level.description">{{ level.name }} ({{ level.value }})</mat-option>
+                            }
+                          </mat-select>
+                        </mat-form-field>
+                        <mat-form-field class="rating-comment-field" subscriptSizing="dynamic">
+                          <mat-label>Comment</mat-label>
+                          <input matInput [value]="getRating(row.event.id, comp.id).comment"
+                            (input)="setRatingComment(row.event.id, comp.id, $event.target.value)" />
+                        </mat-form-field>
+                        <div class="rating-actions">
+                          <button mat-icon-button class="rating-submit-button"
+                            [disabled]="!canSubmitRating(row.event.id, comp.id)"
+                            (click)="submitRating(row.event.id, comp.id)"
+                            title="Submit assertion">
+                            <mat-icon class="mdi-18px" fontIcon="mdi-send"></mat-icon>
+                          </button>
+                          @if (isRatingSubmitted(row.event.id, comp.id)) {
+                            <span class="rating-submitted-indicator">
+                              <mat-icon fontIcon="mdi-check-circle" class="mdi-14px"></mat-icon>
+                              Submitted
+                            </span>
+                          }
+                        </div>
+                      </div>
+                    }
+                  </div>
+                  @if (hasAnyRatings(row.event.id)) {
+                    <div class="assessment-actions">
+                      <button mat-stroked-button (click)="submitAllRatings(row.event.id)" class="submit-all-button">
+                        <mat-icon fontIcon="mdi-send-check" class="mdi-18px"></mat-icon>
+                        Submit All
+                      </button>
                     </div>
                   }
+                </div>
+              } @else {
+                <div class="assessment-panel assessment-panel-empty">
+                  <div class="assessment-header assessment-header-inactive">
+                    <mat-icon fontIcon="mdi-clipboard-check-outline" class="mdi-18px"></mat-icon>
+                    <span>Competency Assessment</span>
+                  </div>
+                  <div class="no-competencies">No competencies on this event.</div>
                 </div>
               }
             </div>
