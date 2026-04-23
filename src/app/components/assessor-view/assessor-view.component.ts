@@ -608,8 +608,7 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
         // If we have a group, add to group bucket only (not move)
         if (moveInfo.group != null) {
           const gk = `${moveNum}-${moveInfo.group}`;
-          if (!this.groupStatements.has(gk)) this.groupStatements.set(gk, []);
-          this.groupStatements.get(gk).push(stmt);
+          let matchedEvent = false;
 
           const stmtPlatform = (stmt.context?.platform || '').toLowerCase();
           const stmtObjectName = (stmt.object?.definition?.name?.['en-US'] || '').toLowerCase();
@@ -617,17 +616,23 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
             for (const event of moveGroupToEvents.get(gk)) {
               const eventTarget = (event.integrationTarget || '').toLowerCase();
               if (eventTarget && stmtPlatform && eventTarget === stmtPlatform) {
-                // Only attach if there's one matching event or object name matches an event data value
                 const groupEvents = moveGroupToEvents.get(gk).filter(e =>
                   (e.integrationTarget || '').toLowerCase() === stmtPlatform
                 );
                 if (groupEvents.length === 1) {
                   this.eventStatements.get(event.id).push(stmt);
+                  matchedEvent = true;
                 } else if (stmtObjectName && this.eventNameContains(event, stmtObjectName)) {
                   this.eventStatements.get(event.id).push(stmt);
+                  matchedEvent = true;
                 }
               }
             }
+          }
+
+          if (!matchedEvent) {
+            if (!this.groupStatements.has(gk)) this.groupStatements.set(gk, []);
+            this.groupStatements.get(gk).push(stmt);
           }
         } else {
           // Move-only (no group) — add to move bucket

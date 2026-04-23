@@ -171,6 +171,30 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 @if (getMoveStatements(row.moveNumber).length > 0) {
                   <span class="statement-count">{{ getFilteredMoveStatements(row.moveNumber).length }} / {{ getMoveStatements(row.moveNumber).length }}</span>
                 }
+                <div class="evidence-filters">
+                  @if (teamList.length > 0) {
+                  <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
+                    <mat-label>Team</mat-label>
+                    <mat-select [value]="selectedTeamId" (selectionChange)="filterByTeam($event.value)">
+                      <mat-option [value]="null">All</mat-option>
+                      @for (team of teamList; track team.id) {
+                        <mat-option [value]="team.id">{{ team.shortName }}</mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+                  }
+                  <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
+                    <mat-label>Source</mat-label>
+                    <mat-select [value]="selectedSource" (selectionChange)="filterBySource($event.value)">
+                      <mat-option [value]="null">All</mat-option>
+                      <mat-option value="blueprint">Blueprint</mat-option>
+                      <mat-option value="cite">CITE</mat-option>
+                      <mat-option value="steamfitter">Steamfitter</mat-option>
+                      <mat-option value="player">Player</mat-option>
+                      <mat-option value="gallery">Gallery</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </div>
                 <button mat-icon-button class="refresh-button" (click)="refreshStatements()"
                   title="Refresh xAPI statements" [disabled]="statementsLoading">
                   <mat-icon class="mdi-18px" fontIcon="mdi-refresh"></mat-icon>
@@ -245,6 +269,30 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 @if (getGroupStatements(row.groupKey).length > 0) {
                   <span class="statement-count">{{ getFilteredGroupStatements(row.groupKey).length }} / {{ getGroupStatements(row.groupKey).length }}</span>
                 }
+                <div class="evidence-filters">
+                  @if (teamList.length > 0) {
+                  <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
+                    <mat-label>Team</mat-label>
+                    <mat-select [value]="selectedTeamId" (selectionChange)="filterByTeam($event.value)">
+                      <mat-option [value]="null">All</mat-option>
+                      @for (team of teamList; track team.id) {
+                        <mat-option [value]="team.id">{{ team.shortName }}</mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+                  }
+                  <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
+                    <mat-label>Source</mat-label>
+                    <mat-select [value]="selectedSource" (selectionChange)="filterBySource($event.value)">
+                      <mat-option [value]="null">All</mat-option>
+                      <mat-option value="blueprint">Blueprint</mat-option>
+                      <mat-option value="cite">CITE</mat-option>
+                      <mat-option value="steamfitter">Steamfitter</mat-option>
+                      <mat-option value="player">Player</mat-option>
+                      <mat-option value="gallery">Gallery</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </div>
                 <button mat-icon-button class="refresh-button" (click)="refreshStatements()"
                   title="Refresh xAPI statements" [disabled]="statementsLoading">
                   <mat-icon class="mdi-18px" fontIcon="mdi-refresh"></mat-icon>
