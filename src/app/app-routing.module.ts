@@ -16,6 +16,7 @@ import { LaunchComponent } from './components/landing/launch/launch.component';
 import { ManageComponent } from './components/landing/manage/manage.component';
 import { StarterComponent } from './components/starter/starter.component';
 import { EventDetailPageComponent } from './components/event-detail-page/event-detail-page.component';
+import { IntegrationInProgressGuard } from './services/integration-in-progress.guard';
 
 export const ROUTES: Routes = [
   {
@@ -27,6 +28,7 @@ export const ROUTES: Routes = [
     path: 'build',
     component: HomeAppComponent,
     canActivate: [ComnAuthGuardService],
+    canDeactivate: [IntegrationInProgressGuard],
   },
   {
     path: 'join',
