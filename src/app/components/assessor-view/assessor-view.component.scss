@@ -90,10 +90,6 @@ td {
   padding: 0 !important;
 }
 
-.shift-left {
-  margin-left: 10px;
-  width: 300px;
-}
 
 .scenario-event-button {
   width: 30px !important;
@@ -317,13 +313,28 @@ td {
 .filter-bar {
   display: flex;
   align-items: baseline;
-  gap: 12px;
-  flex-wrap: nowrap;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 4px 0;
 }
 
-.filter-field {
-  min-width: 140px;
-  max-width: 220px;
+.search-field {
+  min-width: 180px;
+  max-width: 280px;
+  font-size: 13px;
+}
+
+.top-filter-field {
+  min-width: 120px;
+  max-width: 180px;
+  font-size: 13px;
+}
+
+.clear-filters-button {
+  width: 28px !important;
+  height: 28px !important;
+  padding: 0 !important;
+  align-self: center;
 }
 
 .statement-count {

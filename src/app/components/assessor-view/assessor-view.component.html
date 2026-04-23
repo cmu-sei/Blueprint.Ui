@@ -17,10 +17,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <thead matSort (matSortChange)="sortChanged($event)">
         @if (showSearch) {
         <tr>
-          <th colspan="5">
+          <th [attr.colspan]="assessorDataFields.length + 2
+            + (msel.showMoveOnAssessorView ? 1 : 0)
+            + (msel.showGroupOnAssessorView ? 1 : 0)
+            + (msel.showTimeOnAssessorView ? 1 : 0)
+            + (msel.showIntegrationTargetOnAssessorView ? 1 : 0)">
             <div class="filter-bar">
-              <span class="center-self">Search</span>
-              <mat-form-field class="center-self shift-left">
+              <mat-form-field class="search-field" subscriptSizing="dynamic">
+                <mat-label>Search</mat-label>
                 <input matInput [(ngModel)]="filterString" (keyup)="keyUp.next($event)" />
                 @if (filterString) {
                 <button mat-icon-button matSuffix (click)="applyFilter('')" title="Clear Search">
@@ -28,6 +32,21 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 </button>
                 }
               </mat-form-field>
+              @for (df of filterableFields; track df.id) {
+              <mat-form-field class="top-filter-field" subscriptSizing="dynamic">
+                <mat-label>{{ df.name }}</mat-label>
+                <mat-select [value]="getTopFieldFilter(df.id)" (selectionChange)="setTopFieldFilter(df.id, $event.value)" multiple>
+                  @for (val of getFieldDistinctValues(df); track val) {
+                    <mat-option [value]="val">{{ val }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+              }
+              @if (hasActiveTopFilters) {
+              <button mat-icon-button (click)="clearAllTopFilters()" title="Clear All Filters" class="clear-filters-button">
+                <mat-icon class="mdi-18px" fontIcon="mdi-filter-remove-outline"></mat-icon>
+              </button>
+              }
             </div>
           </th>
         </tr>

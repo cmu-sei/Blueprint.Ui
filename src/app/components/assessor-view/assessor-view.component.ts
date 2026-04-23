@@ -109,10 +109,16 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
     sanitize: false,
   };
 
+  private static FILTERABLE_TYPES = new Set([
+    'Organization', 'Team', 'TeamsMultiple', 'Status', 'Card',
+    'SourceType', 'Move', 'IntegrationTarget', 'Checkbox', 'Competency',
+  ]);
+
   sortableDataTypes = this.scenarioEventDataService.sortableDataTypes;
   showRealTime = false;
   showSearch = false;
   selectedMoveNumber: number | null = null;
+  topFieldFilters = new Map<string, string[]>();
   sectionTeamFilter = new Map<string, string[]>();
   sectionSourceFilter = new Map<string, string[]>();
   sectionVerbFilter = new Map<string, string[]>();
@@ -498,12 +504,70 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
     return `Group ${groupNumber}`;
   }
 
+  get filterableFields(): DataField[] {
+    return this.assessorDataFields.filter(df =>
+      AssessorViewComponent.FILTERABLE_TYPES.has(df.dataType?.toString() || '')
+      || (df.isChosenFromList && df.dataOptions?.length > 0)
+    );
+  }
+
+  getFieldDistinctValues(df: DataField): string[] {
+    if (df.dataOptions?.length > 0) {
+      return df.dataOptions.map(o => o.optionName).filter(n => !!n).sort();
+    }
+    const vals = new Set<string>();
+    for (const event of this.mselScenarioEvents) {
+      const dv = this.getDataValue(event, df.name);
+      const v = (dv.value || '').trim();
+      if (v) vals.add(v);
+    }
+    return Array.from(vals).sort();
+  }
+
+  getTopFieldFilter(fieldId: string): string[] {
+    return this.topFieldFilters.get(fieldId) ?? [];
+  }
+
+  setTopFieldFilter(fieldId: string, values: string[]) {
+    this.topFieldFilters.set(fieldId, values);
+  }
+
+  clearAllTopFilters() {
+    this.topFieldFilters.clear();
+    this.filterString = '';
+    this.scenarioEventDataService.updateScenarioEventViewDisplayedEvents(this);
+  }
+
+  get hasActiveTopFilters(): boolean {
+    for (const vals of this.topFieldFilters.values()) {
+      if (vals.length > 0) return true;
+    }
+    return !!this.filterString;
+  }
+
+  private applyTopFieldFilters(events: ScenarioEvent[]): ScenarioEvent[] {
+    for (const [fieldId, selected] of this.topFieldFilters) {
+      if (selected.length === 0) continue;
+      const df = this.assessorDataFields.find(d => d.id === fieldId);
+      if (!df) continue;
+      events = events.filter(event => {
+        const dv = this.getDataValue(event, df.name);
+        const val = (dv.value || '').trim();
+        if (!val) return false;
+        if (val.toUpperCase() === 'ALL') return true;
+        return selected.some(s => val.toLowerCase().includes(s.toLowerCase()));
+      });
+    }
+    return events;
+  }
+
   get displayRows(): { type: 'move' | 'group' | 'event'; moveNumber?: number; groupNumber?: number; groupKey?: string; event?: ScenarioEvent; rowIndex?: number }[] {
+    const filtered = this.applyTopFieldFilters(this.displayedScenarioEvents);
     const rows: { type: 'move' | 'group' | 'event'; moveNumber?: number; groupNumber?: number; groupKey?: string; event?: ScenarioEvent; rowIndex?: number }[] = [];
     let lastMove = -1;
     let lastGroup = '';
     let rowIndex = 0;
-    for (const event of this.displayedScenarioEvents) {
+    for (const event of filtered) {
       const nums = this.moveAndGroupNumbers[event.id];
       const moveNum = nums ? +nums[0] : 0;
       const groupNum = nums ? +nums[1] : 0;
