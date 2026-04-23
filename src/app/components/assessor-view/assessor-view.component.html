@@ -7,7 +7,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
   @if (msel) {
   @if (assessorDataFields.length === 0) {
     <div class="empty-state">
-      <mat-icon fontIcon="mdi-alert-circle-outline" class="mdi-48px"></mat-icon>
+      <mat-icon fontIcon="mdi-alert-circle-outline" style="font-size: 48px; width: 48px; height: 48px;"></mat-icon>
       <p>No data fields are marked as assessor-visible.</p>
       <p>Go to the Data Fields tab and enable "Assessor View" on the fields you want assessors to see.</p>
     </div>
@@ -238,13 +238,77 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   </div>
                 }
               </div>
-              <div class="assessment-panel assessment-panel-empty">
-                <div class="assessment-header assessment-header-inactive">
-                  <mat-icon fontIcon="mdi-clipboard-check-outline" class="mdi-18px"></mat-icon>
-                  <span>Competency Assessment</span>
+              @if (getMoveCompetencies(row.moveNumber).length > 0) {
+                <div class="assessment-panel">
+                  <div class="assessment-header">
+                    <mat-icon fontIcon="mdi-clipboard-check-outline" class="mdi-18px"></mat-icon>
+                    <span>Move {{ row.moveNumber }} — Competency Assessment</span>
+                  </div>
+                  @if (teamList.length > 0) {
+                    <mat-form-field class="assessment-team-field" subscriptSizing="dynamic">
+                      <mat-label>Assess Team</mat-label>
+                      <mat-select [value]="getAssertionTeam('move-' + row.moveNumber)" (selectionChange)="setAssertionTeam('move-' + row.moveNumber, $event.value)">
+                        <mat-option value="">None</mat-option>
+                        @for (team of teamList; track team.id) {
+                          <mat-option [value]="team.id">{{ team.shortName }}</mat-option>
+                        }
+                      </mat-select>
+                    </mat-form-field>
+                  }
+                  <div class="competency-ratings">
+                    @for (comp of getMoveCompetencies(row.moveNumber); track comp.id) {
+                      <div class="rating-card" [class.rating-submitted]="isRatingSubmitted('move-' + row.moveNumber, comp.id)">
+                        <div class="rating-comp-id">{{ comp.idNumber }}</div>
+                        <div class="rating-comp-name">{{ comp.shortName }}</div>
+                        <mat-form-field class="rating-level-field" subscriptSizing="dynamic">
+                          <mat-label>Rating</mat-label>
+                          <mat-select [value]="getRating('move-' + row.moveNumber, comp.id).levelId"
+                            (selectionChange)="setRatingLevel('move-' + row.moveNumber, comp.id, $event.value)">
+                            @for (level of proficiencyLevels; track level.id) {
+                              <mat-option [value]="level.id" [title]="level.description">{{ level.name }} ({{ level.value }})</mat-option>
+                            }
+                          </mat-select>
+                        </mat-form-field>
+                        <mat-form-field class="rating-comment-field" subscriptSizing="dynamic">
+                          <mat-label>Comment</mat-label>
+                          <input matInput [value]="getRating('move-' + row.moveNumber, comp.id).comment"
+                            (input)="setRatingComment('move-' + row.moveNumber, comp.id, $event.target.value)" />
+                        </mat-form-field>
+                        <div class="rating-actions">
+                          <button mat-icon-button class="rating-submit-button"
+                            [disabled]="!canSubmitRating('move-' + row.moveNumber, comp.id)"
+                            (click)="submitRating('move-' + row.moveNumber, comp.id)"
+                            title="Submit assertion">
+                            <mat-icon class="mdi-18px" fontIcon="mdi-send"></mat-icon>
+                          </button>
+                          @if (isRatingSubmitted('move-' + row.moveNumber, comp.id)) {
+                            <span class="rating-submitted-indicator">
+                              <mat-icon fontIcon="mdi-check-circle" class="mdi-14px"></mat-icon>
+                              Submitted
+                            </span>
+                          }
+                        </div>
+                      </div>
+                    }
+                  </div>
+                  @if (hasAnyRatings('move-' + row.moveNumber)) {
+                    <div class="assessment-actions">
+                      <button mat-stroked-button (click)="submitAllRatings('move-' + row.moveNumber)" class="submit-all-button">
+                        <mat-icon fontIcon="mdi-send-check" class="mdi-18px"></mat-icon>
+                        Submit All
+                      </button>
+                    </div>
+                  }
                 </div>
-                <div class="no-competencies">No competencies at the move level.</div>
-              </div>
+              } @else {
+                <div class="assessment-panel assessment-panel-empty">
+                  <div class="assessment-header assessment-header-inactive">
+                    <mat-icon fontIcon="mdi-clipboard-check-outline" class="mdi-18px"></mat-icon>
+                    <span>Competency Assessment</span>
+                  </div>
+                  <div class="no-competencies">No competencies in this move.</div>
+                </div>
+              }
             </div>
           </td>
         </tr>
@@ -363,13 +427,77 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   </div>
                 }
               </div>
-              <div class="assessment-panel assessment-panel-empty">
-                <div class="assessment-header assessment-header-inactive">
-                  <mat-icon fontIcon="mdi-clipboard-check-outline" class="mdi-18px"></mat-icon>
-                  <span>Competency Assessment</span>
+              @if (getGroupCompetencies(row.groupKey).length > 0) {
+                <div class="assessment-panel">
+                  <div class="assessment-header">
+                    <mat-icon fontIcon="mdi-clipboard-check-outline" class="mdi-18px"></mat-icon>
+                    <span>Group {{ row.groupNumber }} — Competency Assessment</span>
+                  </div>
+                  @if (teamList.length > 0) {
+                    <mat-form-field class="assessment-team-field" subscriptSizing="dynamic">
+                      <mat-label>Assess Team</mat-label>
+                      <mat-select [value]="getAssertionTeam('group-' + row.groupKey)" (selectionChange)="setAssertionTeam('group-' + row.groupKey, $event.value)">
+                        <mat-option value="">None</mat-option>
+                        @for (team of teamList; track team.id) {
+                          <mat-option [value]="team.id">{{ team.shortName }}</mat-option>
+                        }
+                      </mat-select>
+                    </mat-form-field>
+                  }
+                  <div class="competency-ratings">
+                    @for (comp of getGroupCompetencies(row.groupKey); track comp.id) {
+                      <div class="rating-card" [class.rating-submitted]="isRatingSubmitted('group-' + row.groupKey, comp.id)">
+                        <div class="rating-comp-id">{{ comp.idNumber }}</div>
+                        <div class="rating-comp-name">{{ comp.shortName }}</div>
+                        <mat-form-field class="rating-level-field" subscriptSizing="dynamic">
+                          <mat-label>Rating</mat-label>
+                          <mat-select [value]="getRating('group-' + row.groupKey, comp.id).levelId"
+                            (selectionChange)="setRatingLevel('group-' + row.groupKey, comp.id, $event.value)">
+                            @for (level of proficiencyLevels; track level.id) {
+                              <mat-option [value]="level.id" [title]="level.description">{{ level.name }} ({{ level.value }})</mat-option>
+                            }
+                          </mat-select>
+                        </mat-form-field>
+                        <mat-form-field class="rating-comment-field" subscriptSizing="dynamic">
+                          <mat-label>Comment</mat-label>
+                          <input matInput [value]="getRating('group-' + row.groupKey, comp.id).comment"
+                            (input)="setRatingComment('group-' + row.groupKey, comp.id, $event.target.value)" />
+                        </mat-form-field>
+                        <div class="rating-actions">
+                          <button mat-icon-button class="rating-submit-button"
+                            [disabled]="!canSubmitRating('group-' + row.groupKey, comp.id)"
+                            (click)="submitRating('group-' + row.groupKey, comp.id)"
+                            title="Submit assertion">
+                            <mat-icon class="mdi-18px" fontIcon="mdi-send"></mat-icon>
+                          </button>
+                          @if (isRatingSubmitted('group-' + row.groupKey, comp.id)) {
+                            <span class="rating-submitted-indicator">
+                              <mat-icon fontIcon="mdi-check-circle" class="mdi-14px"></mat-icon>
+                              Submitted
+                            </span>
+                          }
+                        </div>
+                      </div>
+                    }
+                  </div>
+                  @if (hasAnyRatings('group-' + row.groupKey)) {
+                    <div class="assessment-actions">
+                      <button mat-stroked-button (click)="submitAllRatings('group-' + row.groupKey)" class="submit-all-button">
+                        <mat-icon fontIcon="mdi-send-check" class="mdi-18px"></mat-icon>
+                        Submit All
+                      </button>
+                    </div>
+                  }
                 </div>
-                <div class="no-competencies">No competencies at the group level.</div>
-              </div>
+              } @else {
+                <div class="assessment-panel assessment-panel-empty">
+                  <div class="assessment-header assessment-header-inactive">
+                    <mat-icon fontIcon="mdi-clipboard-check-outline" class="mdi-18px"></mat-icon>
+                    <span>Competency Assessment</span>
+                  </div>
+                  <div class="no-competencies">No competencies in this group.</div>
+                </div>
+              }
             </div>
           </td>
         </tr>

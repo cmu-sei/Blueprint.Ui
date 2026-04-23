@@ -21,6 +21,7 @@ import {
   ProficiencyScale,
   ScenarioEvent,
   Team,
+  TeamCompetency,
   User,
 } from 'src/app/generated/blueprint.api';
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
@@ -34,6 +35,8 @@ import { OrganizationQuery } from 'src/app/data/organization/organization.query'
 import { TeamQuery } from 'src/app/data/team/team.query';
 import { MselCompetencyQuery } from 'src/app/data/msel-competency/msel-competency.query';
 import { MselCompetencyDataService } from 'src/app/data/msel-competency/msel-competency-data.service';
+import { TeamCompetencyQuery } from 'src/app/data/team-competency/team-competency.query';
+import { TeamCompetencyDataService } from 'src/app/data/team-competency/team-competency-data.service';
 import { CompetencyFrameworkService, ProficiencyScaleService } from 'src/app/generated/blueprint.api/api/api';
 import {
   DataValuePlus,
@@ -144,6 +147,7 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
 
   // Competency assessment
   mselCompetencies: MselCompetency[] = [];
+  teamCompetencies: TeamCompetency[] = [];
   proficiencyScale: ProficiencyScale | null = null;
   proficiencyLevels: ProficiencyLevel[] = [];
   eventRatings = new Map<string, Map<string, { levelId: string; comment: string }>>();
@@ -170,6 +174,8 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
     private settingsService: ComnSettingsService,
     private mselCompetencyQuery: MselCompetencyQuery,
     private mselCompetencyDataService: MselCompetencyDataService,
+    private teamCompetencyQuery: TeamCompetencyQuery,
+    private teamCompetencyDataService: TeamCompetencyDataService,
     private competencyFrameworkService: CompetencyFrameworkService,
     private proficiencyScaleService: ProficiencyScaleService
   ) {
@@ -184,6 +190,7 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
           this.msel = { ...msel } as MselPlus;
           if (mselChanged && msel.id) {
             this.mselCompetencyDataService.loadByMsel(msel.id);
+            this.teamCompetencyDataService.loadByMsel(msel.id);
           }
         }
       });
@@ -264,6 +271,12 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
       .subscribe(mcs => {
         this.mselCompetencies = mcs;
         this.loadProficiencyScale();
+      });
+
+    this.teamCompetencyQuery.selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(tcs => {
+        this.teamCompetencies = tcs;
       });
 
     this.subscription = this.keyUp
@@ -836,10 +849,25 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
       if (stmt.object?.definition?.type !== 'http://adlnet.gov/expapi/activities/competency') continue;
 
       const grouping = stmt.context?.contextActivities?.grouping || [];
+
+      let contextKey: string | null = null;
       const eventGrouping = grouping.find(g => (g.id || '').includes('scenarioevents/'));
-      if (!eventGrouping) continue;
-      const eventId = eventGrouping.id.split('scenarioevents/').pop();
-      if (!this.eventStatements.has(eventId)) continue;
+      if (eventGrouping) {
+        contextKey = eventGrouping.id.split('scenarioevents/').pop();
+        if (!this.eventStatements.has(contextKey)) contextKey = null;
+      }
+      if (!contextKey) {
+        const groupGrouping = grouping.find(g => (g.id || '').includes('/groups/'));
+        const moveGrouping = grouping.find(g => (g.id || '').includes('/moves/') && !(g.id || '').includes('/groups/'));
+        if (groupGrouping) {
+          const parts = groupGrouping.id.match(/moves\/(\d+)\/groups\/(\d+)/);
+          if (parts) contextKey = `group-${parts[1]}-${parts[2]}`;
+        } else if (moveGrouping) {
+          const parts = moveGrouping.id.match(/moves\/(\d+)/);
+          if (parts) contextKey = `move-${parts[1]}`;
+        }
+      }
+      if (!contextKey) continue;
 
       const objectId = stmt.object?.id || '';
       const mc = this.mselCompetencies.find(mc => {
@@ -857,22 +885,39 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
         : null;
 
       const teamId = stmt.context?.team?.account?.name || '';
-      const key = `${eventId}:${mc.competency.id}:${teamId}`;
+      const assertKey = `${contextKey}:${mc.competency.id}:${teamId}`;
 
-      if (this.submittedAssertions.has(key)) continue;
+      if (this.submittedAssertions.has(assertKey)) continue;
 
-      if (!this.eventRatings.has(eventId)) this.eventRatings.set(eventId, new Map());
-      const existing = this.eventRatings.get(eventId).get(mc.competency.id);
-      if (!existing || !existing.levelId) {
-        this.eventRatings.get(eventId).set(mc.competency.id, {
-          levelId: matchedLevel?.id || '',
-          comment: stmt.result?.response || '',
-        });
+      const ratingData = {
+        levelId: matchedLevel?.id || '',
+        comment: stmt.result?.response || '',
+      };
+
+      const keysToPopulate = [contextKey];
+      if (!contextKey.startsWith('move-') && !contextKey.startsWith('group-')) {
+        const nums = this.moveAndGroupNumbers[contextKey];
+        if (nums) {
+          keysToPopulate.push(`move-${+nums[0]}`);
+          keysToPopulate.push(`group-${+nums[0]}-${+nums[1]}`);
+        }
       }
-      this.submittedAssertions.add(key);
+
+      for (const ck of keysToPopulate) {
+        const ratingMapKey = teamId ? `${ck}::${teamId}` : ck;
+        if (!this.eventRatings.has(ratingMapKey)) this.eventRatings.set(ratingMapKey, new Map());
+        const existing = this.eventRatings.get(ratingMapKey).get(mc.competency.id);
+        if (!existing || !existing.levelId) {
+          this.eventRatings.get(ratingMapKey).set(mc.competency.id, ratingData);
+        }
+        const ak = `${ck}:${mc.competency.id}:${teamId}`;
+        this.submittedAssertions.add(ak);
+      }
 
       if (teamId) {
-        this.assertionTeam.set(eventId, teamId);
+        for (const ck of keysToPopulate) {
+          this.assertionTeam.set(ck, teamId);
+        }
       }
     }
   }
@@ -1113,7 +1158,70 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
   private allDataFields: DataField[] = [];
   private competencyFieldIds: string[] = [];
 
+  private filterByTeam(comps: Competency[], contextKey: string): Competency[] {
+    const teamId = this.getAssertionTeam(contextKey);
+    if (!teamId || this.teamCompetencies.length === 0) return comps;
+    const teamCompIds = new Set(
+      this.teamCompetencies.filter(tc => tc.teamId === teamId).map(tc => tc.competencyId)
+    );
+    const filtered = comps.filter(c => teamCompIds.has(c.id));
+    return filtered.length > 0 ? filtered : comps;
+  }
+
   getEventCompetencies(eventId: string): Competency[] {
+    if (this.competencyFieldIds.length === 0 || this.mselCompetencies.length === 0) return [];
+    const allIdNumbers = new Set<string>();
+    for (const fieldId of this.competencyFieldIds) {
+      const dv = this.dataValues.find(v =>
+        v.scenarioEventId === eventId && v.dataFieldId === fieldId
+      );
+      if (dv?.value) {
+        dv.value.split(',').map(s => s.trim()).filter(s => s).forEach(s => allIdNumbers.add(s));
+      }
+    }
+    if (allIdNumbers.size === 0) return [];
+    const comps = Array.from(allIdNumbers)
+      .map(idNum => this.mselCompetencies.find(mc => mc.competency?.idNumber === idNum)?.competency)
+      .filter(c => !!c);
+    return this.filterByTeam(comps, eventId);
+  }
+
+  getMoveCompetencies(moveNumber: number): Competency[] {
+    const contextKey = 'move-' + moveNumber;
+    const seen = new Set<string>();
+    const result: Competency[] = [];
+    for (const event of this.displayedScenarioEvents) {
+      const nums = this.moveAndGroupNumbers[event.id];
+      if (!nums || +nums[0] !== moveNumber) continue;
+      for (const comp of this.getAllEventCompetencies(event.id)) {
+        if (!seen.has(comp.id)) {
+          seen.add(comp.id);
+          result.push(comp);
+        }
+      }
+    }
+    return this.filterByTeam(result, contextKey);
+  }
+
+  getGroupCompetencies(groupKey: string): Competency[] {
+    const contextKey = 'group-' + groupKey;
+    const seen = new Set<string>();
+    const result: Competency[] = [];
+    for (const event of this.displayedScenarioEvents) {
+      const nums = this.moveAndGroupNumbers[event.id];
+      if (!nums) continue;
+      if (`${+nums[0]}-${+nums[1]}` !== groupKey) continue;
+      for (const comp of this.getAllEventCompetencies(event.id)) {
+        if (!seen.has(comp.id)) {
+          seen.add(comp.id);
+          result.push(comp);
+        }
+      }
+    }
+    return this.filterByTeam(result, contextKey);
+  }
+
+  private getAllEventCompetencies(eventId: string): Competency[] {
     if (this.competencyFieldIds.length === 0 || this.mselCompetencies.length === 0) return [];
     const allIdNumbers = new Set<string>();
     for (const fieldId of this.competencyFieldIds) {
@@ -1130,21 +1238,29 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
       .filter(c => !!c);
   }
 
-  getRating(eventId: string, competencyId: string): { levelId: string; comment: string } {
-    const eventMap = this.eventRatings.get(eventId);
-    return eventMap?.get(competencyId) ?? { levelId: '', comment: '' };
+  private ratingKey(contextKey: string): string {
+    const teamId = this.getAssertionTeam(contextKey);
+    return teamId ? `${contextKey}::${teamId}` : contextKey;
   }
 
-  setRatingLevel(eventId: string, competencyId: string, levelId: string) {
-    if (!this.eventRatings.has(eventId)) this.eventRatings.set(eventId, new Map());
-    const existing = this.getRating(eventId, competencyId);
-    this.eventRatings.get(eventId).set(competencyId, { ...existing, levelId });
+  getRating(contextKey: string, competencyId: string): { levelId: string; comment: string } {
+    const key = this.ratingKey(contextKey);
+    const map = this.eventRatings.get(key);
+    return map?.get(competencyId) ?? { levelId: '', comment: '' };
   }
 
-  setRatingComment(eventId: string, competencyId: string, comment: string) {
-    if (!this.eventRatings.has(eventId)) this.eventRatings.set(eventId, new Map());
-    const existing = this.getRating(eventId, competencyId);
-    this.eventRatings.get(eventId).set(competencyId, { ...existing, comment });
+  setRatingLevel(contextKey: string, competencyId: string, levelId: string) {
+    const key = this.ratingKey(contextKey);
+    if (!this.eventRatings.has(key)) this.eventRatings.set(key, new Map());
+    const existing = this.getRating(contextKey, competencyId);
+    this.eventRatings.get(key).set(competencyId, { ...existing, levelId });
+  }
+
+  setRatingComment(contextKey: string, competencyId: string, comment: string) {
+    const key = this.ratingKey(contextKey);
+    if (!this.eventRatings.has(key)) this.eventRatings.set(key, new Map());
+    const existing = this.getRating(contextKey, competencyId);
+    this.eventRatings.get(key).set(competencyId, { ...existing, comment });
   }
 
   getAssertionTeam(eventId: string): string {
@@ -1175,22 +1291,31 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
     return this.submittedAssertions.has(this.assertionKey(eventId, competencyId));
   }
 
-  submitRating(eventId: string, competencyId: string) {
-    const rating = this.getRating(eventId, competencyId);
+  submitRating(contextKey: string, competencyId: string) {
+    const rating = this.getRating(contextKey, competencyId);
     if (!rating.levelId) return;
-    const teamId = this.getAssertionTeam(eventId);
-    const key = this.assertionKey(eventId, competencyId);
+    const teamId = this.getAssertionTeam(contextKey);
+    const key = this.assertionKey(contextKey, competencyId);
     this.submittingAssertions.add(key);
 
     const baseUrl = this.apiUrl.endsWith('/') ? this.apiUrl : this.apiUrl + '/';
-    const body = {
+    const body: any = {
       mselId: this.msel.id,
       competencyId: competencyId,
-      scenarioEventId: eventId,
       teamId: teamId || null,
       proficiencyLevelId: rating.levelId,
       comment: rating.comment || null,
     };
+
+    if (contextKey.startsWith('move-')) {
+      body.moveNumber = parseInt(contextKey.replace('move-', ''), 10);
+    } else if (contextKey.startsWith('group-')) {
+      const parts = contextKey.replace('group-', '').split('-');
+      body.moveNumber = parseInt(parts[0], 10);
+      body.groupNumber = parseInt(parts[1], 10);
+    } else {
+      body.scenarioEventId = contextKey;
+    }
 
     this.http.post(`${baseUrl}api/xapi/assertions`, body).subscribe({
       next: () => {
@@ -1203,19 +1328,29 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
     });
   }
 
-  submitAllRatings(eventId: string) {
-    const comps = this.getEventCompetencies(eventId);
+  submitAllRatings(contextKey: string) {
+    const comps = this.getContextCompetencies(contextKey);
     for (const comp of comps) {
-      if (this.canSubmitRating(eventId, comp.id)) {
-        this.submitRating(eventId, comp.id);
+      if (this.canSubmitRating(contextKey, comp.id)) {
+        this.submitRating(contextKey, comp.id);
       }
     }
   }
 
-  hasAnyRatings(eventId: string): boolean {
-    const eventMap = this.eventRatings.get(eventId);
-    if (!eventMap) return false;
-    for (const r of eventMap.values()) {
+  private getContextCompetencies(contextKey: string): Competency[] {
+    if (contextKey.startsWith('move-')) {
+      return this.getMoveCompetencies(parseInt(contextKey.replace('move-', ''), 10));
+    } else if (contextKey.startsWith('group-')) {
+      return this.getGroupCompetencies(contextKey.replace('group-', ''));
+    }
+    return this.getEventCompetencies(contextKey);
+  }
+
+  hasAnyRatings(contextKey: string): boolean {
+    const key = this.ratingKey(contextKey);
+    const map = this.eventRatings.get(key);
+    if (!map) return false;
+    for (const r of map.values()) {
       if (r.levelId) return true;
     }
     return false;
