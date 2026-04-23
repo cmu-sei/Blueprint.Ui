@@ -590,7 +590,7 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
     const fwId = mc.competency?.competencyFrameworkId;
     if (!fwId) return '';
     const fw = this.frameworks.find(f => f.id === fwId);
-    return fw ? fw.name : '';
+    return fw ? fw.name + ' (' + fw.version + ')' : '';
   }
 
   private get competencyFieldIds(): Set<string> {

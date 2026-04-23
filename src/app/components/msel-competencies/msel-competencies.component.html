@@ -202,7 +202,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <mat-select [value]="frameworkFilter" (selectionChange)="onFrameworkFilterChange($event.value)">
           <mat-option value="">All</mat-option>
           @for (fw of poolFrameworks; track fw.id) {
-          <mat-option [value]="fw.id">{{ fw.name }}</mat-option>
+          <mat-option [value]="fw.id">{{ fw.name }} ({{ fw.version }})</mat-option>
           }
         </mat-select>
       </mat-form-field>

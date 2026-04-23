@@ -858,8 +858,10 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
     if (this.mselCompetencies.length === 0 || this.proficiencyLevels.length === 0) return;
 
     for (const stmt of this.allMselStatements) {
-      if (stmt.verb?.id !== 'https://w3id.org/xapi/dod-isd/verbs/asserted') continue;
-      if (stmt.object?.definition?.type !== 'http://adlnet.gov/expapi/activities/competency') continue;
+      const verbId = stmt.verb?.id || '';
+      if (verbId !== 'https://w3id.org/xapi/tla/verbs/asserted' && verbId !== 'https://w3id.org/xapi/dod-isd/verbs/asserted') continue;
+      const objType = stmt.object?.definition?.type || '';
+      if (objType !== 'https://w3id.org/xapi/tla/activity-types/competency' && objType !== 'http://adlnet.gov/expapi/activities/competency') continue;
 
       const grouping = stmt.context?.contextActivities?.grouping || [];
 
@@ -883,9 +885,11 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
       if (!contextKey) continue;
 
       const objectId = stmt.object?.id || '';
+      const compIdentifier = stmt.object?.definition?.extensions?.['https://w3id.org/xapi/tla/extensions/competency-identifier'] || '';
       const mc = this.mselCompetencies.find(mc => {
         const comp = mc.competency;
         if (!comp) return false;
+        if (compIdentifier && comp.idNumber === compIdentifier) return true;
         if (comp.idNumber?.startsWith('http') && objectId === comp.idNumber) return true;
         if (objectId.includes('competencies/' + comp.id)) return true;
         return false;
