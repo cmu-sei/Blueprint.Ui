@@ -114,10 +114,8 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
   showSearch = false;
   selectedMoveNumber: number | null = null;
   sectionTeamFilter = new Map<string, string | null>();
-  sectionSourceFilter = new Map<string, string | null>();
-  topSourceFilter: string | null = null;
-  topVerbFilter: string | null = null;
-  excludedSources: string[] = [];
+  sectionSourceFilter = new Map<string, string[]>();
+  sectionVerbFilter = new Map<string, string | null>();
   availableVerbs: string[] = [];
   keyUp = new Subject<KeyboardEvent>();
   private subscription: Subscription;
@@ -327,29 +325,26 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
     this.sectionTeamFilter.set(sectionKey, teamId);
   }
 
-  filterBySource(sectionKey: string, source: string | null) {
-    this.sectionSourceFilter.set(sectionKey, source);
+  filterBySources(sectionKey: string, sources: string[]) {
+    this.sectionSourceFilter.set(sectionKey, sources);
+  }
+
+  filterByVerb(sectionKey: string, verb: string | null) {
+    this.sectionVerbFilter.set(sectionKey, verb);
   }
 
   getSectionTeam(sectionKey: string): string | null {
     return this.sectionTeamFilter.get(sectionKey) ?? null;
   }
 
-  getSectionSource(sectionKey: string): string | null {
-    return this.sectionSourceFilter.get(sectionKey) ?? null;
+  getSectionSources(sectionKey: string): string[] {
+    return this.sectionSourceFilter.get(sectionKey) ?? [];
   }
 
-  setTopSourceFilter(source: string | null) {
-    this.topSourceFilter = source;
+  getSectionVerb(sectionKey: string): string | null {
+    return this.sectionVerbFilter.get(sectionKey) ?? null;
   }
 
-  setTopVerbFilter(verb: string | null) {
-    this.topVerbFilter = verb;
-  }
-
-  setExcludedSources(sources: string[]) {
-    this.excludedSources = sources;
-  }
 
   refreshStatements() {
     if (this.statementsLoading || !this.msel.id) return;
@@ -496,35 +491,28 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
   }
 
   private applyStatementFilters(stmts: XApiStatement[], sectionKey?: string): XApiStatement[] {
-    if (this.excludedSources.length > 0) {
-      stmts = stmts.filter(s =>
-        !this.excludedSources.includes((s.context?.platform || '').toLowerCase())
-      );
-    }
-    if (this.topSourceFilter) {
-      stmts = stmts.filter(s =>
-        (s.context?.platform || '').toLowerCase() === this.topSourceFilter
-      );
-    }
-    if (this.topVerbFilter) {
-      stmts = stmts.filter(s => {
-        const verb = s.verb?.display?.['en-US'] || s.verb?.id?.split('/').pop() || '';
-        return verb === this.topVerbFilter;
-      });
-    }
-    const source = sectionKey ? this.sectionSourceFilter.get(sectionKey) : null;
-    if (source) {
-      stmts = stmts.filter(s =>
-        (s.context?.platform || '').toLowerCase() === source
-      );
-    }
-    const teamId = sectionKey ? this.sectionTeamFilter.get(sectionKey) : null;
-    if (teamId) {
-      const team = this.teamList.find(t => t.id === teamId);
-      if (team) {
+    if (sectionKey) {
+      const sources = this.sectionSourceFilter.get(sectionKey);
+      if (sources && sources.length > 0) {
         stmts = stmts.filter(s =>
-          s.context?.team?.name === team.shortName || s.context?.team?.name === team.name
+          sources.includes((s.context?.platform || '').toLowerCase())
         );
+      }
+      const verb = this.sectionVerbFilter.get(sectionKey);
+      if (verb) {
+        stmts = stmts.filter(s => {
+          const v = s.verb?.display?.['en-US'] || s.verb?.id?.split('/').pop() || '';
+          return v === verb;
+        });
+      }
+      const teamId = this.sectionTeamFilter.get(sectionKey);
+      if (teamId) {
+        const team = this.teamList.find(t => t.id === teamId);
+        if (team) {
+          stmts = stmts.filter(s =>
+            s.context?.team?.name === team.shortName || s.context?.team?.name === team.name
+          );
+        }
       }
     }
     return stmts;

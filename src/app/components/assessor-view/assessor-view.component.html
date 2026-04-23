@@ -28,36 +28,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 </button>
                 }
               </mat-form-field>
-              <mat-form-field class="top-filter-field" subscriptSizing="dynamic">
-                <mat-label>Source</mat-label>
-                <mat-select [value]="topSourceFilter" (selectionChange)="setTopSourceFilter($event.value)">
-                  <mat-option [value]="null">All</mat-option>
-                  <mat-option value="blueprint">Blueprint</mat-option>
-                  <mat-option value="cite">CITE</mat-option>
-                  <mat-option value="steamfitter">Steamfitter</mat-option>
-                  <mat-option value="player">Player</mat-option>
-                  <mat-option value="gallery">Gallery</mat-option>
-                </mat-select>
-              </mat-form-field>
-              <mat-form-field class="top-filter-field" subscriptSizing="dynamic">
-                <mat-label>Exclude</mat-label>
-                <mat-select [value]="excludedSources" (selectionChange)="setExcludedSources($event.value)" multiple>
-                  <mat-option value="blueprint">Blueprint</mat-option>
-                  <mat-option value="cite">CITE</mat-option>
-                  <mat-option value="steamfitter">Steamfitter</mat-option>
-                  <mat-option value="player">Player</mat-option>
-                  <mat-option value="gallery">Gallery</mat-option>
-                </mat-select>
-              </mat-form-field>
-              <mat-form-field class="top-filter-field" subscriptSizing="dynamic">
-                <mat-label>Verb</mat-label>
-                <mat-select [value]="topVerbFilter" (selectionChange)="setTopVerbFilter($event.value)">
-                  <mat-option [value]="null">All</mat-option>
-                  @for (verb of availableVerbs; track verb) {
-                    <mat-option [value]="verb">{{ verb }}</mat-option>
-                  }
-                </mat-select>
-              </mat-form-field>
             </div>
           </th>
         </tr>
@@ -185,13 +155,21 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   }
                   <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
                     <mat-label>Source</mat-label>
-                    <mat-select [value]="getSectionSource('move-' + row.moveNumber)" (selectionChange)="filterBySource('move-' + row.moveNumber, $event.value)">
-                      <mat-option [value]="null">All</mat-option>
+                    <mat-select [value]="getSectionSources('move-' + row.moveNumber)" (selectionChange)="filterBySources('move-' + row.moveNumber, $event.value)" multiple>
                       <mat-option value="blueprint">Blueprint</mat-option>
                       <mat-option value="cite">CITE</mat-option>
                       <mat-option value="steamfitter">Steamfitter</mat-option>
                       <mat-option value="player">Player</mat-option>
                       <mat-option value="gallery">Gallery</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                  <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
+                    <mat-label>Verb</mat-label>
+                    <mat-select [value]="getSectionVerb('move-' + row.moveNumber)" (selectionChange)="filterByVerb('move-' + row.moveNumber, $event.value)">
+                      <mat-option [value]="null">All</mat-option>
+                      @for (verb of availableVerbs; track verb) {
+                        <mat-option [value]="verb">{{ verb }}</mat-option>
+                      }
                     </mat-select>
                   </mat-form-field>
                 </div>
@@ -283,13 +261,21 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   }
                   <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
                     <mat-label>Source</mat-label>
-                    <mat-select [value]="getSectionSource('group-' + row.groupKey)" (selectionChange)="filterBySource('group-' + row.groupKey, $event.value)">
-                      <mat-option [value]="null">All</mat-option>
+                    <mat-select [value]="getSectionSources('group-' + row.groupKey)" (selectionChange)="filterBySources('group-' + row.groupKey, $event.value)" multiple>
                       <mat-option value="blueprint">Blueprint</mat-option>
                       <mat-option value="cite">CITE</mat-option>
                       <mat-option value="steamfitter">Steamfitter</mat-option>
                       <mat-option value="player">Player</mat-option>
                       <mat-option value="gallery">Gallery</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                  <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
+                    <mat-label>Verb</mat-label>
+                    <mat-select [value]="getSectionVerb('group-' + row.groupKey)" (selectionChange)="filterByVerb('group-' + row.groupKey, $event.value)">
+                      <mat-option [value]="null">All</mat-option>
+                      @for (verb of availableVerbs; track verb) {
+                        <mat-option [value]="verb">{{ verb }}</mat-option>
+                      }
                     </mat-select>
                   </mat-form-field>
                 </div>
@@ -428,13 +414,21 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   }
                   <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
                     <mat-label>Source</mat-label>
-                    <mat-select [value]="getSectionSource('event-' + row.event.id)" (selectionChange)="filterBySource('event-' + row.event.id, $event.value)">
-                      <mat-option [value]="null">All</mat-option>
+                    <mat-select [value]="getSectionSources('event-' + row.event.id)" (selectionChange)="filterBySources('event-' + row.event.id, $event.value)" multiple>
                       <mat-option value="blueprint">Blueprint</mat-option>
                       <mat-option value="cite">CITE</mat-option>
                       <mat-option value="steamfitter">Steamfitter</mat-option>
                       <mat-option value="player">Player</mat-option>
                       <mat-option value="gallery">Gallery</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                  <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
+                    <mat-label>Verb</mat-label>
+                    <mat-select [value]="getSectionVerb('event-' + row.event.id)" (selectionChange)="filterByVerb('event-' + row.event.id, $event.value)">
+                      <mat-option [value]="null">All</mat-option>
+                      @for (verb of availableVerbs; track verb) {
+                        <mat-option [value]="verb">{{ verb }}</mat-option>
+                      }
                     </mat-select>
                   </mat-form-field>
                 </div>
