@@ -219,7 +219,19 @@ project root for license information or contact permission@sei.cmu.edu for full 
                           <span class="stmt-object">{{ stmt.object?.definition?.name?.['en-US'] || stmt.object?.id || '?' }}</span>
                         </div>
                         @if (expandedStatementIds.has(stmt.id)) {
-                          <pre class="statement-json">{{ formatStatementJson(stmt) }}</pre>
+                          <div class="statement-json">
+                            @for (section of getStatementSections(stmt); track section.key) {
+                              <div class="json-section" (click)="toggleJsonSection(stmt.id, section.key); $event.stopPropagation()">
+                                <span class="json-toggle">{{ isJsonSectionExpanded(stmt.id, section.key) ? '▼' : '▶' }}</span>
+                                <span class="json-key">"{{ section.key }}"</span>:
+                                @if (!isJsonSectionExpanded(stmt.id, section.key)) {
+                                  <span class="json-preview">{{ section.preview || '{...}' }}</span>
+                                } @else {
+                                  <pre class="json-value">{{ formatJson(section.value) }}</pre>
+                                }
+                              </div>
+                            }
+                          </div>
                         }
                       </div>
                     }
@@ -332,7 +344,19 @@ project root for license information or contact permission@sei.cmu.edu for full 
                           <span class="stmt-object">{{ stmt.object?.definition?.name?.['en-US'] || stmt.object?.id || '?' }}</span>
                         </div>
                         @if (expandedStatementIds.has(stmt.id)) {
-                          <pre class="statement-json">{{ formatStatementJson(stmt) }}</pre>
+                          <div class="statement-json">
+                            @for (section of getStatementSections(stmt); track section.key) {
+                              <div class="json-section" (click)="toggleJsonSection(stmt.id, section.key); $event.stopPropagation()">
+                                <span class="json-toggle">{{ isJsonSectionExpanded(stmt.id, section.key) ? '▼' : '▶' }}</span>
+                                <span class="json-key">"{{ section.key }}"</span>:
+                                @if (!isJsonSectionExpanded(stmt.id, section.key)) {
+                                  <span class="json-preview">{{ section.preview || '{...}' }}</span>
+                                } @else {
+                                  <pre class="json-value">{{ formatJson(section.value) }}</pre>
+                                }
+                              </div>
+                            }
+                          </div>
                         }
                       </div>
                     }
@@ -493,7 +517,19 @@ project root for license information or contact permission@sei.cmu.edu for full 
                           <span class="stmt-object">{{ stmt.object?.definition?.name?.['en-US'] || stmt.object?.id || '?' }}</span>
                         </div>
                         @if (expandedStatementIds.has(stmt.id)) {
-                          <pre class="statement-json">{{ formatStatementJson(stmt) }}</pre>
+                          <div class="statement-json">
+                            @for (section of getStatementSections(stmt); track section.key) {
+                              <div class="json-section" (click)="toggleJsonSection(stmt.id, section.key); $event.stopPropagation()">
+                                <span class="json-toggle">{{ isJsonSectionExpanded(stmt.id, section.key) ? '▼' : '▶' }}</span>
+                                <span class="json-key">"{{ section.key }}"</span>:
+                                @if (!isJsonSectionExpanded(stmt.id, section.key)) {
+                                  <span class="json-preview">{{ section.preview || '{...}' }}</span>
+                                } @else {
+                                  <pre class="json-value">{{ formatJson(section.value) }}</pre>
+                                }
+                              </div>
+                            }
+                          </div>
                         }
                       </div>
                     }

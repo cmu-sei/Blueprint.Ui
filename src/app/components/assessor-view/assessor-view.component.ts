@@ -1010,8 +1010,58 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
     navigator.clipboard.writeText(JSON.stringify(stmt, null, 2));
   }
 
-  formatStatementJson(stmt: XApiStatement): string {
-    return JSON.stringify(stmt, null, 2);
+  getStatementSections(stmt: XApiStatement): { key: string; value: any; preview: string }[] {
+    const sections: { key: string; value: any; preview: string }[] = [];
+    const keyOrder = ['actor', 'verb', 'object', 'result', 'context', 'timestamp', 'id'];
+    const raw = stmt as Record<string, any>;
+    for (const key of keyOrder) {
+      if (raw[key] === undefined) continue;
+      const val = raw[key];
+      let preview = '';
+      if (typeof val === 'string') {
+        preview = val;
+      } else if (key === 'actor') {
+        preview = val?.name || val?.account?.name || '';
+      } else if (key === 'verb') {
+        preview = val?.display?.['en-US'] || val?.id?.split('/').pop() || '';
+      } else if (key === 'object') {
+        preview = val?.definition?.name?.['en-US'] || val?.id || '';
+      } else if (key === 'result') {
+        const parts: string[] = [];
+        if (val?.score?.raw != null) parts.push(`score: ${val.score.raw}`);
+        if (val?.response) parts.push(`"${val.response.substring(0, 40)}${val.response.length > 40 ? '...' : ''}"`);
+        if (val?.completion != null) parts.push(val.completion ? 'complete' : 'incomplete');
+        preview = parts.join(', ');
+      } else if (key === 'context') {
+        const parts: string[] = [];
+        if (val?.platform) parts.push(val.platform);
+        if (val?.team?.name) parts.push(val.team.name);
+        preview = parts.join(', ');
+      }
+      sections.push({ key, value: val, preview });
+    }
+    for (const key of Object.keys(raw)) {
+      if (!keyOrder.includes(key)) {
+        sections.push({ key, value: raw[key], preview: '' });
+      }
+    }
+    return sections;
+  }
+
+  expandedJsonSections = new Map<string, Set<string>>();
+
+  isJsonSectionExpanded(stmtId: string, key: string): boolean {
+    return this.expandedJsonSections.get(stmtId)?.has(key) || false;
+  }
+
+  toggleJsonSection(stmtId: string, key: string) {
+    if (!this.expandedJsonSections.has(stmtId)) this.expandedJsonSections.set(stmtId, new Set());
+    const set = this.expandedJsonSections.get(stmtId);
+    if (set.has(key)) set.delete(key); else set.add(key);
+  }
+
+  formatJson(value: any): string {
+    return JSON.stringify(value, null, 2);
   }
 
   formatTimestamp(timestamp: string): string {

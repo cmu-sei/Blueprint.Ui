@@ -215,6 +215,46 @@ td {
   overflow-x: auto;
   max-height: 400px;
   overflow-y: auto;
+  color: var(--mat-sys-on-surface);
+}
+
+.json-section {
+  padding: 2px 0;
+  cursor: pointer;
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+
+  &:hover {
+    background-color: var(--mat-sys-surface-container-highest);
+  }
+}
+
+.json-toggle {
+  font-size: 9px;
+  width: 12px;
+  flex-shrink: 0;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.json-key {
+  color: var(--mat-sys-on-surface);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.json-preview {
+  color: var(--mat-sys-on-surface-variant);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.json-value {
+  margin: 4px 0 4px 16px;
+  padding: 0;
+  font-size: 11px;
+  font-family: monospace;
   white-space: pre-wrap;
   word-break: break-all;
   color: var(--mat-sys-on-surface);
