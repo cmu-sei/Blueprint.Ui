@@ -74,6 +74,7 @@ export interface XApiStatement {
 export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
   @Input() loggedInUserId: string;
   @Input() userTheme: Theme;
+  @Input() canEditCheckboxes = false;
   msel = new MselPlus();
 
   // ScenarioEventView fields

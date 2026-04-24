@@ -150,7 +150,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <td>
             <div class="constrainer" [style]="getStyle(df)">
               <mat-checkbox [checked]="getDisplayValue(item, df.name)"
-                (change)="saveDataValue(item, df, $event.checked.toString())"></mat-checkbox>
+                [disabled]="true"></mat-checkbox>
             </div>
           </td>
           }

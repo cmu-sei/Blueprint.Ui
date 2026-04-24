@@ -12,9 +12,18 @@ project root for license information or contact permission@sei.cmu.edu for full 
   ></app-topbar>
 
   @if (selectedMselId) {
-    <app-assessor-view
-      [loggedInUserId]="loggedInUserId"
-      [userTheme]="userTheme$ | async"
-    ></app-assessor-view>
+    @if (!canViewAssessorPage) {
+      <div class="no-access-message">
+        <mat-icon fontIcon="mdi-alert-circle-outline" style="font-size: 48px; width: 48px; height: 48px;"></mat-icon>
+        <h3>Access Denied</h3>
+        <p>You need at least Editor role on this MSEL to view the assessor page.</p>
+      </div>
+    } @else {
+      <app-assessor-view
+        [loggedInUserId]="loggedInUserId"
+        [userTheme]="userTheme$ | async"
+        [canEditCheckboxes]="canEditAssessorPage"
+      ></app-assessor-view>
+    }
   }
 </div>

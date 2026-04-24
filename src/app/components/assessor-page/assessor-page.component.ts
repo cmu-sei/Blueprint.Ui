@@ -10,7 +10,7 @@ import {
   ComnSettingsService,
   ComnAuthQuery,
 } from '@cmusei/crucible-common';
-import { Msel } from 'src/app/generated/blueprint.api';
+import { Msel, MselRole, UserMselRole } from 'src/app/generated/blueprint.api';
 import { DataFieldDataService } from 'src/app/data/data-field/data-field-data.service';
 import { DataOptionDataService } from 'src/app/data/data-option/data-option-data.service';
 import { DataValueDataService } from 'src/app/data/data-value/data-value-data.service';
@@ -21,6 +21,8 @@ import { ScenarioEventDataService } from 'src/app/data/scenario-event/scenario-e
 import { TeamDataService } from 'src/app/data/team/team-data.service';
 import { UserDataService } from 'src/app/data/user/user-data.service';
 import { CurrentUserQuery } from 'src/app/data/user/user.query';
+import { UserMselRoleDataService } from 'src/app/data/user-msel-role/user-msel-role-data.service';
+import { UserMselRoleQuery } from 'src/app/data/user-msel-role/user-msel-role.query';
 import { TopbarView } from '../shared/top-bar/topbar.models';
 
 @Component({
@@ -42,6 +44,10 @@ export class AssessorPageComponent implements OnDestroy, OnInit {
   topbarTextBase = 'Set AppTopBarText in Settings';
   topbarText = 'blank';
   appTitle = '';
+  userMselRole: UserMselRole | null = null;
+  canEditAssessorPage = false;
+  canViewAssessorPage = false;
+  isSystemAdmin = false;
 
   constructor(
     private activatedRoute: ActivatedRoute,
@@ -58,7 +64,9 @@ export class AssessorPageComponent implements OnDestroy, OnInit {
     private currentUserQuery: CurrentUserQuery,
     private authQuery: ComnAuthQuery,
     private settingsService: ComnSettingsService,
-    private titleService: Title
+    private titleService: Title,
+    private userMselRoleDataService: UserMselRoleDataService,
+    private userMselRoleQuery: UserMselRoleQuery
   ) {
     this.activatedRoute.queryParamMap
       .pipe(takeUntil(this.unsubscribe$))
@@ -74,6 +82,7 @@ export class AssessorPageComponent implements OnDestroy, OnInit {
           this.dataOptionDataService.loadByMsel(mselId);
           this.dataValueDataService.loadByMsel(mselId);
           this.scenarioEventDataService.loadByMsel(mselId);
+          this.userMselRoleDataService.loadByMsel(mselId);
           this.selectedMselId = mselId;
         }
       });
@@ -106,7 +115,53 @@ export class AssessorPageComponent implements OnDestroy, OnInit {
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((cu) => {
         this.loggedInUserId = cu.id;
+        this.isSystemAdmin = cu.permissions?.some(p =>
+          p.key === 'SystemAdmin' || p.key === 'ContentDeveloper'
+        ) || false;
+        this.updateRolePermissions();
       });
+
+    // Watch for user MSEL role changes
+    this.userMselRoleQuery.selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((roles) => {
+        this.updateRolePermissions();
+      });
+  }
+
+  private updateRolePermissions() {
+    if (!this.loggedInUserId || !this.selectedMselId) {
+      this.canViewAssessorPage = false;
+      this.canEditAssessorPage = false;
+      return;
+    }
+
+    // System admins have full access
+    if (this.isSystemAdmin) {
+      this.canViewAssessorPage = true;
+      this.canEditAssessorPage = true;
+      return;
+    }
+
+    // Find user's role for this MSEL
+    const roles = this.userMselRoleQuery.getAll();
+    this.userMselRole = roles.find(r =>
+      r.userId === this.loggedInUserId && r.mselId === this.selectedMselId
+    ) || null;
+
+    if (!this.userMselRole) {
+      this.canViewAssessorPage = false;
+      this.canEditAssessorPage = false;
+      return;
+    }
+
+    // Editor or higher can view assessor page
+    const viewRoles = [MselRole.Owner, MselRole.Editor, MselRole.Approver, MselRole.Evaluator];
+    this.canViewAssessorPage = viewRoles.includes(this.userMselRole.role);
+
+    // Only Evaluator, Owner can edit (check/uncheck checkboxes)
+    const editRoles = [MselRole.Owner, MselRole.Evaluator];
+    this.canEditAssessorPage = editRoles.includes(this.userMselRole.role);
   }
 
   goToUrl(url): void {
