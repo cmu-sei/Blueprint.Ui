@@ -52,7 +52,7 @@ export interface XApiStatement {
   id?: string;
   actor?: { name?: string; account?: { name?: string } };
   verb?: { id?: string; display?: { 'en-US'?: string } };
-  object?: { id?: string; definition?: { name?: { 'en-US'?: string }; type?: string } };
+  object?: { id?: string; definition?: { name?: { 'en-US'?: string }; type?: string; extensions?: Record<string, any> } };
   result?: { score?: { raw?: number }; completion?: boolean; success?: boolean; response?: string };
   timestamp?: string;
   context?: {
