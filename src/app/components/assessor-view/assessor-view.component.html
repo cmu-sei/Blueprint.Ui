@@ -68,11 +68,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
               </button>
               }
               <button mat-icon-button (click)="expandAll()" class="header-button"
-                title="Expand All (Ctrl+Shift+E)">
+                title="Expand All (Ctrl+Shift+E)" [disabled]="isFullyExpanded">
                 <mat-icon class="mdi-24px" fontIcon="mdi-unfold-more-horizontal"></mat-icon>
               </button>
               <button mat-icon-button (click)="collapseAll()" class="header-button"
-                title="Collapse All (Ctrl+Shift+C)">
+                title="Collapse All (Ctrl+Shift+C)" [disabled]="isFullyCollapsed">
                 <mat-icon class="mdi-24px" fontIcon="mdi-unfold-less-horizontal"></mat-icon>
               </button>
             </div>
@@ -150,15 +150,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
               <mat-icon fontIcon="mdi-folder-outline" class="mdi-18px"></mat-icon>
               <span class="section-label">Move {{ row.moveNumber }}</span>
               <span class="section-description">{{ getMoveDescription(row.moveNumber) }}</span>
-              <span style="flex-grow: 1;"></span>
-              <button mat-icon-button (click)="expandAllInMove(row.moveNumber); $event.stopPropagation()"
-                class="header-button" title="Expand all in Move {{ row.moveNumber }}">
-                <mat-icon class="mdi-18px" fontIcon="mdi-unfold-more-horizontal"></mat-icon>
-              </button>
-              <button mat-icon-button (click)="collapseAllInMove(row.moveNumber); $event.stopPropagation()"
-                class="header-button" title="Collapse all in Move {{ row.moveNumber }}">
-                <mat-icon class="mdi-18px" fontIcon="mdi-unfold-less-horizontal"></mat-icon>
-              </button>
             </div>
           </td>
         </tr>
@@ -347,15 +338,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <div class="section-header-content">
               <mat-icon fontIcon="mdi-group" class="mdi-18px"></mat-icon>
               <span class="section-label">Group {{ row.groupNumber }}</span>
-              <span style="flex-grow: 1;"></span>
-              <button mat-icon-button (click)="expandAllInGroup(row.moveNumber, row.groupOrder); $event.stopPropagation()"
-                class="header-button" title="Expand all in Group {{ row.groupNumber }}">
-                <mat-icon class="mdi-18px" fontIcon="mdi-unfold-more-horizontal"></mat-icon>
-              </button>
-              <button mat-icon-button (click)="collapseAllInGroup(row.moveNumber, row.groupOrder); $event.stopPropagation()"
-                class="header-button" title="Collapse all in Group {{ row.groupNumber }}">
-                <mat-icon class="mdi-18px" fontIcon="mdi-unfold-less-horizontal"></mat-icon>
-              </button>
             </div>
           </td>
         </tr>

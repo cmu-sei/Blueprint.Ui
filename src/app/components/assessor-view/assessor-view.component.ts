@@ -566,6 +566,26 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
     this.expandedEventIds.clear();
   }
 
+  get isFullyExpanded(): boolean {
+    const rows = this.displayRows;
+    return rows.every(row => {
+      if (row.type === 'move' && row.moveNumber !== undefined) {
+        return this.expandedMoveNumbers.has(row.moveNumber);
+      } else if (row.type === 'group' && row.groupKey) {
+        return this.expandedGroupKeys.has(row.groupKey);
+      } else if (row.type === 'event' && row.event?.id) {
+        return this.expandedEventIds.has(row.event.id);
+      }
+      return true;
+    });
+  }
+
+  get isFullyCollapsed(): boolean {
+    return this.expandedMoveNumbers.size === 0 &&
+           this.expandedGroupKeys.size === 0 &&
+           this.expandedEventIds.size === 0;
+  }
+
   expandAllInMove(moveNumber: number) {
     // Expand the move itself
     this.expandedMoveNumbers.add(moveNumber);
