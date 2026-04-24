@@ -562,7 +562,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <app-data-value
               [value]="getDataValue(row.event, df.name).value"
               [dataField]="df"
-              [canEdit]="canEditCheckboxes"
+              [canEdit]="canEditCheckboxes && (df.dataType.toString() === 'Checkbox')"
               [canApprove]="false"
               [isOwner]="false"
               [showValueOnly]="true"
