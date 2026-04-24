@@ -149,7 +149,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           @if (df.dataType.toString() === 'Checkbox') {
           <td>
             <div class="constrainer" [style]="getStyle(df)">
-              <mat-checkbox [checked]="getDisplayValue(item, df.name)"
+              <mat-checkbox [checked]="getDisplayValue(item, df.name) === 'true' || getDisplayValue(item, df.name) === true"
                 [disabled]="true"></mat-checkbox>
             </div>
           </td>
