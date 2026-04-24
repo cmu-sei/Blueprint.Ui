@@ -67,6 +67,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 <mat-icon class="mdi-24px" fontIcon="mdi-filter-off-outline"></mat-icon>
               </button>
               }
+              <button mat-icon-button (click)="expandAll()" class="header-button"
+                title="Expand All (Ctrl+Shift+E)">
+                <mat-icon class="mdi-24px" fontIcon="mdi-unfold-more-horizontal"></mat-icon>
+              </button>
+              <button mat-icon-button (click)="collapseAll()" class="header-button"
+                title="Collapse All (Ctrl+Shift+C)">
+                <mat-icon class="mdi-24px" fontIcon="mdi-unfold-less-horizontal"></mat-icon>
+              </button>
             </div>
           </th>
           <!-- row number header -->
@@ -126,13 +134,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
         @for (row of displayRows; track $index) {
         <!-- Move header row -->
         @if (row.type === 'move') {
-        <tr class="move-header-row">
+        <tr class="move-header-row" (click)="toggleMoveExpand(row.moveNumber)" style="cursor: pointer;" title="Click to expand/collapse move">
           <td class="expand-col">
-            <button mat-icon-button class="scenario-event-button" (click)="toggleMoveExpand(row.moveNumber)"
-              title="Show move xAPI evidence">
-              <mat-icon class="mdi-24px"
-                [fontIcon]="expandedMoveNumbers.has(row.moveNumber) ? 'mdi-chevron-down' : 'mdi-chevron-right'"></mat-icon>
-            </button>
+            <mat-icon class="mdi-24px"
+              [fontIcon]="expandedMoveNumbers.has(row.moveNumber) ? 'mdi-chevron-down' : 'mdi-chevron-right'"
+              style="display: flex; align-items: center; justify-content: center; opacity: 0.6;">
+            </mat-icon>
           </td>
           <td [attr.colspan]="assessorDataFields.length + 1
             + (msel.showMoveOnAssessorView ? 1 : 0)
@@ -143,6 +150,15 @@ project root for license information or contact permission@sei.cmu.edu for full 
               <mat-icon fontIcon="mdi-folder-outline" class="mdi-18px"></mat-icon>
               <span class="section-label">Move {{ row.moveNumber }}</span>
               <span class="section-description">{{ getMoveDescription(row.moveNumber) }}</span>
+              <span style="flex-grow: 1;"></span>
+              <button mat-icon-button (click)="expandAllInMove(row.moveNumber); $event.stopPropagation()"
+                class="header-button" title="Expand all in Move {{ row.moveNumber }}">
+                <mat-icon class="mdi-18px" fontIcon="mdi-unfold-more-horizontal"></mat-icon>
+              </button>
+              <button mat-icon-button (click)="collapseAllInMove(row.moveNumber); $event.stopPropagation()"
+                class="header-button" title="Collapse all in Move {{ row.moveNumber }}">
+                <mat-icon class="mdi-18px" fontIcon="mdi-unfold-less-horizontal"></mat-icon>
+              </button>
             </div>
           </td>
         </tr>
@@ -316,13 +332,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
         }
         <!-- Group header row -->
         @if (row.type === 'group') {
-        <tr class="group-header-row">
+        <tr class="group-header-row" (click)="toggleGroupExpand(row.groupKey)" style="cursor: pointer;" title="Click to expand/collapse group">
           <td class="expand-col">
-            <button mat-icon-button class="scenario-event-button" (click)="toggleGroupExpand(row.groupKey)"
-              title="Show group xAPI evidence">
-              <mat-icon class="mdi-24px"
-                [fontIcon]="expandedGroupKeys.has(row.groupKey) ? 'mdi-chevron-down' : 'mdi-chevron-right'"></mat-icon>
-            </button>
+            <mat-icon class="mdi-24px"
+              [fontIcon]="expandedGroupKeys.has(row.groupKey) ? 'mdi-chevron-down' : 'mdi-chevron-right'"
+              style="display: flex; align-items: center; justify-content: center; opacity: 0.6;">
+            </mat-icon>
           </td>
           <td [attr.colspan]="assessorDataFields.length + 1
             + (msel.showMoveOnAssessorView ? 1 : 0)
@@ -332,6 +347,15 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <div class="section-header-content">
               <mat-icon fontIcon="mdi-group" class="mdi-18px"></mat-icon>
               <span class="section-label">Group {{ row.groupNumber }}</span>
+              <span style="flex-grow: 1;"></span>
+              <button mat-icon-button (click)="expandAllInGroup(row.moveNumber, row.groupOrder); $event.stopPropagation()"
+                class="header-button" title="Expand all in Group {{ row.groupNumber }}">
+                <mat-icon class="mdi-18px" fontIcon="mdi-unfold-more-horizontal"></mat-icon>
+              </button>
+              <button mat-icon-button (click)="collapseAllInGroup(row.moveNumber, row.groupOrder); $event.stopPropagation()"
+                class="header-button" title="Collapse all in Group {{ row.groupNumber }}">
+                <mat-icon class="mdi-18px" fontIcon="mdi-unfold-less-horizontal"></mat-icon>
+              </button>
             </div>
           </td>
         </tr>
@@ -505,14 +529,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
         }
         <!-- Event row -->
         @if (row.type === 'event') {
-        <tr [style]="getRowStyle(row.event)">
-          <!-- expand button -->
+        <tr [style]="getRowStyle(row.event)" (click)="toggleEvent(row.event.id)" style="cursor: pointer;" title="Click to expand/collapse">
+          <!-- expand indicator -->
           <td class="expand-col">
-            <button mat-icon-button class="scenario-event-button" (click)="toggleEvent(row.event.id)"
-              title="Show xAPI evidence">
-              <mat-icon class="mdi-24px"
-                [fontIcon]="expandedEventIds.has(row.event.id) ? 'mdi-chevron-down' : 'mdi-chevron-right'"></mat-icon>
-            </button>
+            <mat-icon class="mdi-24px"
+              [fontIcon]="expandedEventIds.has(row.event.id) ? 'mdi-chevron-down' : 'mdi-chevron-right'"
+              style="display: flex; align-items: center; justify-content: center; opacity: 0.6;">
+            </mat-icon>
           </td>
           <!-- row number -->
           <td class="row-num-col">

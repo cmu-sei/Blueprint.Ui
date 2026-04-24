@@ -1,7 +1,7 @@
 // Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, Input, OnDestroy } from '@angular/core';
+import { Component, Input, OnDestroy, HostListener } from '@angular/core';
 import { Subject, Subscription, Observable, of } from 'rxjs';
 import { takeUntil, debounceTime, distinctUntilChanged, mergeMap, delay } from 'rxjs/operators';
 import { Sort } from '@angular/material/sort';
@@ -539,6 +539,106 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
       if (!this.statementsLoaded) {
         this.loadAllStatements();
       }
+    }
+  }
+
+  expandAll() {
+    // Expand all moves, groups, and events
+    const rows = this.displayRows;
+    rows.forEach(row => {
+      if (row.type === 'move' && row.moveNumber !== undefined) {
+        this.expandedMoveNumbers.add(row.moveNumber);
+      } else if (row.type === 'group' && row.groupKey) {
+        this.expandedGroupKeys.add(row.groupKey);
+      } else if (row.type === 'event' && row.event?.id) {
+        this.expandedEventIds.add(row.event.id);
+        this.initEventTeamDefault(row.event.id);
+      }
+    });
+    if (!this.statementsLoaded) {
+      this.loadAllStatements();
+    }
+  }
+
+  collapseAll() {
+    this.expandedMoveNumbers.clear();
+    this.expandedGroupKeys.clear();
+    this.expandedEventIds.clear();
+  }
+
+  expandAllInMove(moveNumber: number) {
+    // Expand the move itself
+    this.expandedMoveNumbers.add(moveNumber);
+    // Expand all groups and events in this move
+    const rows = this.displayRows;
+    rows.forEach(row => {
+      if (row.type === 'group' && row.moveNumber === moveNumber && row.groupKey) {
+        this.expandedGroupKeys.add(row.groupKey);
+      } else if (row.type === 'event' && row.moveNumber === moveNumber && row.event?.id) {
+        this.expandedEventIds.add(row.event.id);
+        this.initEventTeamDefault(row.event.id);
+      }
+    });
+    if (!this.statementsLoaded) {
+      this.loadAllStatements();
+    }
+  }
+
+  collapseAllInMove(moveNumber: number) {
+    // Collapse all groups and events in this move
+    const rows = this.displayRows;
+    rows.forEach(row => {
+      if (row.type === 'group' && row.moveNumber === moveNumber && row.groupKey) {
+        this.expandedGroupKeys.delete(row.groupKey);
+      } else if (row.type === 'event' && row.moveNumber === moveNumber && row.event?.id) {
+        this.expandedEventIds.delete(row.event.id);
+      }
+    });
+    // Collapse the move itself
+    this.expandedMoveNumbers.delete(moveNumber);
+  }
+
+  expandAllInGroup(moveNumber: number, groupOrder: number) {
+    const groupKey = `${moveNumber}-${groupOrder}`;
+    // Expand the group itself
+    this.expandedGroupKeys.add(groupKey);
+    // Expand all events in this group
+    const rows = this.displayRows;
+    rows.forEach(row => {
+      if (row.type === 'event' && row.moveNumber === moveNumber && row.groupNumber === groupOrder && row.event?.id) {
+        this.expandedEventIds.add(row.event.id);
+        this.initEventTeamDefault(row.event.id);
+      }
+    });
+    if (!this.statementsLoaded) {
+      this.loadAllStatements();
+    }
+  }
+
+  collapseAllInGroup(moveNumber: number, groupOrder: number) {
+    // Collapse all events in this group
+    const rows = this.displayRows;
+    rows.forEach(row => {
+      if (row.type === 'event' && row.moveNumber === moveNumber && row.groupNumber === groupOrder && row.event?.id) {
+        this.expandedEventIds.delete(row.event.id);
+      }
+    });
+    // Collapse the group itself
+    const groupKey = `${moveNumber}-${groupOrder}`;
+    this.expandedGroupKeys.delete(groupKey);
+  }
+
+  @HostListener('window:keydown', ['$event'])
+  handleKeyboardEvent(event: KeyboardEvent) {
+    // Ctrl+Shift+E = Expand All
+    if (event.ctrlKey && event.shiftKey && event.key === 'E') {
+      event.preventDefault();
+      this.expandAll();
+    }
+    // Ctrl+Shift+C = Collapse All
+    if (event.ctrlKey && event.shiftKey && event.key === 'C') {
+      event.preventDefault();
+      this.collapseAll();
     }
   }
 
