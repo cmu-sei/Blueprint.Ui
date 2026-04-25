@@ -392,6 +392,15 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
     this.selectedMoveNumber = moveNumber;
   }
 
+  saveDataValue(event: ScenarioEvent, dataField: DataField, newValue: any) {
+    const dataValue = this.getDataValue(event, dataField.name);
+    if (dataValue.value === newValue) {
+      return; // No change
+    }
+    dataValue.value = newValue;
+    this.dataValueDataService.updateDataValue(dataValue);
+  }
+
   filterByTeams(sectionKey: string, teamIds: string[]) {
     this.sectionTeamFilter.set(sectionKey, teamIds);
     this.sectionTeamInitialized.add(sectionKey);

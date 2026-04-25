@@ -558,7 +558,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           }
           <!-- Data Field values -->
           @for (df of assessorDataFields; track df.id) {
-          <td (click)="$event.stopPropagation()">
+          <td [attr.data-field-type]="df.dataType" (click)="df.dataType === 'Checkbox' && canEditCheckboxes ? $event.stopPropagation() : null">
             <app-data-value
               [value]="getDataValue(row.event, df.name).value"
               [dataField]="df"
@@ -566,6 +566,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
               [canApprove]="false"
               [isOwner]="false"
               [showValueOnly]="true"
+              (valueChange)="saveDataValue(row.event, df, $event)"
               [organizationOptions]="getSortedOrganizationOptions()"
               [teamOptions]="teamList"
               [cardOptions]="cardList"
