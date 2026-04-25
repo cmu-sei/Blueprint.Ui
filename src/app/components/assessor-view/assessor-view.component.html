@@ -559,6 +559,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <!-- Data Field values -->
           @for (df of assessorDataFields; track df.id) {
           <td>
+            @if (df.dataType === 'Checkbox') {
+              {{ logCheckboxInfo(df, row.event) }}
+            }
             <app-data-value
               [value]="getDataValue(row.event, df.name).value"
               [dataField]="df"
