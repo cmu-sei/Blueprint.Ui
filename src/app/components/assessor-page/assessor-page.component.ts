@@ -111,13 +111,11 @@ export class AssessorPageComponent implements OnDestroy, OnInit {
   }
 
   ngOnInit() {
-    console.log('[Assessor-Page] ngOnInit called');
     this.userDataService.setCurrentUser();
     this.currentUserQuery
       .select()
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((cu) => {
-        console.log('[Assessor-Page] Current user:', cu);
         this.loggedInUserId = cu.id;
         this.updateRolePermissions();
       });
@@ -127,7 +125,6 @@ export class AssessorPageComponent implements OnDestroy, OnInit {
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(() => {
         this.isSystemAdmin = this.permissionDataService.hasPermission(SystemPermission.CreateMsels);
-        console.log('[Assessor-Page] isSystemAdmin:', this.isSystemAdmin);
         this.updateRolePermissions();
       });
 
@@ -135,14 +132,12 @@ export class AssessorPageComponent implements OnDestroy, OnInit {
     this.userMselRoleQuery.selectAll()
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((roles) => {
-        console.log('[Assessor-Page] User MSEL roles changed:', roles);
         this.updateRolePermissions();
       });
   }
 
   private updateRolePermissions() {
     if (!this.loggedInUserId || !this.selectedMselId) {
-      console.log('[Assessor] No user or msel ID', { loggedInUserId: this.loggedInUserId, selectedMselId: this.selectedMselId });
       this.canViewAssessorPage = false;
       this.canEditAssessorPage = false;
       return;
@@ -150,7 +145,6 @@ export class AssessorPageComponent implements OnDestroy, OnInit {
 
     // System admins have full access
     if (this.isSystemAdmin) {
-      console.log('[Assessor] System admin detected - full access');
       this.canViewAssessorPage = true;
       this.canEditAssessorPage = true;
       return;
@@ -158,14 +152,11 @@ export class AssessorPageComponent implements OnDestroy, OnInit {
 
     // Find user's role for this MSEL
     const roles = this.userMselRoleQuery.getAll();
-    console.log('[Assessor] All roles:', roles);
     this.userMselRole = roles.find(r =>
       r.userId === this.loggedInUserId && r.mselId === this.selectedMselId
     ) || null;
-    console.log('[Assessor] User MSEL role:', this.userMselRole);
 
     if (!this.userMselRole) {
-      console.log('[Assessor] No role found for this MSEL');
       this.canViewAssessorPage = false;
       this.canEditAssessorPage = false;
       return;
@@ -178,8 +169,6 @@ export class AssessorPageComponent implements OnDestroy, OnInit {
     // Only Evaluator, Owner can edit (check/uncheck checkboxes)
     const editRoles: MselRole[] = ['Owner', 'Evaluator'];
     this.canEditAssessorPage = editRoles.includes(this.userMselRole.role as MselRole);
-
-    console.log('[Assessor] Permissions:', { canView: this.canViewAssessorPage, canEdit: this.canEditAssessorPage, role: this.userMselRole.role });
   }
 
   goToUrl(url): void {

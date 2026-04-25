@@ -74,14 +74,7 @@ export interface XApiStatement {
 export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
   @Input() loggedInUserId: string;
   @Input() userTheme: Theme;
-  @Input() set canEditCheckboxes(value: boolean) {
-    console.log('[AssessorView] canEditCheckboxes set to:', value);
-    this._canEditCheckboxes = value;
-  }
-  get canEditCheckboxes(): boolean {
-    return this._canEditCheckboxes;
-  }
-  private _canEditCheckboxes = false;
+  @Input() canEditCheckboxes = false;
   msel = new MselPlus();
 
   // ScenarioEventView fields
@@ -397,17 +390,6 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
 
   filterByMove(moveNumber: number | null) {
     this.selectedMoveNumber = moveNumber;
-  }
-
-  logCheckboxInfo(df: DataField, event: ScenarioEvent) {
-    const canEdit = this.canEditCheckboxes && df.dataType === 'Checkbox';
-    console.log('[AssessorView] Checkbox info:', {
-      canEditCheckboxes: this.canEditCheckboxes,
-      dataFieldType: df.dataType,
-      dataFieldName: df.name,
-      eventId: event.id,
-      calculatedCanEdit: canEdit
-    });
   }
 
   filterByTeams(sectionKey: string, teamIds: string[]) {
