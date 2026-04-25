@@ -10,7 +10,7 @@ import {
   ComnSettingsService,
   ComnAuthQuery,
 } from '@cmusei/crucible-common';
-import { Msel, MselRole, UserMselRole } from 'src/app/generated/blueprint.api';
+import { Msel, MselRole, UserMselRole, SystemPermission } from 'src/app/generated/blueprint.api';
 import { DataFieldDataService } from 'src/app/data/data-field/data-field-data.service';
 import { DataOptionDataService } from 'src/app/data/data-option/data-option-data.service';
 import { DataValueDataService } from 'src/app/data/data-value/data-value-data.service';
@@ -24,7 +24,6 @@ import { CurrentUserQuery } from 'src/app/data/user/user.query';
 import { UserMselRoleDataService } from 'src/app/data/user-msel-role/user-msel-role-data.service';
 import { UserMselRoleQuery } from 'src/app/data/user-msel-role/user-msel-role.query';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
-import { SystemPermission } from 'src/app/data/permission/permission.store';
 import { TopbarView } from '../shared/top-bar/topbar.models';
 
 @Component({
