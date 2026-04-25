@@ -23,6 +23,8 @@ import { UserDataService } from 'src/app/data/user/user-data.service';
 import { CurrentUserQuery } from 'src/app/data/user/user.query';
 import { UserMselRoleDataService } from 'src/app/data/user-msel-role/user-msel-role-data.service';
 import { UserMselRoleQuery } from 'src/app/data/user-msel-role/user-msel-role.query';
+import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
+import { SystemPermission } from 'src/app/data/permission/permission.store';
 import { TopbarView } from '../shared/top-bar/topbar.models';
 
 @Component({
@@ -66,7 +68,8 @@ export class AssessorPageComponent implements OnDestroy, OnInit {
     private settingsService: ComnSettingsService,
     private titleService: Title,
     private userMselRoleDataService: UserMselRoleDataService,
-    private userMselRoleQuery: UserMselRoleQuery
+    private userMselRoleQuery: UserMselRoleQuery,
+    private permissionDataService: PermissionDataService
   ) {
     this.activatedRoute.queryParamMap
       .pipe(takeUntil(this.unsubscribe$))
@@ -117,10 +120,15 @@ export class AssessorPageComponent implements OnDestroy, OnInit {
       .subscribe((cu) => {
         console.log('[Assessor-Page] Current user:', cu);
         this.loggedInUserId = cu.id;
-        this.isSystemAdmin = cu.permissions?.some(p =>
-          p.key === 'SystemAdmin' || p.key === 'ContentDeveloper'
-        ) || false;
-        console.log('[Assessor-Page] isSystemAdmin:', this.isSystemAdmin, 'permissions:', cu.permissions);
+        this.updateRolePermissions();
+      });
+
+    // Load permissions and check system admin
+    this.permissionDataService.load()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(() => {
+        this.isSystemAdmin = this.permissionDataService.hasPermission(SystemPermission.CreateMsels);
+        console.log('[Assessor-Page] isSystemAdmin:', this.isSystemAdmin);
         this.updateRolePermissions();
       });
 
@@ -165,12 +173,12 @@ export class AssessorPageComponent implements OnDestroy, OnInit {
     }
 
     // Editor or higher can view assessor page
-    const viewRoles = [MselRole.Owner, MselRole.Editor, MselRole.Approver, MselRole.Evaluator];
-    this.canViewAssessorPage = viewRoles.includes(this.userMselRole.role);
+    const viewRoles: MselRole[] = ['Owner', 'Editor', 'Approver', 'Evaluator'];
+    this.canViewAssessorPage = viewRoles.includes(this.userMselRole.role as MselRole);
 
     // Only Evaluator, Owner can edit (check/uncheck checkboxes)
-    const editRoles = [MselRole.Owner, MselRole.Evaluator];
-    this.canEditAssessorPage = editRoles.includes(this.userMselRole.role);
+    const editRoles: MselRole[] = ['Owner', 'Evaluator'];
+    this.canEditAssessorPage = editRoles.includes(this.userMselRole.role as MselRole);
 
     console.log('[Assessor] Permissions:', { canView: this.canViewAssessorPage, canEdit: this.canEditAssessorPage, role: this.userMselRole.role });
   }
