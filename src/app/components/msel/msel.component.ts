@@ -48,7 +48,14 @@ export class MselComponent implements OnDestroy {
   @Input() loggedInUserId: string;
   @Input() canEditMsel: boolean;
   @Input() canAccessAdminSection: boolean;
-  @Input() canEditCheckboxes: boolean;
+  @Input() set canEditCheckboxes(value: boolean) {
+    console.log('[MselComponent] canEditCheckboxes set to:', value);
+    this._canEditCheckboxes = value;
+  }
+  get canEditCheckboxes(): boolean {
+    return this._canEditCheckboxes;
+  }
+  private _canEditCheckboxes = false;
   @Input() userTheme$: Observable<Theme>;
   @Output() deleteThisMsel = new EventEmitter<string>();
   @ViewChild('tabGroup0', { static: false }) tabGroup0: MatTabGroup;

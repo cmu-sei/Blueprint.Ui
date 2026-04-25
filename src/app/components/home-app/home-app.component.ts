@@ -146,10 +146,12 @@ export class HomeAppComponent implements OnDestroy, OnInit {
       .subscribe(
         (x) => {
           this.permissions = this.permissionDataService.permissions;
+          console.log('[HomeApp] Permissions loaded:', this.permissions);
           this.canAccessAdminSection = this.permissions.filter(p => !p.endsWith('Msels')).length > 0;
           this.canEditMsels = this.permissionDataService.hasPermission(SystemPermission.EditMsels);
           // Admins (ContentDevelopers/SystemAdmins) can edit checkboxes
           this.canEditCheckboxes = this.permissionDataService.hasPermission(SystemPermission.CreateMsels);
+          console.log('[HomeApp] canEditCheckboxes:', this.canEditCheckboxes, 'hasCreateMsels:', this.permissionDataService.hasPermission(SystemPermission.CreateMsels));
         }
       );
     // Start SignalR connection
