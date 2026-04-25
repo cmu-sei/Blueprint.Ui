@@ -196,18 +196,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         </ng-container>
         <!-- options Column -->
         <ng-container matColumnDef="options">
-          <mat-header-cell *matHeaderCellDef class="six-cell column-with-search">
-            Options
-            <mat-form-field class="search-control" (click)="$event.stopPropagation()">
-              <input matInput [formControl]="filterControl" placeholder="Search" />
-            </mat-form-field>
-            <div class="clear-search-button" (click)="$event.stopPropagation()">
-              <button mat-icon-button (click)="filterControl.setValue(''); $event.stopPropagation()" style="outline: none;"
-                title="Clear Search" [disabled]="!filterControl.value">
-                <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
-              </button>
-            </div>
-          </mat-header-cell>
+          <mat-header-cell *matHeaderCellDef class="six-cell"> Options </mat-header-cell>
           <mat-cell *matCellDef="let element" class="six-cell">
             <div class="summary-text options-link"
                  (click)="viewDataOptions(element, $event)"
