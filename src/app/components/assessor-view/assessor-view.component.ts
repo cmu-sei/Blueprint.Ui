@@ -74,7 +74,14 @@ export interface XApiStatement {
 export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
   @Input() loggedInUserId: string;
   @Input() userTheme: Theme;
-  @Input() canEditCheckboxes = false;
+  @Input() set canEditCheckboxes(value: boolean) {
+    console.log('[AssessorView] canEditCheckboxes set to:', value);
+    this._canEditCheckboxes = value;
+  }
+  get canEditCheckboxes(): boolean {
+    return this._canEditCheckboxes;
+  }
+  private _canEditCheckboxes = false;
   msel = new MselPlus();
 
   // ScenarioEventView fields

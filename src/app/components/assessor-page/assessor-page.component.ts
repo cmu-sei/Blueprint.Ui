@@ -109,15 +109,18 @@ export class AssessorPageComponent implements OnDestroy, OnInit {
   }
 
   ngOnInit() {
+    console.log('[Assessor-Page] ngOnInit called');
     this.userDataService.setCurrentUser();
     this.currentUserQuery
       .select()
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((cu) => {
+        console.log('[Assessor-Page] Current user:', cu);
         this.loggedInUserId = cu.id;
         this.isSystemAdmin = cu.permissions?.some(p =>
           p.key === 'SystemAdmin' || p.key === 'ContentDeveloper'
         ) || false;
+        console.log('[Assessor-Page] isSystemAdmin:', this.isSystemAdmin, 'permissions:', cu.permissions);
         this.updateRolePermissions();
       });
 
@@ -125,6 +128,7 @@ export class AssessorPageComponent implements OnDestroy, OnInit {
     this.userMselRoleQuery.selectAll()
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((roles) => {
+        console.log('[Assessor-Page] User MSEL roles changed:', roles);
         this.updateRolePermissions();
       });
   }
