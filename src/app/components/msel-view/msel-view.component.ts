@@ -5,6 +5,7 @@ import { Component, Input, OnDestroy, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Sort } from '@angular/material/sort';
 import { Subject, Subscription, Observable, of } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
 import {
   takeUntil,
   debounceTime,
@@ -116,7 +117,6 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
 
   constructor(
     private activatedRoute: ActivatedRoute,
-    private settingsService: ComnSettingsService,
     private mselDataService: MselDataService,
     private mselQuery: MselQuery,
     private organizationQuery: OrganizationQuery,
@@ -129,7 +129,9 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
     private moveQuery: MoveQuery,
     private scenarioEventDataService: ScenarioEventDataService,
     private scenarioEventQuery: ScenarioEventQuery,
-    private uiDataService: UIDataService
+    private uiDataService: UIDataService,
+    private http: HttpClient,
+    private settingsService: ComnSettingsService
   ) {
     // subscribe to the route parameters.  Used when viewing independently.
     this.activatedRoute.params
@@ -140,6 +142,15 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
           this.mselDataService.loadById(mselId);
           this.loadInitialData(mselId);
           this.mselDataService.setActive(mselId);
+          // Call xAPI for viewed event (only on view page, not build page)
+          const baseUrl = this.settingsService.settings.ApiUrl.endsWith('/')
+            ? this.settingsService.settings.ApiUrl
+            : this.settingsService.settings.ApiUrl + '/';
+          console.log('xAPI Viewed - MSEL ID:', mselId, 'URL:', `${baseUrl}api/xapi/viewed/msel/${mselId}`);
+          this.http.post(`${baseUrl}api/xapi/viewed/msel/${mselId}`, {}).subscribe({
+            next: () => console.log('xAPI Viewed - Success'),
+            error: (err) => console.error('xAPI Viewed - Error:', err)
+          });
         }
       });
     // subscribe to the route query parameters.  Used when editing the MSEL and checking the view.

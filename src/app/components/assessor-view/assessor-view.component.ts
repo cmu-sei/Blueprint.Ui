@@ -708,6 +708,9 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
     if (df.dataOptions?.length > 0) {
       return df.dataOptions.map(o => o.optionName).filter(n => !!n).sort();
     }
+    if (df.dataType === 'Checkbox') {
+      return ['Unchecked', 'Checked'];
+    }
     const vals = new Set<string>();
     for (const event of this.mselScenarioEvents) {
       const dv = this.getDataValue(event, df.name);
@@ -745,7 +748,12 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
       if (!df) continue;
       events = events.filter(event => {
         const dv = this.getDataValue(event, df.name);
-        const val = (dv.value || '').trim();
+        let val = (dv.value || '').trim();
+        if (df.dataType === 'Checkbox') {
+          val = val === 'true' ? 'true' : 'false';
+          const mappedSelected = selected.map(s => s === 'Checked' ? 'true' : s === 'Unchecked' ? 'false' : s);
+          return mappedSelected.some(s => val.toLowerCase() === s.toLowerCase());
+        }
         if (!val) return false;
         if (val.toUpperCase() === 'ALL') return true;
         return selected.some(s => val.toLowerCase().includes(s.toLowerCase()));
