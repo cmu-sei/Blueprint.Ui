@@ -35,7 +35,7 @@
 
 .error-message {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   gap: 8px;
   color: var(--sys-mat-error, #d32f2f);
@@ -47,6 +47,7 @@
 
 .error-icon {
   color: var(--sys-mat-error, #d32f2f);
+  flex-shrink: 0;
 }
 
 .action-buttons {
