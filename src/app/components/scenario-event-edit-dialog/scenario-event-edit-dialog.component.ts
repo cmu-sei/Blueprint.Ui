@@ -250,7 +250,10 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
   }
 
   hasBadData(): boolean {
-    return this.getScenarioTypeDataFields().length === 0;
+    return (
+      this.data.scenarioEvent.scenarioEventType === this.eventType.Inject &&
+      this.getScenarioTypeDataFields().length === 0
+    );
   }
 
   showDefaultTab(): boolean {
