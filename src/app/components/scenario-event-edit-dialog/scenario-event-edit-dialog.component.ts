@@ -208,21 +208,20 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
   // filter the data fields by the selected tab
   getFilteredDataFields(filter: string): DataField[] {
     this.currentFilterBy = filter;
-    const scenarioTypeDataFields = this.getScenarioTypeDataFields();
     let filteredList = [];
     switch (filter) {
       case 'default':
-        filteredList = scenarioTypeDataFields.filter(
+        filteredList = this.getScenarioTypeDataFields().filter(
           (x) => x.isShownOnDefaultTab
         );
         break;
       case 'gallery':
-        filteredList = scenarioTypeDataFields.filter(
+        filteredList = (this.data.dataFields as DataField[]).filter(
           (x) => !!x.galleryArticleParameter
         );
         break;
       default:
-        filteredList = scenarioTypeDataFields;
+        filteredList = (this.data.dataFields as DataField[]).slice();
         break;
     }
     filteredList = filteredList.sort((a, b) =>
