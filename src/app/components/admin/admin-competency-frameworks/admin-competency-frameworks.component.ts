@@ -181,10 +181,10 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
         .pipe(take(1))
         .subscribe({
           next: (check) => {
-            console.log('Framework', fw.name, 'canDelete:', check.CanDelete, 'affectedMsels:', check.AffectedMsels?.length || 0);
+            console.log('Framework', fw.name, 'canDelete:', check.canDelete, 'affectedMsels:', check.affectedMsels?.length || 0);
             this.frameworkDeleteCheckMap.set(fw.id, {
-              canDelete: check.CanDelete,
-              inUseByMsels: check.AffectedMsels?.map(m => m.Name) || []
+              canDelete: check.canDelete,
+              inUseByMsels: check.affectedMsels?.map(m => m.name) || []
             });
           },
           error: (err) => {

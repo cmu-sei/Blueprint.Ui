@@ -19,6 +19,6 @@ import { MselReference } from './mselReference';
 
 
 export interface FrameworkDeleteCheck {
-    CanDelete?: boolean;
-    AffectedMsels?: Array<MselReference>;
+    canDelete?: boolean;
+    affectedMsels?: Array<MselReference>;
 }
