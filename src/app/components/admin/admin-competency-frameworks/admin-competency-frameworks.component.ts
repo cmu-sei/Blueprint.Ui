@@ -172,15 +172,41 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
   }
 
   deleteCompetencyFramework(competencyFramework: CompetencyFramework): void {
-    this.dialogService
-      .confirm(
-        'Delete Competency Framework',
-        'Are you sure that you want to delete ' + competencyFramework.name + '? This will also delete all its competencies.'
-      )
-      .subscribe((result) => {
-        if (result['confirm']) {
-          this.competencyFrameworkDataService.delete(competencyFramework.id);
-          this.expandedElementId = '';
+    this.competencyFrameworkService.checkCanDeleteCompetencyFramework(competencyFramework.id)
+      .pipe(take(1))
+      .subscribe({
+        next: (check) => {
+          if (check.CanDelete) {
+            this.dialogService
+              .confirm(
+                'Delete Competency Framework',
+                'Are you sure that you want to delete ' + competencyFramework.name + '? This will delete ' +
+                (competencyFramework.Competencies?.length || 0) + ' competencies.'
+              )
+              .subscribe((result) => {
+                if (result['confirm']) {
+                  this.competencyFrameworkDataService.delete(competencyFramework.id);
+                  this.expandedElementId = '';
+                }
+              });
+          } else {
+            let message = `Cannot delete ${competencyFramework.name}. It is being used by ${check.AffectedMsels.length} MSEL(s):\n\n`;
+            check.AffectedMsels.slice(0, 10).forEach(m => {
+              message += `• ${m.Name}\n`;
+            });
+            if (check.AffectedMsels.length > 10) {
+              message += `• ... and ${check.AffectedMsels.length - 10} more\n`;
+            }
+            message += '\nRemove competencies from these MSELs before deleting the framework.';
+            this.dialogService.message(
+              'Cannot Delete Framework',
+              message,
+              'Close'
+            );
+          }
+        },
+        error: (err) => {
+          this.importError = 'Check failed: ' + (err.error?.title || err.message || 'Unknown error');
         }
       });
   }
