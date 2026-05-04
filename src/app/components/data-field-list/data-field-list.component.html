@@ -76,6 +76,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             </mat-menu>
           </mat-header-cell>
           <mat-cell *matCellDef="let element" class="column-action">
+            <div>{{ !showTemplates && element.displayOrder > 0 ? element.displayOrder : ' '}}</div>
             <div class="action-div">
               @if (element.displayOrder > 0) {
               <span style="display: inline-flex; white-space: nowrap;">
@@ -107,7 +108,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 }
                 &nbsp;
             </div>
-            <div>{{ !showTemplates && element.displayOrder > 0 ? element.displayOrder : ' '}}</div>
           </mat-cell>
         </ng-container>
         <!-- events Column -->
@@ -132,6 +132,19 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <mat-cell *matCellDef="let element" class="column-display">
             <mat-checkbox [(ngModel)]="element.onExerciseView" [disabled]="!canEdit()" (change)="saveChange(element)"
               (click)="$event.stopPropagation();" title="Display on the Exercise View">
+            </mat-checkbox>
+          </mat-cell>
+        </ng-container>
+        <!-- assessor Column -->
+        <ng-container matColumnDef="assessor">
+          <mat-header-cell mat-sort-header="isAssessorVisible" title="Display on the Assessor View"
+            *matHeaderCellDef class="column-display">
+            &nbsp;&nbsp;&nbsp;&nbsp;Assess
+          </mat-header-cell>
+          <mat-cell *matCellDef="let element" class="column-display">
+            <mat-checkbox [(ngModel)]="element.isAssessorVisible" [disabled]="!canEdit()"
+              (change)="saveChange(element)" (click)="$event.stopPropagation();"
+              title="Display on the Assessor View">
             </mat-checkbox>
           </mat-cell>
         </ng-container>
@@ -163,19 +176,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
               title="Display for Facilitation Events">
             </mat-checkbox>
             }
-          </mat-cell>
-        </ng-container>
-        <!-- assessor Column -->
-        <ng-container matColumnDef="assessor">
-          <mat-header-cell mat-sort-header="isAssessorVisible" title="Display on the Assessor View"
-            *matHeaderCellDef class="column-display">
-            &nbsp;&nbsp;&nbsp;&nbsp;Assess
-          </mat-header-cell>
-          <mat-cell *matCellDef="let element" class="column-display">
-            <mat-checkbox [(ngModel)]="element.isAssessorVisible" [disabled]="!canEdit()"
-              (change)="saveChange(element)" (click)="$event.stopPropagation();"
-              title="Display on the Assessor View">
-            </mat-checkbox>
           </mat-cell>
         </ng-container>
         <!-- default Column -->
