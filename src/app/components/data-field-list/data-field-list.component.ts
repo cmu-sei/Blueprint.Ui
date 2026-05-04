@@ -72,6 +72,8 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
     'information',
     'facilitation',
     'assessor',
+    'default',
+    'devs',
     'name',
     'datatype',
     'options',
@@ -84,6 +86,8 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
     'information',
     'facilitation',
     'assessor',
+    'default',
+    'devs',
     'name',
     'datatype',
     'options',
@@ -399,14 +403,29 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
         break;
       case 'onScenarioEventList':
       case 'onExerciseView':
+      case 'isInformationField':
+      case 'isFacilitationField':
+      case 'isAssessorVisible':
+      case 'isShownOnDefaultTab':
+      case 'isOnlyShownToOwners':
         const aChecked = a[sortFieldName];
         const bChecked = b[sortFieldName];
         if (aChecked !== bChecked) {
           sortResult = aChecked ? -1 : 1;
         }
         break;
+      case 'options':
+        const aOptionsCount = a.dataOptions?.length || 0;
+        const bOptionsCount = b.dataOptions?.length || 0;
+        if (aOptionsCount < bOptionsCount) {
+          sortResult = -1;
+        } else if (aOptionsCount > bOptionsCount) {
+          sortResult = 1;
+        }
+        break;
       case 'name':
       case 'dataType':
+      case 'galleryArticleParameter':
         const aStr = a[sortFieldName];
         const bStr = b[sortFieldName];
         sortResult = Intl.Collator().compare(
