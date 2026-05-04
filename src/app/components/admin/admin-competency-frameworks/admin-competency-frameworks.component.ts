@@ -238,7 +238,7 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
       .confirm(
         'Delete Competency Framework',
         'Are you sure that you want to delete ' + competencyFramework.name + '? This will delete ' +
-        (competencyFramework.Competencies?.length || 0) + ' competencies.'
+        (competencyFramework.competencies?.length || 0) + ' competencies.'
       )
       .subscribe((result) => {
         if (result['confirm']) {
