@@ -162,6 +162,8 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
   private baseGroupCompetencies = new Map<string, Competency[]>();
   private teamCompIdSets = new Map<string, Set<string>>();
   private statementSectionsCache = new Map<string, { key: string; value: any; preview: string }[]>();
+  private competencyFrameworkCache = new Map<string, CompetencyFramework>();
+  private competencyTypeCache = new Map<string, string>();
 
   private apiUrl: string;
   private unsubscribe$ = new Subject();
@@ -283,6 +285,7 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
       .subscribe(mcs => {
         this.mselCompetencies = mcs;
         this.loadProficiencyScale();
+        this.loadCompetencyFrameworks();
         this.rebuildCompetencyCaches();
       });
 
@@ -1316,6 +1319,29 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
       });
   }
 
+  private loadCompetencyFrameworks() {
+    // Get unique framework IDs from competencies
+    const frameworkIds = new Set<string>();
+    for (const mc of this.mselCompetencies) {
+      if (mc.competency?.competencyFrameworkId) {
+        frameworkIds.add(mc.competency.competencyFrameworkId);
+      }
+    }
+
+    // Load frameworks that aren't already cached
+    for (const fwId of frameworkIds) {
+      if (!this.competencyFrameworkCache.has(fwId)) {
+        this.competencyFrameworkService.getCompetencyFramework(fwId)
+          .pipe(takeUntil(this.unsubscribe$))
+          .subscribe(fw => {
+            if (fw) {
+              this.competencyFrameworkCache.set(fwId, fw);
+            }
+          });
+      }
+    }
+  }
+
   private allDataFields: DataField[] = [];
   private competencyFieldIds: string[] = [];
   private static EMPTY_COMPETENCIES: Competency[] = [];
@@ -1420,6 +1446,41 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
     return this.filterByTeam(base, 'group-' + groupKey);
   }
 
+  getCompetencyTooltip(comp: Competency): string {
+    return comp?.shortName || '';
+  }
+
+  private getCompetencyType(comp: Competency): string {
+    if (!comp || !comp.id) return '';
+
+    // Check cache first
+    if (this.competencyTypeCache.has(comp.id)) {
+      return this.competencyTypeCache.get(comp.id) || '';
+    }
+
+    // Derive from ID pattern
+    const idNumber = comp.idNumber || '';
+    let type = '';
+
+    if (idNumber.includes('WRL')) {
+      type = 'Work Role';
+    } else if (/^[TKSA][\d-]/.test(idNumber)) {
+      const prefixMap: Record<string, string> = {
+        'T': 'Task', 'K': 'Knowledge', 'S': 'Skill', 'A': 'Ability',
+      };
+      type = prefixMap[idNumber.charAt(0)] || '';
+    } else if (/^[A-Z]{2}-[A-Z]{3}-\d+$/.test(idNumber)) {
+      type = 'Work Role';
+    } else if (/^[A-Z]{3}$/.test(idNumber)) {
+      type = 'Specialty Area';
+    } else if (/^[A-Z]{2}$/.test(idNumber)) {
+      type = 'Category';
+    }
+
+    this.competencyTypeCache.set(comp.id, type);
+    return type;
+  }
+
   private ratingKey(contextKey: string): string {
     const teamId = this.getAssertionTeam(contextKey);
     return teamId ? `${contextKey}::${teamId}` : contextKey;
@@ -1459,6 +1520,42 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
     this.assertionTeam.set(eventId, teamId);
   }
 
+  getTeamsForContext(contextKey: string): Team[] {
+    // Get competencies for this context
+    let competencies: Competency[] = [];
+    if (contextKey.startsWith('move-')) {
+      const moveNumber = parseInt(contextKey.replace('move-', ''), 10);
+      competencies = this.baseMoveCompetencies.get(moveNumber) || [];
+    } else if (contextKey.startsWith('group-')) {
+      const groupKey = contextKey.replace('group-', '');
+      competencies = this.baseGroupCompetencies.get(groupKey) || [];
+    } else {
+      competencies = this.baseEventCompetencies.get(contextKey) || [];
+    }
+
+    // If no team assignments exist or no competencies in context, return empty
+    if (this.teamCompIdSets.size === 0 || competencies.length === 0) {
+      return [];
+    }
+
+    // Get competency IDs in this context
+    const contextCompIds = new Set(competencies.map(c => c.id));
+
+    // Filter teams to only those with assignments to these competencies
+    const filteredTeams = this.teamList.filter(team => {
+      const teamCompIds = this.teamCompIdSets.get(team.id);
+      if (!teamCompIds) return false;
+      // Team has assignment if it has at least one competency from this context
+      for (const compId of contextCompIds) {
+        if (teamCompIds.has(compId)) return true;
+      }
+      return false;
+    });
+
+    // Return filtered list (empty if no teams have assignments)
+    return filteredTeams;
+  }
+
   assertionKey(eventId: string, competencyId: string): string {
     const teamId = this.getAssertionTeam(eventId);
     return `${eventId}:${competencyId}:${teamId}`;
@@ -1466,7 +1563,8 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
 
   canSubmitRating(eventId: string, competencyId: string): boolean {
     const rating = this.getRating(eventId, competencyId);
-    return !!rating.levelId && !this.submittingAssertions.has(this.assertionKey(eventId, competencyId));
+    const teamId = this.getAssertionTeam(eventId);
+    return !!rating.levelId && !!teamId && !this.submittingAssertions.has(this.assertionKey(eventId, competencyId));
   }
 
   isRatingSubmitted(eventId: string, competencyId: string): boolean {
@@ -1477,6 +1575,10 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
     const rating = this.getRating(contextKey, competencyId);
     if (!rating.levelId) return;
     const teamId = this.getAssertionTeam(contextKey);
+    if (!teamId) {
+      alert('Please select a team before submitting a competency assertion.');
+      return;
+    }
     const key = this.assertionKey(contextKey, competencyId);
     this.submittingAssertions.add(key);
 
@@ -1534,6 +1636,18 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
     if (!map) return false;
     for (const r of map.values()) {
       if (r.levelId) return true;
+    }
+    return false;
+  }
+
+  hasAnySubmittableRatings(contextKey: string): boolean {
+    const comps = this.getContextCompetencies(contextKey);
+    const teamId = this.getAssertionTeam(contextKey);
+    if (!teamId) return false;
+    for (const comp of comps) {
+      if (this.canSubmitRating(contextKey, comp.id)) {
+        return true;
+      }
     }
     return false;
   }

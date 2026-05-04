@@ -372,8 +372,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 <div class="competency-list">
                   @for (c of workRoleCompetencies; track c.id) {
                   <div class="competency-list-item">
-                    <span class="competency-list-id">{{ c.idNumber }}</span>
-                    <span class="competency-list-name">{{ c.shortName }}</span>
+                    <span class="competency-list-id" [matTooltip]="getCompetencyTooltip(c)" matTooltipPosition="right">{{ c.idNumber }}</span>
                   </div>
                   }
                 </div>
@@ -390,8 +389,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 <div class="competency-list">
                   @for (c of nonWorkRoleCompetencies; track c.id) {
                   <div class="competency-list-item">
-                    <span class="competency-list-id">{{ c.idNumber }}</span>
-                    <span class="competency-list-name">{{ c.shortName }}</span>
+                    <span class="competency-list-id" [matTooltip]="getCompetencyTooltip(c)" matTooltipPosition="right">{{ c.idNumber }}</span>
                   </div>
                   }
                 </div>

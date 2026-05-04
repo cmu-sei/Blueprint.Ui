@@ -68,6 +68,7 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   workRoleCompetencies: Competency[] = [];
   nonWorkRoleCompetencies: Competency[] = [];
   competencyFrameworkNames: string[] = [];
+  private competencyTypeCache = new Map<string, string>();
   creatorName = 'unknown';
   scoringModelList: ScoringModel[] = [];
   itemStatus: MselItemStatus[] = [
@@ -344,6 +345,41 @@ export class MselInfoComponent implements OnDestroy, OnInit {
       .map(id => frameworks.find(f => f.id === id)?.name || '')
       .filter(n => n)
       .sort();
+  }
+
+  getCompetencyTooltip(comp: Competency): string {
+    return comp?.shortName || '';
+  }
+
+  private getCompetencyType(comp: Competency): string {
+    if (!comp || !comp.id) return '';
+
+    // Check cache first
+    if (this.competencyTypeCache.has(comp.id)) {
+      return this.competencyTypeCache.get(comp.id) || '';
+    }
+
+    // Derive from ID pattern
+    const idNumber = comp.idNumber || '';
+    let type = '';
+
+    if (idNumber.includes('WRL')) {
+      type = 'Work Role';
+    } else if (/^[TKSA][\d-]/.test(idNumber)) {
+      const prefixMap: Record<string, string> = {
+        'T': 'Task', 'K': 'Knowledge', 'S': 'Skill', 'A': 'Ability',
+      };
+      type = prefixMap[idNumber.charAt(0)] || '';
+    } else if (/^[A-Z]{2}-[A-Z]{3}-\d+$/.test(idNumber)) {
+      type = 'Work Role';
+    } else if (/^[A-Z]{3}$/.test(idNumber)) {
+      type = 'Specialty Area';
+    } else if (/^[A-Z]{2}$/.test(idNumber)) {
+      type = 'Category';
+    }
+
+    this.competencyTypeCache.set(comp.id, type);
+    return type;
   }
 
   getUserName(userId: string) {

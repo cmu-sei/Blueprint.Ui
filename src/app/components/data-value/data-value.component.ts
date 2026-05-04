@@ -106,7 +106,13 @@ export class DataValueComponent {
   displayCompetency = (val: string): string => {
     if (!val || !this.dataField?.dataOptions) return val || '';
     const opt = this.dataField.dataOptions.find(o => o.optionName === val);
-    return opt ? `${opt.optionName} - ${opt.optionValue}` : val;
+    return opt ? opt.optionName : val;
+  }
+
+  getCompetencyTooltip = (val: string): string => {
+    if (!val || !this.dataField?.dataOptions) return '';
+    const opt = this.dataField.dataOptions.find(o => o.optionName === val);
+    return opt?.optionValue || '';
   }
 
   isCompetencySelected(optionName: string): boolean {

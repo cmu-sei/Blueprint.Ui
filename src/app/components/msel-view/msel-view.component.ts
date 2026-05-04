@@ -16,10 +16,13 @@ import {
 import { ComnSettingsService, Theme } from '@cmusei/crucible-common';
 import {
   Card,
+  Competency,
+  CompetencyFramework,
   DataField,
   DataValue,
   Move,
   Msel,
+  MselCompetency,
   Organization,
   ScenarioEvent,
   Team,
@@ -44,6 +47,10 @@ import {
   ScenarioEventViewIndexing,
 } from 'src/app/data/scenario-event/scenario-event-data.service';
 import { ScenarioEventQuery } from 'src/app/data/scenario-event/scenario-event.query';
+import { MselCompetencyQuery } from 'src/app/data/msel-competency/msel-competency.query';
+import { MselCompetencyDataService } from 'src/app/data/msel-competency/msel-competency-data.service';
+import { CompetencyFrameworkQuery } from 'src/app/data/competency-framework/competency-framework.query';
+import { CompetencyFrameworkDataService } from 'src/app/data/competency-framework/competency-framework-data.service';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
 import { AngularEditorConfig } from '@kolkov/angular-editor';
 
@@ -99,6 +106,8 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
   keyUp = new Subject<KeyboardEvent>();
   private subscription: Subscription;
   private unsubscribe$ = new Subject();
+  private competencyCache = new Map<string, Competency>();
+  private competencyTypeCache = new Map<string, string>();
   viewConfig: AngularEditorConfig = {
     editable: false,
     height: 'auto',
@@ -129,6 +138,10 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
     private moveQuery: MoveQuery,
     private scenarioEventDataService: ScenarioEventDataService,
     private scenarioEventQuery: ScenarioEventQuery,
+    private mselCompetencyQuery: MselCompetencyQuery,
+    private mselCompetencyDataService: MselCompetencyDataService,
+    private competencyFrameworkQuery: CompetencyFrameworkQuery,
+    private competencyFrameworkDataService: CompetencyFrameworkDataService,
     private uiDataService: UIDataService,
     private http: HttpClient,
     private settingsService: ComnSettingsService
@@ -260,6 +273,18 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
       .subscribe((teams) => {
         this.teamList = teams;
       });
+    // observe the MselCompetencies for tooltip data
+    this.mselCompetencyQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((mselCompetencies) => {
+        this.competencyCache.clear();
+        for (const mc of mselCompetencies) {
+          if (mc.competency && mc.competency.idNumber) {
+            this.competencyCache.set(mc.competency.idNumber, mc.competency);
+          }
+        }
+      });
     // subscribe to filter string changes for debounce
     this.subscription = this.keyUp
       .pipe(
@@ -297,6 +322,8 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
     this.dataFieldDataService.loadByMsel(mselId);
     this.dataValueDataService.loadByMsel(mselId);
     this.scenarioEventDataService.loadByMsel(mselId);
+    this.mselCompetencyDataService.loadByMsel(mselId);
+    this.competencyFrameworkDataService.load();
   }
 
   applyFilter(filterValue: string) {
@@ -382,6 +409,42 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
       a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1
     );
     return users;
+  }
+
+  getCompetencyTooltip(idNumber: string): string {
+    const comp = this.competencyCache.get(idNumber);
+    return comp?.shortName || '';
+  }
+
+  private getCompetencyType(comp: Competency): string {
+    if (!comp || !comp.id) return '';
+
+    // Check cache first
+    if (this.competencyTypeCache.has(comp.id)) {
+      return this.competencyTypeCache.get(comp.id) || '';
+    }
+
+    // Derive from ID pattern
+    const idNumber = comp.idNumber || '';
+    let type = '';
+
+    if (idNumber.includes('WRL')) {
+      type = 'Work Role';
+    } else if (/^[TKSA][\d-]/.test(idNumber)) {
+      const prefixMap: Record<string, string> = {
+        'T': 'Task', 'K': 'Knowledge', 'S': 'Skill', 'A': 'Ability',
+      };
+      type = prefixMap[idNumber.charAt(0)] || '';
+    } else if (/^[A-Z]{2}-[A-Z]{3}-\d+$/.test(idNumber)) {
+      type = 'Work Role';
+    } else if (/^[A-Z]{3}$/.test(idNumber)) {
+      type = 'Specialty Area';
+    } else if (/^[A-Z]{2}$/.test(idNumber)) {
+      type = 'Category';
+    }
+
+    this.competencyTypeCache.set(comp.id, type);
+    return type;
   }
 
   trackByFn(index, item) {

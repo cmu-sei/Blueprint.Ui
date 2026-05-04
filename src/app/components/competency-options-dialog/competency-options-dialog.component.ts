@@ -7,10 +7,12 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import {
+  CompetencyFramework,
   DataOption,
   MselCompetency,
 } from 'src/app/generated/blueprint.api';
 import { MselCompetencyQuery } from 'src/app/data/msel-competency/msel-competency.query';
+import { CompetencyFrameworkService } from 'src/app/generated/blueprint.api/api/api';
 import { v4 as uuidv4 } from 'uuid';
 
 @Component({
@@ -22,17 +24,22 @@ import { v4 as uuidv4 } from 'uuid';
 export class CompetencyOptionsDialogComponent implements OnDestroy {
   searchText = '';
   typeFilter = '';
+  frameworkFilter = '';
   pageIndex = 0;
   pageSize = 50;
   mselCompetencies: MselCompetency[] = [];
   competencyTypes: string[] = [];
   private competencyTypeMap = new Map<string, string>();
+  private competencyFrameworkMap = new Map<string, string>();
+  frameworks: CompetencyFramework[] = [];
+  frameworkNames: string[] = [];
   selected = new Set<string>(); // tracks by idNumber
   private unsubscribe$ = new Subject();
 
   constructor(
     public dialogRef: MatDialogRef<CompetencyOptionsDialogComponent>,
     private mselCompetencyQuery: MselCompetencyQuery,
+    private competencyFrameworkService: CompetencyFrameworkService,
     @Inject(MAT_DIALOG_DATA) public data: {
       dataFieldId: string;
       dataOptions: DataOption[];
@@ -40,12 +47,18 @@ export class CompetencyOptionsDialogComponent implements OnDestroy {
     }
   ) {
     dialogRef.disableClose = true;
+    // Load frameworks
+    this.competencyFrameworkService.getCompetencyFrameworks().subscribe(frameworks => {
+      this.frameworks = frameworks;
+      this.buildFrameworkMap();
+    });
     // Subscribe to MSEL competency pool
     this.mselCompetencyQuery.selectAll().pipe(
       takeUntil(this.unsubscribe$)
     ).subscribe(mselCompetencies => {
       this.mselCompetencies = mselCompetencies;
       this.buildTypeMap();
+      this.buildFrameworkMap();
     });
     // Initialize selected set — only include options still in the pool
     const poolIdNumbers = new Set(
@@ -76,6 +89,20 @@ export class CompetencyOptionsDialogComponent implements OnDestroy {
       .sort();
   }
 
+  private buildFrameworkMap() {
+    this.competencyFrameworkMap.clear();
+    const frameworkMap = new Map(this.frameworks.map(f => [f.id, f.name]));
+    const frameworkNamesSet = new Set<string>();
+    for (const mc of this.mselCompetencies) {
+      const c = mc.competency;
+      if (!c || !c.competencyFrameworkId) continue;
+      const frameworkName = frameworkMap.get(c.competencyFrameworkId) || 'Unknown';
+      this.competencyFrameworkMap.set(c.id, frameworkName);
+      frameworkNamesSet.add(frameworkName);
+    }
+    this.frameworkNames = [...frameworkNamesSet].sort();
+  }
+
   private deriveTypeFromId(idNumber: string): string {
     if (!idNumber) return 'Other';
     if (idNumber.includes('WRL')) return 'Work Role';
@@ -93,6 +120,9 @@ export class CompetencyOptionsDialogComponent implements OnDestroy {
 
   get filteredCompetencies(): MselCompetency[] {
     let results = this.mselCompetencies;
+    if (this.frameworkFilter) {
+      results = results.filter(mc => this.competencyFrameworkMap.get(mc.competencyId) === this.frameworkFilter);
+    }
     if (this.typeFilter) {
       results = results.filter(mc => this.competencyTypeMap.get(mc.competencyId) === this.typeFilter);
     }
@@ -123,6 +153,10 @@ export class CompetencyOptionsDialogComponent implements OnDestroy {
 
   getType(mc: MselCompetency): string {
     return this.competencyTypeMap.get(mc.competencyId) || 'Other';
+  }
+
+  getFramework(mc: MselCompetency): string {
+    return this.competencyFrameworkMap.get(mc.competencyId) || '';
   }
 
   get selectedCount(): number {

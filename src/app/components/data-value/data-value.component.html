@@ -48,8 +48,8 @@ project root for license information.
   <!-- dataType.Competency -->
   @if (dataField.dataType === dataType.Competency) {
   <span>
-    @for (id of selectedCompetencies; track id) {
-    {{ displayCompetency(id) }}<br>
+    @for (id of selectedCompetencies; track id; let isLast = $last) {
+      <span [matTooltip]="getCompetencyTooltip(id)" matTooltipPosition="above" style="white-space: nowrap;">{{ displayCompetency(id) }}</span>@if (!isLast) {<span>, </span>}
     }
   </span>
   }
@@ -409,7 +409,7 @@ project root for license information.
     <label class="competency-label">{{ dataField.name }}</label>
     <mat-chip-set>
       @for (id of selectedCompetencies; track id) {
-      <mat-chip (removed)="removeCompetency(id)">
+      <mat-chip (removed)="removeCompetency(id)" [matTooltip]="getCompetencyTooltip(id)" matTooltipPosition="above">
         {{ displayCompetency(id) }}
         @if (canEdit) {
         <button matChipRemove>
@@ -446,8 +446,8 @@ project root for license information.
   }
   @if (showValueOnly) {
   <span>
-    @for (id of selectedCompetencies; track id) {
-    {{ displayCompetency(id) }}<br>
+    @for (id of selectedCompetencies; track id; let isLast = $last) {
+      <span [matTooltip]="getCompetencyTooltip(id)" matTooltipPosition="above" style="white-space: nowrap;">{{ displayCompetency(id) }}</span>@if (!isLast) {<span>, </span>}
     }
   </span>
   }

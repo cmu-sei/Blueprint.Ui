@@ -13,6 +13,17 @@ project root for license information or contact permission@sei.cmu.edu for full 
 
 <!-- Filters -->
 <div class="filter-section">
+  @if (frameworkNames.length > 1) {
+  <mat-form-field class="type-filter-field">
+    <mat-label>Framework</mat-label>
+    <mat-select [(value)]="frameworkFilter" (selectionChange)="onFilterChanged()">
+      <mat-option value="">All Frameworks</mat-option>
+      @for (fw of frameworkNames; track fw) {
+      <mat-option [value]="fw">{{ fw }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+  }
   @if (competencyTypes.length > 1) {
   <mat-form-field class="type-filter-field">
     <mat-label>Type</mat-label>
@@ -37,7 +48,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
 
 @if (data.canEdit) {
 <div class="action-buttons">
-  <span class="selection-count">{{ selectedCount }} of {{ mselCompetencies.length }} selected{{ typeFilter || searchText ? ' (' + filteredCompetencies.length + ' shown)' : '' }}</span>
+  <span class="selection-count">{{ selectedCount }} of {{ mselCompetencies.length }} selected{{ frameworkFilter || typeFilter || searchText ? ' (' + filteredCompetencies.length + ' shown)' : '' }}</span>
 </div>
 }
 
@@ -59,6 +70,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         </th>
         }
         <th>ID</th>
+        <th>Framework</th>
         <th>Type</th>
         <th>Name</th>
         <th>Description</th>
@@ -77,6 +89,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         </td>
         }
         <td class="id-column">{{ mc.competency?.idNumber }}</td>
+        <td class="framework-column">{{ getFramework(mc) }}</td>
         <td class="type-column">{{ getType(mc) }}</td>
         <td>{{ mc.competency?.shortName }}</td>
         <td class="description-column">{{ mc.competency?.description }}</td>
