@@ -97,7 +97,7 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
   typeFilter = '';
   competencyTypes: string[] = [];
   frameworkFilter = '';
-  poolFrameworks: { id: string, name: string }[] = [];
+  poolFrameworks: { id: string, name: string, version: string }[] = [];
   // Teams
   mselTeams: Team[] = [];
   teamsByCompetency = new Map<string, string[]>();
@@ -505,18 +505,18 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
 
   private buildPoolTypes() {
     const types = new Set<string>();
-    const fwMap = new Map<string, string>();
+    const fwMap = new Map<string, { name: string, version: string }>();
     for (const mc of this.mselCompetencyList) {
       const t = this.competencyTypeMap.get(mc.competencyId) || this.deriveTypeFromId(mc.competency?.idNumber);
       if (t && t !== 'Other') types.add(t);
       const fwId = mc.competency?.competencyFrameworkId;
       if (fwId && !fwMap.has(fwId)) {
         const fw = this.frameworks.find(f => f.id === fwId);
-        if (fw) fwMap.set(fwId, fw.name);
+        if (fw) fwMap.set(fwId, { name: fw.name, version: fw.version || '' });
       }
     }
     this.competencyTypes = [...types].sort();
-    this.poolFrameworks = [...fwMap.entries()].map(([id, name]) => ({ id, name })).sort((a, b) => a.name.localeCompare(b.name));
+    this.poolFrameworks = [...fwMap.entries()].map(([id, fw]) => ({ id, name: fw.name, version: fw.version })).sort((a, b) => a.name.localeCompare(b.name));
   }
 
   onTypeFilterChange(type: string) {
