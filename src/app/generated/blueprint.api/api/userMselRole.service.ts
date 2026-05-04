@@ -171,6 +171,31 @@ export class UserMselRoleService extends BaseService {
     }
 
     /**
+     * Sets CITE Evaluation and Gallery Exhibit roles for a user on a MSEL
+     */
+    public setUserMselIntegrationRoles(mselId: string, userId: string, update: { citeEvaluationRole?: string | null; galleryExhibitRole?: string | null; steamfitterScenarioRole?: string | null }): Observable<Array<UserMselRole>> {
+        if (mselId === null || mselId === undefined) {
+            throw new Error('Required parameter mselId was null or undefined when calling setUserMselIntegrationRoles.');
+        }
+        if (userId === null || userId === undefined) {
+            throw new Error('Required parameter userId was null or undefined when calling setUserMselIntegrationRoles.');
+        }
+        let localVarHeaders = this.defaultHeaders;
+        localVarHeaders = this.configuration.addCredentialToHeaders('oauth2', 'Authorization', localVarHeaders, 'Bearer ');
+        localVarHeaders = localVarHeaders.set('Accept', 'application/json');
+        localVarHeaders = localVarHeaders.set('Content-Type', 'application/json');
+        const { basePath, withCredentials } = this.configuration;
+        const path = `/api/msels/${this.configuration.encodeParam({name: "mselId", value: mselId, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: "uuid"})}/users/${this.configuration.encodeParam({name: "userId", value: userId, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: "uuid"})}/integrationroles`;
+        return this.httpClient.request<Array<UserMselRole>>('put', `${basePath}${path}`, {
+            body: update,
+            responseType: 'json',
+            ...(withCredentials ? { withCredentials } : {}),
+            headers: localVarHeaders,
+            observe: 'body'
+        });
+    }
+
+    /**
      * Gets a specific UserMselRole by id
      * Returns the UserMselRole with the id specified
      * @param id The id of the UserMselRole
