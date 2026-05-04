@@ -52,6 +52,7 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
   competencyFrameworkDataSource = new MatTableDataSource<CompetencyFramework>(new Array<CompetencyFramework>());
   displayedColumns: string[] = ['action', 'name', 'version', 'source', 'scale', 'description'];
   private scaleMap = new Map<string, string>();
+  private frameworkDeleteCheckMap = new Map<string, { canDelete: boolean; inUseByMsels: string[] }>();
   private unsubscribe$ = new Subject();
   isExpansionDetailRow = (i: number, row: Object) => (row as CompetencyFramework).id === this.expandedElementId;
   expandedElementId = '';
@@ -113,6 +114,7 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
       });
     this.competencyFrameworkQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(competencyFrameworks => {
       this.adminCompetencyFrameworks = competencyFrameworks;
+      this.checkAllFrameworksForDelete();
       this.sortChanged(this.sort);
     });
     this.filterControl.valueChanges
@@ -171,42 +173,50 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
     }
   }
 
-  deleteCompetencyFramework(competencyFramework: CompetencyFramework): void {
-    this.competencyFrameworkService.checkCanDeleteCompetencyFramework(competencyFramework.id)
-      .pipe(take(1))
-      .subscribe({
-        next: (check) => {
-          if (check.CanDelete) {
-            this.dialogService
-              .confirm(
-                'Delete Competency Framework',
-                'Are you sure that you want to delete ' + competencyFramework.name + '? This will delete ' +
-                (competencyFramework.Competencies?.length || 0) + ' competencies.'
-              )
-              .subscribe((result) => {
-                if (result['confirm']) {
-                  this.competencyFrameworkDataService.delete(competencyFramework.id);
-                  this.expandedElementId = '';
-                }
-              });
-          } else {
-            let message = `Cannot delete ${competencyFramework.name}. It is being used by ${check.AffectedMsels.length} MSEL(s):\n\n`;
-            check.AffectedMsels.slice(0, 10).forEach(m => {
-              message += `• ${m.Name}\n`;
+  checkAllFrameworksForDelete(): void {
+    this.adminCompetencyFrameworks.forEach(fw => {
+      this.competencyFrameworkService.checkCanDeleteCompetencyFramework(fw.id)
+        .pipe(take(1))
+        .subscribe({
+          next: (check) => {
+            this.frameworkDeleteCheckMap.set(fw.id, {
+              canDelete: check.CanDelete,
+              inUseByMsels: check.AffectedMsels?.map(m => m.Name) || []
             });
-            if (check.AffectedMsels.length > 10) {
-              message += `• ... and ${check.AffectedMsels.length - 10} more\n`;
-            }
-            message += '\nRemove competencies from these MSELs before deleting the framework.';
-            this.dialogService.message(
-              'Cannot Delete Framework',
-              message,
-              'Close'
-            );
+          },
+          error: () => {
+            this.frameworkDeleteCheckMap.set(fw.id, { canDelete: true, inUseByMsels: [] });
           }
-        },
-        error: (err) => {
-          this.importError = 'Check failed: ' + (err.error?.title || err.message || 'Unknown error');
+        });
+    });
+  }
+
+  canDeleteFramework(frameworkId: string): boolean {
+    return this.frameworkDeleteCheckMap.get(frameworkId)?.canDelete ?? true;
+  }
+
+  getDeleteTooltip(frameworkId: string): string {
+    const check = this.frameworkDeleteCheckMap.get(frameworkId);
+    if (!check || check.canDelete) {
+      return 'Delete framework';
+    }
+    const mselCount = check.inUseByMsels.length;
+    const mselList = check.inUseByMsels.slice(0, 3).join(', ');
+    const more = mselCount > 3 ? ` and ${mselCount - 3} more` : '';
+    return `In use by ${mselCount} MSEL(s): ${mselList}${more}`;
+  }
+
+  deleteCompetencyFramework(competencyFramework: CompetencyFramework): void {
+    this.dialogService
+      .confirm(
+        'Delete Competency Framework',
+        'Are you sure that you want to delete ' + competencyFramework.name + '? This will delete ' +
+        (competencyFramework.Competencies?.length || 0) + ' competencies.'
+      )
+      .subscribe((result) => {
+        if (result['confirm']) {
+          this.competencyFrameworkDataService.delete(competencyFramework.id);
+          this.expandedElementId = '';
         }
       });
   }

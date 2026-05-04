@@ -50,8 +50,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
             title="Edit {{ element.name }}">
             <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline"></mat-icon>
           </button>
-          <button mat-icon-button class="msel-action" (click)="deleteCompetencyFramework(element); $event.stopPropagation();"
-            title="Delete {{ element.name }}">
+          <button mat-icon-button class="msel-action"
+            (click)="deleteCompetencyFramework(element); $event.stopPropagation();"
+            [disabled]="!canDeleteFramework(element.id)"
+            [matTooltip]="getDeleteTooltip(element.id)"
+            matTooltipPosition="above">
             <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline"></mat-icon>
           </button>
           }
