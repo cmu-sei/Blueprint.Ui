@@ -113,7 +113,6 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
         scales.forEach(s => this.scaleMap.set(s.id, s.name));
       });
     this.competencyFrameworkQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(competencyFrameworks => {
-      console.log('Frameworks loaded:', competencyFrameworks.length);
       this.adminCompetencyFrameworks = competencyFrameworks;
       this.checkAllFrameworksForDelete();
       this.sortChanged(this.sort);
@@ -175,20 +174,17 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
   }
 
   checkAllFrameworksForDelete(): void {
-    console.log('Checking delete for', this.adminCompetencyFrameworks.length, 'frameworks');
     this.adminCompetencyFrameworks.forEach(fw => {
       this.competencyFrameworkService.checkCanDeleteCompetencyFramework(fw.id)
         .pipe(take(1))
         .subscribe({
           next: (check) => {
-            console.log('Framework', fw.name, 'canDelete:', check.canDelete, 'affectedMsels:', check.affectedMsels?.length || 0);
             this.frameworkDeleteCheckMap.set(fw.id, {
               canDelete: check.canDelete,
               inUseByMsels: check.affectedMsels?.map(m => m.name) || []
             });
           },
-          error: (err) => {
-            console.error('Error checking framework', fw.name, err);
+          error: () => {
             this.frameworkDeleteCheckMap.set(fw.id, { canDelete: true, inUseByMsels: [] });
           }
         });
