@@ -113,6 +113,7 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
         scales.forEach(s => this.scaleMap.set(s.id, s.name));
       });
     this.competencyFrameworkQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(competencyFrameworks => {
+      console.log('Frameworks loaded:', competencyFrameworks.length);
       this.adminCompetencyFrameworks = competencyFrameworks;
       this.checkAllFrameworksForDelete();
       this.sortChanged(this.sort);
@@ -174,17 +175,20 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
   }
 
   checkAllFrameworksForDelete(): void {
+    console.log('Checking delete for', this.adminCompetencyFrameworks.length, 'frameworks');
     this.adminCompetencyFrameworks.forEach(fw => {
       this.competencyFrameworkService.checkCanDeleteCompetencyFramework(fw.id)
         .pipe(take(1))
         .subscribe({
           next: (check) => {
+            console.log('Framework', fw.name, 'canDelete:', check.CanDelete, 'affectedMsels:', check.AffectedMsels?.length || 0);
             this.frameworkDeleteCheckMap.set(fw.id, {
               canDelete: check.CanDelete,
               inUseByMsels: check.AffectedMsels?.map(m => m.Name) || []
             });
           },
-          error: () => {
+          error: (err) => {
+            console.error('Error checking framework', fw.name, err);
             this.frameworkDeleteCheckMap.set(fw.id, { canDelete: true, inUseByMsels: [] });
           }
         });
@@ -204,6 +208,29 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
     const mselList = check.inUseByMsels.slice(0, 3).join(', ');
     const more = mselCount > 3 ? ` and ${mselCount - 3} more` : '';
     return `In use by ${mselCount} MSEL(s): ${mselList}${more}`;
+  }
+
+  downloadFramework(competencyFramework: CompetencyFramework): void {
+    this.competencyFrameworkService.getCompetencyFramework(competencyFramework.id)
+      .pipe(take(1))
+      .subscribe({
+        next: (fw) => {
+          const json = JSON.stringify(fw, null, 2);
+          const blob = new Blob([json], { type: 'application/json' });
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          const filename = `${fw.name}-${fw.version || 'export'}.json`.replace(/[^a-z0-9.-]/gi, '_');
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(url);
+        },
+        error: (err) => {
+          this.importError = 'Download failed: ' + (err.error?.title || err.message || 'Unknown error');
+        }
+      });
   }
 
   deleteCompetencyFramework(competencyFramework: CompetencyFramework): void {
