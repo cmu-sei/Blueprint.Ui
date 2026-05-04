@@ -66,6 +66,8 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
     'exercise',
     'information',
     'facilitation',
+    'default',
+    'devs',
     'name',
     'datatype',
     'options',
@@ -77,6 +79,8 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
     'exercise',
     'information',
     'facilitation',
+    'default',
+    'devs',
     'name',
     'datatype',
     'options',
@@ -388,6 +392,8 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
         break;
       case 'onScenarioEventList':
       case 'onExerciseView':
+      case 'isShownOnDefaultTab':
+      case 'isOnlyShownToOwners':
         const aChecked = a[sortFieldName];
         const bChecked = b[sortFieldName];
         if (aChecked !== bChecked) {
