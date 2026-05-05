@@ -30,6 +30,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
   <div class="error-message">{{ parseError }}</div>
   }
 
+  @if (successMessage) {
+  <div class="success-banner">
+    <mat-icon fontIcon="mdi-check-circle"></mat-icon>
+    <span>{{ successMessage }}</span>
+  </div>
+  }
+
   @if (selectedFile) {
   <div class="preview-section">
     <mat-form-field class="full-width" style="margin-top: 16px;">
@@ -41,41 +48,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <input matInput [(ngModel)]="version" placeholder="e.g. 5.1" />
     </mat-form-field>
 
-    @if (framework) {
+    @if (frameworkName) {
     <div class="preview-field">
-      <span class="preview-label">Name:</span>
-      <input matInput [(ngModel)]="framework.name" class="preview-input" />
-    </div>
-
-    <div class="element-summary">
-      <div class="preview-header">Competencies to import: {{ totalElements }}</div>
-      @if (elementTypeCounts.length > 0) {
-      <table class="type-table">
-        <thead>
-          <tr>
-            <th>Type</th>
-            <th>Count</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (tc of elementTypeCounts; track tc.type) {
-          <tr [class.skipped]="skippedTypes.includes(tc.type)">
-            <td>{{ tc.type }}</td>
-            <td>{{ tc.count }}</td>
-            <td>@if (skippedTypes.includes(tc.type)) { <em>skipped</em> }</td>
-          </tr>
-          }
-        </tbody>
-      </table>
-      }
+      <span class="preview-label">Framework Name:</span> {{ frameworkName }}
     </div>
     }
 
-    @if (fileType === 'json' && jsonPreviewName) {
-    <div class="preview-field">
-      <span class="preview-label">Name:</span> {{ jsonPreviewName }}
-    </div>
+    @if (!isProcessing && totalElements > 0) {
     <div class="element-summary">
       <div class="preview-header">Competencies to import: {{ totalElements }}</div>
       @if (totalRelationships > 0) {
@@ -87,15 +66,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <tr>
             <th>Type</th>
             <th>Count</th>
-            <th></th>
           </tr>
         </thead>
         <tbody>
           @for (tc of elementTypeCounts; track tc.type) {
-          <tr [class.skipped]="skippedTypes.includes(tc.type)">
+          <tr>
             <td>{{ tc.type }}</td>
             <td>{{ tc.count }}</td>
-            <td>@if (skippedTypes.includes(tc.type)) { <em>skipped</em> }</td>
           </tr>
           }
         </tbody>
@@ -104,16 +81,25 @@ project root for license information or contact permission@sei.cmu.edu for full 
     </div>
     }
 
-    @if (fileType === 'csv') {
-    <p class="csv-note">CSV will be parsed on the server using Moodle lpimportcsv format.</p>
+    @if (isProcessing) {
+    <div class="processing-message">
+      <mat-spinner diameter="24"></mat-spinner>
+      <span>Processing file...</span>
+    </div>
     }
   </div>
   }
 </div>
 
 <div mat-dialog-actions align="end">
-  <button mat-stroked-button (click)="handleCancel()">Cancel</button>
-  <button mat-raised-button color="primary" [disabled]="!ready" (click)="handleImport()" style="margin-left: 10px;">
-    Import
-  </button>
+  @if (importSucceeded) {
+    <button mat-raised-button color="primary" (click)="handleCancel()">
+      Close
+    </button>
+  } @else {
+    <button mat-stroked-button (click)="handleCancel()">Cancel</button>
+    <button mat-raised-button color="primary" [disabled]="!ready" (click)="handleImport()" style="margin-left: 10px;">
+      Import
+    </button>
+  }
 </div>

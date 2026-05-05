@@ -1,9 +1,3 @@
-/*
- Copyright 2026 Carnegie Mellon University. All Rights Reserved.
- Released under a MIT (SEI)-style license. See LICENSE.md in the
- project root for license information.
-*/
-
 export * from './card.service';
 import { CardService } from './card.service';
 export * from './cardTeam.service';
@@ -20,8 +14,6 @@ export * from './citeAction.service';
 import { CiteActionService } from './citeAction.service';
 export * from './citeDuty.service';
 import { CiteDutyService } from './citeDuty.service';
-export * from './competencyElement.service';
-import { CompetencyElementService } from './competencyElement.service';
 export * from './competencyFramework.service';
 import { CompetencyFrameworkService } from './competencyFramework.service';
 export * from './dataField.service';
@@ -40,14 +32,16 @@ export * from './injectType.service';
 import { InjectTypeService } from './injectType.service';
 export * from './invitation.service';
 import { InvitationService } from './invitation.service';
+export * from './lmt.service';
+import { LmtService } from './lmt.service';
 export * from './move.service';
 import { MoveService } from './move.service';
 export * from './msel.service';
 import { MselService } from './msel.service';
-export * from './mselPage.service';
-import { MselPageService } from './mselPage.service';
 export * from './mselCompetency.service';
 import { MselCompetencyService } from './mselCompetency.service';
+export * from './mselPage.service';
+import { MselPageService } from './mselPage.service';
 export * from './mselUnit.service';
 import { MselUnitService } from './mselUnit.service';
 export * from './organization.service';
@@ -84,4 +78,6 @@ export * from './userMselRole.service';
 import { UserMselRoleService } from './userMselRole.service';
 export * from './userTeamRole.service';
 import { UserTeamRoleService } from './userTeamRole.service';
-export const APIS = [CardService, CardTeamService, CatalogService, CatalogInjectService, CatalogUnitService, CiteService, CiteActionService, CiteDutyService, CompetencyElementService, CompetencyFrameworkService, DataFieldService, DataOptionService, DataValueService, GroupService, HealthCheckService, InjectService, InjectTypeService, InvitationService, MoveService, MselService, MselCompetencyService, MselPageService, MselUnitService, OrganizationService, PlayerService, PlayerApplicationService, PlayerApplicationTeamService, ProficiencyLevelService, ProficiencyScaleService, ScenarioEventService, SystemPermissionsService, SystemRolesService, TeamService, TeamCompetencyService, TeamUserService, UnitService, UnitUserService, UserService, UserMselRoleService, UserTeamRoleService];
+export * from './xApi.service';
+import { XApiService } from './xApi.service';
+export const APIS = [CardService, CardTeamService, CatalogService, CatalogInjectService, CatalogUnitService, CiteService, CiteActionService, CiteDutyService, CompetencyFrameworkService, DataFieldService, DataOptionService, DataValueService, GroupService, HealthCheckService, InjectService, InjectTypeService, InvitationService, LmtService, MoveService, MselService, MselCompetencyService, MselPageService, MselUnitService, OrganizationService, PlayerService, PlayerApplicationService, PlayerApplicationTeamService, ProficiencyLevelService, ProficiencyScaleService, ScenarioEventService, SystemPermissionsService, SystemRolesService, TeamService, TeamCompetencyService, TeamUserService, UnitService, UnitUserService, UserService, UserMselRoleService, UserTeamRoleService, XApiService];

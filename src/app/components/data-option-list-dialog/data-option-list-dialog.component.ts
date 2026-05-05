@@ -23,6 +23,7 @@ export class DataOptionListDialogComponent {
     @Inject(MAT_DIALOG_DATA) public data: {
       dataOptions: DataOption[];
       canEdit: boolean;
+      canImport?: boolean;
       onEdit: (option: DataOption) => void;
       onDelete: (option: DataOption) => void;
       onAdd: () => void;

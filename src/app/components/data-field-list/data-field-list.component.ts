@@ -322,6 +322,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
         useCite: this.msel.useCite,
         dataFieldTypes: this.dataFieldTypes,
         title: dialogTitle,
+        onSave: (df: DataField) => this.saveDataField(df)
       },
     });
     dialogRef.componentInstance.editComplete.subscribe((result) => {

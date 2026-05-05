@@ -1,9 +1,3 @@
-/*
- Copyright 2026 Carnegie Mellon University. All Rights Reserved.
- Released under a MIT (SEI)-style license. See LICENSE.md in the
- project root for license information.
-*/
-
 export * from './applicationTemplate';
 export * from './assembly';
 export * from './calendar';
@@ -19,9 +13,9 @@ export * from './citeAction';
 export * from './citeDuty';
 export * from './compareInfo';
 export * from './competency';
-export * from './competencyElement';
+export * from './competencyAssertion';
 export * from './competencyFramework';
-export * from './mselCompetency';
+export * from './competencyFrameworkImportPreview';
 export * from './constructorInfo';
 export * from './createFromInjectsForm';
 export * from './cultureInfo';
@@ -33,6 +27,8 @@ export * from './dataColumn';
 export * from './dataField';
 export * from './dataFieldType';
 export * from './dataOption';
+export * from './dataOptionImportPreview';
+export * from './dataOptionImportPreviewItem';
 export * from './dataSet';
 export * from './dataSetDateTime';
 export * from './dataTable';
@@ -40,6 +36,7 @@ export * from './dataValue';
 export * from './dateTimeFormatInfo';
 export * from './dayOfWeek';
 export * from './digitShapes';
+export * from './elementTypeCount';
 export * from './eventAttributes';
 export * from './eventInfo';
 export * from './eventType';
@@ -73,6 +70,7 @@ export * from './module';
 export * from './moduleHandle';
 export * from './move';
 export * from './msel';
+export * from './mselCompetency';
 export * from './mselItemStatus';
 export * from './mselPage';
 export * from './mselReference';

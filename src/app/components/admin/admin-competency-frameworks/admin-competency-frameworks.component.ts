@@ -250,51 +250,60 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
       maxWidth: '90vw',
     });
     dialogRef.componentInstance.importComplete.subscribe((result: ImportResult | null) => {
-      if (result) {
-        this.importing = true;
-        this.importError = '';
-        if (result.type === 'csv' && result.file) {
-          this.competencyFrameworkService.importCompetencyFramework(result.source, result.version, result.file)
-            .pipe(take(1))
-            .subscribe({
-              next: (created) => {
-                this.importing = false;
-                this.competencyFrameworkDataService.updateStore(created);
-              },
-              error: (err) => {
-                this.importing = false;
-                this.importError = 'Import failed: ' + (err.error?.title || err.message || 'Unknown error');
-              }
-            });
-        } else if (result.type === 'json' && result.file) {
-          this.competencyFrameworkService.importCompetencyFrameworkJson(result.file)
-            .pipe(take(1))
-            .subscribe({
-              next: (created) => {
-                this.importing = false;
-                this.competencyFrameworkDataService.updateStore(created);
-              },
-              error: (err) => {
-                this.importing = false;
-                this.importError = 'Import failed: ' + (err.error?.title || err.message || 'Unknown error');
-              }
-            });
-        } else if (result.type === 'parsed' && result.framework) {
-          this.competencyFrameworkService.createCompetencyFramework(result.framework)
-            .pipe(take(1))
-            .subscribe({
-              next: (created) => {
-                this.importing = false;
-                this.competencyFrameworkDataService.updateStore(created);
-              },
-              error: (err) => {
-                this.importing = false;
-                this.importError = 'Import failed: ' + (err.error?.title || err.message || 'Unknown error');
-              }
-            });
-        }
+      if (!result) {
+        dialogRef.close();
+        return;
       }
-      dialogRef.close();
+
+      dialogRef.componentInstance.isProcessing = true;
+      dialogRef.componentInstance.parseError = '';
+
+      if (result.type === 'csv' && result.file) {
+        this.competencyFrameworkService.importCompetencyFramework(result.source, result.version, result.file)
+          .pipe(take(1))
+          .subscribe({
+            next: (created) => {
+              this.competencyFrameworkDataService.updateStore(created);
+              dialogRef.componentInstance.isProcessing = false;
+              dialogRef.componentInstance.importSucceeded = true;
+              dialogRef.componentInstance.successMessage = `Successfully imported ${created.name}`;
+            },
+            error: (err) => {
+              dialogRef.componentInstance.isProcessing = false;
+              dialogRef.componentInstance.parseError = 'Import failed: ' + (err.error?.title || err.message || 'Unknown error');
+            }
+          });
+      } else if (result.type === 'json' && result.file) {
+        this.competencyFrameworkService.importCompetencyFrameworkJson(result.file)
+          .pipe(take(1))
+          .subscribe({
+            next: (created) => {
+              this.competencyFrameworkDataService.updateStore(created);
+              dialogRef.componentInstance.isProcessing = false;
+              dialogRef.componentInstance.importSucceeded = true;
+              dialogRef.componentInstance.successMessage = `Successfully imported ${created.name}`;
+            },
+            error: (err) => {
+              dialogRef.componentInstance.isProcessing = false;
+              dialogRef.componentInstance.parseError = 'Import failed: ' + (err.error?.title || err.message || 'Unknown error');
+            }
+          });
+      } else if (result.type === 'xlsx' && result.file) {
+        this.competencyFrameworkService.importCompetencyFrameworkXlsx(result.source, result.version, result.file)
+          .pipe(take(1))
+          .subscribe({
+            next: (created) => {
+              this.competencyFrameworkDataService.updateStore(created);
+              dialogRef.componentInstance.isProcessing = false;
+              dialogRef.componentInstance.importSucceeded = true;
+              dialogRef.componentInstance.successMessage = `Successfully imported ${created.name}`;
+            },
+            error: (err) => {
+              dialogRef.componentInstance.isProcessing = false;
+              dialogRef.componentInstance.parseError = 'Import failed: ' + (err.error?.title || err.message || 'Unknown error');
+            }
+          });
+      }
     });
   }
 

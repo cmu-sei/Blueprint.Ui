@@ -31,7 +31,10 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <button mat-icon-button (click)="handleAdd()" title="Add new option" style="outline: none;">
       <mat-icon class="mdi-24px" fontIcon="mdi-plus-circle-outline"></mat-icon>
     </button>
-    <button mat-icon-button (click)="handleImport()" title="Import options from file" style="outline: none;">
+    <button mat-icon-button (click)="handleImport()"
+      [disabled]="data.canImport === false"
+      matTooltip="Import options from file"
+      style="outline: none;">
       <mat-icon class="mdi-24px" fontIcon="mdi-upload"></mat-icon>
     </button>
   </div>

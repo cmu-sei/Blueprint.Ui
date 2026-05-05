@@ -4,9 +4,9 @@
 
 import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { DataOption } from 'src/app/generated/blueprint.api';
+import { DataOption, DataOptionService } from 'src/app/generated/blueprint.api';
 import { v4 as uuidv4 } from 'uuid';
-import * as XLSX from 'xlsx';
+import { take } from 'rxjs/operators';
 
 export interface ImportPreviewItem {
   optionName: string;
@@ -35,7 +35,8 @@ export class DataOptionImportDialogComponent {
       existingOptions: DataOption[];
       instructions?: string;
       showDescription?: boolean;
-    }
+    },
+    private dataOptionService: DataOptionService
   ) {
     dialogRef.disableClose = true;
   }
@@ -47,236 +48,42 @@ export class DataOptionImportDialogComponent {
   onFileSelected(event: any) {
     const file = event.target.files[0];
     if (file) {
+      if (!this.data.dataFieldId) {
+        this.parseError = 'Data field ID is missing';
+        return;
+      }
+
       this.isProcessing = true;
       this.parseError = '';
       this.previewItems = [];
       this.fileName = file.name;
-      const ext = file.name.split('.').pop()?.toLowerCase();
 
-      if (ext === 'json') {
-        const reader = new FileReader();
-        reader.onload = (e: any) => {
-          try {
-            this.parseJson(e.target.result);
-          } catch (error) {
-            this.parseError = `Error reading file: ${error.message}`;
-          } finally {
+      // Upload file to API for server-side parsing
+      this.dataOptionService.previewDataOptionImport(this.data.dataFieldId, file)
+        .pipe(take(1))
+        .subscribe({
+          next: (preview) => {
+            if (preview.error) {
+              this.parseError = preview.error;
+            } else {
+              this.previewItems = preview.items.map(item => ({
+                optionName: item.optionName,
+                optionValue: item.optionValue,
+                optionDescription: item.optionDescription,
+                willImport: !item.exists,
+                exists: item.exists
+              }));
+            }
+            this.isProcessing = false;
+          },
+          error: (err) => {
+            this.parseError = `Error processing file: ${err.error?.title || err.message || 'Unknown error'}`;
             this.isProcessing = false;
           }
-        };
-        reader.readAsText(file);
-      } else if (ext === 'csv') {
-        const reader = new FileReader();
-        reader.onload = (e: any) => {
-          try {
-            this.parseCsv(e.target.result);
-          } catch (error) {
-            this.parseError = `Error reading file: ${error.message}`;
-          } finally {
-            this.isProcessing = false;
-          }
-        };
-        reader.readAsText(file);
-      } else if (ext === 'xlsx' || ext === 'xls') {
-        const reader = new FileReader();
-        reader.onload = (e: any) => {
-          try {
-            this.parseXlsx(e.target.result);
-          } catch (error) {
-            this.parseError = `Error reading file: ${error.message}`;
-          } finally {
-            this.isProcessing = false;
-          }
-        };
-        reader.readAsArrayBuffer(file);
-      } else {
-        this.parseError = 'Unsupported file type. Please use JSON, CSV, or XLSX.';
-        this.isProcessing = false;
-      }
+        });
     }
   }
 
-  parseJson(content: string) {
-    const parsed = JSON.parse(content);
-    const items: ImportPreviewItem[] = [];
-
-    // NICE Framework format (v1.0.0 / v2.0.0+)
-    if (parsed.response?.elements?.elements || (parsed.elements && Array.isArray(parsed.elements))) {
-      const elements = parsed.response?.elements?.elements || parsed.elements;
-      const skipTypes = ['sort', 'opm_code'];
-      for (const item of elements) {
-        if (skipTypes.includes(item.element_type)) continue;
-        if (item.element_identifier) {
-          const name = item.title || '';
-          const description = item.text || '';
-          items.push(this.createPreviewItem(item.element_identifier, name, description));
-        }
-      }
-    } else if (Array.isArray(parsed)) {
-      for (const item of parsed) {
-        const extracted = this.extractFields(item);
-        if (extracted) {
-          items.push(this.createPreviewItem(extracted.id, extracted.name, extracted.description));
-        }
-      }
-    } else if (typeof parsed === 'object') {
-      const arrayProp = Object.values(parsed).find(v => Array.isArray(v)) as any[];
-      if (arrayProp) {
-        for (const item of arrayProp) {
-          const extracted = this.extractFields(item);
-          if (extracted) {
-            items.push(this.createPreviewItem(extracted.id, extracted.name, extracted.description));
-          }
-        }
-      }
-    }
-
-    if (items.length === 0) {
-      this.parseError = 'No options found. Expected an array of objects with ID and name fields.';
-    } else {
-      this.previewItems = items;
-    }
-  }
-
-  private extractFields(item: any): { id: string; name: string; description: string } | null {
-    if (typeof item !== 'object' || !item) return null;
-    const id = item.id || item.identifier || item.code || item.optionName || item.element_identifier;
-    const name = item.name || item.title || item.optionValue || item.value || '';
-    const description = item.description || item.text || item.optionDescription || '';
-    if (id) {
-      return { id: String(id), name: name ? String(name) : '', description: description ? String(description) : '' };
-    }
-    return null;
-  }
-
-  parseCsv(content: string) {
-    const lines = content.split(/\r?\n/).filter(line => line.trim());
-    if (lines.length < 2) {
-      this.parseError = 'CSV file must have a header row and at least one data row.';
-      return;
-    }
-
-    const headers = this.parseCsvLine(lines[0]).map(h => h.toLowerCase().trim());
-    const idCol = this.findColumn(headers, ['id', 'identifier', 'code', 'optionname']);
-    const nameCol = this.findColumn(headers, ['name', 'title', 'optionvalue']);
-    const descCol = this.findColumn(headers, ['description', 'text', 'optiondescription']);
-
-    const items: ImportPreviewItem[] = [];
-    for (let i = 1; i < lines.length; i++) {
-      const cols = this.parseCsvLine(lines[i]);
-      let id: string, name: string, description: string;
-      if (idCol >= 0) {
-        id = (cols[idCol] || '').trim();
-        name = nameCol >= 0 ? (cols[nameCol] || '').trim() : '';
-        description = descCol >= 0 ? (cols[descCol] || '').trim() : '';
-      } else {
-        // Positional fallback
-        id = (cols[0] || '').trim();
-        name = (cols[1] || '').trim();
-        description = (cols[2] || '').trim();
-      }
-      if (id) {
-        items.push(this.createPreviewItem(id, name, description));
-      }
-    }
-    this.setPreviewItems(items);
-  }
-
-  private parseCsvLine(line: string): string[] {
-    const result: string[] = [];
-    let current = '';
-    let inQuotes = false;
-    for (let i = 0; i < line.length; i++) {
-      const ch = line[i];
-      if (inQuotes) {
-        if (ch === '"' && line[i + 1] === '"') {
-          current += '"';
-          i++;
-        } else if (ch === '"') {
-          inQuotes = false;
-        } else {
-          current += ch;
-        }
-      } else {
-        if (ch === '"') {
-          inQuotes = true;
-        } else if (ch === ',') {
-          result.push(current);
-          current = '';
-        } else {
-          current += ch;
-        }
-      }
-    }
-    result.push(current);
-    return result;
-  }
-
-  private findColumn(headers: string[], candidates: string[]): number {
-    for (const candidate of candidates) {
-      const index = headers.indexOf(candidate);
-      if (index >= 0) return index;
-    }
-    return -1;
-  }
-
-  parseXlsx(data: ArrayBuffer) {
-    const workbook = XLSX.read(data, { type: 'array' });
-    const sheetName = workbook.SheetNames[0];
-    const sheet = workbook.Sheets[sheetName];
-    const rows: any[][] = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-
-    if (rows.length < 2) {
-      this.parseError = 'Spreadsheet must have a header row and at least one data row.';
-      return;
-    }
-
-    const headers = rows[0].map((h: any) => String(h || '').toLowerCase().trim());
-    const idCol = this.findColumn(headers, ['id', 'identifier', 'code', 'optionname']);
-    const nameCol = this.findColumn(headers, ['name', 'title', 'optionvalue']);
-    const descCol = this.findColumn(headers, ['description', 'text', 'optiondescription']);
-
-    const items: ImportPreviewItem[] = [];
-    for (let i = 1; i < rows.length; i++) {
-      const cols = rows[i];
-      let id: string, name: string, description: string;
-      if (idCol >= 0) {
-        id = String(cols[idCol] || '').trim();
-        name = nameCol >= 0 ? String(cols[nameCol] || '').trim() : '';
-        description = descCol >= 0 ? String(cols[descCol] || '').trim() : '';
-      } else {
-        // Positional fallback
-        id = String(cols[0] || '').trim();
-        name = String(cols[1] || '').trim();
-        description = String(cols[2] || '').trim();
-      }
-      if (id) {
-        items.push(this.createPreviewItem(id, name, description));
-      }
-    }
-    this.setPreviewItems(items);
-  }
-
-  private setPreviewItems(items: ImportPreviewItem[]) {
-    if (items.length === 0) {
-      this.parseError = 'No options found in file.';
-    } else {
-      this.previewItems = items;
-    }
-  }
-
-  private createPreviewItem(optionName: string, optionValue: string, optionDescription: string): ImportPreviewItem {
-    const exists = this.data.existingOptions.some(
-      opt => opt.optionName === optionName
-    );
-    return {
-      optionName,
-      optionValue,
-      optionDescription,
-      willImport: !exists,
-      exists
-    };
-  }
 
   getImportCount(): number {
     return this.previewItems.filter(item => item.willImport).length;

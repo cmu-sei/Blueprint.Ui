@@ -124,6 +124,27 @@ export class DataFieldEditDialogComponent {
   }
 
   importDataOptions(dataField: DataField) {
+    // If field is not saved yet, save it first
+    if (!dataField.id) {
+      if (!this.errorFree()) {
+        return; // Can't save if there are validation errors
+      }
+      // Save via callback if provided, otherwise emit event
+      if (this.data.onSave) {
+        const savedId = this.data.onSave(this.data.dataField);
+        if (savedId) {
+          this.data.dataField.id = savedId;
+          // Now open import dialog with the new ID
+          this.openImportDialog(this.data.dataField);
+        }
+      }
+      return;
+    }
+
+    this.openImportDialog(dataField);
+  }
+
+  private openImportDialog(dataField: DataField) {
     const dialogRef = this.dialog.open(DataOptionImportDialogComponent, {
       width: '800px',
       maxWidth: '90vw',
@@ -168,6 +189,7 @@ export class DataFieldEditDialogComponent {
         data: {
           dataOptions: this.data.dataField.dataOptions,
           canEdit: canAddOptions,
+          canImport: canAddOptions,
           onEdit: (option: DataOption) => this.editDataOption(option),
           onDelete: (option: DataOption) => this.deleteDataOption(option),
           onAdd: () => this.addDataOption(this.data.dataField),

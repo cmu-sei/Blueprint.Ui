@@ -22,6 +22,33 @@
   padding: 8px 0;
 }
 
+.success-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  margin: 16px 0;
+  background: #e8f5e9 !important;
+  color: #1b5e20 !important;
+  border: 1px solid #81c784 !important;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 15px;
+
+  mat-icon {
+    font-size: 24px !important;
+    width: 24px !important;
+    height: 24px !important;
+    line-height: 24px !important;
+    color: #2e7d32 !important;
+    flex-shrink: 0;
+  }
+
+  span {
+    color: #1b5e20 !important;
+  }
+}
+
 .preview-section {
   margin-top: 8px;
 }
@@ -77,5 +104,20 @@
   .skipped {
     opacity: 0.5;
     text-decoration: line-through;
+  }
+}
+
+.processing-message {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+  padding: 12px;
+  background: var(--mat-sys-surface-container-low);
+  border-radius: 4px;
+
+  span {
+    font-size: 13px;
+    color: var(--mat-sys-on-surface-variant);
   }
 }
