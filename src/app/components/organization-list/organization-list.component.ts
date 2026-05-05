@@ -226,13 +226,13 @@ export class OrganizationListComponent implements OnDestroy, OnInit, AfterViewIn
     const isAsc = direction !== 'desc';
     switch (column) {
       case 'name':
-        return ((a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1) * (isAsc ? 1 : -1));
+        return (((a.name ?? '').toLowerCase() < (b.name ?? '').toLowerCase() ? -1 : 1) * (isAsc ? 1 : -1));
         break;
       case 'shortname':
-        return ((a.shortName.toLowerCase() < b.shortName.toLowerCase() ? -1 : 1) * (isAsc ? 1 : -1));
+        return (((a.shortName ?? '').toLowerCase() < (b.shortName ?? '').toLowerCase() ? -1 : 1) * (isAsc ? 1 : -1));
         break;
       case 'summary':
-        return ((a.summary.toLowerCase() < b.summary.toLowerCase() ? -1 : 1) * (isAsc ? 1 : -1));
+        return (((a.summary ?? '').toLowerCase() < (b.summary ?? '').toLowerCase() ? -1 : 1) * (isAsc ? 1 : -1));
         break;
       default:
         return 0;

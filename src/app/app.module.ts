@@ -49,6 +49,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {
   ComnAuthModule,
+  ComnHeaderBarModule,
   ComnSettingsConfig,
   ComnSettingsModule,
   ComnSettingsService,
@@ -100,6 +101,7 @@ import { MoveListComponent } from './components/move-list/move-list.component';
 import { MselComponent } from './components/msel/msel.component';
 import { MselContributorsComponent } from './components/msel-contributors/msel-contributors.component';
 import { MselInfoComponent } from './components/msel-info/msel-info.component';
+import { IntegrationStatusComponent } from './components/integration-status/integration-status.component';
 import { MselListComponent } from './components/msel-list/msel-list.component';
 import { MselPageComponent } from './components/msel-page/msel-page.component';
 import { MselTeamsComponent } from './components/msel-teams/msel-teams.component';
@@ -121,6 +123,7 @@ import { TeamAddDialogComponent } from './components/team-add-dialog/team-add-di
 import { TeamEditDialogComponent } from './components/team-edit-dialog/team-edit-dialog.component';
 import { TeamUsersComponent } from './components/team-users/team-users.component';
 import { TopbarComponent } from './components/shared/top-bar/topbar.component';
+import { PresenceBarComponent } from './components/shared/presence-bar/presence-bar.component';
 import { UIDataService } from './data/ui/ui-data.service';
 import { UserDataService } from './data/user/user-data.service';
 import { DialogService } from './services/dialog/dialog.service';
@@ -148,6 +151,7 @@ import { DataValueComponent } from './components/data-value/data-value.component
 
 const settings: ComnSettingsConfig = {
   url: 'assets/config/settings.json',
+  sharedUrl: 'assets/config/settings.shared.json',
   envUrl: 'assets/config/settings.env.json',
 };
 
@@ -190,6 +194,7 @@ export const appConfig: ApplicationConfig = {
     MselComponent,
     MselContributorsComponent,
     MselInfoComponent,
+    IntegrationStatusComponent,
     MselListComponent,
     MselPageComponent,
     MselTeamsComponent,
@@ -227,6 +232,7 @@ export const appConfig: ApplicationConfig = {
     AdminGroupsMembershipListComponent,
     NameDialogComponent,
     TopbarComponent,
+    PresenceBarComponent,
     DisplayOrderPipe,
     SortByPipe,
     PlainTextPipe,
@@ -279,7 +285,6 @@ export const appConfig: ApplicationConfig = {
     MatBottomSheetModule,
     MatBadgeModule,
     MatFormFieldModule,
-    MatDatepickerModule,
     NgxMatDatepickerActions,
     NgxMatDatepickerApply,
     NgxMatDatepickerCancel,
@@ -294,7 +299,8 @@ export const appConfig: ApplicationConfig = {
     ComnAuthModule.forRoot(),
     ComnSettingsModule.forRoot(),
     AngularEditorModule,
-    DragDropModule], providers: [
+    DragDropModule,
+    ComnHeaderBarModule], providers: [
       DialogService,
       SystemMessageService,
       UIDataService,

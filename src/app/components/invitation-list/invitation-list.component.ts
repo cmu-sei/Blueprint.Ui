@@ -2,8 +2,8 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 import { Component, Input, OnDestroy, ViewChild } from '@angular/core';
-import { UntypedFormControl } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
+import { MatPaginator } from '@angular/material/paginator';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import {
@@ -14,7 +14,6 @@ import {
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { Sort } from '@angular/material/sort';
-import { MatMenuTrigger } from '@angular/material/menu';
 import { InvitationDataService } from 'src/app/data/invitation/invitation-data.service';
 import { InvitationQuery } from 'src/app/data/invitation/invitation.query';
 import { TeamQuery } from 'src/app/data/team/team.query';
@@ -33,19 +32,13 @@ export class InvitationListComponent implements OnDestroy {
   @Input() loggedInUserId: string;
   @Input() canEditMsel: boolean;
   @Input() hideSearch: boolean;
-  // context menu
-  @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
-  contextMenuPosition = { x: '0px', y: '0px' };
+  @ViewChild(MatPaginator) set matPaginator(paginator: MatPaginator) {
+    this.invitationDataSource.paginator = paginator;
+  }
   msel = new MselPlus();
   invitationList: Invitation[] = [];
-  changedInvitation: Invitation = {};
-  filteredInvitationList: Invitation[] = [];
-  filterControl = new UntypedFormControl();
   filterString = '';
-  sort: Sort = { active: 'name', direction: 'asc' };
-  sortedInvitations: Invitation[] = [];
-  templateInvitations: Invitation[] = [];
-  editingId = '';
+  sort: Sort = { active: 'teamId', direction: 'asc' };
   invitationDataSource = new MatTableDataSource<Invitation>(new Array<Invitation>());
   displayedColumns: string[] = ['action', 'teamId', 'emailDomain', 'expirationDateTime', 'usesAllowed', 'usesRemaining'];
   teamList: Team[] = [];
@@ -62,33 +55,19 @@ export class InvitationListComponent implements OnDestroy {
     // subscribe to invitations
     this.invitationQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(invitations => {
       this.invitationList = invitations;
-      this.sortChanged(this.sort);
+      this.applyFilter(this.filterString);
     });
     // subscribe to the active MSEL
     (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
       if (msel && this.msel.id !== msel.id) {
         Object.assign(this.msel, msel);
-        this.sortChanged(this.sort);
+        this.applyFilter(this.filterString);
       }
     });
     // subscribe to the MSEL teams
     this.teamQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(teams => {
       this.teamList = teams;
     });
-    // subscribe to filter control changes
-    this.filterControl.valueChanges
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe((term) => {
-        this.filterString = term;
-        this.sortChanged(this.sort);
-      });
-  }
-
-  getSortedInvitations(invitations: Invitation[]) {
-    if (invitations) {
-      invitations.sort((a, b) => this.sortInvitations(a, b, this.sort.active, this.sort.direction));
-    }
-    return invitations;
   }
 
   addOrEditInvitation(invitation: Invitation, makeTemplate: boolean) {
@@ -139,59 +118,44 @@ export class InvitationListComponent implements OnDestroy {
       .subscribe((result) => {
         if (result['confirm']) {
           this.invitationDataService.delete(invitation.id);
-          this.editingId = '';
         }
       });
+  }
+
+  applyFilter(filterValue: string) {
+    this.filterString = filterValue;
+    const term = filterValue.toLowerCase();
+    const filtered = this.invitationList
+      .filter(inv => inv.mselId === this.msel.id)
+      .filter(inv =>
+        !term ||
+        this.getTeamName(inv.teamId)?.toLowerCase().includes(term) ||
+        inv.emailDomain?.toLowerCase().includes(term)
+      )
+      .sort((a, b) => this.sortInvitations(a, b));
+    this.invitationDataSource.data = filtered;
   }
 
   sortChanged(sort: Sort) {
     this.sort = sort;
-    this.invitationDataSource.data = this.getSortedInvitations(this.getFilteredInvitations(this.msel.id, this.invitationList));
+    this.applyFilter(this.filterString);
   }
 
-  ngOnDestroy() {
-    this.unsubscribe$.next(null);
-    this.unsubscribe$.complete();
-  }
-
-  getFilteredInvitations(mselId: string, invitations: Invitation[]): Invitation[] {
-    let filteredInvitations: Invitation[] = [];
-    if (invitations) {
-      invitations.forEach(se => {
-        if (se.mselId === mselId) {
-          filteredInvitations.push({ ...se });
-        }
-      });
-      if (filteredInvitations && filteredInvitations.length > 0 && this.filterString) {
-        const filterString = this.filterString?.toLowerCase();
-        filteredInvitations = filteredInvitations.filter(invitation => {
-          const teamName = this.getTeamName(invitation.teamId)?.toLowerCase() || ''; // Ensuring it's always a string
-          return teamName.includes(filterString) ||
-            invitation.emailDomain?.toLowerCase().includes(filterString) ||
-            (invitation.teamId && invitation.teamId.toString().includes(filterString));
-        });
-      }
-    }
-    return filteredInvitations;
-  }
-
-  private sortInvitations(
-    a: Invitation,
-    b: Invitation,
-    column: string,
-    direction: string
-  ) {
-    const isAsc = direction !== 'desc';
-    switch (column) {
-      // case 'name':
-      //   return ( (a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1) * (isAsc ? 1 : -1) );
-      //   break;
-      // case 'shortname':
-      //   return ( (a.shortName.toLowerCase() < b.shortName.toLowerCase() ? -1 : 1) * (isAsc ? 1 : -1) );
-      //   break;
-      // case 'summary':
-      //   return ( (a.summary.toLowerCase() < b.summary.toLowerCase() ? -1 : 1) * (isAsc ? 1 : -1) );
-      //   break;
+  sortInvitations(a: Invitation, b: Invitation): number {
+    const dir = this.sort.direction === 'desc' ? -1 : 1;
+    switch (this.sort.active) {
+      case 'teamId':
+        return (this.getTeamName(a.teamId)?.toLowerCase() ?? '') <
+          (this.getTeamName(b.teamId)?.toLowerCase() ?? '') ? -dir : dir;
+      case 'emailDomain':
+        return (a.emailDomain?.toLowerCase() ?? '') < (b.emailDomain?.toLowerCase() ?? '') ? -dir : dir;
+      case 'expirationDateTime':
+        return (a.expirationDateTime ?? '') < (b.expirationDateTime ?? '') ? -dir : dir;
+      case 'usesAllowed':
+        return (a.maxUsersAllowed ?? 0) < (b.maxUsersAllowed ?? 0) ? -dir : dir;
+      case 'usesRemaining':
+        return ((a.maxUsersAllowed ?? 0) - (a.userCount ?? 0)) <
+          ((b.maxUsersAllowed ?? 0) - (b.userCount ?? 0)) ? -dir : dir;
       default:
         return 0;
     }
@@ -212,4 +176,8 @@ export class InvitationListComponent implements OnDestroy {
     return teamName;
   }
 
+  ngOnDestroy() {
+    this.unsubscribe$.next(null);
+    this.unsubscribe$.complete();
+  }
 }

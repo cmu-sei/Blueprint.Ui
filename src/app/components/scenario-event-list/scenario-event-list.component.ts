@@ -756,6 +756,7 @@ export class ScenarioEventListComponent
         isApprover: isApprover,
         isEditor: isEditor,
         isEditingRestricted: this.isStarterMsel,
+        showScenarioEventType: !this.isStarterMsel,
         useCite: this.msel.useCite,
         useGallery: this.msel.useGallery,
         useSteamfitter: this.msel.useSteamfitter,

@@ -64,18 +64,12 @@ export class MoveListComponent implements OnDestroy, AfterViewInit {
       .subscribe((moves) => {
         this.moveList = moves;
         this.displayedMoves = this.getSortedMoves(this.getFilteredMoves());
-        this.maxMoveNumber = Math.max.apply(
-          Math,
-          moves.map(function (o) {
-            return +o.moveNumber;
-          })
-        );
-        this.maxMoveStartSeconds = Math.max.apply(
-          Math,
-          moves.map(function (o) {
-            return +o.deltaSeconds;
-          })
-        );
+        this.maxMoveNumber = moves.length > 0
+          ? Math.max.apply(Math, moves.map(function (o) { return +o.moveNumber; }))
+          : 0;
+        this.maxMoveStartSeconds = moves.length > 0
+          ? Math.max.apply(Math, moves.map(function (o) { return +o.deltaSeconds; }))
+          : 0;
       });
     // subscribe to the active MSEL
     (this.mselQuery.selectActive() as Observable<MselPlus>)

@@ -33,6 +33,7 @@ export interface ScenarioEvent {
     scenarioEventType?: EventType;
     injectId?: string | null;
     integrationTarget?: string | null;
+    information?: string | null;
     steamfitterTaskId?: string | null;
     steamfitterTask?: SteamfitterTask;
 }

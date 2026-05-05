@@ -1,7 +1,7 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, HostListener, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { TeamQuery } from 'src/app/data/team/team.query';
@@ -126,7 +126,6 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   dataFieldList: DataField[] = [];
   scenarioEventList: ScenarioEvent[] = [];
   basePageUrl = document.baseURI + '/mselpage/';
-  pushStatus = '';
   savedStartTime: Date;
   savedDurationSeconds = 0;
   playerViewName = '';
@@ -135,6 +134,10 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   citeEvaluationName = '';
   citeScoringModelName = '';
   steamfitterScenarioName = '';
+  integrationDismissed = false;
+  get pushStatus(): string {
+    return this.msel?.integrationStatus || '';
+  }
   constructor(
     public dialogService: DialogService,
     private teamQuery: TeamQuery,
@@ -179,6 +182,10 @@ export class MselInfoComponent implements OnDestroy, OnInit {
           this.savedDurationSeconds = msel.durationSeconds;
           // Update scoring model name when scoring model ID changes
           this.updateCiteScoringModelName();
+          // Reset dismissed flag when a new integration push starts
+          if (msel.integrationStatus && !msel.integrationStatus.startsWith('ERROR')) {
+            this.integrationDismissed = false;
+          }
           // Fetch integration names for deployed integrations
           this.fetchIntegrationNames();
         }
@@ -189,25 +196,6 @@ export class MselInfoComponent implements OnDestroy, OnInit {
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((isLoading) => {
         this.isBusy = isLoading;
-      });
-    // subscribe to MSEL push statuses
-    this.mselDataService.mselPushStatuses
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe((mselPushStatuses) => {
-        const mselPushStatus = mselPushStatuses.find(
-          (mps) => mps.mselId === this.msel.id
-        );
-        if (mselPushStatus) {
-          if (mselPushStatus.pushStatus) {
-            this.pushStatus = mselPushStatus.pushStatus;
-          } else {
-            if (this.pushStatus) {
-              this.pushStatus = '';
-              // added this, because signalR is not updating the actual msel data during a push
-              this.mselDataService.loadById(this.msel.id);
-            }
-          }
-        }
       });
     // subscribe to users
     this.userQuery.selectAll()
@@ -407,7 +395,6 @@ export class MselInfoComponent implements OnDestroy, OnInit {
       .subscribe((result) => {
         if (result['confirm']) {
           this.mselDataService.pushIntegrations(this.msel.id);
-          this.pushStatus = 'Pushing Integrations';
         }
       });
   }
@@ -423,6 +410,10 @@ export class MselInfoComponent implements OnDestroy, OnInit {
           this.mselDataService.pullIntegrations(this.msel.id);
         }
       });
+  }
+
+  dismissIntegrationStatus() {
+    this.integrationDismissed = true;
   }
 
   onTabIndexChange(targetIndex: number) {
@@ -675,6 +666,16 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   }
 
   fetchIntegrationNames() {
+    // Only fetch names when integrations are fully deployed
+    if (this.msel.status !== 'Deployed') {
+      this.playerViewName = '';
+      this.galleryCollectionName = '';
+      this.galleryExhibitName = '';
+      this.citeEvaluationName = '';
+      this.citeScoringModelName = '';
+      this.steamfitterScenarioName = '';
+      return;
+    }
     // Fetch Player View name
     if (this.msel.playerViewId) {
       const playerApiUrl = this.settingsService.settings.PlayerApiUrl || '';
@@ -763,6 +764,17 @@ export class MselInfoComponent implements OnDestroy, OnInit {
         );
     } else {
       this.steamfitterScenarioName = '';
+    }
+  }
+
+  hasPendingChanges(): boolean {
+    return this.isChanged || this.hasUnsavedPageChanges();
+  }
+
+  @HostListener('window:beforeunload', ['$event'])
+  onBeforeUnload(event: BeforeUnloadEvent) {
+    if (this.hasPendingChanges()) {
+      event.preventDefault();
     }
   }
 

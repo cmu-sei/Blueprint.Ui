@@ -41,7 +41,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <mat-icon class="mdi-24px center-self" fontIcon="mdi-plus-circle"></mat-icon>
         </button>
         }
-        @if (!showTemplates && canEdit) {
+        @if (!showTemplates && (canEdit || msel.hasRole(loggedInUserId, null).owner)) {
         <button mat-icon-button [matMenuTriggerFor]="addMenu"
           style="outline: none;" title="Add card"
           (click)="$event.stopPropagation();">

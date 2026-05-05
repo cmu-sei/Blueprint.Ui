@@ -39,6 +39,7 @@ export interface Msel {
     name?: string | null;
     description?: string | null;
     status?: MselItemStatus;
+    integrationStatus?: string | null;
     usePlayer?: boolean;
     playerViewId?: string | null;
     playerIntegrationType?: IntegrationType;
