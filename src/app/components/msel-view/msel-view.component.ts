@@ -159,11 +159,7 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
           const baseUrl = this.settingsService.settings.ApiUrl.endsWith('/')
             ? this.settingsService.settings.ApiUrl
             : this.settingsService.settings.ApiUrl + '/';
-          console.log('xAPI Viewed - MSEL ID:', mselId, 'URL:', `${baseUrl}api/xapi/viewed/msel/${mselId}`);
-          this.http.post(`${baseUrl}api/xapi/viewed/msel/${mselId}`, {}).subscribe({
-            next: () => console.log('xAPI Viewed - Success'),
-            error: (err) => console.error('xAPI Viewed - Error:', err)
-          });
+          this.http.post(`${baseUrl}api/xapi/viewed/msel/${mselId}`, {}).subscribe();
         }
       });
     // subscribe to the route query parameters.  Used when editing the MSEL and checking the view.
