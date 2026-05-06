@@ -69,13 +69,16 @@ table {
 
 .browser-table-scroll {
   max-height: 580px;
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 // Work role browser columns
 .wr-col-check {
-  flex: 0 0 48px;
-  width: 48px;
+  flex: 0 0 60px;
+  width: 60px;
+  padding-left: 8px !important;
+  padding-right: 8px !important;
 }
 
 .wr-col-id {
@@ -109,7 +112,7 @@ table {
 // Browser children (expanded detail)
 .browser-children {
   width: 100%;
-  padding: 8px 16px 12px 48px;
+  padding: 8px 16px 12px 60px;
 }
 
 .browser-children-toolbar {
@@ -151,10 +154,10 @@ table {
 }
 
 .browser-child-check {
-  flex: 0 0 32px;
-  margin-right: 4px;
+  flex: 0 0 40px;
+  margin-right: 8px;
 
-  @include mat.checkbox-density(-3);
+  @include mat.checkbox-density(-2);
 }
 
 .browser-child-id {
@@ -183,7 +186,8 @@ table {
 
 .pool-table-scroll {
   max-height: calc(100vh - 400px);
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
   padding-bottom: 20px;
 }
 
