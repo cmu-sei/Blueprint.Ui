@@ -499,6 +499,56 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
     return selectedCount > 0 && selectedCount < children.length;
   }
 
+  // --- Select all / deselect all (work role browser) ---
+
+  isAllWorkRolesSelected(): boolean {
+    return this.workRoleDataSource.data.length > 0 && this.workRoleDataSource.data.every(wr => this.isInPool(wr.id));
+  }
+
+  hasWorkRoleSelection(): boolean {
+    return this.workRoleDataSource.data.some(wr => this.isInPool(wr.id));
+  }
+
+  toggleAllWorkRoles() {
+    const allSelected = this.isAllWorkRolesSelected();
+    if (allSelected) {
+      // Remove all visible work roles
+      const toRemove = this.workRoleDataSource.data
+        .map(wr => this.mselCompetencyList.find(mc => mc.competencyId === wr.id))
+        .filter(mc => mc);
+      if (toRemove.length === 0) return;
+      const totalEvents = toRemove.reduce((sum, mc) => sum + this.getEventCount(mc), 0);
+      const totalOptions = toRemove.reduce((sum, mc) => sum + this.getDataFieldOptionCount(mc.competency?.idNumber), 0);
+      let msg = `Remove ${toRemove.length} work role${toRemove.length === 1 ? '' : 's'} from this MSEL?`;
+      const parts: string[] = [];
+      if (totalEvents > 0) parts.push(`${totalEvents} scenario event reference${totalEvents === 1 ? '' : 's'}`);
+      if (totalOptions > 0) parts.push(`${totalOptions} data field option${totalOptions === 1 ? '' : 's'}`);
+      if (parts.length > 0) {
+        msg += ` ${parts.join(' and ')} will also be removed.`;
+      }
+      this.dialogService.confirm('Remove Work Roles', msg).subscribe(result => {
+        if (result['confirm']) {
+          for (const mc of toRemove) {
+            if (mc.competency?.idNumber) {
+              this.removeCompetencyReferences(mc.competency.idNumber);
+            }
+            this.mselCompetencyDataService.delete(mc.id);
+          }
+        }
+      });
+    } else {
+      // Add all visible work roles
+      for (const wr of this.workRoleDataSource.data) {
+        if (!this.isInPool(wr.id)) {
+          this.mselCompetencyDataService.add({
+            mselId: this.msel.id,
+            competencyId: wr.id,
+          } as MselCompetency);
+        }
+      }
+    }
+  }
+
   // =============================================
   // Panel 2: MSEL Competencies — pool
   // =============================================

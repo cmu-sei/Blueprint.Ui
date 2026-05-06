@@ -67,7 +67,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <mat-table [dataSource]="workRoleDataSource" matSort #workRoleSort="matSort" multiTemplateDataRows>
         <!-- check column -->
         <ng-container matColumnDef="check">
-          <mat-header-cell *matHeaderCellDef class="wr-col-check"></mat-header-cell>
+          <mat-header-cell *matHeaderCellDef class="wr-col-check">
+            @if (canEditMsel()) {
+            <mat-checkbox (change)="toggleAllWorkRoles()" [checked]="isAllWorkRolesSelected()"
+              [indeterminate]="hasWorkRoleSelection() && !isAllWorkRolesSelected()">
+            </mat-checkbox>
+            }
+          </mat-header-cell>
           <mat-cell *matCellDef="let wr" class="wr-col-check">
             @if (canEditMsel()) {
             <mat-checkbox (click)="$event.stopPropagation()" (change)="togglePoolItem(wr)"
