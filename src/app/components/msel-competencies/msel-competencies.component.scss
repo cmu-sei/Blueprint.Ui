@@ -132,7 +132,8 @@ table {
 
 .browser-children-list {
   max-height: 300px;
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
   border: 1px solid var(--mat-sys-outline-variant);
   border-radius: 4px;
 }
