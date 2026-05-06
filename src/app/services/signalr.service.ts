@@ -601,6 +601,13 @@ export class SignalRService implements OnDestroy {
       }
     );
 
+    this.hubConnection.on(
+      'UserMselRoleUpdated',
+      (userMselRole: UserMselRole) => {
+        this.userMselRoleDataService.updateStore(userMselRole);
+      }
+    );
+
     this.hubConnection.on('UserMselRoleDeleted', (id: string) => {
       this.userMselRoleDataService.deleteFromStore(id);
     });
