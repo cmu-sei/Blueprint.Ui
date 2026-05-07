@@ -84,6 +84,9 @@ export class JoinComponent implements OnDestroy, OnInit {
     // Log xAPI viewed statement for join page
     this.xApiService.viewedJoinPage().subscribe();
 
+    // Set current user for topbar
+    this.userDataService.setCurrentUser();
+
     // subscribe to users
     this.userQuery.selectAll()
       .pipe(takeUntil(this.unsubscribe$))
