@@ -37,6 +37,7 @@ import { UIDataService } from 'src/app/data/ui/ui-data.service';
 import { UserDataService } from 'src/app/data/user/user-data.service';
 import { UserMselRoleDataService } from 'src/app/data/user-msel-role/user-msel-role-data.service';
 import { UserTeamRoleDataService } from 'src/app/data/user-team-role/user-team-role-data.service';
+import { XApiService } from 'src/app/services/xapi/xapi.service';
 
 @Component({
   selector: 'app-msel',
@@ -127,7 +128,8 @@ export class MselComponent implements OnDestroy {
     private userMselRoleDataService: UserMselRoleDataService,
     private userTeamRoleDataService: UserTeamRoleDataService,
     private authQuery: ComnAuthQuery,
-    private dialogService: DialogService
+    private dialogService: DialogService,
+    private xApiService: XApiService
   ) {
     this.theme$ = this.authQuery.userTheme$;
     // subscribe to route changes
@@ -137,6 +139,8 @@ export class MselComponent implements OnDestroy {
         // load the selected MSEL data
         const mselId = params.get('msel');
         if (mselId && this.selectedMselId !== mselId) {
+          // Log xAPI viewed statement
+          this.xApiService.viewedMsel(mselId).subscribe();
           // load the selected MSEL and make it active
           this.mselDataService.loadById(mselId);
           this.mselDataService.setActive(mselId);
