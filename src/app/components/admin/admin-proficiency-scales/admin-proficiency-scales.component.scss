@@ -1,0 +1,134 @@
+// Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+// Released under a MIT (SEI)-style license. See LICENSE.md in the
+// project root for license information.
+
+:host {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 44px);
+}
+
+.cssLayoutRowStartCenter {
+  min-height: 76px;
+  flex-shrink: 0;
+}
+
+.button-end {
+  margin-left: auto;
+}
+
+.scrolling-region {
+  height: calc(100% - 94px);
+  overflow: auto;
+  width: 100%;
+}
+
+.element-row {
+  position: relative;
+  cursor: pointer;
+}
+
+.element-row:hover {
+  background-color: var(--mat-sys-surface-variant);
+}
+
+.element-row-expanded {
+  background-color: var(--mat-sys-surface-variant);
+}
+
+.detail-row {
+  height: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+::ng-deep .detail-row .mat-mdc-cell.expanded-detail-cell {
+  padding: 0 !important;
+  min-height: 0;
+  border-bottom-width: 0;
+  flex: 0 0 100%;
+  width: 100%;
+  max-width: 100%;
+}
+
+.element-row td {
+  border-bottom-width: 0;
+}
+
+.expanded-detail-cell {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 8px 10px;
+}
+
+.sub-col-action {
+  flex: 0 0 100px;
+  width: 100px;
+}
+
+.sub-col-name {
+  flex: 1 1 25%;
+}
+
+.sub-col-desc {
+  flex: 2 1 45%;
+}
+
+.sub-col-levels {
+  flex: 0 0 80px;
+}
+
+.lv-col-action {
+  flex: 0 0 100px;
+  width: 100px;
+  white-space: nowrap;
+}
+
+.lv-col-name {
+  flex: 2 1 20%;
+  min-width: 100px;
+}
+
+.lv-col-value {
+  flex: 0 0 80px;
+}
+
+.lv-col-order {
+  flex: 0 0 80px;
+}
+
+.lv-col-desc {
+  flex: 4 1 40%;
+  min-width: 150px;
+}
+
+.levels-detail {
+  margin: 8px 0;
+  padding: 8px 16px;
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 4px;
+
+  table {
+    width: 100%;
+  }
+}
+
+.levels-title {
+  font-weight: bold;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.no-results {
+  margin-top: 20px;
+  margin-left: 150px;
+}
+
+.no-results-inline {
+  padding: 8px 0;
+  color: var(--mat-sys-on-surface-variant);
+  font-style: italic;
+}

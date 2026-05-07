@@ -48,6 +48,7 @@ export class MselComponent implements OnDestroy {
   @Input() loggedInUserId: string;
   @Input() canEditMsel: boolean;
   @Input() canAccessAdminSection: boolean;
+  @Input() canEditCheckboxes = false;
   @Input() userTheme$: Observable<Theme>;
   @Output() deleteThisMsel = new EventEmitter<string>();
   @ViewChild('tabGroup0', { static: false }) tabGroup0: MatTabGroup;
@@ -56,8 +57,9 @@ export class MselComponent implements OnDestroy {
   tabList: string[] = [
     'Info',
     'Contributors',
-    'Teams',
+    'Competencies',
     'Data Fields',
+    'Teams',
     'Organizations',
     'Moves',
     'Player Apps',
@@ -66,6 +68,7 @@ export class MselComponent implements OnDestroy {
     'CITE Duties',
     'Scenario Events',
     'Exercise View',
+    'Assessor View',
     'MSEL Playbook',
     'Invitations',
   ];
@@ -80,8 +83,10 @@ export class MselComponent implements OnDestroy {
     ['Gallery Cards', 'mdi-view-grid-outline'],
     ['CITE Actions', 'mdi-clipboard-check-outline'],
     ['CITE Duties', 'mdi-clipboard-account-outline'],
+    ['Competencies', 'mdi-certificate-outline'],
     ['Scenario Events', 'mdi-chart-timeline'],
     ['Exercise View', 'mdi-eye-outline'],
+    ['Assessor View', 'mdi-clipboard-check-multiple-outline'],
     ['MSEL Playbook', 'mdi-book'],
     ['Invitations', 'mdi-email-open-outline'],
   ]);

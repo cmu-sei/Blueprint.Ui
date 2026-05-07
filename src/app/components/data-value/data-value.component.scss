@@ -19,6 +19,26 @@
   width: 300px;
 }
 
+.competency-field {
+  width: 100%;
+}
+
+.competency-label {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+
+.competency-chip-view {
+  display: inline-block;
+  padding: 2px 8px;
+  margin: 2px 4px 2px 0;
+  border-radius: 16px;
+  font-size: 13px;
+  background: var(--mat-sys-surface-variant);
+}
+
 // overrides.scss or styles.scss
 // This fixes https://github.com//issues/4609
 /* TODO(mdc-migration): The following rule targets internal classes of dialog that may no longer apply for the MDC version.*/

@@ -1,0 +1,111 @@
+// Copyright 2025 Carnegie Mellon University. All Rights Reserved.
+// Released under a MIT (SEI)-style license. See LICENSE.md in the
+// project root for license information.
+
+.close-button {
+  float: right;
+  margin-top: -8px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.framework-section {
+  padding: 0 24px;
+}
+
+.filter-section {
+  display: flex;
+  gap: 8px;
+  padding: 0 24px;
+}
+
+.search-field {
+  flex: 1;
+}
+
+.type-filter-field {
+  width: 180px;
+}
+
+.action-buttons {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 0 24px;
+  margin-bottom: 8px;
+}
+
+.selection-count {
+  margin-left: 16px;
+  font-size: 13px;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.table-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0;
+}
+
+.loading-message {
+  padding: 24px;
+  text-align: center;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.element-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+
+  th, td {
+    text-align: left;
+    padding: 4px 8px;
+    border-bottom: 1px solid var(--mat-sys-outline-variant);
+  }
+
+  th {
+    font-weight: 500;
+    position: sticky;
+    top: 0;
+    background: var(--mat-sys-surface);
+    z-index: 1;
+  }
+
+  .check-column {
+    width: 40px;
+    padding: 4px;
+  }
+
+  .id-column {
+    font-family: monospace;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .type-column {
+    white-space: nowrap;
+    font-size: 12px;
+  }
+}
+
+.description-column {
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.clickable-row {
+  cursor: pointer;
+
+  &:hover {
+    background: var(--mat-sys-surface-variant);
+  }
+}
+
+.selected-row {
+  background: color-mix(in srgb, var(--mat-sys-primary) 10%, transparent);
+}

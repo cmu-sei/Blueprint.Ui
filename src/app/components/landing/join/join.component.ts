@@ -19,6 +19,7 @@ import { TopbarView } from '../../shared/top-bar/topbar.models';
 import { Title } from '@angular/platform-browser';
 import { ErrorService } from 'src/app/services/error/error.service';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
     selector: 'app-join',
@@ -52,7 +53,8 @@ export class JoinComponent implements OnDestroy, OnInit {
     private router: Router,
     private titleService: Title,
     private errorService: ErrorService,
-    private uiDataService: UIDataService
+    private uiDataService: UIDataService,
+    private http: HttpClient
   ) {
     this.hideTopbar = this.uiDataService.inIframe();
     // set image
@@ -79,6 +81,12 @@ export class JoinComponent implements OnDestroy, OnInit {
   }
 
   ngOnInit() {
+    // Call xAPI for join page viewed
+    const baseUrl = this.settingsService.settings.ApiUrl.endsWith('/')
+      ? this.settingsService.settings.ApiUrl
+      : this.settingsService.settings.ApiUrl + '/';
+    this.http.post(`${baseUrl}api/xapi/viewed/joinpage`, {}).subscribe();
+
     // subscribe to users
     this.userQuery.selectAll()
       .pipe(takeUntil(this.unsubscribe$))

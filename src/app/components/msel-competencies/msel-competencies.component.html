@@ -1,0 +1,362 @@
+<!--
+Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license, please see LICENSE.md in the
+project root for license information or contact permission@sei.cmu.edu for full terms.
+-->
+
+@if (msel) {
+<div class="top-toolbar">
+  <div class="sp-icon">
+    <mat-icon class="mdi-24px" fontIcon="mdi-certificate-outline" [ngStyle]="{'color': 'var(--mat-sys-primary)'}"></mat-icon>
+  </div>
+  <mat-form-field class="framework-select">
+    <mat-label>Competency Framework</mat-label>
+    <mat-select [value]="selectedFrameworkId" (selectionChange)="onFrameworkChange($event.value)" [disabled]="!canEditMsel()">
+      <mat-option value="">— Select a framework —</mat-option>
+      @for (fw of frameworks; track fw.id) {
+      <mat-option [value]="fw.id">{{ fw.name }} ({{ fw.version }})</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+</div>
+<div class="content-area">
+  <!-- ==================== Panel 1: Add Competencies ==================== -->
+  <mat-expansion-panel class="section-panel" [(expanded)]="addPanelExpanded">
+    <mat-expansion-panel-header>
+      <mat-panel-title>
+        <mat-icon class="mdi-18px panel-icon" fontIcon="mdi-plus-circle-outline"></mat-icon>
+        Add Competencies
+      </mat-panel-title>
+    </mat-expansion-panel-header>
+    <div class="toolbar-row">
+      @if (selectedFramework && frameworkWorkRoles.length > 0) {
+      <mat-form-field style="width: 220px;">
+        <input matInput [formControl]="workRoleFilterControl" placeholder="Search work roles" />
+        @if (workRoleFilterString) {
+        <button mat-icon-button matSuffix (click)="workRoleFilterControl.setValue('')" title="Clear">
+          <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline"></mat-icon>
+        </button>
+        }
+      </mat-form-field>
+      <mat-form-field style="width: 220px; margin-left: 10px;">
+        <input matInput [formControl]="competencySearchControl" placeholder="Search competencies" />
+        @if (competencySearchString) {
+        <button mat-icon-button matSuffix (click)="competencySearchControl.setValue('')" title="Clear">
+          <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline"></mat-icon>
+        </button>
+        }
+      </mat-form-field>
+      @if (workRoleCategories.length > 0) {
+      <mat-form-field style="width: 200px; margin-left: 10px;">
+        <mat-label>Category</mat-label>
+        <mat-select [value]="workRoleCategoryFilter" (selectionChange)="onWorkRoleCategoryChange($event.value)">
+          <mat-option value="">All</mat-option>
+          @for (cat of workRoleCategories; track cat) {
+          <mat-option [value]="cat">{{ cat }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      }
+      <div class="button-end">
+        <mat-paginator #workRolePaginator [pageSize]="10" [pageSizeOptions]="[10, 25, 50, 100]"></mat-paginator>
+      </div>
+      }
+    </div>
+    @if (selectedFramework && frameworkWorkRoles.length > 0) {
+    <div class="browser-table-scroll">
+      <mat-table [dataSource]="workRoleDataSource" matSort #workRoleSort="matSort" multiTemplateDataRows>
+        <!-- check column -->
+        <ng-container matColumnDef="check">
+          <mat-header-cell *matHeaderCellDef class="wr-col-check">
+            @if (canEditMsel()) {
+            <mat-checkbox (change)="toggleAllWorkRoles()" [checked]="isAllWorkRolesSelected()"
+              [indeterminate]="hasWorkRoleSelection() && !isAllWorkRolesSelected()">
+            </mat-checkbox>
+            }
+          </mat-header-cell>
+          <mat-cell *matCellDef="let wr" class="wr-col-check">
+            @if (canEditMsel()) {
+            <mat-checkbox (click)="$event.stopPropagation()" (change)="togglePoolItem(wr)"
+              [checked]="isInPool(wr.id)">
+            </mat-checkbox>
+            }
+          </mat-cell>
+        </ng-container>
+        <!-- idNumber column -->
+        <ng-container matColumnDef="idNumber">
+          <mat-header-cell mat-sort-header *matHeaderCellDef class="wr-col-id">ID</mat-header-cell>
+          <mat-cell *matCellDef="let wr" class="wr-col-id">{{ wr.idNumber }}</mat-cell>
+        </ng-container>
+        <!-- shortName column -->
+        <ng-container matColumnDef="shortName">
+          <mat-header-cell mat-sort-header *matHeaderCellDef class="wr-col-name">Name</mat-header-cell>
+          <mat-cell *matCellDef="let wr" class="wr-col-name" [matTooltip]="wr.description" matTooltipShowDelay="800">{{ wr.shortName }}</mat-cell>
+        </ng-container>
+        <!-- category column -->
+        <ng-container matColumnDef="category">
+          <mat-header-cell mat-sort-header *matHeaderCellDef class="wr-col-category">Category</mat-header-cell>
+          <mat-cell *matCellDef="let wr" class="wr-col-category">{{ getWorkRoleCategory(wr) }}</mat-cell>
+        </ng-container>
+        <!-- Expanded detail: child TKSAs -->
+        <ng-container matColumnDef="expandedDetail">
+          <mat-cell *matCellDef="let wr" class="expanded-detail-cell">
+            @if (isBrowserExpanded(wr)) {
+            <div class="browser-children" (click)="$event.stopPropagation();">
+              <div class="browser-children-toolbar">
+                @if (canEditMsel()) {
+                <mat-checkbox
+                  (change)="allChildrenSelected(wr) ? deselectAllChildren(wr) : selectAllChildren(wr)"
+                  [checked]="allChildrenSelected(wr)"
+                  [indeterminate]="someChildrenSelected(wr)">
+                  Select All
+                </mat-checkbox>
+                }
+                @if (browserChildTypes.length > 1) {
+                <mat-form-field style="width: 160px; margin-left: 16px;">
+                  <mat-label>Type</mat-label>
+                  <mat-select [value]="browserChildTypeFilter" (selectionChange)="onBrowserChildTypeChange($event.value)">
+                    <mat-option value="">All</mat-option>
+                    @for (t of browserChildTypes; track t) {
+                    <mat-option [value]="t">{{ t }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+                }
+                <mat-paginator [length]="getFilteredChildren(wr).length"
+                  [pageSize]="browserChildrenPageSize"
+                  [pageIndex]="browserChildrenPageIndex"
+                  [pageSizeOptions]="[25, 50, 100]"
+                  (page)="onBrowserChildrenPage($event)">
+                </mat-paginator>
+              </div>
+              <div class="browser-children-list">
+                @for (child of getPaginatedChildren(wr); track child.id) {
+                <div class="browser-child-row">
+                  @if (canEditMsel()) {
+                  <mat-checkbox (click)="$event.stopPropagation()" (change)="togglePoolItem(child)"
+                    [checked]="isInPool(child.id)" class="browser-child-check">
+                  </mat-checkbox>
+                  }
+                  <span class="browser-child-id">{{ child.idNumber }}</span>
+                  <span class="browser-child-type">{{ getCompetencyType(child) }}</span>
+                  <span class="browser-child-name" [matTooltip]="child.description" matTooltipShowDelay="800">{{ child.shortName }}</span>
+                </div>
+                } @empty {
+                <div class="no-results-inline">No related competencies in framework</div>
+                }
+              </div>
+            </div>
+            }
+          </mat-cell>
+        </ng-container>
+        <!-- row definitions -->
+        <mat-header-row *matHeaderRowDef="workRoleDisplayedColumns; sticky: true"></mat-header-row>
+        <mat-row *matRowDef="let row; columns: workRoleDisplayedColumns;"
+          class="browser-row"
+          [class.browser-row-expanded]="isBrowserExpanded(row)"
+          (click)="toggleBrowserExpand(row)"></mat-row>
+        <mat-row *matRowDef="let row; columns: ['expandedDetail']" class="detail-row"
+          [@detailExpand]="isBrowserExpanded(row) ? 'expanded' : 'collapsed'"></mat-row>
+      </mat-table>
+      @if (workRoleDataSource.data.length === 0) {
+      <div class="no-results-inline">No work roles found</div>
+      }
+    </div>
+    } @else if (!selectedFramework) {
+    <div class="no-results-inline" style="padding: 8px 0 16px;">Select a framework to browse work roles and competencies</div>
+    }
+  </mat-expansion-panel>
+
+  <!-- ==================== Panel 2: MSEL Competencies ==================== -->
+  <mat-expansion-panel class="section-panel" [expanded]="true">
+    <mat-expansion-panel-header>
+      <mat-panel-title>
+        <mat-icon class="mdi-18px panel-icon" fontIcon="mdi-certificate-outline"></mat-icon>
+        MSEL Competencies ({{ mselCompetencyList.length }})
+      </mat-panel-title>
+    </mat-expansion-panel-header>
+    <div class="toolbar-row">
+      @if (canEditMsel() && selection.hasValue()) {
+      <button mat-stroked-button (click)="removeSelected(); $event.stopPropagation();"
+        title="Remove selected" style="margin-right: 10px;">
+        <mat-icon fontIcon="mdi-delete-sweep-outline"></mat-icon>
+        Remove {{ selection.selected.length }}
+      </button>
+      }
+      <mat-form-field style="width: 300px;">
+        <input matInput [formControl]="filterControl" placeholder="Search competencies" />
+        @if (filterString) {
+        <button mat-icon-button matSuffix (click)="filterControl.setValue('')" title="Clear Search">
+          <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline"></mat-icon>
+        </button>
+        }
+      </mat-form-field>
+      @if (competencyTypes.length > 1) {
+      <mat-form-field style="width: 180px; margin-left: 10px;">
+        <mat-label>Type</mat-label>
+        <mat-select [value]="typeFilter" (selectionChange)="onTypeFilterChange($event.value)">
+          <mat-option value="">All</mat-option>
+          @for (t of competencyTypes; track t) {
+          <mat-option [value]="t">{{ t }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      }
+      @if (poolFrameworks.length > 0) {
+      <mat-form-field style="width: 280px; margin-left: 10px;">
+        <mat-label>Framework</mat-label>
+        <mat-select [value]="frameworkFilter" (selectionChange)="onFrameworkFilterChange($event.value)">
+          <mat-option value="">All</mat-option>
+          @for (fw of poolFrameworks; track fw.id) {
+          <mat-option [value]="fw.id">{{ fw.name }} ({{ fw.version }})</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      }
+      <div class="button-end">
+        <mat-paginator #competencyPaginator [pageSize]="20" [pageSizeOptions]="[10, 20, 50, 100, 200]"></mat-paginator>
+      </div>
+    </div>
+    <div class="pool-table-scroll">
+      <mat-table [dataSource]="dataSource" matSort #poolSort="matSort" multiTemplateDataRows>
+        <!-- select column -->
+        <ng-container matColumnDef="select">
+          <mat-header-cell *matHeaderCellDef class="pool-col-select">
+            <mat-checkbox (change)="toggleAllRows()" [checked]="isAllSelected()"
+              [indeterminate]="selection.hasValue() && !isAllSelected()">
+            </mat-checkbox>
+          </mat-header-cell>
+          <mat-cell *matCellDef="let element" class="pool-col-select">
+            <mat-checkbox (click)="$event.stopPropagation()" (change)="selection.toggle(element)"
+              [checked]="selection.isSelected(element)">
+            </mat-checkbox>
+          </mat-cell>
+        </ng-container>
+        <!-- action column -->
+        <ng-container matColumnDef="action">
+          <mat-header-cell *matHeaderCellDef class="pool-col-action"></mat-header-cell>
+          <mat-cell *matCellDef="let element" class="pool-col-action">
+            @if (canEditMsel()) {
+            <button mat-icon-button (click)="removeMselCompetency(element); $event.stopPropagation();"
+              title="Remove from MSEL">
+              <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline"></mat-icon>
+            </button>
+            }
+          </mat-cell>
+        </ng-container>
+        <!-- idNumber column -->
+        <ng-container matColumnDef="idNumber">
+          <mat-header-cell mat-sort-header *matHeaderCellDef class="pool-col-id">ID</mat-header-cell>
+          <mat-cell *matCellDef="let element" class="pool-col-id">{{ element.competency?.idNumber }}</mat-cell>
+        </ng-container>
+        <!-- type column -->
+        <ng-container matColumnDef="type">
+          <mat-header-cell mat-sort-header *matHeaderCellDef class="pool-col-type">Type</mat-header-cell>
+          <mat-cell *matCellDef="let element" class="pool-col-type">{{ getMselCompetencyType(element) }}</mat-cell>
+        </ng-container>
+        <!-- framework column -->
+        <ng-container matColumnDef="framework">
+          <mat-header-cell mat-sort-header *matHeaderCellDef class="pool-col-framework">Framework</mat-header-cell>
+          <mat-cell *matCellDef="let element" class="pool-col-framework">{{ getFrameworkName(element) }}</mat-cell>
+        </ng-container>
+        <!-- shortName column -->
+        <ng-container matColumnDef="shortName">
+          <mat-header-cell mat-sort-header *matHeaderCellDef class="pool-col-name">Name</mat-header-cell>
+          <mat-cell *matCellDef="let element" class="pool-col-name"
+            [matTooltip]="element.competency?.description" matTooltipShowDelay="800">
+            {{ element.competency?.shortName }}
+          </mat-cell>
+        </ng-container>
+        <!-- teams column (summary) -->
+        <ng-container matColumnDef="teams">
+          <mat-header-cell mat-sort-header *matHeaderCellDef class="pool-col-teams">Teams</mat-header-cell>
+          <mat-cell *matCellDef="let element" class="pool-col-teams">
+            {{ getTeamNames(element) || '—' }}
+          </mat-cell>
+        </ng-container>
+        <!-- events column -->
+        <ng-container matColumnDef="events">
+          <mat-header-cell mat-sort-header *matHeaderCellDef class="pool-col-events">Events</mat-header-cell>
+          <mat-cell *matCellDef="let element" class="pool-col-events">{{ getEventCount(element) }}</mat-cell>
+        </ng-container>
+        <!-- Expanded detail row: team assignment -->
+        <ng-container matColumnDef="expandedDetail">
+          <mat-cell *matCellDef="let element" class="expanded-detail-cell">
+            @if (expandedCompetencyId === element.competencyId) {
+            <div class="related-enchilada" (click)="$event.stopPropagation();">
+              <div class="related-list-container mat-elevation-z8">
+                <mat-toolbar class="related-toolbar">
+                  <mat-toolbar-row>
+                    <mat-icon class="mdi-24px header-icon" fontIcon="mdi-account-multiple"></mat-icon>
+                    <p matTooltip="Teams that can be assigned to this competency" matTooltipShowDelay="800">Available Teams</p>
+                  </mat-toolbar-row>
+                </mat-toolbar>
+                <div class="related-table-scroll">
+                  @if (getAvailableTeams(element).length > 0) {
+                  <table mat-table [dataSource]="getAvailableTeams(element)">
+                    <ng-container matColumnDef="name">
+                      <td mat-cell *matCellDef="let team">{{ team.shortName || team.name }}</td>
+                    </ng-container>
+                    <ng-container matColumnDef="add">
+                      <td mat-cell *matCellDef="let team" class="related-col-btn">
+                        <button mat-icon-button (click)="addTeamToCompetency(element, team)" title="Add {{ team.shortName }}"
+                          [disabled]="!canEditMsel()">
+                          <mat-icon class="mdi-18px" fontIcon="mdi-plus-circle-outline"></mat-icon>
+                        </button>
+                      </td>
+                    </ng-container>
+                    <tr mat-row *matRowDef="let row; columns: ['name', 'add']"></tr>
+                  </table>
+                  } @else {
+                  <div class="no-results-inline">All teams assigned</div>
+                  }
+                </div>
+              </div>
+              <div class="related-list-container mat-elevation-z8">
+                <mat-toolbar class="related-toolbar">
+                  <mat-toolbar-row>
+                    <mat-icon class="mdi-24px header-icon" fontIcon="mdi-account-group"></mat-icon>
+                    <p matTooltip="Teams currently assigned to this competency" matTooltipShowDelay="800">Assigned ({{ getAssignedTeams(element).length }})</p>
+                  </mat-toolbar-row>
+                </mat-toolbar>
+                <div class="related-table-scroll">
+                  @if (getAssignedTeams(element).length > 0) {
+                  <table mat-table [dataSource]="getAssignedTeams(element)">
+                    <ng-container matColumnDef="name">
+                      <td mat-cell *matCellDef="let team">{{ team.shortName || team.name }}</td>
+                    </ng-container>
+                    <ng-container matColumnDef="remove">
+                      <td mat-cell *matCellDef="let team" class="related-col-btn">
+                        <button mat-icon-button (click)="removeTeamFromCompetency(element, team)" title="Remove {{ team.shortName }}"
+                          [disabled]="!canEditMsel()">
+                          <mat-icon class="mdi-18px" fontIcon="mdi-minus-circle-outline"></mat-icon>
+                        </button>
+                      </td>
+                    </ng-container>
+                    <tr mat-row *matRowDef="let row; columns: ['name', 'remove']"></tr>
+                  </table>
+                  } @else {
+                  <div class="no-results-inline">No teams assigned</div>
+                  }
+                </div>
+              </div>
+            </div>
+            }
+          </mat-cell>
+        </ng-container>
+        <!-- row definitions -->
+        <mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></mat-header-row>
+        <mat-row *matRowDef="let row; columns: displayedColumns;"
+          class="pool-row"
+          [class.pool-row-expanded]="expandedCompetencyId === row.competencyId"
+          (click)="toggleExpand(row)"></mat-row>
+        <mat-row *matRowDef="let row; columns: ['expandedDetail']" class="detail-row"
+          [@detailExpand]="expandedCompetencyId === row.competencyId ? 'expanded' : 'collapsed'"></mat-row>
+      </mat-table>
+      @if (dataSource.data.length === 0) {
+      <div class="no-results">No competencies associated with this MSEL.</div>
+      }
+    </div>
+  </mat-expansion-panel>
+</div>
+}

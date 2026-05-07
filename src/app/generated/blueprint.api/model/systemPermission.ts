@@ -41,7 +41,9 @@ export const SystemPermission = {
     ViewRoles: 'ViewRoles',
     ManageRoles: 'ManageRoles',
     ViewGroups: 'ViewGroups',
-    ManageGroups: 'ManageGroups'
+    ManageGroups: 'ManageGroups',
+    ViewCompetencyFrameworks: 'ViewCompetencyFrameworks',
+    ManageCompetencyFrameworks: 'ManageCompetencyFrameworks'
 } as const;
 export type SystemPermission = typeof SystemPermission[keyof typeof SystemPermission];
 

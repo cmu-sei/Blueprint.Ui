@@ -48,49 +48,29 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <div class="partial-detail">
         <div>
           <mat-checkbox [(ngModel)]="data.dataField.isChosenFromList"
-            [disabled]="(!data.canEdit && !data.isOwner) || optionListNotAllowed()" class="bottom-margin">
+            [disabled]="(!data.canEdit && !data.isOwner) || optionListNotAllowed() || isCompetency()" class="bottom-margin">
             Use Option List
           </mat-checkbox>
+          @if (data.dataField.isChosenFromList && !optionListNotAllowed()) {
+          <span class="options-link clickable" (click)="viewAllOptions()"
+            title="Click to manage options">
+            @if (isCompetency()) {
+            {{ data.dataField.dataOptions.length > 0 ? data.dataField.dataOptions.length + ' competencies' : 'Manage' }}
+            } @else {
+            {{ data.dataField.dataOptions.length }} options
+            }
+          </span>
+          }
         </div>
         @if (data.dataField.isChosenFromList) {
         <div>
           <mat-checkbox [(ngModel)]="data.dataField.isMultiSelect"
-            [disabled]="(!data.canEdit && !data.isOwner) || optionListNotAllowed()" class="bottom-margin left-margin">
+            [disabled]="(!data.canEdit && !data.isOwner) || optionListNotAllowed() || isCompetency()" class="bottom-margin left-margin">
             Multi-select
           </mat-checkbox>
         </div>
         }
       </div>
-      @if (data.dataField.isChosenFromList) {
-      <div class="data-options">
-        @for (dataOption of data.dataField.dataOptions; track dataOption) {
-        <div class="data-option">
-          @if ((data.canEdit || data.isOwner) && !optionListNotAllowed()) {
-          <div>
-            <button mat-icon-button (click)="editDataOption(dataOption)" title="Edit this option">
-              <mat-icon class="mdi-18px up-12" fontIcon="mdi-square-edit-outline"></mat-icon>
-            </button>
-            <button mat-icon-button (click)="deleteDataOption(dataOption)" title="Delete this option">
-              <mat-icon class="mdi-18px up-12" fontIcon="mdi-trash-can-outline"></mat-icon>
-            </button>
-          </div>
-          }
-          <div class="center-self">
-            &nbsp;{{ dataOption.displayOrder }} &nbsp;&nbsp; {{dataOption.optionName }} &nbsp;&nbsp;
-            {{dataOption.optionValue }}
-          </div>
-        </div>
-        }
-        @if ((data.canEdit || data.isOwner) && !optionListNotAllowed()) {
-        <div class="data-option">
-          <button mat-icon-button (click)="addDataOption(data.dataField)" style="outline: none; margin-right: 15px;"
-            title="Add new data option">
-            <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
-          </button>
-        </div>
-        }
-      </div>
-      }
     </div>
   </div>
   @if (!data.dataField.isTemplate) {
@@ -132,6 +112,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
         tab</mat-checkbox><br />
     </div>
   </div>
+  <div class="data-field-detail" (click)="$event.stopPropagation();">
+    <div class="single-detail">
+      <mat-checkbox [(ngModel)]="data.dataField.isAssessorVisible" [disabled]="!data.canEdit && !data.isOwner"
+        class="bottom-margin">Assessor View</mat-checkbox><br />
+    </div>
+  </div>
+  }
+  @if (!data.dataField.isTemplate) {
   <div class="data-field-detail" (click)="$event.stopPropagation();">
     <div class="single-detail">
       <mat-checkbox [(ngModel)]="data.dataField.isOnlyShownToOwners" [disabled]="!data.canEdit && !data.isOwner"

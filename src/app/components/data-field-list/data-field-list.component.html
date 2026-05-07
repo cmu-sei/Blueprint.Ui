@@ -76,9 +76,10 @@ project root for license information or contact permission@sei.cmu.edu for full 
             </mat-menu>
           </mat-header-cell>
           <mat-cell *matCellDef="let element" class="column-action">
+            <div>{{ !showTemplates && element.displayOrder > 0 ? element.displayOrder : ' '}}</div>
             <div class="action-div">
               @if (element.displayOrder > 0) {
-              <span>
+              <span style="display: inline-flex; white-space: nowrap;">
                 @if (canEdit()) {
                 <button mat-icon-button class="msel-action"
                   (click)="addOrEditDataField(element, showTemplates); $event.stopPropagation();"
@@ -107,37 +108,49 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 }
                 &nbsp;
             </div>
-            <div>{{ !showTemplates && element.displayOrder > 0 ? element.displayOrder : ' '}}</div>
           </mat-cell>
         </ng-container>
         <!-- events Column -->
         <ng-container matColumnDef="events">
-          <mat-header-cell mat-sort-header="onScenarioEventList" title="Display on Scenario Events list?"
+          <mat-header-cell mat-sort-header="onScenarioEventList" title="Display on Scenario Events list"
             *matHeaderCellDef class="column-display">
             &nbsp;&nbsp;&nbsp;&nbsp;List
           </mat-header-cell>
           <mat-cell *matCellDef="let element" class="column-display">
             <mat-checkbox [(ngModel)]="element.onScenarioEventList" [disabled]="!canEdit()"
               (change)="saveChange(element)" (click)="$event.stopPropagation()"
-              title="Display on Scenario Events list?">
+              title="Display on Scenario Events list">
             </mat-checkbox>
           </mat-cell>
         </ng-container>
         <!-- exercise Column -->
         <ng-container matColumnDef="exercise">
-          <mat-header-cell mat-sort-header="onExerciseView" title="Display on the Exercise View?" *matHeaderCellDef
+          <mat-header-cell mat-sort-header="onExerciseView" title="Display on the Exercise View" *matHeaderCellDef
             class="column-display">
             &nbsp;&nbsp;&nbsp;&nbsp;View
           </mat-header-cell>
           <mat-cell *matCellDef="let element" class="column-display">
             <mat-checkbox [(ngModel)]="element.onExerciseView" [disabled]="!canEdit()" (change)="saveChange(element)"
-              (click)="$event.stopPropagation();" title="Display on the Exercise View?">
+              (click)="$event.stopPropagation();" title="Display on the Exercise View">
+            </mat-checkbox>
+          </mat-cell>
+        </ng-container>
+        <!-- assessor Column -->
+        <ng-container matColumnDef="assessor">
+          <mat-header-cell mat-sort-header="isAssessorVisible" title="Display on the Assessor View"
+            *matHeaderCellDef class="column-display">
+            &nbsp;&nbsp;&nbsp;&nbsp;Assess
+          </mat-header-cell>
+          <mat-cell *matCellDef="let element" class="column-display">
+            <mat-checkbox [(ngModel)]="element.isAssessorVisible" [disabled]="!canEdit()"
+              (change)="saveChange(element)" (click)="$event.stopPropagation();"
+              title="Display on the Assessor View">
             </mat-checkbox>
           </mat-cell>
         </ng-container>
         <!-- information Column -->
         <ng-container matColumnDef="information">
-          <mat-header-cell mat-sort-header="isInformationField" title="Display for Information Events?"
+          <mat-header-cell mat-sort-header="isInformationField" title="Display for Information Events"
             *matHeaderCellDef class="column-display">
             &nbsp;&nbsp;&nbsp;&nbsp;Info
           </mat-header-cell>
@@ -145,14 +158,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
             @if (element.displayOrder >= 0) {
             <mat-checkbox [(ngModel)]="element.isInformationField" [disabled]="!canEdit()"
               (change)="saveChange(element)" (click)="$event.stopPropagation();"
-              title="Display for Information Events?">
+              title="Display for Information Events">
             </mat-checkbox>
             }
           </mat-cell>
         </ng-container>
         <!-- facilitation Column -->
         <ng-container matColumnDef="facilitation">
-          <mat-header-cell mat-sort-header="isFacilitationField" title="Display for Facilitation Events?"
+          <mat-header-cell mat-sort-header="isFacilitationField" title="Display for Facilitation Events"
             *matHeaderCellDef class="column-display">
             &nbsp;&nbsp;&nbsp;&nbsp;Facil
           </mat-header-cell>
@@ -160,7 +173,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             @if (element.displayOrder >= 0) {
             <mat-checkbox [(ngModel)]="element.isFacilitationField" [disabled]="!canEdit()"
               (change)="saveChange(element)" (click)="$event.stopPropagation();"
-              title="Display for Facilitation Events?">
+              title="Display for Facilitation Events">
             </mat-checkbox>
             }
           </mat-cell>
@@ -182,7 +195,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         </ng-container>
         <!-- devs Column -->
         <ng-container matColumnDef="devs">
-          <mat-header-cell mat-sort-header="isOnlyShownToOwners" title="Display for Content Developers and MSEL Owners ONLY?"
+          <mat-header-cell mat-sort-header="isOnlyShownToOwners" title="Hide this field from participants on all views - show only to content developers and MSEL owners"
             *matHeaderCellDef class="column-display">
             &nbsp;&nbsp;&nbsp;&nbsp;Devs
           </mat-header-cell>
@@ -190,7 +203,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             @if (element.displayOrder >= 0) {
             <mat-checkbox [(ngModel)]="element.isOnlyShownToOwners" [disabled]="!canEdit()"
               (change)="saveChange(element)" (click)="$event.stopPropagation();"
-              title="Display for Content Developers and MSEL Owners ONLY?">
+              title="Hide this field from participants on all views - show only to content developers and MSEL owners">
             </mat-checkbox>
             }
           </mat-cell>
@@ -213,14 +226,19 @@ project root for license information or contact permission@sei.cmu.edu for full 
         </ng-container>
         <!-- options Column -->
         <ng-container matColumnDef="options">
-          <mat-header-cell *matHeaderCellDef class="six-cell column-min60"> Options </mat-header-cell>
+          <mat-header-cell mat-sort-header *matHeaderCellDef class="six-cell column-min60"> Options </mat-header-cell>
           <mat-cell *matCellDef="let element" class="six-cell column-min60">
-            <div class="summary-text">{{ getDataOptionsString(element) }}</div>
+            <div class="summary-text options-link"
+                 (click)="viewDataOptions(element, $event)"
+                 [class.clickable]="element.dataType === 'Competency' || (element.dataOptions && element.dataOptions.length > 0)"
+                 [title]="element.dataType === 'Competency' || (element.dataOptions && element.dataOptions.length > 0) ? 'Click to manage options' : ''">
+              {{ getDataOptionsString(element) }}
+            </div>
           </mat-cell>
         </ng-container>
         <!-- integration Column -->
         <ng-container matColumnDef="integration">
-          <mat-header-cell *matHeaderCellDef class="six-cell column-integration"> Integration </mat-header-cell>
+          <mat-header-cell mat-sort-header="galleryArticleParameter" *matHeaderCellDef class="six-cell column-integration"> Integration </mat-header-cell>
           <mat-cell *matCellDef="let element" class="six-cell column-integration">
             @if (element.displayOrder > 0) {
             <mat-select class="integration" [(ngModel)]="element.galleryArticleParameter"

@@ -1,0 +1,105 @@
+<!--
+Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license, please see LICENSE.md in the
+project root for license information or contact permission@sei.cmu.edu for full terms.
+-->
+
+<div mat-dialog-title>Import Competency Framework</div>
+
+<div mat-dialog-content>
+  <div class="upload-section">
+    <p class="instructions">
+      Supported formats: Moodle CSV (<code>lpimportcsv</code>), NICE Framework JSON, DCWF XLSX
+    </p>
+    <input
+      type="file"
+      accept=".csv,.json,.xlsx,.xls"
+      (change)="onFileSelected($event)"
+      #fileInput
+      style="display: none" />
+    <button mat-stroked-button (click)="fileInput.click()">
+      <mat-icon fontIcon="mdi-upload"></mat-icon>
+      Choose File
+    </button>
+    @if (fileName) {
+    <span class="file-name">{{ fileName }}</span>
+    }
+  </div>
+
+  @if (parseError) {
+  <div class="error-message">{{ parseError }}</div>
+  }
+
+  @if (successMessage) {
+  <div class="success-banner">
+    <mat-icon fontIcon="mdi-check-circle"></mat-icon>
+    <span>{{ successMessage }}</span>
+  </div>
+  }
+
+  @if (selectedFile) {
+  <div class="preview-section">
+    <mat-form-field class="full-width" style="margin-top: 16px;">
+      <mat-label>Source</mat-label>
+      <input matInput [(ngModel)]="source" placeholder="e.g. NICE, DCWF" />
+    </mat-form-field>
+    <mat-form-field class="full-width">
+      <mat-label>Version</mat-label>
+      <input matInput [(ngModel)]="version" placeholder="e.g. 5.1" />
+    </mat-form-field>
+
+    @if (frameworkName) {
+    <div class="preview-field">
+      <span class="preview-label">Framework Name:</span> {{ frameworkName }}
+    </div>
+    }
+
+    @if (!isProcessing && totalElements > 0) {
+    <div class="element-summary">
+      <div class="preview-header">Competencies to import: {{ totalElements }}</div>
+      @if (totalRelationships > 0) {
+      <div class="preview-header">Relationships: {{ totalRelationships }}</div>
+      }
+      @if (elementTypeCounts.length > 0) {
+      <table class="type-table">
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>Count</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (tc of elementTypeCounts; track tc.type) {
+          <tr>
+            <td>{{ tc.type }}</td>
+            <td>{{ tc.count }}</td>
+          </tr>
+          }
+        </tbody>
+      </table>
+      }
+    </div>
+    }
+
+    @if (isProcessing) {
+    <div class="processing-message">
+      <mat-spinner diameter="24"></mat-spinner>
+      <span>Processing file...</span>
+    </div>
+    }
+  </div>
+  }
+</div>
+
+<div mat-dialog-actions align="end">
+  @if (importSucceeded) {
+    <button mat-raised-button color="primary" (click)="handleCancel()">
+      Close
+    </button>
+  } @else {
+    <button mat-stroked-button (click)="handleCancel()">Cancel</button>
+    <button mat-raised-button color="primary" [disabled]="!ready" (click)="handleImport()" style="margin-left: 10px;">
+      Import
+    </button>
+  }
+</div>
