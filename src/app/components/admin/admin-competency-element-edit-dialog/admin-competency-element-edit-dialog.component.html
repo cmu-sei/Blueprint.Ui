@@ -1,0 +1,89 @@
+<!--
+Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license, please see LICENSE.md in the
+project root for license information or contact permission@sei.cmu.edu for full terms.
+-->
+<div mat-dialog-container>
+  <div mat-dialog-title>
+    @if (data.element.id) {
+      <span>Edit</span>
+    }
+    @if (!data.element.id) {
+      <span>Create</span>
+    }
+    Competency Element
+    &nbsp;
+    <button
+      mat-icon-button
+      (click)="handleEditComplete(false)"
+      title="Cancel"
+      class="close-button"
+      tabindex="-1"
+      >
+      <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
+    </button>
+  </div>
+  @if (!!data && data.element !== undefined && data.element !== null) {
+    <div mat-dialog-content>
+      <div class="add-margin">
+        <div>
+          <mat-form-field class="full-width">
+            <mat-label>Identifier</mat-label>
+            <input
+              type="text"
+              title="The Identifier of the Competency Element (e.g. S-CE-WRL-006)"
+              matInput
+              placeholder="Identifier (e.g. S-CE-WRL-006)"
+              [(ngModel)]="data.element.elementIdentifier">
+          </mat-form-field>
+        </div>
+      </div>
+      <div class="add-margin">
+        <div>
+          <mat-form-field class="full-width">
+            <mat-label>Type</mat-label>
+            <input
+              type="text"
+              title="The Type of the Competency Element (e.g. work_role, task, knowledge, skill)"
+              matInput
+              placeholder="Type (e.g. work_role)"
+              [(ngModel)]="data.element.elementType">
+          </mat-form-field>
+        </div>
+      </div>
+      <div class="add-margin">
+        <div>
+          <mat-form-field class="full-width">
+            <mat-label>Name</mat-label>
+            <input
+              type="text"
+              title="The Name of the Competency Element"
+              matInput
+              placeholder="Name (required)"
+              [(ngModel)]="data.element.name">
+          </mat-form-field>
+        </div>
+      </div>
+      <div class="add-margin">
+        <div>
+          <mat-form-field class="full-width">
+            <mat-label>Description</mat-label>
+            <input
+              type="text"
+              title="The Description of the Competency Element"
+              matInput
+              placeholder="Description"
+              [(ngModel)]="data.element.description">
+          </mat-form-field>
+        </div>
+      </div>
+      <div class="cssLayoutRowStartCenter bottom-button">
+        <div class="delete-button">
+          <button mat-stroked-button (click)="handleEditComplete(true)" [disabled]="!errorFree()" style="margin-left: 40px;">Save</button>
+        </div>
+        <div class="delete-button">
+          <button mat-stroked-button (click)="handleEditComplete(false)">Cancel</button>
+        </div>
+      </div>
+    </div>
+  }

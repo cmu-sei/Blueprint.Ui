@@ -66,6 +66,10 @@ export class MselPlus implements Msel {
   showIntegrationTargetOnScenarioEventList?: boolean;
   showIntegrationTargetOnExerciseView?: boolean;
   integrationTargetDisplayOrder?: number;
+  showTimeOnAssessorView?: boolean;
+  showMoveOnAssessorView?: boolean;
+  showGroupOnAssessorView?: boolean;
+  showIntegrationTargetOnAssessorView?: boolean;
   moves?: Array<Move>;
   dataFields?: Array<DataField>;
   scenarioEvents?: Array<ScenarioEvent>;
@@ -80,6 +84,12 @@ export class MselPlus implements Msel {
   galleryIntegrationType?: IntegrationType;
   citeIntegrationType?: IntegrationType;
   steamfitterIntegrationType?: IntegrationType;
+  educationalLevel?: string;
+  subject?: string;
+  keywords?: string;
+  educationalUse?: string;
+  courseMode?: string;
+  language?: string;
 
   hasRole(userId: string, scenarioEventId: string) {
     // initialize to no roles

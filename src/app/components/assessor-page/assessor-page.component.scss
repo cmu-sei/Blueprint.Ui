@@ -1,0 +1,33 @@
+// Copyright 2024 Carnegie Mellon University. All Rights Reserved.
+// Released under a MIT (SEI)-style license. See LICENSE.md in the
+// project root for license information.
+
+:host {
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.no-access-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  text-align: center;
+  gap: 16px;
+
+  mat-icon {
+    color: #ff9800;
+  }
+
+  h3 {
+    margin: 0;
+    font-size: 24px;
+  }
+
+  p {
+    margin: 0;
+    color: rgba(0, 0, 0, 0.6);
+  }
+}

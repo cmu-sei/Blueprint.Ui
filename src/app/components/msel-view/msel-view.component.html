@@ -149,8 +149,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
           @if (df.dataType.toString() === 'Checkbox') {
           <td>
             <div class="constrainer" [style]="getStyle(df)">
-              <mat-checkbox [checked]="getDisplayValue(item, df.name)"
-                (change)="saveDataValue(item, df, $event.checked.toString())"></mat-checkbox>
+              <mat-checkbox [checked]="getDisplayValue(item, df.name) === 'true' || getDisplayValue(item, df.name) === true"
+                [disabled]="true"></mat-checkbox>
             </div>
           </td>
           }
@@ -162,12 +162,23 @@ project root for license information or contact permission@sei.cmu.edu for full 
             </div>
           </td>
           }
+          <!-- Competency value with tooltip -->
+          @if (df.dataType.toString() === 'Competency') {
+          <td>
+            <div class="constrainer" [style]="getStyle(df)">
+              @for (compId of getDisplayValue(item, df.name).split(',').map(s => s.trim()).filter(s => s); track compId; let isLast = $last) {
+                <span [matTooltip]="getCompetencyTooltip(compId)" matTooltipPosition="above" style="white-space: nowrap;">{{ compId }}</span>@if (!isLast) {<span>, </span>}
+              }
+            </div>
+          </td>
+          }
           <!-- All others -->
           @if (df.dataType.toString() !== 'Html' &&
           df.dataType.toString() !== 'Url' &&
           df.dataType.toString() !== 'User' &&
           df.dataType.toString() !== 'Checkbox' &&
-          df.dataType.toString() !== 'DateTime') {
+          df.dataType.toString() !== 'DateTime' &&
+          df.dataType.toString() !== 'Competency') {
           <td>
             <div class="constrainer" [style]="getStyle(df)">
               {{ getDisplayValue(item, df.name) }}

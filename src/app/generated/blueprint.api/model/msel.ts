@@ -15,6 +15,7 @@
  */
 import { Organization } from './organization';
 import { MselPage } from './mselPage';
+import { MselCompetency } from './mselCompetency';
 import { Invitation } from './invitation';
 import { UserMselRole } from './userMselRole';
 import { ScenarioEvent } from './scenarioEvent';
@@ -69,6 +70,10 @@ export interface Msel {
     showIntegrationTargetOnScenarioEventList?: boolean;
     showIntegrationTargetOnExerciseView?: boolean;
     integrationTargetDisplayOrder?: number;
+    showTimeOnAssessorView?: boolean;
+    showMoveOnAssessorView?: boolean;
+    showGroupOnAssessorView?: boolean;
+    showIntegrationTargetOnAssessorView?: boolean;
     moves?: Array<Move> | null;
     dataFields?: Array<DataField> | null;
     scenarioEvents?: Array<ScenarioEvent> | null;
@@ -76,6 +81,12 @@ export interface Msel {
     units?: Array<Unit> | null;
     userMselRoles?: Array<UserMselRole> | null;
     headerRowMetadata?: string | null;
+    educationalLevel?: string | null;
+    subject?: string | null;
+    keywords?: string | null;
+    educationalUse?: string | null;
+    courseMode?: string | null;
+    language?: string | null;
     organizations?: Array<Organization> | null;
     cards?: Array<Card> | null;
     galleryArticleParameters?: Array<string> | null;
@@ -85,6 +96,7 @@ export interface Msel {
     playerApplications?: Array<PlayerApplication> | null;
     pages?: Array<MselPage> | null;
     invitations?: Array<Invitation> | null;
+    mselCompetencies?: Array<MselCompetency> | null;
 }
 export namespace Msel {
 }

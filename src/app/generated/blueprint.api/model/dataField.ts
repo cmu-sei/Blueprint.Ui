@@ -42,6 +42,7 @@ export interface DataField {
     isTemplate?: boolean;
     isInformationField?: boolean;
     isFacilitationField?: boolean;
+    isAssessorVisible?: boolean;
 }
 export namespace DataField {
 }

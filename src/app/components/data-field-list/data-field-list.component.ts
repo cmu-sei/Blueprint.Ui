@@ -8,6 +8,7 @@ import { takeUntil } from 'rxjs/operators';
 import {
   DataField,
   DataFieldType,
+  DataOption,
   SystemPermission,
 } from 'src/app/generated/blueprint.api';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
@@ -23,6 +24,10 @@ import { DataFieldDataService } from 'src/app/data/data-field/data-field-data.se
 import { DataFieldQuery } from 'src/app/data/data-field/data-field.query';
 import { DataFieldTemplateQuery } from 'src/app/data/data-field/data-field-template.query';
 import { DataFieldEditDialogComponent } from '../data-field-edit-dialog/data-field-edit-dialog.component';
+import { CompetencyOptionsDialogComponent } from '../competency-options-dialog/competency-options-dialog.component';
+import { DataOptionEditDialogComponent } from '../data-option-edit-dialog/data-option-edit-dialog.component';
+import { DataOptionListDialogComponent } from '../data-option-list-dialog/data-option-list-dialog.component';
+import { DataOptionImportDialogComponent } from '../data-option-import-dialog/data-option-import-dialog.component';
 import { InjectTypeDataService } from 'src/app/data/inject-type/inject-type-data.service';
 import { InjectTypeQuery } from 'src/app/data/inject-type/inject-type.query';
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
@@ -64,6 +69,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
     'action',
     'events',
     'exercise',
+    'assessor',
     'information',
     'facilitation',
     'default',
@@ -77,6 +83,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
     'action',
     'events',
     'exercise',
+    'assessor',
     'information',
     'facilitation',
     'default',
@@ -210,6 +217,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
         name: 'Move',
         onScenarioEventList: this.msel.showMoveOnScenarioEventList,
         onExerciseView: this.msel.showMoveOnExerciseView,
+        isAssessorVisible: this.msel.showMoveOnAssessorView,
         isInformationField: false,
         isFacilitationField: false,
         galleryArticleParameter: 'Gallery Move',
@@ -221,6 +229,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
         name: 'Group',
         onScenarioEventList: this.msel.showGroupOnScenarioEventList,
         onExerciseView: this.msel.showGroupOnExerciseView,
+        isAssessorVisible: this.msel.showGroupOnAssessorView,
         isInformationField: false,
         isFacilitationField: false,
         galleryArticleParameter: 'Gallery Inject',
@@ -232,6 +241,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
         name: 'Execution Time',
         onScenarioEventList: this.msel.showTimeOnScenarioEventList,
         onExerciseView: this.msel.showTimeOnExerciseView,
+        isAssessorVisible: this.msel.showTimeOnAssessorView,
         isInformationField: false,
         isFacilitationField: false,
         galleryArticleParameter: '- - -',
@@ -243,6 +253,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
         name: 'Integration Target',
         onScenarioEventList: this.msel.showIntegrationTargetOnScenarioEventList,
         onExerciseView: this.msel.showIntegrationTargetOnExerciseView,
+        isAssessorVisible: this.msel.showIntegrationTargetOnAssessorView,
         isInformationField: false,
         isFacilitationField: false,
         galleryArticleParameter: '- - -',
@@ -297,7 +308,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
     }
     dataField.dataOptions = dataOptions;
     const dialogRef = this.dialog.open(DataFieldEditDialogComponent, {
-      minWidth: '400px',
+      minWidth: '650px',
       maxWidth: '90vw',
       width: 'auto',
       data: {
@@ -311,6 +322,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
         useCite: this.msel.useCite,
         dataFieldTypes: this.dataFieldTypes,
         title: dialogTitle,
+        onSave: (df: DataField) => this.saveDataField(df)
       },
     });
     dialogRef.componentInstance.editComplete.subscribe((result) => {
@@ -392,6 +404,9 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
         break;
       case 'onScenarioEventList':
       case 'onExerciseView':
+      case 'isInformationField':
+      case 'isFacilitationField':
+      case 'isAssessorVisible':
       case 'isShownOnDefaultTab':
       case 'isOnlyShownToOwners':
         const aChecked = a[sortFieldName];
@@ -400,8 +415,18 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
           sortResult = aChecked ? -1 : 1;
         }
         break;
+      case 'options':
+        const aOptionsCount = a.dataOptions?.length || 0;
+        const bOptionsCount = b.dataOptions?.length || 0;
+        if (aOptionsCount < bOptionsCount) {
+          sortResult = -1;
+        } else if (aOptionsCount > bOptionsCount) {
+          sortResult = 1;
+        }
+        break;
       case 'name':
       case 'dataType':
+      case 'galleryArticleParameter':
         const aStr = a[sortFieldName];
         const bStr = b[sortFieldName];
         sortResult = Intl.Collator().compare(
@@ -459,17 +484,121 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
   }
 
   getDataOptionsString(dataField: DataField): string {
-    if (dataField.dataOptions) {
-      const dataOptions = dataField.dataOptions
-        .slice()
-        .sort((a, b) => (+a.displayOrder < +b.displayOrder ? -1 : 1))
-        .map(function (elem) {
-          return elem.optionName;
-        });
-      return dataOptions.join(', ');
+    if (dataField.dataOptions && dataField.dataOptions.length > 0) {
+      const count = dataField.dataOptions.length;
+      if (dataField.dataType === DataFieldType.Competency) {
+        return `${count} competenc${count !== 1 ? 'ies' : 'y'}`;
+      }
+      return `${count} option${count !== 1 ? 's' : ''}`;
+    } else if (dataField.dataType === DataFieldType.Competency) {
+      return 'Manage';
     } else {
       return ' ';
     }
+  }
+
+  viewDataOptions(dataField: DataField, event: Event) {
+    event.stopPropagation();
+    if (dataField.dataType === DataFieldType.Competency || (dataField.dataOptions && dataField.dataOptions.length > 0)) {
+      const hasEditPermission = this.canEdit() || this.msel.hasRole(this.loggedInUserId, null).owner;
+      const supportsOptionList =
+        dataField.dataType === DataFieldType.Double ||
+        dataField.dataType === DataFieldType.Integer ||
+        dataField.dataType === DataFieldType.String ||
+        dataField.dataType === DataFieldType.Competency;
+      const canAddOptions = hasEditPermission && supportsOptionList;
+
+      if (dataField.dataType === DataFieldType.Competency) {
+        const compDialogRef = this.dialog.open(CompetencyOptionsDialogComponent, {
+          width: '900px',
+          maxWidth: '95vw',
+          maxHeight: '90vh',
+          data: {
+            dataFieldId: dataField.id,
+            dataOptions: dataField.dataOptions,
+            canEdit: canAddOptions
+          }
+        });
+        compDialogRef.afterClosed().subscribe((updatedOptions) => {
+          const updated = { ...dataField, dataOptions: updatedOptions || dataField.dataOptions };
+          this.dataFieldDataService.updateDataField(updated);
+        });
+      } else {
+        this.dialog.open(DataOptionListDialogComponent, {
+          width: '900px',
+          maxWidth: '95vw',
+          maxHeight: '90vh',
+          data: {
+            dataOptions: dataField.dataOptions,
+            canEdit: canAddOptions,
+            onEdit: (option: DataOption) => this.editDataOption(option, dataField),
+            onDelete: (option: DataOption) => this.deleteDataOption(option, dataField),
+            onAdd: () => this.addDataOption(dataField),
+            onImport: () => this.importDataOptions(dataField)
+          }
+        });
+      }
+    }
+  }
+
+  addDataOption(dataField: DataField) {
+    const dataOption: DataOption = {
+      displayOrder: dataField.dataOptions.length + 1,
+      dataFieldId: dataField.id
+    };
+    this.openDataOptionEditDialog(dataOption, dataField);
+  }
+
+  editDataOption(option: DataOption, dataField: DataField) {
+    const selected = { ...option };
+    this.openDataOptionEditDialog(selected, dataField);
+  }
+
+  deleteDataOption(option: DataOption, dataField: DataField) {
+    const index = dataField.dataOptions.findIndex(x => x.id === option.id);
+    if (index >= 0) {
+      dataField.dataOptions.splice(index, 1);
+      this.dataFieldDataService.updateDataField(dataField);
+    }
+  }
+
+  private openDataOptionEditDialog(dataOption: DataOption, dataField: DataField) {
+    const dialogRef = this.dialog.open(DataOptionEditDialogComponent, {
+      minWidth: '400px',
+      maxWidth: '90vw',
+      width: 'auto',
+      data: { dataOption }
+    });
+    dialogRef.componentInstance.editComplete.subscribe((result) => {
+      if (result.saveChanges && result.dataOption) {
+        if (dataOption.id) {
+          const index = dataField.dataOptions.findIndex(x => x.id === dataOption.id);
+          dataField.dataOptions[index] = dataOption;
+        } else {
+          dataOption.id = uuidv4();
+          dataField.dataOptions.push(dataOption);
+        }
+        this.dataFieldDataService.updateDataField(dataField);
+      }
+      dialogRef.close();
+    });
+  }
+
+  importDataOptions(dataField: DataField) {
+    const dialogRef = this.dialog.open(DataOptionImportDialogComponent, {
+      width: '800px',
+      maxWidth: '90vw',
+      data: {
+        dataFieldId: dataField.id,
+        existingOptions: dataField.dataOptions
+      },
+    });
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result && Array.isArray(result)) {
+        dataField.dataOptions.push(...result);
+        this.dataFieldDataService.updateDataField(dataField);
+      }
+    });
   }
 
   saveChange(dataField: DataField) {
@@ -480,19 +609,23 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
         case 'Move':
           this.msel.showMoveOnExerciseView = dataField.onExerciseView;
           this.msel.showMoveOnScenarioEventList = dataField.onScenarioEventList;
+          this.msel.showMoveOnAssessorView = dataField.isAssessorVisible;
           break;
         case 'Group':
           this.msel.showGroupOnExerciseView = dataField.onExerciseView;
           this.msel.showGroupOnScenarioEventList =
             dataField.onScenarioEventList;
+          this.msel.showGroupOnAssessorView = dataField.isAssessorVisible;
           break;
         case 'Execution Time':
           this.msel.showTimeOnExerciseView = dataField.onExerciseView;
           this.msel.showTimeOnScenarioEventList = dataField.onScenarioEventList;
+          this.msel.showTimeOnAssessorView = dataField.isAssessorVisible;
           break;
         case 'Integration Target':
           this.msel.showIntegrationTargetOnExerciseView = dataField.onExerciseView;
           this.msel.showIntegrationTargetOnScenarioEventList = dataField.onScenarioEventList;
+          this.msel.showIntegrationTargetOnAssessorView = dataField.isAssessorVisible;
           break;
       }
       this.saveMsel();

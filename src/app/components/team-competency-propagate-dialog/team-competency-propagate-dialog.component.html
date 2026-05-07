@@ -1,0 +1,50 @@
+<!--
+Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license, please see LICENSE.md in the
+project root for license information or contact permission@sei.cmu.edu for full terms.
+-->
+
+<h1 mat-dialog-title>{{ data.action === 'add' ? 'Add' : 'Remove' }} Team from Related</h1>
+<div mat-dialog-content>
+  <p>Also {{ actionVerb }} team {{ data.teamName }} {{ preposition }} the {{ data.competencies.length }}
+    related competenc{{ data.competencies.length === 1 ? 'y' : 'ies' }} on the MSEL?</p>
+  <mat-table [dataSource]="data.competencies" class="propagate-table">
+    <!-- select column -->
+    <ng-container matColumnDef="select">
+      <mat-header-cell *matHeaderCellDef class="col-select">
+        <mat-checkbox (change)="toggleAll()" [checked]="isAllSelected()"
+          [indeterminate]="selection.hasValue() && !isAllSelected()">
+        </mat-checkbox>
+      </mat-header-cell>
+      <mat-cell *matCellDef="let mc" class="col-select">
+        <mat-checkbox (click)="$event.stopPropagation()" (change)="selection.toggle(mc)"
+          [checked]="selection.isSelected(mc)">
+        </mat-checkbox>
+      </mat-cell>
+    </ng-container>
+    <!-- idNumber column -->
+    <ng-container matColumnDef="idNumber">
+      <mat-header-cell *matHeaderCellDef class="col-id">ID</mat-header-cell>
+      <mat-cell *matCellDef="let mc" class="col-id">{{ mc.competency?.idNumber }}</mat-cell>
+    </ng-container>
+    <!-- shortName column -->
+    <ng-container matColumnDef="shortName">
+      <mat-header-cell *matHeaderCellDef class="col-name">Name</mat-header-cell>
+      <mat-cell *matCellDef="let mc" class="col-name"
+        [matTooltip]="mc.competency?.description" matTooltipShowDelay="800">
+        {{ mc.competency?.shortName }}
+      </mat-cell>
+    </ng-container>
+    <!-- row definitions -->
+    <mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></mat-header-row>
+    <mat-row *matRowDef="let row; columns: displayedColumns;"
+      (click)="selection.toggle(row)"></mat-row>
+  </mat-table>
+</div>
+<mat-dialog-actions>
+  <div class="action-spacer"></div>
+  <button mat-button (click)="onCancel()">No</button>
+  <button mat-raised-button color="primary" (click)="onConfirm()" [disabled]="selection.isEmpty()">
+    Yes ({{ selection.selected.length }})
+  </button>
+</mat-dialog-actions>
