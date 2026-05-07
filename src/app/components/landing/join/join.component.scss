@@ -23,7 +23,7 @@
   flex-direction: row;
   flex-wrap: wrap;
   justify-content: center;
-  align-items: stretch;
+  align-items: flex-start;
   padding-top: 40px;
   gap: 4%;
 }
@@ -37,7 +37,7 @@
   margin-bottom: 10px;
   width: 30%;
   max-width: 400px;
-  height: 320px;
+  height: 550px;
 }
 
 .card-image {
@@ -70,9 +70,8 @@ mat-card-subtitle {
   padding-bottom: 0;
   padding-left: 16px;
   padding-right: 16px;
-  flex: 1;
-  overflow: auto;
-  min-height: 0;
+  flex-shrink: 0;
+  overflow: visible;
 }
 
 .base-card mat-card-actions {
