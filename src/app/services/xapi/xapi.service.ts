@@ -38,11 +38,11 @@ export class XApiService {
   /**
    * Logs xAPI viewed statement when user views the join page
    */
-  viewedJoinpage(): Observable<any> {
+  viewedJoinPage(): Observable<any> {
     if (!this.enabled) {
       return of(null);
     }
-    return this.generatedXApiService.viewedJoinpage().pipe(
+    return this.generatedXApiService.viewedJoinPage().pipe(
       catchError((error) => {
         console.error('xAPI tracking error:', error);
         return of(null);

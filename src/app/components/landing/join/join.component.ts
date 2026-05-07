@@ -82,7 +82,7 @@ export class JoinComponent implements OnDestroy, OnInit {
 
   ngOnInit() {
     // Log xAPI viewed statement for join page
-    this.xApiService.viewedJoinpage().subscribe();
+    this.xApiService.viewedJoinPage().subscribe();
 
     // subscribe to users
     this.userQuery.selectAll()
