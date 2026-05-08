@@ -25,6 +25,9 @@ export interface UserMselRole {
     mselId?: string;
     userId?: string;
     role?: MselRole;
+    citeEvaluationRole?: string | null;
+    galleryExhibitRole?: string | null;
+    steamfitterScenarioRole?: string | null;
 }
 export namespace UserMselRole {
 }
