@@ -1,9 +1,3 @@
-/*
- Copyright 2026 Carnegie Mellon University. All Rights Reserved.
- Released under a MIT (SEI)-style license. See LICENSE.md in the
- project root for license information.
-*/
-
 /**
  * Blueprint API
  *
@@ -32,7 +26,6 @@ export const DataFieldType = {
     Checkbox: 'Checkbox',
     Url: 'Url',
     Move: 'Move',
-    IntegrationTarget: 'IntegrationTarget',
     Competency: 'Competency'
 } as const;
 export type DataFieldType = typeof DataFieldType[keyof typeof DataFieldType];
