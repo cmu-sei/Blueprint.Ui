@@ -3,64 +3,236 @@ Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
-<div class="top-container background">
+<div class="command-center">
   @if (!hideTopbar) {
   <app-topbar [title]="topbarText" [topbarView]="TopbarView.BLUEPRINT_HOME" [imageFilePath]="topbarImage"
     (urlNavigate)="topBarNavigate($event)"></app-topbar>
   }
+
   @if (isStarted) {
-  <div class="card-container">
-    @if (joinMselList.length > 0) {
-    <mat-card appearance="outlined" [ngClass]="joinClass" tabindex="1" role="button" (click)="gotoUrl('join')"
-      (mouseover)="joinClass='base-card outline'" (mouseout)="joinClass='base-card'">
-      <mat-card-header>
-        <mat-card-title>Join an Event</mat-card-title>
-        <mat-card-subtitle>Access In-Progress Events</mat-card-subtitle>
-      </mat-card-header>
-      <img class="card-image" src="assets/img/join.png" alt="Join image">
-    </mat-card>
-    }
-    @if (launchMselList.length > 0) {
-    <mat-card appearance="outlined" [ngClass]="launchClass" tabindex="2" role="button" (click)="gotoUrl('launch')"
-      (mouseover)="launchClass='base-card outline'" (mouseout)="launchClass='base-card'">
-      <mat-card-header>
-        <mat-card-title>Start an Event</mat-card-title>
-        <mat-card-subtitle>Launch New events</mat-card-subtitle>
-      </mat-card-header>
-      <img class="card-image" src="assets/img/start.png" alt="Start image">
-    </mat-card>
-    }
-    @if (buildMselList.length > 0 || canCreateMsels) {
-    <mat-card appearance="outlined" [ngClass]="buildClass" tabindex="3" role="button" (click)="gotoUrl('build')"
-      (mouseover)="buildClass='base-card outline'" (mouseout)="buildClass='base-card'">
-      <mat-card-header>
-        <mat-card-title>Manage an Event</mat-card-title>
-        <mat-card-subtitle>Design and Plan Events</mat-card-subtitle>
-      </mat-card-header>
-      <img class="card-image" src="assets/img/build.png" alt="Build image">
-    </mat-card>
-    }
-    @if (joinMselList.length === 0 && launchMselList.length === 0 && buildMselList.length === 0 && !canCreateMsels) {
-    <mat-card appearance="outlined" [ngClass]="buildClass" tabindex="3" role="button">
-      <mat-card-header>
-        <mat-card-title>Nothing to see here!</mat-card-title>
-      </mat-card-header>
-      It appears that you do not have anything to access. If you believe this is an error, please contact you system
-      administrator.
-    </mat-card>
-    }
+  <div class="dashboard-container">
+    <!-- Header Section -->
+    <div class="dashboard-header">
+      <div class="header-content">
+        <div class="header-left">
+          <h1 class="mission-title">Event Dashboard</h1>
+          <p class="mission-subtitle">Master Scenario Event List Planning & Coordination</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Value Proposition -->
+    <div class="value-section">
+      <div class="value-card" role="button" tabindex="0" (click)="openCapabilityDialog('collaborative')" (keydown.enter)="openCapabilityDialog('collaborative')">
+        <div class="value-icon">
+          <mat-icon>groups</mat-icon>
+        </div>
+        <h3 class="value-title">Collaborative Planning</h3>
+        <p class="value-text">Replace Excel spreadsheets with real-time team coordination</p>
+        <div class="learn-more">
+          <mat-icon class="info-icon">info</mat-icon>
+          <span>Click to learn more</span>
+        </div>
+      </div>
+      <div class="value-card" role="button" tabindex="0" (click)="openCapabilityDialog('integrated')" (keydown.enter)="openCapabilityDialog('integrated')">
+        <div class="value-icon">
+          <mat-icon>hub</mat-icon>
+        </div>
+        <h3 class="value-title">Integrated Platform</h3>
+        <p class="value-text">Connect Player, CITE, Gallery & Steamfitter in one workflow</p>
+        <div class="learn-more">
+          <mat-icon class="info-icon">info</mat-icon>
+          <span>Click to learn more</span>
+        </div>
+      </div>
+      <div class="value-card" role="button" tabindex="0" (click)="openCapabilityDialog('scenario')" (keydown.enter)="openCapabilityDialog('scenario')">
+        <div class="value-icon">
+          <mat-icon>timeline</mat-icon>
+        </div>
+        <h3 class="value-title">Scenario Design</h3>
+        <p class="value-text">Build complex cyber exercise scenarios with move-based structure</p>
+        <div class="learn-more">
+          <mat-icon class="info-icon">info</mat-icon>
+          <span>Click to learn more</span>
+        </div>
+      </div>
+      <div class="value-card" role="button" tabindex="0" (click)="openCapabilityDialog('cyberrange')" (keydown.enter)="openCapabilityDialog('cyberrange')">
+        <div class="value-icon">
+          <mat-icon>security</mat-icon>
+        </div>
+        <h3 class="value-title">Cyber Range Ready</h3>
+        <p class="value-text">Purpose-built for cybersecurity training and simulation</p>
+        <div class="learn-more">
+          <mat-icon class="info-icon">info</mat-icon>
+          <span>Click to learn more</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="mission-grid">
+      <!-- JOIN card - always shown -->
+      <div class="mission-card join-card"
+           [class.disabled-card]="joinMselList.length === 0"
+           tabindex="1"
+           role="button"
+           (click)="joinMselList.length > 0 && gotoUrl('join')">
+        <div class="card-corner-accent"></div>
+        <div class="card-header">
+          <div class="card-icon join-icon">
+            <mat-icon>login</mat-icon>
+          </div>
+          <div class="card-title-section">
+            <h2 class="card-title">JOIN</h2>
+            <p class="card-subtitle">Active Operations</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="metric">
+            <span class="metric-value">{{joinMselList.length}}</span>
+            <span class="metric-label">Events Ready</span>
+          </div>
+          <div class="card-description">
+            @if (joinMselList.length > 0) {
+              Access in-progress events and join ongoing exercises
+            } @else {
+              No active events available to join
+            }
+          </div>
+        </div>
+        <div class="card-footer">
+          <span class="action-text">ENTER <mat-icon class="inline-icon">arrow_forward</mat-icon></span>
+        </div>
+      </div>
+
+      @if (launchMselList.length > 0) {
+      <div class="mission-card launch-card"
+           tabindex="2"
+           role="button"
+           (click)="gotoUrl('launch')">
+        <div class="card-corner-accent"></div>
+        <div class="card-header">
+          <div class="card-icon launch-icon">
+            <mat-icon>rocket_launch</mat-icon>
+          </div>
+          <div class="card-title-section">
+            <h2 class="card-title">LAUNCH</h2>
+            <p class="card-subtitle">Initiate New Missions</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="metric">
+            <span class="metric-value">{{launchMselList.length}}</span>
+            <span class="metric-label">Events Staged</span>
+          </div>
+          <div class="card-description">
+            Deploy new events and begin exercise execution
+          </div>
+        </div>
+        <div class="card-footer">
+          <span class="action-text">DEPLOY <mat-icon class="inline-icon">arrow_forward</mat-icon></span>
+        </div>
+      </div>
+      }
+
+      @if (buildMselList.length > 0 || canCreateMsels) {
+      <div class="mission-card build-card"
+           tabindex="3"
+           role="button"
+           (click)="gotoUrl('build')">
+        <div class="card-corner-accent"></div>
+        <div class="card-header">
+          <div class="card-icon build-icon">
+            <mat-icon>construction</mat-icon>
+          </div>
+          <div class="card-title-section">
+            <h2 class="card-title">BUILD</h2>
+            <p class="card-subtitle">Design & Planning</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="metric">
+            <span class="metric-value">{{buildMselList.length}}</span>
+            <span class="metric-label">Events Draft</span>
+          </div>
+          <div class="card-description">
+            Create and configure events, manage MSEL planning
+          </div>
+        </div>
+        <div class="card-footer">
+          <span class="action-text">CONFIGURE <mat-icon class="inline-icon">arrow_forward</mat-icon></span>
+        </div>
+      </div>
+      }
+
+      <!-- ASSESS card - shown for users with Evaluator role -->
+      @if (hasAssessorRole) {
+      <div class="mission-card assess-card"
+           [class.disabled-card]="assessMselList.length === 0"
+           tabindex="4"
+           role="button"
+           (click)="assessMselList.length > 0 && gotoUrl('assess')">
+        <div class="card-corner-accent"></div>
+        <div class="card-header">
+          <div class="card-icon assess-icon">
+            <mat-icon>assignment</mat-icon>
+          </div>
+          <div class="card-title-section">
+            <h2 class="card-title">ASSESS</h2>
+            <p class="card-subtitle">Evaluation & Scoring</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="metric">
+            <span class="metric-value">{{assessMselList.length}}</span>
+            <span class="metric-label">Events Active</span>
+          </div>
+          <div class="card-description">
+            @if (assessMselList.length > 0) {
+              Evaluate and score active exercises
+            } @else {
+              No active events available to assess
+            }
+          </div>
+        </div>
+        <div class="card-footer">
+          <span class="action-text">EVALUATE <mat-icon class="inline-icon">arrow_forward</mat-icon></span>
+        </div>
+      </div>
+      }
+
+      @if (joinMselList.length === 0 && launchMselList.length === 0 && buildMselList.length === 0 && !canCreateMsels && !hasAssessorRole) {
+      <div class="mission-card empty-state">
+        <div class="card-header">
+          <div class="card-icon empty-icon">
+            <mat-icon>block</mat-icon>
+          </div>
+          <div class="card-title-section">
+            <h2 class="card-title">NO ACCESS</h2>
+            <p class="card-subtitle">Authorization Required</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="card-description">
+            No accessible resources found. Contact your system administrator if you believe this is an error.
+          </div>
+        </div>
+      </div>
+      }
+    </div>
   </div>
   }
+
   @if (!isStarted) {
-  <div class="card-container">
-    <mat-card appearance="outlined" [ngClass]="buildClass">
-      <mat-card-header>
-        <mat-card-title>Initializing Data</mat-card-title>
-        <mat-card-subtitle>Please wait ...</mat-card-subtitle>
-      </mat-card-header>
-      <mat-progress-spinner color="primary" mode="indeterminate">
-      </mat-progress-spinner>
-    </mat-card>
+  <div class="loading-container">
+    <div class="loading-card">
+      <div class="loading-icon">
+        <mat-progress-spinner color="primary" mode="indeterminate" diameter="60">
+        </mat-progress-spinner>
+      </div>
+      <h2 class="loading-title">Initializing Data</h2>
+      <p class="loading-subtitle">Please wait...</p>
+    </div>
   </div>
   }
 </div>

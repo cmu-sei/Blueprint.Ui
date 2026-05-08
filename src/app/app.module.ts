@@ -92,6 +92,7 @@ import { CiteActionListComponent } from './components/cite-action-list/cite-acti
 import { CiteDutyEditDialogComponent } from './components/cite-duty-edit-dialog/cite-duty-edit-dialog.component';
 import { CiteDutyListComponent } from './components/cite-duty-list/cite-duty-list.component';
 import { DashboardComponent } from './components/landing/dashboard/dashboard.component';
+import { CapabilityDialogComponent } from './components/capability-dialog/capability-dialog.component';
 import { DataFieldEditDialogComponent } from './components/data-field-edit-dialog/data-field-edit-dialog.component';
 import { DataFieldListComponent } from './components/data-field-list/data-field-list.component';
 import { CompetencyOptionsDialogComponent } from './components/competency-options-dialog/competency-options-dialog.component';
@@ -192,6 +193,7 @@ export const appConfig: ApplicationConfig = {
     CiteDutyEditDialogComponent,
     CiteDutyListComponent,
     DashboardComponent,
+    CapabilityDialogComponent,
     DataFieldEditDialogComponent,
     DataFieldListComponent,
     CompetencyOptionsDialogComponent,
