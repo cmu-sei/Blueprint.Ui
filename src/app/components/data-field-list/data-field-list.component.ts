@@ -57,6 +57,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
   sort: Sort = { active: '', direction: '' };
   allowDragAndDrop = true;
   dataFieldTypes = DataFieldType;
+  editableDataFieldTypes = this.getEditableDataFieldTypes();
   systemDefinedDataFields = new Array<DataField>();
   dataFieldDataSource = new MatTableDataSource<DataField>(
     new Array<DataField>()
@@ -197,6 +198,12 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
     this.dataFieldDataSource.paginator = this.paginator;
   }
 
+  getEditableDataFieldTypes() {
+    const editableTypes = { ...DataFieldType };
+    delete editableTypes.IntegrationTarget;
+    return editableTypes;
+  }
+
   setDataFieldList() {
     this.dataFieldList = [];
     this.allDataFields.forEach((df) => {
@@ -320,7 +327,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
         ),
         useGallery: this.msel.useGallery,
         useCite: this.msel.useCite,
-        dataFieldTypes: this.dataFieldTypes,
+        dataFieldTypes: this.editableDataFieldTypes,
         title: dialogTitle,
         onSave: (df: DataField) => this.saveDataField(df)
       },
