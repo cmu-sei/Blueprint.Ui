@@ -3,6 +3,9 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
+@if (msel?.integrationStatus && !integrationDismissed) {
+  <app-integration-status [msel]="msel" (closed)="dismissIntegrationStatus()"></app-integration-status>
+} @else {
 <div class="frame">
   <mat-tab-group mat-align-tabs="start" class="tab-group" [selectedIndex]="currentTabIndex"
     (selectedIndexChange)="onTabIndexChange($event)">
@@ -330,28 +333,144 @@ project root for license information or contact permission@sei.cmu.edu for full 
               <a target="_blank" href="{{ starterUrl }}">{{ starterUrl }}</a>
             </div>
           </div>
+          <!-- Assessor View URL -->
+          <div class="url-form-field">
+            <div class="editor-label">
+              Assessor View URL
+              <div class="field-hint">
+                Use this URL for direct access to the Assessor View
+              </div>
+            </div>
+            <div class="url-button-link">
+              <button mat-icon-button ngxClipboard [cbContent]="assessorUrl" (click)="$event.stopPropagation()"
+                title="Copy Assessor View URL:  {{ assessorUrl }}">
+                <mat-icon class="mdi-24px" fontIcon="mdi-content-copy"></mat-icon>
+              </button>
+              <a target="_blank" href="{{ assessorUrl }}">{{ assessorUrl }}</a>
+            </div>
+          </div>
+          <!-- Competencies summary -->
+          <div class="competency-section">
+            <div class="section-header">
+              <mat-icon class="mdi-18px" fontIcon="mdi-certificate-outline" style="color: var(--mat-sys-primary); vertical-align: middle; margin-right: 4px;"></mat-icon>
+              <b>Competencies</b>
+              @if (competencyFrameworkNames.length > 0) {
+              <span style="margin-left: 8px; font-weight: normal; color: var(--mat-sys-on-surface-variant); font-size: 13px;">
+                ({{ competencyFrameworkNames.join(', ') }})
+              </span>
+              }
+            </div>
+            <div class="competency-panels-row">
+              @if (workRoleCompetencies.length > 0) {
+              <mat-expansion-panel class="competency-expansion">
+                <mat-expansion-panel-header>
+                  <mat-panel-title>
+                    <mat-icon class="mdi-18px" fontIcon="mdi-account-hard-hat" style="color: var(--mat-sys-primary); margin-right: 6px;"></mat-icon>
+                    Work Roles ({{ workRoleCompetencies.length }})
+                  </mat-panel-title>
+                </mat-expansion-panel-header>
+                <div class="competency-list">
+                  @for (c of workRoleCompetencies; track c.id) {
+                  <div class="competency-list-item">
+                    <span class="competency-list-id" [matTooltip]="getCompetencyTooltip(c)" matTooltipPosition="right">{{ c.idNumber }}</span>
+                  </div>
+                  }
+                </div>
+              </mat-expansion-panel>
+              }
+              @if (nonWorkRoleCompetencies.length > 0) {
+              <mat-expansion-panel class="competency-expansion">
+                <mat-expansion-panel-header>
+                  <mat-panel-title>
+                    <mat-icon class="mdi-18px" fontIcon="mdi-certificate-outline" style="color: var(--mat-sys-primary); margin-right: 6px;"></mat-icon>
+                    Competencies ({{ nonWorkRoleCompetencies.length }})
+                  </mat-panel-title>
+                </mat-expansion-panel-header>
+                <div class="competency-list">
+                  @for (c of nonWorkRoleCompetencies; track c.id) {
+                  <div class="competency-list-item">
+                    <span class="competency-list-id" [matTooltip]="getCompetencyTooltip(c)" matTooltipPosition="right">{{ c.idNumber }}</span>
+                  </div>
+                  }
+                </div>
+              </mat-expansion-panel>
+              }
+            </div>
+            <div class="competency-hint">Manage on the Competencies tab</div>
+          </div>
+          <!-- LMT Metadata -->
+          <div class="section-header">
+            <mat-icon class="mdi-18px" fontIcon="mdi-tag-outline" style="color: var(--mat-sys-primary); vertical-align: middle; margin-right: 4px;"></mat-icon>
+            <b>Metadata</b>
+          </div>
+          <div class="lmt-dropdown-row">
+            <mat-form-field class="lmt-dropdown-width" matTooltip="Beginner, Intermediate, or Advanced — maps to lrmi:educationalLevel" matTooltipShowDelay="800">
+              <mat-label>Difficulty Rating</mat-label>
+              <mat-select [(ngModel)]="msel.educationalLevel" [disabled]="!canEditMsel()"
+                (selectionChange)="isChanged = true">
+                <mat-option [value]="null"></mat-option>
+                @for (level of educationalLevels; track level) {
+                <mat-option [value]="level">{{ level }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field class="lmt-dropdown-width" matTooltip="Assessment, Instruction, or Professional Support — maps to lrmi:educationalUse" matTooltipShowDelay="800">
+              <mat-label>Exercise Purpose</mat-label>
+              <mat-select [(ngModel)]="msel.educationalUse" [disabled]="!canEditMsel()"
+                (selectionChange)="isChanged = true">
+                <mat-option [value]="null"></mat-option>
+                @for (use of educationalUses; track use) {
+                <mat-option [value]="use">{{ use }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field class="lmt-dropdown-width" matTooltip="Online, Onsite, or Blended delivery mode — maps to schema:courseMode" matTooltipShowDelay="800">
+              <mat-label>Exercise Mode</mat-label>
+              <mat-select [(ngModel)]="msel.courseMode" [disabled]="!canEditMsel()"
+                (selectionChange)="isChanged = true">
+                <mat-option [value]="null"></mat-option>
+                @for (mode of courseModes; track mode) {
+                <mat-option [value]="mode">{{ mode }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+          <div class="single-detail center-self">
+            <mat-form-field class="full-width" matTooltip="Topic areas covered by this exercise — maps to dcterms:subject" matTooltipShowDelay="800">
+              <mat-label>Subject</mat-label>
+              <input type="text" matInput placeholder="e.g., incident response, network defense"
+                [(ngModel)]="msel.subject" (cut)="isChanged = true" (change)="isChanged = true"
+                (paste)="isChanged = true" (keypress)="isChanged = true" [disabled]="!canEditMsel()" />
+            </mat-form-field>
+          </div>
+          <div class="single-detail center-self">
+            <mat-form-field class="full-width" matTooltip="Searchable tags for catalog discovery — maps to schema:keywords" matTooltipShowDelay="800">
+              <mat-label>Keywords</mat-label>
+              <input type="text" matInput placeholder="Searchable tags"
+                [(ngModel)]="msel.keywords" (cut)="isChanged = true" (change)="isChanged = true"
+                (paste)="isChanged = true" (keypress)="isChanged = true" [disabled]="!canEditMsel()" />
+            </mat-form-field>
+          </div>
           <!-- row meta data -->
           @if (canManageMsel()) {
           <div class="single-detail center-self">
-            <mat-form-field class="full-width"
+            <mat-form-field class="meta-field-width"
               title="A numeric value that defines the height of the header row when this MSEL is exported as an xlsx file">
-              <mat-label>Header Row Metadata (Height) when exported as an Excel file</mat-label>
+              <mat-label>Header Row Metadata (Height)</mat-label>
               <input type="text" matInput [(ngModel)]="msel.headerRowMetadata" (cut)="isChanged = true"
                 (change)="isChanged = true" (paste)="isChanged = true" (keypress)="isChanged = true"
                 title="An integer value that defines the height of the header row when this MSEL is exported as an xlsx file" />
             </mat-form-field>
           </div>
           }
-          <div class="single-detail center-self">
-            <mat-form-field class="full-width">
+          <div class="lmt-dropdown-row">
+            <mat-form-field class="meta-field-width">
               <mat-label>Date Created</mat-label>
               <input type="text" matInput value="{{ msel.dateCreated | date: 'yyyy-MM-dd' }}" disabled />
             </mat-form-field>
-          </div>
-          <div class="single-detail center-self">
-            <mat-form-field class="full-width">
+            <mat-form-field class="meta-field-width">
               <mat-label>Created By</mat-label>
-              <input type="text" matInput value="{{ getUserName(msel.createdBy) }}" disabled />
+              <input type="text" matInput value="{{ creatorName }}" disabled />
             </mat-form-field>
           </div>
         </div>
@@ -438,3 +557,4 @@ project root for license information or contact permission@sei.cmu.edu for full 
     }
   </mat-tab-group>
 </div>
+}

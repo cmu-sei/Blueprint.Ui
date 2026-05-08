@@ -13,7 +13,12 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
+import { TeamPermission } from './teamPermission';
 
 
-export type TeamRole = string;
+export interface TeamRole { 
+    id?: string;
+    name?: string | null;
+    permissions?: Array<TeamPermission> | null;
+}
 

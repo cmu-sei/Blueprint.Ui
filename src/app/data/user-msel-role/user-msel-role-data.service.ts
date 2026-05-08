@@ -126,6 +126,18 @@ export class UserMselRoleDataService {
       });
   }
 
+  setIntegrationRoles(mselId: string, userId: string, citeEvaluationRole: string | null, galleryExhibitRole: string | null, steamfitterScenarioRole: string | null) {
+    this.userMselRoleService
+      .setUserMselIntegrationRoles(mselId, userId, { citeEvaluationRole, galleryExhibitRole, steamfitterScenarioRole })
+      .pipe(take(1))
+      .subscribe((updated) => {
+        updated.forEach(u => {
+          this.setAsDates(u);
+          this.userMselRoleStore.upsert(u.id, u);
+        });
+      });
+  }
+
   setActive(id: string) {
     this.userMselRoleStore.setActive(id);
   }

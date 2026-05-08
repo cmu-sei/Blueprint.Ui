@@ -24,6 +24,7 @@ export interface DataOption {
     dataFieldId?: string;
     optionName?: string | null;
     optionValue?: string | null;
+    optionDescription?: string | null;
     displayOrder?: number;
 }
 

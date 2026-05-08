@@ -135,7 +135,7 @@ export class TeamDataService {
   load() {
     this.teamStore.setLoading(true);
     this.teamService
-      .getTeams()
+      .getMyTeams()
       .pipe(
         tap(() => {
           this.teamStore.setLoading(false);

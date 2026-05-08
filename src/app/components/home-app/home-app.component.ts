@@ -52,6 +52,7 @@ export class HomeAppComponent implements OnDestroy, OnInit {
   username = '';
   canAccessAdminSection = false;
   canEditMsels = false;
+  canEditCheckboxes = false;
   isAuthorizedUser = false;
   isSidebarOpen = true;
   private unsubscribe$ = new Subject();
@@ -147,6 +148,8 @@ export class HomeAppComponent implements OnDestroy, OnInit {
           this.permissions = this.permissionDataService.permissions;
           this.canAccessAdminSection = this.permissions.filter(p => !p.endsWith('Msels')).length > 0;
           this.canEditMsels = this.permissionDataService.hasPermission(SystemPermission.EditMsels);
+          // Admins (ContentDevelopers/SystemAdmins) can edit checkboxes
+          this.canEditCheckboxes = this.permissionDataService.hasPermission(SystemPermission.CreateMsels);
         }
       );
     // Start SignalR connection

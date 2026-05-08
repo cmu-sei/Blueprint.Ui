@@ -6,8 +6,11 @@ import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { TeamQuery } from 'src/app/data/team/team.query';
 import { UserQuery } from 'src/app/data/user/user.query';
+import { UserDataService } from 'src/app/data/user/user-data.service';
 import {
+  Competency,
   DataField,
+  MselCompetency,
   MselItemStatus,
   MselPage,
   MselUnit,
@@ -28,6 +31,12 @@ import { DataFieldQuery } from 'src/app/data/data-field/data-field.query';
 import { MselPageDataService } from 'src/app/data/msel-page/msel-page-data.service';
 import { MselPageQuery } from 'src/app/data/msel-page/msel-page.query';
 import { MselUnitQuery } from 'src/app/data/msel-unit/msel-unit.query';
+import { MselCompetencyDataService } from 'src/app/data/msel-competency/msel-competency-data.service';
+import { MselCompetencyQuery } from 'src/app/data/msel-competency/msel-competency.query';
+import { CompetencyFrameworkQuery } from 'src/app/data/competency-framework/competency-framework.query';
+import { CompetencyFrameworkDataService } from 'src/app/data/competency-framework/competency-framework-data.service';
+import { MatDialog } from '@angular/material/dialog';
+import { CompetencyOptionsDialogComponent } from '../competency-options-dialog/competency-options-dialog.component';
 import { AngularEditorConfig } from '@kolkov/angular-editor';
 import { ComnSettingsService } from '@cmusei/crucible-common';
 import { HttpClient } from '@angular/common/http';
@@ -54,6 +63,13 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   userList: User[] = [];
   teamList: Team[] = [];
   mselUnitList: MselUnit[] = [];
+  mselCompetencyList: MselCompetency[] = [];
+  workRoleCount = 0;
+  workRoleCompetencies: Competency[] = [];
+  nonWorkRoleCompetencies: Competency[] = [];
+  competencyFrameworkNames: string[] = [];
+  private competencyTypeCache = new Map<string, string>();
+  creatorName = 'unknown';
   scoringModelList: ScoringModel[] = [];
   itemStatus: MselItemStatus[] = [
     MselItemStatus.Pending,
@@ -63,8 +79,12 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     MselItemStatus.Complete,
     MselItemStatus.Archived,
   ];
+  educationalLevels: string[] = ['Beginner', 'Intermediate', 'Advanced'];
+  educationalUses: string[] = ['Assessment', 'Instruction', 'Professional Support'];
+  courseModes: string[] = ['Online', 'Onsite', 'Blended'];
   viewUrl: string;
   starterUrl: string;
+  assessorUrl: string;
   mselPages: MselPage[] = [];
   newMselPage = {} as MselPage;
   changedMselPage = {} as MselPage;
@@ -126,7 +146,6 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   dataFieldList: DataField[] = [];
   scenarioEventList: ScenarioEvent[] = [];
   basePageUrl = document.baseURI + '/mselpage/';
-  pushStatus = '';
   savedStartTime: Date;
   savedDurationSeconds = 0;
   playerViewName = '';
@@ -135,10 +154,15 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   citeEvaluationName = '';
   citeScoringModelName = '';
   steamfitterScenarioName = '';
+  integrationDismissed = false;
+  get pushStatus(): string {
+    return this.msel?.integrationStatus || '';
+  }
   constructor(
     public dialogService: DialogService,
     private teamQuery: TeamQuery,
     private userQuery: UserQuery,
+    private userDataService: UserDataService,
     private dataFieldQuery: DataFieldQuery,
     private mselDataService: MselDataService,
     private mselQuery: MselQuery,
@@ -147,6 +171,11 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     private mselPageDataService: MselPageDataService,
     private mselPageQuery: MselPageQuery,
     private mselUnitQuery: MselUnitQuery,
+    private mselCompetencyDataService: MselCompetencyDataService,
+    private mselCompetencyQuery: MselCompetencyQuery,
+    private competencyFrameworkQuery: CompetencyFrameworkQuery,
+    private competencyFrameworkDataService: CompetencyFrameworkDataService,
+    private dialog: MatDialog,
     private permissionDataService: PermissionDataService,
     private changeDetectorRef: ChangeDetectorRef,
     private settingsService: ComnSettingsService,
@@ -165,15 +194,22 @@ export class MselInfoComponent implements OnDestroy, OnInit {
             this.viewUrl = document.baseURI + 'msel/' + this.msel.id + '/view';
             this.starterUrl =
               document.baseURI + 'starter/?msel=' + this.msel.id;
+            this.assessorUrl = document.baseURI + 'assess/?msel=' + this.msel.id;
             this.mselPageDataService.loadByMsel(msel.id);
+            this.mselCompetencyDataService.loadByMsel(msel.id);
             this.newMselPage.mselId = msel.id;
           }
           this.savedStartTime = new Date(msel.startTime);
           this.savedDurationSeconds = msel.durationSeconds;
           // Update scoring model name when scoring model ID changes
           this.updateCiteScoringModelName();
+          // Reset dismissed flag when a new integration push starts
+          if (msel.integrationStatus && !msel.integrationStatus.startsWith('ERROR')) {
+            this.integrationDismissed = false;
+          }
           // Fetch integration names for deployed integrations
           this.fetchIntegrationNames();
+          this.resolveCreatorName();
         }
       });
     // subscribe to MSEL loading flag
@@ -183,30 +219,12 @@ export class MselInfoComponent implements OnDestroy, OnInit {
       .subscribe((isLoading) => {
         this.isBusy = isLoading;
       });
-    // subscribe to MSEL push statuses
-    this.mselDataService.mselPushStatuses
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe((mselPushStatuses) => {
-        const mselPushStatus = mselPushStatuses.find(
-          (mps) => mps.mselId === this.msel.id
-        );
-        if (mselPushStatus) {
-          if (mselPushStatus.pushStatus) {
-            this.pushStatus = mselPushStatus.pushStatus;
-          } else {
-            if (this.pushStatus) {
-              this.pushStatus = '';
-              // added this, because signalR is not updating the actual msel data during a push
-              this.mselDataService.loadById(this.msel.id);
-            }
-          }
-        }
-      });
     // subscribe to users
     this.userQuery.selectAll()
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((users) => {
         this.userList = users;
+        this.resolveCreatorName();
       });
     // subscribe to teams
     this.teamQuery
@@ -221,6 +239,27 @@ export class MselInfoComponent implements OnDestroy, OnInit {
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((mselUnits) => {
         this.mselUnitList = mselUnits;
+      });
+    // subscribe to mselCompetencies
+    this.mselCompetencyQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((mselCompetencies) => {
+        this.mselCompetencyList = mselCompetencies;
+        const isWorkRole = (mc: MselCompetency) => {
+          const id = mc.competency?.idNumber || '';
+          return id.includes('WRL') || /^[A-Z]{2}-[A-Z]{3}-\d+$/.test(id);
+        };
+        this.workRoleCompetencies = mselCompetencies
+          .filter(mc => isWorkRole(mc) && mc.competency)
+          .map(mc => mc.competency)
+          .sort((a, b) => (a.idNumber || '').localeCompare(b.idNumber || ''));
+        this.nonWorkRoleCompetencies = mselCompetencies
+          .filter(mc => !isWorkRole(mc) && mc.competency)
+          .map(mc => mc.competency)
+          .sort((a, b) => (a.idNumber || '').localeCompare(b.idNumber || ''));
+        this.workRoleCount = this.workRoleCompetencies.length;
+        this.updateFrameworkNames();
       });
     // subscribe to MselPages
     this.mselPageQuery
@@ -288,11 +327,82 @@ export class MselInfoComponent implements OnDestroy, OnInit {
       .subscribe(() => {
         this.changeDetectorRef.markForCheck();
       });
+    this.competencyFrameworkDataService.load();
+    this.competencyFrameworkQuery.selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(() => this.updateFrameworkNames());
+  }
+
+  private updateFrameworkNames() {
+    const fwIds = new Set<string>();
+    for (const mc of this.mselCompetencyList) {
+      if (mc.competency?.competencyFrameworkId) {
+        fwIds.add(mc.competency.competencyFrameworkId);
+      }
+    }
+    const frameworks = this.competencyFrameworkQuery.getAll();
+    this.competencyFrameworkNames = [...fwIds]
+      .map(id => frameworks.find(f => f.id === id)?.name || '')
+      .filter(n => n)
+      .sort();
+  }
+
+  getCompetencyTooltip(comp: Competency): string {
+    return comp?.shortName || '';
+  }
+
+  private getCompetencyType(comp: Competency): string {
+    if (!comp || !comp.id) return '';
+
+    // Check cache first
+    if (this.competencyTypeCache.has(comp.id)) {
+      return this.competencyTypeCache.get(comp.id) || '';
+    }
+
+    // Derive from ID pattern
+    const idNumber = comp.idNumber || '';
+    let type = '';
+
+    if (idNumber.includes('WRL')) {
+      type = 'Work Role';
+    } else if (/^[TKSA][\d-]/.test(idNumber)) {
+      const prefixMap: Record<string, string> = {
+        'T': 'Task', 'K': 'Knowledge', 'S': 'Skill', 'A': 'Ability',
+      };
+      type = prefixMap[idNumber.charAt(0)] || '';
+    } else if (/^[A-Z]{2}-[A-Z]{3}-\d+$/.test(idNumber)) {
+      type = 'Work Role';
+    } else if (/^[A-Z]{3}$/.test(idNumber)) {
+      type = 'Specialty Area';
+    } else if (/^[A-Z]{2}$/.test(idNumber)) {
+      type = 'Category';
+    }
+
+    this.competencyTypeCache.set(comp.id, type);
+    return type;
   }
 
   getUserName(userId: string) {
     const user = this.userList.find((u) => u.id === userId);
     return user ? user.name : 'unknown';
+  }
+
+  private resolveCreatorName(): void {
+    if (!this.msel?.createdBy) {
+      this.creatorName = 'unknown';
+      return;
+    }
+    const user = this.userList.find(u => u.id === this.msel.createdBy);
+    if (user) {
+      this.creatorName = user.name;
+    } else {
+      this.userDataService.loadById(this.msel.createdBy)
+        .pipe(takeUntil(this.unsubscribe$))
+        .subscribe({
+          next: (u) => { this.creatorName = u?.name || 'unknown'; },
+          error: () => { this.creatorName = 'unknown'; }
+        });
+    }
   }
 
   saveChanges() {
@@ -328,6 +438,47 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   canManageMsel(): boolean {
     return this.permissionDataService.hasPermission(SystemPermission.ManageMsels) ||
       this.msel.hasRole(this.loggedInUserId, '').owner;
+  }
+
+  openCompetencyPicker(): void {
+    const existingIdNumbers = this.mselCompetencyList.map(mc => mc.competency?.idNumber).filter(Boolean);
+    const dialogRef = this.dialog.open(CompetencyOptionsDialogComponent, {
+      width: '900px',
+      maxWidth: '95vw',
+      maxHeight: '90vh',
+      data: {
+        dataFieldId: null,
+        dataOptions: existingIdNumbers.map(idNumber => ({ optionName: idNumber })),
+        canEdit: this.canEditMsel()
+      }
+    });
+    dialogRef.afterClosed().subscribe((updatedOptions) => {
+      if (!updatedOptions) return;
+      const newIdNumbers = new Set(updatedOptions.map((o: any) => o.optionName));
+      const existingMap = new Map<string, MselCompetency>();
+      for (const mc of this.mselCompetencyList) {
+        if (mc.competency?.idNumber) {
+          existingMap.set(mc.competency.idNumber, mc);
+        }
+      }
+      // Remove deselected
+      for (const [idNumber, mc] of existingMap) {
+        if (!newIdNumbers.has(idNumber)) {
+          this.mselCompetencyDataService.delete(mc.id);
+        }
+      }
+      // Add newly selected — need to resolve idNumber to competencyId
+      // The dialog returns DataOption-shaped objects with optionName = idNumber
+      // We need the competency ID, which we can get from the dialog's competencies
+      for (const opt of updatedOptions) {
+        if (!existingMap.has(opt.optionName) && opt.competencyId) {
+          this.mselCompetencyDataService.add({
+            mselId: this.msel.id,
+            competencyId: opt.competencyId
+          });
+        }
+      }
+    });
   }
 
   galleryWarningMessage() {
@@ -400,7 +551,6 @@ export class MselInfoComponent implements OnDestroy, OnInit {
       .subscribe((result) => {
         if (result['confirm']) {
           this.mselDataService.pushIntegrations(this.msel.id);
-          this.pushStatus = 'Pushing Integrations';
         }
       });
   }
@@ -416,6 +566,10 @@ export class MselInfoComponent implements OnDestroy, OnInit {
           this.mselDataService.pullIntegrations(this.msel.id);
         }
       });
+  }
+
+  dismissIntegrationStatus() {
+    this.integrationDismissed = true;
   }
 
   onTabIndexChange(targetIndex: number) {
@@ -668,6 +822,16 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   }
 
   fetchIntegrationNames() {
+    // Only fetch names when integrations are fully deployed
+    if (this.msel.status !== 'Deployed') {
+      this.playerViewName = '';
+      this.galleryCollectionName = '';
+      this.galleryExhibitName = '';
+      this.citeEvaluationName = '';
+      this.citeScoringModelName = '';
+      this.steamfitterScenarioName = '';
+      return;
+    }
     // Fetch Player View name
     if (this.msel.playerViewId) {
       const playerApiUrl = this.settingsService.settings.PlayerApiUrl || '';

@@ -24,12 +24,14 @@
 
 .table-container {
   flex: 1;
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
   padding-bottom: 20px;
 }
 
 mat-table {
   width: 100%;
+  table-layout: fixed;
 }
 
 .header-row {
@@ -62,14 +64,15 @@ mat-table {
 }
 
 .column-display {
-  flex: 0 0 70px;
+  flex: 0 0 85px;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
 .column-name {
-  flex: 0 0 20%;
+  flex: 0 0 15%;
+  min-width: 60px;
   display: flex;
   align-items: center;
   padding: 1%;
@@ -108,6 +111,10 @@ mat-table {
 
 .action-div {
   width: 150px;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
 }
 
 .column-summary {
@@ -198,6 +205,14 @@ mat-table {
   text-align: left;
 }
 
+.column-min60 {
+  min-width: 60px;
+}
+
+.column-integration {
+  min-width: 236px;
+}
+
 .integration {
   width: 95%;
 }
@@ -285,4 +300,10 @@ row.cdk-drag-preview.dark-theme {
   width: 100%;
   background: #373739 !important;
   color: #efefef;
+}
+
+.options-link.clickable {
+  cursor: pointer;
+  text-decoration: underline;
+  color: var(--mat-sys-primary);
 }

@@ -92,15 +92,19 @@ export class MselListComponent implements OnDestroy, OnInit {
     this.mselDataSource = new MatTableDataSource<MselPlus>(
       new Array<MselPlus>()
     );
-    // load the MSELs
-    this.mselDataService.loadMine();
   }
 
   ngOnInit() {
-    // Load permissions and trigger change detection when loaded
+    // Load permissions, then load MSELs based on access level
     this.permissionDataService.load()
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(() => {
+        if (this.permissionDataService.hasPermission(SystemPermission.ViewMsels)) {
+          this.mselDataService.load();
+          this.allMselsAreLoaded = true;
+        } else {
+          this.mselDataService.loadMine();
+        }
         this.changeDetectorRef.markForCheck();
       });
     // subscribe to users

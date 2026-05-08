@@ -17,7 +17,7 @@ export class DialogService {
 
   public confirm(title: string, message: string, data?: any): Observable<boolean> {
 
-    const dialogRef: MatDialogRef<ConfirmDialogComponent> = this.dialog.open(ConfirmDialogComponent, { maxWidth: '90vw', width: 'auto', data: data || {} });
+    const dialogRef: MatDialogRef<ConfirmDialogComponent> = this.dialog.open(ConfirmDialogComponent, { maxWidth: '500px', width: 'auto', data: data || {} });
     dialogRef.componentInstance.title = title;
     dialogRef.componentInstance.message = message;
 

@@ -83,54 +83,49 @@ export class LaunchComponent implements OnDestroy, OnInit {
       .subscribe((msels) => {
         this.launchMselList = msels;
       });
-    // subscribe to MSEL push statuses
-    this.mselDataService.mselPushStatuses
+    // subscribe to MSEL updates to track integration status changes
+    this.mselDataService.MselList
       .pipe(takeUntil(this.unsubscribe$))
-      .subscribe((mselPushStatuses) => {
-        const mselPushStatus = mselPushStatuses.find(
-          (mps) => mps.mselId === this.launchedMsel.id
-        );
-        if (mselPushStatus) {
-          console.log('mselPushStatus is ' + mselPushStatus.pushStatus);
-          if (mselPushStatus.pushStatus) {
-            console.log('set launch status to ' + mselPushStatus.pushStatus);
-            this.launchStatus = mselPushStatus.pushStatus;
+      .subscribe((msels) => {
+        if (!this.launchedMsel?.id) return;
+        const updatedMsel = msels.find(m => m.id === this.launchedMsel.id);
+        if (!updatedMsel) return;
+        this.launchedMsel = updatedMsel;
+        if (updatedMsel.integrationStatus) {
+          this.launchStatus = updatedMsel.integrationStatus;
+        } else if (!updatedMsel.integrationStatus && this.launchStatus) {
+          // Integration push completed
+          if (updatedMsel.playerViewId) {
+            this.launchStatus = 'Adding event management ...';
+            // add a manage event application
+            const playerApplication = {
+              mselId: this.launchedMsel.id,
+              name: 'Manage Event',
+              url:
+                document.baseURI +
+                '/manage?msel=' +
+                this.launchedMsel.id +
+                '&{theme}',
+              icon: document.baseURI + 'assets/img/pencil-ruler-blue.png',
+              embeddable: true,
+              loadInBackground: false,
+            };
+            this.playerApplicationDataService
+              .addAndPush(playerApplication)
+              .pipe(take(1))
+              .subscribe((s) => {
+                // redirect to player view
+                this.launchStatus = 'Completing event processing ...';
+                let playerUrl = this.settingsService.settings.PlayerUrl;
+                if (playerUrl.slice(-1) !== '/') {
+                  playerUrl = playerUrl + '/';
+                }
+                playerUrl =
+                  playerUrl + 'view/' + this.launchedMsel.playerViewId;
+                location.href = playerUrl;
+              });
           } else {
-            if (this.launchedMsel.playerViewId) {
-              console.log('set launch status to Adding event management ...');
-              this.launchStatus = 'Adding event management ...';
-              // add a manage event application
-              const playerApplication = {
-                mselId: this.launchedMsel.id,
-                name: 'Manage Event',
-                url:
-                  document.baseURI +
-                  '/manage?msel=' +
-                  this.launchedMsel.id +
-                  '&{theme}',
-                icon: document.baseURI + 'assets/img/pencil-ruler-blue.png',
-                embeddable: true,
-                loadInBackground: false,
-              };
-              console.log('add new player application');
-              this.playerApplicationDataService
-                .addAndPush(playerApplication)
-                .pipe(take(1))
-                .subscribe((s) => {
-                  // redirect to player view
-                  this.launchStatus = 'Completing event processing ...';
-                  let playerUrl = this.settingsService.settings.PlayerUrl;
-                  if (playerUrl.slice(-1) !== '/') {
-                    playerUrl = playerUrl + '/';
-                  }
-                  playerUrl =
-                    playerUrl + 'view/' + this.launchedMsel.playerViewId;
-                  location.href = playerUrl;
-                });
-            } else {
-              console.log('clearing launch status');
-              this.launchStatus = '';
-            }
+            this.launchStatus = '';
           }
         }
       });

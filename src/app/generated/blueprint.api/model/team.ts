@@ -31,9 +31,6 @@ export interface Team {
     mselId?: string | null;
     citeTeamTypeId?: string | null;
     email?: string | null;
-    playerTeamId?: string | null;
-    galleryTeamId?: string | null;
-    citeTeamId?: string | null;
     canTeamLeaderInvite?: boolean;
     canTeamMemberInvite?: boolean;
     users?: Array<User> | null;

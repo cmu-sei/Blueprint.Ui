@@ -68,6 +68,26 @@ export class MselContributorsComponent implements OnDestroy, OnInit {
     MselRole.Evaluator,
     MselRole.Viewer
   ];
+  citeEvaluationRoles: string[] = [
+    'Owner',
+    'Editor',
+    'Viewer',
+    'Facilitator',
+    'Advancer',
+    'Observer',
+    'Member'
+  ];
+  galleryExhibitRoles: string[] = [
+    'Manager',
+    'Observer',
+    'Member'
+  ];
+  steamfitterScenarioRoles: string[] = [
+    'Manager',
+    'Facilitator',
+    'Member',
+    'Observer'
+  ];
   isEditEnabled = false;
   userList: User[] = [];
   mselUnitList: MselUnit[] = [];
@@ -225,6 +245,62 @@ export class MselContributorsComponent implements OnDestroy, OnInit {
       ).id;
       this.userMselRoleDataService.delete(umrId);
     }
+  }
+
+  getSelectedMselRoles(userId: string): MselRole[] {
+    return this.userMselRoles
+      .filter(umr => umr.userId === userId && umr.mselId === this.msel.id)
+      .map(umr => umr.role);
+  }
+
+  setMselRoles(userId: string, newRoles: MselRole[]) {
+    const current = this.getSelectedMselRoles(userId);
+    const toAdd = newRoles.filter(r => !current.includes(r));
+    const toRemove = current.filter(r => !newRoles.includes(r));
+    toAdd.forEach(r => this.toggleMselRole(userId, r, true));
+    toRemove.forEach(r => this.toggleMselRole(userId, r, false));
+  }
+
+  getCiteEvaluationRole(userId: string): string | null {
+    const umr = this.userMselRoles.find(u =>
+      u.userId === userId && u.mselId === this.msel.id);
+    return umr?.citeEvaluationRole ?? null;
+  }
+
+  setCiteEvaluationRole(userId: string, role: string | null) {
+    this.userMselRoleDataService.setIntegrationRoles(
+      this.msel.id, userId,
+      role,
+      this.getGalleryExhibitRole(userId),
+      this.getSteamfitterScenarioRole(userId));
+  }
+
+  getGalleryExhibitRole(userId: string): string | null {
+    const umr = this.userMselRoles.find(u =>
+      u.userId === userId && u.mselId === this.msel.id);
+    return umr?.galleryExhibitRole ?? null;
+  }
+
+  setGalleryExhibitRole(userId: string, role: string | null) {
+    this.userMselRoleDataService.setIntegrationRoles(
+      this.msel.id, userId,
+      this.getCiteEvaluationRole(userId),
+      role,
+      this.getSteamfitterScenarioRole(userId));
+  }
+
+  getSteamfitterScenarioRole(userId: string): string | null {
+    const umr = this.userMselRoles.find(u =>
+      u.userId === userId && u.mselId === this.msel.id);
+    return umr?.steamfitterScenarioRole ?? null;
+  }
+
+  setSteamfitterScenarioRole(userId: string, role: string | null) {
+    this.userMselRoleDataService.setIntegrationRoles(
+      this.msel.id, userId,
+      this.getCiteEvaluationRole(userId),
+      this.getGalleryExhibitRole(userId),
+      role);
   }
 
   saveMselUnit(mselUnit: MselUnit) {

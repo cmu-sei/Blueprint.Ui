@@ -37,6 +37,7 @@ import { UIDataService } from 'src/app/data/ui/ui-data.service';
 import { UserDataService } from 'src/app/data/user/user-data.service';
 import { UserMselRoleDataService } from 'src/app/data/user-msel-role/user-msel-role-data.service';
 import { UserTeamRoleDataService } from 'src/app/data/user-team-role/user-team-role-data.service';
+import { XApiService } from 'src/app/services/xapi/xapi.service';
 
 @Component({
   selector: 'app-msel',
@@ -48,6 +49,7 @@ export class MselComponent implements OnDestroy {
   @Input() loggedInUserId: string;
   @Input() canEditMsel: boolean;
   @Input() canAccessAdminSection: boolean;
+  @Input() canEditCheckboxes = false;
   @Input() userTheme$: Observable<Theme>;
   @Output() deleteThisMsel = new EventEmitter<string>();
   @ViewChild('tabGroup0', { static: false }) tabGroup0: MatTabGroup;
@@ -56,8 +58,9 @@ export class MselComponent implements OnDestroy {
   tabList: string[] = [
     'Info',
     'Contributors',
-    'Teams',
+    'Competencies',
     'Data Fields',
+    'Teams',
     'Organizations',
     'Moves',
     'Player Apps',
@@ -66,6 +69,7 @@ export class MselComponent implements OnDestroy {
     'CITE Duties',
     'Scenario Events',
     'Exercise View',
+    'Assessor View',
     'MSEL Playbook',
     'Invitations',
   ];
@@ -80,8 +84,10 @@ export class MselComponent implements OnDestroy {
     ['Gallery Cards', 'mdi-view-grid-outline'],
     ['CITE Actions', 'mdi-clipboard-check-outline'],
     ['CITE Duties', 'mdi-clipboard-account-outline'],
+    ['Competencies', 'mdi-certificate-outline'],
     ['Scenario Events', 'mdi-chart-timeline'],
     ['Exercise View', 'mdi-eye-outline'],
+    ['Assessor View', 'mdi-clipboard-check-multiple-outline'],
     ['MSEL Playbook', 'mdi-book'],
     ['Invitations', 'mdi-email-open-outline'],
   ]);
@@ -122,7 +128,8 @@ export class MselComponent implements OnDestroy {
     private userMselRoleDataService: UserMselRoleDataService,
     private userTeamRoleDataService: UserTeamRoleDataService,
     private authQuery: ComnAuthQuery,
-    private dialogService: DialogService
+    private dialogService: DialogService,
+    private xApiService: XApiService
   ) {
     this.theme$ = this.authQuery.userTheme$;
     // subscribe to route changes
@@ -132,6 +139,8 @@ export class MselComponent implements OnDestroy {
         // load the selected MSEL data
         const mselId = params.get('msel');
         if (mselId && this.selectedMselId !== mselId) {
+          // Log xAPI viewed statement
+          this.xApiService.viewedMsel(mselId).subscribe();
           // load the selected MSEL and make it active
           this.mselDataService.loadById(mselId);
           this.mselDataService.setActive(mselId);
