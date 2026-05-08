@@ -7,23 +7,11 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-import { MselRole } from './mselRole';
 
 
-export interface UserMselRole { 
-    dateCreated?: Date;
-    dateModified?: Date | null;
-    createdBy?: string;
-    modifiedBy?: string | null;
-    id?: string;
-    mselId?: string;
-    userId?: string;
-    role?: MselRole;
+export interface IntegrationRoleUpdate { 
     citeEvaluationRole?: string | null;
     galleryExhibitRole?: string | null;
     steamfitterScenarioRole?: string | null;
 }
-export namespace UserMselRole {
-}
-
 
