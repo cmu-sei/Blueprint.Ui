@@ -10,13 +10,22 @@ project root for license information.
       <h2>MSEL Playbook</h2>
       <div class="right-buttons no-print">
         <button
-          aria-label="Print MSEL Playbook"
+          aria-label="Print Current Page"
           mat-icon-button
           style="outline: none;"
-          title="Print MSEL Playbook"
+          title="Print Current Page"
           (click)="printpage()"
           >
           <mat-icon aria-hidden="false" class="mdi-24px" fontIcon="mdi-printer"></mat-icon>
+        </button>
+        <button
+          aria-label="Print All Events"
+          mat-icon-button
+          style="outline: none;"
+          title="Print All Events"
+          (click)="printAllEvents()"
+          >
+          <mat-icon aria-hidden="false" class="mdi-24px" fontIcon="mdi-printer-outline"></mat-icon>
         </button>
       </div>
     </div>

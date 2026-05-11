@@ -421,6 +421,18 @@ export class MselPlaybookComponent {
     location.reload();
   }
 
+  printAllEvents() {
+    const originalPageSize = this.pageSize;
+    this.pageSize = this.sortedScenarioEvents.length;
+    setTimeout(() => {
+      const printContents = document.getElementById('printable-area').innerHTML;
+      document.body.innerHTML = printContents;
+      window.print();
+      this.pageSize = originalPageSize;
+      location.reload();
+    }, 100);
+  }
+
   getCardNameById(cardId: string): string {
     const card = this.cardList.find((c) => c.id === cardId);
     return card ? card.name : 'Unknown';
