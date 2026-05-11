@@ -101,7 +101,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 title="Delete {{ element.name }}" [disabled]="!isReady || !canManageMsel(element) || element.status === 'Deployed' || element.isTemplate">
                 <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline" alt="Delete"></mat-icon>
               </button>
-              <button mat-icon-button class="msel-action" (click)="copyMsel(element.id); $event.stopPropagation();"
+              <button mat-icon-button class="msel-action" (click)="copyMsel(element); $event.stopPropagation();"
                 title="Copy {{ element.name }}" [disabled]="!isReady || !canCreateMsels()">
                 <mat-icon class="mdi-18px" fontIcon="mdi-content-copy" alt="Copy"></mat-icon>
               </button>
