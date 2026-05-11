@@ -26,7 +26,8 @@
   width: 100%;
   table-layout: fixed;
   margin: 0 auto;
-  margin-bottom: 20px;
+  margin-bottom: 40px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 #eventDetails td {
@@ -51,8 +52,10 @@
   padding-top: 12px;
   padding-bottom: 12px;
   text-align: center;
-  background-color: darkgrey;
-  color: black;
+  background-color: #333;
+  color: white;
+  font-weight: bold;
+  font-size: 1.1em;
 }
 
 .header-div {
