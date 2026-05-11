@@ -388,7 +388,8 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   }
 
   private resolveCreatorName(): void {
-    if (!this.msel?.createdBy) {
+    const emptyGuid = '00000000-0000-0000-0000-000000000000';
+    if (!this.msel?.createdBy || this.msel.createdBy === emptyGuid) {
       this.creatorName = 'unknown';
       return;
     }
