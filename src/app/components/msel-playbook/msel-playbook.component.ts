@@ -40,7 +40,7 @@ import { MselPlus } from 'src/app/data/msel/msel-data.service';
 import { DataValueQuery } from 'src/app/data/data-value/data-value.query';
 import { ScenarioEventQuery } from 'src/app/data/scenario-event/scenario-event.query';
 import { Sort } from '@angular/material/sort';
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnDestroy } from '@angular/core';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
 import { CardQuery } from 'src/app/data/card/card.query';
 import { CardDataService } from 'src/app/data/card/card-data.service';
@@ -52,7 +52,7 @@ import { PageEvent } from '@angular/material/paginator';
     styleUrls: ['./msel-playbook.component.scss'],
     standalone: false
 })
-export class MselPlaybookComponent {
+export class MselPlaybookComponent implements OnDestroy {
   @Input() userTheme: Theme;
   @Input() canEditMsel: boolean;
   @Input() loggedInUserId: string;
@@ -120,33 +120,16 @@ export class MselPlaybookComponent {
     private mselPageQuery: MselPageQuery,
     private activatedRoute: ActivatedRoute
   ) {
-    // set image
-    this.activatedRoute.paramMap
+    // Most data is loaded by parent component, but we need to load msel pages
+    this.activatedRoute.queryParamMap
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((params) => {
-        // load the selected MSEL data
-        const mselId = params.get('id');
+        const mselId = params.get('msel');
         const scenarioEventId = params.get('scenarioEventId');
         this.scenarioEventId = scenarioEventId;
         if (mselId && this.selectedMselId !== mselId) {
-          // load the selected MSEL and make it active
-          this.mselDataService.loadById(mselId);
-          this.mselDataService.setActive(mselId);
-          // // load the MSELs moves
-          this.moveDataService.loadByMsel(mselId);
-          // // load the MSEL Teams
-          this.teamDataService.loadByMsel(mselId);
-          // // load the MSEL organizations and templates
-          this.organizationDataService.loadByMsel(mselId);
-          // // load data fields and values
-          this.dataFieldDataService.loadByMsel(mselId);
-          this.dataValueDataService.loadByMsel(mselId);
-          // // load msel pages
+          this.selectedMselId = mselId;
           this.mselPageDataService.loadByMsel(mselId);
-          // // load scenario events
-          if (scenarioEventId) {
-            this.scenarioEventDataService.loadById(scenarioEventId);
-          }
         }
       });
     // subscribe to the active MSEL
@@ -220,6 +203,11 @@ export class MselPlaybookComponent {
       .subscribe((pages) => {
         this.mselPages = pages.filter(p => p.includeInPlaybook);
       });
+  }
+
+  ngOnDestroy() {
+    this.unsubscribe$.next(null);
+    this.unsubscribe$.complete();
   }
 
   getEditableMsel(msel: MselPlus): MselPlus {
