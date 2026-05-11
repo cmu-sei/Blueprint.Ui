@@ -8,18 +8,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
   <div class="sp-icon">
     <mat-icon class="mdi-24px" fontIcon="mdi-application" [ngStyle]="{'color': 'var(--mat-sys-primary)'}"></mat-icon>
   </div>
-  <mat-form-field style="width: 300px; margin-left: 10px;">
-    <input matInput [formControl]="filterControl" placeholder="Search" />
-    @if (filterControl.value) {
-    <button mat-icon-button matSuffix (click)="filterControl.setValue(''); $event.stopPropagation()" title="Clear Search">
-      <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline"></mat-icon>
-    </button>
-    }
-  </mat-form-field>
-  <div class="button-end">
-    <mat-paginator #paginator [pageIndex]="0" [pageSize]="20"
-      [pageSizeOptions]="[5, 10, 15, 20, 25, 50, 100, 200]"></mat-paginator>
-  </div>
 </div>
 
 <mat-menu #addMenu="matMenu" [overlapTrigger]="false">
@@ -35,14 +23,17 @@ project root for license information or contact permission@sei.cmu.edu for full 
 
 @if (msel) {
 <div class="frame">
-  <div class="table-container">
-    <table mat-table #appTable [dataSource]="appDataSource" matSort (matSortChange)="sortChanged($event)" multiTemplateDataRows>
+  <mat-expansion-panel>
+    <mat-expansion-panel-header class="team-app-order-header">
+      <h4>Player Applications</h4>
+    </mat-expansion-panel-header>
+    <table mat-table #appTable [dataSource]="appDataSource" matSort (matSortChange)="sortChanged($event)"
+      multiTemplateDataRows>
       <!-- action column -->
       <ng-container matColumnDef="action">
         <th mat-header-cell *matHeaderCellDef class="column-action">
           @if (canEditMsel() || msel.hasRole(loggedInUserId, null).owner) {
-          <button mat-icon-button [matMenuTriggerFor]="addMenu"
-            style="outline: none;" title="Add Player Application"
+          <button mat-icon-button [matMenuTriggerFor]="addMenu" style="outline: none;" title="Add Player Application"
             (click)="$event.stopPropagation();">
             <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle"></mat-icon>
           </button>
@@ -57,8 +48,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </button>
           }
           @if (canEditMsel() || msel.hasRole(loggedInUserId, null).owner) {
-          <button mat-icon-button
-            (click)="deletePlayerApplication(element); $event.stopPropagation()" title="Delete {{ element.name }}">
+          <button mat-icon-button (click)="deletePlayerApplication(element); $event.stopPropagation()"
+            title="Delete {{ element.name }}">
             <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline"></mat-icon>
           </button>
           }
@@ -99,7 +90,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         (click)="rowClicked(row)"></tr>
       <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="detail-row"></tr>
     </table>
-  </div>
+  </mat-expansion-panel>
   <mat-expansion-panel>
     <mat-expansion-panel-header class="team-app-order-header">
       <h4>Team Application Order</h4>

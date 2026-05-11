@@ -15,11 +15,12 @@ project root for license information.
         <mat-form-field style="width: 75%; margin-left:10%;">
           <input matInput [(ngModel)]="filterString" (keyup)="applyFilter($any($event.target).value)"
             placeholder="Search" />
+          @if (filterString) {
+          <button mat-icon-button matSuffix (click)="clearFilter()" title="Clear Search">
+            <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline"></mat-icon>
+          </button>
+          }
         </mat-form-field>
-        <button [disabled]="!filterString" mat-icon-button (click)="clearFilter()"
-          style="outline: none; margin-top: -10px;" title="Clear Search">
-          <mat-icon class="mdi-24px" fontIcon="mdi-close-circle-outline"></mat-icon>
-        </button>
       </div>
     </div>
     <hr />
@@ -85,16 +86,14 @@ project root for license information.
 
       <ng-container matColumnDef="isShownOnWall">
         <mat-cell *matCellDef="let element">
-          <mat-checkbox [checked]="element.isShownOnWall"
-            (change)="setIsShownOnWall(element, $event.checked)"
+          <mat-checkbox [checked]="element.isShownOnWall" (change)="setIsShownOnWall(element, $event.checked)"
             [disabled]="!canEditMsel()"></mat-checkbox>
         </mat-cell>
       </ng-container>
 
       <ng-container matColumnDef="canPostArticles">
         <mat-cell *matCellDef="let element">
-          <mat-checkbox [checked]="element.canPostArticles"
-            (change)="setCanPostArticles(element, $event.checked)"
+          <mat-checkbox [checked]="element.canPostArticles" (change)="setCanPostArticles(element, $event.checked)"
             [disabled]="!canEditMsel()"></mat-checkbox>
         </mat-cell>
       </ng-container>

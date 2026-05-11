@@ -15,6 +15,16 @@ project root for license information or contact permission@sei.cmu.edu for full 
     </button>
     }
   </mat-form-field>
+  <mat-form-field style="width: 260px; margin-left: 10px;">
+    <mat-label>Display columns</mat-label>
+    <mat-select multiple
+      [value]="visibleDisplayColumns"
+      (selectionChange)="onVisibleColumnsChange($event.value)">
+      @for (opt of availableDisplayOptions(); track opt.key) {
+        <mat-option [value]="opt.key" [title]="opt.title">{{ opt.label }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
   <div class="button-end">
     <mat-paginator #paginator [pageIndex]="0" [pageSize]="20"
       [pageSizeOptions]="[5, 10, 15, 20, 25, 50, 100, 200]"></mat-paginator>
