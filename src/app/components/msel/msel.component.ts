@@ -302,9 +302,15 @@ export class MselComponent implements OnDestroy {
   }
 
   goToUrl(url): void {
-    this.router.navigate([url], {
-      queryParamsHandling: 'merge',
-    });
+    if (url === '/admin') {
+      this.router.navigate([url], {
+        queryParams: { returnUrl: this.router.url },
+      });
+    } else {
+      this.router.navigate([url], {
+        queryParamsHandling: 'merge',
+      });
+    }
   }
 
   deleteMsel(id: string) {

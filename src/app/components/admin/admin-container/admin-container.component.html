@@ -7,8 +7,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
 <mat-sidenav-container class="appcontent-container" autosize>
   @if (sideNavCollapsed) {
   <mat-sidenav class="appbarmenu-container-collapsed" #sidenav mode="side" [(opened)]="isSidebarOpen">
-    <mat-toolbar class="sidenav-header" title="Exit Administration" [routerLink]="['/build/']">
-      <a class="nolink" [routerLink]="['/build/']">
+    <mat-toolbar class="sidenav-header" title="Exit Administration" (click)="exitAdmin()">
+      <a class="nolink">
         <mat-icon class="icon-35px crucible-icon-blueprint" svgIcon="crucible-icon-blueprint"></mat-icon>
       </a>
     </mat-toolbar>
@@ -93,8 +93,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
   } @else {
   <mat-sidenav class="appbarmenu-container" #sidenav mode="side" [(opened)]="isSidebarOpen">
     <div class="sidenav-content-wrapper">
-      <mat-toolbar class="sidenav-header" title="Exit Administration" [routerLink]="['/build/']">
-        <a class="nolink" [routerLink]="['/build/']">
+      <mat-toolbar class="sidenav-header" title="Exit Administration" (click)="exitAdmin()">
+        <a class="nolink">
           <div class="cssLayoutRowStartCenter">
             <mat-icon class="icon-35px crucible-icon-blueprint" svgIcon="crucible-icon-blueprint"></mat-icon>
             <h2 class="icon-text">Administration</h2>

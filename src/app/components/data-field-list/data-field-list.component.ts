@@ -67,13 +67,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
   systemFieldDisplayedColumns: string[] = [
     'draghandleSpacer',
     'action',
-    'events',
-    'exercise',
-    'assessor',
-    'information',
-    'facilitation',
-    'default',
-    'devs',
+    'display',
     'name',
     'datatype',
     'options',
@@ -81,16 +75,19 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
   displayedColumns: string[] = [
     'draghandle',
     'action',
-    'events',
-    'exercise',
-    'assessor',
-    'information',
-    'facilitation',
-    'default',
-    'devs',
+    'display',
     'name',
     'datatype',
     'options',
+  ];
+  readonly displayOptions: { key: string; label: string; title: string; visibleForSystemRows: boolean; hideInAdmin?: boolean; hideInInjectType?: boolean }[] = [
+    { key: 'onScenarioEventList', label: 'List', title: 'Display on Scenario Events list', visibleForSystemRows: true, hideInAdmin: true, hideInInjectType: true },
+    { key: 'onExerciseView', label: 'View', title: 'Display on the Exercise View', visibleForSystemRows: true, hideInAdmin: true },
+    { key: 'isAssessorVisible', label: 'Assess', title: 'Display on the Assessor View', visibleForSystemRows: true },
+    { key: 'isInformationField', label: 'Info', title: 'Display for Information Events', visibleForSystemRows: false },
+    { key: 'isFacilitationField', label: 'Facil', title: 'Display for Facilitation Events', visibleForSystemRows: false },
+    { key: 'isShownOnDefaultTab', label: 'Default', title: 'Display on the default tab of the scenario event edit dialog', visibleForSystemRows: false },
+    { key: 'isOnlyShownToOwners', label: 'Devs', title: 'Hide this field from participants on all views - show only to content developers and MSEL owners', visibleForSystemRows: false },
   ];
   private unsubscribe$ = new Subject();
   // context menu
@@ -148,7 +145,6 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
         this.changeDetectorRef.markForCheck();
       });
     if (this.showTemplates) {
-      this.displayedColumns.splice(2, 2);
       this.msel = new MselPlus();
       this.mselDataService.setActive('');
     } else {
@@ -163,7 +159,6 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
       if (this.injectTypeId) {
         this.msel = new MselPlus();
         this.mselDataService.setActive('');
-        this.displayedColumns.splice(2, 1);
         // load data fields for the inject type
         this.dataFieldDataService.loadByInjectType(this.injectTypeId);
       } else {
@@ -599,6 +594,28 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
         this.dataFieldDataService.updateDataField(dataField);
       }
     });
+  }
+
+  getAvailableDisplayOptions(element: DataField) {
+    return this.displayOptions.filter((opt) => {
+      if (this.showTemplates && opt.hideInAdmin) return false;
+      if (this.injectTypeId && opt.hideInInjectType) return false;
+      if (element.displayOrder < 0 && !opt.visibleForSystemRows) return false;
+      return true;
+    });
+  }
+
+  getSelectedDisplayOptions(element: DataField): string[] {
+    return this.getAvailableDisplayOptions(element)
+      .filter((opt) => (element as any)[opt.key])
+      .map((opt) => opt.key);
+  }
+
+  onDisplaySelectionChange(element: DataField, selectedKeys: string[]) {
+    for (const opt of this.getAvailableDisplayOptions(element)) {
+      (element as any)[opt.key] = selectedKeys.includes(opt.key);
+    }
+    this.saveChange(element);
   }
 
   saveChange(dataField: DataField) {

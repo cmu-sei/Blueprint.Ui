@@ -70,6 +70,32 @@ mat-table {
   align-items: center;
 }
 
+.column-display-select {
+  flex: 0 0 260px;
+  min-width: 260px;
+  display: flex;
+  align-items: center;
+  padding-right: 8px;
+}
+
+.display-field {
+  width: 100%;
+
+  ::ng-deep .mat-mdc-form-field-infix {
+    min-height: 0;
+    padding-top: 4px;
+    padding-bottom: 4px;
+  }
+
+  ::ng-deep .mat-mdc-text-field-wrapper {
+    height: 40px;
+  }
+
+  ::ng-deep .mdc-floating-label {
+    top: 20px;
+  }
+}
+
 .column-name {
   flex: 0 0 15%;
   min-width: 60px;

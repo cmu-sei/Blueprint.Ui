@@ -205,6 +205,10 @@ export class HomeAppComponent implements OnDestroy, OnInit {
   topBarNavigate(url): void {
     if (url === '/') {
       this.router.navigate([url]);
+    } else if (url === '/admin') {
+      this.router.navigate([url], {
+        queryParams: { returnUrl: this.router.url },
+      });
     } else {
       this.router.navigate([url], {
         queryParamsHandling: 'merge',
