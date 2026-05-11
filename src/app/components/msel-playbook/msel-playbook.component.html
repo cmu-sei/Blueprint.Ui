@@ -9,6 +9,9 @@ project root for license information.
     <div class="header-div">
       <h2>MSEL Playbook</h2>
       <div class="right-buttons no-print">
+        <mat-paginator [length]="sortedScenarioEvents.length" [pageSize]="pageSize" [pageSizeOptions]="pageSizeOptions"
+          (page)="changePage($event)">
+        </mat-paginator>
         <button
           aria-label="Print Current Page"
           mat-icon-button
@@ -31,9 +34,6 @@ project root for license information.
     </div>
     @if (msel) {
       <div class="table-container">
-        <mat-paginator [length]="sortedScenarioEvents.length" [pageSize]="pageSize" [pageSizeOptions]="pageSizeOptions"
-          (page)="changePage($event)" class="no-print">
-        </mat-paginator>
         @if (isShowingAllEvents()) {
         <div class="msel-header print-only">
           <h2>{{ msel.name }}</h2>

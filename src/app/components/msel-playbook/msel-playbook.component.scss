@@ -29,6 +29,8 @@
   margin-bottom: 20px;
   padding-bottom: 20px;
   border-bottom: 3px solid var(--mat-sys-primary);
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
 }
 
 #eventDetails td {
@@ -57,6 +59,8 @@
   color: var(--mat-sys-on-primary);
   font-weight: bold;
   font-size: 1.1em;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
 }
 
 .header-div {
@@ -67,6 +71,9 @@
 
 .right-buttons {
   margin-right: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .page-break {

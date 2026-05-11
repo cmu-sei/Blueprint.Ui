@@ -424,8 +424,6 @@ export class MselPlaybookComponent {
   printAllEvents() {
     const originalPageSize = this.pageSize;
     this.pageSize = this.sortedScenarioEvents.length;
-    console.log('Printing all events. isShowingAllEvents:', this.isShowingAllEvents());
-    console.log('MselPages to print:', this.mselPages);
     setTimeout(() => {
       const printContents = document.getElementById('printable-area').innerHTML;
       document.body.innerHTML = printContents;
