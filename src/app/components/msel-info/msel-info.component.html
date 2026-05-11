@@ -499,9 +499,16 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <button mat-icon-button (click)="openContent(page.id)" title="Open page in new tab" class="far-right-button">
             <mat-icon class="mdi-24px self-center" fontIcon="mdi-open-in-new"></mat-icon>
           </button>
-          @if (page.allCanView) {
-          <span>&nbsp;&nbsp;** All MSEL users can view this page</span>
-          }
+          <span [title]="page.allCanView ? 'All MSEL users can view this page' : 'Only MSEL contributors can view this page'">
+            <button mat-icon-button disabled>
+              <mat-icon class="mdi-24px" [fontIcon]="page.allCanView ? 'mdi-eye' : 'mdi-eye-off'" style="color: var(--mat-sys-primary)"></mat-icon>
+            </button>
+          </span>
+          <span [title]="page.includeInPlaybook ? 'Included in playbook' : 'Not included in playbook'">
+            <button mat-icon-button disabled>
+              <mat-icon class="mdi-24px" [fontIcon]="page.includeInPlaybook ? 'mdi-file-document-check' : 'mdi-file-document-remove'" style="color: var(--mat-sys-primary)"></mat-icon>
+            </button>
+          </span>
         </span>
         }
         @if (editingPageId === page.id) {
