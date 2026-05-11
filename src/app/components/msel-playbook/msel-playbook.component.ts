@@ -475,4 +475,8 @@ export class MselPlaybookComponent {
   isMoveBoundary(scenarioEventId: string, previousScenarioEventId: string): boolean {
     return this.getMoveNumber(scenarioEventId) !== this.getMoveNumber(previousScenarioEventId);
   }
+
+  isShowingAllEvents(): boolean {
+    return this.pageSize >= this.sortedScenarioEvents.length;
+  }
 }
