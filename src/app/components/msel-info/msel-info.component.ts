@@ -440,6 +440,19 @@ export class MselInfoComponent implements OnDestroy, OnInit {
       this.msel.hasRole(this.loggedInUserId, '').owner;
   }
 
+  getDeleteTooltip(): string {
+    if (!this.canManageMsel()) {
+      return 'You do not have permission to delete this MSEL';
+    }
+    if (this.msel?.status === 'Deployed') {
+      return 'Cannot delete deployed MSEL';
+    }
+    if (this.msel?.isTemplate) {
+      return 'Cannot delete template MSELs';
+    }
+    return 'Delete this MSEL';
+  }
+
   openCompetencyPicker(): void {
     const existingIdNumbers = this.mselCompetencyList.map(mc => mc.competency?.idNumber).filter(Boolean);
     const dialogRef = this.dialog.open(CompetencyOptionsDialogComponent, {
