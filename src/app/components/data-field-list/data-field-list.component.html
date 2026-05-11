@@ -15,6 +15,16 @@ project root for license information or contact permission@sei.cmu.edu for full 
     </button>
     }
   </mat-form-field>
+  <mat-form-field style="width: 260px; margin-left: 10px;">
+    <mat-label>Display columns</mat-label>
+    <mat-select multiple
+      [value]="visibleDisplayColumns"
+      (selectionChange)="onVisibleColumnsChange($event.value)">
+      @for (opt of availableDisplayOptions(); track opt.key) {
+        <mat-option [value]="opt.key" [title]="opt.title">{{ opt.label }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
   <div class="button-end">
     <mat-paginator #paginator [pageIndex]="0" [pageSize]="20"
       [pageSizeOptions]="[5, 10, 15, 20, 25, 50, 100, 200]"></mat-paginator>
@@ -110,23 +120,102 @@ project root for license information or contact permission@sei.cmu.edu for full 
             </div>
           </mat-cell>
         </ng-container>
-        <!-- display Column -->
-        <ng-container matColumnDef="display">
-          <mat-header-cell *matHeaderCellDef class="column-display-select">
-            Display
+        <!-- events Column -->
+        <ng-container matColumnDef="events">
+          <mat-header-cell mat-sort-header="onScenarioEventList" title="Display on Scenario Events list"
+            *matHeaderCellDef class="column-display">
+            &nbsp;&nbsp;&nbsp;&nbsp;List
           </mat-header-cell>
-          <mat-cell *matCellDef="let element" class="column-display-select">
-            <mat-form-field subscriptSizing="dynamic" class="display-field">
-              <mat-select multiple
-                [value]="getSelectedDisplayOptions(element)"
-                [disabled]="!canEdit()"
-                (selectionChange)="onDisplaySelectionChange(element, $event.value)"
-                (click)="$event.stopPropagation()">
-                @for (opt of getAvailableDisplayOptions(element); track opt.key) {
-                  <mat-option [value]="opt.key" [title]="opt.title">{{ opt.label }}</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
+          <mat-cell *matCellDef="let element" class="column-display">
+            <mat-checkbox [(ngModel)]="element.onScenarioEventList" [disabled]="!canEdit()"
+              (change)="saveChange(element)" (click)="$event.stopPropagation()"
+              title="Display on Scenario Events list">
+            </mat-checkbox>
+          </mat-cell>
+        </ng-container>
+        <!-- exercise Column -->
+        <ng-container matColumnDef="exercise">
+          <mat-header-cell mat-sort-header="onExerciseView" title="Display on the Exercise View" *matHeaderCellDef
+            class="column-display">
+            &nbsp;&nbsp;&nbsp;&nbsp;View
+          </mat-header-cell>
+          <mat-cell *matCellDef="let element" class="column-display">
+            <mat-checkbox [(ngModel)]="element.onExerciseView" [disabled]="!canEdit()" (change)="saveChange(element)"
+              (click)="$event.stopPropagation();" title="Display on the Exercise View">
+            </mat-checkbox>
+          </mat-cell>
+        </ng-container>
+        <!-- assessor Column -->
+        <ng-container matColumnDef="assessor">
+          <mat-header-cell mat-sort-header="isAssessorVisible" title="Display on the Assessor View"
+            *matHeaderCellDef class="column-display">
+            &nbsp;&nbsp;&nbsp;&nbsp;Assess
+          </mat-header-cell>
+          <mat-cell *matCellDef="let element" class="column-display">
+            <mat-checkbox [(ngModel)]="element.isAssessorVisible" [disabled]="!canEdit()"
+              (change)="saveChange(element)" (click)="$event.stopPropagation();"
+              title="Display on the Assessor View">
+            </mat-checkbox>
+          </mat-cell>
+        </ng-container>
+        <!-- information Column -->
+        <ng-container matColumnDef="information">
+          <mat-header-cell mat-sort-header="isInformationField" title="Display for Information Events"
+            *matHeaderCellDef class="column-display">
+            &nbsp;&nbsp;&nbsp;&nbsp;Info
+          </mat-header-cell>
+          <mat-cell *matCellDef="let element" class="column-display">
+            @if (element.displayOrder >= 0) {
+            <mat-checkbox [(ngModel)]="element.isInformationField" [disabled]="!canEdit()"
+              (change)="saveChange(element)" (click)="$event.stopPropagation();"
+              title="Display for Information Events">
+            </mat-checkbox>
+            }
+          </mat-cell>
+        </ng-container>
+        <!-- facilitation Column -->
+        <ng-container matColumnDef="facilitation">
+          <mat-header-cell mat-sort-header="isFacilitationField" title="Display for Facilitation Events"
+            *matHeaderCellDef class="column-display">
+            &nbsp;&nbsp;&nbsp;&nbsp;Facil
+          </mat-header-cell>
+          <mat-cell *matCellDef="let element" class="column-display">
+            @if (element.displayOrder >= 0) {
+            <mat-checkbox [(ngModel)]="element.isFacilitationField" [disabled]="!canEdit()"
+              (change)="saveChange(element)" (click)="$event.stopPropagation();"
+              title="Display for Facilitation Events">
+            </mat-checkbox>
+            }
+          </mat-cell>
+        </ng-container>
+        <!-- default Column -->
+        <ng-container matColumnDef="default">
+          <mat-header-cell mat-sort-header="isShownOnDefaultTab" title="Display on the default tab of the scenario event edit dialog"
+            *matHeaderCellDef class="column-display">
+            &nbsp;&nbsp;&nbsp;&nbsp;Default
+          </mat-header-cell>
+          <mat-cell *matCellDef="let element" class="column-display">
+            @if (element.displayOrder >= 0) {
+            <mat-checkbox [(ngModel)]="element.isShownOnDefaultTab" [disabled]="!canEdit()"
+              (change)="saveChange(element)" (click)="$event.stopPropagation();"
+              title="Display on the default tab of the scenario event edit dialog">
+            </mat-checkbox>
+            }
+          </mat-cell>
+        </ng-container>
+        <!-- devs Column -->
+        <ng-container matColumnDef="devs">
+          <mat-header-cell mat-sort-header="isOnlyShownToOwners" title="Hide this field from participants on all views - show only to content developers and MSEL owners"
+            *matHeaderCellDef class="column-display">
+            &nbsp;&nbsp;&nbsp;&nbsp;Devs
+          </mat-header-cell>
+          <mat-cell *matCellDef="let element" class="column-display">
+            @if (element.displayOrder >= 0) {
+            <mat-checkbox [(ngModel)]="element.isOnlyShownToOwners" [disabled]="!canEdit()"
+              (change)="saveChange(element)" (click)="$event.stopPropagation();"
+              title="Hide this field from participants on all views - show only to content developers and MSEL owners">
+            </mat-checkbox>
+            }
           </mat-cell>
         </ng-container>
         <!-- name Column -->

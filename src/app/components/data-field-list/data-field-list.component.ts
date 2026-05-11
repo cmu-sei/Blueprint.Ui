@@ -33,6 +33,7 @@ import { InjectTypeQuery } from 'src/app/data/inject-type/inject-type.query';
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
 import { MatDialog } from '@angular/material/dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
+import { UIDataService } from 'src/app/data/ui/ui-data.service';
 import { v4 as uuidv4 } from 'uuid';
 
 @Component({
@@ -64,31 +65,28 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
   templateDataSource = new MatTableDataSource<DataField>(
     new Array<DataField>()
   );
+  readonly baseSystemColumns: string[] = ['draghandleSpacer', 'action'];
+  readonly baseColumns: string[] = ['draghandle', 'action'];
+  readonly trailingColumns: string[] = ['name', 'datatype', 'options'];
   systemFieldDisplayedColumns: string[] = [
-    'draghandleSpacer',
-    'action',
-    'display',
-    'name',
-    'datatype',
-    'options',
+    ...this.baseSystemColumns,
+    ...this.trailingColumns,
   ];
   displayedColumns: string[] = [
-    'draghandle',
-    'action',
-    'display',
-    'name',
-    'datatype',
-    'options',
+    ...this.baseColumns,
+    ...this.trailingColumns,
   ];
-  readonly displayOptions: { key: string; label: string; title: string; visibleForSystemRows: boolean; hideInAdmin?: boolean; hideInInjectType?: boolean }[] = [
-    { key: 'onScenarioEventList', label: 'List', title: 'Display on Scenario Events list', visibleForSystemRows: true, hideInAdmin: true, hideInInjectType: true },
-    { key: 'onExerciseView', label: 'View', title: 'Display on the Exercise View', visibleForSystemRows: true, hideInAdmin: true },
-    { key: 'isAssessorVisible', label: 'Assess', title: 'Display on the Assessor View', visibleForSystemRows: true },
-    { key: 'isInformationField', label: 'Info', title: 'Display for Information Events', visibleForSystemRows: false },
-    { key: 'isFacilitationField', label: 'Facil', title: 'Display for Facilitation Events', visibleForSystemRows: false },
-    { key: 'isShownOnDefaultTab', label: 'Default', title: 'Display on the default tab of the scenario event edit dialog', visibleForSystemRows: false },
-    { key: 'isOnlyShownToOwners', label: 'Devs', title: 'Hide this field from participants on all views - show only to content developers and MSEL owners', visibleForSystemRows: false },
+  readonly displayOptions: { key: string; column: string; label: string; title: string; hideInAdmin?: boolean; hideInInjectType?: boolean }[] = [
+    { key: 'onScenarioEventList', column: 'events', label: 'List', title: 'Display on Scenario Events list', hideInAdmin: true, hideInInjectType: true },
+    { key: 'onExerciseView', column: 'exercise', label: 'View', title: 'Display on the Exercise View', hideInAdmin: true },
+    { key: 'isAssessorVisible', column: 'assessor', label: 'Assess', title: 'Display on the Assessor View' },
+    { key: 'isInformationField', column: 'information', label: 'Info', title: 'Display for Information Events' },
+    { key: 'isFacilitationField', column: 'facilitation', label: 'Facil', title: 'Display for Facilitation Events' },
+    { key: 'isShownOnDefaultTab', column: 'default', label: 'Default', title: 'Display on the default tab of the scenario event edit dialog' },
+    { key: 'isOnlyShownToOwners', column: 'devs', label: 'Devs', title: 'Hide this field from participants on all views - show only to content developers and MSEL owners' },
   ];
+  readonly defaultVisibleDisplayColumns: string[] = ['onScenarioEventList', 'onExerciseView'];
+  visibleDisplayColumns: string[] = [];
   private unsubscribe$ = new Subject();
   // context menu
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
@@ -106,6 +104,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
     public dialog: MatDialog,
     public dialogService: DialogService,
     private permissionDataService: PermissionDataService,
+    private uiDataService: UIDataService,
     private changeDetectorRef: ChangeDetectorRef
   ) {
     this.msel.id = null;
@@ -144,6 +143,11 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
       .subscribe(() => {
         this.changeDetectorRef.markForCheck();
       });
+    const saved = this.uiDataService.getVisibleDataFieldColumns();
+    const seed = saved && saved.length > 0 ? saved : this.defaultVisibleDisplayColumns;
+    const availableKeys = this.availableDisplayOptions().map((o) => o.key);
+    this.visibleDisplayColumns = seed.filter((k) => availableKeys.includes(k));
+    this.applyVisibleDisplayColumns();
     if (this.showTemplates) {
       this.msel = new MselPlus();
       this.mselDataService.setActive('');
@@ -180,6 +184,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
               ) {
                 this.displayedColumns.splice(this.displayedColumns.length - 1);
               }
+              this.applyVisibleDisplayColumns();
               this.createSystemDefinedDataFields();
             }
             this.sortChanged(this.sort);
@@ -596,26 +601,31 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
     });
   }
 
-  getAvailableDisplayOptions(element: DataField) {
+  availableDisplayOptions() {
     return this.displayOptions.filter((opt) => {
       if (this.showTemplates && opt.hideInAdmin) return false;
       if (this.injectTypeId && opt.hideInInjectType) return false;
-      if (element.displayOrder < 0 && !opt.visibleForSystemRows) return false;
       return true;
     });
   }
 
-  getSelectedDisplayOptions(element: DataField): string[] {
-    return this.getAvailableDisplayOptions(element)
-      .filter((opt) => (element as any)[opt.key])
-      .map((opt) => opt.key);
+  onVisibleColumnsChange(selectedKeys: string[]) {
+    this.visibleDisplayColumns = selectedKeys;
+    this.uiDataService.setVisibleDataFieldColumns(selectedKeys);
+    this.applyVisibleDisplayColumns();
   }
 
-  onDisplaySelectionChange(element: DataField, selectedKeys: string[]) {
-    for (const opt of this.getAvailableDisplayOptions(element)) {
-      (element as any)[opt.key] = selectedKeys.includes(opt.key);
-    }
-    this.saveChange(element);
+  private applyVisibleDisplayColumns() {
+    const available = this.availableDisplayOptions();
+    const chosenColumns = available
+      .filter((opt) => this.visibleDisplayColumns.includes(opt.key))
+      .map((opt) => opt.column);
+    const hasIntegration = this.displayedColumns.includes('integration');
+    const trailing = hasIntegration
+      ? [...this.trailingColumns, 'integration']
+      : [...this.trailingColumns];
+    this.displayedColumns = [...this.baseColumns, ...chosenColumns, ...trailing];
+    this.systemFieldDisplayedColumns = [...this.baseSystemColumns, ...chosenColumns, ...this.trailingColumns];
   }
 
   saveChange(dataField: DataField) {
