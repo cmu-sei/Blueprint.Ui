@@ -1,8 +1,7 @@
 // Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild, AfterViewInit } from '@angular/core';
-import { UntypedFormControl } from '@angular/forms';
+import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { PlayerApplication, Move, SystemPermission, Team } from 'src/app/generated/blueprint.api';
@@ -20,7 +19,6 @@ import { PlayerApplicationEditDialogComponent } from '../player-application-edit
 import { PlayerService } from 'src/app/generated/blueprint.api';
 import { v4 as uuidv4 } from 'uuid';
 import { MatTable, MatTableDataSource } from '@angular/material/table';
-import { MatPaginator } from '@angular/material/paginator';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 
 @Component({
@@ -36,19 +34,16 @@ import { animate, state, style, transition, trigger } from '@angular/animations'
   ],
   standalone: false
 })
-export class PlayerApplicationListComponent implements OnDestroy, OnInit, AfterViewInit {
+export class PlayerApplicationListComponent implements OnDestroy, OnInit {
   @Input() loggedInUserId: string;
   // context menu
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
   @ViewChild('appTable', { static: false }) appTable: MatTable<any>;
-  @ViewChild(MatPaginator) paginator: MatPaginator;
   msel = new MselPlus();
   mselTeamList: Team[] = [];
   templateList: PlayerApplication[] = [];
   playerApplicationList: PlayerApplication[] = [];
   filteredPlayerApplicationList: PlayerApplication[] = [];
-  filterControl = new UntypedFormControl();
-  filterString = '';
   sort: Sort = { active: '', direction: '' };
   sortedPlayerApplications: PlayerApplication[] = [];
   appDataSource = new MatTableDataSource<PlayerApplication>(new Array<PlayerApplication>());
@@ -85,12 +80,6 @@ export class PlayerApplicationListComponent implements OnDestroy, OnInit, AfterV
       }
       this.sortedPlayerApplications = this.getSortedPlayerApplications(this.getFilteredPlayerApplications());
     });
-    this.filterControl.valueChanges
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe((term) => {
-        this.filterString = term;
-        this.sortedPlayerApplications = this.getSortedPlayerApplications(this.getFilteredPlayerApplications());
-      });
     // load playerApplication templates
     this.playerService.getApplicationTemplates().subscribe(
       (templates) => {
@@ -113,10 +102,6 @@ export class PlayerApplicationListComponent implements OnDestroy, OnInit, AfterV
       .subscribe(() => {
         this.changeDetectorRef.markForCheck();
       });
-  }
-
-  ngAfterViewInit() {
-    this.appDataSource.paginator = this.paginator;
   }
 
   canEditMsel(): boolean {
@@ -210,7 +195,7 @@ export class PlayerApplicationListComponent implements OnDestroy, OnInit, AfterV
   getFilteredPlayerApplications(): PlayerApplication[] {
     const playerApplications = this.playerApplicationList;
     const mselId = this.msel?.id;
-    let filteredPlayerApplications: PlayerApplication[] = [];
+    const filteredPlayerApplications: PlayerApplication[] = [];
     if (playerApplications) {
       playerApplications.forEach((playerApplication) => {
         if (
@@ -220,16 +205,6 @@ export class PlayerApplicationListComponent implements OnDestroy, OnInit, AfterV
           filteredPlayerApplications.push({ ...playerApplication });
         }
       });
-      if (
-        filteredPlayerApplications &&
-        filteredPlayerApplications.length > 0 &&
-        this.filterString
-      ) {
-        const filterString = this.filterString.toLowerCase();
-        filteredPlayerApplications = filteredPlayerApplications.filter((a) =>
-          a.name.toLowerCase().includes(filterString)
-        );
-      }
     }
     return filteredPlayerApplications;
   }

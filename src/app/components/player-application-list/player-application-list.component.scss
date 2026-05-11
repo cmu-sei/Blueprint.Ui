@@ -20,13 +20,11 @@
   flex-direction: column;
   flex: 1;
   min-height: 0;
+  overflow-y: auto;
 }
 
 .table-container {
-  flex: 1;
-  overflow: auto;
   padding-bottom: 20px;
-  min-height: 200px;
 }
 
 table {
@@ -64,15 +62,6 @@ table {
   min-width: 0;
 }
 
-.column-search {
-  flex: 3;
-  min-width: 0;
-}
-
-.search-control {
-  width: calc(100% - 32px);
-}
-
 .expanded-detail-div {
   display: flex;
   flex-direction: column;
@@ -103,16 +92,15 @@ table {
 }
 
 ::ng-deep .frame>mat-expansion-panel {
-  flex-shrink: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
+  flex: 0 0 auto;
 }
 
-::ng-deep .frame>mat-expansion-panel .mat-expansion-panel-content {
-  overflow: auto;
-  flex: 1;
-  min-height: 0;
+::ng-deep .frame>mat-expansion-panel + mat-expansion-panel {
+  margin-top: 20px;
+}
+
+::ng-deep .frame>mat-expansion-panel .mat-expansion-panel-body {
+  padding-left: 100px;
 }
 
 .button-end {
