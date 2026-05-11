@@ -34,13 +34,13 @@ project root for license information.
         <mat-paginator [length]="sortedScenarioEvents.length" [pageSize]="pageSize" [pageSizeOptions]="pageSizeOptions"
           (page)="changePage($event)" class="no-print">
         </mat-paginator>
+        @if (isShowingAllEvents()) {
         <div class="msel-header print-only">
           <h2>{{ msel.name }}</h2>
           @if (msel.description) {
             <div>{{ msel.description }}</div>
           }
         </div>
-        @if (isShowingAllEvents()) {
         @for (page of mselPages; track page.id) {
           <div class="msel-page-content print-only page-break">
             <h3>{{ page.name }}</h3>
@@ -51,7 +51,7 @@ project root for license information.
         @for (scenarioEvent of getPagedScenarioEvents(); track scenarioEvent.id; let i = $index) {
           @let move = getMoveForEvent(scenarioEvent.id);
           @let prevEvent = i > 0 ? getPagedScenarioEvents()[i - 1] : null;
-          @if (i === 0 || isMoveBoundary(scenarioEvent.id, prevEvent.id)) {
+          @if (isShowingAllEvents() && (i === 0 || isMoveBoundary(scenarioEvent.id, prevEvent.id))) {
             <div class="move-header print-only">
               <h3>Move {{ getMoveNumber(scenarioEvent.id) }}@if (move?.description) {: {{ move.description }}}</h3>
               @if (move?.situationTime) {
