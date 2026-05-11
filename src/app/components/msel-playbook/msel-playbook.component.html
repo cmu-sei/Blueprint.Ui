@@ -22,6 +22,9 @@ project root for license information.
     </div>
     @if (msel) {
       <div class="table-container">
+        <mat-paginator [length]="sortedScenarioEvents.length" [pageSize]="pageSize" [pageSizeOptions]="pageSizeOptions"
+          (page)="changePage($event)" class="no-print">
+        </mat-paginator>
         <div class="msel-header print-only">
           <h2>{{ msel.name }}</h2>
           @if (msel.description) {
@@ -93,9 +96,6 @@ project root for license information.
             </tbody>
           </table>
         }
-        <mat-paginator [length]="sortedScenarioEvents.length" [pageSize]="pageSize" [pageSizeOptions]="pageSizeOptions"
-          (page)="changePage($event)" class="no-print">
-        </mat-paginator>
       </div>
     }
   </div>
