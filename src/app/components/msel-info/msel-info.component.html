@@ -35,12 +35,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <button mat-menu-item (click)="downloadJsonFile()" title="Download json file">Download json file</button>
             <button mat-menu-item (click)="downloadXlsxFile()" title="Download xlsx file">Download xlsx file</button>
           </mat-menu>
-          @if (canEditMsel()) {
-          <input type="file" accept=".xlsx" (change)="confirmUploadXlsx($event)" #xlsxInput style="display: none" />
-          <button mat-icon-button (click)="xlsxInput.click()" title="Upload xlsx file" style="outline: none;">
-            <mat-icon class="mdi-18px" fontIcon="mdi-upload"></mat-icon>
-          </button>
-          }
         </span>
         <span class="delete-span">
           @if (canManageMsel()) {

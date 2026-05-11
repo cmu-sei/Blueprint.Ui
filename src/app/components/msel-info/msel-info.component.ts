@@ -983,22 +983,6 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     );
   }
 
-  confirmUploadXlsx(event: any) {
-    const file = event.target.files[0];
-    event.target.value = null;
-    if (!file) return;
-    this.dialogService
-      .confirm(
-        'Upload Excel',
-        'Uploading an Excel file will overwrite the data fields and scenario events on this MSEL. This cannot be undone. Continue?'
-      )
-      .subscribe((result) => {
-        if (result['confirm']) {
-          this.mselDataService.uploadXlsx(this.msel.id, null, file, 'events', true);
-        }
-      });
-  }
-
   ngOnDestroy() {
     // Clear the unsaved changes map to prevent memory leaks
     this.unsavedPageChanges.clear();

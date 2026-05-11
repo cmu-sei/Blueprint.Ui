@@ -199,27 +199,6 @@ export class MselListComponent implements OnDestroy, OnInit {
       this.areButtonsDisabled = false;
       return;
     }
-    if (this.fileType === 'xlsx' && this.uploadMselId) {
-      this.dialogService
-        .confirm(
-          'Upload Excel',
-          'Uploading an Excel file will overwrite the data fields and scenario events on this MSEL. This cannot be undone. Continue?'
-        )
-        .subscribe((result) => {
-          if (result['confirm']) {
-            this.doUpload(file);
-          } else {
-            this.areButtonsDisabled = false;
-            this.jsonInput.nativeElement.value = null;
-            this.xlsxInput.nativeElement.value = null;
-          }
-        });
-    } else {
-      this.doUpload(file);
-    }
-  }
-
-  private doUpload(file: File) {
     this.uploadProgress = 0;
     this.isReady = false;
     if (this.fileType === 'xlsx') {
