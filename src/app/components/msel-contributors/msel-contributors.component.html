@@ -85,8 +85,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
                       (selectionChange)="setMselRoles(user.id, $event.value)"
                       [disabled]="!canManageMsel()">
                       @for (role of getMselRolesToDisplay(); track role) {
-                      <mat-option [value]="role" [disabled]="isOwnOwnerRole(user.id, role)"
-                        [matTooltip]="getRoleDescription(role)">{{ role }}</mat-option>
+                      <mat-option [value]="role" [disabled]="isOwnOwnerRole(user.id, role) || isCreatorRole(user.id, role)">
+                        <span [matTooltip]="getRoleDescription(role)"
+                              matTooltipPosition="right"
+                              style="pointer-events: auto; display: block; width: 100%;">
+                          {{ role }}
+                        </span>
+                      </mat-option>
                       }
                     </mat-select>
                   </mat-form-field>
