@@ -64,6 +64,14 @@ import { AdminCatalogListComponent } from './components/admin/admin-catalog-list
 import { AdminContainerComponent } from './components/admin/admin-container/admin-container.component';
 import { AdminInjectTypesComponent } from './components/admin/admin-inject-types/admin-inject-types.component';
 import { AdminInjectTypeEditDialogComponent } from './components/admin/admin-inject-type-edit-dialog/admin-inject-type-edit-dialog.component';
+import { AdminCompetencyFrameworksComponent } from './components/admin/admin-competency-frameworks/admin-competency-frameworks.component';
+import { AdminCompetencyFrameworkEditDialogComponent } from './components/admin/admin-competency-framework-edit-dialog/admin-competency-framework-edit-dialog.component';
+import { AdminCompetencyEditDialogComponent } from './components/admin/admin-competency-edit-dialog/admin-competency-edit-dialog.component';
+import { AdminCompetencyDetailDialogComponent } from './components/admin/admin-competency-detail-dialog/admin-competency-detail-dialog.component';
+import { AdminProficiencyScaleEditDialogComponent } from './components/admin/admin-proficiency-scale-edit-dialog/admin-proficiency-scale-edit-dialog.component';
+import { AdminProficiencyLevelEditDialogComponent } from './components/admin/admin-proficiency-level-edit-dialog/admin-proficiency-level-edit-dialog.component';
+import { AdminCompetencyFrameworkImportDialogComponent } from './components/admin/admin-competency-framework-import-dialog/admin-competency-framework-import-dialog.component';
+import { AdminProficiencyScalesComponent } from './components/admin/admin-proficiency-scales/admin-proficiency-scales.component';
 import { AdminUnitsComponent } from './components/admin/admin-units/admin-units.component';
 import { AdminUnitEditDialogComponent } from './components/admin/admin-unit-edit-dialog/admin-unit-edit-dialog.component';
 import { AdminUnitUsersComponent } from './components/admin/admin-unit-users/admin-unit-users.component';
@@ -86,7 +94,11 @@ import { CiteDutyListComponent } from './components/cite-duty-list/cite-duty-lis
 import { DashboardComponent } from './components/landing/dashboard/dashboard.component';
 import { DataFieldEditDialogComponent } from './components/data-field-edit-dialog/data-field-edit-dialog.component';
 import { DataFieldListComponent } from './components/data-field-list/data-field-list.component';
+import { CompetencyOptionsDialogComponent } from './components/competency-options-dialog/competency-options-dialog.component';
+import { TeamCompetencyPropagateDialogComponent } from './components/team-competency-propagate-dialog/team-competency-propagate-dialog.component';
 import { DataOptionEditDialogComponent } from './components/data-option-edit-dialog/data-option-edit-dialog.component';
+import { DataOptionImportDialogComponent } from './components/data-option-import-dialog/data-option-import-dialog.component';
+import { DataOptionListDialogComponent } from './components/data-option-list-dialog/data-option-list-dialog.component';
 import { HomeAppComponent } from './components/home-app/home-app.component';
 import { InjectEditDialogComponent } from './components/inject-edit-dialog/inject-edit-dialog.component';
 import { InjectListComponent } from './components/inject-list/inject-list.component';
@@ -101,8 +113,12 @@ import { MoveListComponent } from './components/move-list/move-list.component';
 import { MselComponent } from './components/msel/msel.component';
 import { MselContributorsComponent } from './components/msel-contributors/msel-contributors.component';
 import { MselInfoComponent } from './components/msel-info/msel-info.component';
+import { IntegrationStatusComponent } from './components/integration-status/integration-status.component';
 import { MselListComponent } from './components/msel-list/msel-list.component';
 import { MselPageComponent } from './components/msel-page/msel-page.component';
+import { MselCompetenciesComponent } from './components/msel-competencies/msel-competencies.component';
+import { AssessorViewComponent } from './components/assessor-view/assessor-view.component';
+import { AssessorPageComponent } from './components/assessor-page/assessor-page.component';
 import { MselTeamsComponent } from './components/msel-teams/msel-teams.component';
 import { MselViewComponent } from './components/msel-view/msel-view.component';
 import { OrganizationEditDialogComponent } from './components/organization-edit-dialog/organization-edit-dialog.component';
@@ -178,7 +194,11 @@ export const appConfig: ApplicationConfig = {
     DashboardComponent,
     DataFieldEditDialogComponent,
     DataFieldListComponent,
+    CompetencyOptionsDialogComponent,
+    TeamCompetencyPropagateDialogComponent,
     DataOptionEditDialogComponent,
+    DataOptionImportDialogComponent,
+    DataOptionListDialogComponent,
     HomeAppComponent,
     InjectEditDialogComponent,
     InjectListComponent,
@@ -193,8 +213,12 @@ export const appConfig: ApplicationConfig = {
     MselComponent,
     MselContributorsComponent,
     MselInfoComponent,
+    IntegrationStatusComponent,
     MselListComponent,
     MselPageComponent,
+    MselCompetenciesComponent,
+    AssessorViewComponent,
+    AssessorPageComponent,
     MselTeamsComponent,
     MselViewComponent,
     OrganizationEditDialogComponent,
@@ -218,6 +242,14 @@ export const appConfig: ApplicationConfig = {
     AdminContainerComponent,
     AdminInjectTypesComponent,
     AdminInjectTypeEditDialogComponent,
+    AdminCompetencyFrameworksComponent,
+    AdminCompetencyFrameworkEditDialogComponent,
+    AdminCompetencyEditDialogComponent,
+    AdminCompetencyDetailDialogComponent,
+    AdminProficiencyScaleEditDialogComponent,
+    AdminProficiencyLevelEditDialogComponent,
+    AdminCompetencyFrameworkImportDialogComponent,
+    AdminProficiencyScalesComponent,
     AdminUnitsComponent,
     AdminUnitEditDialogComponent,
     AdminUnitUsersComponent,

@@ -1,0 +1,50 @@
+// Copyright 2025 Carnegie Mellon University. All Rights Reserved.
+// Released under a MIT (SEI)-style license. See LICENSE.md in the
+// project root for license information.
+
+.close-button {
+  float: right;
+  margin-top: -8px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.search-section {
+  margin-bottom: 8px;
+}
+
+.action-buttons {
+  display: flex;
+  flex-direction: row;
+  margin-bottom: 8px;
+}
+
+.options-table-container {
+  flex: 1;
+  overflow-y: auto;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 4px;
+}
+
+.actions-column {
+  max-width: 100px;
+}
+
+.order-column {
+  max-width: 80px;
+}
+
+.name-column {
+  max-width: 150px;
+  font-family: monospace;
+  font-weight: 500;
+}
+
+.value-column {
+  flex: 1;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
+}

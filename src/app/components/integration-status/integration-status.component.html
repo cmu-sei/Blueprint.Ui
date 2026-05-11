@@ -1,0 +1,45 @@
+<!--
+Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license, please see LICENSE.md in the
+project root for license information or contact permission@sei.cmu.edu for full terms.
+-->
+<div class="integration-status-container">
+  <div class="status-card">
+    @if (!isError) {
+      <h2 class="status-heading">Processing integrations ...</h2>
+      <mat-progress-bar mode="indeterminate" class="progress-bar"></mat-progress-bar>
+      <p class="status-message">{{ statusMessage }} ...</p>
+      @if (!isPulling) {
+        <div class="action-buttons">
+          @if (!isCancelling) {
+            <button mat-raised-button color="warn" (click)="cancelPush()"
+                    title="Cancel the integration push and remove partial integrations">
+              Cancel Push
+            </button>
+          }
+          @if (isCancelling) {
+            <span class="cancelling-text">Cancelling...</span>
+          }
+        </div>
+      }
+    }
+
+    @if (isError) {
+      <h2 class="status-heading">Integration Failed</h2>
+      <div class="error-message">
+        <mat-icon fontIcon="mdi-alert-circle" class="mdi-24px error-icon"></mat-icon>
+        <span>{{ statusMessage }}</span>
+      </div>
+      <div class="action-buttons">
+        <button mat-raised-button color="warn" (click)="pullIntegrations()"
+                title="Remove partial integrations from associated applications">
+          Pull Integrations
+        </button>
+        <button mat-raised-button (click)="close()"
+                title="Dismiss this message and return to MSEL info">
+          Close
+        </button>
+      </div>
+    }
+  </div>
+</div>

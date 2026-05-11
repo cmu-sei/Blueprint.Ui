@@ -5,6 +5,92 @@ project root for license information or contact permission@sei.cmu.edu for full 
 -->
 
 <mat-sidenav-container class="appcontent-container" autosize>
+  @if (sideNavCollapsed) {
+  <mat-sidenav class="appbarmenu-container-collapsed" #sidenav mode="side" [(opened)]="isSidebarOpen">
+    <mat-toolbar class="sidenav-header" title="Exit Administration" [routerLink]="['/build/']">
+      <a class="nolink" [routerLink]="['/build/']">
+        <mat-icon class="icon-35px crucible-icon-blueprint" svgIcon="crucible-icon-blueprint"></mat-icon>
+      </a>
+    </mat-toolbar>
+    <mat-list class="appitems-container">
+      @if (canViewUnits) {
+      <mat-list-item [ngClass]="getSelectedClass(unitsText)" (click)="gotoSection(unitsText)" [title]="unitsText">
+        <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-account-group"></mat-icon>
+      </mat-list-item>
+      }
+      @if (canViewDataFields) {
+      <mat-list-item [ngClass]="getSelectedClass(dataFieldsText)" (click)="gotoSection(dataFieldsText)" [title]="dataFieldsText">
+        <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-view-column-outline"></mat-icon>
+      </mat-list-item>
+      }
+      @if (canViewInjectTypes) {
+      <mat-list-item [ngClass]="getSelectedClass(injectTypesText)" (click)="gotoSection(injectTypesText)" [title]="injectTypesText">
+        <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-format-list-group"></mat-icon>
+      </mat-list-item>
+      }
+      @if (canViewCatalogs) {
+      <mat-list-item [ngClass]="getSelectedClass(catalogsText)" (click)="gotoSection(catalogsText)" [title]="catalogsText">
+        <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-book-open-outline"></mat-icon>
+      </mat-list-item>
+      }
+      @if (canViewOrganizations) {
+      <mat-list-item [ngClass]="getSelectedClass(organizationsText)" (click)="gotoSection(organizationsText)" [title]="organizationsText">
+        <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-bank"></mat-icon>
+      </mat-list-item>
+      }
+      @if (canViewGalleryCards) {
+      <mat-list-item [ngClass]="getSelectedClass(galleryCardsText)" (click)="gotoSection(galleryCardsText)" [title]="galleryCardsText">
+        <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-view-grid-outline"></mat-icon>
+      </mat-list-item>
+      }
+      @if (canViewCiteActions) {
+      <mat-list-item [ngClass]="getSelectedClass(citeActionsText)" (click)="gotoSection(citeActionsText)" [title]="citeActionsText">
+        <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-clipboard-check-outline"></mat-icon>
+      </mat-list-item>
+      }
+      @if (canViewCiteDuties) {
+      <mat-list-item [ngClass]="getSelectedClass(citeDutiesText)" (click)="gotoSection(citeDutiesText)" [title]="citeDutiesText">
+        <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-clipboard-account-outline"></mat-icon>
+      </mat-list-item>
+      }
+      @if (canViewCompetencyFrameworks) {
+      <mat-list-item [ngClass]="getSelectedClass(competencyFrameworksText)" (click)="gotoSection(competencyFrameworksText)" [title]="competencyFrameworksText">
+        <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-certificate-outline"></mat-icon>
+      </mat-list-item>
+      <mat-list-item [ngClass]="getSelectedClass(proficiencyScalesText)" (click)="gotoSection(proficiencyScalesText)" [title]="proficiencyScalesText">
+        <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-tune-variant"></mat-icon>
+      </mat-list-item>
+      }
+      @if (canViewUsers) {
+      <mat-list-item [ngClass]="getSelectedClass(usersText)" (click)="gotoSection(usersText)" [title]="usersText">
+        <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-account"></mat-icon>
+      </mat-list-item>
+      }
+      @if (canViewRoles) {
+      <mat-list-item [ngClass]="getSelectedClass(rolesText)" (click)="gotoSection(rolesText)" [title]="rolesText">
+        <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-shield-account"></mat-icon>
+      </mat-list-item>
+      }
+      @if (canViewGroups) {
+      <mat-list-item [ngClass]="getSelectedClass(groupsText)" (click)="gotoSection(groupsText)" [title]="groupsText">
+        <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-account-multiple"></mat-icon>
+      </mat-list-item>
+      }
+    </mat-list>
+    <div class="bottom-div">
+      <button mat-icon-button title="Expand Navigation Panel" (click)="setCollapsed(false)">
+        <mat-icon class="mdi-24px" fontIcon="mdi-chevron-double-right"></mat-icon>
+      </button>
+      @if (!hideTopbar) {
+      <img class="crucible-logo" [src]="
+                    (theme$ | async) === 'light-theme'
+          ? 'assets/img/crucible-app-color-white.png'
+          : 'assets/img/crucible-app-color.png'
+      " />
+      }
+    </div>
+  </mat-sidenav>
+  } @else {
   <mat-sidenav class="appbarmenu-container" #sidenav mode="side" [(opened)]="isSidebarOpen">
     <div class="sidenav-content-wrapper">
       <mat-toolbar class="sidenav-header" title="Exit Administration" [routerLink]="['/build/']">
@@ -103,6 +189,26 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </button>
         </mat-list-item>
         }
+        @if (canViewCompetencyFrameworks) {
+        <!-- Competency Frameworks -->
+        <mat-list-item [ngClass]="getSelectedClass(competencyFrameworksText)" id="wrapper showhand"
+          (click)="gotoSection(competencyFrameworksText)">
+          <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-certificate-outline"></mat-icon>
+          {{ competencyFrameworksSidebarText }}
+          <button aria-labelledby="competencyFrameworksText" mat-icon-button class="pull-right">
+            <mat-icon fontIcon="mdi-chevron-right"></mat-icon>
+          </button>
+        </mat-list-item>
+        <!-- Proficiency Scales -->
+        <mat-list-item [ngClass]="getSelectedClass(proficiencyScalesText)" id="wrapper showhand"
+          (click)="gotoSection(proficiencyScalesText)">
+          <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-tune-variant"></mat-icon>
+          {{ proficiencyScalesText }}
+          <button aria-labelledby="proficiencyScalesText" mat-icon-button class="pull-right">
+            <mat-icon fontIcon="mdi-chevron-right"></mat-icon>
+          </button>
+        </mat-list-item>
+        }
         <!-- Users -->
         @if (canViewUsers) {
         <mat-list-item [ngClass]="getSelectedClass(usersText)" id="wrapper showhand" (click)="gotoSection(usersText)">
@@ -151,6 +257,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       }
     </div>
   </mat-sidenav>
+  }
   <mat-sidenav-content>
     @if (!hideTopbar) {
     <app-topbar [title]="selectedTab" [topbarView]="TopbarView.BLUEPRINT_ADMIN"
@@ -179,6 +286,16 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <span>
       <app-admin-inject-types [loggedInUserId]="loggedInUserId"
         [canEdit]="canManageInjectTypes"></app-admin-inject-types>
+    </span>
+    }
+    @if (canViewCompetencyFrameworks && (selectedTab === competencyFrameworksText)) {
+      <app-admin-competency-frameworks [loggedInUserId]="loggedInUserId"
+        [canEdit]="canManageCompetencyFrameworks"></app-admin-competency-frameworks>
+    }
+    @if (canViewCompetencyFrameworks && (selectedTab === proficiencyScalesText)) {
+    <span>
+      <app-admin-proficiency-scales [loggedInUserId]="loggedInUserId"
+        [canEdit]="canManageCompetencyFrameworks"></app-admin-proficiency-scales>
     </span>
     }
     @if (canViewCatalogs && (selectedTab === catalogsText)) {

@@ -36,7 +36,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
     @if (!apiIsSick && selectedMselId) {
     <div class="content-under-topbar">
       <app-msel [loggedInUserId]="loggedInUserId" [canEditMsel]="canEditMsels"
-        [canAccessAdminSection]="canAccessAdminSection" [userTheme$]="theme$"
+        [canAccessAdminSection]="canAccessAdminSection" [canEditCheckboxes]="canEditCheckboxes"
+        [userTheme$]="theme$"
         (deleteThisMsel)="deleteMsel($event)"></app-msel>
     </div>
     }

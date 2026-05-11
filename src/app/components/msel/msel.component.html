@@ -139,12 +139,19 @@ project root for license information or contact permission@sei.cmu.edu for full 
       @if (selectedTab === 'CITE Duties') {
       <app-cite-duty-list [loggedInUserId]="loggedInUserId" [canEdit]="canEditMsel"></app-cite-duty-list>
       }
+      @if (selectedTab === 'Competencies') {
+      <app-msel-competencies [loggedInUserId]="loggedInUserId"></app-msel-competencies>
+      }
       @if (selectedTab === 'Scenario Events') {
       <app-scenario-event-list [loggedInUserId]="loggedInUserId"
         [userTheme]="userTheme$ | async"></app-scenario-event-list>
       }
       @if (selectedTab === 'Exercise View') {
       <app-msel-view [tabHeight]="48" [userTheme]="userTheme$ | async"></app-msel-view>
+      }
+      @if (selectedTab === 'Assessor View') {
+      <app-assessor-view [loggedInUserId]="loggedInUserId" [userTheme]="userTheme$ | async"
+        [canEditCheckboxes]="canEditCheckboxes"></app-assessor-view>
       }
       @if (selectedTab === 'Invitations') {
       <app-invitation-list [loggedInUserId]="loggedInUserId" [canEditMsel]="canEditMsel"

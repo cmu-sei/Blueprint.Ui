@@ -1,0 +1,395 @@
+// Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+// Released under a MIT (SEI)-style license. See LICENSE.md in the
+// project root for license information.
+
+@use "@angular/material" as mat;
+
+:host {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 44px);
+}
+
+.cssLayoutRowStartCenter {
+  min-height: 76px;
+  flex-shrink: 0;
+}
+
+.button-end {
+  margin-left: auto;
+}
+
+.section-panel {
+  margin-bottom: 12px;
+  background-color: transparent;
+  width: 100%;
+  min-width: 660px;
+}
+
+.panel-icon {
+  margin-right: 8px;
+  color: var(--mat-sys-primary);
+}
+
+.table {
+  font-size: small;
+  width: 100%;
+  overflow: none;
+  background: transparent;
+}
+
+.header-row {
+  min-height: 18px;
+  background: transparent;
+}
+
+.row {
+  min-height: 18px;
+}
+
+.row,
+.header-row {
+  display: flex;
+  border-bottom-width: 1px;
+  border-bottom-style: solid;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.header-cell {
+  font-weight: bold;
+}
+
+.cell,
+.header-cell {
+  overflow: hidden;
+  word-wrap: break-word;
+  text-align: left;
+}
+
+.element-row {
+  position: relative;
+  cursor: pointer;
+}
+
+.element-row:hover {
+  background-color: var(--mat-sys-surface-variant);
+}
+
+.detail-row {
+  height: 0;
+  min-height: 0;
+  overflow: hidden;
+  --mat-table-row-item-outline-width: 0px;
+}
+
+::ng-deep .detail-row .mat-mdc-cell.expanded-detail-cell {
+  padding: 0 !important;
+  min-height: 0;
+  border-bottom-width: 0;
+  flex: 0 0 100%;
+  width: 100%;
+  max-width: 100%;
+}
+
+.element-row td {
+  border-bottom-width: 0;
+}
+
+.column-name {
+  flex: 0 0 20%;
+  padding: 2px;
+}
+
+.column-action {
+  flex: 0 0 150px;
+  width: 150px;
+}
+
+.action-div {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 4px;
+}
+
+.column-version {
+  flex: 0 0 10%;
+  padding: 2px;
+}
+
+.column-source {
+  flex: 0 0 10%;
+  padding: 2px;
+}
+
+.column-scale {
+  flex: 0 0 12%;
+  padding: 2px;
+}
+
+.column-description {
+  flex: 0 0 calc(48% - 150px);
+  padding: 2px;
+}
+
+.expanded-detail-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  min-width: 660px;
+  padding: 0;
+  gap: 8px;
+}
+
+.row:has(.expanded-detail-div) {
+  border-bottom: none;
+}
+
+.expanded-detail-div {
+  width: 100%;
+  min-width: 660px;
+  max-height: 500px;
+  overflow: auto;
+}
+
+.scrolling-region {
+  height: calc(100% - 40px);
+  overflow: auto;
+  width: 100%;
+}
+
+.no-results {
+  margin-top: 20px;
+  margin-left: 150px;
+}
+
+.no-results-inline {
+  padding: 8px 0;
+  color: var(--mat-sys-on-surface-variant);
+  font-style: italic;
+}
+
+// Sub-table column widths (scales and elements)
+.sub-col-action {
+  flex: 0 0 100px;
+  width: 100px;
+}
+
+.sub-col-name {
+  flex: 1 1 25%;
+}
+
+.sub-col-desc {
+  flex: 2 1 45%;
+}
+
+.sub-col-levels {
+  flex: 0 0 80px;
+}
+
+.el-col-action {
+  flex: 0 0 100px;
+  width: 100px;
+}
+
+.el-col-id {
+  flex: 0 0 120px;
+  white-space: nowrap;
+}
+
+.el-col-type {
+  flex: 0 0 10%;
+}
+
+.el-col-name {
+  flex: 1 1 25%;
+}
+
+.el-col-desc {
+  flex: 2 1 45%;
+}
+
+// Level sub-table column widths
+.lv-col-name {
+  flex: 1 1 20%;
+}
+
+.lv-col-value {
+  flex: 0 0 80px;
+}
+
+.lv-col-order {
+  flex: 0 0 80px;
+}
+
+.lv-col-desc {
+  flex: 2 1 50%;
+}
+
+// Levels detail section
+.levels-detail {
+  margin: 8px 0 8px 16px;
+  padding: 8px;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 4px;
+}
+
+.levels-title {
+  font-weight: bold;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.element-row-expanded {
+  background-color: var(--mat-sys-surface-variant);
+}
+
+// Competency (Moodle-imported) sub-table column widths
+.comp-col-action {
+  flex: 0 0 140px;
+  width: 140px;
+}
+
+.comp-col-id {
+  flex: 0 0 120px;
+  white-space: nowrap;
+}
+
+.comp-col-type {
+  flex: 0 0 10%;
+}
+
+.comp-col-name {
+  flex: 1 1 20%;
+}
+
+.comp-col-desc {
+  flex: 2 1 40%;
+}
+
+.comp-col-category {
+  flex: 0 0 15%;
+}
+
+.comp-col-related {
+  flex: 1 1 15%;
+}
+
+
+.element-toolbar {
+  display: flex;
+  align-items: center;
+  min-height: 56px;
+  flex-shrink: 0;
+}
+
+// Sticky header background for sub-tables
+::ng-deep .expanded-detail-div .mat-mdc-header-row {
+  background-color: var(--mat-sys-surface);
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+}
+
+::ng-deep .expanded-detail-div .mat-mdc-row {
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+}
+
+// Competency row expand
+.comp-row {
+  cursor: pointer;
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+}
+
+.comp-row:hover {
+  background-color: var(--mat-sys-surface-variant);
+}
+
+.comp-row-expanded {
+  background-color: var(--mat-sys-surface-variant);
+}
+
+// Related detail cell
+::ng-deep .detail-row .mat-mdc-cell.related-detail-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 0 !important;
+  min-height: 0;
+  border-bottom-width: 0;
+  flex: 0 0 100%;
+  width: 100%;
+  max-width: 100%;
+}
+
+.related-hint {
+  padding: 8px 4px 0;
+  font-size: 13px;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+// Card-teams-style two-table layout
+.related-enchilada {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  width: 100%;
+  padding: 8px 0;
+  gap: 4%;
+}
+
+.related-list-container {
+  display: flex;
+  flex-direction: column;
+  width: 48%;
+  min-width: 250px;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 4px;
+}
+
+.related-toolbar {
+  background: transparent;
+  overflow: visible;
+
+  @include mat.form-field-density(-5);
+
+  p {
+    margin-left: 8px;
+  }
+}
+
+::ng-deep .related-toolbar .mat-toolbar-row {
+  overflow: visible;
+}
+
+.header-icon {
+  margin-right: 10px;
+  color: var(--mat-sys-primary);
+}
+
+.related-search {
+  width: 40%;
+}
+
+.related-type-filter {
+  width: 140px;
+  margin-left: 8px;
+}
+
+::ng-deep .related-type-filter .mat-mdc-select-panel {
+  min-width: 200px;
+}
+
+.related-table-scroll {
+  max-height: 600px;
+  overflow: auto;
+}
+
+.related-col-btn {
+  flex: 0 0 48px;
+  width: 48px;
+  justify-content: center;
+}
+
+
+

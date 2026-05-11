@@ -413,9 +413,10 @@ export class SignalRService implements OnDestroy {
       this.mselDataService.deleteFromStore(id);
     });
 
-    this.hubConnection.on('MselPushStatusChange', (mselPushStatus: string) => {
-      this.mselDataService.mselPushStatusChange(mselPushStatus);
+    this.hubConnection.on('IntegrationStatusUpdated', (mselId: string, integrationStatus: string) => {
+      this.mselDataService.updateIntegrationStatus(mselId, integrationStatus);
     });
+
   }
 
   private addMselUnitHandlers() {
@@ -595,6 +596,13 @@ export class SignalRService implements OnDestroy {
   private addUserMselRoleHandlers() {
     this.hubConnection.on(
       'UserMselRoleCreated',
+      (userMselRole: UserMselRole) => {
+        this.userMselRoleDataService.updateStore(userMselRole);
+      }
+    );
+
+    this.hubConnection.on(
+      'UserMselRoleUpdated',
       (userMselRole: UserMselRole) => {
         this.userMselRoleDataService.updateStore(userMselRole);
       }

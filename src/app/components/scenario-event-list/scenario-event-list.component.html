@@ -33,6 +33,18 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <div class="row-start-buttons">
               <span class="row-index center-self" [style.visibility]="allowDragAndDrop && canEditMsel() ? 'visible' : 'hidden'">&nbsp;</span>
               <span class="row-index center-self">&nbsp;</span>
+              @if (!showSearch) {
+              <button mat-icon-button (click)="setSearch(true)" class="header-button"
+                title="Search Events">
+                <mat-icon class="mdi-24px" fontIcon="mdi-filter-outline"></mat-icon>
+              </button>
+              }
+              @if (showSearch) {
+              <button mat-icon-button (click)="setSearch(false)" class="header-button"
+                title="Clear Search">
+                <mat-icon class="mdi-24px" fontIcon="mdi-filter-off-outline"></mat-icon>
+              </button>
+              }
               @if ((canEditMsel() || msel.hasRole(loggedInUserId, null).owner)) {
               <mat-checkbox [checked]="allSelected" (change)="setAllSelectedState($event.checked)"
                 title="Select All/None" style="margin-left: -10px; margin-top: 7px; margin-right: 7px;"
@@ -99,18 +111,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   Delete selected events
                 </button>
               </mat-menu>
-              @if (!showSearch) {
-              <button mat-icon-button (click)="setSearch(true)" class="header-button"
-                title="Search Events">
-                <mat-icon class="mdi-24px" fontIcon="mdi-filter-outline"></mat-icon>
-              </button>
-              }
-              @if (showSearch) {
-              <button mat-icon-button (click)="setSearch(false)" class="header-button"
-                title="Clear Search">
-                <mat-icon class="mdi-24px" fontIcon="mdi-filter-off-outline"></mat-icon>
-              </button>
-              }
             </div>
           </th>
           <!-- Move header -->
@@ -305,6 +305,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 [gallerySourceTypeOptions]="msel.gallerySourceTypes" [userOptions]="userList">
               </app-data-value>
             </span>
+            }
+            @if (item.information) {
+            <span style="margin-right: 30px;">{{ item.information }}</span>
             }
           </td>
           }

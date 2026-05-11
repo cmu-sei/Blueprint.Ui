@@ -73,8 +73,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         @if (selectedTabName !== 'Steamfitter Task') {
         <span>
           <!-- event start time (deltaSeconds) -->
-          @if ((currentFilterBy === 'all' || data.scenarioEvent.scenarioEventType !== eventType.Inject) &&
-          getScenarioTypeDataFields().length > 0) {
+          @if (currentFilterBy === 'all' || data.scenarioEvent.scenarioEventType !== eventType.Inject) {
           <div class="start-time-div">
             <app-duration-edit [startTime]="data.mselStartTime" [(durationSeconds)]="data.scenarioEvent.deltaSeconds"
               [timeName]="'Execution Date / Time'" [postScript]="''" [canEdit]="data.isEditor">
@@ -82,7 +81,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </div>
           }
           <!-- data values for each data field -->
-          @for (df of getScenarioTypeDataFields(); track df) {
+          @for (df of sortedDataFields; track df.id) {
           <div class="full-width">
             <app-data-value [(value)]="getDataValue(df.name).value" [dataField]="df"
               [canEdit]="data.isEditor && (!data.isEditingRestricted || data.scenarioEvent.scenarioEventType === eventType.Information)"
@@ -102,11 +101,22 @@ project root for license information or contact permission@sei.cmu.edu for full 
             </mat-form-field>
           </div>
           }
-          <!-- no data fields message -->
-          @if (getScenarioTypeDataFields().length === 0) {
+          <!-- no data fields message (Inject only) -->
+          @if (getScenarioTypeDataFields().length === 0 && data.scenarioEvent.scenarioEventType === eventType.Inject) {
           <div class="full-width">
             <br /><br />
             <b>No data fields have been defined for this scenario event type!</b>
+          </div>
+          }
+          <!-- information / notes field for non-Inject event types -->
+          @if (data.scenarioEvent.scenarioEventType !== eventType.Inject) {
+          <div class="full-width">
+            <mat-form-field class="full-width">
+              <mat-label>Information / Notes</mat-label>
+              <textarea matInput rows="6" placeholder="Enter information or facilitation notes..."
+                [(ngModel)]="data.scenarioEvent.information"
+                [disabled]="!data.isEditor"></textarea>
+            </mat-form-field>
           </div>
           }
         </span>
