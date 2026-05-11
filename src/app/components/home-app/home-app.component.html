@@ -18,9 +18,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
   </div>
   }
 
-  @if (!apiIsSick && !selectedMselId) {
+  <div class="main-area">
 
-  <section>
+    @if (!apiIsSick && !selectedMselId) {
     <div class="top-row">
       <div class="one-cell last-cell">
         @if (canAccessAdminSection) {
@@ -30,23 +30,22 @@ project root for license information or contact permission@sei.cmu.edu for full 
         }
       </div>
     </div>
-    <div>
-      <app-msel-list [loggedInUserId]="loggedInUserId" [canAccessAdminSection]="canAccessAdminSection"></app-msel-list>
+    <app-msel-list [loggedInUserId]="loggedInUserId" [canAccessAdminSection]="canAccessAdminSection"></app-msel-list>
+    }
+
+    @if (!apiIsSick && selectedMselId) {
+    <div class="content-under-topbar">
+      <app-msel [loggedInUserId]="loggedInUserId" [canEditMsel]="canEditMsels"
+        [canAccessAdminSection]="canAccessAdminSection" [canEditCheckboxes]="canEditCheckboxes"
+        [userTheme$]="theme$"
+        (deleteThisMsel)="deleteMsel($event)"></app-msel>
     </div>
-  </section>
-  }
+    }
 
-  @if (!apiIsSick && selectedMselId) {
-  <div class="content-under-topbar">
-    <app-msel [loggedInUserId]="loggedInUserId" [canEditMsel]="canEditMsels"
-      [canAccessAdminSection]="canAccessAdminSection" [userTheme$]="theme$"
-      (deleteThisMsel)="deleteMsel($event)"></app-msel>
+    @if (isLoading$ | async) {
+    <div>
+      <mat-progress-bar color="primary" mode="indeterminate" style="width: 90%; margin: 20px;"></mat-progress-bar>
+    </div>
+    }
   </div>
-  }
-
-  @if (isLoading$ | async) {
-  <div>
-    <mat-progress-bar color="primary" mode="indeterminate" style="width: 90%; margin: 20px;"></mat-progress-bar>
-  </div>
-  }
 </div>

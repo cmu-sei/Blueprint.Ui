@@ -52,6 +52,7 @@ export class HomeAppComponent implements OnDestroy, OnInit {
   username = '';
   canAccessAdminSection = false;
   canEditMsels = false;
+  canEditCheckboxes = false;
   isAuthorizedUser = false;
   isSidebarOpen = true;
   private unsubscribe$ = new Subject();
@@ -66,6 +67,7 @@ export class HomeAppComponent implements OnDestroy, OnInit {
   appTitle = '';
   permissions: SystemPermission[] = [];
   readonly SystemPermission = SystemPermission;
+  private mselWasActive = false;
 
   constructor(
     activatedRoute: ActivatedRoute,
@@ -100,6 +102,7 @@ export class HomeAppComponent implements OnDestroy, OnInit {
         if (!this.selectedMselId) {
           // set appTitle and topbarText for top level
           this.mselDataService.setActive('');
+          this.signalRService.clearPresence();
           this.topbarText = this.topbarTextBase;
           this.titleService.setTitle(this.appTitle);
         }
@@ -109,11 +112,12 @@ export class HomeAppComponent implements OnDestroy, OnInit {
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((m) => {
         if (m) {
+          this.mselWasActive = true;
           // set appTitle and topbarText for the selected MSEL
           const prefix = this.appTitle + ' - ';
           this.topbarText = m ? prefix + m.name : this.topbarTextBase;
           this.titleService.setTitle(prefix + m.name);
-        } else if (this.selectedMselId) {
+        } else if (this.selectedMselId && this.mselWasActive) {
           // active MSEL was deleted, navigate back to the list
           this.selectedMselId = '';
           this.topbarText = this.topbarTextBase;
@@ -144,6 +148,8 @@ export class HomeAppComponent implements OnDestroy, OnInit {
           this.permissions = this.permissionDataService.permissions;
           this.canAccessAdminSection = this.permissions.filter(p => !p.endsWith('Msels')).length > 0;
           this.canEditMsels = this.permissionDataService.hasPermission(SystemPermission.EditMsels);
+          // Admins (ContentDevelopers/SystemAdmins) can edit checkboxes
+          this.canEditCheckboxes = this.permissionDataService.hasPermission(SystemPermission.CreateMsels);
         }
       );
     // Start SignalR connection

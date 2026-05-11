@@ -16,12 +16,13 @@
 
 .unit-div {
   margin-bottom: 10px;
-  width: 80%;
+  width: 100%;
 }
 
 .unit-button {
   width: 90%;
   text-align: left;
+  white-space: nowrap;
 }
 
 .full-width {
@@ -57,16 +58,6 @@
   float: right;
 }
 
-.search-div {
-  display: flex;
-  flex-flow: row;
-  width: 50%;
-}
-
 .search-control {
-  width: calc(100% - 32px);
-}
-
-.action-buttons{
-  max-height: 70px !important;
+  width: 90%;
 }

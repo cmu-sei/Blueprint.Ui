@@ -20,6 +20,8 @@ export const MselItemStatus = {
     Entered: 'Entered',
     Approved: 'Approved',
     Complete: 'Complete',
+    Pushing: 'Pushing',
+    Pulling: 'Pulling',
     Deployed: 'Deployed',
     Archived: 'Archived'
 } as const;

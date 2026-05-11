@@ -3,19 +3,23 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
+@if (msel?.integrationStatus && !integrationDismissed) {
+  <app-integration-status [msel]="msel" (closed)="dismissIntegrationStatus()"></app-integration-status>
+} @else {
 <div class="frame">
-  <mat-tab-group mat-align-tabs="start" class="tab-group" [selectedIndex]="currentTabIndex" (selectedIndexChange)="onTabIndexChange($event)">
+  <mat-tab-group mat-align-tabs="start" class="tab-group" [selectedIndex]="currentTabIndex"
+    (selectedIndexChange)="onTabIndexChange($event)">
     >
     <mat-tab label="Config" class="tab">
       <div class="edit-buttons">
         <span class="edit-buttons-span">
           <button mat-icon-button (click)="saveChanges()" style="outline: none;" title="Save Changes"
             [disabled]="!isChanged">
-            <mat-icon class="mdi-24px self-center" fontIcon="mdi-check"></mat-icon>
+            <mat-icon class="mdi-24px self-center" fontIcon="mdi-content-save-outline"></mat-icon>
           </button>
           <button mat-icon-button (click)="cancelChanges()" style="outline: none;" title="Cancel Changes"
             [disabled]="!isChanged">
-            <mat-icon class="mdi-24px self-center" fontIcon="mdi-close"></mat-icon>
+            <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
           </button>
         </span>
         <span class="change-span">
@@ -40,7 +44,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
         </span>
         <span class="delete-span">
           @if (canManageMsel()) {
-          <button mat-icon-button (click)="deleteMsel()" title="Delete this MSEL" [disabled]="msel && msel.status === 'Deployed'">
+          <button mat-icon-button (click)="deleteMsel()" title="Delete this MSEL"
+            [disabled]="msel && msel.status === 'Deployed'">
             <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline" alt="Delete"></mat-icon>
           </button>
           }
@@ -53,10 +58,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <div class="single-detail center-self">
             <mat-form-field class="full-width">
               <mat-label>Name</mat-label>
-              <input type="text" matInput [(ngModel)]="msel.name"
-                maxlength="70"
-                (cut)="isChanged = true" (change)="isChanged = true"
-                (paste)="isChanged = true" (keypress)="isChanged = true" [disabled]="!canEditMsel()" />
+              <input type="text" matInput [(ngModel)]="msel.name" maxlength="70" (cut)="isChanged = true"
+                (change)="isChanged = true" (paste)="isChanged = true" (keypress)="isChanged = true"
+                [disabled]="!canEditMsel()" />
               <mat-hint align="end">{{ msel.name?.length || 0 }} / 70 characters</mat-hint>
             </mat-form-field>
           </div>
@@ -64,8 +68,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <div class="single-detail center-self">
             <mat-form-field class="full-width">
               <mat-label>Description</mat-label>
-              <input type="text" matInput placeholder="Description" [(ngModel)]="msel.description"
-                maxlength="600"
+              <input type="text" matInput placeholder="Description" [(ngModel)]="msel.description" maxlength="600"
                 (cut)="isChanged = true" (change)="isChanged = true" (paste)="isChanged = true"
                 (keypress)="isChanged = true" [disabled]="!canEditMsel()" />
               <mat-hint align="end">{{ msel.description?.length || 0 }} / 600 characters</mat-hint>
@@ -76,14 +79,15 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <div class="sub-detail center-self">
               <mat-checkbox [(ngModel)]="msel.isTemplate" [disabled]="msel.status === 'Deployed' || !canEditMsel()"
                 (cut)="isChanged = true" (change)="isChanged = true" (paste)="isChanged = true"
-                (keypress)="isChanged = true" title="Mark this MSEL as a reusable template for creating new MSELs">Is a Template</mat-checkbox>
+                (keypress)="isChanged = true" title="Mark this MSEL as a reusable template for creating new MSELs">Is a
+                Template</mat-checkbox>
             </div>
           </div>
           <!-- MSEL Start Time -->
           <div class="single-checkbox">
-            <mat-checkbox [checked]="msel.startTime?.valueOf() > 0"
-              [disabled]="!canEditMsel()"
-              (change)="toggleStartTime($event)" title="Schedule a specific start date and time for this MSEL">Set a Start Time
+            <mat-checkbox [checked]="msel.startTime?.valueOf() > 0" [disabled]="!canEditMsel()"
+              (change)="toggleStartTime($event)" title="Schedule a specific start date and time for this MSEL">Set a
+              Start Time
             </mat-checkbox>
           </div>
           @if (hasStartTime()) {
@@ -91,7 +95,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <mat-form-field class="datetime-field">
               <mat-label>Start Date / Time</mat-label>
               <input matInput [ngxMatDatetimePicker]="picker" [(ngModel)]="msel.startTime"
-                (dateChange)="isChanged = true" (dateInput)="isChanged = true" style="display: none;" [disabled]="!canEditMsel()">
+                (dateChange)="isChanged = true" (dateInput)="isChanged = true" style="display: none;"
+                [disabled]="!canEditMsel()">
               <!-- <datetime-picker> -->
               <span (click)="canEditMsel() && picker.open()">
                 {{msel.startTime | date: 'dd MMM yyyy HH:mm'}} {{ getTimezoneAbbr() }}
@@ -111,7 +116,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
           }
           <!-- MSEL End/Duration -->
           <app-duration-edit [startTime]="msel.startTime" [(durationSeconds)]="msel.durationSeconds"
-            [timeName]="'End Date / Time'" [postScript]="'duration'" [canEdit]="canEditMsel()" (change)="isChanged = true;"></app-duration-edit>
+            [timeName]="'End Date / Time'" [postScript]="'duration'" [canEdit]="canEditMsel()"
+            (change)="isChanged = true;"></app-duration-edit>
           <!-- Integration Section -->
           <div class="integration-div">
             <div class="integration-header">
@@ -128,7 +134,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
                               (msel.useGallery && galleryToDo()) ||
                               (msel.useCite && !msel.citeScoringModelId) ||
                               (msel.useCite && hasCiteTeamsWithoutType()) ||
-                              isBusy || isChanged || (pushStatus && pushStatus.startsWith('ERROR'))">@if (pushStatus && !pushStatus.startsWith('ERROR')) {
+                              isBusy || isChanged || (pushStatus && pushStatus.startsWith('ERROR'))">@if (pushStatus &&
+                  !pushStatus.startsWith('ERROR')) {
                   <span>{{ pushStatus }} ...</span>
                   }@if (!pushStatus || pushStatus.startsWith('ERROR')) {
                   <span>Push Integrations</span>
@@ -145,7 +152,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 }
               </div>
               @if (pushStatus && pushStatus.startsWith('ERROR')) {
-              <div class="integration-error" style="color: red; margin-top: 8px; padding: 8px; background-color: #ffebee; border-radius: 4px;">
+              <div class="integration-error"
+                style="color: red; margin-top: 8px; padding: 8px; background-color: #ffebee; border-radius: 4px;">
                 <strong>Error:</strong> {{ pushStatus.substring(7) }}
               </div>
               }
@@ -187,7 +195,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 @if (msel.galleryCollectionId) {
                 <div class="integration-field">
                   <span class="integration-label">Collection:</span>
-                  <span class="integration-guid" [title]="msel.galleryCollectionId">{{ msel.galleryCollectionId }}</span>
+                  <span class="integration-guid" [title]="msel.galleryCollectionId">{{ msel.galleryCollectionId
+                    }}</span>
                   @if (galleryCollectionName) {
                   <span class="integration-name">{{ galleryCollectionName }}</span>
                   }
@@ -226,7 +235,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   @if (scoringModelList.length > 0 && msel.status !== 'Deployed' && canEditMsel()) {
                   <mat-form-field class="integration-select">
                     <mat-select [(ngModel)]="msel.citeScoringModelId" (cut)="isChanged = true"
-                      (selectionChange)="isChanged = true; updateCiteScoringModelName()" (paste)="isChanged = true" (keypress)="isChanged = true">
+                      (selectionChange)="isChanged = true; updateCiteScoringModelName()" (paste)="isChanged = true"
+                      (keypress)="isChanged = true">
                       <mat-option [value]=""></mat-option>
                       @for (scoringModel of scoringModelList; track scoringModel) {
                       <mat-option [value]="scoringModel.id">
@@ -237,12 +247,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   </mat-form-field>
                   }
                   @if (scoringModelList.length === 0 || msel.status === 'Deployed' || !canEditMsel()) {
-                    @if (msel.citeScoringModelId) {
-                    <span class="integration-guid" [title]="msel.citeScoringModelId">{{ msel.citeScoringModelId }}</span>
-                    @if (citeScoringModelName) {
-                    <span class="integration-name">{{ citeScoringModelName }}</span>
-                    }
-                    }
+                  @if (msel.citeScoringModelId) {
+                  <span class="integration-guid" [title]="msel.citeScoringModelId">{{ msel.citeScoringModelId }}</span>
+                  @if (citeScoringModelName) {
+                  <span class="integration-name">{{ citeScoringModelName }}</span>
+                  }
+                  }
                   }
                 </div>
                 @if (!msel.isTemplate && msel.citeEvaluationId) {
@@ -269,19 +279,21 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <!-- Steamfitter Integration -->
             <div class="integration-row">
               <div class="integration-checkbox-cell">
-                <mat-checkbox [disabled]="msel.status === 'Deployed' || !canEditMsel()" [(ngModel)]="msel.useSteamfitter"
-                  (cut)="isChanged = true" (change)="isChanged = true" (paste)="isChanged = true"
-                  (keypress)="isChanged = true">Steamfitter</mat-checkbox>
+                <mat-checkbox [disabled]="msel.status === 'Deployed' || !canEditMsel()"
+                  [(ngModel)]="msel.useSteamfitter" (cut)="isChanged = true" (change)="isChanged = true"
+                  (paste)="isChanged = true" (keypress)="isChanged = true">Steamfitter</mat-checkbox>
               </div>
               @if (!msel.isTemplate && msel.useSteamfitter && msel.steamfitterScenarioId) {
               <div class="integration-details">
                 <div class="integration-field">
                   <span class="integration-label">Scenario:</span>
-                  <span class="integration-guid" [title]="msel.steamfitterScenarioId">{{ msel.steamfitterScenarioId }}</span>
+                  <span class="integration-guid" [title]="msel.steamfitterScenarioId">{{ msel.steamfitterScenarioId
+                    }}</span>
                   @if (steamfitterScenarioName) {
                   <span class="integration-name">{{ steamfitterScenarioName }}</span>
                   }
-                  <a [href]="getSteamfitterScenarioUrl()" target="_blank" class="integration-link" title="Open in Steamfitter">
+                  <a [href]="getSteamfitterScenarioUrl()" target="_blank" class="integration-link"
+                    title="Open in Steamfitter">
                     <mat-icon class="mdi-18px" fontIcon="mdi-open-in-new"></mat-icon>
                   </a>
                 </div>
@@ -293,8 +305,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <div class="single-detail center-self">
             <mat-form-field class="full-width">
               <mat-label>MSEL Status</mat-label>
-              <mat-select [(ngModel)]="msel.status" [disabled]="msel.status === 'Deployed' || !canEditMsel()" (cut)="isChanged = true"
-                (change)="isChanged = true" (paste)="isChanged = true" (keypress)="isChanged = true">
+              <mat-select [(ngModel)]="msel.status" [disabled]="msel.status === 'Deployed' || !canEditMsel()"
+                (cut)="isChanged = true" (selectionChange)="isChanged = true" (change)="isChanged = true"
+                (paste)="isChanged = true" (keypress)="isChanged = true">
                 @for (item of itemStatus; track item) {
                 <mat-option [value]="item">
                   {{ item }}
@@ -335,30 +348,144 @@ project root for license information or contact permission@sei.cmu.edu for full 
               <a target="_blank" href="{{ starterUrl }}">{{ starterUrl }}</a>
             </div>
           </div>
+          <!-- Assessor View URL -->
+          <div class="url-form-field">
+            <div class="editor-label">
+              Assessor View URL
+              <div class="field-hint">
+                Use this URL for direct access to the Assessor View
+              </div>
+            </div>
+            <div class="url-button-link">
+              <button mat-icon-button ngxClipboard [cbContent]="assessorUrl" (click)="$event.stopPropagation()"
+                title="Copy Assessor View URL:  {{ assessorUrl }}">
+                <mat-icon class="mdi-24px" fontIcon="mdi-content-copy"></mat-icon>
+              </button>
+              <a target="_blank" href="{{ assessorUrl }}">{{ assessorUrl }}</a>
+            </div>
+          </div>
+          <!-- Competencies summary -->
+          <div class="competency-section">
+            <div class="section-header">
+              <mat-icon class="mdi-18px" fontIcon="mdi-certificate-outline" style="color: var(--mat-sys-primary); vertical-align: middle; margin-right: 4px;"></mat-icon>
+              <b>Competencies</b>
+              @if (competencyFrameworkNames.length > 0) {
+              <span style="margin-left: 8px; font-weight: normal; color: var(--mat-sys-on-surface-variant); font-size: 13px;">
+                ({{ competencyFrameworkNames.join(', ') }})
+              </span>
+              }
+            </div>
+            <div class="competency-panels-row">
+              @if (workRoleCompetencies.length > 0) {
+              <mat-expansion-panel class="competency-expansion">
+                <mat-expansion-panel-header>
+                  <mat-panel-title>
+                    <mat-icon class="mdi-18px" fontIcon="mdi-account-hard-hat" style="color: var(--mat-sys-primary); margin-right: 6px;"></mat-icon>
+                    Work Roles ({{ workRoleCompetencies.length }})
+                  </mat-panel-title>
+                </mat-expansion-panel-header>
+                <div class="competency-list">
+                  @for (c of workRoleCompetencies; track c.id) {
+                  <div class="competency-list-item">
+                    <span class="competency-list-id" [matTooltip]="getCompetencyTooltip(c)" matTooltipPosition="right">{{ c.idNumber }}</span>
+                  </div>
+                  }
+                </div>
+              </mat-expansion-panel>
+              }
+              @if (nonWorkRoleCompetencies.length > 0) {
+              <mat-expansion-panel class="competency-expansion">
+                <mat-expansion-panel-header>
+                  <mat-panel-title>
+                    <mat-icon class="mdi-18px" fontIcon="mdi-certificate-outline" style="color: var(--mat-sys-primary); margin-right: 6px;"></mat-icon>
+                    Competencies ({{ nonWorkRoleCompetencies.length }})
+                  </mat-panel-title>
+                </mat-expansion-panel-header>
+                <div class="competency-list">
+                  @for (c of nonWorkRoleCompetencies; track c.id) {
+                  <div class="competency-list-item">
+                    <span class="competency-list-id" [matTooltip]="getCompetencyTooltip(c)" matTooltipPosition="right">{{ c.idNumber }}</span>
+                  </div>
+                  }
+                </div>
+              </mat-expansion-panel>
+              }
+            </div>
+            <div class="competency-hint">Manage on the Competencies tab</div>
+          </div>
+          <!-- LMT Metadata -->
+          <div class="section-header">
+            <mat-icon class="mdi-18px" fontIcon="mdi-tag-outline" style="color: var(--mat-sys-primary); vertical-align: middle; margin-right: 4px;"></mat-icon>
+            <b>Metadata</b>
+          </div>
+          <div class="lmt-dropdown-row">
+            <mat-form-field class="lmt-dropdown-width" matTooltip="Beginner, Intermediate, or Advanced — maps to lrmi:educationalLevel" matTooltipShowDelay="800">
+              <mat-label>Difficulty Rating</mat-label>
+              <mat-select [(ngModel)]="msel.educationalLevel" [disabled]="!canEditMsel()"
+                (selectionChange)="isChanged = true">
+                <mat-option [value]="null"></mat-option>
+                @for (level of educationalLevels; track level) {
+                <mat-option [value]="level">{{ level }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field class="lmt-dropdown-width" matTooltip="Assessment, Instruction, or Professional Support — maps to lrmi:educationalUse" matTooltipShowDelay="800">
+              <mat-label>Exercise Purpose</mat-label>
+              <mat-select [(ngModel)]="msel.educationalUse" [disabled]="!canEditMsel()"
+                (selectionChange)="isChanged = true">
+                <mat-option [value]="null"></mat-option>
+                @for (use of educationalUses; track use) {
+                <mat-option [value]="use">{{ use }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field class="lmt-dropdown-width" matTooltip="Online, Onsite, or Blended delivery mode — maps to schema:courseMode" matTooltipShowDelay="800">
+              <mat-label>Exercise Mode</mat-label>
+              <mat-select [(ngModel)]="msel.courseMode" [disabled]="!canEditMsel()"
+                (selectionChange)="isChanged = true">
+                <mat-option [value]="null"></mat-option>
+                @for (mode of courseModes; track mode) {
+                <mat-option [value]="mode">{{ mode }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+          <div class="single-detail center-self">
+            <mat-form-field class="full-width" matTooltip="Topic areas covered by this exercise — maps to dcterms:subject" matTooltipShowDelay="800">
+              <mat-label>Subject</mat-label>
+              <input type="text" matInput placeholder="e.g., incident response, network defense"
+                [(ngModel)]="msel.subject" (cut)="isChanged = true" (change)="isChanged = true"
+                (paste)="isChanged = true" (keypress)="isChanged = true" [disabled]="!canEditMsel()" />
+            </mat-form-field>
+          </div>
+          <div class="single-detail center-self">
+            <mat-form-field class="full-width" matTooltip="Searchable tags for catalog discovery — maps to schema:keywords" matTooltipShowDelay="800">
+              <mat-label>Keywords</mat-label>
+              <input type="text" matInput placeholder="Searchable tags"
+                [(ngModel)]="msel.keywords" (cut)="isChanged = true" (change)="isChanged = true"
+                (paste)="isChanged = true" (keypress)="isChanged = true" [disabled]="!canEditMsel()" />
+            </mat-form-field>
+          </div>
           <!-- row meta data -->
           @if (canManageMsel()) {
           <div class="single-detail center-self">
-            <mat-form-field class="full-width"
+            <mat-form-field class="meta-field-width"
               title="A numeric value that defines the height of the header row when this MSEL is exported as an xlsx file">
-              <mat-label>Header Row Metadata (Height) when exported as an Excel file</mat-label>
-              <input type="text" matInput
-                [(ngModel)]="msel.headerRowMetadata" (cut)="isChanged = true" (change)="isChanged = true"
-                (paste)="isChanged = true" (keypress)="isChanged = true"
+              <mat-label>Header Row Metadata (Height)</mat-label>
+              <input type="text" matInput [(ngModel)]="msel.headerRowMetadata" (cut)="isChanged = true"
+                (change)="isChanged = true" (paste)="isChanged = true" (keypress)="isChanged = true"
                 title="An integer value that defines the height of the header row when this MSEL is exported as an xlsx file" />
             </mat-form-field>
           </div>
           }
-          <div class="single-detail center-self">
-            <mat-form-field class="full-width">
+          <div class="lmt-dropdown-row">
+            <mat-form-field class="meta-field-width">
               <mat-label>Date Created</mat-label>
-              <input type="text" matInput value="{{ msel.dateCreated | date: 'yyyy-MM-dd' }}"
-                disabled />
+              <input type="text" matInput value="{{ msel.dateCreated | date: 'yyyy-MM-dd' }}" disabled />
             </mat-form-field>
-          </div>
-          <div class="single-detail center-self">
-            <mat-form-field class="full-width">
+            <mat-form-field class="meta-field-width">
               <mat-label>Created By</mat-label>
-              <input type="text" matInput value="{{ getUserName(msel.createdBy) }}" disabled />
+              <input type="text" matInput value="{{ creatorName }}" disabled />
             </mat-form-field>
           </div>
         </div>
@@ -395,10 +522,10 @@ project root for license information or contact permission@sei.cmu.edu for full 
         @if (editingPageId === page.id) {
         <span>
           <button mat-icon-button (click)="saveMselPageEdits()" style="outline: none;" title="Save Changes">
-            <mat-icon class="mdi-24px self-center" fontIcon="mdi-check"></mat-icon>
+            <mat-icon class="mdi-24px self-center" fontIcon="mdi-content-save-outline"></mat-icon>
           </button>
           <button mat-icon-button (click)="cancelMselPageEdits()" style="outline: none;" title="Cancel Changes">
-            <mat-icon class="mdi-24px self-center" fontIcon="mdi-close"></mat-icon>
+            <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
           </button>
           @if (hasUnsavedPageChanges()) {
           <mat-label class="unsaved-warning">Changes have not been saved!</mat-label>
@@ -418,8 +545,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
           @if (editingPageId === page.id) {
           <mat-checkbox [(ngModel)]="changedMselPage.allCanView" title="All MSEL users can view this page">All MSEL
             users can view this page</mat-checkbox>
-          } @else if (page.allCanView) {
-          <span>** All MSEL users can view this page</span>
           }
         </div>
         <div>
@@ -427,8 +552,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <angular-editor [placeholder]="'Content'" [(ngModel)]="changedMselPage.content"
             [config]="editorConfig"></angular-editor>
           } @else {
-          <angular-editor [placeholder]="'Content'" [ngModel]="page.content"
-            [config]="viewConfig"></angular-editor>
+          <angular-editor [placeholder]="'Content'" [ngModel]="page.content" [config]="viewConfig"></angular-editor>
           }
         </div>
       </div>
@@ -448,3 +572,4 @@ project root for license information or contact permission@sei.cmu.edu for full 
     }
   </mat-tab-group>
 </div>
+}

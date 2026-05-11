@@ -4,6 +4,7 @@
 import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { UnitDataService } from 'src/app/data/unit/unit-data.service';
 import { UnitQuery } from 'src/app/data/unit/unit.query';
 import { UserQuery } from 'src/app/data/user/user.query';
 import {
@@ -26,6 +27,8 @@ import { UserMselRoleDataService } from 'src/app/data/user-msel-role/user-msel-r
 import { UserMselRoleQuery } from 'src/app/data/user-msel-role/user-msel-role.query';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { MatTable, MatTableDataSource } from '@angular/material/table';
+import { MatPaginator } from '@angular/material/paginator';
+import { Sort } from '@angular/material/sort';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 
 @Component({
@@ -46,7 +49,12 @@ export class MselContributorsComponent implements OnDestroy, OnInit {
   // context menu
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
   @ViewChild('contributorTable', { static: false }) contributorTable: MatTable<any>;
+  @ViewChild(MatPaginator) set matPaginator(paginator: MatPaginator) {
+    this.mselUnitDataSource.paginator = paginator;
+  }
   contextMenuPosition = { x: '0px', y: '0px' };
+  filterString = '';
+  sort: Sort = { active: 'shortName', direction: 'asc' };
   msel = new MselPlus();
   originalMsel = new MselPlus();
   expandedSectionIds: string[] = [];
@@ -60,6 +68,26 @@ export class MselContributorsComponent implements OnDestroy, OnInit {
     MselRole.Evaluator,
     MselRole.Viewer
   ];
+  citeEvaluationRoles: string[] = [
+    'Owner',
+    'Editor',
+    'Viewer',
+    'Facilitator',
+    'Advancer',
+    'Observer',
+    'Member'
+  ];
+  galleryExhibitRoles: string[] = [
+    'Manager',
+    'Observer',
+    'Member'
+  ];
+  steamfitterScenarioRoles: string[] = [
+    'Manager',
+    'Facilitator',
+    'Member',
+    'Observer'
+  ];
   isEditEnabled = false;
   userList: User[] = [];
   mselUnitList: MselUnit[] = [];
@@ -72,6 +100,7 @@ export class MselContributorsComponent implements OnDestroy, OnInit {
   private unsubscribe$ = new Subject();
 
   constructor(
+    private unitDataService: UnitDataService,
     private unitQuery: UnitQuery,
     private userQuery: UserQuery,
     private mselDataService: MselDataService,
@@ -111,11 +140,7 @@ export class MselContributorsComponent implements OnDestroy, OnInit {
           this.mselUnitList.push(Object.assign(mselUnit, mt));
         }
       });
-      if (this.mselUnitList.length > 0) {
-        this.mselUnitList = this.mselUnitList.sort((a, b) =>
-          a.unit.shortName?.toLowerCase() > b.unit.shortName?.toLowerCase() ? 1 : -1);
-      }
-      this.mselUnitDataSource.data = this.mselUnitList;
+      this.applyFilter(this.filterString);
     });
     // subscribe to UserMselRoles
     this.userMselRoleQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(umrs => {
@@ -124,6 +149,8 @@ export class MselContributorsComponent implements OnDestroy, OnInit {
   }
 
   ngOnInit() {
+    // Refresh units so newly created units appear in the add menu
+    this.unitDataService.load();
     // Load permissions and trigger change detection when loaded
     this.permissionDataService.load()
       .pipe(takeUntil(this.unsubscribe$))
@@ -156,6 +183,10 @@ export class MselContributorsComponent implements OnDestroy, OnInit {
     }
 
     return unitList;
+  }
+
+  refreshUnits() {
+    this.unitDataService.load();
   }
 
   getUnit(id: string) {
@@ -214,6 +245,62 @@ export class MselContributorsComponent implements OnDestroy, OnInit {
       ).id;
       this.userMselRoleDataService.delete(umrId);
     }
+  }
+
+  getSelectedMselRoles(userId: string): MselRole[] {
+    return this.userMselRoles
+      .filter(umr => umr.userId === userId && umr.mselId === this.msel.id)
+      .map(umr => umr.role);
+  }
+
+  setMselRoles(userId: string, newRoles: MselRole[]) {
+    const current = this.getSelectedMselRoles(userId);
+    const toAdd = newRoles.filter(r => !current.includes(r));
+    const toRemove = current.filter(r => !newRoles.includes(r));
+    toAdd.forEach(r => this.toggleMselRole(userId, r, true));
+    toRemove.forEach(r => this.toggleMselRole(userId, r, false));
+  }
+
+  getCiteEvaluationRole(userId: string): string | null {
+    const umr = this.userMselRoles.find(u =>
+      u.userId === userId && u.mselId === this.msel.id);
+    return umr?.citeEvaluationRole ?? null;
+  }
+
+  setCiteEvaluationRole(userId: string, role: string | null) {
+    this.userMselRoleDataService.setIntegrationRoles(
+      this.msel.id, userId,
+      role,
+      this.getGalleryExhibitRole(userId),
+      this.getSteamfitterScenarioRole(userId));
+  }
+
+  getGalleryExhibitRole(userId: string): string | null {
+    const umr = this.userMselRoles.find(u =>
+      u.userId === userId && u.mselId === this.msel.id);
+    return umr?.galleryExhibitRole ?? null;
+  }
+
+  setGalleryExhibitRole(userId: string, role: string | null) {
+    this.userMselRoleDataService.setIntegrationRoles(
+      this.msel.id, userId,
+      this.getCiteEvaluationRole(userId),
+      role,
+      this.getSteamfitterScenarioRole(userId));
+  }
+
+  getSteamfitterScenarioRole(userId: string): string | null {
+    const umr = this.userMselRoles.find(u =>
+      u.userId === userId && u.mselId === this.msel.id);
+    return umr?.steamfitterScenarioRole ?? null;
+  }
+
+  setSteamfitterScenarioRole(userId: string, role: string | null) {
+    this.userMselRoleDataService.setIntegrationRoles(
+      this.msel.id, userId,
+      this.getCiteEvaluationRole(userId),
+      this.getGalleryExhibitRole(userId),
+      role);
   }
 
   saveMselUnit(mselUnit: MselUnit) {
@@ -278,12 +365,40 @@ export class MselContributorsComponent implements OnDestroy, OnInit {
   }
 
   isOwnOwnerRole(userId: string, mselRole: MselRole): boolean {
-    return userId === this.loggedInUserId && mselRole === MselRole.Owner;
+    return userId === this.loggedInUserId && mselRole === MselRole.Owner && this.hasMselRole(userId, mselRole);
   }
 
   ngOnDestroy() {
     this.unsubscribe$.next(null);
     this.unsubscribe$.complete();
+  }
+
+  applyFilter(filterValue: string) {
+    this.filterString = filterValue;
+    filterValue = filterValue.toLowerCase();
+    const filtered = this.mselUnitList
+      .filter(mu =>
+        mu.unit?.name?.toLowerCase().includes(filterValue) ||
+        mu.unit?.shortName?.toLowerCase().includes(filterValue) ||
+        mu.unit?.users?.some(u => u.name?.toLowerCase().includes(filterValue))
+      )
+      .sort((a, b) => this.sortMselUnits(a, b));
+    this.mselUnitDataSource.data = filtered;
+  }
+
+  sortChanged(sort: Sort) {
+    this.sort = sort;
+    this.applyFilter(this.filterString);
+  }
+
+  sortMselUnits(a: MselUnit, b: MselUnit): number {
+    const dir = this.sort.direction === 'desc' ? -1 : 1;
+    switch (this.sort.active) {
+      case 'name':
+        return (a.unit?.name?.toLowerCase() ?? '') < (b.unit?.name?.toLowerCase() ?? '') ? -dir : dir;
+      default:
+        return (a.unit?.shortName?.toLowerCase() ?? '') < (b.unit?.shortName?.toLowerCase() ?? '') ? -dir : dir;
+    }
   }
 
   getRoleDescription(role: MselRole): string {

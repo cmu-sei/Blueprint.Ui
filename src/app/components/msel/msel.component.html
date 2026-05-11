@@ -8,7 +8,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
   @if (sideNavCollapsed) {
   <mat-drawer #sidenav mode="side" opened class="side-nav-collapsed">
     <div class="top-div">
-      <a mat-icon-button [routerLink]="['/build/']" title="Back to My MSELs">
+      <a mat-icon-button (click)="navigateBack()" title="Back to My MSELs" style="cursor: pointer;">
         <mat-icon class="mat-list-item-icon mdi-24px" fontIcon="mdi-arrow-left-thin-circle-outline"></mat-icon>
       </a>
     </div>
@@ -39,7 +39,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
   }
   @if (!sideNavCollapsed) {
   <mat-drawer #sidenav mode="side" opened class="side-nav">
-    <a class="top-div" [routerLink]="['/build/']" title="Back to My MSELs">
+    <a class="top-div" (click)="navigateBack()" title="Back to My MSELs" style="cursor: pointer;">
       <div class="one-cell center-self">
         <mat-icon class="mat-list-item-icon mdi-24px" fontIcon="mdi-arrow-left-thin-circle-outline"></mat-icon>
       </div>
@@ -139,12 +139,19 @@ project root for license information or contact permission@sei.cmu.edu for full 
       @if (selectedTab === 'CITE Duties') {
       <app-cite-duty-list [loggedInUserId]="loggedInUserId" [canEdit]="canEditMsel"></app-cite-duty-list>
       }
+      @if (selectedTab === 'Competencies') {
+      <app-msel-competencies [loggedInUserId]="loggedInUserId"></app-msel-competencies>
+      }
       @if (selectedTab === 'Scenario Events') {
       <app-scenario-event-list [loggedInUserId]="loggedInUserId"
         [userTheme]="userTheme$ | async"></app-scenario-event-list>
       }
       @if (selectedTab === 'Exercise View') {
       <app-msel-view [tabHeight]="48" [userTheme]="userTheme$ | async"></app-msel-view>
+      }
+      @if (selectedTab === 'Assessor View') {
+      <app-assessor-view [loggedInUserId]="loggedInUserId" [userTheme]="userTheme$ | async"
+        [canEditCheckboxes]="canEditCheckboxes"></app-assessor-view>
       }
       @if (selectedTab === 'Invitations') {
       <app-invitation-list [loggedInUserId]="loggedInUserId" [canEditMsel]="canEditMsel"

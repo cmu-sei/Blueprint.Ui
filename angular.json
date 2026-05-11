@@ -71,9 +71,21 @@
                   "maximumWarning": "6kb"
                 }
               ]
+            },
+            "development": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": {
+                "scripts": true,
+                "styles": true,
+                "vendor": true
+              },
+              "namedChunks": true
+            },
+            "localNPM": {
+              "tsConfig": "tsconfig.local-npm.json"
             }
-          },
-          "defaultConfiguration": ""
+          }
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
@@ -81,9 +93,16 @@
             "port": 4725,
             "buildTarget": "blueprint-ui:build"
           },
+          "defaultConfiguration": "development",
           "configurations": {
             "production": {
               "buildTarget": "blueprint-ui:build:production"
+            },
+            "development": {
+              "buildTarget": "blueprint-ui:build:development"
+            },
+            "localNPM": {
+              "buildTarget": "blueprint-ui:build:development,localNPM"
             }
           }
         },

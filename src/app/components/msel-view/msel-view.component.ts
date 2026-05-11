@@ -5,6 +5,7 @@ import { Component, Input, OnDestroy, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Sort } from '@angular/material/sort';
 import { Subject, Subscription, Observable, of } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
 import {
   takeUntil,
   debounceTime,
@@ -15,10 +16,13 @@ import {
 import { ComnSettingsService, Theme } from '@cmusei/crucible-common';
 import {
   Card,
+  Competency,
+  CompetencyFramework,
   DataField,
   DataValue,
   Move,
   Msel,
+  MselCompetency,
   Organization,
   ScenarioEvent,
   Team,
@@ -43,6 +47,10 @@ import {
   ScenarioEventViewIndexing,
 } from 'src/app/data/scenario-event/scenario-event-data.service';
 import { ScenarioEventQuery } from 'src/app/data/scenario-event/scenario-event.query';
+import { MselCompetencyQuery } from 'src/app/data/msel-competency/msel-competency.query';
+import { MselCompetencyDataService } from 'src/app/data/msel-competency/msel-competency-data.service';
+import { CompetencyFrameworkQuery } from 'src/app/data/competency-framework/competency-framework.query';
+import { CompetencyFrameworkDataService } from 'src/app/data/competency-framework/competency-framework-data.service';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
 import { AngularEditorConfig } from '@kolkov/angular-editor';
 
@@ -98,6 +106,8 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
   keyUp = new Subject<KeyboardEvent>();
   private subscription: Subscription;
   private unsubscribe$ = new Subject();
+  private competencyCache = new Map<string, Competency>();
+  private competencyTypeCache = new Map<string, string>();
   viewConfig: AngularEditorConfig = {
     editable: false,
     height: 'auto',
@@ -116,7 +126,6 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
 
   constructor(
     private activatedRoute: ActivatedRoute,
-    private settingsService: ComnSettingsService,
     private mselDataService: MselDataService,
     private mselQuery: MselQuery,
     private organizationQuery: OrganizationQuery,
@@ -129,7 +138,13 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
     private moveQuery: MoveQuery,
     private scenarioEventDataService: ScenarioEventDataService,
     private scenarioEventQuery: ScenarioEventQuery,
-    private uiDataService: UIDataService
+    private mselCompetencyQuery: MselCompetencyQuery,
+    private mselCompetencyDataService: MselCompetencyDataService,
+    private competencyFrameworkQuery: CompetencyFrameworkQuery,
+    private competencyFrameworkDataService: CompetencyFrameworkDataService,
+    private uiDataService: UIDataService,
+    private http: HttpClient,
+    private settingsService: ComnSettingsService
   ) {
     // subscribe to the route parameters.  Used when viewing independently.
     this.activatedRoute.params
@@ -140,6 +155,11 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
           this.mselDataService.loadById(mselId);
           this.loadInitialData(mselId);
           this.mselDataService.setActive(mselId);
+          // Call xAPI for viewed event (only on view page, not build page)
+          const baseUrl = this.settingsService.settings.ApiUrl.endsWith('/')
+            ? this.settingsService.settings.ApiUrl
+            : this.settingsService.settings.ApiUrl + '/';
+          this.http.post(`${baseUrl}api/xapi/viewed/msel/${mselId}`, {}).subscribe();
         }
       });
     // subscribe to the route query parameters.  Used when editing the MSEL and checking the view.
@@ -171,6 +191,7 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
       .subscribe((dataFields) => {
         this.sortedDataFields = this.getSortedDataFields(dataFields);
         this.scenarioEventDataService.updateScenarioEventViewDataFields(this);
+        this.scenarioEventDataService.updateScenarioEventViewDataValues(this);
         this.scenarioEventDataService.updateScenarioEventViewDisplayedEvents(
           this
         );
@@ -248,6 +269,18 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
       .subscribe((teams) => {
         this.teamList = teams;
       });
+    // observe the MselCompetencies for tooltip data
+    this.mselCompetencyQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((mselCompetencies) => {
+        this.competencyCache.clear();
+        for (const mc of mselCompetencies) {
+          if (mc.competency && mc.competency.idNumber) {
+            this.competencyCache.set(mc.competency.idNumber, mc.competency);
+          }
+        }
+      });
     // subscribe to filter string changes for debounce
     this.subscription = this.keyUp
       .pipe(
@@ -285,6 +318,8 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
     this.dataFieldDataService.loadByMsel(mselId);
     this.dataValueDataService.loadByMsel(mselId);
     this.scenarioEventDataService.loadByMsel(mselId);
+    this.mselCompetencyDataService.loadByMsel(mselId);
+    this.competencyFrameworkDataService.load();
   }
 
   applyFilter(filterValue: string) {
@@ -372,6 +407,42 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
     return users;
   }
 
+  getCompetencyTooltip(idNumber: string): string {
+    const comp = this.competencyCache.get(idNumber);
+    return comp?.shortName || '';
+  }
+
+  private getCompetencyType(comp: Competency): string {
+    if (!comp || !comp.id) return '';
+
+    // Check cache first
+    if (this.competencyTypeCache.has(comp.id)) {
+      return this.competencyTypeCache.get(comp.id) || '';
+    }
+
+    // Derive from ID pattern
+    const idNumber = comp.idNumber || '';
+    let type = '';
+
+    if (idNumber.includes('WRL')) {
+      type = 'Work Role';
+    } else if (/^[TKSA][\d-]/.test(idNumber)) {
+      const prefixMap: Record<string, string> = {
+        'T': 'Task', 'K': 'Knowledge', 'S': 'Skill', 'A': 'Ability',
+      };
+      type = prefixMap[idNumber.charAt(0)] || '';
+    } else if (/^[A-Z]{2}-[A-Z]{3}-\d+$/.test(idNumber)) {
+      type = 'Work Role';
+    } else if (/^[A-Z]{3}$/.test(idNumber)) {
+      type = 'Specialty Area';
+    } else if (/^[A-Z]{2}$/.test(idNumber)) {
+      type = 'Category';
+    }
+
+    this.competencyTypeCache.set(comp.id, type);
+    return type;
+  }
+
   trackByFn(index, item) {
     return item.id;
   }
@@ -401,7 +472,7 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
     const topHeight = this.tabHeight
       ? this.myTopHeight + this.tabHeight
       : this.myTopHeight;
-    return 'calc(100vh - ' + topHeight + 'px)';
+    return 'calc(100% - ' + topHeight + 'px)';
   }
 
   blankDataValuePlus(): DataValuePlus {

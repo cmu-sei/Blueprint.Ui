@@ -1,0 +1,762 @@
+<!--
+Copyright 2024 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license, please see LICENSE.md in the
+project root for license information or contact permission@sei.cmu.edu for full terms.
+-->
+<div class="container">
+  @if (msel) {
+  @if (assessorDataFields.length === 0) {
+    <div class="empty-state">
+      <mat-icon fontIcon="mdi-alert-circle-outline" style="font-size: 48px; width: 48px; height: 48px;"></mat-icon>
+      <p>No data fields are marked as assessor-visible.</p>
+      <p>Go to the Data Fields tab and enable "Assessor View" on the fields you want assessors to see.</p>
+    </div>
+  } @else {
+  <div class="tableFixHead">
+    <table>
+      <thead matSort (matSortChange)="sortChanged($event)">
+        @if (showSearch) {
+        <tr>
+          <th [attr.colspan]="assessorDataFields.length + 2
+            + (msel.showMoveOnAssessorView ? 1 : 0)
+            + (msel.showGroupOnAssessorView ? 1 : 0)
+            + (msel.showTimeOnAssessorView ? 1 : 0)
+            + (msel.showIntegrationTargetOnAssessorView ? 1 : 0)">
+            <div class="filter-bar">
+              <mat-form-field class="search-field" subscriptSizing="dynamic">
+                <mat-label>Search</mat-label>
+                <input matInput [(ngModel)]="filterString" (keyup)="keyUp.next($event)" />
+                @if (filterString) {
+                <button mat-icon-button matSuffix (click)="applyFilter('')" title="Clear Search">
+                  <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline"></mat-icon>
+                </button>
+                }
+              </mat-form-field>
+              @for (df of filterableFields; track df.id) {
+              <mat-form-field class="top-filter-field" subscriptSizing="dynamic">
+                <mat-label>{{ df.name }}</mat-label>
+                <mat-select [value]="getTopFieldFilter(df.id)" (selectionChange)="setTopFieldFilter(df.id, $event.value)" multiple>
+                  @for (val of getFieldDistinctValues(df); track val) {
+                    <mat-option [value]="val">{{ val }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+              }
+              @if (hasActiveTopFilters) {
+              <button mat-icon-button (click)="clearAllTopFilters()" title="Clear All Filters" class="clear-filters-button">
+                <mat-icon class="mdi-18px" fontIcon="mdi-filter-remove-outline"></mat-icon>
+              </button>
+              }
+            </div>
+          </th>
+        </tr>
+        }
+        <tr>
+          <!-- expand button header -->
+          <th class="background expand-col">
+            <div class="row-start-buttons">
+              @if (!showSearch) {
+              <button mat-icon-button (click)="setSearch(true)" class="header-button"
+                title="Search Events">
+                <mat-icon class="mdi-24px" fontIcon="mdi-filter-outline"></mat-icon>
+              </button>
+              }
+              @if (showSearch) {
+              <button mat-icon-button (click)="setSearch(false)" class="header-button"
+                title="Clear Search">
+                <mat-icon class="mdi-24px" fontIcon="mdi-filter-off-outline"></mat-icon>
+              </button>
+              }
+              <button mat-icon-button (click)="expandAll()" class="header-button"
+                title="Expand All (Ctrl+Shift+E)" [disabled]="isFullyExpanded">
+                <mat-icon class="mdi-24px" fontIcon="mdi-unfold-more-horizontal"></mat-icon>
+              </button>
+              <button mat-icon-button (click)="collapseAll()" class="header-button"
+                title="Collapse All (Ctrl+Shift+C)" [disabled]="isFullyCollapsed">
+                <mat-icon class="mdi-24px" fontIcon="mdi-unfold-less-horizontal"></mat-icon>
+              </button>
+            </div>
+          </th>
+          <!-- row number header -->
+          <th class="background row-num-col"></th>
+          <!-- Move header -->
+          @if (msel.showMoveOnAssessorView) {
+          <th mat-sort-header="moveNumber" class="background">
+            <div>Move</div>
+          </th>
+          }
+          <!-- Group header -->
+          @if (msel.showGroupOnAssessorView) {
+          <th mat-sort-header="groupOrder" class="background">
+            <div>Group</div>
+          </th>
+          }
+          <!-- Time header -->
+          @if (msel.showTimeOnAssessorView) {
+          <th mat-sort-header="deltaSeconds" class="background">
+            <div>
+              @if (!showRealTime) {
+              <button mat-icon-button (click)="setRealTime(true)" style="outline: none;" title="Switch to Real Time"
+                [disabled]="!msel || !msel.startTime || msel.startTime.valueOf() < 0">
+                <mat-icon class="mdi-24px" fontIcon="mdi-timer-outline"></mat-icon>
+              </button>
+              }
+              @if (showRealTime) {
+              <button mat-icon-button (click)="setRealTime(false)" style="outline: none;" title="Switch to Delta Time">
+                <mat-icon class="mdi-24px" fontIcon="mdi-clock-time-four-outline"></mat-icon>
+              </button>
+              }
+              <span>Execution Time</span>
+            </div>
+          </th>
+          }
+          <!-- IntegrationTarget header -->
+          @if (msel.showIntegrationTargetOnAssessorView) {
+          <th mat-sort-header="integrationTarget" class="background">
+            <div>Integration Target</div>
+          </th>
+          }
+          <!-- Data Field headers -->
+          @for (df of assessorDataFields; track df.id) {
+          @if (sortableDataTypes.includes(df.dataType)) {
+          <th mat-sort-header="{{ df.name }}" class="background">
+            <div [style]="getStyle(df)">{{ df.name }}</div>
+          </th>
+          } @else {
+          <th class="background">
+            <div [style]="getStyle(df)">{{ df.name }}</div>
+          </th>
+          }
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of displayRows; track $index) {
+        <!-- Move header row -->
+        @if (row.type === 'move') {
+        <tr class="move-header-row" (click)="toggleMoveExpand(row.moveNumber)" style="cursor: pointer;" title="Click to expand/collapse move">
+          <td class="expand-col">
+            <mat-icon class="mdi-24px"
+              [fontIcon]="expandedMoveNumbers.has(row.moveNumber) ? 'mdi-chevron-down' : 'mdi-chevron-right'"
+              style="display: flex; align-items: center; justify-content: center; opacity: 0.6;">
+            </mat-icon>
+          </td>
+          <td [attr.colspan]="assessorDataFields.length + 1
+            + (msel.showMoveOnAssessorView ? 1 : 0)
+            + (msel.showGroupOnAssessorView ? 1 : 0)
+            + (msel.showTimeOnAssessorView ? 1 : 0)
+            + (msel.showIntegrationTargetOnAssessorView ? 1 : 0)">
+            <div class="section-header-content">
+              <mat-icon fontIcon="mdi-folder-outline" class="mdi-18px"></mat-icon>
+              <span class="section-label">Move {{ row.moveNumber }}</span>
+              <span class="section-description">{{ getMoveDescription(row.moveNumber) }}</span>
+            </div>
+          </td>
+        </tr>
+        @if (expandedMoveNumbers.has(row.moveNumber)) {
+        <tr class="detail-row">
+          <td [attr.colspan]="assessorDataFields.length + 2
+            + (msel.showMoveOnAssessorView ? 1 : 0)
+            + (msel.showGroupOnAssessorView ? 1 : 0)
+            + (msel.showTimeOnAssessorView ? 1 : 0)
+            + (msel.showIntegrationTargetOnAssessorView ? 1 : 0)">
+            <div class="event-detail-split">
+              <div class="evidence-panel">
+                <div class="statements-header">
+                  <mat-icon fontIcon="mdi-clipboard-text-outline" class="mdi-18px"></mat-icon>
+                  <span>xAPI Evidence — Move {{ row.moveNumber }}</span>
+                  @if (getMoveStatements(row.moveNumber).length > 0) {
+                    <span class="statement-count">{{ getFilteredMoveStatements(row.moveNumber).length }} / {{ getMoveStatements(row.moveNumber).length }}</span>
+                  }
+                  <div class="evidence-filters">
+                    @if (teamList.length > 0) {
+                    <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
+                      <mat-label>Team</mat-label>
+                      <mat-select [value]="getSectionTeams('move-' + row.moveNumber)" (selectionChange)="filterByTeams('move-' + row.moveNumber, $event.value)" multiple>
+                        @for (team of teamList; track team.id) {
+                          <mat-option [value]="team.id">{{ team.shortName }}</mat-option>
+                        }
+                      </mat-select>
+                    </mat-form-field>
+                    }
+                    <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
+                      <mat-label>Source</mat-label>
+                      <mat-select [value]="getSectionSources('move-' + row.moveNumber)" (selectionChange)="filterBySources('move-' + row.moveNumber, $event.value)" multiple>
+                        <mat-option value="blueprint">Blueprint</mat-option>
+                        <mat-option value="cite">CITE</mat-option>
+                        <mat-option value="steamfitter">Steamfitter</mat-option>
+                        <mat-option value="player">Player</mat-option>
+                        <mat-option value="gallery">Gallery</mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                    <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
+                      <mat-label>Verb</mat-label>
+                      <mat-select [value]="getSectionVerbs('move-' + row.moveNumber)" (selectionChange)="filterByVerbs('move-' + row.moveNumber, $event.value)" multiple>
+                        @for (verb of availableVerbs; track verb) {
+                          <mat-option [value]="verb">{{ verb }}</mat-option>
+                        }
+                      </mat-select>
+                    </mat-form-field>
+                  </div>
+                  <button mat-icon-button class="refresh-button" (click)="refreshStatements()"
+                    title="Refresh xAPI statements" [disabled]="statementsLoading">
+                    <mat-icon class="mdi-18px" fontIcon="mdi-refresh"></mat-icon>
+                  </button>
+                </div>
+                @if (loadingStatements.has('_all')) {
+                  <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+                } @else if (getMoveStatements(row.moveNumber).length === 0) {
+                  <div class="no-statements">No xAPI statements found for this move.</div>
+                } @else {
+                  <div class="statements-list">
+                    @for (stmt of getFilteredMoveStatements(row.moveNumber); track $index) {
+                      <div class="statement-entry">
+                        <div class="statement-row" (click)="toggleStatement(stmt.id)"
+                          [class.statement-expanded]="expandedStatementIds.has(stmt.id)">
+                          <button mat-icon-button class="copy-button" (click)="copyStatement(stmt, $event)" title="Copy JSON">
+                            <mat-icon class="mdi-14px" fontIcon="mdi-content-copy"></mat-icon>
+                          </button>
+                          <span class="statement-time">{{ formatTimestamp(stmt.timestamp) }}</span>
+                          <span class="stmt-move">{{ getMovePart(stmt) }}</span>
+                          <span class="stmt-group">{{ getGroupPart(stmt) }}</span>
+                          <span class="platform-badge" [ngClass]="getPlatformClass(stmt)">{{ stmt.context?.platform || '?' }}</span>
+                          <span class="stmt-actor">{{ stmt.actor?.name || stmt.actor?.account?.name || 'Unknown' }}</span>
+                          <span class="stmt-team">{{ stmt.context?.team?.name || '' }}</span>
+                          <span class="stmt-verb">{{ stmt.verb?.display?.['en-US'] || stmt.verb?.id?.split('/').pop() || '?' }}</span>
+                          <span class="stmt-object">{{ stmt.object?.definition?.name?.['en-US'] || stmt.object?.id || '?' }}</span>
+                        </div>
+                        @if (expandedStatementIds.has(stmt.id)) {
+                          <div class="statement-json">
+                            @for (section of getStatementSections(stmt); track section.key) {
+                              <div class="json-section" (click)="toggleJsonSection(stmt.id, section.key); $event.stopPropagation()">
+                                <span class="json-toggle">{{ isJsonSectionExpanded(stmt.id, section.key) ? '▼' : '▶' }}</span>
+                                <span class="json-key">"{{ section.key }}"</span>:
+                                @if (!isJsonSectionExpanded(stmt.id, section.key)) {
+                                  <span class="json-preview">{{ section.preview || '{...}' }}</span>
+                                } @else {
+                                  <pre class="json-value">{{ formatJson(section.value) }}</pre>
+                                }
+                              </div>
+                            }
+                          </div>
+                        }
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+              @if (getMoveCompetencies(row.moveNumber).length > 0) {
+                <div class="assessment-panel">
+                  <div class="assessment-header">
+                    <mat-icon fontIcon="mdi-clipboard-check-outline" class="mdi-18px"></mat-icon>
+                    <span>Move {{ row.moveNumber }} — Competency Assessment</span>
+                  </div>
+                  @if (teamList.length > 0) {
+                    <mat-form-field class="assessment-team-field" subscriptSizing="dynamic">
+                      <mat-label>Assess Team</mat-label>
+                      <mat-select [value]="getAssertionTeam('move-' + row.moveNumber)" (selectionChange)="setAssertionTeam('move-' + row.moveNumber, $event.value)">
+                        <mat-option value="">None</mat-option>
+                        @for (team of getTeamsForContext('move-' + row.moveNumber); track team.id) {
+                          <mat-option [value]="team.id">{{ team.shortName }}</mat-option>
+                        }
+                      </mat-select>
+                    </mat-form-field>
+                  }
+                  <div class="competency-ratings">
+                    @for (comp of getMoveCompetencies(row.moveNumber); track comp.id) {
+                      <div class="rating-card" [class.rating-submitted]="isRatingSubmitted('move-' + row.moveNumber, comp.id)">
+                        <div class="rating-comp-id" [matTooltip]="getCompetencyTooltip(comp)" matTooltipPosition="above">{{ comp.idNumber }}</div>
+                        <mat-form-field class="rating-level-field" subscriptSizing="dynamic">
+                          <mat-label>Rating</mat-label>
+                          <mat-select [value]="getRating('move-' + row.moveNumber, comp.id).levelId"
+                            (selectionChange)="setRatingLevel('move-' + row.moveNumber, comp.id, $event.value)">
+                            @for (level of proficiencyLevels; track level.id) {
+                              <mat-option [value]="level.id" [title]="level.description">{{ level.name }} ({{ level.value }})</mat-option>
+                            }
+                          </mat-select>
+                        </mat-form-field>
+                        <mat-form-field class="rating-comment-field" subscriptSizing="dynamic">
+                          <mat-label>Comment</mat-label>
+                          <input matInput [value]="getRating('move-' + row.moveNumber, comp.id).comment"
+                            (input)="setRatingComment('move-' + row.moveNumber, comp.id, $event.target.value)" />
+                        </mat-form-field>
+                        <div class="rating-actions">
+                          <button mat-icon-button class="rating-submit-button"
+                            [disabled]="!canSubmitRating('move-' + row.moveNumber, comp.id)"
+                            (click)="submitRating('move-' + row.moveNumber, comp.id)"
+                            title="Submit assertion">
+                            <mat-icon class="mdi-18px" fontIcon="mdi-send"></mat-icon>
+                          </button>
+                          @if (isRatingSubmitted('move-' + row.moveNumber, comp.id)) {
+                            <span class="rating-submitted-indicator">
+                              <mat-icon fontIcon="mdi-check-circle" class="mdi-14px"></mat-icon>
+                              Submitted
+                            </span>
+                          }
+                        </div>
+                      </div>
+                    }
+                  </div>
+                  @if (hasAnyRatings('move-' + row.moveNumber)) {
+                    <div class="assessment-actions">
+                      <button mat-stroked-button
+                        [disabled]="!hasAnySubmittableRatings('move-' + row.moveNumber)"
+                        (click)="submitAllRatings('move-' + row.moveNumber)"
+                        class="submit-all-button">
+                        <mat-icon fontIcon="mdi-send-check" class="mdi-18px"></mat-icon>
+                        Submit All
+                      </button>
+                    </div>
+                  }
+                </div>
+              } @else {
+                <div class="assessment-panel assessment-panel-empty">
+                  <div class="assessment-header assessment-header-inactive">
+                    <mat-icon fontIcon="mdi-clipboard-check-outline" class="mdi-18px"></mat-icon>
+                    <span>Competency Assessment</span>
+                  </div>
+                  <div class="no-competencies">No competencies in this move.</div>
+                </div>
+              }
+            </div>
+          </td>
+        </tr>
+        }
+        }
+        <!-- Group header row -->
+        @if (row.type === 'group') {
+        <tr class="group-header-row" (click)="toggleGroupExpand(row.groupKey)" style="cursor: pointer;" title="Click to expand/collapse group">
+          <td class="expand-col">
+            <mat-icon class="mdi-24px"
+              [fontIcon]="expandedGroupKeys.has(row.groupKey) ? 'mdi-chevron-down' : 'mdi-chevron-right'"
+              style="display: flex; align-items: center; justify-content: center; opacity: 0.6;">
+            </mat-icon>
+          </td>
+          <td [attr.colspan]="assessorDataFields.length + 1
+            + (msel.showMoveOnAssessorView ? 1 : 0)
+            + (msel.showGroupOnAssessorView ? 1 : 0)
+            + (msel.showTimeOnAssessorView ? 1 : 0)
+            + (msel.showIntegrationTargetOnAssessorView ? 1 : 0)">
+            <div class="section-header-content">
+              <mat-icon fontIcon="mdi-group" class="mdi-18px"></mat-icon>
+              <span class="section-label">Group {{ row.groupNumber }}</span>
+            </div>
+          </td>
+        </tr>
+        @if (expandedGroupKeys.has(row.groupKey)) {
+        <tr class="detail-row">
+          <td [attr.colspan]="assessorDataFields.length + 2
+            + (msel.showMoveOnAssessorView ? 1 : 0)
+            + (msel.showGroupOnAssessorView ? 1 : 0)
+            + (msel.showTimeOnAssessorView ? 1 : 0)
+            + (msel.showIntegrationTargetOnAssessorView ? 1 : 0)">
+            <div class="event-detail-split">
+              <div class="evidence-panel">
+                <div class="statements-header">
+                  <mat-icon fontIcon="mdi-clipboard-text-outline" class="mdi-18px"></mat-icon>
+                  <span>xAPI Evidence — Group {{ row.groupNumber }}</span>
+                  @if (getGroupStatements(row.groupKey).length > 0) {
+                    <span class="statement-count">{{ getFilteredGroupStatements(row.groupKey).length }} / {{ getGroupStatements(row.groupKey).length }}</span>
+                  }
+                  <div class="evidence-filters">
+                    @if (teamList.length > 0) {
+                    <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
+                      <mat-label>Team</mat-label>
+                      <mat-select [value]="getSectionTeams('group-' + row.groupKey)" (selectionChange)="filterByTeams('group-' + row.groupKey, $event.value)" multiple>
+                        @for (team of teamList; track team.id) {
+                          <mat-option [value]="team.id">{{ team.shortName }}</mat-option>
+                        }
+                      </mat-select>
+                    </mat-form-field>
+                    }
+                    <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
+                      <mat-label>Source</mat-label>
+                      <mat-select [value]="getSectionSources('group-' + row.groupKey)" (selectionChange)="filterBySources('group-' + row.groupKey, $event.value)" multiple>
+                        <mat-option value="blueprint">Blueprint</mat-option>
+                        <mat-option value="cite">CITE</mat-option>
+                        <mat-option value="steamfitter">Steamfitter</mat-option>
+                        <mat-option value="player">Player</mat-option>
+                        <mat-option value="gallery">Gallery</mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                    <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
+                      <mat-label>Verb</mat-label>
+                      <mat-select [value]="getSectionVerbs('group-' + row.groupKey)" (selectionChange)="filterByVerbs('group-' + row.groupKey, $event.value)" multiple>
+                        @for (verb of availableVerbs; track verb) {
+                          <mat-option [value]="verb">{{ verb }}</mat-option>
+                        }
+                      </mat-select>
+                    </mat-form-field>
+                  </div>
+                  <button mat-icon-button class="refresh-button" (click)="refreshStatements()"
+                    title="Refresh xAPI statements" [disabled]="statementsLoading">
+                    <mat-icon class="mdi-18px" fontIcon="mdi-refresh"></mat-icon>
+                  </button>
+                </div>
+                @if (loadingStatements.has('_all')) {
+                  <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+                } @else if (getGroupStatements(row.groupKey).length === 0) {
+                  <div class="no-statements">No xAPI statements found for this group.</div>
+                } @else {
+                  <div class="statements-list">
+                    @for (stmt of getFilteredGroupStatements(row.groupKey); track $index) {
+                      <div class="statement-entry">
+                        <div class="statement-row" (click)="toggleStatement(stmt.id)"
+                          [class.statement-expanded]="expandedStatementIds.has(stmt.id)">
+                          <button mat-icon-button class="copy-button" (click)="copyStatement(stmt, $event)" title="Copy JSON">
+                            <mat-icon class="mdi-14px" fontIcon="mdi-content-copy"></mat-icon>
+                          </button>
+                          <span class="statement-time">{{ formatTimestamp(stmt.timestamp) }}</span>
+                          <span class="stmt-move">{{ getMovePart(stmt) }}</span>
+                          <span class="stmt-group">{{ getGroupPart(stmt) }}</span>
+                          <span class="platform-badge" [ngClass]="getPlatformClass(stmt)">{{ stmt.context?.platform || '?' }}</span>
+                          <span class="stmt-actor">{{ stmt.actor?.name || stmt.actor?.account?.name || 'Unknown' }}</span>
+                          <span class="stmt-team">{{ stmt.context?.team?.name || '' }}</span>
+                          <span class="stmt-verb">{{ stmt.verb?.display?.['en-US'] || stmt.verb?.id?.split('/').pop() || '?' }}</span>
+                          <span class="stmt-object">{{ stmt.object?.definition?.name?.['en-US'] || stmt.object?.id || '?' }}</span>
+                        </div>
+                        @if (expandedStatementIds.has(stmt.id)) {
+                          <div class="statement-json">
+                            @for (section of getStatementSections(stmt); track section.key) {
+                              <div class="json-section" (click)="toggleJsonSection(stmt.id, section.key); $event.stopPropagation()">
+                                <span class="json-toggle">{{ isJsonSectionExpanded(stmt.id, section.key) ? '▼' : '▶' }}</span>
+                                <span class="json-key">"{{ section.key }}"</span>:
+                                @if (!isJsonSectionExpanded(stmt.id, section.key)) {
+                                  <span class="json-preview">{{ section.preview || '{...}' }}</span>
+                                } @else {
+                                  <pre class="json-value">{{ formatJson(section.value) }}</pre>
+                                }
+                              </div>
+                            }
+                          </div>
+                        }
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+              @if (getGroupCompetencies(row.groupKey).length > 0) {
+                <div class="assessment-panel">
+                  <div class="assessment-header">
+                    <mat-icon fontIcon="mdi-clipboard-check-outline" class="mdi-18px"></mat-icon>
+                    <span>Group {{ row.groupNumber }} — Competency Assessment</span>
+                  </div>
+                  @if (teamList.length > 0) {
+                    <mat-form-field class="assessment-team-field" subscriptSizing="dynamic">
+                      <mat-label>Assess Team</mat-label>
+                      <mat-select [value]="getAssertionTeam('group-' + row.groupKey)" (selectionChange)="setAssertionTeam('group-' + row.groupKey, $event.value)">
+                        <mat-option value="">None</mat-option>
+                        @for (team of getTeamsForContext('group-' + row.groupKey); track team.id) {
+                          <mat-option [value]="team.id">{{ team.shortName }}</mat-option>
+                        }
+                      </mat-select>
+                    </mat-form-field>
+                  }
+                  <div class="competency-ratings">
+                    @for (comp of getGroupCompetencies(row.groupKey); track comp.id) {
+                      <div class="rating-card" [class.rating-submitted]="isRatingSubmitted('group-' + row.groupKey, comp.id)">
+                        <div class="rating-comp-id" [matTooltip]="getCompetencyTooltip(comp)" matTooltipPosition="above">{{ comp.idNumber }}</div>
+                        <mat-form-field class="rating-level-field" subscriptSizing="dynamic">
+                          <mat-label>Rating</mat-label>
+                          <mat-select [value]="getRating('group-' + row.groupKey, comp.id).levelId"
+                            (selectionChange)="setRatingLevel('group-' + row.groupKey, comp.id, $event.value)">
+                            @for (level of proficiencyLevels; track level.id) {
+                              <mat-option [value]="level.id" [title]="level.description">{{ level.name }} ({{ level.value }})</mat-option>
+                            }
+                          </mat-select>
+                        </mat-form-field>
+                        <mat-form-field class="rating-comment-field" subscriptSizing="dynamic">
+                          <mat-label>Comment</mat-label>
+                          <input matInput [value]="getRating('group-' + row.groupKey, comp.id).comment"
+                            (input)="setRatingComment('group-' + row.groupKey, comp.id, $event.target.value)" />
+                        </mat-form-field>
+                        <div class="rating-actions">
+                          <button mat-icon-button class="rating-submit-button"
+                            [disabled]="!canSubmitRating('group-' + row.groupKey, comp.id)"
+                            (click)="submitRating('group-' + row.groupKey, comp.id)"
+                            title="Submit assertion">
+                            <mat-icon class="mdi-18px" fontIcon="mdi-send"></mat-icon>
+                          </button>
+                          @if (isRatingSubmitted('group-' + row.groupKey, comp.id)) {
+                            <span class="rating-submitted-indicator">
+                              <mat-icon fontIcon="mdi-check-circle" class="mdi-14px"></mat-icon>
+                              Submitted
+                            </span>
+                          }
+                        </div>
+                      </div>
+                    }
+                  </div>
+                  @if (hasAnyRatings('group-' + row.groupKey)) {
+                    <div class="assessment-actions">
+                      <button mat-stroked-button
+                        [disabled]="!hasAnySubmittableRatings('group-' + row.groupKey)"
+                        (click)="submitAllRatings('group-' + row.groupKey)"
+                        class="submit-all-button">
+                        <mat-icon fontIcon="mdi-send-check" class="mdi-18px"></mat-icon>
+                        Submit All
+                      </button>
+                    </div>
+                  }
+                </div>
+              } @else {
+                <div class="assessment-panel assessment-panel-empty">
+                  <div class="assessment-header assessment-header-inactive">
+                    <mat-icon fontIcon="mdi-clipboard-check-outline" class="mdi-18px"></mat-icon>
+                    <span>Competency Assessment</span>
+                  </div>
+                  <div class="no-competencies">No competencies in this group.</div>
+                </div>
+              }
+            </div>
+          </td>
+        </tr>
+        }
+        }
+        <!-- Event row -->
+        @if (row.type === 'event') {
+        <tr [style]="getRowStyle(row.event)" (click)="toggleEvent(row.event.id)" style="cursor: pointer;" title="Click to expand/collapse">
+          <!-- expand indicator -->
+          <td class="expand-col">
+            <mat-icon class="mdi-24px"
+              [fontIcon]="expandedEventIds.has(row.event.id) ? 'mdi-chevron-down' : 'mdi-chevron-right'"
+              style="display: flex; align-items: center; justify-content: center; opacity: 0.6;">
+            </mat-icon>
+          </td>
+          <!-- row number -->
+          <td class="row-num-col">
+            <span class="row-index center-self">{{ row.rowIndex }}</span>
+          </td>
+          <!-- Move value -->
+          @if (msel.showMoveOnAssessorView) {
+          <td>
+            <div class="constrainer" style="text-align: center;">
+              {{ moveAndGroupNumbers[row.event.id] ? moveAndGroupNumbers[row.event.id][0] : '' }}
+            </div>
+          </td>
+          }
+          <!-- Group value -->
+          @if (msel.showGroupOnAssessorView) {
+          <td>
+            <div class="constrainer" style="text-align: center;">
+              {{ moveAndGroupNumbers[row.event.id] ? moveAndGroupNumbers[row.event.id][1] : '' }}
+            </div>
+          </td>
+          }
+          <!-- Time value -->
+          @if (msel.showTimeOnAssessorView) {
+          <td>
+            <div class="time-span center-self">
+              <app-duration-view [startTime]="msel.startTime" [durationSeconds]="row.event.deltaSeconds"
+                [showRealTime]="showRealTime"></app-duration-view>
+            </div>
+          </td>
+          }
+          <!-- Integration Target value -->
+          @if (msel.showIntegrationTargetOnAssessorView) {
+          <td>
+            <div class="constrainer">
+              {{ row.event.integrationTarget || '' }}
+            </div>
+          </td>
+          }
+          <!-- Data Field values -->
+          @for (df of assessorDataFields; track df.id) {
+          <td [attr.data-field-type]="df.dataType" (click)="df.dataType === 'Checkbox' && canEditCheckboxes ? $event.stopPropagation() : null">
+            <app-data-value
+              [value]="getDataValue(row.event, df.name).value"
+              [dataField]="df"
+              [canEdit]="canEditCheckboxes && df.dataType === 'Checkbox'"
+              [canApprove]="false"
+              [isOwner]="false"
+              [showValueOnly]="true"
+              (valueChange)="saveDataValue(row.event, df, $event)"
+              [organizationOptions]="getSortedOrganizationOptions()"
+              [teamOptions]="teamList"
+              [cardOptions]="cardList"
+              [moveOptions]="moveList"
+              [userOptions]="userList">
+            </app-data-value>
+          </td>
+          }
+        </tr>
+        <!-- xAPI evidence + competency assessment detail row -->
+        @if (expandedEventIds.has(row.event.id)) {
+        <tr class="detail-row">
+          <td [attr.colspan]="assessorDataFields.length + 2
+            + (msel.showMoveOnAssessorView ? 1 : 0)
+            + (msel.showGroupOnAssessorView ? 1 : 0)
+            + (msel.showTimeOnAssessorView ? 1 : 0)
+            + (msel.showIntegrationTargetOnAssessorView ? 1 : 0)">
+            <div class="event-detail-split">
+              <!-- Left: xAPI Evidence -->
+              <div class="evidence-panel">
+                <div class="statements-header">
+                  <mat-icon fontIcon="mdi-clipboard-text-outline" class="mdi-18px"></mat-icon>
+                  <span>xAPI Evidence</span>
+                  @if (getStatements(row.event.id).length > 0) {
+                    <span class="statement-count">{{ getFilteredStatements(row.event.id).length }} / {{ getStatements(row.event.id).length }}</span>
+                  }
+                  <div class="evidence-filters">
+                    @if (teamList.length > 0) {
+                    <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
+                      <mat-label>Team</mat-label>
+                      <mat-select [value]="getSectionTeams('event-' + row.event.id)" (selectionChange)="filterByTeams('event-' + row.event.id, $event.value)" multiple>
+                        @for (team of teamList; track team.id) {
+                          <mat-option [value]="team.id">{{ team.shortName }}</mat-option>
+                        }
+                      </mat-select>
+                    </mat-form-field>
+                    }
+                    <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
+                      <mat-label>Source</mat-label>
+                      <mat-select [value]="getSectionSources('event-' + row.event.id)" (selectionChange)="filterBySources('event-' + row.event.id, $event.value)" multiple>
+                        <mat-option value="blueprint">Blueprint</mat-option>
+                        <mat-option value="cite">CITE</mat-option>
+                        <mat-option value="steamfitter">Steamfitter</mat-option>
+                        <mat-option value="player">Player</mat-option>
+                        <mat-option value="gallery">Gallery</mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                    <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
+                      <mat-label>Verb</mat-label>
+                      <mat-select [value]="getSectionVerbs('event-' + row.event.id)" (selectionChange)="filterByVerbs('event-' + row.event.id, $event.value)" multiple>
+                        @for (verb of availableVerbs; track verb) {
+                          <mat-option [value]="verb">{{ verb }}</mat-option>
+                        }
+                      </mat-select>
+                    </mat-form-field>
+                  </div>
+                  <button mat-icon-button class="refresh-button" (click)="refreshStatements()"
+                    title="Refresh xAPI statements" [disabled]="isLoading(row.event.id)">
+                    <mat-icon class="mdi-18px" fontIcon="mdi-refresh"></mat-icon>
+                  </button>
+                </div>
+                @if (isLoading(row.event.id)) {
+                  <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+                } @else if (getStatements(row.event.id).length === 0) {
+                  <div class="no-statements">No xAPI statements found for this event.</div>
+                } @else {
+                  <div class="statements-list">
+                    @for (stmt of getFilteredStatements(row.event.id); track $index) {
+                      <div class="statement-entry">
+                        <div class="statement-row" (click)="toggleStatement(stmt.id)"
+                          [class.statement-expanded]="expandedStatementIds.has(stmt.id)">
+                          <button mat-icon-button class="copy-button" (click)="copyStatement(stmt, $event)" title="Copy JSON">
+                            <mat-icon class="mdi-14px" fontIcon="mdi-content-copy"></mat-icon>
+                          </button>
+                          <span class="statement-time">{{ formatTimestamp(stmt.timestamp) }}</span>
+                          <span class="stmt-move">{{ getMovePart(stmt) }}</span>
+                          <span class="stmt-group">{{ getGroupPart(stmt) }}</span>
+                          <span class="platform-badge" [ngClass]="getPlatformClass(stmt)">{{ stmt.context?.platform || '?' }}</span>
+                          <span class="stmt-actor">{{ stmt.actor?.name || stmt.actor?.account?.name || 'Unknown' }}</span>
+                          <span class="stmt-team">{{ stmt.context?.team?.name || '' }}</span>
+                          <span class="stmt-verb">{{ stmt.verb?.display?.['en-US'] || stmt.verb?.id?.split('/').pop() || '?' }}</span>
+                          <span class="stmt-object">{{ stmt.object?.definition?.name?.['en-US'] || stmt.object?.id || '?' }}</span>
+                        </div>
+                        @if (expandedStatementIds.has(stmt.id)) {
+                          <div class="statement-json">
+                            @for (section of getStatementSections(stmt); track section.key) {
+                              <div class="json-section" (click)="toggleJsonSection(stmt.id, section.key); $event.stopPropagation()">
+                                <span class="json-toggle">{{ isJsonSectionExpanded(stmt.id, section.key) ? '▼' : '▶' }}</span>
+                                <span class="json-key">"{{ section.key }}"</span>:
+                                @if (!isJsonSectionExpanded(stmt.id, section.key)) {
+                                  <span class="json-preview">{{ section.preview || '{...}' }}</span>
+                                } @else {
+                                  <pre class="json-value">{{ formatJson(section.value) }}</pre>
+                                }
+                              </div>
+                            }
+                          </div>
+                        }
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+              <!-- Right: Competency Assessment -->
+              @if (getEventCompetencies(row.event.id).length > 0) {
+                <div class="assessment-panel">
+                  <div class="assessment-header">
+                    <mat-icon fontIcon="mdi-clipboard-check-outline" class="mdi-18px"></mat-icon>
+                    <span>Competency Assessment</span>
+                  </div>
+                  @if (teamList.length > 0) {
+                    <mat-form-field class="assessment-team-field" subscriptSizing="dynamic">
+                      <mat-label>Assess Team</mat-label>
+                      <mat-select [value]="getAssertionTeam(row.event.id)" (selectionChange)="setAssertionTeam(row.event.id, $event.value)">
+                        <mat-option value="">None</mat-option>
+                        @for (team of getTeamsForContext(row.event.id); track team.id) {
+                          <mat-option [value]="team.id">{{ team.shortName }}</mat-option>
+                        }
+                      </mat-select>
+                    </mat-form-field>
+                  }
+                  <div class="competency-ratings">
+                    @for (comp of getEventCompetencies(row.event.id); track comp.id) {
+                      <div class="rating-card" [class.rating-submitted]="isRatingSubmitted(row.event.id, comp.id)">
+                        <div class="rating-comp-id" [matTooltip]="getCompetencyTooltip(comp)" matTooltipPosition="above">{{ comp.idNumber }}</div>
+                        <mat-form-field class="rating-level-field" subscriptSizing="dynamic">
+                          <mat-label>Rating</mat-label>
+                          <mat-select [value]="getRating(row.event.id, comp.id).levelId"
+                            (selectionChange)="setRatingLevel(row.event.id, comp.id, $event.value)">
+                            @for (level of proficiencyLevels; track level.id) {
+                              <mat-option [value]="level.id" [title]="level.description">{{ level.name }} ({{ level.value }})</mat-option>
+                            }
+                          </mat-select>
+                        </mat-form-field>
+                        <mat-form-field class="rating-comment-field" subscriptSizing="dynamic">
+                          <mat-label>Comment</mat-label>
+                          <input matInput [value]="getRating(row.event.id, comp.id).comment"
+                            (input)="setRatingComment(row.event.id, comp.id, $event.target.value)" />
+                        </mat-form-field>
+                        <div class="rating-actions">
+                          <button mat-icon-button class="rating-submit-button"
+                            [disabled]="!canSubmitRating(row.event.id, comp.id)"
+                            (click)="submitRating(row.event.id, comp.id)"
+                            title="Submit assertion">
+                            <mat-icon class="mdi-18px" fontIcon="mdi-send"></mat-icon>
+                          </button>
+                          @if (isRatingSubmitted(row.event.id, comp.id)) {
+                            <span class="rating-submitted-indicator">
+                              <mat-icon fontIcon="mdi-check-circle" class="mdi-14px"></mat-icon>
+                              Submitted
+                            </span>
+                          }
+                        </div>
+                      </div>
+                    }
+                  </div>
+                  @if (hasAnyRatings(row.event.id)) {
+                    <div class="assessment-actions">
+                      <button mat-stroked-button
+                        [disabled]="!hasAnySubmittableRatings(row.event.id)"
+                        (click)="submitAllRatings(row.event.id)"
+                        class="submit-all-button">
+                        <mat-icon fontIcon="mdi-send-check" class="mdi-18px"></mat-icon>
+                        Submit All
+                      </button>
+                    </div>
+                  }
+                </div>
+              } @else {
+                <div class="assessment-panel assessment-panel-empty">
+                  <div class="assessment-header assessment-header-inactive">
+                    <mat-icon fontIcon="mdi-clipboard-check-outline" class="mdi-18px"></mat-icon>
+                    <span>Competency Assessment</span>
+                  </div>
+                  <div class="no-competencies">No competencies on this event.</div>
+                </div>
+              }
+            </div>
+          </td>
+        </tr>
+        }
+        }
+        }
+      </tbody>
+    </table>
+  </div>
+  }
+  }
+</div>

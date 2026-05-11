@@ -31,7 +31,7 @@ a {
 
 .frame {
   width: 100%;
-  height: calc(100vh - 60px);
+  height: calc(100% - 60px);
 }
 
 .tab-group {
@@ -64,7 +64,7 @@ a {
 }
 
 .page-content-region {
-  height: calc(100vh - 198px);
+  height: calc(100% - 198px);
   width: 90%;
   margin-left: 5%;
 }
@@ -80,6 +80,75 @@ a {
   width: 100%;
   align-self: center;
 }
+
+.competency-section {
+  width: 100%;
+  margin-bottom: 16px;
+  text-align: left;
+
+  .competency-header {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: bold;
+    margin-bottom: 8px;
+  }
+
+  .competency-title {
+    margin-right: 8px;
+  }
+
+  .competency-count {
+    font-weight: normal;
+    font-size: 13px;
+    color: var(--mat-sys-on-surface-variant);
+  }
+
+  .competency-panels-row {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+
+  .competency-expansion {
+    flex: 1 1 50%;
+    background: transparent;
+  }
+
+  .competency-list {
+    max-height: 300px;
+    overflow: auto;
+  }
+
+  .competency-list-item {
+    display: flex;
+    padding: 4px 8px;
+    font-size: 13px;
+    border-bottom: 1px solid var(--mat-sys-outline-variant);
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  .competency-list-id {
+    flex: 0 0 100px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .competency-list-name {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .competency-hint {
+    font-size: 12px;
+    color: var(--mat-sys-on-surface-variant);
+    margin-top: 4px;
+  }
+}
+
 
 .url-form-field {
   display: flex;
@@ -140,6 +209,30 @@ a {
 
 .half-width {
   width: 60%;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: bold;
+  margin-bottom: 8px;
+  text-align: left;
+  width: 100%;
+}
+
+.lmt-dropdown-row {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+}
+
+.lmt-dropdown-width {
+  width: 250px;
+}
+
+.meta-field-width {
+  width: 300px;
 }
 
 .half-button {

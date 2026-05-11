@@ -113,6 +113,7 @@ export class InjectListComponent implements OnDestroy, OnInit {
       .selectAll()
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((injects) => {
+        this.injectList = [];
         // get editable objects
         injects.forEach((m) => {
           const inject = { ...m };
@@ -120,14 +121,7 @@ export class InjectListComponent implements OnDestroy, OnInit {
           m.dataValues.forEach((dv) => {
             inject.dataValues.push({ ...dv });
           });
-          const index = this.injectList
-            ? this.injectList.findIndex((i) => i.id === inject.id)
-            : -1;
-          if (index === -1) {
-            this.injectList.push(inject);
-          } else {
-            this.injectList[index] = inject;
-          }
+          this.injectList.push(inject);
         });
         this.sortChanged(this.sort);
       });
@@ -243,10 +237,14 @@ export class InjectListComponent implements OnDestroy, OnInit {
       newDataValue.injectId = newInjectId;
       newInject.dataValues.push(newDataValue);
     });
-    this.editInject(newInject, true);
+    // When in the inject type view (no catalog context), resolve the catalogId from
+    // the first catalog that belongs to this inject type.
+    const catalogId = this.catalog.id ||
+      this.catalogList.find(c => c.injectTypeId === this.injectType.id)?.id;
+    this.editInject(newInject, true, catalogId);
   }
 
-  editInject(inject: Injectm, isNewInject?: boolean) {
+  editInject(inject: Injectm, isNewInject?: boolean, catalogId?: string) {
     const dialogRef = this.dialog.open(InjectEditDialogComponent, {
       minWidth: '400px',
       maxWidth: '90vw',
@@ -265,7 +263,7 @@ export class InjectListComponent implements OnDestroy, OnInit {
       if (result.saveChanges && result.inject) {
         // save the inject (add or update)
         if (isNewInject) {
-          this.injectmDataService.add(this.catalog.id, result.inject);
+          this.injectmDataService.add((this.catalog.id || catalogId) as string, result.inject);
         } else {
           this.injectmDataService.update(result.inject);
         }
