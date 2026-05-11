@@ -2,9 +2,15 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
 .scrolling-region {
   width: 100%;
-  height: calc(100% - 60px);
   overflow: auto;
   display: flex;
   flex-direction: column;

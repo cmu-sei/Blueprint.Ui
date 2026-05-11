@@ -3,8 +3,11 @@
 // project root for license information.
 
 :host {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
   height: 100%;
+  min-height: 0;
 }
 
 .container {
@@ -103,8 +106,11 @@
 }
 
 .main-content {
+  display: flex;
+  flex-direction: column;
   width: 100%;
   height: 100%;
+  min-height: 0;
 }
 
 .top-div {

@@ -21,7 +21,7 @@
 .main-area {
   display: flex;
   flex-direction: column;
-  height: calc(100% - 44px - 20px);
+  flex: 1;
   min-height: 0;
   overflow: hidden;
   padding-bottom: 8px;
