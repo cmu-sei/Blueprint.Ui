@@ -11,6 +11,7 @@ import {
   OnInit,
   Output,
 } from '@angular/core';
+import { Router } from '@angular/router';
 import { ComnAuthQuery, ComnAuthService, Theme } from '@cmusei/crucible-common';
 import { CurrentUserState } from 'src/app/data/user/user.store';
 import { Observable, Subject } from 'rxjs';
@@ -51,8 +52,13 @@ export class TopbarComponent implements OnInit, OnDestroy {
     private currentUserQuery: CurrentUserQuery,
     private authQuery: ComnAuthQuery,
     private uiDataService: UIDataService,
-    private permissionDataService: PermissionDataService
+    private permissionDataService: PermissionDataService,
+    private router: Router
   ) {}
+
+  get currentUrl(): string {
+    return this.router.url;
+  }
 
   ngOnInit() {
     this.permissionDataService

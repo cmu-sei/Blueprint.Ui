@@ -4,10 +4,19 @@
  project root for license information.
 */
 
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
 .frame {
   width: 100%;
-  height: calc(100% - 60px);
+  flex: 1;
+  min-height: 0;
   overflow-x: hidden;
+  overflow-y: auto;
   justify-content: center;
   align-items: center;
 }

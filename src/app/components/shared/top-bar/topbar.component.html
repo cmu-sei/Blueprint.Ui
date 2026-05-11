@@ -45,7 +45,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         </button>
         }
         @if (topbarView !== TopbarView.BLUEPRINT_ADMIN && canViewAdmin) {
-        <button [routerLink]="['/admin']" mat-menu-item>
+        <button [routerLink]="['/admin']" [queryParams]="{returnUrl: currentUrl}" mat-menu-item>
           Administration
         </button>
         }
