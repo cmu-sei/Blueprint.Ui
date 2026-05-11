@@ -248,9 +248,16 @@ export class MselContributorsComponent implements OnDestroy, OnInit {
   }
 
   getSelectedMselRoles(userId: string): MselRole[] {
-    return this.userMselRoles
+    const roles = this.userMselRoles
       .filter(umr => umr.userId === userId && umr.mselId === this.msel.id)
       .map(umr => umr.role);
+
+    // Add 'Creator' as a display-only pseudo-role for the MSEL creator
+    if (userId === this.msel.createdBy) {
+      roles.push('Creator' as MselRole);
+    }
+
+    return roles;
   }
 
   setMselRoles(userId: string, newRoles: MselRole[]) {
@@ -351,6 +358,8 @@ export class MselContributorsComponent implements OnDestroy, OnInit {
         mselRoles.push(mr);
       }
     });
+    // Add 'Creator' as a display-only option
+    mselRoles.push('Creator' as MselRole);
     return mselRoles;
   }
 
@@ -366,6 +375,10 @@ export class MselContributorsComponent implements OnDestroy, OnInit {
 
   isOwnOwnerRole(userId: string, mselRole: MselRole): boolean {
     return userId === this.loggedInUserId && mselRole === MselRole.Owner && this.hasMselRole(userId, mselRole);
+  }
+
+  isCreatorRole(userId: string, mselRole: MselRole): boolean {
+    return mselRole === ('Creator' as MselRole) && userId === this.msel.createdBy;
   }
 
   ngOnDestroy() {
@@ -401,14 +414,15 @@ export class MselContributorsComponent implements OnDestroy, OnInit {
     }
   }
 
-  getRoleDescription(role: MselRole): string {
+  getRoleDescription(role: MselRole | string): string {
     const descriptions = {
       [MselRole.Editor]: 'Can edit scenario events within the MSEL.',
       [MselRole.Approver]: 'Can approve scenario events on the MSEL.',
       [MselRole.MoveEditor]: 'Can modify the move-related information.',
       [MselRole.Owner]: 'Holds full control over the MSEL.',
       [MselRole.Evaluator]: 'Can access the MSEL view and mark items as complete.',
-      [MselRole.Viewer]: 'Can only view MSEL Pages without the ability to make changes.'
+      [MselRole.Viewer]: 'Can only view MSEL Pages without the ability to make changes.',
+      'Creator': 'Created this MSEL and permanently holds Owner permissions. This cannot be removed.'
     };
     return descriptions[role] || 'No description available.';
   }
