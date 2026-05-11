@@ -16,6 +16,8 @@ import { TeamDataService } from 'src/app/data/team/team-data.service';
 import { OrganizationDataService } from 'src/app/data/organization/organization-data.service';
 import { DataFieldDataService } from 'src/app/data/data-field/data-field-data.service';
 import { DataValueDataService } from 'src/app/data/data-value/data-value-data.service';
+import { MselPageDataService } from 'src/app/data/msel-page/msel-page-data.service';
+import { MselPageQuery } from 'src/app/data/msel-page/msel-page.query';
 import {
   ScenarioEventDataService,
   DataValuePlus,
@@ -31,6 +33,7 @@ import {
   ScenarioEvent,
   MselItemStatus,
   Card,
+  MselPage,
 } from 'src/app/generated/blueprint.api';
 import { UntypedFormControl } from '@angular/forms';
 import { MselPlus } from 'src/app/data/msel/msel-data.service';
@@ -72,6 +75,7 @@ export class MselPlaybookComponent {
   sortedScenarioEvents: ScenarioEvent[] = [];
   moveAndGroupNumbers: Record<string, number[]>[] = [];
   moveList: Move[] = [];
+  mselPages: MselPage[] = [];
   filteredScenarioEventList: ScenarioEvent[] = [];
   filterString = '';
   blankDataValue = {
@@ -106,12 +110,14 @@ export class MselPlaybookComponent {
     private dataFieldDataService: DataFieldDataService,
     private dataValueDataService: DataValueDataService,
     private scenarioEventDataService: ScenarioEventDataService,
+    private mselPageDataService: MselPageDataService,
     private mselQuery: MselQuery,
     private dataFieldQuery: DataFieldQuery,
     private moveQuery: MoveQuery,
     private dataValueQuery: DataValueQuery,
     private scenarioEventQuery: ScenarioEventQuery,
     private cardQuery: CardQuery,
+    private mselPageQuery: MselPageQuery,
     private activatedRoute: ActivatedRoute
   ) {
     // set image
@@ -135,6 +141,8 @@ export class MselPlaybookComponent {
           // // load data fields and values
           this.dataFieldDataService.loadByMsel(mselId);
           this.dataValueDataService.loadByMsel(mselId);
+          // // load msel pages
+          this.mselPageDataService.loadByMsel(mselId);
           // // load scenario events
           if (scenarioEventId) {
             this.scenarioEventDataService.loadById(scenarioEventId);
@@ -205,6 +213,12 @@ export class MselPlaybookComponent {
             this.mselScenarioEvents,
             this.moveList
           );
+      });
+    this.mselPageQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((pages) => {
+        this.mselPages = pages.filter(p => p.includeInPlaybook);
       });
   }
 

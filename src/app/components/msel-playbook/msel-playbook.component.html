@@ -28,6 +28,12 @@ project root for license information.
             <div>{{ msel.description }}</div>
           }
         </div>
+        @for (page of mselPages; track page.id) {
+          <div class="msel-page-content print-only">
+            <h3>{{ page.name }}</h3>
+            <div [innerHTML]="page.content"></div>
+          </div>
+        }
         @for (scenarioEvent of getPagedScenarioEvents(); track scenarioEvent.id; let i = $index) {
           @let move = getMoveForEvent(scenarioEvent.id);
           @let prevEvent = i > 0 ? getPagedScenarioEvents()[i - 1] : null;
