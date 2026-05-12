@@ -388,7 +388,8 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   }
 
   private resolveCreatorName(): void {
-    if (!this.msel?.createdBy) {
+    const emptyGuid = '00000000-0000-0000-0000-000000000000';
+    if (!this.msel?.createdBy || this.msel.createdBy === emptyGuid) {
       this.creatorName = 'unknown';
       return;
     }
@@ -438,6 +439,19 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   canManageMsel(): boolean {
     return this.permissionDataService.hasPermission(SystemPermission.ManageMsels) ||
       this.msel.hasRole(this.loggedInUserId, '').owner;
+  }
+
+  getDeleteTooltip(): string {
+    if (!this.canManageMsel()) {
+      return 'You do not have permission to delete this MSEL';
+    }
+    if (this.msel?.status === 'Deployed') {
+      return 'Cannot delete deployed MSEL';
+    }
+    if (this.msel?.isTemplate) {
+      return 'Cannot delete template MSELs';
+    }
+    return 'Delete this MSEL';
   }
 
   openCompetencyPicker(): void {
@@ -947,6 +961,40 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     });
     const parts = formatted.split(' ');
     return parts[parts.length - 1];
+  }
+
+  downloadJsonFile() {
+    this.mselDataService.downloadJson(this.msel.id).subscribe(
+      (data) => {
+        const url = window.URL.createObjectURL(data);
+        const link = document.createElement('a');
+        link.href = url;
+        link.target = '_blank';
+        link.download = this.msel.name + '-msel.json';
+        link.click();
+      },
+      (err) => {
+        window.alert('Error downloading file');
+      }
+    );
+  }
+
+  downloadXlsxFile() {
+    this.mselDataService.downloadXlsx(this.msel.id).subscribe(
+      (data) => {
+        const url = window.URL.createObjectURL(data);
+        const link = document.createElement('a');
+        link.href = url;
+        link.target = '_blank';
+        link.download = this.msel.name.endsWith('.xlsx')
+          ? this.msel.name
+          : this.msel.name + '.xlsx';
+        link.click();
+      },
+      (err) => {
+        window.alert('Error downloading file');
+      }
+    );
   }
 
   ngOnDestroy() {

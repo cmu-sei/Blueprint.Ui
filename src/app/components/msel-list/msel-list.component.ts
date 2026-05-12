@@ -393,6 +393,22 @@ export class MselListComponent implements OnDestroy, OnInit {
       msel?.hasRole(this.loggedInUserId, '').owner;
   }
 
+  getDeleteTooltip(msel: MselPlus): string {
+    if (!this.isReady) {
+      return 'System is not ready';
+    }
+    if (!this.canManageMsel(msel)) {
+      return 'You do not have permission to delete this MSEL';
+    }
+    if (msel.status === 'Deployed') {
+      return 'Cannot delete deployed MSEL';
+    }
+    if (msel.isTemplate) {
+      return 'Cannot delete template MSELs';
+    }
+    return 'Delete ' + msel.name;
+  }
+
   isValidDate(date: Date | null | undefined): boolean {
     if (!date) return false;
     const year = new Date(date).getFullYear();
