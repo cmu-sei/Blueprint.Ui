@@ -192,7 +192,7 @@ project root for license information.
 </span>
 }
 <!-- TeamsMultiple value -->
-@if (!dataField.isChosenFromList && dataField.dataType === dataType.TeamsMultiple) {
+@if (dataField.dataType === dataType.TeamsMultiple) {
 <span>
   @if (!showValueOnly) {
   <mat-form-field class="full-width">
