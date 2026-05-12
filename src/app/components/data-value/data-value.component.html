@@ -214,11 +214,20 @@ project root for license information.
   </mat-form-field>
   }
   @if (showValueOnly) {
-  <span>
-    @for (val of getValueArray(); track val) {
-    {{ val }}<br>
+  <mat-select multiple autoclose="" placeholder="{{ dataField.name }}" (click)="$event.stopPropagation()"
+    (valueChange)="setDataValueArray($event)" [value]="getValueArray()" [disabled]="!canEdit">
+    @if (teamOptions && teamOptions.length > 0) {
+    <mat-option value="ALL">ALL</mat-option>
     }
-  </span>
+    @if (teamOptions && teamOptions.length > 0) {
+    <mat-option value="None">None</mat-option>
+    }
+    @for (team of teamOptions; track team.id) {
+    <mat-option [value]="team.shortName">
+      {{ team.shortName }}
+    </mat-option>
+    }
+  </mat-select>
   }
 </span>
 }
