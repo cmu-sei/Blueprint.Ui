@@ -48,6 +48,23 @@ export class PlayerApplicationEditDialogComponent {
     []
   );
 
+  public urlValidationError: string = '';
+  public iconValidationError: string = '';
+
+  private readonly allowedVariables = [
+    'citeUrl',
+    'galleryUrl',
+    'steamfitterUrl',
+    'playerUrl',
+    'blueprintUrl',
+    'citeEvaluationId',
+    'galleryExhibitId',
+    'steamfitterScenarioId',
+    'playerViewId',
+    'blueprintMselId',
+    'theme'
+  ];
+
   constructor(
     public dialogService: DialogService,
     dialogRef: MatDialogRef<PlayerApplicationEditDialogComponent>,
@@ -78,12 +95,61 @@ export class PlayerApplicationEditDialogComponent {
   }
 
   /**
+   * Validates a URL for unknown variable placeholders and unpaired braces
+   */
+  validateUrl(url: string): string {
+    if (!url) return '';
+
+    const variablePattern = /\{([^}]+)\}/g;
+    const matches = [...url.matchAll(variablePattern)];
+    const unknownVars: string[] = [];
+
+    // Check for unknown variables in complete {var} patterns
+    matches.forEach(match => {
+      const varName = match[1];
+      if (!this.allowedVariables.includes(varName)) {
+        unknownVars.push(varName);
+      }
+    });
+
+    if (unknownVars.length > 0) {
+      return `Unknown variable(s): {${unknownVars.join('}, {')}}`;
+    }
+
+    // Remove all valid variable patterns
+    let cleanedUrl = url;
+    this.allowedVariables.forEach(varName => {
+      cleanedUrl = cleanedUrl.replace(new RegExp(`\\{${varName}\\}`, 'g'), '');
+    });
+
+    // Check for any remaining braces (orphaned or part of invalid patterns)
+    if (cleanedUrl.includes('{') || cleanedUrl.includes('}')) {
+      return 'URL contains unpaired or invalid braces';
+    }
+
+    return '';
+  }
+
+  /**
+   * Validates URLs before save
+   */
+  validateUrls(): boolean {
+    this.urlValidationError = this.validateUrl(this.data.playerApplication.url);
+    this.iconValidationError = this.validateUrl(this.data.playerApplication.icon);
+
+    return !this.urlValidationError && !this.iconValidationError;
+  }
+
+  /**
    * Closes the edit screen
    */
   handleEditComplete(saveChanges: boolean): void {
     if (!saveChanges) {
       this.editComplete.emit({ saveChanges: false, playerApplication: null });
     } else {
+      if (!this.validateUrls()) {
+        return;
+      }
       this.editComplete.emit({
         saveChanges: saveChanges,
         playerApplication: this.data.playerApplication,

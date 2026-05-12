@@ -317,6 +317,10 @@ a {
 .all-can-view-div {
   text-align: left;
   width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
 }
 
 .date-time-picker {

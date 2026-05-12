@@ -92,7 +92,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 <button mat-menu-item (click)="downloadXlsxFile(element);" title="Download xlsx file">Download xlsx
                   file</button>
               </mat-menu>
-              <span [matTooltip]="getDeleteTooltip(element)">
+              <span [title]="getDeleteTooltip(element)">
                 <button mat-icon-button class="msel-action" (click)="delete(element); $event.stopPropagation();"
                   [disabled]="!isReady || !canManageMsel(element) || element.status === 'Deployed' || element.isTemplate">
                   <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline" alt="Delete"></mat-icon>

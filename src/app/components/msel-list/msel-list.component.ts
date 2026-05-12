@@ -287,8 +287,20 @@ export class MselListComponent implements OnDestroy, OnInit {
     this.mselDataSource.sort = this.sort;
   }
 
-  copyMsel(id: string): void {
-    this.mselDataService.copy(id);
+  copyMsel(mselId: string): void {
+    const msel = this.mselList.find(m => m.id === mselId);
+    if (!msel) return;
+
+    this.dialogService
+      .confirm(
+        'Copy MSEL',
+        'Are you sure that you want to copy ' + msel.name + '?'
+      )
+      .subscribe((result) => {
+        if (result['confirm']) {
+          this.mselDataService.copy(msel.id);
+        }
+      });
   }
 
   delete(msel: MselPlus): void {
