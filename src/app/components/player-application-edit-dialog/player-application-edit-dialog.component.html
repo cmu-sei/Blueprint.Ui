@@ -36,6 +36,9 @@ project root for license information.
           <mat-label>URL</mat-label>
           <input type="text" matInput [(ngModel)]="data.playerApplication.url" placeholder="URL">
         </mat-form-field>
+        @if (urlValidationError) {
+        <div class="validation-error">{{ urlValidationError }}</div>
+        }
       </div>
     </div>
     <div class="add-icon-url-margin">
@@ -44,6 +47,9 @@ project root for license information.
           <mat-label>Icon URL</mat-label>
           <input type="text" matInput [(ngModel)]="data.playerApplication.icon" placeholder="Icon URL">
         </mat-form-field>
+        @if (iconValidationError) {
+        <div class="validation-error">{{ iconValidationError }}</div>
+        }
       </div>
     </div>
     <div class="add-margin">
