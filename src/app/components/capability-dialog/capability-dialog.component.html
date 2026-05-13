@@ -6,7 +6,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
 <div mat-dialog-container>
   <div mat-dialog-title>
     <div class="title-wrapper">
-      <mat-icon class="title-icon">{{data.icon}}</mat-icon>
+      <mat-icon class="title-icon" [fontIcon]="data.icon"></mat-icon>
       <span>{{data.title}}</span>
     </div>
     <button
@@ -27,7 +27,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <ul class="feature-list">
         @for (feature of data.features; track feature) {
           <li class="feature-item">
-            <mat-icon class="check-icon">check_circle</mat-icon>
+            <mat-icon class="check-icon" fontIcon="mdi-check-circle"></mat-icon>
             <span>{{feature}}</span>
           </li>
         }
@@ -39,7 +39,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <ul class="benefit-list">
         @for (benefit of data.benefits; track benefit) {
           <li class="benefit-item">
-            <mat-icon class="arrow-icon">arrow_forward</mat-icon>
+            <mat-icon class="arrow-icon" fontIcon="mdi-arrow-right"></mat-icon>
             <span>{{benefit}}</span>
           </li>
         }

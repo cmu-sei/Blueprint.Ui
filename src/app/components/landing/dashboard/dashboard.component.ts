@@ -191,7 +191,7 @@ export class DashboardComponent implements OnDestroy, OnInit {
     const capabilities: { [key: string]: CapabilityData } = {
       'collaborative': {
         title: 'Collaborative Planning',
-        icon: 'groups',
+        icon: 'mdi-account-group',
         description: 'Blueprint transforms MSEL development from isolated spreadsheet work into a real-time collaborative experience. Multiple team members can simultaneously edit, review, and approve scenarios.',
         features: [
           'Real-time multi-user editing with instant synchronization',
@@ -210,7 +210,7 @@ export class DashboardComponent implements OnDestroy, OnInit {
       },
       'integrated': {
         title: 'Integrated Platform',
-        icon: 'hub',
+        icon: 'mdi-link-variant',
         description: 'Blueprint serves as the central hub that connects all Crucible applications. Define your MSEL once and automatically integrate with Player, CITE, Gallery, and Steamfitter.',
         features: [
           'One-click integration with Player for participant interfaces',
@@ -229,7 +229,7 @@ export class DashboardComponent implements OnDestroy, OnInit {
       },
       'scenario': {
         title: 'Scenario Design',
-        icon: 'timeline',
+        icon: 'mdi-timeline-text',
         description: 'Build sophisticated cyber exercise scenarios with structured timelines, organizational hierarchies, and move-based event orchestration. Blueprint provides the tools to design complex, realistic training environments.',
         features: [
           'Move-based timeline organization for structured events',
@@ -248,7 +248,7 @@ export class DashboardComponent implements OnDestroy, OnInit {
       },
       'cyberrange': {
         title: 'Cyber Range Ready',
-        icon: 'security',
+        icon: 'mdi-shield-check',
         description: 'Purpose-built for cybersecurity training and simulation, Blueprint understands the unique requirements of cyber range operations, from incident response to red team exercises.',
         features: [
           'Native support for cyber incident scenarios',
