@@ -61,6 +61,7 @@ export * from './iContainer';
 export * from './iSite';
 export * from './injectType';
 export * from './injectm';
+export * from './integrationRoleUpdate';
 export * from './integrationType';
 export * from './invitation';
 export * from './itemStatus';

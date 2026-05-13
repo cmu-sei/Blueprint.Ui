@@ -105,6 +105,7 @@ model/iContainer.ts
 model/iSite.ts
 model/injectType.ts
 model/injectm.ts
+model/integrationRoleUpdate.ts
 model/integrationType.ts
 model/invitation.ts
 model/itemStatus.ts

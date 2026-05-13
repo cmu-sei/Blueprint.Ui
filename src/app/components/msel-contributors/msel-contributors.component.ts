@@ -68,6 +68,26 @@ export class MselContributorsComponent implements OnDestroy, OnInit {
     MselRole.Evaluator,
     MselRole.Viewer
   ];
+  citeEvaluationRoles: string[] = [
+    'Owner',
+    'Editor',
+    'Viewer',
+    'Facilitator',
+    'Advancer',
+    'Observer',
+    'Member'
+  ];
+  galleryExhibitRoles: string[] = [
+    'Manager',
+    'Observer',
+    'Member'
+  ];
+  steamfitterScenarioRoles: string[] = [
+    'Manager',
+    'Facilitator',
+    'Member',
+    'Observer'
+  ];
   isEditEnabled = false;
   userList: User[] = [];
   mselUnitList: MselUnit[] = [];
@@ -227,6 +247,69 @@ export class MselContributorsComponent implements OnDestroy, OnInit {
     }
   }
 
+  getSelectedMselRoles(userId: string): MselRole[] {
+    const roles = this.userMselRoles
+      .filter(umr => umr.userId === userId && umr.mselId === this.msel.id)
+      .map(umr => umr.role);
+
+    // Add 'Creator' as a display-only pseudo-role for the MSEL creator
+    if (userId === this.msel.createdBy) {
+      roles.push('Creator' as MselRole);
+    }
+
+    return roles;
+  }
+
+  setMselRoles(userId: string, newRoles: MselRole[]) {
+    const current = this.getSelectedMselRoles(userId);
+    const toAdd = newRoles.filter(r => !current.includes(r));
+    const toRemove = current.filter(r => !newRoles.includes(r));
+    toAdd.forEach(r => this.toggleMselRole(userId, r, true));
+    toRemove.forEach(r => this.toggleMselRole(userId, r, false));
+  }
+
+  getCiteEvaluationRole(userId: string): string | null {
+    const umr = this.userMselRoles.find(u =>
+      u.userId === userId && u.mselId === this.msel.id);
+    return umr?.citeEvaluationRole ?? null;
+  }
+
+  setCiteEvaluationRole(userId: string, role: string | null) {
+    this.userMselRoleDataService.setIntegrationRoles(
+      this.msel.id, userId,
+      role,
+      this.getGalleryExhibitRole(userId),
+      this.getSteamfitterScenarioRole(userId));
+  }
+
+  getGalleryExhibitRole(userId: string): string | null {
+    const umr = this.userMselRoles.find(u =>
+      u.userId === userId && u.mselId === this.msel.id);
+    return umr?.galleryExhibitRole ?? null;
+  }
+
+  setGalleryExhibitRole(userId: string, role: string | null) {
+    this.userMselRoleDataService.setIntegrationRoles(
+      this.msel.id, userId,
+      this.getCiteEvaluationRole(userId),
+      role,
+      this.getSteamfitterScenarioRole(userId));
+  }
+
+  getSteamfitterScenarioRole(userId: string): string | null {
+    const umr = this.userMselRoles.find(u =>
+      u.userId === userId && u.mselId === this.msel.id);
+    return umr?.steamfitterScenarioRole ?? null;
+  }
+
+  setSteamfitterScenarioRole(userId: string, role: string | null) {
+    this.userMselRoleDataService.setIntegrationRoles(
+      this.msel.id, userId,
+      this.getCiteEvaluationRole(userId),
+      this.getGalleryExhibitRole(userId),
+      role);
+  }
+
   saveMselUnit(mselUnit: MselUnit) {
     this.mselUnitDataService.updateMselUnit(mselUnit);
   }
@@ -275,6 +358,8 @@ export class MselContributorsComponent implements OnDestroy, OnInit {
         mselRoles.push(mr);
       }
     });
+    // Add 'Creator' as a display-only option
+    mselRoles.push('Creator' as MselRole);
     return mselRoles;
   }
 
@@ -290,6 +375,10 @@ export class MselContributorsComponent implements OnDestroy, OnInit {
 
   isOwnOwnerRole(userId: string, mselRole: MselRole): boolean {
     return userId === this.loggedInUserId && mselRole === MselRole.Owner && this.hasMselRole(userId, mselRole);
+  }
+
+  isCreatorRole(userId: string, mselRole: MselRole): boolean {
+    return mselRole === ('Creator' as MselRole) && userId === this.msel.createdBy;
   }
 
   ngOnDestroy() {
@@ -325,14 +414,15 @@ export class MselContributorsComponent implements OnDestroy, OnInit {
     }
   }
 
-  getRoleDescription(role: MselRole): string {
+  getRoleDescription(role: MselRole | string): string {
     const descriptions = {
       [MselRole.Editor]: 'Can edit scenario events within the MSEL.',
       [MselRole.Approver]: 'Can approve scenario events on the MSEL.',
       [MselRole.MoveEditor]: 'Can modify the move-related information.',
       [MselRole.Owner]: 'Holds full control over the MSEL.',
       [MselRole.Evaluator]: 'Can access the MSEL view and mark items as complete.',
-      [MselRole.Viewer]: 'Can only view MSEL Pages without the ability to make changes.'
+      [MselRole.Viewer]: 'Can only view MSEL Pages without the ability to make changes.',
+      'Creator': 'Created this MSEL and permanently holds Owner permissions. This cannot be removed.'
     };
     return descriptions[role] || 'No description available.';
   }

@@ -16,6 +16,8 @@ import { TeamDataService } from 'src/app/data/team/team-data.service';
 import { OrganizationDataService } from 'src/app/data/organization/organization-data.service';
 import { DataFieldDataService } from 'src/app/data/data-field/data-field-data.service';
 import { DataValueDataService } from 'src/app/data/data-value/data-value-data.service';
+import { MselPageDataService } from 'src/app/data/msel-page/msel-page-data.service';
+import { MselPageQuery } from 'src/app/data/msel-page/msel-page.query';
 import {
   ScenarioEventDataService,
   DataValuePlus,
@@ -31,13 +33,14 @@ import {
   ScenarioEvent,
   MselItemStatus,
   Card,
+  MselPage,
 } from 'src/app/generated/blueprint.api';
 import { UntypedFormControl } from '@angular/forms';
 import { MselPlus } from 'src/app/data/msel/msel-data.service';
 import { DataValueQuery } from 'src/app/data/data-value/data-value.query';
 import { ScenarioEventQuery } from 'src/app/data/scenario-event/scenario-event.query';
 import { Sort } from '@angular/material/sort';
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnDestroy } from '@angular/core';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
 import { CardQuery } from 'src/app/data/card/card.query';
 import { CardDataService } from 'src/app/data/card/card-data.service';
@@ -49,7 +52,7 @@ import { PageEvent } from '@angular/material/paginator';
     styleUrls: ['./msel-playbook.component.scss'],
     standalone: false
 })
-export class MselPlaybookComponent {
+export class MselPlaybookComponent implements OnDestroy {
   @Input() userTheme: Theme;
   @Input() canEditMsel: boolean;
   @Input() loggedInUserId: string;
@@ -72,6 +75,7 @@ export class MselPlaybookComponent {
   sortedScenarioEvents: ScenarioEvent[] = [];
   moveAndGroupNumbers: Record<string, number[]>[] = [];
   moveList: Move[] = [];
+  mselPages: MselPage[] = [];
   filteredScenarioEventList: ScenarioEvent[] = [];
   filterString = '';
   blankDataValue = {
@@ -106,39 +110,26 @@ export class MselPlaybookComponent {
     private dataFieldDataService: DataFieldDataService,
     private dataValueDataService: DataValueDataService,
     private scenarioEventDataService: ScenarioEventDataService,
+    private mselPageDataService: MselPageDataService,
     private mselQuery: MselQuery,
     private dataFieldQuery: DataFieldQuery,
     private moveQuery: MoveQuery,
     private dataValueQuery: DataValueQuery,
     private scenarioEventQuery: ScenarioEventQuery,
     private cardQuery: CardQuery,
+    private mselPageQuery: MselPageQuery,
     private activatedRoute: ActivatedRoute
   ) {
-    // set image
-    this.activatedRoute.paramMap
+    // Most data is loaded by parent component, but we need to load msel pages
+    this.activatedRoute.queryParamMap
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((params) => {
-        // load the selected MSEL data
-        const mselId = params.get('id');
+        const mselId = params.get('msel');
         const scenarioEventId = params.get('scenarioEventId');
         this.scenarioEventId = scenarioEventId;
         if (mselId && this.selectedMselId !== mselId) {
-          // load the selected MSEL and make it active
-          this.mselDataService.loadById(mselId);
-          this.mselDataService.setActive(mselId);
-          // // load the MSELs moves
-          this.moveDataService.loadByMsel(mselId);
-          // // load the MSEL Teams
-          this.teamDataService.loadByMsel(mselId);
-          // // load the MSEL organizations and templates
-          this.organizationDataService.loadByMsel(mselId);
-          // // load data fields and values
-          this.dataFieldDataService.loadByMsel(mselId);
-          this.dataValueDataService.loadByMsel(mselId);
-          // // load scenario events
-          if (scenarioEventId) {
-            this.scenarioEventDataService.loadById(scenarioEventId);
-          }
+          this.selectedMselId = mselId;
+          this.mselPageDataService.loadByMsel(mselId);
         }
       });
     // subscribe to the active MSEL
@@ -206,6 +197,17 @@ export class MselPlaybookComponent {
             this.moveList
           );
       });
+    this.mselPageQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((pages) => {
+        this.mselPages = pages.filter(p => p.includeInPlaybook);
+      });
+  }
+
+  ngOnDestroy() {
+    this.unsubscribe$.next(null);
+    this.unsubscribe$.complete();
   }
 
   getEditableMsel(msel: MselPlus): MselPlus {
@@ -407,6 +409,18 @@ export class MselPlaybookComponent {
     location.reload();
   }
 
+  printAllEvents() {
+    const originalPageSize = this.pageSize;
+    this.pageSize = this.sortedScenarioEvents.length;
+    setTimeout(() => {
+      const printContents = document.getElementById('printable-area').innerHTML;
+      document.body.innerHTML = printContents;
+      window.print();
+      this.pageSize = originalPageSize;
+      location.reload();
+    }, 250);
+  }
+
   getCardNameById(cardId: string): string {
     const card = this.cardList.find((c) => c.id === cardId);
     return card ? card.name : 'Unknown';
@@ -460,5 +474,9 @@ export class MselPlaybookComponent {
 
   isMoveBoundary(scenarioEventId: string, previousScenarioEventId: string): boolean {
     return this.getMoveNumber(scenarioEventId) !== this.getMoveNumber(previousScenarioEventId);
+  }
+
+  isShowingAllEvents(): boolean {
+    return this.pageSize >= this.sortedScenarioEvents.length;
   }
 }

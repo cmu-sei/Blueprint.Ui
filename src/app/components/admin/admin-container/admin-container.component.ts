@@ -3,7 +3,7 @@
 // project root for license information.
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Title } from '@angular/platform-browser';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Observable, Subject } from 'rxjs';
 import { take, takeUntil } from 'rxjs/operators';
 import { UnitDataService } from 'src/app/data/unit/unit-data.service';
@@ -101,10 +101,12 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
   userList$: Observable<User[]>;
   uiVersion = environment.VERSION;
   apiVersion = 'API ERROR!';
+  returnUrl = '/';
   private unsubscribe$ = new Subject();
 
   constructor(
     private router: Router,
+    private activatedRoute: ActivatedRoute,
     private unitDataService: UnitDataService,
     private userDataService: UserDataService,
     private userQuery: UserQuery,
@@ -122,6 +124,7 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
   ) {
     this.theme$ = this.authQuery.userTheme$;
     this.hideTopbar = this.uiDataService.inIframe();
+    this.returnUrl = this.activatedRoute.snapshot.queryParamMap.get('returnUrl') || '/';
     // Set the display settings from config file
     const appTitle = this.settingsService.settings.AppTitle || 'Set AppTitle in Settings';
     titleService.setTitle(appTitle + ' Admin');
@@ -203,6 +206,10 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
   gotoSection(section: string) {
     this.selectedTab = section;
     this.uiDataService.setAdminTab(section);
+  }
+
+  exitAdmin(): void {
+    this.router.navigateByUrl(this.returnUrl);
   }
 
   goToUrl(url): void {

@@ -4,10 +4,19 @@
  project root for license information.
 */
 
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
 .frame {
   width: 100%;
-  height: calc(100% - 60px);
+  flex: 1;
+  min-height: 0;
   overflow-x: hidden;
+  overflow-y: auto;
   justify-content: center;
   align-items: center;
 }
@@ -18,6 +27,10 @@
   table-layout: fixed;
   margin: 0 auto;
   margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 3px solid var(--mat-sys-primary);
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
 }
 
 #eventDetails td {
@@ -38,12 +51,20 @@
   color: black !important;
 }
 
+#eventDetails thead {
+  display: table-row-group;
+}
+
 #eventDetails th {
   padding-top: 12px;
   padding-bottom: 12px;
   text-align: center;
-  background-color: darkgrey;
-  color: black;
+  background-color: var(--mat-sys-primary);
+  color: var(--mat-sys-on-primary);
+  font-weight: bold;
+  font-size: 1.1em;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
 }
 
 .header-div {
@@ -54,6 +75,13 @@
 
 .right-buttons {
   margin-right: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+mat-paginator {
+  background: transparent;
 }
 
 .page-break {
@@ -94,6 +122,10 @@
   .msel-header,
   .move-header {
     page-break-after: always;
+  }
+
+  #eventDetails thead {
+    display: table-row-group;
   }
 }
 

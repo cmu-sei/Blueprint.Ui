@@ -27,12 +27,23 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <mat-label>Changes have not been saved!</mat-label>
           }
         </span>
+        <span class="export-import-span">
+          <button mat-icon-button [matMenuTriggerFor]="downloadMenu" title="Download" style="outline: none;">
+            <mat-icon class="mdi-18px" fontIcon="mdi-download"></mat-icon>
+          </button>
+          <mat-menu #downloadMenu="matMenu" [overlapTrigger]="false">
+            <button mat-menu-item (click)="downloadJsonFile()" title="Download json file">Download json file</button>
+            <button mat-menu-item (click)="downloadXlsxFile()" title="Download xlsx file">Download xlsx file</button>
+          </mat-menu>
+        </span>
         <span class="delete-span">
           @if (canManageMsel()) {
-          <button mat-icon-button (click)="deleteMsel()" title="Delete this MSEL"
-            [disabled]="msel && msel.status === 'Deployed'">
-            <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline" alt="Delete"></mat-icon>
-          </button>
+          <span [title]="getDeleteTooltip()">
+            <button mat-icon-button (click)="deleteMsel()"
+              [disabled]="msel && (msel.status === 'Deployed' || msel.isTemplate)">
+              <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline" alt="Delete"></mat-icon>
+            </button>
+          </span>
           }
         </span>
       </div>
@@ -499,9 +510,16 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <button mat-icon-button (click)="openContent(page.id)" title="Open page in new tab" class="far-right-button">
             <mat-icon class="mdi-24px self-center" fontIcon="mdi-open-in-new"></mat-icon>
           </button>
-          @if (page.allCanView) {
-          <span>&nbsp;&nbsp;** All MSEL users can view this page</span>
-          }
+          <span [title]="page.allCanView ? 'All MSEL users can view this page' : 'Only MSEL contributors can view this page'">
+            <button mat-icon-button disabled>
+              <mat-icon class="mdi-24px" [fontIcon]="page.allCanView ? 'mdi-eye' : 'mdi-eye-off'" style="color: var(--mat-sys-primary)"></mat-icon>
+            </button>
+          </span>
+          <span [title]="page.includeInPlaybook ? 'Included in playbook' : 'Not included in playbook'">
+            <button mat-icon-button disabled>
+              <mat-icon class="mdi-24px" [fontIcon]="page.includeInPlaybook ? 'mdi-file-document-check' : 'mdi-file-document-remove'" style="color: var(--mat-sys-primary)"></mat-icon>
+            </button>
+          </span>
         </span>
         }
         @if (editingPageId === page.id) {
@@ -530,6 +548,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           @if (editingPageId === page.id) {
           <mat-checkbox [(ngModel)]="changedMselPage.allCanView" title="All MSEL users can view this page">All MSEL
             users can view this page</mat-checkbox>
+          <mat-checkbox [(ngModel)]="changedMselPage.includeInPlaybook" title="Include this page when printing the playbook">Include in playbook</mat-checkbox>
           }
         </div>
         <div>

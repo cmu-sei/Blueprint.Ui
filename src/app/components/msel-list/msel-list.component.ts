@@ -287,8 +287,20 @@ export class MselListComponent implements OnDestroy, OnInit {
     this.mselDataSource.sort = this.sort;
   }
 
-  copyMsel(id: string): void {
-    this.mselDataService.copy(id);
+  copyMsel(mselId: string): void {
+    const msel = this.mselList.find(m => m.id === mselId);
+    if (!msel) return;
+
+    this.dialogService
+      .confirm(
+        'Copy MSEL',
+        'Are you sure that you want to copy ' + msel.name + '?'
+      )
+      .subscribe((result) => {
+        if (result['confirm']) {
+          this.mselDataService.copy(msel.id);
+        }
+      });
   }
 
   delete(msel: MselPlus): void {
@@ -391,6 +403,22 @@ export class MselListComponent implements OnDestroy, OnInit {
   canManageMsel(msel: MselPlus): boolean {
     return this.permissionDataService.hasPermission(SystemPermission.ManageMsels) ||
       msel?.hasRole(this.loggedInUserId, '').owner;
+  }
+
+  getDeleteTooltip(msel: MselPlus): string {
+    if (!this.isReady) {
+      return 'System is not ready';
+    }
+    if (!this.canManageMsel(msel)) {
+      return 'You do not have permission to delete this MSEL';
+    }
+    if (msel.status === 'Deployed') {
+      return 'Cannot delete deployed MSEL';
+    }
+    if (msel.isTemplate) {
+      return 'Cannot delete template MSELs';
+    }
+    return 'Delete ' + msel.name;
   }
 
   isValidDate(date: Date | null | undefined): boolean {

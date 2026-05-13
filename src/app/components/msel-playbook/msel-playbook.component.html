@@ -9,29 +9,49 @@ project root for license information.
     <div class="header-div">
       <h2>MSEL Playbook</h2>
       <div class="right-buttons no-print">
+        <mat-paginator [length]="sortedScenarioEvents.length" [pageSize]="pageSize" [pageSizeOptions]="pageSizeOptions"
+          (page)="changePage($event)">
+        </mat-paginator>
         <button
-          aria-label="Print MSEL Playbook"
+          aria-label="Print Current Page"
           mat-icon-button
           style="outline: none;"
-          title="Print MSEL Playbook"
+          title="Print Current Page"
           (click)="printpage()"
           >
           <mat-icon aria-hidden="false" class="mdi-24px" fontIcon="mdi-printer"></mat-icon>
+        </button>
+        <button
+          aria-label="Print All Events"
+          mat-icon-button
+          style="outline: none;"
+          title="Print All Events"
+          (click)="printAllEvents()"
+          >
+          <mat-icon aria-hidden="false" class="mdi-24px" fontIcon="mdi-printer-outline"></mat-icon>
         </button>
       </div>
     </div>
     @if (msel) {
       <div class="table-container">
+        @if (isShowingAllEvents()) {
         <div class="msel-header print-only">
           <h2>{{ msel.name }}</h2>
           @if (msel.description) {
             <div>{{ msel.description }}</div>
           }
         </div>
+        @for (page of mselPages; track page.id) {
+          <div class="msel-page-content print-only page-break">
+            <h3>{{ page.name }}</h3>
+            <div [innerHTML]="page.content"></div>
+          </div>
+        }
+        }
         @for (scenarioEvent of getPagedScenarioEvents(); track scenarioEvent.id; let i = $index) {
           @let move = getMoveForEvent(scenarioEvent.id);
           @let prevEvent = i > 0 ? getPagedScenarioEvents()[i - 1] : null;
-          @if (i === 0 || isMoveBoundary(scenarioEvent.id, prevEvent.id)) {
+          @if (isShowingAllEvents() && (i === 0 || isMoveBoundary(scenarioEvent.id, prevEvent.id))) {
             <div class="move-header print-only">
               <h3>Move {{ getMoveNumber(scenarioEvent.id) }}@if (move?.description) {: {{ move.description }}}</h3>
               @if (move?.situationTime) {
@@ -85,9 +105,6 @@ project root for license information.
             </tbody>
           </table>
         }
-        <mat-paginator [length]="sortedScenarioEvents.length" [pageSize]="pageSize" [pageSizeOptions]="pageSizeOptions"
-          (page)="changePage($event)" class="no-print">
-        </mat-paginator>
       </div>
     }
   </div>

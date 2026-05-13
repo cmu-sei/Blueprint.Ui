@@ -13,6 +13,7 @@ export class UIState {
   expandedItems: string[] = [];
   navCollapsed: boolean;
   useRealTime: boolean;
+  visibleDataFieldColumns: string[] = [];
 }
 
 @Injectable({
@@ -111,6 +112,18 @@ export class UIDataService {
     return this.uiState.selectedTheme;
   }
   // end theme
+
+  //
+  // Data field display columns section
+  setVisibleDataFieldColumns(columns: string[]) {
+    this.uiState.visibleDataFieldColumns = columns;
+    this.saveChanges();
+  }
+
+  getVisibleDataFieldColumns(): string[] {
+    return this.uiState.visibleDataFieldColumns ?? [];
+  }
+  // end data field display columns section
 
   saveChanges() {
     localStorage.setItem('uiState', JSON.stringify(this.uiState));

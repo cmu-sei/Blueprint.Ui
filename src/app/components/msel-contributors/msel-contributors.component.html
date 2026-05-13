@@ -78,12 +78,67 @@ project root for license information or contact permission@sei.cmu.edu for full 
               @for (user of getMselUnitUsers(element.unitId); track user) {
               <div class="unit-detail">
                 <div class="user-name four-cell">{{ user.name }}</div>
-                @for (mselRole of getMselRolesToDisplay(); track mselRole) {
-                <div class="msel-role one-cell">
-                  <mat-checkbox [checked]="hasMselRole(user.id, mselRole)"
-                    (change)="toggleMselRole(user.id, mselRole, $event.checked)" (click)="$event.stopPropagation();"
-                    style="margin-right: 20px;" [disabled]="!canManageMsel() || isOwnOwnerRole(user.id, mselRole)"
-                    [matTooltip]="getRoleDescription(mselRole)">{{ mselRole }}</mat-checkbox>
+                <div class="role-select" (click)="$event.stopPropagation();">
+                  <mat-form-field>
+                    <mat-label>MSEL Roles</mat-label>
+                    <mat-select multiple [value]="getSelectedMselRoles(user.id)"
+                      (selectionChange)="setMselRoles(user.id, $event.value)"
+                      [disabled]="!canManageMsel()">
+                      @for (role of getMselRolesToDisplay(); track role) {
+                      <mat-option [value]="role" [disabled]="isOwnOwnerRole(user.id, role) || isCreatorRole(user.id, role)">
+                        <span [matTooltip]="getRoleDescription(role)"
+                              matTooltipPosition="right"
+                              style="pointer-events: auto; display: block; width: 100%;">
+                          {{ role }}
+                        </span>
+                      </mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+                @if (msel.useCite) {
+                <div class="role-select" (click)="$event.stopPropagation();">
+                  <mat-form-field>
+                    <mat-label>CITE Role</mat-label>
+                    <mat-select [value]="getCiteEvaluationRole(user.id)"
+                      (selectionChange)="setCiteEvaluationRole(user.id, $event.value)"
+                      [disabled]="!canManageMsel()">
+                      <mat-option [value]="null">&mdash;</mat-option>
+                      @for (role of citeEvaluationRoles; track role) {
+                      <mat-option [value]="role">{{ role }}</mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+                }
+                @if (msel.useGallery) {
+                <div class="role-select" (click)="$event.stopPropagation();">
+                  <mat-form-field>
+                    <mat-label>Gallery Role</mat-label>
+                    <mat-select [value]="getGalleryExhibitRole(user.id)"
+                      (selectionChange)="setGalleryExhibitRole(user.id, $event.value)"
+                      [disabled]="!canManageMsel()">
+                      <mat-option [value]="null">&mdash;</mat-option>
+                      @for (role of galleryExhibitRoles; track role) {
+                      <mat-option [value]="role">{{ role }}</mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+                }
+                @if (msel.useSteamfitter) {
+                <div class="role-select" (click)="$event.stopPropagation();">
+                  <mat-form-field>
+                    <mat-label>Steamfitter Role</mat-label>
+                    <mat-select [value]="getSteamfitterScenarioRole(user.id)"
+                      (selectionChange)="setSteamfitterScenarioRole(user.id, $event.value)"
+                      [disabled]="!canManageMsel()">
+                      <mat-option [value]="null">&mdash;</mat-option>
+                      @for (role of steamfitterScenarioRoles; track role) {
+                      <mat-option [value]="role">{{ role }}</mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
                 </div>
                 }
               </div>
