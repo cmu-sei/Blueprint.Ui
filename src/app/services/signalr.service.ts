@@ -170,13 +170,15 @@ export class SignalRService implements OnDestroy {
   }
 
   public selectMsel(mselId: string) {
-    if (this.hubConnection.state !== signalR.HubConnectionState.Connected) {
+    if (this.hubConnection?.state !== signalR.HubConnectionState.Connected) {
       setTimeout(() => this.selectMsel(mselId), 500);
     } else if (this.isJoined) {
       if (this.applicationArea !== ApplicationArea.admin) {
         this.presenceActors = [];
         this.actors$.next([]);
-        this.hubConnection.invoke('selectMsel', [mselId]);
+        this.hubConnection.invoke('selectMsel', [mselId]).catch(() => {
+          // Ignore errors during rapid navigation
+        });
         this.mselId = mselId;
         // fetch current presence so we don't rely solely on greet-back
         this.hubConnection.invoke('GetPresence', mselId).then(
@@ -187,14 +189,18 @@ export class SignalRService implements OnDestroy {
               }
             }
           }
-        );
+        ).catch(() => {
+          // Ignore errors during rapid navigation
+        });
       }
     }
   }
 
   public clearPresence() {
-    if (this.hubConnection?.state === signalR.HubConnectionState.Connected && this.mselId) {
-      this.hubConnection.invoke('selectMsel', []);
+    if (this.hubConnection?.state === signalR.HubConnectionState.Connected && this.mselId && this.applicationArea !== ApplicationArea.admin) {
+      this.hubConnection.invoke('selectMsel', []).catch(() => {
+        // Ignore errors during rapid navigation
+      });
     }
     this.mselId = '';
     this.presenceActors = [];
