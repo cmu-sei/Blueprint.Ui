@@ -73,6 +73,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline"></mat-icon>
           </button>
           }
+          @if (!showTemplates && canEdit) {
+          <button mat-icon-button (click)="addOrEditCiteDuty(element, true, false); $event.stopPropagation();"
+            title="Make {{ element.name }} a template">
+            <mat-icon class="mdi-18px" fontIcon="mdi-card-plus-outline"></mat-icon>
+          </button>
+          }
         </td>
       </ng-container>
       <!-- name column -->
