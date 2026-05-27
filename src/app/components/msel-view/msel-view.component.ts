@@ -571,6 +571,31 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
     }
   }
 
+  shouldShowMoveSeparators(): boolean {
+    if (!this.sort || !this.sort.active || !this.sort.direction) return true;
+    if (this.sort.direction !== 'asc') return false;
+    return this.sort.active === 'moveNumber' || this.sort.active === 'deltaSeconds';
+  }
+
+  isMoveStartRow(rowIndex: number): boolean {
+    if (!this.shouldShowMoveSeparators()) return false;
+    const events = this.sortedScenarioEvents;
+    if (!events || !events[rowIndex]) return false;
+    const currMove = this.moveAndGroupNumbers[events[rowIndex].id]?.[0];
+    if (currMove == null || currMove < 0) return false;
+    if (rowIndex === 0) return true;
+    const prevMove = this.moveAndGroupNumbers[events[rowIndex - 1].id]?.[0];
+    return currMove !== prevMove;
+  }
+
+  getMoveLabel(rowIndex: number): string {
+    const events = this.sortedScenarioEvents;
+    const moveNum = this.moveAndGroupNumbers[events[rowIndex].id]?.[0];
+    const move = this.moveList.find((m) => +m.moveNumber === +moveNum);
+    const desc = move?.description?.trim();
+    return desc ? `Start Move ${moveNum} — ${desc}` : `Start Move ${moveNum}`;
+  }
+
   ngOnDestroy() {
     this.unsubscribe$.next(null);
     this.unsubscribe$.complete();

@@ -87,6 +87,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </thead>
       <tbody>
         @for (item of sortedScenarioEvents; track item.id; let rowIndex = $index) {
+        @if (isMoveStartRow(rowIndex)) {
+        <tr class="move-start-row">
+          <td [attr.colspan]="999">{{ getMoveLabel(rowIndex) }}</td>
+        </tr>
+        }
         <tr class="move-group" [style]="getRowStyle(item)">
           <!-- row buttons -->
           <td class="center-self">

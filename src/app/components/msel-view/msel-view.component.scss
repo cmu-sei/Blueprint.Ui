@@ -73,3 +73,11 @@ td {
   margin-left: 10px;
   width: 300px;
 }
+
+.move-start-row td {
+  background: var(--mat-sys-secondary-container, #e0e0e0);
+  color: var(--mat-sys-on-secondary-container, inherit);
+  font-weight: 600;
+  padding: 6px 12px;
+  border-top: 2px solid var(--mat-sys-outline, #888);
+}

@@ -168,6 +168,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <tbody cdkDropList [cdkDropListDisabled]="!allowDragAndDrop || !canEditMsel()"
         (cdkDropListDropped)="dropHandler($event)">
         @for (item of displayedScenarioEvents; track item.id; let rowIndex = $index) {
+        @if (isMoveStartRow(rowIndex)) {
+        <tr class="move-start-row">
+          <td [attr.colspan]="999">{{ getMoveLabel(rowIndex) }}</td>
+        </tr>
+        }
         <tr [style]="getRowStyle(item)" cdkDrag [cdkDragData]="item" cdkDragLockAxis="y"
           [cdkDragPreviewClass]="userTheme" (cdkDragStarted)="dragStart($event)" (cdkDragEnded)="dragEnd($event)">
           <!-- row buttons -->
