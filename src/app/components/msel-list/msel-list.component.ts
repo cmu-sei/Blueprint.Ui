@@ -392,7 +392,8 @@ export class MselListComponent implements OnDestroy, OnInit {
 
   canViewMsel(msel: MselPlus): boolean {
     return this.permissionDataService.hasPermission(SystemPermission.ViewMsels) ||
-      msel?.hasRole(this.loggedInUserId, '').editor;
+      msel?.hasRole(this.loggedInUserId, '').editor ||
+      (msel?.isTemplate && this.permissionDataService.hasPermission(SystemPermission.CreateMsels));
   }
 
   canEditMsel(msel: MselPlus): boolean {
