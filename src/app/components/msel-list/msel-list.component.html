@@ -139,14 +139,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
         </ng-container>
         <!-- dateCreated Column -->
         <ng-container matColumnDef="dateCreated">
-          <mat-header-cell *matHeaderCellDef mat-sort-header> Date Created </mat-header-cell>
+          <mat-header-cell *matHeaderCellDef mat-sort-header> Created </mat-header-cell>
           <mat-cell *matCellDef="let element">
             <div class="description-text">{{ element.dateCreated | date: 'yyyy-MM-dd HH:mm' }}</div>
           </mat-cell>
         </ng-container>
         <!-- dateModified Column -->
         <ng-container matColumnDef="dateModified">
-          <mat-header-cell *matHeaderCellDef mat-sort-header> Date Modified </mat-header-cell>
+          <mat-header-cell *matHeaderCellDef mat-sort-header> Modified </mat-header-cell>
           <mat-cell *matCellDef="let element">
             <div class="description-text">
               @if (isValidDate(element.dateModified)) {
