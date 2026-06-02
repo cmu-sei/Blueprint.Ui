@@ -37,6 +37,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   style="outline: none;">
                   <mat-icon class="mdi-24px center-self" fontIcon="mdi-plus-circle"></mat-icon>
                 </button>
+                <button mat-icon-button title="Upload Organization templates from JSON" style="outline: none;"
+                  (click)="jsonInput.click()">
+                  <mat-icon class="mdi-24px" fontIcon="mdi-upload"></mat-icon>
+                </button>
+                <button mat-icon-button title="Download Organization templates as JSON" style="outline: none;"
+                  (click)="openDownloadDialog()">
+                  <mat-icon class="mdi-24px" fontIcon="mdi-download"></mat-icon>
+                </button>
               </span>
               } &nbsp;
               @if (!showTemplates && (canEdit || msel.hasRole(loggedInUserId, null).owner)) {
@@ -123,3 +131,5 @@ project root for license information or contact permission@sei.cmu.edu for full 
     </span>
   </section>
 </div>
+
+<input hidden type="file" #jsonInput accept=".json" (change)="selectFile($event)" />

@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, Input, OnDestroy, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, ElementRef, Input, OnDestroy, ViewChild, AfterViewInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -22,6 +22,7 @@ import { TeamQuery } from 'src/app/data/team/team.query';
 import { MatDialog } from '@angular/material/dialog';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 import { CiteDutyEditDialogComponent } from '../cite-duty-edit-dialog/cite-duty-edit-dialog.component';
+import { ItemDownloadDialogComponent } from '../item-download-dialog/item-download-dialog.component';
 
 @Component({
   selector: 'app-cite-duty-list',
@@ -52,6 +53,7 @@ export class CiteDutyListComponent implements OnDestroy, AfterViewInit {
   // context menu
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
   @ViewChild(MatPaginator) paginator: MatPaginator;
+  @ViewChild('jsonInput') jsonInput: ElementRef<HTMLInputElement>;
   contextMenuPosition = { x: '0px', y: '0px' };
 
   constructor(
@@ -168,6 +170,53 @@ export class CiteDutyListComponent implements OnDestroy, AfterViewInit {
         this.citeDutyDataService.add(citeDuty);
       });
     }
+  }
+
+  selectFile(e: Event) {
+    const input = e.target as HTMLInputElement;
+    const file = input.files && input.files[0];
+    if (!file) {
+      return;
+    }
+    this.citeDutyDataService.uploadJson(file, 'events', true);
+    this.jsonInput.nativeElement.value = null;
+  }
+
+  openDownloadDialog() {
+    const items = (this.templateList || []).map((d) => ({
+      id: d.id,
+      label: d.name || d.id,
+    }));
+    const dialogRef = this.dialog.open(ItemDownloadDialogComponent, {
+      maxWidth: '90vw',
+      width: 'auto',
+      data: {
+        title: 'Select CITE Duty templates to download',
+        items,
+      },
+    });
+    dialogRef.afterClosed().subscribe((selectedIds: string[] | undefined) => {
+      if (selectedIds && selectedIds.length > 0) {
+        this.downloadJsonItems(selectedIds);
+      }
+    });
+  }
+
+  downloadJsonItems(ids: string[]) {
+    this.citeDutyDataService.downloadJson(ids).subscribe(
+      (data) => {
+        const url = window.URL.createObjectURL(data);
+        const link = document.createElement('a');
+        link.href = url;
+        link.target = '_blank';
+        link.download = 'cite-duty-templates.json';
+        link.click();
+        window.URL.revokeObjectURL(url);
+      },
+      (err) => {
+        window.alert('Error downloading file');
+      }
+    );
   }
 
   deleteCiteDuty(citeDuty: CiteDuty): void {

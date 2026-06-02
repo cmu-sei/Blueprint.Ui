@@ -1,0 +1,23 @@
+.select-all {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+}
+
+.item-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 50vh;
+  min-width: 360px;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.empty-message {
+  color: var(--mat-sys-on-surface-variant);
+  font-style: italic;
+  padding: 12px 0;
+}

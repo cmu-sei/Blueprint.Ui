@@ -16,7 +16,8 @@ import {
   DataFieldService,
 } from 'src/app/generated/blueprint.api';
 import { map, take, tap } from 'rxjs/operators';
-import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, combineLatest } from 'rxjs';
+import { HttpEventType, HttpResponse } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root',
@@ -34,6 +35,7 @@ export class DataFieldDataService {
   readonly pageEvent = new BehaviorSubject<PageEvent>(this._pageEvent); private _requestedDataFieldId: string;
   private pageSize: Observable<number>;
   private pageIndex: Observable<number>;
+  public uploadProgress = new Subject<number>();
 
   constructor(
     private dataFieldStore: DataFieldStore,
@@ -224,6 +226,37 @@ export class DataFieldDataService {
       .subscribe((dfid) => {
         this.deleteFromStore(dfid);
       });
+  }
+
+  downloadJson(ids: string[]) {
+    return this.dataFieldService.downloadJsonDataFields(ids);
+  }
+
+  uploadJson(file: File, observe: any, reportProgress: boolean) {
+    this.dataFieldTemplateStore.setLoading(true);
+    this.dataFieldService
+      .uploadJsonDataFields(file, observe, reportProgress)
+      .subscribe(
+        (event: any) => {
+          if (event.type === HttpEventType.UploadProgress) {
+            const uploadProgress = Math.round(
+              (100 * event.loaded) / event.total
+            );
+            this.uploadProgress.next(uploadProgress);
+          } else if (event instanceof HttpResponse) {
+            this.uploadProgress.next(0);
+            this.dataFieldTemplateStore.setLoading(false);
+            if (event.status === 200) {
+              const items = event.body || [];
+              this.dataFieldTemplateStore.upsertMany(items);
+            }
+          }
+        },
+        (error) => {
+          this.dataFieldTemplateStore.setLoading(false);
+          this.uploadProgress.next(0);
+        }
+      );
   }
 
   setPageEvent(pageEvent: PageEvent) {

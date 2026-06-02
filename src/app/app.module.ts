@@ -100,6 +100,7 @@ import { DataOptionEditDialogComponent } from './components/data-option-edit-dia
 import { DataOptionImportDialogComponent } from './components/data-option-import-dialog/data-option-import-dialog.component';
 import { DataOptionListDialogComponent } from './components/data-option-list-dialog/data-option-list-dialog.component';
 import { HomeAppComponent } from './components/home-app/home-app.component';
+import { ItemDownloadDialogComponent } from './components/item-download-dialog/item-download-dialog.component';
 import { InjectEditDialogComponent } from './components/inject-edit-dialog/inject-edit-dialog.component';
 import { InjectListComponent } from './components/inject-list/inject-list.component';
 import { InjectSelectDialogComponent } from './components/inject-select-dialog/inject-select-dialog.component';
@@ -200,6 +201,7 @@ export const appConfig: ApplicationConfig = {
     DataOptionImportDialogComponent,
     DataOptionListDialogComponent,
     HomeAppComponent,
+    ItemDownloadDialogComponent,
     InjectEditDialogComponent,
     InjectListComponent,
     InjectSelectDialogComponent,
