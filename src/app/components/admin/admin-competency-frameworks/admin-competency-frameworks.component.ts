@@ -1,7 +1,7 @@
 // Copyright 2026 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, Input, OnDestroy, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, ElementRef, Input, OnDestroy, ViewChild, AfterViewInit } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { MatTableDataSource, MatTable } from '@angular/material/table';
 import { animate, state, style, transition, trigger } from '@angular/animations';
@@ -91,6 +91,7 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
   relatedTypes: string[] = [];
   @ViewChild('availablePaginator') availablePaginator: MatPaginator;
   @ViewChild('relatedPaginator') relatedPaginator: MatPaginator;
+  @ViewChild('jsonInput') jsonInput: ElementRef<HTMLInputElement>;
   private expandedComp: Competency = null;
   private currentRelatedIdNumbers: string[] = [];
   private relatedFilterSub: Subscription;
@@ -242,6 +243,29 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
           this.expandedElementId = '';
         }
       });
+  }
+
+  selectJsonFile(e: Event): void {
+    const input = e.target as HTMLInputElement;
+    const file = input.files && input.files[0];
+    if (!file) {
+      return;
+    }
+    this.importing = true;
+    this.importError = '';
+    this.competencyFrameworkService.importCompetencyFrameworkJson(file)
+      .pipe(take(1))
+      .subscribe({
+        next: (created) => {
+          this.competencyFrameworkDataService.updateStore(created);
+          this.importing = false;
+        },
+        error: (err) => {
+          this.importing = false;
+          this.importError = 'Import failed: ' + (err.error?.title || err.message || 'Unknown error');
+        },
+      });
+    this.jsonInput.nativeElement.value = null;
   }
 
   importFramework(): void {

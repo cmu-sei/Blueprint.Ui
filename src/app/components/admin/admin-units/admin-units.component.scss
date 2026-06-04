@@ -35,8 +35,10 @@ table {
 }
 
 .column-action {
-  flex: 0 0 120px;
-  width: 120px;
+  flex: 0 0 144px;
+  width: 144px;
+  min-width: 144px;
+  white-space: nowrap;
 }
 
 .column-short-name {
@@ -69,5 +71,5 @@ table {
 }
 
 .button-end {
-  margin-left: 100px;
+  margin-left: auto;
 }

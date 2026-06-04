@@ -1,7 +1,7 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild, AfterViewInit } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, Input, OnDestroy, OnInit, ViewChild, AfterViewInit } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -28,6 +28,7 @@ import { CompetencyOptionsDialogComponent } from '../competency-options-dialog/c
 import { DataOptionEditDialogComponent } from '../data-option-edit-dialog/data-option-edit-dialog.component';
 import { DataOptionListDialogComponent } from '../data-option-list-dialog/data-option-list-dialog.component';
 import { DataOptionImportDialogComponent } from '../data-option-import-dialog/data-option-import-dialog.component';
+import { ItemDownloadDialogComponent } from '../item-download-dialog/item-download-dialog.component';
 import { InjectTypeDataService } from 'src/app/data/inject-type/inject-type-data.service';
 import { InjectTypeQuery } from 'src/app/data/inject-type/inject-type.query';
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
@@ -91,6 +92,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
   // context menu
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
   @ViewChild(MatPaginator) paginator: MatPaginator;
+  @ViewChild('jsonInput') jsonInput: ElementRef<HTMLInputElement>;
   contextMenuPosition = { x: '0px', y: '0px' };
 
   constructor(
@@ -341,6 +343,53 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
       this.dataFieldDataService.add(dataField);
     }
     return dataField.id;
+  }
+
+  selectFile(e: Event) {
+    const input = e.target as HTMLInputElement;
+    const file = input.files && input.files[0];
+    if (!file) {
+      return;
+    }
+    this.dataFieldDataService.uploadJson(file, 'events', true);
+    this.jsonInput.nativeElement.value = null;
+  }
+
+  openDownloadDialog() {
+    const items = (this.templateDataSource.data || []).map((d) => ({
+      id: d.id,
+      label: d.name || d.id,
+    }));
+    const dialogRef = this.dialog.open(ItemDownloadDialogComponent, {
+      maxWidth: '90vw',
+      width: 'auto',
+      data: {
+        title: 'Select Data Field templates to download',
+        items,
+      },
+    });
+    dialogRef.afterClosed().subscribe((selectedIds: string[] | undefined) => {
+      if (selectedIds && selectedIds.length > 0) {
+        this.downloadJsonItems(selectedIds);
+      }
+    });
+  }
+
+  downloadJsonItems(ids: string[]) {
+    this.dataFieldDataService.downloadJson(ids).subscribe(
+      (data) => {
+        const url = window.URL.createObjectURL(data);
+        const link = document.createElement('a');
+        link.href = url;
+        link.target = '_blank';
+        link.download = 'data-field-templates.json';
+        link.click();
+        window.URL.revokeObjectURL(url);
+      },
+      (err) => {
+        window.alert('Error downloading file');
+      }
+    );
   }
 
   deleteDataField(dataField: DataField): void {

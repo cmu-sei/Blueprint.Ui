@@ -19,7 +19,8 @@ import {
   UnitService
 } from 'src/app/generated/blueprint.api';
 import { map, take, tap } from 'rxjs/operators';
-import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, combineLatest } from 'rxjs';
+import { HttpEventType, HttpResponse } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root',
@@ -39,6 +40,7 @@ export class UnitDataService {
   readonly pageEvent = new BehaviorSubject<PageEvent>(this._pageEvent);
   private pageSize: Observable<number>;
   private pageIndex: Observable<number>;
+  public uploadProgress = new Subject<number>();
 
   constructor(
     private unitStore: UnitStore,
@@ -252,6 +254,37 @@ export class UnitDataService {
         this.deleteFromStore(id);
         this.setActive('');
       });
+  }
+
+  downloadJson(ids: string[]) {
+    return this.unitService.downloadJsonUnits(ids);
+  }
+
+  uploadJson(file: File, observe: any, reportProgress: boolean) {
+    this.unitStore.setLoading(true);
+    this.unitService
+      .uploadJsonUnits(file, observe, reportProgress)
+      .subscribe(
+        (event: any) => {
+          if (event.type === HttpEventType.UploadProgress) {
+            const uploadProgress = Math.round(
+              (100 * event.loaded) / event.total
+            );
+            this.uploadProgress.next(uploadProgress);
+          } else if (event instanceof HttpResponse) {
+            this.uploadProgress.next(0);
+            this.unitStore.setLoading(false);
+            if (event.status === 200) {
+              const items = event.body || [];
+              this.unitStore.upsertMany(items);
+            }
+          }
+        },
+        (error) => {
+          this.unitStore.setLoading(false);
+          this.uploadProgress.next(0);
+        }
+      );
   }
 
   setActive(id: string) {

@@ -13,7 +13,8 @@ import {
   CiteActionService
 } from 'src/app/generated/blueprint.api';
 import { map, take, tap } from 'rxjs/operators';
-import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, combineLatest } from 'rxjs';
+import { HttpEventType, HttpResponse } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root',
@@ -32,6 +33,7 @@ export class CiteActionDataService {
   readonly pageEvent = new BehaviorSubject<PageEvent>(this._pageEvent);
   private pageSize: Observable<number>;
   private pageIndex: Observable<number>;
+  public uploadProgress = new Subject<number>();
 
   constructor(
     private citeActionStore: CiteActionStore,
@@ -213,6 +215,37 @@ export class CiteActionDataService {
       .subscribe((r) => {
         this.deleteFromStore(id);
       });
+  }
+
+  downloadJson(ids: string[]) {
+    return this.citeActionService.downloadJsonCiteActions(ids);
+  }
+
+  uploadJson(file: File, observe: any, reportProgress: boolean) {
+    this.citeActionStore.setLoading(true);
+    this.citeActionService
+      .uploadJsonCiteActions(file, observe, reportProgress)
+      .subscribe(
+        (event: any) => {
+          if (event.type === HttpEventType.UploadProgress) {
+            const uploadProgress = Math.round(
+              (100 * event.loaded) / event.total
+            );
+            this.uploadProgress.next(uploadProgress);
+          } else if (event instanceof HttpResponse) {
+            this.uploadProgress.next(0);
+            this.citeActionStore.setLoading(false);
+            if (event.status === 200) {
+              const items = event.body || [];
+              this.citeActionStore.upsertMany(items);
+            }
+          }
+        },
+        (error) => {
+          this.citeActionStore.setLoading(false);
+          this.uploadProgress.next(0);
+        }
+      );
   }
 
   setPageEvent(pageEvent: PageEvent) {

@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, Input, OnDestroy, ViewChild } from '@angular/core';
+import { Component, ElementRef, Input, OnDestroy, ViewChild } from '@angular/core';
 import { MatPaginator } from '@angular/material/paginator';
 import { Sort } from '@angular/material/sort';
 import { MatTable, MatTableDataSource } from '@angular/material/table';
@@ -16,6 +16,7 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { MatDialog } from '@angular/material/dialog';
 import { AdminUnitEditDialogComponent } from 'src/app/components/admin/admin-unit-edit-dialog/admin-unit-edit-dialog.component';
+import { ItemDownloadDialogComponent } from 'src/app/components/item-download-dialog/item-download-dialog.component';
 import { DialogService } from 'src/app/services/dialog/dialog.service';
 
 @Component({
@@ -34,6 +35,7 @@ import { DialogService } from 'src/app/services/dialog/dialog.service';
 export class AdminUnitsComponent implements OnDestroy {
   @Input() canManage: boolean;
   @ViewChild('unitTable', { static: false }) unitTable: MatTable<any>;
+  @ViewChild('jsonInput') jsonInput: ElementRef<HTMLInputElement>;
   @ViewChild(MatPaginator) set matPaginator(paginator: MatPaginator) {
     this.unitDataSource.paginator = paginator;
   }
@@ -106,6 +108,53 @@ export class AdminUnitsComponent implements OnDestroy {
     } else {
       this.unitDataService.add(unit);
     }
+  }
+
+  selectFile(e: Event) {
+    const input = e.target as HTMLInputElement;
+    const file = input.files && input.files[0];
+    if (!file) {
+      return;
+    }
+    this.unitDataService.uploadJson(file, 'events', true);
+    this.jsonInput.nativeElement.value = null;
+  }
+
+  openDownloadDialog() {
+    const items = (this.unitDataSource.filteredData || []).map((u) => ({
+      id: u.id,
+      label: u.name || u.shortName || u.id,
+    }));
+    const dialogRef = this.dialog.open(ItemDownloadDialogComponent, {
+      maxWidth: '90vw',
+      width: 'auto',
+      data: {
+        title: 'Select Units to download',
+        items,
+      },
+    });
+    dialogRef.afterClosed().subscribe((selectedIds: string[] | undefined) => {
+      if (selectedIds && selectedIds.length > 0) {
+        this.downloadJsonItems(selectedIds);
+      }
+    });
+  }
+
+  downloadJsonItems(ids: string[]) {
+    this.unitDataService.downloadJson(ids).subscribe(
+      (data) => {
+        const url = window.URL.createObjectURL(data);
+        const link = document.createElement('a');
+        link.href = url;
+        link.target = '_blank';
+        link.download = 'unit-export.json';
+        link.click();
+        window.URL.revokeObjectURL(url);
+      },
+      (err) => {
+        window.alert('Error downloading file');
+      }
+    );
   }
 
   deleteUnit(unit: Unit): void {

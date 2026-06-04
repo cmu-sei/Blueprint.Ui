@@ -15,7 +15,8 @@ import {
   CardService,
 } from 'src/app/generated/blueprint.api';
 import { map, take, tap } from 'rxjs/operators';
-import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, combineLatest } from 'rxjs';
+import { HttpEventType, HttpResponse } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root',
@@ -33,6 +34,7 @@ export class CardDataService {
   readonly pageEvent = new BehaviorSubject<PageEvent>(this._pageEvent); private _requestedCardId: string;
   private pageSize: Observable<number>;
   private pageIndex: Observable<number>;
+  public uploadProgress = new Subject<number>();
 
   constructor(
     private cardStore: CardStore,
@@ -192,6 +194,37 @@ export class CardDataService {
       .subscribe((r) => {
         this.deleteFromStore(id);
       });
+  }
+
+  downloadJson(ids: string[]) {
+    return this.cardService.downloadJsonCards(ids);
+  }
+
+  uploadJson(file: File, observe: any, reportProgress: boolean) {
+    this.cardStore.setLoading(true);
+    this.cardService
+      .uploadJsonCards(file, observe, reportProgress)
+      .subscribe(
+        (event: any) => {
+          if (event.type === HttpEventType.UploadProgress) {
+            const uploadProgress = Math.round(
+              (100 * event.loaded) / event.total
+            );
+            this.uploadProgress.next(uploadProgress);
+          } else if (event instanceof HttpResponse) {
+            this.uploadProgress.next(0);
+            this.cardStore.setLoading(false);
+            if (event.status === 200) {
+              const items = event.body || [];
+              this.cardStore.upsertMany(items);
+            }
+          }
+        },
+        (error) => {
+          this.cardStore.setLoading(false);
+          this.uploadProgress.next(0);
+        }
+      );
   }
 
   setPageEvent(pageEvent: PageEvent) {

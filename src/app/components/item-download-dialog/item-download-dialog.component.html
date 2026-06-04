@@ -1,0 +1,35 @@
+<!--
+Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license, please see LICENSE.md in the
+project root for license information or contact permission@sei.cmu.edu for full terms.
+-->
+
+<h2 mat-dialog-title>{{ data.title }}</h2>
+
+<mat-dialog-content>
+  @if (data.items.length === 0) {
+    <div class="empty-message">No items available to download.</div>
+  } @else {
+    <mat-checkbox class="select-all"
+                  [checked]="isAllSelected()"
+                  [indeterminate]="isIndeterminate()"
+                  (change)="toggleAll($event.checked)">
+      Select all ({{ selected.size }}/{{ data.items.length }})
+    </mat-checkbox>
+    <div class="item-list">
+      @for (item of data.items; track item.id) {
+        <mat-checkbox [checked]="selected.has(item.id)"
+                      (change)="toggle(item.id, $event.checked)">
+          {{ item.label }}
+        </mat-checkbox>
+      }
+    </div>
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancel()">Cancel</button>
+  <button mat-raised-button color="primary"
+          [disabled]="selected.size === 0"
+          (click)="download()">Download</button>
+</mat-dialog-actions>
