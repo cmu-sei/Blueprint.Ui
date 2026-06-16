@@ -281,15 +281,23 @@ export class MselListComponent implements OnDestroy, OnInit {
 
   addMsel() {
     this.areButtonsDisabled = true;
-    this.mselDataService.add({
-      name: 'New MSEL',
-      description:
-        'Created from Default Settings by ' + this.currentUserName,
-      status: 'Pending',
-      dataFields: this.settingsService.settings.DefaultDataFields,
-    });
-    this.sort.sort(<MatSortable>{ id: 'dateCreated', start: 'desc' });
-    this.mselDataSource.sort = this.sort;
+    this.mselDataService
+      .add({
+        name: 'New MSEL',
+        description:
+          'Created from Default Settings by ' + this.currentUserName,
+        status: 'Pending',
+        dataFields: this.settingsService.settings.DefaultDataFields,
+      })
+      .pipe(take(1))
+      .subscribe((msel) => {
+        this.areButtonsDisabled = false;
+        // Open the newly created MSEL in the edit page
+        this.openMsel(msel.id);
+        this.router.navigate(['/build'], {
+          queryParams: { msel: msel.id },
+        });
+      });
   }
 
   copyMsel(mselId: string): void {

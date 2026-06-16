@@ -347,24 +347,22 @@ export class MselDataService {
     this.mselStore.set([]);
   }
 
-  add(msel: Msel) {
+  add(msel: Msel): Observable<Msel> {
     this.mselStore.setLoading(true);
-    this.mselService
+    return this.mselService
       .createMsel(msel)
       .pipe(
-        tap(() => {
-          this.mselStore.setLoading(false);
-        }),
+        tap(
+          (s) => {
+            this.mselStore.setLoading(false);
+            this.setAsDates(s);
+            this.mselStore.add(s);
+          },
+          (error) => {
+            this.mselStore.setLoading(false);
+          }
+        ),
         take(1)
-      )
-      .subscribe(
-        (s) => {
-          this.setAsDates(s);
-          this.mselStore.add(s);
-        },
-        (error) => {
-          this.mselStore.setLoading(false);
-        }
       );
   }
 
