@@ -4,6 +4,7 @@
 import { ChangeDetectorRef, Component, Input, OnDestroy, ViewChild, ElementRef, OnInit } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { MatSort, MatSortable, Sort } from '@angular/material/sort';
+import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
 import { Router } from '@angular/router';
 import { Subject, Observable } from 'rxjs';
@@ -34,6 +35,11 @@ export class MselListComponent implements OnDestroy, OnInit {
   @ViewChild('jsonInput') jsonInput: ElementRef<HTMLInputElement>;
   @ViewChild('xlsxInput') xlsxInput: ElementRef<HTMLInputElement>;
   @ViewChild(MatSort, { static: true }) sort: MatSort;
+  @ViewChild(MatPaginator) set paginator(paginator: MatPaginator) {
+    if (paginator && this.mselDataSource) {
+      this.mselDataSource.paginator = paginator;
+    }
+  }
   mselList: MselPlus[] = [];
   isReady = false;
   uploadProgress = 0;
@@ -54,7 +60,6 @@ export class MselListComponent implements OnDestroy, OnInit {
     'description',
     'isTemplate',
     'status',
-    'createdBy',
     'dateCreated',
     'dateModified',
   ];
