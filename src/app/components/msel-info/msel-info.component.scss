@@ -49,6 +49,13 @@ a {
   height: 100%;
 }
 
+// The Material tab body adds horizontal padding; a width:100% child (e.g.
+// .edit-buttons) overflows it by a few pixels and triggers a horizontal
+// scrollbar. Suppress that minor horizontal overflow on the config panel.
+.frame ::ng-deep .mat-mdc-tab-body-content {
+  overflow-x: hidden;
+}
+
 .tab {
   width: 100%;
   height: 480px;
