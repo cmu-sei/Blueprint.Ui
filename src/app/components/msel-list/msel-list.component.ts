@@ -4,6 +4,7 @@
 import { ChangeDetectorRef, Component, Input, OnDestroy, ViewChild, ElementRef, OnInit } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { MatSort, MatSortable, Sort } from '@angular/material/sort';
+import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
 import { Router } from '@angular/router';
 import { Subject, Observable } from 'rxjs';
@@ -34,6 +35,11 @@ export class MselListComponent implements OnDestroy, OnInit {
   @ViewChild('jsonInput') jsonInput: ElementRef<HTMLInputElement>;
   @ViewChild('xlsxInput') xlsxInput: ElementRef<HTMLInputElement>;
   @ViewChild(MatSort, { static: true }) sort: MatSort;
+  @ViewChild(MatPaginator) set paginator(paginator: MatPaginator) {
+    if (paginator && this.mselDataSource) {
+      this.mselDataSource.paginator = paginator;
+    }
+  }
   mselList: MselPlus[] = [];
   isReady = false;
   uploadProgress = 0;
@@ -54,7 +60,6 @@ export class MselListComponent implements OnDestroy, OnInit {
     'description',
     'isTemplate',
     'status',
-    'createdBy',
     'dateCreated',
     'dateModified',
   ];
@@ -276,15 +281,23 @@ export class MselListComponent implements OnDestroy, OnInit {
 
   addMsel() {
     this.areButtonsDisabled = true;
-    this.mselDataService.add({
-      name: 'New MSEL',
-      description:
-        'Created from Default Settings by ' + this.currentUserName,
-      status: 'Pending',
-      dataFields: this.settingsService.settings.DefaultDataFields,
-    });
-    this.sort.sort(<MatSortable>{ id: 'dateCreated', start: 'desc' });
-    this.mselDataSource.sort = this.sort;
+    this.mselDataService
+      .add({
+        name: 'New MSEL',
+        description:
+          'Created from Default Settings by ' + this.currentUserName,
+        status: 'Pending',
+        dataFields: this.settingsService.settings.DefaultDataFields,
+      })
+      .pipe(take(1))
+      .subscribe((msel) => {
+        this.areButtonsDisabled = false;
+        // Open the newly created MSEL in the edit page
+        this.openMsel(msel.id);
+        this.router.navigate(['/build'], {
+          queryParams: { msel: msel.id },
+        });
+      });
   }
 
   copyMsel(mselId: string): void {

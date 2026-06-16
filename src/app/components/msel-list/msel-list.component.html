@@ -155,13 +155,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
             </div>
           </mat-cell>
         </ng-container>
-        <!-- createdBy Column -->
-        <ng-container matColumnDef="createdBy">
-          <mat-header-cell *matHeaderCellDef mat-sort-header> Created By </mat-header-cell>
-          <mat-cell *matCellDef="let element">
-            <div class="description-text" [title]="element.createdBy">{{ getUserName(element.createdBy) }}</div>
-          </mat-cell>
-        </ng-container>
         <!-- Description Column -->
         <ng-container matColumnDef="description">
           <mat-header-cell *matHeaderCellDef mat-sort-header> Description </mat-header-cell>
@@ -177,6 +170,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
       @if (mselDataSource.filteredData.length === 0) {
       <div class="text no-results">No results found</div>
       }
+      <mat-paginator
+        [pageSizeOptions]="[10, 25, 50, 100]"
+        showFirstLastButtons
+        aria-label="Select page of MSELs">
+      </mat-paginator>
     </div>
     @if (isLoading) {
     <mat-card appearance="outlined" style="display: flex; justify-content: center; align-items: center">
