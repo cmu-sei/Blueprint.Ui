@@ -56,6 +56,7 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
   private unsubscribe$ = new Subject();
   isExpansionDetailRow = (i: number, row: Object) => (row as CompetencyFramework).id === this.expandedElementId;
   expandedElementId = '';
+  loadingCompetencies = false;
   // Competency data sources
   expandedCompetencies: Competency[] = [];
   competencyDataSource = new MatTableDataSource<Competency>([]);
@@ -389,12 +390,8 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
 
   rowClicked(row: CompetencyFramework) {
     if (this.expandedElementId === row.id) {
-      this.collapseCompetencyDetail();
       this.expandedElementId = '';
-      this.expandedCompetencies = [];
-      this.competencyDataSource.data = [];
-      this.workRoles = [];
-      this.workRoleDataSource.data = [];
+      this.clearExpandedFrameworkState();
     } else {
       this.expandedElementId = row.id;
       this.loadCompetencies(row.id);
@@ -415,38 +412,72 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
   // --- Competencies ---
 
   loadCompetencies(frameworkId: string) {
+    this.clearExpandedFrameworkState();
+    this.loadingCompetencies = true;
     this.competencyFilterControl.setValue('');
     this.workRoleFilterControl.setValue('');
     this.selectedCompetencyType = '';
     this.selectedWorkRoleCategory = '';
     this.competencyFrameworkService.getCompetencyFramework(frameworkId)
       .pipe(take(1))
-      .subscribe(fw => {
-        const allComps = fw.competencies || [];
-        this.buildTypeMap(fw);
-        // Separate work roles from other competencies
-        this.workRoles = allComps.filter(c => this.competencyTypeMap.get(c.id) === 'Work Role');
-        this.expandedCompetencies = allComps.filter(c => this.competencyTypeMap.get(c.id) !== 'Work Role');
-        this.workRoleCategories = [...new Set(this.workRoles.map(wr => this.getWorkRoleCategory(wr)).filter(c => c))].sort();
-        this.applyWorkRoleFilter();
-        this.applyCompetencyFilter();
-        // Refresh expanded row's related data with updated inverse relationships
-        if (this.expandedCompetencyId && this.competencyById.has(this.expandedCompetencyId)) {
-          const fresh = this.competencyById.get(this.expandedCompetencyId);
-          this.expandedComp = fresh;
-          this.currentRelatedIdNumbers = [...(fresh.relatedIdNumbers || [])];
+      .subscribe({
+        next: (fw) => {
+          if (this.expandedElementId !== frameworkId) {
+            return;
+          }
+          this.loadingCompetencies = false;
+          const allComps = fw.competencies || [];
+          this.buildTypeMap(fw);
+          // Separate work roles from other competencies
+          this.workRoles = allComps.filter(c => this.competencyTypeMap.get(c.id) === 'Work Role');
+          this.expandedCompetencies = allComps.filter(c => this.competencyTypeMap.get(c.id) !== 'Work Role');
+          this.workRoleCategories = [...new Set(this.workRoles.map(wr => this.getWorkRoleCategory(wr)).filter(c => c))].sort();
+          this.applyWorkRoleFilter();
+          this.applyCompetencyFilter();
+          // Refresh expanded row's related data with updated inverse relationships
+          if (this.expandedCompetencyId && this.competencyById.has(this.expandedCompetencyId)) {
+            const fresh = this.competencyById.get(this.expandedCompetencyId);
+            this.expandedComp = fresh;
+            this.currentRelatedIdNumbers = [...(fresh.relatedIdNumbers || [])];
 
-          this.updateRelatedDataSources();
+            this.updateRelatedDataSources();
+          }
+          setTimeout(() => {
+            if (this.competencyPaginator) {
+              this.competencyDataSource.paginator = this.competencyPaginator;
+            }
+            if (this.workRolePaginator) {
+              this.workRoleDataSource.paginator = this.workRolePaginator;
+            }
+          });
+        },
+        error: (err: any) => {
+          if (this.expandedElementId !== frameworkId) {
+            return;
+          }
+          this.loadingCompetencies = false;
+          this.importError = 'Load failed: ' + (err.error?.title || err.message || 'Unknown error');
         }
-        setTimeout(() => {
-          if (this.competencyPaginator) {
-            this.competencyDataSource.paginator = this.competencyPaginator;
-          }
-          if (this.workRolePaginator) {
-            this.workRoleDataSource.paginator = this.workRolePaginator;
-          }
-        });
       });
+  }
+
+  private clearExpandedFrameworkState(): void {
+    this.loadingCompetencies = false;
+    this.collapseCompetencyDetail();
+    this.expandedCompetencies = [];
+    this.competencyDataSource.data = [];
+    this.competencyTypes = [];
+    this.workRoles = [];
+    this.workRoleDataSource.data = [];
+    this.workRoleCategories = [];
+    this.taxonomyLevels = [];
+    this.competencyTypeMap.clear();
+    this.competencyById.clear();
+    this.availableRelatedDataSource.data = [];
+    this.relatedDataSource.data = [];
+    this.availableTypes = [];
+    this.relatedTypes = [];
+    this.currentRelatedIdNumbers = [];
   }
 
   private buildTypeMap(fw: CompetencyFramework) {
@@ -513,6 +544,8 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
     }
     // NICE 2017: XX-YYY-NNN pattern (3 hyphenated parts) → Work Role
     if (/^[A-Z]{2}-[A-Z]{3}-\d+$/.test(idNumber)) return 'Work Role';
+    // DCWF: category code + role number (for example IT-411, DA-422)
+    if (/^[A-Z]{2}-\d+[A-Z]?$/.test(idNumber)) return 'Work Role';
     // 3-letter code → Specialty Area (e.g. DEV, MGT, ASA)
     if (/^[A-Z]{3}$/.test(idNumber)) return 'Specialty Area';
     // 2-letter code → Category (e.g. PD, IO, AN)
