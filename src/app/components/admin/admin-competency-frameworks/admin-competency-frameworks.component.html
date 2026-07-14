@@ -121,12 +121,17 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <div [@detailExpand]="element.id == expandedElementId ? 'expanded' : 'collapsed'" style="overflow: hidden">
           @if (expandedElementId === element.id) {
           <!-- Work Roles -->
-          @if (workRoles.length > 0 || canEdit) {
+          @if (loadingCompetencies || workRoles.length > 0 || canEdit) {
           <mat-expansion-panel class="section-panel">
             <mat-expansion-panel-header>
               <mat-panel-title>
                 <mat-icon class="mdi-18px panel-icon" fontIcon="mdi-account-hard-hat"></mat-icon>
-                Work Roles ({{ workRoles.length }})
+                Work Roles
+                @if (loadingCompetencies) {
+                (Loading...)
+                } @else {
+                ({{ workRoles.length }})
+                }
               </mat-panel-title>
             </mat-expansion-panel-header>
             <div class="element-toolbar" (click)="$event.stopPropagation();">
@@ -327,7 +332,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   (click)="toggleCompetencyExpand(row)"></mat-row>
                 <mat-row *matRowDef="let row; columns: ['relatedDetail']" class="detail-row"></mat-row>
               </mat-table>
-              @if (workRoleDataSource.filteredData.length === 0) {
+              @if (loadingCompetencies) {
+                <div class="no-results-inline">Loading work roles...</div>
+              } @else if (workRoleDataSource.filteredData.length === 0) {
                 <div class="no-results-inline">No work roles found</div>
               }
             </div>
@@ -338,7 +345,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <mat-expansion-panel-header>
               <mat-panel-title>
                 <mat-icon class="mdi-18px panel-icon" fontIcon="mdi-certificate-outline"></mat-icon>
-                Competencies ({{ expandedCompetencies.length }})
+                Competencies
+                @if (loadingCompetencies) {
+                (Loading...)
+                } @else {
+                ({{ expandedCompetencies.length }})
+                }
               </mat-panel-title>
             </mat-expansion-panel-header>
             <div class="element-toolbar" (click)="$event.stopPropagation();">
@@ -539,7 +551,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   (click)="toggleCompetencyExpand(row)"></mat-row>
                 <mat-row *matRowDef="let row; columns: ['relatedDetail']" class="detail-row"></mat-row>
               </mat-table>
-              @if (competencyDataSource.filteredData.length === 0) {
+              @if (loadingCompetencies) {
+                <div class="no-results-inline">Loading competencies...</div>
+              } @else if (competencyDataSource.filteredData.length === 0) {
                 <div class="no-results-inline">No competencies found</div>
               }
             </div>
