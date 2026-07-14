@@ -18,7 +18,7 @@ import { MatPaginator } from '@angular/material/paginator';
 import { CompetencyFrameworkDataService } from 'src/app/data/competency-framework/competency-framework-data.service';
 import { CompetencyFrameworkQuery } from 'src/app/data/competency-framework/competency-framework.query';
 import { MatDialog } from '@angular/material/dialog';
-import { DialogService } from 'src/app/services/dialog/dialog.service';
+import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { AdminCompetencyFrameworkEditDialogComponent } from '../admin-competency-framework-edit-dialog/admin-competency-framework-edit-dialog.component';
 import { AdminCompetencyFrameworkImportDialogComponent, ImportResult } from '../admin-competency-framework-import-dialog/admin-competency-framework-import-dialog.component';
 import { AdminCompetencyEditDialogComponent } from '../admin-competency-edit-dialog/admin-competency-edit-dialog.component';
@@ -106,7 +106,7 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
     private competencyFrameworkService: CompetencyFrameworkService,
     private proficiencyScaleService: ProficiencyScaleService,
     public dialog: MatDialog,
-    public dialogService: DialogService
+    public dialogService: CrucibleDialogService
   ) {
     this.proficiencyScaleService.getProficiencyScales()
       .pipe(take(1))
@@ -232,13 +232,10 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
 
   deleteCompetencyFramework(competencyFramework: CompetencyFramework): void {
     this.dialogService
-      .confirm(
-        'Delete Competency Framework',
-        'Are you sure that you want to delete ' + competencyFramework.name + '? This will delete ' +
+      .confirm({ title: 'Delete Competency Framework', message: 'Are you sure that you want to delete ' + competencyFramework.name + '? This will delete ' +
         (competencyFramework.competencies?.length || 0) + ' competencies.'
-      )
-      .subscribe((result) => {
-        if (result['confirm']) {
+       }).afterClosed().subscribe((result) => {
+        if (result) {
           this.competencyFrameworkDataService.delete(competencyFramework.id);
           this.expandedElementId = '';
         }
@@ -818,12 +815,9 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
 
   deleteCompetency(competency: Competency): void {
     this.dialogService
-      .confirm(
-        'Delete Competency',
-        'Are you sure you want to delete ' + (competency.idNumber || competency.shortName) + '?'
-      )
-      .subscribe((result) => {
-        if (result['confirm']) {
+      .confirm({ title: 'Delete Competency', message: 'Are you sure you want to delete ' + (competency.idNumber || competency.shortName) + '?'
+       }).afterClosed().subscribe((result) => {
+        if (result) {
           this.competencyFrameworkService.deleteCompetency(competency.id)
             .pipe(take(1))
             .subscribe({

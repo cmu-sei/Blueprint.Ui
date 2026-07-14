@@ -27,7 +27,7 @@ import { MatPaginator } from '@angular/material/paginator';
 import { CatalogDataService } from 'src/app/data/catalog/catalog-data.service';
 import { CatalogQuery } from 'src/app/data/catalog/catalog.query';
 import { MatDialog } from '@angular/material/dialog';
-import { DialogService } from 'src/app/services/dialog/dialog.service';
+import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { AdminCatalogEditDialogComponent } from '../admin-catalog-edit-dialog/admin-catalog-edit-dialog.component';
 import { v4 as uuidv4 } from 'uuid';
 import { InjectTypeQuery } from 'src/app/data/inject-type/inject-type.query';
@@ -81,7 +81,7 @@ export class AdminCatalogListComponent implements OnDestroy, AfterViewInit {
     private catalogDataService: CatalogDataService,
     private catalogQuery: CatalogQuery,
     public dialog: MatDialog,
-    public dialogService: DialogService,
+    public dialogService: CrucibleDialogService,
     private injectTypeQuery: InjectTypeQuery
   ) {
     // subscribe to catalogs
@@ -155,12 +155,9 @@ export class AdminCatalogListComponent implements OnDestroy, AfterViewInit {
 
   deleteCatalog(catalog: Catalog): void {
     this.dialogService
-      .confirm(
-        'Delete Catalog',
-        'Are you sure that you want to delete ' + catalog.name + '?'
-      )
-      .subscribe((result) => {
-        if (result['confirm']) {
+      .confirm({ title: 'Delete Catalog', message: 'Are you sure that you want to delete ' + catalog.name + '?'
+       }).afterClosed().subscribe((result) => {
+        if (result) {
           this.catalogDataService.delete(catalog.id);
           this.editingId = '';
         }
@@ -169,12 +166,9 @@ export class AdminCatalogListComponent implements OnDestroy, AfterViewInit {
 
   copyCatalog(catalog: Catalog): void {
     this.dialogService
-      .confirm(
-        'Copy Catalog',
-        'Are you sure that you want to copy ' + catalog.name + '?'
-      )
-      .subscribe((result) => {
-        if (result['confirm']) {
+      .confirm({ title: 'Copy Catalog', message: 'Are you sure that you want to copy ' + catalog.name + '?'
+       }).afterClosed().subscribe((result) => {
+        if (result) {
           this.catalogDataService.copy(catalog.id);
         }
       });

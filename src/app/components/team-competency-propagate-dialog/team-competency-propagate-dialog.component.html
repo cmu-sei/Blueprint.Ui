@@ -4,8 +4,16 @@ Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
 
-<h1 mat-dialog-title>{{ data.action === 'add' ? 'Add' : 'Remove' }} Team from Related</h1>
-<div mat-dialog-content>
+<crucible-dialog
+  [dialogTitle]="(data.action === 'add' ? 'Add' : 'Remove') + ' Team from Related'"
+  [submitLabel]="'Yes (' + selection.selected.length + ')'"
+  cancelLabel="No"
+  [submitDisabled]="selection.isEmpty()"
+  [guardUnsavedWork]="true"
+  (cancel)="onCancel()"
+  (submit)="onConfirm()"
+>
+<div crucibleDialogContent>
   <p>Also {{ actionVerb }} team {{ data.teamName }} {{ preposition }} the {{ data.competencies.length }}
     related competenc{{ data.competencies.length === 1 ? 'y' : 'ies' }} on the MSEL?</p>
   <mat-table [dataSource]="data.competencies" class="propagate-table">
@@ -41,10 +49,4 @@ project root for license information or contact permission@sei.cmu.edu for full 
       (click)="selection.toggle(row)"></mat-row>
   </mat-table>
 </div>
-<mat-dialog-actions>
-  <div class="action-spacer"></div>
-  <button mat-button (click)="onCancel()">No</button>
-  <button mat-raised-button color="primary" (click)="onConfirm()" [disabled]="selection.isEmpty()">
-    Yes ({{ selection.selected.length }})
-  </button>
-</mat-dialog-actions>
+</crucible-dialog>

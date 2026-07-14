@@ -4,7 +4,7 @@
 
 import { Component, EventEmitter, Output } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
-import { CompetencyFramework, Competency, CompetencyFrameworkService } from 'src/app/generated/blueprint.api';
+import { CompetencyFrameworkService } from 'src/app/generated/blueprint.api';
 import { take } from 'rxjs/operators';
 
 interface ElementTypeCount {
@@ -44,9 +44,7 @@ export class AdminCompetencyFrameworkImportDialogComponent {
   constructor(
     public dialogRef: MatDialogRef<AdminCompetencyFrameworkImportDialogComponent>,
     private competencyFrameworkService: CompetencyFrameworkService
-  ) {
-    dialogRef.disableClose = true;
-  }
+  ) {}
 
   onFileSelected(event: any) {
     const file = event.target.files[0];

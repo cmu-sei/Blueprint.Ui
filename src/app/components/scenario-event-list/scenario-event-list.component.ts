@@ -60,7 +60,7 @@ import { ScenarioEventEditDialogComponent } from '../scenario-event-edit-dialog/
 import { ScenarioEventQuery } from 'src/app/data/scenario-event/scenario-event.query';
 import { DataValueDataService } from 'src/app/data/data-value/data-value-data.service';
 import { DataValueQuery } from 'src/app/data/data-value/data-value.query';
-import { DialogService } from 'src/app/services/dialog/dialog.service';
+import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { v4 as uuidv4 } from 'uuid';
 import { DataFieldQuery } from 'src/app/data/data-field/data-field.query';
 import { TeamQuery } from 'src/app/data/team/team.query';
@@ -197,7 +197,7 @@ export class ScenarioEventListComponent
     private organizationQuery: OrganizationQuery,
     private scenarioEventDataService: ScenarioEventDataService,
     private scenarioEventQuery: ScenarioEventQuery,
-    public dialogService: DialogService,
+    public dialogService: CrucibleDialogService,
     public dialog: MatDialog,
     private dataFieldQuery: DataFieldQuery,
     private dataValueDataService: DataValueDataService,
@@ -867,12 +867,9 @@ export class ScenarioEventListComponent
 
   deleteScenarioEvent(scenarioEvent: ScenarioEvent, index: number): void {
     this.dialogService
-      .confirm(
-        'Delete Event',
-        'Are you sure that you want to delete event ' + index + '?'
-      )
-      .subscribe((result) => {
-        if (result['confirm']) {
+      .confirm({ title: 'Delete Event', message: 'Are you sure that you want to delete event ' + index + '?'
+       }).afterClosed().subscribe((result) => {
+        if (result) {
           this.scenarioEventDataService.delete(scenarioEvent.id);
         }
       });
@@ -880,12 +877,9 @@ export class ScenarioEventListComponent
 
   batchDeleteScenarioEvents() {
     this.dialogService
-      .confirm(
-        'Delete ALL selected Events!',
-        'Are you sure that you want to delete the selected events?'
-      )
-      .subscribe((result) => {
-        if (result['confirm']) {
+      .confirm({ title: 'Delete ALL selected Events!', message: 'Are you sure that you want to delete the selected events?'
+       }).afterClosed().subscribe((result) => {
+        if (result) {
           this.scenarioEventDataService.batchDelete(this.selectedEventIdList);
           this.selectedEventIdList = [];
           this.allSelected = false;

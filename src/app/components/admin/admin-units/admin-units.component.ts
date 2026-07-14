@@ -17,7 +17,7 @@ import { takeUntil } from 'rxjs/operators';
 import { MatDialog } from '@angular/material/dialog';
 import { AdminUnitEditDialogComponent } from 'src/app/components/admin/admin-unit-edit-dialog/admin-unit-edit-dialog.component';
 import { ItemDownloadDialogComponent } from 'src/app/components/item-download-dialog/item-download-dialog.component';
-import { DialogService } from 'src/app/services/dialog/dialog.service';
+import { CrucibleDialogService } from '@cmusei/crucible-common';
 
 @Component({
     selector: 'app-admin-units',
@@ -58,7 +58,7 @@ export class AdminUnitsComponent implements OnDestroy {
   constructor(
     private settingsService: ComnSettingsService,
     private dialog: MatDialog,
-    public dialogService: DialogService,
+    public dialogService: CrucibleDialogService,
     private unitDataService: UnitDataService,
     private unitQuery: UnitQuery,
     private userQuery: UserQuery
@@ -159,12 +159,9 @@ export class AdminUnitsComponent implements OnDestroy {
 
   deleteUnit(unit: Unit): void {
     this.dialogService
-      .confirm(
-        'Delete Unit',
-        'Are you sure that you want to delete ' + unit.name + '?'
-      )
-      .subscribe((result) => {
-        if (result['confirm']) {
+      .confirm({ title: 'Delete Unit', message: 'Are you sure that you want to delete ' + unit.name + '?'
+       }).afterClosed().subscribe((result) => {
+        if (result) {
           this.unitDataService.delete(unit.id);
         }
       });

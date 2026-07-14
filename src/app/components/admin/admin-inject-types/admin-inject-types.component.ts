@@ -21,7 +21,7 @@ import { InjectTypeDataService } from 'src/app/data/inject-type/inject-type-data
 import { InjectTypeQuery } from 'src/app/data/inject-type/inject-type.query';
 import { TeamQuery } from 'src/app/data/team/team.query';
 import { MatDialog } from '@angular/material/dialog';
-import { DialogService } from 'src/app/services/dialog/dialog.service';
+import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { AdminInjectTypeEditDialogComponent } from '../admin-inject-type-edit-dialog/admin-inject-type-edit-dialog.component';
 import { ItemDownloadDialogComponent } from '../../item-download-dialog/item-download-dialog.component';
 import { v4 as uuidv4 } from 'uuid';
@@ -69,7 +69,7 @@ export class AdminInjectTypesComponent implements OnDestroy, AfterViewInit {
     private injectTypeQuery: InjectTypeQuery,
     private teamQuery: TeamQuery,
     public dialog: MatDialog,
-    public dialogService: DialogService
+    public dialogService: CrucibleDialogService
   ) {
     // subscribe to injectTypes
     this.injectTypeQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(injectTypes => {
@@ -174,12 +174,9 @@ export class AdminInjectTypesComponent implements OnDestroy, AfterViewInit {
 
   deleteInjectType(injectType: InjectType): void {
     this.dialogService
-      .confirm(
-        'Delete InjectType',
-        'Are you sure that you want to delete ' + injectType.name + '?'
-      )
-      .subscribe((result) => {
-        if (result['confirm']) {
+      .confirm({ title: 'Delete InjectType', message: 'Are you sure that you want to delete ' + injectType.name + '?'
+       }).afterClosed().subscribe((result) => {
+        if (result) {
           this.injectTypeDataService.delete(injectType.id);
           this.editingId = '';
         }

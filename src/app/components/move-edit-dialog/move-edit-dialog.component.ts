@@ -3,28 +3,9 @@
 // project root for license information.
 
 import { Component, EventEmitter, Inject, Output } from '@angular/core';
-import {
-  UntypedFormControl,
-  FormGroupDirective,
-  NgForm,
-} from '@angular/forms';
-import { ErrorStateMatcher } from '@angular/material/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { DialogService } from 'src/app/services/dialog/dialog.service';
+import { UntypedFormControl } from '@angular/forms';
+import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { AngularEditorConfig } from '@kolkov/angular-editor';
-
-/** Error when invalid control is dirty, touched, or submitted. */
-export class UserErrorStateMatcher implements ErrorStateMatcher {
-  isErrorState(
-    control: UntypedFormControl | null,
-    form: FormGroupDirective | NgForm | null
-  ): boolean {
-    const isSubmitted = form && form.submitted;
-    return !!(control && control.invalid && (control.dirty || isSubmitted));
-  }
-}
-
-const MIN_NAME_LENGTH = 3;
 
 @Component({
     selector: 'app-move-edit-dialog',
@@ -69,12 +50,8 @@ export class MoveEditDialogComponent {
   };
 
   constructor(
-    public dialogService: DialogService,
-    dialogRef: MatDialogRef<MoveEditDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any
-  ) {
-    dialogRef.disableClose = true;
-  }
+  ) {}
 
   saveMove(which: string) {
     switch (which) {
@@ -116,7 +93,7 @@ export class MoveEditDialogComponent {
     });
     const parts = formatted.split(' ');
     return parts[parts.length - 1] || 'UTC';
-    } catch (error) {
+    } catch {
       return 'UTC';
     }
   }

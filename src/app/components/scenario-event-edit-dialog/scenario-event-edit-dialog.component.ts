@@ -13,11 +13,7 @@ import {
 } from 'src/app/generated/blueprint.api';
 import { Sort } from '@angular/material/sort';
 import { DataValuePlus, IntegrationTarget } from 'src/app/data/scenario-event/scenario-event-data.service';
-import {
-  MatDialogRef,
-  MAT_DIALOG_DATA,
-} from '@angular/material/dialog';
-import { DialogService } from 'src/app/services/dialog/dialog.service';
+import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { AngularEditorConfig } from '@kolkov/angular-editor';
 
 @Component({
@@ -109,12 +105,8 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
   integrationTarget = IntegrationTarget;
 
   constructor(
-    public dialogService: DialogService,
-    dialogRef: MatDialogRef<ScenarioEventEditDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any
-  ) {
-    dialogRef.disableClose = true;
-  }
+  ) {}
 
   ngOnInit() {
     if (!this.data.isNew && this.showDefaultTab()) {

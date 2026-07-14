@@ -24,7 +24,7 @@ import { PermissionDataService } from 'src/app/data/permission/permission-data.s
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { MatMenuTrigger } from '@angular/material/menu';
-import { DialogService } from 'src/app/services/dialog/dialog.service';
+import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { CiteService } from 'src/app/generated/blueprint.api';
 import { PlayerService } from 'src/app/generated/blueprint.api';
 import { ScoringModel } from 'src/app/generated/blueprint.api/model/scoringModel';
@@ -160,7 +160,7 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     return this.msel?.integrationStatus || '';
   }
   constructor(
-    public dialogService: DialogService,
+    public dialogService: CrucibleDialogService,
     private teamQuery: TeamQuery,
     private userQuery: UserQuery,
     private userDataService: UserDataService,
@@ -421,12 +421,9 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   deleteMsel() {
     if (this.canManageMsel()) {
       this.dialogService
-        .confirm(
-          'Delete MSEL',
-          'Are you sure that you want to delete ' + this.msel.name + '?'
-        )
-        .subscribe((result) => {
-          if (result['confirm']) {
+        .confirm({ title: 'Delete MSEL', message: 'Are you sure that you want to delete ' + this.msel.name + '?'
+         }).afterClosed().subscribe((result) => {
+          if (result) {
             this.deleteThisMsel.emit(this.msel.id);
           }
         });
@@ -560,12 +557,9 @@ export class MselInfoComponent implements OnDestroy, OnInit {
       message += '\n\n** WARNING: One or more Scenario Events marked as a Gallery integration is missing required fields. **';
     }
     this.dialogService
-      .confirm(
-        'Push Integrations',
-        message
-      )
-      .subscribe((result) => {
-        if (result['confirm']) {
+      .confirm({ title: 'Push Integrations', message: message
+       }).afterClosed().subscribe((result) => {
+        if (result) {
           this.mselDataService.pushIntegrations(this.msel.id);
         }
       });
@@ -573,12 +567,9 @@ export class MselInfoComponent implements OnDestroy, OnInit {
 
   pullIntegrations() {
     this.dialogService
-      .confirm(
-        'Remove Integrations',
-        'Are you sure you want to remove this MSEL from the associated applications?'
-      )
-      .subscribe((result) => {
-        if (result['confirm']) {
+      .confirm({ title: 'Remove Integrations', message: 'Are you sure you want to remove this MSEL from the associated applications?'
+       }).afterClosed().subscribe((result) => {
+        if (result) {
           this.mselDataService.pullIntegrations(this.msel.id);
         }
       });
@@ -721,12 +712,9 @@ export class MselInfoComponent implements OnDestroy, OnInit {
 
   deletePage(page: MselPage): void {
     this.dialogService
-      .confirm(
-        'Delete Page',
-        'Are you sure that you want to delete ' + page.name + '?'
-      )
-      .subscribe((result) => {
-        if (result['confirm']) {
+      .confirm({ title: 'Delete Page', message: 'Are you sure that you want to delete ' + page.name + '?'
+       }).afterClosed().subscribe((result) => {
+        if (result) {
           // Clear any unsaved changes for this page
           this.unsavedPageChanges.delete(page.id);
           this.mselPageDataService.delete(page.id);

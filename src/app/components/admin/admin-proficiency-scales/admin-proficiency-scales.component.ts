@@ -16,7 +16,7 @@ import {
 } from 'src/app/generated/blueprint.api';
 import { Sort } from '@angular/material/sort';
 import { MatDialog } from '@angular/material/dialog';
-import { DialogService } from 'src/app/services/dialog/dialog.service';
+import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { AdminProficiencyScaleEditDialogComponent } from '../admin-proficiency-scale-edit-dialog/admin-proficiency-scale-edit-dialog.component';
 import { AdminProficiencyLevelEditDialogComponent } from '../admin-proficiency-level-edit-dialog/admin-proficiency-level-edit-dialog.component';
 import { ItemDownloadDialogComponent } from '../../item-download-dialog/item-download-dialog.component';
@@ -56,7 +56,7 @@ export class AdminProficiencyScalesComponent implements OnInit, OnDestroy {
     private proficiencyScaleService: ProficiencyScaleService,
     private proficiencyLevelService: ProficiencyLevelService,
     public dialog: MatDialog,
-    public dialogService: DialogService
+    public dialogService: CrucibleDialogService
   ) {}
 
   ngOnInit() {
@@ -221,9 +221,8 @@ export class AdminProficiencyScalesComponent implements OnInit, OnDestroy {
 
   deleteScale(scale: ProficiencyScale) {
     this.dialogService
-      .confirm('Delete Scale', 'Are you sure you want to delete ' + scale.name + '?')
-      .subscribe((result) => {
-        if (result['confirm']) {
+      .confirm({ title: 'Delete Scale', message: 'Are you sure you want to delete ' + scale.name + '?' }).afterClosed().subscribe((result) => {
+        if (result) {
           this.proficiencyScaleService.deleteProficiencyScale(scale.id)
             .pipe(take(1))
             .subscribe(() => {

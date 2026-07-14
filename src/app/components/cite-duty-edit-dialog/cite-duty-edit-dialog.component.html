@@ -4,23 +4,15 @@ Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
 
-<div mat-dialog-container>
-  <div mat-dialog-title>
-    @if(!data.citeDuty?.id) {
-    New CITE Duty
-    } @else {
-    Edit CITE Duty
-    }
-    @if(data.citeDuty?.isTemplate) {
-    Template
-    }
-    &nbsp;
-    <button mat-icon-button (click)="handleEditComplete(false)" title="Cancel" class="close-button" tabindex="-1">
-      <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
-    </button>
-  </div>
+<crucible-dialog
+  [dialogTitle]="(data.citeDuty?.id ? 'Edit CITE Duty' : 'New CITE Duty') + (data.citeDuty?.isTemplate ? ' Template' : '')"
+  [submitDisabled]="!errorFree()"
+  [guardUnsavedWork]="true"
+  (cancel)="handleEditComplete(false)"
+  (submit)="handleEditComplete(true)"
+>
   @if (data && data.citeDuty) {
-  <div mat-dialog-content>
+  <div crucibleDialogContent>
     <div class="add-margin">
       <div>
         <mat-form-field class="full-width">
@@ -50,12 +42,4 @@ project root for license information or contact permission@sei.cmu.edu for full 
     }
   </div>
   }
-  <div class="cssLayoutRowStartCenter bottom-button">
-    <div class="delete-button">
-      <button mat-stroked-button (click)="handleEditComplete(true)" [disabled]="!errorFree()" style="margin-left: 40px;">Save</button>
-    </div>
-    <div class="delete-button">
-      <button mat-stroked-button (click)="handleEditComplete(false)">Cancel</button>
-    </div>
-  </div>
-</div>
+</crucible-dialog>

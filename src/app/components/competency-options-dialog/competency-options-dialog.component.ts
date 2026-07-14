@@ -46,7 +46,6 @@ export class CompetencyOptionsDialogComponent implements OnDestroy {
       canEdit: boolean;
     }
   ) {
-    dialogRef.disableClose = true;
     // Load frameworks
     this.competencyFrameworkService.getCompetencyFrameworks().subscribe(frameworks => {
       this.frameworks = frameworks;

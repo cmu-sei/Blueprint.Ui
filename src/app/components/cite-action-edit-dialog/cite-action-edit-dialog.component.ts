@@ -3,27 +3,8 @@
 // project root for license information.
 
 import { Component, EventEmitter, Inject, Output } from '@angular/core';
-import {
-  FormControl,
-  FormGroupDirective,
-  NgForm,
-  Validators,
-} from '@angular/forms';
-import { ErrorStateMatcher } from '@angular/material/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { DialogService } from 'src/app/services/dialog/dialog.service';
+import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MoveQuery } from 'src/app/data/move/move.query';
-
-/** Error when invalid control is dirty, touched, or submitted. */
-export class UserErrorStateMatcher implements ErrorStateMatcher {
-  isErrorState(
-    control: FormControl | null,
-    form: FormGroupDirective | NgForm | null
-  ): boolean {
-    const isSubmitted = form && form.submitted;
-    return !!(control && control.invalid && (control.dirty || isSubmitted));
-  }
-}
 
 @Component({
     selector: 'app-cite-action-edit-dialog',
@@ -37,13 +18,9 @@ export class CiteActionEditDialogComponent {
   moveList = this.moveQuery.getAll().sort((a, b) => +a.moveNumber < +b.moveNumber ? -1 : 1);
 
   constructor(
-    public dialogService: DialogService,
-    dialogRef: MatDialogRef<CiteActionEditDialogComponent>,
     private moveQuery: MoveQuery,
     @Inject(MAT_DIALOG_DATA) public data: any
-  ) {
-    dialogRef.disableClose = true;
-  }
+  ) {}
 
   errorFree() {
     return this.data.citeAction.description && this.data.citeAction.description.length > 0;

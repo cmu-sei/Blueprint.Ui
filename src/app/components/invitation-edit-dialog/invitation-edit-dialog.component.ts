@@ -3,28 +3,7 @@
 // project root for license information.
 
 import { Component, EventEmitter, Inject, Output } from '@angular/core';
-import {
-  UntypedFormControl,
-  FormGroupDirective,
-  NgForm,
-  Validators,
-} from '@angular/forms';
-import { ErrorStateMatcher } from '@angular/material/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { DialogService } from 'src/app/services/dialog/dialog.service';
-
-/** Error when invalid control is dirty, touched, or submitted. */
-export class UserErrorStateMatcher implements ErrorStateMatcher {
-  isErrorState(
-    control: UntypedFormControl | null,
-    form: FormGroupDirective | NgForm | null
-  ): boolean {
-    const isSubmitted = form && form.submitted;
-    return !!(control && control.invalid && (control.dirty || isSubmitted));
-  }
-}
-
-const MIN_NAME_LENGTH = 3;
+import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 @Component({
     selector: 'app-invitation-edit-dialog',
@@ -35,15 +14,10 @@ const MIN_NAME_LENGTH = 3;
 
 export class InvitationEditDialogComponent {
   @Output() editComplete = new EventEmitter<any>();
-  isChanged = false;
 
   constructor(
-    public dialogService: DialogService,
-    dialogRef: MatDialogRef<InvitationEditDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any
-  ) {
-    dialogRef.disableClose = true;
-  }
+  ) {}
 
   errorFree() {
     return this.data.invitation.teamId &&
@@ -89,7 +63,7 @@ export class InvitationEditDialogComponent {
     });
     const parts = formatted.split(' ');
     return parts[parts.length - 1] || 'UTC';
-    } catch (error) {
+    } catch {
       return 'UTC';
     }
   }

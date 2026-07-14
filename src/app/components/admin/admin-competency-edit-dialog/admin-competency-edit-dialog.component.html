@@ -3,28 +3,15 @@ Copyright 2026 Carnegie Mellon University. All Rights Reserved.
 Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information.
 -->
-<div mat-dialog-container>
-  <div mat-dialog-title>
-    @if (data.competency.id) {
-      <span>Edit</span>
-    }
-    @if (!data.competency.id) {
-      <span>Add</span>
-    }
-    {{ typeHint || 'Competency' }}
-    &nbsp;
-    <button
-      mat-icon-button
-      (click)="handleEditComplete(false)"
-      title="Cancel"
-      class="close-button"
-      tabindex="-1"
-      >
-      <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
-    </button>
-  </div>
+<crucible-dialog
+  [dialogTitle]="(data.competency.id ? 'Edit ' : 'Add ') + (typeHint || 'Competency')"
+  [submitDisabled]="!errorFree()"
+  [guardUnsavedWork]="true"
+  (cancel)="handleEditComplete(false)"
+  (submit)="handleEditComplete(true)"
+>
   @if (!!data && data.competency !== undefined && data.competency !== null) {
-    <div mat-dialog-content>
+    <div crucibleDialogContent>
       @if (availableTypes.length > 0) {
       <div class="add-margin">
         <mat-form-field class="full-width">
@@ -81,13 +68,6 @@ project root for license information.
           </textarea>
         </mat-form-field>
       </div>
-      <div class="cssLayoutRowStartCenter bottom-button">
-        <div class="delete-button">
-          <button mat-stroked-button (click)="handleEditComplete(true)" [disabled]="!errorFree()" style="margin-left: 40px;">Save</button>
-        </div>
-        <div class="delete-button">
-          <button mat-stroked-button (click)="handleEditComplete(false)">Cancel</button>
-        </div>
-      </div>
     </div>
   }
+</crucible-dialog>

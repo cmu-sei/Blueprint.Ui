@@ -4,14 +4,12 @@ Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
 
-<div mat-dialog-title>
-  Manage Options ({{ data.dataOptions.length }})
-  <button mat-icon-button (click)="handleClose()" title="Close" class="close-button" tabindex="-1">
-    <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
-  </button>
-</div>
+<crucible-dialog
+  [dialogTitle]="'Manage Options (' + data.dataOptions.length + ')'"
+  [hideDefaultActions]="true"
+>
 
-<div mat-dialog-content>
+<div crucibleDialogContent>
   <!-- Search Box -->
   <div class="search-section">
     <mat-form-field class="full-width">
@@ -72,7 +70,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
   </div>
 </div>
 
-<div mat-dialog-actions>
-  <div style="flex: 1;"></div>
-  <button mat-raised-button color="primary" (click)="handleClose()">Close</button>
-</div>
+<ng-container crucibleDialogActions>
+  <button matButton="filled" type="button" (click)="handleClose()">Close</button>
+</ng-container>
+</crucible-dialog>

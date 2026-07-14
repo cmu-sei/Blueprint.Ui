@@ -39,7 +39,7 @@ import { InjectService } from 'src/app/generated/blueprint.api';
 import { InjectmDataService } from 'src/app/data/injectm/injectm-data.service';
 import { InjectmQuery } from 'src/app/data/injectm/injectm.query';
 import { MatDialog } from '@angular/material/dialog';
-import { DialogService } from 'src/app/services/dialog/dialog.service';
+import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { InjectEditDialogComponent } from '../inject-edit-dialog/inject-edit-dialog.component';
 import { v4 as uuidv4 } from 'uuid';
 import { InjectTypeQuery } from 'src/app/data/inject-type/inject-type.query';
@@ -101,7 +101,7 @@ export class InjectListComponent implements OnDestroy, OnInit {
     private injectmDataService: InjectmDataService,
     private injectmQuery: InjectmQuery,
     public dialog: MatDialog,
-    public dialogService: DialogService,
+    public dialogService: CrucibleDialogService,
     private injectTypeQuery: InjectTypeQuery,
     private dataFieldDataService: DataFieldDataService,
     private dataFieldQuery: DataFieldQuery,
@@ -277,12 +277,9 @@ export class InjectListComponent implements OnDestroy, OnInit {
       this.catalogInjectDataService.deleteByIds(this.catalog.id, injectm.id);
     } else {
       this.dialogService
-        .confirm(
-          'Delete Inject',
-          'Are you sure that you want to delete ' + injectm.name + '?'
-        )
-        .subscribe((result) => {
-          if (result['confirm']) {
+        .confirm({ title: 'Delete Inject', message: 'Are you sure that you want to delete ' + injectm.name + '?'
+         }).afterClosed().subscribe((result) => {
+          if (result) {
             this.injectmDataService.delete(injectm.id);
           }
         });
@@ -396,16 +393,13 @@ export class InjectListComponent implements OnDestroy, OnInit {
     } else {
       if (requiredInjectNames) {
         this.dialogService
-          .confirm(
-            'Inject Requires Additional Injects',
-            'Adding Inject ' +
+          .confirm({ title: 'Inject Requires Additional Injects', message: 'Adding Inject ' +
             injectm.name +
             ' also requires adding inject(s) ' +
             requiredInjectNames +
             '.  Add them?'
-          )
-          .subscribe((result) => {
-            if (result['confirm']) {
+           }).afterClosed().subscribe((result) => {
+            if (result) {
               requiredInjectIds.forEach((id) => {
                 this.selectedInjectIds.push(id);
               });

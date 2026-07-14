@@ -4,14 +4,13 @@ Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
 
-<div mat-dialog-title>
-  Import Options
-  <button mat-icon-button (click)="handleCancel()" title="Cancel" class="close-button" tabindex="-1">
-    <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
-  </button>
-</div>
+<crucible-dialog
+  dialogTitle="Import Options"
+  [hideDefaultActions]="true"
+  [guardUnsavedWork]="true"
+>
 
-<div mat-dialog-content>
+<div crucibleDialogContent>
   <!-- File Upload Section -->
   <div class="upload-section">
     <p class="instructions">
@@ -101,14 +100,15 @@ project root for license information or contact permission@sei.cmu.edu for full 
   }
 </div>
 
-<div mat-dialog-actions align="end">
-  <button mat-button (click)="handleCancel()">Cancel</button>
+<ng-container crucibleDialogActions>
+  <button matButton="outlined" type="button" (click)="handleCancel()">Cancel</button>
   <button
-    mat-raised-button
-    color="primary"
+    matButton="filled"
+    type="button"
     (click)="handleImport()"
     [disabled]="getImportCount() === 0 || isProcessing"
   >
     Import {{ getImportCount() }} Option{{ getImportCount() !== 1 ? 's' : '' }}
   </button>
-</div>
+</ng-container>
+</crucible-dialog>

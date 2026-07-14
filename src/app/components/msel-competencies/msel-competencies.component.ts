@@ -29,7 +29,7 @@ import { TeamCompetencyQuery } from 'src/app/data/team-competency/team-competenc
 import { CompetencyFrameworkDataService } from 'src/app/data/competency-framework/competency-framework-data.service';
 import { CompetencyFrameworkQuery } from 'src/app/data/competency-framework/competency-framework.query';
 import { MatDialog } from '@angular/material/dialog';
-import { DialogService } from 'src/app/services/dialog/dialog.service';
+import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { TeamCompetencyPropagateDialogComponent, TeamCompetencyPropagateData } from '../team-competency-propagate-dialog/team-competency-propagate-dialog.component';
 import { DataFieldDataService } from 'src/app/data/data-field/data-field-data.service';
 import { DataFieldQuery } from 'src/app/data/data-field/data-field.query';
@@ -116,7 +116,7 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
     private competencyFrameworkService: CompetencyFrameworkService,
     private permissionDataService: PermissionDataService,
     public dialog: MatDialog,
-    public dialogService: DialogService,
+    public dialogService: CrucibleDialogService,
     private dataFieldDataService: DataFieldDataService,
     private dataFieldQuery: DataFieldQuery,
     private dataValueDataService: DataValueDataService,
@@ -300,8 +300,8 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
       const mc = this.mselCompetencyList.find(m => m.competencyId === comp.id);
       if (mc) {
         const msg = this.buildRemoveMessage(comp.idNumber, comp.shortName, this.getEventCount(mc), this.getDataFieldOptionCount(comp.idNumber));
-        this.dialogService.confirm('Remove Competency', msg).subscribe(result => {
-          if (result['confirm']) {
+        this.dialogService.confirm({ title: 'Remove Competency', message: msg }).afterClosed().subscribe(result => {
+          if (result) {
             this.removeCompetencyReferences(comp.idNumber);
             this.mselCompetencyDataService.delete(mc.id);
           }
@@ -476,8 +476,8 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
     if (parts.length > 0) {
       msg += ` ${parts.join(' and ')} will also be removed.`;
     }
-    this.dialogService.confirm('Remove Competencies', msg).subscribe(result => {
-      if (result['confirm']) {
+    this.dialogService.confirm({ title: 'Remove Competencies', message: msg }).afterClosed().subscribe(result => {
+      if (result) {
         for (const mc of toRemove) {
           if (mc.competency?.idNumber) {
             this.removeCompetencyReferences(mc.competency.idNumber);
@@ -526,8 +526,8 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
       if (parts.length > 0) {
         msg += ` ${parts.join(' and ')} will also be removed.`;
       }
-      this.dialogService.confirm('Remove Work Roles', msg).subscribe(result => {
-        if (result['confirm']) {
+      this.dialogService.confirm({ title: 'Remove Work Roles', message: msg }).afterClosed().subscribe(result => {
+        if (result) {
           for (const mc of toRemove) {
             if (mc.competency?.idNumber) {
               this.removeCompetencyReferences(mc.competency.idNumber);
@@ -624,8 +624,8 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
     const idNumber = mc.competency?.idNumber || '';
     const name = mc.competency?.shortName || '';
     const msg = this.buildRemoveMessage(idNumber, name, this.getEventCount(mc), this.getDataFieldOptionCount(idNumber));
-    this.dialogService.confirm('Remove Competency', msg).subscribe(result => {
-      if (result['confirm']) {
+    this.dialogService.confirm({ title: 'Remove Competency', message: msg }).afterClosed().subscribe(result => {
+      if (result) {
         this.removeCompetencyReferences(idNumber);
         this.mselCompetencyDataService.delete(mc.id);
       }
@@ -852,8 +852,8 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
     if (parts.length > 0) {
       msg += ` ${parts.join(' and ')} will also be removed.`;
     }
-    this.dialogService.confirm('Remove Selected', msg).subscribe(result => {
-      if (result['confirm']) {
+    this.dialogService.confirm({ title: 'Remove Selected', message: msg }).afterClosed().subscribe(result => {
+      if (result) {
         for (const mc of selected) {
           if (mc.competency?.idNumber) {
             this.removeCompetencyReferences(mc.competency.idNumber);
