@@ -18,7 +18,7 @@ import { InvitationDataService } from 'src/app/data/invitation/invitation-data.s
 import { InvitationQuery } from 'src/app/data/invitation/invitation.query';
 import { TeamQuery } from 'src/app/data/team/team.query';
 import { MatDialog } from '@angular/material/dialog';
-import { DialogService } from 'src/app/services/dialog/dialog.service';
+import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { InvitationEditDialogComponent } from '../invitation-edit-dialog/invitation-edit-dialog.component';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -50,7 +50,7 @@ export class InvitationListComponent implements OnDestroy {
     private invitationQuery: InvitationQuery,
     private teamQuery: TeamQuery,
     public dialog: MatDialog,
-    public dialogService: DialogService
+    public dialogService: CrucibleDialogService
   ) {
     // subscribe to invitations
     this.invitationQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(invitations => {
@@ -111,12 +111,9 @@ export class InvitationListComponent implements OnDestroy {
 
   deleteInvitation(invitation: Invitation): void {
     this.dialogService
-      .confirm(
-        'Delete Invitation',
-        'Are you sure that you want to delete the invitation for ' + invitation.emailDomain + '?'
-      )
-      .subscribe((result) => {
-        if (result['confirm']) {
+      .confirm({ title: 'Delete Invitation', message: 'Are you sure that you want to delete the invitation for ' + invitation.emailDomain + '?'
+       }).afterClosed().subscribe((result) => {
+        if (result) {
           this.invitationDataService.delete(invitation.id);
         }
       });

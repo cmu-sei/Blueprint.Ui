@@ -18,7 +18,7 @@ import { TopbarView } from '../../shared/top-bar/topbar.models';
 import { Title } from '@angular/platform-browser';
 import { ErrorService } from 'src/app/services/error/error.service';
 import { MatDialog } from '@angular/material/dialog';
-import { DialogService } from 'src/app/services/dialog/dialog.service';
+import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { InvitationDataService } from 'src/app/data/invitation/invitation-data.service';
 import { TeamDataService } from 'src/app/data/team/team-data.service';
 import { MselItemStatus, SystemPermission } from 'src/app/generated/blueprint.api';
@@ -61,7 +61,7 @@ export class ManageComponent implements OnDestroy, OnInit {
     private router: Router,
     private titleService: Title,
     public dialog: MatDialog,
-    public dialogService: DialogService,
+    public dialogService: CrucibleDialogService,
     private errorService: ErrorService,
     private uiDataService: UIDataService
   ) {
@@ -133,9 +133,8 @@ export class ManageComponent implements OnDestroy, OnInit {
 
   endEvent() {
     this.dialogService
-      .confirm('End the Event', 'Are you sure that you want to end this event?')
-      .subscribe((result) => {
-        if (result['confirm']) {
+      .confirm({ title: 'End the Event', message: 'Are you sure that you want to end this event?' }).afterClosed().subscribe((result) => {
+        if (result) {
           this.mselDataService.archive(this.msel.id);
         }
       });

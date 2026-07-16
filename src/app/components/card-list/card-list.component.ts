@@ -21,7 +21,7 @@ import { CardDataService } from 'src/app/data/card/card-data.service';
 import { CardQuery } from 'src/app/data/card/card.query';
 import { MoveQuery } from 'src/app/data/move/move.query';
 import { MatDialog } from '@angular/material/dialog';
-import { DialogService } from 'src/app/services/dialog/dialog.service';
+import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { CardEditDialogComponent } from '../card-edit-dialog/card-edit-dialog.component';
 import { ItemDownloadDialogComponent } from '../item-download-dialog/item-download-dialog.component';
 import { v4 as uuidv4 } from 'uuid';
@@ -76,7 +76,7 @@ export class CardListComponent implements OnDestroy, AfterViewInit {
     private cardQuery: CardQuery,
     private moveQuery: MoveQuery,
     public dialog: MatDialog,
-    public dialogService: DialogService
+    public dialogService: CrucibleDialogService
   ) {
     // subscribe to cards
     this.cardQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(cards => {
@@ -241,12 +241,9 @@ export class CardListComponent implements OnDestroy, AfterViewInit {
 
   deleteCard(card: Card): void {
     this.dialogService
-      .confirm(
-        'Delete Card',
-        'Are you sure that you want to delete ' + card.name + '?'
-      )
-      .subscribe((result) => {
-        if (result['confirm']) {
+      .confirm({ title: 'Delete Card', message: 'Are you sure that you want to delete ' + card.name + '?'
+       }).afterClosed().subscribe((result) => {
+        if (result) {
           this.cardDataService.delete(card.id);
           this.expandedElementId = '';
         }

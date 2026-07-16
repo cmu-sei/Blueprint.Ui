@@ -22,7 +22,7 @@ import { MselQuery } from 'src/app/data/msel/msel.query';
 import { MatMenuTrigger } from '@angular/material/menu';
 import { CiteService } from 'src/app/generated/blueprint.api';
 import { MatDialog } from '@angular/material/dialog';
-import { DialogService } from 'src/app/services/dialog/dialog.service';
+import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { TeamAddDialogComponent } from '../team-add-dialog/team-add-dialog.component';
 import { TeamEditDialogComponent } from '../team-edit-dialog/team-edit-dialog.component';
 import { UnitDataService } from 'src/app/data/unit/unit-data.service';
@@ -84,7 +84,7 @@ export class MselTeamsComponent implements OnDestroy, OnInit {
     private unitDataService: UnitDataService,
     private unitQuery: UnitQuery,
     private dialog: MatDialog,
-    public dialogService: DialogService,
+    public dialogService: CrucibleDialogService,
     private permissionDataService: PermissionDataService,
     private changeDetectorRef: ChangeDetectorRef
   ) {
@@ -212,12 +212,9 @@ export class MselTeamsComponent implements OnDestroy, OnInit {
 
   deleteTeam(team: Team): void {
     this.dialogService
-      .confirm(
-        'Delete Team',
-        'Are you sure that you want to delete ' + team.name + '?'
-      )
-      .subscribe((result) => {
-        if (result['confirm']) {
+      .confirm({ title: 'Delete Team', message: 'Are you sure that you want to delete ' + team.name + '?'
+       }).afterClosed().subscribe((result) => {
+        if (result) {
           this.teamDataService.delete(team.id);
         }
       });

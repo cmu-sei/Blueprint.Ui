@@ -3,8 +3,7 @@
 // project root for license information.
 
 import { Component, EventEmitter, Inject, Output } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { DialogService } from 'src/app/services/dialog/dialog.service';
+import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 @Component({
     selector: 'app-admin-proficiency-scale-edit-dialog',
@@ -17,12 +16,8 @@ export class AdminProficiencyScaleEditDialogComponent {
   @Output() editComplete = new EventEmitter<any>();
 
   constructor(
-    public dialogService: DialogService,
-    dialogRef: MatDialogRef<AdminProficiencyScaleEditDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any
-  ) {
-    dialogRef.disableClose = true;
-  }
+  ) {}
 
   errorFree() {
     return this.data.scale.name;

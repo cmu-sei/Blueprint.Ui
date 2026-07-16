@@ -22,7 +22,7 @@ import { MatMenuTrigger } from '@angular/material/menu';
 import { CiteActionDataService } from 'src/app/data/cite-action/cite-action-data.service';
 import { CiteActionQuery } from 'src/app/data/cite-action/cite-action.query';
 import { MatDialog } from '@angular/material/dialog';
-import { DialogService } from 'src/app/services/dialog/dialog.service';
+import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { CiteActionEditDialogComponent } from '../cite-action-edit-dialog/cite-action-edit-dialog.component';
 import { ItemDownloadDialogComponent } from '../item-download-dialog/item-download-dialog.component';
 
@@ -68,7 +68,7 @@ export class CiteActionListComponent implements OnInit, OnDestroy, AfterViewInit
     private moveQuery: MoveQuery,
     private teamQuery: TeamQuery,
     public dialog: MatDialog,
-    public dialogService: DialogService
+    public dialogService: CrucibleDialogService
   ) {
     // subscribe to citeActions
     this.citeActionQuery
@@ -282,12 +282,9 @@ export class CiteActionListComponent implements OnInit, OnDestroy, AfterViewInit
     }
     const title = this.showTemplates ? 'Delete CITE Action Template' : 'Delete CITE Action';
     this.dialogService
-      .confirm(
-        title,
-        'Are you sure that you want to delete ' + citeAction.description + '?'
-      )
-      .subscribe((result) => {
-        if (result['confirm']) {
+      .confirm({ title: title, message: 'Are you sure that you want to delete ' + citeAction.description + '?'
+       }).afterClosed().subscribe((result) => {
+        if (result) {
           this.citeActionDataService.delete(citeAction.id);
           this.editingId = '';
         }

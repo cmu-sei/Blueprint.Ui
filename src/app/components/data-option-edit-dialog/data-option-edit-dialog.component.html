@@ -4,28 +4,21 @@ Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
 
-<div mat-dialog-title>
-  Edit Option
-  <button
-    mat-icon-button
-    (click)="handleEditComplete(false)"
-    title="Cancel"
-    class="close-button"
-    tabindex="-1"
-    >
-    <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
-  </button>
-</div>
-<div>
-  <div>
-    <mat-form-field class="name-field full-width">
-      <mat-label>Display Order</mat-label>
-      <input matInput [(ngModel)]="data.dataOption.displayOrder" />
-    </mat-form-field>
-  </div>
-</div>
+<crucible-dialog
+  dialogTitle="Edit Option"
+  [submitDisabled]="!errorFree()"
+  [guardUnsavedWork]="true"
+  (cancel)="handleEditComplete(false)"
+  (submit)="handleEditComplete(true)"
+>
 @if (data && data.dataOption) {
-  <div mat-dialog-content>
+  <div crucibleDialogContent>
+    <div>
+      <mat-form-field class="name-field full-width">
+        <mat-label>Display Order</mat-label>
+        <input matInput [(ngModel)]="data.dataOption.displayOrder" />
+      </mat-form-field>
+    </div>
     <div class="add-margin">
       <div>
         <mat-form-field class="name-field full-width">
@@ -52,13 +45,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </div>
     </div>
     }
-    <div class="cssLayoutRowStartCenter bottom-button">
-      <div class="delete-button">
-        <button mat-stroked-button (click)="handleEditComplete(true)" [disabled]="!errorFree()" style="margin-left: 40px;">Save</button>
-      </div>
-      <div class="delete-button">
-        <button mat-stroked-button (click)="handleEditComplete(false)">Cancel</button>
-      </div>
-    </div>
   </div>
 }
+</crucible-dialog>

@@ -3,27 +3,8 @@
 // project root for license information.
 
 import { Component, EventEmitter, Inject, Output } from '@angular/core';
-import {
-  UntypedFormControl,
-  FormGroupDirective,
-  NgForm,
-} from '@angular/forms';
-import { ErrorStateMatcher } from '@angular/material/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { DialogService } from 'src/app/services/dialog/dialog.service';
-
-/** Error when invalid control is dirty, touched, or submitted. */
-export class UserErrorStateMatcher implements ErrorStateMatcher {
-  isErrorState(
-    control: UntypedFormControl | null,
-    form: FormGroupDirective | NgForm | null
-  ): boolean {
-    const isSubmitted = form && form.submitted;
-    return !!(control && control.invalid && (control.dirty || isSubmitted));
-  }
-}
-
-const MIN_NAME_LENGTH = 3;
+import { UntypedFormControl } from '@angular/forms';
+import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 @Component({
     selector: 'app-player-applicationedit-dialog',
@@ -66,19 +47,13 @@ export class PlayerApplicationEditDialogComponent {
   ];
 
   constructor(
-    public dialogService: DialogService,
-    dialogRef: MatDialogRef<PlayerApplicationEditDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any
-  ) {
-    dialogRef.disableClose = true;
-  }
+  ) {}
 
   savePlayerApplication(which: string) {
-    let timeParts: string[];
     switch (which) {
       case 'situationDate':
         const newPosted = new Date(this.situationDateFormControl.value);
-        const oldPosted = new Date(this.data.playerApplication.situationTime);
         this.data.playerApplication.situationTime = newPosted;
         break;
       case 'playerApplicationStartTime':

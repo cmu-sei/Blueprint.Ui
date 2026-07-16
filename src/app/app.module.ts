@@ -6,6 +6,7 @@
 
 import { CdkTableModule } from '@angular/cdk/table';
 import { CdkTreeModule } from '@angular/cdk/tree';
+import { A11yModule } from '@angular/cdk/a11y';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { ApplicationConfig, ErrorHandler, NgModule } from '@angular/core';
@@ -50,6 +51,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {
   ComnAuthModule,
   ComnHeaderBarModule,
+  CRUCIBLE_DIALOG_IMPORTS,
   ComnSettingsConfig,
   ComnSettingsModule,
   ComnSettingsService,
@@ -133,7 +135,6 @@ import { ScenarioEventEditDialogComponent } from './components/scenario-event-ed
 import { ScenarioEventListComponent } from './components/scenario-event-list/scenario-event-list.component';
 import { StarterComponent } from './components/starter/starter.component';
 import { SteamfitterTaskComponent } from './components/steamfitter-task/steamfitter-task.component';
-import { ConfirmDialogComponent } from './components/shared/confirm-dialog/confirm-dialog.component';
 import { SystemMessageComponent } from './components/shared/system-message/system-message.component';
 import { TeamAddDialogComponent } from './components/team-add-dialog/team-add-dialog.component';
 import { TeamEditDialogComponent } from './components/team-edit-dialog/team-edit-dialog.component';
@@ -142,7 +143,6 @@ import { TopbarComponent } from './components/shared/top-bar/topbar.component';
 import { PresenceBarComponent } from './components/shared/presence-bar/presence-bar.component';
 import { UIDataService } from './data/ui/ui-data.service';
 import { UserDataService } from './data/user/user-data.service';
-import { DialogService } from './services/dialog/dialog.service';
 import { ErrorService } from './services/error/error.service';
 import { SystemMessageService } from './services/system-message/system-message.service';
 import { BASE_PATH } from './generated/blueprint.api';
@@ -235,7 +235,6 @@ export const appConfig: ApplicationConfig = {
     StarterComponent,
     SteamfitterTaskComponent,
     SystemMessageComponent,
-    ConfirmDialogComponent,
     TeamAddDialogComponent,
     TeamEditDialogComponent,
     TeamUsersComponent,
@@ -325,6 +324,7 @@ export const appConfig: ApplicationConfig = {
     NgxMatDatepickerToggle,
     NgxMatDatetimepicker,
     CdkTableModule,
+    A11yModule,
     MatTreeModule,
     CdkTreeModule,
     ClipboardModule,
@@ -332,8 +332,8 @@ export const appConfig: ApplicationConfig = {
     ComnSettingsModule.forRoot(),
     AngularEditorModule,
     DragDropModule,
-    ComnHeaderBarModule], providers: [
-      DialogService,
+    ComnHeaderBarModule,
+    ...CRUCIBLE_DIALOG_IMPORTS], providers: [
       SystemMessageService,
       UIDataService,
       UserDataService,

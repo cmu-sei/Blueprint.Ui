@@ -37,9 +37,7 @@ export class DataOptionImportDialogComponent {
       showDescription?: boolean;
     },
     private dataOptionService: DataOptionService
-  ) {
-    dialogRef.disableClose = true;
-  }
+  ) {}
 
   get hasDescription(): boolean {
     return this.data.showDescription === true;

@@ -17,7 +17,7 @@ import { UserQuery, CurrentUserQuery } from 'src/app/data/user/user.query';
 import { SignalRService } from 'src/app/services/signalr.service';
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
-import { DialogService } from 'src/app/services/dialog/dialog.service';
+import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
 import { User, SystemPermission } from 'src/app/generated/blueprint.api';
 import { MselItemStatus } from 'src/app/generated/blueprint.api';
@@ -80,7 +80,7 @@ export class MselListComponent implements OnDestroy, OnInit {
   private unsubscribe$ = new Subject();
 
   constructor(
-    public dialogService: DialogService,
+    public dialogService: CrucibleDialogService,
     private router: Router,
     private userDataService: UserDataService,
     private userQuery: UserQuery,
@@ -305,12 +305,9 @@ export class MselListComponent implements OnDestroy, OnInit {
     if (!msel) return;
 
     this.dialogService
-      .confirm(
-        'Copy MSEL',
-        'Are you sure that you want to copy ' + msel.name + '?'
-      )
-      .subscribe((result) => {
-        if (result['confirm']) {
+      .confirm({ title: 'Copy MSEL', message: 'Are you sure that you want to copy ' + msel.name + '?'
+       }).afterClosed().subscribe((result) => {
+        if (result) {
           this.mselDataService.copy(msel.id);
         }
       });
@@ -318,12 +315,9 @@ export class MselListComponent implements OnDestroy, OnInit {
 
   delete(msel: MselPlus): void {
     this.dialogService
-      .confirm(
-        'Delete MSEL',
-        'Are you sure that you want to delete ' + msel.name + '?'
-      )
-      .subscribe((result) => {
-        if (result['confirm']) {
+      .confirm({ title: 'Delete MSEL', message: 'Are you sure that you want to delete ' + msel.name + '?'
+       }).afterClosed().subscribe((result) => {
+        if (result) {
           this.mselDataService.delete(msel.id);
         }
       });

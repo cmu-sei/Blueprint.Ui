@@ -14,7 +14,7 @@ import { PlayerApplicationDataService } from 'src/app/data/player-application/pl
 import { PlayerApplicationTeamDataService } from 'src/app/data/team/player-application-team-data.service';
 import { PlayerApplicationQuery } from 'src/app/data/player-application/player-application.query';
 import { MatDialog } from '@angular/material/dialog';
-import { DialogService } from 'src/app/services/dialog/dialog.service';
+import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { PlayerApplicationEditDialogComponent } from '../player-application-edit-dialog/player-application-edit-dialog.component';
 import { PlayerService } from 'src/app/generated/blueprint.api';
 import { v4 as uuidv4 } from 'uuid';
@@ -61,7 +61,7 @@ export class PlayerApplicationListComponent implements OnDestroy, OnInit {
     private playerService: PlayerService,
     private playerApplicationTeamDataService: PlayerApplicationTeamDataService,
     public dialog: MatDialog,
-    public dialogService: DialogService,
+    public dialogService: CrucibleDialogService,
     private permissionDataService: PermissionDataService,
     private changeDetectorRef: ChangeDetectorRef
   ) {
@@ -173,12 +173,9 @@ export class PlayerApplicationListComponent implements OnDestroy, OnInit {
 
   deletePlayerApplication(playerApplication: PlayerApplication): void {
     this.dialogService
-      .confirm(
-        'Delete PlayerApplication',
-        'Are you sure that you want to delete ' + playerApplication.name + '?'
-      )
-      .subscribe((result) => {
-        if (result['confirm']) {
+      .confirm({ title: 'Delete PlayerApplication', message: 'Are you sure that you want to delete ' + playerApplication.name + '?'
+       }).afterClosed().subscribe((result) => {
+        if (result) {
           this.playerApplicationDataService.delete(playerApplication.id);
           this.expandedId = '';
         }

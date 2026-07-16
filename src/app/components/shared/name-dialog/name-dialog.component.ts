@@ -1,6 +1,6 @@
 // Copyright 2025 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import {
   MatDialogRef,
@@ -26,8 +26,6 @@ export class NameDialogComponent {
     public dialogRef: MatDialogRef<NameDialogComponent>,
     private formBuilder: FormBuilder
   ) {
-    this.dialogRef.disableClose = true;
-
     this.form = this.formBuilder.group({
       name: [data.nameValue, [Validators.required]],
     });

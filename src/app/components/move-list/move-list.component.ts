@@ -16,7 +16,7 @@ import { MoveDataService } from 'src/app/data/move/move-data.service';
 import { MoveQuery } from 'src/app/data/move/move.query';
 import { MoveEditDialogComponent } from '../move-edit-dialog/move-edit-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
-import { DialogService } from 'src/app/services/dialog/dialog.service';
+import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { v4 as uuidv4 } from 'uuid';
 
 @Component({
@@ -55,7 +55,7 @@ export class MoveListComponent implements OnDestroy, AfterViewInit {
     private moveDataService: MoveDataService,
     private moveQuery: MoveQuery,
     public dialog: MatDialog,
-    public dialogService: DialogService
+    public dialogService: CrucibleDialogService
   ) {
     // subscribe to move changes
     this.moveQuery
@@ -153,12 +153,9 @@ export class MoveListComponent implements OnDestroy, AfterViewInit {
       return;
     }
     this.dialogService
-      .confirm(
-        'Delete Move',
-        'Are you sure that you want to delete ' + move.description + '?'
-      )
-      .subscribe((result) => {
-        if (result['confirm']) {
+      .confirm({ title: 'Delete Move', message: 'Are you sure that you want to delete ' + move.description + '?'
+       }).afterClosed().subscribe((result) => {
+        if (result) {
           this.moveDataService.delete(move.id);
           this.editingId = '';
         }

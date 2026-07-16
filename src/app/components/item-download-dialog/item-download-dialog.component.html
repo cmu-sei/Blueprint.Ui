@@ -4,9 +4,14 @@ Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
 
-<h2 mat-dialog-title>{{ data.title }}</h2>
-
-<mat-dialog-content>
+<crucible-dialog
+  [dialogTitle]="data.title"
+  submitLabel="Download"
+  [submitDisabled]="selected.size === 0"
+  (cancel)="cancel()"
+  (submit)="download()"
+>
+<div crucibleDialogContent>
   @if (data.items.length === 0) {
     <div class="empty-message">No items available to download.</div>
   } @else {
@@ -25,11 +30,5 @@ project root for license information or contact permission@sei.cmu.edu for full 
       }
     </div>
   }
-</mat-dialog-content>
-
-<mat-dialog-actions align="end">
-  <button mat-button (click)="cancel()">Cancel</button>
-  <button mat-raised-button color="primary"
-          [disabled]="selected.size === 0"
-          (click)="download()">Download</button>
-</mat-dialog-actions>
+</div>
+</crucible-dialog>
