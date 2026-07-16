@@ -741,7 +741,7 @@ export class ScenarioEventListComponent
       minWidth: '900px',
       maxWidth: '90vw',
       width: 'auto',
-      height: '90%',
+      maxHeight: '90vh',
       data: {
         scenarioEvent: scenarioEvent,
         integrationTargetOptions: this.integrationTargetOptions,
