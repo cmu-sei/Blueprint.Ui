@@ -68,6 +68,7 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
   selectedFrameworkId = '';
   selectedFramework: CompetencyFramework = null;
   frameworkWorkRoles: Competency[] = [];
+  isLoadingFramework = false;
   private competencyTypeMap = new Map<string, string>();
   private competencyById = new Map<string, Competency>();
 
@@ -193,6 +194,7 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
     this.selectedFrameworkId = frameworkId;
     this.browserExpandedId = null;
     this.browserChildTypeFilter = '';
+    this.isLoadingFramework = false;
     if (frameworkId) {
       this.addPanelExpanded = true;
     }
@@ -202,22 +204,39 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
       this.workRoleDataSource.data = [];
       return;
     }
+    this.selectedFramework = null;
+    this.frameworkWorkRoles = [];
+    this.workRoleDataSource.data = [];
+    this.workRoleCategories = [];
+    this.workRoleCategoryFilter = '';
+    this.isLoadingFramework = true;
     this.competencyFrameworkService.getCompetencyFramework(frameworkId)
       .pipe(take(1))
-      .subscribe(fw => {
-        this.selectedFramework = fw;
-        const allComps = fw.competencies || [];
-        this.buildTypeMapFromComps(fw, allComps);
-        this.frameworkWorkRoles = allComps.filter(c => this.competencyTypeMap.get(c.id) === 'Work Role');
-        this.workRoleCategories = [...new Set(this.frameworkWorkRoles.map(wr => this.getWorkRoleCategory(wr)).filter(c => c))].sort();
-        this.workRoleCategoryFilter = '';
-        this.workRoleFilterControl.setValue('');
-        this.applyWorkRoleFilter();
-        setTimeout(() => {
-          if (this.workRolePaginator) {
-            this.workRoleDataSource.paginator = this.workRolePaginator;
-          }
-        });
+      .subscribe({
+        next: fw => {
+          this.selectedFramework = fw;
+          const allComps = fw.competencies || [];
+          this.buildTypeMapFromComps(fw, allComps);
+          this.frameworkWorkRoles = allComps.filter(c => this.competencyTypeMap.get(c.id) === 'Work Role');
+          this.workRoleCategories = [...new Set(this.frameworkWorkRoles.map(wr => this.getWorkRoleCategory(wr)).filter(c => c))].sort();
+          this.workRoleCategoryFilter = '';
+          this.workRoleFilterControl.setValue('');
+          this.applyWorkRoleFilter();
+          setTimeout(() => {
+            if (this.workRolePaginator) {
+              this.workRoleDataSource.paginator = this.workRolePaginator;
+            }
+          });
+        },
+        error: () => {
+          this.isLoadingFramework = false;
+          this.selectedFramework = null;
+          this.frameworkWorkRoles = [];
+          this.workRoleDataSource.data = [];
+        },
+        complete: () => {
+          this.isLoadingFramework = false;
+        }
       });
   }
 

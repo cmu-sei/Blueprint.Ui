@@ -250,7 +250,9 @@ export class MselInfoComponent implements OnDestroy, OnInit {
         this.mselCompetencyList = mselCompetencies;
         const isWorkRole = (mc: MselCompetency) => {
           const id = mc.competency?.idNumber || '';
-          return id.includes('WRL') || /^[A-Z]{2}-[A-Z]{3}-\d+$/.test(id);
+          return id.includes('WRL')
+            || /^[A-Z]{2}-[A-Z]{3}-\d+$/.test(id)
+            || /^[A-Z]{2}-\d+[A-Z]?$/.test(id);
         };
         this.workRoleCompetencies = mselCompetencies
           .filter(mc => isWorkRole(mc) && mc.competency)
@@ -373,6 +375,8 @@ export class MselInfoComponent implements OnDestroy, OnInit {
       };
       type = prefixMap[idNumber.charAt(0)] || '';
     } else if (/^[A-Z]{2}-[A-Z]{3}-\d+$/.test(idNumber)) {
+      type = 'Work Role';
+    } else if (/^[A-Z]{2}-\d+[A-Z]?$/.test(idNumber)) {
       type = 'Work Role';
     } else if (/^[A-Z]{3}$/.test(idNumber)) {
       type = 'Specialty Area';

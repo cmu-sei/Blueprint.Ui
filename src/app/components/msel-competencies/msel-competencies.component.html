@@ -62,7 +62,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </div>
       }
     </div>
-    @if (selectedFramework && frameworkWorkRoles.length > 0) {
+    @if (isLoadingFramework) {
+    <div class="browser-loading">
+      <mat-spinner diameter="36"></mat-spinner>
+      <div class="browser-loading-text">Loading framework competencies...</div>
+    </div>
+    } @else if (selectedFramework && frameworkWorkRoles.length > 0) {
     <div class="browser-table-scroll">
       <mat-table [dataSource]="workRoleDataSource" matSort #workRoleSort="matSort" multiTemplateDataRows>
         <!-- check column -->
@@ -162,6 +167,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <div class="no-results-inline">No work roles found</div>
       }
     </div>
+    } @else if (selectedFramework) {
+    <div class="no-results-inline" style="padding: 8px 0 16px;">No work roles found in this framework</div>
     } @else if (!selectedFramework) {
     <div class="no-results-inline" style="padding: 8px 0 16px;">Select a framework to browse work roles and competencies</div>
     }

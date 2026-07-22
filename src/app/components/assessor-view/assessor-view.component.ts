@@ -1471,6 +1471,8 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
       type = prefixMap[idNumber.charAt(0)] || '';
     } else if (/^[A-Z]{2}-[A-Z]{3}-\d+$/.test(idNumber)) {
       type = 'Work Role';
+    } else if (/^[A-Z]{2}-\d+[A-Z]?$/.test(idNumber)) {
+      type = 'Work Role';
     } else if (/^[A-Z]{3}$/.test(idNumber)) {
       type = 'Specialty Area';
     } else if (/^[A-Z]{2}$/.test(idNumber)) {
