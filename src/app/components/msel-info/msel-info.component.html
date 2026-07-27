@@ -3,8 +3,8 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
-@if (msel?.integrationStatus && !integrationDismissed) {
-  <app-integration-status [msel]="msel" (closed)="dismissIntegrationStatus()"></app-integration-status>
+@if ((msel?.integrationStatus || integrationRequested) && !integrationDismissed) {
+<app-integration-status [msel]="msel" (closed)="dismissIntegrationStatus()"></app-integration-status>
 } @else {
 <div class="frame">
   <mat-tab-group mat-align-tabs="start" class="tab-group" [selectedIndex]="currentTabIndex"
@@ -363,10 +363,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <!-- Competencies summary -->
           <div class="competency-section">
             <div class="section-header">
-              <mat-icon class="mdi-18px" fontIcon="mdi-certificate-outline" style="color: var(--mat-sys-primary); vertical-align: middle; margin-right: 4px;"></mat-icon>
+              <mat-icon class="mdi-18px" fontIcon="mdi-certificate-outline"
+                style="color: var(--mat-sys-primary); vertical-align: middle; margin-right: 4px;"></mat-icon>
               <b>Competencies</b>
               @if (competencyFrameworkNames.length > 0) {
-              <span style="margin-left: 8px; font-weight: normal; color: var(--mat-sys-on-surface-variant); font-size: 13px;">
+              <span
+                style="margin-left: 8px; font-weight: normal; color: var(--mat-sys-on-surface-variant); font-size: 13px;">
                 ({{ competencyFrameworkNames.join(', ') }})
               </span>
               }
@@ -376,14 +378,16 @@ project root for license information or contact permission@sei.cmu.edu for full 
               <mat-expansion-panel class="competency-expansion">
                 <mat-expansion-panel-header>
                   <mat-panel-title>
-                    <mat-icon class="mdi-18px" fontIcon="mdi-account-hard-hat" style="color: var(--mat-sys-primary); margin-right: 6px;"></mat-icon>
+                    <mat-icon class="mdi-18px" fontIcon="mdi-account-hard-hat"
+                      style="color: var(--mat-sys-primary); margin-right: 6px;"></mat-icon>
                     Work Roles ({{ workRoleCompetencies.length }})
                   </mat-panel-title>
                 </mat-expansion-panel-header>
                 <div class="competency-list">
                   @for (c of workRoleCompetencies; track c.id) {
                   <div class="competency-list-item">
-                    <span class="competency-list-id" [matTooltip]="getCompetencyTooltip(c)" matTooltipPosition="right">{{ c.idNumber }}</span>
+                    <span class="competency-list-id" [matTooltip]="getCompetencyTooltip(c)"
+                      matTooltipPosition="right">{{ c.idNumber }}</span>
                   </div>
                   }
                 </div>
@@ -393,14 +397,16 @@ project root for license information or contact permission@sei.cmu.edu for full 
               <mat-expansion-panel class="competency-expansion">
                 <mat-expansion-panel-header>
                   <mat-panel-title>
-                    <mat-icon class="mdi-18px" fontIcon="mdi-certificate-outline" style="color: var(--mat-sys-primary); margin-right: 6px;"></mat-icon>
+                    <mat-icon class="mdi-18px" fontIcon="mdi-certificate-outline"
+                      style="color: var(--mat-sys-primary); margin-right: 6px;"></mat-icon>
                     Competencies ({{ nonWorkRoleCompetencies.length }})
                   </mat-panel-title>
                 </mat-expansion-panel-header>
                 <div class="competency-list">
                   @for (c of nonWorkRoleCompetencies; track c.id) {
                   <div class="competency-list-item">
-                    <span class="competency-list-id" [matTooltip]="getCompetencyTooltip(c)" matTooltipPosition="right">{{ c.idNumber }}</span>
+                    <span class="competency-list-id" [matTooltip]="getCompetencyTooltip(c)"
+                      matTooltipPosition="right">{{ c.idNumber }}</span>
                   </div>
                   }
                 </div>
@@ -411,11 +417,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </div>
           <!-- LMT Metadata -->
           <div class="section-header">
-            <mat-icon class="mdi-18px" fontIcon="mdi-tag-outline" style="color: var(--mat-sys-primary); vertical-align: middle; margin-right: 4px;"></mat-icon>
+            <mat-icon class="mdi-18px" fontIcon="mdi-tag-outline"
+              style="color: var(--mat-sys-primary); vertical-align: middle; margin-right: 4px;"></mat-icon>
             <b>Metadata</b>
           </div>
           <div class="lmt-dropdown-row">
-            <mat-form-field class="lmt-dropdown-width" matTooltip="Beginner, Intermediate, or Advanced — maps to lrmi:educationalLevel" matTooltipShowDelay="800">
+            <mat-form-field class="lmt-dropdown-width"
+              matTooltip="Beginner, Intermediate, or Advanced — maps to lrmi:educationalLevel"
+              matTooltipShowDelay="800">
               <mat-label>Difficulty Rating</mat-label>
               <mat-select [(ngModel)]="msel.educationalLevel" [disabled]="!canEditMsel()"
                 (selectionChange)="isChanged = true">
@@ -425,7 +434,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 }
               </mat-select>
             </mat-form-field>
-            <mat-form-field class="lmt-dropdown-width" matTooltip="Assessment, Instruction, or Professional Support — maps to lrmi:educationalUse" matTooltipShowDelay="800">
+            <mat-form-field class="lmt-dropdown-width"
+              matTooltip="Assessment, Instruction, or Professional Support — maps to lrmi:educationalUse"
+              matTooltipShowDelay="800">
               <mat-label>Exercise Purpose</mat-label>
               <mat-select [(ngModel)]="msel.educationalUse" [disabled]="!canEditMsel()"
                 (selectionChange)="isChanged = true">
@@ -435,7 +446,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 }
               </mat-select>
             </mat-form-field>
-            <mat-form-field class="lmt-dropdown-width" matTooltip="Online, Onsite, or Blended delivery mode — maps to schema:courseMode" matTooltipShowDelay="800">
+            <mat-form-field class="lmt-dropdown-width"
+              matTooltip="Online, Onsite, or Blended delivery mode — maps to schema:courseMode"
+              matTooltipShowDelay="800">
               <mat-label>Exercise Mode</mat-label>
               <mat-select [(ngModel)]="msel.courseMode" [disabled]="!canEditMsel()"
                 (selectionChange)="isChanged = true">
@@ -447,7 +460,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
             </mat-form-field>
           </div>
           <div class="single-detail center-self">
-            <mat-form-field class="full-width" matTooltip="Topic areas covered by this exercise — maps to dcterms:subject" matTooltipShowDelay="800">
+            <mat-form-field class="full-width"
+              matTooltip="Topic areas covered by this exercise — maps to dcterms:subject" matTooltipShowDelay="800">
               <mat-label>Subject</mat-label>
               <input type="text" matInput placeholder="e.g., incident response, network defense"
                 [(ngModel)]="msel.subject" (cut)="isChanged = true" (change)="isChanged = true"
@@ -455,11 +469,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
             </mat-form-field>
           </div>
           <div class="single-detail center-self">
-            <mat-form-field class="full-width" matTooltip="Searchable tags for catalog discovery — maps to schema:keywords" matTooltipShowDelay="800">
+            <mat-form-field class="full-width"
+              matTooltip="Searchable tags for catalog discovery — maps to schema:keywords" matTooltipShowDelay="800">
               <mat-label>Keywords</mat-label>
-              <input type="text" matInput placeholder="Searchable tags"
-                [(ngModel)]="msel.keywords" (cut)="isChanged = true" (change)="isChanged = true"
-                (paste)="isChanged = true" (keypress)="isChanged = true" [disabled]="!canEditMsel()" />
+              <input type="text" matInput placeholder="Searchable tags" [(ngModel)]="msel.keywords"
+                (cut)="isChanged = true" (change)="isChanged = true" (paste)="isChanged = true"
+                (keypress)="isChanged = true" [disabled]="!canEditMsel()" />
             </mat-form-field>
           </div>
           <!-- row meta data -->
@@ -510,14 +525,18 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <button mat-icon-button (click)="openContent(page.id)" title="Open page in new tab" class="far-right-button">
             <mat-icon class="mdi-24px self-center" fontIcon="mdi-open-in-new"></mat-icon>
           </button>
-          <span [title]="page.allCanView ? 'All MSEL users can view this page' : 'Only MSEL contributors can view this page'">
+          <span
+            [title]="page.allCanView ? 'All MSEL users can view this page' : 'Only MSEL contributors can view this page'">
             <button mat-icon-button disabled>
-              <mat-icon class="mdi-24px" [fontIcon]="page.allCanView ? 'mdi-eye' : 'mdi-eye-off'" style="color: var(--mat-sys-primary)"></mat-icon>
+              <mat-icon class="mdi-24px" [fontIcon]="page.allCanView ? 'mdi-eye' : 'mdi-eye-off'"
+                style="color: var(--mat-sys-primary)"></mat-icon>
             </button>
           </span>
           <span [title]="page.includeInPlaybook ? 'Included in playbook' : 'Not included in playbook'">
             <button mat-icon-button disabled>
-              <mat-icon class="mdi-24px" [fontIcon]="page.includeInPlaybook ? 'mdi-file-document-check' : 'mdi-file-document-remove'" style="color: var(--mat-sys-primary)"></mat-icon>
+              <mat-icon class="mdi-24px"
+                [fontIcon]="page.includeInPlaybook ? 'mdi-file-document-check' : 'mdi-file-document-remove'"
+                style="color: var(--mat-sys-primary)"></mat-icon>
             </button>
           </span>
         </span>
@@ -548,7 +567,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
           @if (editingPageId === page.id) {
           <mat-checkbox [(ngModel)]="changedMselPage.allCanView" title="All MSEL users can view this page">All MSEL
             users can view this page</mat-checkbox>
-          <mat-checkbox [(ngModel)]="changedMselPage.includeInPlaybook" title="Include this page when printing the playbook">Include in playbook</mat-checkbox>
+          <mat-checkbox [(ngModel)]="changedMselPage.includeInPlaybook"
+            title="Include this page when printing the playbook">Include in playbook</mat-checkbox>
           }
         </div>
         <div>
