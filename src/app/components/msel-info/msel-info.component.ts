@@ -155,9 +155,13 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   citeEvaluationName = '';
   citeScoringModelName = '';
   steamfitterScenarioName = '';
+  integrationRequested = '';
   integrationDismissed = false;
   get pushStatus(): string {
-    return this.msel?.integrationStatus || '';
+    const integrationStatus = this.msel?.integrationStatus || '';
+    return this.integrationDismissed && integrationStatus.startsWith('ERROR')
+      ? ''
+      : integrationStatus;
   }
   constructor(
     public dialogService: CrucibleDialogService,
@@ -201,14 +205,21 @@ export class MselInfoComponent implements OnDestroy, OnInit {
             this.mselCompetencyDataService.loadByMsel(msel.id);
             this.newMselPage.mselId = msel.id;
           }
+          if (!this.msel?.integrationStatus) {
+            this.integrationRequested = '';
+            this.integrationDismissed = false;
+            this.clearDismissedIntegrationError();
+          } else if (this.msel.integrationStatus.startsWith('ERROR')) {
+            this.integrationDismissed =
+              sessionStorage.getItem(this.dismissedIntegrationErrorKey) === this.msel.integrationStatus;
+          } else if (!this.msel.integrationStatus.startsWith('ERROR')) {
+            this.integrationDismissed = false;
+            this.clearDismissedIntegrationError();
+          }
           this.savedStartTime = new Date(msel.startTime);
           this.savedDurationSeconds = msel.durationSeconds;
           // Update scoring model name when scoring model ID changes
           this.updateCiteScoringModelName();
-          // Reset dismissed flag when a new integration push starts
-          if (msel.integrationStatus && !msel.integrationStatus.startsWith('ERROR')) {
-            this.integrationDismissed = false;
-          }
           // Fetch integration names for deployed integrations
           this.fetchIntegrationNames();
           this.resolveCreatorName();
@@ -425,8 +436,9 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   deleteMsel() {
     if (this.canManageMsel()) {
       this.dialogService
-        .confirm({ title: 'Delete MSEL', message: 'Are you sure that you want to delete ' + this.msel.name + '?'
-         }).afterClosed().subscribe((result) => {
+        .confirm({
+          title: 'Delete MSEL', message: 'Are you sure that you want to delete ' + this.msel.name + '?'
+        }).afterClosed().subscribe((result) => {
           if (result) {
             this.deleteThisMsel.emit(this.msel.id);
           }
@@ -561,9 +573,13 @@ export class MselInfoComponent implements OnDestroy, OnInit {
       message += '\n\n** WARNING: One or more Scenario Events marked as a Gallery integration is missing required fields. **';
     }
     this.dialogService
-      .confirm({ title: 'Push Integrations', message: message
-       }).afterClosed().subscribe((result) => {
+      .confirm({
+        title: 'Push Integrations', message: message
+      }).afterClosed().subscribe((result) => {
         if (result) {
+          this.integrationDismissed = false;
+          this.clearDismissedIntegrationError();
+          this.integrationRequested = 'push';
           this.mselDataService.pushIntegrations(this.msel.id);
         }
       });
@@ -571,16 +587,32 @@ export class MselInfoComponent implements OnDestroy, OnInit {
 
   pullIntegrations() {
     this.dialogService
-      .confirm({ title: 'Remove Integrations', message: 'Are you sure you want to remove this MSEL from the associated applications?'
-       }).afterClosed().subscribe((result) => {
+      .confirm({
+        title: 'Remove Integrations', message: 'Are you sure you want to remove this MSEL from the associated applications?'
+      }).afterClosed().subscribe((result) => {
         if (result) {
+          this.integrationDismissed = false;
+          this.clearDismissedIntegrationError();
+          this.integrationRequested = 'pull';
           this.mselDataService.pullIntegrations(this.msel.id);
         }
       });
   }
 
   dismissIntegrationStatus() {
+    this.integrationRequested = '';
     this.integrationDismissed = true;
+    if (this.msel?.integrationStatus?.startsWith('ERROR')) {
+      sessionStorage.setItem(this.dismissedIntegrationErrorKey, this.msel.integrationStatus);
+    }
+  }
+
+  private get dismissedIntegrationErrorKey(): string {
+    return `blueprint.dismissedIntegrationError.${this.msel?.id || ''}`;
+  }
+
+  private clearDismissedIntegrationError(): void {
+    sessionStorage.removeItem(this.dismissedIntegrationErrorKey);
   }
 
   onTabIndexChange(targetIndex: number) {
@@ -716,8 +748,9 @@ export class MselInfoComponent implements OnDestroy, OnInit {
 
   deletePage(page: MselPage): void {
     this.dialogService
-      .confirm({ title: 'Delete Page', message: 'Are you sure that you want to delete ' + page.name + '?'
-       }).afterClosed().subscribe((result) => {
+      .confirm({
+        title: 'Delete Page', message: 'Are you sure that you want to delete ' + page.name + '?'
+      }).afterClosed().subscribe((result) => {
         if (result) {
           // Clear any unsaved changes for this page
           this.unsavedPageChanges.delete(page.id);
