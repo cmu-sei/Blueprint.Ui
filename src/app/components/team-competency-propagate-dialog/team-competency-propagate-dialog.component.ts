@@ -55,7 +55,4 @@ export class TeamCompetencyPropagateDialogComponent {
     this.dialogRef.close(this.selection.selected);
   }
 
-  onCancel(): void {
-    this.dialogRef.close(null);
-  }
 }

@@ -55,10 +55,6 @@ export class ItemDownloadDialogComponent {
     }
   }
 
-  cancel() {
-    this.dialogRef.close();
-  }
-
   download() {
     this.dialogRef.close([...this.selected]);
   }
