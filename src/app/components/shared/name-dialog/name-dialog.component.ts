@@ -50,15 +50,6 @@ export class NameDialogComponent {
       ? (this.data.removeArtifacts = this.removeArtifacts)
       : (this.data.removeArtifacts = false);
     this.data.nameValue = this.form?.get('name').value;
-    this.data.wasCancelled = false;
-    this.dialogRef.close(this.data);
-  }
-
-  onCancel(): void {
-    this.data.artifacts && this.data.artifacts.length > 0
-      ? (this.data.removeArtifacts = this.removeArtifacts)
-      : (this.data.removeArtifacts = false);
-    this.data.wasCancelled = true;
     this.dialogRef.close(this.data);
   }
 }
