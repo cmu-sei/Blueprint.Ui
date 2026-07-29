@@ -5,6 +5,7 @@
 import { Component, EventEmitter, Inject, Output } from '@angular/core';
 import { UntypedFormControl, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { AngularEditorConfig } from '@kolkov/angular-editor';
 
 @Component({
     selector: 'app-admin-unit-edit-dialog',
@@ -28,6 +29,37 @@ export class AdminUnitEditDialogComponent {
       Validators.required,
     ]
   );
+  public descriptionFormControl = new UntypedFormControl(
+    this.data.unit.description,
+    []
+  );
+  editorConfig: AngularEditorConfig = {
+    editable: true,
+    spellcheck: true,
+    height: 'auto',
+    minHeight: '0',
+    maxHeight: 'auto',
+    width: 'auto',
+    minWidth: '0',
+    translate: 'yes',
+    enableToolbar: true,
+    showToolbar: true,
+    placeholder: 'Enter text here...',
+    defaultParagraphSeparator: '',
+    defaultFontName: '',
+    defaultFontSize: '',
+    fonts: [
+      { class: 'arial', name: 'Arial' },
+      { class: 'times-new-roman', name: 'Times New Roman' },
+      { class: 'calibri', name: 'Calibri' },
+      { class: 'comic-sans-ms', name: 'Comic Sans MS' },
+    ],
+    uploadUrl: '',
+    uploadWithCredentials: false,
+    sanitize: false,
+    toolbarPosition: 'top',
+    toolbarHiddenButtons: [['backgroundColor']],
+  };
 
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: any
@@ -55,6 +87,9 @@ export class AdminUnitEditDialogComponent {
       this.data.unit.shortName = this.unitShortNameFormControl.value
         .toString()
         .trim();
+      this.data.unit.description = this.descriptionFormControl.value
+        ? this.descriptionFormControl.value.toString().trim()
+        : '';
       if (this.errorFree) {
         this.editComplete.emit({
           saveChanges: saveChanges,
@@ -74,6 +109,11 @@ export class AdminUnitEditDialogComponent {
         break;
       case 'shortName':
         this.data.unit.shortName = this.unitShortNameFormControl.value.toString();
+        break;
+      case 'description':
+        this.data.unit.description = this.descriptionFormControl.value
+          ? this.descriptionFormControl.value.toString()
+          : '';
         break;
       default:
         break;
