@@ -323,9 +323,12 @@ export class MselInfoComponent implements OnDestroy, OnInit {
       }
     );
     // subscribe to data fields
-    this.dataFieldQuery.selectAll().subscribe((dataFields) => {
-      this.dataFieldList = dataFields;
-    });
+    this.dataFieldQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((dataFields) => {
+        this.dataFieldList = dataFields;
+      });
     // subscribe to scenario events
     this.scenarioEventQuery
       .selectAll()
