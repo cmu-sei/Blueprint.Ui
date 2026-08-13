@@ -30,7 +30,7 @@
 
 table {
   border-collapse: collapse;
-  width: 100%;
+  width: calc(100% - 2px);
   background-color: var(--mat-sys-background);
   color: var(--mat-sys-on-background);
 }
