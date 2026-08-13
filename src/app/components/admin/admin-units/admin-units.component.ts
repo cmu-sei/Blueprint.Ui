@@ -80,7 +80,8 @@ export class AdminUnitsComponent implements OnDestroy {
     if (!unit) {
       unit = {
         name: '',
-        shortName: ''
+        shortName: '',
+        description: ''
       };
     } else {
       unit = { ...unit };

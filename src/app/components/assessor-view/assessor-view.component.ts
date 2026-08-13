@@ -46,7 +46,6 @@ import {
 } from 'src/app/data/scenario-event/scenario-event-data.service';
 import { ScenarioEventQuery } from 'src/app/data/scenario-event/scenario-event.query';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
-import { AngularEditorConfig } from '@kolkov/angular-editor';
 
 export interface XApiStatement {
   id?: string;
@@ -105,21 +104,6 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
   lightThemeTint = this.settingsService.settings.LightThemeTint
     ? this.settingsService.settings.LightThemeTint
     : 0.4;
-  viewConfig: AngularEditorConfig = {
-    editable: false,
-    height: 'auto',
-    minHeight: '1200px',
-    width: '100%',
-    minWidth: '0',
-    translate: 'yes',
-    enableToolbar: false,
-    showToolbar: false,
-    placeholder: '',
-    defaultParagraphSeparator: '',
-    defaultFontName: '',
-    defaultFontSize: '',
-    sanitize: false,
-  };
 
   private static FILTERABLE_TYPES = new Set([
     'Organization', 'Team', 'TeamsMultiple', 'Status', 'Card',
