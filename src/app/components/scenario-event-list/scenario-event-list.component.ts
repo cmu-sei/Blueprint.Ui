@@ -66,7 +66,6 @@ import { DataFieldQuery } from 'src/app/data/data-field/data-field.query';
 import { TeamQuery } from 'src/app/data/team/team.query';
 import { UnitQuery } from 'src/app/data/unit/unit.query';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
-import { AngularEditorConfig } from '@kolkov/angular-editor';
 
 interface StringDictionary {
   [key: string]: string;
@@ -104,21 +103,6 @@ export class ScenarioEventListComponent
   isAddingScenarioEvent = false;
   canDoAnything = false;
   private unsubscribe$ = new Subject();
-  viewConfig: AngularEditorConfig = {
-    editable: false,
-    height: 'auto',
-    minHeight: '1200px',
-    width: '100%',
-    minWidth: '0',
-    translate: 'yes',
-    enableToolbar: false,
-    showToolbar: false,
-    placeholder: '',
-    defaultParagraphSeparator: '',
-    defaultFontName: '',
-    defaultFontSize: '',
-    sanitize: false,
-  };
   dataType: typeof DataFieldType = DataFieldType;
   sortableDataTypes = this.scenarioEventDataService.sortableDataTypes;
   customHandledDataTypes = [

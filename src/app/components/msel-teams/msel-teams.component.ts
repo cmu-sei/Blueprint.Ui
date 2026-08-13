@@ -179,6 +179,7 @@ export class MselTeamsComponent implements OnDestroy, OnInit {
       team = {
         name: '',
         shortName: '',
+        description: '',
         mselId: this.msel.id
       };
     } else {

@@ -46,7 +46,7 @@ import { DataValueQuery } from 'src/app/data/data-value/data-value.query';
 import { ScenarioEventQuery } from 'src/app/data/scenario-event/scenario-event.query';
 import { Sort } from '@angular/material/sort';
 import { Component, Input } from '@angular/core';
-import { AngularEditorConfig } from '@kolkov/angular-editor';
+import { VIEW_CONFIG } from 'src/app/utilities/editor-config';
 import { CardQuery } from 'src/app/data/card/card.query';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
 
@@ -107,21 +107,7 @@ export class EventDetailPageComponent {
   selectedEventIdList: string[] = [];
   mselUsers: User[] = [];
   showRealTime = false;
-  viewConfig: AngularEditorConfig = {
-    editable: false,
-    height: 'auto',
-    minHeight: '1200px',
-    width: '100%',
-    minWidth: '0',
-    translate: 'yes',
-    enableToolbar: false,
-    showToolbar: false,
-    placeholder: '',
-    defaultParagraphSeparator: '',
-    defaultFontName: '',
-    defaultFontSize: '',
-    sanitize: false,
-  };
+  viewConfig = VIEW_CONFIG;
   dataType: typeof DataFieldType = DataFieldType;
   dataValueId = '';
 

@@ -28,6 +28,7 @@ export interface Team {
     id?: string;
     name?: string | null;
     shortName?: string | null;
+    description?: string | null;
     mselId?: string | null;
     citeTeamTypeId?: string | null;
     email?: string | null;

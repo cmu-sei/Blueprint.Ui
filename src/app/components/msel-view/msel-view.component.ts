@@ -52,7 +52,7 @@ import { MselCompetencyDataService } from 'src/app/data/msel-competency/msel-com
 import { CompetencyFrameworkQuery } from 'src/app/data/competency-framework/competency-framework.query';
 import { CompetencyFrameworkDataService } from 'src/app/data/competency-framework/competency-framework-data.service';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
-import { AngularEditorConfig } from '@kolkov/angular-editor';
+import { VIEW_CONFIG } from 'src/app/utilities/editor-config';
 
 @Component({
     selector: 'app-msel-view',
@@ -108,21 +108,7 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
   private unsubscribe$ = new Subject();
   private competencyCache = new Map<string, Competency>();
   private competencyTypeCache = new Map<string, string>();
-  viewConfig: AngularEditorConfig = {
-    editable: false,
-    height: 'auto',
-    minHeight: '1200px',
-    width: '100%',
-    minWidth: '0',
-    translate: 'yes',
-    enableToolbar: false,
-    showToolbar: false,
-    placeholder: '',
-    defaultParagraphSeparator: '',
-    defaultFontName: '',
-    defaultFontSize: '',
-    sanitize: false,
-  };
+  viewConfig = VIEW_CONFIG;
 
   constructor(
     private activatedRoute: ActivatedRoute,
