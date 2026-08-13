@@ -38,7 +38,7 @@ import { CompetencyFrameworkQuery } from 'src/app/data/competency-framework/comp
 import { CompetencyFrameworkDataService } from 'src/app/data/competency-framework/competency-framework-data.service';
 import { MatDialog } from '@angular/material/dialog';
 import { CompetencyOptionsDialogComponent } from '../competency-options-dialog/competency-options-dialog.component';
-import { AngularEditorConfig } from '@kolkov/angular-editor';
+import { EDITOR_CONFIG_PARAGRAPH, VIEW_CONFIG } from 'src/app/utilities/editor-config';
 import { ComnSettingsService } from '@cmusei/crucible-common';
 import { HttpClient } from '@angular/common/http';
 import { ScenarioEventQuery } from 'src/app/data/scenario-event/scenario-event.query';
@@ -94,55 +94,8 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   private newlyAddedPageName = '';
   // Map to store unsaved changes for each page
   private unsavedPageChanges = new Map<string, MselPage>();
-  editorConfig: AngularEditorConfig = {
-    editable: true,
-    spellcheck: true,
-    height: 'auto',
-    minHeight: '0',
-    maxHeight: 'auto',
-    width: 'auto',
-    minWidth: '0',
-    translate: 'yes',
-    enableToolbar: true,
-    showToolbar: true,
-    placeholder: 'Enter text here...',
-    defaultParagraphSeparator: 'p',
-    defaultFontName: '',
-    defaultFontSize: '',
-    fonts: [
-      { class: 'arial', name: 'Arial' },
-      { class: 'times-new-roman', name: 'Times New Roman' },
-      { class: 'calibri', name: 'Calibri' },
-      { class: 'comic-sans-ms', name: 'Comic Sans MS' },
-    ],
-    uploadUrl: '',
-    uploadWithCredentials: false,
-    sanitize: false,
-    toolbarPosition: 'top',
-    toolbarHiddenButtons: [['backgroundColor']],
-    customClasses: [
-      {
-        name: 'Left Aligned',
-        class: 'text-left',
-        tag: 'p',
-      }
-    ]
-  };
-  viewConfig: AngularEditorConfig = {
-    editable: false,
-    height: 'auto',
-    minHeight: '1200px',
-    width: '100%',
-    minWidth: '0',
-    translate: 'yes',
-    enableToolbar: false,
-    showToolbar: false,
-    placeholder: '',
-    defaultParagraphSeparator: '',
-    defaultFontName: '',
-    defaultFontSize: '',
-    sanitize: false,
-  };
+  editorConfig = EDITOR_CONFIG_PARAGRAPH;
+  viewConfig = VIEW_CONFIG;
   isBusy = true;
   dataFieldList: DataField[] = [];
   scenarioEventList: ScenarioEvent[] = [];

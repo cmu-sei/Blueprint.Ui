@@ -5,7 +5,7 @@
 import { Component, EventEmitter, Inject, Output } from '@angular/core';
 import { UntypedFormControl, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { AngularEditorConfig } from '@kolkov/angular-editor';
+import { EDITOR_CONFIG } from 'src/app/utilities/editor-config';
 
 const MIN_NAME_LENGTH = 3;
 
@@ -43,33 +43,7 @@ export class TeamEditDialogComponent {
     this.data.team.citeTeamTypeId,
     []
   );
-  editorConfig: AngularEditorConfig = {
-    editable: true,
-    spellcheck: true,
-    height: 'auto',
-    minHeight: '0',
-    maxHeight: 'auto',
-    width: 'auto',
-    minWidth: '0',
-    translate: 'yes',
-    enableToolbar: true,
-    showToolbar: true,
-    placeholder: 'Enter text here...',
-    defaultParagraphSeparator: '',
-    defaultFontName: '',
-    defaultFontSize: '',
-    fonts: [
-      { class: 'arial', name: 'Arial' },
-      { class: 'times-new-roman', name: 'Times New Roman' },
-      { class: 'calibri', name: 'Calibri' },
-      { class: 'comic-sans-ms', name: 'Comic Sans MS' },
-    ],
-    uploadUrl: '',
-    uploadWithCredentials: false,
-    sanitize: false,
-    toolbarPosition: 'top',
-    toolbarHiddenButtons: [['backgroundColor']],
-  };
+  editorConfig = EDITOR_CONFIG;
 
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: any
