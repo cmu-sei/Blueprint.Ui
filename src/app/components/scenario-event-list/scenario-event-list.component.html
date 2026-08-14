@@ -5,34 +5,31 @@ project root for license information or contact permission@sei.cmu.edu for full 
 -->
 <div class="container">
   @if (msel) {
+  <!-- search field bar; sits outside the scrolling table so it stays visible -->
+  @if (showSearch) {
+  <div class="search-bar">
+    <span class="center-self">Search</span>
+    <mat-form-field class="center-self shift-left">
+      <input matInput [(ngModel)]="filterString" (keyup)="keyUp.next($event)" />
+      @if (filterString) {
+      <button mat-icon-button matSuffix (click)="applyFilter('')" title="Clear Search">
+        <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline"></mat-icon>
+      </button>
+      }
+    </mat-form-field>
+  </div>
+  }
   <div class="tableFixHead">
     <!-- scenario event table -->
     <table>
       <!-- table header -->
       <thead matSort (matSortChange)="sortChanged($event)">
-        <!-- search field header row -->
-        @if (showSearch) {
-        <tr>
-          <th colspan="5">
-            <span class="center-self">Search</span>
-            <mat-form-field class="center-self shift-left">
-              <input matInput [(ngModel)]="filterString" (keyup)="keyUp.next($event)" />
-              @if (filterString) {
-              <button mat-icon-button matSuffix (click)="applyFilter('')" title="Clear Search">
-                <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline"></mat-icon>
-              </button>
-              }
-            </mat-form-field>
-          </th>
-        </tr>
-        }
         <!-- main header row -->
         <tr>
           <!-- action button header -->
           <th class="background center-self">
             <div class="row-start-buttons">
               <span class="row-index center-self" [style.visibility]="allowDragAndDrop && canEditMsel() ? 'visible' : 'hidden'">&nbsp;</span>
-              <span class="row-index center-self">&nbsp;</span>
               @if (!showSearch) {
               <button mat-icon-button (click)="setSearch(true)" class="header-button"
                 title="Search Events">
@@ -47,7 +44,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
               }
               @if ((canEditMsel() || msel.hasRole(loggedInUserId, null).owner)) {
               <mat-checkbox [checked]="allSelected" (change)="setAllSelectedState($event.checked)"
-                title="Select All/None" style="margin-left: -10px; margin-top: 7px; margin-right: 7px;"
+                title="Select All/None" style="margin-top: 7px; margin-right: 7px;"
                 [disabled]="displayedScenarioEvents.length === 0"></mat-checkbox>
               }
               @if (selectedEventIdList.length === 0 && (canEditMsel() || msel.hasRole(loggedInUserId, null).owner))
