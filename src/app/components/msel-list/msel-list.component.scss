@@ -58,6 +58,12 @@
   align-items: center;
 }
 
+// Was an inline `width: 320px`, which is wider than the whole list container on a phone.
+.search-field {
+  width: 320px;
+  max-width: 100%;
+}
+
 .clear-search-button {
   align-self: center;
 }
@@ -173,6 +179,23 @@
 .button-items {
   flex-grow: 1;
   margin-right: 15px;
+}
+
+// Narrow viewports: the filters and the search box do not fit on one 90px row, and `nowrap`
+// pushed the search box past the right edge of a page that cannot scroll horizontally
+// (`body` is `overflow: hidden`), so it could not be reached at all. Let the row wrap and let
+// the container use the full width instead of 80% of it.
+@media (max-width: 599px) {
+  .msel-list-container {
+    width: 100%;
+  }
+
+  .buttons-container {
+    flex-wrap: wrap;
+    height: auto;
+    row-gap: 8px;
+    padding: 8px 0;
+  }
 }
 
 /* unvisited link */

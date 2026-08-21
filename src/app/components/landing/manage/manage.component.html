@@ -26,7 +26,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
       }
       @if (msel.status !== 'Deployed') {
       <div>
-        <h1>This event has ended</h1>
+        <!-- h2, not h1: the top bar's title is the page's single h1. -->
+        <h2>This event has ended</h2>
       </div>
       }
     </mat-card-content>
@@ -48,6 +49,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
 
 @if (!(msel.id && (msel.hasRole(loggedInUserId, null).owner || canEditMsels))) {
 <div class="nothing-to-see-here background">
+  <!-- Stays an h1: this branch replaces the whole page, top bar included, so it is the only
+       heading there is. -->
   <h1>You have nothing to manage.</h1>
   <h2>If you believe you should have permissions to manage this event, contact your administrator.</h2>
 </div>

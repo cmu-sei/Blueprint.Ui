@@ -1,6 +1,7 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
+import { BreakpointObserver } from '@angular/cdk/layout';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -121,6 +122,7 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
     private uiDataService: UIDataService,
     private injectTypeDataService: InjectTypeDataService,
     private competencyFrameworkDataService: CompetencyFrameworkDataService,
+    private breakpointObserver: BreakpointObserver,
   ) {
     this.theme$ = this.authQuery.userTheme$;
     this.hideTopbar = this.uiDataService.inIframe();
@@ -139,6 +141,15 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
   }
 
   ngOnInit() {
+    // Collapse the navigation panel to its icon rail on narrow viewports. At 250px wide the
+    // expanded panel leaves a phone with too little room for the admin section itself, and since
+    // the page cannot scroll horizontally (`body` is `overflow: hidden`) anything pushed past the
+    // right edge -- the section's toolbar buttons and its paginator -- is unreachable rather than
+    // merely off to the side. 599px is the same breakpoint the top bar uses.
+    this.breakpointObserver
+      .observe('(max-width: 599px)')
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((state) => this.setCollapsed(state.matches));
     // Set up user list observable
     this.userList$ = this.userQuery.selectAll();
     // Load users

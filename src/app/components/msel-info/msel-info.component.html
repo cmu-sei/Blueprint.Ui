@@ -14,7 +14,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <div class="edit-buttons">
         <span class="edit-buttons-span">
           <button mat-icon-button (click)="saveChanges()" style="outline: none;" title="Save Changes"
-            [disabled]="!isChanged">
+            [disabled]="!isChanged || !isMselValid()">
             <mat-icon class="mdi-24px self-center" fontIcon="mdi-content-save-outline"></mat-icon>
           </button>
           <button mat-icon-button (click)="cancelChanges()" style="outline: none;" title="Cancel Changes"
@@ -54,9 +54,15 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <div class="single-detail center-self">
             <mat-form-field class="full-width">
               <mat-label>Name</mat-label>
-              <input type="text" matInput [(ngModel)]="msel.name" maxlength="70" (cut)="isChanged = true"
+              <input type="text" matInput [(ngModel)]="msel.name" #mselName="ngModel" required pattern=".*\S.*"
+                [errorStateMatcher]="showErrorWhenDirty" maxlength="70" (cut)="isChanged = true"
                 (change)="isChanged = true" (paste)="isChanged = true" (keypress)="isChanged = true"
                 [disabled]="!canEditMsel()" />
+              @if (mselName.hasError('required') || mselName.hasError('pattern')) {
+                <mat-error>
+                  Name is <strong>required</strong>
+                </mat-error>
+              }
               <mat-hint align="end">{{ msel.name?.length || 0 }} / 70 characters</mat-hint>
             </mat-form-field>
           </div>

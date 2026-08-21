@@ -100,12 +100,11 @@ export class MselTeamsComponent implements OnDestroy, OnInit {
     this.userQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(users => {
       this.userList = users;
     });
-    // subscribe to teams
+    // subscribe to teams. An empty emission is meaningful — it is what deleting the last team
+    // looks like — so it must refresh the grid too. Skipping it left the deleted row on screen.
     this.teamQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(teams => {
-      if (teams && teams.length > 0) {
-        this.allTeams = teams;
-        this.applyFilter(this.filterString);
-      }
+      this.allTeams = teams ?? [];
+      this.applyFilter(this.filterString);
     });
     // subscribe to TeamTypes
     this.citeService.getTeamTypes().subscribe(

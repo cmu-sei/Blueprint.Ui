@@ -78,6 +78,7 @@ export * from './moduleHandle';
 export * from './move';
 export * from './msel';
 export * from './mselCompetency';
+export * from './mselIntegrationNames';
 export * from './mselItemStatus';
 export * from './mselPage';
 export * from './mselReference';
