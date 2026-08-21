@@ -23,6 +23,33 @@
   font-size: 110%;
   margin-left: 50px;
   margin-right: 40px;
+  // mat-toolbar-row is `white-space: nowrap`, so without these the title's full width is its
+  // minimum width and it shoves everything after it — including the account menu — off the
+  // right edge of the toolbar.
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// Narrow viewports: the fixed title gutters and the user's name are what push the account menu
+// past the right edge. `body` is `overflow: hidden`, so anything beyond that edge cannot be
+// scrolled to — the menu behind this button (Administration, Logout, Dark Theme) becomes
+// unreachable rather than merely clipped. Give the title less room and drop the name, leaving
+// the chevron; the button keeps its accessible name from aria-label.
+@media (max-width: 599px) {
+  .view-text {
+    margin-left: 12px;
+    margin-right: 12px;
+  }
+
+  .options-text {
+    margin-right: 0;
+  }
+
+  .user-name {
+    display: none;
+  }
 }
 
 .no-sidenav {

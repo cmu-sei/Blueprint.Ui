@@ -49,8 +49,10 @@ project root for license information or contact permission@sei.cmu.edu for full 
         </mat-select>
       </div>
       <div class="searchBox">
-        <mat-form-field style="width: 320px">
-          <input matInput [formControl]="filterControl" placeholder="Search" />
+        <mat-form-field class="search-field">
+          <!-- A placeholder alone leaves the field unlabelled for assistive technology, so the
+               name is stated with aria-label rather than a visible mat-label. -->
+          <input matInput aria-label="Search" [formControl]="filterControl" placeholder="Search" />
           @if (filterString !== '') {
           <button mat-icon-button matSuffix (click)="filterControl.setValue('')" title="Clear Search">
             <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline"></mat-icon>
@@ -92,8 +94,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 <button mat-menu-item (click)="downloadXlsxFile(element);" title="Download xlsx file">Download xlsx
                   file</button>
               </mat-menu>
+              <!--
+                The tooltip is on the span because a disabled button does not fire hover events;
+                the button still needs its own accessible name, which a title on the parent does
+                not provide.
+              -->
               <span [title]="getDeleteTooltip(element)">
-                <button mat-icon-button class="msel-action" (click)="delete(element); $event.stopPropagation();"
+                <button mat-icon-button class="msel-action" [attr.aria-label]="getDeleteTooltip(element)"
+                  (click)="delete(element); $event.stopPropagation();"
                   [disabled]="!isReady || !canManageMsel(element) || element.status === 'Deployed' || element.isTemplate">
                   <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline" alt="Delete"></mat-icon>
                 </button>
