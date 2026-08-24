@@ -24,7 +24,7 @@ import {
   Team,
   UserMselRole,
 } from 'src/app/generated/blueprint.api';
-import { map, take, tap } from 'rxjs/operators';
+import { map, shareReplay, take, tap } from 'rxjs/operators';
 import { BehaviorSubject, Observable, Subject, combineLatest } from 'rxjs';
 import { ErrorService } from 'src/app/services/error/error.service';
 
@@ -395,25 +395,34 @@ export class MselDataService {
       );
   }
 
-  updateMsel(msel: Msel) {
+  updateMsel(msel: Msel): Observable<Msel> {
     this.mselStore.setLoading(true);
-    this.mselService
-      .updateMsel(msel.id, msel)
-      .pipe(
-        tap(() => {
+    const update$ = this.mselService.updateMsel(msel.id, msel).pipe(
+      take(1),
+      tap({
+        next: (n) => {
           this.mselStore.setLoading(false);
-        }),
-        take(1)
-      )
-      .subscribe(
-        (n) => {
           this.setAsDates(n);
           this.updateStore(n);
         },
-        (error) => {
+        error: () => {
+          // A failed save used to be swallowed here, so the user saw no error and the form
+          // reset itself as though the edit had been persisted.
           this.mselStore.setLoading(false);
-        }
-      );
+        },
+      }),
+      shareReplay(1)
+    );
+    // Subscribed here as well as returned, so the store stays updated for the several callers
+    // that fire and forget. shareReplay keeps a caller that *does* subscribe from issuing a
+    // second PUT, and replays the outcome to it even though it subscribes after this line.
+    update$.subscribe({
+      next: () => {},
+      error: (error) => {
+        this.errorService.handleError(error);
+      },
+    });
+    return update$;
   }
 
   pushIntegrations(mselId: string) {

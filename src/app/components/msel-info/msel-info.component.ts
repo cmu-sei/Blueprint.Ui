@@ -14,6 +14,7 @@ import {
   MselCompetency,
   MselItemStatus,
   MselPage,
+  MselService,
   MselUnit,
   ScenarioEvent,
   SystemPermission,
@@ -37,10 +38,10 @@ import { MselCompetencyQuery } from 'src/app/data/msel-competency/msel-competenc
 import { CompetencyFrameworkQuery } from 'src/app/data/competency-framework/competency-framework.query';
 import { CompetencyFrameworkDataService } from 'src/app/data/competency-framework/competency-framework-data.service';
 import { MatDialog } from '@angular/material/dialog';
+import { ShowOnDirtyErrorStateMatcher } from '@angular/material/core';
 import { CompetencyOptionsDialogComponent } from '../competency-options-dialog/competency-options-dialog.component';
 import { EDITOR_CONFIG_PARAGRAPH, VIEW_CONFIG } from 'src/app/utilities/editor-config';
 import { ComnSettingsService } from '@cmusei/crucible-common';
-import { HttpClient } from '@angular/common/http';
 import { ScenarioEventQuery } from 'src/app/data/scenario-event/scenario-event.query';
 
 @Component({
@@ -123,6 +124,7 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     private userDataService: UserDataService,
     private dataFieldQuery: DataFieldQuery,
     private mselDataService: MselDataService,
+    private mselService: MselService,
     private mselQuery: MselQuery,
     private citeService: CiteService,
     private playerService: PlayerService,
@@ -138,7 +140,6 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     private changeDetectorRef: ChangeDetectorRef,
     private activatedRoute: ActivatedRoute,
     private settingsService: ComnSettingsService,
-    private http: HttpClient,
     private scenarioEventQuery: ScenarioEventQuery
   ) {
     // subscribe to the active MSEL
@@ -379,9 +380,32 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     }
   }
 
+  // Material's default matcher only shows a field's error once the control has been *touched*,
+  // i.e. after it loses focus. Clearing the required Name and seeing nothing wrong until you
+  // click elsewhere is poor feedback, so this field reports as soon as it has been edited.
+  readonly showErrorWhenDirty = new ShowOnDirtyErrorStateMatcher();
+
+  // A MSEL must have a name. The Save/Cancel buttons live outside the `@if (msel)` block that
+  // owns the Name input, so they cannot read that input's `ngModel` template ref — validity has
+  // to come from here. This mirrors the required/pattern validators on the field itself, which
+  // are what render the mat-error.
+  isMselValid(): boolean {
+    return !!this.msel?.name?.trim();
+  }
+
   saveChanges() {
-    this.mselDataService.updateMsel(this.msel);
-    this.isChanged = false;
+    if (!this.isMselValid()) {
+      return;
+    }
+    this.mselDataService.updateMsel(this.msel).subscribe({
+      next: () => {
+        this.isChanged = false;
+      },
+      // The failure itself is reported to the user by MselDataService. Keep isChanged set so
+      // the "Changes have not been saved!" label stays up and the edit can be retried rather
+      // than silently discarded.
+      error: () => {},
+    });
   }
 
   cancelChanges() {
@@ -776,16 +800,19 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   }
 
   updateCiteScoringModelName() {
-    if (this.msel.citeScoringModelId && this.scoringModelList.length > 0) {
-      const scoringModel = this.scoringModelList.find(sm => sm.id === this.msel.citeScoringModelId);
-      this.citeScoringModelName = scoringModel ? scoringModel.description : '';
-      if (!scoringModel) {
-        console.warn(`Scoring Model ID ${this.msel.citeScoringModelId} not found in list of ${this.scoringModelList.length} scoring models`);
-      }
-    } else {
+    if (!this.msel.citeScoringModelId) {
       this.citeScoringModelName = '';
-      // scoringModelList may not be loaded yet; updateCiteScoringModelName
-      // is called again once the list arrives, so this is not an error.
+      return;
+    }
+    // The list may not have arrived yet, or may not contain this scoring model (it is filtered to
+    // the ones with no evaluation). Either way, leave the name fetchIntegrationNames supplied
+    // alone rather than blanking it -- this runs again when the list arrives, so a stale empty
+    // name here would clobber a good one.
+    const scoringModel = this.scoringModelList.find(sm => sm.id === this.msel.citeScoringModelId);
+    if (scoringModel) {
+      this.citeScoringModelName = scoringModel.description;
+    } else if (this.scoringModelList.length > 0) {
+      console.warn(`Scoring Model ID ${this.msel.citeScoringModelId} not found in list of ${this.scoringModelList.length} scoring models`);
     }
   }
 
@@ -822,103 +849,41 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   fetchIntegrationNames() {
     // Only fetch names when integrations are fully deployed
     if (this.msel.status !== 'Deployed') {
-      this.playerViewName = '';
-      this.galleryCollectionName = '';
-      this.galleryExhibitName = '';
-      this.citeEvaluationName = '';
-      this.citeScoringModelName = '';
-      this.steamfitterScenarioName = '';
+      this.clearIntegrationNames();
       return;
     }
-    // Fetch Player View name
-    if (this.msel.playerViewId) {
-      const playerApiUrl = this.settingsService.settings.PlayerApiUrl || '';
-      this.http.get<any>(`${playerApiUrl}/views/${this.msel.playerViewId}`)
-        .pipe(takeUntil(this.unsubscribe$))
-        .subscribe(
-          (view) => {
-            this.playerViewName = view.name || '';
-          },
-          (error) => {
-            console.error('Failed to load Player View name:', error);
-            this.playerViewName = '';
-          }
-        );
-    } else {
-      this.playerViewName = '';
-    }
 
-    // Fetch Gallery Collection name
-    if (this.msel.galleryCollectionId) {
-      const galleryApiUrl = this.settingsService.settings.GalleryApiUrl || '';
-      this.http.get<any>(`${galleryApiUrl}/collections/${this.msel.galleryCollectionId}`)
-        .pipe(takeUntil(this.unsubscribe$))
-        .subscribe(
-          (collection) => {
-            this.galleryCollectionName = collection.name || '';
-          },
-          (error) => {
-            console.error('Failed to load Gallery Collection name:', error);
-            this.galleryCollectionName = '';
-          }
-        );
-    } else {
-      this.galleryCollectionName = '';
-    }
+    // One call to Blueprint's own API, which reads each name from the application that owns it.
+    // The browser cannot read them itself: Player, Gallery, CITE and Steamfitter each allow only
+    // their own UI's origin, so fetching a name directly from here is blocked by CORS before the
+    // request is even sent. Blueprint forwards this user's own token for each lookup, so nothing
+    // is revealed that the user could not have read.
+    this.mselService
+      .getMselIntegrationNames(this.msel.id)
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(
+        (names) => {
+          this.playerViewName = names.playerViewName || '';
+          this.galleryCollectionName = names.galleryCollectionName || '';
+          this.galleryExhibitName = names.galleryExhibitName || '';
+          this.citeEvaluationName = names.citeEvaluationName || '';
+          this.citeScoringModelName = names.citeScoringModelName || '';
+          this.steamfitterScenarioName = names.steamfitterScenarioName || '';
+        },
+        (error) => {
+          console.error('Failed to load integration names:', error);
+          this.clearIntegrationNames();
+        }
+      );
+  }
 
-    // Fetch Gallery Exhibit name
-    if (this.msel.galleryExhibitId) {
-      const galleryApiUrl = this.settingsService.settings.GalleryApiUrl || '';
-      this.http.get<any>(`${galleryApiUrl}/exhibits/${this.msel.galleryExhibitId}`)
-        .pipe(takeUntil(this.unsubscribe$))
-        .subscribe(
-          (exhibit) => {
-            this.galleryExhibitName = exhibit.name || '';
-          },
-          (error) => {
-            console.error('Failed to load Gallery Exhibit name:', error);
-            this.galleryExhibitName = '';
-          }
-        );
-    } else {
-      this.galleryExhibitName = '';
-    }
-
-    // Fetch CITE Evaluation name
-    if (this.msel.citeEvaluationId) {
-      const citeApiUrl = this.settingsService.settings.CiteApiUrl || '';
-      this.http.get<any>(`${citeApiUrl}/evaluations/${this.msel.citeEvaluationId}`)
-        .pipe(takeUntil(this.unsubscribe$))
-        .subscribe(
-          (evaluation) => {
-            this.citeEvaluationName = evaluation.description || '';
-          },
-          (error) => {
-            console.error('Failed to load CITE Evaluation name:', error);
-            this.citeEvaluationName = '';
-          }
-        );
-    } else {
-      this.citeEvaluationName = '';
-    }
-
-    // Fetch Steamfitter Scenario name
-    if (this.msel.steamfitterScenarioId) {
-      const steamfitterApiUrl = this.settingsService.settings.SteamfitterApiUrl || '';
-      this.http.get<any>(`${steamfitterApiUrl}/scenarios/${this.msel.steamfitterScenarioId}`)
-        .pipe(takeUntil(this.unsubscribe$))
-        .subscribe(
-          (scenario) => {
-            this.steamfitterScenarioName = scenario.name || '';
-          },
-          (error) => {
-            console.error('Failed to load Steamfitter Scenario name:', error);
-            this.steamfitterScenarioName = '';
-          }
-        );
-    } else {
-      this.steamfitterScenarioName = '';
-    }
+  private clearIntegrationNames() {
+    this.playerViewName = '';
+    this.galleryCollectionName = '';
+    this.galleryExhibitName = '';
+    this.citeEvaluationName = '';
+    this.citeScoringModelName = '';
+    this.steamfitterScenarioName = '';
   }
 
   hasPendingChanges(): boolean {

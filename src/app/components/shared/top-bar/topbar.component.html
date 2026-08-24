@@ -3,7 +3,7 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
-<mat-toolbar class="toolbar" [style.backgroundColor]="'var(--mat-sys-primary)'"
+<mat-toolbar class="toolbar" role="banner" [style.backgroundColor]="'var(--mat-sys-primary)'"
   [style.color]="'var(--mat-sys-on-primary)'">
   <mat-toolbar-row>
     <span class="margin-auto">
@@ -11,7 +11,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <mat-icon svgIcon="crucible-icon-blueprint"></mat-icon>
       </a>
     </span>
-    <span class="view-text">{{ title }}</span>
+    <!--
+      The toolbar title is the page's heading: it is the only thing that names the current
+      view (the dashboard, the app, or the admin section being edited). It is an <h1> so that
+      a screen reader has a document outline to start from -- Material styles headings inside
+      a toolbar to the toolbar's own font, so this reads identically to the <span> it replaces.
+    -->
+    <h1 class="view-text">{{ title }}</h1>
     @if (teams && team && teams.length > 0) {
     <div class="team-text">Team:</div>
     <b class="team-text">{{ team.name }}</b>
@@ -34,9 +40,15 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <span class="spacer"></span>
     @if (currentUser$ | async; as currentUser) {
     <div class="options-text">
-      <button mat-button class="menu-trigger" [matMenuTriggerFor]="menu" style="outline: none;">
-        <strong>{{ currentUser.name }}</strong>
-        <mat-icon aria-hidden="false" class="menu-trigger" fontIcon="mdi-chevron-down"></mat-icon>
+      <!--
+        The name is hidden on narrow viewports (see the scss), where only the chevron is left, so
+        the accessible name is stated here instead of being left to the button's visible text.
+        matMenuTriggerFor already contributes the "has popup" part of the announcement.
+      -->
+      <button mat-button class="menu-trigger" [matMenuTriggerFor]="menu" style="outline: none;"
+        [attr.aria-label]="currentUser.name">
+        <strong class="user-name">{{ currentUser.name }}</strong>
+        <mat-icon aria-hidden="true" class="menu-trigger" fontIcon="mdi-chevron-down"></mat-icon>
       </button>
       <mat-menu #menu="matMenu" [overlapTrigger]="false">
         @if (topbarView === TopbarView.BLUEPRINT_ADMIN) {
