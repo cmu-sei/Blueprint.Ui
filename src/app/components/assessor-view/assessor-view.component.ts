@@ -60,6 +60,7 @@ export interface XApiStatement {
     extensions?: Record<string, any>;
     contextActivities?: {
       grouping?: { id?: string; definition?: { name?: { 'en-US'?: string }; type?: string } }[];
+      other?: { id?: string; definition?: { name?: { 'en-US'?: string }; type?: string } }[];
     };
   };
 }
@@ -203,6 +204,7 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
         this.scenarioEventDataService.updateScenarioEventViewDataFields(this);
         this.scenarioEventDataService.updateScenarioEventViewDataValues(this);
         this.scenarioEventDataService.updateScenarioEventViewDisplayedEvents(this);
+        this.redistributeStatementsIfLoaded();
       });
 
     this.dataValueQuery.selectAll()
@@ -215,6 +217,7 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
         this.scenarioEventDataService.updateScenarioEventViewDataValues(this);
         this.scenarioEventDataService.updateScenarioEventViewDisplayedEvents(this);
         this.rebuildCompetencyCaches();
+        this.redistributeStatementsIfLoaded();
       });
 
     this.scenarioEventQuery.selectAll()
@@ -228,14 +231,16 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
           this.scenarioEventDataService.updateScenarioEventViewDisplayedEvents(this);
           this.rebuildCompetencyCaches();
         }
+        this.redistributeStatementsIfLoaded();
       });
 
     this.cardQuery.selectAll()
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(cards => {
         this.cardList = cards;
+        this.scenarioEventDataService.updateScenarioEventViewCards(this);
+        this.redistributeStatementsIfLoaded();
       });
-    this.scenarioEventDataService.updateScenarioEventViewCards(this);
     this.scenarioEventDataService.updateScenarioEventViewDisplayedEvents(this);
 
     this.moveQuery.selectAll()
@@ -248,6 +253,7 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
           this.mselScenarioEvents, this.moveList
         );
         this.rebuildCompetencyCaches();
+        this.redistributeStatementsIfLoaded();
       });
 
     this.organizationQuery.selectAll()
@@ -836,6 +842,12 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
       });
   }
 
+  private redistributeStatementsIfLoaded() {
+    if (this.statementsLoaded) {
+      this.distributeStatements();
+    }
+  }
+
   private filterToCurrentSession() {
     let launchTimestamp = '';
     for (const stmt of this.allMselStatements) {
@@ -909,22 +921,11 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
           let matchedEvent = false;
 
           const stmtPlatform = (stmt.context?.platform || '').toLowerCase();
-          const stmtObjectName = (stmt.object?.definition?.name?.['en-US'] || '').toLowerCase();
           if (moveGroupToEvents.has(gk)) {
-            for (const event of moveGroupToEvents.get(gk)) {
-              const eventTarget = (event.integrationTarget || '').toLowerCase();
-              if (eventTarget && stmtPlatform && eventTarget === stmtPlatform) {
-                const groupEvents = moveGroupToEvents.get(gk).filter(e =>
-                  (e.integrationTarget || '').toLowerCase() === stmtPlatform
-                );
-                if (groupEvents.length === 1) {
-                  this.eventStatements.get(event.id).push(stmt);
-                  matchedEvent = true;
-                } else if (stmtObjectName && this.eventNameContains(event, stmtObjectName)) {
-                  this.eventStatements.get(event.id).push(stmt);
-                  matchedEvent = true;
-                }
-              }
+            const event = this.getStatementEventMatch(moveGroupToEvents.get(gk), stmt, stmtPlatform);
+            if (event) {
+              this.eventStatements.get(event.id).push(stmt);
+              matchedEvent = true;
             }
           }
 
@@ -1109,12 +1110,75 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
     return { name: null, number: null, group: null };
   }
 
-  private eventNameContains(event: ScenarioEvent, needle: string): boolean {
-    for (const df of this.assessorDataFields) {
-      const dv = this.getDataValue(event, df.name);
-      if (dv.value && dv.value.toLowerCase().includes(needle)) return true;
-    }
-    return false;
+  private getStatementEventMatch(
+    groupEvents: ScenarioEvent[],
+    stmt: XApiStatement,
+    platform: string
+  ): ScenarioEvent | null {
+    if (!platform) return null;
+
+    const platformEvents = groupEvents.filter(event => this.eventTargetsPlatform(event, platform));
+    if (platformEvents.length === 1) return platformEvents[0];
+    if (platform !== 'gallery') return null;
+
+    const titleMatches = platformEvents.filter(event => this.eventMatchesGalleryArticleName(event, stmt));
+    if (titleMatches.length === 1) return titleMatches[0];
+    if (titleMatches.length > 1) return null;
+
+    const cardMatches = platformEvents.filter(event => this.eventMatchesGalleryCard(event, stmt));
+    return cardMatches.length === 1 ? cardMatches[0] : null;
+  }
+
+  private eventTargetsPlatform(event: ScenarioEvent, platform: string): boolean {
+    return (event.integrationTarget || '')
+      .split(',')
+      .map(target => target.trim().toLowerCase())
+      .includes(platform);
+  }
+
+  private eventMatchesGalleryArticleName(event: ScenarioEvent, stmt: XApiStatement): boolean {
+    const statementName = this.normalizeMatchText(stmt.object?.definition?.name?.['en-US']);
+    const galleryArticleName = this.getEventGalleryValue(event, 'Name');
+    return !!statementName && statementName === this.normalizeMatchText(galleryArticleName);
+  }
+
+  private eventMatchesGalleryCard(event: ScenarioEvent, stmt: XApiStatement): boolean {
+    const statementCardId = this.getStatementCardId(stmt);
+    const eventCardId = this.getEventGalleryCardId(event);
+    return !!statementCardId && !!eventCardId && statementCardId === eventCardId;
+  }
+
+  private getEventGalleryValue(event: ScenarioEvent, parameter: string): string {
+    const dataField = this.allDataFields.find(field => field.galleryArticleParameter === parameter);
+    if (!dataField?.id) return '';
+
+    return this.dataValues.find(value =>
+      value.scenarioEventId === event.id && value.dataFieldId === dataField.id
+    )?.value || '';
+  }
+
+  private getEventGalleryCardId(event: ScenarioEvent): string {
+    const blueprintCardId = this.getEventGalleryValue(event, 'CardId');
+    const card = this.cardList.find(candidate => candidate.id === blueprintCardId);
+    return this.getIdSegment(card?.galleryId || blueprintCardId);
+  }
+
+  private getStatementCardId(stmt: XApiStatement): string {
+    const contextActivities = stmt.context?.contextActivities;
+    const activities = [
+      ...(contextActivities?.other || []),
+      ...(contextActivities?.grouping || []),
+    ];
+    const cardActivity = activities.find(activity => (activity.id || '').includes('/card/'));
+    return this.getIdSegment(cardActivity?.id);
+  }
+
+  private getIdSegment(value?: string): string {
+    return value ? value.split('/').pop().toLowerCase() : '';
+  }
+
+  private normalizeMatchText(value?: string): string {
+    return (value || '').trim().replace(/\s+/g, ' ').toLowerCase();
   }
 
   getStatements(eventId: string): XApiStatement[] {
