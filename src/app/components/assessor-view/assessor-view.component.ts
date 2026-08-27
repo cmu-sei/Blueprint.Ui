@@ -1121,8 +1121,12 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
     if (platformEvents.length === 1) return platformEvents[0];
     if (platform !== 'gallery') return null;
 
-    const matchingEvents = platformEvents.filter(event => this.eventMatchesGalleryStatement(event, stmt));
-    return matchingEvents.length === 1 ? matchingEvents[0] : null;
+    const titleMatches = platformEvents.filter(event => this.eventMatchesGalleryArticleName(event, stmt));
+    if (titleMatches.length === 1) return titleMatches[0];
+    if (titleMatches.length > 1) return null;
+
+    const cardMatches = platformEvents.filter(event => this.eventMatchesGalleryCard(event, stmt));
+    return cardMatches.length === 1 ? cardMatches[0] : null;
   }
 
   private eventTargetsPlatform(event: ScenarioEvent, platform: string): boolean {
@@ -1132,13 +1136,13 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
       .includes(platform);
   }
 
-  private eventMatchesGalleryStatement(event: ScenarioEvent, stmt: XApiStatement): boolean {
+  private eventMatchesGalleryArticleName(event: ScenarioEvent, stmt: XApiStatement): boolean {
     const statementName = this.normalizeMatchText(stmt.object?.definition?.name?.['en-US']);
     const galleryArticleName = this.getEventGalleryValue(event, 'Name');
-    if (statementName && statementName === this.normalizeMatchText(galleryArticleName)) {
-      return true;
-    }
+    return !!statementName && statementName === this.normalizeMatchText(galleryArticleName);
+  }
 
+  private eventMatchesGalleryCard(event: ScenarioEvent, stmt: XApiStatement): boolean {
     const statementCardId = this.getStatementCardId(stmt);
     const eventCardId = this.getEventGalleryCardId(event);
     return !!statementCardId && !!eventCardId && statementCardId === eventCardId;
