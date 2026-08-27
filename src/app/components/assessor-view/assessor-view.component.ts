@@ -204,6 +204,7 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
         this.scenarioEventDataService.updateScenarioEventViewDataFields(this);
         this.scenarioEventDataService.updateScenarioEventViewDataValues(this);
         this.scenarioEventDataService.updateScenarioEventViewDisplayedEvents(this);
+        this.redistributeStatementsIfLoaded();
       });
 
     this.dataValueQuery.selectAll()
@@ -216,6 +217,7 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
         this.scenarioEventDataService.updateScenarioEventViewDataValues(this);
         this.scenarioEventDataService.updateScenarioEventViewDisplayedEvents(this);
         this.rebuildCompetencyCaches();
+        this.redistributeStatementsIfLoaded();
       });
 
     this.scenarioEventQuery.selectAll()
@@ -229,14 +231,16 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
           this.scenarioEventDataService.updateScenarioEventViewDisplayedEvents(this);
           this.rebuildCompetencyCaches();
         }
+        this.redistributeStatementsIfLoaded();
       });
 
     this.cardQuery.selectAll()
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(cards => {
         this.cardList = cards;
+        this.scenarioEventDataService.updateScenarioEventViewCards(this);
+        this.redistributeStatementsIfLoaded();
       });
-    this.scenarioEventDataService.updateScenarioEventViewCards(this);
     this.scenarioEventDataService.updateScenarioEventViewDisplayedEvents(this);
 
     this.moveQuery.selectAll()
@@ -249,6 +253,7 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
           this.mselScenarioEvents, this.moveList
         );
         this.rebuildCompetencyCaches();
+        this.redistributeStatementsIfLoaded();
       });
 
     this.organizationQuery.selectAll()
@@ -835,6 +840,12 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
           this.loadingStatements.delete('_all');
         }
       });
+  }
+
+  private redistributeStatementsIfLoaded() {
+    if (this.statementsLoaded) {
+      this.distributeStatements();
+    }
   }
 
   private filterToCurrentSession() {
