@@ -84,7 +84,8 @@ export class AdminProficiencyScalesComponent implements OnInit, OnDestroy {
     if (!file) {
       return;
     }
-    this.proficiencyScaleService.uploadJsonProficiencyScales(file, 'events', true)
+    this.proficiencyScaleService
+      .uploadJsonProficiencyScales('', '', '', file, 'events', true)
       .subscribe((event: any) => {
         if (event instanceof HttpResponse && event.status === 200) {
           this.loadScales();

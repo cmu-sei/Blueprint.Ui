@@ -224,7 +224,7 @@ export class CiteDutyDataService {
   uploadJson(file: File, observe: any, reportProgress: boolean) {
     this.citeDutyStore.setLoading(true);
     this.citeDutyService
-      .uploadJsonCiteDuties(file, observe, reportProgress)
+      .uploadJsonCiteDuties('', '', '', file, observe, reportProgress)
       .subscribe(
         (event: any) => {
           if (event.type === HttpEventType.UploadProgress) {

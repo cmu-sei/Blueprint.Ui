@@ -37,7 +37,7 @@ export class MselPlus implements Msel {
   createdBy?: string;
   modifiedBy?: string;
   id?: string;
-  name?: string;
+  name: string;
   description?: string;
   status?: MselItemStatus;
   integrationStatus?: string;

@@ -42,7 +42,7 @@ export class LaunchComponent implements OnDestroy, OnInit {
   appTitle = 'Start Event';
   launchStatus = '';
   launchingMselId = '';
-  launchedMsel: Msel = {};
+  launchedMsel: Msel = { name: '' };
   showChoices = false;
   private unsubscribe$ = new Subject();
 
@@ -175,7 +175,7 @@ export class LaunchComponent implements OnDestroy, OnInit {
         (error) => {
           this.launchingMselId = '';
           this.launchStatus = '';
-          this.launchedMsel = {};
+          this.launchedMsel = { name: '' };
           this.showChoices = true;
           this.errorService.handleError(error);
         }

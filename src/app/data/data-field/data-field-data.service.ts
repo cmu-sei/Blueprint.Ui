@@ -235,7 +235,7 @@ export class DataFieldDataService {
   uploadJson(file: File, observe: any, reportProgress: boolean) {
     this.dataFieldTemplateStore.setLoading(true);
     this.dataFieldService
-      .uploadJsonDataFields(file, observe, reportProgress)
+      .uploadJsonDataFields('', '', '', file, observe, reportProgress)
       .subscribe(
         (event: any) => {
           if (event.type === HttpEventType.UploadProgress) {
