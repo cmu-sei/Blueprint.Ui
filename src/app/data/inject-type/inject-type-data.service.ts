@@ -174,7 +174,7 @@ export class InjectTypeDataService {
   uploadJson(file: File, observe: any, reportProgress: boolean) {
     this.injectTypeStore.setLoading(true);
     this.injectTypeService
-      .uploadJsonInjectTypes('', '', '', file, observe, reportProgress)
+      .uploadJsonInjectTypes(file, observe, reportProgress)
       .subscribe(
         (event: any) => {
           if (event.type === HttpEventType.UploadProgress) {

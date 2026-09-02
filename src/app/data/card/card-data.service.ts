@@ -203,7 +203,7 @@ export class CardDataService {
   uploadJson(file: File, observe: any, reportProgress: boolean) {
     this.cardStore.setLoading(true);
     this.cardService
-      .uploadJsonCards('', '', '', file, observe, reportProgress)
+      .uploadJsonCards(file, observe, reportProgress)
       .subscribe(
         (event: any) => {
           if (event.type === HttpEventType.UploadProgress) {

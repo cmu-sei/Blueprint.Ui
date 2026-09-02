@@ -558,7 +558,6 @@ export class MselDataService {
 
   uploadXlsx(
     mselId: string,
-    teamId: string,
     file: File,
     observe: any,
     reportProgress: boolean
@@ -566,15 +565,9 @@ export class MselDataService {
     this.mselStore.setLoading(true);
     if (mselId) {
       this.mselService
-        .replaceWithXlsxFile(
-          mselId,
-          '',
-          '',
-          teamId,
-          file,
-          observe,
-          reportProgress
-        )
+        // the third argument is the form's optional MselId, which only guards
+        // against a mismatch with the id in the route; the route id is enough
+        .replaceWithXlsxFile(mselId, file, undefined, observe, reportProgress)
         .subscribe(
           (event: any) => {
             if (event.type === HttpEventType.UploadProgress) {
@@ -599,7 +592,7 @@ export class MselDataService {
         );
     } else {
       this.mselService
-        .uploadXlsx('', '', teamId, file, observe, reportProgress)
+        .uploadXlsx(file, observe, reportProgress)
         .subscribe(
           (event) => {
             if (event.type === HttpEventType.UploadProgress) {
@@ -628,7 +621,7 @@ export class MselDataService {
   uploadJson(file: File, observe: any, reportProgress: boolean) {
     this.mselStore.setLoading(true);
     this.mselService
-      .uploadJsonMsel('', '', '', file, observe, reportProgress)
+      .uploadJsonMsel(file, observe, reportProgress)
       .subscribe(
         (event: any) => {
           if (event.type === HttpEventType.UploadProgress) {

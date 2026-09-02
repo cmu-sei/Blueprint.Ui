@@ -481,17 +481,17 @@ export class OrganizationService extends BaseService {
 
     /**
      * Upload a json file containing a list of Organization templates
-     * @param mselId 
-     * @param mselTemplateId 
-     * @param teamId 
      * @param toUpload 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public uploadJsonOrganizations(mselId?: string, mselTemplateId?: string, teamId?: string, toUpload?: Blob, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<Organization>>;
-    public uploadJsonOrganizations(mselId?: string, mselTemplateId?: string, teamId?: string, toUpload?: Blob, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<Organization>>>;
-    public uploadJsonOrganizations(mselId?: string, mselTemplateId?: string, teamId?: string, toUpload?: Blob, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<Organization>>>;
-    public uploadJsonOrganizations(mselId?: string, mselTemplateId?: string, teamId?: string, toUpload?: Blob, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public uploadJsonOrganizations(toUpload: Blob, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<Organization>>;
+    public uploadJsonOrganizations(toUpload: Blob, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<Organization>>>;
+    public uploadJsonOrganizations(toUpload: Blob, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<Organization>>>;
+    public uploadJsonOrganizations(toUpload: Blob, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+        if (toUpload === null || toUpload === undefined) {
+            throw new Error('Required parameter toUpload was null or undefined when calling uploadJsonOrganizations.');
+        }
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -530,15 +530,6 @@ export class OrganizationService extends BaseService {
             localVarFormParams = new HttpParams({encoder: this.encoder});
         }
 
-        if (mselId !== undefined) {
-            localVarFormParams = localVarFormParams.append('MselId', <any>mselId) as any || localVarFormParams;
-        }
-        if (mselTemplateId !== undefined) {
-            localVarFormParams = localVarFormParams.append('MselTemplateId', <any>mselTemplateId) as any || localVarFormParams;
-        }
-        if (teamId !== undefined) {
-            localVarFormParams = localVarFormParams.append('TeamId', <any>teamId) as any || localVarFormParams;
-        }
         if (toUpload !== undefined) {
             localVarFormParams = localVarFormParams.append('ToUpload', <any>toUpload) as any || localVarFormParams;
         }

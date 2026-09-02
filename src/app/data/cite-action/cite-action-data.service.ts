@@ -224,7 +224,7 @@ export class CiteActionDataService {
   uploadJson(file: File, observe: any, reportProgress: boolean) {
     this.citeActionStore.setLoading(true);
     this.citeActionService
-      .uploadJsonCiteActions('', '', '', file, observe, reportProgress)
+      .uploadJsonCiteActions(file, observe, reportProgress)
       .subscribe(
         (event: any) => {
           if (event.type === HttpEventType.UploadProgress) {

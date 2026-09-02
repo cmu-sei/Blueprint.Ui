@@ -202,7 +202,7 @@ export class OrganizationDataService {
   uploadJson(file: File, observe: any, reportProgress: boolean) {
     this.organizationStore.setLoading(true);
     this.organizationService
-      .uploadJsonOrganizations('', '', '', file, observe, reportProgress)
+      .uploadJsonOrganizations(file, observe, reportProgress)
       .subscribe(
         (event: any) => {
           if (event.type === HttpEventType.UploadProgress) {

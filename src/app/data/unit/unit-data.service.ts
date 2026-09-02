@@ -263,7 +263,7 @@ export class UnitDataService {
   uploadJson(file: File, observe: any, reportProgress: boolean) {
     this.unitStore.setLoading(true);
     this.unitService
-      .uploadJsonUnits('', '', '', file, observe, reportProgress)
+      .uploadJsonUnits(file, observe, reportProgress)
       .subscribe(
         (event: any) => {
           if (event.type === HttpEventType.UploadProgress) {
