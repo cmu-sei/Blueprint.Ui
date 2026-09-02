@@ -29,6 +29,8 @@ import { CompetencyFramework } from '../model/competencyFramework';
 // @ts-ignore
 import { CompetencyFrameworkImportPreview } from '../model/competencyFrameworkImportPreview';
 // @ts-ignore
+import { CompetencyFrameworkImportStatus } from '../model/competencyFrameworkImportStatus';
+// @ts-ignore
 import { FrameworkDeleteCheck } from '../model/frameworkDeleteCheck';
 // @ts-ignore
 import { ProblemDetails } from '../model/problemDetails';
@@ -425,6 +427,66 @@ export class CompetencyFrameworkService extends BaseService {
     }
 
     /**
+     * Gets the progress of a framework import
+     * Returns the phase and item counts of the import started with this importId, so a client can show real progress for the many seconds a large framework takes to import. Terminal states stay readable for 30 minutes; unknown ids return 404.
+     * @param importId The importId passed on the import request
+     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+     * @param reportProgress flag to report request and response progress.
+     */
+    public getCompetencyFrameworkImportStatus(importId: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<CompetencyFrameworkImportStatus>;
+    public getCompetencyFrameworkImportStatus(importId: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<CompetencyFrameworkImportStatus>>;
+    public getCompetencyFrameworkImportStatus(importId: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<CompetencyFrameworkImportStatus>>;
+    public getCompetencyFrameworkImportStatus(importId: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+        if (importId === null || importId === undefined) {
+            throw new Error('Required parameter importId was null or undefined when calling getCompetencyFrameworkImportStatus.');
+        }
+
+        let localVarHeaders = this.defaultHeaders;
+
+        // authentication (oauth2) required
+        localVarHeaders = this.configuration.addCredentialToHeaders('oauth2', 'Authorization', localVarHeaders, 'Bearer ');
+
+        const localVarHttpHeaderAcceptSelected: string | undefined = options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept([
+            'text/plain',
+            'application/json',
+            'text/json'
+        ]);
+        if (localVarHttpHeaderAcceptSelected !== undefined) {
+            localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
+        }
+
+        const localVarHttpContext: HttpContext = options?.context ?? new HttpContext();
+
+        const localVarTransferCache: boolean = options?.transferCache ?? true;
+
+
+        let responseType_: 'text' | 'json' | 'blob' = 'json';
+        if (localVarHttpHeaderAcceptSelected) {
+            if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
+                responseType_ = 'text';
+            } else if (this.configuration.isJsonMime(localVarHttpHeaderAcceptSelected)) {
+                responseType_ = 'json';
+            } else {
+                responseType_ = 'blob';
+            }
+        }
+
+        let localVarPath = `/api/competencyframeworks/imports/${this.configuration.encodeParam({name: "importId", value: importId, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: "uuid"})}`;
+        const { basePath, withCredentials } = this.configuration;
+        return this.httpClient.request<CompetencyFrameworkImportStatus>('get', `${basePath}${localVarPath}`,
+            {
+                context: localVarHttpContext,
+                responseType: <any>responseType_,
+                ...(withCredentials ? { withCredentials } : {}),
+                headers: localVarHeaders,
+                observe: observe,
+                transferCache: localVarTransferCache,
+                reportProgress: reportProgress
+            }
+        );
+    }
+
+    /**
      * Gets all Competency Frameworks
      * Returns a list of all competency frameworks (without competencies).
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
@@ -485,20 +547,23 @@ export class CompetencyFrameworkService extends BaseService {
      * Accepts a CSV file in the Moodle lpimportcsv 14-column format. Creates the framework, all competencies with hierarchy, and cross-reference relationships.
      * @param source Framework source (e.g. \&quot;NICE\&quot;, \&quot;DCWF\&quot;)
      * @param version Framework version (e.g. \&quot;5.1\&quot;)
+     * @param importId Optional client-generated id for polling import progress
      * @param file The CSV file
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public importCompetencyFramework(source?: string, version?: string, file?: Blob, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<CompetencyFramework>;
-    public importCompetencyFramework(source?: string, version?: string, file?: Blob, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<CompetencyFramework>>;
-    public importCompetencyFramework(source?: string, version?: string, file?: Blob, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<CompetencyFramework>>;
-    public importCompetencyFramework(source?: string, version?: string, file?: Blob, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public importCompetencyFramework(source?: string, version?: string, importId?: string, file?: Blob, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<CompetencyFramework>;
+    public importCompetencyFramework(source?: string, version?: string, importId?: string, file?: Blob, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<CompetencyFramework>>;
+    public importCompetencyFramework(source?: string, version?: string, importId?: string, file?: Blob, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<CompetencyFramework>>;
+    public importCompetencyFramework(source?: string, version?: string, importId?: string, file?: Blob, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
 
         let localVarQueryParameters = new HttpParams({encoder: this.encoder});
         localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
           <any>source, 'source');
         localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
           <any>version, 'version');
+        localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
+          <any>importId, 'importId');
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -572,14 +637,19 @@ export class CompetencyFrameworkService extends BaseService {
     /**
      * Imports a Competency Framework from a NICE-format JSON file
      * Accepts a JSON file in the NICE/NIST CPRT format (response.elements with documents, elements, and relationships). Creates the framework, all competencies with hierarchy, and work-role-to-TKSA relationships.
+     * @param importId Optional client-generated id for polling import progress
      * @param file The JSON file
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public importCompetencyFrameworkJson(file?: Blob, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<CompetencyFramework>;
-    public importCompetencyFrameworkJson(file?: Blob, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<CompetencyFramework>>;
-    public importCompetencyFrameworkJson(file?: Blob, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<CompetencyFramework>>;
-    public importCompetencyFrameworkJson(file?: Blob, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public importCompetencyFrameworkJson(importId?: string, file?: Blob, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<CompetencyFramework>;
+    public importCompetencyFrameworkJson(importId?: string, file?: Blob, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<CompetencyFramework>>;
+    public importCompetencyFrameworkJson(importId?: string, file?: Blob, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<CompetencyFramework>>;
+    public importCompetencyFrameworkJson(importId?: string, file?: Blob, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+
+        let localVarQueryParameters = new HttpParams({encoder: this.encoder});
+        localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
+          <any>importId, 'importId');
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -639,6 +709,7 @@ export class CompetencyFrameworkService extends BaseService {
             {
                 context: localVarHttpContext,
                 body: localVarConvertFormParamsToString ? localVarFormParams.toString() : localVarFormParams,
+                params: localVarQueryParameters,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
@@ -654,20 +725,23 @@ export class CompetencyFrameworkService extends BaseService {
      * Accepts an XLSX file with columns: ID, Name, Description, ParentID, RelatedIDs. Creates the framework, all competencies with hierarchy, and cross-reference relationships.
      * @param source Framework source (e.g. \&quot;DCWF\&quot;)
      * @param version Framework version (e.g. \&quot;1.0\&quot;)
+     * @param importId Optional client-generated id for polling import progress
      * @param file The XLSX file
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public importCompetencyFrameworkXlsx(source?: string, version?: string, file?: Blob, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<CompetencyFramework>;
-    public importCompetencyFrameworkXlsx(source?: string, version?: string, file?: Blob, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<CompetencyFramework>>;
-    public importCompetencyFrameworkXlsx(source?: string, version?: string, file?: Blob, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<CompetencyFramework>>;
-    public importCompetencyFrameworkXlsx(source?: string, version?: string, file?: Blob, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public importCompetencyFrameworkXlsx(source?: string, version?: string, importId?: string, file?: Blob, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<CompetencyFramework>;
+    public importCompetencyFrameworkXlsx(source?: string, version?: string, importId?: string, file?: Blob, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<CompetencyFramework>>;
+    public importCompetencyFrameworkXlsx(source?: string, version?: string, importId?: string, file?: Blob, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<CompetencyFramework>>;
+    public importCompetencyFrameworkXlsx(source?: string, version?: string, importId?: string, file?: Blob, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
 
         let localVarQueryParameters = new HttpParams({encoder: this.encoder});
         localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
           <any>source, 'source');
         localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
           <any>version, 'version');
+        localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
+          <any>importId, 'importId');
 
         let localVarHeaders = this.defaultHeaders;
 

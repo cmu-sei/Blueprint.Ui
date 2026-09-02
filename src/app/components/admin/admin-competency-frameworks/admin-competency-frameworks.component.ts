@@ -5,7 +5,7 @@ import { Component, ElementRef, Input, OnDestroy, ViewChild, AfterViewInit } fro
 import { UntypedFormControl } from '@angular/forms';
 import { MatTableDataSource, MatTable } from '@angular/material/table';
 import { animate, state, style, transition, trigger } from '@angular/animations';
-import { Subject, Subscription } from 'rxjs';
+import { Observable, Subject, Subscription } from 'rxjs';
 import { take, takeUntil } from 'rxjs/operators';
 import {
   Competency,
@@ -82,6 +82,15 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
   expandedCompetencyId = '';
   availableRelatedDataSource = new MatTableDataSource<Competency>([]);
   relatedDataSource = new MatTableDataSource<Competency>([]);
+  // Rows for the two panels above, held aside until their paginators exist.
+  private availableRelatedRows: Competency[] = [];
+  private relatedRows: Competency[] = [];
+  // False for the frame between opening the panel and publishing its rows, so the
+  // empty-state messages do not flash.
+  relatedRowsReady = false;
+  // True while an add/remove of a related competency is being saved. Blocks a second
+  // one until the first lands, see saveCurrentRelated.
+  savingRelated = false;
   availableRelatedColumns: string[] = ['name', 'view', 'add'];
   relatedColumns: string[] = ['name', 'view', 'remove'];
   relatedFilterControl = new UntypedFormControl();
@@ -251,7 +260,8 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
     }
     this.importing = true;
     this.importError = '';
-    this.competencyFrameworkService.importCompetencyFrameworkJson(file)
+    // No importId: this path shows only a spinner, so there is no progress to poll.
+    this.competencyFrameworkService.importCompetencyFrameworkJson(undefined, file)
       .pipe(take(1))
       .subscribe({
         next: (created) => {
@@ -280,52 +290,34 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
       dialogRef.componentInstance.isProcessing = true;
       dialogRef.componentInstance.parseError = '';
 
+      // result.importId lets the dialog poll the API for the import's progress while
+      // this request is in flight.
+      let request: Observable<CompetencyFramework>;
       if (result.type === 'csv' && result.file) {
-        this.competencyFrameworkService.importCompetencyFramework(result.source, result.version, result.file)
-          .pipe(take(1))
-          .subscribe({
-            next: (created) => {
-              this.competencyFrameworkDataService.updateStore(created);
-              dialogRef.componentInstance.isProcessing = false;
-              dialogRef.componentInstance.importSucceeded = true;
-              dialogRef.componentInstance.successMessage = `Successfully imported ${created.name}`;
-            },
-            error: (err) => {
-              dialogRef.componentInstance.isProcessing = false;
-              dialogRef.componentInstance.parseError = 'Import failed: ' + (err.error?.title || err.message || 'Unknown error');
-            }
-          });
+        request = this.competencyFrameworkService.importCompetencyFramework(
+          result.source, result.version, result.importId, result.file);
       } else if (result.type === 'json' && result.file) {
-        this.competencyFrameworkService.importCompetencyFrameworkJson(result.file)
-          .pipe(take(1))
-          .subscribe({
-            next: (created) => {
-              this.competencyFrameworkDataService.updateStore(created);
-              dialogRef.componentInstance.isProcessing = false;
-              dialogRef.componentInstance.importSucceeded = true;
-              dialogRef.componentInstance.successMessage = `Successfully imported ${created.name}`;
-            },
-            error: (err) => {
-              dialogRef.componentInstance.isProcessing = false;
-              dialogRef.componentInstance.parseError = 'Import failed: ' + (err.error?.title || err.message || 'Unknown error');
-            }
-          });
+        request = this.competencyFrameworkService.importCompetencyFrameworkJson(
+          result.importId, result.file);
       } else if (result.type === 'xlsx' && result.file) {
-        this.competencyFrameworkService.importCompetencyFrameworkXlsx(result.source, result.version, result.file)
-          .pipe(take(1))
-          .subscribe({
-            next: (created) => {
-              this.competencyFrameworkDataService.updateStore(created);
-              dialogRef.componentInstance.isProcessing = false;
-              dialogRef.componentInstance.importSucceeded = true;
-              dialogRef.componentInstance.successMessage = `Successfully imported ${created.name}`;
-            },
-            error: (err) => {
-              dialogRef.componentInstance.isProcessing = false;
-              dialogRef.componentInstance.parseError = 'Import failed: ' + (err.error?.title || err.message || 'Unknown error');
-            }
-          });
+        request = this.competencyFrameworkService.importCompetencyFrameworkXlsx(
+          result.source, result.version, result.importId, result.file);
+      } else {
+        return;
       }
+
+      request
+        .pipe(take(1))
+        .subscribe({
+          next: (created) => {
+            this.competencyFrameworkDataService.updateStore(created);
+            dialogRef.componentInstance.finishImport(`Successfully imported ${created.name}`);
+          },
+          error: (err) => {
+            dialogRef.componentInstance.failImport(
+              'Import failed: ' + (err.error?.title || err.message || 'Unknown error'));
+          }
+        });
     });
   }
 
@@ -429,24 +421,20 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
           this.workRoles = allComps.filter(c => this.competencyTypeMap.get(c.id) === 'Work Role');
           this.expandedCompetencies = allComps.filter(c => this.competencyTypeMap.get(c.id) !== 'Work Role');
           this.workRoleCategories = [...new Set(this.workRoles.map(wr => this.getWorkRoleCategory(wr)).filter(c => c))].sort();
+          // Attach the paginators *before* the data lands. Angular runs change
+          // detection when this handler's microtask queue drains, which is before any
+          // setTimeout scheduled here — so a data source that is still unpaginated at
+          // this point renders every row (2 per competency, via multiTemplateDataRows)
+          // only for the paginator to throw them away a tick later. On NICE 2.1.0 that
+          // is ~4,400 rows built and discarded, which blocks the main thread for
+          // seconds. The panel holding these paginators is already rendered by now,
+          // because rowClicked set expandedElementId before this request was issued.
+          this.attachCompetencyPaginators();
           this.applyWorkRoleFilter();
           this.applyCompetencyFilter();
-          // Refresh expanded row's related data with updated inverse relationships
-          if (this.expandedCompetencyId && this.competencyById.has(this.expandedCompetencyId)) {
-            const fresh = this.competencyById.get(this.expandedCompetencyId);
-            this.expandedComp = fresh;
-            this.currentRelatedIdNumbers = [...(fresh.relatedIdNumbers || [])];
-
-            this.updateRelatedDataSources();
-          }
-          setTimeout(() => {
-            if (this.competencyPaginator) {
-              this.competencyDataSource.paginator = this.competencyPaginator;
-            }
-            if (this.workRolePaginator) {
-              this.workRoleDataSource.paginator = this.workRolePaginator;
-            }
-          });
+          // Fallback for the case where the panel had not rendered yet, so the
+          // paginators did not exist above.
+          setTimeout(() => this.attachCompetencyPaginators());
         },
         error: (err: any) => {
           if (this.expandedElementId !== frameworkId) {
@@ -456,6 +444,15 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
           this.importError = 'Load failed: ' + (err.error?.title || err.message || 'Unknown error');
         }
       });
+  }
+
+  private attachCompetencyPaginators(): void {
+    if (this.competencyPaginator && this.competencyDataSource.paginator !== this.competencyPaginator) {
+      this.competencyDataSource.paginator = this.competencyPaginator;
+    }
+    if (this.workRolePaginator && this.workRoleDataSource.paginator !== this.workRolePaginator) {
+      this.workRoleDataSource.paginator = this.workRolePaginator;
+    }
   }
 
   private clearExpandedFrameworkState(): void {
@@ -666,12 +663,16 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
     this.relatedSideFilterControl.setValue('');
     this.availableTypeFilter = '';
     this.relatedTypeFilter = '';
-    this.updateRelatedDataSources();
+    // Only work the rows out here. The paginators live inside the detail cell that
+    // expandedCompetencyId above has just made renderable, so they do not exist yet;
+    // publishing the rows now would render both tables in full. Deferred to the
+    // setTimeout below, which runs after the cell — and its paginators — exist.
+    this.computeRelatedRows();
     this.availableTypes = [...new Set(
-      this.availableRelatedDataSource.data.map(c => this.competencyTypeMap.get(c.id) || '').filter(t => t)
+      this.availableRelatedRows.map(c => this.competencyTypeMap.get(c.id) || '').filter(t => t)
     )].sort();
     this.relatedTypes = [...new Set(
-      this.relatedDataSource.data.map(c => this.competencyTypeMap.get(c.id) || '').filter(t => t)
+      this.relatedRows.map(c => this.competencyTypeMap.get(c.id) || '').filter(t => t)
     )].sort();
     this.availableRelatedDataSource.filterPredicate = (c: Competency, filter: string): boolean => {
       if (this.availableTypeFilter) {
@@ -703,32 +704,58 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
     this.relatedSideFilterSub = this.relatedSideFilterControl.valueChanges.subscribe(() => {
       this.applyRelatedFilter();
     });
-    setTimeout(() => {
-      if (this.availablePaginator) {
-        this.availableRelatedDataSource.paginator = this.availablePaginator;
-      }
-      if (this.relatedPaginator) {
-        this.relatedDataSource.paginator = this.relatedPaginator;
-      }
-    });
+    setTimeout(() => this.commitRelatedRows());
   }
 
   private collapseCompetencyDetail(): void {
     this.expandedCompetencyId = '';
     this.expandedComp = null;
+    this.relatedRowsReady = false;
   }
 
   private updateRelatedDataSources(): void {
+    this.computeRelatedRows();
+    this.commitRelatedRows();
+  }
+
+  /**
+   * Works out the two row sets without touching the data sources, so callers can
+   * publish them once the paginators exist (see commitRelatedRows).
+   */
+  private computeRelatedRows(): void {
     const relatedSet = new Set(this.currentRelatedIdNumbers);
     const selfId = this.expandedComp?.idNumber;
     const sortByIdNumber = (a: Competency, b: Competency) =>
       (a.idNumber || '').localeCompare(b.idNumber || '');
-    this.relatedDataSource.data = [...this.competencyById.values()]
+    const all = [...this.competencyById.values()];
+    this.relatedRows = all
       .filter(c => relatedSet.has(c.idNumber))
       .sort(sortByIdNumber);
-    this.availableRelatedDataSource.data = [...this.competencyById.values()]
+    this.availableRelatedRows = all
       .filter(c => c.idNumber !== selfId && !relatedSet.has(c.idNumber))
       .sort(sortByIdNumber);
+  }
+
+  /**
+   * Publishes the computed rows, attaching the paginators first. "Available to Link"
+   * holds every other competency in the framework, so handing it to an unpaginated
+   * table renders the whole framework (~2,200 rows for NICE 2.1.0) just to discard it
+   * on the next tick.
+   */
+  private commitRelatedRows(): void {
+    this.attachRelatedPaginators();
+    this.relatedDataSource.data = this.relatedRows;
+    this.availableRelatedDataSource.data = this.availableRelatedRows;
+    this.relatedRowsReady = true;
+  }
+
+  private attachRelatedPaginators(): void {
+    if (this.availablePaginator && this.availableRelatedDataSource.paginator !== this.availablePaginator) {
+      this.availableRelatedDataSource.paginator = this.availablePaginator;
+    }
+    if (this.relatedPaginator && this.relatedDataSource.paginator !== this.relatedPaginator) {
+      this.relatedDataSource.paginator = this.relatedPaginator;
+    }
   }
 
   onAvailableTypeFilterChange(type: string): void {
@@ -759,23 +786,78 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
   }
 
   addRelatedCompetency(comp: Competency): void {
-    if (!this.currentRelatedIdNumbers.includes(comp.idNumber)) {
-      this.currentRelatedIdNumbers.push(comp.idNumber);
-      this.updateRelatedDataSources();
-      this.saveCurrentRelated();
+    if (this.savingRelated || this.currentRelatedIdNumbers.includes(comp.idNumber)) {
+      return;
     }
+    this.currentRelatedIdNumbers = [...this.currentRelatedIdNumbers, comp.idNumber];
+    this.updateRelatedDataSources();
+    this.saveCurrentRelated(comp.idNumber, true);
   }
 
   removeRelatedCompetency(comp: Competency): void {
+    if (this.savingRelated || !this.currentRelatedIdNumbers.includes(comp.idNumber)) {
+      return;
+    }
     this.currentRelatedIdNumbers = this.currentRelatedIdNumbers.filter(id => id !== comp.idNumber);
     this.updateRelatedDataSources();
-    this.saveCurrentRelated();
+    this.saveCurrentRelated(comp.idNumber, false);
   }
 
-  private saveCurrentRelated(): void {
-    if (this.expandedComp) {
-      const updated = { ...this.expandedComp, relatedIdNumbers: this.currentRelatedIdNumbers };
-      this.saveCompetency(updated);
+  /**
+   * Saves a single related-competency change. This used to reload the whole framework on
+   * success, which is well over a megabyte of JSON and several seconds of row rendering
+   * for one click on a checkbox-sized button — so it patches the local copy from the
+   * change it just made instead. Only one save is allowed in flight at a time: two
+   * overlapping PUTs on the same competency would each be computed from the same
+   * server-side relationship set.
+   */
+  private saveCurrentRelated(changedIdNumber: string, added: boolean): void {
+    const comp = this.expandedComp;
+    if (!comp?.id) {
+      return;
+    }
+
+    const relatedIdNumbers = [...this.currentRelatedIdNumbers];
+    this.savingRelated = true;
+    this.competencyFrameworkService.updateCompetency(comp.id, { ...comp, relatedIdNumbers })
+      .pipe(take(1))
+      .subscribe({
+        next: () => {
+          this.savingRelated = false;
+          comp.relatedIdNumbers = relatedIdNumbers;
+          this.patchInverseRelation(changedIdNumber, comp.idNumber, added);
+        },
+        error: (err) => {
+          this.savingRelated = false;
+          this.importError = 'Save failed: ' + (err.error?.title || err.message || 'Unknown error');
+          // Put the lists back to what the server still holds. Skipped if the user has
+          // moved on to a different competency, whose state this must not overwrite.
+          if (this.expandedComp === comp) {
+            this.currentRelatedIdNumbers = [...(comp.relatedIdNumbers || [])];
+            this.updateRelatedDataSources();
+          }
+        }
+      });
+  }
+
+  /**
+   * Keeps the other end of the relationship in step, because the API reports a
+   * competency's related list as the union of its outbound and inbound relationships —
+   * so linking A to B also changes what B reports. competencyById holds the same object
+   * references as the competency and work role tables, so patching in place is enough.
+   */
+  private patchInverseRelation(otherIdNumber: string, selfIdNumber: string, added: boolean): void {
+    const other = [...this.competencyById.values()].find(c => c.idNumber === otherIdNumber);
+    if (!other) {
+      return;
+    }
+    const related = other.relatedIdNumbers || [];
+    if (added) {
+      if (!related.includes(selfIdNumber)) {
+        other.relatedIdNumbers = [...related, selfIdNumber];
+      }
+    } else {
+      other.relatedIdNumbers = related.filter(id => id !== selfIdNumber);
     }
   }
 
