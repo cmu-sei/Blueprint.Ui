@@ -67,7 +67,7 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
   contextMenuPosition = { x: '0px', y: '0px' };
   myTopHeight = 79;
-  msel: Msel = {};
+  msel: Msel = { name: '' };
   expandedScenarioEventIds: string[] = [];
   expandedMoreScenarioEventIds: string[] = [];
   showSearch = false;

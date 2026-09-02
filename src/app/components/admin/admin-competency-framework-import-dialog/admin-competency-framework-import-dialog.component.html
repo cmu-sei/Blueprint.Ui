@@ -85,7 +85,15 @@ project root for license information or contact permission@sei.cmu.edu for full 
     </div>
     }
 
-    @if (isProcessing) {
+    @if (importRunning) {
+    <div class="import-progress">
+      <mat-progress-bar mode="determinate" [value]="importPercent"></mat-progress-bar>
+      <div class="import-progress-status">
+        <span>{{ importPhase }}{{ importCounts ? ' — ' + importCounts : '' }}</span>
+        <span>{{ importPercent }}%</span>
+      </div>
+    </div>
+    } @else if (isProcessing) {
     <div class="processing-message">
       <mat-spinner diameter="24"></mat-spinner>
       <span>Processing file...</span>
@@ -102,7 +110,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     </button>
   } @else {
     <button matButton="outlined" type="button" (click)="handleCancel()">Cancel</button>
-    <button matButton="filled" type="button" [disabled]="!ready" (click)="handleImport()">
+    <button matButton="filled" type="button" [disabled]="!ready || isProcessing || importRunning" (click)="handleImport()">
       Import
     </button>
   }

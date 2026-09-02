@@ -74,10 +74,10 @@ project root for license information or contact permission@sei.cmu.edu for full 
               <mat-icon class="mdi-24px" fontIcon="mdi-upload"></mat-icon>
             </button>
             <mat-menu #upload="matMenu" [overlapTrigger]="false">
-              <button mat-menu-item (click)="uploadFile('json', '', ''); jsonInput.click()"
+              <button mat-menu-item (click)="uploadFile('json', ''); jsonInput.click()"
                 title="Upload json file">Upload
                 json file</button>
-              <button mat-menu-item (click)="uploadFile('xlsx', '', ''); xlsxInput.click()"
+              <button mat-menu-item (click)="uploadFile('xlsx', ''); xlsxInput.click()"
                 title="Upload xlsx file">Upload
                 xlsx file</button>
             </mat-menu>
