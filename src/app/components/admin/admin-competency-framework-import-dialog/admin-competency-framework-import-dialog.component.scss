@@ -111,3 +111,19 @@
     color: var(--mat-sys-on-surface-variant);
   }
 }
+
+.import-progress {
+  margin-top: 16px;
+  padding: 12px;
+  background: var(--mat-sys-surface-container-low);
+  border-radius: 4px;
+
+  .import-progress-status {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 8px;
+    font-size: 13px;
+    color: var(--mat-sys-on-surface-variant);
+  }
+}

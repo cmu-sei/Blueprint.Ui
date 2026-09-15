@@ -2,10 +2,12 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, OnDestroy, Output } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
 import { CompetencyFrameworkService } from 'src/app/generated/blueprint.api';
-import { take } from 'rxjs/operators';
+import { EMPTY, Subscription, timer } from 'rxjs';
+import { catchError, switchMap, take } from 'rxjs/operators';
+import { v4 as uuidv4 } from 'uuid';
 
 interface ElementTypeCount {
   type: string;
@@ -17,6 +19,8 @@ export interface ImportResult {
   file?: File;
   source: string;
   version: string;
+  /** Id the host passes on the import request so this dialog can poll its progress. */
+  importId: string;
 }
 
 @Component({
@@ -25,7 +29,7 @@ export interface ImportResult {
     styleUrls: ['./admin-competency-framework-import-dialog.component.scss'],
     standalone: false
 })
-export class AdminCompetencyFrameworkImportDialogComponent {
+export class AdminCompetencyFrameworkImportDialogComponent implements OnDestroy {
   @Output() importComplete = new EventEmitter<ImportResult | null>();
   fileName = '';
   parseError = '';
@@ -40,6 +44,15 @@ export class AdminCompetencyFrameworkImportDialogComponent {
   totalRelationships = 0;
   frameworkName = '';
   isProcessing = false;
+
+  // Progress of the import itself, polled from the API. Kept apart from isProcessing,
+  // which also covers the much shorter preview request.
+  importRunning = false;
+  importPercent = 0;
+  importPhase = '';
+  importCounts = '';
+  private importId = '';
+  private progressSub: Subscription;
 
   constructor(
     public dialogRef: MatDialogRef<AdminCompetencyFrameworkImportDialogComponent>,
@@ -137,31 +150,79 @@ export class AdminCompetencyFrameworkImportDialogComponent {
   }
 
   handleImport(): void {
-    if (this.fileType === 'csv' && this.selectedFile) {
-      this.importComplete.emit({
-        type: 'csv',
-        file: this.selectedFile,
-        source: this.source,
-        version: this.version,
-      });
-    } else if (this.fileType === 'json' && this.selectedFile) {
-      this.importComplete.emit({
-        type: 'json',
-        file: this.selectedFile,
-        source: this.source,
-        version: this.version,
-      });
-    } else if (this.fileType === 'xlsx' && this.selectedFile) {
-      this.importComplete.emit({
-        type: 'xlsx',
-        file: this.selectedFile,
-        source: this.source,
-        version: this.version,
-      });
+    if (!this.fileType || !this.selectedFile || this.importRunning) {
+      return;
     }
+    // Importing a large framework takes tens of seconds. The API records progress
+    // against this id, so the host passes it on the import request and this dialog
+    // polls it — a real bar rather than a spinner that gives nothing away.
+    this.importId = uuidv4();
+    this.importRunning = true;
+    this.importPercent = 0;
+    this.importPhase = 'Starting';
+    this.importCounts = '';
+    this.pollProgress(this.importId);
+    this.importComplete.emit({
+      type: this.fileType,
+      file: this.selectedFile,
+      source: this.source,
+      version: this.version,
+      importId: this.importId,
+    });
+  }
+
+  /** Called by the host when the import request comes back successfully. */
+  finishImport(message: string): void {
+    this.stopProgressPolling();
+    this.isProcessing = false;
+    this.importPercent = 100;
+    this.importPhase = 'Complete';
+    this.importCounts = '';
+    this.importSucceeded = true;
+    this.successMessage = message;
+  }
+
+  /** Called by the host when the import request fails. */
+  failImport(message: string): void {
+    this.stopProgressPolling();
+    this.isProcessing = false;
+    this.importRunning = false;
+    this.parseError = message;
+  }
+
+  private pollProgress(importId: string): void {
+    this.progressSub?.unsubscribe();
+    this.progressSub = timer(500, 1000)
+      .pipe(
+        switchMap(() => this.competencyFrameworkService.getCompetencyFrameworkImportStatus(importId)
+          // The first poll or two can 404 before the API has registered the import, and
+          // a real failure is reported by the import request itself — so a failed poll
+          // only means "no news", and must not tear down the timer.
+          .pipe(catchError(() => EMPTY)))
+      )
+      .subscribe((status) => {
+        if (importId !== this.importId) {
+          return;
+        }
+        this.importPercent = status.percentComplete ?? 0;
+        this.importPhase = status.phase || '';
+        this.importCounts = status.total > 0 ? `${status.processed} of ${status.total}` : '';
+      });
+  }
+
+  private stopProgressPolling(): void {
+    this.progressSub?.unsubscribe();
+    this.progressSub = null;
+    // Blanks the guard in pollProgress, so a poll already in flight is discarded.
+    this.importId = '';
   }
 
   handleCancel(): void {
+    this.stopProgressPolling();
     this.importComplete.emit(null);
+  }
+
+  ngOnDestroy(): void {
+    this.stopProgressPolling();
   }
 }

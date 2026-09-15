@@ -44,7 +44,6 @@ export class MselListComponent implements OnDestroy, OnInit {
   isReady = false;
   uploadProgress = 0;
   uploadMselId = '';
-  uploadTeamId = '';
   fileType = '';
   filteredMselList: MselPlus[] = [];
   filterControl = new UntypedFormControl();
@@ -188,10 +187,9 @@ export class MselListComponent implements OnDestroy, OnInit {
     this.uiDataService.setMselTab(this.defaultTab);
   }
 
-  uploadFile(fileType: string, mselId: string, teamId: string) {
+  uploadFile(fileType: string, mselId: string) {
     this.areButtonsDisabled = true;
     this.uploadMselId = mselId ? mselId : '';
-    this.uploadTeamId = teamId ? teamId : '';
     this.fileType = fileType;
   }
 
@@ -209,7 +207,6 @@ export class MselListComponent implements OnDestroy, OnInit {
     if (this.fileType === 'xlsx') {
       this.mselDataService.uploadXlsx(
         this.uploadMselId,
-        this.uploadTeamId,
         file,
         'events',
         true

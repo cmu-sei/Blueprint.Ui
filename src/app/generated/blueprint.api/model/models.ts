@@ -22,6 +22,8 @@ export * from './competency';
 export * from './competencyAssertion';
 export * from './competencyFramework';
 export * from './competencyFrameworkImportPreview';
+export * from './competencyFrameworkImportState';
+export * from './competencyFrameworkImportStatus';
 export * from './constructorInfo';
 export * from './createFromInjectsForm';
 export * from './cultureInfo';

@@ -92,7 +92,7 @@ export class MselComponent implements OnDestroy {
     ['Invitations', 'mdi-email-open-outline'],
   ]);
   private unsubscribe$ = new Subject();
-  private msel: Msel = {};
+  private msel: Msel = { name: '' };
   selectedTab = '';
   defaultTab = 'Info';
   selectedIndex = 1;
@@ -185,7 +185,7 @@ export class MselComponent implements OnDestroy {
         if (msel) {
           this.msel = msel;
         } else {
-          this.msel = {};
+          this.msel = { name: '' };
         }
       });
     // subscribe to mselUnits to reload users when contributors change

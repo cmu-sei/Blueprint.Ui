@@ -252,14 +252,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
                             </ng-container>
                             <ng-container matColumnDef="add">
                               <mat-cell *matCellDef="let r" class="related-col-btn">
-                                <button mat-icon-button (click)="addRelatedCompetency(r)" title="Add {{ r.idNumber }}" [disabled]="!canEdit">
+                                <button mat-icon-button (click)="addRelatedCompetency(r)" title="Add {{ r.idNumber }}" [disabled]="!canEdit || savingRelated">
                                   <mat-icon class="mdi-18px" fontIcon="mdi-plus-circle-outline"></mat-icon>
                                 </button>
                               </mat-cell>
                             </ng-container>
                             <mat-row *matRowDef="let row; columns: availableRelatedColumns"></mat-row>
                           </mat-table>
-                          @if (availableRelatedDataSource.filteredData.length === 0) {
+                          @if (relatedRowsReady && availableRelatedDataSource.filteredData.length === 0) {
                           <div class="no-results-inline">No competencies available</div>
                           }
                         </div>
@@ -309,14 +309,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
                             </ng-container>
                             <ng-container matColumnDef="remove">
                               <mat-cell *matCellDef="let r" class="related-col-btn">
-                                <button mat-icon-button (click)="removeRelatedCompetency(r)" title="Remove {{ r.idNumber }}" [disabled]="!canEdit">
+                                <button mat-icon-button (click)="removeRelatedCompetency(r)" title="Remove {{ r.idNumber }}" [disabled]="!canEdit || savingRelated">
                                   <mat-icon class="mdi-18px" fontIcon="mdi-minus-circle-outline"></mat-icon>
                                 </button>
                               </mat-cell>
                             </ng-container>
                             <mat-row *matRowDef="let row; columns: relatedColumns"></mat-row>
                           </mat-table>
-                          @if (relatedDataSource.data.length === 0) {
+                          @if (relatedRowsReady && relatedDataSource.data.length === 0) {
                           <div class="no-results-inline">No related competencies</div>
                           }
                         </div>
@@ -471,14 +471,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
                             </ng-container>
                             <ng-container matColumnDef="add">
                               <mat-cell *matCellDef="let r" class="related-col-btn">
-                                <button mat-icon-button (click)="addRelatedCompetency(r)" title="Add {{ r.idNumber }}" [disabled]="!canEdit">
+                                <button mat-icon-button (click)="addRelatedCompetency(r)" title="Add {{ r.idNumber }}" [disabled]="!canEdit || savingRelated">
                                   <mat-icon class="mdi-18px" fontIcon="mdi-plus-circle-outline"></mat-icon>
                                 </button>
                               </mat-cell>
                             </ng-container>
                             <mat-row *matRowDef="let row; columns: availableRelatedColumns"></mat-row>
                           </mat-table>
-                          @if (availableRelatedDataSource.filteredData.length === 0) {
+                          @if (relatedRowsReady && availableRelatedDataSource.filteredData.length === 0) {
                           <div class="no-results-inline">No competencies available</div>
                           }
                         </div>
@@ -528,14 +528,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
                             </ng-container>
                             <ng-container matColumnDef="remove">
                               <mat-cell *matCellDef="let r" class="related-col-btn">
-                                <button mat-icon-button (click)="removeRelatedCompetency(r)" title="Remove {{ r.idNumber }}" [disabled]="!canEdit">
+                                <button mat-icon-button (click)="removeRelatedCompetency(r)" title="Remove {{ r.idNumber }}" [disabled]="!canEdit || savingRelated">
                                   <mat-icon class="mdi-18px" fontIcon="mdi-minus-circle-outline"></mat-icon>
                                 </button>
                               </mat-cell>
                             </ng-container>
                             <mat-row *matRowDef="let row; columns: relatedColumns"></mat-row>
                           </mat-table>
-                          @if (relatedDataSource.data.length === 0) {
+                          @if (relatedRowsReady && relatedDataSource.data.length === 0) {
                           <div class="no-results-inline">No related competencies</div>
                           }
                         </div>
