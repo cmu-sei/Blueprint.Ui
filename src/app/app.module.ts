@@ -59,6 +59,7 @@ import {
 import { AkitaNgRouterStoreModule } from '@datorama/akita-ng-router-store';
 import { AkitaNgDevtools } from '@datorama/akita-ngdevtools';
 import { ClipboardModule } from 'ngx-clipboard';
+import { environment } from '../environments/environment';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { AdminCatalogEditDialogComponent } from './components/admin/admin-catalog-edit-dialog/admin-catalog-edit-dialog.component';
@@ -274,7 +275,7 @@ export const appConfig: ApplicationConfig = {
     DataValueComponent,
   ],
   exports: [MatSortModule],
-  bootstrap: [AppComponent], imports: [AkitaNgDevtools,
+  bootstrap: [AppComponent], imports: [environment.production ? [] : AkitaNgDevtools.forRoot(),
     AkitaNgRouterStoreModule,
     BrowserModule,
     AppRoutingModule,
