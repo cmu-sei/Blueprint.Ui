@@ -55,6 +55,7 @@ import {
   ComnSettingsConfig,
   ComnSettingsModule,
   ComnSettingsService,
+  provideCrucibleTheme,
 } from '@cmusei/crucible-common';
 import { AkitaNgRouterStoreModule } from '@datorama/akita-ng-router-store';
 import { AkitaNgDevtools } from '@datorama/akita-ngdevtools';
@@ -348,6 +349,7 @@ export const appConfig: ApplicationConfig = {
         useClass: ErrorService,
       },
       provideHttpClient(withInterceptorsFromDi()),
+      provideCrucibleTheme({ brand: { color: '#007CB5', text: '#FFFFFF' } }),
     ]
 })
 export class AppModule { }
