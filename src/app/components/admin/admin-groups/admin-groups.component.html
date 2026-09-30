@@ -9,7 +9,7 @@ Released under a MIT (SEI)-style license. See LICENSE.md in the project root for
       <mat-icon class="mdi-24px sp-icon" fontIcon="mdi-account-group"></mat-icon>
     </div>
     <mat-form-field class="search-field">
-      <input matInput [(ngModel)]="filterString" (keyup)="applyFilter($event.target.value)"
+      <input matInput [(ngModel)]="filterString" (ngModelChange)="applyFilter($event)"
         placeholder="Search Groups" />
       @if (filterString) {
       <button matSuffix mat-icon-button aria-label="Clear" (click)="clearFilter()">

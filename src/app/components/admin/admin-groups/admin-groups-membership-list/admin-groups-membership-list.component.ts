@@ -68,8 +68,7 @@ export class AdminGroupsMembershipListComponent
     this.createMembership.emit(id);
   }
 
-  applyFilter(event: Event) {
-    const filterValue = (event.target as HTMLInputElement).value;
+  applyFilter(filterValue: string) {
     this.dataSource.filter = filterValue.trim().toLowerCase();
   }
 
