@@ -152,7 +152,7 @@ export class ScenarioEventListComponent
   moveList: Move[] = [];
   teamList: Team[] = [];
   unitList: Unit[] = [];
-  keyUp = new Subject<KeyboardEvent>();
+  filterChange = new Subject<string>();
   private subscription: Subscription;
   selectedEventIdList: string[] = [];
   showSearch = false;
@@ -337,7 +337,7 @@ export class ScenarioEventListComponent
         this.unitList = units;
       });
     // subscribe to filter string changes for debounce
-    this.subscription = this.keyUp
+    this.subscription = this.filterChange
       .pipe(
         debounceTime(250),
         distinctUntilChanged(),

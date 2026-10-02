@@ -13,7 +13,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <th colspan="9">
             <span class="center-self">Search</span>
             <mat-form-field class="center-self shift-left">
-              <input matInput [(ngModel)]="filterString" (keyup)="keyUp.next($event)" placeholder="Search"
+              <input matInput [(ngModel)]="filterString" (ngModelChange)="filterChange.next($event)" placeholder="Search"
                 style="font-size: 10pt;" />
               @if (filterString) {
               <button mat-icon-button matSuffix (click)="applyFilter('')" title="Clear Search">

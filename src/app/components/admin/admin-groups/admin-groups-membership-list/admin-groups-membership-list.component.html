@@ -11,7 +11,7 @@ Released under a MIT (SEI)-style license. See LICENSE.md in the project root for
     <mat-toolbar-row>
       <mat-form-field class="w-50">
         <mat-label>Search</mat-label>
-        <input matInput [(ngModel)]="filterString" (keyup)="applyFilter($event)" #input autocomplete="off" />
+        <input matInput [(ngModel)]="filterString" (ngModelChange)="applyFilter($event)" #input autocomplete="off" />
         @if (filterString) {
         <button matSuffix mat-icon-button aria-label="Clear" (click)="clearFilter()">
           <mat-icon class="mdi-24px" fontIcon="mdi-close-circle-outline"></mat-icon>

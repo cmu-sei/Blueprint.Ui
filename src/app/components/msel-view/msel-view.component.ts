@@ -103,7 +103,7 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
   moveAndGroupNumbers: Record<string, number[]>[] = [];
   moveList: Move[] = [];
   teamList: Team[] = [];
-  keyUp = new Subject<KeyboardEvent>();
+  filterChange = new Subject<string>();
   private subscription: Subscription;
   private unsubscribe$ = new Subject();
   private competencyCache = new Map<string, Competency>();
@@ -268,7 +268,7 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
         }
       });
     // subscribe to filter string changes for debounce
-    this.subscription = this.keyUp
+    this.subscription = this.filterChange
       .pipe(
         debounceTime(250),
         distinctUntilChanged(),

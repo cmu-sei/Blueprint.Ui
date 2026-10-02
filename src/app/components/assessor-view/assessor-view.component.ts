@@ -121,7 +121,7 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
   sectionVerbFilter = new Map<string, string[]>();
   sectionTeamInitialized = new Set<string>();
   availableVerbs: string[] = [];
-  keyUp = new Subject<KeyboardEvent>();
+  filterChange = new Subject<string>();
   private subscription: Subscription;
   expandedEventIds = new Set<string>();
   expandedMoveNumbers = new Set<number>();
@@ -286,7 +286,7 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
         this.rebuildTeamCompIdSets();
       });
 
-    this.subscription = this.keyUp
+    this.subscription = this.filterChange
       .pipe(
         debounceTime(250),
         distinctUntilChanged(),
