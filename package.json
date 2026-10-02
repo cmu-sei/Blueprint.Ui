@@ -33,7 +33,7 @@
     "@angular/material-luxon-adapter": "^21.2.14",
     "@angular/platform-browser": "^21.2.18",
     "@angular/platform-browser-dynamic": "^21.2.18",
-    "@angular/router": "^21.2.1",
+    "@angular/router": "^21.2.24",
     "@cmusei/crucible-common": "0.8.0",
     "@datorama/akita": "^8.0.0",
     "@datorama/akita-ng-router-store": "^7.0.0",
