@@ -34,7 +34,17 @@ Run `ng build` to build the project. The build artifacts will be stored in the `
 
 ## Running unit tests
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+Unit tests run on Vitest through Angular's `@angular/build:unit-test` builder, following the
+Crucible UI test standard.
+
+```bash
+npm test                # run every spec once
+npm run test:watch      # re-run on change
+npm run test:coverage   # run once with coverage and enforce the thresholds in angular.json
+```
+
+The shared test helpers (`renderComponent`, the default providers, API stub types, the SignalR fake,
+the permission providers) are in `src/app/test-utils/`.
 
 ## Running end-to-end tests with Playwright
 
