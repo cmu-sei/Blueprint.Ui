@@ -1,6 +1,6 @@
 # BlueprintUi
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 9.1.
+This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 21.2 (Angular 21). It requires Node `^20.19.0 || ^22.12.0 || >=24.0.0`.
 
 ## Documentation
 
@@ -16,13 +16,12 @@ Blueprint uses a monochrome gray Material 3 SCSS palette with runtime top-bar co
 |------|---------------|---------|
 | `src/assets/config/settings.json` | `"AppTopBarHexColor": "#007CB5"` | Runtime config -- top bar background color |
 | `src/assets/config/settings.json` | `"AppTopBarHexTextColor": "#FFFFFF"` | Runtime config -- top bar text color |
-| `src/app/app.component.ts` | `'#C41230'` / `'#FFFFFF'` fallbacks in `setTheme()` | Runtime fallbacks when settings are not provided |
 
 To change the top bar color for a deployment, update `AppTopBarHexColor` and `AppTopBarHexTextColor` in `settings.json`.
 
 ## Development server
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4725/`. The app will automatically reload if you change any of the source files.
+Run `npm start` (`ng serve`) for a dev server. Navigate to `http://localhost:4725/`. The app will automatically reload if you change any of the source files.
 
 ## Code scaffolding
 
@@ -30,7 +29,7 @@ Run `ng generate component component-name` to generate a new component. You can 
 
 ## Build
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `--prod` flag for a production build.
+Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use `ng build --configuration production` for a production build.
 
 ## Running unit tests
 
@@ -50,7 +49,7 @@ the permission providers) are in `src/app/test-utils/`.
 
 One time from powershell to install playwright and playwright browsers on windows managed laptop:
   set this environment variable on your system:  PLAYWRIGHT_BROWSERS_PATH="C:\SEI\Tools\ms-playwright"
-  cd Blueprint.Ui
+  cd blueprint.ui
   npm install
   npx playwright install
 
