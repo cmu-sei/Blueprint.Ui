@@ -2,12 +2,6 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-[mat-dialog-title] {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
 .title-wrapper {
   display: flex;
   align-items: center;
@@ -19,15 +13,6 @@
   width: 28px;
   height: 28px;
   color: var(--mat-sys-primary);
-}
-
-.close-button {
-  color: var(--mat-sys-on-surface-variant);
-}
-
-[mat-dialog-content] {
-  min-width: 500px;
-  max-width: 600px;
 }
 
 .description {
@@ -99,11 +84,6 @@
 
 // Responsive
 @media (max-width: 600px) {
-  [mat-dialog-content] {
-    min-width: auto;
-    max-width: 100%;
-  }
-
   .title-icon {
     font-size: 24px;
     width: 24px;
