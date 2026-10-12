@@ -118,6 +118,7 @@ import { MoveListComponent } from './components/move-list/move-list.component';
 import { MselComponent } from './components/msel/msel.component';
 import { MselContributorsComponent } from './components/msel-contributors/msel-contributors.component';
 import { MselInfoComponent } from './components/msel-info/msel-info.component';
+import { MselImportDialogComponent } from './components/msel-import-dialog/msel-import-dialog.component';
 import { IntegrationStatusComponent } from './components/integration-status/integration-status.component';
 import { MselListComponent } from './components/msel-list/msel-list.component';
 import { MselPageComponent } from './components/msel-page/msel-page.component';
@@ -217,6 +218,7 @@ export const appConfig: ApplicationConfig = {
     MselComponent,
     MselContributorsComponent,
     MselInfoComponent,
+    MselImportDialogComponent,
     IntegrationStatusComponent,
     MselListComponent,
     MselPageComponent,

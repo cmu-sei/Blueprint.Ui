@@ -8,7 +8,12 @@ import { Injectable } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { PageEvent } from '@angular/material/paginator';
 import { Router, ActivatedRoute } from '@angular/router';
-import { HttpEventType, HttpResponse } from '@angular/common/http';
+import {
+  HttpClient,
+  HttpEventType,
+  HttpHeaders,
+  HttpResponse,
+} from '@angular/common/http';
 import {
   Card,
   DataField,
@@ -27,6 +32,7 @@ import {
 import { map, shareReplay, take, tap } from 'rxjs/operators';
 import { BehaviorSubject, Observable, Subject, combineLatest } from 'rxjs';
 import { ErrorService } from 'src/app/services/error/error.service';
+import { MselImportResult } from './msel-import-result';
 
 @Injectable({
   providedIn: 'root',
@@ -205,7 +211,8 @@ export class MselDataService {
     private mselService: MselService,
     private router: Router,
     private activatedRoute: ActivatedRoute,
-    private errorService: ErrorService
+    private errorService: ErrorService,
+    private httpClient: HttpClient
   ) {
     this.filterTerm = activatedRoute.queryParamMap.pipe(
       map((params) => params.get('mselmask') || '')
@@ -643,6 +650,28 @@ export class MselDataService {
           this.uploadProgress.next(0);
           this.errorService.handleError(error);
         }
+      );
+  }
+
+  // Errors are left to the caller, which shows them in the import dialog
+  importJson(file: File): Observable<MselImportResult> {
+    const configuration = this.mselService.configuration;
+    const headers = configuration.addCredentialToHeaders(
+      'oauth2',
+      'Authorization',
+      new HttpHeaders(),
+      'Bearer '
+    );
+    const formData = new FormData();
+    formData.append('ToUpload', file);
+    return this.httpClient
+      .post<MselImportResult>(
+        `${configuration.basePath}/api/msels/json/import`,
+        formData,
+        { headers }
+      )
+      .pipe(
+        tap((result) => this.mselStore.upsert(result.msel.id, result.msel))
       );
   }
 

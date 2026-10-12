@@ -18,6 +18,8 @@ import { SignalRService } from 'src/app/services/signalr.service';
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
+import { MatDialog } from '@angular/material/dialog';
+import { MselImportDialogComponent } from 'src/app/components/msel-import-dialog/msel-import-dialog.component';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
 import { User, SystemPermission } from 'src/app/generated/blueprint.api';
 import { MselItemStatus } from 'src/app/generated/blueprint.api';
@@ -90,7 +92,8 @@ export class MselListComponent implements OnDestroy, OnInit {
     private signalRService: SignalRService,
     private uiDataService: UIDataService,
     private permissionDataService: PermissionDataService,
-    private changeDetectorRef: ChangeDetectorRef
+    private changeDetectorRef: ChangeDetectorRef,
+    private dialog: MatDialog
   ) {
     // Initial datasource
     this.mselDataSource = new MatTableDataSource<MselPlus>(
@@ -212,10 +215,29 @@ export class MselListComponent implements OnDestroy, OnInit {
         true
       );
     } else {
-      this.mselDataService.uploadJson(file, 'events', true);
+      this.isReady = true;
+      this.importJson(file);
     }
     this.jsonInput.nativeElement.value = null;
     this.xlsxInput.nativeElement.value = null;
+  }
+
+  importJson(file: File) {
+    this.dialog
+      .open(MselImportDialogComponent, {
+        data: { file },
+        width: '600px',
+        maxWidth: '90vw',
+      })
+      .afterClosed()
+      .pipe(take(1))
+      .subscribe((mselId) => {
+        this.areButtonsDisabled = false;
+        if (mselId) {
+          this.openMsel(mselId);
+          this.router.navigate(['/build'], { queryParams: { msel: mselId } });
+        }
+      });
   }
 
   /**
