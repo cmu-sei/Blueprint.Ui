@@ -60,13 +60,12 @@ import { ScenarioEventEditDialogComponent } from '../scenario-event-edit-dialog/
 import { ScenarioEventQuery } from 'src/app/data/scenario-event/scenario-event.query';
 import { DataValueDataService } from 'src/app/data/data-value/data-value-data.service';
 import { DataValueQuery } from 'src/app/data/data-value/data-value.query';
-import { DialogService } from 'src/app/services/dialog/dialog.service';
+import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { v4 as uuidv4 } from 'uuid';
 import { DataFieldQuery } from 'src/app/data/data-field/data-field.query';
 import { TeamQuery } from 'src/app/data/team/team.query';
 import { UnitQuery } from 'src/app/data/unit/unit.query';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
-import { AngularEditorConfig } from '@kolkov/angular-editor';
 
 interface StringDictionary {
   [key: string]: string;
@@ -104,21 +103,6 @@ export class ScenarioEventListComponent
   isAddingScenarioEvent = false;
   canDoAnything = false;
   private unsubscribe$ = new Subject();
-  viewConfig: AngularEditorConfig = {
-    editable: false,
-    height: 'auto',
-    minHeight: '1200px',
-    width: '100%',
-    minWidth: '0',
-    translate: 'yes',
-    enableToolbar: false,
-    showToolbar: false,
-    placeholder: '',
-    defaultParagraphSeparator: '',
-    defaultFontName: '',
-    defaultFontSize: '',
-    sanitize: false,
-  };
   dataType: typeof DataFieldType = DataFieldType;
   sortableDataTypes = this.scenarioEventDataService.sortableDataTypes;
   customHandledDataTypes = [
@@ -168,7 +152,7 @@ export class ScenarioEventListComponent
   moveList: Move[] = [];
   teamList: Team[] = [];
   unitList: Unit[] = [];
-  keyUp = new Subject<KeyboardEvent>();
+  filterChange = new Subject<string>();
   private subscription: Subscription;
   selectedEventIdList: string[] = [];
   showSearch = false;
@@ -197,7 +181,7 @@ export class ScenarioEventListComponent
     private organizationQuery: OrganizationQuery,
     private scenarioEventDataService: ScenarioEventDataService,
     private scenarioEventQuery: ScenarioEventQuery,
-    public dialogService: DialogService,
+    public dialogService: CrucibleDialogService,
     public dialog: MatDialog,
     private dataFieldQuery: DataFieldQuery,
     private dataValueDataService: DataValueDataService,
@@ -353,7 +337,7 @@ export class ScenarioEventListComponent
         this.unitList = units;
       });
     // subscribe to filter string changes for debounce
-    this.subscription = this.keyUp
+    this.subscription = this.filterChange
       .pipe(
         debounceTime(250),
         distinctUntilChanged(),
@@ -741,7 +725,7 @@ export class ScenarioEventListComponent
       minWidth: '900px',
       maxWidth: '90vw',
       width: 'auto',
-      height: '90%',
+      maxHeight: '90vh',
       data: {
         scenarioEvent: scenarioEvent,
         integrationTargetOptions: this.integrationTargetOptions,
@@ -867,12 +851,9 @@ export class ScenarioEventListComponent
 
   deleteScenarioEvent(scenarioEvent: ScenarioEvent, index: number): void {
     this.dialogService
-      .confirm(
-        'Delete Event',
-        'Are you sure that you want to delete event ' + index + '?'
-      )
-      .subscribe((result) => {
-        if (result['confirm']) {
+      .confirm({ title: 'Delete Event', message: 'Are you sure that you want to delete event ' + index + '?'
+       }).afterClosed().subscribe((result) => {
+        if (result) {
           this.scenarioEventDataService.delete(scenarioEvent.id);
         }
       });
@@ -880,12 +861,9 @@ export class ScenarioEventListComponent
 
   batchDeleteScenarioEvents() {
     this.dialogService
-      .confirm(
-        'Delete ALL selected Events!',
-        'Are you sure that you want to delete the selected events?'
-      )
-      .subscribe((result) => {
-        if (result['confirm']) {
+      .confirm({ title: 'Delete ALL selected Events!', message: 'Are you sure that you want to delete the selected events?'
+       }).afterClosed().subscribe((result) => {
+        if (result) {
           this.scenarioEventDataService.batchDelete(this.selectedEventIdList);
           this.selectedEventIdList = [];
           this.allSelected = false;
@@ -1131,6 +1109,30 @@ export class ScenarioEventListComponent
     // Extract timezone abbreviation (e.g., "EST", "PST")
     const parts = formatted.split(' ');
     return parts[parts.length - 1];
+  }
+
+  shouldShowMoveSeparators(): boolean {
+    if (!this.sort || !this.sort.active || !this.sort.direction) return true;
+    if (this.sort.direction !== 'asc') return false;
+    return this.sort.active === 'moveNumber' || this.sort.active === 'deltaSeconds';
+  }
+
+  isMoveStartRow(rowIndex: number): boolean {
+    if (!this.shouldShowMoveSeparators()) return false;
+    const events = this.displayedScenarioEvents;
+    const currMove = this.moveAndGroupNumbers[events[rowIndex].id]?.[0];
+    if (currMove == null || currMove < 0) return false;
+    if (rowIndex === 0) return true;
+    const prevMove = this.moveAndGroupNumbers[events[rowIndex - 1].id]?.[0];
+    return currMove !== prevMove;
+  }
+
+  getMoveLabel(rowIndex: number): string {
+    const events = this.displayedScenarioEvents;
+    const moveNum = this.moveAndGroupNumbers[events[rowIndex].id]?.[0];
+    const move = this.moveList.find((m) => +m.moveNumber === +moveNum);
+    const desc = move?.description?.trim();
+    return desc ? `Start Move ${moveNum} — ${desc}` : `Start Move ${moveNum}`;
   }
 
   ngOnDestroy() {

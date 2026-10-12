@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, Input, OnDestroy, OnInit, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, ElementRef, Input, OnDestroy, OnInit, ViewChild, AfterViewInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -22,8 +22,9 @@ import { MatMenuTrigger } from '@angular/material/menu';
 import { CiteActionDataService } from 'src/app/data/cite-action/cite-action-data.service';
 import { CiteActionQuery } from 'src/app/data/cite-action/cite-action.query';
 import { MatDialog } from '@angular/material/dialog';
-import { DialogService } from 'src/app/services/dialog/dialog.service';
+import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { CiteActionEditDialogComponent } from '../cite-action-edit-dialog/cite-action-edit-dialog.component';
+import { ItemDownloadDialogComponent } from '../item-download-dialog/item-download-dialog.component';
 
 @Component({
   selector: 'app-cite-action-list',
@@ -57,6 +58,7 @@ export class CiteActionListComponent implements OnInit, OnDestroy, AfterViewInit
   // context menu
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
   @ViewChild(MatPaginator) paginator: MatPaginator;
+  @ViewChild('jsonInput') jsonInput: ElementRef<HTMLInputElement>;
   contextMenuPosition = { x: '0px', y: '0px' };
 
   constructor(
@@ -66,7 +68,7 @@ export class CiteActionListComponent implements OnInit, OnDestroy, AfterViewInit
     private moveQuery: MoveQuery,
     private teamQuery: TeamQuery,
     public dialog: MatDialog,
-    public dialogService: DialogService
+    public dialogService: CrucibleDialogService
   ) {
     // subscribe to citeActions
     this.citeActionQuery
@@ -224,6 +226,53 @@ export class CiteActionListComponent implements OnInit, OnDestroy, AfterViewInit
     }
   }
 
+  selectFile(e: Event) {
+    const input = e.target as HTMLInputElement;
+    const file = input.files && input.files[0];
+    if (!file) {
+      return;
+    }
+    this.citeActionDataService.uploadJson(file, 'events', true);
+    this.jsonInput.nativeElement.value = null;
+  }
+
+  openDownloadDialog() {
+    const items = (this.templateList || []).map((a) => ({
+      id: a.id,
+      label: a.description || a.id,
+    }));
+    const dialogRef = this.dialog.open(ItemDownloadDialogComponent, {
+      maxWidth: '90vw',
+      width: 'auto',
+      data: {
+        title: 'Select CITE Action templates to download',
+        items,
+      },
+    });
+    dialogRef.afterClosed().subscribe((selectedIds: string[] | undefined) => {
+      if (selectedIds && selectedIds.length > 0) {
+        this.downloadJsonItems(selectedIds);
+      }
+    });
+  }
+
+  downloadJsonItems(ids: string[]) {
+    this.citeActionDataService.downloadJson(ids).subscribe(
+      (data) => {
+        const url = window.URL.createObjectURL(data);
+        const link = document.createElement('a');
+        link.href = url;
+        link.target = '_blank';
+        link.download = 'cite-action-templates.json';
+        link.click();
+        window.URL.revokeObjectURL(url);
+      },
+      (err) => {
+        window.alert('Error downloading file');
+      }
+    );
+  }
+
   deleteCiteAction(citeAction: CiteAction): void {
     if (
       this.isAddingCiteAction ||
@@ -233,12 +282,9 @@ export class CiteActionListComponent implements OnInit, OnDestroy, AfterViewInit
     }
     const title = this.showTemplates ? 'Delete CITE Action Template' : 'Delete CITE Action';
     this.dialogService
-      .confirm(
-        title,
-        'Are you sure that you want to delete ' + citeAction.description + '?'
-      )
-      .subscribe((result) => {
-        if (result['confirm']) {
+      .confirm({ title: title, message: 'Are you sure that you want to delete ' + citeAction.description + '?'
+       }).afterClosed().subscribe((result) => {
+        if (result) {
           this.citeActionDataService.delete(citeAction.id);
           this.editingId = '';
         }

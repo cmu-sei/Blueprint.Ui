@@ -3,26 +3,9 @@
 // project root for license information.
 
 import { Component, EventEmitter, Inject, Output } from '@angular/core';
-import {
-  UntypedFormControl,
-  FormGroupDirective,
-  NgForm,
-  Validators,
-} from '@angular/forms';
-import { ErrorStateMatcher } from '@angular/material/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { DialogService } from 'src/app/services/dialog/dialog.service';
-
-/** Error when invalid control is dirty, touched, or submitted. */
-export class UserErrorStateMatcher implements ErrorStateMatcher {
-  isErrorState(
-    control: UntypedFormControl | null,
-    form: FormGroupDirective | NgForm | null
-  ): boolean {
-    const isSubmitted = form && form.submitted;
-    return !!(control && control.invalid && (control.dirty || isSubmitted));
-  }
-}
+import { UntypedFormControl, Validators } from '@angular/forms';
+import { MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { EDITOR_CONFIG } from 'src/app/utilities/editor-config';
 
 const MIN_NAME_LENGTH = 3;
 
@@ -52,17 +35,19 @@ export class TeamEditDialogComponent {
     this.data.team.email,
     []
   );
+  public descriptionFormControl = new UntypedFormControl(
+    this.data.team.description,
+    []
+  );
   public citeTeamTypeIdFormControl = new UntypedFormControl(
     this.data.team.citeTeamTypeId,
     []
   );
+  editorConfig = EDITOR_CONFIG;
 
   constructor(
-    public dialogService: DialogService,
-    dialogRef: MatDialogRef<TeamEditDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {
-    dialogRef.disableClose = true;
     // Make CITE Team Type required when CITE is being used
     if (this.data.useCite) {
       this.citeTeamTypeIdFormControl.setValidators([Validators.required]);
@@ -97,6 +82,9 @@ export class TeamEditDialogComponent {
       this.data.team.shortName = this.teamShortNameFormControl.value
         .toString()
         .trim();
+      this.data.team.description = this.descriptionFormControl.value
+        ? this.descriptionFormControl.value.toString().trim()
+        : '';
       if (this.errorFree) {
         this.editComplete.emit({
           saveChanges: saveChanges,
@@ -119,6 +107,9 @@ export class TeamEditDialogComponent {
         break;
       case 'email':
         this.data.team.email = this.emailFormControl.value?.toString() || '';
+        break;
+      case 'description':
+        this.data.team.description = this.descriptionFormControl.value?.toString() || '';
         break;
       case 'citeTeamTypeId':
         this.data.team.citeTeamTypeId = this.citeTeamTypeIdFormControl.value?.toString() || '';

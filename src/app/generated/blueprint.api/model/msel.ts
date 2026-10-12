@@ -37,7 +37,7 @@ export interface Msel {
     createdBy?: string;
     modifiedBy?: string | null;
     id?: string;
-    name?: string | null;
+    name: string;
     description?: string | null;
     status?: MselItemStatus;
     integrationStatus?: string | null;

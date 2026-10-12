@@ -4,13 +4,13 @@ Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
 
-<div mat-dialog-title>
-  Manage Competencies ({{ selectedCount }} selected)
-  <button mat-icon-button (click)="handleClose()" title="Close" class="close-button" tabindex="-1">
-    <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
-  </button>
-</div>
+<crucible-dialog
+  [dialogTitle]="'Manage Competencies (' + selectedCount + ' selected)'"
+  [hideDefaultActions]="true"
+  [guardUnsavedWork]="true"
+>
 
+<div crucibleDialogContent>
 <!-- Filters -->
 <div class="filter-section">
   @if (frameworkNames.length > 1) {
@@ -53,7 +53,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
 }
 
 <!-- Competencies table -->
-<div mat-dialog-content class="table-content">
+<div class="table-content">
   @if (mselCompetencies.length === 0) {
   <div class="loading-message">No competencies in this MSEL's pool. Add competencies from the Competencies tab first.</div>
   } @else {
@@ -107,8 +107,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
   (page)="onPageChanged($event)"
   showFirstLastButtons>
 </mat-paginator>
-
-<div mat-dialog-actions>
-  <div style="flex: 1;"></div>
-  <button mat-raised-button color="primary" (click)="handleClose()">Close</button>
 </div>
+
+<ng-container crucibleDialogActions>
+  <button matButton="filled" type="button" (click)="handleClose()">Close</button>
+</ng-container>
+</crucible-dialog>

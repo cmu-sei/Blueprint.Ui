@@ -3,27 +3,9 @@
 // project root for license information.
 
 import { Component, EventEmitter, Inject, Output } from '@angular/core';
-import {
-  UntypedFormControl,
-  FormGroupDirective,
-  NgForm,
-  Validators,
-} from '@angular/forms';
-import { ErrorStateMatcher } from '@angular/material/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { DialogService } from 'src/app/services/dialog/dialog.service';
-import { AngularEditorConfig } from '@kolkov/angular-editor';
-
-/** Error when invalid control is dirty, touched, or submitted. */
-export class UserErrorStateMatcher implements ErrorStateMatcher {
-  isErrorState(
-    control: UntypedFormControl | null,
-    form: FormGroupDirective | NgForm | null
-  ): boolean {
-    const isSubmitted = form && form.submitted;
-    return !!(control && control.invalid && (control.dirty || isSubmitted));
-  }
-}
+import { UntypedFormControl, Validators } from '@angular/forms';
+import { MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { EDITOR_CONFIG } from 'src/app/utilities/editor-config';
 
 @Component({
     selector: 'app-organization-edit-dialog',
@@ -54,41 +36,11 @@ export class OrganizationEditDialogComponent {
     this.data.organization.summary,
     [Validators.required]
   );
-  editorConfig: AngularEditorConfig = {
-    editable: true,
-    spellcheck: true,
-    height: 'auto',
-    minHeight: '0',
-    maxHeight: 'auto',
-    width: 'auto',
-    minWidth: '0',
-    translate: 'yes',
-    enableToolbar: true,
-    showToolbar: true,
-    placeholder: 'Enter text here...',
-    defaultParagraphSeparator: '',
-    defaultFontName: '',
-    defaultFontSize: '',
-    fonts: [
-      { class: 'arial', name: 'Arial' },
-      { class: 'times-new-roman', name: 'Times New Roman' },
-      { class: 'calibri', name: 'Calibri' },
-      { class: 'comic-sans-ms', name: 'Comic Sans MS' },
-    ],
-    uploadUrl: '',
-    uploadWithCredentials: false,
-    sanitize: false,
-    toolbarPosition: 'top',
-    toolbarHiddenButtons: [['backgroundColor']],
-  };
+  editorConfig = EDITOR_CONFIG;
 
   constructor(
-    public dialogService: DialogService,
-    dialogRef: MatDialogRef<OrganizationEditDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any
-  ) {
-    dialogRef.disableClose = true;
-  }
+  ) {}
 
   errorFree() {
     return !(

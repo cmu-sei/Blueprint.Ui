@@ -52,7 +52,7 @@ import { MselCompetencyDataService } from 'src/app/data/msel-competency/msel-com
 import { CompetencyFrameworkQuery } from 'src/app/data/competency-framework/competency-framework.query';
 import { CompetencyFrameworkDataService } from 'src/app/data/competency-framework/competency-framework-data.service';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
-import { AngularEditorConfig } from '@kolkov/angular-editor';
+import { VIEW_CONFIG } from 'src/app/utilities/editor-config';
 
 @Component({
     selector: 'app-msel-view',
@@ -67,7 +67,7 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
   contextMenuPosition = { x: '0px', y: '0px' };
   myTopHeight = 79;
-  msel: Msel = {};
+  msel: Msel = { name: '' };
   expandedScenarioEventIds: string[] = [];
   expandedMoreScenarioEventIds: string[] = [];
   showSearch = false;
@@ -103,26 +103,12 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
   moveAndGroupNumbers: Record<string, number[]>[] = [];
   moveList: Move[] = [];
   teamList: Team[] = [];
-  keyUp = new Subject<KeyboardEvent>();
+  filterChange = new Subject<string>();
   private subscription: Subscription;
   private unsubscribe$ = new Subject();
   private competencyCache = new Map<string, Competency>();
   private competencyTypeCache = new Map<string, string>();
-  viewConfig: AngularEditorConfig = {
-    editable: false,
-    height: 'auto',
-    minHeight: '1200px',
-    width: '100%',
-    minWidth: '0',
-    translate: 'yes',
-    enableToolbar: false,
-    showToolbar: false,
-    placeholder: '',
-    defaultParagraphSeparator: '',
-    defaultFontName: '',
-    defaultFontSize: '',
-    sanitize: false,
-  };
+  viewConfig = VIEW_CONFIG;
 
   constructor(
     private activatedRoute: ActivatedRoute,
@@ -282,7 +268,7 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
         }
       });
     // subscribe to filter string changes for debounce
-    this.subscription = this.keyUp
+    this.subscription = this.filterChange
       .pipe(
         debounceTime(250),
         distinctUntilChanged(),
@@ -433,6 +419,8 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
       type = prefixMap[idNumber.charAt(0)] || '';
     } else if (/^[A-Z]{2}-[A-Z]{3}-\d+$/.test(idNumber)) {
       type = 'Work Role';
+    } else if (/^[A-Z]{2}-\d+[A-Z]?$/.test(idNumber)) {
+      type = 'Work Role';
     } else if (/^[A-Z]{3}$/.test(idNumber)) {
       type = 'Specialty Area';
     } else if (/^[A-Z]{2}$/.test(idNumber)) {
@@ -569,6 +557,31 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
     } catch (error) {
       return 'UTC';
     }
+  }
+
+  shouldShowMoveSeparators(): boolean {
+    if (!this.sort || !this.sort.active || !this.sort.direction) return true;
+    if (this.sort.direction !== 'asc') return false;
+    return this.sort.active === 'moveNumber' || this.sort.active === 'deltaSeconds';
+  }
+
+  isMoveStartRow(rowIndex: number): boolean {
+    if (!this.shouldShowMoveSeparators()) return false;
+    const events = this.sortedScenarioEvents;
+    if (!events || !events[rowIndex]) return false;
+    const currMove = this.moveAndGroupNumbers[events[rowIndex].id]?.[0];
+    if (currMove == null || currMove < 0) return false;
+    if (rowIndex === 0) return true;
+    const prevMove = this.moveAndGroupNumbers[events[rowIndex - 1].id]?.[0];
+    return currMove !== prevMove;
+  }
+
+  getMoveLabel(rowIndex: number): string {
+    const events = this.sortedScenarioEvents;
+    const moveNum = this.moveAndGroupNumbers[events[rowIndex].id]?.[0];
+    const move = this.moveList.find((m) => +m.moveNumber === +moveNum);
+    const desc = move?.description?.trim();
+    return desc ? `Start Move ${moveNum} — ${desc}` : `Start Move ${moveNum}`;
   }
 
   ngOnDestroy() {

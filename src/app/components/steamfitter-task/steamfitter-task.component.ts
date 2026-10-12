@@ -6,7 +6,7 @@ import {
   ScenarioEvent,
   SteamfitterIntegrationType
 } from 'src/app/generated/blueprint.api';
-import { AngularEditorConfig } from '@kolkov/angular-editor';
+import { EDITOR_CONFIG, VIEW_CONFIG_AUTO_SIZE } from 'src/app/utilities/editor-config';
 
 @Component({
   selector: 'app-steamfitter-task',
@@ -27,49 +27,8 @@ export class SteamfitterTaskComponent {
     SteamfitterIntegrationType.HttpPut,
     SteamfitterIntegrationType.HttpDelete
   ];
-  editorConfig: AngularEditorConfig = {
-    editable: true,
-    spellcheck: true,
-    height: 'auto',
-    minHeight: '0',
-    maxHeight: 'auto',
-    width: 'auto',
-    minWidth: '0',
-    translate: 'yes',
-    enableToolbar: true,
-    showToolbar: true,
-    placeholder: 'Enter text here...',
-    defaultParagraphSeparator: '',
-    defaultFontName: '',
-    defaultFontSize: '',
-    fonts: [
-      { class: 'arial', name: 'Arial' },
-      { class: 'times-new-roman', name: 'Times New Roman' },
-      { class: 'calibri', name: 'Calibri' },
-      { class: 'comic-sans-ms', name: 'Comic Sans MS' },
-    ],
-    uploadUrl: '',
-    uploadWithCredentials: false,
-    sanitize: false,
-    toolbarPosition: 'top',
-    toolbarHiddenButtons: [['backgroundColor']],
-  };
-  viewConfig: AngularEditorConfig = {
-    editable: false,
-    height: 'auto',
-    minHeight: '0',
-    maxHeight: 'auto',
-    width: 'auto',
-    minWidth: '0',
-    translate: 'yes',
-    enableToolbar: false,
-    showToolbar: false,
-    placeholder: '',
-    defaultParagraphSeparator: '',
-    defaultFontName: '',
-    defaultFontSize: '',
-    sanitize: false,
-  };
+  editorConfig = EDITOR_CONFIG;
+  viewConfig = VIEW_CONFIG_AUTO_SIZE;
 
   constructor(
   ) { }

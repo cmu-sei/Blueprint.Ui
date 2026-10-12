@@ -24,7 +24,7 @@ import {
   Team,
   UserMselRole,
 } from 'src/app/generated/blueprint.api';
-import { map, take, tap } from 'rxjs/operators';
+import { map, shareReplay, take, tap } from 'rxjs/operators';
 import { BehaviorSubject, Observable, Subject, combineLatest } from 'rxjs';
 import { ErrorService } from 'src/app/services/error/error.service';
 
@@ -37,7 +37,7 @@ export class MselPlus implements Msel {
   createdBy?: string;
   modifiedBy?: string;
   id?: string;
-  name?: string;
+  name: string;
   description?: string;
   status?: MselItemStatus;
   integrationStatus?: string;
@@ -347,24 +347,22 @@ export class MselDataService {
     this.mselStore.set([]);
   }
 
-  add(msel: Msel) {
+  add(msel: Msel): Observable<Msel> {
     this.mselStore.setLoading(true);
-    this.mselService
+    return this.mselService
       .createMsel(msel)
       .pipe(
-        tap(() => {
-          this.mselStore.setLoading(false);
-        }),
+        tap(
+          (s) => {
+            this.mselStore.setLoading(false);
+            this.setAsDates(s);
+            this.mselStore.add(s);
+          },
+          (error) => {
+            this.mselStore.setLoading(false);
+          }
+        ),
         take(1)
-      )
-      .subscribe(
-        (s) => {
-          this.setAsDates(s);
-          this.mselStore.add(s);
-        },
-        (error) => {
-          this.mselStore.setLoading(false);
-        }
       );
   }
 
@@ -397,25 +395,34 @@ export class MselDataService {
       );
   }
 
-  updateMsel(msel: Msel) {
+  updateMsel(msel: Msel): Observable<Msel> {
     this.mselStore.setLoading(true);
-    this.mselService
-      .updateMsel(msel.id, msel)
-      .pipe(
-        tap(() => {
+    const update$ = this.mselService.updateMsel(msel.id, msel).pipe(
+      take(1),
+      tap({
+        next: (n) => {
           this.mselStore.setLoading(false);
-        }),
-        take(1)
-      )
-      .subscribe(
-        (n) => {
           this.setAsDates(n);
           this.updateStore(n);
         },
-        (error) => {
+        error: () => {
+          // A failed save used to be swallowed here, so the user saw no error and the form
+          // reset itself as though the edit had been persisted.
           this.mselStore.setLoading(false);
-        }
-      );
+        },
+      }),
+      shareReplay(1)
+    );
+    // Subscribed here as well as returned, so the store stays updated for the several callers
+    // that fire and forget. shareReplay keeps a caller that *does* subscribe from issuing a
+    // second PUT, and replays the outcome to it even though it subscribes after this line.
+    update$.subscribe({
+      next: () => {},
+      error: (error) => {
+        this.errorService.handleError(error);
+      },
+    });
+    return update$;
   }
 
   pushIntegrations(mselId: string) {
@@ -551,7 +558,6 @@ export class MselDataService {
 
   uploadXlsx(
     mselId: string,
-    teamId: string,
     file: File,
     observe: any,
     reportProgress: boolean
@@ -559,15 +565,9 @@ export class MselDataService {
     this.mselStore.setLoading(true);
     if (mselId) {
       this.mselService
-        .replaceWithXlsxFile(
-          mselId,
-          '',
-          '',
-          teamId,
-          file,
-          observe,
-          reportProgress
-        )
+        // the third argument is the form's optional MselId, which only guards
+        // against a mismatch with the id in the route; the route id is enough
+        .replaceWithXlsxFile(mselId, file, undefined, observe, reportProgress)
         .subscribe(
           (event: any) => {
             if (event.type === HttpEventType.UploadProgress) {
@@ -592,7 +592,7 @@ export class MselDataService {
         );
     } else {
       this.mselService
-        .uploadXlsx('', '', teamId, file, observe, reportProgress)
+        .uploadXlsx(file, observe, reportProgress)
         .subscribe(
           (event) => {
             if (event.type === HttpEventType.UploadProgress) {
@@ -621,7 +621,7 @@ export class MselDataService {
   uploadJson(file: File, observe: any, reportProgress: boolean) {
     this.mselStore.setLoading(true);
     this.mselService
-      .uploadJsonMsel('', '', '', file, observe, reportProgress)
+      .uploadJsonMsel(file, observe, reportProgress)
       .subscribe(
         (event: any) => {
           if (event.type === HttpEventType.UploadProgress) {

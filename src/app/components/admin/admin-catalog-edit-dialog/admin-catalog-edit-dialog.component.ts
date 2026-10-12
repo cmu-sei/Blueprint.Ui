@@ -3,32 +3,11 @@
 // project root for license information.
 
 import { Component, EventEmitter, Inject, Output } from '@angular/core';
-import {
-  UntypedFormControl,
-  FormGroupDirective,
-  NgForm,
-  Validators,
-} from '@angular/forms';
-import { ErrorStateMatcher } from '@angular/material/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { DialogService } from 'src/app/services/dialog/dialog.service';
+import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { DataFieldDataService } from 'src/app/data/data-field/data-field-data.service';
 import { DataFieldQuery } from 'src/app/data/data-field/data-field.query';
 import { Subject, takeUntil } from 'rxjs';
 import { DataField } from 'src/app/generated/blueprint.api';
-
-/** Error when invalid control is dirty, touched, or submitted. */
-export class UserErrorStateMatcher implements ErrorStateMatcher {
-  isErrorState(
-    control: UntypedFormControl | null,
-    form: FormGroupDirective | NgForm | null
-  ): boolean {
-    const isSubmitted = form && form.submitted;
-    return !!(control && control.invalid && (control.dirty || isSubmitted));
-  }
-}
-
-const MIN_NAME_LENGTH = 3;
 
 @Component({
     selector: 'app-admin-catalog-edit-dialog',
@@ -38,19 +17,15 @@ const MIN_NAME_LENGTH = 3;
 })
 export class AdminCatalogEditDialogComponent {
   @Output() editComplete = new EventEmitter<any>();
-  isChanged = false;
   dataFieldList: DataField[] = [];
   private dataFieldsLoaded = false;
   private unsubscribe$ = new Subject();
 
   constructor(
-    public dialogService: DialogService,
-    dialogRef: MatDialogRef<AdminCatalogEditDialogComponent>,
     private dataFieldDataService: DataFieldDataService,
     private dataFieldQuery: DataFieldQuery,
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {
-    dialogRef.disableClose = true;
     this.dataFieldQuery
       .selectAll()
       .pipe(takeUntil(this.unsubscribe$))

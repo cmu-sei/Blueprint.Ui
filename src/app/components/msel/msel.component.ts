@@ -3,7 +3,7 @@
 // project root for license information.
 import { Component, EventEmitter, Input, OnDestroy, Output, ViewChild, ViewChildren, QueryList } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { DialogService } from 'src/app/services/dialog/dialog.service';
+import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { MselInfoComponent } from '../msel-info/msel-info.component';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -92,7 +92,7 @@ export class MselComponent implements OnDestroy {
     ['Invitations', 'mdi-email-open-outline'],
   ]);
   private unsubscribe$ = new Subject();
-  private msel: Msel = {};
+  private msel: Msel = { name: '' };
   selectedTab = '';
   defaultTab = 'Info';
   selectedIndex = 1;
@@ -128,7 +128,7 @@ export class MselComponent implements OnDestroy {
     private userMselRoleDataService: UserMselRoleDataService,
     private userTeamRoleDataService: UserTeamRoleDataService,
     private authQuery: ComnAuthQuery,
-    private dialogService: DialogService,
+    private dialogService: CrucibleDialogService,
     private xApiService: XApiService
   ) {
     this.theme$ = this.authQuery.userTheme$;
@@ -185,7 +185,7 @@ export class MselComponent implements OnDestroy {
         if (msel) {
           this.msel = msel;
         } else {
-          this.msel = {};
+          this.msel = { name: '' };
         }
       });
     // subscribe to mselUnits to reload users when contributors change
@@ -228,9 +228,8 @@ export class MselComponent implements OnDestroy {
 
     if (this.selectedTab === 'Info' && tabName !== 'Info' && this.mselInfoComponent?.hasPendingChanges()) {
       this.dialogService
-        .confirm('Unsaved Changes', 'You have unsaved changes on the MSEL Info page. Are you sure you want to discard them?')
-        .subscribe((result) => {
-          if (result['confirm']) {
+        .confirm({ title: 'Unsaved Changes', message: 'You have unsaved changes on the MSEL Info page. Are you sure you want to discard them?' }).afterClosed().subscribe((result) => {
+          if (result) {
             doTabChange();
           }
         });
@@ -249,9 +248,8 @@ export class MselComponent implements OnDestroy {
 
     if (this.selectedTab === 'Info' && this.mselInfoComponent?.hasPendingChanges()) {
       this.dialogService
-        .confirm('Unsaved Changes', 'You have unsaved changes on the MSEL Info page. Are you sure you want to discard them?')
-        .subscribe((result) => {
-          if (result['confirm']) {
+        .confirm({ title: 'Unsaved Changes', message: 'You have unsaved changes on the MSEL Info page. Are you sure you want to discard them?' }).afterClosed().subscribe((result) => {
+          if (result) {
             doNavigate();
           }
         });

@@ -1,0 +1,33 @@
+<!--
+Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license, please see LICENSE.md in the
+project root for license information or contact permission@sei.cmu.edu for full terms.
+-->
+
+<crucible-dialog
+  [dialogTitle]="data.title"
+  submitLabel="Download"
+  [submitDisabled]="selected.size === 0"
+  (submit)="download()"
+>
+<div crucibleDialogContent>
+  @if (data.items.length === 0) {
+    <div class="empty-message">No items available to download.</div>
+  } @else {
+    <mat-checkbox class="select-all"
+                  [checked]="isAllSelected()"
+                  [indeterminate]="isIndeterminate()"
+                  (change)="toggleAll($event.checked)">
+      Select all ({{ selected.size }}/{{ data.items.length }})
+    </mat-checkbox>
+    <div class="item-list">
+      @for (item of data.items; track item.id) {
+        <mat-checkbox [checked]="selected.has(item.id)"
+                      (change)="toggle(item.id, $event.checked)">
+          {{ item.label }}
+        </mat-checkbox>
+      }
+    </div>
+  }
+</div>
+</crucible-dialog>

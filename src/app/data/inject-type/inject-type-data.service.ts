@@ -12,7 +12,8 @@ import {
   InjectTypeService,
 } from 'src/app/generated/blueprint.api';
 import { map, take, tap } from 'rxjs/operators';
-import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, combineLatest } from 'rxjs';
+import { HttpEventType, HttpResponse } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root',
@@ -31,6 +32,7 @@ export class InjectTypeDataService {
   readonly pageEvent = new BehaviorSubject<PageEvent>(this._pageEvent);
   private pageSize: Observable<number>;
   private pageIndex: Observable<number>;
+  public uploadProgress = new Subject<number>();
 
   constructor(
     private injectTypeStore: InjectTypeStore,
@@ -163,6 +165,37 @@ export class InjectTypeDataService {
       .subscribe((r) => {
         this.deleteFromStore(id);
       });
+  }
+
+  downloadJson(ids: string[]) {
+    return this.injectTypeService.downloadJsonInjectTypes(ids);
+  }
+
+  uploadJson(file: File, observe: any, reportProgress: boolean) {
+    this.injectTypeStore.setLoading(true);
+    this.injectTypeService
+      .uploadJsonInjectTypes(file, observe, reportProgress)
+      .subscribe(
+        (event: any) => {
+          if (event.type === HttpEventType.UploadProgress) {
+            const uploadProgress = Math.round(
+              (100 * event.loaded) / event.total
+            );
+            this.uploadProgress.next(uploadProgress);
+          } else if (event instanceof HttpResponse) {
+            this.uploadProgress.next(0);
+            this.injectTypeStore.setLoading(false);
+            if (event.status === 200) {
+              const items = event.body || [];
+              this.injectTypeStore.upsertMany(items);
+            }
+          }
+        },
+        (error) => {
+          this.injectTypeStore.setLoading(false);
+          this.uploadProgress.next(0);
+        }
+      );
   }
 
   setActive(id: string) {

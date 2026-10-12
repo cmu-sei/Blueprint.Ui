@@ -39,13 +39,6 @@
   margin-left: 8%;
 }
 
-.card-list-header {
-  display: flex;
-  flex-direction: row;
-  width: 100%;
-  height: 56px;
-}
-
 .mat-mdc-table-msel-teams {
   overflow: auto;
   width: 100%;
@@ -58,42 +51,36 @@
   height: 444px;
 }
 
+.mat-column-name {
+  width: 50%;
+  text-align: left;
+}
+
 .mat-column-isShownOnWall {
   width: 15%;
   text-align: center;
+  justify-content: center;
 }
 
 .mat-column-canPostArticles {
   width: 15%;
   text-align: center;
+  justify-content: center;
 }
 
 .mat-column-id {
   width: 20%;
   min-width: 120px;
   text-align: center;
+  justify-content: center;
 }
 
 .mat-mdc-cell {
   padding-right: 0;
 }
 
-.head-name {
-  width: 55%;
-  min-width: 130px;
-  text-align: left;
-}
-
-.head-check {
-  width: 15%;
-  min-width: 100px;
-  text-align: center;
-}
-
-.head-right {
-  width: 20%;
-  min-width: 120px;
-  text-align: center;
+.mat-mdc-header-cell {
+  padding-right: 0;
 }
 
 .header-icon-div {

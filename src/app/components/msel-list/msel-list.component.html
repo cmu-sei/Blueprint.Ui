@@ -49,8 +49,10 @@ project root for license information or contact permission@sei.cmu.edu for full 
         </mat-select>
       </div>
       <div class="searchBox">
-        <mat-form-field style="width: 320px">
-          <input matInput [formControl]="filterControl" placeholder="Search" />
+        <mat-form-field class="search-field">
+          <!-- A placeholder alone leaves the field unlabelled for assistive technology, so the
+               name is stated with aria-label rather than a visible mat-label. -->
+          <input matInput aria-label="Search" [formControl]="filterControl" placeholder="Search" />
           @if (filterString !== '') {
           <button mat-icon-button matSuffix (click)="filterControl.setValue('')" title="Clear Search">
             <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline"></mat-icon>
@@ -72,10 +74,10 @@ project root for license information or contact permission@sei.cmu.edu for full 
               <mat-icon class="mdi-24px" fontIcon="mdi-upload"></mat-icon>
             </button>
             <mat-menu #upload="matMenu" [overlapTrigger]="false">
-              <button mat-menu-item (click)="uploadFile('json', '', ''); jsonInput.click()"
+              <button mat-menu-item (click)="uploadFile('json', ''); jsonInput.click()"
                 title="Upload json file">Upload
                 json file</button>
-              <button mat-menu-item (click)="uploadFile('xlsx', '', ''); xlsxInput.click()"
+              <button mat-menu-item (click)="uploadFile('xlsx', ''); xlsxInput.click()"
                 title="Upload xlsx file">Upload
                 xlsx file</button>
             </mat-menu>
@@ -92,8 +94,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 <button mat-menu-item (click)="downloadXlsxFile(element);" title="Download xlsx file">Download xlsx
                   file</button>
               </mat-menu>
+              <!--
+                The tooltip is on the span because a disabled button does not fire hover events;
+                the button still needs its own accessible name, which a title on the parent does
+                not provide.
+              -->
               <span [title]="getDeleteTooltip(element)">
-                <button mat-icon-button class="msel-action" (click)="delete(element); $event.stopPropagation();"
+                <button mat-icon-button class="msel-action" [attr.aria-label]="getDeleteTooltip(element)"
+                  (click)="delete(element); $event.stopPropagation();"
                   [disabled]="!isReady || !canManageMsel(element) || element.status === 'Deployed' || element.isTemplate">
                   <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline" alt="Delete"></mat-icon>
                 </button>
@@ -139,27 +147,20 @@ project root for license information or contact permission@sei.cmu.edu for full 
         </ng-container>
         <!-- dateCreated Column -->
         <ng-container matColumnDef="dateCreated">
-          <mat-header-cell *matHeaderCellDef mat-sort-header> Date Created </mat-header-cell>
+          <mat-header-cell *matHeaderCellDef mat-sort-header> Created </mat-header-cell>
           <mat-cell *matCellDef="let element">
             <div class="description-text">{{ element.dateCreated | date: 'yyyy-MM-dd HH:mm' }}</div>
           </mat-cell>
         </ng-container>
         <!-- dateModified Column -->
         <ng-container matColumnDef="dateModified">
-          <mat-header-cell *matHeaderCellDef mat-sort-header> Date Modified </mat-header-cell>
+          <mat-header-cell *matHeaderCellDef mat-sort-header> Modified </mat-header-cell>
           <mat-cell *matCellDef="let element">
             <div class="description-text">
               @if (isValidDate(element.dateModified)) {
                 {{ element.dateModified | date: 'yyyy-MM-dd HH:mm' }}
               }
             </div>
-          </mat-cell>
-        </ng-container>
-        <!-- createdBy Column -->
-        <ng-container matColumnDef="createdBy">
-          <mat-header-cell *matHeaderCellDef mat-sort-header> Created By </mat-header-cell>
-          <mat-cell *matCellDef="let element">
-            <div class="description-text" [title]="element.createdBy">{{ getUserName(element.createdBy) }}</div>
           </mat-cell>
         </ng-container>
         <!-- Description Column -->
@@ -177,6 +178,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
       @if (mselDataSource.filteredData.length === 0) {
       <div class="text no-results">No results found</div>
       }
+      <mat-paginator
+        [pageSizeOptions]="[10, 25, 50, 100]"
+        showFirstLastButtons
+        aria-label="Select page of MSELs">
+      </mat-paginator>
     </div>
     @if (isLoading) {
     <mat-card appearance="outlined" style="display: flex; justify-content: center; align-items: center">

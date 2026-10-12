@@ -41,6 +41,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
           title="Add new competency framework">
           <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle"></mat-icon>
         </button>
+        <button mat-icon-button title="Upload Competency Framework from JSON" style="outline: none;"
+          [disabled]="importing"
+          (click)="jsonInput.click(); $event.stopPropagation();">
+          <mat-icon class="mdi-24px" fontIcon="mdi-upload"></mat-icon>
+        </button>
         } &nbsp;
       </mat-header-cell>
       <mat-cell *matCellDef="let element" class="column-action">
@@ -116,12 +121,17 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <div [@detailExpand]="element.id == expandedElementId ? 'expanded' : 'collapsed'" style="overflow: hidden">
           @if (expandedElementId === element.id) {
           <!-- Work Roles -->
-          @if (workRoles.length > 0 || canEdit) {
+          @if (loadingCompetencies || workRoles.length > 0 || canEdit) {
           <mat-expansion-panel class="section-panel">
             <mat-expansion-panel-header>
               <mat-panel-title>
                 <mat-icon class="mdi-18px panel-icon" fontIcon="mdi-account-hard-hat"></mat-icon>
-                Work Roles ({{ workRoles.length }})
+                Work Roles
+                @if (loadingCompetencies) {
+                (Loading...)
+                } @else {
+                ({{ workRoles.length }})
+                }
               </mat-panel-title>
             </mat-expansion-panel-header>
             <div class="element-toolbar" (click)="$event.stopPropagation();">
@@ -242,14 +252,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
                             </ng-container>
                             <ng-container matColumnDef="add">
                               <mat-cell *matCellDef="let r" class="related-col-btn">
-                                <button mat-icon-button (click)="addRelatedCompetency(r)" title="Add {{ r.idNumber }}" [disabled]="!canEdit">
+                                <button mat-icon-button (click)="addRelatedCompetency(r)" title="Add {{ r.idNumber }}" [disabled]="!canEdit || savingRelated">
                                   <mat-icon class="mdi-18px" fontIcon="mdi-plus-circle-outline"></mat-icon>
                                 </button>
                               </mat-cell>
                             </ng-container>
                             <mat-row *matRowDef="let row; columns: availableRelatedColumns"></mat-row>
                           </mat-table>
-                          @if (availableRelatedDataSource.filteredData.length === 0) {
+                          @if (relatedRowsReady && availableRelatedDataSource.filteredData.length === 0) {
                           <div class="no-results-inline">No competencies available</div>
                           }
                         </div>
@@ -299,14 +309,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
                             </ng-container>
                             <ng-container matColumnDef="remove">
                               <mat-cell *matCellDef="let r" class="related-col-btn">
-                                <button mat-icon-button (click)="removeRelatedCompetency(r)" title="Remove {{ r.idNumber }}" [disabled]="!canEdit">
+                                <button mat-icon-button (click)="removeRelatedCompetency(r)" title="Remove {{ r.idNumber }}" [disabled]="!canEdit || savingRelated">
                                   <mat-icon class="mdi-18px" fontIcon="mdi-minus-circle-outline"></mat-icon>
                                 </button>
                               </mat-cell>
                             </ng-container>
                             <mat-row *matRowDef="let row; columns: relatedColumns"></mat-row>
                           </mat-table>
-                          @if (relatedDataSource.data.length === 0) {
+                          @if (relatedRowsReady && relatedDataSource.data.length === 0) {
                           <div class="no-results-inline">No related competencies</div>
                           }
                         </div>
@@ -322,7 +332,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   (click)="toggleCompetencyExpand(row)"></mat-row>
                 <mat-row *matRowDef="let row; columns: ['relatedDetail']" class="detail-row"></mat-row>
               </mat-table>
-              @if (workRoleDataSource.filteredData.length === 0) {
+              @if (loadingCompetencies) {
+                <div class="no-results-inline">Loading work roles...</div>
+              } @else if (workRoleDataSource.filteredData.length === 0) {
                 <div class="no-results-inline">No work roles found</div>
               }
             </div>
@@ -333,7 +345,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <mat-expansion-panel-header>
               <mat-panel-title>
                 <mat-icon class="mdi-18px panel-icon" fontIcon="mdi-certificate-outline"></mat-icon>
-                Competencies ({{ expandedCompetencies.length }})
+                Competencies
+                @if (loadingCompetencies) {
+                (Loading...)
+                } @else {
+                ({{ expandedCompetencies.length }})
+                }
               </mat-panel-title>
             </mat-expansion-panel-header>
             <div class="element-toolbar" (click)="$event.stopPropagation();">
@@ -454,14 +471,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
                             </ng-container>
                             <ng-container matColumnDef="add">
                               <mat-cell *matCellDef="let r" class="related-col-btn">
-                                <button mat-icon-button (click)="addRelatedCompetency(r)" title="Add {{ r.idNumber }}" [disabled]="!canEdit">
+                                <button mat-icon-button (click)="addRelatedCompetency(r)" title="Add {{ r.idNumber }}" [disabled]="!canEdit || savingRelated">
                                   <mat-icon class="mdi-18px" fontIcon="mdi-plus-circle-outline"></mat-icon>
                                 </button>
                               </mat-cell>
                             </ng-container>
                             <mat-row *matRowDef="let row; columns: availableRelatedColumns"></mat-row>
                           </mat-table>
-                          @if (availableRelatedDataSource.filteredData.length === 0) {
+                          @if (relatedRowsReady && availableRelatedDataSource.filteredData.length === 0) {
                           <div class="no-results-inline">No competencies available</div>
                           }
                         </div>
@@ -511,14 +528,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
                             </ng-container>
                             <ng-container matColumnDef="remove">
                               <mat-cell *matCellDef="let r" class="related-col-btn">
-                                <button mat-icon-button (click)="removeRelatedCompetency(r)" title="Remove {{ r.idNumber }}" [disabled]="!canEdit">
+                                <button mat-icon-button (click)="removeRelatedCompetency(r)" title="Remove {{ r.idNumber }}" [disabled]="!canEdit || savingRelated">
                                   <mat-icon class="mdi-18px" fontIcon="mdi-minus-circle-outline"></mat-icon>
                                 </button>
                               </mat-cell>
                             </ng-container>
                             <mat-row *matRowDef="let row; columns: relatedColumns"></mat-row>
                           </mat-table>
-                          @if (relatedDataSource.data.length === 0) {
+                          @if (relatedRowsReady && relatedDataSource.data.length === 0) {
                           <div class="no-results-inline">No related competencies</div>
                           }
                         </div>
@@ -534,7 +551,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   (click)="toggleCompetencyExpand(row)"></mat-row>
                 <mat-row *matRowDef="let row; columns: ['relatedDetail']" class="detail-row"></mat-row>
               </mat-table>
-              @if (competencyDataSource.filteredData.length === 0) {
+              @if (loadingCompetencies) {
+                <div class="no-results-inline">Loading competencies...</div>
+              } @else if (competencyDataSource.filteredData.length === 0) {
                 <div class="no-results-inline">No competencies found</div>
               }
             </div>
@@ -555,3 +574,5 @@ project root for license information or contact permission@sei.cmu.edu for full 
   <div class="no-results">No Competency Frameworks found</div>
   }
 </section>
+
+<input hidden type="file" #jsonInput accept=".json" (change)="selectJsonFile($event)" />

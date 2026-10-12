@@ -4,9 +4,13 @@ Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
 
-<div mat-dialog-title>Import Competency Framework</div>
+<crucible-dialog
+  dialogTitle="Import Competency Framework"
+  [hideDefaultActions]="true"
+  [guardUnsavedWork]="true"
+>
 
-<div mat-dialog-content>
+<div crucibleDialogContent>
   <div class="upload-section">
     <p class="instructions">
       Supported formats: Moodle CSV (<code>lpimportcsv</code>), NICE Framework JSON, DCWF XLSX
@@ -81,7 +85,15 @@ project root for license information or contact permission@sei.cmu.edu for full 
     </div>
     }
 
-    @if (isProcessing) {
+    @if (importRunning) {
+    <div class="import-progress">
+      <mat-progress-bar mode="determinate" [value]="importPercent"></mat-progress-bar>
+      <div class="import-progress-status">
+        <span>{{ importPhase }}{{ importCounts ? ' — ' + importCounts : '' }}</span>
+        <span>{{ importPercent }}%</span>
+      </div>
+    </div>
+    } @else if (isProcessing) {
     <div class="processing-message">
       <mat-spinner diameter="24"></mat-spinner>
       <span>Processing file...</span>
@@ -91,15 +103,16 @@ project root for license information or contact permission@sei.cmu.edu for full 
   }
 </div>
 
-<div mat-dialog-actions align="end">
+<ng-container crucibleDialogActions>
   @if (importSucceeded) {
-    <button mat-raised-button color="primary" (click)="handleCancel()">
+    <button matButton="filled" type="button" (click)="handleCancel()">
       Close
     </button>
   } @else {
-    <button mat-stroked-button (click)="handleCancel()">Cancel</button>
-    <button mat-raised-button color="primary" [disabled]="!ready" (click)="handleImport()" style="margin-left: 10px;">
+    <button matButton="outlined" type="button" (click)="handleCancel()">Cancel</button>
+    <button matButton="filled" type="button" [disabled]="!ready || isProcessing || importRunning" (click)="handleImport()">
       Import
     </button>
   }
-</div>
+</ng-container>
+</crucible-dialog>

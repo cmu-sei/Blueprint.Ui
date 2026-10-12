@@ -70,6 +70,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
             title="Add a template CITE Action" style="outline: none;">
             <mat-icon class="mdi-24px center-self" fontIcon="mdi-plus-circle"></mat-icon>
           </button>
+          <button mat-icon-button title="Upload CITE Action templates from JSON" style="outline: none;"
+            (click)="jsonInput.click(); $event.stopPropagation();">
+            <mat-icon class="mdi-24px" fontIcon="mdi-upload"></mat-icon>
+          </button>
+          <button mat-icon-button title="Download CITE Action templates as JSON" style="outline: none;"
+            (click)="openDownloadDialog(); $event.stopPropagation();">
+            <mat-icon class="mdi-24px" fontIcon="mdi-download"></mat-icon>
+          </button>
           }
           @if (!showTemplates && (canEdit || msel.hasRole(loggedInUserId, null).owner)) {
           <button mat-icon-button [matMenuTriggerFor]="addMenu"
@@ -126,3 +134,5 @@ project root for license information or contact permission@sei.cmu.edu for full 
     </table>
   </div>
 </div>
+
+<input hidden type="file" #jsonInput accept=".json" (change)="selectFile($event)" />

@@ -3,15 +3,8 @@
 // project root for license information.
 
 import { Component, EventEmitter, Inject, Output } from '@angular/core';
-import {
-  UntypedFormControl,
-  FormGroupDirective,
-  NgForm,
-} from '@angular/forms';
-import { ErrorStateMatcher } from '@angular/material/core';
 import { MatDialog } from '@angular/material/dialog';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { DialogService } from 'src/app/services/dialog/dialog.service';
+import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { ComnSettingsService } from '@cmusei/crucible-common';
 import {
   DataField,
@@ -23,17 +16,6 @@ import { DataOptionImportDialogComponent } from '../data-option-import-dialog/da
 import { DataOptionListDialogComponent } from '../data-option-list-dialog/data-option-list-dialog.component';
 import { CompetencyOptionsDialogComponent } from '../competency-options-dialog/competency-options-dialog.component';
 import { v4 as uuidv4 } from 'uuid';
-
-/** Error when invalid control is dirty, touched, or submitted. */
-export class UserErrorStateMatcher implements ErrorStateMatcher {
-  isErrorState(
-    control: UntypedFormControl | null,
-    form: FormGroupDirective | NgForm | null
-  ): boolean {
-    const isSubmitted = form && form.submitted;
-    return !!(control && control.invalid && (control.dirty || isSubmitted));
-  }
-}
 
 @Component({
     selector: 'app-data-field-edit-dialog',
@@ -47,13 +29,9 @@ export class DataFieldEditDialogComponent {
 
   constructor(
     public dialog: MatDialog,
-    public dialogService: DialogService,
-    dialogRef: MatDialogRef<DataFieldEditDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any,
     private settingsService: ComnSettingsService
-  ) {
-    dialogRef.disableClose = true;
-  }
+  ) {}
 
   errorFree() {
     const base = this.data.dataField.name && this.data.dataField.name.length > 0 &&

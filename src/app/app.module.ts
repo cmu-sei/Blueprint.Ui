@@ -6,6 +6,7 @@
 
 import { CdkTableModule } from '@angular/cdk/table';
 import { CdkTreeModule } from '@angular/cdk/tree';
+import { A11yModule } from '@angular/cdk/a11y';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { ApplicationConfig, ErrorHandler, NgModule } from '@angular/core';
@@ -50,13 +51,16 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {
   ComnAuthModule,
   ComnHeaderBarModule,
+  CRUCIBLE_DIALOG_IMPORTS,
   ComnSettingsConfig,
   ComnSettingsModule,
   ComnSettingsService,
+  provideCrucibleTheme,
 } from '@cmusei/crucible-common';
 import { AkitaNgRouterStoreModule } from '@datorama/akita-ng-router-store';
 import { AkitaNgDevtools } from '@datorama/akita-ngdevtools';
 import { ClipboardModule } from 'ngx-clipboard';
+import { environment } from '../environments/environment';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { AdminCatalogEditDialogComponent } from './components/admin/admin-catalog-edit-dialog/admin-catalog-edit-dialog.component';
@@ -101,6 +105,7 @@ import { DataOptionEditDialogComponent } from './components/data-option-edit-dia
 import { DataOptionImportDialogComponent } from './components/data-option-import-dialog/data-option-import-dialog.component';
 import { DataOptionListDialogComponent } from './components/data-option-list-dialog/data-option-list-dialog.component';
 import { HomeAppComponent } from './components/home-app/home-app.component';
+import { ItemDownloadDialogComponent } from './components/item-download-dialog/item-download-dialog.component';
 import { InjectEditDialogComponent } from './components/inject-edit-dialog/inject-edit-dialog.component';
 import { InjectListComponent } from './components/inject-list/inject-list.component';
 import { InjectSelectDialogComponent } from './components/inject-select-dialog/inject-select-dialog.component';
@@ -133,7 +138,6 @@ import { ScenarioEventEditDialogComponent } from './components/scenario-event-ed
 import { ScenarioEventListComponent } from './components/scenario-event-list/scenario-event-list.component';
 import { StarterComponent } from './components/starter/starter.component';
 import { SteamfitterTaskComponent } from './components/steamfitter-task/steamfitter-task.component';
-import { ConfirmDialogComponent } from './components/shared/confirm-dialog/confirm-dialog.component';
 import { SystemMessageComponent } from './components/shared/system-message/system-message.component';
 import { TeamAddDialogComponent } from './components/team-add-dialog/team-add-dialog.component';
 import { TeamEditDialogComponent } from './components/team-edit-dialog/team-edit-dialog.component';
@@ -142,7 +146,6 @@ import { TopbarComponent } from './components/shared/top-bar/topbar.component';
 import { PresenceBarComponent } from './components/shared/presence-bar/presence-bar.component';
 import { UIDataService } from './data/ui/ui-data.service';
 import { UserDataService } from './data/user/user-data.service';
-import { DialogService } from './services/dialog/dialog.service';
 import { ErrorService } from './services/error/error.service';
 import { SystemMessageService } from './services/system-message/system-message.service';
 import { BASE_PATH } from './generated/blueprint.api';
@@ -202,6 +205,7 @@ export const appConfig: ApplicationConfig = {
     DataOptionImportDialogComponent,
     DataOptionListDialogComponent,
     HomeAppComponent,
+    ItemDownloadDialogComponent,
     InjectEditDialogComponent,
     InjectListComponent,
     InjectSelectDialogComponent,
@@ -235,7 +239,6 @@ export const appConfig: ApplicationConfig = {
     StarterComponent,
     SteamfitterTaskComponent,
     SystemMessageComponent,
-    ConfirmDialogComponent,
     TeamAddDialogComponent,
     TeamEditDialogComponent,
     TeamUsersComponent,
@@ -275,7 +278,7 @@ export const appConfig: ApplicationConfig = {
     DataValueComponent,
   ],
   exports: [MatSortModule],
-  bootstrap: [AppComponent], imports: [AkitaNgDevtools,
+  bootstrap: [AppComponent], imports: [environment.production ? [] : AkitaNgDevtools.forRoot(),
     AkitaNgRouterStoreModule,
     BrowserModule,
     AppRoutingModule,
@@ -325,6 +328,7 @@ export const appConfig: ApplicationConfig = {
     NgxMatDatepickerToggle,
     NgxMatDatetimepicker,
     CdkTableModule,
+    A11yModule,
     MatTreeModule,
     CdkTreeModule,
     ClipboardModule,
@@ -332,8 +336,8 @@ export const appConfig: ApplicationConfig = {
     ComnSettingsModule.forRoot(),
     AngularEditorModule,
     DragDropModule,
-    ComnHeaderBarModule], providers: [
-      DialogService,
+    ComnHeaderBarModule,
+    ...CRUCIBLE_DIALOG_IMPORTS], providers: [
       SystemMessageService,
       UIDataService,
       UserDataService,
@@ -347,6 +351,7 @@ export const appConfig: ApplicationConfig = {
         useClass: ErrorService,
       },
       provideHttpClient(withInterceptorsFromDi()),
+      provideCrucibleTheme({ brand: { color: '#007CB5', text: '#FFFFFF' } }),
     ]
 })
 export class AppModule { }

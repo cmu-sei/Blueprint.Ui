@@ -25,7 +25,7 @@ import { MselUnitQuery } from 'src/app/data/msel-unit/msel-unit.query';
 import { MatMenuTrigger } from '@angular/material/menu';
 import { UserMselRoleDataService } from 'src/app/data/user-msel-role/user-msel-role-data.service';
 import { UserMselRoleQuery } from 'src/app/data/user-msel-role/user-msel-role.query';
-import { DialogService } from 'src/app/services/dialog/dialog.service';
+import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { MatTable, MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 import { Sort } from '@angular/material/sort';
@@ -109,7 +109,7 @@ export class MselContributorsComponent implements OnDestroy, OnInit {
     private mselUnitQuery: MselUnitQuery,
     private userMselRoleDataService: UserMselRoleDataService,
     private userMselRoleQuery: UserMselRoleQuery,
-    public dialogService: DialogService,
+    public dialogService: CrucibleDialogService,
     private permissionDataService: PermissionDataService,
     private changeDetectorRef: ChangeDetectorRef
   ) {
@@ -212,12 +212,9 @@ export class MselContributorsComponent implements OnDestroy, OnInit {
     const unitLabel = mselUnit?.unit?.name;
 
     this.dialogService
-      .confirm(
-        'Remove Contributor',
-        `Are you sure that you want to remove ${unitLabel} from the MSEL?`
-      )
-      .subscribe((result) => {
-        if (result['confirm']) {
+      .confirm({ title: 'Remove Contributor', message: `Are you sure that you want to remove ${unitLabel} from the MSEL?`
+       }).afterClosed().subscribe((result) => {
+        if (result) {
           this.mselUnitDataService.delete(id);
         }
       });

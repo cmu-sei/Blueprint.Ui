@@ -27,7 +27,6 @@ export class TeamCompetencyPropagateDialogComponent {
     public dialogRef: MatDialogRef<TeamCompetencyPropagateDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: TeamCompetencyPropagateData
   ) {
-    this.dialogRef.disableClose = true;
     // Pre-select all
     this.selection.select(...data.competencies);
   }
@@ -56,7 +55,4 @@ export class TeamCompetencyPropagateDialogComponent {
     this.dialogRef.close(this.selection.selected);
   }
 
-  onCancel(): void {
-    this.dialogRef.close(null);
-  }
 }

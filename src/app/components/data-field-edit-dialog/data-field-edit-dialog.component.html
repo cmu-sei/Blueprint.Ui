@@ -4,13 +4,14 @@ Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
 
-<div mat-dialog-title>
-  {{ data.title }}
-  <button mat-icon-button (click)="handleEditComplete(false)" title="Cancel" class="close-button" tabindex="-1">
-    <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
-  </button>
-</div>
-<div mat-dialog-content>
+<crucible-dialog
+  [dialogTitle]="data.title"
+  [submitDisabled]="!errorFree()"
+  [guardUnsavedWork]="true"
+  (cancel)="handleEditComplete(false)"
+  (submit)="handleEditComplete(true)"
+>
+<div crucibleDialogContent>
   @if (!data.dataField.isTemplate) {
   <div class="data-field-detail" (click)="$event.stopPropagation();">
     <div class="single-detail">
@@ -164,14 +165,4 @@ project root for license information or contact permission@sei.cmu.edu for full 
   </div>
   }
 </div>
-<div mat-dialog-actions>
-  <div class="cssLayoutRowStartCenter bottom-button">
-    <div class="delete-button">
-      <button mat-stroked-button (click)="handleEditComplete(true)" [disabled]="!errorFree()"
-        style="margin-left: 40px;">Save</button>
-    </div>
-    <div class="delete-button">
-      <button mat-stroked-button (click)="handleEditComplete(false)">Cancel</button>
-    </div>
-  </div>
-</div>
+</crucible-dialog>

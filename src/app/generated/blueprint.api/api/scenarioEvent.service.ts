@@ -116,16 +116,19 @@ export class ScenarioEventService extends BaseService {
      * Copies ScenarioEvents from one MSEL to another
      * Copies ScenarioEvents from the supplied list to another MSEL
      * @param mselId The MSEL ID
-     * @param requestBody The list of ScenarioEvent IDs
+     * @param scenarioEventIdList The list of ScenarioEvent IDs
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public copyScenarioEventsToMsel(mselId: string, requestBody?: Array<string>, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<ScenarioEvent>>;
-    public copyScenarioEventsToMsel(mselId: string, requestBody?: Array<string>, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<ScenarioEvent>>>;
-    public copyScenarioEventsToMsel(mselId: string, requestBody?: Array<string>, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<ScenarioEvent>>>;
-    public copyScenarioEventsToMsel(mselId: string, requestBody?: Array<string>, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public copyScenarioEventsToMsel(mselId: string, scenarioEventIdList: Array<string>, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<ScenarioEvent>>;
+    public copyScenarioEventsToMsel(mselId: string, scenarioEventIdList: Array<string>, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<ScenarioEvent>>>;
+    public copyScenarioEventsToMsel(mselId: string, scenarioEventIdList: Array<string>, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<ScenarioEvent>>>;
+    public copyScenarioEventsToMsel(mselId: string, scenarioEventIdList: Array<string>, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (mselId === null || mselId === undefined) {
             throw new Error('Required parameter mselId was null or undefined when calling copyScenarioEventsToMsel.');
+        }
+        if (scenarioEventIdList === null || scenarioEventIdList === undefined) {
+            throw new Error('Required parameter scenarioEventIdList was null or undefined when calling copyScenarioEventsToMsel.');
         }
 
         let localVarHeaders = this.defaultHeaders;
@@ -174,7 +177,7 @@ export class ScenarioEventService extends BaseService {
         return this.httpClient.request<Array<ScenarioEvent>>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: requestBody,
+                body: scenarioEventIdList,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,

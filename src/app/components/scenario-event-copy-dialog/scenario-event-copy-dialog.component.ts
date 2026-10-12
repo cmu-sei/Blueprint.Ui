@@ -10,11 +10,7 @@ import {
   Output,
 } from '@angular/core';
 import { Msel } from 'src/app/generated/blueprint.api';
-import {
-  MatDialogRef,
-  MAT_DIALOG_DATA,
-} from '@angular/material/dialog';
-import { DialogService } from 'src/app/services/dialog/dialog.service';
+import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 @Component({
     selector: 'app-scenario-event-copy-dialog',
@@ -28,12 +24,8 @@ export class ScenarioEventCopyDialogComponent implements OnDestroy, OnInit {
   selectedMselId = '';
 
   constructor(
-    public dialogService: DialogService,
-    dialogRef: MatDialogRef<ScenarioEventCopyDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any
-  ) {
-    dialogRef.disableClose = true;
-  }
+  ) {}
 
   ngOnInit() { }
 

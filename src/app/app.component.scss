@@ -7,8 +7,8 @@
 @use "@angular/material" as mat;
 
 mat-toolbar {
-    @include mat.toolbar-overrides((container-background-color: var(--mat-sys-primary),
-            container-text-color: var(--mat-sys-on-primary),
+    @include mat.toolbar-overrides((container-background-color: var(--crucible-topbar-background),
+            container-text-color: var(--crucible-topbar-text),
         ));
 }
 
@@ -16,5 +16,15 @@ mat-toolbar {
   display: flex;
   flex-direction: column;
   height: 100vh;
+  overflow: hidden;
+}
+
+// The routed component used to be a direct flex child of :host and its own :host sets
+// `flex: 1`, so the <main> landmark that now wraps it has to be that flex child instead.
+.app-main {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
   overflow: hidden;
 }

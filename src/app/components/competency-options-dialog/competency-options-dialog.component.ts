@@ -46,7 +46,6 @@ export class CompetencyOptionsDialogComponent implements OnDestroy {
       canEdit: boolean;
     }
   ) {
-    dialogRef.disableClose = true;
     // Load frameworks
     this.competencyFrameworkService.getCompetencyFrameworks().subscribe(frameworks => {
       this.frameworks = frameworks;
@@ -113,6 +112,7 @@ export class CompetencyOptionsDialogComponent implements OnDestroy {
       return prefixMap[idNumber.charAt(0)] || 'Other';
     }
     if (/^[A-Z]{2}-[A-Z]{3}-\d+$/.test(idNumber)) return 'Work Role';
+    if (/^[A-Z]{2}-\d+[A-Z]?$/.test(idNumber)) return 'Work Role';
     if (/^[A-Z]{3}$/.test(idNumber)) return 'Specialty Area';
     if (/^[A-Z]{2}$/.test(idNumber)) return 'Category';
     return 'Other';

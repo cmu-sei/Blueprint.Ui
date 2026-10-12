@@ -1,7 +1,7 @@
 // Copyright 2026 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTable, MatTableDataSource } from '@angular/material/table';
@@ -16,9 +16,11 @@ import {
 } from 'src/app/generated/blueprint.api';
 import { Sort } from '@angular/material/sort';
 import { MatDialog } from '@angular/material/dialog';
-import { DialogService } from 'src/app/services/dialog/dialog.service';
+import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { AdminProficiencyScaleEditDialogComponent } from '../admin-proficiency-scale-edit-dialog/admin-proficiency-scale-edit-dialog.component';
 import { AdminProficiencyLevelEditDialogComponent } from '../admin-proficiency-level-edit-dialog/admin-proficiency-level-edit-dialog.component';
+import { ItemDownloadDialogComponent } from '../../item-download-dialog/item-download-dialog.component';
+import { HttpEventType, HttpResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-admin-proficiency-scales',
@@ -44,6 +46,7 @@ export class AdminProficiencyScalesComponent implements OnInit, OnDestroy {
   levelSort: Sort = { active: 'displayOrder', direction: 'asc' };
   @ViewChild('scaleTable', { static: false }) scaleTable: MatTable<any>;
   @ViewChild('paginator') paginator: MatPaginator;
+  @ViewChild('jsonInput') jsonInput: ElementRef<HTMLInputElement>;
   expandedScaleId = '';
   filterControl = new UntypedFormControl();
   filterString = '';
@@ -53,7 +56,7 @@ export class AdminProficiencyScalesComponent implements OnInit, OnDestroy {
     private proficiencyScaleService: ProficiencyScaleService,
     private proficiencyLevelService: ProficiencyLevelService,
     public dialog: MatDialog,
-    public dialogService: DialogService
+    public dialogService: CrucibleDialogService
   ) {}
 
   ngOnInit() {
@@ -73,6 +76,58 @@ export class AdminProficiencyScalesComponent implements OnInit, OnDestroy {
         this.scales = scales;
         this.applySorting();
       });
+  }
+
+  selectFile(e: Event) {
+    const input = e.target as HTMLInputElement;
+    const file = input.files && input.files[0];
+    if (!file) {
+      return;
+    }
+    this.proficiencyScaleService.uploadJsonProficiencyScales(file, 'events', true)
+      .subscribe((event: any) => {
+        if (event instanceof HttpResponse && event.status === 200) {
+          this.loadScales();
+        }
+      });
+    this.jsonInput.nativeElement.value = null;
+  }
+
+  openDownloadDialog() {
+    const items = (this.scaleDataSource.filteredData || []).map((s) => ({
+      id: s.id,
+      label: s.name || s.id,
+    }));
+    const dialogRef = this.dialog.open(ItemDownloadDialogComponent, {
+      maxWidth: '90vw',
+      width: 'auto',
+      data: {
+        title: 'Select Proficiency Scales to download',
+        items,
+      },
+    });
+    dialogRef.afterClosed().subscribe((selectedIds: string[] | undefined) => {
+      if (selectedIds && selectedIds.length > 0) {
+        this.downloadJsonItems(selectedIds);
+      }
+    });
+  }
+
+  downloadJsonItems(ids: string[]) {
+    this.proficiencyScaleService.downloadJsonProficiencyScales(ids).subscribe(
+      (data) => {
+        const url = window.URL.createObjectURL(data);
+        const link = document.createElement('a');
+        link.href = url;
+        link.target = '_blank';
+        link.download = 'proficiency-scale-export.json';
+        link.click();
+        window.URL.revokeObjectURL(url);
+      },
+      (err) => {
+        window.alert('Error downloading file');
+      }
+    );
   }
 
   applySorting() {
@@ -166,9 +221,8 @@ export class AdminProficiencyScalesComponent implements OnInit, OnDestroy {
 
   deleteScale(scale: ProficiencyScale) {
     this.dialogService
-      .confirm('Delete Scale', 'Are you sure you want to delete ' + scale.name + '?')
-      .subscribe((result) => {
-        if (result['confirm']) {
+      .confirm({ title: 'Delete Scale', message: 'Are you sure you want to delete ' + scale.name + '?' }).afterClosed().subscribe((result) => {
+        if (result) {
           this.proficiencyScaleService.deleteProficiencyScale(scale.id)
             .pipe(take(1))
             .subscribe(() => {

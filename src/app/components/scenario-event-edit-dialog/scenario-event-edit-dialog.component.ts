@@ -13,12 +13,8 @@ import {
 } from 'src/app/generated/blueprint.api';
 import { Sort } from '@angular/material/sort';
 import { DataValuePlus, IntegrationTarget } from 'src/app/data/scenario-event/scenario-event-data.service';
-import {
-  MatDialogRef,
-  MAT_DIALOG_DATA,
-} from '@angular/material/dialog';
-import { DialogService } from 'src/app/services/dialog/dialog.service';
-import { AngularEditorConfig } from '@kolkov/angular-editor';
+import { MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { EDITOR_CONFIG, VIEW_CONFIG } from 'src/app/utilities/editor-config';
 
 @Component({
   selector: 'app-scenario-event-edit-dialog',
@@ -34,48 +30,8 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
   isAddingScenarioEvent = false;
   canDoAnything = false;
   private unsubscribe$ = new Subject();
-  editorConfig: AngularEditorConfig = {
-    editable: true,
-    spellcheck: true,
-    height: 'auto',
-    minHeight: '0',
-    maxHeight: 'auto',
-    width: 'auto',
-    minWidth: '0',
-    translate: 'yes',
-    enableToolbar: true,
-    showToolbar: true,
-    placeholder: 'Enter text here...',
-    defaultParagraphSeparator: '',
-    defaultFontName: '',
-    defaultFontSize: '',
-    fonts: [
-      { class: 'arial', name: 'Arial' },
-      { class: 'times-new-roman', name: 'Times New Roman' },
-      { class: 'calibri', name: 'Calibri' },
-      { class: 'comic-sans-ms', name: 'Comic Sans MS' },
-    ],
-    uploadUrl: '',
-    uploadWithCredentials: false,
-    sanitize: false,
-    toolbarPosition: 'top',
-    toolbarHiddenButtons: [['backgroundColor']],
-  };
-  viewConfig: AngularEditorConfig = {
-    editable: false,
-    height: 'auto',
-    minHeight: '1200px',
-    width: '100%',
-    minWidth: '0',
-    translate: 'yes',
-    enableToolbar: false,
-    showToolbar: false,
-    placeholder: '',
-    defaultParagraphSeparator: '',
-    defaultFontName: '',
-    defaultFontSize: '',
-    sanitize: false,
-  };
+  editorConfig = EDITOR_CONFIG;
+  viewConfig = VIEW_CONFIG;
   dataType: typeof DataFieldType = DataFieldType;
   eventType: typeof EventType = EventType;
   eventTypes = [
@@ -109,12 +65,8 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
   integrationTarget = IntegrationTarget;
 
   constructor(
-    public dialogService: DialogService,
-    dialogRef: MatDialogRef<ScenarioEventEditDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any
-  ) {
-    dialogRef.disableClose = true;
-  }
+  ) {}
 
   ngOnInit() {
     if (!this.data.isNew && this.showDefaultTab()) {

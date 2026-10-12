@@ -219,7 +219,7 @@ export class CatalogDataService {
   uploadJson(file: File, observe: any, reportProgress: boolean) {
     this.catalogStore.setLoading(true);
     this.catalogService
-      .uploadJsonCatalog('', '', '', file, observe, reportProgress)
+      .uploadJsonCatalog(file, observe, reportProgress)
       .subscribe(
         (event: any) => {
           if (event.type === HttpEventType.UploadProgress) {

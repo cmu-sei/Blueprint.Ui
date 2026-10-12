@@ -34,7 +34,7 @@ import { TopbarView } from '../shared/top-bar/topbar.models';
 })
 export class AssessorPageComponent implements OnDestroy, OnInit {
   private unsubscribe$ = new Subject();
-  private msel: Msel = {};
+  private msel: Msel = { name: '' };
   selectedMselId = '';
   loggedInUserId: string;
   userTheme$ = this.authQuery.userTheme$;
@@ -98,7 +98,7 @@ export class AssessorPageComponent implements OnDestroy, OnInit {
           this.topbarText = prefix + msel.name;
           this.titleService.setTitle(prefix + msel.name);
         } else {
-          this.msel = {};
+          this.msel = { name: '' };
         }
       });
 

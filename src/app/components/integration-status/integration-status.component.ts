@@ -3,7 +3,7 @@
 // project root for license information.
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
-import { DialogService } from 'src/app/services/dialog/dialog.service';
+import { CrucibleDialogService } from '@cmusei/crucible-common';
 
 @Component({
   selector: 'app-integration-status',
@@ -18,7 +18,7 @@ export class IntegrationStatusComponent {
 
   constructor(
     private mselDataService: MselDataService,
-    private dialogService: DialogService
+    private dialogService: CrucibleDialogService
   ) {}
 
   get isError(): boolean {
@@ -47,12 +47,9 @@ export class IntegrationStatusComponent {
 
   pullIntegrations() {
     this.dialogService
-      .confirm(
-        'Remove Integrations',
-        'Are you sure you want to remove partial integrations from the associated applications?'
-      )
-      .subscribe((result) => {
-        if (result['confirm']) {
+      .confirm({ title: 'Remove Integrations', message: 'Are you sure you want to remove partial integrations from the associated applications?'
+       }).afterClosed().subscribe((result) => {
+        if (result) {
           this.mselDataService.pullIntegrations(this.msel.id);
           this.closed.emit();
         }

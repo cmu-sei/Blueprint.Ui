@@ -3,8 +3,7 @@
 // project root for license information.
 
 import { Component, EventEmitter, Inject, Output } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { DialogService } from 'src/app/services/dialog/dialog.service';
+import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 @Component({
     selector: 'app-admin-proficiency-level-edit-dialog',
@@ -17,12 +16,8 @@ export class AdminProficiencyLevelEditDialogComponent {
   @Output() editComplete = new EventEmitter<any>();
 
   constructor(
-    public dialogService: DialogService,
-    dialogRef: MatDialogRef<AdminProficiencyLevelEditDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any
-  ) {
-    dialogRef.disableClose = true;
-  }
+  ) {}
 
   errorFree() {
     return this.data.level.name;

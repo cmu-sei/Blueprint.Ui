@@ -10,7 +10,7 @@ import {
   Team,
 } from 'src/app/generated/blueprint.api';
 import { PlayerApplicationQuery } from 'src/app/data/player-application/player-application.query';
-import { DialogService } from 'src/app/services/dialog/dialog.service';
+import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { PlayerApplicationTeamDataService } from 'src/app/data/team/player-application-team-data.service';
 import { TeamQuery } from 'src/app/data/team/team.query';
 import { MatTable, MatTableDataSource } from '@angular/material/table';
@@ -50,7 +50,7 @@ export class PlayerTeamAppOrderComponent implements OnDestroy {
     private playerApplicationQuery: PlayerApplicationQuery,
     private playerApplicationTeamDataService: PlayerApplicationTeamDataService,
     private teamQuery: TeamQuery,
-    public dialogService: DialogService,
+    public dialogService: CrucibleDialogService,
   ) {
     this.playerApplicationTeamDataService.playerApplicationTeams
       .pipe(takeUntil(this.unsubscribe$))

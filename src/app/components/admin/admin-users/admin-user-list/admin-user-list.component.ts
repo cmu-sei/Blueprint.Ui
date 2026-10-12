@@ -11,17 +11,13 @@ import {
   OnChanges,
   SimpleChanges,
 } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
+import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { MatSort } from '@angular/material/sort';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
-import { ConfirmDialogComponent } from 'src/app/components/shared/confirm-dialog/confirm-dialog.component';
 import { User, SystemRole } from 'src/app/generated/blueprint.api';
-import { Observable } from 'rxjs';
 import { SystemRoleDataService } from 'src/app/data/system-role/system-role-data.service';
 import { MatSelectChange } from '@angular/material/select';
-
-const WAS_CANCELLED = 'wasCancelled';
 
 export interface Action {
   Value: string;
@@ -55,7 +51,7 @@ export class AdminUserListComponent implements OnInit, OnChanges {
   @ViewChild(MatSort, { static: true }) sort: MatSort;
 
   constructor(
-    private dialog: MatDialog,
+    private confirmService: CrucibleDialogService,
     private roleDataService: SystemRoleDataService
   ) { }
 
@@ -98,29 +94,18 @@ export class AdminUserListComponent implements OnInit, OnChanges {
   }
 
   deleteUser(user: User) {
-    this.confirmDialog('Delete ' + user.name + '?', user.id, {
-      buttonTrueText: 'Delete',
-    }).subscribe((result) => {
-      if (!result[WAS_CANCELLED] && result['confirm']) {
+    this.confirmService
+      .confirm({
+        title: 'Delete ' + user.name + '?',
+        message: user.id,
+        confirmText: 'Delete',
+      })
+      .afterClosed()
+      .subscribe((result) => {
+      if (result) {
         this.delete.emit(user.id);
       }
     });
-  }
-
-  confirmDialog(
-    title: string,
-    message: string,
-    data?: any
-  ): Observable<boolean> {
-    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-      maxWidth: '90vw',
-      width: 'auto',
-      data: data || {},
-    });
-    dialogRef.componentInstance.title = title;
-    dialogRef.componentInstance.message = message;
-
-    return dialogRef.afterClosed();
   }
 
   trackById(index: number, item: any) {

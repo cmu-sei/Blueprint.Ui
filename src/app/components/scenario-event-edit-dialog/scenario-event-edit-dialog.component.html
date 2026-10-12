@@ -3,25 +3,20 @@ Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
-<div mat-dialog-container>
-  <div mat-dialog-title>
-    @if (data.isNew) {
-    <span>Create Event</span>
-    }
-    @if (!data.isNew) {
-    <span>Edit Event</span>
-    }
-    <button mat-icon-button (click)="handleEditComplete(false)" title="Cancel" class="close-button" tabindex="-1">
-      <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
-    </button>
-  </div>
+<crucible-dialog
+  [dialogTitle]="data.isNew ? 'Create Event' : 'Edit Event'"
+  [submitDisabled]="hasBadData() || !data.isEditor"
+  [guardUnsavedWork]="true"
+  (cancel)="handleEditComplete(false)"
+  (submit)="handleEditComplete(true)"
+>
   @if (!!data && data.scenarioEvent) {
-  <div mat-dialog-content>
+  <div crucibleDialogContent>
     <div class="scenario-event-edit-dialog">
       <!-- Scenario Event Type -->
       @if (!data.isEditingRestricted) {
       <div class="single-edit-dialog">
-        <mat-form-field>
+        <mat-form-field class="full-width">
           <mat-label>Scenario Event Type</mat-label>
           <mat-select placeholder="Scenario Event Type" [(ngModel)]="data.scenarioEvent.scenarioEventType"
             (valueChange)="scenarioEventTypeChange()" [disabled]="!data.isContentDeveloper && !data.isOwner">
@@ -125,9 +120,4 @@ project root for license information or contact permission@sei.cmu.edu for full 
     </div>
   </div>
   }
-  <div mat-dialog-actions>
-    <button mat-stroked-button (click)="handleEditComplete(true)"
-      [disabled]="hasBadData() || !data.isEditor">Save</button>
-    <button mat-stroked-button (click)="handleEditComplete(false)">Cancel</button>
-  </div>
-</div>
+</crucible-dialog>

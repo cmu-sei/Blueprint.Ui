@@ -3,26 +3,9 @@
 // project root for license information.
 
 import { Component, EventEmitter, Inject, Output } from '@angular/core';
-import {
-  UntypedFormControl,
-  FormGroupDirective,
-  NgForm,
-  Validators,
-} from '@angular/forms';
-import { ErrorStateMatcher } from '@angular/material/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { DialogService } from 'src/app/services/dialog/dialog.service';
-
-/** Error when invalid control is dirty, touched, or submitted. */
-export class UserErrorStateMatcher implements ErrorStateMatcher {
-  isErrorState(
-    control: UntypedFormControl | null,
-    form: FormGroupDirective | NgForm | null
-  ): boolean {
-    const isSubmitted = form && form.submitted;
-    return !!(control && control.invalid && (control.dirty || isSubmitted));
-  }
-}
+import { UntypedFormControl, Validators } from '@angular/forms';
+import { MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { EDITOR_CONFIG } from 'src/app/utilities/editor-config';
 
 @Component({
     selector: 'app-admin-unit-edit-dialog',
@@ -46,14 +29,15 @@ export class AdminUnitEditDialogComponent {
       Validators.required,
     ]
   );
+  public descriptionFormControl = new UntypedFormControl(
+    this.data.unit.description,
+    []
+  );
+  editorConfig = EDITOR_CONFIG;
 
   constructor(
-    public dialogService: DialogService,
-    dialogRef: MatDialogRef<AdminUnitEditDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any
-  ) {
-    dialogRef.disableClose = true;
-  }
+  ) {}
 
   errorFree() {
     return !(
@@ -77,6 +61,9 @@ export class AdminUnitEditDialogComponent {
       this.data.unit.shortName = this.unitShortNameFormControl.value
         .toString()
         .trim();
+      this.data.unit.description = this.descriptionFormControl.value
+        ? this.descriptionFormControl.value.toString().trim()
+        : '';
       if (this.errorFree) {
         this.editComplete.emit({
           saveChanges: saveChanges,
@@ -96,6 +83,11 @@ export class AdminUnitEditDialogComponent {
         break;
       case 'shortName':
         this.data.unit.shortName = this.unitShortNameFormControl.value.toString();
+        break;
+      case 'description':
+        this.data.unit.description = this.descriptionFormControl.value
+          ? this.descriptionFormControl.value.toString()
+          : '';
         break;
       default:
         break;

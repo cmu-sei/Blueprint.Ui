@@ -10,7 +10,7 @@ import { MselPageDataService } from 'src/app/data/msel-page/msel-page-data.servi
 import { MselPageQuery } from 'src/app/data/msel-page/msel-page.query';
 import { SafeHtml } from '@angular/platform-browser';
 import { ComnSettingsService } from '@cmusei/crucible-common';
-import { AngularEditorConfig } from '@kolkov/angular-editor';
+import { VIEW_CONFIG } from 'src/app/utilities/editor-config';
 
 @Component({
     selector: 'app-msel-pageapp',
@@ -22,21 +22,7 @@ export class MselPageComponent implements OnDestroy {
   safeContent: SafeHtml = '';
   mselPage: MselPage = {} as MselPage;
   private unsubscribe$ = new Subject();
-  viewConfig: AngularEditorConfig = {
-    editable: false,
-    height: 'auto',
-    minHeight: '1200px',
-    width: '100%',
-    minWidth: '0',
-    translate: 'yes',
-    enableToolbar: false,
-    showToolbar: false,
-    placeholder: '',
-    defaultParagraphSeparator: '',
-    defaultFontName: '',
-    defaultFontSize: '',
-    sanitize: false,
-  };
+  viewConfig = VIEW_CONFIG;
 
   constructor(
     private activatedRoute: ActivatedRoute,

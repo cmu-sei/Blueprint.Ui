@@ -6,7 +6,10 @@ project root for license information or contact permission@sei.cmu.edu for full 
 
 <mat-sidenav-container class="appcontent-container" autosize>
   @if (sideNavCollapsed) {
-  <mat-sidenav class="appbarmenu-container-collapsed" #sidenav mode="side" [(opened)]="isSidebarOpen">
+  <!-- mat-sidenav carries no landmark role of its own, so the section list has to be marked up as
+       navigation explicitly for assistive technology to find or skip it. -->
+  <mat-sidenav class="appbarmenu-container-collapsed" role="navigation" aria-label="Administration sections"
+    #sidenav mode="side" [(opened)]="isSidebarOpen">
     <mat-toolbar class="sidenav-header" title="Exit Administration" (click)="exitAdmin()">
       <a class="nolink">
         <mat-icon class="icon-35px crucible-icon-blueprint" svgIcon="crucible-icon-blueprint"></mat-icon>
@@ -91,7 +94,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
     </div>
   </mat-sidenav>
   } @else {
-  <mat-sidenav class="appbarmenu-container" #sidenav mode="side" [(opened)]="isSidebarOpen">
+  <mat-sidenav class="appbarmenu-container" role="navigation" aria-label="Administration sections" #sidenav
+    mode="side" [(opened)]="isSidebarOpen">
     <div class="sidenav-content-wrapper">
       <mat-toolbar class="sidenav-header" title="Exit Administration" (click)="exitAdmin()">
         <a class="nolink">

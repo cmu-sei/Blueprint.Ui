@@ -4,6 +4,7 @@
 import { ChangeDetectorRef, Component, Input, OnDestroy, ViewChild, ElementRef, OnInit } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { MatSort, MatSortable, Sort } from '@angular/material/sort';
+import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
 import { Router } from '@angular/router';
 import { Subject, Observable } from 'rxjs';
@@ -16,7 +17,7 @@ import { UserQuery, CurrentUserQuery } from 'src/app/data/user/user.query';
 import { SignalRService } from 'src/app/services/signalr.service';
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
-import { DialogService } from 'src/app/services/dialog/dialog.service';
+import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
 import { User, SystemPermission } from 'src/app/generated/blueprint.api';
 import { MselItemStatus } from 'src/app/generated/blueprint.api';
@@ -34,11 +35,15 @@ export class MselListComponent implements OnDestroy, OnInit {
   @ViewChild('jsonInput') jsonInput: ElementRef<HTMLInputElement>;
   @ViewChild('xlsxInput') xlsxInput: ElementRef<HTMLInputElement>;
   @ViewChild(MatSort, { static: true }) sort: MatSort;
+  @ViewChild(MatPaginator) set paginator(paginator: MatPaginator) {
+    if (paginator && this.mselDataSource) {
+      this.mselDataSource.paginator = paginator;
+    }
+  }
   mselList: MselPlus[] = [];
   isReady = false;
   uploadProgress = 0;
   uploadMselId = '';
-  uploadTeamId = '';
   fileType = '';
   filteredMselList: MselPlus[] = [];
   filterControl = new UntypedFormControl();
@@ -54,7 +59,6 @@ export class MselListComponent implements OnDestroy, OnInit {
     'description',
     'isTemplate',
     'status',
-    'createdBy',
     'dateCreated',
     'dateModified',
   ];
@@ -75,7 +79,7 @@ export class MselListComponent implements OnDestroy, OnInit {
   private unsubscribe$ = new Subject();
 
   constructor(
-    public dialogService: DialogService,
+    public dialogService: CrucibleDialogService,
     private router: Router,
     private userDataService: UserDataService,
     private userQuery: UserQuery,
@@ -183,10 +187,9 @@ export class MselListComponent implements OnDestroy, OnInit {
     this.uiDataService.setMselTab(this.defaultTab);
   }
 
-  uploadFile(fileType: string, mselId: string, teamId: string) {
+  uploadFile(fileType: string, mselId: string) {
     this.areButtonsDisabled = true;
     this.uploadMselId = mselId ? mselId : '';
-    this.uploadTeamId = teamId ? teamId : '';
     this.fileType = fileType;
   }
 
@@ -204,7 +207,6 @@ export class MselListComponent implements OnDestroy, OnInit {
     if (this.fileType === 'xlsx') {
       this.mselDataService.uploadXlsx(
         this.uploadMselId,
-        this.uploadTeamId,
         file,
         'events',
         true
@@ -276,15 +278,23 @@ export class MselListComponent implements OnDestroy, OnInit {
 
   addMsel() {
     this.areButtonsDisabled = true;
-    this.mselDataService.add({
-      name: 'New MSEL',
-      description:
-        'Created from Default Settings by ' + this.currentUserName,
-      status: 'Pending',
-      dataFields: this.settingsService.settings.DefaultDataFields,
-    });
-    this.sort.sort(<MatSortable>{ id: 'dateCreated', start: 'desc' });
-    this.mselDataSource.sort = this.sort;
+    this.mselDataService
+      .add({
+        name: 'New MSEL',
+        description:
+          'Created from Default Settings by ' + this.currentUserName,
+        status: 'Pending',
+        dataFields: this.settingsService.settings.DefaultDataFields,
+      })
+      .pipe(take(1))
+      .subscribe((msel) => {
+        this.areButtonsDisabled = false;
+        // Open the newly created MSEL in the edit page
+        this.openMsel(msel.id);
+        this.router.navigate(['/build'], {
+          queryParams: { msel: msel.id },
+        });
+      });
   }
 
   copyMsel(mselId: string): void {
@@ -292,12 +302,9 @@ export class MselListComponent implements OnDestroy, OnInit {
     if (!msel) return;
 
     this.dialogService
-      .confirm(
-        'Copy MSEL',
-        'Are you sure that you want to copy ' + msel.name + '?'
-      )
-      .subscribe((result) => {
-        if (result['confirm']) {
+      .confirm({ title: 'Copy MSEL', message: 'Are you sure that you want to copy ' + msel.name + '?'
+       }).afterClosed().subscribe((result) => {
+        if (result) {
           this.mselDataService.copy(msel.id);
         }
       });
@@ -305,12 +312,9 @@ export class MselListComponent implements OnDestroy, OnInit {
 
   delete(msel: MselPlus): void {
     this.dialogService
-      .confirm(
-        'Delete MSEL',
-        'Are you sure that you want to delete ' + msel.name + '?'
-      )
-      .subscribe((result) => {
-        if (result['confirm']) {
+      .confirm({ title: 'Delete MSEL', message: 'Are you sure that you want to delete ' + msel.name + '?'
+       }).afterClosed().subscribe((result) => {
+        if (result) {
           this.mselDataService.delete(msel.id);
         }
       });
@@ -392,7 +396,8 @@ export class MselListComponent implements OnDestroy, OnInit {
 
   canViewMsel(msel: MselPlus): boolean {
     return this.permissionDataService.hasPermission(SystemPermission.ViewMsels) ||
-      msel?.hasRole(this.loggedInUserId, '').editor;
+      msel?.hasRole(this.loggedInUserId, '').editor ||
+      (msel?.isTemplate && this.permissionDataService.hasPermission(SystemPermission.CreateMsels));
   }
 
   canEditMsel(msel: MselPlus): boolean {

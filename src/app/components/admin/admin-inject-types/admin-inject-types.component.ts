@@ -1,7 +1,7 @@
 // Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, Input, OnDestroy, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, ElementRef, Input, OnDestroy, ViewChild, AfterViewInit } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { animate, state, style, transition, trigger } from '@angular/animations';
@@ -21,8 +21,9 @@ import { InjectTypeDataService } from 'src/app/data/inject-type/inject-type-data
 import { InjectTypeQuery } from 'src/app/data/inject-type/inject-type.query';
 import { TeamQuery } from 'src/app/data/team/team.query';
 import { MatDialog } from '@angular/material/dialog';
-import { DialogService } from 'src/app/services/dialog/dialog.service';
+import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { AdminInjectTypeEditDialogComponent } from '../admin-inject-type-edit-dialog/admin-inject-type-edit-dialog.component';
+import { ItemDownloadDialogComponent } from '../../item-download-dialog/item-download-dialog.component';
 import { v4 as uuidv4 } from 'uuid';
 
 @Component({
@@ -43,6 +44,7 @@ export class AdminInjectTypesComponent implements OnDestroy, AfterViewInit {
   @Input() canEdit: boolean;
   @ViewChild('injectTypeTable', { static: false }) injectTypeTable: MatTable<any>;
   @ViewChild(MatPaginator) paginator: MatPaginator;
+  @ViewChild('jsonInput') jsonInput: ElementRef<HTMLInputElement>;
   contextMenuPosition = { x: '0px', y: '0px' };
   msel = new MselPlus();
   adminInjectTypes: InjectType[] = [];
@@ -67,7 +69,7 @@ export class AdminInjectTypesComponent implements OnDestroy, AfterViewInit {
     private injectTypeQuery: InjectTypeQuery,
     private teamQuery: TeamQuery,
     public dialog: MatDialog,
-    public dialogService: DialogService
+    public dialogService: CrucibleDialogService
   ) {
     // subscribe to injectTypes
     this.injectTypeQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(injectTypes => {
@@ -114,6 +116,53 @@ export class AdminInjectTypesComponent implements OnDestroy, AfterViewInit {
     });
   }
 
+  selectFile(e: Event) {
+    const input = e.target as HTMLInputElement;
+    const file = input.files && input.files[0];
+    if (!file) {
+      return;
+    }
+    this.injectTypeDataService.uploadJson(file, 'events', true);
+    this.jsonInput.nativeElement.value = null;
+  }
+
+  openDownloadDialog() {
+    const items = (this.injectTypeDataSource.filteredData || []).map((it) => ({
+      id: it.id,
+      label: it.name || it.id,
+    }));
+    const dialogRef = this.dialog.open(ItemDownloadDialogComponent, {
+      maxWidth: '90vw',
+      width: 'auto',
+      data: {
+        title: 'Select Inject Types to download',
+        items,
+      },
+    });
+    dialogRef.afterClosed().subscribe((selectedIds: string[] | undefined) => {
+      if (selectedIds && selectedIds.length > 0) {
+        this.downloadJsonItems(selectedIds);
+      }
+    });
+  }
+
+  downloadJsonItems(ids: string[]) {
+    this.injectTypeDataService.downloadJson(ids).subscribe(
+      (data) => {
+        const url = window.URL.createObjectURL(data);
+        const link = document.createElement('a');
+        link.href = url;
+        link.target = '_blank';
+        link.download = 'inject-type-export.json';
+        link.click();
+        window.URL.revokeObjectURL(url);
+      },
+      (err) => {
+        window.alert('Error downloading file');
+      }
+    );
+  }
+
   saveInjectType(injectType: InjectType) {
     if (injectType.id) {
       this.injectTypeDataService.update(injectType);
@@ -125,12 +174,9 @@ export class AdminInjectTypesComponent implements OnDestroy, AfterViewInit {
 
   deleteInjectType(injectType: InjectType): void {
     this.dialogService
-      .confirm(
-        'Delete InjectType',
-        'Are you sure that you want to delete ' + injectType.name + '?'
-      )
-      .subscribe((result) => {
-        if (result['confirm']) {
+      .confirm({ title: 'Delete InjectType', message: 'Are you sure that you want to delete ' + injectType.name + '?'
+       }).afterClosed().subscribe((result) => {
+        if (result) {
           this.injectTypeDataService.delete(injectType.id);
           this.editingId = '';
         }

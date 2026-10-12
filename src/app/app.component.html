@@ -5,5 +5,13 @@ project root for license information.
 -->
 
 <comn-header-bar></comn-header-bar>
-<router-outlet></router-outlet>
+<!--
+  The routed page is the document's main landmark. Without one, assistive technology has no
+  way to skip past the toolbar to the content: every route was previously a flat sequence of
+  divs. app-main carries the flex layout the routed component's :host expects (flex: 1 in a
+  column), so this wrapper is layout-neutral.
+-->
+<main class="app-main">
+  <router-outlet></router-outlet>
+</main>
 

@@ -12,7 +12,7 @@ import {
 } from 'src/app/generated/blueprint.api';
 import { SystemRoleDataService } from 'src/app/data/system-role/system-role-data.service';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
-import { DialogService } from 'src/app/services/dialog/dialog.service';
+import { CrucibleDialogService } from '@cmusei/crucible-common';
 
 @Component({
   selector: 'app-admin-roles',
@@ -86,7 +86,7 @@ export class AdminRolesComponent implements OnInit, OnDestroy {
   constructor(
     private roleDataService: SystemRoleDataService,
     private permissionDataService: PermissionDataService,
-    private dialogService: DialogService
+    private dialogService: CrucibleDialogService
   ) {}
 
   ngOnInit(): void {
@@ -178,12 +178,9 @@ export class AdminRolesComponent implements OnInit, OnDestroy {
 
   deleteRole(role: SystemRole): void {
     this.dialogService
-      .confirm(
-        'Delete Role',
-        `Are you sure you want to delete "${role.name}"?`
-      )
-      .subscribe((result) => {
-        if (result && result['confirm']) {
+      .confirm({ title: 'Delete Role', message: `Are you sure you want to delete "${role.name}"?`
+       }).afterClosed().subscribe((result) => {
+        if (result && result) {
           this.roleDataService.deleteRole(role.id).subscribe();
         }
       });

@@ -17,9 +17,7 @@
     "useDefineForClassFields": false,
     "resolveJsonModule": true,
     "skipLibCheck": true,
-    "paths": {
-      "@cmusei/crucible-common": ["../../libraries/Crucible.Common.Ui/dist/@crucible-common"]
-    }
+    "paths": {}
   },
   "exclude": [
     "../../libraries/**/node_modules"

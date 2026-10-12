@@ -44,7 +44,7 @@ import { UserTeamRoleDataService } from 'src/app/data/user-team-role/user-team-r
 export class StarterComponent implements OnDestroy, OnInit {
   @Input() canAccessAdminSection: boolean;
   private unsubscribe$ = new Subject();
-  private msel: Msel = {};
+  private msel: Msel = { name: '' };
   selectedIndex = 1;
   selectedMselId = '';
   theme$: Observable<Theme>;
@@ -135,7 +135,7 @@ export class StarterComponent implements OnDestroy, OnInit {
           this.topbarText = msel ? prefix + msel.name : this.topbarTextBase;
           this.titleService.setTitle(prefix + msel.name);
         } else {
-          this.msel = {};
+          this.msel = { name: '' };
         }
       });
     // load units

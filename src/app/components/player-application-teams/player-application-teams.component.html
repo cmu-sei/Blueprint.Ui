@@ -15,7 +15,7 @@ project root for license information.
       </div>
       <div class="search-div">
         <mat-form-field style="width: 75%; margin-left:10%;">
-          <input matInput [(ngModel)]="filterString" (keyup)="applyFilter($any($event.target).value)"
+          <input matInput [(ngModel)]="filterString" (ngModelChange)="applyFilter($event)"
             placeholder="Search" />
         </mat-form-field>
         <button [disabled]="!filterString" mat-icon-button (click)="clearFilter()"

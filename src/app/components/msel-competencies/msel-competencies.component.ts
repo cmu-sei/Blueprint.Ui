@@ -29,7 +29,7 @@ import { TeamCompetencyQuery } from 'src/app/data/team-competency/team-competenc
 import { CompetencyFrameworkDataService } from 'src/app/data/competency-framework/competency-framework-data.service';
 import { CompetencyFrameworkQuery } from 'src/app/data/competency-framework/competency-framework.query';
 import { MatDialog } from '@angular/material/dialog';
-import { DialogService } from 'src/app/services/dialog/dialog.service';
+import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { TeamCompetencyPropagateDialogComponent, TeamCompetencyPropagateData } from '../team-competency-propagate-dialog/team-competency-propagate-dialog.component';
 import { DataFieldDataService } from 'src/app/data/data-field/data-field-data.service';
 import { DataFieldQuery } from 'src/app/data/data-field/data-field.query';
@@ -68,6 +68,7 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
   selectedFrameworkId = '';
   selectedFramework: CompetencyFramework = null;
   frameworkWorkRoles: Competency[] = [];
+  isLoadingFramework = false;
   private competencyTypeMap = new Map<string, string>();
   private competencyById = new Map<string, Competency>();
 
@@ -116,7 +117,7 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
     private competencyFrameworkService: CompetencyFrameworkService,
     private permissionDataService: PermissionDataService,
     public dialog: MatDialog,
-    public dialogService: DialogService,
+    public dialogService: CrucibleDialogService,
     private dataFieldDataService: DataFieldDataService,
     private dataFieldQuery: DataFieldQuery,
     private dataValueDataService: DataValueDataService,
@@ -193,6 +194,7 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
     this.selectedFrameworkId = frameworkId;
     this.browserExpandedId = null;
     this.browserChildTypeFilter = '';
+    this.isLoadingFramework = false;
     if (frameworkId) {
       this.addPanelExpanded = true;
     }
@@ -202,22 +204,39 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
       this.workRoleDataSource.data = [];
       return;
     }
+    this.selectedFramework = null;
+    this.frameworkWorkRoles = [];
+    this.workRoleDataSource.data = [];
+    this.workRoleCategories = [];
+    this.workRoleCategoryFilter = '';
+    this.isLoadingFramework = true;
     this.competencyFrameworkService.getCompetencyFramework(frameworkId)
       .pipe(take(1))
-      .subscribe(fw => {
-        this.selectedFramework = fw;
-        const allComps = fw.competencies || [];
-        this.buildTypeMapFromComps(fw, allComps);
-        this.frameworkWorkRoles = allComps.filter(c => this.competencyTypeMap.get(c.id) === 'Work Role');
-        this.workRoleCategories = [...new Set(this.frameworkWorkRoles.map(wr => this.getWorkRoleCategory(wr)).filter(c => c))].sort();
-        this.workRoleCategoryFilter = '';
-        this.workRoleFilterControl.setValue('');
-        this.applyWorkRoleFilter();
-        setTimeout(() => {
-          if (this.workRolePaginator) {
-            this.workRoleDataSource.paginator = this.workRolePaginator;
-          }
-        });
+      .subscribe({
+        next: fw => {
+          this.selectedFramework = fw;
+          const allComps = fw.competencies || [];
+          this.buildTypeMapFromComps(fw, allComps);
+          this.frameworkWorkRoles = allComps.filter(c => this.competencyTypeMap.get(c.id) === 'Work Role');
+          this.workRoleCategories = [...new Set(this.frameworkWorkRoles.map(wr => this.getWorkRoleCategory(wr)).filter(c => c))].sort();
+          this.workRoleCategoryFilter = '';
+          this.workRoleFilterControl.setValue('');
+          this.applyWorkRoleFilter();
+          setTimeout(() => {
+            if (this.workRolePaginator) {
+              this.workRoleDataSource.paginator = this.workRolePaginator;
+            }
+          });
+        },
+        error: () => {
+          this.isLoadingFramework = false;
+          this.selectedFramework = null;
+          this.frameworkWorkRoles = [];
+          this.workRoleDataSource.data = [];
+        },
+        complete: () => {
+          this.isLoadingFramework = false;
+        }
       });
   }
 
@@ -259,6 +278,7 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
       return prefixMap[idNumber.charAt(0)] || 'Other';
     }
     if (/^[A-Z]{2}-[A-Z]{3}-\d+$/.test(idNumber)) return 'Work Role';
+    if (/^[A-Z]{2}-\d+[A-Z]?$/.test(idNumber)) return 'Work Role';
     if (/^[A-Z]{3}$/.test(idNumber)) return 'Specialty Area';
     if (/^[A-Z]{2}$/.test(idNumber)) return 'Category';
     return 'Other';
@@ -300,8 +320,8 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
       const mc = this.mselCompetencyList.find(m => m.competencyId === comp.id);
       if (mc) {
         const msg = this.buildRemoveMessage(comp.idNumber, comp.shortName, this.getEventCount(mc), this.getDataFieldOptionCount(comp.idNumber));
-        this.dialogService.confirm('Remove Competency', msg).subscribe(result => {
-          if (result['confirm']) {
+        this.dialogService.confirm({ title: 'Remove Competency', message: msg }).afterClosed().subscribe(result => {
+          if (result) {
             this.removeCompetencyReferences(comp.idNumber);
             this.mselCompetencyDataService.delete(mc.id);
           }
@@ -476,8 +496,8 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
     if (parts.length > 0) {
       msg += ` ${parts.join(' and ')} will also be removed.`;
     }
-    this.dialogService.confirm('Remove Competencies', msg).subscribe(result => {
-      if (result['confirm']) {
+    this.dialogService.confirm({ title: 'Remove Competencies', message: msg }).afterClosed().subscribe(result => {
+      if (result) {
         for (const mc of toRemove) {
           if (mc.competency?.idNumber) {
             this.removeCompetencyReferences(mc.competency.idNumber);
@@ -526,8 +546,8 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
       if (parts.length > 0) {
         msg += ` ${parts.join(' and ')} will also be removed.`;
       }
-      this.dialogService.confirm('Remove Work Roles', msg).subscribe(result => {
-        if (result['confirm']) {
+      this.dialogService.confirm({ title: 'Remove Work Roles', message: msg }).afterClosed().subscribe(result => {
+        if (result) {
           for (const mc of toRemove) {
             if (mc.competency?.idNumber) {
               this.removeCompetencyReferences(mc.competency.idNumber);
@@ -624,8 +644,8 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
     const idNumber = mc.competency?.idNumber || '';
     const name = mc.competency?.shortName || '';
     const msg = this.buildRemoveMessage(idNumber, name, this.getEventCount(mc), this.getDataFieldOptionCount(idNumber));
-    this.dialogService.confirm('Remove Competency', msg).subscribe(result => {
-      if (result['confirm']) {
+    this.dialogService.confirm({ title: 'Remove Competency', message: msg }).afterClosed().subscribe(result => {
+      if (result) {
         this.removeCompetencyReferences(idNumber);
         this.mselCompetencyDataService.delete(mc.id);
       }
@@ -852,8 +872,8 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
     if (parts.length > 0) {
       msg += ` ${parts.join(' and ')} will also be removed.`;
     }
-    this.dialogService.confirm('Remove Selected', msg).subscribe(result => {
-      if (result['confirm']) {
+    this.dialogService.confirm({ title: 'Remove Selected', message: msg }).afterClosed().subscribe(result => {
+      if (result) {
         for (const mc of selected) {
           if (mc.competency?.idNumber) {
             this.removeCompetencyReferences(mc.competency.idNumber);

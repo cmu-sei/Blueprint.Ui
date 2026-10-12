@@ -60,6 +60,11 @@ body {
   background-color: var(--mat-sys-surface) !important;
 }
 
+// Preserve intentional line breaks in messages rendered by crucible-common.
+crucible-confirm-dialog mat-dialog-content p {
+  white-space: pre-line;
+}
+
 // support color="warn" on icon buttons
 .mat-mdc-icon-button.mat-warn {
   --mat-icon-button-icon-color: var(--mat-sys-error);

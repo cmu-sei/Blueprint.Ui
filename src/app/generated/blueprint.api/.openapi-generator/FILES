@@ -66,6 +66,8 @@ model/competency.ts
 model/competencyAssertion.ts
 model/competencyFramework.ts
 model/competencyFrameworkImportPreview.ts
+model/competencyFrameworkImportState.ts
+model/competencyFrameworkImportStatus.ts
 model/constructorInfo.ts
 model/createFromInjectsForm.ts
 model/cultureInfo.ts
@@ -123,6 +125,7 @@ model/moduleHandle.ts
 model/move.ts
 model/msel.ts
 model/mselCompetency.ts
+model/mselIntegrationNames.ts
 model/mselItemStatus.ts
 model/mselPage.ts
 model/mselReference.ts

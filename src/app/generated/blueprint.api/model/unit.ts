@@ -24,6 +24,7 @@ export interface Unit {
     id?: string;
     name?: string | null;
     shortName?: string | null;
+    description?: string | null;
     users?: Array<User> | null;
 }
 
