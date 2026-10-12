@@ -20,7 +20,7 @@ import { PermissionDataService } from 'src/app/data/permission/permission-data.s
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { MatMenuTrigger } from '@angular/material/menu';
-import { CiteService } from 'src/app/generated/blueprint.api';
+import { CasterService, CiteService } from 'src/app/generated/blueprint.api';
 import { MatDialog } from '@angular/material/dialog';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { TeamAddDialogComponent } from '../team-add-dialog/team-add-dialog.component';
@@ -31,6 +31,8 @@ import { MatTable, MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 import { Sort } from '@angular/material/sort';
 import { animate, state, style, transition, trigger } from '@angular/animations';
+
+const PLAYER_ADMIN_TEAM_VARIABLE = 'admin';
 
 @Component({
     selector: 'app-msel-teams',
@@ -71,6 +73,9 @@ export class MselTeamsComponent implements OnDestroy, OnInit {
   displayedColumns: string[] = ['action', 'shortName', 'name', 'email', 'teamType', 'invitation'];
   expandedElementId = '';
   isExpansionDetailRow = (i: number, row: Object) => (row as Team).id === this.expandedElementId;
+  // the template variables a team can be mapped to; null until loaded, or when the MSEL has no Caster directory
+  casterTeamVariables: string[] = null;
+  casterTeamVariablesError = '';
   private allTeams: Team[] = [];
   private unsubscribe$ = new Subject();
 
@@ -81,6 +86,7 @@ export class MselTeamsComponent implements OnDestroy, OnInit {
     private mselDataService: MselDataService,
     private mselQuery: MselQuery,
     private citeService: CiteService,
+    private casterService: CasterService,
     private unitDataService: UnitDataService,
     private unitQuery: UnitQuery,
     private dialog: MatDialog,
@@ -94,6 +100,12 @@ export class MselTeamsComponent implements OnDestroy, OnInit {
         Object.assign(this.originalMsel, msel);
         Object.assign(this.msel, msel);
         this.applyFilter(this.filterString);
+        this.loadCasterTeamVariables();
+      } else if (msel && (this.msel.useCaster !== msel.useCaster || this.msel.casterDirectoryId !== msel.casterDirectoryId)) {
+        // a different template, or none, from the Info tab
+        this.msel.useCaster = msel.useCaster;
+        this.msel.casterDirectoryId = msel.casterDirectoryId;
+        this.loadCasterTeamVariables();
       }
     });
     // subscribe to users
@@ -173,6 +185,85 @@ export class MselTeamsComponent implements OnDestroy, OnInit {
     return item.id;
   }
 
+  loadCasterTeamVariables() {
+    this.casterTeamVariables = null;
+    this.casterTeamVariablesError = '';
+    if (!this.msel.useCaster || !this.msel.casterDirectoryId) {
+      this.setDisplayedColumns();
+      return;
+    }
+    const directoryId = this.msel.casterDirectoryId;
+    this.casterService.getCasterTeamVariables(directoryId).subscribe(
+      (variables) => {
+        if (this.msel.casterDirectoryId === directoryId) {
+          this.casterTeamVariables = variables;
+          this.setDisplayedColumns();
+        }
+      },
+      (error) => {
+        console.error('Failed to load the Caster team variables:', error);
+        this.casterTeamVariablesError = error?.error?.title || 'The Caster template could not be read.';
+        this.setDisplayedColumns();
+      }
+    );
+  }
+
+  setDisplayedColumns() {
+    const columns = ['action', 'shortName', 'name', 'email', 'teamType', 'invitation'];
+    if (this.msel.useCaster && this.msel.casterDirectoryId) {
+      columns.splice(5, 0, 'topologyTeam');
+    }
+    this.displayedColumns = columns;
+  }
+
+  // The variable a team's Player team ID is written to: its mapping, or else its name the way
+  // Blueprint (and Alloy before it) turns a name into a variable.
+  getTeamVariable(team: Team): string {
+    if (team.casterTeamVariable) {
+      return team.casterTeamVariable;
+    }
+    const alloyName = (team.name ?? '').toLowerCase().replace(/ /g, '_').replace(/[@&'(\s)<>#]/g, '');
+    const name = alloyName.replace(/[^\p{L}\p{Nd}_-]/gu, '');
+    if (!name) {
+      return '';
+    }
+    return /^[\p{L}_]/u.test(name) ? name : '_' + name;
+  }
+
+  // topology teams no MSEL team writes to
+  getUnmappedTopologyTeams(): string[] {
+    if (!this.casterTeamVariables) {
+      return [];
+    }
+    const used = this.allTeams.map(t => this.getTeamVariable(t));
+    return this.casterTeamVariables.filter(v => !used.includes(v));
+  }
+
+  // Player adds an Admin team, holding only whoever creates the view, to every view Blueprint pushes;
+  // by name it writes "admin" unless a MSEL team takes that variable
+  getUnmappedTopologyTeamDestination(variable: string): string {
+    return variable === PLAYER_ADMIN_TEAM_VARIABLE
+      ? 'Its VMs will go to the Player view\'s own Admin team.'
+      : 'Its VMs will go to no team.';
+  }
+
+  // the team mapped to the variable this unmapped team would get by name, which then replaces it
+  getMappedOverTeam(team: Team): Team {
+    if (team.casterTeamVariable) {
+      return null;
+    }
+    const variable = this.getTeamVariable(team);
+    return this.allTeams.find(t => t.id !== team.id && t.casterTeamVariable === variable) ?? null;
+  }
+
+  // teams mapped to a variable the template no longer declares
+  getStaleMappings(): Team[] {
+    if (!this.casterTeamVariables) {
+      return [];
+    }
+    return this.allTeams.filter(t => t.casterTeamVariable && !this.casterTeamVariables.includes(t.casterTeamVariable));
+  }
+
   addOrEditTeam(team: Team) {
     if (!team) {
       team = {
@@ -191,7 +282,8 @@ export class MselTeamsComponent implements OnDestroy, OnInit {
       data: {
         team: team,
         useCite: this.msel.useCite,
-        teamTypeList: this.teamTypeList
+        teamTypeList: this.teamTypeList,
+        casterTeamVariables: this.casterTeamVariables
       },
     });
     dialogRef.componentInstance.editComplete.subscribe((result) => {

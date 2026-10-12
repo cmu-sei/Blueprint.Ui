@@ -30,6 +30,19 @@ project root for license information or contact permission@sei.cmu.edu for full 
 </mat-menu>
 
 @if (msel) {
+@if (casterTeamVariablesError) {
+<div class="topology-warning">Topology teams: {{ casterTeamVariablesError }}</div>
+}
+@for (variable of getUnmappedTopologyTeams(); track variable) {
+<div class="topology-warning">
+  Topology team "{{ variable }}" has no MSEL team. {{ getUnmappedTopologyTeamDestination(variable) }}
+</div>
+}
+@for (team of getStaleMappings(); track team.id) {
+<div class="topology-warning">
+  {{ team.name }} is mapped to topology team "{{ team.casterTeamVariable }}", which the Caster template no longer declares.
+</div>
+}
 <div class="frame">
   <div class="table-container">
     <table mat-table #teamTable [dataSource]="teamDataSource" matSort (matSortChange)="sortChanged($event)" multiTemplateDataRows>
@@ -80,6 +93,19 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <th mat-header-cell *matHeaderCellDef mat-sort-header class="column-team-type">Team Type</th>
         <td mat-cell *matCellDef="let element" class="column-team-type">
           {{ getCiteTeamTypeName(element.citeTeamTypeId) }}
+        </td>
+      </ng-container>
+      <!-- topologyTeam column -->
+      <ng-container matColumnDef="topologyTeam">
+        <th mat-header-cell *matHeaderCellDef class="column-topology-team"
+          matTooltip="The Caster template variable this team's Player team ID is written to">Topology Team</th>
+        <td mat-cell *matCellDef="let element" class="column-topology-team">
+          {{ getTeamVariable(element) }}
+          @if (getMappedOverTeam(element); as mappedOver) {
+          <span class="topology-unused">(replaced by {{ mappedOver.name }})</span>
+          } @else if (!element.casterTeamVariable && casterTeamVariables && !casterTeamVariables.includes(getTeamVariable(element))) {
+          <span class="topology-unused">(not in template)</span>
+          }
         </td>
       </ng-container>
       <!-- invitation column -->

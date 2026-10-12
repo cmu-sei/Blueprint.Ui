@@ -103,3 +103,13 @@ table {
 .button-end {
   margin-left: auto;
 }
+
+.topology-warning {
+  flex-shrink: 0;
+  margin: 0 10px 6px;
+  color: var(--mat-sys-error);
+}
+
+.topology-unused {
+  opacity: 0.7;
+}

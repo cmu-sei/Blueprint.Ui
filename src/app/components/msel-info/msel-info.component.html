@@ -124,18 +124,20 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <div class="integration-div">
             <div class="integration-header">
               <b>Applications to Integrate</b>
-              @if ((msel.usePlayer || msel.useCite || msel.useGallery || msel.useSteamfitter) && !msel.isTemplate) {
+              @if ((msel.usePlayer || msel.useCite || msel.useGallery || msel.useSteamfitter || msel.useCaster) && !msel.isTemplate) {
               <div class="integration-actions">
                 @if ((!msel.playerViewId &&
                 !msel.citeEvaluationId &&
                 !msel.galleryCollectionId &&
                 !msel.steamfitterScenarioId &&
+                !msel.casterWorkspaceId &&
                 !msel.isTemplate) ||
                 pushStatus) {
                 <button (click)="pushIntegrations()" title="Push Integrations" class="thin-button" [disabled]="!canManageMsel() ||
                               (msel.useGallery && galleryToDo()) ||
                               (msel.useCite && !msel.citeScoringModelId) ||
                               (msel.useCite && hasCiteTeamsWithoutType()) ||
+                              !!casterWarningMessage() ||
                               isBusy || isChanged || (pushStatus && pushStatus.startsWith('ERROR'))">@if (pushStatus &&
                   !pushStatus.startsWith('ERROR')) {
                   <span>{{ pushStatus }} ...</span>
@@ -146,7 +148,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 @if ((msel.playerViewId ||
                 msel.citeEvaluationId ||
                 msel.galleryCollectionId ||
-                msel.steamfitterScenarioId) &&
+                msel.steamfitterScenarioId ||
+                msel.casterWorkspaceId) &&
                 !pushStatus) {
                 <button (click)="pullIntegrations()" title="Remove Integrations" class="thin-button"
                   [disabled]="!canManageMsel() || isChanged">Remove
@@ -302,6 +305,71 @@ project root for license information or contact permission@sei.cmu.edu for full 
               </div>
               }
             </div>
+
+            <!-- Caster Integration -->
+            <div class="integration-row">
+              <div class="integration-checkbox-cell">
+                <mat-checkbox [disabled]="msel.status === 'Deployed' || !canEditMsel()"
+                  [(ngModel)]="msel.useCaster" (cut)="isChanged = true" (change)="isChanged = true"
+                  (paste)="isChanged = true" (keypress)="isChanged = true">Caster</mat-checkbox>
+              </div>
+              @if (msel.useCaster) {
+              <div class="integration-details">
+                <div class="integration-field">
+                  <span class="integration-label">Directory:</span>
+                  @if (casterDirectoryList.length > 0 && msel.status !== 'Deployed' && canEditMsel()) {
+                  <mat-form-field class="integration-select">
+                    <mat-select [(ngModel)]="msel.casterDirectoryId" (selectionChange)="isChanged = true">
+                      <mat-option [value]="null"></mat-option>
+                      @for (directory of casterDirectoryList; track directory.id) {
+                      <mat-option [value]="directory.id">
+                        {{ casterDirectoryLabel(directory) }}
+                      </mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+                  }
+                  @if (casterDirectoryList.length === 0 || msel.status === 'Deployed' || !canEditMsel()) {
+                  @if (msel.casterDirectoryId) {
+                  <span class="integration-guid" [title]="msel.casterDirectoryId">{{ msel.casterDirectoryId }}</span>
+                  @if (selectedCasterDirectory || casterDirectoryName) {
+                  <span class="integration-name">{{ selectedCasterDirectory ? casterDirectoryLabel(selectedCasterDirectory) : casterDirectoryName }}</span>
+                  }
+                  }
+                  }
+                </div>
+                @if (!msel.isTemplate && msel.casterWorkspaceId) {
+                <div class="integration-field">
+                  <span class="integration-label">Workspace:</span>
+                  <span class="integration-guid" [title]="msel.casterWorkspaceId">{{ msel.casterWorkspaceId }}</span>
+                  @if (casterWorkspaceName) {
+                  <span class="integration-name">{{ casterWorkspaceName }}</span>
+                  }
+                  @if (getCasterProjectUrl()) {
+                  <a [href]="getCasterProjectUrl()" target="_blank" class="integration-link" title="Open in Caster">
+                    <mat-icon class="mdi-18px" fontIcon="mdi-open-in-new"></mat-icon>
+                  </a>
+                  }
+                </div>
+                }
+              </div>
+              }
+            </div>
+            @if (msel.useCaster && msel.status !== 'Deployed' && casterDirectoryError) {
+            <div class="integration-warning">
+              <span class="gallery-warning">{{ casterDirectoryError }}</span>
+            </div>
+            }
+            @if (casterWarningMessage()) {
+            <div class="integration-warning">
+              <span class="gallery-warning">{{ casterWarningMessage() }}</span>
+            </div>
+            }
+            @if (msel.status !== 'Deployed' && casterVmAppWarningMessage()) {
+            <div class="integration-warning">
+              <span class="gallery-warning">{{ casterVmAppWarningMessage() }}</span>
+            </div>
+            }
           </div>
           <!-- Status -->
           <div class="single-detail center-self">

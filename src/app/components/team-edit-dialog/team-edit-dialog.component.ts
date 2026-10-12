@@ -43,6 +43,10 @@ export class TeamEditDialogComponent {
     this.data.team.citeTeamTypeId,
     []
   );
+  public casterTeamVariableFormControl = new UntypedFormControl(
+    this.data.team.casterTeamVariable ?? '',
+    []
+  );
   editorConfig = EDITOR_CONFIG;
 
   constructor(
@@ -111,12 +115,25 @@ export class TeamEditDialogComponent {
       case 'description':
         this.data.team.description = this.descriptionFormControl.value?.toString() || '';
         break;
+      case 'casterTeamVariable':
+        this.data.team.casterTeamVariable = this.casterTeamVariableFormControl.value?.toString() || null;
+        break;
       case 'citeTeamTypeId':
         this.data.team.citeTeamTypeId = this.citeTeamTypeIdFormControl.value?.toString() || '';
         break;
       default:
         break;
     }
+  }
+
+  // keeps a mapping the template no longer declares selectable, so opening the dialog does not drop it
+  topologyTeamOptions(): string[] {
+    const options = [...(this.data.casterTeamVariables ?? [])];
+    const current = this.data.team.casterTeamVariable;
+    if (current && !options.includes(current)) {
+      options.push(current);
+    }
+    return options;
   }
 
   getUserName(userId: string) {

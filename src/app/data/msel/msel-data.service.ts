@@ -51,6 +51,10 @@ export class MselPlus implements Msel {
   citeScoringModelId?: string;
   useSteamfitter?: boolean;
   steamfitterScenarioId?: string;
+  useCaster?: boolean;
+  casterDirectoryId?: string;
+  casterWorkspaceId?: string;
+  casterRunId?: string;
   isTemplate?: boolean;
   startTime?: Date;
   durationSeconds?: number;
