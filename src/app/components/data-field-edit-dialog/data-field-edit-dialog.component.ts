@@ -191,6 +191,8 @@ export class DataFieldEditDialogComponent {
       this.data.dataField.dataType === DataFieldType.Double ||
       this.data.dataField.dataType === DataFieldType.Integer ||
       this.data.dataField.dataType === DataFieldType.String ||
+      this.data.dataField.dataType === DataFieldType.IpAddress ||
+      this.data.dataField.dataType === DataFieldType.Network ||
       this.data.dataField.dataType === DataFieldType.Competency
     );
   }

@@ -551,6 +551,8 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
         dataField.dataType === DataFieldType.Double ||
         dataField.dataType === DataFieldType.Integer ||
         dataField.dataType === DataFieldType.String ||
+        dataField.dataType === DataFieldType.IpAddress ||
+        dataField.dataType === DataFieldType.Network ||
         dataField.dataType === DataFieldType.Competency;
       const canAddOptions = hasEditPermission && supportsOptionList;
 

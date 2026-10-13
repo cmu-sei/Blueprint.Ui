@@ -86,6 +86,25 @@ project root for license information.
   }
 </span>
 }
+<!-- IP address or network input -->
+@if (!dataField.isChosenFromList && (dataField.dataType === dataType.IpAddress || dataField.dataType === dataType.Network)) {
+<span>
+  @if (!showValueOnly) {
+  <mat-form-field class="full-width">
+    <mat-label>{{ dataField.name }}</mat-label>
+    <input type="text" matInput [placeholder]="dataField.dataType === dataType.Network ? '10.1.0.0/24' : '192.0.2.10'"
+      [(ngModel)]="value" (ngModelChange)="valueChangeHandler()" [disabled]="!canEdit"
+      [errorStateMatcher]="addressErrorMatcher" spellcheck="false" />
+    <mat-error>{{ addressError() }}</mat-error>
+  </mat-form-field>
+  }
+  @if (showValueOnly) {
+  <span>
+    {{ value }}
+  </span>
+  }
+</span>
+}
 <!-- Numeric input -->
 @if (!dataField.isChosenFromList && dataField.dataType === dataType.Integer || dataField.dataType === dataType.Double) {
 <span>

@@ -19,6 +19,7 @@ import {
   User,
 } from 'src/app/generated/blueprint.api';
 import { take, tap } from 'rxjs/operators';
+import { ipSortKey } from 'src/app/utilities/ip-address';
 
 
 export type IntegrationTarget = 'Gallery' | 'Steamfitter' | 'Email' | 'Notification';
@@ -32,6 +33,7 @@ export const IntegrationTarget = {
 export interface DataValuePlus extends DataValue {
   fieldType: DataFieldType;
   sortAndFilterValue: string | number;
+  sortValue?: string; // set when sorting must differ from the filter text, as for IP addresses
   valueArray: string[];
 }
 
@@ -106,6 +108,8 @@ export class ScenarioEventDataService {
     DataFieldType.User,
     DataFieldType.Url,
     DataFieldType.Competency,
+    DataFieldType.IpAddress,
+    DataFieldType.Network,
   ];
 
   loadByMsel(mselId: string) {
@@ -427,6 +431,9 @@ export class ScenarioEventDataService {
           valueArray: value.value ? value.value.split(', ') : [],
           fieldType: fieldType.dataType,
         };
+        if (fieldType.dataType === DataFieldType.IpAddress || fieldType.dataType === DataFieldType.Network) {
+          dataValue.sortValue = ipSortKey(value.value);
+        }
         eventProps.set(fieldType.name, dataValue);
       }
     }
@@ -526,7 +533,7 @@ export class ScenarioEventDataService {
       const eventMap = valueMap.get(scenarioEvent.id);
       const val = eventMap ? eventMap.get(fieldName) : '';
       if (val) {
-        return val.sortAndFilterValue;
+        return val.sortValue ?? val.sortAndFilterValue;
       }
       return '';
     }
