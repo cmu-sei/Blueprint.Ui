@@ -10,7 +10,7 @@ project root for license information.
   @if (dataField.dataType === dataType.DateTime) {
   <span>
     @if (value) {
-    {{ value | date: 'dd MMM yyyy HH:mm' }} {{ getTimezoneAbbr() }}
+    {{ value | date: 'dd MMM yyyy HH:mm' }} {{ value | timezoneAbbr }}
     }
   </span>
   }
@@ -114,7 +114,7 @@ project root for license information.
     <!-- <datetime-picker> -->
     <span (click)="canEdit && picker.open()">
       @if (value) {
-      {{ value | date: 'dd MMM yyyy HH:mm' }} {{ getTimezoneAbbr() }}
+      {{ value | date: 'dd MMM yyyy HH:mm' }} {{ value | timezoneAbbr }}
       }
     </span>
     <mat-datepicker-toggle matSuffix title="Choose Date/Time" [for]="picker" [disabled]="!canEdit">
@@ -131,7 +131,7 @@ project root for license information.
   @if (showValueOnly) {
   <span>
     @if (value) {
-    {{ value | date: 'dd MMM yyyy HH:mm' }} {{ getTimezoneAbbr() }}
+    {{ value | date: 'dd MMM yyyy HH:mm' }} {{ value | timezoneAbbr }}
     }
   </span>
   }

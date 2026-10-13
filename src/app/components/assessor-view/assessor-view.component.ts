@@ -46,6 +46,7 @@ import {
 } from 'src/app/data/scenario-event/scenario-event-data.service';
 import { ScenarioEventQuery } from 'src/app/data/scenario-event/scenario-event.query';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
+import { getTimezoneAbbr } from 'src/app/utilities/timezone-abbr';
 
 export interface XApiStatement {
   id?: string;
@@ -1330,19 +1331,7 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
     const year = d.getFullYear();
     const hours = String(d.getHours()).padStart(2, '0');
     const minutes = String(d.getMinutes()).padStart(2, '0');
-    return `${day} ${month} ${year} ${hours}:${minutes} ${this.getTimezoneAbbr()}`;
-  }
-
-  private getTimezoneAbbr(): string {
-    try {
-      const date = new Date();
-      const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
-      const formatted = date.toLocaleTimeString('en-US', { timeZoneName: 'short', timeZone });
-      const parts = formatted.split(' ');
-      return parts[parts.length - 1] || 'UTC';
-    } catch {
-      return 'UTC';
-    }
+    return `${day} ${month} ${year} ${hours}:${minutes} ${getTimezoneAbbr(d)}`;
   }
 
   // --- Competency assessment methods ---
