@@ -213,9 +213,12 @@ export class MselTeamsComponent implements OnDestroy, OnInit {
   }
 
   setDisplayedColumns() {
-    const columns = ['action', 'shortName', 'name', 'email', 'teamType', 'invitation'];
+    // Team Type is the CITE team type, so it only matters when CITE is in use
+    const columns = this.msel.useCite
+      ? ['action', 'shortName', 'name', 'email', 'teamType', 'invitation']
+      : ['action', 'shortName', 'name', 'email', 'invitation'];
     if (this.msel.useCaster && this.msel.casterDirectoryId) {
-      columns.splice(5, 0, 'topologyTeam');
+      columns.splice(columns.indexOf('invitation'), 0, 'topologyTeam');
     }
     this.displayedColumns = columns;
   }
