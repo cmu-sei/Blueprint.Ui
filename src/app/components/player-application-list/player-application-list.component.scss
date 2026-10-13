@@ -63,6 +63,11 @@ table {
   min-width: 0;
 }
 
+.vm-app-warning {
+  margin: 0 10px 6px;
+  color: var(--mat-sys-error);
+}
+
 .expanded-detail-div {
   display: flex;
   flex-direction: column;

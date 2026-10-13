@@ -46,6 +46,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { ShowOnDirtyErrorStateMatcher } from '@angular/material/core';
 import { CompetencyOptionsDialogComponent } from '../competency-options-dialog/competency-options-dialog.component';
 import { EDITOR_CONFIG_PARAGRAPH, VIEW_CONFIG } from 'src/app/utilities/editor-config';
+import { casterVmAppWarning } from 'src/app/utilities/caster-vm-app';
 import { ComnSettingsService } from '@cmusei/crucible-common';
 import { ScenarioEventQuery } from 'src/app/data/scenario-event/scenario-event.query';
 
@@ -907,18 +908,8 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     return '';
   }
 
-  // Informational only: Push stays enabled, since the VMs may be reached some other way.
-  // Blueprint creates no Player application on its own, so without one the VMs are deployed
-  // but nobody can open them from Player.
   casterVmAppWarningMessage(): string {
-    if (!this.msel.useCaster || this.casterWarningMessage()) return '';
-    const vmUrl = (this.settingsService.settings.VmUrl || '').replace(/\/+$/, '');
-    const hasVmApp = this.playerApplicationList
-      .filter(a => a.mselId === this.msel.id)
-      .some(a => a.url?.includes('{vmUrl}') || (vmUrl && a.url?.startsWith(vmUrl)));
-    return hasVmApp
-      ? ''
-      : 'No Player application opens the VM UI, so participants will not be able to reach the Caster VMs. Add one using {vmUrl}, for example {vmUrl}/views/{playerViewId}.';
+    return casterVmAppWarning(this.msel, this.playerApplicationList, this.settingsService.settings.VmUrl);
   }
 
   fetchIntegrationNames() {

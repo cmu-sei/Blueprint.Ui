@@ -20,6 +20,8 @@ import { PlayerService } from 'src/app/generated/blueprint.api';
 import { v4 as uuidv4 } from 'uuid';
 import { MatTable, MatTableDataSource } from '@angular/material/table';
 import { animate, state, style, transition, trigger } from '@angular/animations';
+import { ComnSettingsService } from '@cmusei/crucible-common';
+import { casterVmAppWarning } from 'src/app/utilities/caster-vm-app';
 
 @Component({
   selector: 'app-player-application-list',
@@ -63,6 +65,7 @@ export class PlayerApplicationListComponent implements OnDestroy, OnInit {
     public dialog: MatDialog,
     public dialogService: CrucibleDialogService,
     private permissionDataService: PermissionDataService,
+    private settingsService: ComnSettingsService,
     private changeDetectorRef: ChangeDetectorRef
   ) {
     // subscribe to playerApplications
@@ -102,6 +105,10 @@ export class PlayerApplicationListComponent implements OnDestroy, OnInit {
       .subscribe(() => {
         this.changeDetectorRef.markForCheck();
       });
+  }
+
+  casterVmAppWarningMessage(): string {
+    return casterVmAppWarning(this.msel, this.playerApplicationList, this.settingsService.settings.VmUrl);
   }
 
   canEditMsel(): boolean {

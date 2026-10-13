@@ -22,6 +22,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
 </mat-menu>
 
 @if (msel) {
+@if (msel.status !== 'Deployed' && casterVmAppWarningMessage()) {
+<div class="vm-app-warning">{{ casterVmAppWarningMessage() }}</div>
+}
 <div class="frame">
   <mat-expansion-panel>
     <mat-expansion-panel-header class="team-app-order-header">
