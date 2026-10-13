@@ -33,12 +33,15 @@ project root for license information or contact permission@sei.cmu.edu for full 
 @if (casterTeamVariablesError) {
 <div class="topology-warning">Topology teams: {{ casterTeamVariablesError }}</div>
 }
-@for (variable of getUnmappedTopologyTeams(); track variable) {
+@for (warning of duplicateTeamVariableWarnings; track warning) {
+<div class="topology-warning">{{ warning }}</div>
+}
+@for (variable of unmappedTopologyTeams; track variable) {
 <div class="topology-warning">
   Topology team "{{ variable }}" has no MSEL team. {{ getUnmappedTopologyTeamDestination(variable) }}
 </div>
 }
-@for (team of getStaleMappings(); track team.id) {
+@for (team of staleMappings; track team.id) {
 <div class="topology-warning">
   {{ team.name }} is mapped to topology team "{{ team.casterTeamVariable }}", which the Caster template no longer declares.
 </div>

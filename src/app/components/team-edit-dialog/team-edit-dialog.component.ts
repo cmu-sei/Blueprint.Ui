@@ -136,6 +136,12 @@ export class TeamEditDialogComponent {
     return options;
   }
 
+  // names the other teams that already write a variable, e.g. "blue_cell (used by Blue Team)"
+  topologyTeamLabel(variable: string): string {
+    const users: string[] = this.data.casterTeamVariableUsers?.[variable] ?? [];
+    return users.length > 0 ? variable + ' (used by ' + users.join(', ') + ')' : variable;
+  }
+
   getUserName(userId: string) {
     return this.data.userList.find(u => u.id === userId).name;
   }

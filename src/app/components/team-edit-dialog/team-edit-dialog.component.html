@@ -105,7 +105,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </div>
         </div>
       }
-      @if (data.casterTeamVariables) {
+      @if (data.casterTeamVariables || data.team.casterTeamVariable) {
         <div class="add-margin">
           <div>
             <mat-form-field class="full-width">
@@ -117,7 +117,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 <mat-option [value]="''">By team name</mat-option>
                 @for (variable of topologyTeamOptions(); track variable) {
                   <mat-option [value]="variable">
-                    {{ variable }}
+                    {{ topologyTeamLabel(variable) }}
                   </mat-option>
                 }
               </mat-select>
