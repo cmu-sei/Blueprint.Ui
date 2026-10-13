@@ -273,8 +273,8 @@ export class MselTeamsComponent implements OnDestroy, OnInit {
       (v === PLAYER_ADMIN_TEAM_VARIABLE || this.requiredCasterTeamVariables.includes(v)));
   }
 
-  // Player adds an Admin team, holding only whoever creates the view, to every view Blueprint pushes;
-  // by name it writes "admin" unless a MSEL team takes that variable
+  // Unless a MSEL team named Admin takes its place, Player adds an Admin team, holding only whoever
+  // creates the view, to every view Blueprint pushes; by name it writes "admin" unless a MSEL team takes that variable
   getUnmappedTopologyTeamDestination(variable: string): string {
     return variable === PLAYER_ADMIN_TEAM_VARIABLE
       ? 'Its VMs will go to the Player view\'s own Admin team.'
@@ -307,7 +307,10 @@ export class MselTeamsComponent implements OnDestroy, OnInit {
       return [];
     }
     const writers = this.mselTeams.map(t => this.toTeamVariableWriter(t));
-    writers.push({ name: PLAYER_ADMIN_TEAM_NAME, variable: PLAYER_ADMIN_TEAM_VARIABLE, mapped: false, isPlayerAdmin: true });
+    // a MSEL team named Admin takes the place of Player's own
+    if (!this.mselTeams.some(t => t.name?.trim().toLowerCase() === PLAYER_ADMIN_TEAM_VARIABLE)) {
+      writers.push({ name: PLAYER_ADMIN_TEAM_NAME, variable: PLAYER_ADMIN_TEAM_VARIABLE, mapped: false, isPlayerAdmin: true });
+    }
     const byVariable = new Map<string, string[]>();
     this.resolveTeamVariables(writers).forEach(w =>
       byVariable.set(w.variable, [...(byVariable.get(w.variable) ?? []), w.isPlayerAdmin ? w.name : '"' + w.name + '"']));
