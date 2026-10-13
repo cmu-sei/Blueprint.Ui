@@ -80,6 +80,7 @@ export class MselPlus implements Msel {
   cards?: Array<Card>;
   galleryArticleParameters?: Array<string>;
   gallerySourceTypes?: Array<string>;
+  galleryItemStatuses?: Array<string>;
   playerIntegrationType?: IntegrationType;
   galleryIntegrationType?: IntegrationType;
   citeIntegrationType?: IntegrationType;
