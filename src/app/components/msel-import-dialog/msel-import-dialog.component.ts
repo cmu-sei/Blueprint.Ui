@@ -7,7 +7,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { take } from 'rxjs/operators';
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
-import { MselImportResult } from 'src/app/data/msel/msel-import-result';
+import { MselImportResult } from 'src/app/generated/blueprint.api';
 
 export interface MselImportDialogData {
   file: File;
