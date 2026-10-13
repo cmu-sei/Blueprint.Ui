@@ -1,7 +1,7 @@
 // Copyright 2026 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
-import { describe, it, expect, vi } from 'vitest';
+import { afterEach, describe, it, expect, vi } from 'vitest';
 import { Component, Input } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
@@ -22,6 +22,7 @@ import { MselStore } from 'src/app/data/msel/msel.store';
 import { MoveListComponent } from './move-list.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { dialogRefStub } from 'src/app/test-utils/dialog-refs';
+import { TimezoneAbbrPipe } from 'src/app/utilities/timezone-abbr';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { unstubbed } from 'src/app/test-utils/unstubbed';
 
@@ -44,8 +45,8 @@ function msel(roles: MselRole[] = []): Msel {
   };
 }
 
-async function renderMoves(overrides: { canEditMsel?: boolean; roles?: MselRole[] } = {}) {
-  const { canEditMsel = true, roles = [] } = overrides;
+async function renderMoves(overrides: { canEditMsel?: boolean; roles?: MselRole[]; moves?: Move[] } = {}) {
+  const { canEditMsel = true, roles = [], moves = [MOVE] } = overrides;
   const moveApi = {
     deleteMove: vi.fn(() => of<unknown>(null)),
   } satisfies ApiStub<MoveService>;
@@ -63,7 +64,7 @@ async function renderMoves(overrides: { canEditMsel?: boolean; roles?: MselRole[
       MatSortModule,
       MatTableModule,
     ],
-    declarations: [MoveListComponent, DurationViewStub],
+    declarations: [MoveListComponent, DurationViewStub, TimezoneAbbrPipe],
     providers: [
       { provide: MoveService, useValue: moveApi },
       { provide: CrucibleDialogService, useValue: dialog },
@@ -82,7 +83,7 @@ async function renderMoves(overrides: { canEditMsel?: boolean; roles?: MselRole[
         provide: MoveStore,
         useFactory: () => {
           const store = new MoveStore();
-          store.set([structuredClone(MOVE)]);
+          store.set(structuredClone(moves));
           return store;
         },
       },
@@ -96,6 +97,11 @@ const table = () => screen.getByRole('table');
 const ACTIONS = ['Add new move', 'Edit Move 1', 'Delete Move 1'];
 
 describe('MoveListComponent', () => {
+  // A test that sets TZ runs in a zone with daylight saving time; this restores the host's.
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   /**
    * Verifies: with canEditMsel, as the owner, or as a Move Editor, the moves can be added, edited and deleted.
    * Interacts with: real MselQuery and MoveQuery (seeded), MselPlus.hasRole.
@@ -141,5 +147,23 @@ describe('MoveListComponent', () => {
     expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Delete Move' }));
     expect(moveApi.deleteMove).toHaveBeenCalledWith('move-1');
     expect(within(table()).queryByText('Initial access')).not.toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: each move's situation time is labelled with the zone in effect on that move's date.
+   * Interacts with: real MoveQuery (seeded), DatePipe, TimezoneAbbrPipe in the situation time column.
+   * Data: TZ America/New_York; Move 1 on 20 Oct 2026 16:00 UTC (EDT), Move 2 on 20 Nov 2026 17:00 UTC (EST, after DST ends).
+   */
+  it('labels each situation time with the zone in effect on that date', async () => {
+    vi.stubEnv('TZ', 'America/New_York');
+    const moves: Move[] = [
+      { ...MOVE, situationTime: new Date('2026-10-20T16:00:00Z') },
+      { ...MOVE, id: 'move-2', moveNumber: 2, deltaSeconds: 3600, description: 'Lateral movement', situationTime: new Date('2026-11-20T17:00:00Z') },
+    ];
+
+    await renderMoves({ moves });
+
+    expect(within(table()).getByText('20 Oct 2026 12:00 EDT')).toBeInTheDocument();
+    expect(within(table()).getByText('20 Nov 2026 12:00 EST')).toBeInTheDocument();
   });
 });

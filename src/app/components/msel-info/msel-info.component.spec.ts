@@ -1,7 +1,7 @@
 // Copyright 2026 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
@@ -9,6 +9,8 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatNativeDateModule } from '@angular/material/core';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatDialog } from '@angular/material/dialog';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -23,6 +25,7 @@ import userEvent from '@testing-library/user-event';
 import { of } from 'rxjs';
 import { AngularEditorModule } from '@kolkov/angular-editor';
 import { ClipboardModule } from 'ngx-clipboard';
+import { NgxMatDatepickerActions, NgxMatDatepickerApply, NgxMatDatepickerCancel, NgxMatDatepickerInput, NgxMatDatetimepicker } from '@ngxmc/datetime-picker';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
 import {
   CiteService,
@@ -46,6 +49,7 @@ import { PermissionDataService } from 'src/app/data/permission/permission-data.s
 import { MselInfoComponent } from './msel-info.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { dialogRefStub } from 'src/app/test-utils/dialog-refs';
+import { TimezoneAbbrPipe } from 'src/app/utilities/timezone-abbr';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { permissionApiStubs } from 'src/app/test-utils/mock-permission-data.service';
 import { unstubbed } from 'src/app/test-utils/unstubbed';
@@ -71,8 +75,9 @@ const PAGE: MselPage = { id: 'page-1', mselId: 'msel-1', name: 'Read Ahead', con
 const ALL = Object.values(SystemPermission);
 const allBut = (...missing: SystemPermission[]) => ALL.filter((p) => !missing.includes(p));
 
-function msel(myRoles: MselRole[] = []): Msel {
+function msel(myRoles: MselRole[] = [], startTime?: Date): Msel {
   return {
+    ...(startTime ? { startTime } : {}),
     id: 'msel-1',
     name: 'Exercise Alpha',
     description: 'Alpha',
@@ -87,8 +92,8 @@ function msel(myRoles: MselRole[] = []): Msel {
   };
 }
 
-async function renderInfo(overrides: { permissions?: SystemPermission[]; myRoles?: MselRole[] } = {}) {
-  const { permissions = [], myRoles = [] } = overrides;
+async function renderInfo(overrides: { permissions?: SystemPermission[]; myRoles?: MselRole[]; startTime?: Date } = {}) {
+  const { permissions = [], myRoles = [], startTime } = overrides;
   const pageApi = {
     getMselPages: vi.fn(() => of(structuredClone([PAGE]))),
     deleteMselPage: vi.fn(() => of<unknown>(null)),
@@ -117,16 +122,23 @@ async function renderInfo(overrides: { permissions?: SystemPermission[]; myRoles
       ClipboardModule,
       MatButtonModule,
       MatCheckboxModule,
+      MatDatepickerModule,
       MatExpansionModule,
       MatFormFieldModule,
       MatIconModule,
       MatInputModule,
       MatMenuModule,
+      MatNativeDateModule,
       MatSelectModule,
       MatTabsModule,
       MatTooltipModule,
+      NgxMatDatepickerActions,
+      NgxMatDatepickerApply,
+      NgxMatDatepickerCancel,
+      NgxMatDatepickerInput,
+      NgxMatDatetimepicker,
     ],
-    declarations: [MselInfoComponent, IntegrationStatusStub, DurationEditStub],
+    declarations: [MselInfoComponent, IntegrationStatusStub, DurationEditStub, TimezoneAbbrPipe],
     providers: [
       { provide: SystemPermissionsService, useValue: permissionApis.systemPermissions },
       PermissionDataService,
@@ -145,7 +157,7 @@ async function renderInfo(overrides: { permissions?: SystemPermission[]; myRoles
         provide: MselStore,
         useFactory: () => {
           const store = new MselStore();
-          store.set([msel(myRoles)]);
+          store.set([msel(myRoles, startTime)]);
           store.setActive('msel-1');
           return store;
         },
@@ -173,6 +185,11 @@ async function openPage() {
 }
 
 describe('MselInfoComponent', () => {
+  // A test that sets TZ runs in a zone with daylight saving time; this restores the host's.
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   beforeEach(() => {
     sessionStorage.clear();
   });
@@ -269,5 +286,21 @@ describe('MselInfoComponent', () => {
     await renderInfo({ permissions: [SystemPermission.EditMsels] });
 
     expect(screen.getByLabelText('Created By')).toHaveValue('Casey Creator');
+  });
+
+  /**
+   * Verifies: the MSEL start time is labelled with the zone in effect on that date.
+   * Interacts with: MselInfoComponent.hasStartTime, DatePipe, TimezoneAbbrPipe.
+   * Data: TZ America/New_York; start time 20 Oct 2026 16:00 UTC (EDT) or 20 Nov 2026 17:00 UTC (EST, after DST ends); EditMsels.
+   */
+  it.each([
+    { date: '2026-10-20T16:00:00Z', label: '20 Oct 2026 12:00 EDT' },
+    { date: '2026-11-20T17:00:00Z', label: '20 Nov 2026 12:00 EST' },
+  ])('labels the start time with the zone in effect on that date ($label)', async ({ date, label }) => {
+    vi.stubEnv('TZ', 'America/New_York');
+
+    await renderInfo({ permissions: [SystemPermission.EditMsels], startTime: new Date(date) });
+
+    expect(screen.getByText(label)).toBeInTheDocument();
   });
 });

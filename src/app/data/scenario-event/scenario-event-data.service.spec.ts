@@ -1,7 +1,7 @@
 // Copyright 2026 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { firstValueFrom, of, throwError } from 'rxjs';
 import {
@@ -209,6 +209,11 @@ describe('ScenarioEventDataService', () => {
   });
 
   describe('view helpers', () => {
+    // A test that sets TZ runs in a zone with daylight saving time; this restores the host's.
+    afterEach(() => {
+      vi.unstubAllEnvs();
+    });
+
     const fields: DataField[] = [
       { id: 'f-title', name: 'Title', dataType: DataFieldType.String },
       { id: 'f-priority', name: 'Priority', dataType: DataFieldType.Integer },
@@ -464,6 +469,26 @@ describe('ScenarioEventDataService', () => {
       expect(service.getDisplayValueFromView(v, se1, 'Title')).toBe('Phishing');
       expect(service.getDisplayValueFromView(v, se2, 'When')).toBe(' ');
       expect(service.getDisplayValueFromView(v, se2, 'Title')).toBe('');
+    });
+
+    /**
+     * Verifies: each DateTime value is labelled with the zone in effect on its own date.
+     * Interacts with: ScenarioEventDataService.getDisplayValueFromView, getTimezoneAbbr.
+     * Data: TZ America/New_York; se-1 at 12 Oct 2026 16:00 UTC (EDT), se-2 at 12 Nov 2026 17:00 UTC (EST).
+     */
+    it('getDisplayValueFromView labels each date with the zone in effect on that date', () => {
+      vi.stubEnv('TZ', 'America/New_York');
+      const { service } = setup();
+      const v = view({
+        dataValues: [
+          value('se-1', 'f-when', '2026-10-12T16:00:00Z'),
+          value('se-2', 'f-when', '2026-11-12T17:00:00Z'),
+        ],
+      });
+      index(service, v);
+
+      expect(service.getDisplayValueFromView(v, event(), 'When')).toBe('12 Oct 2026 12:00 EDT');
+      expect(service.getDisplayValueFromView(v, event({ id: 'se-2' }), 'When')).toBe('12 Nov 2026 12:00 EST');
     });
 
     /**

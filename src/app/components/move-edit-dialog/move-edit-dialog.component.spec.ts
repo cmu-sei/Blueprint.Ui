@@ -1,7 +1,7 @@
 // Copyright 2026 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
-import { describe, it, expect } from 'vitest';
+import { afterEach, describe, it, expect, vi } from 'vitest';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { By } from '@angular/platform-browser';
 import { provideHttpClient } from '@angular/common/http';
@@ -24,6 +24,7 @@ import {
 import { CRUCIBLE_DIALOG_IMPORTS } from '@cmusei/crucible-common';
 import { Move } from 'src/app/generated/blueprint.api';
 import { MoveEditDialogComponent } from './move-edit-dialog.component';
+import { TimezoneAbbrPipe } from 'src/app/utilities/timezone-abbr';
 import { renderComponent } from 'src/app/test-utils/render-component';
 
 @Component({ selector: 'app-duration-edit', template: '', standalone: false })
@@ -48,8 +49,8 @@ const MOVE: Move = {
   situationDescription: '<p>Phishing</p>',
 };
 
-async function renderMoveEdit() {
-  const data = { move: structuredClone(MOVE), mselStartTime: START, title: 'Edit Move' };
+async function renderMoveEdit(move: Move = MOVE) {
+  const data = { move: structuredClone(move), mselStartTime: START, title: 'Edit Move' };
   const rendered = await renderComponent(MoveEditDialogComponent, {
     imports: [
       ...CRUCIBLE_DIALOG_IMPORTS,
@@ -64,7 +65,7 @@ async function renderMoveEdit() {
       NgxMatDatepickerInput,
       NgxMatDatetimepicker,
     ],
-    declarations: [MoveEditDialogComponent, DurationEditStub],
+    declarations: [MoveEditDialogComponent, DurationEditStub, TimezoneAbbrPipe],
     // angular-editor injects HttpClient for its image upload.
     providers: [{ provide: MAT_DIALOG_DATA, useValue: data }, provideHttpClient(), provideHttpClientTesting()],
   });
@@ -82,6 +83,11 @@ const actions = () => within(document.querySelector('mat-dialog-actions') as HTM
 const description = () => screen.getByPlaceholderText('Move Description');
 
 describe('MoveEditDialogComponent', () => {
+  // A test that sets TZ runs in a zone with daylight saving time; this restores the host's.
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   /**
    * Verifies: the component mounts with the default test providers and shows the move, its start offset editor and situation time.
    * Interacts with: getDefaultProviders (placeholders and stubs only), crucible-dialog, DurationEditStub inputs.
@@ -117,5 +123,21 @@ describe('MoveEditDialogComponent', () => {
       { saveChanges: true, move: data.move },
       { saveChanges: false, move: null },
     ]);
+  });
+
+  /**
+   * Verifies: the situation time is labelled with the zone in effect on that date.
+   * Interacts with: DatePipe, TimezoneAbbrPipe in the situation time field.
+   * Data: TZ America/New_York; situation time 20 Oct 2026 16:00 UTC (EDT) or 20 Nov 2026 17:00 UTC (EST, after DST ends).
+   */
+  it.each([
+    { date: '2026-10-20T16:00:00Z', label: '20 Oct 2026 12:00 EDT' },
+    { date: '2026-11-20T17:00:00Z', label: '20 Nov 2026 12:00 EST' },
+  ])('labels the situation time with the zone in effect on that date ($label)', async ({ date, label }) => {
+    vi.stubEnv('TZ', 'America/New_York');
+
+    await renderMoveEdit({ ...MOVE, situationTime: new Date(date) });
+
+    expect(screen.getByText(label)).toBeInTheDocument();
   });
 });

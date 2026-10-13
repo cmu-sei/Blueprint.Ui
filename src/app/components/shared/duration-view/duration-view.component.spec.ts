@@ -1,12 +1,12 @@
 // Copyright 2026 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
-import { describe, it, expect } from 'vitest';
+import { afterEach, describe, it, expect, vi } from 'vitest';
 import { screen } from '@testing-library/angular';
 import { DurationViewComponent } from './duration-view.component';
 import { renderComponent } from 'src/app/test-utils/render-component';
 
-async function renderDurationView(inputs: { durationSeconds: number; showRealTime: boolean }) {
+async function renderDurationView(inputs: { durationSeconds: number; showRealTime: boolean; startTime?: Date }) {
   return renderComponent(DurationViewComponent, {
     declarations: [DurationViewComponent],
     inputs: { startTime: new Date(2026, 0, 1, 12, 0, 0), ...inputs },
@@ -14,6 +14,11 @@ async function renderDurationView(inputs: { durationSeconds: number; showRealTim
 }
 
 describe('DurationViewComponent', () => {
+  // A test that sets TZ runs in a zone with daylight saving time; this restores the host's.
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   /**
    * Verifies: the component mounts with the default test providers.
    * Interacts with: getDefaultProviders (placeholders and stubs only).
@@ -49,5 +54,18 @@ describe('DurationViewComponent', () => {
     await renderDurationView({ durationSeconds: 3600, showRealTime: true });
 
     expect(screen.getByTitle('Time shown in your browser timezone')).toHaveTextContent(/^01 Jan 2026 13:00/);
+  });
+
+  /**
+   * Verifies: the real time is labelled with the zone in effect on that date, not on the start date.
+   * Interacts with: DurationViewComponent.getDate, getTimezoneAbbr.
+   * Data: TZ America/New_York; start 20 Oct 2026 12:00 EDT, offset 30 days (19 Nov 2026, after DST ends).
+   */
+  it('labels the real time with the zone in effect on that date', async () => {
+    vi.stubEnv('TZ', 'America/New_York');
+
+    await renderDurationView({ durationSeconds: 30 * 86400, showRealTime: true, startTime: new Date('2026-10-20T16:00:00Z') });
+
+    expect(screen.getByTitle('Time shown in your browser timezone')).toHaveTextContent('19 Nov 2026 11:00 EST');
   });
 });

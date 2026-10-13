@@ -1,21 +1,26 @@
 // Copyright 2026 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
-import { describe, it, expect } from 'vitest';
+import { afterEach, describe, it, expect, vi } from 'vitest';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatNativeDateModule } from '@angular/material/core';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { NgxMatDatepickerActions, NgxMatDatepickerApply, NgxMatDatepickerCancel, NgxMatDatepickerInput, NgxMatDatetimepicker } from '@ngxmc/datetime-picker';
 import { screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { DataField, DataFieldType, MselItemStatus } from 'src/app/generated/blueprint.api';
 import { DataValueComponent } from './data-value.component';
+import { TimezoneAbbrPipe } from 'src/app/utilities/timezone-abbr';
 import { renderComponent } from 'src/app/test-utils/render-component';
 
 const SUBJECT: DataField = { id: 'df-subject', name: 'Subject', dataType: DataFieldType.String };
 const STATUS: DataField = { id: 'df-status', name: 'Status', dataType: DataFieldType.Status };
 const ASSIGNED: DataField = { id: 'df-team', name: 'Assigned To', dataType: DataFieldType.Team };
+const WHEN: DataField = { id: 'df-when', name: 'When', dataType: DataFieldType.DateTime };
 
 interface Flags {
   canEdit?: boolean;
@@ -27,8 +32,21 @@ interface Flags {
 async function renderDataValue(dataField: DataField, value: string, flags: Flags = {}) {
   const { canEdit = false, canApprove = false, isOwner = false, showValueOnly = false } = flags;
   const rendered = await renderComponent(DataValueComponent, {
-    imports: [MatCheckboxModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatTooltipModule],
-    declarations: [DataValueComponent],
+    imports: [
+      MatCheckboxModule,
+      MatDatepickerModule,
+      MatFormFieldModule,
+      MatInputModule,
+      MatNativeDateModule,
+      MatSelectModule,
+      MatTooltipModule,
+      NgxMatDatepickerActions,
+      NgxMatDatepickerApply,
+      NgxMatDatepickerCancel,
+      NgxMatDatepickerInput,
+      NgxMatDatetimepicker,
+    ],
+    declarations: [DataValueComponent, TimezoneAbbrPipe],
     inputs: {
       dataField,
       value,
@@ -48,6 +66,11 @@ async function renderDataValue(dataField: DataField, value: string, flags: Flags
 }
 
 describe('DataValueComponent', () => {
+  // A test that sets TZ runs in a zone with daylight saving time; this restores the host's.
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   /**
    * Verifies: a string value is editable with canEdit and emits each change.
    * Interacts with: ngModel, valueChange output.
@@ -128,5 +151,27 @@ describe('DataValueComponent', () => {
 
     expect(screen.getByText('Urgent')).toBeInTheDocument();
     expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: a DateTime value is labelled with the zone in effect on that date, in each of the three places the template shows it.
+   * Interacts with: DatePipe, TimezoneAbbrPipe in the DataValueComponent template (view-only display, editable field, value-only view for an editor).
+   * Data: TZ America/New_York; When = 12 Oct 2026 16:00 UTC (EDT) or 12 Nov 2026 17:00 UTC (EST, after DST ends); showValueOnly with no flags, canEdit alone, or showValueOnly with canEdit, canApprove and isOwner.
+   */
+  it.each(
+    [
+      { view: 'shown read-only', flags: { showValueOnly: true } },
+      { view: 'in the editable field', flags: { canEdit: true } },
+      { view: 'shown as a value to its editor', flags: { showValueOnly: true, canEdit: true, canApprove: true, isOwner: true } },
+    ].flatMap((v) => [
+      { ...v, value: '2026-10-12T16:00:00Z', label: '12 Oct 2026 12:00 EDT' },
+      { ...v, value: '2026-11-12T17:00:00Z', label: '12 Nov 2026 12:00 EST' },
+    ]),
+  )('labels a date-time value $view as $label', async ({ flags, value, label }) => {
+    vi.stubEnv('TZ', 'America/New_York');
+
+    await renderDataValue(WHEN, value, flags);
+
+    expect(screen.getByText(label)).toBeInTheDocument();
   });
 });

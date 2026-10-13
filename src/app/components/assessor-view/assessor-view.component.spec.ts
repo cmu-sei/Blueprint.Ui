@@ -1,12 +1,12 @@
 // Copyright 2026 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { ComponentFixture } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { provideHttpClient } from '@angular/common/http';
-import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -16,12 +16,14 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSortModule } from '@angular/material/sort';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { screen } from '@testing-library/angular';
+import userEvent from '@testing-library/user-event';
 import { of } from 'rxjs';
 import {
   DataField,
   DataFieldType,
   DataValue,
   EventType,
+  Move,
   Msel,
   MselCompetency,
   MselCompetencyService,
@@ -31,6 +33,7 @@ import {
 } from 'src/app/generated/blueprint.api';
 import { DataFieldStore } from 'src/app/data/data-field/data-field.store';
 import { DataValueStore } from 'src/app/data/data-value/data-value.store';
+import { MoveStore } from 'src/app/data/move/move.store';
 import { MselStore } from 'src/app/data/msel/msel.store';
 import { ScenarioEventStore } from 'src/app/data/scenario-event/scenario-event.store';
 import { AssessorViewComponent } from './assessor-view.component';
@@ -82,8 +85,8 @@ function seeded<S extends { set(entities: unknown[]): void }>(Store: new () => S
   };
 }
 
-async function renderAssessorView(overrides: { canEditCheckboxes?: boolean } = {}) {
-  const { canEditCheckboxes = false } = overrides;
+async function renderAssessorView(overrides: { canEditCheckboxes?: boolean; moves?: Move[] } = {}) {
+  const { canEditCheckboxes = false, moves = [] } = overrides;
   const poolApi = {
     getMselCompetencies: vi.fn(() => of<MselCompetency[]>([])),
   } satisfies ApiStub<MselCompetencyService>;
@@ -121,6 +124,7 @@ async function renderAssessorView(overrides: { canEditCheckboxes?: boolean } = {
       seeded(DataFieldStore, FIELDS),
       seeded(DataValueStore, VALUES),
       seeded(ScenarioEventStore, [EVENT]),
+      seeded(MoveStore, moves),
     ],
     inputs: { canEditCheckboxes, loggedInUserId: 'user-me' },
   });
@@ -135,6 +139,11 @@ const byField = (fixture: ComponentFixture<unknown>, name: string) => values(fix
 describe('AssessorViewComponent', () => {
   beforeEach(() => {
     localStorage.clear();
+  });
+
+  // A test that sets TZ runs in a zone with daylight saving time; this restores the host's.
+  afterEach(() => {
+    vi.unstubAllEnvs();
   });
 
   /**
@@ -180,5 +189,36 @@ describe('AssessorViewComponent', () => {
 
     expect(byField(fixture, 'Observed')?.canEdit).toBe(false);
     expect(byField(fixture, 'Title')?.canEdit).toBe(false);
+  });
+
+  /**
+   * Verifies: each xAPI statement in an opened move is timed with the zone in effect on its own date.
+   * Interacts with: toggleMoveExpand (move header clicked), HttpClient GET api/xapi/statements (HttpTestingController), formatTimestamp, getTimezoneAbbr.
+   * Data: TZ America/New_York; Move 1 at 0 s; two CITE statements for move 1, 20 Oct 2026 16:00 UTC (EDT) and 20 Nov 2026 17:00 UTC (EST).
+   */
+  it('times each move statement with the zone in effect on its date', async () => {
+    vi.stubEnv('TZ', 'America/New_York');
+    const { fixture } = await renderAssessorView({
+      moves: [{ id: 'move-1', mselId: 'msel-1', moveNumber: 1, deltaSeconds: 0, description: 'Initial access' }],
+    });
+    const user = userEvent.setup();
+
+    await user.click(screen.getByText('Move 1'));
+    const statement = (id: string, timestamp: string) => ({
+      id,
+      timestamp,
+      actor: { name: 'Blue Analyst' },
+      verb: { id: 'http://adlnet.gov/expapi/verbs/experienced', display: { 'en-US': 'experienced' } },
+      context: { platform: 'cite', contextActivities: { grouping: [{ id: 'https://blueprint.example/move/1' }] } },
+    });
+    TestBed.inject(HttpTestingController)
+      .expectOne((req) => req.url === '/api/xapi/statements' && req.params.get('mselId') === 'msel-1')
+      .flush({ statements: [statement('stmt-oct', '2026-10-20T16:00:00Z'), statement('stmt-nov', '2026-11-20T17:00:00Z')] });
+    fixture.detectChanges();
+
+    expect(Array.from(document.querySelectorAll('.statement-time'), (e) => e.textContent)).toEqual([
+      '20 Oct 2026 12:00 EDT',
+      '20 Nov 2026 12:00 EST',
+    ]);
   });
 });
