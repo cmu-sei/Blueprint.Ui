@@ -310,7 +310,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <div class="integration-row">
               <div class="integration-checkbox-cell">
                 <mat-checkbox [disabled]="msel.status === 'Deployed' || !canEditMsel()"
-                  [(ngModel)]="msel.useCaster" (cut)="isChanged = true" (change)="isChanged = true"
+                  [(ngModel)]="msel.useCaster" (cut)="isChanged = true" (change)="isChanged = true; $event.checked && loadCasterDirectories()"
                   (paste)="isChanged = true" (keypress)="isChanged = true">Caster</mat-checkbox>
               </div>
               @if (msel.useCaster) {

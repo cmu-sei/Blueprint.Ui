@@ -81,6 +81,7 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   scoringModelList: ScoringModel[] = [];
   casterDirectoryList: CasterDirectory[] = [];
   casterDirectoryError = '';
+  private casterDirectoriesRequested = false;
   playerApplicationList: PlayerApplication[] = [];
   itemStatus: MselItemStatus[] = [
     MselItemStatus.Pending,
@@ -193,6 +194,9 @@ export class MselInfoComponent implements OnDestroy, OnInit {
           // Fetch integration names for deployed integrations
           this.fetchIntegrationNames();
           this.resolveCreatorName();
+          if (this.msel.useCaster) {
+            this.loadCasterDirectories();
+          }
         }
       });
     // subscribe to MSEL loading flag
@@ -290,19 +294,6 @@ export class MselInfoComponent implements OnDestroy, OnInit {
       (error) => {
         console.error('Failed to load CITE scoring models:', error);
         this.scoringModelList = [];
-      }
-    );
-    // load the Caster directories this user can deploy from. Caster answers with the user's own
-    // permissions, so the list holds only directories the user can view in Caster.
-    this.casterService.getCasterDirectories().subscribe(
-      (directories) => {
-        this.casterDirectoryList = directories || [];
-        this.casterDirectoryError = '';
-      },
-      (error) => {
-        console.error('Failed to load Caster directories:', error);
-        this.casterDirectoryList = [];
-        this.casterDirectoryError = 'Caster directories could not be loaded. You need access to Caster to choose one.';
       }
     );
     // subscribe to player applications
@@ -943,6 +934,28 @@ export class MselInfoComponent implements OnDestroy, OnInit {
           this.clearIntegrationNames();
         }
       );
+  }
+
+  // load the Caster directories this user can deploy from, once, and only for a MSEL that uses Caster.
+  // Caster answers with the user's own permissions, so the list holds only directories the user can view in Caster.
+  loadCasterDirectories() {
+    if (this.casterDirectoriesRequested) {
+      return;
+    }
+    this.casterDirectoriesRequested = true;
+    this.casterService.getCasterDirectories().subscribe(
+      (directories) => {
+        this.casterDirectoryList = directories || [];
+        this.casterDirectoryError = '';
+      },
+      (error) => {
+        console.error('Failed to load Caster directories:', error);
+        this.casterDirectoryList = [];
+        this.casterDirectoryError = 'Caster directories could not be loaded. You need access to Caster to choose one.';
+        // checking Caster again retries
+        this.casterDirectoriesRequested = false;
+      }
+    );
   }
 
   private clearIntegrationNames() {
