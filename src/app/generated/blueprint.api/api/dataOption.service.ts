@@ -25,6 +25,10 @@ import { Observable }                                        from 'rxjs';
 // @ts-ignore
 import { DataOption } from '../model/dataOption';
 // @ts-ignore
+import { DataOptionCreate } from '../model/dataOptionCreate';
+// @ts-ignore
+import { DataOptionEdit } from '../model/dataOptionEdit';
+// @ts-ignore
 import { DataOptionImportPreview } from '../model/dataOptionImportPreview';
 // @ts-ignore
 import { ProblemDetails } from '../model/problemDetails';
@@ -48,14 +52,14 @@ export class DataOptionService extends BaseService {
     /**
      * Creates a new DataOption
      * Creates a new DataOption with the attributes specified &lt;para /&gt; Accessible only to a ContentDeveloper or an Administrator
-     * @param dataOption The data used to create the DataOption
+     * @param dataOptionCreate The data used to create the DataOption
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public createDataOption(dataOption?: DataOption, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<DataOption>;
-    public createDataOption(dataOption?: DataOption, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<DataOption>>;
-    public createDataOption(dataOption?: DataOption, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<DataOption>>;
-    public createDataOption(dataOption?: DataOption, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public createDataOption(dataOptionCreate?: DataOptionCreate, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<DataOption>;
+    public createDataOption(dataOptionCreate?: DataOptionCreate, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<DataOption>>;
+    public createDataOption(dataOptionCreate?: DataOptionCreate, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<DataOption>>;
+    public createDataOption(dataOptionCreate?: DataOptionCreate, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -103,7 +107,7 @@ export class DataOptionService extends BaseService {
         return this.httpClient.request<DataOption>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: dataOption,
+                body: dataOptionCreate,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
@@ -438,16 +442,16 @@ export class DataOptionService extends BaseService {
 
     /**
      * Updates a  DataOption
-     * Updates a DataOption with the attributes specified. The ID from the route MUST MATCH the ID contained in the dataOption parameter &lt;para /&gt; Accessible only to a ContentDeveloper or an Administrator
+     * Updates a DataOption with the attributes specified. The DataOption stays on its DataField; that cannot be changed. &lt;para /&gt; Accessible only to a ContentDeveloper or an Administrator
      * @param id The Id of the DataOption to update
-     * @param dataOption The updated DataOption values
+     * @param dataOptionEdit The updated DataOption values
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public updateDataOption(id: string, dataOption?: DataOption, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<DataOption>;
-    public updateDataOption(id: string, dataOption?: DataOption, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<DataOption>>;
-    public updateDataOption(id: string, dataOption?: DataOption, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<DataOption>>;
-    public updateDataOption(id: string, dataOption?: DataOption, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public updateDataOption(id: string, dataOptionEdit?: DataOptionEdit, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<DataOption>;
+    public updateDataOption(id: string, dataOptionEdit?: DataOptionEdit, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<DataOption>>;
+    public updateDataOption(id: string, dataOptionEdit?: DataOptionEdit, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<DataOption>>;
+    public updateDataOption(id: string, dataOptionEdit?: DataOptionEdit, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (id === null || id === undefined) {
             throw new Error('Required parameter id was null or undefined when calling updateDataOption.');
         }
@@ -498,7 +502,7 @@ export class DataOptionService extends BaseService {
         return this.httpClient.request<DataOption>('put', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: dataOption,
+                body: dataOptionEdit,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,

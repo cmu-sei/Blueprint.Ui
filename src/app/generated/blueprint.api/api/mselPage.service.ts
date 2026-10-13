@@ -25,6 +25,10 @@ import { Observable }                                        from 'rxjs';
 // @ts-ignore
 import { MselPage } from '../model/mselPage';
 // @ts-ignore
+import { MselPageCreate } from '../model/mselPageCreate';
+// @ts-ignore
+import { MselPageEdit } from '../model/mselPageEdit';
+// @ts-ignore
 import { ProblemDetails } from '../model/problemDetails';
 
 // @ts-ignore
@@ -46,14 +50,14 @@ export class MselPageService extends BaseService {
     /**
      * Creates a new MselPage
      * Creates a new MselPage with the attributes specified &lt;para /&gt;
-     * @param mselPage The data to create the MselPage with
+     * @param mselPageCreate The data to create the MselPage with
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public createMselPage(mselPage?: MselPage, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<MselPage>;
-    public createMselPage(mselPage?: MselPage, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<MselPage>>;
-    public createMselPage(mselPage?: MselPage, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<MselPage>>;
-    public createMselPage(mselPage?: MselPage, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public createMselPage(mselPageCreate?: MselPageCreate, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<MselPage>;
+    public createMselPage(mselPageCreate?: MselPageCreate, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<MselPage>>;
+    public createMselPage(mselPageCreate?: MselPageCreate, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<MselPage>>;
+    public createMselPage(mselPageCreate?: MselPageCreate, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -101,7 +105,7 @@ export class MselPageService extends BaseService {
         return this.httpClient.request<MselPage>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: mselPage,
+                body: mselPageCreate,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
@@ -292,16 +296,16 @@ export class MselPageService extends BaseService {
 
     /**
      * Updates a MselPage
-     * Updates a MselPage with the attributes specified &lt;para /&gt;
+     * Updates a MselPage with the attributes specified. The page stays in its MSEL: the MSEL cannot be changed. &lt;para /&gt;
      * @param id The Id of the MselPage to update
-     * @param mselPage The updated MselPage values
+     * @param mselPageEdit The updated MselPage values
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public updateMselPage(id: string, mselPage?: MselPage, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<MselPage>;
-    public updateMselPage(id: string, mselPage?: MselPage, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<MselPage>>;
-    public updateMselPage(id: string, mselPage?: MselPage, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<MselPage>>;
-    public updateMselPage(id: string, mselPage?: MselPage, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public updateMselPage(id: string, mselPageEdit?: MselPageEdit, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<MselPage>;
+    public updateMselPage(id: string, mselPageEdit?: MselPageEdit, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<MselPage>>;
+    public updateMselPage(id: string, mselPageEdit?: MselPageEdit, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<MselPage>>;
+    public updateMselPage(id: string, mselPageEdit?: MselPageEdit, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (id === null || id === undefined) {
             throw new Error('Required parameter id was null or undefined when calling updateMselPage.');
         }
@@ -352,7 +356,7 @@ export class MselPageService extends BaseService {
         return this.httpClient.request<MselPage>('put', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: mselPage,
+                body: mselPageEdit,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,

@@ -26,6 +26,10 @@ import { Observable }                                        from 'rxjs';
 import { ProblemDetails } from '../model/problemDetails';
 // @ts-ignore
 import { ProficiencyLevel } from '../model/proficiencyLevel';
+// @ts-ignore
+import { ProficiencyLevelCreate } from '../model/proficiencyLevelCreate';
+// @ts-ignore
+import { ProficiencyLevelEdit } from '../model/proficiencyLevelEdit';
 
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS }                     from '../variables';
@@ -45,14 +49,14 @@ export class ProficiencyLevelService extends BaseService {
 
     /**
      * Creates a new ProficiencyLevel
-     * @param proficiencyLevel 
+     * @param proficiencyLevelCreate 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public createProficiencyLevel(proficiencyLevel?: ProficiencyLevel, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<ProficiencyLevel>;
-    public createProficiencyLevel(proficiencyLevel?: ProficiencyLevel, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<ProficiencyLevel>>;
-    public createProficiencyLevel(proficiencyLevel?: ProficiencyLevel, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<ProficiencyLevel>>;
-    public createProficiencyLevel(proficiencyLevel?: ProficiencyLevel, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public createProficiencyLevel(proficiencyLevelCreate?: ProficiencyLevelCreate, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<ProficiencyLevel>;
+    public createProficiencyLevel(proficiencyLevelCreate?: ProficiencyLevelCreate, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<ProficiencyLevel>>;
+    public createProficiencyLevel(proficiencyLevelCreate?: ProficiencyLevelCreate, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<ProficiencyLevel>>;
+    public createProficiencyLevel(proficiencyLevelCreate?: ProficiencyLevelCreate, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -100,7 +104,7 @@ export class ProficiencyLevelService extends BaseService {
         return this.httpClient.request<ProficiencyLevel>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: proficiencyLevel,
+                body: proficiencyLevelCreate,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
@@ -289,14 +293,14 @@ export class ProficiencyLevelService extends BaseService {
     /**
      * Updates a ProficiencyLevel
      * @param id 
-     * @param proficiencyLevel 
+     * @param proficiencyLevelEdit 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public updateProficiencyLevel(id: string, proficiencyLevel?: ProficiencyLevel, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<ProficiencyLevel>;
-    public updateProficiencyLevel(id: string, proficiencyLevel?: ProficiencyLevel, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<ProficiencyLevel>>;
-    public updateProficiencyLevel(id: string, proficiencyLevel?: ProficiencyLevel, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<ProficiencyLevel>>;
-    public updateProficiencyLevel(id: string, proficiencyLevel?: ProficiencyLevel, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public updateProficiencyLevel(id: string, proficiencyLevelEdit?: ProficiencyLevelEdit, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<ProficiencyLevel>;
+    public updateProficiencyLevel(id: string, proficiencyLevelEdit?: ProficiencyLevelEdit, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<ProficiencyLevel>>;
+    public updateProficiencyLevel(id: string, proficiencyLevelEdit?: ProficiencyLevelEdit, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<ProficiencyLevel>>;
+    public updateProficiencyLevel(id: string, proficiencyLevelEdit?: ProficiencyLevelEdit, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (id === null || id === undefined) {
             throw new Error('Required parameter id was null or undefined when calling updateProficiencyLevel.');
         }
@@ -347,7 +351,7 @@ export class ProficiencyLevelService extends BaseService {
         return this.httpClient.request<ProficiencyLevel>('put', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: proficiencyLevel,
+                body: proficiencyLevelEdit,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,

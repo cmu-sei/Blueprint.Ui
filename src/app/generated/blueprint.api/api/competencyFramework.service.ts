@@ -368,7 +368,7 @@ export class CompetencyFrameworkService extends BaseService {
 
     /**
      * Gets a specific Competency Framework by id
-     * Returns the framework with all competencies and relationships.
+     * Returns the framework with all competencies and relationships. &lt;para /&gt; Readable by any authenticated user, for the same reason as the list above.
      * @param id The id of the Competency Framework
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
@@ -428,7 +428,7 @@ export class CompetencyFrameworkService extends BaseService {
 
     /**
      * Gets the progress of a framework import
-     * Returns the phase and item counts of the import started with this importId, so a client can show real progress for the many seconds a large framework takes to import. Terminal states stay readable for 30 minutes; unknown ids return 404.
+     * Returns the phase and item counts of the import started with this importId, so a client can show real progress for the many seconds a large framework takes to import. Terminal states stay readable for 30 minutes; an id that is unknown, has expired, or belongs to another user returns 404.
      * @param importId The importId passed on the import request
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
@@ -488,7 +488,7 @@ export class CompetencyFrameworkService extends BaseService {
 
     /**
      * Gets all Competency Frameworks
-     * Returns a list of all competency frameworks (without competencies).
+     * Returns a list of all competency frameworks (without competencies). &lt;para /&gt; Readable by any authenticated user: frameworks are global reference data loaded by every MSEL screen.
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */

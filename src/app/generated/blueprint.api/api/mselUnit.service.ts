@@ -25,6 +25,8 @@ import { Observable }                                        from 'rxjs';
 // @ts-ignore
 import { MselUnit } from '../model/mselUnit';
 // @ts-ignore
+import { MselUnitCreate } from '../model/mselUnitCreate';
+// @ts-ignore
 import { ProblemDetails } from '../model/problemDetails';
 // @ts-ignore
 import { Unit } from '../model/unit';
@@ -48,14 +50,14 @@ export class MselUnitService extends BaseService {
     /**
      * Creates a new MselUnit
      * Creates a new MselUnit with the attributes specified &lt;para /&gt;
-     * @param mselUnit The data to create the MselUnit with
+     * @param mselUnitCreate The data to create the MselUnit with
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public createMselUnit(mselUnit?: MselUnit, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<MselUnit>;
-    public createMselUnit(mselUnit?: MselUnit, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<MselUnit>>;
-    public createMselUnit(mselUnit?: MselUnit, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<MselUnit>>;
-    public createMselUnit(mselUnit?: MselUnit, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public createMselUnit(mselUnitCreate?: MselUnitCreate, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<MselUnit>;
+    public createMselUnit(mselUnitCreate?: MselUnitCreate, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<MselUnit>>;
+    public createMselUnit(mselUnitCreate?: MselUnitCreate, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<MselUnit>>;
+    public createMselUnit(mselUnitCreate?: MselUnitCreate, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -103,7 +105,7 @@ export class MselUnitService extends BaseService {
         return this.httpClient.request<MselUnit>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: mselUnit,
+                body: mselUnitCreate,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
@@ -356,16 +358,16 @@ export class MselUnitService extends BaseService {
 
     /**
      * Updates a MselUnit
-     * Updates a MselUnit with the attributes specified &lt;para /&gt;
+     * Updates a MselUnit. The MSEL and the Unit cannot be changed, so this only confirms the pairing exists. &lt;para /&gt;
      * @param id The Id of the MselUnit to update
-     * @param mselUnit The updated MselUnit values
+     * @param body The updated MselUnit values
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public updateMselUnit(id: string, mselUnit?: MselUnit, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<Unit>;
-    public updateMselUnit(id: string, mselUnit?: MselUnit, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Unit>>;
-    public updateMselUnit(id: string, mselUnit?: MselUnit, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Unit>>;
-    public updateMselUnit(id: string, mselUnit?: MselUnit, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public updateMselUnit(id: string, body?: object, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<Unit>;
+    public updateMselUnit(id: string, body?: object, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Unit>>;
+    public updateMselUnit(id: string, body?: object, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Unit>>;
+    public updateMselUnit(id: string, body?: object, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (id === null || id === undefined) {
             throw new Error('Required parameter id was null or undefined when calling updateMselUnit.');
         }
@@ -416,7 +418,7 @@ export class MselUnitService extends BaseService {
         return this.httpClient.request<Unit>('put', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: mselUnit,
+                body: body,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,

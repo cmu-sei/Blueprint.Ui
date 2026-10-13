@@ -25,6 +25,10 @@ import { Observable }                                        from 'rxjs';
 // @ts-ignore
 import { CiteAction } from '../model/citeAction';
 // @ts-ignore
+import { CiteActionCreate } from '../model/citeActionCreate';
+// @ts-ignore
+import { CiteActionEdit } from '../model/citeActionEdit';
+// @ts-ignore
 import { ProblemDetails } from '../model/problemDetails';
 
 // @ts-ignore
@@ -46,14 +50,14 @@ export class CiteActionService extends BaseService {
     /**
      * Creates a new CiteAction
      * Creates a new CiteAction with the attributes specified &lt;para /&gt; Accessible only to a ContentDeveloper or an Administrator
-     * @param citeAction The data used to create the CiteAction
+     * @param citeActionCreate The data used to create the CiteAction
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public createCiteAction(citeAction?: CiteAction, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<CiteAction>;
-    public createCiteAction(citeAction?: CiteAction, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<CiteAction>>;
-    public createCiteAction(citeAction?: CiteAction, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<CiteAction>>;
-    public createCiteAction(citeAction?: CiteAction, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public createCiteAction(citeActionCreate?: CiteActionCreate, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<CiteAction>;
+    public createCiteAction(citeActionCreate?: CiteActionCreate, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<CiteAction>>;
+    public createCiteAction(citeActionCreate?: CiteActionCreate, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<CiteAction>>;
+    public createCiteAction(citeActionCreate?: CiteActionCreate, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -101,7 +105,7 @@ export class CiteActionService extends BaseService {
         return this.httpClient.request<CiteAction>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: citeAction,
+                body: citeActionCreate,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
@@ -408,16 +412,16 @@ export class CiteActionService extends BaseService {
 
     /**
      * Updates a  CiteAction
-     * Updates a CiteAction with the attributes specified. The ID from the route MUST MATCH the ID contained in the citeAction parameter &lt;para /&gt; Accessible only to a ContentDeveloper or an Administrator
+     * Updates a CiteAction with the attributes specified. The CiteAction stays where it is: its MSEL and template flag cannot be changed &lt;para /&gt; Accessible only to a ContentDeveloper or an Administrator
      * @param id The Id of the CiteAction to update
-     * @param citeAction The updated CiteAction values
+     * @param citeActionEdit The updated CiteAction values
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public updateCiteAction(id: string, citeAction?: CiteAction, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<CiteAction>;
-    public updateCiteAction(id: string, citeAction?: CiteAction, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<CiteAction>>;
-    public updateCiteAction(id: string, citeAction?: CiteAction, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<CiteAction>>;
-    public updateCiteAction(id: string, citeAction?: CiteAction, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public updateCiteAction(id: string, citeActionEdit?: CiteActionEdit, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<CiteAction>;
+    public updateCiteAction(id: string, citeActionEdit?: CiteActionEdit, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<CiteAction>>;
+    public updateCiteAction(id: string, citeActionEdit?: CiteActionEdit, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<CiteAction>>;
+    public updateCiteAction(id: string, citeActionEdit?: CiteActionEdit, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (id === null || id === undefined) {
             throw new Error('Required parameter id was null or undefined when calling updateCiteAction.');
         }
@@ -468,7 +472,7 @@ export class CiteActionService extends BaseService {
         return this.httpClient.request<CiteAction>('put', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: citeAction,
+                body: citeActionEdit,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
