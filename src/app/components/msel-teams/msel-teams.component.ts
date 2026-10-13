@@ -75,6 +75,8 @@ export class MselTeamsComponent implements OnDestroy, OnInit {
   isExpansionDetailRow = (i: number, row: Object) => (row as Team).id === this.expandedElementId;
   // the template variables a team can be mapped to; null until loaded, or when the MSEL has no Caster directory
   casterTeamVariables: string[] = null;
+  // the ones the template gives no default, so a push is refused unless a team writes them
+  requiredCasterTeamVariables: string[] = [];
   casterTeamVariablesError = '';
   private allTeams: Team[] = [];
   private unsubscribe$ = new Subject();
@@ -187,6 +189,7 @@ export class MselTeamsComponent implements OnDestroy, OnInit {
 
   loadCasterTeamVariables() {
     this.casterTeamVariables = null;
+    this.requiredCasterTeamVariables = [];
     this.casterTeamVariablesError = '';
     if (!this.msel.useCaster || !this.msel.casterDirectoryId) {
       this.setDisplayedColumns();
@@ -196,7 +199,8 @@ export class MselTeamsComponent implements OnDestroy, OnInit {
     this.casterService.getCasterTeamVariables(directoryId).subscribe(
       (variables) => {
         if (this.msel.casterDirectoryId === directoryId) {
-          this.casterTeamVariables = variables;
+          this.casterTeamVariables = variables.map(v => v.name);
+          this.requiredCasterTeamVariables = variables.filter(v => v.required).map(v => v.name);
           this.setDisplayedColumns();
         }
       },
@@ -230,13 +234,14 @@ export class MselTeamsComponent implements OnDestroy, OnInit {
     return /^[\p{L}_]/u.test(name) ? name : '_' + name;
   }
 
-  // topology teams no MSEL team writes to
+  // topology teams no MSEL team writes to, less the optional ones: the template has a default for those
   getUnmappedTopologyTeams(): string[] {
     if (!this.casterTeamVariables) {
       return [];
     }
     const used = this.allTeams.map(t => this.getTeamVariable(t));
-    return this.casterTeamVariables.filter(v => !used.includes(v));
+    return this.casterTeamVariables.filter(v => !used.includes(v) &&
+      (v === PLAYER_ADMIN_TEAM_VARIABLE || this.requiredCasterTeamVariables.includes(v)));
   }
 
   // Player adds an Admin team, holding only whoever creates the view, to every view Blueprint pushes;
@@ -244,7 +249,7 @@ export class MselTeamsComponent implements OnDestroy, OnInit {
   getUnmappedTopologyTeamDestination(variable: string): string {
     return variable === PLAYER_ADMIN_TEAM_VARIABLE
       ? 'Its VMs will go to the Player view\'s own Admin team.'
-      : 'Its VMs will go to no team.';
+      : 'The Caster template requires one, so Push will be refused.';
   }
 
   // the team mapped to the variable this unmapped team would get by name, which then replaces it
