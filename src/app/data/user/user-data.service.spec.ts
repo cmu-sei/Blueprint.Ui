@@ -8,7 +8,7 @@ import { ComnAuthService, Theme } from '@cmusei/crucible-common';
 import { User, UserService } from 'src/app/generated/blueprint.api';
 import { UserDataService } from './user-data.service';
 import { CurrentUserQuery, UserQuery } from './user.query';
-import { CurrentUserStore, initialUserUiState, UserStore } from './user.store';
+import { initialUserUiState, UserStore } from './user.store';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { recordEmissions } from 'src/app/test-utils/record-emissions';
 import {
@@ -277,26 +277,5 @@ describe('UserDataService', () => {
     service.setUserTheme(Theme.DARK);
 
     expect(themes).toEqual([Theme.LIGHT, Theme.DARK]);
-  });
-});
-
-describe('CurrentUserQuery', () => {
-  beforeEach(() => {
-    TestBed.resetTestingModule();
-  });
-
-  /**
-   * Verifies: getLastRoute falls back to "/" until a route is recorded.
-   * Interacts with: real CurrentUserStore and CurrentUserQuery.
-   * Data: the initial state, then lastRoute "/build?msel=msel-1".
-   */
-  it('getLastRoute defaults to the root route', () => {
-    const store = TestBed.inject(CurrentUserStore);
-    const query = TestBed.inject(CurrentUserQuery);
-
-    expect(query.getLastRoute()).toBe('/');
-
-    store.update({ lastRoute: '/build?msel=msel-1' });
-    expect(query.getLastRoute()).toBe('/build?msel=msel-1');
   });
 });

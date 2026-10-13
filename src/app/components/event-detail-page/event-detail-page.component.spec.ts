@@ -2,18 +2,28 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { describe, it, expect } from 'vitest';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { ComponentFixture } from '@angular/core/testing';
+import { Component, EventEmitter, Input, Output, Provider } from '@angular/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { screen } from '@testing-library/angular';
-import { DataField, DataFieldType, DataValue, Msel, ScenarioEvent } from 'src/app/generated/blueprint.api';
+import {
+  DataField,
+  DataFieldType,
+  DataValue,
+  Msel,
+  MselRole,
+  ScenarioEvent,
+  SystemPermission,
+} from 'src/app/generated/blueprint.api';
 import { EventDetailPageComponent } from './event-detail-page.component';
 import { activatedRouteStub } from 'src/app/test-utils/activated-route';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { mselLoadApiProviders, mselLoadApiStubs } from 'src/app/test-utils/msel-load-api-stubs';
+import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
+import { permissionDataProviders } from 'src/app/test-utils/mock-permission-data.service';
 
 @Component({ selector: 'app-topbar', template: '', standalone: false })
 class TopbarStub {
@@ -51,13 +61,14 @@ const VALUES: DataValue[] = [
   { id: 'dv-2', scenarioEventId: 'se-1', dataFieldId: 'df-owner', value: 'user-a' },
 ];
 
-async function renderEventDetail() {
-  const apis = mselLoadApiStubs({ msel: MSEL, dataFields: FIELDS, dataValues: VALUES, scenarioEvents: [EVENT] });
+async function renderEventDetail(options: { msel?: Msel; providers?: Provider[] } = {}) {
+  const { msel = MSEL, providers = [] } = options;
+  const apis = mselLoadApiStubs({ msel, dataFields: FIELDS, dataValues: VALUES, scenarioEvents: [EVENT] });
   const { route } = activatedRouteStub({ msel: 'msel-1', scenarioEvent: 'se-1' });
   const rendered = await renderComponent(EventDetailPageComponent, {
     imports: [MatButtonModule, MatIconModule],
     declarations: [EventDetailPageComponent, TopbarStub, DataValueStub],
-    providers: [...mselLoadApiProviders(apis), { provide: ActivatedRoute, useValue: route }],
+    providers: [...mselLoadApiProviders(apis), { provide: ActivatedRoute, useValue: route }, ...providers],
     inputs: { loggedInUserId: 'user-me' },
   });
   return { ...rendered, apis };
@@ -99,6 +110,32 @@ describe('EventDetailPageComponent', () => {
       expect(value.canApprove).toBe(false);
       expect(value.isOwner).toBe(false);
       expect(value.showValueOnly).toBe(true);
+    }
+  });
+
+  /**
+   * Verifies: a user who may edit and approve this MSEL elsewhere still gets every data value read-only here: the page binds the gates to false.
+   * Interacts with: the MSEL's userMselRoles (through the real MSEL store), the real PermissionDataService (which the page does not read), DataValueStub inputs.
+   * Data: user-me is Editor and Approver of msel-1 and holds SystemPermission.EditMsels.
+   */
+  it('keeps the data values read-only for an editor and approver of the MSEL', async () => {
+    const { fixture } = await renderEventDetail({
+      msel: {
+        ...MSEL,
+        userMselRoles: [
+          { id: 'umr-1', userId: 'user-me', mselId: 'msel-1', role: MselRole.Editor },
+          { id: 'umr-2', userId: 'user-me', mselId: 'msel-1', role: MselRole.Approver },
+        ],
+      },
+      providers: permissionDataProviders({ system: [SystemPermission.EditMsels] }),
+    });
+
+    // The user's system permission is loaded in the app state the page runs in.
+    expect(TestBed.inject(PermissionDataService).hasPermission(SystemPermission.EditMsels)).toBe(true);
+    expect(values(fixture)).toHaveLength(2);
+    for (const value of values(fixture)) {
+      expect(value.canEdit).toBe(false);
+      expect(value.canApprove).toBe(false);
     }
   });
 

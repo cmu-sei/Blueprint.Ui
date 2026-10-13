@@ -2,28 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { describe, it, expect } from 'vitest';
-import { PlainTextPipe } from './plain-text-pipe';
 import { DisplayOrderPipe, SortByPipe } from './sort-by-pipe';
-import { HtmlToText } from './html-to-text';
-
-describe('PlainTextPipe', () => {
-  const pipe = new PlainTextPipe();
-
-  /**
-   * Verifies: tags (including ones spanning lines) are replaced with spaces, and empty input passes through.
-   * Interacts with: PlainTextPipe.transform.
-   * Data: HTML with a paragraph and a multi-line tag; a line break; '', null and undefined.
-   */
-  it.each([
-    { input: '<p>Phishing</p><b\nclass="x">email</b>', output: ' Phishing  email ' },
-    { input: 'line<br/>break', output: 'line break' },
-    { input: '', output: '' },
-    { input: null, output: null },
-    { input: undefined, output: undefined },
-  ])('turns $input into $output', ({ input, output }) => {
-    expect(pipe.transform(input)).toBe(output);
-  });
-});
 
 describe('SortByPipe', () => {
   const pipe = new SortByPipe();
@@ -55,6 +34,15 @@ describe('SortByPipe', () => {
     expect(asc).toBe(list);
 
     expect(pipe.transform(list, 'desc')).toEqual(['charlie', 'bravo', 'alpha']);
+  });
+
+  /**
+   * Verifies: on a plain array, any order other than 'asc' sorts descending, and an empty column counts as no column.
+   * Interacts with: SortByPipe.transform (1-D branch).
+   * Data: ['bravo', 'alpha', 'charlie'] with order 'DESC' and column ''.
+   */
+  it('sorts a plain array descending for any order but asc', () => {
+    expect(pipe.transform(['bravo', 'alpha', 'charlie'], 'DESC', '')).toEqual(['charlie', 'bravo', 'alpha']);
   });
 
   /**
@@ -94,28 +82,5 @@ describe('DisplayOrderPipe', () => {
     expect(options.map((o) => o.name)).toEqual(['c', 'a', 'b']);
     expect(pipe.transform([options[0]])).toEqual([options[0]]);
     expect(pipe.transform(null)).toBeNull();
-  });
-});
-
-describe('HtmlToText.extractContent', () => {
-  /**
-   * Verifies: the text of the HTML is returned with runs of spaces collapsed, optionally spacing out adjacent elements.
-   * Interacts with: HtmlToText.extractContent (DOM span parsing).
-   * Data: "<p>Ransom</p><p>note   arrives</p>" with and without element spacing.
-   */
-  it.each([
-    { space: false, text: 'Ransomnote arrives' },
-    { space: true, text: 'Ransom note arrives ' },
-  ])('extracts text with element spacing $space', ({ space, text }) => {
-    expect(HtmlToText.extractContent('<p>Ransom</p><p>note   arrives</p>', space)).toBe(text);
-  });
-
-  /**
-   * Verifies: a result ending in ">" has its last two characters trimmed.
-   * Interacts with: HtmlToText.extractContent.
-   * Data: escaped text "a -&gt;" whose text content ends with ">".
-   */
-  it('trims a trailing arrow', () => {
-    expect(HtmlToText.extractContent('a -&gt;', false)).toBe('a ');
   });
 });

@@ -41,7 +41,9 @@ async function renderTeamEdit(data = teamData()) {
     // angular-editor injects HttpClient for its image upload.
     providers: [{ provide: MAT_DIALOG_DATA, useValue: data }, provideHttpClient(), provideHttpClientTesting()],
   });
+  // ngModel writes the checkbox state in a microtask; render it once more after it lands.
   await rendered.fixture.whenStable();
+  rendered.fixture.detectChanges();
   const results: { saveChanges: boolean; team: Team | null }[] = [];
   rendered.fixture.componentInstance.editComplete.subscribe((r) => results.push(r));
   return { ...rendered, data, results };
@@ -71,20 +73,42 @@ describe('TeamEditDialogComponent', () => {
   });
 
   /**
-   * Verifies: saving without ticking the box keeps canTeamMemberInvite false, and the trimmed names are saved.
-   * Interacts with: crucible-dialog submit, handleEditComplete.
+   * Verifies: a team stored with canTeamMemberInvite false shows the box unticked, saving without ticking it keeps the setting false, and the trimmed names are saved.
+   * Interacts with: mat-checkbox ngModel, crucible-dialog submit, handleEditComplete.
    * Data: Blue Team with canTeamMemberInvite false; name edited to " Cell ".
    */
   it('keeps canTeamMemberInvite false when the box stays unticked', async () => {
-    const { results } = await renderTeamEdit();
+    const { results } = await renderTeamEdit(
+      teamData({ team: { id: 'team-1', name: 'Blue Team', shortName: 'BLUE', email: '', canTeamMemberInvite: false } }),
+    );
     const user = userEvent.setup();
 
+    expect(inviteBox()).not.toBeChecked();
     await user.clear(screen.getByPlaceholderText('Name (required)'));
     await user.type(screen.getByPlaceholderText('Name (required)'), ' Cell ');
     await user.click(actions().getByRole('button', { name: 'Save' }));
 
     expect(results[0].team.canTeamMemberInvite).toBe(false);
     expect(results[0].team.name).toBe('Cell');
+  });
+
+  /**
+   * Verifies: a team stored with canTeamMemberInvite true shows the box ticked, and unticking it saves the setting false.
+   * Interacts with: mat-checkbox ngModel, crucible-dialog submit, editComplete output.
+   * Data: Blue Team with canTeamMemberInvite true; the box is unticked, then saved.
+   */
+  it('saves canTeamMemberInvite false when a ticked box is unticked', async () => {
+    const { results } = await renderTeamEdit(
+      teamData({ team: { id: 'team-1', name: 'Blue Team', shortName: 'BLUE', email: '', canTeamMemberInvite: true } }),
+    );
+    const user = userEvent.setup();
+
+    expect(inviteBox()).toBeChecked();
+    await user.click(inviteBox());
+    await user.click(actions().getByRole('button', { name: 'Save' }));
+
+    expect(results).toHaveLength(1);
+    expect(results[0].team.canTeamMemberInvite).toBe(false);
   });
 
   /**
