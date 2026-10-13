@@ -7,6 +7,8 @@ import {
   Component,
   OnDestroy,
   OnInit,
+  OnChanges,
+  SimpleChanges,
   Input,
   ElementRef,
   ViewChild,
@@ -29,7 +31,7 @@ import { takeUntil } from 'rxjs/operators';
     standalone: false
 })
 
-export class PlayerApplicationTeamsComponent implements OnDestroy, OnInit {
+export class PlayerApplicationTeamsComponent implements OnDestroy, OnInit, OnChanges {
   @Input() loggedInUserId: string;
   @Input() playerApplicationId: string;
   @Input() mselTeamList: Team[] = [];
@@ -101,6 +103,13 @@ export class PlayerApplicationTeamsComponent implements OnDestroy, OnInit {
           : new Array<PlayerApplicationTeam>();
         this.setDataSources();
       });
+  }
+
+  // the MSEL team list can change while the application is open (a team added on the Teams tab)
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes.mselTeamList && this.playerApplicationTeams) {
+      this.setDataSources();
+    }
   }
 
   applyFilter(filterValue: string) {
