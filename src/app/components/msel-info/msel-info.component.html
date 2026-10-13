@@ -101,7 +101,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 [disabled]="!canEditMsel()">
               <!-- <datetime-picker> -->
               <span (click)="canEditMsel() && picker.open()">
-                {{msel.startTime | date: 'dd MMM yyyy HH:mm'}} {{ getTimezoneAbbr() }}
+                {{msel.startTime | date: 'dd MMM yyyy HH:mm'}} {{ msel.startTime | timezoneAbbr }}
               </span>
               <mat-datepicker-toggle matSuffix title="Choose Date/Time" [for]="picker" [disabled]="!canEditMsel()">
               </mat-datepicker-toggle>

@@ -152,6 +152,7 @@ import { ApiModule as SwaggerCodegenApiModule } from './generated/blueprint.api/
 import { DisplayOrderPipe, SortByPipe } from 'src/app/utilities/sort-by-pipe';
 import { AngularEditorModule } from '@kolkov/angular-editor';
 import { PlainTextPipe } from './utilities/plain-text-pipe';
+import { TimezoneAbbrPipe } from './utilities/timezone-abbr';
 import {
   NgxMatDatepickerActions,
   NgxMatDatepickerApply,
@@ -269,6 +270,7 @@ export const appConfig: ApplicationConfig = {
     DisplayOrderPipe,
     SortByPipe,
     PlainTextPipe,
+    TimezoneAbbrPipe,
     DurationEditComponent,
     DurationViewComponent,
     EventDetailPageComponent,
