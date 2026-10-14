@@ -38,3 +38,13 @@
   font-size: 13px;
   background: var(--mat-sys-surface-variant);
 }
+
+.gallery-status-swatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-right: 8px;
+  border-radius: 2px;
+  border: 1px solid var(--mat-sys-outline);
+  vertical-align: middle;
+}

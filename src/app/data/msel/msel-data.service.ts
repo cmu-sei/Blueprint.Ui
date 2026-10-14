@@ -51,6 +51,10 @@ export class MselPlus implements Msel {
   citeScoringModelId?: string;
   useSteamfitter?: boolean;
   steamfitterScenarioId?: string;
+  useCaster?: boolean;
+  casterDirectoryId?: string;
+  casterWorkspaceId?: string;
+  casterRunId?: string;
   isTemplate?: boolean;
   startTime?: Date;
   durationSeconds?: number;
@@ -80,6 +84,7 @@ export class MselPlus implements Msel {
   cards?: Array<Card>;
   galleryArticleParameters?: Array<string>;
   gallerySourceTypes?: Array<string>;
+  galleryItemStatuses?: Array<string>;
   playerIntegrationType?: IntegrationType;
   galleryIntegrationType?: IntegrationType;
   citeIntegrationType?: IntegrationType;

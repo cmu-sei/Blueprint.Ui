@@ -34,6 +34,7 @@ export interface Team {
     email?: string | null;
     canTeamLeaderInvite?: boolean;
     canTeamMemberInvite?: boolean;
+    casterTeamVariable?: string | null;
     users?: Array<User> | null;
     cardTeams?: Array<CardTeam> | null;
     playerApplicationTeams?: Array<PlayerApplicationTeam> | null;

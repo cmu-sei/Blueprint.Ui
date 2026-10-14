@@ -30,6 +30,22 @@ project root for license information or contact permission@sei.cmu.edu for full 
 </mat-menu>
 
 @if (msel) {
+@if (casterTeamVariablesError) {
+<div class="topology-warning">Topology teams: {{ casterTeamVariablesError }}</div>
+}
+@for (warning of duplicateTeamVariableWarnings; track warning) {
+<div class="topology-warning">{{ warning }}</div>
+}
+@for (variable of unmappedTopologyTeams; track variable) {
+<div class="topology-warning">
+  Topology team "{{ variable }}" has no MSEL team. {{ getUnmappedTopologyTeamDestination(variable) }}
+</div>
+}
+@for (team of staleMappings; track team.id) {
+<div class="topology-warning">
+  {{ team.name }} is mapped to topology team "{{ team.casterTeamVariable }}", which the Caster template no longer declares.
+</div>
+}
 <div class="frame">
   <div class="table-container">
     <table mat-table #teamTable [dataSource]="teamDataSource" matSort (matSortChange)="sortChanged($event)" multiTemplateDataRows>
@@ -77,14 +93,29 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </ng-container>
       <!-- teamType column -->
       <ng-container matColumnDef="teamType">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header class="column-team-type">Team Type</th>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header class="column-team-type"
+          matTooltip="The CITE team type this team is created with when the MSEL is pushed to CITE">Team Type</th>
         <td mat-cell *matCellDef="let element" class="column-team-type">
           {{ getCiteTeamTypeName(element.citeTeamTypeId) }}
         </td>
       </ng-container>
+      <!-- topologyTeam column -->
+      <ng-container matColumnDef="topologyTeam">
+        <th mat-header-cell *matHeaderCellDef class="column-topology-team"
+          matTooltip="The Caster template variable this team's Player team ID is written to">Topology Team</th>
+        <td mat-cell *matCellDef="let element" class="column-topology-team">
+          {{ getTeamVariable(element) }}
+          @if (getMappedOverTeam(element); as mappedOver) {
+          <span class="topology-unused">(replaced by {{ mappedOver.name }})</span>
+          } @else if (!element.casterTeamVariable && casterTeamVariables && !casterTeamVariables.includes(getTeamVariable(element))) {
+          <span class="topology-unused">(not in template)</span>
+          }
+        </td>
+      </ng-container>
       <!-- invitation column -->
       <ng-container matColumnDef="invitation">
-        <th mat-header-cell *matHeaderCellDef class="column-invitation">Open Invite</th>
+        <th mat-header-cell *matHeaderCellDef class="column-invitation"
+          matTooltip="Any member of this team can invite others to it">Open Invite</th>
         <td mat-cell *matCellDef="let element" class="column-invitation">
           <mat-checkbox [checked]="element.canTeamMemberInvite" disabled
             (click)="$event.stopPropagation();" matTooltip="Any team member can invite"></mat-checkbox>

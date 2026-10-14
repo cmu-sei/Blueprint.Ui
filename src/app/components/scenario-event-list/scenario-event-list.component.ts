@@ -736,6 +736,7 @@ export class ScenarioEventListComponent
         moveList: this.moveList,
         cardList: this.cardList,
         gallerySourceTypes: this.msel.gallerySourceTypes,
+        galleryItemStatuses: this.msel.galleryItemStatuses,
         isNew: this.isAddingScenarioEvent,
         isOwner: isOwner,
         isApprover: isApprover,
@@ -1093,22 +1094,6 @@ export class ScenarioEventListComponent
       }
       dialogRef.close();
     });
-  }
-
-  getUserTimezone(): string {
-    return Intl.DateTimeFormat().resolvedOptions().timeZone;
-  }
-
-  getTimezoneAbbr(): string {
-    const date = new Date();
-    const timeZone = this.getUserTimezone();
-    const formatted = date.toLocaleTimeString('en-US', {
-      timeZoneName: 'short',
-      timeZone
-    });
-    // Extract timezone abbreviation (e.g., "EST", "PST")
-    const parts = formatted.split(' ');
-    return parts[parts.length - 1];
   }
 
   shouldShowMoveSeparators(): boolean {

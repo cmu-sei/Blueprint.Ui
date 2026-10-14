@@ -13,6 +13,7 @@ import { MatMenuTrigger } from '@angular/material/menu';
 import { PlayerApplicationDataService } from 'src/app/data/player-application/player-application-data.service';
 import { PlayerApplicationTeamDataService } from 'src/app/data/team/player-application-team-data.service';
 import { PlayerApplicationQuery } from 'src/app/data/player-application/player-application.query';
+import { TeamQuery } from 'src/app/data/team/team.query';
 import { MatDialog } from '@angular/material/dialog';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { PlayerApplicationEditDialogComponent } from '../player-application-edit-dialog/player-application-edit-dialog.component';
@@ -20,6 +21,9 @@ import { PlayerService } from 'src/app/generated/blueprint.api';
 import { v4 as uuidv4 } from 'uuid';
 import { MatTable, MatTableDataSource } from '@angular/material/table';
 import { animate, state, style, transition, trigger } from '@angular/animations';
+import { ComnSettingsService } from '@cmusei/crucible-common';
+import { casterVmAppWarning } from 'src/app/utilities/caster-vm-app';
+import { playerAppIconUrl } from 'src/app/utilities/player-app-icon';
 
 @Component({
   selector: 'app-player-application-list',
@@ -47,8 +51,9 @@ export class PlayerApplicationListComponent implements OnDestroy, OnInit {
   sort: Sort = { active: '', direction: '' };
   sortedPlayerApplications: PlayerApplication[] = [];
   appDataSource = new MatTableDataSource<PlayerApplication>(new Array<PlayerApplication>());
-  displayedColumns: string[] = ['action', 'name', 'url'];
+  displayedColumns: string[] = ['action', 'name', 'url', 'icon', 'embeddable', 'loadInBackground'];
   expandedId = '';
+  brokenIcons = new Set<string>();
   isExpansionDetailRow = (i: number, row: Object) => (row as PlayerApplication).id === this.expandedId;
   contextMenuPosition = { x: '0px', y: '0px' };
   moveList: Move[] = [];
@@ -58,11 +63,13 @@ export class PlayerApplicationListComponent implements OnDestroy, OnInit {
     private mselQuery: MselQuery,
     private playerApplicationDataService: PlayerApplicationDataService,
     private playerApplicationQuery: PlayerApplicationQuery,
+    private teamQuery: TeamQuery,
     private playerService: PlayerService,
     private playerApplicationTeamDataService: PlayerApplicationTeamDataService,
     public dialog: MatDialog,
     public dialogService: CrucibleDialogService,
     private permissionDataService: PermissionDataService,
+    private settingsService: ComnSettingsService,
     private changeDetectorRef: ChangeDetectorRef
   ) {
     // subscribe to playerApplications
@@ -76,9 +83,12 @@ export class PlayerApplicationListComponent implements OnDestroy, OnInit {
       if (msel) {
         this.playerApplicationDataService.loadByMsel(msel.id);
         this.playerApplicationTeamDataService.getPlayerApplicationTeamsFromApi(msel.id);
-        this.mselTeamList = msel.teams;
       }
       this.sortedPlayerApplications = this.getSortedPlayerApplications(this.getFilteredPlayerApplications());
+    });
+    // subscribe to teams from the store, so a team added on the Teams tab can be added to an application
+    this.teamQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(teams => {
+      this.mselTeamList = teams;
     });
     // load playerApplication templates
     this.playerService.getApplicationTemplates().subscribe(
@@ -102,6 +112,14 @@ export class PlayerApplicationListComponent implements OnDestroy, OnInit {
       .subscribe(() => {
         this.changeDetectorRef.markForCheck();
       });
+  }
+
+  getIconUrl(icon: string): string {
+    return playerAppIconUrl(icon, this.settingsService.settings);
+  }
+
+  casterVmAppWarningMessage(): string {
+    return casterVmAppWarning(this.msel, this.playerApplicationList, this.settingsService.settings.VmUrl);
   }
 
   canEditMsel(): boolean {

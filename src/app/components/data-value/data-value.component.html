@@ -10,7 +10,7 @@ project root for license information.
   @if (dataField.dataType === dataType.DateTime) {
   <span>
     @if (value) {
-    {{ value | date: 'dd MMM yyyy HH:mm' }} {{ getTimezoneAbbr() }}
+    {{ value | date: 'dd MMM yyyy HH:mm' }} {{ value | timezoneAbbr }}
     }
   </span>
   }
@@ -62,6 +62,10 @@ project root for license information.
     @for (val of getValueArray(); track val) {
     {{ val }}<br>
     }
+    } @else if (isGalleryItemStatus && galleryItemStatusColors[getGalleryItemStatus(value)]) {
+    <span class="gallery-status-swatch"
+      [style.background-color]="galleryItemStatusColors[getGalleryItemStatus(value)]"></span>
+    {{ getGalleryItemStatus(value) }}
     } @else {
     {{ value }}
     }
@@ -69,8 +73,54 @@ project root for license information.
   }
 </span>
 } @else {
+<!-- Gallery Article Status input -->
+@if (useGalleryItemStatusSelect) {
+<span>
+  @if (!showValueOnly) {
+  <mat-form-field class="full-width">
+    <mat-label>{{ dataField.name }}</mat-label>
+    <mat-select placeholder="{{ dataField.name }}" [ngModel]="getGalleryItemStatus(value)"
+      (ngModelChange)="galleryItemStatusChange($event)" [disabled]="!canEdit">
+      <mat-select-trigger>
+        @if (galleryItemStatusColors[getGalleryItemStatus(value)]) {
+        <span class="gallery-status-swatch"
+          [style.background-color]="galleryItemStatusColors[getGalleryItemStatus(value)]"></span>
+        }
+        {{ getGalleryItemStatus(value) }}
+      </mat-select-trigger>
+      <mat-option value=""> </mat-option>
+      @for (status of galleryItemStatusOptions; track $index) {
+      <mat-option [value]="status">
+        <span class="gallery-status-swatch" [style.background-color]="galleryItemStatusColors[status]"></span>
+        {{ status }}
+      </mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+  }
+  @if (showValueOnly) {
+  <mat-select placeholder="{{ dataField.name }}" [ngModel]="getGalleryItemStatus(value)"
+    (ngModelChange)="galleryItemStatusChange($event)" [disabled]="!canEdit">
+    <mat-select-trigger>
+      @if (galleryItemStatusColors[getGalleryItemStatus(value)]) {
+      <span class="gallery-status-swatch"
+        [style.background-color]="galleryItemStatusColors[getGalleryItemStatus(value)]"></span>
+      }
+      {{ getGalleryItemStatus(value) }}
+    </mat-select-trigger>
+    <mat-option value=""> </mat-option>
+    @for (status of galleryItemStatusOptions; track $index) {
+    <mat-option [value]="status">
+      <span class="gallery-status-swatch" [style.background-color]="galleryItemStatusColors[status]"></span>
+      {{ status }}
+    </mat-option>
+    }
+  </mat-select>
+  }
+</span>
+}
 <!-- string input -->
-@if (!dataField.isChosenFromList && (dataField.dataType === dataType.String || dataField.dataType === dataType.Url)) {
+@if (!useGalleryItemStatusSelect && !dataField.isChosenFromList && (dataField.dataType === dataType.String || dataField.dataType === dataType.Url)) {
 <span>
   @if (!showValueOnly) {
   <mat-form-field class="full-width">
@@ -106,7 +156,7 @@ project root for license information.
 </span>
 }
 <!-- Numeric input -->
-@if (!dataField.isChosenFromList && dataField.dataType === dataType.Integer || dataField.dataType === dataType.Double) {
+@if (!dataField.isChosenFromList && (dataField.dataType === dataType.Integer || dataField.dataType === dataType.Double)) {
 <span>
   @if (!showValueOnly) {
   <mat-form-field class="full-width">
@@ -133,7 +183,7 @@ project root for license information.
     <!-- <datetime-picker> -->
     <span (click)="canEdit && picker.open()">
       @if (value) {
-      {{ value | date: 'dd MMM yyyy HH:mm' }} {{ getTimezoneAbbr() }}
+      {{ value | date: 'dd MMM yyyy HH:mm' }} {{ value | timezoneAbbr }}
       }
     </span>
     <mat-datepicker-toggle matSuffix title="Choose Date/Time" [for]="picker" [disabled]="!canEdit">
@@ -150,7 +200,7 @@ project root for license information.
   @if (showValueOnly) {
   <span>
     @if (value) {
-    {{ value | date: 'dd MMM yyyy HH:mm' }} {{ getTimezoneAbbr() }}
+    {{ value | date: 'dd MMM yyyy HH:mm' }} {{ value | timezoneAbbr }}
     }
   </span>
   }
@@ -482,7 +532,7 @@ project root for license information.
 </span>
 }
 <!-- dropdown input -->
-@if (dataField.isChosenFromList && dataField.dataType !== dataType.Competency) {
+@if (!useGalleryItemStatusSelect && dataField.isChosenFromList && dataField.dataType !== dataType.Competency) {
 <span>
   @if (!showValueOnly) {
   <mat-form-field class="full-width">

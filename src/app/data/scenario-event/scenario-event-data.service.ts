@@ -20,6 +20,7 @@ import {
 } from 'src/app/generated/blueprint.api';
 import { take, tap } from 'rxjs/operators';
 import { ipSortKey } from 'src/app/utilities/ip-address';
+import { getTimezoneAbbr } from 'src/app/utilities/timezone-abbr';
 
 
 export type IntegrationTarget = 'Gallery' | 'Steamfitter' | 'Email' | 'Notification';
@@ -258,7 +259,7 @@ export class ScenarioEventDataService {
         const year = date.getFullYear();
         const hours = String(date.getHours()).padStart(2, '0');
         const minutes = String(date.getMinutes()).padStart(2, '0');
-        const tz = this.getTimezoneAbbr();
+        const tz = getTimezoneAbbr(date);
 
         return `${day} ${month} ${year} ${hours}:${minutes} ${tz}`;
       default:
@@ -621,20 +622,5 @@ export class ScenarioEventDataService {
       this.sortScenarioEventImpl(a, b, sorts, valueMap)
     );
     return scenarioEvents;
-  }
-
-  private getTimezoneAbbr(): string {
-    try {
-      const date = new Date();
-      const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
-      const formatted = date.toLocaleTimeString('en-US', {
-        timeZoneName: 'short',
-        timeZone
-      });
-      const parts = formatted.split(' ');
-      return parts[parts.length - 1] || 'UTC';
-    } catch (error) {
-      return 'UTC';
-    }
   }
 }
