@@ -24,13 +24,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <mat-card-subtitle>{{ msel.description }}</mat-card-subtitle>
         </mat-card-header>
         <mat-card-actions>
-          <button
+          <a
             mat-stroked-button
-            (click)="join(msel.id, '')"
+            [routerLink]="['/join']"
+            [queryParams]="{ msel: msel.id }"
             title="Join {{ msel.name }}"
             >
             Join
-          </button>
+          </a>
         </mat-card-actions>
       </mat-card>
     }
