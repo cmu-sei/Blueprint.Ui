@@ -89,7 +89,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <ng-container matColumnDef="situationTime">
         <th mat-header-cell *matHeaderCellDef mat-sort-header class="column-sit-time">Situation Time</th>
         <td mat-cell *matCellDef="let element" class="column-sit-time">
-          {{ element.situationTime | date: 'dd MMM yyyy HH:mm' }} {{ getTimezoneAbbr() }}
+          {{ element.situationTime | date: 'dd MMM yyyy HH:mm' }} {{ element.situationTime | timezoneAbbr }}
         </td>
       </ng-container>
       <!-- description column -->

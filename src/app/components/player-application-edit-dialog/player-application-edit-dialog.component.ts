@@ -38,10 +38,13 @@ export class PlayerApplicationEditDialogComponent {
     'steamfitterUrl',
     'playerUrl',
     'blueprintUrl',
+    'casterUrl',
+    'vmUrl',
     'citeEvaluationId',
     'galleryExhibitId',
     'steamfitterScenarioId',
     'playerViewId',
+    'casterWorkspaceId',
     'blueprintMselId',
     'theme'
   ];

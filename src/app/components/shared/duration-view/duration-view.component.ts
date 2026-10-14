@@ -5,6 +5,7 @@
 */
 
 import { Component, Input } from '@angular/core';
+import { getTimezoneAbbr } from 'src/app/utilities/timezone-abbr';
 
 @Component({
     selector: 'app-duration-view',
@@ -64,22 +65,7 @@ export class DurationViewComponent {
     const hours = String(scenarioEventDate.getHours()).padStart(2, '0');
     const minutes = String(scenarioEventDate.getMinutes()).padStart(2, '0');
 
-    return `${day} ${month} ${year} ${hours}:${minutes} ${this.getTimezoneAbbr()}`;
-  }
-
-  getTimezoneAbbr(): string {
-    try {
-      const date = new Date();
-      const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
-      const formatted = date.toLocaleTimeString('en-US', {
-        timeZoneName: 'short',
-        timeZone
-      });
-      const parts = formatted.split(' ');
-      return parts[parts.length - 1] || 'UTC';
-    } catch (error) {
-      return 'UTC';
-    }
+    return `${day} ${month} ${year} ${hours}:${minutes} ${getTimezoneAbbr(scenarioEventDate)}`;
   }
 
 }

@@ -20,6 +20,9 @@ import { PlayerService } from 'src/app/generated/blueprint.api';
 import { v4 as uuidv4 } from 'uuid';
 import { MatTable, MatTableDataSource } from '@angular/material/table';
 import { animate, state, style, transition, trigger } from '@angular/animations';
+import { ComnSettingsService } from '@cmusei/crucible-common';
+import { casterVmAppWarning } from 'src/app/utilities/caster-vm-app';
+import { playerAppIconUrl } from 'src/app/utilities/player-app-icon';
 
 @Component({
   selector: 'app-player-application-list',
@@ -47,8 +50,9 @@ export class PlayerApplicationListComponent implements OnDestroy, OnInit {
   sort: Sort = { active: '', direction: '' };
   sortedPlayerApplications: PlayerApplication[] = [];
   appDataSource = new MatTableDataSource<PlayerApplication>(new Array<PlayerApplication>());
-  displayedColumns: string[] = ['action', 'name', 'url'];
+  displayedColumns: string[] = ['action', 'name', 'url', 'icon', 'embeddable', 'loadInBackground'];
   expandedId = '';
+  brokenIcons = new Set<string>();
   isExpansionDetailRow = (i: number, row: Object) => (row as PlayerApplication).id === this.expandedId;
   contextMenuPosition = { x: '0px', y: '0px' };
   moveList: Move[] = [];
@@ -63,6 +67,7 @@ export class PlayerApplicationListComponent implements OnDestroy, OnInit {
     public dialog: MatDialog,
     public dialogService: CrucibleDialogService,
     private permissionDataService: PermissionDataService,
+    private settingsService: ComnSettingsService,
     private changeDetectorRef: ChangeDetectorRef
   ) {
     // subscribe to playerApplications
@@ -102,6 +107,14 @@ export class PlayerApplicationListComponent implements OnDestroy, OnInit {
       .subscribe(() => {
         this.changeDetectorRef.markForCheck();
       });
+  }
+
+  getIconUrl(icon: string): string {
+    return playerAppIconUrl(icon, this.settingsService.settings);
+  }
+
+  casterVmAppWarningMessage(): string {
+    return casterVmAppWarning(this.msel, this.playerApplicationList, this.settingsService.settings.VmUrl);
   }
 
   canEditMsel(): boolean {

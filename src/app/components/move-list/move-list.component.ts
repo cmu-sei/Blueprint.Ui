@@ -237,21 +237,6 @@ export class MoveListComponent implements OnDestroy, AfterViewInit {
     return false;
   }
 
-  getTimezoneAbbr(): string {
-    try {
-      const date = new Date();
-      const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
-      const formatted = date.toLocaleTimeString('en-US', {
-        timeZoneName: 'short',
-        timeZone
-      });
-      const parts = formatted.split(' ');
-      return parts[parts.length - 1] || 'UTC';
-    } catch (error) {
-      return 'UTC';
-    }
-  }
-
   ngOnDestroy() {
     this.unsubscribe$.next(null);
     this.unsubscribe$.complete();

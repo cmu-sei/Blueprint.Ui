@@ -14,7 +14,7 @@ project root for license information.
       <!-- <datetime-picker> -->
       <span (click)="canEdit && picker.open()">
         @if (endTimeFormControl.value) {
-        {{ endTimeFormControl.value | date: 'dd MMM yyyy HH:mm'}} {{ getTimezoneAbbr() }}
+        {{ endTimeFormControl.value | date: 'dd MMM yyyy HH:mm'}} {{ endTimeFormControl.value | timezoneAbbr }}
         }
       </span>
       <mat-datepicker-toggle matSuffix title="Choose Date/Time" [for]="picker" [disabled]="!canEdit">
