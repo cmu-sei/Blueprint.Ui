@@ -31,6 +31,7 @@ export class DataValueComponent {
   @Input() cardOptions: any[] = [];
   @Input() moveOptions: any[] = [];
   @Input() gallerySourceTypeOptions: any[] = [];
+  @Input() galleryItemStatusOptions: string[] = [];
   @Input() userOptions: any[] = [];
   @Output() valueChange = new EventEmitter<any>();
   editorConfig = EDITOR_CONFIG;
@@ -44,6 +45,38 @@ export class DataValueComponent {
     MselItemStatus.Deployed,
     MselItemStatus.Archived,
   ];
+  // the color Gallery shows for each article status
+  galleryItemStatusColors: { [status: string]: string } = {
+    Gray: '#b5b5b5',
+    Green: 'rgb(163, 235, 163)',
+    Yellow: 'rgb(250, 235, 100)',
+    Orange: 'rgb(250, 163, 2)',
+    Red: '#ff3333',
+  };
+  // the names Gallery used before its statuses were named for colors; existing MSELs still hold them
+  legacyGalleryItemStatuses: { [status: string]: string } = {
+    unused: 'Gray',
+    closed: 'Red',
+    critical: 'Orange',
+    affected: 'Yellow',
+    open: 'Green',
+  };
+
+  // the data field that sets a Gallery Article's status
+  get isGalleryItemStatus(): boolean {
+    return this.dataField?.galleryArticleParameter === 'Status';
+  }
+
+  // the MSEL's Gallery statuses replace free text and the field's own option list
+  get useGalleryItemStatusSelect(): boolean {
+    return (
+      this.isGalleryItemStatus &&
+      this.galleryItemStatusOptions?.length > 0 &&
+      (this.dataField.isChosenFromList ||
+        this.dataField.dataType === DataFieldType.String ||
+        this.dataField.dataType === DataFieldType.Url)
+    );
+  }
 
   // --- Competency chips + search list ---
   competencyFilter = '';
@@ -126,6 +159,20 @@ export class DataValueComponent {
   getMoveTitle(id: string): string {
     const move = this.moveOptions?.find((m) => m.id === id);
     return move ? move.title : '';
+  }
+
+  // a color name or a legacy name, any case, as the color name; anything else unchanged
+  getGalleryItemStatus(value: string): string {
+    const status = value?.trim() || '';
+    const color = Object.keys(this.galleryItemStatusColors).find(
+      (c) => c.toLowerCase() === status.toLowerCase()
+    );
+    return color || this.legacyGalleryItemStatuses[status.toLowerCase()] || value;
+  }
+
+  galleryItemStatusChange(status: string) {
+    this.value = status;
+    this.valueChangeHandler();
   }
 
   getUserName(id: string): string {
