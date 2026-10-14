@@ -87,7 +87,7 @@ project root for license information.
 </span>
 }
 <!-- Numeric input -->
-@if (!dataField.isChosenFromList && dataField.dataType === dataType.Integer || dataField.dataType === dataType.Double) {
+@if (!dataField.isChosenFromList && (dataField.dataType === dataType.Integer || dataField.dataType === dataType.Double)) {
 <span>
   @if (!showValueOnly) {
   <mat-form-field class="full-width">
