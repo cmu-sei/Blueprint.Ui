@@ -105,6 +105,27 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </div>
         </div>
       }
+      @if (data.casterTeamVariables || data.team.casterTeamVariable) {
+        <div class="add-margin">
+          <div>
+            <mat-form-field class="full-width">
+              <mat-label>Topology Team</mat-label>
+              <mat-select
+                [formControl]="casterTeamVariableFormControl"
+                (selectionChange)="saveTeam('casterTeamVariable')"
+                >
+                <mat-option [value]="''">By team name</mat-option>
+                @for (variable of topologyTeamOptions(); track variable) {
+                  <mat-option [value]="variable">
+                    {{ topologyTeamLabel(variable) }}
+                  </mat-option>
+                }
+              </mat-select>
+              <mat-hint>The Caster template variable this team's Player team ID is written to</mat-hint>
+            </mat-form-field>
+          </div>
+        </div>
+      }
       <div class="add-margin">
         <div>
           <mat-checkbox

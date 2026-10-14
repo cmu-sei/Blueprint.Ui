@@ -25,5 +25,7 @@ export interface MselIntegrationNames {
     citeEvaluationName?: string | null;
     citeScoringModelName?: string | null;
     steamfitterScenarioName?: string | null;
+    casterDirectoryName?: string | null;
+    casterWorkspaceName?: string | null;
 }
 
