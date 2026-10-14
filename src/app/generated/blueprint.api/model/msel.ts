@@ -55,6 +55,11 @@ export interface Msel {
     useSteamfitter?: boolean;
     steamfitterScenarioId?: string | null;
     steamfitterIntegrationType?: IntegrationType;
+    useCaster?: boolean;
+    casterDirectoryId?: string | null;
+    casterWorkspaceId?: string | null;
+    casterRunId?: string | null;
+    casterIntegrationType?: IntegrationType;
     isTemplate?: boolean;
     startTime?: Date;
     durationSeconds?: number;

@@ -28,6 +28,11 @@ import { MatMenuTrigger } from '@angular/material/menu';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { CiteService } from 'src/app/generated/blueprint.api';
 import { PlayerService } from 'src/app/generated/blueprint.api';
+import { CasterService } from 'src/app/generated/blueprint.api';
+import { CasterDirectory } from 'src/app/generated/blueprint.api/model/casterDirectory';
+import { PlayerApplication } from 'src/app/generated/blueprint.api/model/playerApplication';
+import { PlayerApplicationDataService } from 'src/app/data/player-application/player-application-data.service';
+import { PlayerApplicationQuery } from 'src/app/data/player-application/player-application.query';
 import { ScoringModel } from 'src/app/generated/blueprint.api/model/scoringModel';
 import { DataFieldQuery } from 'src/app/data/data-field/data-field.query';
 import { MselPageDataService } from 'src/app/data/msel-page/msel-page-data.service';
@@ -41,6 +46,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { ShowOnDirtyErrorStateMatcher } from '@angular/material/core';
 import { CompetencyOptionsDialogComponent } from '../competency-options-dialog/competency-options-dialog.component';
 import { EDITOR_CONFIG_PARAGRAPH, VIEW_CONFIG } from 'src/app/utilities/editor-config';
+import { casterVmAppWarning } from 'src/app/utilities/caster-vm-app';
 import { ComnSettingsService } from '@cmusei/crucible-common';
 import { ScenarioEventQuery } from 'src/app/data/scenario-event/scenario-event.query';
 
@@ -73,6 +79,10 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   private competencyTypeCache = new Map<string, string>();
   creatorName = 'unknown';
   scoringModelList: ScoringModel[] = [];
+  casterDirectoryList: CasterDirectory[] = [];
+  casterDirectoryError = '';
+  private casterDirectoriesRequested = false;
+  playerApplicationList: PlayerApplication[] = [];
   itemStatus: MselItemStatus[] = [
     MselItemStatus.Pending,
     MselItemStatus.Entered,
@@ -109,6 +119,8 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   citeEvaluationName = '';
   citeScoringModelName = '';
   steamfitterScenarioName = '';
+  casterDirectoryName = '';
+  casterWorkspaceName = '';
   integrationRequested = '';
   integrationDismissed = false;
   get pushStatus(): string {
@@ -128,6 +140,9 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     private mselQuery: MselQuery,
     private citeService: CiteService,
     private playerService: PlayerService,
+    private casterService: CasterService,
+    private playerApplicationDataService: PlayerApplicationDataService,
+    private playerApplicationQuery: PlayerApplicationQuery,
     private mselPageDataService: MselPageDataService,
     private mselPageQuery: MselPageQuery,
     private mselUnitQuery: MselUnitQuery,
@@ -157,6 +172,8 @@ export class MselInfoComponent implements OnDestroy, OnInit {
             this.assessorUrl = document.baseURI + 'assess/?msel=' + this.msel.id;
             this.mselPageDataService.loadByMsel(msel.id);
             this.mselCompetencyDataService.loadByMsel(msel.id);
+            // the Caster warning needs to know whether any application opens the VM UI
+            this.playerApplicationDataService.loadByMsel(msel.id);
             this.newMselPage.mselId = msel.id;
           }
           if (!this.msel?.integrationStatus) {
@@ -177,6 +194,9 @@ export class MselInfoComponent implements OnDestroy, OnInit {
           // Fetch integration names for deployed integrations
           this.fetchIntegrationNames();
           this.resolveCreatorName();
+          if (this.msel.useCaster) {
+            this.loadCasterDirectories();
+          }
         }
       });
     // subscribe to MSEL loading flag
@@ -276,6 +296,13 @@ export class MselInfoComponent implements OnDestroy, OnInit {
         this.scoringModelList = [];
       }
     );
+    // subscribe to player applications
+    this.playerApplicationQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((playerApplications) => {
+        this.playerApplicationList = playerApplications;
+      });
     // subscribe to data fields
     this.dataFieldQuery
       .selectAll()
@@ -846,6 +873,36 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     return `${baseUrl}scenario/${this.msel.steamfitterScenarioId}`;
   }
 
+  casterDirectoryLabel(directory: CasterDirectory): string {
+    return `${directory.projectName} / ${directory.name}`;
+  }
+
+  get selectedCasterDirectory(): CasterDirectory {
+    return this.casterDirectoryList.find(d => d.id === this.msel.casterDirectoryId);
+  }
+
+  // Caster has no route to a single workspace, so link to the project that holds it
+  getCasterProjectUrl(): string {
+    const directory = this.selectedCasterDirectory;
+    if (!directory) return '';
+    let baseUrl = this.settingsService.settings.CasterUrl || '';
+    if (baseUrl && baseUrl.slice(-1) !== '/') {
+      baseUrl = baseUrl + '/';
+    }
+    return `${baseUrl}projects/${directory.projectId}`;
+  }
+
+  casterWarningMessage(): string {
+    if (!this.msel.useCaster) return '';
+    if (!this.msel.usePlayer) return 'Caster requires Player: the VMs are added to the Player view and its teams.';
+    if (!this.msel.casterDirectoryId) return 'Select the Caster directory to deploy.';
+    return '';
+  }
+
+  casterVmAppWarningMessage(): string {
+    return casterVmAppWarning(this.msel, this.playerApplicationList, this.settingsService.settings.VmUrl);
+  }
+
   fetchIntegrationNames() {
     // Only fetch names when integrations are fully deployed
     if (this.msel.status !== 'Deployed') {
@@ -869,12 +926,36 @@ export class MselInfoComponent implements OnDestroy, OnInit {
           this.citeEvaluationName = names.citeEvaluationName || '';
           this.citeScoringModelName = names.citeScoringModelName || '';
           this.steamfitterScenarioName = names.steamfitterScenarioName || '';
+          this.casterDirectoryName = names.casterDirectoryName || '';
+          this.casterWorkspaceName = names.casterWorkspaceName || '';
         },
         (error) => {
           console.error('Failed to load integration names:', error);
           this.clearIntegrationNames();
         }
       );
+  }
+
+  // load the Caster directories this user can deploy from, once, and only for a MSEL that uses Caster.
+  // Caster answers with the user's own permissions, so the list holds only directories the user can view in Caster.
+  loadCasterDirectories() {
+    if (this.casterDirectoriesRequested) {
+      return;
+    }
+    this.casterDirectoriesRequested = true;
+    this.casterService.getCasterDirectories().subscribe(
+      (directories) => {
+        this.casterDirectoryList = directories || [];
+        this.casterDirectoryError = '';
+      },
+      (error) => {
+        console.error('Failed to load Caster directories:', error);
+        this.casterDirectoryList = [];
+        this.casterDirectoryError = 'Caster directories could not be loaded. You need access to Caster to choose one.';
+        // checking Caster again retries
+        this.casterDirectoriesRequested = false;
+      }
+    );
   }
 
   private clearIntegrationNames() {
@@ -884,6 +965,8 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     this.citeEvaluationName = '';
     this.citeScoringModelName = '';
     this.steamfitterScenarioName = '';
+    this.casterDirectoryName = '';
+    this.casterWorkspaceName = '';
   }
 
   hasPendingChanges(): boolean {
