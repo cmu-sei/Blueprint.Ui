@@ -11,6 +11,8 @@ import {
   MselItemStatus,
 } from 'src/app/generated/blueprint.api';
 import { EDITOR_CONFIG, VIEW_CONFIG } from 'src/app/utilities/editor-config';
+import { ErrorStateMatcher } from '@angular/material/core';
+import { dataValueError } from 'src/app/utilities/ip-address';
 
 @Component({
     selector: 'app-data-value',
@@ -128,6 +130,15 @@ export class DataValueComponent {
     const current = this.selectedCompetencies.filter(v => v !== id);
     this.value = current.join(', ');
     this.valueChangeHandler();
+  }
+
+  // shows the address error as soon as it applies, rather than waiting for the field to lose focus
+  addressErrorMatcher: ErrorStateMatcher = {
+    isErrorState: () => !!this.addressError(),
+  };
+
+  addressError(): string {
+    return dataValueError(this.dataField?.dataType, this.value);
   }
 
   valueChangeHandler() {
