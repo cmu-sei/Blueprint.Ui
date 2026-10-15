@@ -96,6 +96,7 @@ export interface Msel {
     cards?: Array<Card> | null;
     galleryArticleParameters?: Array<string> | null;
     gallerySourceTypes?: Array<string> | null;
+    galleryItemStatuses?: Array<string> | null;
     citeDuties?: Array<CiteDuty> | null;
     citeActions?: Array<CiteAction> | null;
     playerApplications?: Array<PlayerApplication> | null;

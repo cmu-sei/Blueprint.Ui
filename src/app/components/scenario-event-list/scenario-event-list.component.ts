@@ -736,6 +736,7 @@ export class ScenarioEventListComponent
         moveList: this.moveList,
         cardList: this.cardList,
         gallerySourceTypes: this.msel.gallerySourceTypes,
+        galleryItemStatuses: this.msel.galleryItemStatuses,
         isNew: this.isAddingScenarioEvent,
         isOwner: isOwner,
         isApprover: isApprover,
