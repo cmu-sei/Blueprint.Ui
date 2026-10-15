@@ -17,6 +17,7 @@ import {
   MselItemStatus,
   Move,
   Msel,
+  MselImportResult,
   MselRole,
   MselService,
   Unit,
@@ -648,6 +649,15 @@ export class MselDataService {
           this.uploadProgress.next(0);
           this.errorService.handleError(error);
         }
+      );
+  }
+
+  // Errors are left to the caller, which shows them in the import dialog
+  importJson(file: File): Observable<MselImportResult> {
+    return this.mselService
+      .importJsonMsel(file)
+      .pipe(
+        tap((result) => this.mselStore.upsert(result.msel.id, result.msel))
       );
   }
 
