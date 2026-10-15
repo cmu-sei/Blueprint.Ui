@@ -25,6 +25,7 @@ import { XApiService as AppXApiService } from '../services/xapi/xapi.service';
 import {
   CardService,
   CardTeamService,
+  CasterService,
   CatalogInjectService,
   CatalogService,
   CatalogUnitService,
@@ -91,6 +92,7 @@ export function getDefaultProviders(
     // with `satisfies ApiStub<XService>`.
     unstubbed(CardService),
     unstubbed(CardTeamService),
+    unstubbed(CasterService),
     unstubbed(CatalogInjectService),
     unstubbed(CatalogService),
     unstubbed(CatalogUnitService),
@@ -140,6 +142,8 @@ export function getDefaultProviders(
         settings: {
           // 6. Keys this app reads from settings.json, with neutral values.
           ApiUrl: '',
+          CasterUrl: '',
+          VmUrl: '',
           AppTitle: '',
           AppTopBarText: '',
           AppTopBarHexColor: '#000000',

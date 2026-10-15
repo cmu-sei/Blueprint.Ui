@@ -9,6 +9,8 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { MatSelectHarness } from '@angular/material/select/testing';
+import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { screen, within } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { AngularEditorModule } from '@kolkov/angular-editor';
@@ -17,13 +19,27 @@ import { Team } from 'src/app/generated/blueprint.api';
 import { TeamEditDialogComponent } from './team-edit-dialog.component';
 import { renderComponent } from 'src/app/test-utils/render-component';
 
-function teamData(overrides: { team?: Team; useCite?: boolean } = {}) {
-  const { team = { id: 'team-1', name: 'Blue Team', shortName: 'BLUE', email: '', canTeamMemberInvite: false }, useCite = false } = overrides;
+function teamData(
+  overrides: {
+    team?: Team;
+    useCite?: boolean;
+    casterTeamVariables?: string[] | null;
+    casterTeamVariableUsers?: { [variable: string]: string[] };
+  } = {},
+) {
+  const {
+    team = { id: 'team-1', name: 'Blue Team', shortName: 'BLUE', email: '', canTeamMemberInvite: false },
+    useCite = false,
+    casterTeamVariables = null,
+    casterTeamVariableUsers = {},
+  } = overrides;
   return {
     team,
     useCite,
     teamTypeList: [{ id: 'tt-1', name: 'Agency' }],
     userList: [],
+    casterTeamVariables,
+    casterTeamVariableUsers,
   };
 }
 
@@ -153,4 +169,92 @@ describe('TeamEditDialogComponent', () => {
     expect(results).toEqual([{ saveChanges: true, team: data.team }]);
   });
 
+  describe('Topology Team', () => {
+    const VARIABLES = ['admin', 'blue_cell', 'red_cell'];
+    const topologySelect = (fixture: Parameters<typeof TestbedHarnessEnvironment.loader>[0]) =>
+      TestbedHarnessEnvironment.loader(fixture).getHarness(MatSelectHarness);
+    const optionTexts = async (select: MatSelectHarness) => {
+      await select.open();
+      return Promise.all((await select.getOptions()).map((option) => option.getText()));
+    };
+
+    /**
+     * Verifies: without the Caster template's variables and with no mapping, the dialog has no Topology Team field.
+     * Interacts with: the dialog template.
+     * Data: Blue Team with no casterTeamVariable; casterTeamVariables null (the MSEL has no Caster directory).
+     */
+    it('has no Topology Team field without Caster team variables', async () => {
+      await renderTeamEdit();
+
+      expect(screen.queryByText('Topology Team')).not.toBeInTheDocument();
+    });
+
+    /**
+     * Verifies: the field offers "By team name" and each template variable, naming the other teams that already write a variable, and starts at "By team name" for an unmapped team.
+     * Interacts with: topologyTeamOptions, topologyTeamLabel, MatSelectHarness.
+     * Data: variables admin, blue_cell and red_cell; blue_cell already written by Blue Cell and Cyan Team.
+     */
+    it('offers the topology teams and who already uses them', async () => {
+      const { fixture } = await renderTeamEdit(
+        teamData({ casterTeamVariables: VARIABLES, casterTeamVariableUsers: { blue_cell: ['Blue Cell', 'Cyan Team'] } }),
+      );
+      const select = await topologySelect(fixture);
+
+      expect(screen.getByText("The Caster template variable this team's Player team ID is written to")).toBeInTheDocument();
+      expect(await select.getValueText()).toBe('By team name');
+      expect(await optionTexts(select)).toEqual(['By team name', 'admin', 'blue_cell (used by Blue Cell, Cyan Team)', 'red_cell']);
+    });
+
+    /**
+     * Verifies: choosing a topology team saves it as the team's casterTeamVariable.
+     * Interacts with: MatSelectHarness, saveTeam('casterTeamVariable'), crucible-dialog submit, editComplete output.
+     * Data: Blue Team, unmapped; variables admin, blue_cell and red_cell; red_cell chosen.
+     */
+    it('saves the chosen topology team', async () => {
+      const { fixture, results } = await renderTeamEdit(teamData({ casterTeamVariables: VARIABLES }));
+      const user = userEvent.setup();
+
+      await (await topologySelect(fixture)).clickOptions({ text: 'red_cell' });
+      await user.click(actions().getByRole('button', { name: 'Save' }));
+
+      expect(results).toHaveLength(1);
+      expect(results[0].team.casterTeamVariable).toBe('red_cell');
+    });
+
+    /**
+     * Verifies: a team mapped to a variable the template no longer declares, or with no template loaded, still shows the field with its mapping selected and kept as an option.
+     * Interacts with: topologyTeamOptions, MatSelectHarness.
+     * Data: Blue Team mapped to old_cell; variables admin, blue_cell and red_cell, or none (null).
+     */
+    it.each([
+      { label: 'the template no longer declares', casterTeamVariables: VARIABLES, options: ['By team name', 'admin', 'blue_cell', 'red_cell', 'old_cell'] },
+      { label: 'no template is loaded for', casterTeamVariables: null as string[], options: ['By team name', 'old_cell'] },
+    ])('keeps a mapping $label', async ({ casterTeamVariables, options }) => {
+      const { fixture } = await renderTeamEdit(
+        teamData({ team: { id: 'team-1', name: 'Blue Team', shortName: 'BLUE', casterTeamVariable: 'old_cell' }, casterTeamVariables }),
+      );
+      const select = await topologySelect(fixture);
+
+      expect(await select.getValueText()).toBe('old_cell');
+      expect(await optionTexts(select)).toEqual(options);
+    });
+
+    /**
+     * Verifies: choosing "By team name" for a mapped team saves the mapping as null.
+     * Interacts with: MatSelectHarness, saveTeam('casterTeamVariable'), crucible-dialog submit, editComplete output.
+     * Data: Blue Team mapped to blue_cell; variables admin, blue_cell and red_cell.
+     */
+    it('clears the mapping when By team name is chosen', async () => {
+      const { fixture, results } = await renderTeamEdit(
+        teamData({ team: { id: 'team-1', name: 'Blue Team', shortName: 'BLUE', casterTeamVariable: 'blue_cell' }, casterTeamVariables: VARIABLES }),
+      );
+      const user = userEvent.setup();
+
+      await (await topologySelect(fixture)).clickOptions({ text: 'By team name' });
+      await user.click(actions().getByRole('button', { name: 'Save' }));
+
+      expect(results).toHaveLength(1);
+      expect(results[0].team.casterTeamVariable).toBeNull();
+    });
+  });
 });

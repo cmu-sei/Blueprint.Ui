@@ -65,6 +65,7 @@ class DataValueStub {
   @Input() cardOptions: unknown[];
   @Input() moveOptions: unknown[];
   @Input() gallerySourceTypeOptions: unknown[];
+  @Input() galleryItemStatusOptions: string[];
   @Input() userOptions: unknown[];
 }
 
@@ -83,7 +84,7 @@ const VALUES: DataValue[] = [
 ];
 const ALL_BUT_EDIT_MSELS = Object.values(SystemPermission).filter((p) => p !== SystemPermission.EditMsels);
 
-function msel(myRoles: MselRole[] = []): Msel {
+function msel(myRoles: MselRole[] = [], extra: Partial<Msel> = {}): Msel {
   return {
     id: 'msel-1',
     name: 'Exercise Alpha',
@@ -91,6 +92,7 @@ function msel(myRoles: MselRole[] = []): Msel {
     teams: [],
     units: [],
     userMselRoles: myRoles.map((role, i) => ({ id: `umr-${i}`, userId: ME, mselId: 'msel-1', role })),
+    ...extra,
   };
 }
 
@@ -106,9 +108,9 @@ function seeded<S extends { set(entities: unknown[]): void }>(Store: new () => S
 }
 
 async function renderEventList(
-  overrides: { permissions?: SystemPermission[]; myRoles?: MselRole[]; isStarterMsel?: boolean } = {},
+  overrides: { permissions?: SystemPermission[]; myRoles?: MselRole[]; isStarterMsel?: boolean; mselExtra?: Partial<Msel> } = {},
 ) {
-  const { permissions = [], myRoles = [], isStarterMsel = false } = overrides;
+  const { permissions = [], myRoles = [], isStarterMsel = false, mselExtra = {} } = overrides;
   const mselApi = {
     getMyMsels: vi.fn(() => of<Msel[]>([])),
   } satisfies ApiStub<MselService>;
@@ -153,7 +155,7 @@ async function renderEventList(
         provide: MselStore,
         useFactory: () => {
           const store = new MselStore();
-          store.set([msel(myRoles)]);
+          store.set([msel(myRoles, mselExtra)]);
           store.setActive('msel-1');
           return store;
         },
@@ -333,5 +335,29 @@ describe('ScenarioEventListComponent', () => {
 
     expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Delete Event' }));
     expect(eventApi.deleteScenarioEvent).toHaveBeenCalledWith('se-1');
+  });
+
+  /**
+   * Verifies: the MSEL's Gallery source types and Gallery article statuses go to every data value in the list (Inject and other events) and to the event edit dialog.
+   * Interacts with: DataValueStub inputs, the event action menu, MatDialog.open (stub).
+   * Data: EditMsels; MSEL source types News and Social and statuses Green and Red; three events.
+   */
+  it("passes the MSEL's Gallery source types and statuses to the values and the edit dialog", async () => {
+    const { fixture, open } = await renderEventList({
+      permissions: [SystemPermission.EditMsels],
+      mselExtra: { gallerySourceTypes: ['News', 'Social'], galleryItemStatuses: ['Green', 'Red'] },
+    });
+
+    expect(dataValues(fixture)).toHaveLength(3);
+    for (const value of dataValues(fixture)) {
+      expect(value.gallerySourceTypeOptions).toEqual(['News', 'Social']);
+      expect(value.galleryItemStatusOptions).toEqual(['Green', 'Red']);
+    }
+    const user = await openEventMenu(1);
+    await user.click(screen.getByTitle('Edit event 1'));
+
+    expect(open.mock.calls[0][1].data).toEqual(
+      expect.objectContaining({ gallerySourceTypes: ['News', 'Social'], galleryItemStatuses: ['Green', 'Red'] }),
+    );
   });
 });

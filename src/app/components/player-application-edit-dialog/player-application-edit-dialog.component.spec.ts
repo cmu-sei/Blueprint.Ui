@@ -78,4 +78,37 @@ describe('PlayerApplicationEditDialogComponent', () => {
     expect(results).toEqual([]);
     expect(screen.getByText('Unknown variable(s): {missionId}')).toBeInTheDocument();
   });
+
+  /**
+   * Verifies: Save accepts an application URL or icon that uses the Caster and VM UI variables.
+   * Interacts with: validateUrls, crucible-dialog submit, editComplete output.
+   * Data: a URL or icon using {vmUrl} with {playerViewId}, {casterUrl} or {casterWorkspaceId}.
+   */
+  it.each([
+    { label: 'a URL using {vmUrl}', overrides: { url: '{vmUrl}/views/{playerViewId}' } },
+    { label: 'a URL using {casterUrl} and {casterWorkspaceId}', overrides: { url: '{casterUrl}/workspaces/{casterWorkspaceId}' } },
+    { label: 'an icon using {vmUrl}', overrides: { icon: '{vmUrl}/assets/icon.png' } },
+  ])('saves $label', async ({ overrides }) => {
+    const { data, results } = await renderPlayerApplicationEditDialog(dialogData(overrides));
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+
+    expect(results).toEqual([{ saveChanges: true, playerApplication: data.playerApplication }]);
+    expect(screen.queryByText(/Unknown variable/)).not.toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: the help text lists the Caster and VM UI variables among those a URL may use.
+   * Interacts with: the dialog template.
+   * Data: application Mail.
+   */
+  it('lists the Caster and VM UI variables', async () => {
+    await renderPlayerApplicationEditDialog();
+
+    expect(screen.getByText('{citeUrl}, {galleryUrl}, {steamfitterUrl}, {playerUrl}, {blueprintUrl}, {casterUrl}, {vmUrl}', { exact: false })).toBeInTheDocument();
+    expect(
+      screen.getByText('{citeEvaluationId}, {galleryExhibitId}, {steamfitterScenarioId}, {playerViewId}, {casterWorkspaceId}, {blueprintMselId}', { exact: false }),
+    ).toBeInTheDocument();
+  });
 });

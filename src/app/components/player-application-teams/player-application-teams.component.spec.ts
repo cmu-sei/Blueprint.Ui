@@ -144,4 +144,22 @@ describe('PlayerApplicationTeamsComponent', () => {
     // Current behavior; see agent-docs/ui-test-bugs/blueprint.ui.md.
     expect(within(appTeams()).getByRole('button', { name: /^Remove/ })).toHaveAccessibleName('Remove');
   });
+
+  /**
+   * Verifies: a team added to the MSEL while the application is open (a new mselTeamList from the parent) is offered for adding.
+   * Interacts with: ngOnChanges, setDataSources, real PlayerApplicationTeamDataService.
+   * Data: EditMsels; BLUE on the application, RED not; then the list gains Green Team (GREEN).
+   */
+  it('offers a team added to the MSEL while the application is open', async () => {
+    const { fixture } = await renderAppTeams({ permissions: [SystemPermission.EditMsels] });
+    const green: Team = { id: 'team-3', mselId: 'msel-1', name: 'Green Team', shortName: 'GREEN' };
+    expect(within(mselTeams()).queryByRole('button', { name: 'Add Green Team' })).not.toBeInTheDocument();
+
+    fixture.componentRef.setInput('mselTeamList', [BLUE, RED, green]);
+    fixture.detectChanges();
+
+    expect(within(mselTeams()).getByRole('button', { name: 'Add Red Team' })).toBeInTheDocument();
+    expect(within(mselTeams()).getByRole('button', { name: 'Add Green Team' })).toBeInTheDocument();
+    expect(within(mselTeams()).queryByRole('button', { name: 'Add Blue Team' })).not.toBeInTheDocument();
+  });
 });

@@ -30,6 +30,7 @@ class DataValueStub {
   @Input() cardOptions: unknown[];
   @Input() moveOptions: unknown[];
   @Input() gallerySourceTypeOptions: unknown[];
+  @Input() galleryItemStatusOptions: string[];
   @Input() userOptions: unknown[];
 }
 

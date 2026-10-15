@@ -47,6 +47,7 @@ class DataValueStub {
   @Input() cardOptions: unknown[];
   @Input() moveOptions: unknown[];
   @Input() gallerySourceTypeOptions: unknown[];
+  @Input() galleryItemStatusOptions: string[];
   @Input() userOptions: unknown[];
 }
 
@@ -140,7 +141,7 @@ describe('EventDetailPageComponent', () => {
   });
 
   /**
-   * Verifies: the data values get undefined user and gallery source type options (current behavior).
+   * Verifies: the data values get undefined user options (current behavior).
    * Interacts with: DataValueStub inputs.
    * Data: the Owner value (a user id).
    */
@@ -149,6 +150,22 @@ describe('EventDetailPageComponent', () => {
 
     // Current behavior; see agent-docs/ui-test-bugs/blueprint.ui.md.
     expect(values(fixture)[1].userOptions).toBeUndefined();
-    expect(values(fixture)[1].gallerySourceTypeOptions).toBeUndefined();
+  });
+
+  /**
+   * Verifies: every data value gets the MSEL's Gallery source types and Gallery article statuses as its options.
+   * Interacts with: DataValueStub inputs, the MSEL loaded through the real MselDataService.
+   * Data: MSEL msel-1 with source types News and Social and statuses Green and Red.
+   */
+  it("passes the MSEL's Gallery source types and statuses to the data values", async () => {
+    const { fixture } = await renderEventDetail({
+      msel: { ...MSEL, gallerySourceTypes: ['News', 'Social'], galleryItemStatuses: ['Green', 'Red'] },
+    });
+
+    expect(values(fixture)).toHaveLength(2);
+    for (const value of values(fixture)) {
+      expect(value.gallerySourceTypeOptions).toEqual(['News', 'Social']);
+      expect(value.galleryItemStatusOptions).toEqual(['Green', 'Red']);
+    }
   });
 });

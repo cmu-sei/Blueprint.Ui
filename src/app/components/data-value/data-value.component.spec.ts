@@ -8,6 +8,8 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { MatSelectHarness } from '@angular/material/select/testing';
+import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { NgxMatDatepickerActions, NgxMatDatepickerApply, NgxMatDatepickerCancel, NgxMatDatepickerInput, NgxMatDatetimepicker } from '@ngxmc/datetime-picker';
 import { screen } from '@testing-library/angular';
@@ -21,6 +23,9 @@ const SUBJECT: DataField = { id: 'df-subject', name: 'Subject', dataType: DataFi
 const STATUS: DataField = { id: 'df-status', name: 'Status', dataType: DataFieldType.Status };
 const ASSIGNED: DataField = { id: 'df-team', name: 'Assigned To', dataType: DataFieldType.Team };
 const WHEN: DataField = { id: 'df-when', name: 'When', dataType: DataFieldType.DateTime };
+// The data field that sets a Gallery Article's status, and the statuses the MSEL offers.
+const ARTICLE_STATUS: DataField = { id: 'df-article-status', name: 'Article Status', dataType: DataFieldType.String, galleryArticleParameter: 'Status' };
+const GALLERY_STATUSES = ['Gray', 'Green', 'Red'];
 
 interface Flags {
   canEdit?: boolean;
@@ -29,7 +34,7 @@ interface Flags {
   showValueOnly?: boolean;
 }
 
-async function renderDataValue(dataField: DataField, value: string, flags: Flags = {}) {
+async function renderDataValue(dataField: DataField, value: string, flags: Flags = {}, galleryItemStatusOptions: string[] = []) {
   const { canEdit = false, canApprove = false, isOwner = false, showValueOnly = false } = flags;
   const rendered = await renderComponent(DataValueComponent, {
     imports: [
@@ -55,6 +60,7 @@ async function renderDataValue(dataField: DataField, value: string, flags: Flags
       isOwner,
       showValueOnly,
       unitOptions: [{ id: 'unit-blue', shortName: 'BLUE' }, { id: 'unit-red', shortName: 'RED' }],
+      galleryItemStatusOptions,
     },
   });
   // ngModel applies [disabled] in a microtask.
@@ -173,5 +179,126 @@ describe('DataValueComponent', () => {
     await renderDataValue(WHEN, value, flags);
 
     expect(screen.getByText(label)).toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: a numeric field chosen from a list shows only its dropdown, with no number box beside it.
+   * Interacts with: the numeric and dropdown branches of the template, mat-select options, valueChange output.
+   * Data: an Integer or Double field chosen from the options One (1) and Two (2); value 1; canEdit; Two chosen.
+   */
+  it.each([DataFieldType.Integer, DataFieldType.Double])('shows only the dropdown for a %s field chosen from a list', async (dataType) => {
+    const field: DataField = {
+      id: 'df-count',
+      name: 'Count',
+      dataType,
+      isChosenFromList: true,
+      dataOptions: [
+        { id: 'do-1', dataFieldId: 'df-count', optionName: 'One', optionValue: '1' },
+        { id: 'do-2', dataFieldId: 'df-count', optionName: 'Two', optionValue: '2' },
+      ],
+    };
+    const { changes } = await renderDataValue(field, '1', { canEdit: true });
+    const user = userEvent.setup();
+
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    await user.click(screen.getByRole('combobox'));
+    await user.click(screen.getByRole('option', { name: 'Two' }));
+
+    expect(changes).toEqual(['2']);
+  });
+
+  /**
+   * Verifies: a numeric field not chosen from a list keeps its number box.
+   * Interacts with: the numeric branch of the template.
+   * Data: a Double field; value 1.5; canEdit.
+   */
+  it('shows the number box for a Double field', async () => {
+    await renderDataValue({ id: 'df-ratio', name: 'Ratio', dataType: DataFieldType.Double }, '1.5', { canEdit: true });
+
+    expect(screen.getByRole('textbox', { name: 'Ratio' })).toHaveValue('1.5');
+    expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: with canEdit, a Gallery Article Status field offers the MSEL's statuses in a select instead of a text box, in the form field and in the value-only view, and emits the chosen status.
+   * Interacts with: useGalleryItemStatusSelect, getGalleryItemStatus (legacy "open" shown as Green), galleryItemStatusChange, valueChange output.
+   * Data: Article Status (String, Gallery parameter Status) = "open"; statuses Gray, Green, Red; canEdit only, with showValueOnly false or true; Red chosen.
+   */
+  it.each([false, true])('lets a Gallery status be chosen with canEdit (showValueOnly %s)', async (showValueOnly) => {
+    const { fixture, changes } = await renderDataValue(ARTICLE_STATUS, 'open', { canEdit: true, showValueOnly }, GALLERY_STATUSES);
+    // In the value-only view the select has no form field, so it opens through the harness.
+    const select = await TestbedHarnessEnvironment.loader(fixture).getHarness(MatSelectHarness);
+
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    expect(screen.getByRole('combobox')).toHaveAttribute('aria-disabled', 'false');
+    expect(await select.getValueText()).toBe('Green');
+    await select.open();
+    expect(await Promise.all((await select.getOptions()).map((o) => o.getText()))).toEqual(['', 'Gray', 'Green', 'Red']);
+    await select.clickOptions({ text: 'Red' });
+
+    expect(changes).toEqual(['Red']);
+  });
+
+  /**
+   * Verifies: without canEdit the Gallery status select is disabled, even for an approver who owns the event, in the form field and in the value-only view.
+   * Interacts with: the Gallery status mat-select [disabled].
+   * Data: Article Status = "Green"; statuses Gray, Green, Red; canEdit false with canApprove and isOwner true (near miss), showValueOnly false or true.
+   */
+  it.each([false, true])('disables the Gallery status select without canEdit (showValueOnly %s)', async (showValueOnly) => {
+    await renderDataValue(ARTICLE_STATUS, 'Green', { canEdit: false, canApprove: true, isOwner: true, showValueOnly }, GALLERY_STATUSES);
+
+    expect(screen.getByRole('combobox')).toHaveAttribute('aria-disabled', 'true');
+  });
+
+  /**
+   * Verifies: the Gallery status select replaces the own option list of a status field chosen from a list.
+   * Interacts with: useGalleryItemStatusSelect, the dropdown branch.
+   * Data: Article Status chosen from the option A, = "Green"; statuses Gray, Green, Red; canEdit.
+   */
+  it('offers the Gallery statuses instead of the option list of a status field', async () => {
+    const field: DataField = {
+      ...ARTICLE_STATUS,
+      isChosenFromList: true,
+      dataOptions: [{ id: 'do-a', dataFieldId: 'df-article-status', optionName: 'A', optionValue: 'A' }],
+    };
+    await renderDataValue(field, 'Green', { canEdit: true }, GALLERY_STATUSES);
+    const user = userEvent.setup();
+
+    expect(screen.getAllByRole('combobox')).toHaveLength(1);
+    await user.click(screen.getByRole('combobox'));
+
+    expect(screen.getAllByRole('option').map((o) => o.textContent.trim())).toEqual(['', 'Gray', 'Green', 'Red']);
+  });
+
+  /**
+   * Verifies: a text box, not the Gallery status select, is shown when the MSEL offers no statuses or the field is not the Status parameter.
+   * Interacts with: useGalleryItemStatusSelect, the string branch.
+   * Data: Article Status with no statuses; a Subject field with statuses Gray, Green, Red; value "Green"; canEdit.
+   */
+  it.each([
+    { label: 'without MSEL statuses', field: ARTICLE_STATUS, statuses: [] as string[] },
+    { label: 'for another field', field: SUBJECT, statuses: GALLERY_STATUSES },
+  ])('keeps the text box $label', async ({ field, statuses }) => {
+    await renderDataValue(field, 'Green', { canEdit: true }, statuses);
+
+    expect(screen.getByRole('textbox', { name: field.name })).toHaveValue('Green');
+    expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: read-only, a Gallery status is shown by its color name, any case or legacy name, with its color swatch; any other value is shown as it is, with no swatch.
+   * Interacts with: the view-only branch, getGalleryItemStatus, galleryItemStatusColors.
+   * Data: Article Status = "CRITICAL" (legacy Orange), "red" or "Pending review"; showValueOnly with no flags.
+   */
+  it.each([
+    { value: 'CRITICAL', shown: 'Orange', color: 'rgb(250, 163, 2)' },
+    { value: 'red', shown: 'Red', color: 'rgb(255, 51, 51)' },
+    { value: 'Pending review', shown: 'Pending review', color: null as string },
+  ])('shows the Gallery status $value as $shown', async ({ value, shown, color }) => {
+    const { container } = await renderDataValue(ARTICLE_STATUS, value, { showValueOnly: true }, GALLERY_STATUSES);
+
+    expect(screen.getByText(shown)).toBeInTheDocument();
+    const swatch = container.querySelector<HTMLElement>('.gallery-status-swatch');
+    expect(swatch?.style.backgroundColor ?? null).toBe(color);
   });
 });

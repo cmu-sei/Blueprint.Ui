@@ -33,6 +33,7 @@ class DataValueStub {
   @Input() cardOptions: unknown[];
   @Input() moveOptions: unknown[];
   @Input() gallerySourceTypeOptions: unknown[];
+  @Input() galleryItemStatusOptions: string[];
   @Input() userOptions: unknown[];
 }
 @Component({ selector: 'app-duration-edit', template: '', standalone: false })
@@ -83,7 +84,8 @@ function dialogData(roles: Roles = {}) {
     unitList: [],
     moveList: [],
     cardList: [],
-    gallerySourceTypes: [],
+    gallerySourceTypes: ['News', 'Social'],
+    galleryItemStatuses: ['Green', 'Red'],
     isNew: false,
     isOwner,
     isApprover,
@@ -205,5 +207,17 @@ describe('ScenarioEventEditDialogComponent', () => {
     expect(results).toHaveLength(1);
     expect(results[0].scenarioEvent.steamfitterTask).toBeNull();
     expect(results[0].scenarioEvent.steamfitterTaskId).toBeNull();
+  });
+
+  /**
+   * Verifies: the event's data values get the MSEL's Gallery source types and Gallery article statuses the list passed in.
+   * Interacts with: DataValueStub inputs, MAT_DIALOG_DATA.
+   * Data: gallerySourceTypes News and Social; galleryItemStatuses Green and Red; isEditor.
+   */
+  it("passes the MSEL's Gallery source types and statuses to the data values", async () => {
+    const { fixture } = await renderEventEdit({ isEditor: true });
+
+    expect(child(fixture, DataValueStub).gallerySourceTypeOptions).toEqual(['News', 'Social']);
+    expect(child(fixture, DataValueStub).galleryItemStatusOptions).toEqual(['Green', 'Red']);
   });
 });
