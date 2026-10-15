@@ -1,6 +1,6 @@
 # BlueprintUi
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 9.1.
+This project was generated with [Angular CLI](https://github.com/angular/angular-cli) and now uses Angular CLI version 21 (Angular 21.2). Node `^20.19.0 || ^22.12.0 || >=24.0.0` is required; the Dockerfile and CI use Node 24.
 
 ## Documentation
 
@@ -16,13 +16,13 @@ Blueprint uses a monochrome gray Material 3 SCSS palette with runtime top-bar co
 |------|---------------|---------|
 | `src/assets/config/settings.json` | `"AppTopBarHexColor": "#007CB5"` | Runtime config -- top bar background color |
 | `src/assets/config/settings.json` | `"AppTopBarHexTextColor": "#FFFFFF"` | Runtime config -- top bar text color |
-| `src/app/app.component.ts` | `'#C41230'` / `'#FFFFFF'` fallbacks in `setTheme()` | Runtime fallbacks when settings are not provided |
+| `src/app/app.module.ts` | `provideCrucibleTheme({ brand: { color: '#007CB5', text: '#FFFFFF' } })` | Runtime fallbacks when settings are not provided |
 
-To change the top bar color for a deployment, update `AppTopBarHexColor` and `AppTopBarHexTextColor` in `settings.json`.
+To change the top bar color for a deployment, update `AppTopBarHexColor` and `AppTopBarHexTextColor` in `settings.json`, or set them in `settings.env.json`, which the app merges over `settings.json` and `settings.shared.json` at startup.
 
 ## Development server
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4725/`. The app will automatically reload if you change any of the source files.
+Run `npm start` (`ng serve`) for a dev server. Navigate to `http://localhost:4725/`. The app will automatically reload if you change any of the source files.
 
 ## Code scaffolding
 
@@ -30,26 +30,26 @@ Run `ng generate component component-name` to generate a new component. You can 
 
 ## Build
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `--prod` flag for a production build.
+Run `npm run build` (`ng build`) to build the project. The build artifacts will be stored in the `dist/browser` directory. Without a configuration the build is unoptimized; use `--configuration production` for a production build.
 
 ## Running unit tests
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+Unit tests run on Vitest through Angular's `@angular/build:unit-test` builder, following the
+Crucible UI test standard.
 
-## Running end-to-end tests with Playwright
+```bash
+npm test                # run every spec once
+npm run test:watch      # re-run on change
+npm run test:coverage   # run once with coverage and enforce the thresholds in angular.json
+```
 
-One time from powershell to install playwright and playwright browsers on windows managed laptop:
-  set this environment variable on your system:  PLAYWRIGHT_BROWSERS_PATH="C:\SEI\Tools\ms-playwright"
-  cd Blueprint.Ui
-  npm install
-  npx playwright install
+The shared test helpers (`renderComponent`, the default providers, API stub types, the SignalR fake,
+the permission providers) are in `src/app/test-utils/`.
 
-  npx playwright test
-    Runs the end-to-end tests.
+## Running end-to-end tests
 
-  npx playwright test --debug
-    Runs the tests in debug mode.
+End-to-end tests for Blueprint are the Playwright tests in the [crucible-tests](https://github.com/cmu-sei/crucible-tests) repository (`blueprint/`). They run against a running Crucible stack; from that repository, run `./run-tests.sh blueprint`. See its README for setup.
 
 ## Further help
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI README](https://github.com/angular/angular-cli/blob/master/README.md).
+To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI README](https://github.com/angular/angular-cli/blob/main/README.md).
