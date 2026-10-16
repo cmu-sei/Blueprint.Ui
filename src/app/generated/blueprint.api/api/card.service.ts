@@ -25,6 +25,10 @@ import { Observable }                                        from 'rxjs';
 // @ts-ignore
 import { Card } from '../model/card';
 // @ts-ignore
+import { CardCreate } from '../model/cardCreate';
+// @ts-ignore
+import { CardEdit } from '../model/cardEdit';
+// @ts-ignore
 import { ProblemDetails } from '../model/problemDetails';
 
 // @ts-ignore
@@ -46,14 +50,14 @@ export class CardService extends BaseService {
     /**
      * Creates a new Card
      * Creates a new Card with the attributes specified &lt;para /&gt; Accessible only to a ContentDeveloper or an Administrator
-     * @param card The data used to create the Card
+     * @param cardCreate The data used to create the Card
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public createCard(card?: Card, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<Card>;
-    public createCard(card?: Card, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Card>>;
-    public createCard(card?: Card, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Card>>;
-    public createCard(card?: Card, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public createCard(cardCreate?: CardCreate, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<Card>;
+    public createCard(cardCreate?: CardCreate, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Card>>;
+    public createCard(cardCreate?: CardCreate, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Card>>;
+    public createCard(cardCreate?: CardCreate, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -101,7 +105,7 @@ export class CardService extends BaseService {
         return this.httpClient.request<Card>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: card,
+                body: cardCreate,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
@@ -408,16 +412,16 @@ export class CardService extends BaseService {
 
     /**
      * Updates a  Card
-     * Updates a Card with the attributes specified. The ID from the route MUST MATCH the ID contained in the card parameter &lt;para /&gt; Accessible only to a ContentDeveloper or an Administrator
+     * Updates a Card with the attributes specified. The Card stays where it is: its MSEL and template flag cannot be changed &lt;para /&gt; Accessible only to a ContentDeveloper or an Administrator
      * @param id The Id of the Card to update
-     * @param card The updated Card values
+     * @param cardEdit The updated Card values
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public updateCard(id: string, card?: Card, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<Card>;
-    public updateCard(id: string, card?: Card, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Card>>;
-    public updateCard(id: string, card?: Card, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Card>>;
-    public updateCard(id: string, card?: Card, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public updateCard(id: string, cardEdit?: CardEdit, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<Card>;
+    public updateCard(id: string, cardEdit?: CardEdit, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Card>>;
+    public updateCard(id: string, cardEdit?: CardEdit, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Card>>;
+    public updateCard(id: string, cardEdit?: CardEdit, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (id === null || id === undefined) {
             throw new Error('Required parameter id was null or undefined when calling updateCard.');
         }
@@ -468,7 +472,7 @@ export class CardService extends BaseService {
         return this.httpClient.request<Card>('put', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: card,
+                body: cardEdit,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,

@@ -25,6 +25,10 @@ import { Observable }                                        from 'rxjs';
 // @ts-ignore
 import { DataValue } from '../model/dataValue';
 // @ts-ignore
+import { DataValueCreate } from '../model/dataValueCreate';
+// @ts-ignore
+import { DataValueEdit } from '../model/dataValueEdit';
+// @ts-ignore
 import { ProblemDetails } from '../model/problemDetails';
 
 // @ts-ignore
@@ -45,15 +49,15 @@ export class DataValueService extends BaseService {
 
     /**
      * Creates a new DataValue
-     * Creates a new DataValue with the attributes specified &lt;para /&gt; Accessible only to a ContentDeveloper or an Administrator
-     * @param dataValue The data used to create the DataValue
+     * Creates a new DataValue with the attributes specified. The Scenario Event must belong to the Data Field\&#39;s MSEL. &lt;para /&gt; Accessible only to a ContentDeveloper or an Administrator
+     * @param dataValueCreate The data used to create the DataValue
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public createDataValue(dataValue?: DataValue, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<DataValue>;
-    public createDataValue(dataValue?: DataValue, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<DataValue>>;
-    public createDataValue(dataValue?: DataValue, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<DataValue>>;
-    public createDataValue(dataValue?: DataValue, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public createDataValue(dataValueCreate?: DataValueCreate, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<DataValue>;
+    public createDataValue(dataValueCreate?: DataValueCreate, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<DataValue>>;
+    public createDataValue(dataValueCreate?: DataValueCreate, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<DataValue>>;
+    public createDataValue(dataValueCreate?: DataValueCreate, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -101,7 +105,7 @@ export class DataValueService extends BaseService {
         return this.httpClient.request<DataValue>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: dataValue,
+                body: dataValueCreate,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
@@ -292,16 +296,16 @@ export class DataValueService extends BaseService {
 
     /**
      * Updates a  DataValue
-     * Updates a DataValue with the attributes specified. The ID from the route MUST MATCH the ID contained in the dataValue parameter &lt;para /&gt; Accessible only to a ContentDeveloper or an Administrator
+     * Updates a DataValue with the attributes specified. The value stays in its cell: its Data Field and Scenario Event cannot be changed. &lt;para /&gt; Accessible only to a ContentDeveloper or an Administrator
      * @param id The Id of the DataValue to update
-     * @param dataValue The updated DataValue values
+     * @param dataValueEdit The updated DataValue values
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public updateDataValue(id: string, dataValue?: DataValue, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<DataValue>;
-    public updateDataValue(id: string, dataValue?: DataValue, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<DataValue>>;
-    public updateDataValue(id: string, dataValue?: DataValue, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<DataValue>>;
-    public updateDataValue(id: string, dataValue?: DataValue, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public updateDataValue(id: string, dataValueEdit?: DataValueEdit, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<DataValue>;
+    public updateDataValue(id: string, dataValueEdit?: DataValueEdit, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<DataValue>>;
+    public updateDataValue(id: string, dataValueEdit?: DataValueEdit, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<DataValue>>;
+    public updateDataValue(id: string, dataValueEdit?: DataValueEdit, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (id === null || id === undefined) {
             throw new Error('Required parameter id was null or undefined when calling updateDataValue.');
         }
@@ -352,7 +356,7 @@ export class DataValueService extends BaseService {
         return this.httpClient.request<DataValue>('put', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: dataValue,
+                body: dataValueEdit,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,

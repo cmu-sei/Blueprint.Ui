@@ -25,6 +25,10 @@ import { Observable }                                        from 'rxjs';
 // @ts-ignore
 import { PlayerApplication } from '../model/playerApplication';
 // @ts-ignore
+import { PlayerApplicationCreate } from '../model/playerApplicationCreate';
+// @ts-ignore
+import { PlayerApplicationEdit } from '../model/playerApplicationEdit';
+// @ts-ignore
 import { ProblemDetails } from '../model/problemDetails';
 
 // @ts-ignore
@@ -46,14 +50,14 @@ export class PlayerApplicationService extends BaseService {
     /**
      * Creates a new PlayerApplication and pushes to a Player View
      * Creates a new PlayerApplication with the attributes specified &lt;para /&gt; Accessible only to a ContentDeveloper or MSEL owner
-     * @param playerApplication The data used to create the PlayerApplication
+     * @param playerApplicationCreate The data used to create the PlayerApplication
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public createAndPushPlayerApplication(playerApplication?: PlayerApplication, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<PlayerApplication>;
-    public createAndPushPlayerApplication(playerApplication?: PlayerApplication, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<PlayerApplication>>;
-    public createAndPushPlayerApplication(playerApplication?: PlayerApplication, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<PlayerApplication>>;
-    public createAndPushPlayerApplication(playerApplication?: PlayerApplication, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public createAndPushPlayerApplication(playerApplicationCreate?: PlayerApplicationCreate, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<PlayerApplication>;
+    public createAndPushPlayerApplication(playerApplicationCreate?: PlayerApplicationCreate, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<PlayerApplication>>;
+    public createAndPushPlayerApplication(playerApplicationCreate?: PlayerApplicationCreate, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<PlayerApplication>>;
+    public createAndPushPlayerApplication(playerApplicationCreate?: PlayerApplicationCreate, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -101,7 +105,7 @@ export class PlayerApplicationService extends BaseService {
         return this.httpClient.request<PlayerApplication>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: playerApplication,
+                body: playerApplicationCreate,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
@@ -115,14 +119,14 @@ export class PlayerApplicationService extends BaseService {
     /**
      * Creates a new PlayerApplication
      * Creates a new PlayerApplication with the attributes specified &lt;para /&gt; Accessible only to a ContentDeveloper or an Administrator
-     * @param playerApplication The data used to create the PlayerApplication
+     * @param playerApplicationCreate The data used to create the PlayerApplication
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public createPlayerApplication(playerApplication?: PlayerApplication, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<PlayerApplication>;
-    public createPlayerApplication(playerApplication?: PlayerApplication, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<PlayerApplication>>;
-    public createPlayerApplication(playerApplication?: PlayerApplication, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<PlayerApplication>>;
-    public createPlayerApplication(playerApplication?: PlayerApplication, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public createPlayerApplication(playerApplicationCreate?: PlayerApplicationCreate, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<PlayerApplication>;
+    public createPlayerApplication(playerApplicationCreate?: PlayerApplicationCreate, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<PlayerApplication>>;
+    public createPlayerApplication(playerApplicationCreate?: PlayerApplicationCreate, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<PlayerApplication>>;
+    public createPlayerApplication(playerApplicationCreate?: PlayerApplicationCreate, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -170,7 +174,7 @@ export class PlayerApplicationService extends BaseService {
         return this.httpClient.request<PlayerApplication>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: playerApplication,
+                body: playerApplicationCreate,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
@@ -361,16 +365,16 @@ export class PlayerApplicationService extends BaseService {
 
     /**
      * Updates a  PlayerApplication
-     * Updates a PlayerApplication with the attributes specified. The ID from the route MUST MATCH the ID contained in the playerApplication parameter &lt;para /&gt; Accessible only to a ContentDeveloper or an Administrator
+     * Updates a PlayerApplication with the attributes specified. The application stays in its MSEL: the MSEL cannot be changed. &lt;para /&gt; Accessible only to a ContentDeveloper or an Administrator
      * @param id The Id of the PlayerApplication to update
-     * @param playerApplication The updated PlayerApplication values
+     * @param playerApplicationEdit The updated PlayerApplication values
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public updatePlayerApplication(id: string, playerApplication?: PlayerApplication, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<PlayerApplication>;
-    public updatePlayerApplication(id: string, playerApplication?: PlayerApplication, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<PlayerApplication>>;
-    public updatePlayerApplication(id: string, playerApplication?: PlayerApplication, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<PlayerApplication>>;
-    public updatePlayerApplication(id: string, playerApplication?: PlayerApplication, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public updatePlayerApplication(id: string, playerApplicationEdit?: PlayerApplicationEdit, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<PlayerApplication>;
+    public updatePlayerApplication(id: string, playerApplicationEdit?: PlayerApplicationEdit, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<PlayerApplication>>;
+    public updatePlayerApplication(id: string, playerApplicationEdit?: PlayerApplicationEdit, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<PlayerApplication>>;
+    public updatePlayerApplication(id: string, playerApplicationEdit?: PlayerApplicationEdit, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (id === null || id === undefined) {
             throw new Error('Required parameter id was null or undefined when calling updatePlayerApplication.');
         }
@@ -421,7 +425,7 @@ export class PlayerApplicationService extends BaseService {
         return this.httpClient.request<PlayerApplication>('put', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: playerApplication,
+                body: playerApplicationEdit,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,

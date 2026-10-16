@@ -25,6 +25,10 @@ import { Observable }                                        from 'rxjs';
 // @ts-ignore
 import { DataField } from '../model/dataField';
 // @ts-ignore
+import { DataFieldCreate } from '../model/dataFieldCreate';
+// @ts-ignore
+import { DataFieldEdit } from '../model/dataFieldEdit';
+// @ts-ignore
 import { ProblemDetails } from '../model/problemDetails';
 
 // @ts-ignore
@@ -45,15 +49,15 @@ export class DataFieldService extends BaseService {
 
     /**
      * Creates a new DataField
-     * Creates a new DataField with the attributes specified &lt;para /&gt; Accessible only to a ContentDeveloper or an Administrator
-     * @param dataField The data used to create the DataField
+     * Creates a new DataField with the attributes specified. A DataField belongs to at most one of a MSEL, an inject type or the template list. &lt;para /&gt; Accessible only to a ContentDeveloper or an Administrator
+     * @param dataFieldCreate The data used to create the DataField
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public createDataField(dataField?: DataField, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<DataField>;
-    public createDataField(dataField?: DataField, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<DataField>>;
-    public createDataField(dataField?: DataField, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<DataField>>;
-    public createDataField(dataField?: DataField, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public createDataField(dataFieldCreate?: DataFieldCreate, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<DataField>;
+    public createDataField(dataFieldCreate?: DataFieldCreate, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<DataField>>;
+    public createDataField(dataFieldCreate?: DataFieldCreate, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<DataField>>;
+    public createDataField(dataFieldCreate?: DataFieldCreate, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -101,7 +105,7 @@ export class DataFieldService extends BaseService {
         return this.httpClient.request<DataField>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: dataField,
+                body: dataFieldCreate,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
@@ -470,16 +474,16 @@ export class DataFieldService extends BaseService {
 
     /**
      * Updates a  DataField
-     * Updates a DataField with the attributes specified. The ID from the route MUST MATCH the ID contained in the dataField parameter &lt;para /&gt; Accessible only to a ContentDeveloper or an Administrator
+     * Updates a DataField with the attributes specified. The DataField stays with its MSEL, inject type or template list; that cannot be changed. &lt;para /&gt; Accessible only to a ContentDeveloper or an Administrator
      * @param id The Id of the DataField to update
-     * @param dataField The updated DataField values
+     * @param dataFieldEdit The updated DataField values
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public updateDataField(id: string, dataField?: DataField, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<DataField>;
-    public updateDataField(id: string, dataField?: DataField, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<DataField>>;
-    public updateDataField(id: string, dataField?: DataField, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<DataField>>;
-    public updateDataField(id: string, dataField?: DataField, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public updateDataField(id: string, dataFieldEdit?: DataFieldEdit, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<DataField>;
+    public updateDataField(id: string, dataFieldEdit?: DataFieldEdit, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<DataField>>;
+    public updateDataField(id: string, dataFieldEdit?: DataFieldEdit, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<DataField>>;
+    public updateDataField(id: string, dataFieldEdit?: DataFieldEdit, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (id === null || id === undefined) {
             throw new Error('Required parameter id was null or undefined when calling updateDataField.');
         }
@@ -530,7 +534,7 @@ export class DataFieldService extends BaseService {
         return this.httpClient.request<DataField>('put', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: dataField,
+                body: dataFieldEdit,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,

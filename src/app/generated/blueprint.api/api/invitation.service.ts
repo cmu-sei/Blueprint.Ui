@@ -25,6 +25,10 @@ import { Observable }                                        from 'rxjs';
 // @ts-ignore
 import { Invitation } from '../model/invitation';
 // @ts-ignore
+import { InvitationCreate } from '../model/invitationCreate';
+// @ts-ignore
+import { InvitationEdit } from '../model/invitationEdit';
+// @ts-ignore
 import { ProblemDetails } from '../model/problemDetails';
 
 // @ts-ignore
@@ -45,15 +49,15 @@ export class InvitationService extends BaseService {
 
     /**
      * Creates a new Invitation
-     * Creates a new Invitation with the attributes specified &lt;para /&gt;
-     * @param invitation The data to create the Invitation with
+     * Creates a new Invitation with the attributes specified. The team must belong to the Invitation\&#39;s MSEL. &lt;para /&gt;
+     * @param invitationCreate The data to create the Invitation with
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public createInvitation(invitation?: Invitation, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<Invitation>;
-    public createInvitation(invitation?: Invitation, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Invitation>>;
-    public createInvitation(invitation?: Invitation, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Invitation>>;
-    public createInvitation(invitation?: Invitation, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public createInvitation(invitationCreate?: InvitationCreate, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<Invitation>;
+    public createInvitation(invitationCreate?: InvitationCreate, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Invitation>>;
+    public createInvitation(invitationCreate?: InvitationCreate, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Invitation>>;
+    public createInvitation(invitationCreate?: InvitationCreate, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -101,7 +105,7 @@ export class InvitationService extends BaseService {
         return this.httpClient.request<Invitation>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: invitation,
+                body: invitationCreate,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
@@ -292,16 +296,16 @@ export class InvitationService extends BaseService {
 
     /**
      * Updates a Invitation
-     * Updates a Invitation with the attributes specified &lt;para /&gt;
+     * Updates a Invitation with the attributes specified. The Invitation stays in its MSEL, and the team must belong to it. &lt;para /&gt;
      * @param id The Id of the Invitation to update
-     * @param invitation The updated Invitation values
+     * @param invitationEdit The updated Invitation values
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public updateInvitation(id: string, invitation?: Invitation, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<Invitation>;
-    public updateInvitation(id: string, invitation?: Invitation, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Invitation>>;
-    public updateInvitation(id: string, invitation?: Invitation, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Invitation>>;
-    public updateInvitation(id: string, invitation?: Invitation, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public updateInvitation(id: string, invitationEdit?: InvitationEdit, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<Invitation>;
+    public updateInvitation(id: string, invitationEdit?: InvitationEdit, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Invitation>>;
+    public updateInvitation(id: string, invitationEdit?: InvitationEdit, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Invitation>>;
+    public updateInvitation(id: string, invitationEdit?: InvitationEdit, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (id === null || id === undefined) {
             throw new Error('Required parameter id was null or undefined when calling updateInvitation.');
         }
@@ -352,7 +356,7 @@ export class InvitationService extends BaseService {
         return this.httpClient.request<Invitation>('put', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: invitation,
+                body: invitationEdit,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,

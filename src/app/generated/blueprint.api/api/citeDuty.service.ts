@@ -25,6 +25,10 @@ import { Observable }                                        from 'rxjs';
 // @ts-ignore
 import { CiteDuty } from '../model/citeDuty';
 // @ts-ignore
+import { CiteDutyCreate } from '../model/citeDutyCreate';
+// @ts-ignore
+import { CiteDutyEdit } from '../model/citeDutyEdit';
+// @ts-ignore
 import { ProblemDetails } from '../model/problemDetails';
 
 // @ts-ignore
@@ -46,14 +50,14 @@ export class CiteDutyService extends BaseService {
     /**
      * Creates a new CiteDuty
      * Creates a new CiteDuty with the attributes specified &lt;para /&gt; Accessible only to a ContentDeveloper or an Administrator
-     * @param citeDuty The data used to create the CiteDuty
+     * @param citeDutyCreate The data used to create the CiteDuty
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public createCiteDuty(citeDuty?: CiteDuty, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<CiteDuty>;
-    public createCiteDuty(citeDuty?: CiteDuty, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<CiteDuty>>;
-    public createCiteDuty(citeDuty?: CiteDuty, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<CiteDuty>>;
-    public createCiteDuty(citeDuty?: CiteDuty, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public createCiteDuty(citeDutyCreate?: CiteDutyCreate, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<CiteDuty>;
+    public createCiteDuty(citeDutyCreate?: CiteDutyCreate, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<CiteDuty>>;
+    public createCiteDuty(citeDutyCreate?: CiteDutyCreate, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<CiteDuty>>;
+    public createCiteDuty(citeDutyCreate?: CiteDutyCreate, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -101,7 +105,7 @@ export class CiteDutyService extends BaseService {
         return this.httpClient.request<CiteDuty>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: citeDuty,
+                body: citeDutyCreate,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
@@ -408,16 +412,16 @@ export class CiteDutyService extends BaseService {
 
     /**
      * Updates a  CiteDuty
-     * Updates a CiteDuty with the attributes specified. The ID from the route MUST MATCH the ID contained in the citeDuty parameter &lt;para /&gt; Accessible only to a ContentDeveloper or an Administrator
+     * Updates a CiteDuty with the attributes specified. The CiteDuty stays where it is: its MSEL and template flag cannot be changed &lt;para /&gt; Accessible only to a ContentDeveloper or an Administrator
      * @param id The Id of the CiteDuty to update
-     * @param citeDuty The updated CiteDuty values
+     * @param citeDutyEdit The updated CiteDuty values
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public updateCiteDuty(id: string, citeDuty?: CiteDuty, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<CiteDuty>;
-    public updateCiteDuty(id: string, citeDuty?: CiteDuty, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<CiteDuty>>;
-    public updateCiteDuty(id: string, citeDuty?: CiteDuty, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<CiteDuty>>;
-    public updateCiteDuty(id: string, citeDuty?: CiteDuty, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public updateCiteDuty(id: string, citeDutyEdit?: CiteDutyEdit, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<CiteDuty>;
+    public updateCiteDuty(id: string, citeDutyEdit?: CiteDutyEdit, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<CiteDuty>>;
+    public updateCiteDuty(id: string, citeDutyEdit?: CiteDutyEdit, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<CiteDuty>>;
+    public updateCiteDuty(id: string, citeDutyEdit?: CiteDutyEdit, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (id === null || id === undefined) {
             throw new Error('Required parameter id was null or undefined when calling updateCiteDuty.');
         }
@@ -468,7 +472,7 @@ export class CiteDutyService extends BaseService {
         return this.httpClient.request<CiteDuty>('put', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: citeDuty,
+                body: citeDutyEdit,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,

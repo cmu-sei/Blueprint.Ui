@@ -83,13 +83,18 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   casterDirectoryError = '';
   private casterDirectoriesRequested = false;
   playerApplicationList: PlayerApplication[] = [];
+  // Pushing, Pulling and Deployed are set only by pushing and pulling integrations
   itemStatus: MselItemStatus[] = [
     MselItemStatus.Pending,
     MselItemStatus.Entered,
     MselItemStatus.Approved,
-    MselItemStatus.Deployed,
     MselItemStatus.Complete,
     MselItemStatus.Archived,
+  ];
+  private pipelineStatuses: MselItemStatus[] = [
+    MselItemStatus.Pushing,
+    MselItemStatus.Pulling,
+    MselItemStatus.Deployed,
   ];
   educationalLevels: string[] = ['Beginner', 'Intermediate', 'Advanced'];
   educationalUses: string[] = ['Assessment', 'Instruction', 'Professional Support'];
@@ -456,6 +461,15 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   canEditMsel(): boolean {
     return this.permissionDataService.hasPermission(SystemPermission.EditMsels) ||
       this.msel.hasRole(this.loggedInUserId, '').editor;
+  }
+
+  isPipelineStatus(): boolean {
+    return this.pipelineStatuses.includes(this.msel?.status);
+  }
+
+  // the current status is listed even when it is one the user cannot choose, so the field still shows it
+  statusOptions(): MselItemStatus[] {
+    return this.isPipelineStatus() ? [...this.itemStatus, this.msel.status] : this.itemStatus;
   }
 
   canManageMsel(): boolean {
