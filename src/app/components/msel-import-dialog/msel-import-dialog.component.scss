@@ -1,0 +1,87 @@
+// Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+// Released under a MIT (SEI)-style license. See LICENSE.md in the
+// project root for license information.
+
+.importing {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 0;
+}
+
+.msel-name {
+  font-weight: 600;
+  margin: 0 0 1rem 0;
+}
+
+.section {
+  margin-bottom: 1.25rem;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+}
+
+.count-list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem 1rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+
+  li {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+  }
+}
+
+.count-value {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--mat-sys-primary);
+}
+
+.count-label {
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.message-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+
+  li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding: 0.25rem 0;
+  }
+
+  mat-icon {
+    flex-shrink: 0;
+    color: var(--mat-sys-primary);
+  }
+}
+
+.failed {
+  .section-title,
+  .message-list li,
+  .message-list mat-icon {
+    color: var(--mat-sys-error);
+  }
+}
+
+.error-message {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  color: var(--mat-sys-error);
+}

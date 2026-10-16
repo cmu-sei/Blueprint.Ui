@@ -15,6 +15,7 @@ import { Sort } from '@angular/material/sort';
 import { DataValuePlus, IntegrationTarget } from 'src/app/data/scenario-event/scenario-event-data.service';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { EDITOR_CONFIG, VIEW_CONFIG } from 'src/app/utilities/editor-config';
+import { hasInvalidAddress } from 'src/app/utilities/ip-address';
 
 @Component({
   selector: 'app-scenario-event-edit-dialog',
@@ -202,8 +203,9 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
 
   hasBadData(): boolean {
     return (
-      this.data.scenarioEvent.scenarioEventType === this.eventType.Inject &&
-      this.getScenarioTypeDataFields().length === 0
+      (this.data.scenarioEvent.scenarioEventType === this.eventType.Inject &&
+        this.getScenarioTypeDataFields().length === 0) ||
+      hasInvalidAddress(this.data.dataFields, this.data.scenarioEvent.dataValues)
     );
   }
 

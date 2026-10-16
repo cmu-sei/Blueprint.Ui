@@ -125,6 +125,10 @@ model/moduleHandle.ts
 model/move.ts
 model/msel.ts
 model/mselCompetency.ts
+model/mselImportCounts.ts
+model/mselImportFailure.ts
+model/mselImportMessage.ts
+model/mselImportResult.ts
 model/mselIntegrationNames.ts
 model/mselItemStatus.ts
 model/mselPage.ts

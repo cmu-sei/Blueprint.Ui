@@ -1,0 +1,91 @@
+// Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+// Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
+
+import { describe, it, expect, vi } from 'vitest';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { screen } from '@testing-library/angular';
+import userEvent from '@testing-library/user-event';
+import { of } from 'rxjs';
+import { CrucibleDialogService } from '@cmusei/crucible-common';
+import { Msel, MselService } from 'src/app/generated/blueprint.api';
+import { MselPlus } from 'src/app/data/msel/msel-data.service';
+import { IntegrationStatusComponent } from './integration-status.component';
+import { ApiStub } from 'src/app/test-utils/api-stub';
+import { dialogRefStub } from 'src/app/test-utils/dialog-refs';
+import { renderComponent } from 'src/app/test-utils/render-component';
+
+function msel(integrationStatus: string): MselPlus {
+  return Object.assign(new MselPlus(), { id: 'msel-1', name: 'Exercise Alpha', integrationStatus });
+}
+
+async function renderStatus(integrationStatus: string) {
+  const mselApi = {
+    cancelIntegrations: vi.fn(() => of<unknown>(null)),
+    pullIntegrations: vi.fn(() => of<Msel>({ id: 'msel-1', name: 'Exercise Alpha' })),
+  } satisfies ApiStub<MselService>;
+  // The user confirms every dialog.
+  const confirm = vi.fn(() => dialogRefStub<unknown, boolean>(true).dialogRef);
+  const dialog = { confirm } satisfies Pick<CrucibleDialogService, 'confirm'>;
+  const rendered = await renderComponent(IntegrationStatusComponent, {
+    imports: [MatButtonModule, MatIconModule, MatProgressBarModule],
+    declarations: [IntegrationStatusComponent],
+    providers: [
+      { provide: MselService, useValue: mselApi },
+      { provide: CrucibleDialogService, useValue: dialog },
+    ],
+    inputs: { msel: msel(integrationStatus) },
+  });
+  let closed = 0;
+  rendered.fixture.componentInstance.closed.subscribe(() => closed++);
+  return { ...rendered, mselApi, confirm, closedCount: () => closed };
+}
+
+describe('IntegrationStatusComponent', () => {
+  /**
+   * Verifies: the component mounts with the default test providers and shows a push in progress with Cancel Push.
+   * Interacts with: getDefaultProviders (placeholders and stubs only).
+   * Data: status "Pushing to Gallery".
+   */
+  it('renders with the default test providers', async () => {
+    const { fixture } = await renderStatus('Pushing to Gallery');
+
+    expect(fixture.componentInstance).toBeInstanceOf(IntegrationStatusComponent);
+    expect(screen.getByRole('heading', { name: 'Processing integrations ...' })).toBeInTheDocument();
+    expect(screen.getByText('Pushing to Gallery ...')).toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: Cancel Push asks the API to cancel and shows that it is cancelling.
+   * Interacts with: MselService.cancelIntegrations (stub), real MselDataService.
+   * Data: status "Pushing to Gallery".
+   */
+  it('cancels a push', async () => {
+    const { mselApi } = await renderStatus('Pushing to Gallery');
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole('button', { name: 'Cancel Push' }));
+
+    expect(mselApi.cancelIntegrations).toHaveBeenCalledWith('msel-1');
+    expect(screen.getByText('Cancelling...')).toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: a failed push shows the error, and Pull Integrations removes the partial integrations after confirmation and closes.
+   * Interacts with: CrucibleDialogService.confirm (stub, confirms), MselService.pullIntegrations (stub), closed output.
+   * Data: status "ERROR: Gallery is unreachable".
+   */
+  it('pulls the partial integrations after a failure', async () => {
+    const { mselApi, confirm, closedCount } = await renderStatus('ERROR: Gallery is unreachable');
+    const user = userEvent.setup();
+
+    expect(screen.getByRole('heading', { name: 'Integration Failed' })).toBeInTheDocument();
+    expect(screen.getByText('Gallery is unreachable')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Pull Integrations' }));
+
+    expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Remove Integrations' }));
+    expect(mselApi.pullIntegrations).toHaveBeenCalledWith('msel-1');
+    expect(closedCount()).toBe(1);
+  });
+});
