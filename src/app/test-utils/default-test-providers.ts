@@ -67,10 +67,10 @@ import {
   XApiService,
 } from '../generated/blueprint.api';
 
-// 3. RouterQuery: not needed. main.ts imports AkitaNgRouterStoreModule, but
+// 3. RouterQuery: not needed. app.config.ts imports AkitaNgRouterStoreModule, but
 //    no code injects RouterQuery.
 
-// 4. BASE_PATH: not needed. Only main.ts provides it; no data or hub
+// 4. BASE_PATH: not needed. Only app.config.ts provides it; no data or hub
 //    service injects it.
 
 // 5. Every other common-library service the app injects, as a placeholder

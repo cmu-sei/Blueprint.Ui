@@ -184,7 +184,7 @@ describe('DataOptionDataService', () => {
 
     expect(TestBed.inject(DataOptionQuery).getValue().loading).toBe(true);
     // An empty error callback swallows the error; with no callback it escapes to
-    // ErrorService, the ErrorHandler main.ts provides, which shows it.
+    // ErrorService, the ErrorHandler app.config.ts provides, which shows it.
     expect(errors).toEqual(escapes ? [failure] : []);
   });
 
@@ -205,7 +205,7 @@ describe('DataOptionDataService', () => {
     await flush();
 
     // These methods subscribe with no error callback and set no loading flag,
-    // so the error escapes to ErrorService, the ErrorHandler main.ts
+    // so the error escapes to ErrorService, the ErrorHandler app.config.ts
     // provides, which shows it to the user. Not a defect on its own.
     expect(errors).toEqual([failure]);
   });
