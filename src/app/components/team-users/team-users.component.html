@@ -39,7 +39,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </ng-container>
 
       <ng-container matColumnDef="id">
-        <mat-header-cell *matHeaderCellDef />
+        <mat-header-cell *matHeaderCellDef>&nbsp;</mat-header-cell>
         <mat-cell *matCellDef="let element">
           <div>
             @if (!onAnotherTeam(element.id) && canEditMsel()) {
@@ -106,7 +106,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         </mat-cell>
       </ng-container>
       <ng-container matColumnDef="id">
-        <mat-header-cell *matHeaderCellDef />
+        <mat-header-cell *matHeaderCellDef>&nbsp;</mat-header-cell>
         <mat-cell *matCellDef="let element">
           <div>
             @if (canEditMsel()) {
