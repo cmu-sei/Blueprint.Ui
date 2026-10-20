@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, EventEmitter, Inject, Output } from '@angular/core';
+import { Component, EventEmitter, Output, inject } from '@angular/core';
 import { UntypedFormControl, FormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { CrucibleDialogComponent, CrucibleDialogContentDirective } from '@cmusei/crucible-common';
@@ -17,6 +17,8 @@ import { MatCheckbox } from '@angular/material/checkbox';
 })
 
 export class PlayerApplicationEditDialogComponent {
+  data = inject(MAT_DIALOG_DATA);
+
   @Output() editComplete = new EventEmitter<any>();
 
   public situationDateFormControl = new UntypedFormControl(
@@ -51,10 +53,6 @@ export class PlayerApplicationEditDialogComponent {
     'blueprintMselId',
     'theme'
   ];
-
-  constructor(
-    @Inject(MAT_DIALOG_DATA) public data: any
-  ) {}
 
   savePlayerApplication(which: string) {
     switch (which) {

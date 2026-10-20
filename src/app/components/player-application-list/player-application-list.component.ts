@@ -1,7 +1,7 @@
 // Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { PlayerApplication, Move, SystemPermission, Team } from 'src/app/generated/blueprint.api';
@@ -47,6 +47,18 @@ import { PlayerTeamAppOrderComponent } from '../player-team-app-order/player-tea
     imports: [MatIcon, MatMenu, MatMenuItem, MatExpansionPanel, MatExpansionPanelHeader, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatIconButton, MatMenuTrigger, MatCellDef, MatCell, MatSortHeader, MatTooltip, MatCheckbox, PlayerApplicationTeamsComponent, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, PlayerTeamAppOrderComponent]
 })
 export class PlayerApplicationListComponent implements OnDestroy, OnInit {
+  private mselQuery = inject(MselQuery);
+  private playerApplicationDataService = inject(PlayerApplicationDataService);
+  private playerApplicationQuery = inject(PlayerApplicationQuery);
+  private teamQuery = inject(TeamQuery);
+  private playerService = inject(PlayerService);
+  private playerApplicationTeamDataService = inject(PlayerApplicationTeamDataService);
+  dialog = inject(MatDialog);
+  dialogService = inject(CrucibleDialogService);
+  private permissionDataService = inject(PermissionDataService);
+  private settingsService = inject(ComnSettingsService);
+  private changeDetectorRef = inject(ChangeDetectorRef);
+
   @Input() loggedInUserId: string;
   // context menu
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
@@ -67,19 +79,7 @@ export class PlayerApplicationListComponent implements OnDestroy, OnInit {
   moveList: Move[] = [];
   private unsubscribe$ = new Subject();
 
-  constructor(
-    private mselQuery: MselQuery,
-    private playerApplicationDataService: PlayerApplicationDataService,
-    private playerApplicationQuery: PlayerApplicationQuery,
-    private teamQuery: TeamQuery,
-    private playerService: PlayerService,
-    private playerApplicationTeamDataService: PlayerApplicationTeamDataService,
-    public dialog: MatDialog,
-    public dialogService: CrucibleDialogService,
-    private permissionDataService: PermissionDataService,
-    private settingsService: ComnSettingsService,
-    private changeDetectorRef: ChangeDetectorRef
-  ) {
+  constructor() {
     // subscribe to playerApplications
     this.playerApplicationQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(playerApplications => {
       this.playerApplicationList = playerApplications;

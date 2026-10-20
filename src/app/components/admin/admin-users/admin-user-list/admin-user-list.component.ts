@@ -1,16 +1,7 @@
 // Copyright 2025 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
-import {
-  Component,
-  EventEmitter,
-  OnInit,
-  ViewChild,
-  Input,
-  Output,
-  OnChanges,
-  SimpleChanges,
-} from '@angular/core';
+import { Component, EventEmitter, OnInit, ViewChild, Input, Output, OnChanges, SimpleChanges, inject } from '@angular/core';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { MatSort, MatSortHeader } from '@angular/material/sort';
 import { MatPaginator } from '@angular/material/paginator';
@@ -41,6 +32,9 @@ export interface Action {
     imports: [MatIcon, MatFormField, MatInput, FormsModule, MatIconButton, MatSuffix, MatPaginator, MatTooltip, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatSortHeader, MatCellDef, MatCell, ClipboardModule, MatSelect, MatOption, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, MatCard, MatProgressSpinner, AsyncPipe]
 })
 export class AdminUserListComponent implements OnInit, OnChanges {
+  private confirmService = inject(CrucibleDialogService);
+  private roleDataService = inject(SystemRoleDataService);
+
   displayedColumns: string[] = ['id', 'name', 'role'];
   filterString = '';
   savedFilterString = '';
@@ -59,11 +53,6 @@ export class AdminUserListComponent implements OnInit, OnChanges {
   @Output() updateUser: EventEmitter<User> = new EventEmitter<User>();
   @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
   @ViewChild(MatSort, { static: true }) sort: MatSort;
-
-  constructor(
-    private confirmService: CrucibleDialogService,
-    private roleDataService: SystemRoleDataService
-  ) { }
 
   ngOnInit() {
     if (this.paginator) {

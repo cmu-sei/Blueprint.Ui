@@ -1,7 +1,7 @@
 // Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { UnitDataService } from 'src/app/data/unit/unit-data.service';
@@ -53,6 +53,19 @@ import { MatTooltip } from '@angular/material/tooltip';
     imports: [MatIcon, MatFormField, MatInput, FormsModule, MatIconButton, MatSuffix, MatPaginator, MatMenu, MatMenuItem, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatMenuTrigger, MatCellDef, MatCell, MatSortHeader, MatLabel, MatSelect, MatOption, MatTooltip, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow]
 })
 export class MselContributorsComponent implements OnDestroy, OnInit {
+  private unitDataService = inject(UnitDataService);
+  private unitQuery = inject(UnitQuery);
+  private userQuery = inject(UserQuery);
+  private mselDataService = inject(MselDataService);
+  private mselQuery = inject(MselQuery);
+  private mselUnitDataService = inject(MselUnitDataService);
+  private mselUnitQuery = inject(MselUnitQuery);
+  private userMselRoleDataService = inject(UserMselRoleDataService);
+  private userMselRoleQuery = inject(UserMselRoleQuery);
+  dialogService = inject(CrucibleDialogService);
+  private permissionDataService = inject(PermissionDataService);
+  private changeDetectorRef = inject(ChangeDetectorRef);
+
   @Input() loggedInUserId: string;
   // context menu
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
@@ -107,20 +120,7 @@ export class MselContributorsComponent implements OnDestroy, OnInit {
   private allUnits: Unit[] = [];
   private unsubscribe$ = new Subject();
 
-  constructor(
-    private unitDataService: UnitDataService,
-    private unitQuery: UnitQuery,
-    private userQuery: UserQuery,
-    private mselDataService: MselDataService,
-    private mselQuery: MselQuery,
-    private mselUnitDataService: MselUnitDataService,
-    private mselUnitQuery: MselUnitQuery,
-    private userMselRoleDataService: UserMselRoleDataService,
-    private userMselRoleQuery: UserMselRoleQuery,
-    public dialogService: CrucibleDialogService,
-    private permissionDataService: PermissionDataService,
-    private changeDetectorRef: ChangeDetectorRef
-  ) {
+  constructor() {
     // subscribe to the active MSEL
     (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
       if (msel && this.msel.id !== msel.id) {

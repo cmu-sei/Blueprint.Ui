@@ -1,7 +1,7 @@
 // Copyright 2026 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, ElementRef, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, Input, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTable, MatTableDataSource, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
@@ -41,6 +41,11 @@ import { MatRipple } from '@angular/material/core';
     imports: [MatIcon, MatFormField, MatInput, FormsModule, ReactiveFormsModule, MatIconButton, MatSuffix, MatPaginator, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatSortHeader, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, MatRipple]
 })
 export class AdminProficiencyScalesComponent implements OnInit, OnDestroy {
+  private proficiencyScaleService = inject(ProficiencyScaleService);
+  private proficiencyLevelService = inject(ProficiencyLevelService);
+  dialog = inject(MatDialog);
+  dialogService = inject(CrucibleDialogService);
+
   @Input() loggedInUserId: string;
   @Input() canEdit: boolean;
   scales: ProficiencyScale[] = [];
@@ -56,13 +61,6 @@ export class AdminProficiencyScalesComponent implements OnInit, OnDestroy {
   filterControl = new UntypedFormControl();
   filterString = '';
   private unsubscribe$ = new Subject();
-
-  constructor(
-    private proficiencyScaleService: ProficiencyScaleService,
-    private proficiencyLevelService: ProficiencyLevelService,
-    public dialog: MatDialog,
-    public dialogService: CrucibleDialogService
-  ) {}
 
   ngOnInit() {
     this.loadScales();

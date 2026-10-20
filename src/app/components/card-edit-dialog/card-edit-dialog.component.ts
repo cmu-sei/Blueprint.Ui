@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, EventEmitter, Inject, Output } from '@angular/core';
+import { Component, EventEmitter, Output, inject } from '@angular/core';
 import { UntypedFormControl, FormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { CrucibleDialogComponent, CrucibleDialogContentDirective } from '@cmusei/crucible-common';
@@ -18,6 +18,8 @@ import { MatOption } from '@angular/material/autocomplete';
 })
 
 export class CardEditDialogComponent {
+  data = inject(MAT_DIALOG_DATA);
+
   @Output() editComplete = new EventEmitter<any>();
 
   public situationDateFormControl = new UntypedFormControl(
@@ -32,10 +34,6 @@ export class CardEditDialogComponent {
     this.data.card.cardStopTime,
     []
   );
-
-  constructor(
-    @Inject(MAT_DIALOG_DATA) public data: any
-  ) {}
 
   saveCard(which: string) {
     switch (which) {

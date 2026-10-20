@@ -5,7 +5,7 @@
 */
 
 import { ScenarioEventStore } from './scenario-event.store';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Sort } from '@angular/material/sort';
 import {
   Card,
@@ -75,10 +75,9 @@ export interface ScenarioEventView {
   providedIn: 'root',
 })
 export class ScenarioEventDataService {
-  constructor(
-    private scenarioEventStore: ScenarioEventStore,
-    private scenarioEventService: ScenarioEventService
-  ) {}
+  private scenarioEventStore = inject(ScenarioEventStore);
+  private scenarioEventService = inject(ScenarioEventService);
+
 
   readonly baseSort: Sort[] = [
     { active: 'deltaSeconds', direction: 'asc' },

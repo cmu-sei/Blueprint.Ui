@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, EventEmitter, OnDestroy, Output } from '@angular/core';
+import { Component, EventEmitter, OnDestroy, Output, inject } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
 import { CompetencyFrameworkService } from 'src/app/generated/blueprint.api';
 import { EMPTY, Subscription, timer } from 'rxjs';
@@ -37,6 +37,9 @@ export interface ImportResult {
     imports: [CrucibleDialogComponent, CrucibleDialogContentDirective, MatButton, MatIcon, MatFormField, MatLabel, MatInput, FormsModule, MatProgressBar, MatProgressSpinner, CrucibleDialogActionsDirective]
 })
 export class AdminCompetencyFrameworkImportDialogComponent implements OnDestroy {
+  dialogRef = inject<MatDialogRef<AdminCompetencyFrameworkImportDialogComponent>>(MatDialogRef);
+  private competencyFrameworkService = inject(CompetencyFrameworkService);
+
   @Output() importComplete = new EventEmitter<ImportResult | null>();
   fileName = '';
   parseError = '';
@@ -60,11 +63,6 @@ export class AdminCompetencyFrameworkImportDialogComponent implements OnDestroy 
   importCounts = '';
   private importId = '';
   private progressSub: Subscription;
-
-  constructor(
-    public dialogRef: MatDialogRef<AdminCompetencyFrameworkImportDialogComponent>,
-    private competencyFrameworkService: CompetencyFrameworkService
-  ) {}
 
   onFileSelected(event: any) {
     const file = event.target.files[0];

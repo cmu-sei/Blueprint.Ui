@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, Inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Competency } from 'src/app/generated/blueprint.api';
 import { CrucibleDialogComponent, CrucibleDialogContentDirective, CrucibleDialogActionsDirective } from '@cmusei/crucible-common';
@@ -15,15 +15,17 @@ import { MatButton } from '@angular/material/button';
     imports: [CrucibleDialogComponent, CrucibleDialogContentDirective, CrucibleDialogActionsDirective, MatButton]
 })
 export class AdminCompetencyDetailDialogComponent {
+  dialogRef = inject<MatDialogRef<AdminCompetencyDetailDialogComponent>>(MatDialogRef);
+  data = inject<{
+    competency: Competency;
+    competencyTypeMap: Map<string, string>;
+}>(MAT_DIALOG_DATA);
+
   competencyTypeMap: Map<string, string>;
 
-  constructor(
-    public dialogRef: MatDialogRef<AdminCompetencyDetailDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: {
-      competency: Competency;
-      competencyTypeMap: Map<string, string>;
-    }
-  ) {
+  constructor() {
+    const data = this.data;
+
     this.competencyTypeMap = data.competencyTypeMap;
   }
 

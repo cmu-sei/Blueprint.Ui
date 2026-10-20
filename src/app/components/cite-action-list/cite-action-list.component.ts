@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, ElementRef, Input, OnDestroy, OnInit, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, ElementRef, Input, OnDestroy, OnInit, ViewChild, AfterViewInit, inject } from '@angular/core';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -39,6 +39,14 @@ import { MatOption } from '@angular/material/autocomplete';
     imports: [MatIcon, MatFormField, MatInput, FormsModule, ReactiveFormsModule, MatIconButton, MatSuffix, MatLabel, MatSelect, MatOption, MatPaginator, MatMenu, MatMenuItem, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatMenuTrigger, MatCellDef, MatCell, MatSortHeader, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow]
 })
 export class CiteActionListComponent implements OnInit, OnDestroy, AfterViewInit {
+  private mselQuery = inject(MselQuery);
+  private citeActionDataService = inject(CiteActionDataService);
+  private citeActionQuery = inject(CiteActionQuery);
+  private moveQuery = inject(MoveQuery);
+  private teamQuery = inject(TeamQuery);
+  dialog = inject(MatDialog);
+  dialogService = inject(CrucibleDialogService);
+
   @Input() loggedInUserId: string;
   @Input() canEdit: boolean;
   @Input() showTemplates: boolean;
@@ -67,15 +75,7 @@ export class CiteActionListComponent implements OnInit, OnDestroy, AfterViewInit
   @ViewChild('jsonInput') jsonInput: ElementRef<HTMLInputElement>;
   contextMenuPosition = { x: '0px', y: '0px' };
 
-  constructor(
-    private mselQuery: MselQuery,
-    private citeActionDataService: CiteActionDataService,
-    private citeActionQuery: CiteActionQuery,
-    private moveQuery: MoveQuery,
-    private teamQuery: TeamQuery,
-    public dialog: MatDialog,
-    public dialogService: CrucibleDialogService
-  ) {
+  constructor() {
     // subscribe to citeActions
     this.citeActionQuery
       .selectAll()

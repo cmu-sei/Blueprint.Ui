@@ -2,6 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { Injector, runInInjectionContext } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { firstValueFrom, of, throwError } from 'rxjs';
 import {
@@ -596,7 +597,10 @@ describe('ScenarioEventQuery', () => {
    */
   it('orders events by time then group', async () => {
     const store = new ScenarioEventStore();
-    const query = new ScenarioEventQuery(store);
+    const injector = Injector.create({
+      providers: [{ provide: ScenarioEventStore, useValue: store }],
+    });
+    const query = runInInjectionContext(injector, () => new ScenarioEventQuery());
     store.set([
       event({ id: 'late', deltaSeconds: 120 }),
       event({ id: 'mid-2', deltaSeconds: 60, groupOrder: 2 }),

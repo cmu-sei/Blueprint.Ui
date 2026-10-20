@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, EventEmitter, Inject, Output } from '@angular/core';
+import { Component, EventEmitter, Output, inject as inject_1 } from '@angular/core';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { DataValue } from 'src/app/generated/blueprint.api';
 import { hasInvalidAddress } from 'src/app/utilities/ip-address';
@@ -20,11 +20,9 @@ import { DataValueComponent } from '../data-value/data-value.component';
     imports: [CrucibleDialogComponent, CrucibleDialogContentDirective, MatFormField, MatLabel, MatInput, FormsModule, MatSelect, MatOption, DataValueComponent]
 })
 export class InjectEditDialogComponent {
-  @Output() editComplete = new EventEmitter<any>();
+  data = inject_1(MAT_DIALOG_DATA);
 
-  constructor(
-    @Inject(MAT_DIALOG_DATA) public data: any
-  ) {}
+  @Output() editComplete = new EventEmitter<any>();
 
   errorFree() {
     return this.data.inject.name && this.data.inject.description &&

@@ -1,7 +1,7 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, EventEmitter, Input, OnDestroy, Output, ViewChild, ViewChildren, QueryList } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, Output, ViewChild, ViewChildren, QueryList, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { MselInfoComponent } from '../msel-info/msel-info.component';
@@ -66,6 +66,36 @@ import { MselPlaybookComponent } from '../msel-playbook/msel-playbook.component'
     imports: [MatDrawerContainer, MatDrawer, MatIconButton, MatIcon, MatList, MatDivider, MatListItem, NgClass, MatDrawerContent, MselInfoComponent, MselContributorsComponent, MselTeamsComponent, DataFieldListComponent, OrganizationListComponent, MoveListComponent, PlayerApplicationListComponent, CardListComponent, CiteActionListComponent, CiteDutyListComponent, MselCompetenciesComponent, ScenarioEventListComponent, MselViewComponent, AssessorViewComponent, InvitationListComponent, MselPlaybookComponent, AsyncPipe]
 })
 export class MselComponent implements OnDestroy {
+  private activatedRoute = inject(ActivatedRoute);
+  private router = inject(Router);
+  private cardDataService = inject(CardDataService);
+  private cardTeamDataService = inject(CardTeamDataService);
+  private catalogDataService = inject(CatalogDataService);
+  private catalogUnitDataService = inject(CatalogUnitDataService);
+  private citeActionDataService = inject(CiteActionDataService);
+  private citeDutyDataService = inject(CiteDutyDataService);
+  private dataFieldDataService = inject(DataFieldDataService);
+  private dataOptionDataService = inject(DataOptionDataService);
+  private dataValueDataService = inject(DataValueDataService);
+  private invitationDataService = inject(InvitationDataService);
+  private moveDataService = inject(MoveDataService);
+  private mselDataService = inject(MselDataService);
+  private mselUnitDataService = inject(MselUnitDataService);
+  private mselQuery = inject(MselQuery);
+  private mselUnitQuery = inject(MselUnitQuery);
+  private organizationDataService = inject(OrganizationDataService);
+  private scenarioEventDataService = inject(ScenarioEventDataService);
+  private teamDataService = inject(TeamDataService);
+  private teamUserDataService = inject(TeamUserDataService);
+  private unitDataService = inject(UnitDataService);
+  private uiDataService = inject(UIDataService);
+  private userDataService = inject(UserDataService);
+  private userMselRoleDataService = inject(UserMselRoleDataService);
+  private userTeamRoleDataService = inject(UserTeamRoleDataService);
+  private authQuery = inject(ComnAuthQuery);
+  private dialogService = inject(CrucibleDialogService);
+  private xApiService = inject(XApiService);
+
   @Input() loggedInUserId: string;
   @Input() canEditMsel: boolean;
   @Input() canAccessAdminSection: boolean;
@@ -120,37 +150,7 @@ export class MselComponent implements OnDestroy {
   sideNavCollapsed = false;
   theme$: Observable<Theme>;
 
-  constructor(
-    private activatedRoute: ActivatedRoute,
-    private router: Router,
-    private cardDataService: CardDataService,
-    private cardTeamDataService: CardTeamDataService,
-    private catalogDataService: CatalogDataService,
-    private catalogUnitDataService: CatalogUnitDataService,
-    private citeActionDataService: CiteActionDataService,
-    private citeDutyDataService: CiteDutyDataService,
-    private dataFieldDataService: DataFieldDataService,
-    private dataOptionDataService: DataOptionDataService,
-    private dataValueDataService: DataValueDataService,
-    private invitationDataService: InvitationDataService,
-    private moveDataService: MoveDataService,
-    private mselDataService: MselDataService,
-    private mselUnitDataService: MselUnitDataService,
-    private mselQuery: MselQuery,
-    private mselUnitQuery: MselUnitQuery,
-    private organizationDataService: OrganizationDataService,
-    private scenarioEventDataService: ScenarioEventDataService,
-    private teamDataService: TeamDataService,
-    private teamUserDataService: TeamUserDataService,
-    private unitDataService: UnitDataService,
-    private uiDataService: UIDataService,
-    private userDataService: UserDataService,
-    private userMselRoleDataService: UserMselRoleDataService,
-    private userTeamRoleDataService: UserTeamRoleDataService,
-    private authQuery: ComnAuthQuery,
-    private dialogService: CrucibleDialogService,
-    private xApiService: XApiService
-  ) {
+  constructor() {
     this.theme$ = this.authQuery.userTheme$;
     // subscribe to route changes
     this.activatedRoute.queryParamMap

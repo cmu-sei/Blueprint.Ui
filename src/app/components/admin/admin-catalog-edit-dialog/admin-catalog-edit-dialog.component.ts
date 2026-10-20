@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, EventEmitter, Inject, Output } from '@angular/core';
+import { Component, EventEmitter, Output, inject } from '@angular/core';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { DataFieldDataService } from 'src/app/data/data-field/data-field-data.service';
 import { DataFieldQuery } from 'src/app/data/data-field/data-field.query';
@@ -22,16 +22,16 @@ import { MatCheckbox } from '@angular/material/checkbox';
     imports: [CrucibleDialogComponent, CrucibleDialogContentDirective, MatFormField, MatLabel, MatInput, FormsModule, MatSelect, MatOption, MatCheckbox]
 })
 export class AdminCatalogEditDialogComponent {
+  private dataFieldDataService = inject(DataFieldDataService);
+  private dataFieldQuery = inject(DataFieldQuery);
+  data = inject(MAT_DIALOG_DATA);
+
   @Output() editComplete = new EventEmitter<any>();
   dataFieldList: DataField[] = [];
   private dataFieldsLoaded = false;
   private unsubscribe$ = new Subject();
 
-  constructor(
-    private dataFieldDataService: DataFieldDataService,
-    private dataFieldQuery: DataFieldQuery,
-    @Inject(MAT_DIALOG_DATA) public data: any
-  ) {
+  constructor() {
     this.dataFieldQuery
       .selectAll()
       .pipe(takeUntil(this.unsubscribe$))

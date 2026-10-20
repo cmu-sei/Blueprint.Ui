@@ -1,7 +1,7 @@
 // Copyright 2023 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 import { DOCUMENT } from '@angular/common';
-import { Component, Inject, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -21,18 +21,18 @@ import { FormsModule } from '@angular/forms';
     imports: [AngularEditorModule, FormsModule]
 })
 export class MselPageComponent implements OnDestroy {
+  private activatedRoute = inject(ActivatedRoute);
+  private mselPageDataService = inject(MselPageDataService);
+  private mselPageQuery = inject(MselPageQuery);
+  private settingsService = inject(ComnSettingsService);
+  private _document = inject<HTMLDocument>(DOCUMENT);
+
   safeContent: SafeHtml = '';
   mselPage: MselPage = {} as MselPage;
   private unsubscribe$ = new Subject();
   viewConfig = VIEW_CONFIG;
 
-  constructor(
-    private activatedRoute: ActivatedRoute,
-    private mselPageDataService: MselPageDataService,
-    private mselPageQuery: MselPageQuery,
-    private settingsService: ComnSettingsService,
-    @Inject(DOCUMENT) private _document: HTMLDocument
-  ) {
+  constructor() {
     this._document.getElementById('appTitle').innerHTML = this.settingsService.settings.AppTitle + ' MSEL Page';
     // subscribe to route changes
     this.activatedRoute.paramMap.pipe(takeUntil(this.unsubscribe$)).subscribe(params => {

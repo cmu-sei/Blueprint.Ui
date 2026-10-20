@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, Inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { DataOption, DataOptionService } from 'src/app/generated/blueprint.api';
 import { v4 as uuidv4 } from 'uuid';
@@ -31,21 +31,19 @@ export interface ImportPreviewItem {
     imports: [CrucibleDialogComponent, CrucibleDialogContentDirective, MatButton, MatIcon, MatError, MatProgressSpinner, MatCheckbox, FormsModule, MatTooltip, CrucibleDialogActionsDirective]
 })
 export class DataOptionImportDialogComponent {
+  dialogRef = inject<MatDialogRef<DataOptionImportDialogComponent>>(MatDialogRef);
+  data = inject<{
+    dataFieldId: string;
+    existingOptions: DataOption[];
+    instructions?: string;
+    showDescription?: boolean;
+}>(MAT_DIALOG_DATA);
+  private dataOptionService = inject(DataOptionService);
+
   previewItems: ImportPreviewItem[] = [];
   parseError: string = '';
   isProcessing = false;
   fileName = '';
-
-  constructor(
-    public dialogRef: MatDialogRef<DataOptionImportDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: {
-      dataFieldId: string;
-      existingOptions: DataOption[];
-      instructions?: string;
-      showDescription?: boolean;
-    },
-    private dataOptionService: DataOptionService
-  ) {}
 
   get hasDescription(): boolean {
     return this.data.showDescription === true;

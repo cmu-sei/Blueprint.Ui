@@ -1,7 +1,7 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, Input, OnDestroy, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, Input, OnDestroy, ViewChild, AfterViewInit, inject } from '@angular/core';
 import { UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatTableDataSource, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
@@ -32,6 +32,12 @@ import { TimezoneAbbrPipe } from '../../utilities/timezone-abbr';
     imports: [MatIcon, MatFormField, MatInput, FormsModule, ReactiveFormsModule, MatIconButton, MatSuffix, MatPaginator, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatSortHeader, DurationViewComponent, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, DatePipe, TimezoneAbbrPipe]
 })
 export class MoveListComponent implements OnDestroy, AfterViewInit {
+  private mselQuery = inject(MselQuery);
+  private moveDataService = inject(MoveDataService);
+  private moveQuery = inject(MoveQuery);
+  dialog = inject(MatDialog);
+  dialogService = inject(CrucibleDialogService);
+
   @Input() loggedInUserId: string;
   @Input() canEditMsel: boolean;
   msel = new MselPlus();
@@ -56,13 +62,7 @@ export class MoveListComponent implements OnDestroy, AfterViewInit {
   @ViewChild(MatPaginator) paginator: MatPaginator;
   contextMenuPosition = { x: '0px', y: '0px' };
 
-  constructor(
-    private mselQuery: MselQuery,
-    private moveDataService: MoveDataService,
-    private moveQuery: MoveQuery,
-    public dialog: MatDialog,
-    public dialogService: CrucibleDialogService
-  ) {
+  constructor() {
     // subscribe to move changes
     this.moveQuery
       .selectAll()

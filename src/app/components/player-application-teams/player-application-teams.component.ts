@@ -2,17 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import {
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-  OnChanges,
-  SimpleChanges,
-  Input,
-  ElementRef,
-  ViewChild,
-} from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, OnChanges, SimpleChanges, Input, ElementRef, ViewChild, inject } from '@angular/core';
 import { PageEvent, MatPaginator } from '@angular/material/paginator';
 import { MatSort, MatSortable } from '@angular/material/sort';
 import { MatTableDataSource, MatTable, MatColumnDef, MatCellDef, MatCell, MatRowDef, MatRow } from '@angular/material/table';
@@ -38,6 +28,11 @@ import { MatProgressSpinner } from '@angular/material/progress-spinner';
 })
 
 export class PlayerApplicationTeamsComponent implements OnDestroy, OnInit, OnChanges {
+  private playerApplicationTeamDataService = inject(PlayerApplicationTeamDataService);
+  private mselQuery = inject(MselQuery);
+  private permissionDataService = inject(PermissionDataService);
+  private changeDetectorRef = inject(ChangeDetectorRef);
+
   @Input() loggedInUserId: string;
   @Input() playerApplicationId: string;
   @Input() mselTeamList: Team[] = [];
@@ -57,12 +52,7 @@ export class PlayerApplicationTeamsComponent implements OnDestroy, OnInit, OnCha
   pageEvent: PageEvent;
   private unsubscribe$ = new Subject();
 
-  constructor(
-    private playerApplicationTeamDataService: PlayerApplicationTeamDataService,
-    private mselQuery: MselQuery,
-    private permissionDataService: PermissionDataService,
-    private changeDetectorRef: ChangeDetectorRef
-  ) {
+  constructor() {
     // Subscribe to the active MSEL
     (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
       if (msel) {

@@ -40,7 +40,7 @@ import { MselPlus } from 'src/app/data/msel/msel-data.service';
 import { DataValueQuery } from 'src/app/data/data-value/data-value.query';
 import { ScenarioEventQuery } from 'src/app/data/scenario-event/scenario-event.query';
 import { Sort } from '@angular/material/sort';
-import { Component, Input, OnDestroy } from '@angular/core';
+import { Component, Input, OnDestroy, inject } from '@angular/core';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
 import { CardQuery } from 'src/app/data/card/card.query';
 import { CardDataService } from 'src/app/data/card/card-data.service';
@@ -57,6 +57,24 @@ import { DatePipe } from '@angular/common';
     imports: [MatPaginator, MatIconButton, MatIcon, DurationViewComponent, DatePipe]
 })
 export class MselPlaybookComponent implements OnDestroy {
+  private settingsService = inject(ComnSettingsService);
+  private moveDataService = inject(MoveDataService);
+  private organizationDataService = inject(OrganizationDataService);
+  private mselDataService = inject(MselDataService);
+  private teamDataService = inject(TeamDataService);
+  private dataFieldDataService = inject(DataFieldDataService);
+  private dataValueDataService = inject(DataValueDataService);
+  private scenarioEventDataService = inject(ScenarioEventDataService);
+  private mselPageDataService = inject(MselPageDataService);
+  private mselQuery = inject(MselQuery);
+  private dataFieldQuery = inject(DataFieldQuery);
+  private moveQuery = inject(MoveQuery);
+  private dataValueQuery = inject(DataValueQuery);
+  private scenarioEventQuery = inject(ScenarioEventQuery);
+  private cardQuery = inject(CardQuery);
+  private mselPageQuery = inject(MselPageQuery);
+  private activatedRoute = inject(ActivatedRoute);
+
   @Input() userTheme: Theme;
   @Input() canEditMsel: boolean;
   @Input() loggedInUserId: string;
@@ -105,25 +123,7 @@ export class MselPlaybookComponent implements OnDestroy {
     ? this.settingsService.settings.LightThemeTint
     : 0.4;
 
-  constructor(
-    private settingsService: ComnSettingsService,
-    private moveDataService: MoveDataService,
-    private organizationDataService: OrganizationDataService,
-    private mselDataService: MselDataService,
-    private teamDataService: TeamDataService,
-    private dataFieldDataService: DataFieldDataService,
-    private dataValueDataService: DataValueDataService,
-    private scenarioEventDataService: ScenarioEventDataService,
-    private mselPageDataService: MselPageDataService,
-    private mselQuery: MselQuery,
-    private dataFieldQuery: DataFieldQuery,
-    private moveQuery: MoveQuery,
-    private dataValueQuery: DataValueQuery,
-    private scenarioEventQuery: ScenarioEventQuery,
-    private cardQuery: CardQuery,
-    private mselPageQuery: MselPageQuery,
-    private activatedRoute: ActivatedRoute
-  ) {
+  constructor() {
     // Most data is loaded by parent component, but we need to load msel pages
     this.activatedRoute.queryParamMap
       .pipe(takeUntil(this.unsubscribe$))

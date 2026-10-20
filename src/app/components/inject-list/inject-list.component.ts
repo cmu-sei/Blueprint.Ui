@@ -1,15 +1,7 @@
 // Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import {
-  Component,
-  EventEmitter,
-  Input,
-  Output,
-  OnDestroy,
-  OnInit,
-  ViewChild,
-} from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnDestroy, OnInit, ViewChild, inject as inject_1 } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { MatTableDataSource, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
 import {
@@ -68,6 +60,20 @@ import { DataValueComponent } from '../data-value/data-value.component';
     imports: [MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, NgClass, MatIconButton, MatMenuTrigger, MatIcon, MatMenu, MatMenuItem, MatCellDef, MatCell, MatCheckbox, DataValueComponent, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow]
 })
 export class InjectListComponent implements OnDestroy, OnInit {
+  private catalogQuery = inject_1(CatalogQuery);
+  private catalogInjectDataService = inject_1(CatalogInjectDataService);
+  private catalogInjectQuery = inject_1(CatalogInjectQuery);
+  private injectService = inject_1(InjectService);
+  private injectmDataService = inject_1(InjectmDataService);
+  private injectmQuery = inject_1(InjectmQuery);
+  dialog = inject_1(MatDialog);
+  dialogService = inject_1(CrucibleDialogService);
+  private injectTypeQuery = inject_1(InjectTypeQuery);
+  private dataFieldDataService = inject_1(DataFieldDataService);
+  private dataFieldQuery = inject_1(DataFieldQuery);
+  private unitQuery = inject_1(UnitQuery);
+  private userQuery = inject_1(UserQuery);
+
   @Input() loggedInUserId: string;
   @Input() canEdit: boolean;
   @Input() isEditMode: boolean;
@@ -98,21 +104,7 @@ export class InjectListComponent implements OnDestroy, OnInit {
   userList = [];
   catalogList: Catalog[] = [];
 
-  constructor(
-    private catalogQuery: CatalogQuery,
-    private catalogInjectDataService: CatalogInjectDataService,
-    private catalogInjectQuery: CatalogInjectQuery,
-    private injectService: InjectService,
-    private injectmDataService: InjectmDataService,
-    private injectmQuery: InjectmQuery,
-    public dialog: MatDialog,
-    public dialogService: CrucibleDialogService,
-    private injectTypeQuery: InjectTypeQuery,
-    private dataFieldDataService: DataFieldDataService,
-    private dataFieldQuery: DataFieldQuery,
-    private unitQuery: UnitQuery,
-    private userQuery: UserQuery
-  ) {
+  constructor() {
     // subscribe to injects
     this.injectmQuery
       .selectAll()

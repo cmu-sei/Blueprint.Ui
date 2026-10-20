@@ -1,7 +1,7 @@
 // Copyright 2025 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { MatTableDataSource, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
 import { MatCheckboxChange, MatCheckbox } from '@angular/material/checkbox';
 import { Subject } from 'rxjs';
@@ -46,6 +46,10 @@ import { AsyncPipe } from '@angular/common';
     ],
 })
 export class AdminRolesComponent implements OnInit, OnDestroy {
+  private roleDataService = inject(SystemRoleDataService);
+  private permissionDataService = inject(PermissionDataService);
+  private dialogService = inject(CrucibleDialogService);
+
   private unsubscribe$ = new Subject<void>();
 
   canEdit = false;
@@ -107,12 +111,6 @@ export class AdminRolesComponent implements OnInit, OnDestroy {
       return ['permissions', ...columnNames];
     })
   );
-
-  constructor(
-    private roleDataService: SystemRoleDataService,
-    private permissionDataService: PermissionDataService,
-    private dialogService: CrucibleDialogService
-  ) {}
 
   ngOnInit(): void {
     this.canEdit = this.permissionDataService.hasPermission(

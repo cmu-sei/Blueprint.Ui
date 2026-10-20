@@ -1,7 +1,7 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { TeamDataService } from 'src/app/data/team/team-data.service';
@@ -65,6 +65,20 @@ interface TeamVariableWriter {
     imports: [MatIcon, MatFormField, MatInput, FormsModule, MatIconButton, MatSuffix, MatPaginator, MatMenu, MatMenuItem, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatMenuTrigger, MatCellDef, MatCell, MatSortHeader, MatTooltip, MatCheckbox, TeamUsersComponent, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow]
 })
 export class MselTeamsComponent implements OnDestroy, OnInit {
+  private teamQuery = inject(TeamQuery);
+  private teamDataService = inject(TeamDataService);
+  private userQuery = inject(UserQuery);
+  private mselDataService = inject(MselDataService);
+  private mselQuery = inject(MselQuery);
+  private citeService = inject(CiteService);
+  private casterService = inject(CasterService);
+  private unitDataService = inject(UnitDataService);
+  private unitQuery = inject(UnitQuery);
+  private dialog = inject(MatDialog);
+  dialogService = inject(CrucibleDialogService);
+  private permissionDataService = inject(PermissionDataService);
+  private changeDetectorRef = inject(ChangeDetectorRef);
+
   @Input() loggedInUserId: string;
   @Input() teamTypeList: TeamType[];
   // context menu
@@ -104,21 +118,7 @@ export class MselTeamsComponent implements OnDestroy, OnInit {
   private mselTeams: Team[] = [];
   private unsubscribe$ = new Subject();
 
-  constructor(
-    private teamQuery: TeamQuery,
-    private teamDataService: TeamDataService,
-    private userQuery: UserQuery,
-    private mselDataService: MselDataService,
-    private mselQuery: MselQuery,
-    private citeService: CiteService,
-    private casterService: CasterService,
-    private unitDataService: UnitDataService,
-    private unitQuery: UnitQuery,
-    private dialog: MatDialog,
-    public dialogService: CrucibleDialogService,
-    private permissionDataService: PermissionDataService,
-    private changeDetectorRef: ChangeDetectorRef
-  ) {
+  constructor() {
     // subscribe to the active MSEL
     (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
       if (msel && this.msel.id !== msel.id) {

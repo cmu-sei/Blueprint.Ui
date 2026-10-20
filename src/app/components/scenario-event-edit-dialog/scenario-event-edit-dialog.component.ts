@@ -1,7 +1,7 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, EventEmitter, Inject, OnDestroy, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, OnDestroy, OnInit, Output, inject } from '@angular/core';
 import { Subject } from 'rxjs';
 import {
   DataField,
@@ -33,6 +33,8 @@ import { DataValueComponent } from '../data-value/data-value.component';
     imports: [CrucibleDialogComponent, CrucibleDialogContentDirective, MatFormField, MatLabel, MatSelect, FormsModule, MatOption, MatTabGroup, MatTab, SteamfitterTaskComponent, DurationEditComponent, DataValueComponent, MatInput]
 })
 export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
+  data = inject(MAT_DIALOG_DATA);
+
   @Output() editComplete = new EventEmitter<any>();
   sort: Sort = { active: '', direction: '' };
   sortedScenarioEvents: ScenarioEvent[] = [];
@@ -73,10 +75,6 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
   selectedTabName = '';
   currentFilterBy = 'all';
   integrationTarget = IntegrationTarget;
-
-  constructor(
-    @Inject(MAT_DIALOG_DATA) public data: any
-  ) {}
 
   ngOnInit() {
     if (!this.data.isNew && this.showDefaultTab()) {

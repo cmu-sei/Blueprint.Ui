@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, ElementRef, Input, OnDestroy, ViewChild } from '@angular/core';
+import { Component, ElementRef, Input, OnDestroy, ViewChild, inject } from '@angular/core';
 import { MatPaginator } from '@angular/material/paginator';
 import { Sort, MatSort, MatSortHeader } from '@angular/material/sort';
 import { MatTable, MatTableDataSource, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
@@ -41,6 +41,13 @@ import { MatProgressSpinner } from '@angular/material/progress-spinner';
     imports: [MatIcon, MatFormField, MatInput, FormsModule, MatIconButton, MatSuffix, MatPaginator, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatSortHeader, AdminUnitUsersComponent, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, MatCard, MatProgressSpinner]
 })
 export class AdminUnitsComponent implements OnDestroy {
+  private settingsService = inject(ComnSettingsService);
+  private dialog = inject(MatDialog);
+  dialogService = inject(CrucibleDialogService);
+  private unitDataService = inject(UnitDataService);
+  private unitQuery = inject(UnitQuery);
+  private userQuery = inject(UserQuery);
+
   @Input() canManage: boolean;
   @ViewChild('unitTable', { static: false }) unitTable: MatTable<any>;
   @ViewChild('jsonInput') jsonInput: ElementRef<HTMLInputElement>;
@@ -63,14 +70,7 @@ export class AdminUnitsComponent implements OnDestroy {
   isExpansionDetailRow = (i: number, row: Object) => (row as Unit).id === this.expandedElementId;
   private unsubscribe$ = new Subject();
 
-  constructor(
-    private settingsService: ComnSettingsService,
-    private dialog: MatDialog,
-    public dialogService: CrucibleDialogService,
-    private unitDataService: UnitDataService,
-    private unitQuery: UnitQuery,
-    private userQuery: UserQuery
-  ) {
+  constructor() {
     // subscribe to all units
     this.unitQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(units => {
       this.allUnits = units;

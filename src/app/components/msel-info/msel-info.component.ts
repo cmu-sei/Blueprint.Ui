@@ -1,7 +1,7 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { ChangeDetectorRef, Component, EventEmitter, HostListener, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, HostListener, Input, OnDestroy, OnInit, Output, ViewChild, inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -76,6 +76,33 @@ import { TimezoneAbbrPipe } from '../../utilities/timezone-abbr';
     imports: [IntegrationStatusComponent, MatTabGroup, MatTab, MatIconButton, MatIcon, MatLabel, MatMenuTrigger, MatMenu, MatMenuItem, MatFormField, MatInput, FormsModule, MatError, MatHint, MatCheckbox, NgxMatDatepickerInput, MatDatepickerToggle, MatSuffix, NgxMatDatetimepicker, NgxMatDatepickerActions, MatButton, NgxMatDatepickerApply, NgxMatDatepickerCancel, DurationEditComponent, MatSelect, MatOption, ClipboardModule, MatExpansionPanel, MatExpansionPanelHeader, MatExpansionPanelTitle, MatTooltip, AngularEditorModule, MatTabLabel, CardEditDialogComponent, DatePipe, TimezoneAbbrPipe]
 })
 export class MselInfoComponent implements OnDestroy, OnInit {
+  dialogService = inject(CrucibleDialogService);
+  private teamQuery = inject(TeamQuery);
+  private userQuery = inject(UserQuery);
+  private userDataService = inject(UserDataService);
+  private dataFieldQuery = inject(DataFieldQuery);
+  private mselDataService = inject(MselDataService);
+  private mselService = inject(MselService);
+  private mselQuery = inject(MselQuery);
+  private citeService = inject(CiteService);
+  private playerService = inject(PlayerService);
+  private casterService = inject(CasterService);
+  private playerApplicationDataService = inject(PlayerApplicationDataService);
+  private playerApplicationQuery = inject(PlayerApplicationQuery);
+  private mselPageDataService = inject(MselPageDataService);
+  private mselPageQuery = inject(MselPageQuery);
+  private mselUnitQuery = inject(MselUnitQuery);
+  private mselCompetencyDataService = inject(MselCompetencyDataService);
+  private mselCompetencyQuery = inject(MselCompetencyQuery);
+  private competencyFrameworkQuery = inject(CompetencyFrameworkQuery);
+  private competencyFrameworkDataService = inject(CompetencyFrameworkDataService);
+  private dialog = inject(MatDialog);
+  private permissionDataService = inject(PermissionDataService);
+  private changeDetectorRef = inject(ChangeDetectorRef);
+  private activatedRoute = inject(ActivatedRoute);
+  private settingsService = inject(ComnSettingsService);
+  private scenarioEventQuery = inject(ScenarioEventQuery);
+
   @Input() loggedInUserId: string;
   @Output() deleteThisMsel = new EventEmitter<string>();
   msel = new MselPlus();
@@ -153,34 +180,7 @@ export class MselInfoComponent implements OnDestroy, OnInit {
       ? ''
       : integrationStatus;
   }
-  constructor(
-    public dialogService: CrucibleDialogService,
-    private teamQuery: TeamQuery,
-    private userQuery: UserQuery,
-    private userDataService: UserDataService,
-    private dataFieldQuery: DataFieldQuery,
-    private mselDataService: MselDataService,
-    private mselService: MselService,
-    private mselQuery: MselQuery,
-    private citeService: CiteService,
-    private playerService: PlayerService,
-    private casterService: CasterService,
-    private playerApplicationDataService: PlayerApplicationDataService,
-    private playerApplicationQuery: PlayerApplicationQuery,
-    private mselPageDataService: MselPageDataService,
-    private mselPageQuery: MselPageQuery,
-    private mselUnitQuery: MselUnitQuery,
-    private mselCompetencyDataService: MselCompetencyDataService,
-    private mselCompetencyQuery: MselCompetencyQuery,
-    private competencyFrameworkQuery: CompetencyFrameworkQuery,
-    private competencyFrameworkDataService: CompetencyFrameworkDataService,
-    private dialog: MatDialog,
-    private permissionDataService: PermissionDataService,
-    private changeDetectorRef: ChangeDetectorRef,
-    private activatedRoute: ActivatedRoute,
-    private settingsService: ComnSettingsService,
-    private scenarioEventQuery: ScenarioEventQuery
-  ) {
+  constructor() {
     // subscribe to the active MSEL
     (this.mselQuery.selectActive() as Observable<MselPlus>)
       .pipe(takeUntil(this.unsubscribe$))

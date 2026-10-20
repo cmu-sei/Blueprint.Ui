@@ -1,7 +1,7 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { ChangeDetectorRef, Component, ElementRef, Input, OnDestroy, OnInit, ViewChild, AfterViewInit } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, Input, OnDestroy, OnInit, ViewChild, AfterViewInit, inject } from '@angular/core';
 import { UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -51,6 +51,19 @@ import { MatCheckbox } from '@angular/material/checkbox';
     imports: [MatIcon, MatFormField, MatInput, FormsModule, ReactiveFormsModule, MatIconButton, MatSuffix, MatLabel, MatSelect, MatOption, MatPaginator, MatTable, MatSort, CdkDropList, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, CdkDragHandle, CdkDrag, MatMenuTrigger, MatMenu, MatMenuItem, MatSortHeader, MatCheckbox, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow]
 })
 export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit {
+  private mselQuery = inject(MselQuery);
+  private dataFieldDataService = inject(DataFieldDataService);
+  private dataFieldQuery = inject(DataFieldQuery);
+  private dataFieldTemplateQuery = inject(DataFieldTemplateQuery);
+  private injectTypeDataService = inject(InjectTypeDataService);
+  private injectTypeQuery = inject(InjectTypeQuery);
+  private mselDataService = inject(MselDataService);
+  dialog = inject(MatDialog);
+  dialogService = inject(CrucibleDialogService);
+  private permissionDataService = inject(PermissionDataService);
+  private uiDataService = inject(UIDataService);
+  private changeDetectorRef = inject(ChangeDetectorRef);
+
   @Input() loggedInUserId: string;
   @Input() showTemplates: boolean;
   @Input() userTheme: Theme;
@@ -102,20 +115,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
   @ViewChild('jsonInput') jsonInput: ElementRef<HTMLInputElement>;
   contextMenuPosition = { x: '0px', y: '0px' };
 
-  constructor(
-    private mselQuery: MselQuery,
-    private dataFieldDataService: DataFieldDataService,
-    private dataFieldQuery: DataFieldQuery,
-    private dataFieldTemplateQuery: DataFieldTemplateQuery,
-    private injectTypeDataService: InjectTypeDataService,
-    private injectTypeQuery: InjectTypeQuery,
-    private mselDataService: MselDataService,
-    public dialog: MatDialog,
-    public dialogService: CrucibleDialogService,
-    private permissionDataService: PermissionDataService,
-    private uiDataService: UIDataService,
-    private changeDetectorRef: ChangeDetectorRef
-  ) {
+  constructor() {
     this.msel.id = null;
     // subscribe to filter string changes
     this.filterControl.valueChanges

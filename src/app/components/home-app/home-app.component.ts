@@ -1,7 +1,7 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { MatSidenav } from '@angular/material/sidenav';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -48,6 +48,20 @@ export enum Section {
     imports: [TopbarComponent, MatIconButton, MatIcon, MselListComponent, MselComponent, MatProgressBar, AsyncPipe]
 })
 export class HomeAppComponent implements OnDestroy, OnInit {
+  private router = inject(Router);
+  private userDataService = inject(UserDataService);
+  private currentUserQuery = inject(CurrentUserQuery);
+  private permissionDataService = inject(PermissionDataService);
+  private settingsService = inject(ComnSettingsService);
+  private authQuery = inject(ComnAuthQuery);
+  private authService = inject(ComnAuthService);
+  private mselDataService = inject(MselDataService);
+  private mselQuery = inject(MselQuery);
+  private signalRService = inject(SignalRService);
+  private healthCheckService = inject(HealthCheckService);
+  private titleService = inject(Title);
+  private uiDataService = inject(UIDataService);
+
   @ViewChild('sidenav') sidenav: MatSidenav;
   apiIsSick = false;
   apiMessage = 'The API web service is not responding.';
@@ -76,22 +90,9 @@ export class HomeAppComponent implements OnDestroy, OnInit {
   readonly SystemPermission = SystemPermission;
   private mselWasActive = false;
 
-  constructor(
-    activatedRoute: ActivatedRoute,
-    private router: Router,
-    private userDataService: UserDataService,
-    private currentUserQuery: CurrentUserQuery,
-    private permissionDataService: PermissionDataService,
-    private settingsService: ComnSettingsService,
-    private authQuery: ComnAuthQuery,
-    private authService: ComnAuthService,
-    private mselDataService: MselDataService,
-    private mselQuery: MselQuery,
-    private signalRService: SignalRService,
-    private healthCheckService: HealthCheckService,
-    private titleService: Title,
-    private uiDataService: UIDataService
-  ) {
+  constructor() {
+    const activatedRoute = inject(ActivatedRoute);
+
     this.healthCheck();
     this.appTitle =
       this.settingsService.settings.AppTitle || 'Set AppTitle in Settings';

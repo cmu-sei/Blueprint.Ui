@@ -3,7 +3,7 @@
 
 import { CatalogStore } from './catalog.store';
 import { CatalogQuery } from './catalog.query';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { PageEvent } from '@angular/material/paginator';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -21,6 +21,14 @@ import { InjectmDataService } from '../injectm/injectm-data.service';
   providedIn: 'root',
 })
 export class CatalogDataService {
+  private catalogStore = inject(CatalogStore);
+  private catalogQuery = inject(CatalogQuery);
+  private catalogService = inject(CatalogService);
+  private catalogInjectService = inject(CatalogInjectService);
+  private injectmDataService = inject(InjectmDataService);
+  private router = inject(Router);
+  private activatedRoute = inject(ActivatedRoute);
+
   private _requestedCatalogId: string;
   private _requestedCatalogId$ = this.activatedRoute.queryParamMap.pipe(
     map((params) => params.get('catalogId') || '')
@@ -36,15 +44,9 @@ export class CatalogDataService {
   private pageIndex: Observable<number>;
   public uploadProgress = new Subject<number>();
 
-  constructor(
-    private catalogStore: CatalogStore,
-    private catalogQuery: CatalogQuery,
-    private catalogService: CatalogService,
-    private catalogInjectService: CatalogInjectService,
-    private injectmDataService: InjectmDataService,
-    private router: Router,
-    private activatedRoute: ActivatedRoute
-  ) {
+  constructor() {
+    const activatedRoute = this.activatedRoute;
+
     this.filterTerm = activatedRoute.queryParamMap.pipe(
       map((params) => params.get('catalogmask') || '')
     );

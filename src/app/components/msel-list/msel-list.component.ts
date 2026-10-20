@@ -1,7 +1,7 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { ChangeDetectorRef, Component, Input, OnDestroy, ViewChild, ElementRef, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnDestroy, ViewChild, ElementRef, OnInit, inject } from '@angular/core';
 import { UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatSort, MatSortable, Sort, MatSortHeader } from '@angular/material/sort';
 import { MatPaginator } from '@angular/material/paginator';
@@ -42,6 +42,20 @@ import { DatePipe } from '@angular/common';
     imports: [MatIconButton, MatIcon, MatSelect, FormsModule, MatOption, MatFormField, MatInput, ReactiveFormsModule, MatSuffix, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatMenuTrigger, MatMenu, MatMenuItem, MatCellDef, MatCell, MatSortHeader, RouterLink, MatCheckbox, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, MatPaginator, MatCard, MatProgressSpinner, DatePipe]
 })
 export class MselListComponent implements OnDestroy, OnInit {
+  dialogService = inject(CrucibleDialogService);
+  private router = inject(Router);
+  private userDataService = inject(UserDataService);
+  private userQuery = inject(UserQuery);
+  private currentUserQuery = inject(CurrentUserQuery);
+  private settingsService = inject(ComnSettingsService);
+  private mselDataService = inject(MselDataService);
+  private mselQuery = inject(MselQuery);
+  private signalRService = inject(SignalRService);
+  private uiDataService = inject(UIDataService);
+  private permissionDataService = inject(PermissionDataService);
+  private changeDetectorRef = inject(ChangeDetectorRef);
+  private dialog = inject(MatDialog);
+
   @Input() loggedInUserId: string;
   @Input() canAccessAdminSection: boolean;
   @ViewChild('jsonInput') jsonInput: ElementRef<HTMLInputElement>;
@@ -90,21 +104,7 @@ export class MselListComponent implements OnDestroy, OnInit {
   allMselsAreLoaded = false;
   private unsubscribe$ = new Subject();
 
-  constructor(
-    public dialogService: CrucibleDialogService,
-    private router: Router,
-    private userDataService: UserDataService,
-    private userQuery: UserQuery,
-    private currentUserQuery: CurrentUserQuery,
-    private settingsService: ComnSettingsService,
-    private mselDataService: MselDataService,
-    private mselQuery: MselQuery,
-    private signalRService: SignalRService,
-    private uiDataService: UIDataService,
-    private permissionDataService: PermissionDataService,
-    private changeDetectorRef: ChangeDetectorRef,
-    private dialog: MatDialog
-  ) {
+  constructor() {
     // Initial datasource
     this.mselDataSource = new MatTableDataSource<MselPlus>(
       new Array<MselPlus>()

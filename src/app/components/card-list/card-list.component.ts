@@ -1,7 +1,7 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, ElementRef, Input, OnDestroy, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, ElementRef, Input, OnDestroy, ViewChild, AfterViewInit, inject as inject_1 } from '@angular/core';
 import { UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatTableDataSource, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
 import { MatTable } from '@angular/material/table';
@@ -45,6 +45,13 @@ import { CardTeamsComponent } from '../card-teams/card-teams.component';
     imports: [MatIcon, MatFormField, MatInput, FormsModule, ReactiveFormsModule, MatIconButton, MatSuffix, MatPaginator, MatMenu, MatMenuItem, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatMenuTrigger, MatCellDef, MatCell, MatSortHeader, CardTeamsComponent, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow]
 })
 export class CardListComponent implements OnDestroy, AfterViewInit {
+  private mselQuery = inject_1(MselQuery);
+  private cardDataService = inject_1(CardDataService);
+  private cardQuery = inject_1(CardQuery);
+  private moveQuery = inject_1(MoveQuery);
+  dialog = inject_1(MatDialog);
+  dialogService = inject_1(CrucibleDialogService);
+
   @Input() loggedInUserId: string;
   @Input() canEdit: boolean;
   @Input() showTemplates: boolean;
@@ -75,14 +82,7 @@ export class CardListComponent implements OnDestroy, AfterViewInit {
     return ['action', 'move', 'name', 'description'];
   }
 
-  constructor(
-    private mselQuery: MselQuery,
-    private cardDataService: CardDataService,
-    private cardQuery: CardQuery,
-    private moveQuery: MoveQuery,
-    public dialog: MatDialog,
-    public dialogService: CrucibleDialogService
-  ) {
+  constructor() {
     // subscribe to cards
     this.cardQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(cards => {
       this.cardList = cards;

@@ -1,7 +1,7 @@
 // Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -37,6 +37,23 @@ import { InvitationListComponent } from '../../invitation-list/invitation-list.c
     imports: [TopbarComponent, MatCard, MatCardHeader, MatCardTitle, MatCardSubtitle, MatCardContent, MatFormField, MatInput, FormsModule, MatCardActions, MatButton, InvitationListComponent]
 })
 export class ManageComponent implements OnDestroy, OnInit {
+  private userDataService = inject(UserDataService);
+  private currentUserQuery = inject(CurrentUserQuery);
+  private permissionDataService = inject(PermissionDataService);
+  private authService = inject(ComnAuthService);
+  private settingsService = inject(ComnSettingsService);
+  private mselDataService = inject(MselDataService);
+  private mselQuery = inject(MselQuery);
+  private invitationDataService = inject(InvitationDataService);
+  private teamDataService = inject(TeamDataService);
+  private activatedRoute = inject(ActivatedRoute);
+  private router = inject(Router);
+  private titleService = inject(Title);
+  dialog = inject(MatDialog);
+  dialogService = inject(CrucibleDialogService);
+  private errorService = inject(ErrorService);
+  private uiDataService = inject(UIDataService);
+
   msel: MselPlus = new MselPlus();
   imageFilePath = '';
   hideTopbar = false;
@@ -53,24 +70,7 @@ export class ManageComponent implements OnDestroy, OnInit {
   canEditMsels = false;
   private unsubscribe$ = new Subject();
 
-  constructor(
-    private userDataService: UserDataService,
-    private currentUserQuery: CurrentUserQuery,
-    private permissionDataService: PermissionDataService,
-    private authService: ComnAuthService,
-    private settingsService: ComnSettingsService,
-    private mselDataService: MselDataService,
-    private mselQuery: MselQuery,
-    private invitationDataService: InvitationDataService,
-    private teamDataService: TeamDataService,
-    private activatedRoute: ActivatedRoute,
-    private router: Router,
-    private titleService: Title,
-    public dialog: MatDialog,
-    public dialogService: CrucibleDialogService,
-    private errorService: ErrorService,
-    private uiDataService: UIDataService
-  ) {
+  constructor() {
     this.hideTopbar = this.uiDataService.inIframe();
     // set image
     this.imageFilePath = this.settingsService.settings.AppTopBarImage.replace(

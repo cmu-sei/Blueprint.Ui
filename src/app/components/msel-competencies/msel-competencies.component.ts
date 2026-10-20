@@ -1,7 +1,7 @@
 // Copyright 2026 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, Input, OnDestroy, OnInit, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit, ViewChild, AfterViewInit, inject } from '@angular/core';
 import { UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { SelectionModel } from '@angular/cdk/collections';
 import { animate, state, style, transition, trigger } from '@angular/animations';
@@ -64,6 +64,22 @@ import { MatToolbar, MatToolbarRow } from '@angular/material/toolbar';
     imports: [MatIcon, MatFormField, MatLabel, MatSelect, MatOption, MatExpansionPanel, MatExpansionPanelHeader, MatExpansionPanelTitle, MatInput, FormsModule, ReactiveFormsModule, MatIconButton, MatSuffix, MatPaginator, MatProgressSpinner, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCheckbox, MatCellDef, MatCell, MatSortHeader, MatTooltip, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, MatButton, MatToolbar, MatToolbarRow]
 })
 export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewInit {
+  private mselQuery = inject(MselQuery);
+  private mselCompetencyDataService = inject(MselCompetencyDataService);
+  private mselCompetencyQuery = inject(MselCompetencyQuery);
+  private teamCompetencyDataService = inject(TeamCompetencyDataService);
+  private teamCompetencyQuery = inject(TeamCompetencyQuery);
+  private competencyFrameworkDataService = inject(CompetencyFrameworkDataService);
+  private competencyFrameworkQuery = inject(CompetencyFrameworkQuery);
+  private competencyFrameworkService = inject(CompetencyFrameworkService);
+  private permissionDataService = inject(PermissionDataService);
+  dialog = inject(MatDialog);
+  dialogService = inject(CrucibleDialogService);
+  private dataFieldDataService = inject(DataFieldDataService);
+  private dataFieldQuery = inject(DataFieldQuery);
+  private dataValueDataService = inject(DataValueDataService);
+  private dataValueQuery = inject(DataValueQuery);
+
   @Input() loggedInUserId: string;
   @ViewChild('competencyPaginator') competencyPaginator: MatPaginator;
   @ViewChild('workRolePaginator') workRolePaginator: MatPaginator;
@@ -117,23 +133,7 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
 
   private unsubscribe$ = new Subject();
 
-  constructor(
-    private mselQuery: MselQuery,
-    private mselCompetencyDataService: MselCompetencyDataService,
-    private mselCompetencyQuery: MselCompetencyQuery,
-    private teamCompetencyDataService: TeamCompetencyDataService,
-    private teamCompetencyQuery: TeamCompetencyQuery,
-    private competencyFrameworkDataService: CompetencyFrameworkDataService,
-    private competencyFrameworkQuery: CompetencyFrameworkQuery,
-    private competencyFrameworkService: CompetencyFrameworkService,
-    private permissionDataService: PermissionDataService,
-    public dialog: MatDialog,
-    public dialogService: CrucibleDialogService,
-    private dataFieldDataService: DataFieldDataService,
-    private dataFieldQuery: DataFieldQuery,
-    private dataValueDataService: DataValueDataService,
-    private dataValueQuery: DataValueQuery
-  ) {
+  constructor() {
     (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
       if (msel) {
         const isNewMsel = this.msel.id !== msel.id;

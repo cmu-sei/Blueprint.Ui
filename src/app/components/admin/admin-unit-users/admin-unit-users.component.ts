@@ -2,15 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import {
-  Component,
-  OnDestroy,
-  OnInit,
-  Input,
-  ElementRef,
-  ViewChild,
-  AfterViewInit,
-} from '@angular/core';
+import { Component, OnDestroy, OnInit, Input, ElementRef, ViewChild, AfterViewInit, inject } from '@angular/core';
 import { MatPaginator } from '@angular/material/paginator';
 import { Sort, MatSort, MatSortHeader } from '@angular/material/sort';
 import { MatTableDataSource, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
@@ -32,6 +24,9 @@ import { MatIconButton } from '@angular/material/button';
     imports: [MatToolbar, MatToolbarRow, MatIcon, MatFormField, MatInput, FormsModule, ReactiveFormsModule, MatIconButton, MatSuffix, MatPaginator, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatSortHeader, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow]
 })
 export class AdminUnitUsersComponent implements OnDestroy, OnInit, AfterViewInit {
+  private unitUserDataService = inject(UnitUserDataService);
+  private userQuery = inject(UserQuery);
+
   @Input() unitId: string;
   @Input() canManage: boolean;
   @ViewChild('userPaginator') userPaginator: MatPaginator;
@@ -50,10 +45,7 @@ export class AdminUnitUsersComponent implements OnDestroy, OnInit, AfterViewInit
   sort: Sort = { active: 'name', direction: 'asc' };
   @ViewChild('usersInput') usersInput: ElementRef<HTMLInputElement>;
 
-  constructor(
-    private unitUserDataService: UnitUserDataService,
-    private userQuery: UserQuery
-  ) {
+  constructor() {
     this.userQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(users => {
       this.userList = users;
       this.setDataSources();

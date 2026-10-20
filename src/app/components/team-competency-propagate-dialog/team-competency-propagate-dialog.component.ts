@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, Inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { SelectionModel } from '@angular/cdk/collections';
 import { MselCompetency } from 'src/app/generated/blueprint.api';
@@ -24,13 +24,15 @@ export interface TeamCompetencyPropagateData {
     imports: [CrucibleDialogComponent, CrucibleDialogContentDirective, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCheckbox, MatCellDef, MatCell, MatTooltip, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow]
 })
 export class TeamCompetencyPropagateDialogComponent {
+  dialogRef = inject<MatDialogRef<TeamCompetencyPropagateDialogComponent>>(MatDialogRef);
+  data = inject<TeamCompetencyPropagateData>(MAT_DIALOG_DATA);
+
   selection = new SelectionModel<MselCompetency>(true, []);
   displayedColumns = ['select', 'idNumber', 'shortName'];
 
-  constructor(
-    public dialogRef: MatDialogRef<TeamCompetencyPropagateDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: TeamCompetencyPropagateData
-  ) {
+  constructor() {
+    const data = this.data;
+
     // Pre-select all
     this.selection.select(...data.competencies);
   }

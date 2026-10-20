@@ -1,7 +1,7 @@
 // Copyright 2026 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, ElementRef, Input, OnDestroy, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, ElementRef, Input, OnDestroy, ViewChild, AfterViewInit, inject } from '@angular/core';
 import { UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatTableDataSource, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatRowDef, MatRow, MatHeaderRowDef, MatHeaderRow } from '@angular/material/table';
 import { animate, state, style, transition, trigger } from '@angular/animations';
@@ -49,6 +49,13 @@ import { MatRipple } from '@angular/material/core';
     imports: [MatIcon, MatFormField, MatInput, FormsModule, ReactiveFormsModule, MatIconButton, MatSuffix, MatButton, MatPaginator, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatTooltip, MatSortHeader, MatExpansionPanel, MatExpansionPanelHeader, MatExpansionPanelTitle, MatLabel, MatSelect, MatOption, MatToolbar, MatToolbarRow, MatRowDef, MatRow, MatHeaderRowDef, MatHeaderRow, MatRipple]
 })
 export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewInit {
+  private competencyFrameworkDataService = inject(CompetencyFrameworkDataService);
+  private competencyFrameworkQuery = inject(CompetencyFrameworkQuery);
+  private competencyFrameworkService = inject(CompetencyFrameworkService);
+  private proficiencyScaleService = inject(ProficiencyScaleService);
+  dialog = inject(MatDialog);
+  dialogService = inject(CrucibleDialogService);
+
   @Input() loggedInUserId: string;
   @Input() canEdit: boolean;
   @ViewChild('competencyFrameworkTable', { static: false }) competencyFrameworkTable: MatTable<any>;
@@ -120,14 +127,7 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
   importing = false;
   importError = '';
 
-  constructor(
-    private competencyFrameworkDataService: CompetencyFrameworkDataService,
-    private competencyFrameworkQuery: CompetencyFrameworkQuery,
-    private competencyFrameworkService: CompetencyFrameworkService,
-    private proficiencyScaleService: ProficiencyScaleService,
-    public dialog: MatDialog,
-    public dialogService: CrucibleDialogService
-  ) {
+  constructor() {
     this.proficiencyScaleService.getProficiencyScales()
       .pipe(take(1))
       .subscribe(scales => {

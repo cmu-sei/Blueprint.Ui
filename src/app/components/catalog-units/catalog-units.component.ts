@@ -1,7 +1,7 @@
 // Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { UnitQuery } from 'src/app/data/unit/unit.query';
@@ -31,6 +31,12 @@ import { MatExpansionPanel, MatExpansionPanelHeader } from '@angular/material/ex
     imports: [MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatIconButton, MatIcon, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, MatExpansionPanel, MatExpansionPanelHeader]
 })
 export class CatalogUnitsComponent implements OnDestroy, OnInit {
+  private unitQuery = inject(UnitQuery);
+  private userQuery = inject(UserQuery);
+  private catalogDataService = inject(CatalogDataService);
+  private catalogUnitDataService = inject(CatalogUnitDataService);
+  private catalogUnitQuery = inject(CatalogUnitQuery);
+
   @Input() loggedInUserId: string;
   @Input() canEdit: boolean;
   @Input() catalog: Catalog;
@@ -47,13 +53,7 @@ export class CatalogUnitsComponent implements OnDestroy, OnInit {
   private allUnits: Unit[] = [];
   private unsubscribe$ = new Subject();
 
-  constructor(
-    private unitQuery: UnitQuery,
-    private userQuery: UserQuery,
-    private catalogDataService: CatalogDataService,
-    private catalogUnitDataService: CatalogUnitDataService,
-    private catalogUnitQuery: CatalogUnitQuery,
-  ) {
+  constructor() {
     // subscribe to users
     this.userQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(users => {
       this.userList = users;

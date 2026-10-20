@@ -1,7 +1,7 @@
 // Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, Input, OnDestroy, HostListener } from '@angular/core';
+import { Component, Input, OnDestroy, HostListener, inject } from '@angular/core';
 import { Subject, Subscription, Observable, of } from 'rxjs';
 import { takeUntil, debounceTime, distinctUntilChanged, mergeMap, delay } from 'rxjs/operators';
 import { Sort, MatSort, MatSortHeader } from '@angular/material/sort';
@@ -85,6 +85,26 @@ export interface XApiStatement {
     imports: [MatIcon, MatSort, MatFormField, MatLabel, MatInput, FormsModule, MatIconButton, MatSuffix, MatSelect, MatOption, MatSortHeader, MatProgressBar, NgClass, MatTooltip, MatButton, DurationViewComponent, DataValueComponent, CardEditDialogComponent]
 })
 export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
+  private mselQuery = inject(MselQuery);
+  private dataFieldQuery = inject(DataFieldQuery);
+  private dataValueQuery = inject(DataValueQuery);
+  private dataValueDataService = inject(DataValueDataService);
+  private moveQuery = inject(MoveQuery);
+  private cardQuery = inject(CardQuery);
+  private organizationQuery = inject(OrganizationQuery);
+  private teamQuery = inject(TeamQuery);
+  private scenarioEventDataService = inject(ScenarioEventDataService);
+  private scenarioEventQuery = inject(ScenarioEventQuery);
+  private uiDataService = inject(UIDataService);
+  private http = inject(HttpClient);
+  private settingsService = inject(ComnSettingsService);
+  private mselCompetencyQuery = inject(MselCompetencyQuery);
+  private mselCompetencyDataService = inject(MselCompetencyDataService);
+  private teamCompetencyQuery = inject(TeamCompetencyQuery);
+  private teamCompetencyDataService = inject(TeamCompetencyDataService);
+  private competencyFrameworkService = inject(CompetencyFrameworkService);
+  private proficiencyScaleService = inject(ProficiencyScaleService);
+
   @Input() loggedInUserId: string;
   @Input() userTheme: Theme;
   @Input() canEditCheckboxes = false;
@@ -166,27 +186,7 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
   private apiUrl: string;
   private unsubscribe$ = new Subject();
 
-  constructor(
-    private mselQuery: MselQuery,
-    private dataFieldQuery: DataFieldQuery,
-    private dataValueQuery: DataValueQuery,
-    private dataValueDataService: DataValueDataService,
-    private moveQuery: MoveQuery,
-    private cardQuery: CardQuery,
-    private organizationQuery: OrganizationQuery,
-    private teamQuery: TeamQuery,
-    private scenarioEventDataService: ScenarioEventDataService,
-    private scenarioEventQuery: ScenarioEventQuery,
-    private uiDataService: UIDataService,
-    private http: HttpClient,
-    private settingsService: ComnSettingsService,
-    private mselCompetencyQuery: MselCompetencyQuery,
-    private mselCompetencyDataService: MselCompetencyDataService,
-    private teamCompetencyQuery: TeamCompetencyQuery,
-    private teamCompetencyDataService: TeamCompetencyDataService,
-    private competencyFrameworkService: CompetencyFrameworkService,
-    private proficiencyScaleService: ProficiencyScaleService
-  ) {
+  constructor() {
     this.apiUrl = this.settingsService.settings.ApiUrl;
     this.showRealTime = this.uiDataService.useRealTime();
 

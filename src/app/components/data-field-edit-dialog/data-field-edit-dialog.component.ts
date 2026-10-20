@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, EventEmitter, Inject, Output } from '@angular/core';
+import { Component, EventEmitter, Output, inject } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { ComnSettingsService, CrucibleDialogComponent, CrucibleDialogContentDirective } from '@cmusei/crucible-common';
@@ -31,13 +31,11 @@ import { KeyValuePipe } from '@angular/common';
 })
 
 export class DataFieldEditDialogComponent {
-  @Output() editComplete = new EventEmitter<any>();
+  dialog = inject(MatDialog);
+  data = inject(MAT_DIALOG_DATA);
+  private settingsService = inject(ComnSettingsService);
 
-  constructor(
-    public dialog: MatDialog,
-    @Inject(MAT_DIALOG_DATA) public data: any,
-    private settingsService: ComnSettingsService
-  ) {}
+  @Output() editComplete = new EventEmitter<any>();
 
   errorFree() {
     const base = this.data.dataField.name && this.data.dataField.name.length > 0 &&

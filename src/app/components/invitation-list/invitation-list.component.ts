@@ -1,7 +1,7 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, Input, OnDestroy, ViewChild } from '@angular/core';
+import { Component, Input, OnDestroy, ViewChild, inject } from '@angular/core';
 import { MatTableDataSource, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 import { Subject, Observable } from 'rxjs';
@@ -35,6 +35,13 @@ import { ClipboardModule } from 'ngx-clipboard';
     imports: [MatIcon, MatFormField, MatInput, FormsModule, MatIconButton, MatSuffix, MatPaginator, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, ClipboardModule, MatSortHeader, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, DatePipe]
 })
 export class InvitationListComponent implements OnDestroy {
+  private mselQuery = inject(MselQuery);
+  private invitationDataService = inject(InvitationDataService);
+  private invitationQuery = inject(InvitationQuery);
+  private teamQuery = inject(TeamQuery);
+  dialog = inject(MatDialog);
+  dialogService = inject(CrucibleDialogService);
+
   @Input() loggedInUserId: string;
   @Input() canEditMsel: boolean;
   @Input() hideSearch: boolean;
@@ -50,14 +57,7 @@ export class InvitationListComponent implements OnDestroy {
   teamList: Team[] = [];
   private unsubscribe$ = new Subject();
 
-  constructor(
-    private mselQuery: MselQuery,
-    private invitationDataService: InvitationDataService,
-    private invitationQuery: InvitationQuery,
-    private teamQuery: TeamQuery,
-    public dialog: MatDialog,
-    public dialogService: CrucibleDialogService
-  ) {
+  constructor() {
     // subscribe to invitations
     this.invitationQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(invitations => {
       this.invitationList = invitations;

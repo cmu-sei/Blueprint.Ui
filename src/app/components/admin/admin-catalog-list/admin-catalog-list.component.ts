@@ -1,14 +1,7 @@
 // Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import {
-  Component,
-  ElementRef,
-  Input,
-  OnDestroy,
-  ViewChild,
-  AfterViewInit,
-} from '@angular/core';
+import { Component, ElementRef, Input, OnDestroy, ViewChild, AfterViewInit, inject } from '@angular/core';
 import { UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatTableDataSource, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
 import {
@@ -55,6 +48,12 @@ import { MatRipple } from '@angular/material/core';
     imports: [MatIcon, MatFormField, MatInput, FormsModule, ReactiveFormsModule, MatIconButton, MatSuffix, MatPaginator, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatCheckbox, MatSortHeader, MatExpansionPanel, MatExpansionPanelHeader, InjectListComponent, CatalogUnitsComponent, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, MatRipple]
 })
 export class AdminCatalogListComponent implements OnDestroy, AfterViewInit {
+  private catalogDataService = inject(CatalogDataService);
+  private catalogQuery = inject(CatalogQuery);
+  dialog = inject(MatDialog);
+  dialogService = inject(CrucibleDialogService);
+  private injectTypeQuery = inject(InjectTypeQuery);
+
   @Input() loggedInUserId: string;
   @Input() canEdit: boolean;
   @ViewChild('catalogTable', { static: false }) catalogTable: MatTable<any>;
@@ -86,13 +85,7 @@ export class AdminCatalogListComponent implements OnDestroy, AfterViewInit {
   uploadProgress = 0;
   uploadCatalogId = '';
 
-  constructor(
-    private catalogDataService: CatalogDataService,
-    private catalogQuery: CatalogQuery,
-    public dialog: MatDialog,
-    public dialogService: CrucibleDialogService,
-    private injectTypeQuery: InjectTypeQuery
-  ) {
+  constructor() {
     // subscribe to catalogs
     this.catalogQuery
       .selectAll()

@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, Inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Sort, MatSort, MatSortHeader } from '@angular/material/sort';
 import { DataOption } from 'src/app/generated/blueprint.api';
@@ -21,22 +21,20 @@ import { MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, Ma
     imports: [CrucibleDialogComponent, CrucibleDialogContentDirective, MatFormField, MatLabel, MatInput, FormsModule, MatIconButton, MatSuffix, MatIcon, MatTooltip, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatSortHeader, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, CrucibleDialogActionsDirective, MatButton]
 })
 export class DataOptionListDialogComponent {
+  dialogRef = inject<MatDialogRef<DataOptionListDialogComponent>>(MatDialogRef);
+  data = inject<{
+    dataOptions: DataOption[];
+    canEdit: boolean;
+    canImport?: boolean;
+    onEdit: (option: DataOption) => void;
+    onDelete: (option: DataOption) => void;
+    onAdd: () => void;
+    onImport: () => void;
+}>(MAT_DIALOG_DATA);
+
   searchText = '';
   sortActive = 'displayOrder';
   sortDirection = 'asc';
-
-  constructor(
-    public dialogRef: MatDialogRef<DataOptionListDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: {
-      dataOptions: DataOption[];
-      canEdit: boolean;
-      canImport?: boolean;
-      onEdit: (option: DataOption) => void;
-      onDelete: (option: DataOption) => void;
-      onAdd: () => void;
-      onImport: () => void;
-    }
-  ) {}
 
   get displayedColumns(): string[] {
     return this.data.canEdit

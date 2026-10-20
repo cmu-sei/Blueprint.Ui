@@ -2,15 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import {
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-  Input,
-  ElementRef,
-  ViewChild,
-} from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, Input, ElementRef, ViewChild, inject } from '@angular/core';
 import { PageEvent, MatPaginator } from '@angular/material/paginator';
 import { MatSort, MatSortable } from '@angular/material/sort';
 import { MatTableDataSource, MatTable, MatColumnDef, MatCellDef, MatCell, MatRowDef, MatRow, MatHeaderCellDef, MatHeaderCell, MatHeaderRowDef, MatHeaderRow } from '@angular/material/table';
@@ -37,6 +29,11 @@ import { MatCheckbox } from '@angular/material/checkbox';
 })
 
 export class CardTeamsComponent implements OnDestroy, OnInit {
+  private cardTeamDataService = inject(CardTeamDataService);
+  private mselQuery = inject(MselQuery);
+  private permissionDataService = inject(PermissionDataService);
+  private changeDetectorRef = inject(ChangeDetectorRef);
+
   @Input() cardId: string;
   @Input() loggedInUserId: string;
   msel = new MselPlus();
@@ -55,12 +52,7 @@ export class CardTeamsComponent implements OnDestroy, OnInit {
   pageEvent: PageEvent;
   private unsubscribe$ = new Subject();
 
-  constructor(
-    private cardTeamDataService: CardTeamDataService,
-    private mselQuery: MselQuery,
-    private permissionDataService: PermissionDataService,
-    private changeDetectorRef: ChangeDetectorRef
-  ) {
+  constructor() {
     // subscribe to the active MSEL
     (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
       if (msel) {

@@ -1,7 +1,7 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, Input, OnDestroy, ViewChild } from '@angular/core';
+import { Component, Input, OnDestroy, ViewChild, inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Sort, MatSort, MatSortHeader } from '@angular/material/sort';
 import { Subject, Subscription, Observable, of } from 'rxjs';
@@ -69,6 +69,27 @@ import { MatTooltip } from '@angular/material/tooltip';
     imports: [MatSort, MatFormField, MatInput, FormsModule, MatIconButton, MatSuffix, MatIcon, MatSortHeader, DurationViewComponent, AngularEditorModule, MatCheckbox, MatTooltip]
 })
 export class MselViewComponent implements OnDestroy, ScenarioEventView {
+  private activatedRoute = inject(ActivatedRoute);
+  private mselDataService = inject(MselDataService);
+  private mselQuery = inject(MselQuery);
+  private organizationQuery = inject(OrganizationQuery);
+  private dataValueDataService = inject(DataValueDataService);
+  private dataValueQuery = inject(DataValueQuery);
+  private teamQuery = inject(TeamQuery);
+  private dataFieldDataService = inject(DataFieldDataService);
+  private dataFieldQuery = inject(DataFieldQuery);
+  private cardQuery = inject(CardQuery);
+  private moveQuery = inject(MoveQuery);
+  private scenarioEventDataService = inject(ScenarioEventDataService);
+  private scenarioEventQuery = inject(ScenarioEventQuery);
+  private mselCompetencyQuery = inject(MselCompetencyQuery);
+  private mselCompetencyDataService = inject(MselCompetencyDataService);
+  private competencyFrameworkQuery = inject(CompetencyFrameworkQuery);
+  private competencyFrameworkDataService = inject(CompetencyFrameworkDataService);
+  private uiDataService = inject(UIDataService);
+  private http = inject(HttpClient);
+  private settingsService = inject(ComnSettingsService);
+
   @Input() tabHeight: number;
   @Input() userTheme: Theme;
   // context menu
@@ -118,28 +139,9 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
   private competencyTypeCache = new Map<string, string>();
   viewConfig = VIEW_CONFIG;
 
-  constructor(
-    private activatedRoute: ActivatedRoute,
-    private mselDataService: MselDataService,
-    private mselQuery: MselQuery,
-    private organizationQuery: OrganizationQuery,
-    private dataValueDataService: DataValueDataService,
-    private dataValueQuery: DataValueQuery,
-    private teamQuery: TeamQuery,
-    private dataFieldDataService: DataFieldDataService,
-    private dataFieldQuery: DataFieldQuery,
-    private cardQuery: CardQuery,
-    private moveQuery: MoveQuery,
-    private scenarioEventDataService: ScenarioEventDataService,
-    private scenarioEventQuery: ScenarioEventQuery,
-    private mselCompetencyQuery: MselCompetencyQuery,
-    private mselCompetencyDataService: MselCompetencyDataService,
-    private competencyFrameworkQuery: CompetencyFrameworkQuery,
-    private competencyFrameworkDataService: CompetencyFrameworkDataService,
-    private uiDataService: UIDataService,
-    private http: HttpClient,
-    private settingsService: ComnSettingsService
-  ) {
+  constructor() {
+    const activatedRoute = this.activatedRoute;
+
     // subscribe to the route parameters.  Used when viewing independently.
     this.activatedRoute.params
       .pipe(takeUntil(this.unsubscribe$))

@@ -1,7 +1,7 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { UntypedFormControl, FormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { CdkDragDrop, CdkDragStart, CdkDragEnd, CdkDropList, CdkDrag, CdkDragHandle } from '@angular/cdk/drag-drop';
@@ -87,6 +87,29 @@ interface StringDictionary {
 })
 export class ScenarioEventListComponent
   implements OnDestroy, OnInit, ScenarioEventView {
+  private router = inject(Router);
+  private permissionDataService = inject(PermissionDataService);
+  private settingsService = inject(ComnSettingsService);
+  private cardQuery = inject(CardQuery);
+  private catalogQuery = inject(CatalogQuery);
+  private injectmDataService = inject(InjectmDataService);
+  private injectTypeQuery = inject(InjectTypeQuery);
+  private moveQuery = inject(MoveQuery);
+  private mselDataService = inject(MselDataService);
+  private mselQuery = inject(MselQuery);
+  private organizationQuery = inject(OrganizationQuery);
+  private scenarioEventDataService = inject(ScenarioEventDataService);
+  private scenarioEventQuery = inject(ScenarioEventQuery);
+  dialogService = inject(CrucibleDialogService);
+  dialog = inject(MatDialog);
+  private dataFieldQuery = inject(DataFieldQuery);
+  private dataValueDataService = inject(DataValueDataService);
+  private dataValueQuery = inject(DataValueQuery);
+  private teamQuery = inject(TeamQuery);
+  private unitQuery = inject(UnitQuery);
+  private uiDataService = inject(UIDataService);
+  private changeDetectorRef = inject(ChangeDetectorRef);
+
   @Input() loggedInUserId: string;
   @Input() userTheme: Theme;
   @Input() isStarterMsel: boolean;
@@ -175,30 +198,7 @@ export class ScenarioEventListComponent
   mselListForCopy: Msel[] = [];
   integrationTargetOptions: string[] = [];
 
-  constructor(
-    private router: Router,
-    private permissionDataService: PermissionDataService,
-    private settingsService: ComnSettingsService,
-    private cardQuery: CardQuery,
-    private catalogQuery: CatalogQuery,
-    private injectmDataService: InjectmDataService,
-    private injectTypeQuery: InjectTypeQuery,
-    private moveQuery: MoveQuery,
-    private mselDataService: MselDataService,
-    private mselQuery: MselQuery,
-    private organizationQuery: OrganizationQuery,
-    private scenarioEventDataService: ScenarioEventDataService,
-    private scenarioEventQuery: ScenarioEventQuery,
-    public dialogService: CrucibleDialogService,
-    public dialog: MatDialog,
-    private dataFieldQuery: DataFieldQuery,
-    private dataValueDataService: DataValueDataService,
-    private dataValueQuery: DataValueQuery,
-    private teamQuery: TeamQuery,
-    private unitQuery: UnitQuery,
-    private uiDataService: UIDataService,
-    private changeDetectorRef: ChangeDetectorRef
-  ) {
+  constructor() {
     // load the user's build MSELs for use when copying scenario events
     this.mselDataService
       .getMyBuildMsels()

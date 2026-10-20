@@ -2,15 +2,7 @@
 // Released under a MIT (SEI)-style license, please see LICENSE.md in the
 // project root for license information or contact permission@sei.cmu.edu for full terms.
 
-import {
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-  Input,
-  ViewChild,
-  AfterViewInit,
-} from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, Input, ViewChild, AfterViewInit, inject } from '@angular/core';
 import { MatPaginator } from '@angular/material/paginator';
 import { Sort, MatSortable, MatSort, MatSortHeader } from '@angular/material/sort';
 import { MatTableDataSource, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
@@ -42,6 +34,20 @@ import { MatOption } from '@angular/material/autocomplete';
     imports: [MatToolbar, MatToolbarRow, MatIcon, MatFormField, MatInput, FormsModule, ReactiveFormsModule, MatIconButton, MatSuffix, MatPaginator, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatSortHeader, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, MatSelect, MatOption]
 })
 export class TeamUsersComponent implements OnDestroy, OnInit, AfterViewInit {
+  private teamQuery = inject(TeamQuery);
+  private teamUserDataService = inject(TeamUserDataService);
+  private teamUserQuery = inject(TeamUserQuery);
+  private userQuery = inject(UserQuery);
+  private currentUserQuery = inject(CurrentUserQuery);
+  private userTeamRoleDataService = inject(UserTeamRoleDataService);
+  private userTeamRoleQuery = inject(UserTeamRoleQuery);
+  private mselQuery = inject(MselQuery);
+  private mselUnitQuery = inject(MselUnitQuery);
+  private unitQuery = inject(UnitQuery);
+  private permissionDataService = inject(PermissionDataService);
+  private citeService = inject(CiteService);
+  private changeDetectorRef = inject(ChangeDetectorRef);
+
   @Input() team: Team;
   @ViewChild('userPaginator') userPaginator: MatPaginator;
   @ViewChild('teamMemberPaginator') teamMemberPaginator: MatPaginator;
@@ -66,21 +72,7 @@ export class TeamUsersComponent implements OnDestroy, OnInit, AfterViewInit {
   loggedInUserId = '';
   private unsubscribe$ = new Subject();
 
-  constructor(
-    private teamQuery: TeamQuery,
-    private teamUserDataService: TeamUserDataService,
-    private teamUserQuery: TeamUserQuery,
-    private userQuery: UserQuery,
-    private currentUserQuery: CurrentUserQuery,
-    private userTeamRoleDataService: UserTeamRoleDataService,
-    private userTeamRoleQuery: UserTeamRoleQuery,
-    private mselQuery: MselQuery,
-    private mselUnitQuery: MselUnitQuery,
-    private unitQuery: UnitQuery,
-    private permissionDataService: PermissionDataService,
-    private citeService: CiteService,
-    private changeDetectorRef: ChangeDetectorRef
-  ) {
+  constructor() {
     // Fetch CITE team roles dynamically
     this.citeService.getTeamRoles().pipe(takeUntil(this.unsubscribe$)).subscribe(roles => {
       this.teamRoles = roles.map(r => r.name).filter(n => !!n);

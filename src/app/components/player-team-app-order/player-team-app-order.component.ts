@@ -1,7 +1,7 @@
 // Copyright 2025 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, Input, OnDestroy, ViewChild } from '@angular/core';
+import { Component, Input, OnDestroy, ViewChild, inject } from '@angular/core';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import {
@@ -32,6 +32,11 @@ import { MatIcon } from '@angular/material/icon';
     imports: [MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatIconButton, MatIcon, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow]
 })
 export class PlayerTeamAppOrderComponent implements OnDestroy {
+  private playerApplicationQuery = inject(PlayerApplicationQuery);
+  private playerApplicationTeamDataService = inject(PlayerApplicationTeamDataService);
+  private teamQuery = inject(TeamQuery);
+  dialogService = inject(CrucibleDialogService);
+
   @Input() loggedInUserId: string;
   @Input() canEdit: boolean;
   @Input() mselTeamList: Team[];
@@ -48,12 +53,7 @@ export class PlayerTeamAppOrderComponent implements OnDestroy {
   activeTeams: Team[] = [];
   private unsubscribe$ = new Subject();
 
-  constructor(
-    private playerApplicationQuery: PlayerApplicationQuery,
-    private playerApplicationTeamDataService: PlayerApplicationTeamDataService,
-    private teamQuery: TeamQuery,
-    public dialogService: CrucibleDialogService,
-  ) {
+  constructor() {
     this.playerApplicationTeamDataService.playerApplicationTeams
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((playerApplicationTeams) => {

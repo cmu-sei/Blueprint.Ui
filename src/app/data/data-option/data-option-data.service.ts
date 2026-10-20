@@ -6,7 +6,7 @@
 
 import { DataOptionStore } from './data-option.store';
 import { DataOptionQuery } from './data-option.query';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { PageEvent } from '@angular/material/paginator';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -21,6 +21,12 @@ import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
   providedIn: 'root',
 })
 export class DataOptionDataService {
+  private dataOptionStore = inject(DataOptionStore);
+  private dataOptionQuery = inject(DataOptionQuery);
+  private dataOptionService = inject(DataOptionService);
+  private router = inject(Router);
+  private activatedRoute = inject(ActivatedRoute);
+
   readonly DataOptionList: Observable<DataOption[]>;
   readonly filterControl = new UntypedFormControl();
   private _requestedDataOptionId: string;
@@ -35,13 +41,9 @@ export class DataOptionDataService {
   private pageSize: Observable<number>;
   private pageIndex: Observable<number>;
 
-  constructor(
-    private dataOptionStore: DataOptionStore,
-    private dataOptionQuery: DataOptionQuery,
-    private dataOptionService: DataOptionService,
-    private router: Router,
-    private activatedRoute: ActivatedRoute
-  ) {
+  constructor() {
+    const activatedRoute = this.activatedRoute;
+
     this.filterTerm = activatedRoute.queryParamMap.pipe(
       map((params) => params.get('dataOptionmask') || '')
     );

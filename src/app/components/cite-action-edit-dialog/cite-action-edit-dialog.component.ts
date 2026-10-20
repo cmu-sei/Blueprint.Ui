@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, EventEmitter, Inject, Output } from '@angular/core';
+import { Component, EventEmitter, Output, inject } from '@angular/core';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MoveQuery } from 'src/app/data/move/move.query';
 import { CrucibleDialogComponent, CrucibleDialogContentDirective } from '@cmusei/crucible-common';
@@ -19,13 +19,11 @@ import { MatOption } from '@angular/material/autocomplete';
 })
 
 export class CiteActionEditDialogComponent {
+  private moveQuery = inject(MoveQuery);
+  data = inject(MAT_DIALOG_DATA);
+
   @Output() editComplete = new EventEmitter<any>();
   moveList = this.moveQuery.getAll().sort((a, b) => +a.moveNumber < +b.moveNumber ? -1 : 1);
-
-  constructor(
-    private moveQuery: MoveQuery,
-    @Inject(MAT_DIALOG_DATA) public data: any
-  ) {}
 
   errorFree() {
     return this.data.citeAction.description && this.data.citeAction.description.length > 0;
