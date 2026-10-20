@@ -8,11 +8,10 @@ import { By } from '@angular/platform-browser';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
-import { CRUCIBLE_DIALOG_IMPORTS } from '@cmusei/crucible-common';
+import { CRUCIBLE_DIALOG_IMPORTS, CrucibleDialogComponent, CrucibleDialogContentDirective } from '@cmusei/crucible-common';
 import { Catalog, InjectType, Injectm } from 'src/app/generated/blueprint.api';
 import { InjectSelectDialogComponent } from './inject-select-dialog.component';
 import { renderComponent } from 'src/app/test-utils/render-component';
-import { InjectListComponent } from '../inject-list/inject-list.component';
 
 @Component({ selector: 'app-inject-list', template: '' })
 class InjectListStub {
@@ -30,9 +29,13 @@ async function renderInjectSelect() {
   const data = { catalog: CATALOG, injectType: { id: 'it-email', name: 'Email' }, injectList: [], loggedInUserId: 'user-1' };
   const rendered = await renderComponent(InjectSelectDialogComponent, {
     imports: [...CRUCIBLE_DIALOG_IMPORTS],
-    childStubs: [
-      { replace: InjectListComponent, with: InjectListStub },
-    ],
+    // The component imports InjectListComponent through forwardRef, which
+    // childStubs cannot match by class, so the imports list is set whole.
+    configureTestBed: (testBed) => {
+      testBed.overrideComponent(InjectSelectDialogComponent, {
+        set: { imports: [CrucibleDialogComponent, CrucibleDialogContentDirective, InjectListStub] },
+      });
+    },
     providers: [{ provide: MAT_DIALOG_DATA, useValue: data }],
   });
   const results: unknown[] = [];
