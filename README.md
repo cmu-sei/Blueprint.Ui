@@ -16,7 +16,7 @@ Blueprint uses a monochrome gray Material 3 SCSS palette with runtime top-bar co
 |------|---------------|---------|
 | `src/assets/config/settings.json` | `"AppTopBarHexColor": "#007CB5"` | Runtime config -- top bar background color |
 | `src/assets/config/settings.json` | `"AppTopBarHexTextColor": "#FFFFFF"` | Runtime config -- top bar text color |
-| `src/app/app.module.ts` | `provideCrucibleTheme({ brand: { color: '#007CB5', text: '#FFFFFF' } })` | Runtime fallbacks when settings are not provided |
+| `src/main.ts` | `provideCrucibleTheme({ brand: { color: '#007CB5', text: '#FFFFFF' } })` | Runtime fallbacks when settings are not provided |
 
 To change the top bar color for a deployment, update `AppTopBarHexColor` and `AppTopBarHexTextColor` in `settings.json`, or set them in `settings.env.json`, which the app merges over `settings.json` and `settings.shared.json` at startup.
 
