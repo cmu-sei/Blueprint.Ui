@@ -1,7 +1,7 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, OnDestroy, ViewChild, AfterViewInit, inject, input } from '@angular/core';
+import { Component, OnDestroy, AfterViewInit, inject, input, viewChild } from '@angular/core';
 import { UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatTableDataSource, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
@@ -58,8 +58,8 @@ export class MoveListComponent implements OnDestroy, AfterViewInit {
 
   private unsubscribe$ = new Subject();
   // context menu
-  @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
-  @ViewChild(MatPaginator) paginator: MatPaginator;
+  readonly contextMenu = viewChild(MatMenuTrigger);
+  readonly paginator = viewChild(MatPaginator);
   contextMenuPosition = { x: '0px', y: '0px' };
 
   constructor() {
@@ -95,7 +95,7 @@ export class MoveListComponent implements OnDestroy, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    this.moveDataSource.paginator = this.paginator;
+    this.moveDataSource.paginator = this.paginator();
   }
 
   getSortedMoves(moves: Move[]) {

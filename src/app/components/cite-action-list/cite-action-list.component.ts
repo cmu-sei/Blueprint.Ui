@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild, AfterViewInit, inject, input } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, AfterViewInit, inject, input, viewChild } from '@angular/core';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -70,9 +70,9 @@ export class CiteActionListComponent implements OnInit, OnDestroy, AfterViewInit
   moveList: Move[] = [];
   private unsubscribe$ = new Subject();
   // context menu
-  @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
-  @ViewChild(MatPaginator) paginator: MatPaginator;
-  @ViewChild('jsonInput') jsonInput: ElementRef<HTMLInputElement>;
+  readonly contextMenu = viewChild(MatMenuTrigger);
+  readonly paginator = viewChild(MatPaginator);
+  readonly jsonInput = viewChild<ElementRef<HTMLInputElement>>('jsonInput');
   contextMenuPosition = { x: '0px', y: '0px' };
 
   constructor() {
@@ -145,7 +145,7 @@ export class CiteActionListComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   ngAfterViewInit() {
-    this.citeActionDataSource.paginator = this.paginator;
+    this.citeActionDataSource.paginator = this.paginator();
   }
 
   addOrEditCiteAction(
@@ -239,7 +239,7 @@ export class CiteActionListComponent implements OnInit, OnDestroy, AfterViewInit
       return;
     }
     this.citeActionDataService.uploadJson(file, 'events', true);
-    this.jsonInput.nativeElement.value = null;
+    this.jsonInput().nativeElement.value = null;
   }
 
   openDownloadDialog() {
@@ -303,8 +303,9 @@ export class CiteActionListComponent implements OnInit, OnDestroy, AfterViewInit
       this.getFilteredCiteActions(false)
     );
     this.citeActionDataSource.data = this.sortedCiteActions;
-    if (this.paginator) {
-      this.paginator.length = this.sortedCiteActions.length;
+    const paginator = this.paginator();
+    if (paginator) {
+      paginator.length = this.sortedCiteActions.length;
     }
     this.templateList = this.getSortedCiteActions(
       this.getFilteredCiteActions(true)

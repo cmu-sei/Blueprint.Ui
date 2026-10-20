@@ -8,9 +8,9 @@ import {
   Component,
   OnChanges,
   OnInit,
-  ViewChild,
   input,
-  output
+  output,
+  viewChild
 } from '@angular/core';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort, MatSortHeader } from '@angular/material/sort';
@@ -39,8 +39,8 @@ export class AdminGroupsMemberListComponent
 
   readonly deleteMembership = output<string>();
 
-  @ViewChild(MatSort) sort: MatSort;
-  @ViewChild(MatPaginator) paginator: MatPaginator;
+  readonly sort = viewChild(MatSort);
+  readonly paginator = viewChild(MatPaginator);
 
   viewColumns = ['name'];
   editColumns = ['actions'];
@@ -54,8 +54,8 @@ export class AdminGroupsMemberListComponent
   ngOnInit(): void {}
 
   ngAfterViewInit() {
-    this.dataSource.paginator = this.paginator;
-    this.dataSource.sort = this.sort;
+    this.dataSource.paginator = this.paginator();
+    this.dataSource.sort = this.sort();
   }
 
   ngOnChanges() {

@@ -1,7 +1,7 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { ChangeDetectorRef, Component, OnDestroy, ViewChild, ElementRef, OnInit, inject, input } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, ViewChild, ElementRef, OnInit, inject, input, viewChild } from '@angular/core';
 import { UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatSort, MatSortable, Sort, MatSortHeader } from '@angular/material/sort';
 import { MatPaginator } from '@angular/material/paginator';
@@ -58,9 +58,9 @@ export class MselListComponent implements OnDestroy, OnInit {
 
   readonly loggedInUserId = input<string>(undefined);
   readonly canAccessAdminSection = input<boolean>(undefined);
-  @ViewChild('jsonInput') jsonInput: ElementRef<HTMLInputElement>;
-  @ViewChild('xlsxInput') xlsxInput: ElementRef<HTMLInputElement>;
-  @ViewChild(MatSort, { static: true }) sort: MatSort;
+  readonly jsonInput = viewChild<ElementRef<HTMLInputElement>>('jsonInput');
+  readonly xlsxInput = viewChild<ElementRef<HTMLInputElement>>('xlsxInput');
+  readonly sort = viewChild(MatSort);
   @ViewChild(MatPaginator) set paginator(paginator: MatPaginator) {
     if (paginator && this.mselDataSource) {
       this.mselDataSource.paginator = paginator;
@@ -139,8 +139,8 @@ export class MselListComponent implements OnDestroy, OnInit {
       .subscribe((cu) => {
         this.currentUserName = cu.name;
       });
-    this.sort.sort(<MatSortable>{ id: 'name', start: 'asc' });
-    this.mselDataSource.sort = this.sort;
+    this.sort().sort(<MatSortable>{ id: 'name', start: 'asc' });
+    this.mselDataSource.sort = this.sort();
     // subscribe to MSELs loading
     this.mselQuery
       .selectLoading()
@@ -228,8 +228,8 @@ export class MselListComponent implements OnDestroy, OnInit {
       this.isReady = true;
       this.importJson(file);
     }
-    this.jsonInput.nativeElement.value = null;
-    this.xlsxInput.nativeElement.value = null;
+    this.jsonInput().nativeElement.value = null;
+    this.xlsxInput().nativeElement.value = null;
   }
 
   importJson(file: File) {

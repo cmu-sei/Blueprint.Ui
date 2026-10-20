@@ -8,7 +8,7 @@ import {
   transition,
   trigger,
 } from '@angular/animations';
-import { AfterViewInit, ChangeDetectionStrategy, Component, OnInit, ViewChild, inject } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, OnInit, inject, viewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { MatSort, MatSortHeader } from '@angular/material/sort';
@@ -51,7 +51,7 @@ export class AdminGroupsComponent implements OnInit, AfterViewInit {
   private confirmService = inject(CrucibleDialogService);
   private permissionDataService = inject(PermissionDataService);
 
-  @ViewChild(MatSort) sort: MatSort;
+  readonly sort = viewChild(MatSort);
 
   filterString = '';
   displayedColumns: string[] = ['actions', 'name'];
@@ -77,7 +77,7 @@ export class AdminGroupsComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    this.dataSource.sort = this.sort;
+    this.dataSource.sort = this.sort();
   }
 
   applyFilter(filterValue: string) {

@@ -1,7 +1,7 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild, inject, input } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject, input, viewChild } from '@angular/core';
 import { UntypedFormControl, FormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { CdkDragDrop, CdkDragStart, CdkDragEnd, CdkDropList, CdkDrag, CdkDragHandle } from '@angular/cdk/drag-drop';
@@ -171,7 +171,7 @@ export class ScenarioEventListComponent
     valueArray: [],
   } as DataValuePlus;
   // context menu
-  @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
+  readonly contextMenu = viewChild(MatMenuTrigger);
   contextMenuPosition = { x: '0px', y: '0px' };
   scenarioEventBackgroundColors: Array<string>;
   darkThemeTint = this.settingsService.settings.DarkThemeTint
@@ -567,9 +567,10 @@ export class ScenarioEventListComponent
     event.preventDefault();
     this.contextMenuPosition.x = event.clientX + 'px';
     this.contextMenuPosition.y = event.clientY + 'px';
-    this.contextMenu.menuData = { item: scenarioEvent };
-    this.contextMenu.menu.focusFirstItem('mouse');
-    this.contextMenu.openMenu();
+    const contextMenu = this.contextMenu();
+    contextMenu.menuData = { item: scenarioEvent };
+    contextMenu.menu.focusFirstItem('mouse');
+    contextMenu.openMenu();
   }
 
   applyFilter(filterValue: string) {

@@ -1,7 +1,7 @@
 // Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild, inject, input } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild, inject, input, viewChild } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { UnitDataService } from 'src/app/data/unit/unit-data.service';
@@ -68,8 +68,8 @@ export class MselContributorsComponent implements OnDestroy, OnInit {
 
   readonly loggedInUserId = input<string>(undefined);
   // context menu
-  @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
-  @ViewChild('contributorTable', { static: false }) contributorTable: MatTable<any>;
+  readonly contextMenu = viewChild(MatMenuTrigger);
+  readonly contributorTable = viewChild<MatTable<any>>('contributorTable');
   @ViewChild(MatPaginator) set matPaginator(paginator: MatPaginator) {
     this.mselUnitDataSource.paginator = paginator;
   }
@@ -339,7 +339,7 @@ export class MselContributorsComponent implements OnDestroy, OnInit {
     } else {
       this.expandedElementId = row.id;
     }
-    this.contributorTable.renderRows();
+    this.contributorTable().renderRows();
   }
 
   getRowClass(id: string) {

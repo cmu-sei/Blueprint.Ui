@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, ElementRef, OnDestroy, ViewChild, AfterViewInit, inject, input } from '@angular/core';
+import { Component, ElementRef, OnDestroy, AfterViewInit, inject, input, viewChild } from '@angular/core';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -64,9 +64,9 @@ export class CiteDutyListComponent implements OnDestroy, AfterViewInit {
   mselTeamList: Team[] = [];
   private unsubscribe$ = new Subject();
   // context menu
-  @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
-  @ViewChild(MatPaginator) paginator: MatPaginator;
-  @ViewChild('jsonInput') jsonInput: ElementRef<HTMLInputElement>;
+  readonly contextMenu = viewChild(MatMenuTrigger);
+  readonly paginator = viewChild(MatPaginator);
+  readonly jsonInput = viewChild<ElementRef<HTMLInputElement>>('jsonInput');
   contextMenuPosition = { x: '0px', y: '0px' };
 
   constructor() {
@@ -112,7 +112,7 @@ export class CiteDutyListComponent implements OnDestroy, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    this.citeDutyDataSource.paginator = this.paginator;
+    this.citeDutyDataSource.paginator = this.paginator();
   }
 
   addOrEditCiteDuty(citeDuty: CiteDuty, makeTemplate: boolean, makeFromTemplate: boolean) {
@@ -186,7 +186,7 @@ export class CiteDutyListComponent implements OnDestroy, AfterViewInit {
       return;
     }
     this.citeDutyDataService.uploadJson(file, 'events', true);
-    this.jsonInput.nativeElement.value = null;
+    this.jsonInput().nativeElement.value = null;
   }
 
   openDownloadDialog() {
@@ -245,8 +245,9 @@ export class CiteDutyListComponent implements OnDestroy, AfterViewInit {
     this.sort = sort;
     this.sortedCiteDuties = this.getSortedCiteDuties(this.getFilteredCiteDuties(false));
     this.citeDutyDataSource.data = this.sortedCiteDuties;
-    if (this.paginator) {
-      this.paginator.length = this.sortedCiteDuties.length;
+    const paginator = this.paginator();
+    if (paginator) {
+      paginator.length = this.sortedCiteDuties.length;
     }
     this.templateList = this.getSortedCiteDuties(this.getFilteredCiteDuties(true));
   }

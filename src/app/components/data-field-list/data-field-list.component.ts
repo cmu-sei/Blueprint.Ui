@@ -1,7 +1,7 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild, AfterViewInit, inject, input } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, AfterViewInit, inject, input, viewChild } from '@angular/core';
 import { UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -110,9 +110,9 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
   visibleDisplayColumns: string[] = [];
   private unsubscribe$ = new Subject();
   // context menu
-  @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
-  @ViewChild(MatPaginator) paginator: MatPaginator;
-  @ViewChild('jsonInput') jsonInput: ElementRef<HTMLInputElement>;
+  readonly contextMenu = viewChild(MatMenuTrigger);
+  readonly paginator = viewChild(MatPaginator);
+  readonly jsonInput = viewChild<ElementRef<HTMLInputElement>>('jsonInput');
   contextMenuPosition = { x: '0px', y: '0px' };
 
   constructor() {
@@ -204,7 +204,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
   }
 
   ngAfterViewInit() {
-    this.dataFieldDataSource.paginator = this.paginator;
+    this.dataFieldDataSource.paginator = this.paginator();
   }
 
   setDataFieldList() {
@@ -360,7 +360,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
       return;
     }
     this.dataFieldDataService.uploadJson(file, 'events', true);
-    this.jsonInput.nativeElement.value = null;
+    this.jsonInput().nativeElement.value = null;
   }
 
   openDownloadDialog() {
@@ -426,8 +426,9 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
       this.dataFieldList
     );
     this.dataFieldDataSource.data = filteredData;
-    if (this.paginator) {
-      this.paginator.length = filteredData.length;
+    const paginator = this.paginator();
+    if (paginator) {
+      paginator.length = filteredData.length;
     }
     this.templateDataSource.data = this.templateList.sort((a, b) =>
       this.sortDataFields(a, b)

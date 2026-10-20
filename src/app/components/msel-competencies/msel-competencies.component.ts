@@ -1,7 +1,7 @@
 // Copyright 2026 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, OnDestroy, OnInit, ViewChild, AfterViewInit, inject, input } from '@angular/core';
+import { Component, OnDestroy, OnInit, AfterViewInit, inject, input, viewChild } from '@angular/core';
 import { UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { SelectionModel } from '@angular/cdk/collections';
 import { animate, state, style, transition, trigger } from '@angular/animations';
@@ -81,10 +81,10 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
   private dataValueQuery = inject(DataValueQuery);
 
   readonly loggedInUserId = input<string>(undefined);
-  @ViewChild('competencyPaginator') competencyPaginator: MatPaginator;
-  @ViewChild('workRolePaginator') workRolePaginator: MatPaginator;
-  @ViewChild('workRoleSort') workRoleSort: MatSort;
-  @ViewChild('poolSort') poolSort: MatSort;
+  readonly competencyPaginator = viewChild<MatPaginator>('competencyPaginator');
+  readonly workRolePaginator = viewChild<MatPaginator>('workRolePaginator');
+  readonly workRoleSort = viewChild<MatSort>('workRoleSort');
+  readonly poolSort = viewChild<MatSort>('poolSort');
   msel = new MselPlus();
   mselCompetencyList: MselCompetency[] = [];
   teamCompetencyList: TeamCompetency[] = [];
@@ -187,8 +187,9 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
   }
 
   ngAfterViewInit() {
-    if (this.poolSort) {
-      this.dataSource.sort = this.poolSort;
+    const poolSort = this.poolSort();
+    if (poolSort) {
+      this.dataSource.sort = poolSort;
     }
   }
 
@@ -234,8 +235,9 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
           this.workRoleFilterControl.setValue('');
           this.applyWorkRoleFilter();
           setTimeout(() => {
-            if (this.workRolePaginator) {
-              this.workRoleDataSource.paginator = this.workRolePaginator;
+            const workRolePaginator = this.workRolePaginator();
+            if (workRolePaginator) {
+              this.workRoleDataSource.paginator = workRolePaginator;
             }
           });
         },
@@ -387,8 +389,9 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
       }
     };
     setTimeout(() => {
-      if (this.workRoleSort) {
-        this.workRoleDataSource.sort = this.workRoleSort;
+      const workRoleSort = this.workRoleSort();
+      if (workRoleSort) {
+        this.workRoleDataSource.sort = workRoleSort;
       }
     });
   }
@@ -642,11 +645,13 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
       }
     };
     setTimeout(() => {
-      if (this.competencyPaginator) {
-        this.dataSource.paginator = this.competencyPaginator;
+      const competencyPaginator = this.competencyPaginator();
+      if (competencyPaginator) {
+        this.dataSource.paginator = competencyPaginator;
       }
-      if (this.poolSort) {
-        this.dataSource.sort = this.poolSort;
+      const poolSort = this.poolSort();
+      if (poolSort) {
+        this.dataSource.sort = poolSort;
       }
     });
   }

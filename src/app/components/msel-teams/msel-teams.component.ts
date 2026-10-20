@@ -1,7 +1,7 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild, inject, input } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild, inject, input, viewChild } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { TeamDataService } from 'src/app/data/team/team-data.service';
@@ -82,8 +82,8 @@ export class MselTeamsComponent implements OnDestroy, OnInit {
   readonly loggedInUserId = input<string>(undefined);
   @Input() teamTypeList: TeamType[];
   // context menu
-  @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
-  @ViewChild('teamTable', { static: false }) teamTable: MatTable<any>;
+  readonly contextMenu = viewChild(MatMenuTrigger);
+  readonly teamTable = viewChild<MatTable<any>>('teamTable');
   @ViewChild(MatPaginator) set matPaginator(paginator: MatPaginator) {
     this.teamDataSource.paginator = paginator;
   }
@@ -472,7 +472,7 @@ export class MselTeamsComponent implements OnDestroy, OnInit {
     } else {
       this.expandedElementId = row.id;
     }
-    this.teamTable.renderRows();
+    this.teamTable().renderRows();
   }
 
   getRowClass(id: string) {

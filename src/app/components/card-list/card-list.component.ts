@@ -1,7 +1,7 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, ElementRef, OnDestroy, ViewChild, AfterViewInit, inject as inject_1, input } from '@angular/core';
+import { Component, ElementRef, OnDestroy, AfterViewInit, inject as inject_1, input, viewChild } from '@angular/core';
 import { UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatTableDataSource, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
 import { MatTable } from '@angular/material/table';
@@ -56,10 +56,10 @@ export class CardListComponent implements OnDestroy, AfterViewInit {
   readonly canEdit = input<boolean>(undefined);
   readonly showTemplates = input<boolean>(undefined);
   // context menu
-  @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
-  @ViewChild('cardTable', { static: false }) cardTable: MatTable<any>;
-  @ViewChild(MatPaginator) paginator: MatPaginator;
-  @ViewChild('jsonInput') jsonInput: ElementRef<HTMLInputElement>;
+  readonly contextMenu = viewChild(MatMenuTrigger);
+  readonly cardTable = viewChild<MatTable<any>>('cardTable');
+  readonly paginator = viewChild(MatPaginator);
+  readonly jsonInput = viewChild<ElementRef<HTMLInputElement>>('jsonInput');
   msel = new MselPlus();
   templateList: Card[] = [];
   cardList: Card[] = [];
@@ -114,7 +114,7 @@ export class CardListComponent implements OnDestroy, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    this.cardDataSource.paginator = this.paginator;
+    this.cardDataSource.paginator = this.paginator();
   }
 
   rowClicked(row: Card) {
@@ -126,7 +126,7 @@ export class CardListComponent implements OnDestroy, AfterViewInit {
     } else {
       this.expandedElementId = row.id;
     }
-    this.cardTable.renderRows();
+    this.cardTable().renderRows();
   }
 
   getRowClass(id: string) {
@@ -204,7 +204,7 @@ export class CardListComponent implements OnDestroy, AfterViewInit {
       return;
     }
     this.cardDataService.uploadJson(file, 'events', true);
-    this.jsonInput.nativeElement.value = null;
+    this.jsonInput().nativeElement.value = null;
   }
 
   openDownloadDialog() {
@@ -260,8 +260,9 @@ export class CardListComponent implements OnDestroy, AfterViewInit {
     this.sortedCards = this.getSortedCards(this.getFilteredCards(false));
     this.templateList = this.getSortedCards(this.getFilteredCards(true));
     this.cardDataSource.data = this.sortedCards;
-    if (this.paginator) {
-      this.paginator.length = this.sortedCards.length;
+    const paginator = this.paginator();
+    if (paginator) {
+      paginator.length = this.sortedCards.length;
     }
   }
 

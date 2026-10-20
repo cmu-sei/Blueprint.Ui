@@ -1,7 +1,7 @@
 // Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild, inject, input } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject, input, viewChild } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { PlayerApplication, Move, SystemPermission, Team } from 'src/app/generated/blueprint.api';
@@ -61,8 +61,8 @@ export class PlayerApplicationListComponent implements OnDestroy, OnInit {
 
   readonly loggedInUserId = input<string>(undefined);
   // context menu
-  @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
-  @ViewChild('appTable', { static: false }) appTable: MatTable<any>;
+  readonly contextMenu = viewChild(MatMenuTrigger);
+  readonly appTable = viewChild<MatTable<any>>('appTable');
   msel = new MselPlus();
   mselTeamList: Team[] = [];
   templateList: PlayerApplication[] = [];
@@ -145,7 +145,7 @@ export class PlayerApplicationListComponent implements OnDestroy, OnInit {
 
   rowClicked(row: PlayerApplication) {
     this.expandPlayerApplication(row.id);
-    this.appTable.renderRows();
+    this.appTable().renderRows();
   }
 
   getRowClass(id: string) {

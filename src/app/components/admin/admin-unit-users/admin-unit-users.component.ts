@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, OnDestroy, OnInit, ElementRef, ViewChild, AfterViewInit, inject, input } from '@angular/core';
+import { Component, OnDestroy, OnInit, ElementRef, AfterViewInit, inject, input, viewChild } from '@angular/core';
 import { MatPaginator } from '@angular/material/paginator';
 import { Sort, MatSort, MatSortHeader } from '@angular/material/sort';
 import { MatTableDataSource, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
@@ -29,8 +29,8 @@ export class AdminUnitUsersComponent implements OnDestroy, OnInit, AfterViewInit
 
   readonly unitId = input<string>(undefined);
   readonly canManage = input<boolean>(undefined);
-  @ViewChild('userPaginator') userPaginator: MatPaginator;
-  @ViewChild('unitUserPaginator') unitUserPaginator: MatPaginator;
+  readonly userPaginator = viewChild<MatPaginator>('userPaginator');
+  readonly unitUserPaginator = viewChild<MatPaginator>('unitUserPaginator');
   userList: User[] = [];
   users: User[] = [];
   unitUsers: User[] = [];
@@ -43,7 +43,7 @@ export class AdminUnitUsersComponent implements OnDestroy, OnInit, AfterViewInit
   unitUserFilterString = '';
   private unsubscribe$ = new Subject();
   sort: Sort = { active: 'name', direction: 'asc' };
-  @ViewChild('usersInput') usersInput: ElementRef<HTMLInputElement>;
+  readonly usersInput = viewChild<ElementRef<HTMLInputElement>>('usersInput');
 
   constructor() {
     this.userQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(users => {
@@ -73,8 +73,8 @@ export class AdminUnitUsersComponent implements OnDestroy, OnInit, AfterViewInit
   }
 
   ngAfterViewInit() {
-    this.userDataSource.paginator = this.userPaginator;
-    this.unitUserDataSource.paginator = this.unitUserPaginator;
+    this.userDataSource.paginator = this.userPaginator();
+    this.unitUserDataSource.paginator = this.unitUserPaginator();
   }
 
   applyFilter() {
@@ -123,11 +123,13 @@ export class AdminUnitUsersComponent implements OnDestroy, OnInit, AfterViewInit
       }
     });
     this.userDataSource = new MatTableDataSource(newAllUsers);
-    if (this.userPaginator) {
-      this.userDataSource.paginator = this.userPaginator;
+    const userPaginator = this.userPaginator();
+    if (userPaginator) {
+      this.userDataSource.paginator = userPaginator;
     }
-    if (this.unitUserPaginator) {
-      this.unitUserDataSource.paginator = this.unitUserPaginator;
+    const unitUserPaginator = this.unitUserPaginator();
+    if (unitUserPaginator) {
+      this.unitUserDataSource.paginator = unitUserPaginator;
     }
   }
 
@@ -158,8 +160,9 @@ export class AdminUnitUsersComponent implements OnDestroy, OnInit, AfterViewInit
       }
     });
     this.userDataSource.data = data;
-    if (this.userPaginator) {
-      this.userDataSource.paginator = this.userPaginator;
+    const userPaginator = this.userPaginator();
+    if (userPaginator) {
+      this.userDataSource.paginator = userPaginator;
     }
   }
 
@@ -181,8 +184,9 @@ export class AdminUnitUsersComponent implements OnDestroy, OnInit, AfterViewInit
       }
     });
     this.unitUserDataSource.data = data;
-    if (this.unitUserPaginator) {
-      this.unitUserDataSource.paginator = this.unitUserPaginator;
+    const unitUserPaginator = this.unitUserPaginator();
+    if (unitUserPaginator) {
+      this.unitUserDataSource.paginator = unitUserPaginator;
     }
   }
 

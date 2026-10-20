@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { ChangeDetectorRef, Component, OnDestroy, OnInit, OnChanges, SimpleChanges, ElementRef, ViewChild, inject, input } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, OnChanges, SimpleChanges, ElementRef, inject, input, viewChild } from '@angular/core';
 import { PageEvent, MatPaginator } from '@angular/material/paginator';
 import { MatSort, MatSortable } from '@angular/material/sort';
 import { MatTableDataSource, MatTable, MatColumnDef, MatCellDef, MatCell, MatRowDef, MatRow } from '@angular/material/table';
@@ -36,9 +36,9 @@ export class PlayerApplicationTeamsComponent implements OnDestroy, OnInit, OnCha
   readonly loggedInUserId = input<string>(undefined);
   readonly playerApplicationId = input<string>(undefined);
   readonly mselTeamList = input<Team[]>([]);
-  @ViewChild('teamsInput') teamsInput: ElementRef<HTMLInputElement>;
-  @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
-  @ViewChild(MatSort, { static: true }) sort: MatSort;
+  readonly teamsInput = viewChild<ElementRef<HTMLInputElement>>('teamsInput');
+  readonly paginator = viewChild(MatPaginator);
+  readonly sort = viewChild(MatSort);
   msel = new MselPlus();
   teams: Team[];
   playerApplicationTeams: PlayerApplicationTeam[];
@@ -68,8 +68,8 @@ export class PlayerApplicationTeamsComponent implements OnDestroy, OnInit, OnCha
       .subscribe(() => {
         this.changeDetectorRef.markForCheck();
       });
-    this.sort.sort(<MatSortable>{ id: 'name', start: 'asc' });
-    this.teamDataSource.sort = this.sort;
+    this.sort().sort(<MatSortable>{ id: 'name', start: 'asc' });
+    this.teamDataSource.sort = this.sort();
     this.pageEvent = new PageEvent();
     this.pageEvent.pageIndex = 0;
     this.pageEvent.pageSize = this.defaultPageSize;
@@ -127,7 +127,7 @@ export class PlayerApplicationTeamsComponent implements OnDestroy, OnInit, OnCha
       mselTeams = mselTeamList.filter(mt => !this.playerApplicationTeams.some(ct => ct.teamId === mt.id));
     }
     this.teamDataSource = new MatTableDataSource(mselTeams);
-    this.teamDataSource.sort = this.sort;
+    this.teamDataSource.sort = this.sort();
   }
 
   getTeamShortName(teamId: string) {

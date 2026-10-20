@@ -1,7 +1,7 @@
 // Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, ElementRef, OnDestroy, ViewChild, AfterViewInit, inject, input } from '@angular/core';
+import { Component, ElementRef, OnDestroy, AfterViewInit, inject, input, viewChild } from '@angular/core';
 import { UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatTableDataSource, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
 import { animate, state, style, transition, trigger } from '@angular/animations';
@@ -57,9 +57,9 @@ export class AdminInjectTypesComponent implements OnDestroy, AfterViewInit {
 
   readonly loggedInUserId = input<string>(undefined);
   readonly canEdit = input<boolean>(undefined);
-  @ViewChild('injectTypeTable', { static: false }) injectTypeTable: MatTable<any>;
-  @ViewChild(MatPaginator) paginator: MatPaginator;
-  @ViewChild('jsonInput') jsonInput: ElementRef<HTMLInputElement>;
+  readonly injectTypeTable = viewChild<MatTable<any>>('injectTypeTable');
+  readonly paginator = viewChild(MatPaginator);
+  readonly jsonInput = viewChild<ElementRef<HTMLInputElement>>('jsonInput');
   contextMenuPosition = { x: '0px', y: '0px' };
   msel = new MselPlus();
   adminInjectTypes: InjectType[] = [];
@@ -131,7 +131,7 @@ export class AdminInjectTypesComponent implements OnDestroy, AfterViewInit {
       return;
     }
     this.injectTypeDataService.uploadJson(file, 'events', true);
-    this.jsonInput.nativeElement.value = null;
+    this.jsonInput().nativeElement.value = null;
   }
 
   openDownloadDialog() {
@@ -210,7 +210,7 @@ export class AdminInjectTypesComponent implements OnDestroy, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    this.injectTypeDataSource.paginator = this.paginator;
+    this.injectTypeDataSource.paginator = this.paginator();
   }
 
   ngOnDestroy() {
@@ -267,7 +267,7 @@ export class AdminInjectTypesComponent implements OnDestroy, AfterViewInit {
     } else {
       this.expandedElementId = row.id;
     }
-    this.injectTypeTable.renderRows();
+    this.injectTypeTable().renderRows();
   }
 
   getRowClass(id: string) {

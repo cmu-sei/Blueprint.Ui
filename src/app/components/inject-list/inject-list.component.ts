@@ -1,7 +1,7 @@
 // Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, Input, OnDestroy, OnInit, ViewChild, inject as inject_1, input, output } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit, inject as inject_1, input, output, viewChild } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { MatTableDataSource, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
 import {
@@ -81,7 +81,7 @@ export class InjectListComponent implements OnDestroy, OnInit {
   readonly injectType = input<InjectType>({});
   @Input() injectList: Injectm[] = [];
   readonly selectedInjectIdList = output<string[]>();
-  @ViewChild('injectTable', { static: false }) injectTable: MatTable<any>;
+  readonly injectTable = viewChild<MatTable<any>>('injectTable');
   contextMenuPosition = { x: '0px', y: '0px' };
   selectedInjectIds: string[] = [];
   changedInject: Injectm = {};
@@ -335,7 +335,7 @@ export class InjectListComponent implements OnDestroy, OnInit {
     } else {
       this.expandedElementId = row.id;
     }
-    this.injectTable.renderRows();
+    this.injectTable().renderRows();
   }
 
   getRowClass(id: string) {

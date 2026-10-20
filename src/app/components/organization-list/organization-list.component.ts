@@ -1,7 +1,7 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, ElementRef, Input, OnDestroy, OnInit, ViewChild, AfterViewInit, inject, input } from '@angular/core';
+import { Component, ElementRef, Input, OnDestroy, OnInit, AfterViewInit, inject, input, viewChild } from '@angular/core';
 import { UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatTableDataSource, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
@@ -52,9 +52,9 @@ export class OrganizationListComponent implements OnDestroy, OnInit, AfterViewIn
   readonly canEdit = input<boolean>(undefined);
   @Input() showTemplates: boolean;
   // context menu
-  @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
-  @ViewChild(MatPaginator) paginator: MatPaginator;
-  @ViewChild('jsonInput') jsonInput: ElementRef<HTMLInputElement>;
+  readonly contextMenu = viewChild(MatMenuTrigger);
+  readonly paginator = viewChild(MatPaginator);
+  readonly jsonInput = viewChild<ElementRef<HTMLInputElement>>('jsonInput');
   contextMenuPosition = { x: '0px', y: '0px' };
   msel = new MselPlus();
   organizationList: Organization[] = [];
@@ -100,9 +100,9 @@ export class OrganizationListComponent implements OnDestroy, OnInit, AfterViewIn
 
   ngAfterViewInit() {
     if (this.showTemplates) {
-      this.templateDataSource.paginator = this.paginator;
+      this.templateDataSource.paginator = this.paginator();
     } else {
-      this.organizationDataSource.paginator = this.paginator;
+      this.organizationDataSource.paginator = this.paginator();
     }
   }
 
@@ -174,7 +174,7 @@ export class OrganizationListComponent implements OnDestroy, OnInit, AfterViewIn
       return;
     }
     this.organizationDataService.uploadJson(file, 'events', true);
-    this.jsonInput.nativeElement.value = null;
+    this.jsonInput().nativeElement.value = null;
   }
 
   openDownloadDialog() {
@@ -231,8 +231,9 @@ export class OrganizationListComponent implements OnDestroy, OnInit, AfterViewIn
     const templateData = this.getFilteredAndSortedOrganizations(null, this.organizationList);
     this.organizationDataSource.data = mselData;
     this.templateDataSource.data = templateData;
-    if (this.paginator) {
-      this.paginator.length = this.showTemplates ? templateData.length : mselData.length;
+    const paginator = this.paginator();
+    if (paginator) {
+      paginator.length = this.showTemplates ? templateData.length : mselData.length;
     }
   }
 

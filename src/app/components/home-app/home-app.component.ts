@@ -1,7 +1,7 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject, viewChild } from '@angular/core';
 import { MatSidenav } from '@angular/material/sidenav';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -62,7 +62,7 @@ export class HomeAppComponent implements OnDestroy, OnInit {
   private titleService = inject(Title);
   private uiDataService = inject(UIDataService);
 
-  @ViewChild('sidenav') sidenav: MatSidenav;
+  readonly sidenav = viewChild<MatSidenav>('sidenav');
   apiIsSick = false;
   apiMessage = 'The API web service is not responding.';
   topbarTextBase = 'Set AppTopBarText in Settings';

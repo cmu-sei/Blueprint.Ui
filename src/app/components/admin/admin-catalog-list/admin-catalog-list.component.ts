@@ -1,7 +1,7 @@
 // Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, ElementRef, OnDestroy, ViewChild, AfterViewInit, inject, input } from '@angular/core';
+import { Component, ElementRef, OnDestroy, AfterViewInit, inject, input, viewChild } from '@angular/core';
 import { UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatTableDataSource, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
 import {
@@ -56,9 +56,9 @@ export class AdminCatalogListComponent implements OnDestroy, AfterViewInit {
 
   readonly loggedInUserId = input<string>(undefined);
   readonly canEdit = input<boolean>(undefined);
-  @ViewChild('catalogTable', { static: false }) catalogTable: MatTable<any>;
-  @ViewChild(MatPaginator) paginator: MatPaginator;
-  @ViewChild('jsonInput') jsonInput: ElementRef<HTMLInputElement>;
+  readonly catalogTable = viewChild<MatTable<any>>('catalogTable');
+  readonly paginator = viewChild(MatPaginator);
+  readonly jsonInput = viewChild<ElementRef<HTMLInputElement>>('jsonInput');
   contextMenuPosition = { x: '0px', y: '0px' };
   catalogList: Catalog[] = [];
   changedCatalog: Catalog = {};
@@ -184,7 +184,7 @@ export class AdminCatalogListComponent implements OnDestroy, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    this.catalogDataSource.paginator = this.paginator;
+    this.catalogDataSource.paginator = this.paginator();
   }
 
   ngOnDestroy() {
@@ -243,7 +243,7 @@ export class AdminCatalogListComponent implements OnDestroy, AfterViewInit {
     } else {
       this.expandedElementId = row.id;
     }
-    this.catalogTable.renderRows();
+    this.catalogTable().renderRows();
   }
 
   getRowClass(id: string) {
@@ -273,7 +273,7 @@ export class AdminCatalogListComponent implements OnDestroy, AfterViewInit {
     }
     this.uploadProgress = 0;
     this.catalogDataService.uploadJson(file, 'events', true);
-    this.jsonInput.nativeElement.value = null;
+    this.jsonInput().nativeElement.value = null;
   }
 
   /**

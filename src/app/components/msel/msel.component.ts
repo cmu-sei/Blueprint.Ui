@@ -1,7 +1,7 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, OnDestroy, ViewChild, ViewChildren, QueryList, inject, input, output } from '@angular/core';
+import { Component, OnDestroy, inject, input, output, viewChild, viewChildren } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { MselInfoComponent } from '../msel-info/msel-info.component';
@@ -102,9 +102,9 @@ export class MselComponent implements OnDestroy {
   readonly canEditCheckboxes = input(false);
   readonly userTheme$ = input<Observable<Theme>>(undefined);
   readonly deleteThisMsel = output<string>();
-  @ViewChild('tabGroup0', { static: false }) tabGroup0: MatTabGroup;
-  @ViewChildren('MatTab') tabs: QueryList<MatTab>;
-  @ViewChild(MselInfoComponent) mselInfoComponent: MselInfoComponent;
+  readonly tabGroup0 = viewChild<MatTabGroup>('tabGroup0');
+  readonly tabs = viewChildren<MatTab>('MatTab');
+  readonly mselInfoComponent = viewChild(MselInfoComponent);
   tabList: string[] = [
     'Info',
     'Contributors',
@@ -246,7 +246,7 @@ export class MselComponent implements OnDestroy {
       }
     };
 
-    if (this.selectedTab === 'Info' && tabName !== 'Info' && this.mselInfoComponent?.hasPendingChanges()) {
+    if (this.selectedTab === 'Info' && tabName !== 'Info' && this.mselInfoComponent()?.hasPendingChanges()) {
       this.dialogService
         .confirm({ title: 'Unsaved Changes', message: 'You have unsaved changes on the MSEL Info page. Are you sure you want to discard them?' }).afterClosed().subscribe((result) => {
           if (result) {
@@ -266,7 +266,7 @@ export class MselComponent implements OnDestroy {
       });
     };
 
-    if (this.selectedTab === 'Info' && this.mselInfoComponent?.hasPendingChanges()) {
+    if (this.selectedTab === 'Info' && this.mselInfoComponent()?.hasPendingChanges()) {
       this.dialogService
         .confirm({ title: 'Unsaved Changes', message: 'You have unsaved changes on the MSEL Info page. Are you sure you want to discard them?' }).afterClosed().subscribe((result) => {
           if (result) {

@@ -1,7 +1,7 @@
 // Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, Input, OnDestroy, OnInit, ViewChild, inject, input } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit, inject, input, viewChild } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { UnitQuery } from 'src/app/data/unit/unit.query';
@@ -41,7 +41,7 @@ export class CatalogUnitsComponent implements OnDestroy, OnInit {
   @Input() canEdit: boolean;
   readonly catalog = input<Catalog>(undefined);
   // context menu
-  @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
+  readonly contextMenu = viewChild(MatMenuTrigger);
   contextMenuPosition = { x: '0px', y: '0px' };
   displayedColumns: string[] = ['action', 'shortName', 'name'];
   expandedSectionIds: string[] = [];

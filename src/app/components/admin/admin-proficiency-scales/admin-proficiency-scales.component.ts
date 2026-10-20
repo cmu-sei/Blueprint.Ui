@@ -1,7 +1,7 @@
 // Copyright 2026 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild, inject, input } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, inject, input, viewChild } from '@angular/core';
 import { UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTable, MatTableDataSource, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
@@ -54,9 +54,9 @@ export class AdminProficiencyScalesComponent implements OnInit, OnDestroy {
   levelDisplayedColumns: string[] = ['action', 'name', 'value', 'displayOrder', 'description'];
   scaleSort: Sort = { active: 'name', direction: 'asc' };
   levelSort: Sort = { active: 'displayOrder', direction: 'asc' };
-  @ViewChild('scaleTable', { static: false }) scaleTable: MatTable<any>;
-  @ViewChild('paginator') paginator: MatPaginator;
-  @ViewChild('jsonInput') jsonInput: ElementRef<HTMLInputElement>;
+  readonly scaleTable = viewChild<MatTable<any>>('scaleTable');
+  readonly paginator = viewChild<MatPaginator>('paginator');
+  readonly jsonInput = viewChild<ElementRef<HTMLInputElement>>('jsonInput');
   expandedScaleId = '';
   filterControl = new UntypedFormControl();
   filterString = '';
@@ -93,7 +93,7 @@ export class AdminProficiencyScalesComponent implements OnInit, OnDestroy {
           this.loadScales();
         }
       });
-    this.jsonInput.nativeElement.value = null;
+    this.jsonInput().nativeElement.value = null;
   }
 
   openDownloadDialog() {
@@ -155,8 +155,9 @@ export class AdminProficiencyScalesComponent implements OnInit, OnDestroy {
       bVal = (b[col] || '').toString().toLowerCase();
       return (aVal < bVal ? -1 : aVal > bVal ? 1 : 0) * (isAsc ? 1 : -1);
     });
-    if (this.paginator) {
-      this.scaleDataSource.paginator = this.paginator;
+    const paginator = this.paginator();
+    if (paginator) {
+      this.scaleDataSource.paginator = paginator;
     }
   }
 
@@ -167,7 +168,7 @@ export class AdminProficiencyScalesComponent implements OnInit, OnDestroy {
 
   toggleScaleExpand(row: ProficiencyScale) {
     this.expandedScaleId = this.expandedScaleId === row.id ? '' : row.id;
-    this.scaleTable.renderRows();
+    this.scaleTable().renderRows();
   }
 
   getLevelDataSource(scale: ProficiencyScale): MatTableDataSource<ProficiencyLevel> {

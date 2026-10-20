@@ -1,7 +1,7 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, OnDestroy, ViewChild, inject, input } from '@angular/core';
+import { Component, OnDestroy, inject, input, viewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Sort, MatSort, MatSortHeader } from '@angular/material/sort';
 import { Subject, Subscription, Observable, of } from 'rxjs';
@@ -93,7 +93,7 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
   readonly tabHeight = input<number>(undefined);
   readonly userTheme = input<Theme>(undefined);
   // context menu
-  @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
+  readonly contextMenu = viewChild(MatMenuTrigger);
   contextMenuPosition = { x: '0px', y: '0px' };
   myTopHeight = 79;
   msel: Msel = { name: '' };

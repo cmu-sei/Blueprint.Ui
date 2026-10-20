@@ -1,7 +1,7 @@
 // Copyright 2025 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
-import { Component, OnInit, ViewChild, OnChanges, SimpleChanges, inject, input, output } from '@angular/core';
+import { Component, OnInit, OnChanges, SimpleChanges, inject, input, output, viewChild } from '@angular/core';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { MatSort, MatSortHeader } from '@angular/material/sort';
 import { MatPaginator } from '@angular/material/paginator';
@@ -51,14 +51,15 @@ export class AdminUserListComponent implements OnInit, OnChanges {
   readonly create = output<User>();
   readonly delete = output<string>();
   readonly updateUser = output<User>();
-  @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
-  @ViewChild(MatSort, { static: true }) sort: MatSort;
+  readonly paginator = viewChild(MatPaginator);
+  readonly sort = viewChild(MatSort);
 
   ngOnInit() {
-    if (this.paginator) {
-      this.userDataSource.paginator = this.paginator;
+    const paginator = this.paginator();
+    if (paginator) {
+      this.userDataSource.paginator = paginator;
     }
-    this.userDataSource.sort = this.sort;
+    this.userDataSource.sort = this.sort();
     this.roleDataService.getRoles().subscribe();
     this.filterAndSort(this.filterString);
   }

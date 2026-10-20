@@ -1,7 +1,7 @@
 // Copyright 2025 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, OnDestroy, ViewChild, inject, input } from '@angular/core';
+import { Component, OnDestroy, inject, input, viewChild } from '@angular/core';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import {
@@ -40,7 +40,7 @@ export class PlayerTeamAppOrderComponent implements OnDestroy {
   readonly loggedInUserId = input<string>(undefined);
   readonly canEdit = input<boolean>(undefined);
   readonly mselTeamList = input<Team[]>(undefined);
-  @ViewChild('teamAppTable', { static: false }) teamAppTable: MatTable<any>;
+  readonly teamAppTable = viewChild<MatTable<any>>('teamAppTable');
   playerApplicationList: PlayerApplication[];
   editTeamId = '';
   playerApplicationTeamList: PlayerApplicationTeam[] = [];
@@ -84,7 +84,7 @@ export class PlayerTeamAppOrderComponent implements OnDestroy {
     } else {
       this.expandedElementId = row.id;
     }
-    this.teamAppTable.renderRows();
+    this.teamAppTable().renderRows();
   }
 
   getRowClass(id: string) {

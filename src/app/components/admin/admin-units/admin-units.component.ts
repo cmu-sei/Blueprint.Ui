@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, ElementRef, OnDestroy, ViewChild, inject, input } from '@angular/core';
+import { Component, ElementRef, OnDestroy, ViewChild, inject, input, viewChild } from '@angular/core';
 import { MatPaginator } from '@angular/material/paginator';
 import { Sort, MatSort, MatSortHeader } from '@angular/material/sort';
 import { MatTable, MatTableDataSource, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
@@ -49,8 +49,8 @@ export class AdminUnitsComponent implements OnDestroy {
   private userQuery = inject(UserQuery);
 
   readonly canManage = input<boolean>(undefined);
-  @ViewChild('unitTable', { static: false }) unitTable: MatTable<any>;
-  @ViewChild('jsonInput') jsonInput: ElementRef<HTMLInputElement>;
+  readonly unitTable = viewChild<MatTable<any>>('unitTable');
+  readonly jsonInput = viewChild<ElementRef<HTMLInputElement>>('jsonInput');
   @ViewChild(MatPaginator) set matPaginator(paginator: MatPaginator) {
     this.unitDataSource.paginator = paginator;
   }
@@ -126,7 +126,7 @@ export class AdminUnitsComponent implements OnDestroy {
       return;
     }
     this.unitDataService.uploadJson(file, 'events', true);
-    this.jsonInput.nativeElement.value = null;
+    this.jsonInput().nativeElement.value = null;
   }
 
   openDownloadDialog() {
@@ -210,7 +210,7 @@ export class AdminUnitsComponent implements OnDestroy {
     } else {
       this.expandedElementId = row.id;
     }
-    this.unitTable.renderRows();
+    this.unitTable().renderRows();
   }
 
   getRowClass(id: string) {

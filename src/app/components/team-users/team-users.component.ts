@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license, please see LICENSE.md in the
 // project root for license information or contact permission@sei.cmu.edu for full terms.
 
-import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild, AfterViewInit, inject, input } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, AfterViewInit, inject, input, viewChild } from '@angular/core';
 import { MatPaginator } from '@angular/material/paginator';
 import { Sort, MatSortable, MatSort, MatSortHeader } from '@angular/material/sort';
 import { MatTableDataSource, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
@@ -49,8 +49,8 @@ export class TeamUsersComponent implements OnDestroy, OnInit, AfterViewInit {
   private changeDetectorRef = inject(ChangeDetectorRef);
 
   readonly team = input<Team>(undefined);
-  @ViewChild('userPaginator') userPaginator: MatPaginator;
-  @ViewChild('teamMemberPaginator') teamMemberPaginator: MatPaginator;
+  readonly userPaginator = viewChild<MatPaginator>('userPaginator');
+  readonly teamMemberPaginator = viewChild<MatPaginator>('teamMemberPaginator');
   userList: User[] = [];
   teamUsers: TeamUser[] = [];
   otherTeamUsers: TeamUser[] = [];
@@ -148,8 +148,8 @@ export class TeamUsersComponent implements OnDestroy, OnInit, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    this.userDataSource.paginator = this.userPaginator;
-    this.teamUserDataSource.paginator = this.teamMemberPaginator;
+    this.userDataSource.paginator = this.userPaginator();
+    this.teamUserDataSource.paginator = this.teamMemberPaginator();
   }
 
   canEditMsel(): boolean {
@@ -196,11 +196,13 @@ export class TeamUsersComponent implements OnDestroy, OnInit, AfterViewInit {
       }
     });
     this.userDataSource = new MatTableDataSource(newAllUsers);
-    if (this.userPaginator) {
-      this.userDataSource.paginator = this.userPaginator;
+    const userPaginator = this.userPaginator();
+    if (userPaginator) {
+      this.userDataSource.paginator = userPaginator;
     }
-    if (this.teamMemberPaginator) {
-      this.teamUserDataSource.paginator = this.teamMemberPaginator;
+    const teamMemberPaginator = this.teamMemberPaginator();
+    if (teamMemberPaginator) {
+      this.teamUserDataSource.paginator = teamMemberPaginator;
     }
   }
 
@@ -254,8 +256,9 @@ export class TeamUsersComponent implements OnDestroy, OnInit, AfterViewInit {
       }
     });
     this.userDataSource.data = data;
-    if (this.userPaginator) {
-      this.userDataSource.paginator = this.userPaginator;
+    const userPaginator = this.userPaginator();
+    if (userPaginator) {
+      this.userDataSource.paginator = userPaginator;
     }
   }
 
@@ -272,8 +275,9 @@ export class TeamUsersComponent implements OnDestroy, OnInit, AfterViewInit {
       }
     });
     this.teamUserDataSource.data = teamUserData;
-    if (this.teamMemberPaginator) {
-      this.teamUserDataSource.paginator = this.teamMemberPaginator;
+    const teamMemberPaginator = this.teamMemberPaginator();
+    if (teamMemberPaginator) {
+      this.teamUserDataSource.paginator = teamMemberPaginator;
     }
   }
 
