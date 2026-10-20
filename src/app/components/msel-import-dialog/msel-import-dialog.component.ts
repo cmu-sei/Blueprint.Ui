@@ -7,10 +7,12 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { take } from 'rxjs/operators';
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
-import { MselImportResult } from 'src/app/generated/blueprint.api';
+import { MselDraftImport, MselImportResult } from 'src/app/generated/blueprint.api';
 
+// One of file or draft: a JSON file to import, or a reviewed AI draft to create
 export interface MselImportDialogData {
-  file: File;
+  file?: File;
+  draft?: MselDraftImport;
 }
 
 @Component({
@@ -32,9 +34,15 @@ export class MselImportDialogComponent implements OnInit {
     dialogRef.disableClose = true;
   }
 
+  get importName(): string {
+    return this.data.file?.name ?? this.data.draft?.draft?.name ?? 'the draft';
+  }
+
   ngOnInit() {
-    this.mselDataService
-      .importJson(this.data.file)
+    const import$ = this.data.draft
+      ? this.mselDataService.importDraft(this.data.draft)
+      : this.mselDataService.importJson(this.data.file);
+    import$
       .pipe(take(1))
       .subscribe({
         next: (result) => {

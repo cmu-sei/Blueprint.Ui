@@ -69,6 +69,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <button mat-icon-button (click)="addMsel()" title="Add blank MSEL" [disabled]="!canCreateMsels()">
               <mat-icon class="mdi-24px" fontIcon="mdi-plus-circle"></mat-icon>
             </button>
+            <button mat-icon-button (click)="draftWithAi()" title="Draft MSEL with AI" [disabled]="!canCreateMsels()">
+              <mat-icon class="mdi-24px" fontIcon="mdi-creation"></mat-icon>
+            </button>
             <button mat-icon-button [matMenuTriggerFor]="upload" title="Upload a new MSEL from a file"
               [disabled]="!canCreateMsels()">
               <mat-icon class="mdi-24px" fontIcon="mdi-upload"></mat-icon>

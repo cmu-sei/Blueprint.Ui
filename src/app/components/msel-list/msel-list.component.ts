@@ -19,7 +19,11 @@ import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { MatDialog } from '@angular/material/dialog';
-import { MselImportDialogComponent } from 'src/app/components/msel-import-dialog/msel-import-dialog.component';
+import {
+  MselImportDialogComponent,
+  MselImportDialogData,
+} from 'src/app/components/msel-import-dialog/msel-import-dialog.component';
+import { MselDraftDialogComponent } from 'src/app/components/msel-draft-dialog/msel-draft-dialog.component';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
 import { User, SystemPermission } from 'src/app/generated/blueprint.api';
 import { MselItemStatus } from 'src/app/generated/blueprint.api';
@@ -223,9 +227,30 @@ export class MselListComponent implements OnDestroy, OnInit {
   }
 
   importJson(file: File) {
+    this.openImportDialog({ file });
+  }
+
+  // the draft dialog saves nothing; a reviewed draft goes through the same import report as a json file
+  draftWithAi() {
+    this.dialog
+      .open(MselDraftDialogComponent, {
+        data: { templates: this.mselList.filter((m) => m.isTemplate) },
+        width: '900px',
+        maxWidth: '90vw',
+      })
+      .afterClosed()
+      .pipe(take(1))
+      .subscribe((draft) => {
+        if (draft) {
+          this.openImportDialog({ draft });
+        }
+      });
+  }
+
+  private openImportDialog(data: MselImportDialogData) {
     this.dialog
       .open(MselImportDialogComponent, {
-        data: { file },
+        data,
         width: '600px',
         maxWidth: '90vw',
       })

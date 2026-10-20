@@ -17,6 +17,9 @@ import {
   MselItemStatus,
   Move,
   Msel,
+  MselDraftImport,
+  MselDraftRequest,
+  MselDraftResult,
   MselImportResult,
   MselRole,
   MselService,
@@ -656,6 +659,20 @@ export class MselDataService {
   importJson(file: File): Observable<MselImportResult> {
     return this.mselService
       .importJsonMsel(file)
+      .pipe(
+        tap((result) => this.mselStore.upsert(result.msel.id, result.msel))
+      );
+  }
+
+  // Drafting saves nothing, so the store is untouched until the draft is imported
+  draftMsel(request: MselDraftRequest): Observable<MselDraftResult> {
+    return this.mselService.draftMsel(request);
+  }
+
+  // Errors are left to the caller, which shows them in the import dialog
+  importDraft(draftImport: MselDraftImport): Observable<MselImportResult> {
+    return this.mselService
+      .importMselDraft(draftImport)
       .pipe(
         tap((result) => this.mselStore.upsert(result.msel.id, result.msel))
       );

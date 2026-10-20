@@ -1,0 +1,145 @@
+<!--
+Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license, please see LICENSE.md in the
+project root for license information or contact permission@sei.cmu.edu for full terms.
+-->
+
+<crucible-dialog dialogTitle="Draft MSEL with AI" [hideDefaultActions]="true">
+
+<div crucibleDialogContent>
+  @if (!result) {
+  <p class="hint">
+    Describe the exercise. The draft uses the template's columns, teams and integrations.
+    Nothing is saved until you review the draft and select Create MSEL.
+  </p>
+  <mat-form-field class="full-width">
+    <mat-label>Template</mat-label>
+    <mat-select [(ngModel)]="templateMselId" [disabled]="isDrafting">
+      @for (template of data.templates; track template.id) {
+      <mat-option [value]="template.id">{{ template.name }}</mat-option>
+      }
+    </mat-select>
+    @if (!data.templates.length) {
+    <mat-hint>No templates are available. Mark a MSEL as a template first.</mat-hint>
+    }
+  </mat-form-field>
+  <mat-form-field class="full-width">
+    <mat-label>Exercise description</mat-label>
+    <textarea matInput [(ngModel)]="prompt" rows="7" [disabled]="isDrafting"
+      placeholder="Audience, length, scenario, objectives, organizations to simulate, competencies to exercise"></textarea>
+  </mat-form-field>
+  @if (isDrafting) {
+  <div class="drafting">
+    <mat-spinner diameter="40"></mat-spinner>
+    <span>Drafting. This can take a minute.</span>
+  </div>
+  }
+  @if (errorMessage) {
+  <div class="error-message" role="alert">
+    <mat-icon fontIcon="mdi-alert-circle-outline"></mat-icon>
+    <span>{{ errorMessage }}</span>
+  </div>
+  }
+  } @else {
+  <mat-form-field class="full-width">
+    <mat-label>Name</mat-label>
+    <input matInput [(ngModel)]="result.draft.name" />
+  </mat-form-field>
+  <mat-form-field class="full-width">
+    <mat-label>Description</mat-label>
+    <textarea matInput [(ngModel)]="result.draft.description" rows="3"></textarea>
+  </mat-form-field>
+
+  <section class="section">
+    <h3 class="section-title">Moves</h3>
+    <ul class="plain-list">
+      @for (move of result.draft.moves; track move.moveNumber) {
+      <li><strong>Move {{ move.moveNumber }}</strong> at {{ formatMinutes(move.startMinutes) }}: {{ move.description }}</li>
+      }
+    </ul>
+  </section>
+
+  <section class="section">
+    <h3 class="section-title">Teams and organizations</h3>
+    <mat-chip-set aria-label="Teams">
+      @for (team of result.draft.teams; track team.shortName) {
+      <mat-chip [matTooltip]="team.name">{{ team.shortName }}</mat-chip>
+      }
+    </mat-chip-set>
+    <mat-chip-set aria-label="Organizations">
+      @for (organization of result.draft.organizations; track organization.shortName) {
+      <mat-chip [matTooltip]="organization.name">{{ organization.shortName }}</mat-chip>
+      }
+    </mat-chip-set>
+  </section>
+
+  <section class="section">
+    <h3 class="section-title">Injects ({{ result.draft.injects.length }})</h3>
+    <ul class="inject-list">
+      @for (inject of result.draft.injects; track inject) {
+      <li>
+        <details>
+          <summary>
+            <span class="inject-time">{{ formatMinutes(inject.minutes) }}</span>
+            <span class="inject-move">M{{ moveFor(inject) }}</span>
+            <span class="inject-type">{{ inject.eventType }}</span>
+            <span class="inject-title">{{ titleFor(inject) }}</span>
+            <span class="inject-to">{{ recipientsFor(inject) }}</span>
+            <button mat-icon-button type="button" title="Remove this inject" (click)="removeInject(inject)">
+              <mat-icon fontIcon="mdi-close"></mat-icon>
+            </button>
+          </summary>
+          <dl class="inject-values">
+            @for (value of valuesFor(inject); track value.name) {
+            <dt>{{ value.name }}</dt>
+            <dd>{{ value.value }}</dd>
+            }
+          </dl>
+        </details>
+      </li>
+      }
+    </ul>
+  </section>
+
+  @if (result.draft.competencies?.length) {
+  <section class="section">
+    <h3 class="section-title">Competencies</h3>
+    <p>{{ result.draft.competencies.join(', ') }}</p>
+  </section>
+  }
+
+  @if (result.warnings?.length || result.draft.plannerNotes?.length) {
+  <section class="section">
+    <h3 class="section-title">Check before creating</h3>
+    <ul class="message-list">
+      @for (warning of result.warnings; track $index) {
+      <li>
+        <mat-icon fontIcon="mdi-alert-outline"></mat-icon>
+        <span>{{ warning }}</span>
+      </li>
+      }
+      @for (note of result.draft.plannerNotes; track $index) {
+      <li>
+        <mat-icon fontIcon="mdi-information-outline"></mat-icon>
+        <span>{{ note }}</span>
+      </li>
+      }
+    </ul>
+  </section>
+  }
+  }
+</div>
+
+<ng-container crucibleDialogActions>
+  @if (!result) {
+  <button matButton="outlined" type="button" (click)="close()" [disabled]="isDrafting">Cancel</button>
+  <button matButton="filled" type="button" (click)="draft()" [disabled]="!canDraft">Draft</button>
+  } @else {
+  <button matButton="outlined" type="button" (click)="close()">Discard</button>
+  <button matButton="outlined" type="button" (click)="startOver()">Edit description</button>
+  <button matButton="filled" type="button" (click)="create()" [disabled]="!result.draft.injects.length">
+    Create MSEL
+  </button>
+  }
+</ng-container>
+</crucible-dialog>
