@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { describe, it, expect } from 'vitest';
-import { Component, EventEmitter, Output, input } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
@@ -20,7 +20,7 @@ class InjectListStub {
   readonly injectList = input<Injectm[]>(undefined);
   readonly isContentDeveloper = input<boolean>(undefined);
   readonly loggedInUserId = input<string>(undefined);
-  @Output() selectedInjectIdList = new EventEmitter<string[]>();
+  readonly selectedInjectIdList = output<string[]>();
 }
 
 const CATALOG: Catalog = { id: 'cat-1', name: 'Ransomware Catalog', injectTypeId: 'it-email' };

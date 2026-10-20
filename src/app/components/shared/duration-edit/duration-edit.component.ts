@@ -1,7 +1,7 @@
 // Copyright 2023 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, input } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges, input, output } from '@angular/core';
 import { UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatFormField, MatLabel, MatInput, MatSuffix } from '@angular/material/input';
 import { NgxMatDatepickerInput, NgxMatDatetimepicker, NgxMatDatepickerActions, NgxMatDatepickerApply, NgxMatDatepickerCancel } from '@ngxmc/datetime-picker';
@@ -32,8 +32,8 @@ export class DurationEditComponent implements OnChanges {
   }
   readonly timeName = input<string>(undefined);
   readonly postScript = input<string>(undefined);
-  @Output() durationSecondsChange = new EventEmitter<number>();
-  @Output() change = new EventEmitter<number>();
+  readonly durationSecondsChange = output<number>();
+  readonly change = output<number>();
   durationSecondsValue: number;
   endTimeFormControl = new UntypedFormControl();
   days = 0;

@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, EventEmitter, OnDestroy, Output, inject } from '@angular/core';
+import { Component, OnDestroy, inject, output } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
 import { CompetencyFrameworkService } from 'src/app/generated/blueprint.api';
 import { EMPTY, Subscription, timer } from 'rxjs';
@@ -40,7 +40,7 @@ export class AdminCompetencyFrameworkImportDialogComponent implements OnDestroy 
   dialogRef = inject<MatDialogRef<AdminCompetencyFrameworkImportDialogComponent>>(MatDialogRef);
   private competencyFrameworkService = inject(CompetencyFrameworkService);
 
-  @Output() importComplete = new EventEmitter<ImportResult | null>();
+  readonly importComplete = output<ImportResult | null>();
   fileName = '';
   parseError = '';
   successMessage = '';

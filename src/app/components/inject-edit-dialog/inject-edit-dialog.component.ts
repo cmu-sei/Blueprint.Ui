@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, EventEmitter, Output, inject as inject_1 } from '@angular/core';
+import { Component, inject as inject_1, output } from '@angular/core';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { DataValue } from 'src/app/generated/blueprint.api';
 import { hasInvalidAddress } from 'src/app/utilities/ip-address';
@@ -22,7 +22,7 @@ import { DataValueComponent } from '../data-value/data-value.component';
 export class InjectEditDialogComponent {
   data = inject_1(MAT_DIALOG_DATA);
 
-  @Output() editComplete = new EventEmitter<any>();
+  readonly editComplete = output<any>();
 
   errorFree() {
     return this.data.inject.name && this.data.inject.description &&

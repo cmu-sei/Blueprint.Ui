@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { describe, it, expect } from 'vitest';
-import { Component, EventEmitter, Output, input } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { By } from '@angular/platform-browser';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -19,7 +19,7 @@ import { DataValueComponent } from '../data-value/data-value.component';
 @Component({ selector: 'app-data-value', template: '' })
 class DataValueStub {
   readonly value = input<string>(undefined);
-  @Output() valueChange = new EventEmitter<string>();
+  readonly valueChange = output<string>();
   readonly dataField = input<DataField>(undefined);
   readonly canEdit = input<boolean>(undefined);
   readonly canApprove = input<boolean>(undefined);

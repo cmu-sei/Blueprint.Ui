@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { describe, it, expect, vi } from 'vitest';
-import { Component, EventEmitter, Output, input } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { MatButtonModule } from '@angular/material/button';
@@ -44,7 +44,7 @@ class InjectListStub {
   readonly catalog = input<unknown>(undefined);
   readonly injectType = input<InjectType>(undefined);
   readonly injectList = input<unknown>(undefined);
-  @Output() selectedInjectIdList = new EventEmitter<string[]>();
+  readonly selectedInjectIdList = output<string[]>();
 }
 
 const EMAIL: InjectType = { id: 'it-email', name: 'Email', description: 'An email inject' };

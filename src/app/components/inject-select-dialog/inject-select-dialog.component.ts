@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, EventEmitter, Output, forwardRef, inject as inject_1 } from '@angular/core';
+import { Component, forwardRef, inject as inject_1, output } from '@angular/core';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { CrucibleDialogComponent, CrucibleDialogContentDirective } from '@cmusei/crucible-common';
 import { InjectListComponent } from '../inject-list/inject-list.component';
@@ -17,7 +17,7 @@ import { InjectListComponent } from '../inject-list/inject-list.component';
 export class InjectSelectDialogComponent {
   data = inject_1(MAT_DIALOG_DATA);
 
-  @Output() editComplete = new EventEmitter<any>();
+  readonly editComplete = output<any>();
   selectedInjectIdList: string[] = [];
 
   errorFree() {

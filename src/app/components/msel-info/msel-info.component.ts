@@ -1,7 +1,7 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { ChangeDetectorRef, Component, EventEmitter, HostListener, OnDestroy, OnInit, Output, ViewChild, inject, input } from '@angular/core';
+import { ChangeDetectorRef, Component, HostListener, OnDestroy, OnInit, ViewChild, inject, input, output } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -104,7 +104,7 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   private scenarioEventQuery = inject(ScenarioEventQuery);
 
   readonly loggedInUserId = input<string>(undefined);
-  @Output() deleteThisMsel = new EventEmitter<string>();
+  readonly deleteThisMsel = output<string>();
   msel = new MselPlus();
   originalMsel = new MselPlus();
   expandedScenarioEventIds: string[] = [];

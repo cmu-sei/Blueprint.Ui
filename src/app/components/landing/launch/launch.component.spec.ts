@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { describe, it, expect, vi } from 'vitest';
-import { Component, EventEmitter, Output, input } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -22,7 +22,7 @@ class TopbarStub {
   readonly title = input<string>(undefined);
   readonly topbarView = input<unknown>(undefined);
   readonly imageFilePath = input<string>(undefined);
-  @Output() urlNavigate = new EventEmitter<string>();
+  readonly urlNavigate = output<string>();
 }
 
 const TEMPLATE: Msel = { id: 'msel-t', name: 'Ransomware Starter', description: 'A launchable template' };

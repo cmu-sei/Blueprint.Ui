@@ -1,7 +1,7 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, EventEmitter, OnDestroy, Output, ViewChild, ViewChildren, QueryList, inject, input } from '@angular/core';
+import { Component, OnDestroy, ViewChild, ViewChildren, QueryList, inject, input, output } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { MselInfoComponent } from '../msel-info/msel-info.component';
@@ -101,7 +101,7 @@ export class MselComponent implements OnDestroy {
   readonly canAccessAdminSection = input<boolean>(undefined);
   readonly canEditCheckboxes = input(false);
   readonly userTheme$ = input<Observable<Theme>>(undefined);
-  @Output() deleteThisMsel = new EventEmitter<string>();
+  readonly deleteThisMsel = output<string>();
   @ViewChild('tabGroup0', { static: false }) tabGroup0: MatTabGroup;
   @ViewChildren('MatTab') tabs: QueryList<MatTab>;
   @ViewChild(MselInfoComponent) mselInfoComponent: MselInfoComponent;

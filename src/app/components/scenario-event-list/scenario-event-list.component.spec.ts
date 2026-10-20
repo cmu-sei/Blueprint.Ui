@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { Component, EventEmitter, Output, input } from '@angular/core';
+import { Component, EventEmitter, input, output } from '@angular/core';
 import { ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { DragDropModule } from '@angular/cdk/drag-drop';
@@ -55,7 +55,7 @@ class DurationViewStub {
 @Component({ selector: 'app-data-value', template: '' })
 class DataValueStub {
   readonly value = input<string>(undefined);
-  @Output() valueChange = new EventEmitter<string>();
+  readonly valueChange = output<string>();
   readonly dataField = input<DataField>(undefined);
   readonly canEdit = input<boolean>(undefined);
   readonly canApprove = input<boolean>(undefined);

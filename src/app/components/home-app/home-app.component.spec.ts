@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { Component, EventEmitter, Output, input } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -36,7 +36,7 @@ class TopbarStub {
   readonly title = input<string>(undefined);
   readonly topbarView = input<unknown>(undefined);
   readonly imageFilePath = input<string>(undefined);
-  @Output() urlNavigate = new EventEmitter<string>();
+  readonly urlNavigate = output<string>();
 }
 @Component({ selector: 'app-msel-list', template: '' })
 class MselListStub {
@@ -50,7 +50,7 @@ class MselStub {
   readonly canAccessAdminSection = input<boolean>(undefined);
   readonly canEditCheckboxes = input<boolean>(undefined);
   readonly userTheme$ = input<Observable<Theme>>(undefined);
-  @Output() deleteThisMsel = new EventEmitter<string>();
+  readonly deleteThisMsel = output<string>();
 }
 
 const MSEL_PERMISSIONS = [SystemPermission.CreateMsels, SystemPermission.ViewMsels, SystemPermission.EditMsels, SystemPermission.ManageMsels];

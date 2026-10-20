@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { Component, EventEmitter, Output, Type, input } from '@angular/core';
+import { Component, Type, input, output } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -55,7 +55,7 @@ import { CiteDutyListComponent } from '../../cite-duty-list/cite-duty-list.compo
 class TopbarStub {
   readonly title = input<string>(undefined);
   readonly topbarView = input<string>(undefined);
-  @Output() urlNavigate = new EventEmitter<string>();
+  readonly urlNavigate = output<string>();
 }
 @Component({ selector: 'app-admin-units', template: '' })
 class AdminUnitsStub {

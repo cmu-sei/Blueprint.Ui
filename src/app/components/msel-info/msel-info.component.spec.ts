@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { Component, EventEmitter, Output, input } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { provideHttpClient } from '@angular/common/http';
@@ -67,17 +67,17 @@ import { DurationEditComponent } from '../shared/duration-edit/duration-edit.com
 @Component({ selector: 'app-integration-status', template: '' })
 class IntegrationStatusStub {
   readonly msel = input<Msel>(undefined);
-  @Output() closed = new EventEmitter<void>();
+  readonly closed = output<void>();
 }
 @Component({ selector: 'app-duration-edit', template: '' })
 class DurationEditStub {
   readonly startTime = input<Date>(undefined);
   readonly canEdit = input<boolean>(undefined);
   readonly durationSeconds = input<number>(undefined);
-  @Output() durationSecondsChange = new EventEmitter<number>();
+  readonly durationSecondsChange = output<number>();
   readonly timeName = input<string>(undefined);
   readonly postScript = input<string>(undefined);
-  @Output() change = new EventEmitter<number>();
+  readonly change = output<number>();
 }
 
 const ME = 'user-me';

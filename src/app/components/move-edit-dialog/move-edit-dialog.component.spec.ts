@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { afterEach, describe, it, expect, vi } from 'vitest';
-import { Component, EventEmitter, Output, input } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { By } from '@angular/platform-browser';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
@@ -33,10 +33,10 @@ class DurationEditStub {
   readonly startTime = input<Date>(undefined);
   readonly canEdit = input<boolean>(undefined);
   readonly durationSeconds = input<number>(undefined);
-  @Output() durationSecondsChange = new EventEmitter<number>();
+  readonly durationSecondsChange = output<number>();
   readonly timeName = input<string>(undefined);
   readonly postScript = input<string>(undefined);
-  @Output() change = new EventEmitter<number>();
+  readonly change = output<number>();
 }
 
 const START = new Date('2026-01-01T12:00:00Z');

@@ -4,7 +4,7 @@
  project root for license information.
 */
 
-import { Component, EventEmitter, Input, Output, input } from '@angular/core';
+import { Component, Input, input, output } from '@angular/core';
 import {
   DataField,
   DataFieldType,
@@ -49,7 +49,7 @@ export class DataValueComponent {
   readonly gallerySourceTypeOptions = input<any[]>([]);
   readonly galleryItemStatusOptions = input<string[]>([]);
   readonly userOptions = input<any[]>([]);
-  @Output() valueChange = new EventEmitter<any>();
+  readonly valueChange = output<any>();
   editorConfig = EDITOR_CONFIG;
   viewConfig = VIEW_CONFIG;
   dataType: typeof DataFieldType = DataFieldType;

@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, EventEmitter, OnInit, Output, inject } from '@angular/core';
+import { Component, OnInit, inject, output } from '@angular/core';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { ProficiencyScale, ProficiencyScaleService } from 'src/app/generated/blueprint.api';
 import { take } from 'rxjs/operators';
@@ -23,7 +23,7 @@ export class AdminCompetencyFrameworkEditDialogComponent implements OnInit {
   data = inject(MAT_DIALOG_DATA);
   private proficiencyScaleService = inject(ProficiencyScaleService);
 
-  @Output() editComplete = new EventEmitter<any>();
+  readonly editComplete = output<any>();
   proficiencyScales: ProficiencyScale[] = [];
 
   ngOnInit() {

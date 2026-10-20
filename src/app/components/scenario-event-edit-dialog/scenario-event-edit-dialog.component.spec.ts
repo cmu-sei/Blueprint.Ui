@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { describe, it, expect } from 'vitest';
-import { Component, EventEmitter, Output, input } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
@@ -24,7 +24,7 @@ import { SteamfitterTaskComponent } from '../steamfitter-task/steamfitter-task.c
 @Component({ selector: 'app-data-value', template: '' })
 class DataValueStub {
   readonly value = input<string>(undefined);
-  @Output() valueChange = new EventEmitter<string>();
+  readonly valueChange = output<string>();
   readonly dataField = input<DataField>(undefined);
   readonly canEdit = input<boolean>(undefined);
   readonly canApprove = input<boolean>(undefined);
@@ -44,10 +44,10 @@ class DurationEditStub {
   readonly startTime = input<Date>(undefined);
   readonly canEdit = input<boolean>(undefined);
   readonly durationSeconds = input<number>(undefined);
-  @Output() durationSecondsChange = new EventEmitter<number>();
+  readonly durationSecondsChange = output<number>();
   readonly timeName = input<string>(undefined);
   readonly postScript = input<string>(undefined);
-  @Output() change = new EventEmitter<number>();
+  readonly change = output<number>();
 }
 @Component({ selector: 'app-steamfitter-task', template: '' })
 class SteamfitterTaskStub {

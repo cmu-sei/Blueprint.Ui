@@ -464,7 +464,7 @@ describe('MselTeamsComponent', () => {
     it('passes the topology teams to the team dialog', async () => {
       const editComplete = new EventEmitter<unknown>();
       const { dialogRef } = dialogRefStub<TeamEditDialogComponent>();
-      dialogRef.componentInstance = { editComplete } as Pick<TeamEditDialogComponent, 'editComplete'> as TeamEditDialogComponent;
+      dialogRef.componentInstance = { editComplete } as unknown as TeamEditDialogComponent;
       const open = vi.fn(() => dialogRef);
       const teams = [team('Blue Team', 'blue_cell'), team('Cyan Team', 'blue_cell'), team('Red Team'), team('Crimson', 'red_team')];
       await renderMselTeams({
@@ -501,7 +501,7 @@ describe('MselTeamsComponent', () => {
     it('passes the topology teams to the dialog for a new team', async () => {
       const editComplete = new EventEmitter<unknown>();
       const { dialogRef } = dialogRefStub<TeamEditDialogComponent>();
-      dialogRef.componentInstance = { editComplete } as Pick<TeamEditDialogComponent, 'editComplete'> as TeamEditDialogComponent;
+      dialogRef.componentInstance = { editComplete } as unknown as TeamEditDialogComponent;
       const open = vi.fn(() => dialogRef);
       await renderMselTeams({
         permissions: [SystemPermission.ManageMsels],

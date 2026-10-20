@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { Component, EventEmitter, Output, input } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -41,7 +41,7 @@ import { MselPlaybookComponent } from '../msel-playbook/msel-playbook.component'
 @Component({ selector: 'app-msel-info', template: '' })
 class MselInfoStub {
   readonly loggedInUserId = input<string>(undefined);
-  @Output() deleteThisMsel = new EventEmitter<string>();
+  readonly deleteThisMsel = output<string>();
 }
 @Component({ selector: 'app-msel-contributors', template: '' })
 class MselContributorsStub {

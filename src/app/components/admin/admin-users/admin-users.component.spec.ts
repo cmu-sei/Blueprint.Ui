@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { describe, it, expect, vi } from 'vitest';
-import { Component, EventEmitter, Output, input } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { of } from 'rxjs';
@@ -20,9 +20,9 @@ class UserListStub {
   readonly users = input<User[]>(undefined);
   readonly isLoading = input<boolean>(undefined);
   readonly canEdit = input<boolean>(undefined);
-  @Output() create = new EventEmitter<User>();
-  @Output() delete = new EventEmitter<string>();
-  @Output() updateUser = new EventEmitter<User>();
+  readonly create = output<User>();
+  readonly delete = output<string>();
+  readonly updateUser = output<User>();
 }
 
 const ALICE: User = { id: 'user-a', name: 'Alice' };

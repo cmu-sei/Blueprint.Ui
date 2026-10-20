@@ -1,7 +1,7 @@
 // Copyright 2025 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
-import { Component, EventEmitter, OnInit, ViewChild, Output, OnChanges, SimpleChanges, inject, input } from '@angular/core';
+import { Component, OnInit, ViewChild, OnChanges, SimpleChanges, inject, input, output } from '@angular/core';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { MatSort, MatSortHeader } from '@angular/material/sort';
 import { MatPaginator } from '@angular/material/paginator';
@@ -48,9 +48,9 @@ export class AdminUserListComponent implements OnInit, OnChanges {
   readonly users = input<User[]>(undefined);
   readonly isLoading = input<boolean>(undefined);
   readonly canEdit = input<boolean>(undefined);
-  @Output() create: EventEmitter<User> = new EventEmitter<User>();
-  @Output() delete: EventEmitter<string> = new EventEmitter<string>();
-  @Output() updateUser: EventEmitter<User> = new EventEmitter<User>();
+  readonly create = output<User>();
+  readonly delete = output<string>();
+  readonly updateUser = output<User>();
   @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
   @ViewChild(MatSort, { static: true }) sort: MatSort;
 

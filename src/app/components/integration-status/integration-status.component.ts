@@ -1,7 +1,7 @@
 // Copyright 2026 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, EventEmitter, Output, inject, input } from '@angular/core';
+import { Component, inject, input, output } from '@angular/core';
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { MatProgressBar } from '@angular/material/progress-bar';
@@ -19,7 +19,7 @@ export class IntegrationStatusComponent {
   private dialogService = inject(CrucibleDialogService);
 
   readonly msel = input<MselPlus>(undefined);
-  @Output() closed = new EventEmitter<void>();
+  readonly closed = output<void>();
   cancelClicked = false;
 
   get isError(): boolean {

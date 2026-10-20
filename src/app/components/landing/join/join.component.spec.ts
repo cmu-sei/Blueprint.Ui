@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { describe, it, expect, vi } from 'vitest';
-import { Component, EventEmitter, Output, input } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Params, Router, UrlTree } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -25,7 +25,7 @@ class TopbarStub {
   readonly title = input<string>(undefined);
   readonly topbarView = input<unknown>(undefined);
   readonly imageFilePath = input<string>(undefined);
-  @Output() urlNavigate = new EventEmitter<string>();
+  readonly urlNavigate = output<string>();
 }
 
 const ALPHA: Msel = { id: 'msel-1', name: 'Exercise Alpha', description: 'An exercise in progress' };

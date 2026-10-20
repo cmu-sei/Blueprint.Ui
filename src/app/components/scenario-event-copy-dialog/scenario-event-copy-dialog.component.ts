@@ -1,7 +1,7 @@
 // Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, EventEmitter, OnDestroy, OnInit, Output, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject, output } from '@angular/core';
 import { Msel } from 'src/app/generated/blueprint.api';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { CrucibleDialogComponent, CrucibleDialogContentDirective } from '@cmusei/crucible-common';
@@ -17,7 +17,7 @@ import { FormsModule } from '@angular/forms';
 export class ScenarioEventCopyDialogComponent implements OnDestroy, OnInit {
   data = inject(MAT_DIALOG_DATA);
 
-  @Output() editComplete = new EventEmitter<any>();
+  readonly editComplete = output<any>();
   mselList: Msel[] = [];
   selectedMselId = '';
 

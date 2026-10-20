@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { describe, it, expect, vi } from 'vitest';
-import { Component, EventEmitter, Output, Type, input } from '@angular/core';
+import { Component, Type, input, output } from '@angular/core';
 import { ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { of } from 'rxjs';
@@ -18,14 +18,14 @@ import { AdminGroupsMemberListComponent } from '../admin-groups-member-list/admi
 class MembershipListStub {
   readonly users = input<User[]>(undefined);
   readonly canEdit = input<boolean>(undefined);
-  @Output() createMembership = new EventEmitter<string>();
+  readonly createMembership = output<string>();
 }
 @Component({ selector: 'app-admin-groups-member-list', template: '' })
 class MemberListStub {
   readonly memberships = input<GroupMembership[]>(undefined);
   readonly users = input<User[]>(undefined);
   readonly canEdit = input<boolean>(undefined);
-  @Output() deleteMembership = new EventEmitter<string>();
+  readonly deleteMembership = output<string>();
 }
 
 const USERS: User[] = [
