@@ -19,7 +19,7 @@ import { User, SystemRole } from 'src/app/generated/blueprint.api';
 import { SystemRoleDataService } from 'src/app/data/system-role/system-role-data.service';
 import { MatSelectChange, MatSelect } from '@angular/material/select';
 import { MatIcon } from '@angular/material/icon';
-import { NgStyle, AsyncPipe } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 import { MatFormField, MatInput, MatSuffix } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
 import { MatIconButton } from '@angular/material/button';
@@ -38,7 +38,7 @@ export interface Action {
     selector: 'app-admin-user-list',
     templateUrl: './admin-user-list.component.html',
     styleUrls: ['./admin-user-list.component.scss'],
-    imports: [MatIcon, NgStyle, MatFormField, MatInput, FormsModule, MatIconButton, MatSuffix, MatPaginator, MatTooltip, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatSortHeader, MatCellDef, MatCell, ClipboardModule, MatSelect, MatOption, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, MatCard, MatProgressSpinner, AsyncPipe]
+    imports: [MatIcon, MatFormField, MatInput, FormsModule, MatIconButton, MatSuffix, MatPaginator, MatTooltip, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatSortHeader, MatCellDef, MatCell, ClipboardModule, MatSelect, MatOption, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, MatCard, MatProgressSpinner, AsyncPipe]
 })
 export class AdminUserListComponent implements OnInit, OnChanges {
   displayedColumns: string[] = ['id', 'name', 'role'];

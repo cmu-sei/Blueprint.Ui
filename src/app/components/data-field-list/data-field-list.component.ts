@@ -37,7 +37,7 @@ import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
 import { v4 as uuidv4 } from 'uuid';
 import { MatIcon } from '@angular/material/icon';
-import { NgStyle } from '@angular/common';
+
 import { MatFormField, MatInput, MatSuffix, MatLabel } from '@angular/material/input';
 import { MatIconButton } from '@angular/material/button';
 import { MatSelect } from '@angular/material/select';
@@ -48,7 +48,7 @@ import { MatCheckbox } from '@angular/material/checkbox';
     selector: 'app-data-field-list',
     templateUrl: './data-field-list.component.html',
     styleUrls: ['./data-field-list.component.scss'],
-    imports: [MatIcon, NgStyle, MatFormField, MatInput, FormsModule, ReactiveFormsModule, MatIconButton, MatSuffix, MatLabel, MatSelect, MatOption, MatPaginator, MatTable, MatSort, CdkDropList, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, CdkDragHandle, CdkDrag, MatMenuTrigger, MatMenu, MatMenuItem, MatSortHeader, MatCheckbox, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow]
+    imports: [MatIcon, MatFormField, MatInput, FormsModule, ReactiveFormsModule, MatIconButton, MatSuffix, MatLabel, MatSelect, MatOption, MatPaginator, MatTable, MatSort, CdkDropList, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, CdkDragHandle, CdkDrag, MatMenuTrigger, MatMenu, MatMenuItem, MatSortHeader, MatCheckbox, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow]
 })
 export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit {
   @Input() loggedInUserId: string;

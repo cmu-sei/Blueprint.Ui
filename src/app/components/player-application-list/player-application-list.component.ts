@@ -25,7 +25,7 @@ import { ComnSettingsService } from '@cmusei/crucible-common';
 import { casterVmAppWarning } from 'src/app/utilities/caster-vm-app';
 import { playerAppIconUrl } from 'src/app/utilities/player-app-icon';
 import { MatIcon } from '@angular/material/icon';
-import { NgStyle } from '@angular/common';
+
 import { MatExpansionPanel, MatExpansionPanelHeader } from '@angular/material/expansion';
 import { MatIconButton } from '@angular/material/button';
 import { MatTooltip } from '@angular/material/tooltip';
@@ -44,7 +44,7 @@ import { PlayerTeamAppOrderComponent } from '../player-team-app-order/player-tea
             transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
         ]),
     ],
-    imports: [MatIcon, NgStyle, MatMenu, MatMenuItem, MatExpansionPanel, MatExpansionPanelHeader, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatIconButton, MatMenuTrigger, MatCellDef, MatCell, MatSortHeader, MatTooltip, MatCheckbox, PlayerApplicationTeamsComponent, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, PlayerTeamAppOrderComponent]
+    imports: [MatIcon, MatMenu, MatMenuItem, MatExpansionPanel, MatExpansionPanelHeader, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatIconButton, MatMenuTrigger, MatCellDef, MatCell, MatSortHeader, MatTooltip, MatCheckbox, PlayerApplicationTeamsComponent, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, PlayerTeamAppOrderComponent]
 })
 export class PlayerApplicationListComponent implements OnDestroy, OnInit {
   @Input() loggedInUserId: string;

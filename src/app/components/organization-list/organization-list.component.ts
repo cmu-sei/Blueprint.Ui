@@ -27,7 +27,7 @@ import { OrganizationEditDialogComponent } from '../organization-edit-dialog/org
 import { ItemDownloadDialogComponent } from '../item-download-dialog/item-download-dialog.component';
 import { v4 as uuidv4 } from 'uuid';
 import { MatIcon } from '@angular/material/icon';
-import { NgStyle } from '@angular/common';
+
 import { MatFormField, MatInput, MatSuffix } from '@angular/material/input';
 import { MatIconButton } from '@angular/material/button';
 
@@ -35,7 +35,7 @@ import { MatIconButton } from '@angular/material/button';
     selector: 'app-organization-list',
     templateUrl: './organization-list.component.html',
     styleUrls: ['./organization-list.component.scss'],
-    imports: [MatIcon, NgStyle, MatFormField, MatInput, FormsModule, ReactiveFormsModule, MatIconButton, MatSuffix, MatPaginator, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatMenuTrigger, MatMenu, MatMenuItem, MatCellDef, MatCell, MatSortHeader, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow]
+    imports: [MatIcon, MatFormField, MatInput, FormsModule, ReactiveFormsModule, MatIconButton, MatSuffix, MatPaginator, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatMenuTrigger, MatMenu, MatMenuItem, MatCellDef, MatCell, MatSortHeader, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow]
 })
 export class OrganizationListComponent implements OnDestroy, OnInit, AfterViewInit {
   @Input() loggedInUserId: string;

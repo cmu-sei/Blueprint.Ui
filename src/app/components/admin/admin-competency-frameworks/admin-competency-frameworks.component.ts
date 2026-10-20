@@ -25,7 +25,7 @@ import { AdminCompetencyEditDialogComponent } from '../admin-competency-edit-dia
 import { AdminCompetencyDetailDialogComponent } from '../admin-competency-detail-dialog/admin-competency-detail-dialog.component';
 import { v4 as uuidv4 } from 'uuid';
 import { MatIcon } from '@angular/material/icon';
-import { NgStyle } from '@angular/common';
+
 import { MatFormField, MatInput, MatSuffix, MatLabel } from '@angular/material/input';
 import { MatIconButton, MatButton } from '@angular/material/button';
 import { MatTooltip } from '@angular/material/tooltip';
@@ -46,7 +46,7 @@ import { MatRipple } from '@angular/material/core';
             transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
         ]),
     ],
-    imports: [MatIcon, NgStyle, MatFormField, MatInput, FormsModule, ReactiveFormsModule, MatIconButton, MatSuffix, MatButton, MatPaginator, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatTooltip, MatSortHeader, MatExpansionPanel, MatExpansionPanelHeader, MatExpansionPanelTitle, MatLabel, MatSelect, MatOption, MatToolbar, MatToolbarRow, MatRowDef, MatRow, MatHeaderRowDef, MatHeaderRow, MatRipple]
+    imports: [MatIcon, MatFormField, MatInput, FormsModule, ReactiveFormsModule, MatIconButton, MatSuffix, MatButton, MatPaginator, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatTooltip, MatSortHeader, MatExpansionPanel, MatExpansionPanelHeader, MatExpansionPanelTitle, MatLabel, MatSelect, MatOption, MatToolbar, MatToolbarRow, MatRowDef, MatRow, MatHeaderRowDef, MatHeaderRow, MatRipple]
 })
 export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewInit {
   @Input() loggedInUserId: string;

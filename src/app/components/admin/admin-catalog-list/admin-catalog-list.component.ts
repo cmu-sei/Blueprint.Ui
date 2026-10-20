@@ -32,7 +32,7 @@ import { AdminCatalogEditDialogComponent } from '../admin-catalog-edit-dialog/ad
 import { v4 as uuidv4 } from 'uuid';
 import { InjectTypeQuery } from 'src/app/data/inject-type/inject-type.query';
 import { MatIcon } from '@angular/material/icon';
-import { NgStyle } from '@angular/common';
+
 import { MatFormField, MatInput, MatSuffix } from '@angular/material/input';
 import { MatIconButton } from '@angular/material/button';
 import { MatCheckbox } from '@angular/material/checkbox';
@@ -52,7 +52,7 @@ import { MatRipple } from '@angular/material/core';
             transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
         ]),
     ],
-    imports: [MatIcon, NgStyle, MatFormField, MatInput, FormsModule, ReactiveFormsModule, MatIconButton, MatSuffix, MatPaginator, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatCheckbox, MatSortHeader, MatExpansionPanel, MatExpansionPanelHeader, InjectListComponent, CatalogUnitsComponent, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, MatRipple]
+    imports: [MatIcon, MatFormField, MatInput, FormsModule, ReactiveFormsModule, MatIconButton, MatSuffix, MatPaginator, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatCheckbox, MatSortHeader, MatExpansionPanel, MatExpansionPanelHeader, InjectListComponent, CatalogUnitsComponent, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, MatRipple]
 })
 export class AdminCatalogListComponent implements OnDestroy, AfterViewInit {
   @Input() loggedInUserId: string;

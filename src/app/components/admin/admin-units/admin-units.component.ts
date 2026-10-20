@@ -19,7 +19,7 @@ import { AdminUnitEditDialogComponent } from 'src/app/components/admin/admin-uni
 import { ItemDownloadDialogComponent } from 'src/app/components/item-download-dialog/item-download-dialog.component';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { MatIcon } from '@angular/material/icon';
-import { NgStyle } from '@angular/common';
+
 import { MatFormField, MatInput, MatSuffix } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
 import { MatIconButton } from '@angular/material/button';
@@ -38,7 +38,7 @@ import { MatProgressSpinner } from '@angular/material/progress-spinner';
             transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
         ]),
     ],
-    imports: [MatIcon, NgStyle, MatFormField, MatInput, FormsModule, MatIconButton, MatSuffix, MatPaginator, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatSortHeader, AdminUnitUsersComponent, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, MatCard, MatProgressSpinner]
+    imports: [MatIcon, MatFormField, MatInput, FormsModule, MatIconButton, MatSuffix, MatPaginator, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatSortHeader, AdminUnitUsersComponent, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, MatCard, MatProgressSpinner]
 })
 export class AdminUnitsComponent implements OnDestroy {
   @Input() canManage: boolean;

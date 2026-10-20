@@ -19,7 +19,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { v4 as uuidv4 } from 'uuid';
 import { MatIcon } from '@angular/material/icon';
-import { NgStyle, DatePipe } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import { MatFormField, MatInput, MatSuffix } from '@angular/material/input';
 import { MatIconButton } from '@angular/material/button';
 import { DurationViewComponent } from '../shared/duration-view/duration-view.component';
@@ -29,7 +29,7 @@ import { TimezoneAbbrPipe } from '../../utilities/timezone-abbr';
     selector: 'app-move-list',
     templateUrl: './move-list.component.html',
     styleUrls: ['./move-list.component.scss'],
-    imports: [MatIcon, NgStyle, MatFormField, MatInput, FormsModule, ReactiveFormsModule, MatIconButton, MatSuffix, MatPaginator, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatSortHeader, DurationViewComponent, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, DatePipe, TimezoneAbbrPipe]
+    imports: [MatIcon, MatFormField, MatInput, FormsModule, ReactiveFormsModule, MatIconButton, MatSuffix, MatPaginator, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatSortHeader, DurationViewComponent, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, DatePipe, TimezoneAbbrPipe]
 })
 export class MoveListComponent implements OnDestroy, AfterViewInit {
   @Input() loggedInUserId: string;

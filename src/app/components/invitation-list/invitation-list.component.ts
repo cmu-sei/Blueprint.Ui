@@ -22,7 +22,7 @@ import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { InvitationEditDialogComponent } from '../invitation-edit-dialog/invitation-edit-dialog.component';
 import { v4 as uuidv4 } from 'uuid';
 import { MatIcon } from '@angular/material/icon';
-import { NgStyle, DatePipe } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import { MatFormField, MatInput, MatSuffix } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
 import { MatIconButton } from '@angular/material/button';
@@ -32,7 +32,7 @@ import { ClipboardModule } from 'ngx-clipboard';
     selector: 'app-invitation-list',
     templateUrl: './invitation-list.component.html',
     styleUrls: ['./invitation-list.component.scss'],
-    imports: [MatIcon, NgStyle, MatFormField, MatInput, FormsModule, MatIconButton, MatSuffix, MatPaginator, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, ClipboardModule, MatSortHeader, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, DatePipe]
+    imports: [MatIcon, MatFormField, MatInput, FormsModule, MatIconButton, MatSuffix, MatPaginator, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, ClipboardModule, MatSortHeader, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, DatePipe]
 })
 export class InvitationListComponent implements OnDestroy {
   @Input() loggedInUserId: string;

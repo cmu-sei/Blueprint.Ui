@@ -26,7 +26,7 @@ import { CardEditDialogComponent } from '../card-edit-dialog/card-edit-dialog.co
 import { ItemDownloadDialogComponent } from '../item-download-dialog/item-download-dialog.component';
 import { v4 as uuidv4 } from 'uuid';
 import { MatIcon } from '@angular/material/icon';
-import { NgStyle } from '@angular/common';
+
 import { MatFormField, MatInput, MatSuffix } from '@angular/material/input';
 import { MatIconButton } from '@angular/material/button';
 import { CardTeamsComponent } from '../card-teams/card-teams.component';
@@ -42,7 +42,7 @@ import { CardTeamsComponent } from '../card-teams/card-teams.component';
             transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
         ]),
     ],
-    imports: [MatIcon, NgStyle, MatFormField, MatInput, FormsModule, ReactiveFormsModule, MatIconButton, MatSuffix, MatPaginator, MatMenu, MatMenuItem, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatMenuTrigger, MatCellDef, MatCell, MatSortHeader, CardTeamsComponent, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow]
+    imports: [MatIcon, MatFormField, MatInput, FormsModule, ReactiveFormsModule, MatIconButton, MatSuffix, MatPaginator, MatMenu, MatMenuItem, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatMenuTrigger, MatCellDef, MatCell, MatSortHeader, CardTeamsComponent, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow]
 })
 export class CardListComponent implements OnDestroy, AfterViewInit {
   @Input() loggedInUserId: string;

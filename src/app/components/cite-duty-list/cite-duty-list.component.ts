@@ -24,7 +24,7 @@ import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { CiteDutyEditDialogComponent } from '../cite-duty-edit-dialog/cite-duty-edit-dialog.component';
 import { ItemDownloadDialogComponent } from '../item-download-dialog/item-download-dialog.component';
 import { MatIcon } from '@angular/material/icon';
-import { NgStyle } from '@angular/common';
+
 import { MatFormField, MatInput, MatSuffix, MatLabel } from '@angular/material/input';
 import { MatIconButton } from '@angular/material/button';
 import { MatSelect } from '@angular/material/select';
@@ -34,7 +34,7 @@ import { MatOption } from '@angular/material/autocomplete';
     selector: 'app-cite-duty-list',
     templateUrl: './cite-duty-list.component.html',
     styleUrls: ['./cite-duty-list.component.scss'],
-    imports: [MatIcon, NgStyle, MatFormField, MatInput, FormsModule, ReactiveFormsModule, MatIconButton, MatSuffix, MatLabel, MatSelect, MatOption, MatPaginator, MatMenu, MatMenuItem, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatMenuTrigger, MatCellDef, MatCell, MatSortHeader, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow]
+    imports: [MatIcon, MatFormField, MatInput, FormsModule, ReactiveFormsModule, MatIconButton, MatSuffix, MatLabel, MatSelect, MatOption, MatPaginator, MatMenu, MatMenuItem, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatMenuTrigger, MatCellDef, MatCell, MatSortHeader, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow]
 })
 export class CiteDutyListComponent implements OnDestroy, AfterViewInit {
   @Input() loggedInUserId: string;

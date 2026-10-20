@@ -26,7 +26,7 @@ import { AdminInjectTypeEditDialogComponent } from '../admin-inject-type-edit-di
 import { ItemDownloadDialogComponent } from '../../item-download-dialog/item-download-dialog.component';
 import { v4 as uuidv4 } from 'uuid';
 import { MatIcon } from '@angular/material/icon';
-import { NgStyle } from '@angular/common';
+
 import { MatFormField, MatInput, MatSuffix } from '@angular/material/input';
 import { MatIconButton } from '@angular/material/button';
 import { MatExpansionPanel, MatExpansionPanelHeader } from '@angular/material/expansion';
@@ -45,7 +45,7 @@ import { MatRipple } from '@angular/material/core';
             transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
         ]),
     ],
-    imports: [MatIcon, NgStyle, MatFormField, MatInput, FormsModule, ReactiveFormsModule, MatIconButton, MatSuffix, MatPaginator, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatSortHeader, MatExpansionPanel, MatExpansionPanelHeader, DataFieldListComponent, InjectListComponent, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, MatRipple]
+    imports: [MatIcon, MatFormField, MatInput, FormsModule, ReactiveFormsModule, MatIconButton, MatSuffix, MatPaginator, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatSortHeader, MatExpansionPanel, MatExpansionPanelHeader, DataFieldListComponent, InjectListComponent, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, MatRipple]
 })
 export class AdminInjectTypesComponent implements OnDestroy, AfterViewInit {
   @Input() loggedInUserId: string;
