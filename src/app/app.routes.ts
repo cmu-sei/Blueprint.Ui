@@ -4,74 +4,74 @@
 
 import { Routes } from '@angular/router';
 import { ComnAuthGuardService } from '@cmusei/crucible-common';
-import { AdminContainerComponent } from './components/admin/admin-container/admin-container.component';
-import { HomeAppComponent } from './components/home-app/home-app.component';
-import { MselPageComponent } from './components/msel-page/msel-page.component';
-import { MselViewComponent } from './components/msel-view/msel-view.component';
-import { DashboardComponent } from './components/landing/dashboard/dashboard.component';
-import { JoinComponent } from './components/landing/join/join.component';
-import { LaunchComponent } from './components/landing/launch/launch.component';
-import { ManageComponent } from './components/landing/manage/manage.component';
-import { StarterComponent } from './components/starter/starter.component';
-import { AssessorPageComponent } from './components/assessor-page/assessor-page.component';
-import { EventDetailPageComponent } from './components/event-detail-page/event-detail-page.component';
+
+
+
+
+
+
+
+
+
+
+
 import { IntegrationInProgressGuard } from './services/integration-in-progress.guard';
 
 export const ROUTES: Routes = [
   {
     path: '',
-    component: DashboardComponent,
+    loadComponent: () => import('./components/landing/dashboard/dashboard.component').then(m => m.DashboardComponent),
     canActivate: [ComnAuthGuardService],
   },
   {
     path: 'build',
-    component: HomeAppComponent,
+    loadComponent: () => import('./components/home-app/home-app.component').then(m => m.HomeAppComponent),
     canActivate: [ComnAuthGuardService],
     canDeactivate: [IntegrationInProgressGuard],
   },
   {
     path: 'join',
-    component: JoinComponent,
+    loadComponent: () => import('./components/landing/join/join.component').then(m => m.JoinComponent),
     canActivate: [ComnAuthGuardService],
   },
   {
     path: 'launch',
-    component: LaunchComponent,
+    loadComponent: () => import('./components/landing/launch/launch.component').then(m => m.LaunchComponent),
     canActivate: [ComnAuthGuardService],
   },
   {
     path: 'manage',
-    component: ManageComponent,
+    loadComponent: () => import('./components/landing/manage/manage.component').then(m => m.ManageComponent),
     canActivate: [ComnAuthGuardService],
   },
   {
     path: 'starter',
-    component: StarterComponent,
+    loadComponent: () => import('./components/starter/starter.component').then(m => m.StarterComponent),
     canActivate: [ComnAuthGuardService],
   },
   {
     path: 'assess',
-    component: AssessorPageComponent,
+    loadComponent: () => import('./components/assessor-page/assessor-page.component').then(m => m.AssessorPageComponent),
     canActivate: [ComnAuthGuardService],
   },
   {
     path: 'msel/:mselid/view',
-    component: MselViewComponent,
+    loadComponent: () => import('./components/msel-view/msel-view.component').then(m => m.MselViewComponent),
     canActivate: [ComnAuthGuardService],
   },
   {
     path: 'mselpage/:id',
-    component: MselPageComponent,
+    loadComponent: () => import('./components/msel-page/msel-page.component').then(m => m.MselPageComponent),
     canActivate: [ComnAuthGuardService],
   },
   {
     path: 'admin',
-    component: AdminContainerComponent,
+    loadComponent: () => import('./components/admin/admin-container/admin-container.component').then(m => m.AdminContainerComponent),
     canActivate: [ComnAuthGuardService],
   },
   {
     path: 'eventdetail',
-    component: EventDetailPageComponent,
+    loadComponent: () => import('./components/event-detail-page/event-detail-page.component').then(m => m.EventDetailPageComponent),
     canActivate: [ComnAuthGuardService],
   },
 ];
