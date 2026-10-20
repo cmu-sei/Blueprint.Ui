@@ -1,7 +1,7 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild, inject, input } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { TeamDataService } from 'src/app/data/team/team-data.service';
@@ -79,7 +79,7 @@ export class MselTeamsComponent implements OnDestroy, OnInit {
   private permissionDataService = inject(PermissionDataService);
   private changeDetectorRef = inject(ChangeDetectorRef);
 
-  @Input() loggedInUserId: string;
+  readonly loggedInUserId = input<string>(undefined);
   @Input() teamTypeList: TeamType[];
   // context menu
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
@@ -178,7 +178,7 @@ export class MselTeamsComponent implements OnDestroy, OnInit {
 
   canEditMsel(): boolean {
     return this.permissionDataService.hasPermission(SystemPermission.ManageMsels) ||
-      this.msel.hasRole(this.loggedInUserId, '').owner;
+      this.msel.hasRole(this.loggedInUserId(), '').owner;
   }
 
   getTeamList() {

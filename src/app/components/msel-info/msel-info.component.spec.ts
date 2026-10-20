@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Output, input } from '@angular/core';
 import { ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { provideHttpClient } from '@angular/common/http';
@@ -66,17 +66,17 @@ import { DurationEditComponent } from '../shared/duration-edit/duration-edit.com
 
 @Component({ selector: 'app-integration-status', template: '' })
 class IntegrationStatusStub {
-  @Input() msel: Msel;
+  readonly msel = input<Msel>(undefined);
   @Output() closed = new EventEmitter<void>();
 }
 @Component({ selector: 'app-duration-edit', template: '' })
 class DurationEditStub {
-  @Input() startTime: Date;
-  @Input() canEdit: boolean;
-  @Input() durationSeconds: number;
+  readonly startTime = input<Date>(undefined);
+  readonly canEdit = input<boolean>(undefined);
+  readonly durationSeconds = input<number>(undefined);
   @Output() durationSecondsChange = new EventEmitter<number>();
-  @Input() timeName: string;
-  @Input() postScript: string;
+  readonly timeName = input<string>(undefined);
+  readonly postScript = input<string>(undefined);
   @Output() change = new EventEmitter<number>();
 }
 
@@ -264,7 +264,7 @@ describe('MselInfoComponent', () => {
     expect(nameInput()).toBeEnabled();
     expect(descriptionInput()).toBeEnabled();
     expect(screen.getByLabelText('Player')).toBeEnabled();
-    expect(durationEdit(fixture).canEdit).toBe(true);
+    expect(durationEdit(fixture).canEdit()).toBe(true);
   });
 
   /**
@@ -278,7 +278,7 @@ describe('MselInfoComponent', () => {
     expect(nameInput()).toBeDisabled();
     expect(descriptionInput()).toBeDisabled();
     expect(screen.getByLabelText('Player')).toBeDisabled();
-    expect(durationEdit(fixture).canEdit).toBe(false);
+    expect(durationEdit(fixture).canEdit()).toBe(false);
   });
 
   /**

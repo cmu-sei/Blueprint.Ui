@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Output, input } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -33,23 +33,23 @@ import { MselComponent } from '../msel/msel.component';
 
 @Component({ selector: 'app-topbar', template: '' })
 class TopbarStub {
-  @Input() title: string;
-  @Input() topbarView: unknown;
-  @Input() imageFilePath: string;
+  readonly title = input<string>(undefined);
+  readonly topbarView = input<unknown>(undefined);
+  readonly imageFilePath = input<string>(undefined);
   @Output() urlNavigate = new EventEmitter<string>();
 }
 @Component({ selector: 'app-msel-list', template: '' })
 class MselListStub {
-  @Input() loggedInUserId: string;
-  @Input() canAccessAdminSection: boolean;
+  readonly loggedInUserId = input<string>(undefined);
+  readonly canAccessAdminSection = input<boolean>(undefined);
 }
 @Component({ selector: 'app-msel', template: '' })
 class MselStub {
-  @Input() loggedInUserId: string;
-  @Input() canEditMsel: boolean;
-  @Input() canAccessAdminSection: boolean;
-  @Input() canEditCheckboxes: boolean;
-  @Input() userTheme$: Observable<Theme>;
+  readonly loggedInUserId = input<string>(undefined);
+  readonly canEditMsel = input<boolean>(undefined);
+  readonly canAccessAdminSection = input<boolean>(undefined);
+  readonly canEditCheckboxes = input<boolean>(undefined);
+  readonly userTheme$ = input<Observable<Theme>>(undefined);
   @Output() deleteThisMsel = new EventEmitter<string>();
 }
 
@@ -112,7 +112,7 @@ describe('HomeAppComponent', () => {
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
     const user = userEvent.setup();
 
-    expect(child(fixture, MselListStub)?.canAccessAdminSection).toBe(true);
+    expect(child(fixture, MselListStub)?.canAccessAdminSection()).toBe(true);
     await user.click(screen.getByRole('button', { name: 'Administration' }));
 
     expect(navigate).toHaveBeenCalledWith(['/admin'], { queryParams: { returnUrl: '/' } });
@@ -127,7 +127,7 @@ describe('HomeAppComponent', () => {
     const { fixture } = await renderHome({ permissions: MSEL_PERMISSIONS });
 
     expect(screen.queryByRole('button', { name: 'Administration' })).not.toBeInTheDocument();
-    expect(child(fixture, MselListStub)?.canAccessAdminSection).toBe(false);
+    expect(child(fixture, MselListStub)?.canAccessAdminSection()).toBe(false);
     expect(child(fixture, MselStub)).toBeUndefined();
   });
 
@@ -145,9 +145,9 @@ describe('HomeAppComponent', () => {
     const { fixture, signalR } = await renderHome({ permissions, mselId: 'msel-1' });
 
     const msel = child(fixture, MselStub);
-    expect(msel?.canEditMsel).toBe(canEditMsel);
-    expect(msel?.canEditCheckboxes).toBe(canEditCheckboxes);
-    expect(msel?.canAccessAdminSection).toBe(admin);
+    expect(msel?.canEditMsel()).toBe(canEditMsel);
+    expect(msel?.canEditCheckboxes()).toBe(canEditCheckboxes);
+    expect(msel?.canAccessAdminSection()).toBe(admin);
     expect(child(fixture, MselListStub)).toBeUndefined();
     expect(signalR.join).toHaveBeenCalled();
   });

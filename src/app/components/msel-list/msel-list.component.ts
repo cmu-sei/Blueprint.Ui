@@ -1,7 +1,7 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { ChangeDetectorRef, Component, Input, OnDestroy, ViewChild, ElementRef, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, ViewChild, ElementRef, OnInit, inject, input } from '@angular/core';
 import { UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatSort, MatSortable, Sort, MatSortHeader } from '@angular/material/sort';
 import { MatPaginator } from '@angular/material/paginator';
@@ -56,8 +56,8 @@ export class MselListComponent implements OnDestroy, OnInit {
   private changeDetectorRef = inject(ChangeDetectorRef);
   private dialog = inject(MatDialog);
 
-  @Input() loggedInUserId: string;
-  @Input() canAccessAdminSection: boolean;
+  readonly loggedInUserId = input<string>(undefined);
+  readonly canAccessAdminSection = input<boolean>(undefined);
   @ViewChild('jsonInput') jsonInput: ElementRef<HTMLInputElement>;
   @ViewChild('xlsxInput') xlsxInput: ElementRef<HTMLInputElement>;
   @ViewChild(MatSort, { static: true }) sort: MatSort;
@@ -428,18 +428,18 @@ export class MselListComponent implements OnDestroy, OnInit {
 
   canViewMsel(msel: MselPlus): boolean {
     return this.permissionDataService.hasPermission(SystemPermission.ViewMsels) ||
-      msel?.hasRole(this.loggedInUserId, '').editor ||
+      msel?.hasRole(this.loggedInUserId(), '').editor ||
       (msel?.isTemplate && this.permissionDataService.hasPermission(SystemPermission.CreateMsels));
   }
 
   canEditMsel(msel: MselPlus): boolean {
     return this.permissionDataService.hasPermission(SystemPermission.EditMsels) ||
-      msel?.hasRole(this.loggedInUserId, '').editor;
+      msel?.hasRole(this.loggedInUserId(), '').editor;
   }
 
   canManageMsel(msel: MselPlus): boolean {
     return this.permissionDataService.hasPermission(SystemPermission.ManageMsels) ||
-      msel?.hasRole(this.loggedInUserId, '').owner;
+      msel?.hasRole(this.loggedInUserId(), '').owner;
   }
 
   getDeleteTooltip(msel: MselPlus): string {

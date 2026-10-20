@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { Component, EventEmitter, Input, Output, Type } from '@angular/core';
+import { Component, EventEmitter, Output, Type, input } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -53,13 +53,13 @@ import { CiteDutyListComponent } from '../../cite-duty-list/cite-duty-list.compo
 
 @Component({ selector: 'app-topbar', template: '' })
 class TopbarStub {
-  @Input() title?: string;
-  @Input() topbarView?: string;
+  readonly title = input<string>(undefined);
+  readonly topbarView = input<string>(undefined);
   @Output() urlNavigate = new EventEmitter<string>();
 }
 @Component({ selector: 'app-admin-units', template: '' })
 class AdminUnitsStub {
-  @Input() canManage: boolean;
+  readonly canManage = input<boolean>(undefined);
 }
 @Component({ selector: 'app-admin-users', template: '' })
 class AdminUsersStub {}
@@ -69,52 +69,52 @@ class AdminRolesStub {}
 class AdminGroupsStub {}
 @Component({ selector: 'app-data-field-list', template: '' })
 class DataFieldListStub {
-  @Input() loggedInUserId: string;
-  @Input() showTemplates: boolean;
+  readonly loggedInUserId = input<string>(undefined);
+  readonly showTemplates = input<boolean>(undefined);
 }
 @Component({ selector: 'app-admin-inject-types', template: '' })
 class AdminInjectTypesStub {
-  @Input() loggedInUserId: string;
-  @Input() canEdit: boolean;
+  readonly loggedInUserId = input<string>(undefined);
+  readonly canEdit = input<boolean>(undefined);
 }
 @Component({ selector: 'app-admin-competency-frameworks', template: '' })
 class AdminCompetencyFrameworksStub {
-  @Input() loggedInUserId: string;
-  @Input() canEdit: boolean;
+  readonly loggedInUserId = input<string>(undefined);
+  readonly canEdit = input<boolean>(undefined);
 }
 @Component({ selector: 'app-admin-proficiency-scales', template: '' })
 class AdminProficiencyScalesStub {
-  @Input() loggedInUserId: string;
-  @Input() canEdit: boolean;
+  readonly loggedInUserId = input<string>(undefined);
+  readonly canEdit = input<boolean>(undefined);
 }
 @Component({ selector: 'app-admin-catalog-list', template: '' })
 class AdminCatalogListStub {
-  @Input() loggedInUserId: string;
-  @Input() canEdit: boolean;
+  readonly loggedInUserId = input<string>(undefined);
+  readonly canEdit = input<boolean>(undefined);
 }
 @Component({ selector: 'app-organization-list', template: '' })
 class OrganizationListStub {
-  @Input() loggedInUserId: string;
-  @Input() canEdit: boolean;
-  @Input() showTemplates: boolean;
+  readonly loggedInUserId = input<string>(undefined);
+  readonly canEdit = input<boolean>(undefined);
+  readonly showTemplates = input<boolean>(undefined);
 }
 @Component({ selector: 'app-card-list', template: '' })
 class CardListStub {
-  @Input() loggedInUserId: string;
-  @Input() canEdit: boolean;
-  @Input() showTemplates: boolean;
+  readonly loggedInUserId = input<string>(undefined);
+  readonly canEdit = input<boolean>(undefined);
+  readonly showTemplates = input<boolean>(undefined);
 }
 @Component({ selector: 'app-cite-action-list', template: '' })
 class CiteActionListStub {
-  @Input() loggedInUserId: string;
-  @Input() canEdit: boolean;
-  @Input() showTemplates: boolean;
+  readonly loggedInUserId = input<string>(undefined);
+  readonly canEdit = input<boolean>(undefined);
+  readonly showTemplates = input<boolean>(undefined);
 }
 @Component({ selector: 'app-cite-duty-list', template: '' })
 class CiteDutyListStub {
-  @Input() loggedInUserId: string;
-  @Input() canEdit: boolean;
-  @Input() showTemplates: boolean;
+  readonly loggedInUserId = input<string>(undefined);
+  readonly canEdit = input<boolean>(undefined);
+  readonly showTemplates = input<boolean>(undefined);
 }
 
 
@@ -293,29 +293,29 @@ describe('AdminContainerComponent', () => {
 
     await user.click(within(nav()).getByText('Organizations'));
     const orgs = child(fixture, OrganizationListStub);
-    expect(orgs.canEdit).toBe(true);
-    expect(orgs.showTemplates).toBe(true);
-    expect(orgs.loggedInUserId).toBe('user-1');
+    expect(orgs.canEdit()).toBe(true);
+    expect(orgs.showTemplates()).toBe(true);
+    expect(orgs.loggedInUserId()).toBe('user-1');
     expect(child(fixture, AdminUnitsStub)).toBeUndefined();
     expect(TestBed.inject(UIDataService).getAdminTab()).toBe('Organizations');
 
     await user.click(within(nav()).getByText('Catalogs'));
-    expect(child(fixture, AdminCatalogListStub).canEdit).toBe(false);
+    expect(child(fixture, AdminCatalogListStub).canEdit()).toBe(false);
     expect(child(fixture, OrganizationListStub)).toBeUndefined();
   });
 
   // Each section that passes a Manage permission down to its child, with the
   // nav label, the permissions, and how to read the bound input off the stub.
   const MANAGED_SECTIONS = [
-    { label: 'Units', view: SystemPermission.ViewUnits, manage: SystemPermission.ManageUnits, gate: (f: ComponentFixture<unknown>) => child(f, AdminUnitsStub)?.canManage },
-    { label: 'Inject Types', view: SystemPermission.ViewInjectTypes, manage: SystemPermission.ManageInjectTypes, gate: (f: ComponentFixture<unknown>) => child(f, AdminInjectTypesStub)?.canEdit },
-    { label: 'Competencies', view: SystemPermission.ViewCompetencyFrameworks, manage: SystemPermission.ManageCompetencyFrameworks, gate: (f: ComponentFixture<unknown>) => child(f, AdminCompetencyFrameworksStub)?.canEdit },
-    { label: 'Proficiency Scales', view: SystemPermission.ViewCompetencyFrameworks, manage: SystemPermission.ManageCompetencyFrameworks, gate: (f: ComponentFixture<unknown>) => child(f, AdminProficiencyScalesStub)?.canEdit },
-    { label: 'Catalogs', view: SystemPermission.ViewCatalogs, manage: SystemPermission.ManageCatalogs, gate: (f: ComponentFixture<unknown>) => child(f, AdminCatalogListStub)?.canEdit },
-    { label: 'Organizations', view: SystemPermission.ViewOrganizations, manage: SystemPermission.ManageOrganizations, gate: (f: ComponentFixture<unknown>) => child(f, OrganizationListStub)?.canEdit },
-    { label: 'Gallery Cards', view: SystemPermission.ViewGalleryCards, manage: SystemPermission.ManageGalleryCards, gate: (f: ComponentFixture<unknown>) => child(f, CardListStub)?.canEdit },
-    { label: 'CITE Actions', view: SystemPermission.ViewCiteActions, manage: SystemPermission.ManageCiteActions, gate: (f: ComponentFixture<unknown>) => child(f, CiteActionListStub)?.canEdit },
-    { label: 'CITE Duties', view: SystemPermission.ViewCiteDuties, manage: SystemPermission.ManageCiteDuties, gate: (f: ComponentFixture<unknown>) => child(f, CiteDutyListStub)?.canEdit },
+    { label: 'Units', view: SystemPermission.ViewUnits, manage: SystemPermission.ManageUnits, gate: (f: ComponentFixture<unknown>) => child(f, AdminUnitsStub)?.canManage() },
+    { label: 'Inject Types', view: SystemPermission.ViewInjectTypes, manage: SystemPermission.ManageInjectTypes, gate: (f: ComponentFixture<unknown>) => child(f, AdminInjectTypesStub)?.canEdit() },
+    { label: 'Competencies', view: SystemPermission.ViewCompetencyFrameworks, manage: SystemPermission.ManageCompetencyFrameworks, gate: (f: ComponentFixture<unknown>) => child(f, AdminCompetencyFrameworksStub)?.canEdit() },
+    { label: 'Proficiency Scales', view: SystemPermission.ViewCompetencyFrameworks, manage: SystemPermission.ManageCompetencyFrameworks, gate: (f: ComponentFixture<unknown>) => child(f, AdminProficiencyScalesStub)?.canEdit() },
+    { label: 'Catalogs', view: SystemPermission.ViewCatalogs, manage: SystemPermission.ManageCatalogs, gate: (f: ComponentFixture<unknown>) => child(f, AdminCatalogListStub)?.canEdit() },
+    { label: 'Organizations', view: SystemPermission.ViewOrganizations, manage: SystemPermission.ManageOrganizations, gate: (f: ComponentFixture<unknown>) => child(f, OrganizationListStub)?.canEdit() },
+    { label: 'Gallery Cards', view: SystemPermission.ViewGalleryCards, manage: SystemPermission.ManageGalleryCards, gate: (f: ComponentFixture<unknown>) => child(f, CardListStub)?.canEdit() },
+    { label: 'CITE Actions', view: SystemPermission.ViewCiteActions, manage: SystemPermission.ManageCiteActions, gate: (f: ComponentFixture<unknown>) => child(f, CiteActionListStub)?.canEdit() },
+    { label: 'CITE Duties', view: SystemPermission.ViewCiteDuties, manage: SystemPermission.ManageCiteDuties, gate: (f: ComponentFixture<unknown>) => child(f, CiteDutyListStub)?.canEdit() },
   ];
 
   /**
@@ -347,7 +347,7 @@ describe('AdminContainerComponent', () => {
       permissions: [SystemPermission.ViewUnits, SystemPermission.ManageUnits],
     });
 
-    expect(child(fixture, AdminUnitsStub).canManage).toBe(true);
+    expect(child(fixture, AdminUnitsStub).canManage()).toBe(true);
     expect(units.getUnits).toHaveBeenCalledTimes(1);
   });
 

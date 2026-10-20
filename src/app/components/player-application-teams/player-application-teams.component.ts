@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { ChangeDetectorRef, Component, OnDestroy, OnInit, OnChanges, SimpleChanges, Input, ElementRef, ViewChild, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, OnChanges, SimpleChanges, ElementRef, ViewChild, inject, input } from '@angular/core';
 import { PageEvent, MatPaginator } from '@angular/material/paginator';
 import { MatSort, MatSortable } from '@angular/material/sort';
 import { MatTableDataSource, MatTable, MatColumnDef, MatCellDef, MatCell, MatRowDef, MatRow } from '@angular/material/table';
@@ -33,9 +33,9 @@ export class PlayerApplicationTeamsComponent implements OnDestroy, OnInit, OnCha
   private permissionDataService = inject(PermissionDataService);
   private changeDetectorRef = inject(ChangeDetectorRef);
 
-  @Input() loggedInUserId: string;
-  @Input() playerApplicationId: string;
-  @Input() mselTeamList: Team[] = [];
+  readonly loggedInUserId = input<string>(undefined);
+  readonly playerApplicationId = input<string>(undefined);
+  readonly mselTeamList = input<Team[]>([]);
   @ViewChild('teamsInput') teamsInput: ElementRef<HTMLInputElement>;
   @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
   @ViewChild(MatSort, { static: true }) sort: MatSort;
@@ -79,7 +79,7 @@ export class PlayerApplicationTeamsComponent implements OnDestroy, OnInit, OnCha
         this.playerApplicationTeams = playerApplicationTeams
           ? playerApplicationTeams
             .filter(
-              (et) => et.playerApplicationId === this.playerApplicationId
+              (et) => et.playerApplicationId === this.playerApplicationId()
             )
             .sort((a, b) => {
               if (
@@ -122,22 +122,23 @@ export class PlayerApplicationTeamsComponent implements OnDestroy, OnInit, OnCha
   setDataSources() {
     this.playerApplicationTeamDataSource.data = this.playerApplicationTeams;
     let mselTeams = new Array<Team>();
-    if (this.mselTeamList) {
-      mselTeams = this.mselTeamList.filter(mt => !this.playerApplicationTeams.some(ct => ct.teamId === mt.id));
+    const mselTeamList = this.mselTeamList();
+    if (mselTeamList) {
+      mselTeams = mselTeamList.filter(mt => !this.playerApplicationTeams.some(ct => ct.teamId === mt.id));
     }
     this.teamDataSource = new MatTableDataSource(mselTeams);
     this.teamDataSource.sort = this.sort;
   }
 
   getTeamShortName(teamId: string) {
-    const team = this.mselTeamList.find(t => t.id === teamId);
+    const team = this.mselTeamList().find(t => t.id === teamId);
     return team ? team.shortName : teamId;
   }
 
 
   addTeamToPlayerApplication(team: Team): void {
     this.playerApplicationTeamDataService.addTeamToPlayerApplication(
-      this.playerApplicationId,
+      this.playerApplicationId(),
       team,
       this.playerApplicationTeamDataSource.data.length + 1
     );
@@ -161,7 +162,7 @@ export class PlayerApplicationTeamsComponent implements OnDestroy, OnInit, OnCha
 
   canEditMsel(): boolean {
     return this.permissionDataService.hasPermission(SystemPermission.EditMsels) ||
-      this.msel.hasRole(this.loggedInUserId, '').editor;
+      this.msel.hasRole(this.loggedInUserId(), '').editor;
   }
 
   ngOnDestroy() {

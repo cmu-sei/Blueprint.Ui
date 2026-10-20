@@ -42,12 +42,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 <mat-icon class="mdi-24px" fontIcon="mdi-filter-off-outline"></mat-icon>
               </button>
               }
-              @if ((canEditMsel() || msel.hasRole(loggedInUserId, null).owner)) {
+              @if ((canEditMsel() || msel.hasRole(loggedInUserId(), null).owner)) {
               <mat-checkbox [checked]="allSelected" (change)="setAllSelectedState($event.checked)"
                 title="Select All/None" style="margin-top: 7px; margin-right: 7px;"
                 [disabled]="displayedScenarioEvents.length === 0"></mat-checkbox>
               }
-              @if (selectedEventIdList.length === 0 && (canEditMsel() || msel.hasRole(loggedInUserId, null).owner))
+              @if (selectedEventIdList.length === 0 && (canEditMsel() || msel.hasRole(loggedInUserId(), null).owner))
               {
               <button mat-icon-button class="header-button" title="Action List"
                 [matMenuTriggerFor]="addEventList">
@@ -55,14 +55,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
               </button>
               }
               <mat-menu #addEventList="matMenu" [overlapTrigger]="false">
-                @if ((canEditMsel() || msel.hasRole(loggedInUserId, null).owner) && selectedEventIdList.length ===
+                @if ((canEditMsel() || msel.hasRole(loggedInUserId(), null).owner) && selectedEventIdList.length ===
                 0) {
                 <button mat-menu-item (click)="addScenarioEvent()" title="Add an event"
                   [disabled]="allDataFields.length === 0">
                   Add New Event
                 </button>
                 }
-                @if (catalogList.length > 0 && (canEditMsel() || msel.hasRole(loggedInUserId, null).owner)) {
+                @if (catalogList.length > 0 && (canEditMsel() || msel.hasRole(loggedInUserId(), null).owner)) {
                 <button mat-menu-item [matMenuTriggerFor]="addFromCatalog" title="Add an inject from a catalog"
                   [disabled]="selectedEventIdList.length > 0">
                   Add Inject from Catalog
@@ -76,19 +76,19 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 </button>
                 }
               </mat-menu>
-              @if (selectedEventIdList.length > 0 && (canEditMsel() || msel.hasRole(loggedInUserId, null).owner)) {
+              @if (selectedEventIdList.length > 0 && (canEditMsel() || msel.hasRole(loggedInUserId(), null).owner)) {
               <button mat-icon-button class="header-button" title="Action List"
                 [matMenuTriggerFor]="bulkEventList">
                 <mat-icon class="mdi-24px" fontIcon="mdi-menu"></mat-icon>
               </button>
               }
               <mat-menu #bulkEventList="matMenu" [overlapTrigger]="false">
-                @if ((canEditMsel() || msel.hasRole(loggedInUserId, null).owner)) {
+                @if ((canEditMsel() || msel.hasRole(loggedInUserId(), null).owner)) {
                 <button mat-menu-item (click)="copyToAnotherMsel()" title="Copy Selected Events">
                   Copy Selected Events
                 </button>
                 }
-                @if ((canEditMsel() || msel.hasRole(loggedInUserId, null).owner)) {
+                @if ((canEditMsel() || msel.hasRole(loggedInUserId(), null).owner)) {
                 <button mat-menu-item [matMenuTriggerFor]="colorList" (click)="$event.stopPropagation()"
                   title="Highlight selected events">
                   Highlight selected events
@@ -171,7 +171,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         </tr>
         }
         <tr [style]="getRowStyle(item)" cdkDrag [cdkDragData]="item" cdkDragLockAxis="y"
-          [cdkDragPreviewClass]="userTheme" (cdkDragStarted)="dragStart($event)" (cdkDragEnded)="dragEnd($event)">
+          [cdkDragPreviewClass]="userTheme()" (cdkDragStarted)="dragStart($event)" (cdkDragEnded)="dragEnd($event)">
           <!-- row buttons -->
           <td class="center-self">
             <div class="row-start-buttons">
@@ -179,7 +179,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 <span><mat-icon class="mdi-24px" fontIcon="mdi-drag-vertical" /></span>
               </div>
               <span class="row-index center-self">{{ rowIndex + 1 }}</span>
-              @if ((canEditMsel() || msel.hasRole(loggedInUserId, null).owner)) {
+              @if ((canEditMsel() || msel.hasRole(loggedInUserId(), null).owner)) {
               <mat-checkbox [checked]="getSelectedState(item.id)" (change)="setSelectedState(item.id, $event.checked)"
                 title="Select event {{ rowIndex  + 1 }}"></mat-checkbox>
               }
@@ -195,7 +195,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 <button mat-menu-item (click)="editScenarioEvent(item)" title="Edit event {{ rowIndex  + 1 }}">
                   Edit
                 </button>
-                @if ((canEditMsel() || msel.hasRole(loggedInUserId, item.id).owner)) {
+                @if ((canEditMsel() || msel.hasRole(loggedInUserId(), item.id).owner)) {
                 <button mat-menu-item [matMenuTriggerFor]="colorList" (click)="$event.stopPropagation()"
                   title="Highlight event {{ rowIndex  + 1 }}">
                   Highlight
@@ -211,26 +211,26 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   </button>
                   }
                 </mat-menu>
-                @if ((canEditMsel() || msel.hasRole(loggedInUserId, item.id).owner) && !isStarterMsel) {
+                @if ((canEditMsel() || msel.hasRole(loggedInUserId(), item.id).owner) && !isStarterMsel()) {
                 <button mat-menu-item (click)="copyScenarioEvent(item)" title="Copy event {{ rowIndex + 1 }}">
                   Copy
                 </button>
                 }
-                @if (canEditMsel() || msel.hasRole(loggedInUserId, item.id).owner) {
+                @if (canEditMsel() || msel.hasRole(loggedInUserId(), item.id).owner) {
                 <button mat-menu-item (click)="deleteScenarioEvent(item, rowIndex + 1)"
                   title="Delete event {{ rowIndex  + 1 }}">
                   Delete
                 </button>
                 }
               </mat-menu>
-              @if (!item.isHidden && !isStarterMsel) {
+              @if (!item.isHidden && !isStarterMsel()) {
               <button mat-icon-button class="scenario-event-button" (click)="setHiddenScenarioEvent(item, true)"
                 title="Hide event {{ rowIndex + 1 }} on the Exercise View"
                 [disabled]="selectedEventIdList.length > 0 || !canEditMsel()">
                 <mat-icon class="mdi-24px" fontIcon="mdi-eye-outline"></mat-icon>
               </button>
               }
-              @if (item.isHidden && !isStarterMsel) {
+              @if (item.isHidden && !isStarterMsel()) {
               <button mat-icon-button class="scenario-event-button" (click)="setHiddenScenarioEvent(item, false)"
                 title="Unhide event {{ rowIndex + 1 }} on the Exercise View"
                 [disabled]="selectedEventIdList.length > 0">
@@ -270,7 +270,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <mat-select multiple placeholder="Integration Target" (click)="$event.stopPropagation()"
               [value]="getIntegrationTargetArray(item)"
               (valueChange)="onIntegrationTargetChange(item, $event)"
-              [disabled]="!((canEditMsel() || msel.hasRole(this.loggedInUserId, item.id).editor) && !isStarterMsel)">
+              [disabled]="!((canEditMsel() || msel.hasRole(this.loggedInUserId(), item.id).editor) && !isStarterMsel())">
               @for (opt of integrationTargetOptions; track opt) {
               <mat-option [value]="opt">{{ opt }}</mat-option>
               }
@@ -282,9 +282,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <td>
             <app-data-value [value]="getDataValue(item, df.name).value"
               (valueChange)="saveDataValue(item, df.name, $event)" [dataField]="df"
-              [canEdit]="(canEditMsel() || msel.hasRole(this.loggedInUserId, item.id).editor) && !isStarterMsel"
-              [canApprove]="(canEditMsel() || msel.hasRole(this.loggedInUserId, item.id).approver) && !isStarterMsel"
-              [isOwner]="(canEditMsel() || msel.hasRole(this.loggedInUserId, item.id).owner) && !isStarterMsel"
+              [canEdit]="(canEditMsel() || msel.hasRole(this.loggedInUserId(), item.id).editor) && !isStarterMsel()"
+              [canApprove]="(canEditMsel() || msel.hasRole(this.loggedInUserId(), item.id).approver) && !isStarterMsel()"
+              [isOwner]="(canEditMsel() || msel.hasRole(this.loggedInUserId(), item.id).owner) && !isStarterMsel()"
               [showValueOnly]="true" [organizationOptions]="getSortedOrganizationOptions()" [teamOptions]="teamList"
               [unitOptions]="unitList" [cardOptions]="cardList" [moveOptions]="moveList"
               [gallerySourceTypeOptions]="msel.gallerySourceTypes"
@@ -300,9 +300,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <span style="margin-right: 30px;">
               <app-data-value [value]="getDataValue(item, df2.name).value"
                 (valueChange)="saveDataValue(item, df2.name, $event)" [dataField]="df2"
-                [canEdit]="(canEditMsel() || msel.hasRole(this.loggedInUserId, item.id).editor) && !isStarterMsel"
-                [canApprove]="(canEditMsel() || msel.hasRole(this.loggedInUserId, item.id).approver) && !isStarterMsel"
-                [isOwner]="(canEditMsel() || msel.hasRole(this.loggedInUserId, item.id).owner) && !isStarterMsel"
+                [canEdit]="(canEditMsel() || msel.hasRole(this.loggedInUserId(), item.id).editor) && !isStarterMsel()"
+                [canApprove]="(canEditMsel() || msel.hasRole(this.loggedInUserId(), item.id).approver) && !isStarterMsel()"
+                [isOwner]="(canEditMsel() || msel.hasRole(this.loggedInUserId(), item.id).owner) && !isStarterMsel()"
                 [showValueOnly]="true" [organizationOptions]="getSortedOrganizationOptions()" [teamOptions]="teamList"
                 [unitOptions]="unitList" [cardOptions]="cardList" [moveOptions]="moveList"
                 [gallerySourceTypeOptions]="msel.gallerySourceTypes"

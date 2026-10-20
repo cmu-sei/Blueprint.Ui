@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { describe, it, expect, vi } from 'vitest';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Output, input } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
@@ -21,9 +21,9 @@ import { TopbarComponent } from '../../shared/top-bar/topbar.component';
 
 @Component({ selector: 'app-topbar', template: '' })
 class TopbarStub {
-  @Input() title: string;
-  @Input() topbarView: unknown;
-  @Input() imageFilePath: string;
+  readonly title = input<string>(undefined);
+  readonly topbarView = input<unknown>(undefined);
+  readonly imageFilePath = input<string>(undefined);
   @Output() urlNavigate = new EventEmitter<string>();
 }
 

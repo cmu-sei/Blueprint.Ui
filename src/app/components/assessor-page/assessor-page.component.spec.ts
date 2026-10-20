@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { describe, it, expect } from 'vitest';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Output, input } from '@angular/core';
 import { ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
@@ -22,16 +22,16 @@ import { AssessorViewComponent } from '../assessor-view/assessor-view.component'
 
 @Component({ selector: 'app-topbar', template: '' })
 class TopbarStub {
-  @Input() title: string;
-  @Input() topbarView: unknown;
-  @Input() imageFilePath: string;
+  readonly title = input<string>(undefined);
+  readonly topbarView = input<unknown>(undefined);
+  readonly imageFilePath = input<string>(undefined);
   @Output() urlNavigate = new EventEmitter<string>();
 }
 @Component({ selector: 'app-assessor-view', template: '' })
 class AssessorViewStub {
-  @Input() loggedInUserId: string;
-  @Input() userTheme: Theme;
-  @Input() canEditCheckboxes: boolean;
+  readonly loggedInUserId = input<string>(undefined);
+  readonly userTheme = input<Theme>(undefined);
+  readonly canEditCheckboxes = input<boolean>(undefined);
 }
 
 const ME = 'user-me';
@@ -85,8 +85,8 @@ describe('AssessorPageComponent', () => {
 
     expect(apis.msel.getMsel).toHaveBeenCalledWith('msel-1');
     expect(apis.userMselRole.getUserMselRolesByMsel).toHaveBeenCalledWith('msel-1');
-    expect(assessorView(fixture)?.canEditCheckboxes).toBe(true);
-    expect(assessorView(fixture)?.loggedInUserId).toBe(ME);
+    expect(assessorView(fixture)?.canEditCheckboxes()).toBe(true);
+    expect(assessorView(fixture)?.loggedInUserId()).toBe(ME);
   });
 
   /**
@@ -103,7 +103,7 @@ describe('AssessorPageComponent', () => {
     const { fixture } = await renderAssessorPage({ myRoles: roles(role) });
 
     expect(screen.queryByText('Access Denied')).not.toBeInTheDocument();
-    expect(assessorView(fixture)?.canEditCheckboxes).toBe(canEditCheckboxes);
+    expect(assessorView(fixture)?.canEditCheckboxes()).toBe(canEditCheckboxes);
   });
 
   /**

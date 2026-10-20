@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, ElementRef, Input, OnDestroy, OnInit, ViewChild, AfterViewInit, inject } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild, AfterViewInit, inject, input } from '@angular/core';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -47,9 +47,9 @@ export class CiteActionListComponent implements OnInit, OnDestroy, AfterViewInit
   dialog = inject(MatDialog);
   dialogService = inject(CrucibleDialogService);
 
-  @Input() loggedInUserId: string;
-  @Input() canEdit: boolean;
-  @Input() showTemplates: boolean;
+  readonly loggedInUserId = input<string>(undefined);
+  readonly canEdit = input<boolean>(undefined);
+  readonly showTemplates = input<boolean>(undefined);
   msel = new MselPlus();
   citeActionList: CiteAction[] = [];
   templateList: CiteAction[] = [];
@@ -89,7 +89,7 @@ export class CiteActionListComponent implements OnInit, OnDestroy, AfterViewInit
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((msel) => {
         if (msel && this.msel.id !== msel.id) {
-          if (this.showTemplates) {
+          if (this.showTemplates()) {
             this.msel = new MselPlus();
           } else {
             Object.assign(this.msel, msel);
@@ -139,7 +139,7 @@ export class CiteActionListComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   ngOnInit() {
-    this.displayedColumns = this.showTemplates
+    this.displayedColumns = this.showTemplates()
       ? ['action', 'description']
       : ['action', 'moveNumber', 'team', 'actionNumber', 'description'];
   }
@@ -155,9 +155,9 @@ export class CiteActionListComponent implements OnInit, OnDestroy, AfterViewInit
   ) {
     if (!citeAction) {
       citeAction = {
-        mselId: this.showTemplates ? '' : this.msel.id,
+        mselId: this.showTemplates() ? '' : this.msel.id,
         moveNumber: 0,
-        isTemplate: this.showTemplates,
+        isTemplate: this.showTemplates(),
         actionNumber: 0,
         teamId: '',
       };
@@ -286,7 +286,7 @@ export class CiteActionListComponent implements OnInit, OnDestroy, AfterViewInit
     ) {
       return;
     }
-    const title = this.showTemplates ? 'Delete CITE Action Template' : 'Delete CITE Action';
+    const title = this.showTemplates() ? 'Delete CITE Action Template' : 'Delete CITE Action';
     this.dialogService
       .confirm({ title: title, message: 'Are you sure that you want to delete ' + citeAction.description + '?'
        }).afterClosed().subscribe((result) => {
@@ -368,7 +368,7 @@ export class CiteActionListComponent implements OnInit, OnDestroy, AfterViewInit
 
   getFilteredCiteActions(getTemplatesOnly: boolean): CiteAction[] {
     const citeActions = this.citeActionList;
-    const mselId = getTemplatesOnly || this.showTemplates ? '' : this.msel.id;
+    const mselId = getTemplatesOnly || this.showTemplates() ? '' : this.msel.id;
     let filteredCiteActions: CiteAction[] = [];
     if (citeActions) {
       citeActions.forEach((citeAction) => {

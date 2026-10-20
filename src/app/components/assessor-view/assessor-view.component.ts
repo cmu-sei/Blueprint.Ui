@@ -1,7 +1,7 @@
 // Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, Input, OnDestroy, HostListener, inject } from '@angular/core';
+import { Component, OnDestroy, HostListener, inject, input } from '@angular/core';
 import { Subject, Subscription, Observable, of } from 'rxjs';
 import { takeUntil, debounceTime, distinctUntilChanged, mergeMap, delay } from 'rxjs/operators';
 import { Sort, MatSort, MatSortHeader } from '@angular/material/sort';
@@ -105,9 +105,9 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
   private competencyFrameworkService = inject(CompetencyFrameworkService);
   private proficiencyScaleService = inject(ProficiencyScaleService);
 
-  @Input() loggedInUserId: string;
-  @Input() userTheme: Theme;
-  @Input() canEditCheckboxes = false;
+  readonly loggedInUserId = input<string>(undefined);
+  readonly userTheme = input<Theme>(undefined);
+  readonly canEditCheckboxes = input(false);
   msel = new MselPlus();
 
   // ScenarioEventView fields
@@ -354,7 +354,7 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
         ? rowMetadata[1] + ', ' + rowMetadata[2] + ', ' + rowMetadata[3]
         : '';
     const tint =
-      this.userTheme === 'dark-theme'
+      this.userTheme() === 'dark-theme'
         ? this.darkThemeTint
         : this.lightThemeTint;
     const style = color

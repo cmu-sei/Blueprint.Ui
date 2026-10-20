@@ -27,7 +27,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <!-- action column -->
     <ng-container matColumnDef="action">
       <mat-header-cell *matHeaderCellDef class="sub-col-action">
-        @if (canEdit) {
+        @if (canEdit()) {
         <button mat-icon-button (click)="addOrEditScale(null)" title="Add proficiency scale" style="outline: none;">
           <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle"></mat-icon>
         </button>
@@ -42,7 +42,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         } &nbsp;
       </mat-header-cell>
       <mat-cell *matCellDef="let scale" class="sub-col-action">
-        @if (canEdit) {
+        @if (canEdit()) {
         <button mat-icon-button class="msel-action" (click)="addOrEditScale(scale); $event.stopPropagation();"
           title="Edit {{ scale.name }}">
           <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline"></mat-icon>
@@ -82,14 +82,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
               <!-- action column -->
               <ng-container matColumnDef="action">
                 <th mat-header-cell *matHeaderCellDef class="lv-col-action">
-                  @if (canEdit) {
+                  @if (canEdit()) {
                   <button mat-icon-button (click)="addOrEditLevel(scale, null)" title="Add level" style="outline: none;">
                     <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle"></mat-icon>
                   </button>
                   } &nbsp;
                 </th>
                 <td mat-cell *matCellDef="let level" class="lv-col-action">
-                  @if (canEdit) {
+                  @if (canEdit()) {
                   <button mat-icon-button class="msel-action" (click)="addOrEditLevel(scale, level); $event.stopPropagation();"
                     title="Edit {{ level.name }}">
                     <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline"></mat-icon>

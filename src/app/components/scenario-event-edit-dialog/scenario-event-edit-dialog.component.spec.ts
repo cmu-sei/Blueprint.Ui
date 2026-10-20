@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { describe, it, expect } from 'vitest';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Output, input } from '@angular/core';
 import { ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
@@ -23,36 +23,36 @@ import { SteamfitterTaskComponent } from '../steamfitter-task/steamfitter-task.c
 
 @Component({ selector: 'app-data-value', template: '' })
 class DataValueStub {
-  @Input() value: string;
+  readonly value = input<string>(undefined);
   @Output() valueChange = new EventEmitter<string>();
-  @Input() dataField: DataField;
-  @Input() canEdit: boolean;
-  @Input() canApprove: boolean;
-  @Input() isOwner: boolean;
-  @Input() showValueOnly: boolean;
-  @Input() organizationOptions: unknown[];
-  @Input() teamOptions: unknown[];
-  @Input() unitOptions: unknown[];
-  @Input() cardOptions: unknown[];
-  @Input() moveOptions: unknown[];
-  @Input() gallerySourceTypeOptions: unknown[];
-  @Input() galleryItemStatusOptions: string[];
-  @Input() userOptions: unknown[];
+  readonly dataField = input<DataField>(undefined);
+  readonly canEdit = input<boolean>(undefined);
+  readonly canApprove = input<boolean>(undefined);
+  readonly isOwner = input<boolean>(undefined);
+  readonly showValueOnly = input<boolean>(undefined);
+  readonly organizationOptions = input<unknown[]>(undefined);
+  readonly teamOptions = input<unknown[]>(undefined);
+  readonly unitOptions = input<unknown[]>(undefined);
+  readonly cardOptions = input<unknown[]>(undefined);
+  readonly moveOptions = input<unknown[]>(undefined);
+  readonly gallerySourceTypeOptions = input<unknown[]>(undefined);
+  readonly galleryItemStatusOptions = input<string[]>(undefined);
+  readonly userOptions = input<unknown[]>(undefined);
 }
 @Component({ selector: 'app-duration-edit', template: '' })
 class DurationEditStub {
-  @Input() startTime: Date;
-  @Input() canEdit: boolean;
-  @Input() durationSeconds: number;
+  readonly startTime = input<Date>(undefined);
+  readonly canEdit = input<boolean>(undefined);
+  readonly durationSeconds = input<number>(undefined);
   @Output() durationSecondsChange = new EventEmitter<number>();
-  @Input() timeName: string;
-  @Input() postScript: string;
+  readonly timeName = input<string>(undefined);
+  readonly postScript = input<string>(undefined);
   @Output() change = new EventEmitter<number>();
 }
 @Component({ selector: 'app-steamfitter-task', template: '' })
 class SteamfitterTaskStub {
-  @Input() scenarioEvent: ScenarioEvent;
-  @Input() canEdit: boolean;
+  readonly scenarioEvent = input<ScenarioEvent>(undefined);
+  readonly canEdit = input<boolean>(undefined);
 }
 
 const TITLE: DataField = { id: 'df-title', name: 'Title', dataType: DataFieldType.String, displayOrder: 1, onScenarioEventList: true };
@@ -137,12 +137,12 @@ describe('ScenarioEventEditDialogComponent', () => {
     const user = userEvent.setup();
 
     expect(screen.getByRole('button', { name: 'Save' })).toBeEnabled();
-    expect(child(fixture, DataValueStub).canEdit).toBe(true);
-    expect(child(fixture, DataValueStub).canApprove).toBe(false);
-    expect(child(fixture, DurationEditStub).canEdit).toBe(true);
+    expect(child(fixture, DataValueStub).canEdit()).toBe(true);
+    expect(child(fixture, DataValueStub).canApprove()).toBe(false);
+    expect(child(fixture, DurationEditStub).canEdit()).toBe(true);
     expect(screen.getByRole('textbox', { name: 'Row Metadata' })).toBeEnabled();
     await user.click(screen.getByText('Steamfitter Task'));
-    expect(child(fixture, SteamfitterTaskStub).canEdit).toBe(true);
+    expect(child(fixture, SteamfitterTaskStub).canEdit()).toBe(true);
   });
 
   /**
@@ -155,11 +155,11 @@ describe('ScenarioEventEditDialogComponent', () => {
     const user = userEvent.setup();
 
     expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled();
-    expect(child(fixture, DataValueStub).canEdit).toBe(false);
-    expect(child(fixture, DurationEditStub).canEdit).toBe(false);
+    expect(child(fixture, DataValueStub).canEdit()).toBe(false);
+    expect(child(fixture, DurationEditStub).canEdit()).toBe(false);
     expect(screen.getByRole('textbox', { name: 'Row Metadata' })).toBeDisabled();
     await user.click(screen.getByText('Steamfitter Task'));
-    expect(child(fixture, SteamfitterTaskStub).canEdit).toBe(false);
+    expect(child(fixture, SteamfitterTaskStub).canEdit()).toBe(false);
   });
 
   /**
@@ -170,8 +170,8 @@ describe('ScenarioEventEditDialogComponent', () => {
   it.each([true, false])('passes canApprove and isOwner %s to the data values', async (granted) => {
     const { fixture } = await renderEventEdit({ isEditor: true, isApprover: granted, isOwner: granted });
 
-    expect(child(fixture, DataValueStub).canApprove).toBe(granted);
-    expect(child(fixture, DataValueStub).isOwner).toBe(granted);
+    expect(child(fixture, DataValueStub).canApprove()).toBe(granted);
+    expect(child(fixture, DataValueStub).isOwner()).toBe(granted);
   });
 
   /**
@@ -182,7 +182,7 @@ describe('ScenarioEventEditDialogComponent', () => {
   it('restricts inject values on a starter MSEL', async () => {
     const { fixture } = await renderEventEdit({ isEditor: true, isEditingRestricted: true });
 
-    expect(child(fixture, DataValueStub).canEdit).toBe(false);
+    expect(child(fixture, DataValueStub).canEdit()).toBe(false);
     expect(screen.queryByRole('combobox', { name: 'Scenario Event Type' })).not.toBeInTheDocument();
   });
 
@@ -224,7 +224,7 @@ describe('ScenarioEventEditDialogComponent', () => {
   it("passes the MSEL's Gallery source types and statuses to the data values", async () => {
     const { fixture } = await renderEventEdit({ isEditor: true });
 
-    expect(child(fixture, DataValueStub).gallerySourceTypeOptions).toEqual(['News', 'Social']);
-    expect(child(fixture, DataValueStub).galleryItemStatusOptions).toEqual(['Green', 'Red']);
+    expect(child(fixture, DataValueStub).gallerySourceTypeOptions()).toEqual(['News', 'Social']);
+    expect(child(fixture, DataValueStub).galleryItemStatusOptions()).toEqual(['Green', 'Red']);
   });
 });

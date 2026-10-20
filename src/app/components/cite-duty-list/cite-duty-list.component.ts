@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, ElementRef, Input, OnDestroy, ViewChild, AfterViewInit, inject } from '@angular/core';
+import { Component, ElementRef, OnDestroy, ViewChild, AfterViewInit, inject, input } from '@angular/core';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -44,9 +44,9 @@ export class CiteDutyListComponent implements OnDestroy, AfterViewInit {
   dialog = inject(MatDialog);
   dialogService = inject(CrucibleDialogService);
 
-  @Input() loggedInUserId: string;
-  @Input() canEdit: boolean;
-  @Input() showTemplates: boolean;
+  readonly loggedInUserId = input<string>(undefined);
+  readonly canEdit = input<boolean>(undefined);
+  readonly showTemplates = input<boolean>(undefined);
   msel = new MselPlus();
   citeDutyList: CiteDuty[] = [];
   templateList: CiteDuty[] = [];
@@ -78,12 +78,13 @@ export class CiteDutyListComponent implements OnDestroy, AfterViewInit {
     // subscribe to the active MSEL
     (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
       if (msel && this.msel.id !== msel.id) {
-        if (this.showTemplates) {
+        const showTemplates = this.showTemplates();
+        if (showTemplates) {
           this.msel = new MselPlus();
         } else {
           Object.assign(this.msel, msel);
         }
-        this.displayedColumns = this.showTemplates ? ['action', 'name'] : ['action', 'name', 'team'];
+        this.displayedColumns = showTemplates ? ['action', 'name'] : ['action', 'name', 'team'];
         this.sortedCiteDuties = this.getSortedCiteDuties(this.getFilteredCiteDuties(false));
         this.citeDutyDataSource.data = this.sortedCiteDuties;
       }
@@ -117,9 +118,9 @@ export class CiteDutyListComponent implements OnDestroy, AfterViewInit {
   addOrEditCiteDuty(citeDuty: CiteDuty, makeTemplate: boolean, makeFromTemplate: boolean) {
     if (!citeDuty) {
       citeDuty = {
-        mselId: this.showTemplates ? '' : this.msel.id,
+        mselId: this.showTemplates() ? '' : this.msel.id,
         name: '',
-        isTemplate: this.showTemplates,
+        isTemplate: this.showTemplates(),
         teamId: ''
       };
     } else {
@@ -284,7 +285,7 @@ export class CiteDutyListComponent implements OnDestroy, AfterViewInit {
 
   getFilteredCiteDuties(getTemplatesOnly: boolean): CiteDuty[] {
     const citeDuties = this.citeDutyList;
-    const mselId = getTemplatesOnly || this.showTemplates ? '' : this.msel.id;
+    const mselId = getTemplatesOnly || this.showTemplates() ? '' : this.msel.id;
     let filteredCiteDuties: CiteDuty[] = [];
     if (citeDuties) {
       citeDuties.forEach(citeDuty => {

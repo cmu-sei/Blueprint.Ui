@@ -1,7 +1,7 @@
 // Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, Input, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit, ViewChild, inject, input } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { UnitQuery } from 'src/app/data/unit/unit.query';
@@ -37,9 +37,9 @@ export class CatalogUnitsComponent implements OnDestroy, OnInit {
   private catalogUnitDataService = inject(CatalogUnitDataService);
   private catalogUnitQuery = inject(CatalogUnitQuery);
 
-  @Input() loggedInUserId: string;
+  readonly loggedInUserId = input<string>(undefined);
   @Input() canEdit: boolean;
-  @Input() catalog: Catalog;
+  readonly catalog = input<Catalog>(undefined);
   // context menu
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
   contextMenuPosition = { x: '0px', y: '0px' };
@@ -82,7 +82,7 @@ export class CatalogUnitsComponent implements OnDestroy, OnInit {
 
   ngOnInit() {
     // load the CatalogUnits
-    this.catalogUnitDataService.loadByCatalog(this.catalog.id);
+    this.catalogUnitDataService.loadByCatalog(this.catalog().id);
   }
 
   getSortedDataFields(dataFields: DataField[]): DataField[] {
@@ -98,7 +98,7 @@ export class CatalogUnitsComponent implements OnDestroy, OnInit {
 
   getUnitList() {
     let unitList = this.allUnits;
-    if (this.catalog && this.catalogUnitList && this.catalogUnitList.length > 0 && unitList.length > 0) {
+    if (this.catalog() && this.catalogUnitList && this.catalogUnitList.length > 0 && unitList.length > 0) {
       const catalogUnitIds = new Set(this.catalogUnitList.map(mt => mt.unitId));
       unitList = this.allUnits.filter(t => !catalogUnitIds.has(t.id));
     }
@@ -118,7 +118,7 @@ export class CatalogUnitsComponent implements OnDestroy, OnInit {
 
   addUnitToCatalog(unitId: string) {
     const catalogUnit: CatalogUnit = {
-      catalogId: this.catalog.id,
+      catalogId: this.catalog().id,
       unitId: unitId
     };
     this.catalogUnitDataService.add(catalogUnit);
@@ -133,7 +133,7 @@ export class CatalogUnitsComponent implements OnDestroy, OnInit {
   }
 
   saveChanges() {
-    this.catalogDataService.update(this.catalog);
+    this.catalogDataService.update(this.catalog());
     this.isEditEnabled = false;
   }
 

@@ -1,7 +1,7 @@
 // Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild, inject, input } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { UnitDataService } from 'src/app/data/unit/unit-data.service';
@@ -66,7 +66,7 @@ export class MselContributorsComponent implements OnDestroy, OnInit {
   private permissionDataService = inject(PermissionDataService);
   private changeDetectorRef = inject(ChangeDetectorRef);
 
-  @Input() loggedInUserId: string;
+  readonly loggedInUserId = input<string>(undefined);
   // context menu
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
   @ViewChild('contributorTable', { static: false }) contributorTable: MatTable<any>;
@@ -370,16 +370,16 @@ export class MselContributorsComponent implements OnDestroy, OnInit {
 
   canViewMsel(): boolean {
     return this.permissionDataService.hasPermission(SystemPermission.ViewMsels) ||
-      this.mselUnitList.some(mu => mu.unit?.users?.some(u => u.id === this.loggedInUserId));
+      this.mselUnitList.some(mu => mu.unit?.users?.some(u => u.id === this.loggedInUserId()));
   }
 
   canManageMsel(): boolean {
     return this.permissionDataService.hasPermission(SystemPermission.ManageMsels) ||
-      this.msel.hasRole(this.loggedInUserId, '').owner;
+      this.msel.hasRole(this.loggedInUserId(), '').owner;
   }
 
   isOwnOwnerRole(userId: string, mselRole: MselRole): boolean {
-    return userId === this.loggedInUserId && mselRole === MselRole.Owner && this.hasMselRole(userId, mselRole);
+    return userId === this.loggedInUserId() && mselRole === MselRole.Owner && this.hasMselRole(userId, mselRole);
   }
 
   isCreatorRole(userId: string, mselRole: MselRole): boolean {

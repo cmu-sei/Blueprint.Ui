@@ -1,7 +1,7 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, Input, OnDestroy, ViewChild, inject } from '@angular/core';
+import { Component, OnDestroy, ViewChild, inject, input } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Sort, MatSort, MatSortHeader } from '@angular/material/sort';
 import { Subject, Subscription, Observable, of } from 'rxjs';
@@ -90,8 +90,8 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
   private http = inject(HttpClient);
   private settingsService = inject(ComnSettingsService);
 
-  @Input() tabHeight: number;
-  @Input() userTheme: Theme;
+  readonly tabHeight = input<number>(undefined);
+  readonly userTheme = input<Theme>(undefined);
   // context menu
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
   contextMenuPosition = { x: '0px', y: '0px' };
@@ -467,8 +467,9 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
   }
 
   getScrollingHeight() {
-    const topHeight = this.tabHeight
-      ? this.myTopHeight + this.tabHeight
+    const tabHeight = this.tabHeight();
+    const topHeight = tabHeight
+      ? this.myTopHeight + tabHeight
       : this.myTopHeight;
     return 'calc(100% - ' + topHeight + 'px)';
   }
@@ -517,7 +518,7 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
         ? rowMetadata[1] + ', ' + rowMetadata[2] + ', ' + rowMetadata[3]
         : '';
     const tint =
-      this.userTheme === 'dark-theme'
+      this.userTheme() === 'dark-theme'
         ? this.darkThemeTint
         : this.lightThemeTint;
     const style = color

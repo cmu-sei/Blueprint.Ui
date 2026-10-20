@@ -1,7 +1,7 @@
 // Copyright 2026 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, ElementRef, Input, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild, inject, input } from '@angular/core';
 import { UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTable, MatTableDataSource, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
@@ -46,8 +46,8 @@ export class AdminProficiencyScalesComponent implements OnInit, OnDestroy {
   dialog = inject(MatDialog);
   dialogService = inject(CrucibleDialogService);
 
-  @Input() loggedInUserId: string;
-  @Input() canEdit: boolean;
+  readonly loggedInUserId = input<string>(undefined);
+  readonly canEdit = input<boolean>(undefined);
   scales: ProficiencyScale[] = [];
   scaleDataSource = new MatTableDataSource<ProficiencyScale>([]);
   scaleDisplayedColumns: string[] = ['action', 'name', 'description', 'levels'];

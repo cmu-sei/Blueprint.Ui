@@ -27,7 +27,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <!-- action column -->
     <ng-container matColumnDef="action">
       <mat-header-cell *matHeaderCellDef class="column-action">
-        @if (canEdit) {
+        @if (canEdit()) {
         <button mat-icon-button (click)="addOrEditInjectType(null)" style="outline: none;"
           title="Add new inject type">
           <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle"></mat-icon>
@@ -44,7 +44,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </mat-header-cell>
       <mat-cell *matCellDef="let element" class="column-action">
         <div class="action-div">
-          @if (canEdit || msel.hasRole(loggedInUserId, null).owner) {
+          @if (canEdit() || msel.hasRole(loggedInUserId(), null).owner) {
           <button mat-icon-button class="msel-action" (click)="addOrEditInjectType(element); $event.stopPropagation();"
             title="Edit {{ element.name }} injectType">
             <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline"
@@ -91,7 +91,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
               DataFields
             </mat-expansion-panel-header>
             <div class="expanded-detail-div">
-              <app-data-field-list [loggedInUserId]="loggedInUserId" [showTemplates]="false"
+              <app-data-field-list [loggedInUserId]="loggedInUserId()" [showTemplates]="false"
                 [injectTypeId]="element.id"></app-data-field-list>
             </div>
           </mat-expansion-panel>
@@ -102,7 +102,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
               Injects
             </mat-expansion-panel-header>
             <div class="expanded-detail-div">
-              <app-inject-list [canEdit]="canEdit" [loggedInUserId]="loggedInUserId" [catalog]="{}" [injectType]="element"
+              <app-inject-list [canEdit]="canEdit()" [loggedInUserId]="loggedInUserId()" [catalog]="{}" [injectType]="element"
                 [isEditMode]="true"></app-inject-list>
             </div>
           </mat-expansion-panel>

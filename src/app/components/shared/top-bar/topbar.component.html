@@ -17,7 +17,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       a screen reader has a document outline to start from -- Material styles headings inside
       a toolbar to the toolbar's own font, so this reads identically to the <span> it replaces.
     -->
-    <h1 class="view-text">{{ title }}</h1>
+    <h1 class="view-text">{{ title() }}</h1>
     @if (teams && team && teams.length > 0) {
     <div class="team-text">Team:</div>
     <b class="team-text">{{ team.name }}</b>
@@ -51,12 +51,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <mat-icon aria-hidden="true" class="menu-trigger" fontIcon="mdi-chevron-down"></mat-icon>
       </button>
       <mat-menu #menu="matMenu" [overlapTrigger]="false">
-        @if (topbarView === TopbarView.BLUEPRINT_ADMIN) {
+        @if (topbarView() === TopbarView.BLUEPRINT_ADMIN) {
         <button [routerLink]="['/']" mat-menu-item>
           Exit Administration
         </button>
         }
-        @if (topbarView !== TopbarView.BLUEPRINT_ADMIN && canViewAdmin) {
+        @if (topbarView() !== TopbarView.BLUEPRINT_ADMIN && canViewAdmin) {
         <button [routerLink]="['/admin']" [queryParams]="{returnUrl: currentUrl}" mat-menu-item>
           Administration
         </button>

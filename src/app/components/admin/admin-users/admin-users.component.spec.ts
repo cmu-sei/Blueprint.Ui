@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { describe, it, expect, vi } from 'vitest';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Output, input } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { of } from 'rxjs';
@@ -17,9 +17,9 @@ import { AdminUserListComponent } from './admin-user-list/admin-user-list.compon
 
 @Component({ selector: 'app-admin-user-list', template: '' })
 class UserListStub {
-  @Input() users: User[];
-  @Input() isLoading: boolean;
-  @Input() canEdit: boolean;
+  readonly users = input<User[]>(undefined);
+  readonly isLoading = input<boolean>(undefined);
+  readonly canEdit = input<boolean>(undefined);
   @Output() create = new EventEmitter<User>();
   @Output() delete = new EventEmitter<string>();
   @Output() updateUser = new EventEmitter<User>();
@@ -72,9 +72,9 @@ describe('AdminUsersComponent', () => {
   ])('passes canEdit $granted to the user list', async ({ granted, permissions }) => {
     const { fixture } = await renderUsers(permissions);
 
-    expect(list(fixture).canEdit).toBe(granted);
-    expect(list(fixture).users).toEqual([ALICE]);
-    expect(list(fixture).isLoading).toBe(false);
+    expect(list(fixture).canEdit()).toBe(granted);
+    expect(list(fixture).users()).toEqual([ALICE]);
+    expect(list(fixture).isLoading()).toBe(false);
   });
 
   /**

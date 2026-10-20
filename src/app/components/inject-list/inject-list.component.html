@@ -7,9 +7,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
   <table mat-table #injectTable [dataSource]="injectDataSource" matSort multiTemplateDataRows>
     <!-- action column -->
     <ng-container matColumnDef="action">
-      <mat-header-cell *matHeaderCellDef [ngClass]="isEditMode ? 'mat-column-action' : 'mat-column-select'">
+      <mat-header-cell *matHeaderCellDef [ngClass]="isEditMode() ? 'mat-column-action' : 'mat-column-select'">
         <!-- In Catalog -->
-        @if (canEdit && catalog.id) {
+        @if (canEdit() && catalog().id) {
         <button mat-icon-button [matMenuTriggerFor]="addMenu" style="outline: none;" title="Add Inject">
           <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle"></mat-icon>
         </button>
@@ -31,22 +31,22 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </button>
         </mat-menu>
       </mat-header-cell>
-      <mat-cell *matCellDef="let element" [ngClass]="isEditMode ? 'mat-column-action' : 'mat-column-select'">
-        @if (isEditMode) {
+      <mat-cell *matCellDef="let element" [ngClass]="isEditMode() ? 'mat-column-action' : 'mat-column-select'">
+        @if (isEditMode()) {
         <div>
-          @if (canEdit) {
+          @if (canEdit()) {
           <button mat-icon-button class="msel-action" (click)="editInject(element)"
             title="Edit {{ element.name }} inject">
             <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline"
               title="Edit {{ element.name }} inject"></mat-icon>
           </button>
           }
-          @if (canEdit) {
+          @if (canEdit()) {
           <button mat-icon-button (click)="copyInject(element)" title="Copy {{ element.name }}">
             <mat-icon class="mdi-18px" fontIcon="mdi-content-copy" alt="Copy"></mat-icon>
           </button>
           }
-          @if (canEdit) {
+          @if (canEdit()) {
           <button mat-icon-button class="msel-action" (click)="deleteInject(element)"
             title="Delete {{ element.name }} inject">
             <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline"
@@ -55,7 +55,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           }
         </div>
         }
-        @if (!isEditMode) {
+        @if (!isEditMode()) {
         <div>
           <mat-checkbox [checked]="isSelected(element.id)" (change)="select(element, $event)"></mat-checkbox><br />
         </div>

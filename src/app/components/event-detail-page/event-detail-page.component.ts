@@ -45,7 +45,7 @@ import { MselPlus } from 'src/app/data/msel/msel-data.service';
 import { DataValueQuery } from 'src/app/data/data-value/data-value.query';
 import { ScenarioEventQuery } from 'src/app/data/scenario-event/scenario-event.query';
 import { Sort } from '@angular/material/sort';
-import { Component, Input, inject } from '@angular/core';
+import { Component, inject, input } from '@angular/core';
 import { VIEW_CONFIG } from 'src/app/utilities/editor-config';
 import { CardQuery } from 'src/app/data/card/card.query';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
@@ -82,9 +82,9 @@ export class EventDetailPageComponent {
   private activatedRoute = inject(ActivatedRoute);
   private uiDataService = inject(UIDataService);
 
-  @Input() userTheme: Theme;
-  @Input() isContentDeveloper: boolean;
-  @Input() loggedInUserId: string;
+  readonly userTheme = input<Theme>(undefined);
+  readonly isContentDeveloper = input<boolean>(undefined);
+  readonly loggedInUserId = input<string>(undefined);
   topbarText = 'Scenario Event Details';
   hideTopbar = false;
   imageFilePath = '';

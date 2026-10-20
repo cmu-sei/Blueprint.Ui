@@ -1,7 +1,7 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild, inject, input } from '@angular/core';
 import { UntypedFormControl, FormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { CdkDragDrop, CdkDragStart, CdkDragEnd, CdkDropList, CdkDrag, CdkDragHandle } from '@angular/cdk/drag-drop';
@@ -110,9 +110,9 @@ export class ScenarioEventListComponent
   private uiDataService = inject(UIDataService);
   private changeDetectorRef = inject(ChangeDetectorRef);
 
-  @Input() loggedInUserId: string;
-  @Input() userTheme: Theme;
-  @Input() isStarterMsel: boolean;
+  readonly loggedInUserId = input<string>(undefined);
+  readonly userTheme = input<Theme>(undefined);
+  readonly isStarterMsel = input<boolean>(undefined);
   msel = new MselPlus();
 
   // ScenarioEventView Fields
@@ -390,7 +390,7 @@ export class ScenarioEventListComponent
 
   canEditMsel(): boolean {
     return this.permissionDataService.hasPermission(SystemPermission.EditMsels) ||
-      this.msel.hasRole(this.loggedInUserId, '').editor;
+      this.msel.hasRole(this.loggedInUserId(), '').editor;
   }
 
   tabChange(event) {
@@ -721,13 +721,13 @@ export class ScenarioEventListComponent
   displayEditDialog(scenarioEvent: ScenarioEvent) {
     const isOwner =
       this.canEditMsel() ||
-      this.msel.hasRole(this.loggedInUserId, scenarioEvent.id).owner;
+      this.msel.hasRole(this.loggedInUserId(), scenarioEvent.id).owner;
     const isApprover =
       isOwner ||
-      this.msel.hasRole(this.loggedInUserId, scenarioEvent.id).approver;
+      this.msel.hasRole(this.loggedInUserId(), scenarioEvent.id).approver;
     const isEditor =
       isApprover ||
-      this.msel.hasRole(this.loggedInUserId, scenarioEvent.id).editor;
+      this.msel.hasRole(this.loggedInUserId(), scenarioEvent.id).editor;
 
     const dialogRef = this.dialog.open(ScenarioEventEditDialogComponent, {
       minWidth: '900px',
@@ -749,8 +749,8 @@ export class ScenarioEventListComponent
         isOwner: isOwner,
         isApprover: isApprover,
         isEditor: isEditor,
-        isEditingRestricted: this.isStarterMsel,
-        showScenarioEventType: !this.isStarterMsel,
+        isEditingRestricted: this.isStarterMsel(),
+        showScenarioEventType: !this.isStarterMsel(),
         useCite: this.msel.useCite,
         useGallery: this.msel.useGallery,
         useSteamfitter: this.msel.useSteamfitter,
@@ -908,7 +908,7 @@ export class ScenarioEventListComponent
 
   getStyleFromColor(color: string) {
     const tint =
-      this.userTheme === 'dark-theme'
+      this.userTheme() === 'dark-theme'
         ? this.darkThemeTint
         : this.lightThemeTint;
     return color
@@ -1046,7 +1046,7 @@ export class ScenarioEventListComponent
       height: '90%',
       data: {
         catalog: catalog,
-        loggedInUserId: this.loggedInUserId,
+        loggedInUserId: this.loggedInUserId(),
         isContentDeveloper: this.canEditMsel(),
         injectList: [],
       },

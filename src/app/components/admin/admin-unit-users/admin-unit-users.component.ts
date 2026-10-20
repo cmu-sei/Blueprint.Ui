@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, OnDestroy, OnInit, Input, ElementRef, ViewChild, AfterViewInit, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, ElementRef, ViewChild, AfterViewInit, inject, input } from '@angular/core';
 import { MatPaginator } from '@angular/material/paginator';
 import { Sort, MatSort, MatSortHeader } from '@angular/material/sort';
 import { MatTableDataSource, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
@@ -27,8 +27,8 @@ export class AdminUnitUsersComponent implements OnDestroy, OnInit, AfterViewInit
   private unitUserDataService = inject(UnitUserDataService);
   private userQuery = inject(UserQuery);
 
-  @Input() unitId: string;
-  @Input() canManage: boolean;
+  readonly unitId = input<string>(undefined);
+  readonly canManage = input<boolean>(undefined);
   @ViewChild('userPaginator') userPaginator: MatPaginator;
   @ViewChild('unitUserPaginator') unitUserPaginator: MatPaginator;
   userList: User[] = [];
@@ -61,7 +61,7 @@ export class AdminUnitUsersComponent implements OnDestroy, OnInit, AfterViewInit
       this.unitUsers = tUsers;
       this.setDataSources();
     });
-    this.unitUserDataService.getUnitUsersFromApi(this.unitId);
+    this.unitUserDataService.getUnitUsersFromApi(this.unitId());
     this.filterControl.valueChanges.pipe(takeUntil(this.unsubscribe$)).subscribe(() => {
       this.filterString = this.filterControl.value;
       this.applyFilter();
@@ -136,7 +136,7 @@ export class AdminUnitUsersComponent implements OnDestroy, OnInit, AfterViewInit
       (tu) => tu.id === user.id
     );
     if (index === -1) {
-      this.unitUserDataService.addUserToUnit(this.unitId, user);
+      this.unitUserDataService.addUserToUnit(this.unitId(), user);
     }
   }
 
@@ -195,7 +195,7 @@ export class AdminUnitUsersComponent implements OnDestroy, OnInit, AfterViewInit
       (tu) => tu.id === user.id
     );
     if (index !== -1) {
-      this.unitUserDataService.removeUnitUser(this.unitId, user.id);
+      this.unitUserDataService.removeUnitUser(this.unitId(), user.id);
     }
   }
 

@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { describe, it, expect, vi } from 'vitest';
-import { Component, Input } from '@angular/core';
+import { Component, input } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { MatButtonModule } from '@angular/material/button';
@@ -46,15 +46,15 @@ import { PlayerTeamAppOrderComponent } from '../player-team-app-order/player-tea
 
 @Component({ selector: 'app-player-application-teams', template: '' })
 class AppTeamsStub {
-  @Input() loggedInUserId: string;
-  @Input() playerApplicationId: string;
-  @Input() mselTeamList: Team[];
+  readonly loggedInUserId = input<string>(undefined);
+  readonly playerApplicationId = input<string>(undefined);
+  readonly mselTeamList = input<Team[]>(undefined);
 }
 @Component({ selector: 'app-player-team-app-order', template: '' })
 class AppOrderStub {
-  @Input() loggedInUserId: string;
-  @Input() canEdit: boolean;
-  @Input() mselTeamList: Team[];
+  readonly loggedInUserId = input<string>(undefined);
+  readonly canEdit = input<boolean>(undefined);
+  readonly mselTeamList = input<Team[]>(undefined);
 }
 
 const ME = 'user-me';
@@ -173,7 +173,7 @@ describe('PlayerApplicationListComponent', () => {
     for (const name of ACTIONS) {
       expect(within(table()).getByRole('button', { name })).toBeInTheDocument();
     }
-    expect(orderStub(fixture).canEdit).toBe(true);
+    expect(orderStub(fixture).canEdit()).toBe(true);
   });
 
   /**
@@ -188,7 +188,7 @@ describe('PlayerApplicationListComponent', () => {
     for (const name of ACTIONS) {
       expect(within(table()).queryByRole('button', { name })).not.toBeInTheDocument();
     }
-    expect(orderStub(fixture).canEdit).toBe(false);
+    expect(orderStub(fixture).canEdit()).toBe(false);
   });
 
   /**
@@ -202,8 +202,8 @@ describe('PlayerApplicationListComponent', () => {
     await user.click(within(table()).getByText('Mail'));
 
     const teams = fixture.debugElement.query(By.directive(AppTeamsStub)).componentInstance as AppTeamsStub;
-    expect(teams.playerApplicationId).toBe('app-1');
-    expect(teams.mselTeamList).toEqual([BLUE]);
+    expect(teams.playerApplicationId()).toBe('app-1');
+    expect(teams.mselTeamList()).toEqual([BLUE]);
   });
 
   /**
@@ -328,6 +328,6 @@ describe('PlayerApplicationListComponent', () => {
     fixture.detectChanges();
 
     const teams = fixture.debugElement.query(By.directive(AppTeamsStub)).componentInstance as AppTeamsStub;
-    expect(teams.mselTeamList).toEqual([BLUE, green]);
+    expect(teams.mselTeamList()).toEqual([BLUE, green]);
   });
 });

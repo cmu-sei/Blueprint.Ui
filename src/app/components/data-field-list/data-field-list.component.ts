@@ -1,7 +1,7 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { ChangeDetectorRef, Component, ElementRef, Input, OnDestroy, OnInit, ViewChild, AfterViewInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild, AfterViewInit, inject, input } from '@angular/core';
 import { UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -64,10 +64,10 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
   private uiDataService = inject(UIDataService);
   private changeDetectorRef = inject(ChangeDetectorRef);
 
-  @Input() loggedInUserId: string;
-  @Input() showTemplates: boolean;
-  @Input() userTheme: Theme;
-  @Input() injectTypeId: string;
+  readonly loggedInUserId = input<string>(undefined);
+  readonly showTemplates = input<boolean>(undefined);
+  readonly userTheme = input<Theme>(undefined);
+  readonly injectTypeId = input<string>(undefined);
   msel = new MselPlus();
   allDataFields: DataField[] = [];
   dataFieldList: DataField[] = [];
@@ -134,7 +134,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
         (templates) => {
           this.templateList = templates;
           // if on the templates page, the dataFieldList is the templates
-          if (this.showTemplates) {
+          if (this.showTemplates()) {
             this.dataFieldList = templates;
           }
           this.sortChanged(this.sort);
@@ -157,7 +157,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
     const availableKeys = this.availableDisplayOptions().map((o) => o.key);
     this.visibleDisplayColumns = seed.filter((k) => availableKeys.includes(k));
     this.applyVisibleDisplayColumns();
-    if (this.showTemplates) {
+    if (this.showTemplates()) {
       this.msel = new MselPlus();
       this.mselDataService.setActive('');
     } else {
@@ -169,11 +169,12 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
           this.allDataFields = dataFields;
           this.setDataFieldList();
         });
-      if (this.injectTypeId) {
+      const injectTypeId = this.injectTypeId();
+      if (injectTypeId) {
         this.msel = new MselPlus();
         this.mselDataService.setActive('');
         // load data fields for the inject type
-        this.dataFieldDataService.loadByInjectType(this.injectTypeId);
+        this.dataFieldDataService.loadByInjectType(injectTypeId);
       } else {
         // subscribe to the active MSEL changes to get future changes
         (this.mselQuery.selectActive() as Observable<MselPlus>)
@@ -211,7 +212,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
     this.allDataFields.forEach((df) => {
       if (
         (df.mselId && df.mselId === this.msel.id) ||
-        (df.injectTypeId && df.injectTypeId === this.injectTypeId)
+        (df.injectTypeId && df.injectTypeId === this.injectTypeId())
       ) {
         this.dataFieldList.push({ ...df });
       }
@@ -282,7 +283,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
     if (!dataField) {
       dataField = {
         mselId: this.msel.id,
-        injectTypeId: this.injectTypeId,
+        injectTypeId: this.injectTypeId(),
         displayOrder: this.dataFieldList.length + 1,
         isShownOnDefaultTab: true,
         onScenarioEventList: true,
@@ -303,7 +304,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
         dataField.injectTypeId = null;
       } else {
         dataField.mselId = this.msel.id;
-        dataField.injectTypeId = this.injectTypeId;
+        dataField.injectTypeId = this.injectTypeId();
         dataField.displayOrder = dataField.isTemplate
           ? this.dataFieldList.length + 1
           : dataField.displayOrder;
@@ -323,7 +324,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
       data: {
         dataField: dataField,
         canEdit: this.canEdit(),
-        isOwner: this.msel.hasRole(this.loggedInUserId, null).owner,
+        isOwner: this.msel.hasRole(this.loggedInUserId(), null).owner,
         galleryArticleParameters: this.getUnusedGalleryOptions(
           dataField.galleryArticleParameter
         ),
@@ -417,11 +418,11 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
     ) {
       this.allowDragAndDrop = false;
     } else {
-      this.allowDragAndDrop = !this.showTemplates;
+      this.allowDragAndDrop = !this.showTemplates();
     }
     const filteredData = this.getFilteredDataFields(
       this.msel.id,
-      this.injectTypeId,
+      this.injectTypeId(),
       this.dataFieldList
     );
     this.dataFieldDataSource.data = filteredData;
@@ -495,7 +496,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
   }
 
   sortDataFields(a: DataField, b: DataField): number {
-    const defaultSort: Sort = this.showTemplates
+    const defaultSort: Sort = this.showTemplates()
       ? { active: 'name', direction: 'asc' }
       : { active: 'displayOrder', direction: 'asc' };
     let sortResult = 0;
@@ -530,7 +531,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
     }
 
     const returnArray =
-      this.showTemplates || (!mselId && !injectTypeId)
+      this.showTemplates() || (!mselId && !injectTypeId)
         ? filteredDataFields
         : this.systemDefinedDataFields.concat(filteredDataFields);
     return returnArray;
@@ -553,7 +554,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
   viewDataOptions(dataField: DataField, event: Event) {
     event.stopPropagation();
     if (dataField.dataType === DataFieldType.Competency || (dataField.dataOptions && dataField.dataOptions.length > 0)) {
-      const hasEditPermission = this.canEdit() || this.msel.hasRole(this.loggedInUserId, null).owner;
+      const hasEditPermission = this.canEdit() || this.msel.hasRole(this.loggedInUserId(), null).owner;
       const supportsOptionList =
         dataField.dataType === DataFieldType.Double ||
         dataField.dataType === DataFieldType.Integer ||
@@ -658,8 +659,8 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
 
   availableDisplayOptions() {
     return this.displayOptions.filter((opt) => {
-      if (this.showTemplates && opt.hideInAdmin) return false;
-      if (this.injectTypeId && opt.hideInInjectType) return false;
+      if (this.showTemplates() && opt.hideInAdmin) return false;
+      if (this.injectTypeId() && opt.hideInInjectType) return false;
       return true;
     });
   }
@@ -779,11 +780,11 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
   }
 
   canEdit(): boolean {
-    if (this.showTemplates) {
+    if (this.showTemplates()) {
       return this.permissionDataService.hasPermission(SystemPermission.ManageDataFields);
     } else {
       return this.permissionDataService.hasPermission(SystemPermission.EditMsels) ||
-        this.msel.hasRole(this.loggedInUserId, '').editor;
+        this.msel.hasRole(this.loggedInUserId(), '').editor;
     }
   }
 

@@ -1,7 +1,7 @@
 // Copyright 2025 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
-import { Component, EventEmitter, OnInit, ViewChild, Input, Output, OnChanges, SimpleChanges, inject } from '@angular/core';
+import { Component, EventEmitter, OnInit, ViewChild, Output, OnChanges, SimpleChanges, inject, input } from '@angular/core';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { MatSort, MatSortHeader } from '@angular/material/sort';
 import { MatPaginator } from '@angular/material/paginator';
@@ -45,9 +45,9 @@ export class AdminUserListComponent implements OnInit, OnChanges {
   roles$ = this.roleDataService.roles$;
   topbarColor = '#BB0000';
 
-  @Input() users: User[];
-  @Input() isLoading: boolean;
-  @Input() canEdit: boolean;
+  readonly users = input<User[]>(undefined);
+  readonly isLoading = input<boolean>(undefined);
+  readonly canEdit = input<boolean>(undefined);
   @Output() create: EventEmitter<User> = new EventEmitter<User>();
   @Output() delete: EventEmitter<string> = new EventEmitter<string>();
   @Output() updateUser: EventEmitter<User> = new EventEmitter<User>();

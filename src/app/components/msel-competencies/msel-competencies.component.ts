@@ -1,7 +1,7 @@
 // Copyright 2026 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, Input, OnDestroy, OnInit, ViewChild, AfterViewInit, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild, AfterViewInit, inject, input } from '@angular/core';
 import { UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { SelectionModel } from '@angular/cdk/collections';
 import { animate, state, style, transition, trigger } from '@angular/animations';
@@ -80,7 +80,7 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
   private dataValueDataService = inject(DataValueDataService);
   private dataValueQuery = inject(DataValueQuery);
 
-  @Input() loggedInUserId: string;
+  readonly loggedInUserId = input<string>(undefined);
   @ViewChild('competencyPaginator') competencyPaginator: MatPaginator;
   @ViewChild('workRolePaginator') workRolePaginator: MatPaginator;
   @ViewChild('workRoleSort') workRoleSort: MatSort;
@@ -194,7 +194,7 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
 
   canEditMsel(): boolean {
     return this.permissionDataService.hasPermission(SystemPermission.ManageMsels) ||
-      this.msel.hasRole(this.loggedInUserId, '').owner;
+      this.msel.hasRole(this.loggedInUserId(), '').owner;
   }
 
   // =============================================

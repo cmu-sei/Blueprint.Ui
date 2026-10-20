@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Output, input } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -40,84 +40,84 @@ import { MselPlaybookComponent } from '../msel-playbook/msel-playbook.component'
 // One stub per tab; each declares the inputs MselComponent binds.
 @Component({ selector: 'app-msel-info', template: '' })
 class MselInfoStub {
-  @Input() loggedInUserId: string;
+  readonly loggedInUserId = input<string>(undefined);
   @Output() deleteThisMsel = new EventEmitter<string>();
 }
 @Component({ selector: 'app-msel-contributors', template: '' })
 class MselContributorsStub {
-  @Input() loggedInUserId: string;
+  readonly loggedInUserId = input<string>(undefined);
 }
 @Component({ selector: 'app-msel-teams', template: '' })
 class MselTeamsStub {
-  @Input() loggedInUserId: string;
+  readonly loggedInUserId = input<string>(undefined);
 }
 @Component({ selector: 'app-data-field-list', template: '' })
 class DataFieldListStub {
-  @Input() loggedInUserId: string;
-  @Input() showTemplates: boolean;
-  @Input() userTheme: Theme;
+  readonly loggedInUserId = input<string>(undefined);
+  readonly showTemplates = input<boolean>(undefined);
+  readonly userTheme = input<Theme>(undefined);
 }
 @Component({ selector: 'app-organization-list', template: '' })
 class OrganizationListStub {
-  @Input() loggedInUserId: string;
-  @Input() canEdit: boolean;
-  @Input() showTemplates: boolean;
+  readonly loggedInUserId = input<string>(undefined);
+  readonly canEdit = input<boolean>(undefined);
+  readonly showTemplates = input<boolean>(undefined);
 }
 @Component({ selector: 'app-move-list', template: '' })
 class MoveListStub {
-  @Input() loggedInUserId: string;
-  @Input() canEditMsel: boolean;
+  readonly loggedInUserId = input<string>(undefined);
+  readonly canEditMsel = input<boolean>(undefined);
 }
 @Component({ selector: 'app-player-application-list', template: '' })
 class PlayerApplicationListStub {
-  @Input() loggedInUserId: string;
+  readonly loggedInUserId = input<string>(undefined);
 }
 @Component({ selector: 'app-card-list', template: '' })
 class CardListStub {
-  @Input() loggedInUserId: string;
-  @Input() canEdit: boolean;
-  @Input() showTemplates: boolean;
+  readonly loggedInUserId = input<string>(undefined);
+  readonly canEdit = input<boolean>(undefined);
+  readonly showTemplates = input<boolean>(undefined);
 }
 @Component({ selector: 'app-cite-action-list', template: '' })
 class CiteActionListStub {
-  @Input() loggedInUserId: string;
-  @Input() canEdit: boolean;
+  readonly loggedInUserId = input<string>(undefined);
+  readonly canEdit = input<boolean>(undefined);
 }
 @Component({ selector: 'app-cite-duty-list', template: '' })
 class CiteDutyListStub {
-  @Input() loggedInUserId: string;
-  @Input() canEdit: boolean;
+  readonly loggedInUserId = input<string>(undefined);
+  readonly canEdit = input<boolean>(undefined);
 }
 @Component({ selector: 'app-msel-competencies', template: '' })
 class MselCompetenciesStub {
-  @Input() loggedInUserId: string;
+  readonly loggedInUserId = input<string>(undefined);
 }
 @Component({ selector: 'app-scenario-event-list', template: '' })
 class ScenarioEventListStub {
-  @Input() loggedInUserId: string;
-  @Input() userTheme: Theme;
+  readonly loggedInUserId = input<string>(undefined);
+  readonly userTheme = input<Theme>(undefined);
 }
 @Component({ selector: 'app-msel-view', template: '' })
 class MselViewStub {
-  @Input() tabHeight: number;
-  @Input() userTheme: Theme;
+  readonly tabHeight = input<number>(undefined);
+  readonly userTheme = input<Theme>(undefined);
 }
 @Component({ selector: 'app-assessor-view', template: '' })
 class AssessorViewStub {
-  @Input() loggedInUserId: string;
-  @Input() userTheme: Theme;
-  @Input() canEditCheckboxes: boolean;
+  readonly loggedInUserId = input<string>(undefined);
+  readonly userTheme = input<Theme>(undefined);
+  readonly canEditCheckboxes = input<boolean>(undefined);
 }
 @Component({ selector: 'app-invitation-list', template: '' })
 class InvitationListStub {
-  @Input() loggedInUserId: string;
-  @Input() canEditMsel: boolean;
-  @Input() hideSearch: boolean;
+  readonly loggedInUserId = input<string>(undefined);
+  readonly canEditMsel = input<boolean>(undefined);
+  readonly hideSearch = input<boolean>(undefined);
 }
 @Component({ selector: 'app-msel-playbook', template: '' })
 class MselPlaybookStub {
-  @Input() loggedInUserId: string;
-  @Input() canEditMsel: boolean;
+  readonly loggedInUserId = input<string>(undefined);
+  readonly canEditMsel = input<boolean>(undefined);
 }
 
 
@@ -180,13 +180,13 @@ function child<T>(fixture: ComponentFixture<unknown>, stub: new (...args: never[
 
 // The tabs that pass canEditMsel down, with the input each child receives it as.
 const EDIT_TABS = [
-  { tab: 'Organizations', read: (f: ComponentFixture<unknown>) => child(f, OrganizationListStub)?.canEdit },
-  { tab: 'Moves', read: (f: ComponentFixture<unknown>) => child(f, MoveListStub)?.canEditMsel },
-  { tab: 'Gallery Cards', read: (f: ComponentFixture<unknown>) => child(f, CardListStub)?.canEdit },
-  { tab: 'CITE Actions', read: (f: ComponentFixture<unknown>) => child(f, CiteActionListStub)?.canEdit },
-  { tab: 'CITE Duties', read: (f: ComponentFixture<unknown>) => child(f, CiteDutyListStub)?.canEdit },
-  { tab: 'Invitations', read: (f: ComponentFixture<unknown>) => child(f, InvitationListStub)?.canEditMsel },
-  { tab: 'MSEL Playbook', read: (f: ComponentFixture<unknown>) => child(f, MselPlaybookStub)?.canEditMsel },
+  { tab: 'Organizations', read: (f: ComponentFixture<unknown>) => child(f, OrganizationListStub)?.canEdit() },
+  { tab: 'Moves', read: (f: ComponentFixture<unknown>) => child(f, MoveListStub)?.canEditMsel() },
+  { tab: 'Gallery Cards', read: (f: ComponentFixture<unknown>) => child(f, CardListStub)?.canEdit() },
+  { tab: 'CITE Actions', read: (f: ComponentFixture<unknown>) => child(f, CiteActionListStub)?.canEdit() },
+  { tab: 'CITE Duties', read: (f: ComponentFixture<unknown>) => child(f, CiteDutyListStub)?.canEdit() },
+  { tab: 'Invitations', read: (f: ComponentFixture<unknown>) => child(f, InvitationListStub)?.canEditMsel() },
+  { tab: 'MSEL Playbook', read: (f: ComponentFixture<unknown>) => child(f, MselPlaybookStub)?.canEditMsel() },
 ];
 
 describe('MselComponent', () => {
@@ -207,7 +207,7 @@ describe('MselComponent', () => {
     for (const endpoint of [apis.move.getMovesByMsel, apis.dataField.getDataFieldsByMsel, apis.scenarioEvent.getScenarioEventsByMsel, apis.invitation.getInvitations, apis.mselUnit.getMselUnits]) {
       expect(endpoint).toHaveBeenCalledWith('msel-1');
     }
-    expect(child(fixture, MselInfoStub)?.loggedInUserId).toBe('user-me');
+    expect(child(fixture, MselInfoStub)?.loggedInUserId()).toBe('user-me');
   });
 
   /**
@@ -250,7 +250,7 @@ describe('MselComponent', () => {
 
     await openTab('Assessor View');
 
-    expect(child(fixture, AssessorViewStub)?.canEditCheckboxes).toBe(canEditCheckboxes);
+    expect(child(fixture, AssessorViewStub)?.canEditCheckboxes()).toBe(canEditCheckboxes);
   });
 
   /**

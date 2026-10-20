@@ -1,7 +1,7 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, Input, OnDestroy, ViewChild, AfterViewInit, inject } from '@angular/core';
+import { Component, OnDestroy, ViewChild, AfterViewInit, inject, input } from '@angular/core';
 import { UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatTableDataSource, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
@@ -38,8 +38,8 @@ export class MoveListComponent implements OnDestroy, AfterViewInit {
   dialog = inject(MatDialog);
   dialogService = inject(CrucibleDialogService);
 
-  @Input() loggedInUserId: string;
-  @Input() canEditMsel: boolean;
+  readonly loggedInUserId = input<string>(undefined);
+  readonly canEditMsel = input<boolean>(undefined);
   msel = new MselPlus();
   moveList: Move[] = [];
   changedMove: Move = {};

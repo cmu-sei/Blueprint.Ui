@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Output, input } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By, Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
@@ -22,16 +22,16 @@ import { ScenarioEventListComponent } from '../scenario-event-list/scenario-even
 
 @Component({ selector: 'app-topbar', template: '' })
 class TopbarStub {
-  @Input() title: string;
-  @Input() topbarView: unknown;
-  @Input() imageFilePath: string;
+  readonly title = input<string>(undefined);
+  readonly topbarView = input<unknown>(undefined);
+  readonly imageFilePath = input<string>(undefined);
   @Output() urlNavigate = new EventEmitter<string>();
 }
 @Component({ selector: 'app-scenario-event-list', template: '' })
 class ScenarioEventListStub {
-  @Input() loggedInUserId: string;
-  @Input() userTheme: Theme;
-  @Input() isStarterMsel: boolean;
+  readonly loggedInUserId = input<string>(undefined);
+  readonly userTheme = input<Theme>(undefined);
+  readonly isStarterMsel = input<boolean>(undefined);
 }
 
 const MSEL: Msel = { id: 'msel-1', name: 'Starter Exercise', createdBy: 'someone-else', userMselRoles: [] };
@@ -116,7 +116,7 @@ describe('StarterComponent', () => {
     expect(apis.msel.getMsel).not.toHaveBeenCalled();
     expect(signalR.startConnection).toHaveBeenCalledWith(ApplicationArea.home);
     expect(signalR.selectMsel).toHaveBeenCalledWith('');
-    expect(child(fixture, TopbarStub)?.title).toBe('Blueprint Starter');
+    expect(child(fixture, TopbarStub)?.title()).toBe('Blueprint Starter');
     expect(child(fixture, ScenarioEventListStub)).toBeUndefined();
   });
 
@@ -133,10 +133,10 @@ describe('StarterComponent', () => {
     expect(apis.user.getMselUsers).toHaveBeenCalledWith('msel-1');
     expect(TestBed.inject(MselQuery).getActiveId()).toBe('msel-1');
     expect(TestBed.inject(Title).getTitle()).toBe('Blueprint - Starter Exercise');
-    expect(child(fixture, TopbarStub)?.title).toBe('Blueprint - Starter Exercise');
+    expect(child(fixture, TopbarStub)?.title()).toBe('Blueprint - Starter Exercise');
     expect(signalR.selectMsel).toHaveBeenCalledWith('msel-1');
     const events = child(fixture, ScenarioEventListStub);
-    expect(events?.isStarterMsel).toBe(true);
-    expect(events?.loggedInUserId).toBe('user-me');
+    expect(events?.isStarterMsel()).toBe(true);
+    expect(events?.loggedInUserId()).toBe('user-me');
   });
 });

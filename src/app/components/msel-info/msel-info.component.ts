@@ -1,7 +1,7 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { ChangeDetectorRef, Component, EventEmitter, HostListener, Input, OnDestroy, OnInit, Output, ViewChild, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, HostListener, OnDestroy, OnInit, Output, ViewChild, inject, input } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -103,7 +103,7 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   private settingsService = inject(ComnSettingsService);
   private scenarioEventQuery = inject(ScenarioEventQuery);
 
-  @Input() loggedInUserId: string;
+  readonly loggedInUserId = input<string>(undefined);
   @Output() deleteThisMsel = new EventEmitter<string>();
   msel = new MselPlus();
   originalMsel = new MselPlus();
@@ -479,7 +479,7 @@ export class MselInfoComponent implements OnDestroy, OnInit {
 
   canEditMsel(): boolean {
     return this.permissionDataService.hasPermission(SystemPermission.EditMsels) ||
-      this.msel.hasRole(this.loggedInUserId, '').editor;
+      this.msel.hasRole(this.loggedInUserId(), '').editor;
   }
 
   isPipelineStatus(): boolean {
@@ -493,7 +493,7 @@ export class MselInfoComponent implements OnDestroy, OnInit {
 
   canManageMsel(): boolean {
     return this.permissionDataService.hasPermission(SystemPermission.ManageMsels) ||
-      this.msel.hasRole(this.loggedInUserId, '').owner;
+      this.msel.hasRole(this.loggedInUserId(), '').owner;
   }
 
   getDeleteTooltip(): string {

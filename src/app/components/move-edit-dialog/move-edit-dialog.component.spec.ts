@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { afterEach, describe, it, expect, vi } from 'vitest';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Output, input } from '@angular/core';
 import { By } from '@angular/platform-browser';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
@@ -30,12 +30,12 @@ import { DurationEditComponent } from '../shared/duration-edit/duration-edit.com
 
 @Component({ selector: 'app-duration-edit', template: '' })
 class DurationEditStub {
-  @Input() startTime: Date;
-  @Input() canEdit: boolean;
-  @Input() durationSeconds: number;
+  readonly startTime = input<Date>(undefined);
+  readonly canEdit = input<boolean>(undefined);
+  readonly durationSeconds = input<number>(undefined);
   @Output() durationSecondsChange = new EventEmitter<number>();
-  @Input() timeName: string;
-  @Input() postScript: string;
+  readonly timeName = input<string>(undefined);
+  readonly postScript = input<string>(undefined);
   @Output() change = new EventEmitter<number>();
 }
 
@@ -103,8 +103,8 @@ describe('MoveEditDialogComponent', () => {
     expect(screen.getByRole('heading', { name: 'Edit Move' })).toBeInTheDocument();
     expect(description()).toHaveValue('Initial access');
     const duration = fixture.debugElement.query(By.directive(DurationEditStub)).componentInstance as DurationEditStub;
-    expect(duration.durationSeconds).toBe(3600);
-    expect(duration.startTime).toEqual(START);
+    expect(duration.durationSeconds()).toBe(3600);
+    expect(duration.startTime()).toEqual(START);
   });
 
   /**

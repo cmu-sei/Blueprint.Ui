@@ -1,7 +1,7 @@
 // Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild, inject, input } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { PlayerApplication, Move, SystemPermission, Team } from 'src/app/generated/blueprint.api';
@@ -59,7 +59,7 @@ export class PlayerApplicationListComponent implements OnDestroy, OnInit {
   private settingsService = inject(ComnSettingsService);
   private changeDetectorRef = inject(ChangeDetectorRef);
 
-  @Input() loggedInUserId: string;
+  readonly loggedInUserId = input<string>(undefined);
   // context menu
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
   @ViewChild('appTable', { static: false }) appTable: MatTable<any>;
@@ -132,7 +132,7 @@ export class PlayerApplicationListComponent implements OnDestroy, OnInit {
 
   canEditMsel(): boolean {
     return this.permissionDataService.hasPermission(SystemPermission.EditMsels) ||
-      this.msel.hasRole(this.loggedInUserId, '').editor;
+      this.msel.hasRole(this.loggedInUserId(), '').editor;
   }
 
   expandPlayerApplication(playerApplicationId: string) {

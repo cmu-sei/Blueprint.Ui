@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { describe, it, expect } from 'vitest';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Output, input } from '@angular/core';
 import { ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
@@ -15,11 +15,11 @@ import { renderComponent } from 'src/app/test-utils/render-component';
 
 @Component({ selector: 'app-inject-list', template: '' })
 class InjectListStub {
-  @Input() catalog: Catalog;
-  @Input() injectType: InjectType;
-  @Input() injectList: Injectm[];
-  @Input() isContentDeveloper: boolean;
-  @Input() loggedInUserId: string;
+  readonly catalog = input<Catalog>(undefined);
+  readonly injectType = input<InjectType>(undefined);
+  readonly injectList = input<Injectm[]>(undefined);
+  readonly isContentDeveloper = input<boolean>(undefined);
+  readonly loggedInUserId = input<string>(undefined);
   @Output() selectedInjectIdList = new EventEmitter<string[]>();
 }
 
@@ -58,7 +58,7 @@ describe('InjectSelectDialogComponent', () => {
 
     expect(fixture.componentInstance).toBeInstanceOf(InjectSelectDialogComponent);
     expect(screen.getByRole('heading', { name: 'Select Injects to Add' })).toBeInTheDocument();
-    expect(list(fixture).catalog).toEqual(CATALOG);
+    expect(list(fixture).catalog()).toEqual(CATALOG);
     expect(screen.getByRole('button', { name: 'Add' })).toBeDisabled();
   });
 

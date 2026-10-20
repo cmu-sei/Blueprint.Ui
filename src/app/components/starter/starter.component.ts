@@ -1,7 +1,7 @@
 // Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, Input, OnDestroy, OnInit, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject, input } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 import { Subject, Observable } from 'rxjs';
@@ -69,7 +69,7 @@ export class StarterComponent implements OnDestroy, OnInit {
   private settingsService = inject(ComnSettingsService);
   private titleService = inject(Title);
 
-  @Input() canAccessAdminSection: boolean;
+  readonly canAccessAdminSection = input<boolean>(undefined);
   private unsubscribe$ = new Subject();
   private msel: Msel = { name: '' };
   selectedIndex = 1;

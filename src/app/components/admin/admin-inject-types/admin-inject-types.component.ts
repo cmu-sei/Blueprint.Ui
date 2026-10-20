@@ -1,7 +1,7 @@
 // Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, ElementRef, Input, OnDestroy, ViewChild, AfterViewInit, inject } from '@angular/core';
+import { Component, ElementRef, OnDestroy, ViewChild, AfterViewInit, inject, input } from '@angular/core';
 import { UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatTableDataSource, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
 import { animate, state, style, transition, trigger } from '@angular/animations';
@@ -55,8 +55,8 @@ export class AdminInjectTypesComponent implements OnDestroy, AfterViewInit {
   dialog = inject(MatDialog);
   dialogService = inject(CrucibleDialogService);
 
-  @Input() loggedInUserId: string;
-  @Input() canEdit: boolean;
+  readonly loggedInUserId = input<string>(undefined);
+  readonly canEdit = input<boolean>(undefined);
   @ViewChild('injectTypeTable', { static: false }) injectTypeTable: MatTable<any>;
   @ViewChild(MatPaginator) paginator: MatPaginator;
   @ViewChild('jsonInput') jsonInput: ElementRef<HTMLInputElement>;

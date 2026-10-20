@@ -33,7 +33,7 @@ Released under a MIT (SEI)-style license. See LICENSE.md in the project root for
       <th mat-header-cell *matHeaderCellDef></th>
       <td mat-cell *matCellDef="let model">
         <button mat-icon-button (click)="delete(model.membership.id)" style="outline: none;"
-          title="Remove {{ model.name }}" [disabled]="!canEdit">
+          title="Remove {{ model.name }}" [disabled]="!canEdit()">
           <mat-icon class="mdi-24px center-self" fontIcon="mdi-minus-circle-outline"></mat-icon>
         </button>
       </td>

@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { ChangeDetectorRef, Component, OnDestroy, OnInit, Input, ElementRef, ViewChild, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, ElementRef, ViewChild, inject, input } from '@angular/core';
 import { PageEvent, MatPaginator } from '@angular/material/paginator';
 import { MatSort, MatSortable } from '@angular/material/sort';
 import { MatTableDataSource, MatTable, MatColumnDef, MatCellDef, MatCell, MatRowDef, MatRow, MatHeaderCellDef, MatHeaderCell, MatHeaderRowDef, MatHeaderRow } from '@angular/material/table';
@@ -34,8 +34,8 @@ export class CardTeamsComponent implements OnDestroy, OnInit {
   private permissionDataService = inject(PermissionDataService);
   private changeDetectorRef = inject(ChangeDetectorRef);
 
-  @Input() cardId: string;
-  @Input() loggedInUserId: string;
+  readonly cardId = input<string>(undefined);
+  readonly loggedInUserId = input<string>(undefined);
   msel = new MselPlus();
   mselTeamList: Team[] = [];
   @ViewChild('teamsInput') teamsInput: ElementRef<HTMLInputElement>;
@@ -77,7 +77,7 @@ export class CardTeamsComponent implements OnDestroy, OnInit {
     this.cardTeamDataService.cardTeams.pipe(takeUntil(this.unsubscribe$)).subscribe(cardTeams => {
       this.cardTeams = cardTeams ?
         cardTeams
-          .filter(et => et.cardId === this.cardId)
+          .filter(et => et.cardId === this.cardId())
           .sort((a, b) => {
             if (this.getTeamShortName(a.teamId).toLowerCase() < this.getTeamShortName(b.teamId).toLowerCase()) {
               return -1;
@@ -120,7 +120,7 @@ export class CardTeamsComponent implements OnDestroy, OnInit {
 
 
   addTeamToCard(team: Team): void {
-    this.cardTeamDataService.addTeamToCard(this.cardId, team);
+    this.cardTeamDataService.addTeamToCard(this.cardId(), team);
   }
 
   setIsShownOnWall(cardTeam: CardTeam, value: boolean) {
@@ -151,7 +151,7 @@ export class CardTeamsComponent implements OnDestroy, OnInit {
 
   canEditMsel(): boolean {
     return this.permissionDataService.hasPermission(SystemPermission.EditMsels) ||
-      this.msel.hasRole(this.loggedInUserId, '').editor;
+      this.msel.hasRole(this.loggedInUserId(), '').editor;
   }
 
   ngOnDestroy() {

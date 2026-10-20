@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { describe, it, expect, vi } from 'vitest';
-import { Component, EventEmitter, Input, Output, Type } from '@angular/core';
+import { Component, EventEmitter, Output, Type, input } from '@angular/core';
 import { ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { of } from 'rxjs';
@@ -16,15 +16,15 @@ import { AdminGroupsMemberListComponent } from '../admin-groups-member-list/admi
 
 @Component({ selector: 'app-admin-groups-membership-list', template: '' })
 class MembershipListStub {
-  @Input() users: User[];
-  @Input() canEdit: boolean;
+  readonly users = input<User[]>(undefined);
+  readonly canEdit = input<boolean>(undefined);
   @Output() createMembership = new EventEmitter<string>();
 }
 @Component({ selector: 'app-admin-groups-member-list', template: '' })
 class MemberListStub {
-  @Input() memberships: GroupMembership[];
-  @Input() users: User[];
-  @Input() canEdit: boolean;
+  readonly memberships = input<GroupMembership[]>(undefined);
+  readonly users = input<User[]>(undefined);
+  readonly canEdit = input<boolean>(undefined);
   @Output() deleteMembership = new EventEmitter<string>();
 }
 
@@ -78,9 +78,9 @@ describe('AdminGroupsDetailComponent', () => {
     const { fixture, groupApi } = await renderDetail();
 
     expect(groupApi.getGroupMemberships).toHaveBeenCalledWith('group-1');
-    expect(names(child(fixture, MemberListStub).users)).toEqual(['Alice']);
-    expect(child(fixture, MemberListStub).memberships).toEqual([MEMBERSHIP]);
-    expect(names(child(fixture, MembershipListStub).users)).toEqual(['Bob']);
+    expect(names(child(fixture, MemberListStub).users())).toEqual(['Alice']);
+    expect(child(fixture, MemberListStub).memberships()).toEqual([MEMBERSHIP]);
+    expect(names(child(fixture, MembershipListStub).users())).toEqual(['Bob']);
   });
 
   /**
@@ -91,8 +91,8 @@ describe('AdminGroupsDetailComponent', () => {
   it.each([true, false])('passes canEdit %s to both lists', async (canEdit) => {
     const { fixture } = await renderDetail({ canEdit });
 
-    expect(child(fixture, MembershipListStub).canEdit).toBe(canEdit);
-    expect(child(fixture, MemberListStub).canEdit).toBe(canEdit);
+    expect(child(fixture, MembershipListStub).canEdit()).toBe(canEdit);
+    expect(child(fixture, MemberListStub).canEdit()).toBe(canEdit);
   });
 
   /**

@@ -1,7 +1,7 @@
 // Copyright 2025 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, Input, OnDestroy, ViewChild, inject } from '@angular/core';
+import { Component, OnDestroy, ViewChild, inject, input } from '@angular/core';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import {
@@ -37,9 +37,9 @@ export class PlayerTeamAppOrderComponent implements OnDestroy {
   private teamQuery = inject(TeamQuery);
   dialogService = inject(CrucibleDialogService);
 
-  @Input() loggedInUserId: string;
-  @Input() canEdit: boolean;
-  @Input() mselTeamList: Team[];
+  readonly loggedInUserId = input<string>(undefined);
+  readonly canEdit = input<boolean>(undefined);
+  readonly mselTeamList = input<Team[]>(undefined);
   @ViewChild('teamAppTable', { static: false }) teamAppTable: MatTable<any>;
   playerApplicationList: PlayerApplication[];
   editTeamId = '';

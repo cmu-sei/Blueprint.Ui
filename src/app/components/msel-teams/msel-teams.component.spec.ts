@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { describe, it, expect, vi } from 'vitest';
-import { Component, EventEmitter, Input } from '@angular/core';
+import { Component, EventEmitter, input } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { MatButtonModule } from '@angular/material/button';
@@ -49,7 +49,7 @@ import { TeamUsersComponent } from '../team-users/team-users.component';
 
 @Component({ selector: 'app-team-users', template: '' })
 class TeamUsersStub {
-  @Input() team: Team;
+  readonly team = input<Team>(undefined);
 }
 
 const ME = 'user-me';
@@ -227,7 +227,7 @@ describe('MselTeamsComponent', () => {
     await user.click(within(table()).getByText('Blue Team'));
 
     const users = fixture.debugElement.query(By.directive(TeamUsersStub)).componentInstance as TeamUsersStub;
-    expect(users.team).toEqual(BLUE);
+    expect(users.team()).toEqual(BLUE);
   });
 
   /**

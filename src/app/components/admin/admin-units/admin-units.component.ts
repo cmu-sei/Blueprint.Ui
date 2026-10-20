@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, ElementRef, Input, OnDestroy, ViewChild, inject } from '@angular/core';
+import { Component, ElementRef, OnDestroy, ViewChild, inject, input } from '@angular/core';
 import { MatPaginator } from '@angular/material/paginator';
 import { Sort, MatSort, MatSortHeader } from '@angular/material/sort';
 import { MatTable, MatTableDataSource, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
@@ -48,7 +48,7 @@ export class AdminUnitsComponent implements OnDestroy {
   private unitQuery = inject(UnitQuery);
   private userQuery = inject(UserQuery);
 
-  @Input() canManage: boolean;
+  readonly canManage = input<boolean>(undefined);
   @ViewChild('unitTable', { static: false }) unitTable: MatTable<any>;
   @ViewChild('jsonInput') jsonInput: ElementRef<HTMLInputElement>;
   @ViewChild(MatPaginator) set matPaginator(paginator: MatPaginator) {

@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { describe, it, expect } from 'vitest';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Output, input } from '@angular/core';
 import { By } from '@angular/platform-browser';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -18,21 +18,21 @@ import { DataValueComponent } from '../data-value/data-value.component';
 
 @Component({ selector: 'app-data-value', template: '' })
 class DataValueStub {
-  @Input() value: string;
+  readonly value = input<string>(undefined);
   @Output() valueChange = new EventEmitter<string>();
-  @Input() dataField: DataField;
-  @Input() canEdit: boolean;
-  @Input() canApprove: boolean;
-  @Input() isOwner: boolean;
-  @Input() showValueOnly: boolean;
-  @Input() organizationOptions: unknown[];
-  @Input() teamOptions: unknown[];
-  @Input() unitOptions: unknown[];
-  @Input() cardOptions: unknown[];
-  @Input() moveOptions: unknown[];
-  @Input() gallerySourceTypeOptions: unknown[];
-  @Input() galleryItemStatusOptions: string[];
-  @Input() userOptions: unknown[];
+  readonly dataField = input<DataField>(undefined);
+  readonly canEdit = input<boolean>(undefined);
+  readonly canApprove = input<boolean>(undefined);
+  readonly isOwner = input<boolean>(undefined);
+  readonly showValueOnly = input<boolean>(undefined);
+  readonly organizationOptions = input<unknown[]>(undefined);
+  readonly teamOptions = input<unknown[]>(undefined);
+  readonly unitOptions = input<unknown[]>(undefined);
+  readonly cardOptions = input<unknown[]>(undefined);
+  readonly moveOptions = input<unknown[]>(undefined);
+  readonly gallerySourceTypeOptions = input<unknown[]>(undefined);
+  readonly galleryItemStatusOptions = input<string[]>(undefined);
+  readonly userOptions = input<unknown[]>(undefined);
 }
 
 const SUBJECT: DataField = { id: 'df-subject', name: 'Subject', dataType: DataFieldType.String };
@@ -73,11 +73,11 @@ describe('InjectEditDialogComponent', () => {
     const { fixture } = await renderInjectEdit(injectData({ isEditMode: true }));
 
     const value = fixture.debugElement.query(By.directive(DataValueStub)).componentInstance as DataValueStub;
-    expect(value.dataField).toEqual(SUBJECT);
-    expect(value.value).toBe('Urgent');
-    expect(value.canEdit).toBe(true);
-    expect(value.showValueOnly).toBe(false);
-    expect(value.canApprove).toBe(false);
+    expect(value.dataField()).toEqual(SUBJECT);
+    expect(value.value()).toBe('Urgent');
+    expect(value.canEdit()).toBe(true);
+    expect(value.showValueOnly()).toBe(false);
+    expect(value.canApprove()).toBe(false);
   });
 
   /**
@@ -89,9 +89,9 @@ describe('InjectEditDialogComponent', () => {
     const { fixture } = await renderInjectEdit(injectData({ isEditMode: false }));
 
     const value = fixture.debugElement.query(By.directive(DataValueStub)).componentInstance as DataValueStub;
-    expect(value.canEdit).toBe(false);
-    expect(value.showValueOnly).toBe(true);
-    expect(value.canApprove).toBe(false);
+    expect(value.canEdit()).toBe(false);
+    expect(value.showValueOnly()).toBe(true);
+    expect(value.canApprove()).toBe(false);
   });
 
   /**

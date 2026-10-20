@@ -1,7 +1,7 @@
 // Copyright 2026 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
+import { Component, EventEmitter, Output, inject, input } from '@angular/core';
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { MatProgressBar } from '@angular/material/progress-bar';
@@ -18,32 +18,32 @@ export class IntegrationStatusComponent {
   private mselDataService = inject(MselDataService);
   private dialogService = inject(CrucibleDialogService);
 
-  @Input() msel: MselPlus;
+  readonly msel = input<MselPlus>(undefined);
   @Output() closed = new EventEmitter<void>();
   cancelClicked = false;
 
   get isError(): boolean {
-    return this.msel?.integrationStatus?.startsWith('ERROR') || false;
+    return this.msel()?.integrationStatus?.startsWith('ERROR') || false;
   }
 
   get isCancelling(): boolean {
-    return this.cancelClicked || this.msel?.integrationStatus?.startsWith('Cancelling') || false;
+    return this.cancelClicked || this.msel()?.integrationStatus?.startsWith('Cancelling') || false;
   }
 
   get isPulling(): boolean {
-    return this.msel?.integrationStatus?.startsWith('Pulling') || false;
+    return this.msel()?.integrationStatus?.startsWith('Pulling') || false;
   }
 
   get statusMessage(): string {
     if (this.isError) {
-      return this.msel.integrationStatus.substring(7);
+      return this.msel().integrationStatus.substring(7);
     }
-    return this.msel?.integrationStatus || '';
+    return this.msel()?.integrationStatus || '';
   }
 
   cancelPush() {
     this.cancelClicked = true;
-    this.mselDataService.cancelIntegrations(this.msel.id);
+    this.mselDataService.cancelIntegrations(this.msel().id);
   }
 
   pullIntegrations() {
@@ -51,7 +51,7 @@ export class IntegrationStatusComponent {
       .confirm({ title: 'Remove Integrations', message: 'Are you sure you want to remove partial integrations from the associated applications?'
        }).afterClosed().subscribe((result) => {
         if (result) {
-          this.mselDataService.pullIntegrations(this.msel.id);
+          this.mselDataService.pullIntegrations(this.msel().id);
           this.closed.emit();
         }
       });

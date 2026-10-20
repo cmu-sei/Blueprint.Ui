@@ -1,7 +1,7 @@
 // Copyright 2026 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, ElementRef, Input, OnDestroy, ViewChild, AfterViewInit, inject } from '@angular/core';
+import { Component, ElementRef, Input, OnDestroy, ViewChild, AfterViewInit, inject, input } from '@angular/core';
 import { UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatTableDataSource, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatRowDef, MatRow, MatHeaderRowDef, MatHeaderRow } from '@angular/material/table';
 import { animate, state, style, transition, trigger } from '@angular/animations';
@@ -56,7 +56,7 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
   dialog = inject(MatDialog);
   dialogService = inject(CrucibleDialogService);
 
-  @Input() loggedInUserId: string;
+  readonly loggedInUserId = input<string>(undefined);
   @Input() canEdit: boolean;
   @ViewChild('competencyFrameworkTable', { static: false }) competencyFrameworkTable: MatTable<any>;
   @ViewChild('paginator') paginator: MatPaginator;

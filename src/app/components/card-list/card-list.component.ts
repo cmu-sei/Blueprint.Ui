@@ -1,7 +1,7 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, ElementRef, Input, OnDestroy, ViewChild, AfterViewInit, inject as inject_1 } from '@angular/core';
+import { Component, ElementRef, OnDestroy, ViewChild, AfterViewInit, inject as inject_1, input } from '@angular/core';
 import { UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatTableDataSource, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
 import { MatTable } from '@angular/material/table';
@@ -52,9 +52,9 @@ export class CardListComponent implements OnDestroy, AfterViewInit {
   dialog = inject_1(MatDialog);
   dialogService = inject_1(CrucibleDialogService);
 
-  @Input() loggedInUserId: string;
-  @Input() canEdit: boolean;
-  @Input() showTemplates: boolean;
+  readonly loggedInUserId = input<string>(undefined);
+  readonly canEdit = input<boolean>(undefined);
+  readonly showTemplates = input<boolean>(undefined);
   // context menu
   @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
   @ViewChild('cardTable', { static: false }) cardTable: MatTable<any>;
@@ -76,7 +76,7 @@ export class CardListComponent implements OnDestroy, AfterViewInit {
   isExpansionDetailRow = (i: number, row: Object) => (row as Card).id === this.expandedElementId;
 
   get displayedColumns(): string[] {
-    if (this.showTemplates) {
+    if (this.showTemplates()) {
       return ['action', 'name', 'description'];
     }
     return ['action', 'move', 'name', 'description'];
@@ -94,7 +94,7 @@ export class CardListComponent implements OnDestroy, AfterViewInit {
     });
     // subscribe to the active MSEL
     (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
-      if (this.showTemplates) {
+      if (this.showTemplates()) {
         this.msel = new MselPlus();
       } else {
         Object.assign(this.msel, msel);
@@ -118,7 +118,7 @@ export class CardListComponent implements OnDestroy, AfterViewInit {
   }
 
   rowClicked(row: Card) {
-    if (this.showTemplates) {
+    if (this.showTemplates()) {
       return;
     }
     if (this.expandedElementId === row.id) {
@@ -130,7 +130,7 @@ export class CardListComponent implements OnDestroy, AfterViewInit {
   }
 
   getRowClass(id: string) {
-    if (this.showTemplates) {
+    if (this.showTemplates()) {
       return 'element-row no-clicks';
     }
     const rowClass = this.expandedElementId === id
@@ -142,9 +142,9 @@ export class CardListComponent implements OnDestroy, AfterViewInit {
   addOrEditCard(card: Card, makeTemplate: boolean, makeFromTemplate: boolean) {
     if (!card) {
       card = {
-        mselId: this.showTemplates ? '' : this.msel.id,
+        mselId: this.showTemplates() ? '' : this.msel.id,
         move: 0,
-        isTemplate: this.showTemplates,
+        isTemplate: this.showTemplates(),
         inject: 0
       };
     } else {
@@ -267,7 +267,7 @@ export class CardListComponent implements OnDestroy, AfterViewInit {
 
   getFilteredCards(getTemplatesOnly: boolean): Card[] {
     const cards = this.cardList;
-    const mselId = getTemplatesOnly || this.showTemplates ? '' : this.msel.id;
+    const mselId = getTemplatesOnly || this.showTemplates() ? '' : this.msel.id;
     let filteredCards: Card[] = [];
     if (cards) {
       cards.forEach(card => {

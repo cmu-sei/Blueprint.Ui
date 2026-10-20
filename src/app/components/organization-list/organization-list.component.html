@@ -31,7 +31,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <!-- action column -->
           <ng-container matColumnDef="action">
             <mat-header-cell *matHeaderCellDef class="column-action">
-              @if (showTemplates && canEdit) {
+              @if (showTemplates && canEdit()) {
               <span>
                 <button mat-icon-button (click)="addOrEditOrganization(null, true)" title="Add a template organization"
                   style="outline: none;">
@@ -47,7 +47,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 </button>
               </span>
               } &nbsp;
-              @if (!showTemplates && (canEdit || msel.hasRole(loggedInUserId, null).owner)) {
+              @if (!showTemplates && (canEdit() || msel.hasRole(loggedInUserId(), null).owner)) {
               <span>
                 <button mat-icon-button [matMenuTriggerFor]="addMenu" style="outline: none;"
                   title="Add organization">
@@ -66,7 +66,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             </mat-header-cell>
             <mat-cell *matCellDef="let element" class="column-action">
               <div class="action-div">
-                @if (canEdit || (!showTemplates && msel.hasRole(loggedInUserId, null).owner)) {
+                @if (canEdit() || (!showTemplates && msel.hasRole(loggedInUserId(), null).owner)) {
                 <button mat-icon-button class="msel-action"
                   (click)="addOrEditOrganization(element, showTemplates); $event.stopPropagation();"
                   title="Edit {{ element.name }}">
@@ -74,14 +74,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
                     title="Edit {{ element.name }}"></mat-icon>
                 </button>
                 }
-                @if (canEdit || (!showTemplates && msel.hasRole(loggedInUserId, null).owner)) {
+                @if (canEdit() || (!showTemplates && msel.hasRole(loggedInUserId(), null).owner)) {
                 <button mat-icon-button class="msel-action"
                   (click)="deleteOrganization(element); $event.stopPropagation();" title="Delete {{ element.name }}">
                   <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline"
                     title="Delete {{ element.name }}"></mat-icon>
                 </button>
                 }
-                @if (!showTemplates && canEdit) {
+                @if (!showTemplates && canEdit()) {
                 <button mat-icon-button class="msel-action"
                   (click)="addOrEditOrganization(element, true); $event.stopPropagation();"
                   title="Make {{ element.name }} a template">

@@ -1,7 +1,7 @@
 // Copyright 2025 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, Input } from '@angular/core';
+import { Component, Input, input } from '@angular/core';
 import {
   ScenarioEvent,
   SteamfitterIntegrationType
@@ -21,7 +21,7 @@ import { AngularEditorModule } from '@kolkov/angular-editor';
 })
 export class SteamfitterTaskComponent {
   @Input() scenarioEvent: ScenarioEvent;
-  @Input() canEdit: boolean;
+  readonly canEdit = input<boolean>(undefined);
   steamfitterIntegrationType = SteamfitterIntegrationType;
   taskTypes = [
     SteamfitterIntegrationType.Notification,

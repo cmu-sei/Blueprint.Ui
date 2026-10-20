@@ -40,7 +40,7 @@ import { MselPlus } from 'src/app/data/msel/msel-data.service';
 import { DataValueQuery } from 'src/app/data/data-value/data-value.query';
 import { ScenarioEventQuery } from 'src/app/data/scenario-event/scenario-event.query';
 import { Sort } from '@angular/material/sort';
-import { Component, Input, OnDestroy, inject } from '@angular/core';
+import { Component, OnDestroy, inject, input } from '@angular/core';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
 import { CardQuery } from 'src/app/data/card/card.query';
 import { CardDataService } from 'src/app/data/card/card-data.service';
@@ -75,9 +75,9 @@ export class MselPlaybookComponent implements OnDestroy {
   private mselPageQuery = inject(MselPageQuery);
   private activatedRoute = inject(ActivatedRoute);
 
-  @Input() userTheme: Theme;
-  @Input() canEditMsel: boolean;
-  @Input() loggedInUserId: string;
+  readonly userTheme = input<Theme>(undefined);
+  readonly canEditMsel = input<boolean>(undefined);
+  readonly loggedInUserId = input<string>(undefined);
   pageIndex = 0;
   pageSize = 1;
   defaultPageSizeOptions = [1, 5, 10, 20];

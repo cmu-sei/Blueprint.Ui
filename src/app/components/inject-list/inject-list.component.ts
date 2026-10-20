@@ -1,7 +1,7 @@
 // Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, EventEmitter, Input, Output, OnDestroy, OnInit, ViewChild, inject as inject_1 } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnDestroy, OnInit, ViewChild, inject as inject_1, input } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { MatTableDataSource, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
 import {
@@ -74,11 +74,11 @@ export class InjectListComponent implements OnDestroy, OnInit {
   private unitQuery = inject_1(UnitQuery);
   private userQuery = inject_1(UserQuery);
 
-  @Input() loggedInUserId: string;
-  @Input() canEdit: boolean;
-  @Input() isEditMode: boolean;
-  @Input() catalog: Catalog = {};
-  @Input() injectType: InjectType = {};
+  readonly loggedInUserId = input<string>(undefined);
+  readonly canEdit = input<boolean>(undefined);
+  readonly isEditMode = input<boolean>(undefined);
+  readonly catalog = input<Catalog>({});
+  readonly injectType = input<InjectType>({});
   @Input() injectList: Injectm[] = [];
   @Output() selectedInjectIdList = new EventEmitter<string[]>();
   @ViewChild('injectTable', { static: false }) injectTable: MatTable<any>;
@@ -190,12 +190,14 @@ export class InjectListComponent implements OnDestroy, OnInit {
 
   ngOnInit() {
     // load injects
-    if (this.catalog.id) {
-      this.catalogInjectDataService.loadByCatalog(this.catalog.id);
-      this.dataFieldDataService.loadByInjectType(this.catalog.injectTypeId);
-    } else if (this.injectType.id) {
-      this.injectmDataService.loadByInjectType(this.injectType.id);
-      this.dataFieldDataService.loadByInjectType(this.injectType.id);
+    const catalog = this.catalog();
+    const injectType = this.injectType();
+    if (catalog.id) {
+      this.catalogInjectDataService.loadByCatalog(catalog.id);
+      this.dataFieldDataService.loadByInjectType(catalog.injectTypeId);
+    } else if (injectType.id) {
+      this.injectmDataService.loadByInjectType(injectType.id);
+      this.dataFieldDataService.loadByInjectType(injectType.id);
     } else {
       this.sortChanged(this.sort);
     }
@@ -211,11 +213,12 @@ export class InjectListComponent implements OnDestroy, OnInit {
   }
 
   addInject() {
+    const catalog = this.catalog();
     const inject = {
       id: uuidv4(),
-      injectTypeId: this.catalog.id
-        ? this.catalog.injectTypeId
-        : this.injectType.id,
+      injectTypeId: catalog.id
+        ? catalog.injectTypeId
+        : this.injectType().id,
     } as Injectm;
     inject.dataValues = this.createNewDataValues(inject.id);
     this.editInject(inject, true);
@@ -236,8 +239,8 @@ export class InjectListComponent implements OnDestroy, OnInit {
     });
     // When in the inject type view (no catalog context), resolve the catalogId from
     // the first catalog that belongs to this inject type.
-    const catalogId = this.catalog.id ||
-      this.catalogList.find(c => c.injectTypeId === this.injectType.id)?.id;
+    const catalogId = this.catalog().id ||
+      this.catalogList.find(c => c.injectTypeId === this.injectType().id)?.id;
     this.editInject(newInject, true, catalogId);
   }
 
@@ -249,7 +252,7 @@ export class InjectListComponent implements OnDestroy, OnInit {
       data: {
         inject: inject,
         dataFieldList: this.dataFieldList,
-        isEditMode: this.isEditMode,
+        isEditMode: this.isEditMode(),
         isNewInject: isNewInject,
         unitList: this.unitList,
         userList: this.userList,
@@ -260,7 +263,7 @@ export class InjectListComponent implements OnDestroy, OnInit {
       if (result.saveChanges && result.inject) {
         // save the inject (add or update)
         if (isNewInject) {
-          this.injectmDataService.add((this.catalog.id || catalogId) as string, result.inject);
+          this.injectmDataService.add((this.catalog().id || catalogId) as string, result.inject);
         } else {
           this.injectmDataService.update(result.inject);
         }
@@ -270,8 +273,9 @@ export class InjectListComponent implements OnDestroy, OnInit {
   }
 
   deleteInject(injectm: Injectm): void {
-    if (this.catalog.id) {
-      this.catalogInjectDataService.deleteByIds(this.catalog.id, injectm.id);
+    const catalog = this.catalog();
+    if (catalog.id) {
+      this.catalogInjectDataService.deleteByIds(catalog.id, injectm.id);
     } else {
       this.dialogService
         .confirm({ title: 'Delete Inject', message: 'Are you sure that you want to delete ' + injectm.name + '?'
@@ -429,7 +433,7 @@ export class InjectListComponent implements OnDestroy, OnInit {
   getDisplayedDataFields(): DataField[] {
     const displayedDataFields = [];
     this.dataFieldList.forEach((df) => {
-      if (this.catalog.listDataFields?.indexOf(df.id) > -1) {
+      if (this.catalog().listDataFields?.indexOf(df.id) > -1) {
         displayedDataFields.push(df);
       }
     });
@@ -454,7 +458,7 @@ export class InjectListComponent implements OnDestroy, OnInit {
         });
     } else {
       this.injectService
-        .getInjectsByInjectType(this.catalog.injectTypeId)
+        .getInjectsByInjectType(this.catalog().injectTypeId)
         .pipe(take(1))
         .subscribe((injects) => {
           this.openSelectDialog(injects);
@@ -474,8 +478,8 @@ export class InjectListComponent implements OnDestroy, OnInit {
         catalog: {},
         injectType: {},
         injectList: existingInjects,
-        loggedInUserId: this.loggedInUserId,
-        isContentDeveloper: this.canEdit,
+        loggedInUserId: this.loggedInUserId(),
+        isContentDeveloper: this.canEdit(),
       },
     });
     dialogRef.componentInstance.editComplete.subscribe((result) => {
@@ -485,7 +489,7 @@ export class InjectListComponent implements OnDestroy, OnInit {
         for (let i = 0; i < result.selectedInjectIdList.length; i++) {
           const catalogInject = {
             id: uuidv4(),
-            catalogId: this.catalog.id,
+            catalogId: this.catalog().id,
             injectId: result.selectedInjectIdList[i],
             isNew: true,
             displayOrder: nextOrder + i,
@@ -500,8 +504,10 @@ export class InjectListComponent implements OnDestroy, OnInit {
 
   getFilteredCatalogs() {
     return this.catalogList.filter(
-      (m) =>
-        m.injectTypeId === this.catalog.injectTypeId && m.id !== this.catalog.id
+      (m) => {
+      const catalog = this.catalog();
+      return m.injectTypeId === catalog.injectTypeId && m.id !== catalog.id;
+    }
     );
   }
 

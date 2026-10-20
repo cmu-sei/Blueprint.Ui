@@ -46,7 +46,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <div class="draghandle-div">
               @if (allowDragAndDrop) {
               <mat-icon cdkDragHandle cdkDragRootElement="row" cdkDrag [cdkDragData]="element" cdkDragLockAxis="y"
-                [cdkDragPreviewClass]="userTheme" class="mdi-18px down-12" fontIcon="mdi-drag-vertical" />
+                [cdkDragPreviewClass]="userTheme()" class="mdi-18px down-12" fontIcon="mdi-drag-vertical" />
               }
             </div>
           </mat-cell>
@@ -60,7 +60,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <!-- action column -->
         <ng-container matColumnDef="action">
           <mat-header-cell *matHeaderCellDef class="column-action">
-            @if (showTemplates && canEdit()) {
+            @if (showTemplates() && canEdit()) {
             <span>
               <button mat-icon-button (click)="addOrEditDataField(null, true)" title="Add a template data Field"
                 style="outline: none;">
@@ -76,7 +76,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
               </button>
             </span>
             } &nbsp;
-            @if (!showTemplates && (canEdit())) {
+            @if (!showTemplates() && (canEdit())) {
             <span>
               <button mat-icon-button [matMenuTriggerFor]="addMenu" style="outline: none;"
                 title="Add data Field">
@@ -94,13 +94,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
             </mat-menu>
           </mat-header-cell>
           <mat-cell *matCellDef="let element" class="column-action">
-            <div>{{ !showTemplates && element.displayOrder > 0 ? element.displayOrder : ' '}}</div>
+            <div>{{ !showTemplates() && element.displayOrder > 0 ? element.displayOrder : ' '}}</div>
             <div class="action-div">
               @if (element.displayOrder > 0) {
               <span style="display: inline-flex; white-space: nowrap;">
                 @if (canEdit()) {
                 <button mat-icon-button class="msel-action"
-                  (click)="addOrEditDataField(element, showTemplates); $event.stopPropagation();"
+                  (click)="addOrEditDataField(element, showTemplates()); $event.stopPropagation();"
                   title="Edit {{ element.name }}">
                   <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline"
                     title="Edit {{ element.name }}"></mat-icon>
@@ -113,7 +113,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                     title="Delete {{ element.name }}"></mat-icon>
                 </button>
                 }
-                @if (!injectTypeId && !showTemplates && canEdit()) {
+                @if (!injectTypeId() && !showTemplates() && canEdit()) {
                 <button mat-icon-button class="msel-action"
                   (click)="addOrEditDataField(element, true); $event.stopPropagation();"
                   title="Make {{ element.name }} a template">

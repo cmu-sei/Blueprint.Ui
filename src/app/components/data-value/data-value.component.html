@@ -4,7 +4,7 @@ Released under a MIT (SEI)-style license. See LICENSE.md in the
 project root for license information.
 -->
 <!-- view only display -->
-@if (showValueOnly && !canEdit && !canApprove && !isOwner) {
+@if (showValueOnly() && !canEdit() && !canApprove() && !isOwner()) {
 <span>
   <!-- dataType.DateTime -->
   @if (dataField.dataType === dataType.DateTime) {
@@ -76,11 +76,11 @@ project root for license information.
 <!-- Gallery Article Status input -->
 @if (useGalleryItemStatusSelect) {
 <span>
-  @if (!showValueOnly) {
+  @if (!showValueOnly()) {
   <mat-form-field class="full-width">
     <mat-label>{{ dataField.name }}</mat-label>
     <mat-select placeholder="{{ dataField.name }}" [ngModel]="getGalleryItemStatus(value)"
-      (ngModelChange)="galleryItemStatusChange($event)" [disabled]="!canEdit">
+      (ngModelChange)="galleryItemStatusChange($event)" [disabled]="!canEdit()">
       <mat-select-trigger>
         @if (galleryItemStatusColors[getGalleryItemStatus(value)]) {
         <span class="gallery-status-swatch"
@@ -89,7 +89,7 @@ project root for license information.
         {{ getGalleryItemStatus(value) }}
       </mat-select-trigger>
       <mat-option value=""> </mat-option>
-      @for (status of galleryItemStatusOptions; track $index) {
+      @for (status of galleryItemStatusOptions(); track $index) {
       <mat-option [value]="status">
         <span class="gallery-status-swatch" [style.background-color]="galleryItemStatusColors[status]"></span>
         {{ status }}
@@ -98,9 +98,9 @@ project root for license information.
     </mat-select>
   </mat-form-field>
   }
-  @if (showValueOnly) {
+  @if (showValueOnly()) {
   <mat-select placeholder="{{ dataField.name }}" [ngModel]="getGalleryItemStatus(value)"
-    (ngModelChange)="galleryItemStatusChange($event)" [disabled]="!canEdit">
+    (ngModelChange)="galleryItemStatusChange($event)" [disabled]="!canEdit()">
     <mat-select-trigger>
       @if (galleryItemStatusColors[getGalleryItemStatus(value)]) {
       <span class="gallery-status-swatch"
@@ -109,7 +109,7 @@ project root for license information.
       {{ getGalleryItemStatus(value) }}
     </mat-select-trigger>
     <mat-option value=""> </mat-option>
-    @for (status of galleryItemStatusOptions; track $index) {
+    @for (status of galleryItemStatusOptions(); track $index) {
     <mat-option [value]="status">
       <span class="gallery-status-swatch" [style.background-color]="galleryItemStatusColors[status]"></span>
       {{ status }}
@@ -122,14 +122,14 @@ project root for license information.
 <!-- string input -->
 @if (!useGalleryItemStatusSelect && !dataField.isChosenFromList && (dataField.dataType === dataType.String || dataField.dataType === dataType.Url)) {
 <span>
-  @if (!showValueOnly) {
+  @if (!showValueOnly()) {
   <mat-form-field class="full-width">
     <mat-label>{{ dataField.name }}</mat-label>
     <input type="text" matInput placeholder="{{ dataField.name }}" [(ngModel)]="value"
-      (ngModelChange)="valueChangeHandler()" [disabled]="!canEdit" />
+      (ngModelChange)="valueChangeHandler()" [disabled]="!canEdit()" />
   </mat-form-field>
   }
-  @if (showValueOnly) {
+  @if (showValueOnly()) {
   <span>
     {{ value }}
   </span>
@@ -139,16 +139,16 @@ project root for license information.
 <!-- IP address or network input -->
 @if (!dataField.isChosenFromList && (dataField.dataType === dataType.IpAddress || dataField.dataType === dataType.Network)) {
 <span>
-  @if (!showValueOnly) {
+  @if (!showValueOnly()) {
   <mat-form-field class="full-width">
     <mat-label>{{ dataField.name }}</mat-label>
     <input type="text" matInput [placeholder]="dataField.dataType === dataType.Network ? '10.1.0.0/24' : '192.0.2.10'"
-      [(ngModel)]="value" (ngModelChange)="valueChangeHandler()" [disabled]="!canEdit"
+      [(ngModel)]="value" (ngModelChange)="valueChangeHandler()" [disabled]="!canEdit()"
       [errorStateMatcher]="addressErrorMatcher" spellcheck="false" />
     <mat-error>{{ addressError() }}</mat-error>
   </mat-form-field>
   }
-  @if (showValueOnly) {
+  @if (showValueOnly()) {
   <span>
     {{ value }}
   </span>
@@ -158,14 +158,14 @@ project root for license information.
 <!-- Numeric input -->
 @if (!dataField.isChosenFromList && (dataField.dataType === dataType.Integer || dataField.dataType === dataType.Double)) {
 <span>
-  @if (!showValueOnly) {
+  @if (!showValueOnly()) {
   <mat-form-field class="full-width">
     <mat-label>{{ dataField.name }}</mat-label>
     <input matInput placeholder="{{ dataField.name }}" (change)="verifyNumber(value)" [(ngModel)]="value"
-      (ngModelChange)="valueChangeHandler()" [disabled]="!canEdit" />
+      (ngModelChange)="valueChangeHandler()" [disabled]="!canEdit()" />
   </mat-form-field>
   }
-  @if (showValueOnly) {
+  @if (showValueOnly()) {
   <span>
     {{ value }}
   </span>
@@ -175,18 +175,18 @@ project root for license information.
 <!-- dateTime input -->
 @if (!dataField.isChosenFromList && dataField.dataType === dataType.DateTime) {
 <span>
-  @if (!showValueOnly) {
+  @if (!showValueOnly()) {
   <mat-form-field class="datetime-field">
     <mat-label>{{ dataField.name }}</mat-label>
     <input matInput [ngxMatDatetimePicker]="picker" [(ngModel)]="value" (ngModelChange)="valueChangeHandler()"
-      (dateChange)="isChanged = true" (dateInput)="isChanged = true" style="display: none;" [disabled]="!canEdit">
+      (dateChange)="isChanged = true" (dateInput)="isChanged = true" style="display: none;" [disabled]="!canEdit()">
     <!-- <datetime-picker> -->
-    <span (click)="canEdit && picker.open()">
+    <span (click)="canEdit() && picker.open()">
       @if (value) {
       {{ value | date: 'dd MMM yyyy HH:mm' }} {{ value | timezoneAbbr }}
       }
     </span>
-    <mat-datepicker-toggle matSuffix title="Choose Date/Time" [for]="picker" [disabled]="!canEdit">
+    <mat-datepicker-toggle matSuffix title="Choose Date/Time" [for]="picker" [disabled]="!canEdit()">
     </mat-datepicker-toggle>
     <ngx-mat-datetime-picker #picker [showSpinners]=true [showSeconds]=false [stepHour]=1 [stepMinute]=5 [stepSecond]=1
       [touchUi]=false [enableMeridian]=true [disableMinute]=false [hideTime]=false [color]="'warn'">
@@ -197,7 +197,7 @@ project root for license information.
     </ngx-mat-datetime-picker>
   </mat-form-field>
   }
-  @if (showValueOnly) {
+  @if (showValueOnly()) {
   <span>
     @if (value) {
     {{ value | date: 'dd MMM yyyy HH:mm' }} {{ value | timezoneAbbr }}
@@ -209,19 +209,19 @@ project root for license information.
 <!-- html input -->
 @if (!dataField.isChosenFromList && dataField.dataType === dataType.Html) {
 <div>
-  @if (!showValueOnly) {
+  @if (!showValueOnly()) {
   <div class="full-width">
     <div class="editor-label">
       {{ dataField.name }}
     </div>
     <div>
       <angular-editor [placeholder]="'Enter value ...'" [(ngModel)]="value" (ngModelChange)="valueChangeHandler()"
-        [config]="canEdit ? editorConfig : viewConfig"></angular-editor>
+        [config]="canEdit() ? editorConfig : viewConfig"></angular-editor>
     </div>
     &nbsp;
   </div>
   }
-  @if (showValueOnly) {
+  @if (showValueOnly()) {
   <div class="full-width">
     <angular-editor [innerHtml]="value" [config]="viewConfig"></angular-editor>
   </div>
@@ -231,28 +231,28 @@ project root for license information.
 <!-- Organization input -->
 @if (!dataField.isChosenFromList && dataField.dataType === dataType.Organization) {
 <span>
-  @if (!showValueOnly) {
+  @if (!showValueOnly()) {
   <mat-form-field class="full-width">
     <mat-label>{{ dataField.name }}</mat-label>
     <mat-select placeholder="{{ dataField.name }}" [(ngModel)]="value" (ngModelChange)="valueChangeHandler()"
-      [disabled]="!canEdit">
-      @if (organizationOptions && organizationOptions.length > 0) {
+      [disabled]="!canEdit()">
+      @if (organizationOptions() && organizationOptions().length > 0) {
       <mat-option value="None">None</mat-option>
       }
-      @for (organization of organizationOptions; track $index) {
+      @for (organization of organizationOptions(); track $index) {
       <mat-option [value]="organization">{{ organization
         }}</mat-option>
       }
     </mat-select>
   </mat-form-field>
   }
-  @if (showValueOnly) {
+  @if (showValueOnly()) {
   <mat-select placeholder="{{ dataField.name }}" [(ngModel)]="value" (ngModelChange)="valueChangeHandler()"
-    [disabled]="!canEdit">
-    @if (organizationOptions && organizationOptions.length > 0) {
+    [disabled]="!canEdit()">
+    @if (organizationOptions() && organizationOptions().length > 0) {
     <mat-option value="None">None</mat-option>
     }
-    @for (organization of organizationOptions; track $index) {
+    @for (organization of organizationOptions(); track $index) {
     <mat-option [value]="organization">{{ organization
       }}</mat-option>
     }
@@ -263,18 +263,18 @@ project root for license information.
 <!-- TeamsMultiple value -->
 @if (dataField.dataType === dataType.TeamsMultiple) {
 <span>
-  @if (!showValueOnly) {
+  @if (!showValueOnly()) {
   <mat-form-field class="full-width">
     <mat-label>{{ dataField.name }}</mat-label>
     <mat-select multiple autoclose="" placeholder="{{ dataField.name }}" (click)="$event.stopPropagation()"
-      (valueChange)="setDataValueArray($event)" [value]="getValueArray()" [disabled]="!canEdit">
-      @if (teamOptions && teamOptions.length > 0) {
+      (valueChange)="setDataValueArray($event)" [value]="getValueArray()" [disabled]="!canEdit()">
+      @if (teamOptions() && teamOptions().length > 0) {
       <mat-option value="ALL">ALL</mat-option>
       }
-      @if (teamOptions && teamOptions.length > 0) {
+      @if (teamOptions() && teamOptions().length > 0) {
       <mat-option value="None">None</mat-option>
       }
-      @for (team of teamOptions; track team.id) {
+      @for (team of teamOptions(); track team.id) {
       <mat-option [value]="team.shortName">
         {{ team.shortName }}
       </mat-option>
@@ -282,16 +282,16 @@ project root for license information.
     </mat-select>
   </mat-form-field>
   }
-  @if (showValueOnly) {
+  @if (showValueOnly()) {
   <mat-select multiple autoclose="" placeholder="{{ dataField.name }}" (click)="$event.stopPropagation()"
-    (valueChange)="setDataValueArray($event)" [value]="getValueArray()" [disabled]="!canEdit">
-    @if (teamOptions && teamOptions.length > 0) {
+    (valueChange)="setDataValueArray($event)" [value]="getValueArray()" [disabled]="!canEdit()">
+    @if (teamOptions() && teamOptions().length > 0) {
     <mat-option value="ALL">ALL</mat-option>
     }
-    @if (teamOptions && teamOptions.length > 0) {
+    @if (teamOptions() && teamOptions().length > 0) {
     <mat-option value="None">None</mat-option>
     }
-    @for (team of teamOptions; track team.id) {
+    @for (team of teamOptions(); track team.id) {
     <mat-option [value]="team.shortName">
       {{ team.shortName }}
     </mat-option>
@@ -303,10 +303,10 @@ project root for license information.
 <!-- Status value -->
 @if (!dataField.isChosenFromList && dataField.dataType === dataType.Status) {
 <span>
-  @if (!showValueOnly) {
+  @if (!showValueOnly()) {
   <mat-form-field class="full-width">
     <mat-label>{{ dataField.name }}</mat-label>
-    <mat-select placeholder="{{ dataField.name }}" [(ngModel)]="value" [disabled]="!canApprove"
+    <mat-select placeholder="{{ dataField.name }}" [(ngModel)]="value" [disabled]="!canApprove()"
       (ngModelChange)="valueChangeHandler()">
       @for (status of itemStatus; track $index) {
       <mat-option [value]="status">
@@ -316,8 +316,8 @@ project root for license information.
     </mat-select>
   </mat-form-field>
   }
-  @if (showValueOnly) {
-  <mat-select placeholder="{{ dataField.name }}" [(ngModel)]="value" [disabled]="!canApprove"
+  @if (showValueOnly()) {
+  <mat-select placeholder="{{ dataField.name }}" [(ngModel)]="value" [disabled]="!canApprove()"
     (ngModelChange)="valueChangeHandler()">
     @for (status of itemStatus; track $index) {
     <mat-option [value]="status">
@@ -331,12 +331,12 @@ project root for license information.
 <!-- Assigned Unit value -->
 @if (!dataField.isChosenFromList && dataField.dataType === dataType.Team) {
 <span>
-  @if (!showValueOnly) {
+  @if (!showValueOnly()) {
   <mat-form-field class="full-width">
     <mat-label>{{ dataField.name }}</mat-label>
-    <mat-select placeholder="{{ dataField.name }}" [(ngModel)]="value" [disabled]="!isOwner"
+    <mat-select placeholder="{{ dataField.name }}" [(ngModel)]="value" [disabled]="!isOwner()"
       (ngModelChange)="valueChangeHandler()">
-      @for (unit of unitOptions; track unit.id) {
+      @for (unit of unitOptions(); track unit.id) {
       <mat-option [value]="unit.shortName">
         {{ unit.shortName }}
       </mat-option>
@@ -344,10 +344,10 @@ project root for license information.
     </mat-select>
   </mat-form-field>
   }
-  @if (showValueOnly) {
-  <mat-select placeholder="{{ dataField.name }}" [(ngModel)]="value" [disabled]="!isOwner"
+  @if (showValueOnly()) {
+  <mat-select placeholder="{{ dataField.name }}" [(ngModel)]="value" [disabled]="!isOwner()"
     (ngModelChange)="valueChangeHandler()">
-    @for (unit of unitOptions; track unit.id) {
+    @for (unit of unitOptions(); track unit.id) {
     <mat-option [value]="unit.shortName">
       {{ unit.shortName }}
     </mat-option>
@@ -359,23 +359,23 @@ project root for license information.
 <!-- Card input -->
 @if (!dataField.isChosenFromList && dataField.dataType === dataType.Card) {
 <span>
-  @if (!showValueOnly) {
+  @if (!showValueOnly()) {
   <mat-form-field class="full-width">
     <mat-label>{{ dataField.name }}</mat-label>
     <mat-select placeholder="{{ dataField.name }}" [(ngModel)]="value" (ngModelChange)="valueChangeHandler()"
-      [disabled]="!canEdit">
+      [disabled]="!canEdit()">
       <mat-option value="''"> - - - </mat-option>
-      @for (card of cardOptions; track card.id) {
+      @for (card of cardOptions(); track card.id) {
       <mat-option [value]="card.id">{{ card.name }}</mat-option>
       }
     </mat-select>
   </mat-form-field>
   }
-  @if (showValueOnly) {
+  @if (showValueOnly()) {
   <mat-select placeholder="{{ dataField.name }}" [(ngModel)]="value" (ngModelChange)="valueChangeHandler()"
-    [disabled]="!canEdit">
+    [disabled]="!canEdit()">
     <mat-option value="''"> - - - </mat-option>
-    @for (card of cardOptions; track card.id) {
+    @for (card of cardOptions(); track card.id) {
     <mat-option [value]="card.id">{{ card.name }}</mat-option>
     }
   </mat-select>
@@ -385,24 +385,24 @@ project root for license information.
 <!-- Move input -->
 @if (!dataField.isChosenFromList && dataField.dataType === dataType.Move) {
 <span>
-  @if (!showValueOnly) {
+  @if (!showValueOnly()) {
   <mat-form-field class="full-width">
     <mat-label>{{ dataField.name }}</mat-label>
     <mat-select placeholder="{{ dataField.name }}" [(ngModel)]="value" (ngModelChange)="valueChangeHandler()"
-      [disabled]="!canEdit">
+      [disabled]="!canEdit()">
       <mat-option value="''"> - - - </mat-option>
-      @for (move of moveOptions; track move.id) {
+      @for (move of moveOptions(); track move.id) {
       <mat-option [value]="move.id">{{ move.moveNumber }} - {{ move.title
         }}</mat-option>
       }
     </mat-select>
   </mat-form-field>
   }
-  @if (showValueOnly) {
+  @if (showValueOnly()) {
   <mat-select placeholder="{{ dataField.name }}" [(ngModel)]="value" (ngModelChange)="valueChangeHandler()"
-    [disabled]="!canEdit">
+    [disabled]="!canEdit()">
     <mat-option value="''"> - - - </mat-option>
-    @for (move of moveOptions; track move.id) {
+    @for (move of moveOptions(); track move.id) {
     <mat-option [value]="move.id">{{ move.moveNumber }} - {{ move.title
       }}</mat-option>
     }
@@ -413,24 +413,24 @@ project root for license information.
 <!-- SourceType input -->
 @if (!dataField.isChosenFromList && dataField.dataType === dataType.SourceType) {
 <span>
-  @if (!showValueOnly) {
+  @if (!showValueOnly()) {
   <mat-form-field class="full-width">
     <mat-label>{{ dataField.name }}</mat-label>
     <mat-select placeholder="{{ dataField.name }}" [(ngModel)]="value" (ngModelChange)="valueChangeHandler()"
-      [disabled]="!canEdit">
+      [disabled]="!canEdit()">
       <mat-option value="''"> </mat-option>
-      @for (sourceType of gallerySourceTypeOptions; track $index) {
+      @for (sourceType of gallerySourceTypeOptions(); track $index) {
       <mat-option [value]="sourceType">{{ sourceType
         }}</mat-option>
       }
     </mat-select>
   </mat-form-field>
   }
-  @if (showValueOnly) {
+  @if (showValueOnly()) {
   <mat-select placeholder="{{ dataField.name }}" [(ngModel)]="value" (ngModelChange)="valueChangeHandler()"
-    [disabled]="!canEdit">
+    [disabled]="!canEdit()">
     <mat-option value="''"> </mat-option>
-    @for (sourceType of gallerySourceTypeOptions; track $index) {
+    @for (sourceType of gallerySourceTypeOptions(); track $index) {
     <mat-option [value]="sourceType">{{ sourceType }}</mat-option>
     }
   </mat-select>
@@ -440,12 +440,12 @@ project root for license information.
 <!-- User value -->
 @if (dataField.dataType === dataType.User) {
 <span>
-  @if (!showValueOnly) {
+  @if (!showValueOnly()) {
   <mat-form-field class="full-width">
     <mat-label>{{ dataField.name }}</mat-label>
     <mat-select placeholder="{{ dataField.name }}" [(ngModel)]="value" (ngModelChange)="valueChangeHandler()"
-      [disabled]="!canEdit">
-      @for (user of userOptions; track user.id) {
+      [disabled]="!canEdit()">
+      @for (user of userOptions(); track user.id) {
       <mat-option [value]="user.id">
         {{ user.name }}
       </mat-option>
@@ -453,10 +453,10 @@ project root for license information.
     </mat-select>
   </mat-form-field>
   }
-  @if (showValueOnly) {
+  @if (showValueOnly()) {
   <mat-select placeholder="{{ dataField.name }}" [(ngModel)]="value" (ngModelChange)="valueChangeHandler()"
-    [disabled]="!canEdit">
-    @for (user of userOptions; track user.id) {
+    [disabled]="!canEdit()">
+    @for (user of userOptions(); track user.id) {
     <mat-option [value]="user.id">
       {{ user.name }}
     </mat-option>
@@ -468,7 +468,7 @@ project root for license information.
 <!-- boolean/checkbox input -->
 @if (dataField.dataType === dataType.Boolean || dataField.dataType === dataType.Checkbox) {
 <div class="full-width">
-  @if (!showValueOnly) {
+  @if (!showValueOnly()) {
   <div class="editor-label">
     {{ dataField.name }}
   </div>
@@ -482,14 +482,14 @@ project root for license information.
 <!-- Competency input (chips + search list) -->
 @if (dataField.dataType === dataType.Competency) {
 <span>
-  @if (!showValueOnly) {
+  @if (!showValueOnly()) {
   <div class="competency-field">
     <label class="competency-label">{{ dataField.name }}</label>
     <mat-chip-set>
       @for (id of selectedCompetencies; track id) {
       <mat-chip (removed)="removeCompetency(id)" [matTooltip]="getCompetencyTooltip(id)" matTooltipPosition="above">
         {{ displayCompetency(id) }}
-        @if (canEdit) {
+        @if (canEdit()) {
         <button matChipRemove>
           <mat-icon fontIcon="mdi-close-circle-outline" style="transform: scale(0.85)"></mat-icon>
         </button>
@@ -497,7 +497,7 @@ project root for license information.
       </mat-chip>
       }
     </mat-chip-set>
-    @if (canEdit) {
+    @if (canEdit()) {
     <mat-form-field class="full-width">
       <mat-label>Select competencies</mat-label>
       <mat-select multiple [value]="selectedCompetencies" (selectionChange)="setDataValueArray($event.value)" (openedChange)="$event || (competencyFilter = '')" panelClass="competency-select-panel">
@@ -522,7 +522,7 @@ project root for license information.
     }
   </div>
   }
-  @if (showValueOnly) {
+  @if (showValueOnly()) {
   <span>
     @for (id of selectedCompetencies; track id; let isLast = $last) {
       <span [matTooltip]="getCompetencyTooltip(id)" matTooltipPosition="above" style="white-space: nowrap;">{{ displayCompetency(id) }}</span>@if (!isLast) {<span>, </span>}
@@ -534,13 +534,13 @@ project root for license information.
 <!-- dropdown input -->
 @if (!useGalleryItemStatusSelect && dataField.isChosenFromList && dataField.dataType !== dataType.Competency) {
 <span>
-  @if (!showValueOnly) {
+  @if (!showValueOnly()) {
   <mat-form-field class="full-width">
     <mat-label>{{ dataField.name }}</mat-label>
     <!-- single select -->
     @if (!dataField.isMultiSelect) {
     <mat-select placeholder="{{ dataField.name }}" [(ngModel)]="value" (ngModelChange)="valueChangeHandler()"
-      [disabled]="!canEdit">
+      [disabled]="!canEdit()">
       @for (dataOption of dataField.dataOptions; track $index) {
       <mat-option [value]="dataOption.optionValue">
         {{ dataOption.optionName }}
@@ -551,7 +551,7 @@ project root for license information.
     <!-- multi-select -->
     @if (dataField.isMultiSelect) {
     <mat-select multiple (click)="$event.stopPropagation()" placeholder="{{ dataField.name }}"
-      (valueChange)="setDataValueArray($event)" [value]="getValueArray()" [disabled]="!canEdit">
+      (valueChange)="setDataValueArray($event)" [value]="getValueArray()" [disabled]="!canEdit()">
       @for (dataOption of dataField.dataOptions; track $index) {
       <mat-option [value]="dataOption.optionValue">
         {{ dataOption.optionName }}
@@ -561,7 +561,7 @@ project root for license information.
     }
   </mat-form-field>
   }
-  @if (showValueOnly) {
+  @if (showValueOnly()) {
   <span>
     @if (!dataField.isMultiSelect) {
     {{ value }}
