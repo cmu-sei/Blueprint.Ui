@@ -5,16 +5,6 @@
 import { Routes } from '@angular/router';
 import { ComnAuthGuardService } from '@cmusei/crucible-common';
 
-
-
-
-
-
-
-
-
-
-
 import { IntegrationInProgressGuard } from './services/integration-in-progress.guard';
 
 export const ROUTES: Routes = [
