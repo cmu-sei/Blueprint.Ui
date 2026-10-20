@@ -9,25 +9,25 @@ project root for license information or contact permission@sei.cmu.edu for full 
   <mat-drawer #sidenav mode="side" opened class="side-nav-collapsed">
     <div class="top-div">
       <a mat-icon-button (click)="navigateBack()" title="Back to My MSELs" style="cursor: pointer;">
-        <mat-icon class="mat-list-item-icon mdi-24px" fontIcon="mdi-arrow-left-thin-circle-outline"></mat-icon>
+        <mat-icon class="mat-list-item-icon mdi-24px" fontIcon="mdi-arrow-left-thin-circle-outline" />
       </a>
     </div>
     <mat-list class="list-container">
-      <mat-divider></mat-divider>
+      <mat-divider />
       @for (tabName of getTabListItems(); track tabName) {
       <mat-list-item [ngClass]="getListItemClass(tabName)" (click)="tabChange(tabName)" title="{{ tabName }}">
-        <mat-icon class="mat-list-item-icon mdi-24px" fontIcon="{{ fontIconList.get(tabName) }}"></mat-icon>
+        <mat-icon class="mat-list-item-icon mdi-24px" fontIcon="{{ fontIconList.get(tabName) }}" />
       </mat-list-item>
       }
     </mat-list>
     <div class="bottom-div">
       @if (canAccessAdminSection()) {
       <button mat-icon-button title="Administration" (click)="goToUrl('/admin')">
-        <mat-icon class="mdi-24px" fontIcon="mdi-cog-outline"></mat-icon>
+        <mat-icon class="mdi-24px" fontIcon="mdi-cog-outline" />
       </button>
       }
       <button mat-icon-button title="Expand Navigation Panel" (click)="setCollapsed(false)">
-        <mat-icon aria-hidden="false" class="mat-list-item-icon" fontIcon="mdi-chevron-double-right"></mat-icon>
+        <mat-icon aria-hidden="false" class="mat-list-item-icon" fontIcon="mdi-chevron-double-right" />
       </button>
       <img class="crucible-logo" [src]="
                       (theme$ | async) === 'light-theme'
@@ -41,7 +41,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
   <mat-drawer #sidenav mode="side" opened class="side-nav">
     <a class="top-div" (click)="navigateBack()" title="Back to My MSELs" style="cursor: pointer;">
       <div class="one-cell center-self">
-        <mat-icon class="mat-list-item-icon mdi-24px" fontIcon="mdi-arrow-left-thin-circle-outline"></mat-icon>
+        <mat-icon class="mat-list-item-icon mdi-24px" fontIcon="mdi-arrow-left-thin-circle-outline" />
       </div>
       @if (!sideNavCollapsed) {
       <div class="five-cell center-self">
@@ -50,19 +50,19 @@ project root for license information or contact permission@sei.cmu.edu for full 
       }
     </a>
     <mat-list class="list-container">
-      <mat-divider></mat-divider>
+      <mat-divider />
       @for (tabName of getTabListItems(); track tabName) {
       <mat-list-item [ngClass]="getListItemClass(tabName)" (click)="tabChange(tabName)">
         <div [ngClass]="getListItemClass(tabName)">
           <div class="one-cell center-self">
-            <mat-icon class="mat-list-item-icon mdi-24px" fontIcon="{{ fontIconList.get(tabName) }}"></mat-icon>
+            <mat-icon class="mat-list-item-icon mdi-24px" fontIcon="{{ fontIconList.get(tabName) }}" />
           </div>
           @if (!sideNavCollapsed) {
           <div class="four-cell center-self">
             {{ tabName }}
           </div>
           <div class="one-cell center-self">
-            <mat-icon class="mat-list-item-icon" fontIcon="mdi-chevron-right"></mat-icon>
+            <mat-icon class="mat-list-item-icon" fontIcon="mdi-chevron-right" />
           </div>
           }
         </div>
@@ -75,13 +75,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <div class="admin-section">
           @if (canAccessAdminSection()) {
           <button mat-icon-button title="Administration" (click)="goToUrl('/admin')">
-            <mat-icon class="mdi-24px" fontIcon="mdi-cog-outline"></mat-icon>
+            <mat-icon class="mdi-24px" fontIcon="mdi-cog-outline" />
           </button>
           }&nbsp;
         </div>
         <div class="collapse-section">
           <button mat-icon-button title="Collapse Navigation Panel" (click)="setCollapsed(true)">
-            <mat-icon aria-hidden="false" class="mdi-24px" fontIcon="mdi-chevron-double-left"></mat-icon>
+            <mat-icon aria-hidden="false" class="mdi-24px" fontIcon="mdi-chevron-double-left" />
           </button>
         </div>
       </div>
@@ -95,11 +95,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <div class="bottom-div">
       @if (canAccessAdminSection()) {
       <button mat-icon-button title="Administration" (click)="goToUrl('/admin')">
-        <mat-icon class="mdi-24px" fontIcon="mdi-cog-outline"></mat-icon>
+        <mat-icon class="mdi-24px" fontIcon="mdi-cog-outline" />
       </button>
       }
       <button mat-icon-button title="Expand Navigation Panel" (click)="setCollapsed(false)">
-        <mat-icon aria-hidden="false" class="mat-list-item-icon" fontIcon="mdi-chevron-double-right"></mat-icon>
+        <mat-icon aria-hidden="false" class="mat-list-item-icon" fontIcon="mdi-chevron-double-right" />
       </button>
     </div>
     }
@@ -108,57 +108,57 @@ project root for license information or contact permission@sei.cmu.edu for full 
   <mat-drawer-content class="content-frame">
     <div class="main-content">
       @if (selectedTab === 'Info') {
-      <app-msel-info [loggedInUserId]="loggedInUserId()" (deleteThisMsel)="deleteMsel($event)"></app-msel-info>
+      <app-msel-info [loggedInUserId]="loggedInUserId()" (deleteThisMsel)="deleteMsel($event)" />
       }
       @if (selectedTab === 'Contributors') {
-      <app-msel-contributors [loggedInUserId]="loggedInUserId()"></app-msel-contributors>
+      <app-msel-contributors [loggedInUserId]="loggedInUserId()" />
       }
       @if (selectedTab === 'Teams') {
-      <app-msel-teams [loggedInUserId]="loggedInUserId()"></app-msel-teams>
+      <app-msel-teams [loggedInUserId]="loggedInUserId()" />
       }
       @if (selectedTab === 'Data Fields') {
       <app-data-field-list [loggedInUserId]="loggedInUserId()" [showTemplates]="false"
-        [userTheme]="userTheme$() | async"></app-data-field-list>
+        [userTheme]="userTheme$() | async" />
       }
       @if (selectedTab === 'Organizations') {
       <app-organization-list [loggedInUserId]="loggedInUserId()" [canEdit]="canEditMsel()"
         [showTemplates]="false">Organizations</app-organization-list>
       }
       @if (selectedTab === 'Moves') {
-      <app-move-list [loggedInUserId]="loggedInUserId()" [canEditMsel]="canEditMsel()"></app-move-list>
+      <app-move-list [loggedInUserId]="loggedInUserId()" [canEditMsel]="canEditMsel()" />
       }
       @if (selectedTab === 'Player Apps') {
-      <app-player-application-list [loggedInUserId]="loggedInUserId()"></app-player-application-list>
+      <app-player-application-list [loggedInUserId]="loggedInUserId()" />
       }
       @if (selectedTab === 'Gallery Cards') {
-      <app-card-list [loggedInUserId]="loggedInUserId()" [canEdit]="canEditMsel()" [showTemplates]="false"></app-card-list>
+      <app-card-list [loggedInUserId]="loggedInUserId()" [canEdit]="canEditMsel()" [showTemplates]="false" />
       }
       @if (selectedTab === 'CITE Actions') {
-      <app-cite-action-list [loggedInUserId]="loggedInUserId()" [canEdit]="canEditMsel()"></app-cite-action-list>
+      <app-cite-action-list [loggedInUserId]="loggedInUserId()" [canEdit]="canEditMsel()" />
       }
       @if (selectedTab === 'CITE Duties') {
-      <app-cite-duty-list [loggedInUserId]="loggedInUserId()" [canEdit]="canEditMsel()"></app-cite-duty-list>
+      <app-cite-duty-list [loggedInUserId]="loggedInUserId()" [canEdit]="canEditMsel()" />
       }
       @if (selectedTab === 'Competencies') {
-      <app-msel-competencies [loggedInUserId]="loggedInUserId()"></app-msel-competencies>
+      <app-msel-competencies [loggedInUserId]="loggedInUserId()" />
       }
       @if (selectedTab === 'Scenario Events') {
       <app-scenario-event-list [loggedInUserId]="loggedInUserId()"
-        [userTheme]="userTheme$() | async"></app-scenario-event-list>
+        [userTheme]="userTheme$() | async" />
       }
       @if (selectedTab === 'Exercise View') {
-      <app-msel-view [tabHeight]="48" [userTheme]="userTheme$() | async"></app-msel-view>
+      <app-msel-view [tabHeight]="48" [userTheme]="userTheme$() | async" />
       }
       @if (selectedTab === 'Assessor View') {
       <app-assessor-view [loggedInUserId]="loggedInUserId()" [userTheme]="userTheme$() | async"
-        [canEditCheckboxes]="canEditCheckboxes()"></app-assessor-view>
+        [canEditCheckboxes]="canEditCheckboxes()" />
       }
       @if (selectedTab === 'Invitations') {
       <app-invitation-list [loggedInUserId]="loggedInUserId()" [canEditMsel]="canEditMsel()"
         [hideSearch]="false">Invitations</app-invitation-list>
       }
       @if (selectedTab === 'MSEL Playbook') {
-      <app-msel-playbook [loggedInUserId]="loggedInUserId()" [canEditMsel]="canEditMsel()"></app-msel-playbook>
+      <app-msel-playbook [loggedInUserId]="loggedInUserId()" [canEditMsel]="canEditMsel()" />
       }
     </div>
   </mat-drawer-content>

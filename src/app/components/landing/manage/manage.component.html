@@ -7,7 +7,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
 <div class="top-container background">
   @if (!hideTopbar) {
   <app-topbar [title]="topbarText" [topbarView]="TopbarView.BLUEPRINT_HOME" [imageFilePath]="topbarImage"
-    (urlNavigate)="topBarNavigate($event)"></app-topbar>
+    (urlNavigate)="topBarNavigate($event)" />
   }
   <mat-card appearance="outlined" class="base-card">
     <mat-card-header>
@@ -41,7 +41,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
   </mat-card>
   @if (msel.status === 'Deployed') {
   <mat-card appearance="outlined">
-    <app-invitation-list [loggedInUserId]="loggedInUserId" [hideSearch]="true"></app-invitation-list>
+    <app-invitation-list [loggedInUserId]="loggedInUserId" [hideSearch]="true" />
   </mat-card>
   }
 </div>

@@ -17,7 +17,7 @@ project root for license information.
   <!-- dataType.Html -->
   @if (dataField.dataType === dataType.Html) {
   <span>
-    <angular-editor [innerHtml]="value" [config]="viewConfig"></angular-editor>
+    <angular-editor [innerHtml]="value" [config]="viewConfig" />
   </span>
   }
   <!-- dataType.Card -->
@@ -41,8 +41,7 @@ project root for license information.
   <!-- dataType.Boolean or dataType.Checkbox -->
   @if (dataField.dataType === dataType.Boolean || dataField.dataType === dataType.Checkbox) {
   <span>
-    <mat-checkbox [checked]="value" [disabled]="true">
-    </mat-checkbox><br />&nbsp;
+    <mat-checkbox [checked]="value" [disabled]="true" /><br />&nbsp;
   </span>
   }
   <!-- dataType.Competency -->
@@ -88,7 +87,7 @@ project root for license information.
         }
         {{ getGalleryItemStatus(value) }}
       </mat-select-trigger>
-      <mat-option value=""> </mat-option>
+      <mat-option value="" />
       @for (status of galleryItemStatusOptions(); track $index) {
       <mat-option [value]="status">
         <span class="gallery-status-swatch" [style.background-color]="galleryItemStatusColors[status]"></span>
@@ -108,7 +107,7 @@ project root for license information.
       }
       {{ getGalleryItemStatus(value) }}
     </mat-select-trigger>
-    <mat-option value=""> </mat-option>
+    <mat-option value="" />
     @for (status of galleryItemStatusOptions(); track $index) {
     <mat-option [value]="status">
       <span class="gallery-status-swatch" [style.background-color]="galleryItemStatusColors[status]"></span>
@@ -186,8 +185,7 @@ project root for license information.
       {{ value | date: 'dd MMM yyyy HH:mm' }} {{ value | timezoneAbbr }}
       }
     </span>
-    <mat-datepicker-toggle matSuffix title="Choose Date/Time" [for]="picker" [disabled]="!canEdit()">
-    </mat-datepicker-toggle>
+    <mat-datepicker-toggle matSuffix title="Choose Date/Time" [for]="picker" [disabled]="!canEdit()" />
     <ngx-mat-datetime-picker #picker [showSpinners]=true [showSeconds]=false [stepHour]=1 [stepMinute]=5 [stepSecond]=1
       [touchUi]=false [enableMeridian]=true [disableMinute]=false [hideTime]=false [color]="'warn'">
       <ngx-mat-datepicker-actions>
@@ -216,14 +214,14 @@ project root for license information.
     </div>
     <div>
       <angular-editor [placeholder]="'Enter value ...'" [(ngModel)]="value" (ngModelChange)="valueChangeHandler()"
-        [config]="canEdit() ? editorConfig : viewConfig"></angular-editor>
+        [config]="canEdit() ? editorConfig : viewConfig" />
     </div>
     &nbsp;
   </div>
   }
   @if (showValueOnly()) {
   <div class="full-width">
-    <angular-editor [innerHtml]="value" [config]="viewConfig"></angular-editor>
+    <angular-editor [innerHtml]="value" [config]="viewConfig" />
   </div>
   }
 </div>
@@ -418,7 +416,7 @@ project root for license information.
     <mat-label>{{ dataField.name }}</mat-label>
     <mat-select placeholder="{{ dataField.name }}" [(ngModel)]="value" (ngModelChange)="valueChangeHandler()"
       [disabled]="!canEdit()">
-      <mat-option value="''"> </mat-option>
+      <mat-option value="''" />
       @for (sourceType of gallerySourceTypeOptions(); track $index) {
       <mat-option [value]="sourceType">{{ sourceType
         }}</mat-option>
@@ -429,7 +427,7 @@ project root for license information.
   @if (showValueOnly()) {
   <mat-select placeholder="{{ dataField.name }}" [(ngModel)]="value" (ngModelChange)="valueChangeHandler()"
     [disabled]="!canEdit()">
-    <mat-option value="''"> </mat-option>
+    <mat-option value="''" />
     @for (sourceType of gallerySourceTypeOptions(); track $index) {
     <mat-option [value]="sourceType">{{ sourceType }}</mat-option>
     }
@@ -474,8 +472,7 @@ project root for license information.
   </div>
   }
   <div>
-    <mat-checkbox [checked]="value" (change)="value = $event.checked.toString(); valueChangeHandler()">
-    </mat-checkbox><br />&nbsp;
+    <mat-checkbox [checked]="value" (change)="value = $event.checked.toString(); valueChangeHandler()" /><br />&nbsp;
   </div>
 </div>
 }
@@ -491,7 +488,7 @@ project root for license information.
         {{ displayCompetency(id) }}
         @if (canEdit()) {
         <button matChipRemove>
-          <mat-icon fontIcon="mdi-close-circle-outline" style="transform: scale(0.85)"></mat-icon>
+          <mat-icon fontIcon="mdi-close-circle-outline" style="transform: scale(0.85)" />
         </button>
         }
       </mat-chip>
@@ -502,11 +499,11 @@ project root for license information.
       <mat-label>Select competencies</mat-label>
       <mat-select multiple [value]="selectedCompetencies" (selectionChange)="setDataValueArray($event.value)" (openedChange)="$event || (competencyFilter = '')" panelClass="competency-select-panel">
         <div class="competency-search-box">
-          <mat-icon fontIcon="mdi-magnify"></mat-icon>
+          <mat-icon fontIcon="mdi-magnify" />
           <input [(ngModel)]="competencyFilter" placeholder="Search competencies..." (keydown)="$event.stopPropagation()">
           @if (competencyFilter) {
           <button mat-icon-button (click)="competencyFilter = ''; $event.stopPropagation()" title="Clear">
-            <mat-icon fontIcon="mdi-close"></mat-icon>
+            <mat-icon fontIcon="mdi-close" />
           </button>
           }
         </div>

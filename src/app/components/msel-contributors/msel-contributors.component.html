@@ -6,19 +6,19 @@ project root for license information or contact permission@sei.cmu.edu for full 
 
 <div class="cssLayoutRowStartCenter">
   <div class="sp-icon">
-    <mat-icon class="mdi-24px" fontIcon="mdi-account-edit" [style.color]="'var(--mat-sys-primary)'"></mat-icon>
+    <mat-icon class="mdi-24px" fontIcon="mdi-account-edit" [style.color]="'var(--mat-sys-primary)'" />
   </div>
   <mat-form-field style="width: 300px; margin-left: 10px;">
     <input matInput [(ngModel)]="filterString" (ngModelChange)="applyFilter($event)" placeholder="Search" />
     @if (filterString) {
     <button mat-icon-button matSuffix (click)="applyFilter('')" title="Clear Search">
-      <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline"></mat-icon>
+      <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline" />
     </button>
     }
   </mat-form-field>
   <div class="button-end">
     <mat-paginator #paginator [pageIndex]="0" [pageSize]="20"
-      [pageSizeOptions]="[5, 10, 15, 20, 25, 50]"></mat-paginator>
+      [pageSizeOptions]="[5, 10, 15, 20, 25, 50]" />
   </div>
 </div>
 
@@ -42,7 +42,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <th mat-header-cell *matHeaderCellDef class="column-action">
           @if (canManageMsel()) {
           <button mat-icon-button [matMenuTriggerFor]="addMenu" (menuOpened)="refreshUnits()" title="Add a contributor unit" style="outline: none;">
-            <mat-icon class="mdi-24px center-self" fontIcon="mdi-plus-circle"></mat-icon>
+            <mat-icon class="mdi-24px center-self" fontIcon="mdi-plus-circle" />
           </button>
           }
         </th>
@@ -50,7 +50,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           @if (canManageMsel()) {
           <button mat-icon-button (click)="removeUnitFromMsel(element.id); $event.stopPropagation();"
             title="Remove unit from MSEL">
-            <mat-icon class="mdi-18px" fontIcon="mdi-minus-circle-outline"></mat-icon>
+            <mat-icon class="mdi-18px" fontIcon="mdi-minus-circle-outline" />
           </button>
           }
         </td>

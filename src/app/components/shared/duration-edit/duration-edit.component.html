@@ -17,8 +17,7 @@ project root for license information.
         {{ endTimeFormControl.value | date: 'dd MMM yyyy HH:mm'}} {{ endTimeFormControl.value | timezoneAbbr }}
         }
       </span>
-      <mat-datepicker-toggle matSuffix title="Choose Date/Time" [for]="picker" [disabled]="!canEdit()">
-      </mat-datepicker-toggle>
+      <mat-datepicker-toggle matSuffix title="Choose Date/Time" [for]="picker" [disabled]="!canEdit()" />
       <ngx-mat-datetime-picker #picker [showSpinners]=true [showSeconds]=false [stepHour]=1 [stepMinute]=5
         [stepSecond]=1 [touchUi]=false [enableMeridian]=true [disableMinute]=false [hideTime]=false [color]="'warn'"
         (close)="alert('woah!')">
@@ -35,10 +34,10 @@ project root for license information.
     <span>
       @if (sign > 0) {
       <mat-icon class="mdi-24px center-self plus-minus" fontIcon="mdi-plus" (click)="canEdit() && changeSign()"
-        title="plus/minus" [class.disabled]="!canEdit()"></mat-icon>
+        title="plus/minus" [class.disabled]="!canEdit()" />
       } @else {
       <mat-icon class="mdi-24px center-self plus-minus" fontIcon="mdi-minus" (click)="canEdit() && changeSign()"
-        title="plus/minus" [class.disabled]="!canEdit()"></mat-icon>
+        title="plus/minus" [class.disabled]="!canEdit()" />
       }
     </span>
     <mat-form-field class="two-digits">

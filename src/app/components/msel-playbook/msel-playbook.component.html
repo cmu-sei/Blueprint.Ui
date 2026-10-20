@@ -10,8 +10,7 @@ project root for license information.
       <h2>MSEL Playbook</h2>
       <div class="right-buttons no-print">
         <mat-paginator [length]="sortedScenarioEvents.length" [pageSize]="pageSize" [pageSizeOptions]="pageSizeOptions"
-          (page)="changePage($event)">
-        </mat-paginator>
+          (page)="changePage($event)" />
         <button
           aria-label="Print Current Page"
           mat-icon-button
@@ -19,7 +18,7 @@ project root for license information.
           title="Print Current Page"
           (click)="printpage()"
           >
-          <mat-icon aria-hidden="false" class="mdi-24px" fontIcon="mdi-printer"></mat-icon>
+          <mat-icon aria-hidden="false" class="mdi-24px" fontIcon="mdi-printer" />
         </button>
         <button
           aria-label="Print All Events"
@@ -28,7 +27,7 @@ project root for license information.
           title="Print All Events"
           (click)="printAllEvents()"
           >
-          <mat-icon aria-hidden="false" class="mdi-24px" fontIcon="mdi-printer-outline"></mat-icon>
+          <mat-icon aria-hidden="false" class="mdi-24px" fontIcon="mdi-printer-outline" />
         </button>
       </div>
     </div>
@@ -75,9 +74,9 @@ project root for license information.
                 <td style="font-weight:bold;">Execution Time</td>
                 <td>
                   <app-duration-view [startTime]="msel.startTime" [durationSeconds]="scenarioEvent.deltaSeconds"
-                    [showRealTime]="true"></app-duration-view>
+                    [showRealTime]="true" />
                   (<app-duration-view [startTime]="msel.startTime" [durationSeconds]="scenarioEvent.deltaSeconds"
-                    [showRealTime]="false"></app-duration-view>)
+                    [showRealTime]="false" />)
                 </td>
               </tr>
               <tr>

@@ -8,7 +8,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
   <div class="user-list-container mat-elevation-z8">
     <mat-toolbar class="background">
       <mat-toolbar-row>
-        <mat-icon class="mdi-24px" fontIcon="mdi-account-multiple"></mat-icon>
+        <mat-icon class="mdi-24px" fontIcon="mdi-account-multiple" />
         <p>Users</p>
       </mat-toolbar-row>
       <mat-toolbar-row>
@@ -16,11 +16,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <input matInput [formControl]="filterControl" placeholder="Search" autocomplete="off" />
           @if (filterControl.value) {
           <button mat-icon-button matSuffix (click)="clearFilter()" title="Clear Search">
-            <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline"></mat-icon>
+            <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline" />
           </button>
           }
         </mat-form-field>
-        <mat-paginator #userPaginator [pageSizeOptions]="[10, 25, 50, 100]" aria-label="Select page of users"></mat-paginator>
+        <mat-paginator #userPaginator [pageSizeOptions]="[10, 25, 50, 100]" aria-label="Select page of users" />
       </mat-toolbar-row>
     </mat-toolbar>
 
@@ -39,13 +39,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </ng-container>
 
       <ng-container matColumnDef="id">
-        <mat-header-cell *matHeaderCellDef>&nbsp;</mat-header-cell>
+        <mat-header-cell *matHeaderCellDef />
         <mat-cell *matCellDef="let element">
           <div>
             @if (!onAnotherTeam(element.id) && canEditMsel()) {
             <button mat-icon-button (click)="addUserToTeam(element)" style="outline: none;"
               title="Add {{ element.name }} to Team">
-              <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
+              <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline" />
             </button>
             }
             @if (onAnotherTeam(element.id)) {
@@ -55,8 +55,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
         </mat-cell>
       </ng-container>
 
-      <mat-header-row *matHeaderRowDef="minUserColumns"></mat-header-row>
-      <mat-row *matRowDef="let row; columns: minUserColumns"></mat-row>
+      <mat-header-row *matHeaderRowDef="minUserColumns" />
+      <mat-row *matRowDef="let row; columns: minUserColumns" />
     </mat-table>
 
     @if (userDataSource.filteredData.length === 0) {
@@ -70,7 +70,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
   <div class="team-list-container mat-elevation-z8">
     <mat-toolbar class="background">
       <mat-toolbar-row>
-        <mat-icon class="mdi-24px" fontIcon="mdi-account-group"></mat-icon>
+        <mat-icon class="mdi-24px" fontIcon="mdi-account-group" />
         <p>Team Members</p>
       </mat-toolbar-row>
       <mat-toolbar-row>
@@ -78,11 +78,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <input matInput [formControl]="teamMemberFilterControl" placeholder="Search" autocomplete="off" />
           @if (teamMemberFilterControl.value) {
           <button mat-icon-button matSuffix (click)="clearTeamMemberFilter()" title="Clear Search">
-            <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline"></mat-icon>
+            <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline" />
           </button>
           }
         </mat-form-field>
-        <mat-paginator #teamMemberPaginator [pageSizeOptions]="[10, 25, 50, 100]" aria-label="Select page of team members"></mat-paginator>
+        <mat-paginator #teamMemberPaginator [pageSizeOptions]="[10, 25, 50, 100]" aria-label="Select page of team members" />
       </mat-toolbar-row>
     </mat-toolbar>
 
@@ -106,20 +106,20 @@ project root for license information or contact permission@sei.cmu.edu for full 
         </mat-cell>
       </ng-container>
       <ng-container matColumnDef="id">
-        <mat-header-cell *matHeaderCellDef>&nbsp;</mat-header-cell>
+        <mat-header-cell *matHeaderCellDef />
         <mat-cell *matCellDef="let element">
           <div>
             @if (canEditMsel()) {
             <button mat-icon-button (click)="removeUserFromTeam(element)" style="outline: none;"
               title="Remove {{ element.name }} from Team">
-              <mat-icon class="mdi-24px self-center" fontIcon="mdi-minus-circle-outline"></mat-icon>
+              <mat-icon class="mdi-24px self-center" fontIcon="mdi-minus-circle-outline" />
             </button>
             }
           </div>
         </mat-cell>
       </ng-container>
-      <mat-header-row *matHeaderRowDef="displayedTeamUserColumns"></mat-header-row>
-      <mat-row *matRowDef="let row; columns: displayedTeamUserColumns"></mat-row>
+      <mat-header-row *matHeaderRowDef="displayedTeamUserColumns" />
+      <mat-row *matRowDef="let row; columns: displayedTeamUserColumns" />
     </mat-table>
   </div>
   }

@@ -135,7 +135,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <mat-form-field class="full-width">
         <mat-label>Gallery Article Parameter</mat-label>
         <mat-select [(ngModel)]="data.dataField.galleryArticleParameter" [disabled]="!data.canEdit && !data.isOwner">
-          <mat-option value=""></mat-option>
+          <mat-option value="" />
           @for (parameter of data.galleryArticleParameters; track parameter) {
           <mat-option value="{{ parameter }}">{{ parameter }}</mat-option>
           }

@@ -5,13 +5,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
 -->
 <div class="cssLayoutRowStartCenter">
   <div class="sp-icon">
-    <mat-icon class="mdi-24px" fontIcon="mdi-view-column-outline" [style.color]="'var(--mat-sys-primary)'"></mat-icon>
+    <mat-icon class="mdi-24px" fontIcon="mdi-view-column-outline" [style.color]="'var(--mat-sys-primary)'" />
   </div>
   <mat-form-field style="width: 300px; margin-left: 10px;">
     <input matInput [formControl]="filterControl" placeholder="Search" />
     @if (filterControl.value) {
     <button mat-icon-button matSuffix (click)="filterControl.setValue(''); $event.stopPropagation()" title="Clear Search">
-      <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline"></mat-icon>
+      <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline" />
     </button>
     }
   </mat-form-field>
@@ -27,7 +27,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
   </mat-form-field>
   <div class="button-end">
     <mat-paginator #paginator [pageIndex]="0" [pageSize]="20"
-      [pageSizeOptions]="[5, 10, 15, 20, 25, 50, 100, 200]"></mat-paginator>
+      [pageSizeOptions]="[5, 10, 15, 20, 25, 50, 100, 200]" />
   </div>
 </div>
 
@@ -41,7 +41,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       [cdkDropListDisabled]="!allowDragAndDrop" (cdkDropListDropped)="dropHandler($event)">
         <!-- Drag Handler column -->
         <ng-container matColumnDef="draghandle">
-          <mat-header-cell *matHeaderCellDef class="column-draghandle"></mat-header-cell>
+          <mat-header-cell *matHeaderCellDef class="column-draghandle" />
           <mat-cell *matCellDef="let element;" class="column-draghandle">
             <div class="draghandle-div">
               @if (allowDragAndDrop) {
@@ -52,7 +52,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </mat-cell>
         </ng-container>
         <ng-container matColumnDef="draghandleSpacer">
-          <mat-header-cell *matHeaderCellDef class="column-draghandle"></mat-header-cell>
+          <mat-header-cell *matHeaderCellDef class="column-draghandle" />
           <mat-cell *matCellDef="let element;" class="column-draghandle">
             <div class="draghandle-div"></div>
           </mat-cell>
@@ -64,15 +64,15 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <span>
               <button mat-icon-button (click)="addOrEditDataField(null, true)" title="Add a template data Field"
                 style="outline: none;">
-                <mat-icon class="mdi-24px center-self little-left" fontIcon="mdi-plus-circle"></mat-icon>
+                <mat-icon class="mdi-24px center-self little-left" fontIcon="mdi-plus-circle" />
               </button>
               <button mat-icon-button title="Upload Data Field templates from JSON" style="outline: none;"
                 (click)="jsonInput.click()">
-                <mat-icon class="mdi-24px" fontIcon="mdi-upload"></mat-icon>
+                <mat-icon class="mdi-24px" fontIcon="mdi-upload" />
               </button>
               <button mat-icon-button title="Download Data Field templates as JSON" style="outline: none;"
                 (click)="openDownloadDialog()">
-                <mat-icon class="mdi-24px" fontIcon="mdi-download"></mat-icon>
+                <mat-icon class="mdi-24px" fontIcon="mdi-download" />
               </button>
             </span>
             } &nbsp;
@@ -80,7 +80,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <span>
               <button mat-icon-button [matMenuTriggerFor]="addMenu" style="outline: none;"
                 title="Add data Field">
-                <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle"></mat-icon>
+                <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle" />
               </button>
             </span>
             } &nbsp;
@@ -103,21 +103,21 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   (click)="addOrEditDataField(element, showTemplates()); $event.stopPropagation();"
                   title="Edit {{ element.name }}">
                   <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline"
-                    title="Edit {{ element.name }}"></mat-icon>
+                    title="Edit {{ element.name }}" />
                 </button>
                 }
                 @if (canEdit()) {
                 <button mat-icon-button class="msel-action"
                   (click)="deleteDataField(element); $event.stopPropagation();" title="Delete {{ element.name }}">
                   <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline"
-                    title="Delete {{ element.name }}"></mat-icon>
+                    title="Delete {{ element.name }}" />
                 </button>
                 }
                 @if (!injectTypeId() && !showTemplates() && canEdit()) {
                 <button mat-icon-button class="msel-action"
                   (click)="addOrEditDataField(element, true); $event.stopPropagation();"
                   title="Make {{ element.name }} a template">
-                  <mat-icon class="mdi-18px" fontIcon="mdi-bank" title="Make {{ element.name }} a template"></mat-icon>
+                  <mat-icon class="mdi-18px" fontIcon="mdi-bank" title="Make {{ element.name }} a template" />
                 </button>
                 }
               </span>
@@ -137,8 +137,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <mat-cell *matCellDef="let element" class="column-display">
             <mat-checkbox [(ngModel)]="element.onScenarioEventList" [disabled]="!canEdit()"
               (change)="saveChange(element)" (click)="$event.stopPropagation()"
-              title="Display on Scenario Events list">
-            </mat-checkbox>
+              title="Display on Scenario Events list" />
           </mat-cell>
         </ng-container>
         <!-- exercise Column -->
@@ -149,8 +148,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </mat-header-cell>
           <mat-cell *matCellDef="let element" class="column-display">
             <mat-checkbox [(ngModel)]="element.onExerciseView" [disabled]="!canEdit()" (change)="saveChange(element)"
-              (click)="$event.stopPropagation();" title="Display on the Exercise View">
-            </mat-checkbox>
+              (click)="$event.stopPropagation();" title="Display on the Exercise View" />
           </mat-cell>
         </ng-container>
         <!-- assessor Column -->
@@ -162,8 +160,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <mat-cell *matCellDef="let element" class="column-display">
             <mat-checkbox [(ngModel)]="element.isAssessorVisible" [disabled]="!canEdit()"
               (change)="saveChange(element)" (click)="$event.stopPropagation();"
-              title="Display on the Assessor View">
-            </mat-checkbox>
+              title="Display on the Assessor View" />
           </mat-cell>
         </ng-container>
         <!-- information Column -->
@@ -176,8 +173,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             @if (element.displayOrder >= 0) {
             <mat-checkbox [(ngModel)]="element.isInformationField" [disabled]="!canEdit()"
               (change)="saveChange(element)" (click)="$event.stopPropagation();"
-              title="Display for Information Events">
-            </mat-checkbox>
+              title="Display for Information Events" />
             }
           </mat-cell>
         </ng-container>
@@ -191,8 +187,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             @if (element.displayOrder >= 0) {
             <mat-checkbox [(ngModel)]="element.isFacilitationField" [disabled]="!canEdit()"
               (change)="saveChange(element)" (click)="$event.stopPropagation();"
-              title="Display for Facilitation Events">
-            </mat-checkbox>
+              title="Display for Facilitation Events" />
             }
           </mat-cell>
         </ng-container>
@@ -206,8 +201,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             @if (element.displayOrder >= 0) {
             <mat-checkbox [(ngModel)]="element.isShownOnDefaultTab" [disabled]="!canEdit()"
               (change)="saveChange(element)" (click)="$event.stopPropagation();"
-              title="Display on the default tab of the scenario event edit dialog">
-            </mat-checkbox>
+              title="Display on the default tab of the scenario event edit dialog" />
             }
           </mat-cell>
         </ng-container>
@@ -221,8 +215,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             @if (element.displayOrder >= 0) {
             <mat-checkbox [(ngModel)]="element.isOnlyShownToOwners" [disabled]="!canEdit()"
               (change)="saveChange(element)" (click)="$event.stopPropagation();"
-              title="Hide this field from participants on all views - show only to content developers and MSEL owners">
-            </mat-checkbox>
+              title="Hide this field from participants on all views - show only to content developers and MSEL owners" />
             }
           </mat-cell>
         </ng-container>
@@ -273,9 +266,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </mat-cell>
         </ng-container>
         <!-- row definitions -->
-        <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-        <mat-row *matRowDef="let row; columns: systemFieldDisplayedColumns when: fieldIsSystemDefined"></mat-row>
-        <mat-row *matRowDef="let row; columns: displayedColumns; when: !fieldIsSystemDefined"></mat-row>
+        <mat-header-row *matHeaderRowDef="displayedColumns" />
+        <mat-row *matRowDef="let row; columns: systemFieldDisplayedColumns when: fieldIsSystemDefined" />
+        <mat-row *matRowDef="let row; columns: displayedColumns; when: !fieldIsSystemDefined" />
     </mat-table>
     <!-- No Results Message -->
     @if (dataFieldDataSource?.filteredData.length === 0) {

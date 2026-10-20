@@ -6,19 +6,19 @@ project root for license information or contact permission@sei.cmu.edu for full 
 
 <div class="cssLayoutRowStartCenter">
   <div class="sp-icon">
-    <mat-icon class="mdi-24px" fontIcon="mdi-clock-outline" [style.color]="'var(--mat-sys-primary)'"></mat-icon>
+    <mat-icon class="mdi-24px" fontIcon="mdi-clock-outline" [style.color]="'var(--mat-sys-primary)'" />
   </div>
   <mat-form-field style="width: 300px; margin-left: 10px;">
     <input matInput [formControl]="filterControl" placeholder="Search" />
     @if (filterControl.value) {
     <button mat-icon-button matSuffix (click)="filterControl.setValue(''); $event.stopPropagation()" title="Clear Search">
-      <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline"></mat-icon>
+      <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline" />
     </button>
     }
   </mat-form-field>
   <div class="button-end">
     <mat-paginator #paginator [pageIndex]="0" [pageSize]="20"
-      [pageSizeOptions]="[5, 10, 15, 20, 25, 50, 100, 200]"></mat-paginator>
+      [pageSizeOptions]="[5, 10, 15, 20, 25, 50, 100, 200]" />
   </div>
 </div>
 
@@ -33,7 +33,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           null).moveEditor) {
           <button mat-icon-button (click)="addOrEditMove(null); $event.stopPropagation()"
             style="outline: none;" title="Add new move" [disabled]="isAddingMove">
-            <mat-icon class="mdi-24px" fontIcon="mdi-plus-circle"></mat-icon>
+            <mat-icon class="mdi-24px" fontIcon="mdi-plus-circle" />
           </button>
           }
         </th>
@@ -42,14 +42,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
           null).moveEditor) {
           <button mat-icon-button (click)="addOrEditMove(element); $event.stopPropagation()"
             title="Edit Move {{ element.moveNumber }}">
-            <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline"></mat-icon>
+            <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline" />
           </button>
           }
           @if (canEditMsel() || msel.hasRole(loggedInUserId(), null).owner || msel.hasRole(loggedInUserId(),
           null).moveEditor) {
           <button mat-icon-button (click)="deleteMove(element); $event.stopPropagation()"
             title="Delete Move {{ element.moveNumber }}">
-            <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline"></mat-icon>
+            <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline" />
           </button>
           }
         </td>
@@ -65,13 +65,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
           @if (!showRealTime) {
           <button mat-icon-button (click)="showRealTime = true; $event.stopPropagation()"
             title="Switch to Real Time" [disabled]="!msel || !msel.startTime || msel.startTime.valueOf() < 0">
-            <mat-icon class="mdi-24px" fontIcon="mdi-timer-outline"></mat-icon>
+            <mat-icon class="mdi-24px" fontIcon="mdi-timer-outline" />
           </button>
           }
           @if (showRealTime) {
           <button mat-icon-button (click)="showRealTime = false; $event.stopPropagation()"
             title="Switch to Delta Time">
-            <mat-icon class="mdi-24px" fontIcon="mdi-clock-time-four-outline"></mat-icon>
+            <mat-icon class="mdi-24px" fontIcon="mdi-clock-time-four-outline" />
           </button>
           }
         </th>
@@ -82,7 +82,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <th mat-header-cell *matHeaderCellDef mat-sort-header class="column-start-time">Start Time</th>
         <td mat-cell *matCellDef="let element" class="column-start-time">
           <app-duration-view [startTime]="msel.startTime" [durationSeconds]="element.deltaSeconds"
-            [showRealTime]="showRealTime"></app-duration-view>
+            [showRealTime]="showRealTime" />
         </td>
       </ng-container>
       <!-- situationTime column -->
