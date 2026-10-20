@@ -25,15 +25,17 @@ import { renderComponent } from 'src/app/test-utils/render-component';
 import { permissionApiStubs } from 'src/app/test-utils/mock-permission-data.service';
 import { mselLoadApiProviders, mselLoadApiStubs } from 'src/app/test-utils/msel-load-api-stubs';
 import { unstubbed } from 'src/app/test-utils/unstubbed';
+import { TopbarComponent } from '../../shared/top-bar/topbar.component';
+import { InvitationListComponent } from '../../invitation-list/invitation-list.component';
 
-@Component({ selector: 'app-topbar', template: '', standalone: false })
+@Component({ selector: 'app-topbar', template: '' })
 class TopbarStub {
   @Input() title: string;
   @Input() topbarView: unknown;
   @Input() imageFilePath: string;
   @Output() urlNavigate = new EventEmitter<string>();
 }
-@Component({ selector: 'app-invitation-list', template: '', standalone: false })
+@Component({ selector: 'app-invitation-list', template: '' })
 class InvitationListStub {
   @Input() loggedInUserId: string;
   @Input() canEditMsel: boolean;
@@ -72,7 +74,10 @@ async function renderManage(overrides: { permissions?: SystemPermission[]; activ
   const { route } = activatedRouteStub({ msel: 'msel-1' });
   const rendered = await renderComponent(ManageComponent, {
     imports: [MatButtonModule, MatCardModule, MatFormFieldModule, MatInputModule],
-    declarations: [ManageComponent, TopbarStub, InvitationListStub],
+    childStubs: [
+      { replace: TopbarComponent, with: TopbarStub },
+      { replace: InvitationListComponent, with: InvitationListStub },
+    ],
     providers: [
       ...mselLoadApiProviders(apis),
       { provide: MselService, useValue: mselApi },

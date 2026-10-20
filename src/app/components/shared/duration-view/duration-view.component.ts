@@ -10,8 +10,7 @@ import { getTimezoneAbbr } from 'src/app/utilities/timezone-abbr';
 @Component({
     selector: 'app-duration-view',
     templateUrl: './duration-view.component.html',
-    styleUrls: ['./duration-view.component.scss'],
-    standalone: false
+    styleUrls: ['./duration-view.component.scss']
 })
 export class DurationViewComponent {
   @Input() startTime: Date;

@@ -25,12 +25,16 @@ import { UserMselRoleDataService } from 'src/app/data/user-msel-role/user-msel-r
 import { UserMselRoleQuery } from 'src/app/data/user-msel-role/user-msel-role.query';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
 import { TopbarView } from '../shared/top-bar/topbar.models';
+import { TopbarComponent } from '../shared/top-bar/topbar.component';
+import { MatIcon } from '@angular/material/icon';
+import { AssessorViewComponent } from '../assessor-view/assessor-view.component';
+import { AsyncPipe } from '@angular/common';
 
 @Component({
-  selector: 'app-assessor-page',
-  templateUrl: './assessor-page.component.html',
-  styleUrls: ['./assessor-page.component.scss'],
-  standalone: false
+    selector: 'app-assessor-page',
+    templateUrl: './assessor-page.component.html',
+    styleUrls: ['./assessor-page.component.scss'],
+    imports: [TopbarComponent, MatIcon, AssessorViewComponent, AsyncPipe]
 })
 export class AssessorPageComponent implements OnDestroy, OnInit {
   private unsubscribe$ = new Subject();

@@ -2,8 +2,8 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { MatTableDataSource } from '@angular/material/table';
-import { MatCheckboxChange } from '@angular/material/checkbox';
+import { MatTableDataSource, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
+import { MatCheckboxChange, MatCheckbox } from '@angular/material/checkbox';
 import { Subject } from 'rxjs';
 import { map, takeUntil } from 'rxjs/operators';
 import {
@@ -13,12 +13,37 @@ import {
 import { SystemRoleDataService } from 'src/app/data/system-role/system-role-data.service';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
+import { MatIconButton } from '@angular/material/button';
+import { MatTooltip } from '@angular/material/tooltip';
+import { MatIcon } from '@angular/material/icon';
+import { MatFormField, MatInput } from '@angular/material/input';
+import { FormsModule } from '@angular/forms';
+import { AsyncPipe } from '@angular/common';
 
 @Component({
-  selector: 'app-admin-roles',
-  templateUrl: './admin-roles.component.html',
-  styleUrls: ['./admin-roles.component.scss'],
-  standalone: false,
+    selector: 'app-admin-roles',
+    templateUrl: './admin-roles.component.html',
+    styleUrls: ['./admin-roles.component.scss'],
+    imports: [
+        MatTable,
+        MatColumnDef,
+        MatHeaderCellDef,
+        MatHeaderCell,
+        MatIconButton,
+        MatTooltip,
+        MatIcon,
+        MatFormField,
+        MatInput,
+        FormsModule,
+        MatCellDef,
+        MatCell,
+        MatCheckbox,
+        MatHeaderRowDef,
+        MatHeaderRow,
+        MatRowDef,
+        MatRow,
+        AsyncPipe,
+    ],
 })
 export class AdminRolesComponent implements OnInit, OnDestroy {
   private unsubscribe$ = new Subject<void>();

@@ -4,6 +4,8 @@
 
 import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { CrucibleDialogComponent, CrucibleDialogContentDirective } from '@cmusei/crucible-common';
+import { MatCheckbox } from '@angular/material/checkbox';
 
 export interface ItemDownloadOption {
   id: string;
@@ -16,10 +18,14 @@ export interface ItemDownloadDialogData {
 }
 
 @Component({
-  selector: 'app-item-download-dialog',
-  templateUrl: './item-download-dialog.component.html',
-  styleUrls: ['./item-download-dialog.component.scss'],
-  standalone: false,
+    selector: 'app-item-download-dialog',
+    templateUrl: './item-download-dialog.component.html',
+    styleUrls: ['./item-download-dialog.component.scss'],
+    imports: [
+        CrucibleDialogComponent,
+        CrucibleDialogContentDirective,
+        MatCheckbox,
+    ],
 })
 export class ItemDownloadDialogComponent {
   selected: Set<string>;

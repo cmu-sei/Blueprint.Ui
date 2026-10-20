@@ -20,108 +20,106 @@ import { MselComponent } from './msel.component';
 import { activatedRouteStub } from 'src/app/test-utils/activated-route';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { mselLoadApiProviders, mselLoadApiStubs } from 'src/app/test-utils/msel-load-api-stubs';
+import { MselInfoComponent } from '../msel-info/msel-info.component';
+import { MselContributorsComponent } from '../msel-contributors/msel-contributors.component';
+import { MselTeamsComponent } from '../msel-teams/msel-teams.component';
+import { DataFieldListComponent } from '../data-field-list/data-field-list.component';
+import { OrganizationListComponent } from '../organization-list/organization-list.component';
+import { MoveListComponent } from '../move-list/move-list.component';
+import { PlayerApplicationListComponent } from '../player-application-list/player-application-list.component';
+import { CardListComponent } from '../card-list/card-list.component';
+import { CiteActionListComponent } from '../cite-action-list/cite-action-list.component';
+import { CiteDutyListComponent } from '../cite-duty-list/cite-duty-list.component';
+import { MselCompetenciesComponent } from '../msel-competencies/msel-competencies.component';
+import { ScenarioEventListComponent } from '../scenario-event-list/scenario-event-list.component';
+import { MselViewComponent } from '../msel-view/msel-view.component';
+import { AssessorViewComponent } from '../assessor-view/assessor-view.component';
+import { InvitationListComponent } from '../invitation-list/invitation-list.component';
+import { MselPlaybookComponent } from '../msel-playbook/msel-playbook.component';
 
 // One stub per tab; each declares the inputs MselComponent binds.
-@Component({ selector: 'app-msel-info', template: '', standalone: false })
+@Component({ selector: 'app-msel-info', template: '' })
 class MselInfoStub {
   @Input() loggedInUserId: string;
   @Output() deleteThisMsel = new EventEmitter<string>();
 }
-@Component({ selector: 'app-msel-contributors', template: '', standalone: false })
+@Component({ selector: 'app-msel-contributors', template: '' })
 class MselContributorsStub {
   @Input() loggedInUserId: string;
 }
-@Component({ selector: 'app-msel-teams', template: '', standalone: false })
+@Component({ selector: 'app-msel-teams', template: '' })
 class MselTeamsStub {
   @Input() loggedInUserId: string;
 }
-@Component({ selector: 'app-data-field-list', template: '', standalone: false })
+@Component({ selector: 'app-data-field-list', template: '' })
 class DataFieldListStub {
   @Input() loggedInUserId: string;
   @Input() showTemplates: boolean;
   @Input() userTheme: Theme;
 }
-@Component({ selector: 'app-organization-list', template: '', standalone: false })
+@Component({ selector: 'app-organization-list', template: '' })
 class OrganizationListStub {
   @Input() loggedInUserId: string;
   @Input() canEdit: boolean;
   @Input() showTemplates: boolean;
 }
-@Component({ selector: 'app-move-list', template: '', standalone: false })
+@Component({ selector: 'app-move-list', template: '' })
 class MoveListStub {
   @Input() loggedInUserId: string;
   @Input() canEditMsel: boolean;
 }
-@Component({ selector: 'app-player-application-list', template: '', standalone: false })
+@Component({ selector: 'app-player-application-list', template: '' })
 class PlayerApplicationListStub {
   @Input() loggedInUserId: string;
 }
-@Component({ selector: 'app-card-list', template: '', standalone: false })
+@Component({ selector: 'app-card-list', template: '' })
 class CardListStub {
   @Input() loggedInUserId: string;
   @Input() canEdit: boolean;
   @Input() showTemplates: boolean;
 }
-@Component({ selector: 'app-cite-action-list', template: '', standalone: false })
+@Component({ selector: 'app-cite-action-list', template: '' })
 class CiteActionListStub {
   @Input() loggedInUserId: string;
   @Input() canEdit: boolean;
 }
-@Component({ selector: 'app-cite-duty-list', template: '', standalone: false })
+@Component({ selector: 'app-cite-duty-list', template: '' })
 class CiteDutyListStub {
   @Input() loggedInUserId: string;
   @Input() canEdit: boolean;
 }
-@Component({ selector: 'app-msel-competencies', template: '', standalone: false })
+@Component({ selector: 'app-msel-competencies', template: '' })
 class MselCompetenciesStub {
   @Input() loggedInUserId: string;
 }
-@Component({ selector: 'app-scenario-event-list', template: '', standalone: false })
+@Component({ selector: 'app-scenario-event-list', template: '' })
 class ScenarioEventListStub {
   @Input() loggedInUserId: string;
   @Input() userTheme: Theme;
 }
-@Component({ selector: 'app-msel-view', template: '', standalone: false })
+@Component({ selector: 'app-msel-view', template: '' })
 class MselViewStub {
   @Input() tabHeight: number;
   @Input() userTheme: Theme;
 }
-@Component({ selector: 'app-assessor-view', template: '', standalone: false })
+@Component({ selector: 'app-assessor-view', template: '' })
 class AssessorViewStub {
   @Input() loggedInUserId: string;
   @Input() userTheme: Theme;
   @Input() canEditCheckboxes: boolean;
 }
-@Component({ selector: 'app-invitation-list', template: '', standalone: false })
+@Component({ selector: 'app-invitation-list', template: '' })
 class InvitationListStub {
   @Input() loggedInUserId: string;
   @Input() canEditMsel: boolean;
   @Input() hideSearch: boolean;
 }
-@Component({ selector: 'app-msel-playbook', template: '', standalone: false })
+@Component({ selector: 'app-msel-playbook', template: '' })
 class MselPlaybookStub {
   @Input() loggedInUserId: string;
   @Input() canEditMsel: boolean;
 }
 
-const CHILD_STUBS = [
-  MselInfoStub,
-  MselContributorsStub,
-  MselTeamsStub,
-  DataFieldListStub,
-  OrganizationListStub,
-  MoveListStub,
-  PlayerApplicationListStub,
-  CardListStub,
-  CiteActionListStub,
-  CiteDutyListStub,
-  MselCompetenciesStub,
-  ScenarioEventListStub,
-  MselViewStub,
-  AssessorViewStub,
-  InvitationListStub,
-  MselPlaybookStub,
-];
 
 const MSEL: Msel = {
   id: 'msel-1',
@@ -142,7 +140,24 @@ async function renderMsel(
   const { route } = activatedRouteStub({ msel: 'msel-1' });
   const rendered = await renderComponent(MselComponent, {
     imports: [MatButtonModule, MatIconModule, MatListModule, MatSidenavModule],
-    declarations: [MselComponent, ...CHILD_STUBS],
+    childStubs: [
+      { replace: MselInfoComponent, with: MselInfoStub },
+      { replace: MselContributorsComponent, with: MselContributorsStub },
+      { replace: MselTeamsComponent, with: MselTeamsStub },
+      { replace: DataFieldListComponent, with: DataFieldListStub },
+      { replace: OrganizationListComponent, with: OrganizationListStub },
+      { replace: MoveListComponent, with: MoveListStub },
+      { replace: PlayerApplicationListComponent, with: PlayerApplicationListStub },
+      { replace: CardListComponent, with: CardListStub },
+      { replace: CiteActionListComponent, with: CiteActionListStub },
+      { replace: CiteDutyListComponent, with: CiteDutyListStub },
+      { replace: MselCompetenciesComponent, with: MselCompetenciesStub },
+      { replace: ScenarioEventListComponent, with: ScenarioEventListStub },
+      { replace: MselViewComponent, with: MselViewStub },
+      { replace: AssessorViewComponent, with: AssessorViewStub },
+      { replace: InvitationListComponent, with: InvitationListStub },
+      { replace: MselPlaybookComponent, with: MselPlaybookStub },
+    ],
     providers: [
       ...mselLoadApiProviders(apis),
       { provide: XApiService, useValue: xApi },

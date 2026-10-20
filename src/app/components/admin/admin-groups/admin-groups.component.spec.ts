@@ -23,8 +23,9 @@ import { dialogRefStub } from 'src/app/test-utils/dialog-refs';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { permissionDataProviders } from 'src/app/test-utils/mock-permission-data.service';
 import { unstubbed } from 'src/app/test-utils/unstubbed';
+import { AdminGroupsDetailComponent } from './admin-groups-detail/admin-groups-detail.component';
 
-@Component({ selector: 'app-admin-groups-detail', template: '', standalone: false })
+@Component({ selector: 'app-admin-groups-detail', template: '' })
 class GroupsDetailStub {
   @Input() groupId: string;
   @Input() canEdit: boolean;
@@ -55,7 +56,9 @@ async function renderGroups(permissions: SystemPermission[]) {
       MatTableModule,
       MatTooltipModule,
     ],
-    declarations: [AdminGroupsComponent, GroupsDetailStub],
+    childStubs: [
+      { replace: AdminGroupsDetailComponent, with: GroupsDetailStub },
+    ],
     providers: [
       ...permissionDataProviders({ system: permissions }),
       { provide: GroupService, useValue: groupApi },

@@ -8,8 +8,8 @@ import { PlayerApplication, Move, SystemPermission, Team } from 'src/app/generat
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
 import { MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
-import { Sort } from '@angular/material/sort';
-import { MatMenuTrigger } from '@angular/material/menu';
+import { Sort, MatSort, MatSortHeader } from '@angular/material/sort';
+import { MatMenuTrigger, MatMenu, MatMenuItem } from '@angular/material/menu';
 import { PlayerApplicationDataService } from 'src/app/data/player-application/player-application-data.service';
 import { PlayerApplicationTeamDataService } from 'src/app/data/team/player-application-team-data.service';
 import { PlayerApplicationQuery } from 'src/app/data/player-application/player-application.query';
@@ -19,24 +19,32 @@ import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { PlayerApplicationEditDialogComponent } from '../player-application-edit-dialog/player-application-edit-dialog.component';
 import { PlayerService } from 'src/app/generated/blueprint.api';
 import { v4 as uuidv4 } from 'uuid';
-import { MatTable, MatTableDataSource } from '@angular/material/table';
+import { MatTable, MatTableDataSource, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { ComnSettingsService } from '@cmusei/crucible-common';
 import { casterVmAppWarning } from 'src/app/utilities/caster-vm-app';
 import { playerAppIconUrl } from 'src/app/utilities/player-app-icon';
+import { MatIcon } from '@angular/material/icon';
+import { NgStyle } from '@angular/common';
+import { MatExpansionPanel, MatExpansionPanelHeader } from '@angular/material/expansion';
+import { MatIconButton } from '@angular/material/button';
+import { MatTooltip } from '@angular/material/tooltip';
+import { MatCheckbox } from '@angular/material/checkbox';
+import { PlayerApplicationTeamsComponent } from '../player-application-teams/player-application-teams.component';
+import { PlayerTeamAppOrderComponent } from '../player-team-app-order/player-team-app-order.component';
 
 @Component({
-  selector: 'app-player-application-list',
-  templateUrl: './player-application-list.component.html',
-  styleUrls: ['./player-application-list.component.scss'],
-  animations: [
-    trigger('detailExpand', [
-      state('collapsed', style({ height: '0px', minHeight: '0', visibility: 'hidden' })),
-      state('expanded', style({ height: '*', visibility: 'visible' })),
-      transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
-    ]),
-  ],
-  standalone: false
+    selector: 'app-player-application-list',
+    templateUrl: './player-application-list.component.html',
+    styleUrls: ['./player-application-list.component.scss'],
+    animations: [
+        trigger('detailExpand', [
+            state('collapsed', style({ height: '0px', minHeight: '0', visibility: 'hidden' })),
+            state('expanded', style({ height: '*', visibility: 'visible' })),
+            transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
+        ]),
+    ],
+    imports: [MatIcon, NgStyle, MatMenu, MatMenuItem, MatExpansionPanel, MatExpansionPanelHeader, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatIconButton, MatMenuTrigger, MatCellDef, MatCell, MatSortHeader, MatTooltip, MatCheckbox, PlayerApplicationTeamsComponent, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, PlayerTeamAppOrderComponent]
 })
 export class PlayerApplicationListComponent implements OnDestroy, OnInit {
   @Input() loggedInUserId: string;

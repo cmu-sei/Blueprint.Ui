@@ -24,12 +24,32 @@ import { HealthCheckService, SystemPermission, User } from 'src/app/generated/bl
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
 import { InjectTypeDataService } from 'src/app/data/inject-type/inject-type-data.service';
 import { CompetencyFrameworkDataService } from 'src/app/data/competency-framework/competency-framework-data.service';
+import { MatSidenavContainer, MatSidenav, MatSidenavContent } from '@angular/material/sidenav';
+import { MatToolbar } from '@angular/material/toolbar';
+import { MatIcon } from '@angular/material/icon';
+import { MatList, MatListItem, MatListItemIcon } from '@angular/material/list';
+import { NgClass, AsyncPipe } from '@angular/common';
+import { MatIconButton } from '@angular/material/button';
+import { TopbarComponent } from '../../shared/top-bar/topbar.component';
+import { AdminUnitsComponent } from '../admin-units/admin-units.component';
+import { AdminUsersComponent } from '../admin-users/admin-users.component';
+import { AdminRolesComponent } from '../admin-roles/admin-roles.component';
+import { AdminGroupsComponent } from '../admin-groups/admin-groups.component';
+import { DataFieldListComponent } from '../../data-field-list/data-field-list.component';
+import { AdminInjectTypesComponent } from '../admin-inject-types/admin-inject-types.component';
+import { AdminCompetencyFrameworksComponent } from '../admin-competency-frameworks/admin-competency-frameworks.component';
+import { AdminProficiencyScalesComponent } from '../admin-proficiency-scales/admin-proficiency-scales.component';
+import { AdminCatalogListComponent } from '../admin-catalog-list/admin-catalog-list.component';
+import { OrganizationListComponent } from '../../organization-list/organization-list.component';
+import { CardListComponent } from '../../card-list/card-list.component';
+import { CiteActionListComponent } from '../../cite-action-list/cite-action-list.component';
+import { CiteDutyListComponent } from '../../cite-duty-list/cite-duty-list.component';
 
 @Component({
-  selector: 'app-admin-container',
-  templateUrl: './admin-container.component.html',
-  styleUrls: ['./admin-container.component.scss'],
-  standalone: false
+    selector: 'app-admin-container',
+    templateUrl: './admin-container.component.html',
+    styleUrls: ['./admin-container.component.scss'],
+    imports: [MatSidenavContainer, MatSidenav, MatToolbar, MatIcon, MatList, MatListItem, NgClass, MatListItemIcon, MatIconButton, MatSidenavContent, TopbarComponent, AdminUnitsComponent, AdminUsersComponent, AdminRolesComponent, AdminGroupsComponent, DataFieldListComponent, AdminInjectTypesComponent, AdminCompetencyFrameworksComponent, AdminProficiencyScalesComponent, AdminCatalogListComponent, OrganizationListComponent, CardListComponent, CiteActionListComponent, CiteDutyListComponent, AsyncPipe]
 })
 export class AdminContainerComponent implements OnDestroy, OnInit {
   usersText = 'Users';

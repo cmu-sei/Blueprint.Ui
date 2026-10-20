@@ -4,12 +4,15 @@
 
 import { Component, EventEmitter, Inject, Output } from '@angular/core';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { CrucibleDialogComponent, CrucibleDialogContentDirective } from '@cmusei/crucible-common';
+import { MatFormField, MatLabel, MatInput } from '@angular/material/input';
+import { FormsModule } from '@angular/forms';
 
 @Component({
     selector: 'app-admin-inject-type-edit-dialog',
     templateUrl: './admin-inject-type-edit-dialog.component.html',
     styleUrls: ['./admin-inject-type-edit-dialog.component.scss'],
-    standalone: false
+    imports: [CrucibleDialogComponent, CrucibleDialogContentDirective, MatFormField, MatLabel, MatInput, FormsModule]
 })
 
 export class AdminInjectTypeEditDialogComponent {

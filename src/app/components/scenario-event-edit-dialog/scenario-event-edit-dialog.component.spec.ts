@@ -17,8 +17,11 @@ import { DataField, DataFieldType, EventType, ScenarioEvent } from 'src/app/gene
 import { IntegrationTarget } from 'src/app/data/scenario-event/scenario-event-data.service';
 import { ScenarioEventEditDialogComponent } from './scenario-event-edit-dialog.component';
 import { renderComponent } from 'src/app/test-utils/render-component';
+import { DataValueComponent } from '../data-value/data-value.component';
+import { DurationEditComponent } from '../shared/duration-edit/duration-edit.component';
+import { SteamfitterTaskComponent } from '../steamfitter-task/steamfitter-task.component';
 
-@Component({ selector: 'app-data-value', template: '', standalone: false })
+@Component({ selector: 'app-data-value', template: '' })
 class DataValueStub {
   @Input() value: string;
   @Output() valueChange = new EventEmitter<string>();
@@ -36,7 +39,7 @@ class DataValueStub {
   @Input() galleryItemStatusOptions: string[];
   @Input() userOptions: unknown[];
 }
-@Component({ selector: 'app-duration-edit', template: '', standalone: false })
+@Component({ selector: 'app-duration-edit', template: '' })
 class DurationEditStub {
   @Input() startTime: Date;
   @Input() canEdit: boolean;
@@ -46,7 +49,7 @@ class DurationEditStub {
   @Input() postScript: string;
   @Output() change = new EventEmitter<number>();
 }
-@Component({ selector: 'app-steamfitter-task', template: '', standalone: false })
+@Component({ selector: 'app-steamfitter-task', template: '' })
 class SteamfitterTaskStub {
   @Input() scenarioEvent: ScenarioEvent;
   @Input() canEdit: boolean;
@@ -104,7 +107,11 @@ async function renderEventEdit(roles: Roles = {}) {
   const data = dialogData(roles);
   const rendered = await renderComponent(ScenarioEventEditDialogComponent, {
     imports: [...CRUCIBLE_DIALOG_IMPORTS, MatFormFieldModule, MatInputModule, MatSelectModule, MatTabsModule],
-    declarations: [ScenarioEventEditDialogComponent, DataValueStub, DurationEditStub, SteamfitterTaskStub],
+    childStubs: [
+      { replace: DataValueComponent, with: DataValueStub },
+      { replace: DurationEditComponent, with: DurationEditStub },
+      { replace: SteamfitterTaskComponent, with: SteamfitterTaskStub },
+    ],
     providers: [{ provide: MAT_DIALOG_DATA, useValue: data }],
   });
   // ngModel applies [disabled] in a microtask.

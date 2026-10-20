@@ -4,12 +4,15 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
+import { MatProgressBar } from '@angular/material/progress-bar';
+import { MatButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
 
 @Component({
-  selector: 'app-integration-status',
-  templateUrl: './integration-status.component.html',
-  styleUrls: ['./integration-status.component.scss'],
-  standalone: false
+    selector: 'app-integration-status',
+    templateUrl: './integration-status.component.html',
+    styleUrls: ['./integration-status.component.scss'],
+    imports: [MatProgressBar, MatButton, MatIcon]
 })
 export class IntegrationStatusComponent {
   @Input() msel: MselPlus;

@@ -34,12 +34,15 @@ import { UserDataService } from 'src/app/data/user/user-data.service';
 import { CurrentUserQuery } from 'src/app/data/user/user.query';
 import { UserMselRoleDataService } from 'src/app/data/user-msel-role/user-msel-role-data.service';
 import { UserTeamRoleDataService } from 'src/app/data/user-team-role/user-team-role-data.service';
+import { TopbarComponent } from '../shared/top-bar/topbar.component';
+import { ScenarioEventListComponent } from '../scenario-event-list/scenario-event-list.component';
+import { AsyncPipe } from '@angular/common';
 
 @Component({
     selector: 'app-starter',
     templateUrl: './starter.component.html',
     styleUrls: ['./starter.component.scss'],
-    standalone: false
+    imports: [TopbarComponent, ScenarioEventListComponent, AsyncPipe]
 })
 export class StarterComponent implements OnDestroy, OnInit {
   @Input() canAccessAdminSection: boolean;

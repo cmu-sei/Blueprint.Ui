@@ -45,8 +45,9 @@ import { dialogRefStub } from 'src/app/test-utils/dialog-refs';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { permissionApiStubs } from 'src/app/test-utils/mock-permission-data.service';
 import { unstubbed } from 'src/app/test-utils/unstubbed';
+import { TeamUsersComponent } from '../team-users/team-users.component';
 
-@Component({ selector: 'app-team-users', template: '', standalone: false })
+@Component({ selector: 'app-team-users', template: '' })
 class TeamUsersStub {
   @Input() team: Team;
 }
@@ -125,7 +126,9 @@ async function renderMselTeams(
       MatTableModule,
       MatTooltipModule,
     ],
-    declarations: [MselTeamsComponent, TeamUsersStub],
+    childStubs: [
+      { replace: TeamUsersComponent, with: TeamUsersStub },
+    ],
     providers: [
       { provide: SystemPermissionsService, useValue: permissionApis.systemPermissions },
       PermissionDataService,

@@ -11,7 +11,7 @@ import {
   OnInit,
   Output,
 } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { ComnAuthQuery, ComnAuthService, Theme } from '@cmusei/crucible-common';
 import { CurrentUserState } from 'src/app/data/user/user.store';
 import { Observable, Subject } from 'rxjs';
@@ -20,13 +20,20 @@ import { CurrentUserQuery } from 'src/app/data/user/user.query';
 import { TopbarView } from './topbar.models';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
+import { MatToolbar, MatToolbarRow } from '@angular/material/toolbar';
+import { MatIconButton, MatButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
+import { MatMenuTrigger, MatMenu, MatMenuItem } from '@angular/material/menu';
+import { PresenceBarComponent } from '../presence-bar/presence-bar.component';
+import { MatSlideToggle } from '@angular/material/slide-toggle';
+import { AsyncPipe } from '@angular/common';
 
 @Component({
     selector: 'app-topbar',
     templateUrl: './topbar.component.html',
     styleUrls: ['./topbar.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+    imports: [MatToolbar, MatToolbarRow, MatIconButton, RouterLink, MatIcon, MatButton, MatMenuTrigger, MatMenu, MatMenuItem, PresenceBarComponent, MatSlideToggle, AsyncPipe]
 })
 export class TopbarComponent implements OnInit, OnDestroy {
   @Input() title?: string;

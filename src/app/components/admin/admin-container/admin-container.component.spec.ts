@@ -36,6 +36,20 @@ import { ApiStub } from 'src/app/test-utils/api-stub';
 import { activatedRouteStub } from 'src/app/test-utils/activated-route';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { permissionApiStubs } from 'src/app/test-utils/mock-permission-data.service';
+import { TopbarComponent } from '../../shared/top-bar/topbar.component';
+import { AdminUnitsComponent } from '../admin-units/admin-units.component';
+import { AdminUsersComponent } from '../admin-users/admin-users.component';
+import { AdminRolesComponent } from '../admin-roles/admin-roles.component';
+import { AdminGroupsComponent } from '../admin-groups/admin-groups.component';
+import { DataFieldListComponent } from '../../data-field-list/data-field-list.component';
+import { AdminInjectTypesComponent } from '../admin-inject-types/admin-inject-types.component';
+import { AdminCompetencyFrameworksComponent } from '../admin-competency-frameworks/admin-competency-frameworks.component';
+import { AdminProficiencyScalesComponent } from '../admin-proficiency-scales/admin-proficiency-scales.component';
+import { AdminCatalogListComponent } from '../admin-catalog-list/admin-catalog-list.component';
+import { OrganizationListComponent } from '../../organization-list/organization-list.component';
+import { CardListComponent } from '../../card-list/card-list.component';
+import { CiteActionListComponent } from '../../cite-action-list/cite-action-list.component';
+import { CiteDutyListComponent } from '../../cite-duty-list/cite-duty-list.component';
 
 @Component({ selector: 'app-topbar', template: '' })
 class TopbarStub {
@@ -103,22 +117,6 @@ class CiteDutyListStub {
   @Input() showTemplates: boolean;
 }
 
-const CHILD_STUBS = [
-  TopbarStub,
-  AdminUnitsStub,
-  AdminUsersStub,
-  AdminRolesStub,
-  AdminGroupsStub,
-  DataFieldListStub,
-  AdminInjectTypesStub,
-  AdminCompetencyFrameworksStub,
-  AdminProficiencyScalesStub,
-  AdminCatalogListStub,
-  OrganizationListStub,
-  CardListStub,
-  CiteActionListStub,
-  CiteDutyListStub,
-];
 
 async function renderAdmin(
   overrides: { permissions?: SystemPermission[]; savedTab?: string } = {},
@@ -159,8 +157,23 @@ async function renderAdmin(
   };
 
   const rendered = await renderComponent(AdminContainerComponent, {
-    imports: [MatSidenavModule, MatToolbarModule, MatListModule, MatIconModule, MatButtonModule, ...CHILD_STUBS],
-    declarations: [AdminContainerComponent],
+    imports: [MatSidenavModule, MatToolbarModule, MatListModule, MatIconModule, MatButtonModule],
+    childStubs: [
+      { replace: TopbarComponent, with: TopbarStub },
+      { replace: AdminUnitsComponent, with: AdminUnitsStub },
+      { replace: AdminUsersComponent, with: AdminUsersStub },
+      { replace: AdminRolesComponent, with: AdminRolesStub },
+      { replace: AdminGroupsComponent, with: AdminGroupsStub },
+      { replace: DataFieldListComponent, with: DataFieldListStub },
+      { replace: AdminInjectTypesComponent, with: AdminInjectTypesStub },
+      { replace: AdminCompetencyFrameworksComponent, with: AdminCompetencyFrameworksStub },
+      { replace: AdminProficiencyScalesComponent, with: AdminProficiencyScalesStub },
+      { replace: AdminCatalogListComponent, with: AdminCatalogListStub },
+      { replace: OrganizationListComponent, with: OrganizationListStub },
+      { replace: CardListComponent, with: CardListStub },
+      { replace: CiteActionListComponent, with: CiteActionListStub },
+      { replace: CiteDutyListComponent, with: CiteDutyListStub },
+    ],
     providers: [
       { provide: SystemPermissionsService, useValue: permissionApis.systemPermissions },
       PermissionDataService,

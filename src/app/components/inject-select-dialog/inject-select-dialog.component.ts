@@ -4,11 +4,13 @@
 
 import { Component, EventEmitter, Inject, Output } from '@angular/core';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { CrucibleDialogComponent, CrucibleDialogContentDirective } from '@cmusei/crucible-common';
+import { InjectListComponent } from '../inject-list/inject-list.component';
 
 @Component({
     selector: 'app-inject-select-dialog',
     templateUrl: './inject-select-dialog.component.html',
-    standalone: false
+    imports: [CrucibleDialogComponent, CrucibleDialogContentDirective, InjectListComponent]
 })
 export class InjectSelectDialogComponent {
   @Output() editComplete = new EventEmitter<any>();

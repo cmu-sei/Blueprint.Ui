@@ -21,12 +21,16 @@ import { TopbarView } from '../../shared/top-bar/topbar.models';
 import { Title } from '@angular/platform-browser';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
+import { TopbarComponent } from '../../shared/top-bar/topbar.component';
+import { MatCard, MatCardHeader, MatCardTitle, MatCardSubtitle } from '@angular/material/card';
+import { NgClass } from '@angular/common';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
 
 @Component({
-  selector: 'app-dashboard',
-  templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.scss'],
-  standalone: false
+    selector: 'app-dashboard',
+    templateUrl: './dashboard.component.html',
+    styleUrls: ['./dashboard.component.scss'],
+    imports: [TopbarComponent, MatCard, NgClass, MatCardHeader, MatCardTitle, MatCardSubtitle, MatProgressSpinner]
 })
 export class DashboardComponent implements OnDestroy, OnInit {
   launchMselList: Msel[] = [];

@@ -12,8 +12,9 @@ import { CRUCIBLE_DIALOG_IMPORTS } from '@cmusei/crucible-common';
 import { Catalog, InjectType, Injectm } from 'src/app/generated/blueprint.api';
 import { InjectSelectDialogComponent } from './inject-select-dialog.component';
 import { renderComponent } from 'src/app/test-utils/render-component';
+import { InjectListComponent } from '../inject-list/inject-list.component';
 
-@Component({ selector: 'app-inject-list', template: '', standalone: false })
+@Component({ selector: 'app-inject-list', template: '' })
 class InjectListStub {
   @Input() catalog: Catalog;
   @Input() injectType: InjectType;
@@ -29,7 +30,9 @@ async function renderInjectSelect() {
   const data = { catalog: CATALOG, injectType: { id: 'it-email', name: 'Email' }, injectList: [], loggedInUserId: 'user-1' };
   const rendered = await renderComponent(InjectSelectDialogComponent, {
     imports: [...CRUCIBLE_DIALOG_IMPORTS],
-    declarations: [InjectSelectDialogComponent, InjectListStub],
+    childStubs: [
+      { replace: InjectListComponent, with: InjectListStub },
+    ],
     providers: [{ provide: MAT_DIALOG_DATA, useValue: data }],
   });
   const results: unknown[] = [];

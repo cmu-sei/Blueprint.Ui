@@ -25,8 +25,9 @@ import { ApiStub } from 'src/app/test-utils/api-stub';
 import { dialogRefStub } from 'src/app/test-utils/dialog-refs';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { unstubbed } from 'src/app/test-utils/unstubbed';
+import { CardTeamsComponent } from '../card-teams/card-teams.component';
 
-@Component({ selector: 'app-card-teams', template: '', standalone: false })
+@Component({ selector: 'app-card-teams', template: '' })
 class CardTeamsStub {
   @Input() cardId: string;
   @Input() loggedInUserId: string;
@@ -62,7 +63,9 @@ async function renderCardList(
       MatSortModule,
       MatTableModule,
     ],
-    declarations: [CardListComponent, CardTeamsStub],
+    childStubs: [
+      { replace: CardTeamsComponent, with: CardTeamsStub },
+    ],
     providers: [
       { provide: CardService, useValue: cardApi },
       { provide: CrucibleDialogService, useValue: dialog },

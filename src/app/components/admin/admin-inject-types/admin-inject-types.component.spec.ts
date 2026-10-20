@@ -26,15 +26,17 @@ import { ApiStub } from 'src/app/test-utils/api-stub';
 import { dialogRefStub } from 'src/app/test-utils/dialog-refs';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { unstubbed } from 'src/app/test-utils/unstubbed';
+import { DataFieldListComponent } from '../../data-field-list/data-field-list.component';
+import { InjectListComponent } from '../../inject-list/inject-list.component';
 
-@Component({ selector: 'app-data-field-list', template: '', standalone: false })
+@Component({ selector: 'app-data-field-list', template: '' })
 class DataFieldListStub {
   @Input() loggedInUserId: string;
   @Input() showTemplates: boolean;
   @Input() userTheme: unknown;
   @Input() injectTypeId: string;
 }
-@Component({ selector: 'app-inject-list', template: '', standalone: false })
+@Component({ selector: 'app-inject-list', template: '' })
 class InjectListStub {
   @Input() loggedInUserId: string;
   @Input() canEdit: boolean;
@@ -67,7 +69,10 @@ async function renderInjectTypes(overrides: { canEdit?: boolean } = {}) {
       MatSortModule,
       MatTableModule,
     ],
-    declarations: [AdminInjectTypesComponent, DataFieldListStub, InjectListStub],
+    childStubs: [
+      { replace: DataFieldListComponent, with: DataFieldListStub },
+      { replace: InjectListComponent, with: InjectListStub },
+    ],
     providers: [
       { provide: InjectTypeService, useValue: injectTypeApi },
       { provide: CrucibleDialogService, useValue: dialog },

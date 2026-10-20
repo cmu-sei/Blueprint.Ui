@@ -41,14 +41,16 @@ import { dialogRefStub } from 'src/app/test-utils/dialog-refs';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { permissionApiStubs } from 'src/app/test-utils/mock-permission-data.service';
 import { unstubbed } from 'src/app/test-utils/unstubbed';
+import { PlayerApplicationTeamsComponent } from '../player-application-teams/player-application-teams.component';
+import { PlayerTeamAppOrderComponent } from '../player-team-app-order/player-team-app-order.component';
 
-@Component({ selector: 'app-player-application-teams', template: '', standalone: false })
+@Component({ selector: 'app-player-application-teams', template: '' })
 class AppTeamsStub {
   @Input() loggedInUserId: string;
   @Input() playerApplicationId: string;
   @Input() mselTeamList: Team[];
 }
-@Component({ selector: 'app-player-team-app-order', template: '', standalone: false })
+@Component({ selector: 'app-player-team-app-order', template: '' })
 class AppOrderStub {
   @Input() loggedInUserId: string;
   @Input() canEdit: boolean;
@@ -97,7 +99,10 @@ async function renderAppList(
   const permissionApis = permissionApiStubs({ system: permissions });
   const rendered = await renderComponent(PlayerApplicationListComponent, {
     imports: [MatButtonModule, MatCheckboxModule, MatExpansionModule, MatIconModule, MatMenuModule, MatSortModule, MatTableModule, MatTooltipModule],
-    declarations: [PlayerApplicationListComponent, AppTeamsStub, AppOrderStub],
+    childStubs: [
+      { replace: PlayerApplicationTeamsComponent, with: AppTeamsStub },
+      { replace: PlayerTeamAppOrderComponent, with: AppOrderStub },
+    ],
     providers: [
       { provide: SystemPermissionsService, useValue: permissionApis.systemPermissions },
       PermissionDataService,

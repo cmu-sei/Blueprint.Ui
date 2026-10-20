@@ -38,12 +38,32 @@ import { UserDataService } from 'src/app/data/user/user-data.service';
 import { UserMselRoleDataService } from 'src/app/data/user-msel-role/user-msel-role-data.service';
 import { UserTeamRoleDataService } from 'src/app/data/user-team-role/user-team-role-data.service';
 import { XApiService } from 'src/app/services/xapi/xapi.service';
+import { MatDrawerContainer, MatDrawer, MatDrawerContent } from '@angular/material/sidenav';
+import { MatIconButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
+import { MatList, MatDivider, MatListItem } from '@angular/material/list';
+import { NgClass, AsyncPipe } from '@angular/common';
+import { MselContributorsComponent } from '../msel-contributors/msel-contributors.component';
+import { MselTeamsComponent } from '../msel-teams/msel-teams.component';
+import { DataFieldListComponent } from '../data-field-list/data-field-list.component';
+import { OrganizationListComponent } from '../organization-list/organization-list.component';
+import { MoveListComponent } from '../move-list/move-list.component';
+import { PlayerApplicationListComponent } from '../player-application-list/player-application-list.component';
+import { CardListComponent } from '../card-list/card-list.component';
+import { CiteActionListComponent } from '../cite-action-list/cite-action-list.component';
+import { CiteDutyListComponent } from '../cite-duty-list/cite-duty-list.component';
+import { MselCompetenciesComponent } from '../msel-competencies/msel-competencies.component';
+import { ScenarioEventListComponent } from '../scenario-event-list/scenario-event-list.component';
+import { MselViewComponent } from '../msel-view/msel-view.component';
+import { AssessorViewComponent } from '../assessor-view/assessor-view.component';
+import { InvitationListComponent } from '../invitation-list/invitation-list.component';
+import { MselPlaybookComponent } from '../msel-playbook/msel-playbook.component';
 
 @Component({
-  selector: 'app-msel',
-  templateUrl: './msel.component.html',
-  styleUrls: ['./msel.component.scss'],
-  standalone: false
+    selector: 'app-msel',
+    templateUrl: './msel.component.html',
+    styleUrls: ['./msel.component.scss'],
+    imports: [MatDrawerContainer, MatDrawer, MatIconButton, MatIcon, MatList, MatDivider, MatListItem, NgClass, MatDrawerContent, MselInfoComponent, MselContributorsComponent, MselTeamsComponent, DataFieldListComponent, OrganizationListComponent, MoveListComponent, PlayerApplicationListComponent, CardListComponent, CiteActionListComponent, CiteDutyListComponent, MselCompetenciesComponent, ScenarioEventListComponent, MselViewComponent, AssessorViewComponent, InvitationListComponent, MselPlaybookComponent, AsyncPipe]
 })
 export class MselComponent implements OnDestroy {
   @Input() loggedInUserId: string;

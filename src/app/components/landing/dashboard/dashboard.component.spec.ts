@@ -17,8 +17,9 @@ import { DashboardComponent } from './dashboard.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { permissionApiStubs } from 'src/app/test-utils/mock-permission-data.service';
+import { TopbarComponent } from '../../shared/top-bar/topbar.component';
 
-@Component({ selector: 'app-topbar', template: '', standalone: false })
+@Component({ selector: 'app-topbar', template: '' })
 class TopbarStub {
   @Input() title: string;
   @Input() topbarView: unknown;
@@ -46,7 +47,9 @@ async function renderDashboard(
   const permissionApis = permissionApiStubs({ system: permissions });
   const rendered = await renderComponent(DashboardComponent, {
     imports: [MatCardModule, MatProgressSpinnerModule],
-    declarations: [DashboardComponent, TopbarStub],
+    childStubs: [
+      { replace: TopbarComponent, with: TopbarStub },
+    ],
     providers: [
       { provide: SystemPermissionsService, useValue: permissionApis.systemPermissions },
       PermissionDataService,

@@ -17,15 +17,17 @@ import { activatedRouteStub } from 'src/app/test-utils/activated-route';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { permissionApiStubs } from 'src/app/test-utils/mock-permission-data.service';
 import { mselLoadApiProviders, mselLoadApiStubs } from 'src/app/test-utils/msel-load-api-stubs';
+import { TopbarComponent } from '../shared/top-bar/topbar.component';
+import { ScenarioEventListComponent } from '../scenario-event-list/scenario-event-list.component';
 
-@Component({ selector: 'app-topbar', template: '', standalone: false })
+@Component({ selector: 'app-topbar', template: '' })
 class TopbarStub {
   @Input() title: string;
   @Input() topbarView: unknown;
   @Input() imageFilePath: string;
   @Output() urlNavigate = new EventEmitter<string>();
 }
-@Component({ selector: 'app-scenario-event-list', template: '', standalone: false })
+@Component({ selector: 'app-scenario-event-list', template: '' })
 class ScenarioEventListStub {
   @Input() loggedInUserId: string;
   @Input() userTheme: Theme;
@@ -51,7 +53,10 @@ async function renderStarter(overrides: { permissions?: SystemPermission[]; msel
   const permissionApis = permissionApiStubs({ system: permissions });
   const { route } = activatedRouteStub(mselId ? { msel: mselId } : {});
   const rendered = await renderComponent(StarterComponent, {
-    declarations: [StarterComponent, TopbarStub, ScenarioEventListStub],
+    childStubs: [
+      { replace: TopbarComponent, with: TopbarStub },
+      { replace: ScenarioEventListComponent, with: ScenarioEventListStub },
+    ],
     providers: [
       ...mselLoadApiProviders(apis),
       { provide: SystemPermissionsService, useValue: permissionApis.systemPermissions },

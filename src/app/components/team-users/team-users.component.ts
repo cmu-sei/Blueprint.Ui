@@ -12,8 +12,8 @@ import {
   AfterViewInit,
 } from '@angular/core';
 import { MatPaginator } from '@angular/material/paginator';
-import { Sort, MatSortable } from '@angular/material/sort';
-import { MatTableDataSource } from '@angular/material/table';
+import { Sort, MatSortable, MatSort, MatSortHeader } from '@angular/material/sort';
+import { MatTableDataSource, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
 import { TeamQuery } from 'src/app/data/team/team.query';
 import { SystemPermission, Team, TeamUser, User, UserTeamRole, MselUnit, Unit, CiteService } from 'src/app/generated/blueprint.api';
 import { TeamUserDataService } from 'src/app/data/team-user/team-user-data.service';
@@ -28,12 +28,18 @@ import { UnitQuery } from 'src/app/data/unit/unit.query';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
 import { Observable, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { UntypedFormControl } from '@angular/forms';
+import { UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MatToolbar, MatToolbarRow } from '@angular/material/toolbar';
+import { MatIcon } from '@angular/material/icon';
+import { MatFormField, MatInput, MatSuffix } from '@angular/material/input';
+import { MatIconButton } from '@angular/material/button';
+import { MatSelect } from '@angular/material/select';
+import { MatOption } from '@angular/material/autocomplete';
 @Component({
-  selector: 'app-team-users',
-  templateUrl: './team-users.component.html',
-  styleUrls: ['./team-users.component.scss'],
-  standalone: false
+    selector: 'app-team-users',
+    templateUrl: './team-users.component.html',
+    styleUrls: ['./team-users.component.scss'],
+    imports: [MatToolbar, MatToolbarRow, MatIcon, MatFormField, MatInput, FormsModule, ReactiveFormsModule, MatIconButton, MatSuffix, MatPaginator, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatSortHeader, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, MatSelect, MatOption]
 })
 export class TeamUsersComponent implements OnDestroy, OnInit, AfterViewInit {
   @Input() team: Team;

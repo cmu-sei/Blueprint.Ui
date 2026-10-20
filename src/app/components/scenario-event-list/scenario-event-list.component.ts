@@ -2,9 +2,9 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { UntypedFormControl } from '@angular/forms';
+import { UntypedFormControl, FormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
-import { CdkDragDrop, CdkDragStart, CdkDragEnd } from '@angular/cdk/drag-drop';
+import { CdkDragDrop, CdkDragStart, CdkDragEnd, CdkDropList, CdkDrag, CdkDragHandle } from '@angular/cdk/drag-drop';
 import { Router } from '@angular/router';
 import { Subject, Subscription, Observable, of, take } from 'rxjs';
 import {
@@ -39,8 +39,8 @@ import {
 } from 'src/app/generated/blueprint.api';
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
-import { Sort } from '@angular/material/sort';
-import { MatMenuTrigger } from '@angular/material/menu';
+import { Sort, MatSort, MatSortHeader } from '@angular/material/sort';
+import { MatMenuTrigger, MatMenu, MatMenuItem } from '@angular/material/menu';
 import { CardQuery } from 'src/app/data/card/card.query';
 import { CatalogQuery } from 'src/app/data/catalog/catalog.query';
 import { InjectmDataService } from 'src/app/data/injectm/injectm-data.service';
@@ -66,16 +66,24 @@ import { DataFieldQuery } from 'src/app/data/data-field/data-field.query';
 import { TeamQuery } from 'src/app/data/team/team.query';
 import { UnitQuery } from 'src/app/data/unit/unit.query';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
+import { MatFormField, MatInput, MatSuffix } from '@angular/material/input';
+import { MatIconButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
+import { MatCheckbox } from '@angular/material/checkbox';
+import { DurationViewComponent } from '../shared/duration-view/duration-view.component';
+import { MatSelect } from '@angular/material/select';
+import { MatOption } from '@angular/material/autocomplete';
+import { DataValueComponent } from '../data-value/data-value.component';
 
 interface StringDictionary {
   [key: string]: string;
 };
 
 @Component({
-  selector: 'app-scenario-event-list',
-  templateUrl: './scenario-event-list.component.html',
-  styleUrls: ['./scenario-event-list.component.scss'],
-  standalone: false
+    selector: 'app-scenario-event-list',
+    templateUrl: './scenario-event-list.component.html',
+    styleUrls: ['./scenario-event-list.component.scss'],
+    imports: [MatFormField, MatInput, FormsModule, MatIconButton, MatSuffix, MatIcon, MatSort, MatCheckbox, MatMenuTrigger, MatMenu, MatMenuItem, MatSortHeader, CdkDropList, CdkDrag, CdkDragHandle, DurationViewComponent, MatSelect, MatOption, DataValueComponent]
 })
 export class ScenarioEventListComponent
   implements OnDestroy, OnInit, ScenarioEventView {

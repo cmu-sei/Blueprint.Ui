@@ -9,8 +9,8 @@ import {
   ViewChild,
   AfterViewInit,
 } from '@angular/core';
-import { UntypedFormControl } from '@angular/forms';
-import { MatTableDataSource } from '@angular/material/table';
+import { UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MatTableDataSource, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
 import {
   animate,
   state,
@@ -21,7 +21,7 @@ import {
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { Catalog, InjectType, Team } from 'src/app/generated/blueprint.api';
-import { Sort } from '@angular/material/sort';
+import { Sort, MatSort, MatSortHeader } from '@angular/material/sort';
 import { MatTable } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 import { CatalogDataService } from 'src/app/data/catalog/catalog-data.service';
@@ -31,19 +31,28 @@ import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { AdminCatalogEditDialogComponent } from '../admin-catalog-edit-dialog/admin-catalog-edit-dialog.component';
 import { v4 as uuidv4 } from 'uuid';
 import { InjectTypeQuery } from 'src/app/data/inject-type/inject-type.query';
+import { MatIcon } from '@angular/material/icon';
+import { NgStyle } from '@angular/common';
+import { MatFormField, MatInput, MatSuffix } from '@angular/material/input';
+import { MatIconButton } from '@angular/material/button';
+import { MatCheckbox } from '@angular/material/checkbox';
+import { MatExpansionPanel, MatExpansionPanelHeader } from '@angular/material/expansion';
+import { InjectListComponent } from '../../inject-list/inject-list.component';
+import { CatalogUnitsComponent } from '../../catalog-units/catalog-units.component';
+import { MatRipple } from '@angular/material/core';
 
 @Component({
-  selector: 'app-admin-catalog-list',
-  templateUrl: './admin-catalog-list.component.html',
-  styleUrls: ['./admin-catalog-list.component.scss'],
-  animations: [
-    trigger('detailExpand', [
-      state('collapsed', style({ height: '0px', minHeight: '0', visibility: 'hidden' })),
-      state('expanded', style({ height: '*', visibility: 'visible' })),
-      transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
-    ]),
-  ],
-  standalone: false
+    selector: 'app-admin-catalog-list',
+    templateUrl: './admin-catalog-list.component.html',
+    styleUrls: ['./admin-catalog-list.component.scss'],
+    animations: [
+        trigger('detailExpand', [
+            state('collapsed', style({ height: '0px', minHeight: '0', visibility: 'hidden' })),
+            state('expanded', style({ height: '*', visibility: 'visible' })),
+            transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
+        ]),
+    ],
+    imports: [MatIcon, NgStyle, MatFormField, MatInput, FormsModule, ReactiveFormsModule, MatIconButton, MatSuffix, MatPaginator, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatCheckbox, MatSortHeader, MatExpansionPanel, MatExpansionPanelHeader, InjectListComponent, CatalogUnitsComponent, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, MatRipple]
 })
 export class AdminCatalogListComponent implements OnDestroy, AfterViewInit {
   @Input() loggedInUserId: string;

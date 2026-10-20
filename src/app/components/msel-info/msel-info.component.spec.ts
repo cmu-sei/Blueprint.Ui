@@ -61,13 +61,15 @@ import { TimezoneAbbrPipe } from 'src/app/utilities/timezone-abbr';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { permissionApiStubs } from 'src/app/test-utils/mock-permission-data.service';
 import { unstubbed } from 'src/app/test-utils/unstubbed';
+import { IntegrationStatusComponent } from '../integration-status/integration-status.component';
+import { DurationEditComponent } from '../shared/duration-edit/duration-edit.component';
 
-@Component({ selector: 'app-integration-status', template: '', standalone: false })
+@Component({ selector: 'app-integration-status', template: '' })
 class IntegrationStatusStub {
   @Input() msel: Msel;
   @Output() closed = new EventEmitter<void>();
 }
-@Component({ selector: 'app-duration-edit', template: '', standalone: false })
+@Component({ selector: 'app-duration-edit', template: '' })
 class DurationEditStub {
   @Input() startTime: Date;
   @Input() canEdit: boolean;
@@ -182,7 +184,10 @@ async function renderInfo(
       NgxMatDatepickerInput,
       NgxMatDatetimepicker,
     ],
-    declarations: [MselInfoComponent, IntegrationStatusStub, DurationEditStub, TimezoneAbbrPipe],
+    childStubs: [
+      { replace: IntegrationStatusComponent, with: IntegrationStatusStub },
+      { replace: DurationEditComponent, with: DurationEditStub },
+    ],
     providers: [
       { provide: SystemPermissionsService, useValue: permissionApis.systemPermissions },
       PermissionDataService,

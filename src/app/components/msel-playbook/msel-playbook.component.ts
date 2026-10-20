@@ -44,13 +44,17 @@ import { Component, Input, OnDestroy } from '@angular/core';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
 import { CardQuery } from 'src/app/data/card/card.query';
 import { CardDataService } from 'src/app/data/card/card-data.service';
-import { PageEvent } from '@angular/material/paginator';
+import { PageEvent, MatPaginator } from '@angular/material/paginator';
+import { MatIconButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
+import { DurationViewComponent } from '../shared/duration-view/duration-view.component';
+import { DatePipe } from '@angular/common';
 
 @Component({
     selector: 'app-msel-playbook',
     templateUrl: './msel-playbook.component.html',
     styleUrls: ['./msel-playbook.component.scss'],
-    standalone: false
+    imports: [MatPaginator, MatIconButton, MatIcon, DurationViewComponent, DatePipe]
 })
 export class MselPlaybookComponent implements OnDestroy {
   @Input() userTheme: Theme;

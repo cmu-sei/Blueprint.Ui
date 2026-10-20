@@ -19,12 +19,16 @@ import { CatalogQuery } from 'src/app/data/catalog/catalog.query';
 import { CatalogUnitDataService } from 'src/app/data/catalog-unit/catalog-unit-data.service';
 import { CatalogUnitQuery } from 'src/app/data/catalog-unit/catalog-unit.query';
 import { MatMenuTrigger } from '@angular/material/menu';
+import { MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
+import { MatIconButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
+import { MatExpansionPanel, MatExpansionPanelHeader } from '@angular/material/expansion';
 
 @Component({
-  selector: 'app-catalog-units',
-  templateUrl: './catalog-units.component.html',
-  styleUrls: ['./catalog-units.component.scss'],
-  standalone: false
+    selector: 'app-catalog-units',
+    templateUrl: './catalog-units.component.html',
+    styleUrls: ['./catalog-units.component.scss'],
+    imports: [MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatIconButton, MatIcon, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, MatExpansionPanel, MatExpansionPanelHeader]
 })
 export class CatalogUnitsComponent implements OnDestroy, OnInit {
   @Input() loggedInUserId: string;

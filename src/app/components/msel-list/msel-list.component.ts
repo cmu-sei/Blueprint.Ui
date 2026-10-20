@@ -2,11 +2,11 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 import { ChangeDetectorRef, Component, Input, OnDestroy, ViewChild, ElementRef, OnInit } from '@angular/core';
-import { UntypedFormControl } from '@angular/forms';
-import { MatSort, MatSortable, Sort } from '@angular/material/sort';
+import { UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MatSort, MatSortable, Sort, MatSortHeader } from '@angular/material/sort';
 import { MatPaginator } from '@angular/material/paginator';
-import { MatTableDataSource } from '@angular/material/table';
-import { Router } from '@angular/router';
+import { MatTableDataSource, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
+import { Router, RouterLink } from '@angular/router';
 import { Subject, Observable } from 'rxjs';
 import { take, takeUntil } from 'rxjs/operators';
 import {
@@ -24,12 +24,22 @@ import { UIDataService } from 'src/app/data/ui/ui-data.service';
 import { User, SystemPermission } from 'src/app/generated/blueprint.api';
 import { MselItemStatus } from 'src/app/generated/blueprint.api';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
+import { MatIconButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
+import { MatSelect } from '@angular/material/select';
+import { MatOption } from '@angular/material/autocomplete';
+import { MatFormField, MatInput, MatSuffix } from '@angular/material/input';
+import { MatMenuTrigger, MatMenu, MatMenuItem } from '@angular/material/menu';
+import { MatCheckbox } from '@angular/material/checkbox';
+import { MatCard } from '@angular/material/card';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
+import { DatePipe } from '@angular/common';
 
 @Component({
-  selector: 'app-msel-list',
-  templateUrl: './msel-list.component.html',
-  styleUrls: ['./msel-list.component.scss'],
-  standalone: false
+    selector: 'app-msel-list',
+    templateUrl: './msel-list.component.html',
+    styleUrls: ['./msel-list.component.scss'],
+    imports: [MatIconButton, MatIcon, MatSelect, FormsModule, MatOption, MatFormField, MatInput, ReactiveFormsModule, MatSuffix, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatMenuTrigger, MatMenu, MatMenuItem, MatCellDef, MatCell, MatSortHeader, RouterLink, MatCheckbox, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, MatPaginator, MatCard, MatProgressSpinner, DatePipe]
 })
 export class MselListComponent implements OnDestroy, OnInit {
   @Input() loggedInUserId: string;

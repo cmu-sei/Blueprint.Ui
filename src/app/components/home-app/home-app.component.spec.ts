@@ -27,20 +27,23 @@ import { ApiStub } from 'src/app/test-utils/api-stub';
 import { activatedRouteStub } from 'src/app/test-utils/activated-route';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { permissionApiStubs } from 'src/app/test-utils/mock-permission-data.service';
+import { TopbarComponent } from '../shared/top-bar/topbar.component';
+import { MselListComponent } from '../msel-list/msel-list.component';
+import { MselComponent } from '../msel/msel.component';
 
-@Component({ selector: 'app-topbar', template: '', standalone: false })
+@Component({ selector: 'app-topbar', template: '' })
 class TopbarStub {
   @Input() title: string;
   @Input() topbarView: unknown;
   @Input() imageFilePath: string;
   @Output() urlNavigate = new EventEmitter<string>();
 }
-@Component({ selector: 'app-msel-list', template: '', standalone: false })
+@Component({ selector: 'app-msel-list', template: '' })
 class MselListStub {
   @Input() loggedInUserId: string;
   @Input() canAccessAdminSection: boolean;
 }
-@Component({ selector: 'app-msel', template: '', standalone: false })
+@Component({ selector: 'app-msel', template: '' })
 class MselStub {
   @Input() loggedInUserId: string;
   @Input() canEditMsel: boolean;
@@ -72,7 +75,11 @@ async function renderHome(
   const { route } = activatedRouteStub(mselId ? { msel: mselId } : {});
   const rendered = await renderComponent(HomeAppComponent, {
     imports: [MatButtonModule, MatIconModule, MatProgressBarModule],
-    declarations: [HomeAppComponent, TopbarStub, MselListStub, MselStub],
+    childStubs: [
+      { replace: TopbarComponent, with: TopbarStub },
+      { replace: MselListComponent, with: MselListStub },
+      { replace: MselComponent, with: MselStub },
+    ],
     providers: [
       { provide: SystemPermissionsService, useValue: permissionApis.systemPermissions },
       PermissionDataService,

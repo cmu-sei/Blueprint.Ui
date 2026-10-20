@@ -15,8 +15,9 @@ import { ApplicationArea, SignalRService } from 'src/app/services/signalr.servic
 import { LaunchComponent } from './launch.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { renderComponent } from 'src/app/test-utils/render-component';
+import { TopbarComponent } from '../../shared/top-bar/topbar.component';
 
-@Component({ selector: 'app-topbar', template: '', standalone: false })
+@Component({ selector: 'app-topbar', template: '' })
 class TopbarStub {
   @Input() title: string;
   @Input() topbarView: unknown;
@@ -44,7 +45,9 @@ async function renderLaunch() {
   } satisfies Pick<SignalRService, 'startConnection' | 'join' | 'selectMsel' | 'leave'>;
   const rendered = await renderComponent(LaunchComponent, {
     imports: [MatButtonModule, MatCardModule, MatProgressSpinnerModule],
-    declarations: [LaunchComponent, TopbarStub],
+    childStubs: [
+      { replace: TopbarComponent, with: TopbarStub },
+    ],
     providers: [
       { provide: MselService, useValue: mselApi },
       { provide: UserService, useValue: userApi },

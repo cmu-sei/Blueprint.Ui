@@ -25,8 +25,10 @@ import { AdminCatalogListComponent } from './admin-catalog-list.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { dialogRefStub } from 'src/app/test-utils/dialog-refs';
 import { renderComponent } from 'src/app/test-utils/render-component';
+import { InjectListComponent } from '../../inject-list/inject-list.component';
+import { CatalogUnitsComponent } from '../../catalog-units/catalog-units.component';
 
-@Component({ selector: 'app-inject-list', template: '', standalone: false })
+@Component({ selector: 'app-inject-list', template: '' })
 class InjectListStub {
   @Input() loggedInUserId: string;
   @Input() canEdit: boolean;
@@ -36,7 +38,7 @@ class InjectListStub {
   @Input() injectList: unknown;
   @Output() selectedInjectIdList = new EventEmitter<string[]>();
 }
-@Component({ selector: 'app-catalog-units', template: '', standalone: false })
+@Component({ selector: 'app-catalog-units', template: '' })
 class CatalogUnitsStub {
   @Input() loggedInUserId: string;
   @Input() canEdit: boolean;
@@ -75,7 +77,10 @@ async function renderCatalogList(overrides: { canEdit?: boolean; catalogs?: Cata
       MatSortModule,
       MatTableModule,
     ],
-    declarations: [AdminCatalogListComponent, InjectListStub, CatalogUnitsStub],
+    childStubs: [
+      { replace: InjectListComponent, with: InjectListStub },
+      { replace: CatalogUnitsComponent, with: CatalogUnitsStub },
+    ],
     providers: [
       { provide: CatalogService, useValue: catalogApi },
       { provide: CrucibleDialogService, useValue: dialog },

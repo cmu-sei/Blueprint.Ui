@@ -11,12 +11,14 @@ import { MselPageQuery } from 'src/app/data/msel-page/msel-page.query';
 import { SafeHtml } from '@angular/platform-browser';
 import { ComnSettingsService } from '@cmusei/crucible-common';
 import { VIEW_CONFIG } from 'src/app/utilities/editor-config';
+import { AngularEditorModule } from '@kolkov/angular-editor';
+import { FormsModule } from '@angular/forms';
 
 @Component({
     selector: 'app-msel-pageapp',
     templateUrl: './msel-page.component.html',
     styleUrls: ['./msel-page.component.scss'],
-    standalone: false
+    imports: [AngularEditorModule, FormsModule]
 })
 export class MselPageComponent implements OnDestroy {
   safeContent: SafeHtml = '';

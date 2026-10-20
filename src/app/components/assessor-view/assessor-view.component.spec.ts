@@ -39,14 +39,16 @@ import { ScenarioEventStore } from 'src/app/data/scenario-event/scenario-event.s
 import { AssessorViewComponent } from './assessor-view.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { renderComponent } from 'src/app/test-utils/render-component';
+import { DurationViewComponent } from '../shared/duration-view/duration-view.component';
+import { DataValueComponent } from '../data-value/data-value.component';
 
-@Component({ selector: 'app-duration-view', template: '', standalone: false })
+@Component({ selector: 'app-duration-view', template: '' })
 class DurationViewStub {
   @Input() startTime: Date;
   @Input() durationSeconds: number;
   @Input() showRealTime: boolean;
 }
-@Component({ selector: 'app-data-value', template: '', standalone: false })
+@Component({ selector: 'app-data-value', template: '' })
 class DataValueStub {
   @Input() value: string;
   @Output() valueChange = new EventEmitter<string>();
@@ -104,7 +106,10 @@ async function renderAssessorView(overrides: { canEditCheckboxes?: boolean; move
       MatSortModule,
       MatTooltipModule,
     ],
-    declarations: [AssessorViewComponent, DurationViewStub, DataValueStub],
+    childStubs: [
+      { replace: DurationViewComponent, with: DurationViewStub },
+      { replace: DataValueComponent, with: DataValueStub },
+    ],
     providers: [
       { provide: MselCompetencyService, useValue: poolApi },
       { provide: TeamCompetencyService, useValue: teamCompetencyApi },

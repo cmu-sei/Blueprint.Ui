@@ -14,8 +14,9 @@ import { CRUCIBLE_DIALOG_IMPORTS } from '@cmusei/crucible-common';
 import { DataField, DataFieldType, Injectm } from 'src/app/generated/blueprint.api';
 import { InjectEditDialogComponent } from './inject-edit-dialog.component';
 import { renderComponent } from 'src/app/test-utils/render-component';
+import { DataValueComponent } from '../data-value/data-value.component';
 
-@Component({ selector: 'app-data-value', template: '', standalone: false })
+@Component({ selector: 'app-data-value', template: '' })
 class DataValueStub {
   @Input() value: string;
   @Output() valueChange = new EventEmitter<string>();
@@ -52,7 +53,9 @@ function injectData(overrides: { isEditMode?: boolean; inject?: Injectm } = {}) 
 async function renderInjectEdit(data = injectData()) {
   const rendered = await renderComponent(InjectEditDialogComponent, {
     imports: [...CRUCIBLE_DIALOG_IMPORTS, MatFormFieldModule, MatInputModule, MatSelectModule],
-    declarations: [InjectEditDialogComponent, DataValueStub],
+    childStubs: [
+      { replace: DataValueComponent, with: DataValueStub },
+    ],
     providers: [{ provide: MAT_DIALOG_DATA, useValue: data }],
   });
   const results: unknown[] = [];

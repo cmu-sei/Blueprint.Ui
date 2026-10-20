@@ -24,15 +24,17 @@ import { renderComponent } from 'src/app/test-utils/render-component';
 import { mselLoadApiProviders, mselLoadApiStubs } from 'src/app/test-utils/msel-load-api-stubs';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
 import { permissionDataProviders } from 'src/app/test-utils/mock-permission-data.service';
+import { TopbarComponent } from '../shared/top-bar/topbar.component';
+import { DataValueComponent } from '../data-value/data-value.component';
 
-@Component({ selector: 'app-topbar', template: '', standalone: false })
+@Component({ selector: 'app-topbar', template: '' })
 class TopbarStub {
   @Input() title: string;
   @Input() topbarView: unknown;
   @Input() imageFilePath: string;
   @Output() urlNavigate = new EventEmitter<string>();
 }
-@Component({ selector: 'app-data-value', template: '', standalone: false })
+@Component({ selector: 'app-data-value', template: '' })
 class DataValueStub {
   @Input() value: string;
   @Output() valueChange = new EventEmitter<string>();
@@ -68,7 +70,10 @@ async function renderEventDetail(options: { msel?: Msel; providers?: Provider[] 
   const { route } = activatedRouteStub({ msel: 'msel-1', scenarioEvent: 'se-1' });
   const rendered = await renderComponent(EventDetailPageComponent, {
     imports: [MatButtonModule, MatIconModule],
-    declarations: [EventDetailPageComponent, TopbarStub, DataValueStub],
+    childStubs: [
+      { replace: TopbarComponent, with: TopbarStub },
+      { replace: DataValueComponent, with: DataValueStub },
+    ],
     providers: [...mselLoadApiProviders(apis), { provide: ActivatedRoute, useValue: route }, ...providers],
     inputs: { loggedInUserId: 'user-me' },
   });

@@ -17,15 +17,17 @@ import { activatedRouteStub } from 'src/app/test-utils/activated-route';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { permissionApiStubs } from 'src/app/test-utils/mock-permission-data.service';
 import { mselLoadApiProviders, mselLoadApiStubs } from 'src/app/test-utils/msel-load-api-stubs';
+import { TopbarComponent } from '../shared/top-bar/topbar.component';
+import { AssessorViewComponent } from '../assessor-view/assessor-view.component';
 
-@Component({ selector: 'app-topbar', template: '', standalone: false })
+@Component({ selector: 'app-topbar', template: '' })
 class TopbarStub {
   @Input() title: string;
   @Input() topbarView: unknown;
   @Input() imageFilePath: string;
   @Output() urlNavigate = new EventEmitter<string>();
 }
-@Component({ selector: 'app-assessor-view', template: '', standalone: false })
+@Component({ selector: 'app-assessor-view', template: '' })
 class AssessorViewStub {
   @Input() loggedInUserId: string;
   @Input() userTheme: Theme;
@@ -49,7 +51,10 @@ async function renderAssessorPage(overrides: { permissions?: SystemPermission[];
   const { route } = activatedRouteStub({ msel: 'msel-1' });
   const rendered = await renderComponent(AssessorPageComponent, {
     imports: [MatIconModule],
-    declarations: [AssessorPageComponent, TopbarStub, AssessorViewStub],
+    childStubs: [
+      { replace: TopbarComponent, with: TopbarStub },
+      { replace: AssessorViewComponent, with: AssessorViewStub },
+    ],
     providers: [
       ...mselLoadApiProviders(apis),
       { provide: SystemPermissionsService, useValue: permissionApis.systemPermissions },

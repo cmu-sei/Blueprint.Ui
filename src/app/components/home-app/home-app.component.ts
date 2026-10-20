@@ -27,6 +27,13 @@ import { MselDataService } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { ApplicationArea, SignalRService } from 'src/app/services/signalr.service';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
+import { TopbarComponent } from '../shared/top-bar/topbar.component';
+import { MatIconButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
+import { MselListComponent } from '../msel-list/msel-list.component';
+import { MselComponent } from '../msel/msel.component';
+import { MatProgressBar } from '@angular/material/progress-bar';
+import { AsyncPipe } from '@angular/common';
 
 export enum Section {
   info = 'info',
@@ -35,10 +42,10 @@ export enum Section {
 }
 
 @Component({
-  selector: 'app-home-app',
-  templateUrl: './home-app.component.html',
-  styleUrls: ['./home-app.component.scss'],
-  standalone: false
+    selector: 'app-home-app',
+    templateUrl: './home-app.component.html',
+    styleUrls: ['./home-app.component.scss'],
+    imports: [TopbarComponent, MatIconButton, MatIcon, MselListComponent, MselComponent, MatProgressBar, AsyncPipe]
 })
 export class HomeAppComponent implements OnDestroy, OnInit {
   @ViewChild('sidenav') sidenav: MatSidenav;

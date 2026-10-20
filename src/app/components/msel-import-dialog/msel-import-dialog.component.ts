@@ -8,16 +8,27 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { take } from 'rxjs/operators';
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
 import { MselImportResult } from 'src/app/generated/blueprint.api';
+import { CrucibleDialogComponent, CrucibleDialogContentDirective, CrucibleDialogActionsDirective } from '@cmusei/crucible-common';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
+import { MatIcon } from '@angular/material/icon';
+import { MatButton } from '@angular/material/button';
 
 export interface MselImportDialogData {
   file: File;
 }
 
 @Component({
-  selector: 'app-msel-import-dialog',
-  templateUrl: './msel-import-dialog.component.html',
-  styleUrls: ['./msel-import-dialog.component.scss'],
-  standalone: false,
+    selector: 'app-msel-import-dialog',
+    templateUrl: './msel-import-dialog.component.html',
+    styleUrls: ['./msel-import-dialog.component.scss'],
+    imports: [
+        CrucibleDialogComponent,
+        CrucibleDialogContentDirective,
+        MatProgressSpinner,
+        MatIcon,
+        CrucibleDialogActionsDirective,
+        MatButton,
+    ],
 })
 export class MselImportDialogComponent implements OnInit {
   isImporting = true;

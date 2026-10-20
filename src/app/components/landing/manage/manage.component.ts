@@ -23,12 +23,18 @@ import { InvitationDataService } from 'src/app/data/invitation/invitation-data.s
 import { TeamDataService } from 'src/app/data/team/team-data.service';
 import { MselItemStatus, SystemPermission } from 'src/app/generated/blueprint.api';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
+import { TopbarComponent } from '../../shared/top-bar/topbar.component';
+import { MatCard, MatCardHeader, MatCardTitle, MatCardSubtitle, MatCardContent, MatCardActions } from '@angular/material/card';
+import { MatFormField, MatInput } from '@angular/material/input';
+import { FormsModule } from '@angular/forms';
+import { MatButton } from '@angular/material/button';
+import { InvitationListComponent } from '../../invitation-list/invitation-list.component';
 
 @Component({
     selector: 'app-manage',
     templateUrl: './manage.component.html',
     styleUrls: ['./manage.component.scss'],
-    standalone: false
+    imports: [TopbarComponent, MatCard, MatCardHeader, MatCardTitle, MatCardSubtitle, MatCardContent, MatFormField, MatInput, FormsModule, MatCardActions, MatButton, InvitationListComponent]
 })
 export class ManageComponent implements OnDestroy, OnInit {
   msel: MselPlus = new MselPlus();

@@ -26,8 +26,9 @@ import { Move } from 'src/app/generated/blueprint.api';
 import { MoveEditDialogComponent } from './move-edit-dialog.component';
 import { TimezoneAbbrPipe } from 'src/app/utilities/timezone-abbr';
 import { renderComponent } from 'src/app/test-utils/render-component';
+import { DurationEditComponent } from '../shared/duration-edit/duration-edit.component';
 
-@Component({ selector: 'app-duration-edit', template: '', standalone: false })
+@Component({ selector: 'app-duration-edit', template: '' })
 class DurationEditStub {
   @Input() startTime: Date;
   @Input() canEdit: boolean;
@@ -65,7 +66,9 @@ async function renderMoveEdit(move: Move = MOVE) {
       NgxMatDatepickerInput,
       NgxMatDatetimepicker,
     ],
-    declarations: [MoveEditDialogComponent, DurationEditStub, TimezoneAbbrPipe],
+    childStubs: [
+      { replace: DurationEditComponent, with: DurationEditStub },
+    ],
     // angular-editor injects HttpClient for its image upload.
     providers: [{ provide: MAT_DIALOG_DATA, useValue: data }, provideHttpClient(), provideHttpClientTesting()],
   });

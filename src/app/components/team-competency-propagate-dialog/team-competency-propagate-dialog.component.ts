@@ -6,6 +6,10 @@ import { Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { SelectionModel } from '@angular/cdk/collections';
 import { MselCompetency } from 'src/app/generated/blueprint.api';
+import { CrucibleDialogComponent, CrucibleDialogContentDirective } from '@cmusei/crucible-common';
+import { MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
+import { MatCheckbox } from '@angular/material/checkbox';
+import { MatTooltip } from '@angular/material/tooltip';
 
 export interface TeamCompetencyPropagateData {
   teamName: string;
@@ -14,10 +18,10 @@ export interface TeamCompetencyPropagateData {
 }
 
 @Component({
-  selector: 'app-team-competency-propagate-dialog',
-  templateUrl: './team-competency-propagate-dialog.component.html',
-  styleUrls: ['./team-competency-propagate-dialog.component.scss'],
-  standalone: false
+    selector: 'app-team-competency-propagate-dialog',
+    templateUrl: './team-competency-propagate-dialog.component.html',
+    styleUrls: ['./team-competency-propagate-dialog.component.scss'],
+    imports: [CrucibleDialogComponent, CrucibleDialogContentDirective, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCheckbox, MatCellDef, MatCell, MatTooltip, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow]
 })
 export class TeamCompetencyPropagateDialogComponent {
   selection = new SelectionModel<MselCompetency>(true, []);

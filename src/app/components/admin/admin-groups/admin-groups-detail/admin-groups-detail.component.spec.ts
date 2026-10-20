@@ -11,14 +11,16 @@ import { UserStore } from 'src/app/data/user/user.store';
 import { AdminGroupsDetailComponent } from './admin-groups-detail.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { renderComponent } from 'src/app/test-utils/render-component';
+import { AdminGroupsMembershipListComponent } from '../admin-groups-membership-list/admin-groups-membership-list.component';
+import { AdminGroupsMemberListComponent } from '../admin-groups-member-list/admin-groups-member-list.component';
 
-@Component({ selector: 'app-admin-groups-membership-list', template: '', standalone: false })
+@Component({ selector: 'app-admin-groups-membership-list', template: '' })
 class MembershipListStub {
   @Input() users: User[];
   @Input() canEdit: boolean;
   @Output() createMembership = new EventEmitter<string>();
 }
-@Component({ selector: 'app-admin-groups-member-list', template: '', standalone: false })
+@Component({ selector: 'app-admin-groups-member-list', template: '' })
 class MemberListStub {
   @Input() memberships: GroupMembership[];
   @Input() users: User[];
@@ -40,7 +42,10 @@ async function renderDetail(overrides: { canEdit?: boolean } = {}) {
     deleteGroupMembership: vi.fn(() => of<unknown>(null)),
   } satisfies ApiStub<GroupService>;
   const rendered = await renderComponent(AdminGroupsDetailComponent, {
-    declarations: [AdminGroupsDetailComponent, MembershipListStub, MemberListStub],
+    childStubs: [
+      { replace: AdminGroupsMembershipListComponent, with: MembershipListStub },
+      { replace: AdminGroupsMemberListComponent, with: MemberListStub },
+    ],
     providers: [
       { provide: GroupService, useValue: groupApi },
       // The groups page loads the users; the store is seeded instead.

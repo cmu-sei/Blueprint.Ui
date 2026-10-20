@@ -3,7 +3,7 @@
 // project root for license information.
 import { Component, Input, OnDestroy, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { Sort } from '@angular/material/sort';
+import { Sort, MatSort, MatSortHeader } from '@angular/material/sort';
 import { Subject, Subscription, Observable, of } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import {
@@ -53,12 +53,20 @@ import { CompetencyFrameworkQuery } from 'src/app/data/competency-framework/comp
 import { CompetencyFrameworkDataService } from 'src/app/data/competency-framework/competency-framework-data.service';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
 import { VIEW_CONFIG } from 'src/app/utilities/editor-config';
+import { MatFormField, MatInput, MatSuffix } from '@angular/material/input';
+import { FormsModule } from '@angular/forms';
+import { MatIconButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
+import { DurationViewComponent } from '../shared/duration-view/duration-view.component';
+import { AngularEditorModule } from '@kolkov/angular-editor';
+import { MatCheckbox } from '@angular/material/checkbox';
+import { MatTooltip } from '@angular/material/tooltip';
 
 @Component({
     selector: 'app-msel-view',
     templateUrl: './msel-view.component.html',
     styleUrls: ['./msel-view.component.scss'],
-    standalone: false
+    imports: [MatSort, MatFormField, MatInput, FormsModule, MatIconButton, MatSuffix, MatIcon, MatSortHeader, DurationViewComponent, AngularEditorModule, MatCheckbox, MatTooltip]
 })
 export class MselViewComponent implements OnDestroy, ScenarioEventView {
   @Input() tabHeight: number;

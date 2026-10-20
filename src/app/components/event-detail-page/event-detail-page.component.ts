@@ -49,12 +49,17 @@ import { Component, Input } from '@angular/core';
 import { VIEW_CONFIG } from 'src/app/utilities/editor-config';
 import { CardQuery } from 'src/app/data/card/card.query';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
+import { TopbarComponent } from '../shared/top-bar/topbar.component';
+import { MatIconButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
+import { DataValueComponent } from '../data-value/data-value.component';
+import { AngularEditorModule } from '@kolkov/angular-editor';
 
 @Component({
     selector: 'app-event-detail-page',
     templateUrl: './event-detail-page.component.html',
     styleUrls: ['./event-detail-page.component.scss'],
-    standalone: false
+    imports: [TopbarComponent, MatIconButton, MatIcon, DataValueComponent, AngularEditorModule]
 })
 export class EventDetailPageComponent {
   @Input() userTheme: Theme;

@@ -14,12 +14,21 @@ import {
 import { MselCompetencyQuery } from 'src/app/data/msel-competency/msel-competency.query';
 import { CompetencyFrameworkService } from 'src/app/generated/blueprint.api/api/api';
 import { v4 as uuidv4 } from 'uuid';
+import { CrucibleDialogComponent, CrucibleDialogContentDirective, CrucibleDialogActionsDirective } from '@cmusei/crucible-common';
+import { MatFormField, MatLabel, MatInput, MatSuffix } from '@angular/material/input';
+import { MatSelect } from '@angular/material/select';
+import { MatOption } from '@angular/material/autocomplete';
+import { FormsModule } from '@angular/forms';
+import { MatIconButton, MatButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
+import { MatCheckbox } from '@angular/material/checkbox';
+import { MatPaginator } from '@angular/material/paginator';
 
 @Component({
     selector: 'app-competency-options-dialog',
     templateUrl: './competency-options-dialog.component.html',
     styleUrls: ['./competency-options-dialog.component.scss'],
-    standalone: false
+    imports: [CrucibleDialogComponent, CrucibleDialogContentDirective, MatFormField, MatLabel, MatSelect, MatOption, MatInput, FormsModule, MatIconButton, MatSuffix, MatIcon, MatCheckbox, MatPaginator, CrucibleDialogActionsDirective, MatButton]
 })
 export class CompetencyOptionsDialogComponent implements OnDestroy {
   searchText = '';

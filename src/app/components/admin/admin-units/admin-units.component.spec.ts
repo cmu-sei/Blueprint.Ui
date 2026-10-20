@@ -24,8 +24,9 @@ import { ApiStub } from 'src/app/test-utils/api-stub';
 import { dialogRefStub } from 'src/app/test-utils/dialog-refs';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { unstubbed } from 'src/app/test-utils/unstubbed';
+import { AdminUnitUsersComponent } from '../admin-unit-users/admin-unit-users.component';
 
-@Component({ selector: 'app-admin-unit-users', template: '', standalone: false })
+@Component({ selector: 'app-admin-unit-users', template: '' })
 class UnitUsersStub {
   @Input() unitId: string;
   @Input() canManage: boolean;
@@ -54,7 +55,9 @@ async function renderUnits(overrides: { canManage?: boolean } = {}) {
       MatSortModule,
       MatTableModule,
     ],
-    declarations: [AdminUnitsComponent, UnitUsersStub],
+    childStubs: [
+      { replace: AdminUnitUsersComponent, with: UnitUsersStub },
+    ],
     providers: [
       { provide: UnitService, useValue: unitApi },
       { provide: CrucibleDialogService, useValue: dialog },

@@ -2,14 +2,21 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
-import { UntypedFormControl } from '@angular/forms';
+import { UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MatFormField, MatLabel, MatInput, MatSuffix } from '@angular/material/input';
+import { NgxMatDatepickerInput, NgxMatDatetimepicker, NgxMatDatepickerActions, NgxMatDatepickerApply, NgxMatDatepickerCancel } from '@ngxmc/datetime-picker';
+import { MatDatepickerToggle } from '@angular/material/datepicker';
+import { MatButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
+import { DatePipe } from '@angular/common';
+import { TimezoneAbbrPipe } from '../../../utilities/timezone-abbr';
 
 
 @Component({
-  selector: 'app-duration-edit',
-  templateUrl: './duration-edit.component.html',
-  styleUrls: ['./duration-edit.component.scss'],
-  standalone: false
+    selector: 'app-duration-edit',
+    templateUrl: './duration-edit.component.html',
+    styleUrls: ['./duration-edit.component.scss'],
+    imports: [MatFormField, MatLabel, MatInput, NgxMatDatepickerInput, FormsModule, ReactiveFormsModule, MatDatepickerToggle, MatSuffix, NgxMatDatetimepicker, NgxMatDatepickerActions, MatButton, NgxMatDatepickerApply, NgxMatDatepickerCancel, MatIcon, DatePipe, TimezoneAbbrPipe]
 })
 export class DurationEditComponent implements OnChanges {
   @Input() startTime: Date;

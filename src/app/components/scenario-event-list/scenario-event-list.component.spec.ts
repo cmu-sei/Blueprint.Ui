@@ -43,14 +43,16 @@ import { ApiStub } from 'src/app/test-utils/api-stub';
 import { dialogRefStub } from 'src/app/test-utils/dialog-refs';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { permissionApiStubs } from 'src/app/test-utils/mock-permission-data.service';
+import { DurationViewComponent } from '../shared/duration-view/duration-view.component';
+import { DataValueComponent } from '../data-value/data-value.component';
 
-@Component({ selector: 'app-duration-view', template: '', standalone: false })
+@Component({ selector: 'app-duration-view', template: '' })
 class DurationViewStub {
   @Input() startTime: Date;
   @Input() durationSeconds: number;
   @Input() showRealTime: boolean;
 }
-@Component({ selector: 'app-data-value', template: '', standalone: false })
+@Component({ selector: 'app-data-value', template: '' })
 class DataValueStub {
   @Input() value: string;
   @Output() valueChange = new EventEmitter<string>();
@@ -142,7 +144,10 @@ async function renderEventList(
       MatSelectModule,
       MatSortModule,
     ],
-    declarations: [ScenarioEventListComponent, DurationViewStub, DataValueStub],
+    childStubs: [
+      { replace: DurationViewComponent, with: DurationViewStub },
+      { replace: DataValueComponent, with: DataValueStub },
+    ],
     providers: [
       { provide: SystemPermissionsService, useValue: permissionApis.systemPermissions },
       PermissionDataService,

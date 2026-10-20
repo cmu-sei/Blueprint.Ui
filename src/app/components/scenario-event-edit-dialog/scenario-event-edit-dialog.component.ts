@@ -16,12 +16,21 @@ import { DataValuePlus, IntegrationTarget } from 'src/app/data/scenario-event/sc
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { EDITOR_CONFIG, VIEW_CONFIG } from 'src/app/utilities/editor-config';
 import { hasInvalidAddress } from 'src/app/utilities/ip-address';
+import { CrucibleDialogComponent, CrucibleDialogContentDirective } from '@cmusei/crucible-common';
+import { MatFormField, MatLabel, MatInput } from '@angular/material/input';
+import { MatSelect } from '@angular/material/select';
+import { FormsModule } from '@angular/forms';
+import { MatOption } from '@angular/material/autocomplete';
+import { MatTabGroup, MatTab } from '@angular/material/tabs';
+import { SteamfitterTaskComponent } from '../steamfitter-task/steamfitter-task.component';
+import { DurationEditComponent } from '../shared/duration-edit/duration-edit.component';
+import { DataValueComponent } from '../data-value/data-value.component';
 
 @Component({
-  selector: 'app-scenario-event-edit-dialog',
-  templateUrl: './scenario-event-edit-dialog.component.html',
-  styleUrls: ['./scenario-event-edit-dialog.component.scss'],
-  standalone: false
+    selector: 'app-scenario-event-edit-dialog',
+    templateUrl: './scenario-event-edit-dialog.component.html',
+    styleUrls: ['./scenario-event-edit-dialog.component.scss'],
+    imports: [CrucibleDialogComponent, CrucibleDialogContentDirective, MatFormField, MatLabel, MatSelect, FormsModule, MatOption, MatTabGroup, MatTab, SteamfitterTaskComponent, DurationEditComponent, DataValueComponent, MatInput]
 })
 export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
   @Output() editComplete = new EventEmitter<any>();

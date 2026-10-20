@@ -15,7 +15,7 @@ import {
 } from '@angular/core';
 import { PageEvent, MatPaginator } from '@angular/material/paginator';
 import { MatSort, MatSortable } from '@angular/material/sort';
-import { MatTableDataSource } from '@angular/material/table';
+import { MatTableDataSource, MatTable, MatColumnDef, MatCellDef, MatCell, MatRowDef, MatRow } from '@angular/material/table';
 import { PlayerApplicationTeam, SystemPermission, Team } from 'src/app/generated/blueprint.api';
 import { PlayerApplicationTeamDataService } from 'src/app/data/team/player-application-team-data.service';
 import { MselPlus } from 'src/app/data/msel/msel-data.service';
@@ -23,12 +23,18 @@ import { MselQuery } from 'src/app/data/msel/msel.query';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
 import { Observable, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { MatIcon } from '@angular/material/icon';
+import { MatFormField, MatInput } from '@angular/material/input';
+import { FormsModule } from '@angular/forms';
+import { MatIconButton } from '@angular/material/button';
+import { MatCard } from '@angular/material/card';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
 
 @Component({
     selector: 'app-player-application-teams',
     templateUrl: './player-application-teams.component.html',
     styleUrls: ['./player-application-teams.component.scss'],
-    standalone: false
+    imports: [MatIcon, MatFormField, MatInput, FormsModule, MatIconButton, MatTable, MatSort, MatColumnDef, MatCellDef, MatCell, MatRowDef, MatRow, MatCard, MatProgressSpinner]
 })
 
 export class PlayerApplicationTeamsComponent implements OnDestroy, OnInit, OnChanges {

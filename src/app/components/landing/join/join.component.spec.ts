@@ -18,8 +18,9 @@ import { JoinComponent } from './join.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { activatedRouteStub } from 'src/app/test-utils/activated-route';
 import { renderComponent } from 'src/app/test-utils/render-component';
+import { TopbarComponent } from '../../shared/top-bar/topbar.component';
 
-@Component({ selector: 'app-topbar', template: '', standalone: false })
+@Component({ selector: 'app-topbar', template: '' })
 class TopbarStub {
   @Input() title: string;
   @Input() topbarView: unknown;
@@ -49,7 +50,9 @@ async function renderJoin(join: () => Observable<string> = () => NEVER, queryPar
   const handleError = vi.fn();
   const rendered = await renderComponent(JoinComponent, {
     imports: [MatButtonModule, MatCardModule],
-    declarations: [JoinComponent, TopbarStub],
+    childStubs: [
+      { replace: TopbarComponent, with: TopbarStub },
+    ],
     providers: [
       { provide: MselService, useValue: mselApi },
       { provide: UserService, useValue: userApi },
