@@ -139,7 +139,7 @@ describe('UserTeamRoleDataService', () => {
 
     expect(TestBed.inject(UserTeamRoleQuery).getValue().loading).toBe(true);
     // With no error callback the error escapes to ErrorService, the ErrorHandler
-    // app.module.ts provides, which shows it.
+    // main.ts provides, which shows it.
     expect(errors).toEqual(escapes ? [failure] : []);
   });
 
@@ -160,7 +160,7 @@ describe('UserTeamRoleDataService', () => {
     await flush();
 
     // These methods subscribe with no error callback and set no loading flag,
-    // so the error escapes to ErrorService, the ErrorHandler app.module.ts
+    // so the error escapes to ErrorService, the ErrorHandler main.ts
     // provides, which shows it to the user. Not a defect on its own.
     expect(errors).toEqual([failure]);
   });

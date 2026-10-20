@@ -2,9 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { CommonModule } from '@angular/common';
-import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
+import { Routes } from '@angular/router';
 import { ComnAuthGuardService } from '@cmusei/crucible-common';
 import { AdminContainerComponent } from './components/admin/admin-container/admin-container.component';
 import { HomeAppComponent } from './components/home-app/home-app.component';
@@ -77,9 +75,3 @@ export const ROUTES: Routes = [
     canActivate: [ComnAuthGuardService],
   },
 ];
-
-@NgModule({
-  exports: [RouterModule],
-  imports: [CommonModule, RouterModule.forRoot(ROUTES, {})],
-})
-export class AppRoutingModule {}

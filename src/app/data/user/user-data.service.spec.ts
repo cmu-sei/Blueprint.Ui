@@ -166,7 +166,7 @@ describe('UserDataService', () => {
     await flush();
 
     // update() subscribes with no error callback and sets no loading flag, so
-    // the error escapes to ErrorService, the ErrorHandler app.module.ts
+    // the error escapes to ErrorService, the ErrorHandler main.ts
     // provides, which shows it. Not a defect on its own.
     expect(unhandled).toEqual([new Error('forbidden')]);
     expect(query.getEntity('user-1').name).toBe('Alice Analyst');
