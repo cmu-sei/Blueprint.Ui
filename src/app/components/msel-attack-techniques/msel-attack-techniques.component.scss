@@ -1,0 +1,117 @@
+// Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+// Released under a MIT (SEI)-style license. See LICENSE.md in the
+// project root for license information.
+
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.top-toolbar {
+  display: flex;
+  align-items: center;
+  min-height: 76px;
+  flex-shrink: 0;
+}
+
+.release-select {
+  width: 360px;
+  margin-left: 10px;
+}
+
+.upgrade-button {
+  margin-left: 16px;
+}
+
+.content-area {
+  flex: 1 1 auto;
+  overflow: auto;
+  padding: 0 8px 16px 0;
+}
+
+.section-panel {
+  margin-bottom: 12px;
+}
+
+.panel-icon {
+  margin-right: 8px;
+}
+
+.toolbar-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.sub-technique-toggle {
+  margin-left: 16px;
+}
+
+.button-end {
+  margin-left: auto;
+}
+
+.pin-notice {
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  border-left: 4px solid var(--mat-sys-tertiary);
+  background: var(--mat-sys-surface-variant);
+}
+
+.browser-loading {
+  display: flex;
+  align-items: center;
+  padding: 24px;
+}
+
+.browser-loading-text {
+  margin-left: 16px;
+}
+
+.browser-table-scroll {
+  max-height: 480px;
+  overflow: auto;
+}
+
+.hidden {
+  display: none;
+}
+
+.col-check {
+  flex: 0 0 56px;
+}
+
+.col-id {
+  flex: 0 0 120px;
+}
+
+.col-id.sub-technique {
+  padding-left: 16px;
+}
+
+.col-name {
+  flex: 1 1 260px;
+}
+
+.col-tactics {
+  flex: 1 1 220px;
+}
+
+.col-platforms {
+  flex: 1 1 200px;
+}
+
+.col-events {
+  flex: 0 0 80px;
+}
+
+.empty-text {
+  padding: 16px;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+::ng-deep .attack-description-tooltip {
+  max-width: 480px !important;
+  white-space: pre-line;
+}

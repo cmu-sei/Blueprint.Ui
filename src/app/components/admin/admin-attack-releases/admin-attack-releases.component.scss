@@ -1,0 +1,41 @@
+// Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+// Released under a MIT (SEI)-style license. See LICENSE.md in the
+// project root for license information.
+
+:host {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 44px);
+}
+
+.cssLayoutRowStartCenter {
+  min-height: 76px;
+  flex-shrink: 0;
+}
+
+.scrolling-region {
+  height: calc(100% - 94px);
+  overflow: auto;
+  width: 100%;
+}
+
+.col-action {
+  flex: 0 0 64px;
+}
+
+.col-name {
+  flex: 1 1 240px;
+}
+
+.col-small {
+  flex: 0 0 150px;
+}
+
+.col-count {
+  flex: 0 0 100px;
+}
+
+.empty-text {
+  padding: 24px;
+  color: var(--mat-sys-on-surface-variant);
+}

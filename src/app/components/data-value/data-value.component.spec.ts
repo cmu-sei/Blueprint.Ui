@@ -2,7 +2,10 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { afterEach, describe, it, expect, vi } from 'vitest';
+import { TestBed } from '@angular/core/testing';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatIconModule } from '@angular/material/icon';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -14,7 +17,9 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { NgxMatDatepickerActions, NgxMatDatepickerApply, NgxMatDatepickerCancel, NgxMatDatepickerInput, NgxMatDatetimepicker } from '@ngxmc/datetime-picker';
 import { screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
-import { DataField, DataFieldType, MselItemStatus } from 'src/app/generated/blueprint.api';
+import { DataField, DataFieldType, MselAttackTechnique, MselItemStatus } from 'src/app/generated/blueprint.api';
+import { MselAttackTechniqueDataService } from 'src/app/data/msel-attack-technique/msel-attack-technique-data.service';
+import { MselAttackTechniqueStore } from 'src/app/data/msel-attack-technique/msel-attack-technique.store';
 import { DataValueComponent } from './data-value.component';
 import { TimezoneAbbrPipe } from 'src/app/utilities/timezone-abbr';
 import { renderComponent } from 'src/app/test-utils/render-component';
@@ -300,5 +305,85 @@ describe('DataValueComponent', () => {
     expect(screen.getByText(shown)).toBeInTheDocument();
     const swatch = container.querySelector<HTMLElement>('.gallery-status-swatch');
     expect(swatch?.style.backgroundColor ?? null).toBe(color);
+  });
+});
+
+describe('DataValueComponent ATT&CK techniques', () => {
+  const TECHNIQUES: DataField = { id: 'df-attack', mselId: 'msel-1', name: 'Techniques', dataType: DataFieldType.AttackTechnique };
+  // The MSEL's pool offers T1059 and T1566; T9999 was dropped from it, but a cell still names it.
+  const POOL: MselAttackTechnique[] = [
+    { id: 'mat-2', mselId: 'msel-1', attackTechniqueId: 'at-2', attackTechnique: { id: 'at-2', externalId: 'T1566', name: 'Phishing', url: 'https://attack.mitre.org/techniques/T1566' } },
+    { id: 'mat-1', mselId: 'msel-1', attackTechniqueId: 'at-1', attackTechnique: { id: 'at-1', externalId: 'T1059', name: 'Command and Scripting Interpreter', url: 'https://attack.mitre.org/techniques/T1059' } },
+  ];
+
+  async function renderTechniques(value: string, flags: Flags = {}) {
+    const ensureLoaded = vi.fn();
+    const rendered = await renderComponent(DataValueComponent, {
+      imports: [MatChipsModule, MatFormFieldModule, MatIconModule, MatSelectModule, MatTooltipModule],
+      declarations: [DataValueComponent, TimezoneAbbrPipe],
+      providers: [{ provide: MselAttackTechniqueDataService, useValue: { ensureLoaded } }],
+      inputs: { dataField: TECHNIQUES, value, canEdit: false, canApprove: false, isOwner: false, showValueOnly: false, ...flags },
+    });
+    TestBed.inject(MselAttackTechniqueStore).set(POOL);
+    rendered.fixture.detectChanges();
+    const changes: string[] = [];
+    rendered.fixture.componentInstance.valueChange.subscribe((v) => changes.push(v));
+    return { ...rendered, changes, ensureLoaded };
+  }
+
+  /**
+   * Verifies: read-only, a cell lists its technique ids as text, including one the pool no longer offers.
+   * Interacts with: the view-only branch, selectedAttackTechniques.
+   * Data: value "T1059, T9999"; showValueOnly with no flags.
+   */
+  it('lists the ids read-only', async () => {
+    const { container } = await renderTechniques('T1059, T9999', { showValueOnly: true });
+
+    expect(container.textContent.replace(/\s+/g, ' ')).toContain('T1059, T9999');
+    expect(container.querySelector('mat-chip')).toBeNull();
+  });
+
+  /**
+   * Verifies: editing loads the MSEL's pool, links a pooled id to ATT&CK, and marks an id the pool no longer offers.
+   * Interacts with: ngOnChanges, getAttackTechnique, the chip set.
+   * Data: value "T1059, T9999"; canEdit.
+   */
+  it('links pooled ids and marks the rest', async () => {
+    const { container, ensureLoaded } = await renderTechniques('T1059, T9999', { canEdit: true });
+
+    expect(ensureLoaded).toHaveBeenCalledWith('msel-1');
+    expect(screen.getByRole('link', { name: 'T1059' })).toHaveAttribute('href', 'https://attack.mitre.org/techniques/T1059');
+    const chips = Array.from(container.querySelectorAll('mat-chip'));
+    expect(chips.map((c) => c.classList.contains('attack-not-in-pool'))).toEqual([false, true]);
+  });
+
+  /**
+   * Verifies: the select offers the pool in ATT&CK id order, and choosing one keeps an id the pool no longer offers.
+   * Interacts with: filteredAttackTechniqueOptions, setAttackTechniques.
+   * Data: value "T1059, T9999"; canEdit; choose "T1566 - Phishing".
+   */
+  it('adds a technique and keeps a dropped id', async () => {
+    const { fixture, changes } = await renderTechniques('T1059, T9999', { canEdit: true });
+    const select = await TestbedHarnessEnvironment.loader(fixture).getHarness(MatSelectHarness);
+    await select.open();
+
+    const options = await select.getOptions();
+    expect(await Promise.all(options.map((o) => o.getText()))).toEqual(['T1059 - Command and Scripting Interpreter', 'T1566 - Phishing']);
+    await options[1].click();
+
+    expect(changes).toEqual(['T9999, T1059, T1566']);
+  });
+
+  /**
+   * Verifies: removing a chip drops only that id.
+   * Interacts with: removeAttackTechnique.
+   * Data: value "T1059, T9999"; canEdit; remove T1059's chip.
+   */
+  it('removes a technique', async () => {
+    const { container, changes } = await renderTechniques('T1059, T9999', { canEdit: true });
+
+    await userEvent.click(container.querySelector('mat-chip [matChipRemove]'));
+
+    expect(changes).toEqual(['T9999']);
   });
 });

@@ -48,3 +48,8 @@
   border: 1px solid var(--mat-sys-outline);
   vertical-align: middle;
 }
+
+.attack-not-in-pool {
+  opacity: 0.6;
+  font-style: italic;
+}

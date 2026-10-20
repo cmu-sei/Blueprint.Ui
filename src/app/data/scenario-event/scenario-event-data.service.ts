@@ -111,6 +111,7 @@ export class ScenarioEventDataService {
     DataFieldType.Competency,
     DataFieldType.IpAddress,
     DataFieldType.Network,
+    DataFieldType.AttackTechnique,
   ];
 
   loadByMsel(mselId: string) {

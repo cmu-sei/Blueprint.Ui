@@ -53,6 +53,12 @@ export class DataFieldEditDialogComponent {
         this.data.dataField.isMultiSelect = true;
         this.data.dataField.isFacilitationField = true;
       }
+      // ATT&CK fields offer the MSEL's technique pool, not an option list
+      if (selectedDataType === DataFieldType.AttackTechnique) {
+        this.data.dataField.isChosenFromList = false;
+        this.data.dataField.isMultiSelect = true;
+        this.data.dataField.isFacilitationField = true;
+      }
     }
   }
 
@@ -184,6 +190,10 @@ export class DataFieldEditDialogComponent {
 
   isCompetency(): boolean {
     return this.data.dataField.dataType === DataFieldType.Competency;
+  }
+
+  isAttackTechnique(): boolean {
+    return this.data.dataField.dataType === DataFieldType.AttackTechnique;
   }
 
   optionListNotAllowed(): boolean {

@@ -4,12 +4,17 @@
  project root for license information.
 */
 
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnDestroy, Output } from '@angular/core';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import {
+  AttackTechnique,
   DataField,
   DataFieldType,
   MselItemStatus,
 } from 'src/app/generated/blueprint.api';
+import { MselAttackTechniqueDataService } from 'src/app/data/msel-attack-technique/msel-attack-technique-data.service';
+import { MselAttackTechniqueQuery } from 'src/app/data/msel-attack-technique/msel-attack-technique.query';
 import { EDITOR_CONFIG, VIEW_CONFIG } from 'src/app/utilities/editor-config';
 import { ErrorStateMatcher } from '@angular/material/core';
 import { dataValueError } from 'src/app/utilities/ip-address';
@@ -20,7 +25,7 @@ import { dataValueError } from 'src/app/utilities/ip-address';
     styleUrls: ['./data-value.component.scss'],
     standalone: false
 })
-export class DataValueComponent {
+export class DataValueComponent implements OnChanges, OnDestroy {
   @Input() value: any;
   @Input() dataField: DataField;
   @Input() canEdit: boolean; // enables editing of values
@@ -129,6 +134,67 @@ export class DataValueComponent {
   removeCompetency(id: string) {
     const current = this.selectedCompetencies.filter(v => v !== id);
     this.value = current.join(', ');
+    this.valueChangeHandler();
+  }
+
+  // --- ATT&CK technique chips + search list, offered from the MSEL's technique pool ---
+  attackTechniqueFilter = '';
+  attackTechniqueOptions: AttackTechnique[] = [];
+  private attackTechniquesById = new Map<string, AttackTechnique>();
+  private unsubscribe$ = new Subject();
+
+  constructor(
+    private mselAttackTechniqueQuery: MselAttackTechniqueQuery,
+    private mselAttackTechniqueDataService: MselAttackTechniqueDataService
+  ) {
+    this.mselAttackTechniqueQuery.selectTechniques().pipe(takeUntil(this.unsubscribe$)).subscribe(techniques => {
+      this.attackTechniqueOptions = techniques;
+      this.attackTechniquesById = new Map(techniques.map(t => [t.externalId, t]));
+    });
+  }
+
+  ngOnChanges() {
+    if (this.dataField?.dataType === DataFieldType.AttackTechnique) {
+      this.mselAttackTechniqueDataService.ensureLoaded(this.dataField.mselId);
+    }
+  }
+
+  ngOnDestroy() {
+    this.unsubscribe$.next(null);
+    this.unsubscribe$.complete();
+  }
+
+  get selectedAttackTechniques(): string[] {
+    return this.value ? this.value.split(',').map(v => v.trim()).filter(v => v) : [];
+  }
+
+  get filteredAttackTechniqueOptions(): AttackTechnique[] {
+    if (!this.attackTechniqueFilter) return this.attackTechniqueOptions;
+    const s = this.attackTechniqueFilter.toLowerCase();
+    return this.attackTechniqueOptions.filter(t =>
+      t.externalId?.toLowerCase().includes(s) ||
+      t.name?.toLowerCase().includes(s)
+    );
+  }
+
+  getAttackTechnique(externalId: string): AttackTechnique {
+    return this.attackTechniquesById.get(externalId);
+  }
+
+  getAttackTechniqueTooltip(externalId: string): string {
+    const t = this.attackTechniquesById.get(externalId);
+    return t ? t.name : 'Not in this MSEL\'s ATT&CK techniques';
+  }
+
+  // ids the pool no longer offers aren't options, so keep them rather than let the select drop them
+  setAttackTechniques(selected: string[]) {
+    const kept = this.selectedAttackTechniques.filter(id => !this.attackTechniquesById.has(id));
+    this.value = [...kept, ...selected].join(', ');
+    this.valueChangeHandler();
+  }
+
+  removeAttackTechnique(externalId: string) {
+    this.value = this.selectedAttackTechniques.filter(v => v !== externalId).join(', ');
     this.valueChangeHandler();
   }
 

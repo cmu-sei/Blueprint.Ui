@@ -1,0 +1,172 @@
+<!--
+Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license, please see LICENSE.md in the
+project root for license information or contact permission@sei.cmu.edu for full terms.
+-->
+
+@if (msel) {
+<div class="top-toolbar">
+  <div class="sp-icon">
+    <mat-icon class="mdi-24px" fontIcon="mdi-shield-bug-outline" [ngStyle]="{'color': 'var(--mat-sys-primary)'}"></mat-icon>
+  </div>
+  <mat-form-field class="release-select">
+    <mat-label>ATT&amp;CK Release</mat-label>
+    <mat-select [value]="selectedReleaseId" (selectionChange)="onReleaseChange($event.value)">
+      @for (release of releases; track release.id) {
+      <mat-option [value]="release.id">
+        {{ release.name }} {{ release.version }}@if (release.id === pinnedReleaseId) { (this MSEL)}
+      </mat-option>
+      }
+    </mat-select>
+    @if (releases.length === 0) {
+    <mat-hint>No ATT&amp;CK releases have been imported. An administrator imports them under Administration.</mat-hint>
+    }
+  </mat-form-field>
+  @if (needsUpgrade && canEditMsel()) {
+  <button mat-stroked-button class="upgrade-button" (click)="upgradePool()"
+    title="Move this MSEL's techniques to {{ selectedRelease?.version }}">
+    <mat-icon fontIcon="mdi-arrow-up-bold-circle-outline"></mat-icon>
+    Upgrade to {{ selectedRelease?.version }}
+  </button>
+  }
+</div>
+<div class="content-area">
+  <!-- ==================== Panel 1: Add Techniques ==================== -->
+  <mat-expansion-panel class="section-panel" [(expanded)]="addPanelExpanded">
+    <mat-expansion-panel-header>
+      <mat-panel-title>
+        <mat-icon class="mdi-18px panel-icon" fontIcon="mdi-plus-circle-outline"></mat-icon>
+        Add Techniques
+      </mat-panel-title>
+    </mat-expansion-panel-header>
+    @if (needsUpgrade) {
+    <div class="pin-notice">
+      This MSEL's techniques are from {{ pinnedRelease?.name }} {{ pinnedRelease?.version }}.
+      Upgrade them to {{ selectedRelease?.version }} to add techniques from it.
+    </div>
+    }
+    <div class="toolbar-row">
+      <mat-form-field style="width: 220px;">
+        <mat-label>Tactic</mat-label>
+        <mat-select [value]="tacticFilter" (selectionChange)="onTacticChange($event.value)">
+          <mat-option value="">All</mat-option>
+          @for (tactic of tactics; track tactic.id) {
+          <mat-option [value]="tactic.shortName">{{ tactic.externalId }} {{ tactic.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field style="width: 260px; margin-left: 10px;">
+        <input matInput [formControl]="searchControl" placeholder="Search techniques" />
+        @if (searchString) {
+        <button mat-icon-button matSuffix (click)="searchControl.setValue('')" title="Clear">
+          <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline"></mat-icon>
+        </button>
+        }
+      </mat-form-field>
+      <mat-checkbox class="sub-technique-toggle" [checked]="showSubTechniques" (change)="toggleSubTechniques()">
+        Sub-techniques
+      </mat-checkbox>
+      <div class="button-end">
+        <mat-paginator #browserPaginator [pageSize]="25" [pageSizeOptions]="[10, 25, 50, 100]"></mat-paginator>
+      </div>
+    </div>
+    @if (isLoadingRelease) {
+    <div class="browser-loading">
+      <mat-spinner diameter="36"></mat-spinner>
+      <div class="browser-loading-text">Loading ATT&amp;CK techniques...</div>
+    </div>
+    }
+    <div class="browser-table-scroll" [class.hidden]="isLoadingRelease">
+      <mat-table [dataSource]="browserDataSource">
+        <ng-container matColumnDef="check">
+          <mat-header-cell *matHeaderCellDef class="col-check"></mat-header-cell>
+          <mat-cell *matCellDef="let t" class="col-check">
+            @if (canEditMsel()) {
+            <mat-checkbox [checked]="isInPool(t)" [disabled]="needsUpgrade" (change)="togglePoolItem(t)"
+              [attr.aria-label]="'Add ' + t.externalId"></mat-checkbox>
+            }
+          </mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="externalId">
+          <mat-header-cell *matHeaderCellDef class="col-id">ID</mat-header-cell>
+          <mat-cell *matCellDef="let t" class="col-id" [class.sub-technique]="t.isSubTechnique">
+            <a [href]="t.url" target="_blank" rel="noopener" title="Open {{ t.externalId }} on attack.mitre.org">{{ t.externalId }}</a>
+          </mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="name">
+          <mat-header-cell *matHeaderCellDef class="col-name">Name</mat-header-cell>
+          <mat-cell *matCellDef="let t" class="col-name" [matTooltip]="t.description" matTooltipShowDelay="800"
+            matTooltipClass="attack-description-tooltip">{{ t.name }}</mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="tactics">
+          <mat-header-cell *matHeaderCellDef class="col-tactics">Tactics</mat-header-cell>
+          <mat-cell *matCellDef="let t" class="col-tactics">{{ getTacticNames(t) }}</mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="platforms">
+          <mat-header-cell *matHeaderCellDef class="col-platforms">Platforms</mat-header-cell>
+          <mat-cell *matCellDef="let t" class="col-platforms">{{ t.platforms?.join(', ') }}</mat-cell>
+        </ng-container>
+        <mat-header-row *matHeaderRowDef="browserColumns; sticky: true"></mat-header-row>
+        <mat-row *matRowDef="let row; columns: browserColumns"></mat-row>
+      </mat-table>
+      @if (!isLoadingRelease && selectedReleaseId && browserDataSource.filteredData.length === 0) {
+      <div class="empty-text">No matching techniques</div>
+      }
+    </div>
+  </mat-expansion-panel>
+
+  <!-- ==================== Panel 2: MSEL Techniques ==================== -->
+  <mat-expansion-panel class="section-panel" [expanded]="true">
+    <mat-expansion-panel-header>
+      <mat-panel-title>
+        <mat-icon class="mdi-18px panel-icon" fontIcon="mdi-shield-bug-outline"></mat-icon>
+        MSEL Techniques ({{ pool.length }})
+      </mat-panel-title>
+      @if (pinnedRelease) {
+      <mat-panel-description>{{ pinnedRelease.name }} {{ pinnedRelease.version }}</mat-panel-description>
+      }
+    </mat-expansion-panel-header>
+    @if (pool.length === 0) {
+    <div class="empty-text">
+      No techniques yet. Add techniques above, then add an ATT&amp;CK Technique data field so scenario events can name them.
+    </div>
+    } @else {
+    <mat-table [dataSource]="poolDataSource">
+      <ng-container matColumnDef="action">
+        <mat-header-cell *matHeaderCellDef class="col-check"></mat-header-cell>
+        <mat-cell *matCellDef="let item" class="col-check">
+          @if (canEditMsel()) {
+          <button mat-icon-button class="msel-action" (click)="removeFromPool(item)"
+            title="Remove {{ item.attackTechnique?.externalId }}">
+            <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline"></mat-icon>
+          </button>
+          }
+        </mat-cell>
+      </ng-container>
+      <ng-container matColumnDef="externalId">
+        <mat-header-cell *matHeaderCellDef class="col-id">ID</mat-header-cell>
+        <mat-cell *matCellDef="let item" class="col-id">
+          <a [href]="item.attackTechnique?.url" target="_blank" rel="noopener"
+            title="Open {{ item.attackTechnique?.externalId }} on attack.mitre.org">{{ item.attackTechnique?.externalId }}</a>
+        </mat-cell>
+      </ng-container>
+      <ng-container matColumnDef="name">
+        <mat-header-cell *matHeaderCellDef class="col-name">Name</mat-header-cell>
+        <mat-cell *matCellDef="let item" class="col-name" [matTooltip]="item.attackTechnique?.description"
+          matTooltipShowDelay="800" matTooltipClass="attack-description-tooltip">{{ item.attackTechnique?.name }}</mat-cell>
+      </ng-container>
+      <ng-container matColumnDef="tactics">
+        <mat-header-cell *matHeaderCellDef class="col-tactics">Tactics</mat-header-cell>
+        <mat-cell *matCellDef="let item" class="col-tactics">{{ getTacticNames(item.attackTechnique) }}</mat-cell>
+      </ng-container>
+      <ng-container matColumnDef="events">
+        <mat-header-cell *matHeaderCellDef class="col-events">Events</mat-header-cell>
+        <mat-cell *matCellDef="let item" class="col-events">{{ getEventCount(item) }}</mat-cell>
+      </ng-container>
+      <mat-header-row *matHeaderRowDef="poolColumns"></mat-header-row>
+      <mat-row *matRowDef="let row; columns: poolColumns"></mat-row>
+    </mat-table>
+    }
+  </mat-expansion-panel>
+</div>
+}

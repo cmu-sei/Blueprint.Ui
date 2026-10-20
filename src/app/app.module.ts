@@ -76,6 +76,7 @@ import { AdminProficiencyScaleEditDialogComponent } from './components/admin/adm
 import { AdminProficiencyLevelEditDialogComponent } from './components/admin/admin-proficiency-level-edit-dialog/admin-proficiency-level-edit-dialog.component';
 import { AdminCompetencyFrameworkImportDialogComponent } from './components/admin/admin-competency-framework-import-dialog/admin-competency-framework-import-dialog.component';
 import { AdminProficiencyScalesComponent } from './components/admin/admin-proficiency-scales/admin-proficiency-scales.component';
+import { AdminAttackReleasesComponent } from './components/admin/admin-attack-releases/admin-attack-releases.component';
 import { AdminUnitsComponent } from './components/admin/admin-units/admin-units.component';
 import { AdminUnitEditDialogComponent } from './components/admin/admin-unit-edit-dialog/admin-unit-edit-dialog.component';
 import { AdminUnitUsersComponent } from './components/admin/admin-unit-users/admin-unit-users.component';
@@ -123,6 +124,7 @@ import { IntegrationStatusComponent } from './components/integration-status/inte
 import { MselListComponent } from './components/msel-list/msel-list.component';
 import { MselPageComponent } from './components/msel-page/msel-page.component';
 import { MselCompetenciesComponent } from './components/msel-competencies/msel-competencies.component';
+import { MselAttackTechniquesComponent } from './components/msel-attack-techniques/msel-attack-techniques.component';
 import { AssessorViewComponent } from './components/assessor-view/assessor-view.component';
 import { AssessorPageComponent } from './components/assessor-page/assessor-page.component';
 import { MselTeamsComponent } from './components/msel-teams/msel-teams.component';
@@ -224,6 +226,7 @@ export const appConfig: ApplicationConfig = {
     MselListComponent,
     MselPageComponent,
     MselCompetenciesComponent,
+    MselAttackTechniquesComponent,
     AssessorViewComponent,
     AssessorPageComponent,
     MselTeamsComponent,
@@ -256,6 +259,7 @@ export const appConfig: ApplicationConfig = {
     AdminProficiencyLevelEditDialogComponent,
     AdminCompetencyFrameworkImportDialogComponent,
     AdminProficiencyScalesComponent,
+    AdminAttackReleasesComponent,
     AdminUnitsComponent,
     AdminUnitEditDialogComponent,
     AdminUnitUsersComponent,

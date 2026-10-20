@@ -1,0 +1,87 @@
+<!--
+Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license, please see LICENSE.md in the
+project root for license information or contact permission@sei.cmu.edu for full terms.
+-->
+
+<div class="cssLayoutRowStartCenter">
+  <div class="sp-icon">
+    <mat-icon class="mdi-24px" fontIcon="mdi-shield-bug-outline" [ngStyle]="{'color': 'var(--mat-sys-primary)'}"></mat-icon>
+  </div>
+  <mat-form-field style="width: 300px; margin-left: 10px;">
+    <input matInput [formControl]="filterControl" placeholder="Search" />
+    @if (filterString) {
+    <button mat-icon-button matSuffix (click)="filterControl.setValue('')" title="Clear Search">
+      <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline"></mat-icon>
+    </button>
+    }
+  </mat-form-field>
+  @if (canEdit) {
+  <mat-form-field style="width: 160px; margin-left: 10px;">
+    <mat-label>Version</mat-label>
+    <input matInput [formControl]="versionControl" placeholder="From the file" />
+    <mat-hint>Only if the file has none</mat-hint>
+  </mat-form-field>
+  }
+  @if (isLoading$ | async) {
+  <mat-spinner diameter="28" style="margin-left: 16px;" title="Importing"></mat-spinner>
+  }
+</div>
+
+<section class="scrolling-region">
+  <mat-table [dataSource]="dataSource" matSort matSortActive="releaseDate" matSortDirection="desc">
+    <!-- action column -->
+    <ng-container matColumnDef="action">
+      <mat-header-cell *matHeaderCellDef class="col-action">
+        @if (canEdit) {
+        <button mat-icon-button title="Import an ATT&CK STIX bundle" style="outline: none;"
+          [disabled]="isLoading$ | async" (click)="stixInput.click()">
+          <mat-icon class="mdi-24px" fontIcon="mdi-upload"></mat-icon>
+        </button>
+        } &nbsp;
+      </mat-header-cell>
+      <mat-cell *matCellDef="let release" class="col-action">
+        @if (canEdit) {
+        <button mat-icon-button class="msel-action" (click)="deleteRelease(release)"
+          title="Delete {{ release.name }} {{ release.version }}">
+          <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline"></mat-icon>
+        </button>
+        }
+      </mat-cell>
+    </ng-container>
+    <ng-container matColumnDef="name">
+      <mat-header-cell mat-sort-header *matHeaderCellDef class="col-name">Name</mat-header-cell>
+      <mat-cell *matCellDef="let release" class="col-name" [matTooltip]="release.description" matTooltipShowDelay="800">{{ release.name }}</mat-cell>
+    </ng-container>
+    <ng-container matColumnDef="domain">
+      <mat-header-cell mat-sort-header *matHeaderCellDef class="col-small">Domain</mat-header-cell>
+      <mat-cell *matCellDef="let release" class="col-small">{{ release.domain }}</mat-cell>
+    </ng-container>
+    <ng-container matColumnDef="version">
+      <mat-header-cell mat-sort-header *matHeaderCellDef class="col-small">Version</mat-header-cell>
+      <mat-cell *matCellDef="let release" class="col-small">{{ release.version }}</mat-cell>
+    </ng-container>
+    <ng-container matColumnDef="releaseDate">
+      <mat-header-cell mat-sort-header *matHeaderCellDef class="col-small">Released</mat-header-cell>
+      <mat-cell *matCellDef="let release" class="col-small">{{ release.releaseDate | date: 'd MMM yyyy' }}</mat-cell>
+    </ng-container>
+    <ng-container matColumnDef="tacticCount">
+      <mat-header-cell mat-sort-header *matHeaderCellDef class="col-count">Tactics</mat-header-cell>
+      <mat-cell *matCellDef="let release" class="col-count">{{ release.tacticCount }}</mat-cell>
+    </ng-container>
+    <ng-container matColumnDef="techniqueCount">
+      <mat-header-cell mat-sort-header *matHeaderCellDef class="col-count">Techniques</mat-header-cell>
+      <mat-cell *matCellDef="let release" class="col-count">{{ release.techniqueCount }}</mat-cell>
+    </ng-container>
+    <mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></mat-header-row>
+    <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
+  </mat-table>
+  @if (dataSource.data.length === 0) {
+  <div class="empty-text">
+    No ATT&amp;CK releases have been imported. Download a STIX bundle such as enterprise-attack.json from
+    MITRE's attack-stix-data repository and import it here.
+  </div>
+  }
+</section>
+
+<input hidden (change)="selectFile($event)" #stixInput type="file" accept=".json,application/json" />

@@ -538,6 +538,8 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
       return `${count} option${count !== 1 ? 's' : ''}`;
     } else if (dataField.dataType === DataFieldType.Competency) {
       return 'Manage';
+    } else if (dataField.dataType === DataFieldType.AttackTechnique) {
+      return 'ATT&CK tab';
     } else {
       return ' ';
     }

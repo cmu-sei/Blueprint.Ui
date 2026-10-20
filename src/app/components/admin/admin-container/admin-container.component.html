@@ -63,6 +63,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <mat-list-item [ngClass]="getSelectedClass(proficiencyScalesText)" (click)="gotoSection(proficiencyScalesText)" [title]="proficiencyScalesText">
         <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-tune-variant"></mat-icon>
       </mat-list-item>
+      <mat-list-item [ngClass]="getSelectedClass(attackReleasesText)" (click)="gotoSection(attackReleasesText)" [title]="attackReleasesText">
+        <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-shield-bug-outline"></mat-icon>
+      </mat-list-item>
       }
       @if (canViewUsers) {
       <mat-list-item [ngClass]="getSelectedClass(usersText)" (click)="gotoSection(usersText)" [title]="usersText">
@@ -212,6 +215,15 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <mat-icon fontIcon="mdi-chevron-right"></mat-icon>
           </button>
         </mat-list-item>
+        <!-- ATT&CK Releases -->
+        <mat-list-item [ngClass]="getSelectedClass(attackReleasesText)" id="wrapper showhand"
+          (click)="gotoSection(attackReleasesText)">
+          <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-shield-bug-outline"></mat-icon>
+          {{ attackReleasesText }}
+          <button aria-labelledby="attackReleasesText" mat-icon-button class="pull-right">
+            <mat-icon fontIcon="mdi-chevron-right"></mat-icon>
+          </button>
+        </mat-list-item>
         }
         <!-- Users -->
         @if (canViewUsers) {
@@ -301,6 +313,10 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <app-admin-proficiency-scales [loggedInUserId]="loggedInUserId"
         [canEdit]="canManageCompetencyFrameworks"></app-admin-proficiency-scales>
     </span>
+    }
+    @if (canViewCompetencyFrameworks && (selectedTab === attackReleasesText)) {
+      <app-admin-attack-releases [loggedInUserId]="loggedInUserId"
+        [canEdit]="canManageCompetencyFrameworks"></app-admin-attack-releases>
     }
     @if (canViewCatalogs && (selectedTab === catalogsText)) {
     <span>

@@ -6,6 +6,9 @@
 
 export * from './applicationTemplate';
 export * from './assembly';
+export * from './attackRelease';
+export * from './attackTactic';
+export * from './attackTechnique';
 export * from './calendar';
 export * from './calendarAlgorithmType';
 export * from './calendarWeekRule';
@@ -103,6 +106,8 @@ export * from './move';
 export * from './moveCreate';
 export * from './moveEdit';
 export * from './msel';
+export * from './mselAttackTechnique';
+export * from './mselAttackTechniqueUpgrade';
 export * from './mselCompetency';
 export * from './mselCreate';
 export * from './mselEdit';

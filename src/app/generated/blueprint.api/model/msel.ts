@@ -23,6 +23,7 @@ import { Unit } from './unit';
 import { Card } from './card';
 import { CiteAction } from './citeAction';
 import { CiteDuty } from './citeDuty';
+import { MselAttackTechnique } from './mselAttackTechnique';
 import { DataField } from './dataField';
 import { Move } from './move';
 import { MselItemStatus } from './mselItemStatus';
@@ -103,6 +104,7 @@ export interface Msel {
     pages?: Array<MselPage> | null;
     invitations?: Array<Invitation> | null;
     mselCompetencies?: Array<MselCompetency> | null;
+    mselAttackTechniques?: Array<MselAttackTechnique> | null;
 }
 export namespace Msel {
 }

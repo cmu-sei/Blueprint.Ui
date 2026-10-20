@@ -53,10 +53,19 @@ project root for license information.
     }
   </span>
   }
+  <!-- dataType.AttackTechnique -->
+  @if (dataField.dataType === dataType.AttackTechnique) {
+  <span>
+    @for (id of selectedAttackTechniques; track id; let isLast = $last) {
+      <span [matTooltip]="getAttackTechniqueTooltip(id)" matTooltipPosition="above" style="white-space: nowrap;">{{ id }}</span>@if (!isLast) {<span>, </span>}
+    }
+  </span>
+  }
   <!-- other dataTypes -->
   @if (dataField.dataType !== dataType.DateTime && dataField.dataType !== dataType.Html && dataField.dataType !==
   dataType.Card && dataField.dataType !== dataType.Move && dataField.dataType !== dataType.User && dataField.dataType
-  !== dataType.Boolean && dataField.dataType !== dataType.Checkbox && dataField.dataType !== dataType.Competency) {
+  !== dataType.Boolean && dataField.dataType !== dataType.Checkbox && dataField.dataType !== dataType.Competency
+  && dataField.dataType !== dataType.AttackTechnique) {
   <span>
     @if (dataField.isMultiSelect) {
     @for (val of getValueArray(); track val) {
@@ -531,8 +540,68 @@ project root for license information.
   }
 </span>
 }
+<!-- ATT&CK technique input (chips + search list, offered from the MSEL's ATT&CK techniques) -->
+@if (dataField.dataType === dataType.AttackTechnique) {
+<span>
+  @if (!showValueOnly) {
+  <div class="competency-field">
+    <label class="competency-label">{{ dataField.name }}</label>
+    <mat-chip-set>
+      @for (id of selectedAttackTechniques; track id) {
+      <mat-chip (removed)="removeAttackTechnique(id)" [matTooltip]="getAttackTechniqueTooltip(id)" matTooltipPosition="above"
+        [class.attack-not-in-pool]="!getAttackTechnique(id)">
+        @if (getAttackTechnique(id)?.url) {
+        <a [href]="getAttackTechnique(id).url" target="_blank" rel="noopener" (click)="$event.stopPropagation()">{{ id }}</a>
+        } @else {
+        {{ id }}
+        }
+        @if (canEdit) {
+        <button matChipRemove>
+          <mat-icon fontIcon="mdi-close-circle-outline" style="transform: scale(0.85)"></mat-icon>
+        </button>
+        }
+      </mat-chip>
+      }
+    </mat-chip-set>
+    @if (canEdit) {
+    <mat-form-field class="full-width">
+      <mat-label>Select ATT&CK techniques</mat-label>
+      <mat-select multiple [value]="selectedAttackTechniques" (selectionChange)="setAttackTechniques($event.value)" (openedChange)="$event || (attackTechniqueFilter = '')" panelClass="competency-select-panel">
+        <div class="competency-search-box">
+          <mat-icon fontIcon="mdi-magnify"></mat-icon>
+          <input [(ngModel)]="attackTechniqueFilter" placeholder="Search techniques..." (keydown)="$event.stopPropagation()">
+          @if (attackTechniqueFilter) {
+          <button mat-icon-button (click)="attackTechniqueFilter = ''; $event.stopPropagation()" title="Clear">
+            <mat-icon fontIcon="mdi-close"></mat-icon>
+          </button>
+          }
+        </div>
+        <hr style="margin: 0; border-color: var(--mat-sys-outline-variant);">
+        @for (option of filteredAttackTechniqueOptions; track option.externalId) {
+        <mat-option [value]="option.externalId">{{ option.externalId }} - {{ option.name }}</mat-option>
+        }
+        @if (filteredAttackTechniqueOptions.length === 0) {
+        <div class="competency-no-results">
+          {{ attackTechniqueOptions.length === 0 ? 'Add techniques on the MSEL\'s ATT&CK tab' : 'No matching techniques' }}
+        </div>
+        }
+      </mat-select>
+    </mat-form-field>
+    }
+  </div>
+  }
+  @if (showValueOnly) {
+  <span>
+    @for (id of selectedAttackTechniques; track id; let isLast = $last) {
+      <span [matTooltip]="getAttackTechniqueTooltip(id)" matTooltipPosition="above" style="white-space: nowrap;">{{ id }}</span>@if (!isLast) {<span>, </span>}
+    }
+  </span>
+  }
+</span>
+}
 <!-- dropdown input -->
-@if (!useGalleryItemStatusSelect && dataField.isChosenFromList && dataField.dataType !== dataType.Competency) {
+@if (!useGalleryItemStatusSelect && dataField.isChosenFromList && dataField.dataType !== dataType.Competency
+  && dataField.dataType !== dataType.AttackTechnique) {
 <span>
   @if (!showValueOnly) {
   <mat-form-field class="full-width">
