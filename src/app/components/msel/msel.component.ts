@@ -6,7 +6,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { MselInfoComponent } from '../msel-info/msel-info.component';
 import { Subject, Observable } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { filter, map, takeUntil } from 'rxjs/operators';
 import {
   Theme,
   ComnAuthQuery
@@ -97,6 +97,8 @@ export class MselComponent implements OnDestroy {
   defaultTab = 'Info';
   selectedIndex = 1;
   selectedMselId = '';
+  // The contributor units the MSEL's users were last loaded with; undefined until they load.
+  private contributorUnitIds: string;
   sideNavCollapsed = false;
   theme$: Observable<Theme>;
 
@@ -139,6 +141,8 @@ export class MselComponent implements OnDestroy {
         // load the selected MSEL data
         const mselId = params.get('msel');
         if (mselId && this.selectedMselId !== mselId) {
+          this.selectedMselId = mselId;
+          this.contributorUnitIds = undefined;
           // Log xAPI viewed statement
           this.xApiService.viewedMsel(mselId).subscribe();
           // load the selected MSEL and make it active
@@ -190,13 +194,19 @@ export class MselComponent implements OnDestroy {
       });
     // subscribe to mselUnits to reload users when contributors change
     this.mselUnitQuery.selectAll()
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe((mselUnits) => {
+      .pipe(
+        // skip the units still in the store while this MSEL's are loading
+        filter(() => !this.mselUnitQuery.getValue().loading),
+        map((mselUnits) => mselUnits.map((mu) => mu.unitId).sort().join()),
+        takeUntil(this.unsubscribe$)
+      )
+      .subscribe((unitIds) => {
         const mselId = this.activatedRoute.snapshot.queryParamMap.get('msel');
-        if (mselId && mselUnits !== null) {
-          // Reload users whenever contributor units change
+        // The users loaded with the MSEL already include its first contributors.
+        if (mselId && this.contributorUnitIds !== undefined && unitIds !== this.contributorUnitIds) {
           this.userDataService.loadByMsel(mselId).subscribe();
         }
+        this.contributorUnitIds = unitIds;
       });
     // load units
     this.unitDataService.load();
