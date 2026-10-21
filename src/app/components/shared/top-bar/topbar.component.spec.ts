@@ -22,6 +22,7 @@ import { TopbarComponent } from './topbar.component';
 import { TopbarView } from './topbar.models';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { permissionApiStubs } from 'src/app/test-utils/mock-permission-data.service';
+import { captureUnhandledRxErrors, flush } from 'src/app/test-utils/unhandled-rx-errors';
 
 @Component({ selector: 'app-presence-bar', template: '' })
 class PresenceBarStubComponent {}
@@ -31,11 +32,12 @@ async function renderTopbar(
     permissions?: SystemPermission[];
     topbarView?: TopbarView;
     userName?: string;
+    logout?: ComnAuthService['logout'];
   } = {},
 ) {
   const { permissions = [], topbarView = TopbarView.BLUEPRINT_HOME, userName = 'Alice Analyst' } =
     overrides;
-  const logout = vi.fn();
+  const logout = overrides.logout ?? vi.fn(() => Promise.resolve());
   const setUserTheme = vi.fn();
   const auth: Pick<ComnAuthService, 'logout' | 'setUserTheme'> = { logout, setUserTheme };
   const authQuery: Pick<ComnAuthQuery, 'userTheme$'> = { userTheme$: of(Theme.LIGHT) };
@@ -160,6 +162,23 @@ describe('TopbarComponent', () => {
     await user.click(screen.getByRole('menuitem', { name: 'Logout' }));
 
     expect(logout).toHaveBeenCalledTimes(1);
+  });
+
+  /**
+   * Verifies: a rejected logout from the menu escapes through Angular's zone (current behavior).
+   * Interacts with: ComnAuthService.logout, mat-menu, captureUnhandledRxErrors.
+   * Data: logout rejects with a metadata request failure.
+   */
+  it('leaves a rejected menu logout unhandled', async () => {
+    const failure = new Error('signout metadata request failed');
+    const errors = captureUnhandledRxErrors();
+    await renderTopbar({ logout: () => Promise.reject(failure) });
+    const user = await openUserMenu();
+
+    await user.click(screen.getByRole('menuitem', { name: 'Logout' }));
+    await flush();
+
+    expect(errors).toEqual([failure]);
   });
 
   /**

@@ -36,6 +36,7 @@ import { ApiStub } from 'src/app/test-utils/api-stub';
 import { activatedRouteStub } from 'src/app/test-utils/activated-route';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { permissionApiStubs } from 'src/app/test-utils/mock-permission-data.service';
+import { captureUnhandledRejections, flush } from 'src/app/test-utils/unhandled-rx-errors';
 
 @Component({ selector: 'app-topbar', template: '' })
 class TopbarStub {
@@ -121,7 +122,7 @@ const CHILD_STUBS = [
 ];
 
 async function renderAdmin(
-  overrides: { permissions?: SystemPermission[]; savedTab?: string } = {},
+  overrides: { permissions?: SystemPermission[]; savedTab?: string; logout?: ComnAuthService['logout'] } = {},
 ) {
   const { permissions = [], savedTab } = overrides;
   if (savedTab) {
@@ -155,7 +156,7 @@ async function renderAdmin(
   const permissionApis = permissionApiStubs({ system: permissions });
   const auth: Pick<ComnAuthService, 'user$' | 'logout'> = {
     user$: of({ profile: { sub: 'user-1', name: 'Alice Admin' } }) as ComnAuthService['user$'],
-    logout: vi.fn(),
+    logout: overrides.logout ?? vi.fn(() => Promise.resolve()),
   };
 
   const rendered = await renderComponent(AdminContainerComponent, {
@@ -206,6 +207,22 @@ function child<T>(fixture: ComponentFixture<unknown>, stub: Type<T>): T | undefi
 describe('AdminContainerComponent', () => {
   beforeEach(() => {
     localStorage.clear();
+  });
+
+  /**
+   * Verifies: calling logout lets its rejected promise escape (current behavior).
+   * Interacts with: ComnAuthService.logout, captureUnhandledRejections.
+   * Data: logout rejects with a metadata request failure; no template calls this method.
+   */
+  it('leaves a rejected logout unhandled', async () => {
+    const failure = new Error('signout metadata request failed');
+    const rejections = captureUnhandledRejections();
+    const { fixture } = await renderAdmin({ logout: () => Promise.reject(failure) });
+
+    fixture.componentInstance.logout();
+    await flush();
+
+    expect(rejections).toEqual([failure]);
   });
 
   /**
