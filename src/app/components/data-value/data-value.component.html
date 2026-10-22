@@ -582,7 +582,7 @@ project root for license information.
 <ng-template #dateTimeValue>
   @if (value | isDateTimeValue) {
   {{ value | date: 'dd MMM yyyy HH:mm' }} {{ value | timezoneAbbr }}
-  } @else {
+  } @else if (value.toString().trim()) {
   <span class="invalid-value" title="Not a date and time">{{ value }}</span>
   }
 </ng-template>

@@ -211,6 +211,18 @@ describe('DataValueComponent', () => {
   });
 
   /**
+   * Verifies: a DateTime value of only spaces, as a blank spreadsheet cell can leave, is empty: no error and no red text.
+   * Interacts with: valueError, the dateTimeValue template.
+   * Data: When = "   "; canEdit.
+   */
+  it('treats a date-time value of only spaces as empty', async () => {
+    const { container } = await renderDataValue(WHEN, '   ', { canEdit: true });
+
+    expect(screen.queryByText('Not a date and time. Choose a new one.')).not.toBeInTheDocument();
+    expect(container.querySelector('.invalid-value')).toBeNull();
+  });
+
+  /**
    * Verifies: a numeric field chosen from a list shows only its dropdown, with no number box beside it.
    * Interacts with: the numeric and dropdown branches of the template, mat-select options, valueChange output.
    * Data: an Integer or Double field chosen from the options One (1) and Two (2); value 1; canEdit; Two chosen.

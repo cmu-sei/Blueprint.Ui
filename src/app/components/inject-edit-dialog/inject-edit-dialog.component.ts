@@ -22,7 +22,8 @@ export class InjectEditDialogComponent {
 
   errorFree() {
     return this.data.inject.name && this.data.inject.description &&
-      !hasInvalidDataValue(this.data.dataFieldList, this.data.inject.dataValues);
+      // a read-only value can't be fixed here, so it doesn't hold up Save
+      !(this.data.isEditMode && hasInvalidDataValue(this.data.dataFieldList, this.data.inject.dataValues));
   }
 
   /**

@@ -159,11 +159,15 @@ project root for license information or contact permission@sei.cmu.edu for full 
             </div>
           </td>
           }
-          <!-- datetime value -->
+          <!-- datetime value, or its text when it is not a date -->
           @if (df.dataType.toString() === 'DateTime') {
           <td>
             <div class="constrainer" [style]="getStyle(df)">
+              @if (getDataValue(item, df.name).value?.trim() && !(getDataValue(item, df.name).value | isDateTimeValue)) {
+              <span class="invalid-value" title="Not a date and time">{{ getDisplayValue(item, df.name) }}</span>
+              } @else {
               {{ getDisplayValue(item, df.name) }}
+              }
             </div>
           </td>
           }

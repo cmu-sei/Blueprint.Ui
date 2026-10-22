@@ -440,9 +440,9 @@ describe('ScenarioEventDataService', () => {
     });
 
     /**
-     * Verifies: getDisplayValueFromView shows card/user names, formats DateTime values as "dd MMM yyyy HH:mm TZ", and blanks unparseable dates.
+     * Verifies: getDisplayValueFromView shows card/user names, formats DateTime values as "dd MMM yyyy HH:mm TZ", and shows a DateTime value that is not a date as its text.
      * Interacts with: ScenarioEventDataService.getDisplayValueFromView.
-     * Data: se-1 with a card, user, local date-time, plain text; se-2 with an invalid date.
+     * Data: se-1 with a card, user, local date-time, plain text; se-2 with " not a date " in a DateTime field.
      */
     it('getDisplayValueFromView formats values for display', () => {
       const { service } = setup();
@@ -452,7 +452,7 @@ describe('ScenarioEventDataService', () => {
           value('se-1', 'f-owner', 'user-1'),
           value('se-1', 'f-when', '2026-03-04T05:06:00'),
           value('se-1', 'f-title', 'Phishing'),
-          value('se-2', 'f-when', 'not a date'),
+          value('se-2', 'f-when', ' not a date '),
         ],
       });
       index(service, v);
@@ -467,7 +467,7 @@ describe('ScenarioEventDataService', () => {
         /^04 Mar 2026 05:06 \S+$/,
       );
       expect(service.getDisplayValueFromView(v, se1, 'Title')).toBe('Phishing');
-      expect(service.getDisplayValueFromView(v, se2, 'When')).toBe(' ');
+      expect(service.getDisplayValueFromView(v, se2, 'When')).toBe('not a date');
       expect(service.getDisplayValueFromView(v, se2, 'Title')).toBe('');
     });
 

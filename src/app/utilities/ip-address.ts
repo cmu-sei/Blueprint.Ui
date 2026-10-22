@@ -122,7 +122,7 @@ export function dataValueError(dataType: DataFieldType, value: string): string {
       return networkError(value);
     case DataFieldType.DateTime:
       // a field changed to DateTime can still hold its old text, such as a team name
-      return value && !isDateTimeValue(value) ? 'Not a date and time. Choose a new one.' : '';
+      return (value || '').trim() && !isDateTimeValue(value) ? 'Not a date and time. Choose a new one.' : '';
     default:
       return '';
   }

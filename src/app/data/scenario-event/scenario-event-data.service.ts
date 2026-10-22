@@ -248,9 +248,10 @@ export class ScenarioEventDataService {
       case DataFieldType.User:
         return value.sortAndFilterValue.toString();
       case DataFieldType.DateTime:
-        const dateValue = value.value ? value.value : '';
+        const dateValue = value.value ? value.value.trim() : '';
         if (!dateValue) return ' ';
-        if (!isDateTimeValue(dateValue)) return ' ';
+        // a value that is not a date, such as a team left by a data type change, is shown as it is
+        if (!isDateTimeValue(dateValue)) return dateValue;
         const date = new Date(dateValue);
 
         // Format as: dd MMM yyyy HH:mm TZ

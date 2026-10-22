@@ -205,8 +205,15 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
     return (
       (this.data.scenarioEvent.scenarioEventType === this.eventType.Inject &&
         this.getScenarioTypeDataFields().length === 0) ||
-      hasInvalidDataValue(this.data.dataFields, this.data.scenarioEvent.dataValues)
+      // only the values on screen that can be changed, since Save must not wait on one that can't be fixed
+      (this.canEditDataValues() &&
+        hasInvalidDataValue(this.sortedDataFields, this.data.scenarioEvent.dataValues))
     );
+  }
+
+  canEditDataValues(): boolean {
+    return this.data.isEditor &&
+      (!this.data.isEditingRestricted || this.data.scenarioEvent.scenarioEventType === this.eventType.Information);
   }
 
   showDefaultTab(): boolean {
