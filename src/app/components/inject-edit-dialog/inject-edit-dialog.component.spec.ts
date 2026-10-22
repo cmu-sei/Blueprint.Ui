@@ -35,12 +35,13 @@ class DataValueStub {
 }
 
 const SUBJECT: DataField = { id: 'df-subject', name: 'Subject', dataType: DataFieldType.String };
+const WHEN: DataField = { id: 'df-when', name: 'When', dataType: DataFieldType.DateTime };
 
-function injectData(overrides: { isEditMode?: boolean; inject?: Injectm } = {}) {
-  const { isEditMode = true, inject = { id: 'inj-1', name: 'Phish', description: 'Phishing email', dataValues: [{ id: 'dv-1', dataFieldId: 'df-subject', value: 'Urgent' }] } } = overrides;
+function injectData(overrides: { isEditMode?: boolean; inject?: Injectm; dataFieldList?: DataField[] } = {}) {
+  const { isEditMode = true, inject = { id: 'inj-1', name: 'Phish', description: 'Phishing email', dataValues: [{ id: 'dv-1', dataFieldId: 'df-subject', value: 'Urgent' }] }, dataFieldList = [SUBJECT] } = overrides;
   return {
     inject,
-    dataFieldList: [SUBJECT],
+    dataFieldList,
     isEditMode,
     isNewInject: false,
     unitList: [],
@@ -121,6 +122,21 @@ describe('InjectEditDialogComponent', () => {
     await renderInjectEdit(injectData({ inject: { id: 'inj-1', name: 'Phish', description: '', dataValues: [] } }));
 
     expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled();
+  });
+
+  /**
+   * Verifies: a DateTime value that is not a date disables Save while it can be edited, and doesn't once the values are read-only, since it can't be fixed there.
+   * Interacts with: errorFree, hasInvalidDataValue, crucible-dialog submitDisabled.
+   * Data: When (DateTime) = "Team 2"; isEditMode true or false.
+   */
+  it.each([
+    { isEditMode: true, disabled: true },
+    { isEditMode: false, disabled: false },
+  ])('sets Save disabled $disabled for a value that is not a date with isEditMode $isEditMode', async ({ isEditMode, disabled }) => {
+    const inject = { id: 'inj-1', name: 'Phish', description: 'Phishing email', dataValues: [{ id: 'dv-1', dataFieldId: 'df-when', value: 'Team 2' }] };
+    await renderInjectEdit(injectData({ isEditMode, inject, dataFieldList: [WHEN] }));
+
+    expect(screen.getByRole('button', { name: 'Save' }).hasAttribute('disabled')).toBe(disabled);
   });
 
   /**

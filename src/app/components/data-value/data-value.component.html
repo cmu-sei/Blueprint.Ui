@@ -10,7 +10,7 @@ project root for license information.
   @if (dataField.dataType === dataType.DateTime) {
   <span>
     @if (value) {
-    {{ value | date: 'dd MMM yyyy HH:mm' }} {{ value | timezoneAbbr }}
+    <ng-container *ngTemplateOutlet="dateTimeValue"></ng-container>
     }
   </span>
   }
@@ -144,8 +144,8 @@ project root for license information.
     <mat-label>{{ dataField.name }}</mat-label>
     <input type="text" matInput [placeholder]="dataField.dataType === dataType.Network ? '10.1.0.0/24' : '192.0.2.10'"
       [(ngModel)]="value" (ngModelChange)="valueChangeHandler()" [disabled]="!canEdit"
-      [errorStateMatcher]="addressErrorMatcher" spellcheck="false" />
-    <mat-error>{{ addressError() }}</mat-error>
+      [errorStateMatcher]="valueErrorMatcher" spellcheck="false" />
+    <mat-error>{{ valueError() }}</mat-error>
   </mat-form-field>
   }
   @if (showValueOnly) {
@@ -179,11 +179,12 @@ project root for license information.
   <mat-form-field class="datetime-field">
     <mat-label>{{ dataField.name }}</mat-label>
     <input matInput [ngxMatDatetimePicker]="picker" [(ngModel)]="value" (ngModelChange)="valueChangeHandler()"
-      (dateChange)="isChanged = true" (dateInput)="isChanged = true" style="display: none;" [disabled]="!canEdit">
+      (dateChange)="isChanged = true" (dateInput)="isChanged = true" style="display: none;" [disabled]="!canEdit"
+      [errorStateMatcher]="valueErrorMatcher">
     <!-- <datetime-picker> -->
     <span (click)="canEdit && picker.open()">
       @if (value) {
-      {{ value | date: 'dd MMM yyyy HH:mm' }} {{ value | timezoneAbbr }}
+      <ng-container *ngTemplateOutlet="dateTimeValue"></ng-container>
       }
     </span>
     <mat-datepicker-toggle matSuffix title="Choose Date/Time" [for]="picker" [disabled]="!canEdit">
@@ -195,12 +196,13 @@ project root for license information.
         <button mat-stroked-button ngxMatDatepickerCancel>Cancel</button>
       </ngx-mat-datepicker-actions>
     </ngx-mat-datetime-picker>
+    <mat-error>{{ valueError() }}</mat-error>
   </mat-form-field>
   }
   @if (showValueOnly) {
   <span>
     @if (value) {
-    {{ value | date: 'dd MMM yyyy HH:mm' }} {{ value | timezoneAbbr }}
+    <ng-container *ngTemplateOutlet="dateTimeValue"></ng-container>
     }
   </span>
   }
@@ -576,3 +578,11 @@ project root for license information.
 }
 }
 <!-- editable display -->
+<!-- a DateTime value, or its text when it is not a date, such as a team left by a data type change -->
+<ng-template #dateTimeValue>
+  @if (value | isDateTimeValue) {
+  {{ value | date: 'dd MMM yyyy HH:mm' }} {{ value | timezoneAbbr }}
+  } @else if (value.toString().trim()) {
+  <span class="invalid-value" title="Not a date and time">{{ value }}</span>
+  }
+</ng-template>

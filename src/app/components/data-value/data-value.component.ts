@@ -132,12 +132,12 @@ export class DataValueComponent {
     this.valueChangeHandler();
   }
 
-  // shows the address error as soon as it applies, rather than waiting for the field to lose focus
-  addressErrorMatcher: ErrorStateMatcher = {
-    isErrorState: () => !!this.addressError(),
+  // shows the value's error as soon as it applies, rather than waiting for the field to lose focus
+  valueErrorMatcher: ErrorStateMatcher = {
+    isErrorState: () => !!this.valueError(),
   };
 
-  addressError(): string {
+  valueError(): string {
     return dataValueError(this.dataField?.dataType, this.value);
   }
 
