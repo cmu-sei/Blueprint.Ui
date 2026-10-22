@@ -6,6 +6,7 @@
 
 import { ScenarioEventStore } from './scenario-event.store';
 import { Injectable } from '@angular/core';
+import { isDateTimeValue } from 'src/app/utilities/date-time-value';
 import { Sort } from '@angular/material/sort';
 import {
   Card,
@@ -249,8 +250,8 @@ export class ScenarioEventDataService {
       case DataFieldType.DateTime:
         const dateValue = value.value ? value.value : '';
         if (!dateValue) return ' ';
+        if (!isDateTimeValue(dateValue)) return ' ';
         const date = new Date(dateValue);
-        if (isNaN(date.getTime())) return ' ';
 
         // Format as: dd MMM yyyy HH:mm TZ
         const day = String(date.getDate()).padStart(2, '0');

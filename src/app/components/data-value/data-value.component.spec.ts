@@ -17,6 +17,7 @@ import userEvent from '@testing-library/user-event';
 import { DataField, DataFieldType, MselItemStatus } from 'src/app/generated/blueprint.api';
 import { DataValueComponent } from './data-value.component';
 import { TimezoneAbbrPipe } from 'src/app/utilities/timezone-abbr';
+import { IsDateTimeValuePipe } from 'src/app/utilities/date-time-value';
 import { renderComponent } from 'src/app/test-utils/render-component';
 
 const SUBJECT: DataField = { id: 'df-subject', name: 'Subject', dataType: DataFieldType.String };
@@ -51,7 +52,7 @@ async function renderDataValue(dataField: DataField, value: string, flags: Flags
       NgxMatDatepickerInput,
       NgxMatDatetimepicker,
     ],
-    declarations: [DataValueComponent, TimezoneAbbrPipe],
+    declarations: [DataValueComponent, TimezoneAbbrPipe, IsDateTimeValuePipe],
     inputs: {
       dataField,
       value,
@@ -179,6 +180,23 @@ describe('DataValueComponent', () => {
     await renderDataValue(WHEN, value, flags);
 
     expect(screen.getByText(label)).toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: a DateTime value that is not a date, such as a team left behind by a data type change, is shown as its text instead of breaking the page or showing a made-up date, in each of the three places the template shows a date.
+   * Interacts with: IsDateTimeValuePipe, the dateTimeValue template (view-only display, editable field, value-only view for an editor).
+   * Data: When = "TEAM1" (the date pipe throws), "Team 2" or "42" (new Date() reads both as dates); showValueOnly with no flags, canEdit alone, or showValueOnly with canEdit, canApprove and isOwner.
+   */
+  it.each(
+    [
+      { view: 'shown read-only', flags: { showValueOnly: true } },
+      { view: 'in the editable field', flags: { canEdit: true } },
+      { view: 'shown as a value to its editor', flags: { showValueOnly: true, canEdit: true, canApprove: true, isOwner: true } },
+    ].flatMap((v) => ['TEAM1', 'Team 2', '42'].map((value) => ({ ...v, value }))),
+  )('shows the date-time value $value as its text $view', async ({ flags, value }) => {
+    await renderDataValue(WHEN, value, flags);
+
+    expect(screen.getByText(value)).toHaveAttribute('title', 'Not a date and time');
   });
 
   /**

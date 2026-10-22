@@ -154,6 +154,7 @@ import { DisplayOrderPipe, SortByPipe } from 'src/app/utilities/sort-by-pipe';
 import { AngularEditorModule } from '@kolkov/angular-editor';
 import { PlainTextPipe } from './utilities/plain-text-pipe';
 import { TimezoneAbbrPipe } from './utilities/timezone-abbr';
+import { IsDateTimeValuePipe } from './utilities/date-time-value';
 import {
   NgxMatDatepickerActions,
   NgxMatDatepickerApply,
@@ -273,6 +274,7 @@ export const appConfig: ApplicationConfig = {
     SortByPipe,
     PlainTextPipe,
     TimezoneAbbrPipe,
+    IsDateTimeValuePipe,
     DurationEditComponent,
     DurationViewComponent,
     EventDetailPageComponent,
