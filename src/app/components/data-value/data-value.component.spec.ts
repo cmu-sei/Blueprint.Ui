@@ -200,6 +200,17 @@ describe('DataValueComponent', () => {
   });
 
   /**
+   * Verifies: the editable DateTime field says how to fix a value that is not a date.
+   * Interacts with: valueError, valueErrorMatcher, mat-error.
+   * Data: When = "Team 2"; canEdit.
+   */
+  it('asks for a new date in the editable field when the value is not a date', async () => {
+    await renderDataValue(WHEN, 'Team 2', { canEdit: true });
+
+    expect(screen.getByText('Not a date and time. Choose a new one.')).toBeInTheDocument();
+  });
+
+  /**
    * Verifies: a numeric field chosen from a list shows only its dropdown, with no number box beside it.
    * Interacts with: the numeric and dropdown branches of the template, mat-select options, valueChange output.
    * Data: an Integer or Double field chosen from the options One (1) and Two (2); value 1; canEdit; Two chosen.

@@ -5,7 +5,7 @@
 import { Component, EventEmitter, Inject, Output } from '@angular/core';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { DataValue } from 'src/app/generated/blueprint.api';
-import { hasInvalidAddress } from 'src/app/utilities/ip-address';
+import { hasInvalidDataValue } from 'src/app/utilities/ip-address';
 
 @Component({
     selector: 'app-inject-edit-dialog',
@@ -22,7 +22,7 @@ export class InjectEditDialogComponent {
 
   errorFree() {
     return this.data.inject.name && this.data.inject.description &&
-      !hasInvalidAddress(this.data.dataFieldList, this.data.inject.dataValues);
+      !hasInvalidDataValue(this.data.dataFieldList, this.data.inject.dataValues);
   }
 
   /**

@@ -3,7 +3,9 @@
 // project root for license information.
 
 import { describe, it, expect } from 'vitest';
+import { DataField, DataFieldType } from 'src/app/generated/blueprint.api';
 import { isDateTimeValue } from './date-time-value';
+import { dataValueError, hasInvalidDataValue } from './ip-address';
 
 describe('isDateTimeValue', () => {
   /**
@@ -39,5 +41,23 @@ describe('isDateTimeValue', () => {
 
   it('does not take an invalid Date as a date', () => {
     expect(isDateTimeValue(new Date('TEAM1'))).toBe(false);
+  });
+});
+
+describe('a DateTime value that is not a date', () => {
+  const WHEN: DataField = { id: 'df-when', name: 'When', dataType: DataFieldType.DateTime };
+
+  /**
+   * Verifies: a DateTime value that is not a date has an error and keeps the edit dialogs from saving; a date or an empty value does not.
+   * Interacts with: dataValueError, hasInvalidDataValue.
+   * Data: When = "Team 2", "2026-10-12T16:00:00.000Z" or "".
+   */
+  it.each([
+    { value: 'Team 2', invalid: true },
+    { value: '2026-10-12T16:00:00.000Z', invalid: false },
+    { value: '', invalid: false },
+  ])('treats $value as invalid: $invalid', ({ value, invalid }) => {
+    expect(!!dataValueError(DataFieldType.DateTime, value)).toBe(invalid);
+    expect(hasInvalidDataValue([WHEN], [{ id: 'dv-1', dataFieldId: WHEN.id, value }])).toBe(invalid);
   });
 });
