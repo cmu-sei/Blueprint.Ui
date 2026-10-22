@@ -230,13 +230,20 @@ describe('SignalRService', () => {
     });
 
     /**
-     * Verifies: when the restart after a user change fails, the rejection is unhandled and no retry is scheduled.
+     * Verifies: when stopping or restarting after a user change fails, the rejection is unhandled and no retry is scheduled.
      * Interacts with: ComnAuthService.user$ (stub subject), FakeHubConnection stop/start, Vitest fake timers, captureUnhandledRejections.
-     * Data: a connected hub whose next start() rejects; timers advanced 2 s.
+     * Data: a connected hub whose stop or next start rejects; timers advanced 2 s.
      */
-    it('reconnect leaves a failed restart unhandled and does not retry', async () => {
+    it.each([
+      { phase: 'stop', starts: 1 },
+      { phase: 'restart', starts: 2 },
+    ])('reconnect leaves a failed $phase unhandled and does not retry', async ({ phase, starts }) => {
       const { hub, user$ } = await connect();
-      hub.start.mockRejectedValue(refused);
+      if (phase === 'stop') {
+        hub.stop.mockRejectedValue(refused);
+      } else {
+        hub.start.mockRejectedValue(refused);
+      }
       const rejections = captureUnhandledRejections();
       vi.useFakeTimers();
 
@@ -244,7 +251,8 @@ describe('SignalRService', () => {
       await vi.advanceTimersByTimeAsync(2000);
 
       expect(rejections).toEqual([refused]);
-      expect(hub.start).toHaveBeenCalledTimes(2);
+      expect(hub.stop).toHaveBeenCalledTimes(1);
+      expect(hub.start).toHaveBeenCalledTimes(starts);
     });
   });
 

@@ -65,7 +65,7 @@ describe('DataOptionEditDialogComponent', () => {
   /**
    * Verifies: Save is disabled while the option is incomplete.
    * Interacts with: errorFree, crucible-dialog submitDisabled.
-   * Data: an option with no name.
+   * Data: an option with an empty value.
    */
   it('disables Save for an incomplete option', async () => {
     await renderDataOptionEditDialog(dialogData({ optionValue: '' }));
@@ -76,7 +76,7 @@ describe('DataOptionEditDialogComponent', () => {
   /**
    * Verifies: handleEditComplete(true) emits the save for an incomplete option (current behavior).
    * Interacts with: handleEditComplete, editComplete output.
-   * Data: an option with no name.
+   * Data: an option with an empty value.
    */
   it('saves an incomplete option when handleEditComplete is called', async () => {
     const { fixture, data, results } = await renderDataOptionEditDialog(dialogData({ optionValue: '' }));

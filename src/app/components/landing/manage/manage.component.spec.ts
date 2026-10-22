@@ -25,6 +25,7 @@ import { renderComponent } from 'src/app/test-utils/render-component';
 import { permissionApiStubs } from 'src/app/test-utils/mock-permission-data.service';
 import { mselLoadApiProviders, mselLoadApiStubs } from 'src/app/test-utils/msel-load-api-stubs';
 import { unstubbed } from 'src/app/test-utils/unstubbed';
+import { captureUnhandledRejections, flush } from 'src/app/test-utils/unhandled-rx-errors';
 
 @Component({ selector: 'app-topbar', template: '', standalone: false })
 class TopbarStub {
@@ -57,7 +58,7 @@ function msel(overrides: Partial<Msel> = {}): Msel {
   };
 }
 
-async function renderManage(overrides: { permissions?: SystemPermission[]; activeMsel?: Msel } = {}) {
+async function renderManage(overrides: { permissions?: SystemPermission[]; activeMsel?: Msel; logout?: ComnAuthService['logout'] } = {}) {
   const { permissions = [], activeMsel = msel() } = overrides;
   const apis = mselLoadApiStubs({ msel: activeMsel });
   // Archiving answers with the archived MSEL, which sends the window to the
@@ -83,7 +84,10 @@ async function renderManage(overrides: { permissions?: SystemPermission[]; activ
       unstubbed(MatDialog),
       {
         provide: ComnAuthService,
-        useValue: { user$: of({ profile: { sub: ME, name: 'Me' } }) } as Pick<ComnAuthService, 'user$'>,
+        useValue: {
+          user$: of({ profile: { sub: ME, name: 'Me' } }) as ComnAuthService['user$'],
+          logout: overrides.logout ?? vi.fn(() => Promise.resolve()),
+        } satisfies Pick<ComnAuthService, 'user$' | 'logout'>,
       },
     ],
   });
@@ -96,6 +100,22 @@ function invitations(fixture: ComponentFixture<unknown>): InvitationListStub | u
 }
 
 describe('ManageComponent', () => {
+  /**
+   * Verifies: calling logout lets its rejected promise escape (current behavior).
+   * Interacts with: ComnAuthService.logout, captureUnhandledRejections.
+   * Data: logout rejects with a metadata request failure; no template calls this method.
+   */
+  it('leaves a rejected logout unhandled', async () => {
+    const failure = new Error('signout metadata request failed');
+    const rejections = captureUnhandledRejections();
+    const { fixture } = await renderManage({ logout: () => Promise.reject(failure) });
+
+    fixture.componentInstance.logout();
+    await flush();
+
+    expect(rejections).toEqual([failure]);
+  });
+
   /**
    * Verifies: with EditMsels, or as the owner, the deployed MSEL can be managed: its name, the end time, End Event and the invitations are shown.
    * Interacts with: real PermissionDataService over SystemPermissionsService (stub), MselService.getMsel (stub), real MselQuery, MselPlus.hasRole.
