@@ -56,10 +56,12 @@ describe('a DateTime value that is not a date', () => {
   /**
    * Verifies: a DateTime value that is not a date has an error and keeps the edit dialogs from saving; a date or an empty value does not.
    * Interacts with: dataValueError, hasInvalidDataValue.
-   * Data: When = "Team 2", "2026-10-12T16:00:00.000Z", "" or "   " (only spaces, which the API treats as empty).
+   * Data: When = "Team 2", "2026-10-12T16:00:00.000Z", "" or "   " (only spaces, which the API treats as empty); a Date, as the date picker writes, valid or not.
    */
   it.each([
     { value: 'Team 2', invalid: true },
+    { value: new Date('2026-10-12T16:00:00Z') as unknown as string, invalid: false },
+    { value: new Date('not a date') as unknown as string, invalid: true },
     { value: '2026-10-12T16:00:00.000Z', invalid: false },
     { value: '', invalid: false },
     { value: '   ', invalid: false },

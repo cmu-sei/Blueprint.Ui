@@ -44,6 +44,14 @@ export function isDateTimeValue(value: unknown): boolean {
   return false;
 }
 
+/**
+ * True for a value with nothing in it: empty, null or only spaces. The date picker writes a Date,
+ * which is never blank, so only a string is trimmed.
+ */
+export function isBlankValue(value: unknown): boolean {
+  return value == null || (typeof value === 'string' && !value.trim());
+}
+
 /*
  @if (value | isDateTimeValue) { {{ value | date: 'dd MMM yyyy HH:mm' }} }
 */

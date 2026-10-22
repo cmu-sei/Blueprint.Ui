@@ -12,7 +12,7 @@ import { MatSelectHarness } from '@angular/material/select/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { NgxMatDatepickerActions, NgxMatDatepickerApply, NgxMatDatepickerCancel, NgxMatDatepickerInput, NgxMatDatetimepicker } from '@ngxmc/datetime-picker';
-import { screen } from '@testing-library/angular';
+import { screen, within } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { DataField, DataFieldType, MselItemStatus } from 'src/app/generated/blueprint.api';
 import { DataValueComponent } from './data-value.component';
@@ -220,6 +220,27 @@ describe('DataValueComponent', () => {
 
     expect(screen.queryByText('Not a date and time. Choose a new one.')).not.toBeInTheDocument();
     expect(container.querySelector('.invalid-value')).toBeNull();
+  });
+
+  /**
+   * Verifies: picking a date, which writes a Date rather than a string into the value, shows it with no error and throws nothing on change detection.
+   * Interacts with: the date picker toggle, a day in the calendar, the picker's Save, valueError, valueChange output.
+   * Data: When (DateTime) empty; canEdit; the 15th of the month picked.
+   */
+  it('shows a picked date with no error', async () => {
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { fixture, changes } = await renderDataValue(WHEN, '', { canEdit: true });
+    const user = userEvent.setup();
+
+    await user.click(within(screen.getByTitle('Choose Date/Time')).getByRole('button'));
+    await user.click(await screen.findByText('15'));
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+    fixture.detectChanges();
+
+    expect(changes.at(-1)).toBeInstanceOf(Date);
+    expect(screen.queryByText('Not a date and time. Choose a new one.')).not.toBeInTheDocument();
+    expect(consoleError).not.toHaveBeenCalled();
+    consoleError.mockRestore();
   });
 
   /**

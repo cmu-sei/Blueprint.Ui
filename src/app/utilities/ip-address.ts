@@ -5,7 +5,7 @@
 */
 
 import { DataField, DataFieldType, DataValue } from 'src/app/generated/blueprint.api';
-import { isDateTimeValue } from './date-time-value';
+import { isBlankValue, isDateTimeValue } from './date-time-value';
 
 interface ParsedAddress {
   version: 4 | 6;
@@ -121,8 +121,9 @@ export function dataValueError(dataType: DataFieldType, value: string): string {
     case DataFieldType.Network:
       return networkError(value);
     case DataFieldType.DateTime:
-      // a field changed to DateTime can still hold its old text, such as a team name
-      return (value || '').trim() && !isDateTimeValue(value) ? 'Not a date and time. Choose a new one.' : '';
+      // a field changed to DateTime can still hold its old text, such as a team name; once the
+      // date picker has set it, the value is a Date despite its type
+      return !isBlankValue(value) && !isDateTimeValue(value) ? 'Not a date and time. Choose a new one.' : '';
     default:
       return '';
   }
