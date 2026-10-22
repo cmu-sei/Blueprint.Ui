@@ -60,6 +60,11 @@ export interface Msel {
     casterWorkspaceId?: string | null;
     casterRunId?: string | null;
     casterIntegrationType?: IntegrationType;
+    useRocketChat?: boolean;
+    rocketChatRoomId?: string | null;
+    useMatrix?: boolean;
+    matrixSpaceId?: string | null;
+    matrixRoomId?: string | null;
     isTemplate?: boolean;
     startTime?: Date;
     durationSeconds?: number;

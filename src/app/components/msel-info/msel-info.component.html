@@ -124,13 +124,15 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <div class="integration-div">
             <div class="integration-header">
               <b>Applications to Integrate</b>
-              @if ((msel.usePlayer || msel.useCite || msel.useGallery || msel.useSteamfitter || msel.useCaster) && !msel.isTemplate) {
+              @if ((msel.usePlayer || msel.useCite || msel.useGallery || msel.useSteamfitter || msel.useCaster || msel.useRocketChat || msel.useMatrix) && !msel.isTemplate) {
               <div class="integration-actions">
                 @if ((!msel.playerViewId &&
                 !msel.citeEvaluationId &&
                 !msel.galleryCollectionId &&
                 !msel.steamfitterScenarioId &&
                 !msel.casterWorkspaceId &&
+                !msel.rocketChatRoomId &&
+                !msel.matrixSpaceId &&
                 !msel.isTemplate) ||
                 pushStatus) {
                 <button (click)="pushIntegrations()" title="Push Integrations" class="thin-button" [disabled]="!canManageMsel() ||
@@ -149,7 +151,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 msel.citeEvaluationId ||
                 msel.galleryCollectionId ||
                 msel.steamfitterScenarioId ||
-                msel.casterWorkspaceId) &&
+                msel.casterWorkspaceId ||
+                msel.rocketChatRoomId ||
+                msel.matrixSpaceId) &&
                 !pushStatus) {
                 <button (click)="pullIntegrations()" title="Remove Integrations" class="thin-button"
                   [disabled]="!canManageMsel() || isChanged">Remove
@@ -370,6 +374,40 @@ project root for license information or contact permission@sei.cmu.edu for full 
               <span class="gallery-warning">{{ casterVmAppWarningMessage() }}</span>
             </div>
             }
+
+            <!-- Rocket.Chat Integration -->
+            <div class="integration-row">
+              <div class="integration-checkbox-cell">
+                <mat-checkbox [disabled]="msel.status === 'Deployed' || !canEditMsel()"
+                  [(ngModel)]="msel.useRocketChat" (cut)="isChanged = true" (change)="isChanged = true"
+                  (paste)="isChanged = true" (keypress)="isChanged = true">Rocket.Chat</mat-checkbox>
+              </div>
+              @if (msel.useRocketChat && !msel.isTemplate && msel.rocketChatRoomId) {
+              <div class="integration-details">
+                <div class="integration-field">
+                  <span class="integration-label">Exercise Room:</span>
+                  <span class="integration-guid" [title]="msel.rocketChatRoomId">{{ msel.rocketChatRoomId }}</span>
+                </div>
+              </div>
+              }
+            </div>
+
+            <!-- Matrix Integration -->
+            <div class="integration-row">
+              <div class="integration-checkbox-cell">
+                <mat-checkbox [disabled]="msel.status === 'Deployed' || !canEditMsel()"
+                  [(ngModel)]="msel.useMatrix" (cut)="isChanged = true" (change)="isChanged = true"
+                  (paste)="isChanged = true" (keypress)="isChanged = true">Matrix</mat-checkbox>
+              </div>
+              @if (msel.useMatrix && !msel.isTemplate && msel.matrixSpaceId) {
+              <div class="integration-details">
+                <div class="integration-field">
+                  <span class="integration-label">Space:</span>
+                  <span class="integration-guid" [title]="msel.matrixSpaceId">{{ msel.matrixSpaceId }}</span>
+                </div>
+              </div>
+              }
+            </div>
           </div>
           <!-- Status -->
           <div class="single-detail center-self">

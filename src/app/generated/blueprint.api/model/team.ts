@@ -35,6 +35,8 @@ export interface Team {
     canTeamLeaderInvite?: boolean;
     canTeamMemberInvite?: boolean;
     casterTeamVariable?: string | null;
+    rocketChatRoomId?: string | null;
+    matrixRoomId?: string | null;
     users?: Array<User> | null;
     cardTeams?: Array<CardTeam> | null;
     playerApplicationTeams?: Array<PlayerApplicationTeam> | null;

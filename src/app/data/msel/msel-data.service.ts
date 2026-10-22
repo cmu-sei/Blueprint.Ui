@@ -56,6 +56,11 @@ export class MselPlus implements Msel {
   casterDirectoryId?: string;
   casterWorkspaceId?: string;
   casterRunId?: string;
+  useRocketChat?: boolean;
+  rocketChatRoomId?: string;
+  useMatrix?: boolean;
+  matrixSpaceId?: string;
+  matrixRoomId?: string;
   isTemplate?: boolean;
   startTime?: Date;
   durationSeconds?: number;
