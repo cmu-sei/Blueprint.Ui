@@ -44,15 +44,14 @@
 }
 
 .mission-title {
-  font-family: "Open Sans", sans-serif;
-  font-size: 2rem;
-  font-weight: 600;
+  font: var(--mat-sys-headline-medium);
   color: var(--mat-sys-on-surface);
   margin: 0 0 0.5rem 0;
 }
 
 .mission-subtitle {
-  font-size: 0.875rem;
+  font: var(--mat-sys-body-medium);
+  letter-spacing: var(--mat-sys-body-medium-tracking);
   color: var(--mat-sys-on-surface-variant);
   margin: 0;
 }
@@ -79,8 +78,7 @@
 }
 
 .status-text {
-  font-size: 0.75rem;
-  font-weight: 500;
+  font: var(--mat-sys-label-medium);
   letter-spacing: 0.05em;
   color: var(--mat-sys-on-surface-variant);
   text-transform: uppercase;
@@ -144,16 +142,15 @@
 }
 
 .value-title {
-  font-family: "Open Sans", sans-serif;
-  font-size: 1.125rem;
-  font-weight: 600;
+  font: var(--mat-sys-title-medium);
+  letter-spacing: var(--mat-sys-title-medium-tracking);
   color: var(--mat-sys-on-surface);
   margin: 0 0 0.5rem 0;
 }
 
 .value-text {
-  font-size: 0.875rem;
-  line-height: 1.5;
+  font: var(--mat-sys-body-medium);
+  letter-spacing: var(--mat-sys-body-medium-tracking);
   color: var(--mat-sys-on-surface-variant);
   margin: 0 0 0.75rem 0;
 }
@@ -163,7 +160,8 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  font-size: 0.75rem;
+  font: var(--mat-sys-label-medium);
+  letter-spacing: var(--mat-sys-label-medium-tracking);
   color: var(--mat-sys-primary);
   opacity: 0;
   transition: opacity 0.2s ease;
@@ -303,15 +301,14 @@
 }
 
 .card-title {
-  font-family: "Open Sans", sans-serif;
-  font-size: 1.5rem;
-  font-weight: 600;
+  font: var(--mat-sys-headline-small);
   color: var(--mat-sys-on-surface);
   margin: 0 0 0.25rem 0;
 }
 
 .card-subtitle {
-  font-size: 0.875rem;
+  font: var(--mat-sys-body-medium);
+  letter-spacing: var(--mat-sys-body-medium-tracking);
   color: var(--mat-sys-on-surface-variant);
   margin: 0;
 }
@@ -328,20 +325,20 @@
 }
 
 .metric-value {
-  font-size: 2.5rem;
-  font-weight: 600;
+  font: var(--mat-sys-display-small);
   color: var(--mat-sys-primary);
   line-height: 1;
 }
 
 .metric-label {
-  font-size: 0.875rem;
+  font: var(--mat-sys-body-medium);
+  letter-spacing: var(--mat-sys-body-medium-tracking);
   color: var(--mat-sys-on-surface-variant);
 }
 
 .card-description {
-  font-size: 0.9375rem;
-  line-height: 1.6;
+  font: var(--mat-sys-body-large);
+  letter-spacing: var(--mat-sys-body-large-tracking);
   color: var(--mat-sys-on-surface-variant);
 }
 
@@ -357,8 +354,8 @@
 }
 
 .action-text {
-  font-size: 0.875rem;
-  font-weight: 500;
+  font: var(--mat-sys-label-large);
+  letter-spacing: var(--mat-sys-label-large-tracking);
   color: var(--mat-sys-primary);
   display: flex;
   align-items: center;
@@ -402,15 +399,14 @@
 }
 
 .loading-title {
-  font-family: "Open Sans", sans-serif;
-  font-size: 1.25rem;
-  font-weight: 600;
+  font: var(--mat-sys-title-large);
   color: var(--mat-sys-on-surface);
   margin: 0 0 0.5rem 0;
 }
 
 .loading-subtitle {
-  font-size: 0.875rem;
+  font: var(--mat-sys-body-medium);
+  letter-spacing: var(--mat-sys-body-medium-tracking);
   color: var(--mat-sys-on-surface-variant);
   margin: 0 0 1.5rem 0;
 }
