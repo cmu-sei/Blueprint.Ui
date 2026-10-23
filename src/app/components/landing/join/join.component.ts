@@ -15,6 +15,7 @@ import {
   User,
 } from 'src/app/generated/blueprint.api';
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
+import { MselImageDataService } from 'src/app/data/msel/msel-image-data.service';
 import { TopbarView } from '../../shared/top-bar/topbar.models';
 import { Title } from '@angular/platform-browser';
 import { ErrorService } from 'src/app/services/error/error.service';
@@ -42,6 +43,7 @@ export class JoinComponent implements OnDestroy, OnInit {
   joinStatus: { [id: string]: string } = {};
   isJoined: { [id: string]: boolean } = {};
   showChoices = false;
+  cardPhotos: { [id: string]: string } = {};
   private unsubscribe$ = new Subject();
 
   constructor(
@@ -49,6 +51,7 @@ export class JoinComponent implements OnDestroy, OnInit {
     private userQuery: UserQuery,
     private settingsService: ComnSettingsService,
     private mselDataService: MselDataService,
+    private mselImageDataService: MselImageDataService,
     private activatedRoute: ActivatedRoute,
     private router: Router,
     private titleService: Title,
@@ -101,11 +104,21 @@ export class JoinComponent implements OnDestroy, OnInit {
       .pipe(take(1))
       .subscribe((msels) => {
         this.joinMselList = msels;
+        msels.forEach((msel) =>
+          this.mselImageDataService
+            .imageUrl(msel)
+            .pipe(takeUntil(this.unsubscribe$))
+            .subscribe((url) => {
+              if (url) {
+                this.cardPhotos[msel.id] = url;
+              }
+            })
+        );
       });
   }
 
-  // Until MSELs carry an image, each card gets a pattern generated from the
-  // MSEL id, so the same event always looks the same.
+  // A card shows the MSEL's own image when it has one. Otherwise it gets a
+  // pattern generated from the MSEL id, so the same event always looks the same.
   cardImage(msel: Msel): string {
     let hash = 0;
     for (const c of msel.id ?? msel.name ?? '') {

@@ -78,6 +78,11 @@
   margin-bottom: 1rem;
 }
 
+.card-photo {
+  background-size: cover;
+  background-position: center;
+}
+
 .card-initials {
   font: var(--mat-sys-display-small);
   letter-spacing: 0.05em;

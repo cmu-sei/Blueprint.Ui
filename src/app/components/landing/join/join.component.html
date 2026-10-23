@@ -21,9 +21,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <div class="event-grid">
         @for (msel of joinMselList; track msel.id) {
           <div class="event-card">
+            @if (cardPhotos[msel.id]) {
+            <div class="card-image card-photo" [style.background-image]="'url(' + cardPhotos[msel.id] + ')'"
+              aria-hidden="true"></div>
+            } @else {
             <div class="card-image" [style.background]="cardImage(msel)" aria-hidden="true">
               <span class="card-initials">{{ initials(msel.name) }}</span>
             </div>
+            }
             <h2 class="card-title">{{ msel.name }}</h2>
             @if (msel.description) {
               <p class="card-description">{{ msel.description }}</p>

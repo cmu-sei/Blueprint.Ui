@@ -92,6 +92,7 @@ export interface Msel {
     educationalUse?: string | null;
     courseMode?: string | null;
     language?: string | null;
+    imageDateModified?: Date | null;
     organizations?: Array<Organization> | null;
     cards?: Array<Card> | null;
     galleryArticleParameters?: Array<string> | null;
