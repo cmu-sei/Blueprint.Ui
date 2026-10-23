@@ -20,7 +20,7 @@ import { PermissionDataService } from 'src/app/data/permission/permission-data.s
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { MatMenuTrigger } from '@angular/material/menu';
-import { CiteService } from 'src/app/generated/blueprint.api';
+import { CasterService, CiteService } from 'src/app/generated/blueprint.api';
 import { MatDialog } from '@angular/material/dialog';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { TeamAddDialogComponent } from '../team-add-dialog/team-add-dialog.component';
@@ -31,6 +31,17 @@ import { MatTable, MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 import { Sort } from '@angular/material/sort';
 import { animate, state, style, transition, trigger } from '@angular/animations';
+
+const PLAYER_ADMIN_TEAM_VARIABLE = 'admin';
+const PLAYER_ADMIN_TEAM_NAME = 'Player\'s Admin team';
+
+interface TeamVariableWriter {
+  name: string;
+  variable: string;
+  mapped: boolean;
+  // Player's own Admin team, which has no MSEL team
+  isPlayerAdmin?: boolean;
+}
 
 @Component({
     selector: 'app-msel-teams',
@@ -71,7 +82,18 @@ export class MselTeamsComponent implements OnDestroy, OnInit {
   displayedColumns: string[] = ['action', 'shortName', 'name', 'email', 'teamType', 'invitation'];
   expandedElementId = '';
   isExpansionDetailRow = (i: number, row: Object) => (row as Team).id === this.expandedElementId;
+  // the template variables a team can be mapped to; null until loaded, or when the MSEL has no Caster directory
+  casterTeamVariables: string[] = null;
+  // the ones the template gives no default, so the plan fails unless a team writes them or Caster supplies them
+  requiredCasterTeamVariables: string[] = [];
+  casterTeamVariablesError = '';
+  // recomputed by updateCasterWarnings whenever the teams or the variables change
+  unmappedTopologyTeams: string[] = [];
+  staleMappings: Team[] = [];
+  duplicateTeamVariableWarnings: string[] = [];
   private allTeams: Team[] = [];
+  // this MSEL's teams, unfiltered by the search
+  private mselTeams: Team[] = [];
   private unsubscribe$ = new Subject();
 
   constructor(
@@ -81,6 +103,7 @@ export class MselTeamsComponent implements OnDestroy, OnInit {
     private mselDataService: MselDataService,
     private mselQuery: MselQuery,
     private citeService: CiteService,
+    private casterService: CasterService,
     private unitDataService: UnitDataService,
     private unitQuery: UnitQuery,
     private dialog: MatDialog,
@@ -94,6 +117,12 @@ export class MselTeamsComponent implements OnDestroy, OnInit {
         Object.assign(this.originalMsel, msel);
         Object.assign(this.msel, msel);
         this.applyFilter(this.filterString);
+        this.loadCasterTeamVariables();
+      } else if (msel && (this.msel.useCaster !== msel.useCaster || this.msel.casterDirectoryId !== msel.casterDirectoryId)) {
+        // a different template, or none, from the Info tab
+        this.msel.useCaster = msel.useCaster;
+        this.msel.casterDirectoryId = msel.casterDirectoryId;
+        this.loadCasterTeamVariables();
       }
     });
     // subscribe to users
@@ -173,6 +202,140 @@ export class MselTeamsComponent implements OnDestroy, OnInit {
     return item.id;
   }
 
+  loadCasterTeamVariables() {
+    this.casterTeamVariables = null;
+    this.requiredCasterTeamVariables = [];
+    this.casterTeamVariablesError = '';
+    this.updateCasterWarnings();
+    if (!this.msel.useCaster || !this.msel.casterDirectoryId) {
+      this.setDisplayedColumns();
+      return;
+    }
+    const directoryId = this.msel.casterDirectoryId;
+    this.casterService.getCasterTeamVariables(directoryId).subscribe(
+      (variables) => {
+        if (this.msel.useCaster && this.msel.casterDirectoryId === directoryId) {
+          this.casterTeamVariables = variables.map(v => v.name);
+          this.requiredCasterTeamVariables = variables.filter(v => v.required).map(v => v.name);
+          this.casterTeamVariablesError = '';
+          this.updateCasterWarnings();
+          this.setDisplayedColumns();
+        }
+      },
+      (error) => {
+        if (this.msel.useCaster && this.msel.casterDirectoryId === directoryId) {
+          console.error('Failed to load the Caster team variables:', error);
+          this.casterTeamVariablesError = error?.error?.title || 'The Caster template could not be read.';
+          this.setDisplayedColumns();
+        }
+      }
+    );
+  }
+
+  updateCasterWarnings() {
+    this.unmappedTopologyTeams = this.getUnmappedTopologyTeams();
+    this.staleMappings = this.getStaleMappings();
+    this.duplicateTeamVariableWarnings = this.getDuplicateTeamVariableWarnings();
+  }
+
+  setDisplayedColumns() {
+    // Team Type is the CITE team type, so it only matters when CITE is in use
+    const columns = this.msel.useCite
+      ? ['action', 'shortName', 'name', 'email', 'teamType', 'invitation']
+      : ['action', 'shortName', 'name', 'email', 'invitation'];
+    if (this.msel.useCaster && this.msel.casterDirectoryId) {
+      columns.splice(columns.indexOf('invitation'), 0, 'topologyTeam');
+    }
+    this.displayedColumns = columns;
+  }
+
+  // The variable a team's Player team ID is written to: its mapping, or else its name the way
+  // Blueprint (and Alloy before it) turns a name into a variable.
+  getTeamVariable(team: Team): string {
+    if (team.casterTeamVariable) {
+      return team.casterTeamVariable;
+    }
+    const alloyName = (team.name ?? '').toLowerCase().replace(/ /g, '_').replace(/[@&'(\s)<>#]/g, '');
+    const name = alloyName.replace(/[^\p{L}\p{Nd}_-]/gu, '');
+    if (!name) {
+      return '';
+    }
+    return /^[\p{L}_]/u.test(name) ? name : '_' + name;
+  }
+
+  // topology teams no MSEL team writes to, less the optional ones: the template has a default for those
+  getUnmappedTopologyTeams(): string[] {
+    if (!this.casterTeamVariables) {
+      return [];
+    }
+    const used = this.mselTeams.map(t => this.getTeamVariable(t));
+    return this.casterTeamVariables.filter(v => !used.includes(v) &&
+      (v === PLAYER_ADMIN_TEAM_VARIABLE || this.requiredCasterTeamVariables.includes(v)));
+  }
+
+  // Unless a MSEL team named Admin takes its place, Player adds an Admin team, holding only whoever
+  // creates the view, to every view Blueprint pushes; by name it writes "admin" unless a MSEL team takes that variable
+  getUnmappedTopologyTeamDestination(variable: string): string {
+    return variable === PLAYER_ADMIN_TEAM_VARIABLE
+      ? 'Its VMs will go to the Player view\'s own Admin team.'
+      : 'The Caster template gives it no default, so the plan will fail unless Caster supplies it.';
+  }
+
+  // the team mapped to the variable this unmapped team would get by name, which then replaces it
+  getMappedOverTeam(team: Team): Team {
+    if (team.casterTeamVariable) {
+      return null;
+    }
+    const variable = this.getTeamVariable(team);
+    return this.mselTeams.find(t => t.id !== team.id && t.casterTeamVariable === variable) ?? null;
+  }
+
+  // the teams that end up writing a variable, the way the API resolves them: a mapped team
+  // replaces any team that would get the same variable by name
+  resolveTeamVariables(writers: TeamVariableWriter[]): TeamVariableWriter[] {
+    const mappedVariables = new Set(writers.filter(w => w.mapped).map(w => w.variable));
+    return writers.filter(w => w.variable && (w.mapped || !mappedVariables.has(w.variable)));
+  }
+
+  toTeamVariableWriter(team: Team): TeamVariableWriter {
+    return { name: team.name, variable: this.getTeamVariable(team), mapped: !!team.casterTeamVariable };
+  }
+
+  // variables more than one team would write, counting Player's own Admin team; the API refuses those
+  getDuplicateTeamVariableWarnings(): string[] {
+    if (!this.msel.useCaster || !this.msel.casterDirectoryId) {
+      return [];
+    }
+    const writers = this.mselTeams.map(t => this.toTeamVariableWriter(t));
+    // a MSEL team named Admin takes the place of Player's own
+    if (!this.mselTeams.some(t => t.name?.trim().toLowerCase() === PLAYER_ADMIN_TEAM_VARIABLE)) {
+      writers.push({ name: PLAYER_ADMIN_TEAM_NAME, variable: PLAYER_ADMIN_TEAM_VARIABLE, mapped: false, isPlayerAdmin: true });
+    }
+    const byVariable = new Map<string, string[]>();
+    this.resolveTeamVariables(writers).forEach(w =>
+      byVariable.set(w.variable, [...(byVariable.get(w.variable) ?? []), w.isPlayerAdmin ? w.name : '"' + w.name + '"']));
+    return [...byVariable.entries()]
+      .filter(([, names]) => names.length > 1)
+      .map(([variable, names]) => names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1] +
+        ' all become "' + variable + '", so Push will be refused. Rename one or map it to a different topology team.');
+  }
+
+  // the MSEL teams, other than this one, that would write each variable
+  getTeamVariableUsers(team: Team): { [variable: string]: string[] } {
+    const users: { [variable: string]: string[] } = {};
+    this.resolveTeamVariables(this.mselTeams.filter(t => !team.id || t.id !== team.id).map(t => this.toTeamVariableWriter(t)))
+      .forEach(w => users[w.variable] = [...(users[w.variable] ?? []), w.name]);
+    return users;
+  }
+
+  // teams mapped to a variable the template no longer declares
+  getStaleMappings(): Team[] {
+    if (!this.casterTeamVariables) {
+      return [];
+    }
+    return this.mselTeams.filter(t => t.casterTeamVariable && !this.casterTeamVariables.includes(t.casterTeamVariable));
+  }
+
   addOrEditTeam(team: Team) {
     if (!team) {
       team = {
@@ -191,7 +354,9 @@ export class MselTeamsComponent implements OnDestroy, OnInit {
       data: {
         team: team,
         useCite: this.msel.useCite,
-        teamTypeList: this.teamTypeList
+        teamTypeList: this.teamTypeList,
+        casterTeamVariables: this.casterTeamVariables,
+        casterTeamVariableUsers: this.getTeamVariableUsers(team)
       },
     });
     dialogRef.componentInstance.editComplete.subscribe((result) => {
@@ -263,9 +428,10 @@ export class MselTeamsComponent implements OnDestroy, OnInit {
   applyFilter(filterValue: string) {
     this.filterString = filterValue;
     filterValue = filterValue.toLowerCase();
-    this.teamList = this.allTeams
+    this.mselTeams = this.allTeams.filter(team => team.mselId === this.msel.id);
+    this.updateCasterWarnings();
+    this.teamList = this.mselTeams
       .filter(team =>
-        team.mselId === this.msel.id &&
         (team.name.toLowerCase().indexOf(filterValue) >= 0 ||
           team.shortName.toLowerCase().indexOf(filterValue) >= 0))
       .sort((a, b) => this.sortTeams(a, b));

@@ -42,7 +42,7 @@ project root for license information.
             (inputChange)="saveMove('situationDate')" (dateChange)="saveMove('situationDate')" style="display: none;">
           <!-- <datetime-picker> -->
           <span (click)="picker.open()">
-            {{ situationDateFormControl.value | date: 'dd MMM yyyy HH:mm' }} {{ getTimezoneAbbr() }}
+            {{ situationDateFormControl.value | date: 'dd MMM yyyy HH:mm' }} {{ situationDateFormControl.value | timezoneAbbr }}
           </span>
           <mat-datepicker-toggle matSuffix title="Choose Date/Time" [for]="picker">
           </mat-datepicker-toggle>

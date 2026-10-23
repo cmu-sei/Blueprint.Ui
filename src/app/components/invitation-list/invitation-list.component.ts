@@ -82,6 +82,9 @@ export class InvitationListComponent implements OnDestroy {
         isTeamLeader: false,
         wasDeactivated: false
       };
+    } else {
+      // edit a copy, because the stored invitation is read-only
+      invitation = { ...invitation };
     }
     const dialogRef = this.dialog.open(InvitationEditDialogComponent, {
       minWidth: '400px',

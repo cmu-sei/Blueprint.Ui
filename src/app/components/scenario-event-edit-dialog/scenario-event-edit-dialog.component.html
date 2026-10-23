@@ -79,11 +79,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
           @for (df of sortedDataFields; track df.id) {
           <div class="full-width">
             <app-data-value [(value)]="getDataValue(df.name).value" [dataField]="df"
-              [canEdit]="data.isEditor && (!data.isEditingRestricted || data.scenarioEvent.scenarioEventType === eventType.Information)"
+              [canEdit]="canEditDataValues()"
               [canApprove]="data.isApprover" [isOwner]="data.isOwner" [showValueOnly]="false"
               [organizationOptions]="data.organizationList" [teamOptions]="data.teamList" [unitOptions]="data.unitList"
               [cardOptions]="data.cardList" [moveOptions]="data.moveList"
-              [gallerySourceTypeOptions]="data.gallerySourceTypes" [userOptions]="data.userList"></app-data-value>
+              [gallerySourceTypeOptions]="data.gallerySourceTypes"
+              [galleryItemStatusOptions]="data.galleryItemStatuses" [userOptions]="data.userList"></app-data-value>
           </div>
           }
           <!-- metadata-->

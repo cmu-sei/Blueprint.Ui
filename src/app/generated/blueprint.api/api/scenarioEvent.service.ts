@@ -28,6 +28,10 @@ import { CreateFromInjectsForm } from '../model/createFromInjectsForm';
 import { ProblemDetails } from '../model/problemDetails';
 // @ts-ignore
 import { ScenarioEvent } from '../model/scenarioEvent';
+// @ts-ignore
+import { ScenarioEventCreate } from '../model/scenarioEventCreate';
+// @ts-ignore
+import { ScenarioEventEdit } from '../model/scenarioEventEdit';
 
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS }                     from '../variables';
@@ -191,14 +195,14 @@ export class ScenarioEventService extends BaseService {
     /**
      * Creates a new ScenarioEvent
      * Creates a new ScenarioEvent with the attributes specified &lt;para /&gt; Accessible only to a SuperUser or an Administrator
-     * @param scenarioEvent The data to create the ScenarioEvent with
+     * @param scenarioEventCreate The data to create the ScenarioEvent with
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public createScenarioEvent(scenarioEvent?: ScenarioEvent, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<ScenarioEvent>>;
-    public createScenarioEvent(scenarioEvent?: ScenarioEvent, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<ScenarioEvent>>>;
-    public createScenarioEvent(scenarioEvent?: ScenarioEvent, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<ScenarioEvent>>>;
-    public createScenarioEvent(scenarioEvent?: ScenarioEvent, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public createScenarioEvent(scenarioEventCreate?: ScenarioEventCreate, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<ScenarioEvent>>;
+    public createScenarioEvent(scenarioEventCreate?: ScenarioEventCreate, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<ScenarioEvent>>>;
+    public createScenarioEvent(scenarioEventCreate?: ScenarioEventCreate, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<ScenarioEvent>>>;
+    public createScenarioEvent(scenarioEventCreate?: ScenarioEventCreate, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -246,7 +250,7 @@ export class ScenarioEventService extends BaseService {
         return this.httpClient.request<Array<ScenarioEvent>>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: scenarioEvent,
+                body: scenarioEventCreate,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
@@ -506,16 +510,16 @@ export class ScenarioEventService extends BaseService {
 
     /**
      * Updates a ScenarioEvent
-     * Updates a ScenarioEvent with the attributes specified &lt;para /&gt; Accessible only to a SuperUser or a User on an Admin Team within the specified ScenarioEvent
+     * Updates a ScenarioEvent with the attributes specified. The ScenarioEvent stays in its MSEL. &lt;para /&gt; Accessible only to a SuperUser or a User on an Admin Team within the specified ScenarioEvent
      * @param id The Id of the ScenarioEvent to update
-     * @param scenarioEvent The updated ScenarioEvent values
+     * @param scenarioEventEdit The updated ScenarioEvent values
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public updateScenarioEvent(id: string, scenarioEvent?: ScenarioEvent, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<ScenarioEvent>>;
-    public updateScenarioEvent(id: string, scenarioEvent?: ScenarioEvent, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<ScenarioEvent>>>;
-    public updateScenarioEvent(id: string, scenarioEvent?: ScenarioEvent, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<ScenarioEvent>>>;
-    public updateScenarioEvent(id: string, scenarioEvent?: ScenarioEvent, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public updateScenarioEvent(id: string, scenarioEventEdit?: ScenarioEventEdit, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<ScenarioEvent>>;
+    public updateScenarioEvent(id: string, scenarioEventEdit?: ScenarioEventEdit, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<ScenarioEvent>>>;
+    public updateScenarioEvent(id: string, scenarioEventEdit?: ScenarioEventEdit, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<ScenarioEvent>>>;
+    public updateScenarioEvent(id: string, scenarioEventEdit?: ScenarioEventEdit, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (id === null || id === undefined) {
             throw new Error('Required parameter id was null or undefined when calling updateScenarioEvent.');
         }
@@ -566,7 +570,7 @@ export class ScenarioEventService extends BaseService {
         return this.httpClient.request<Array<ScenarioEvent>>('put', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: scenarioEvent,
+                body: scenarioEventEdit,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,

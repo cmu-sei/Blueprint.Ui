@@ -6,6 +6,7 @@
 
 import { ScenarioEventStore } from './scenario-event.store';
 import { Injectable } from '@angular/core';
+import { isDateTimeValue } from 'src/app/utilities/date-time-value';
 import { Sort } from '@angular/material/sort';
 import {
   Card,
@@ -19,6 +20,8 @@ import {
   User,
 } from 'src/app/generated/blueprint.api';
 import { take, tap } from 'rxjs/operators';
+import { ipSortKey } from 'src/app/utilities/ip-address';
+import { getTimezoneAbbr } from 'src/app/utilities/timezone-abbr';
 
 
 export type IntegrationTarget = 'Gallery' | 'Steamfitter' | 'Email' | 'Notification';
@@ -32,6 +35,7 @@ export const IntegrationTarget = {
 export interface DataValuePlus extends DataValue {
   fieldType: DataFieldType;
   sortAndFilterValue: string | number;
+  sortValue?: string; // set when sorting must differ from the filter text, as for IP addresses
   valueArray: string[];
 }
 
@@ -106,6 +110,8 @@ export class ScenarioEventDataService {
     DataFieldType.User,
     DataFieldType.Url,
     DataFieldType.Competency,
+    DataFieldType.IpAddress,
+    DataFieldType.Network,
   ];
 
   loadByMsel(mselId: string) {
@@ -242,10 +248,11 @@ export class ScenarioEventDataService {
       case DataFieldType.User:
         return value.sortAndFilterValue.toString();
       case DataFieldType.DateTime:
-        const dateValue = value.value ? value.value : '';
+        const dateValue = value.value ? value.value.trim() : '';
         if (!dateValue) return ' ';
+        // a value that is not a date, such as a team left by a data type change, is shown as it is
+        if (!isDateTimeValue(dateValue)) return dateValue;
         const date = new Date(dateValue);
-        if (isNaN(date.getTime())) return ' ';
 
         // Format as: dd MMM yyyy HH:mm TZ
         const day = String(date.getDate()).padStart(2, '0');
@@ -254,7 +261,7 @@ export class ScenarioEventDataService {
         const year = date.getFullYear();
         const hours = String(date.getHours()).padStart(2, '0');
         const minutes = String(date.getMinutes()).padStart(2, '0');
-        const tz = this.getTimezoneAbbr();
+        const tz = getTimezoneAbbr(date);
 
         return `${day} ${month} ${year} ${hours}:${minutes} ${tz}`;
       default:
@@ -427,6 +434,9 @@ export class ScenarioEventDataService {
           valueArray: value.value ? value.value.split(', ') : [],
           fieldType: fieldType.dataType,
         };
+        if (fieldType.dataType === DataFieldType.IpAddress || fieldType.dataType === DataFieldType.Network) {
+          dataValue.sortValue = ipSortKey(value.value);
+        }
         eventProps.set(fieldType.name, dataValue);
       }
     }
@@ -526,7 +536,7 @@ export class ScenarioEventDataService {
       const eventMap = valueMap.get(scenarioEvent.id);
       const val = eventMap ? eventMap.get(fieldName) : '';
       if (val) {
-        return val.sortAndFilterValue;
+        return val.sortValue ?? val.sortAndFilterValue;
       }
       return '';
     }
@@ -614,20 +624,5 @@ export class ScenarioEventDataService {
       this.sortScenarioEventImpl(a, b, sorts, valueMap)
     );
     return scenarioEvents;
-  }
-
-  private getTimezoneAbbr(): string {
-    try {
-      const date = new Date();
-      const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
-      const formatted = date.toLocaleTimeString('en-US', {
-        timeZoneName: 'short',
-        timeZone
-      });
-      const parts = formatted.split(' ');
-      return parts[parts.length - 1] || 'UTC';
-    } catch (error) {
-      return 'UTC';
-    }
   }
 }

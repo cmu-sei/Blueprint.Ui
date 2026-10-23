@@ -11,6 +11,8 @@ import {
   MselItemStatus,
 } from 'src/app/generated/blueprint.api';
 import { EDITOR_CONFIG, VIEW_CONFIG } from 'src/app/utilities/editor-config';
+import { ErrorStateMatcher } from '@angular/material/core';
+import { dataValueError } from 'src/app/utilities/ip-address';
 
 @Component({
     selector: 'app-data-value',
@@ -31,6 +33,7 @@ export class DataValueComponent {
   @Input() cardOptions: any[] = [];
   @Input() moveOptions: any[] = [];
   @Input() gallerySourceTypeOptions: any[] = [];
+  @Input() galleryItemStatusOptions: string[] = [];
   @Input() userOptions: any[] = [];
   @Output() valueChange = new EventEmitter<any>();
   editorConfig = EDITOR_CONFIG;
@@ -44,6 +47,38 @@ export class DataValueComponent {
     MselItemStatus.Deployed,
     MselItemStatus.Archived,
   ];
+  // the color Gallery shows for each article status
+  galleryItemStatusColors: { [status: string]: string } = {
+    Gray: '#b5b5b5',
+    Green: 'rgb(163, 235, 163)',
+    Yellow: 'rgb(250, 235, 100)',
+    Orange: 'rgb(250, 163, 2)',
+    Red: '#ff3333',
+  };
+  // the names Gallery used before its statuses were named for colors; existing MSELs still hold them
+  legacyGalleryItemStatuses: { [status: string]: string } = {
+    unused: 'Gray',
+    closed: 'Red',
+    critical: 'Orange',
+    affected: 'Yellow',
+    open: 'Green',
+  };
+
+  // the data field that sets a Gallery Article's status
+  get isGalleryItemStatus(): boolean {
+    return this.dataField?.galleryArticleParameter === 'Status';
+  }
+
+  // the MSEL's Gallery statuses replace free text and the field's own option list
+  get useGalleryItemStatusSelect(): boolean {
+    return (
+      this.isGalleryItemStatus &&
+      this.galleryItemStatusOptions?.length > 0 &&
+      (this.dataField.isChosenFromList ||
+        this.dataField.dataType === DataFieldType.String ||
+        this.dataField.dataType === DataFieldType.Url)
+    );
+  }
 
   // --- Competency chips + search list ---
   competencyFilter = '';
@@ -97,6 +132,15 @@ export class DataValueComponent {
     this.valueChangeHandler();
   }
 
+  // shows the value's error as soon as it applies, rather than waiting for the field to lose focus
+  valueErrorMatcher: ErrorStateMatcher = {
+    isErrorState: () => !!this.valueError(),
+  };
+
+  valueError(): string {
+    return dataValueError(this.dataField?.dataType, this.value);
+  }
+
   valueChangeHandler() {
     this.valueChange.emit(this.value);
   }
@@ -128,27 +172,22 @@ export class DataValueComponent {
     return move ? move.title : '';
   }
 
+  // a color name or a legacy name, any case, as the color name; anything else unchanged
+  getGalleryItemStatus(value: string): string {
+    const status = value?.trim() || '';
+    const color = Object.keys(this.galleryItemStatusColors).find(
+      (c) => c.toLowerCase() === status.toLowerCase()
+    );
+    return color || this.legacyGalleryItemStatuses[status.toLowerCase()] || value;
+  }
+
+  galleryItemStatusChange(status: string) {
+    this.value = status;
+    this.valueChangeHandler();
+  }
+
   getUserName(id: string): string {
     const user = this.userOptions?.find((m) => m.id === id);
     return user ? user.name : '';
-  }
-
-  getUserTimezone(): string {
-    return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
-  }
-
-  getTimezoneAbbr(): string {
-    try {
-      const date = new Date();
-    const timeZone = this.getUserTimezone();
-    const formatted = date.toLocaleTimeString('en-US', {
-      timeZoneName: 'short',
-      timeZone
-    });
-    const parts = formatted.split(' ');
-    return parts[parts.length - 1] || 'UTC';
-    } catch (error) {
-      return 'UTC';
-    }
   }
 }

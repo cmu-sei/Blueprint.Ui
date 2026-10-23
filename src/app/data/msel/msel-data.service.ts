@@ -17,6 +17,7 @@ import {
   MselItemStatus,
   Move,
   Msel,
+  MselImportResult,
   MselRole,
   MselService,
   Unit,
@@ -51,6 +52,10 @@ export class MselPlus implements Msel {
   citeScoringModelId?: string;
   useSteamfitter?: boolean;
   steamfitterScenarioId?: string;
+  useCaster?: boolean;
+  casterDirectoryId?: string;
+  casterWorkspaceId?: string;
+  casterRunId?: string;
   isTemplate?: boolean;
   startTime?: Date;
   durationSeconds?: number;
@@ -80,6 +85,7 @@ export class MselPlus implements Msel {
   cards?: Array<Card>;
   galleryArticleParameters?: Array<string>;
   gallerySourceTypes?: Array<string>;
+  galleryItemStatuses?: Array<string>;
   playerIntegrationType?: IntegrationType;
   galleryIntegrationType?: IntegrationType;
   citeIntegrationType?: IntegrationType;
@@ -643,6 +649,15 @@ export class MselDataService {
           this.uploadProgress.next(0);
           this.errorService.handleError(error);
         }
+      );
+  }
+
+  // Errors are left to the caller, which shows them in the import dialog
+  importJson(file: File): Observable<MselImportResult> {
+    return this.mselService
+      .importJsonMsel(file)
+      .pipe(
+        tap((result) => this.mselStore.upsert(result.msel.id, result.msel))
       );
   }
 

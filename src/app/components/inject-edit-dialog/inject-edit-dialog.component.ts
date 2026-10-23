@@ -5,6 +5,7 @@
 import { Component, EventEmitter, Inject, Output } from '@angular/core';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { DataValue } from 'src/app/generated/blueprint.api';
+import { hasInvalidDataValue } from 'src/app/utilities/ip-address';
 
 @Component({
     selector: 'app-inject-edit-dialog',
@@ -20,7 +21,9 @@ export class InjectEditDialogComponent {
   ) {}
 
   errorFree() {
-    return this.data.inject.name && this.data.inject.description;
+    return this.data.inject.name && this.data.inject.description &&
+      // a read-only value can't be fixed here, so it doesn't hold up Save
+      !(this.data.isEditMode && hasInvalidDataValue(this.data.dataFieldList, this.data.inject.dataValues));
   }
 
   /**

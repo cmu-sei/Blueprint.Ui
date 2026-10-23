@@ -55,6 +55,11 @@ export interface Msel {
     useSteamfitter?: boolean;
     steamfitterScenarioId?: string | null;
     steamfitterIntegrationType?: IntegrationType;
+    useCaster?: boolean;
+    casterDirectoryId?: string | null;
+    casterWorkspaceId?: string | null;
+    casterRunId?: string | null;
+    casterIntegrationType?: IntegrationType;
     isTemplate?: boolean;
     startTime?: Date;
     durationSeconds?: number;
@@ -91,6 +96,7 @@ export interface Msel {
     cards?: Array<Card> | null;
     galleryArticleParameters?: Array<string> | null;
     gallerySourceTypes?: Array<string> | null;
+    galleryItemStatuses?: Array<string> | null;
     citeDuties?: Array<CiteDuty> | null;
     citeActions?: Array<CiteAction> | null;
     playerApplications?: Array<PlayerApplication> | null;

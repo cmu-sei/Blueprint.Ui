@@ -25,6 +25,10 @@ import { Observable }                                        from 'rxjs';
 // @ts-ignore
 import { Move } from '../model/move';
 // @ts-ignore
+import { MoveCreate } from '../model/moveCreate';
+// @ts-ignore
+import { MoveEdit } from '../model/moveEdit';
+// @ts-ignore
 import { ProblemDetails } from '../model/problemDetails';
 
 // @ts-ignore
@@ -46,14 +50,14 @@ export class MoveService extends BaseService {
     /**
      * Creates a new Move
      * Creates a new Move with the attributes specified &lt;para /&gt; Accessible only to a ContentDeveloper or an Administrator
-     * @param move The data used to create the Move
+     * @param moveCreate The data used to create the Move
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public createMove(move?: Move, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<Move>;
-    public createMove(move?: Move, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Move>>;
-    public createMove(move?: Move, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Move>>;
-    public createMove(move?: Move, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public createMove(moveCreate?: MoveCreate, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<Move>;
+    public createMove(moveCreate?: MoveCreate, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Move>>;
+    public createMove(moveCreate?: MoveCreate, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Move>>;
+    public createMove(moveCreate?: MoveCreate, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -101,7 +105,7 @@ export class MoveService extends BaseService {
         return this.httpClient.request<Move>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: move,
+                body: moveCreate,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
@@ -292,16 +296,16 @@ export class MoveService extends BaseService {
 
     /**
      * Updates a  Move
-     * Updates a Move with the attributes specified. The ID from the route MUST MATCH the ID contained in the move parameter &lt;para /&gt; Accessible only to a ContentDeveloper or an Administrator
+     * Updates a Move with the attributes specified. The Move stays in its MSEL: the MSEL cannot be changed &lt;para /&gt; Accessible only to a ContentDeveloper or an Administrator
      * @param id The Id of the Move to update
-     * @param move The updated Move values
+     * @param moveEdit The updated Move values
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public updateMove(id: string, move?: Move, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<Move>;
-    public updateMove(id: string, move?: Move, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Move>>;
-    public updateMove(id: string, move?: Move, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Move>>;
-    public updateMove(id: string, move?: Move, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public updateMove(id: string, moveEdit?: MoveEdit, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<Move>;
+    public updateMove(id: string, moveEdit?: MoveEdit, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Move>>;
+    public updateMove(id: string, moveEdit?: MoveEdit, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Move>>;
+    public updateMove(id: string, moveEdit?: MoveEdit, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (id === null || id === undefined) {
             throw new Error('Required parameter id was null or undefined when calling updateMove.');
         }
@@ -352,7 +356,7 @@ export class MoveService extends BaseService {
         return this.httpClient.request<Move>('put', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: move,
+                body: moveEdit,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,

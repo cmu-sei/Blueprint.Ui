@@ -119,6 +119,7 @@ import { MoveListComponent } from './components/move-list/move-list.component';
 import { MselComponent } from './components/msel/msel.component';
 import { MselContributorsComponent } from './components/msel-contributors/msel-contributors.component';
 import { MselInfoComponent } from './components/msel-info/msel-info.component';
+import { MselImportDialogComponent } from './components/msel-import-dialog/msel-import-dialog.component';
 import { IntegrationStatusComponent } from './components/integration-status/integration-status.component';
 import { MselListComponent } from './components/msel-list/msel-list.component';
 import { MselPageComponent } from './components/msel-page/msel-page.component';
@@ -153,6 +154,8 @@ import { ApiModule as SwaggerCodegenApiModule } from './generated/blueprint.api/
 import { DisplayOrderPipe, SortByPipe } from 'src/app/utilities/sort-by-pipe';
 import { AngularEditorModule } from '@kolkov/angular-editor';
 import { PlainTextPipe } from './utilities/plain-text-pipe';
+import { TimezoneAbbrPipe } from './utilities/timezone-abbr';
+import { IsDateTimeValuePipe } from './utilities/date-time-value';
 import {
   NgxMatDatepickerActions,
   NgxMatDatepickerApply,
@@ -219,6 +222,7 @@ export const appConfig: ApplicationConfig = {
     MselComponent,
     MselContributorsComponent,
     MselInfoComponent,
+    MselImportDialogComponent,
     IntegrationStatusComponent,
     MselListComponent,
     MselPageComponent,
@@ -271,6 +275,8 @@ export const appConfig: ApplicationConfig = {
     DisplayOrderPipe,
     SortByPipe,
     PlainTextPipe,
+    TimezoneAbbrPipe,
+    IsDateTimeValuePipe,
     DurationEditComponent,
     DurationViewComponent,
     EventDetailPageComponent,

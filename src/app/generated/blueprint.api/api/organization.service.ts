@@ -25,6 +25,10 @@ import { Observable }                                        from 'rxjs';
 // @ts-ignore
 import { Organization } from '../model/organization';
 // @ts-ignore
+import { OrganizationCreate } from '../model/organizationCreate';
+// @ts-ignore
+import { OrganizationEdit } from '../model/organizationEdit';
+// @ts-ignore
 import { ProblemDetails } from '../model/problemDetails';
 
 // @ts-ignore
@@ -46,14 +50,14 @@ export class OrganizationService extends BaseService {
     /**
      * Creates a new Organization
      * Creates a new Organization with the attributes specified &lt;para /&gt; Accessible only to a ContentDeveloper or an Administrator
-     * @param organization The data used to create the Organization
+     * @param organizationCreate The data used to create the Organization
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public createOrganization(organization?: Organization, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<Organization>;
-    public createOrganization(organization?: Organization, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Organization>>;
-    public createOrganization(organization?: Organization, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Organization>>;
-    public createOrganization(organization?: Organization, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public createOrganization(organizationCreate?: OrganizationCreate, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<Organization>;
+    public createOrganization(organizationCreate?: OrganizationCreate, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Organization>>;
+    public createOrganization(organizationCreate?: OrganizationCreate, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Organization>>;
+    public createOrganization(organizationCreate?: OrganizationCreate, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -101,7 +105,7 @@ export class OrganizationService extends BaseService {
         return this.httpClient.request<Organization>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: organization,
+                body: organizationCreate,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
@@ -408,16 +412,16 @@ export class OrganizationService extends BaseService {
 
     /**
      * Updates a  Organization
-     * Updates a Organization with the attributes specified. The ID from the route MUST MATCH the ID contained in the organization parameter &lt;para /&gt; Accessible only to a ContentDeveloper or an Administrator
+     * Updates a Organization with the attributes specified. The Organization stays where it is: its MSEL and template flag cannot be changed &lt;para /&gt; Accessible only to a ContentDeveloper or an Administrator
      * @param id The Id of the Organization to update
-     * @param organization The updated Organization values
+     * @param organizationEdit The updated Organization values
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public updateOrganization(id: string, organization?: Organization, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<Organization>;
-    public updateOrganization(id: string, organization?: Organization, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Organization>>;
-    public updateOrganization(id: string, organization?: Organization, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Organization>>;
-    public updateOrganization(id: string, organization?: Organization, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public updateOrganization(id: string, organizationEdit?: OrganizationEdit, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<Organization>;
+    public updateOrganization(id: string, organizationEdit?: OrganizationEdit, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Organization>>;
+    public updateOrganization(id: string, organizationEdit?: OrganizationEdit, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Organization>>;
+    public updateOrganization(id: string, organizationEdit?: OrganizationEdit, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (id === null || id === undefined) {
             throw new Error('Required parameter id was null or undefined when calling updateOrganization.');
         }
@@ -468,7 +472,7 @@ export class OrganizationService extends BaseService {
         return this.httpClient.request<Organization>('put', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: organization,
+                body: organizationEdit,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,

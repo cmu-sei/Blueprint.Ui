@@ -1,0 +1,75 @@
+<!--
+Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license, please see LICENSE.md in the
+project root for license information or contact permission@sei.cmu.edu for full terms.
+-->
+
+<crucible-dialog dialogTitle="Import MSEL" [hideDefaultActions]="true">
+
+<div crucibleDialogContent>
+  @if (isImporting) {
+  <div class="importing">
+    <mat-spinner diameter="40"></mat-spinner>
+    <span>Importing {{ data.file.name }}...</span>
+  </div>
+  } @else if (errorMessage) {
+  <div class="error-message" role="alert">
+    <mat-icon fontIcon="mdi-alert-circle-outline"></mat-icon>
+    <span>{{ errorMessage }}</span>
+  </div>
+  } @else if (result) {
+  <p class="msel-name">{{ result.msel.name }}</p>
+
+  <section class="section">
+    <h3 class="section-title">Imported</h3>
+    <ul class="count-list">
+      @for (count of counts; track count.label) {
+      <li>
+        <span class="count-value">{{ count.value }}</span>
+        <span class="count-label">{{ count.label }}</span>
+      </li>
+      }
+    </ul>
+  </section>
+
+  @if (result.changes?.length) {
+  <section class="section">
+    <h3 class="section-title">Changed</h3>
+    <ul class="message-list">
+      @for (change of result.changes; track $index) {
+      <li>
+        <mat-icon fontIcon="mdi-information-outline"></mat-icon>
+        <span>{{ change.message }}</span>
+      </li>
+      }
+    </ul>
+  </section>
+  }
+
+  @if (result.failures?.length) {
+  <section class="section failed">
+    <h3 class="section-title">Failed</h3>
+    <ul class="message-list">
+      @for (failure of result.failures; track $index) {
+      <li>
+        <mat-icon fontIcon="mdi-alert-circle-outline"></mat-icon>
+        <span><strong>{{ failure.step }}:</strong> {{ failure.message }}</span>
+      </li>
+      }
+    </ul>
+  </section>
+  }
+  }
+</div>
+
+<ng-container crucibleDialogActions>
+  @if (result) {
+  <button matButton="outlined" type="button" (click)="close()">Close</button>
+  <button matButton="filled" type="button" (click)="openMsel()">Open MSEL</button>
+  } @else {
+  <button matButton="filled" type="button" (click)="close()" [disabled]="isImporting">
+    Close
+  </button>
+  }
+</ng-container>
+</crucible-dialog>

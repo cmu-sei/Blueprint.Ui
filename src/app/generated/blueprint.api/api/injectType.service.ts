@@ -25,6 +25,10 @@ import { Observable }                                        from 'rxjs';
 // @ts-ignore
 import { InjectType } from '../model/injectType';
 // @ts-ignore
+import { InjectTypeCreate } from '../model/injectTypeCreate';
+// @ts-ignore
+import { InjectTypeEdit } from '../model/injectTypeEdit';
+// @ts-ignore
 import { ProblemDetails } from '../model/problemDetails';
 
 // @ts-ignore
@@ -45,15 +49,15 @@ export class InjectTypeService extends BaseService {
 
     /**
      * Creates a new InjectType
-     * Creates a new InjectType with the attributes specified &lt;para /&gt; Accessible only to a SuperUser or an Administrator
-     * @param injectType The data to create the InjectType with
+     * Creates a new InjectType with the attributes specified. Any DataFields sent with it are created as new fields of the InjectType. &lt;para /&gt; Accessible only to a SuperUser or an Administrator
+     * @param injectTypeCreate The data to create the InjectType with
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public createInjectType(injectType?: InjectType, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<InjectType>;
-    public createInjectType(injectType?: InjectType, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<InjectType>>;
-    public createInjectType(injectType?: InjectType, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<InjectType>>;
-    public createInjectType(injectType?: InjectType, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public createInjectType(injectTypeCreate?: InjectTypeCreate, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<InjectType>;
+    public createInjectType(injectTypeCreate?: InjectTypeCreate, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<InjectType>>;
+    public createInjectType(injectTypeCreate?: InjectTypeCreate, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<InjectType>>;
+    public createInjectType(injectTypeCreate?: InjectTypeCreate, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -101,7 +105,7 @@ export class InjectTypeService extends BaseService {
         return this.httpClient.request<InjectType>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: injectType,
+                body: injectTypeCreate,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
@@ -348,16 +352,16 @@ export class InjectTypeService extends BaseService {
 
     /**
      * Updates a InjectType
-     * Updates a InjectType with the attributes specified &lt;para /&gt; Accessible only to a SuperUser or a User on an Admin Team within the specified InjectType
+     * Updates a InjectType with the attributes specified. Its DataFields are edited through the DataField endpoints. &lt;para /&gt; Accessible only to a SuperUser or a User on an Admin Team within the specified InjectType
      * @param id The Id of the Exericse to update
-     * @param injectType The updated InjectType values
+     * @param injectTypeEdit The updated InjectType values
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public updateInjectType(id: string, injectType?: InjectType, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<InjectType>;
-    public updateInjectType(id: string, injectType?: InjectType, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<InjectType>>;
-    public updateInjectType(id: string, injectType?: InjectType, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<InjectType>>;
-    public updateInjectType(id: string, injectType?: InjectType, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public updateInjectType(id: string, injectTypeEdit?: InjectTypeEdit, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<InjectType>;
+    public updateInjectType(id: string, injectTypeEdit?: InjectTypeEdit, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<InjectType>>;
+    public updateInjectType(id: string, injectTypeEdit?: InjectTypeEdit, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<InjectType>>;
+    public updateInjectType(id: string, injectTypeEdit?: InjectTypeEdit, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (id === null || id === undefined) {
             throw new Error('Required parameter id was null or undefined when calling updateInjectType.');
         }
@@ -408,7 +412,7 @@ export class InjectTypeService extends BaseService {
         return this.httpClient.request<InjectType>('put', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: injectType,
+                body: injectTypeEdit,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,

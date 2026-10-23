@@ -112,7 +112,7 @@ export class OrganizationListComponent implements OnDestroy, OnInit, AfterViewIn
         email: '',
         summary: '',
         description: '',
-        mselId: this.msel.id,
+        mselId: makeTemplate ? null : this.msel.id,
         isTemplate: makeTemplate
       };
     } else {

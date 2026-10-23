@@ -25,6 +25,10 @@ import { Observable }                                        from 'rxjs';
 // @ts-ignore
 import { CardTeam } from '../model/cardTeam';
 // @ts-ignore
+import { CardTeamCreate } from '../model/cardTeamCreate';
+// @ts-ignore
+import { CardTeamEdit } from '../model/cardTeamEdit';
+// @ts-ignore
 import { ProblemDetails } from '../model/problemDetails';
 
 // @ts-ignore
@@ -46,14 +50,14 @@ export class CardTeamService extends BaseService {
     /**
      * Creates a new CardTeam
      * Creates a new CardTeam with the attributes specified &lt;para /&gt;
-     * @param cardTeam The data to create the CardTeam with
+     * @param cardTeamCreate The data to create the CardTeam with
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public createCardTeam(cardTeam?: CardTeam, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<CardTeam>;
-    public createCardTeam(cardTeam?: CardTeam, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<CardTeam>>;
-    public createCardTeam(cardTeam?: CardTeam, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<CardTeam>>;
-    public createCardTeam(cardTeam?: CardTeam, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public createCardTeam(cardTeamCreate?: CardTeamCreate, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<CardTeam>;
+    public createCardTeam(cardTeamCreate?: CardTeamCreate, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<CardTeam>>;
+    public createCardTeam(cardTeamCreate?: CardTeamCreate, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<CardTeam>>;
+    public createCardTeam(cardTeamCreate?: CardTeamCreate, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -101,7 +105,7 @@ export class CardTeamService extends BaseService {
         return this.httpClient.request<CardTeam>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: cardTeam,
+                body: cardTeamCreate,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
@@ -470,16 +474,16 @@ export class CardTeamService extends BaseService {
 
     /**
      * Updates a  CardTeam
-     * Updates a CardTeam with the attributes specified. The ID from the route MUST MATCH the ID contained in the cardTeam parameter &lt;para /&gt; Accessible only to a ContentDeveloper or an Administrator
+     * Updates a CardTeam with the attributes specified. The Card and the Team cannot be changed. &lt;para /&gt; Accessible only to a ContentDeveloper or an Administrator
      * @param id The Id of the CardTeam to update
-     * @param cardTeam The updated CardTeam values
+     * @param cardTeamEdit The updated CardTeam values
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public updateCardTeam(id: string, cardTeam?: CardTeam, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<CardTeam>;
-    public updateCardTeam(id: string, cardTeam?: CardTeam, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<CardTeam>>;
-    public updateCardTeam(id: string, cardTeam?: CardTeam, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<CardTeam>>;
-    public updateCardTeam(id: string, cardTeam?: CardTeam, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public updateCardTeam(id: string, cardTeamEdit?: CardTeamEdit, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<CardTeam>;
+    public updateCardTeam(id: string, cardTeamEdit?: CardTeamEdit, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<CardTeam>>;
+    public updateCardTeam(id: string, cardTeamEdit?: CardTeamEdit, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<CardTeam>>;
+    public updateCardTeam(id: string, cardTeamEdit?: CardTeamEdit, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (id === null || id === undefined) {
             throw new Error('Required parameter id was null or undefined when calling updateCardTeam.');
         }
@@ -530,7 +534,7 @@ export class CardTeamService extends BaseService {
         return this.httpClient.request<CardTeam>('put', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: cardTeam,
+                body: cardTeamEdit,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,

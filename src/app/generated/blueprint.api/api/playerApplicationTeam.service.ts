@@ -25,6 +25,10 @@ import { Observable }                                        from 'rxjs';
 // @ts-ignore
 import { PlayerApplicationTeam } from '../model/playerApplicationTeam';
 // @ts-ignore
+import { PlayerApplicationTeamCreate } from '../model/playerApplicationTeamCreate';
+// @ts-ignore
+import { PlayerApplicationTeamEdit } from '../model/playerApplicationTeamEdit';
+// @ts-ignore
 import { ProblemDetails } from '../model/problemDetails';
 
 // @ts-ignore
@@ -46,14 +50,14 @@ export class PlayerApplicationTeamService extends BaseService {
     /**
      * Creates a new PlayerApplicationTeam
      * Creates a new PlayerApplicationTeam with the attributes specified &lt;para /&gt;
-     * @param playerApplicationTeam The data to create the PlayerApplicationTeam with
+     * @param playerApplicationTeamCreate The data to create the PlayerApplicationTeam with
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public createPlayerApplicationTeam(playerApplicationTeam?: PlayerApplicationTeam, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<PlayerApplicationTeam>;
-    public createPlayerApplicationTeam(playerApplicationTeam?: PlayerApplicationTeam, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<PlayerApplicationTeam>>;
-    public createPlayerApplicationTeam(playerApplicationTeam?: PlayerApplicationTeam, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<PlayerApplicationTeam>>;
-    public createPlayerApplicationTeam(playerApplicationTeam?: PlayerApplicationTeam, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public createPlayerApplicationTeam(playerApplicationTeamCreate?: PlayerApplicationTeamCreate, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<PlayerApplicationTeam>;
+    public createPlayerApplicationTeam(playerApplicationTeamCreate?: PlayerApplicationTeamCreate, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<PlayerApplicationTeam>>;
+    public createPlayerApplicationTeam(playerApplicationTeamCreate?: PlayerApplicationTeamCreate, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<PlayerApplicationTeam>>;
+    public createPlayerApplicationTeam(playerApplicationTeamCreate?: PlayerApplicationTeamCreate, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -101,7 +105,7 @@ export class PlayerApplicationTeamService extends BaseService {
         return this.httpClient.request<PlayerApplicationTeam>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: playerApplicationTeam,
+                body: playerApplicationTeamCreate,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
@@ -470,16 +474,16 @@ export class PlayerApplicationTeamService extends BaseService {
 
     /**
      * Updates a  PlayerApplicationTeam
-     * Updates a PlayerApplicationTeam with the attributes specified. The ID from the route MUST MATCH the ID contained in the playerApplicationTeam parameter &lt;para /&gt; Accessible only to a ContentDeveloper or an Administrator
+     * Updates a PlayerApplicationTeam with the attributes specified. The Player Application and the Team cannot be changed. &lt;para /&gt; Accessible only to a ContentDeveloper or an Administrator
      * @param id The Id of the PlayerApplicationTeam to update
-     * @param playerApplicationTeam The updated PlayerApplicationTeam values
+     * @param playerApplicationTeamEdit The updated PlayerApplicationTeam values
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public updatePlayerApplicationTeam(id: string, playerApplicationTeam?: PlayerApplicationTeam, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<PlayerApplicationTeam>;
-    public updatePlayerApplicationTeam(id: string, playerApplicationTeam?: PlayerApplicationTeam, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<PlayerApplicationTeam>>;
-    public updatePlayerApplicationTeam(id: string, playerApplicationTeam?: PlayerApplicationTeam, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<PlayerApplicationTeam>>;
-    public updatePlayerApplicationTeam(id: string, playerApplicationTeam?: PlayerApplicationTeam, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public updatePlayerApplicationTeam(id: string, playerApplicationTeamEdit?: PlayerApplicationTeamEdit, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<PlayerApplicationTeam>;
+    public updatePlayerApplicationTeam(id: string, playerApplicationTeamEdit?: PlayerApplicationTeamEdit, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<PlayerApplicationTeam>>;
+    public updatePlayerApplicationTeam(id: string, playerApplicationTeamEdit?: PlayerApplicationTeamEdit, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<PlayerApplicationTeam>>;
+    public updatePlayerApplicationTeam(id: string, playerApplicationTeamEdit?: PlayerApplicationTeamEdit, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (id === null || id === undefined) {
             throw new Error('Required parameter id was null or undefined when calling updatePlayerApplicationTeam.');
         }
@@ -530,7 +534,7 @@ export class PlayerApplicationTeamService extends BaseService {
         return this.httpClient.request<PlayerApplicationTeam>('put', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: playerApplicationTeam,
+                body: playerApplicationTeamEdit,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
