@@ -6,6 +6,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
+import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
@@ -45,7 +46,7 @@ async function renderDashboard(
   // service is provided over the stubbed endpoint, without priming it.
   const permissionApis = permissionApiStubs({ system: permissions });
   const rendered = await renderComponent(DashboardComponent, {
-    imports: [MatCardModule, MatProgressSpinnerModule],
+    imports: [MatCardModule, MatIconModule, MatProgressSpinnerModule],
     declarations: [DashboardComponent, TopbarStub],
     providers: [
       { provide: SystemPermissionsService, useValue: permissionApis.systemPermissions },
@@ -74,40 +75,41 @@ describe('DashboardComponent', () => {
    * Interacts with: MselService.getMyJoinMsels / getMyLaunchMsels / getMyMsels (stubs), real CurrentUserStore through UserDataService.setCurrentUser.
    * Data: one MSEL of each kind; no system permission.
    */
-  it('offers join, start and manage cards for the user MSELs', async () => {
+  it('offers join, launch and build cards for the user MSELs', async () => {
     const { mselApi } = await renderDashboard({ join: [ALPHA], launch: [ALPHA], build: [ALPHA] });
 
     expect(mselApi.getMyMsels).toHaveBeenCalledTimes(1);
-    expect(card('Join an Event')).toBeInTheDocument();
-    expect(card('Start an Event')).toBeInTheDocument();
-    expect(card('Manage an Event')).toBeInTheDocument();
+    expect(card('JOIN')).toBeInTheDocument();
+    expect(card('LAUNCH')).toBeInTheDocument();
+    expect(card('BUILD')).toBeInTheDocument();
   });
 
   /**
-   * Verifies: with CreateMsels the Manage card is offered even with no MSEL to manage, and opens /build.
+   * Verifies: with CreateMsels the BUILD card is offered even with no MSEL to manage, and opens /build.
    * Interacts with: real PermissionDataService (grants: CreateMsels), Router.navigate (spy).
    * Data: no MSELs; CreateMsels.
    */
-  it('offers Manage an Event with CreateMsels', async () => {
+  it('offers BUILD with CreateMsels', async () => {
     await renderDashboard({ permissions: [SystemPermission.CreateMsels] });
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
     const user = userEvent.setup();
 
-    await user.click(card('Manage an Event') as HTMLElement);
+    await user.click(card('BUILD') as HTMLElement);
 
     expect(navigate).toHaveBeenCalledWith(['build']);
-    expect(screen.queryByText('Nothing to see here!')).not.toBeInTheDocument();
+    expect(screen.queryByText('NO ACCESS')).not.toBeInTheDocument();
   });
 
   /**
-   * Verifies: without CreateMsels and no MSELs there is no Manage card, only the nothing-to-see message.
+   * Verifies: without CreateMsels and no MSELs there is no BUILD card, and the NO ACCESS card shows.
    * Interacts with: real PermissionDataService (stubbed grants), DashboardComponent template.
    * Data: no MSELs; every permission but CreateMsels (near miss).
    */
-  it('hides Manage an Event without CreateMsels or an MSEL', async () => {
+  it('hides BUILD without CreateMsels or an MSEL', async () => {
     await renderDashboard({ permissions: ALL_BUT_CREATE_MSELS });
 
-    expect(card('Manage an Event')).not.toBeInTheDocument();
-    expect(screen.getByText('Nothing to see here!')).toBeInTheDocument();
+    expect(card('BUILD')).not.toBeInTheDocument();
+    expect(screen.getByText('NO ACCESS')).toBeInTheDocument();
   });
+
 });
