@@ -2,8 +2,11 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
+// inline, so the title shares the line of Material's 40px ::before strut in mat-dialog-title
+// and the header is the same height as a plain dialogTitle; a block here drops below the strut
 .title-wrapper {
-  display: flex;
+  display: inline-flex;
+  vertical-align: middle;
   align-items: center;
   gap: 0.75rem;
 }
