@@ -15,11 +15,13 @@ import {
   User,
 } from 'src/app/generated/blueprint.api';
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
+import { MselImageDataService } from 'src/app/data/msel/msel-image-data.service';
 import { TopbarView } from '../../shared/top-bar/topbar.models';
 import { Title } from '@angular/platform-browser';
 import { ErrorService } from 'src/app/services/error/error.service';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
 import { XApiService } from 'src/app/services/xapi/xapi.service';
+import { landingBackground } from 'src/app/utilities/landing-background';
 
 @Component({
     selector: 'app-join',
@@ -37,11 +39,13 @@ export class JoinComponent implements OnDestroy, OnInit {
   topbarColor = '#ef3a47';
   topbarTextColor = '#FFFFFF';
   topbarImage = this.settingsService.settings.AppTopBarImage;
+  backgroundImage = landingBackground(this.settingsService.settings);
   TopbarView = TopbarView;
   appTitle = 'Join Event';
   joinStatus: { [id: string]: string } = {};
   isJoined: { [id: string]: boolean } = {};
   showChoices = false;
+  cardPhotos: { [id: string]: string } = {};
   private unsubscribe$ = new Subject();
 
   constructor(
@@ -49,6 +53,7 @@ export class JoinComponent implements OnDestroy, OnInit {
     private userQuery: UserQuery,
     private settingsService: ComnSettingsService,
     private mselDataService: MselDataService,
+    private mselImageDataService: MselImageDataService,
     private activatedRoute: ActivatedRoute,
     private router: Router,
     private titleService: Title,
@@ -101,7 +106,39 @@ export class JoinComponent implements OnDestroy, OnInit {
       .pipe(take(1))
       .subscribe((msels) => {
         this.joinMselList = msels;
+        msels.forEach((msel) =>
+          this.mselImageDataService
+            .imageUrl(msel)
+            .pipe(takeUntil(this.unsubscribe$))
+            .subscribe((url) => {
+              if (url) {
+                this.cardPhotos[msel.id] = url;
+              }
+            })
+        );
       });
+  }
+
+  // A card shows the MSEL's own image when it has one. Otherwise it gets a
+  // pattern generated from the MSEL id, so the same event always looks the same.
+  cardImage(msel: Msel): string {
+    let hash = 0;
+    for (const c of msel.id ?? msel.name ?? '') {
+      hash = (hash * 31 + c.charCodeAt(0)) | 0;
+    }
+    const hue = Math.abs(hash) % 360;
+    const angle = 30 + (Math.abs(hash >> 8) % 4) * 30;
+    return `repeating-linear-gradient(${angle}deg, rgba(255, 255, 255, 0.08) 0 12px, transparent 12px 24px), ` +
+      `linear-gradient(135deg, hsl(${hue}, 55%, 42%), hsl(${(hue + 40) % 360}, 60%, 30%))`;
+  }
+
+  initials(name: string): string {
+    return (name ?? '')
+      .split(/\s+/)
+      .filter((word) => word)
+      .slice(0, 2)
+      .map((word) => word[0].toUpperCase())
+      .join('');
   }
 
   topBarNavigate(url): void {

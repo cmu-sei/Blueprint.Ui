@@ -38,6 +38,7 @@ import {
   Msel,
   MselCompetency,
   MselCompetencyService,
+  MselImageService,
   MselItemStatus,
   MselPage,
   MselIntegrationNames,
@@ -55,6 +56,7 @@ import {
 import { MselStore } from 'src/app/data/msel/msel.store';
 import { UserStore } from 'src/app/data/user/user.store';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
+import { SystemMessageService } from 'src/app/services/system-message/system-message.service';
 import { MselInfoComponent } from './msel-info.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { dialogRefStub } from 'src/app/test-utils/dialog-refs';
@@ -155,6 +157,12 @@ async function renderInfo(
   const mselApi = {
     getMselIntegrationNames: vi.fn(() => of(structuredClone(names))),
   } satisfies ApiStub<MselService>;
+  const imageApi = {
+    getMselImage: vi.fn(() => of(new Blob(['image'], { type: 'image/png' }))),
+    setMselImage: vi.fn((id: string) => of<Msel>({ ...msel(myRoles, startTime, mselExtra), id, imageDateModified: new Date('2026-10-23T12:00:00Z') })),
+    deleteMselImage: vi.fn((id: string) => of<Msel>({ ...msel(myRoles, startTime, mselExtra), id, imageDateModified: null })),
+  } satisfies ApiStub<MselImageService>;
+  const systemMessage = { displayMessage: vi.fn() } satisfies Pick<SystemMessageService, 'displayMessage'>;
   // The user confirms every dialog.
   const confirm = vi.fn(() => dialogRefStub<unknown, boolean>(true).dialogRef);
   const dialog = { confirm } satisfies Pick<CrucibleDialogService, 'confirm'>;
@@ -195,6 +203,8 @@ async function renderInfo(
       { provide: PlayerApplicationService, useValue: appApi },
       { provide: CasterService, useValue: casterApi },
       { provide: MselService, useValue: mselApi },
+      { provide: MselImageService, useValue: imageApi },
+      { provide: SystemMessageService, useValue: systemMessage },
       {
         provide: ComnSettingsService,
         useValue: { settings: { CasterUrl: casterUrl, VmUrl: 'http://vm.example' } } satisfies Pick<ComnSettingsService, 'settings'>,
@@ -220,7 +230,7 @@ async function renderInfo(
   // ngModel applies [disabled] in a microtask.
   await rendered.fixture.whenStable();
   rendered.fixture.detectChanges();
-  return { ...rendered, pageApi, confirm, appApi, casterApi, mselApi, userApi };
+  return { ...rendered, pageApi, confirm, appApi, casterApi, mselApi, userApi, imageApi, systemMessage };
 }
 
 // The settings page is large, so queries go by label, title or text: whole-page
@@ -620,6 +630,83 @@ describe('MselInfoComponent', () => {
       });
 
       expect(screen.getByTitle('Remove Integrations')).toBeDisabled();
+    });
+  });
+
+  describe('card image', () => {
+    // jsdom has no object URLs.
+    beforeEach(() => {
+      URL.createObjectURL = vi.fn(() => 'blob:card');
+      URL.revokeObjectURL = vi.fn();
+    });
+    const fileInput = (fixture: ComponentFixture<unknown>) => fixture.nativeElement.querySelector('input[type="file"]') as HTMLInputElement;
+
+    /**
+     * Verifies: the owner, or a user with EditMsels, can upload a card image; an Editor without EditMsels sees only the no-image note.
+     * Interacts with: MselInfoComponent.canSetMselImage, real PermissionDataService (stubbed grants).
+     * Data: MSEL role Owner; EditMsels with no role; MSEL role Editor with no permission (near miss).
+     */
+    it.each([
+      { label: 'the owner', permissions: [] as SystemPermission[], myRoles: [MselRole.Owner], allowed: true },
+      { label: 'EditMsels', permissions: [SystemPermission.EditMsels], myRoles: [] as MselRole[], allowed: true },
+      { label: 'an Editor', permissions: [] as SystemPermission[], myRoles: [MselRole.Editor], allowed: false },
+    ])('offers Upload Image to $label: $allowed', async ({ permissions, myRoles, allowed }) => {
+      await renderInfo({ permissions, myRoles });
+
+      expect(screen.getByText("No image. The event's cards show a generated pattern.")).toBeInTheDocument();
+      expect(!!screen.queryByRole('button', { name: 'Upload Image' })).toBe(allowed);
+      expect(!!screen.queryByText('PNG, JPEG, GIF or WebP, up to 2 MB.')).toBe(allowed);
+    });
+
+    /**
+     * Verifies: an uploaded image is sent to the API and then shown as the preview, with Replace Image and Remove Image offered.
+     * Interacts with: MselImageService.setMselImage (stub, answers ImageDateModified), MselImageService.getMselImage (stub), the MSEL store.
+     * Data: MSEL role Owner; a 1 KB PNG.
+     */
+    it('uploads an image and shows it', async () => {
+      const { fixture, imageApi } = await renderInfo({ myRoles: [MselRole.Owner] });
+      const file = new File([new Uint8Array(1024)], 'card.png', { type: 'image/png' });
+
+      await userEvent.setup().upload(fileInput(fixture), file);
+      fixture.detectChanges();
+
+      expect(imageApi.setMselImage.mock.calls).toEqual([['msel-1', file]]);
+      expect(imageApi.getMselImage.mock.calls).toEqual([['msel-1']]);
+      expect(screen.getByAltText('Card image for Exercise Alpha')).toHaveAttribute('src', 'blob:card');
+      expect(screen.getByRole('button', { name: 'Replace Image' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Remove Image' })).toBeInTheDocument();
+    });
+
+    /**
+     * Verifies: an image over 2 MB is refused with a message, without calling the API.
+     * Interacts with: SystemMessageService.displayMessage (spy), MselImageService.setMselImage (stub, not called).
+     * Data: MSEL role Owner; a PNG of 2 MB plus one byte.
+     */
+    it('refuses an image over 2 MB', async () => {
+      const { fixture, imageApi, systemMessage } = await renderInfo({ myRoles: [MselRole.Owner] });
+      const file = new File([new Uint8Array(2 * 1024 * 1024 + 1)], 'big.png', { type: 'image/png' });
+
+      await userEvent.setup().upload(fileInput(fixture), file);
+
+      expect(systemMessage.displayMessage).toHaveBeenCalledWith('Image Too Large', 'Choose an image of 2 MB or less.');
+      expect(imageApi.setMselImage).not.toHaveBeenCalled();
+    });
+
+    /**
+     * Verifies: Remove Image deletes the image through the API and returns to the no-image note.
+     * Interacts with: MselImageService.deleteMselImage (stub, answers no ImageDateModified), the MSEL store.
+     * Data: MSEL role Owner; the MSEL has ImageDateModified set.
+     */
+    it('removes the image', async () => {
+      const { fixture, imageApi } = await renderInfo({ myRoles: [MselRole.Owner], mselExtra: { imageDateModified: new Date('2026-10-22T12:00:00Z') } });
+      expect(screen.getByAltText('Card image for Exercise Alpha')).toBeInTheDocument();
+
+      await userEvent.setup().click(screen.getByRole('button', { name: 'Remove Image' }));
+      fixture.detectChanges();
+
+      expect(imageApi.deleteMselImage.mock.calls).toEqual([['msel-1']]);
+      expect(screen.queryByAltText('Card image for Exercise Alpha')).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Upload Image' })).toBeInTheDocument();
     });
   });
 });
