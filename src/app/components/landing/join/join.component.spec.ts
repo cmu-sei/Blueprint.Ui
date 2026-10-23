@@ -6,7 +6,8 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Params, Router, UrlTree } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
+import { MatIconModule } from '@angular/material/icon';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { NEVER, Observable, of, throwError } from 'rxjs';
@@ -48,7 +49,7 @@ async function renderJoin(join: () => Observable<string> = () => NEVER, queryPar
   const xApi = { viewedJoinPage: vi.fn(() => of(null)) } satisfies Pick<XApiService, 'viewedJoinPage'>;
   const handleError = vi.fn();
   const rendered = await renderComponent(JoinComponent, {
-    imports: [MatButtonModule, MatCardModule],
+    imports: [MatButtonModule, MatIconModule, MatProgressSpinnerModule],
     declarations: [JoinComponent, TopbarStub],
     providers: [
       { provide: MselService, useValue: mselApi },
