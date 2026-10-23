@@ -38,6 +38,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
         </a>
       }
       <div class="action-buttons">
+        @if (canRetryCaster) {
+          <button mat-raised-button color="primary" (click)="retryCaster()"
+                  title="Run the Caster step again, keeping the other integrations">
+            Retry Caster
+          </button>
+        }
         <button mat-raised-button color="warn" (click)="pullIntegrations()"
                 title="Remove partial integrations from associated applications">
           Pull Integrations

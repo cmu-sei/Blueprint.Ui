@@ -9,21 +9,22 @@ import { screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { of } from 'rxjs';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
-import { Msel, MselService } from 'src/app/generated/blueprint.api';
+import { Msel, MselItemStatus, MselService } from 'src/app/generated/blueprint.api';
 import { MselPlus } from 'src/app/data/msel/msel-data.service';
 import { IntegrationStatusComponent } from './integration-status.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { dialogRefStub } from 'src/app/test-utils/dialog-refs';
 import { renderComponent } from 'src/app/test-utils/render-component';
 
-function msel(integrationStatus: string): MselPlus {
-  return Object.assign(new MselPlus(), { id: 'msel-1', name: 'Exercise Alpha', integrationStatus });
+function msel(integrationStatus: string, status: MselItemStatus): MselPlus {
+  return Object.assign(new MselPlus(), { id: 'msel-1', name: 'Exercise Alpha', integrationStatus, status });
 }
 
-async function renderStatus(integrationStatus: string, casterWorkspaceUrl = '') {
+async function renderStatus(integrationStatus: string, casterWorkspaceUrl = '', status: MselItemStatus = MselItemStatus.Pushing) {
   const mselApi = {
     cancelIntegrations: vi.fn(() => of<unknown>(null)),
     pullIntegrations: vi.fn(() => of<Msel>({ id: 'msel-1', name: 'Exercise Alpha' })),
+    retryCasterIntegration: vi.fn(() => of<Msel>({ id: 'msel-1', name: 'Exercise Alpha', integrationStatus: 'Retrying Caster' })),
   } satisfies ApiStub<MselService>;
   // The user confirms every dialog.
   const confirm = vi.fn(() => dialogRefStub<unknown, boolean>(true).dialogRef);
@@ -35,7 +36,7 @@ async function renderStatus(integrationStatus: string, casterWorkspaceUrl = '') 
       { provide: MselService, useValue: mselApi },
       { provide: CrucibleDialogService, useValue: dialog },
     ],
-    inputs: { msel: msel(integrationStatus), casterWorkspaceUrl },
+    inputs: { msel: msel(integrationStatus, status), casterWorkspaceUrl },
   });
   let closed = 0;
   rendered.fixture.componentInstance.closed.subscribe(() => closed++);
@@ -106,5 +107,36 @@ describe('IntegrationStatusComponent', () => {
     } else {
       expect(link).not.toBeInTheDocument();
     }
+  });
+
+  /**
+   * Verifies: a push that failed at its Caster step offers Retry Caster, which asks the API to retry and leaves the status open.
+   * Interacts with: MselService.retryCasterIntegration (stub), real MselDataService, closed output.
+   * Data: a Pushing MSEL with status "ERROR: Caster - planning failed - ...".
+   */
+  it('retries Caster after a push failed at Caster', async () => {
+    const { mselApi, confirm, closedCount } = await renderStatus('ERROR: Caster - planning failed - Caster run run-1 plan ended Failed.');
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole('button', { name: 'Retry Caster' }));
+
+    expect(mselApi.retryCasterIntegration).toHaveBeenCalledWith('msel-1');
+    expect(confirm).not.toHaveBeenCalled();
+    expect(closedCount()).toBe(0);
+  });
+
+  /**
+   * Verifies: Retry Caster is offered only for a push that failed at its Caster step.
+   * Interacts with: IntegrationStatusComponent.canRetryCaster.
+   * Data: a push that failed at Gallery, and a pull of a deployed MSEL that failed at Caster.
+   */
+  it.each([
+    ['a push that failed at Gallery', 'ERROR: Gallery - create collection failed - boom', MselItemStatus.Pushing],
+    ['a pull that failed at Caster', 'ERROR: Caster - pull workspace failed - boom', MselItemStatus.Deployed],
+  ])('offers no Retry Caster for %s', async (_label, integrationStatus, status) => {
+    await renderStatus(integrationStatus, '', status);
+
+    expect(screen.getByRole('heading', { name: 'Integration Failed' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Retry Caster' })).not.toBeInTheDocument();
   });
 });
