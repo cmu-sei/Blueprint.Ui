@@ -31,9 +31,9 @@ const ALPHA: Msel = { id: 'msel-1', name: 'Exercise Alpha' };
 const ALL_BUT_CREATE_MSELS = Object.values(SystemPermission).filter((p) => p !== SystemPermission.CreateMsels);
 
 async function renderDashboard(
-  overrides: { permissions?: SystemPermission[]; join?: Msel[]; launch?: Msel[]; build?: Msel[] } = {},
+  overrides: { permissions?: SystemPermission[]; join?: Msel[]; launch?: Msel[]; build?: Msel[]; background?: string } = {},
 ) {
-  const { permissions = [], join = [], launch = [], build = [] } = overrides;
+  const { permissions = [], join = [], launch = [], build = [], background } = overrides;
   const mselApi = {
     getMyJoinMsels: vi.fn(() => of(structuredClone(join))),
     getMyLaunchMsels: vi.fn(() => of(structuredClone(launch))),
@@ -55,7 +55,9 @@ async function renderDashboard(
       { provide: UserService, useValue: userApi },
       {
         provide: ComnSettingsService,
-        useValue: { settings: { AppTopBarImage: '/assets/img/logo-white.png' } } satisfies Pick<ComnSettingsService, 'settings'>,
+        useValue: {
+          settings: { AppTopBarImage: '/assets/img/logo-white.png', AppLandingBackgroundImage: background },
+        } satisfies Pick<ComnSettingsService, 'settings'>,
       },
       {
         provide: ComnAuthService,
@@ -112,4 +114,19 @@ describe('DashboardComponent', () => {
     expect(screen.getByText('NO ACCESS')).toBeInTheDocument();
   });
 
+  /**
+   * Verifies: the page shows the background image named in settings, and none without the setting.
+   * Interacts with: ComnSettingsService.settings (stub), DashboardComponent template.
+   * Data: AppLandingBackgroundImage set to a relative asset URL, or unset.
+   */
+  it.each([
+    { label: 'with', background: '/assets/local/landing-background.jpg', expected: 'url("/assets/local/landing-background.jpg")' },
+    { label: 'without', background: undefined, expected: '' },
+  ])('shows the landing background $label the setting', async ({ background, expected }) => {
+    const { container } = await renderDashboard({ background });
+
+    const page = container.querySelector('.command-center') as HTMLElement;
+    expect(page.style.getPropertyValue('--landing-background')).toBe(expected);
+    expect(page.classList.contains('has-background')).toBe(!!background);
+  });
 });

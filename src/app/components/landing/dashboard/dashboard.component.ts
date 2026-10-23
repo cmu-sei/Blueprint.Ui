@@ -44,6 +44,11 @@ export class DashboardComponent implements OnDestroy, OnInit {
   topbarColor = '#ef3a47';
   topbarTextColor = '#FFFFFF';
   topbarImage = this.settingsService.settings.AppTopBarImage;
+  // An optional image URL from settings, so a site can brand the page
+  // without shipping the image in this repo.
+  backgroundImage = this.settingsService.settings.AppLandingBackgroundImage
+    ? `url("${this.settingsService.settings.AppLandingBackgroundImage}")`
+    : null;
   TopbarView = TopbarView;
   appTitle = 'Event Dashboard';
   joinClass = 'base-card';
