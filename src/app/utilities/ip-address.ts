@@ -5,6 +5,7 @@
 */
 
 import { DataField, DataFieldType, DataValue } from 'src/app/generated/blueprint.api';
+import { isBlankValue, isDateTimeValue } from './date-time-value';
 
 interface ParsedAddress {
   version: 4 | 6;
@@ -119,6 +120,10 @@ export function dataValueError(dataType: DataFieldType, value: string): string {
       return ipAddressError(value);
     case DataFieldType.Network:
       return networkError(value);
+    case DataFieldType.DateTime:
+      // a field changed to DateTime can still hold its old text, such as a team name; once the
+      // date picker has set it, the value is a Date despite its type
+      return !isBlankValue(value) && !isDateTimeValue(value) ? 'Not a date and time. Choose a new one.' : '';
     default:
       return '';
   }
@@ -139,9 +144,9 @@ export function ipSortKey(value: string): string {
   return parsed.version + parsed.bits.toString(16).padStart(32, '0') + parsed.prefix.toString().padStart(3, '0');
 }
 
-// true when any typed IP address or network value would not pass its field's check;
+// true when any typed IP address, network or date-time value would not pass its field's check;
 // values chosen from an option list are left alone, since the planner set the options
-export function hasInvalidAddress(dataFields: DataField[], dataValues: DataValue[]): boolean {
+export function hasInvalidDataValue(dataFields: DataField[], dataValues: DataValue[]): boolean {
   return (dataFields || []).some(df => !df.isChosenFromList &&
     (dataValues || []).some(dv => dv.dataFieldId === df.id && !!dataValueError(df.dataType, dv.value))
   );

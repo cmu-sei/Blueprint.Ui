@@ -412,6 +412,9 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     return user ? user.name : 'unknown';
   }
 
+  // The creator fetched by id; the MSEL's user list is reloaded wholesale, which drops it again.
+  private creatorLookupId = '';
+
   private resolveCreatorName(): void {
     const emptyGuid = '00000000-0000-0000-0000-000000000000';
     if (!this.msel?.createdBy || this.msel.createdBy === emptyGuid) {
@@ -421,7 +424,8 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     const user = this.userList.find(u => u.id === this.msel.createdBy);
     if (user) {
       this.creatorName = user.name;
-    } else {
+    } else if (this.creatorLookupId !== this.msel.createdBy) {
+      this.creatorLookupId = this.msel.createdBy;
       this.userDataService.loadById(this.msel.createdBy)
         .pipe(takeUntil(this.unsubscribe$))
         .subscribe({

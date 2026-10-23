@@ -53,6 +53,7 @@ import {
   UserService,
 } from 'src/app/generated/blueprint.api';
 import { MselStore } from 'src/app/data/msel/msel.store';
+import { UserStore } from 'src/app/data/user/user.store';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
 import { MselInfoComponent } from './msel-info.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
@@ -224,7 +225,7 @@ async function renderInfo(
   // ngModel applies [disabled] in a microtask.
   await rendered.fixture.whenStable();
   rendered.fixture.detectChanges();
-  return { ...rendered, pageApi, confirm, appApi, casterApi, mselApi };
+  return { ...rendered, pageApi, confirm, appApi, casterApi, mselApi, userApi };
 }
 
 // The settings page is large, so queries go by label, title or text: whole-page
@@ -341,6 +342,23 @@ describe('MselInfoComponent', () => {
   it('shows the creator name', async () => {
     await renderInfo({ permissions: [SystemPermission.EditMsels] });
 
+    expect(screen.getByLabelText('Created By')).toHaveValue('Casey Creator');
+  });
+
+  /**
+   * Verifies: the creator is fetched once, although each reload of the MSEL's users replaces the user store and drops them again.
+   * Interacts with: UserService.getUser (stub), real UserDataService and UserStore.
+   * Data: createdBy user-creator; the store is replaced twice with a list that leaves the creator out.
+   */
+  it('looks the creator up once while the MSEL users reload', async () => {
+    const { fixture, userApi } = await renderInfo({ permissions: [SystemPermission.EditMsels] });
+    const userStore = fixture.debugElement.injector.get(UserStore);
+
+    userStore.set([{ id: 'user-other', name: 'Other User' }]);
+    userStore.set([{ id: 'user-other', name: 'Other User' }, { id: 'user-third', name: 'Third User' }]);
+    fixture.detectChanges();
+
+    expect(userApi.getUser).toHaveBeenCalledTimes(1);
     expect(screen.getByLabelText('Created By')).toHaveValue('Casey Creator');
   });
 

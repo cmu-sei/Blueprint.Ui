@@ -15,7 +15,7 @@ import { Sort } from '@angular/material/sort';
 import { DataValuePlus, IntegrationTarget } from 'src/app/data/scenario-event/scenario-event-data.service';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { EDITOR_CONFIG, VIEW_CONFIG } from 'src/app/utilities/editor-config';
-import { hasInvalidAddress } from 'src/app/utilities/ip-address';
+import { hasInvalidDataValue } from 'src/app/utilities/ip-address';
 import { CrucibleDialogComponent, CrucibleDialogContentDirective } from '@cmusei/crucible-common';
 import { MatFormField, MatLabel, MatInput } from '@angular/material/input';
 import { MatSelect } from '@angular/material/select';
@@ -212,8 +212,15 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
     return (
       (this.data.scenarioEvent.scenarioEventType === this.eventType.Inject &&
         this.getScenarioTypeDataFields().length === 0) ||
-      hasInvalidAddress(this.data.dataFields, this.data.scenarioEvent.dataValues)
+      // only the values on screen that can be changed, since Save must not wait on one that can't be fixed
+      (this.canEditDataValues() &&
+        hasInvalidDataValue(this.sortedDataFields, this.data.scenarioEvent.dataValues))
     );
+  }
+
+  canEditDataValues(): boolean {
+    return this.data.isEditor &&
+      (!this.data.isEditingRestricted || this.data.scenarioEvent.scenarioEventType === this.eventType.Information);
   }
 
   showDefaultTab(): boolean {

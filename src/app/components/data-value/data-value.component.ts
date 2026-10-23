@@ -25,14 +25,15 @@ import { MatDatepickerToggle } from '@angular/material/datepicker';
 import { MatButton, MatIconButton } from '@angular/material/button';
 import { MatChipSet, MatChip, MatChipRemove } from '@angular/material/chips';
 import { MatIcon } from '@angular/material/icon';
-import { DatePipe } from '@angular/common';
+import { DatePipe, NgTemplateOutlet } from '@angular/common';
 import { TimezoneAbbrPipe } from '../../utilities/timezone-abbr';
+import { IsDateTimeValuePipe } from '../../utilities/date-time-value';
 
 @Component({
     selector: 'app-data-value',
     templateUrl: './data-value.component.html',
     styleUrls: ['./data-value.component.scss'],
-    imports: [AngularEditorModule, MatCheckbox, MatTooltip, MatFormField, MatLabel, MatSelect, FormsModule, MatSelectTrigger, MatOption, MatInput, MatError, NgxMatDatepickerInput, MatDatepickerToggle, MatSuffix, NgxMatDatetimepicker, NgxMatDatepickerActions, MatButton, NgxMatDatepickerApply, NgxMatDatepickerCancel, MatChipSet, MatChip, MatChipRemove, MatIcon, MatIconButton, DatePipe, TimezoneAbbrPipe]
+    imports: [AngularEditorModule, MatCheckbox, MatTooltip, MatFormField, MatLabel, MatSelect, FormsModule, MatSelectTrigger, MatOption, MatInput, MatError, NgxMatDatepickerInput, MatDatepickerToggle, MatSuffix, NgxMatDatetimepicker, NgxMatDatepickerActions, MatButton, NgxMatDatepickerApply, NgxMatDatepickerCancel, MatChipSet, MatChip, MatChipRemove, MatIcon, MatIconButton, DatePipe, TimezoneAbbrPipe, NgTemplateOutlet, IsDateTimeValuePipe]
 })
 export class DataValueComponent {
   @Input() value: any;
@@ -146,12 +147,12 @@ export class DataValueComponent {
     this.valueChangeHandler();
   }
 
-  // shows the address error as soon as it applies, rather than waiting for the field to lose focus
-  addressErrorMatcher: ErrorStateMatcher = {
-    isErrorState: () => !!this.addressError(),
+  // shows the value's error as soon as it applies, rather than waiting for the field to lose focus
+  valueErrorMatcher: ErrorStateMatcher = {
+    isErrorState: () => !!this.valueError(),
   };
 
-  addressError(): string {
+  valueError(): string {
     return dataValueError(this.dataField?.dataType, this.value);
   }
 

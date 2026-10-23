@@ -61,12 +61,13 @@ import { DurationViewComponent } from '../shared/duration-view/duration-view.com
 import { AngularEditorModule } from '@kolkov/angular-editor';
 import { MatCheckbox } from '@angular/material/checkbox';
 import { MatTooltip } from '@angular/material/tooltip';
+import { IsDateTimeValuePipe } from 'src/app/utilities/date-time-value';
 
 @Component({
     selector: 'app-msel-view',
     templateUrl: './msel-view.component.html',
     styleUrls: ['./msel-view.component.scss'],
-    imports: [MatSort, MatFormField, MatInput, FormsModule, MatIconButton, MatSuffix, MatIcon, MatSortHeader, DurationViewComponent, AngularEditorModule, MatCheckbox, MatTooltip]
+    imports: [MatSort, MatFormField, MatInput, FormsModule, MatIconButton, MatSuffix, MatIcon, MatSortHeader, DurationViewComponent, AngularEditorModule, MatCheckbox, MatTooltip, IsDateTimeValuePipe]
 })
 export class MselViewComponent implements OnDestroy, ScenarioEventView {
   private activatedRoute = inject(ActivatedRoute);

@@ -10,7 +10,7 @@ import {
   HttpUploadProgressEvent,
 } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
-import { EMPTY, Observable, of, throwError } from 'rxjs';
+import { EMPTY, Observable, Subject, of, throwError } from 'rxjs';
 import { Unit, UnitService } from 'src/app/generated/blueprint.api';
 import { UnitStore } from './unit.store';
 import { UnitDataService } from './unit-data.service';
@@ -59,6 +59,27 @@ const names = (list: Unit[]) => list.map((u) => u.name);
 describe('UnitDataService', () => {
   beforeEach(() => {
     TestBed.resetTestingModule();
+  });
+
+  /**
+   * Verifies: load() sends no second request while one is in flight, and a later load() fetches again.
+   * Interacts with: UnitService.getUnits (stub), real UnitStore and UnitQuery.
+   * Data: two load() calls before the response arrives, then one after.
+   */
+  it('load shares an in-flight request', () => {
+    const { service, query, unitApi } = setup();
+    const response = new Subject<Unit[]>();
+    unitApi.getUnits.mockReturnValueOnce(response);
+
+    service.load();
+    service.load();
+    expect(unitApi.getUnits).toHaveBeenCalledTimes(1);
+
+    response.next([unit({ id: 'id-blue', name: 'Blue Team' })]);
+    expect(names(query.getAll())).toEqual(['Blue Team']);
+
+    service.load();
+    expect(unitApi.getUnits).toHaveBeenCalledTimes(2);
   });
 
   /**

@@ -14,7 +14,8 @@ import { screen, within } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { of } from 'rxjs';
 import { Theme } from '@cmusei/crucible-common';
-import { Msel } from 'src/app/generated/blueprint.api';
+import { Msel, MselUnit } from 'src/app/generated/blueprint.api';
+import { MselUnitStore } from 'src/app/data/msel-unit/msel-unit.store';
 import { XApiService } from 'src/app/services/xapi/xapi.service';
 import { MselComponent } from './msel.component';
 import { activatedRouteStub } from 'src/app/test-utils/activated-route';
@@ -132,12 +133,12 @@ const MSEL: Msel = {
 };
 
 async function renderMsel(
-  overrides: { canEditMsel?: boolean; canAccessAdminSection?: boolean; canEditCheckboxes?: boolean; msel?: Msel } = {},
+  overrides: { canEditMsel?: boolean; canAccessAdminSection?: boolean; canEditCheckboxes?: boolean; msel?: Msel; mselUnits?: MselUnit[] } = {},
 ) {
-  const { canEditMsel = false, canAccessAdminSection = false, canEditCheckboxes = false, msel = MSEL } = overrides;
-  const apis = mselLoadApiStubs({ msel });
+  const { canEditMsel = false, canAccessAdminSection = false, canEditCheckboxes = false, msel = MSEL, mselUnits = [] } = overrides;
+  const apis = mselLoadApiStubs({ msel, mselUnits });
   const xApi = { viewedMsel: vi.fn(() => of(null)) } satisfies Pick<XApiService, 'viewedMsel'>;
-  const { route } = activatedRouteStub({ msel: 'msel-1' });
+  const { route, setQueryParams } = activatedRouteStub({ msel: 'msel-1' });
   const rendered = await renderComponent(MselComponent, {
     imports: [MatButtonModule, MatIconModule, MatListModule, MatSidenavModule],
     childStubs: [
@@ -165,7 +166,7 @@ async function renderMsel(
     ],
     inputs: { canEditMsel, canAccessAdminSection, canEditCheckboxes, loggedInUserId: 'user-me', userTheme$: of(Theme.LIGHT) },
   });
-  return { ...rendered, apis, xApi };
+  return { ...rendered, apis, xApi, setQueryParams };
 }
 
 const nav = () => within(document.querySelector('mat-drawer mat-list') as HTMLElement);
@@ -208,6 +209,41 @@ describe('MselComponent', () => {
       expect(endpoint).toHaveBeenCalledWith('msel-1');
     }
     expect(child(fixture, MselInfoStub)?.loggedInUserId()).toBe('user-me');
+  });
+
+  /**
+   * Verifies: a change to another query parameter, such as the theme, does not load the open MSEL again.
+   * Interacts with: the route's queryParamMap (stub), the MSEL endpoints (stubs).
+   * Data: msel=msel-1, then msel=msel-1 with theme=dark.
+   */
+  it('keeps the loaded MSEL when another query parameter changes', async () => {
+    const { apis, setQueryParams } = await renderMsel();
+
+    setQueryParams({ msel: 'msel-1', theme: 'dark' });
+
+    expect(apis.msel.getMsel).toHaveBeenCalledTimes(1);
+    expect(apis.move.getMovesByMsel).toHaveBeenCalledTimes(1);
+    expect(apis.user.getMselUsers).toHaveBeenCalledTimes(1);
+  });
+
+  /**
+   * Verifies: the MSEL's users load once with the MSEL, and again only when its contributor units change, not when a contributor row is merely updated.
+   * Interacts with: UserService.getMselUsers (stub), real MselUnitDataService and MselUnitStore.
+   * Data: one contributor unit; then the same row updated; then a second unit added.
+   */
+  it('reloads the MSEL users only when its contributors change', async () => {
+    const contributor: MselUnit = { id: 'mu-1', mselId: 'msel-1', unitId: 'unit-1' };
+    const { fixture, apis } = await renderMsel({ mselUnits: [contributor] });
+    const mselUnitStore = fixture.debugElement.injector.get(MselUnitStore);
+
+    expect(apis.user.getMselUsers).toHaveBeenCalledTimes(1);
+
+    mselUnitStore.upsert('mu-1', { ...contributor, mselId: 'msel-1' });
+    expect(apis.user.getMselUsers).toHaveBeenCalledTimes(1);
+
+    mselUnitStore.upsert('mu-2', { id: 'mu-2', mselId: 'msel-1', unitId: 'unit-2' });
+    expect(apis.user.getMselUsers).toHaveBeenCalledTimes(2);
+    expect(apis.user.getMselUsers).toHaveBeenLastCalledWith('msel-1');
   });
 
   /**

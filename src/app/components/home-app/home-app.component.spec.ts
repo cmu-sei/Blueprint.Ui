@@ -12,7 +12,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { Observable, of } from 'rxjs';
-import { Theme } from '@cmusei/crucible-common';
+import { ComnAuthService, Theme } from '@cmusei/crucible-common';
 import {
   HealthCheckService,
   HealthReport,
@@ -30,6 +30,7 @@ import { permissionApiStubs } from 'src/app/test-utils/mock-permission-data.serv
 import { TopbarComponent } from '../shared/top-bar/topbar.component';
 import { MselListComponent } from '../msel-list/msel-list.component';
 import { MselComponent } from '../msel/msel.component';
+import { captureUnhandledRejections, flush } from 'src/app/test-utils/unhandled-rx-errors';
 
 @Component({ selector: 'app-topbar', template: '' })
 class TopbarStub {
@@ -56,7 +57,7 @@ class MselStub {
 const MSEL_PERMISSIONS = [SystemPermission.CreateMsels, SystemPermission.ViewMsels, SystemPermission.EditMsels, SystemPermission.ManageMsels];
 
 async function renderHome(
-  overrides: { permissions?: SystemPermission[]; mselId?: string; health?: HealthReport } = {},
+  overrides: { permissions?: SystemPermission[]; mselId?: string; health?: HealthReport; logout?: ComnAuthService['logout'] } = {},
 ) {
   const { permissions = [], mselId, health = { status: HealthStatus.Healthy } } = overrides;
   const healthApi = {
@@ -86,6 +87,13 @@ async function renderHome(
       { provide: HealthCheckService, useValue: healthApi },
       { provide: SignalRService, useValue: signalR },
       { provide: ActivatedRoute, useValue: route },
+      {
+        provide: ComnAuthService,
+        useValue: {
+          user$: of({ profile: { sub: 'user-1' } }) as ComnAuthService['user$'],
+          logout: overrides.logout ?? vi.fn(() => Promise.resolve()),
+        } satisfies Pick<ComnAuthService, 'user$' | 'logout'>,
+      },
     ],
   });
   await rendered.fixture.whenStable();
@@ -103,6 +111,22 @@ describe('HomeAppComponent', () => {
   });
 
   /**
+   * Verifies: calling logout lets its rejected promise escape (current behavior).
+   * Interacts with: ComnAuthService.logout, captureUnhandledRejections.
+   * Data: logout rejects with a metadata request failure; no template calls this method.
+   */
+  it('leaves a rejected logout unhandled', async () => {
+    const failure = new Error('signout metadata request failed');
+    const rejections = captureUnhandledRejections();
+    const { fixture } = await renderHome({ logout: () => Promise.reject(failure) });
+
+    fixture.componentInstance.logout();
+    await flush();
+
+    expect(rejections).toEqual([failure]);
+  });
+
+  /**
    * Verifies: on the MSEL list a permission outside the MSEL family shows the Administration button, which opens /admin with the return URL.
    * Interacts with: real PermissionDataService over SystemPermissionsService (stub), Router.navigate (spy), MselListStub input.
    * Data: no msel query parameter; ViewUnits.
@@ -117,6 +141,20 @@ describe('HomeAppComponent', () => {
 
     expect(navigate).toHaveBeenCalledWith(['/admin'], { queryParams: { returnUrl: '/' } });
   });
+
+  /**
+   * Verifies: each non-MSEL system permission alone opens the Administration control.
+   * Interacts with: real PermissionDataService over SystemPermissionsService, MselListStub input.
+   * Data: exactly one system permission not ending in Msels, with no broader grant.
+   */
+  it.each(Object.values(SystemPermission).filter((permission) => !permission.endsWith('Msels')))(
+    'offers Administration with exactly %s', async (permission) => {
+      const { fixture } = await renderHome({ permissions: [permission] });
+
+      expect(screen.getByRole('button', { name: 'Administration' })).toBeInTheDocument();
+      expect(child(fixture, MselListStub)?.canAccessAdminSection()).toBe(true);
+    },
+  );
 
   /**
    * Verifies: with only MSEL permissions there is no Administration button and the list is told so.

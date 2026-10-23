@@ -9,13 +9,14 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { of, Subject } from 'rxjs';
-import { ComnSettingsService } from '@cmusei/crucible-common';
+import { ComnAuthService, ComnSettingsService } from '@cmusei/crucible-common';
 import { Msel, MselService, User, UserService } from 'src/app/generated/blueprint.api';
 import { ApplicationArea, SignalRService } from 'src/app/services/signalr.service';
 import { LaunchComponent } from './launch.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { TopbarComponent } from '../../shared/top-bar/topbar.component';
+import { captureUnhandledRejections, flush } from 'src/app/test-utils/unhandled-rx-errors';
 
 @Component({ selector: 'app-topbar', template: '' })
 class TopbarStub {
@@ -27,7 +28,7 @@ class TopbarStub {
 
 const TEMPLATE: Msel = { id: 'msel-t', name: 'Ransomware Starter', description: 'A launchable template' };
 
-async function renderLaunch() {
+async function renderLaunch(logout: ComnAuthService['logout'] = () => Promise.resolve()) {
   // The launch answer is held, so the test can watch the in-progress state.
   const launched = new Subject<Msel>();
   const mselApi = {
@@ -53,6 +54,13 @@ async function renderLaunch() {
       { provide: UserService, useValue: userApi },
       { provide: SignalRService, useValue: signalR },
       {
+        provide: ComnAuthService,
+        useValue: {
+          user$: of({ profile: { sub: 'user-1' } }) as ComnAuthService['user$'],
+          logout,
+        } satisfies Pick<ComnAuthService, 'user$' | 'logout'>,
+      },
+      {
         provide: ComnSettingsService,
         useValue: { settings: { AppTopBarImage: '/assets/img/logo-white.png', PlayerUrl: 'https://player.example.com' } } satisfies Pick<ComnSettingsService, 'settings'>,
       },
@@ -63,6 +71,22 @@ async function renderLaunch() {
 }
 
 describe('LaunchComponent', () => {
+  /**
+   * Verifies: calling logout lets its rejected promise escape (current behavior).
+   * Interacts with: ComnAuthService.logout, captureUnhandledRejections.
+   * Data: logout rejects with a metadata request failure; no template calls this method.
+   */
+  it('leaves a rejected logout unhandled', async () => {
+    const failure = new Error('signout metadata request failed');
+    const rejections = captureUnhandledRejections();
+    const { fixture } = await renderLaunch(() => Promise.reject(failure));
+
+    fixture.componentInstance.logout();
+    await flush();
+
+    expect(rejections).toEqual([failure]);
+  });
+
   /**
    * Verifies: the component mounts with the default test providers, joins the home hub and lists the events the user can start.
    * Interacts with: MselService.getMyLaunchMsels (stub), SignalRService (stub).

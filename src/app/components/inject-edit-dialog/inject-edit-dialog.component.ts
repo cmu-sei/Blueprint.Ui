@@ -5,7 +5,7 @@
 import { Component, inject as inject_1, output } from '@angular/core';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { DataValue } from 'src/app/generated/blueprint.api';
-import { hasInvalidAddress } from 'src/app/utilities/ip-address';
+import { hasInvalidDataValue } from 'src/app/utilities/ip-address';
 import { CrucibleDialogComponent, CrucibleDialogContentDirective } from '@cmusei/crucible-common';
 import { MatFormField, MatLabel, MatInput } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
@@ -26,7 +26,8 @@ export class InjectEditDialogComponent {
 
   errorFree() {
     return this.data.inject.name && this.data.inject.description &&
-      !hasInvalidAddress(this.data.dataFieldList, this.data.inject.dataValues);
+      // a read-only value can't be fixed here, so it doesn't hold up Save
+      !(this.data.isEditMode && hasInvalidDataValue(this.data.dataFieldList, this.data.inject.dataValues));
   }
 
   /**

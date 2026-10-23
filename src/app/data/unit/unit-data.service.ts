@@ -19,7 +19,7 @@ import {
   UnitService
 } from 'src/app/generated/blueprint.api';
 import { map, take, tap } from 'rxjs/operators';
-import { BehaviorSubject, Observable, Subject, combineLatest } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, Subscription, combineLatest } from 'rxjs';
 import { HttpEventType, HttpResponse } from '@angular/common/http';
 
 @Injectable({
@@ -136,9 +136,15 @@ export class UnitDataService {
     // );
   }
 
+  private loadSubscription: Subscription;
+
   load() {
+    // Components that mount together each ask for the units; one request serves them all.
+    if (this.loadSubscription && !this.loadSubscription.closed) {
+      return;
+    }
     this.unitStore.setLoading(true);
-    this.unitService
+    this.loadSubscription = this.unitService
       .getUnits()
       .pipe(
         tap(() => {

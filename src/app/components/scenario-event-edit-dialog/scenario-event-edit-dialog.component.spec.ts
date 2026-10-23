@@ -64,10 +64,15 @@ interface Roles {
   isEditingRestricted?: boolean;
   // The event targets Steamfitter and the MSEL uses it, so the Steamfitter Task tab is offered.
   steamfitter?: boolean;
+  // A When (DateTime) field holding this value, shown on the All tab only while Title is on the Default tab.
+  when?: string;
+  titleOnDefaultTab?: boolean;
 }
 
+const WHEN: DataField = { id: 'df-when', name: 'When', dataType: DataFieldType.DateTime, displayOrder: 2, onScenarioEventList: true };
+
 function dialogData(roles: Roles = {}) {
-  const { isEditor = false, isApprover = false, isOwner = false, isEditingRestricted = false, steamfitter = false } = roles;
+  const { isEditor = false, isApprover = false, isOwner = false, isEditingRestricted = false, steamfitter = false, when, titleOnDefaultTab = false } = roles;
   return {
     scenarioEvent: {
       id: 'se-1',
@@ -75,13 +80,16 @@ function dialogData(roles: Roles = {}) {
       scenarioEventType: EventType.Inject,
       deltaSeconds: 600,
       rowMetadata: '',
-      dataValues: [{ id: 'dv-1', scenarioEventId: 'se-1', dataFieldId: 'df-title', value: 'Phishing wave' }],
+      dataValues: [
+        { id: 'dv-1', scenarioEventId: 'se-1', dataFieldId: 'df-title', value: 'Phishing wave' },
+        ...(when === undefined ? [] : [{ id: 'dv-2', scenarioEventId: 'se-1', dataFieldId: 'df-when', value: when }]),
+      ],
       integrationTarget: steamfitter ? IntegrationTarget.Steamfitter : undefined,
       steamfitterTask: { id: 'task-1', name: steamfitter ? 'Ping the VM' : 'Unused task' },
       steamfitterTaskId: 'task-1',
     } as ScenarioEvent,
     integrationTargetOptions: [],
-    dataFields: [TITLE],
+    dataFields: [{ ...TITLE, isShownOnDefaultTab: titleOnDefaultTab }, ...(when === undefined ? [] : [WHEN])],
     organizationList: [],
     teamList: [],
     unitList: [],
@@ -214,6 +222,22 @@ describe('ScenarioEventEditDialogComponent', () => {
     expect(results).toHaveLength(1);
     expect(results[0].scenarioEvent.steamfitterTask).toBeNull();
     expect(results[0].scenarioEvent.steamfitterTaskId).toBeNull();
+  });
+
+  /**
+   * Verifies: a DateTime value that is not a date disables Save only when it is on screen and can be edited, so Save never waits on a value that can't be fixed; a value of only spaces is empty.
+   * Interacts with: hasBadData, canEditDataValues, sortedDataFields, crucible-dialog submitDisabled.
+   * Data: isEditor; When (DateTime) = "Team 2" editable, on a starter MSEL (isEditingRestricted), or hidden from the Default tab (Title on it); When = "  ".
+   */
+  it.each([
+    { label: 'that can be edited', roles: { when: 'Team 2' }, disabled: true },
+    { label: 'on a starter MSEL, where inject values are read-only', roles: { when: 'Team 2', isEditingRestricted: true }, disabled: false },
+    { label: 'hidden from the Default tab', roles: { when: 'Team 2', titleOnDefaultTab: true }, disabled: false },
+    { label: 'that is only spaces', roles: { when: '  ' }, disabled: false },
+  ])('sets Save disabled $disabled for a DateTime value $label', async ({ roles, disabled }) => {
+    await renderEventEdit({ isEditor: true, ...roles });
+
+    expect(screen.getByRole('button', { name: 'Save' }).hasAttribute('disabled')).toBe(disabled);
   });
 
   /**

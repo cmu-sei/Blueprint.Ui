@@ -41,6 +41,7 @@ import { ApiStub } from 'src/app/test-utils/api-stub';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { DurationViewComponent } from '../shared/duration-view/duration-view.component';
 import { DataValueComponent } from '../data-value/data-value.component';
+import { captureUnhandledRxErrors, flush } from 'src/app/test-utils/unhandled-rx-errors';
 
 @Component({ selector: 'app-duration-view', template: '' })
 class DurationViewStub {
@@ -194,6 +195,45 @@ describe('AssessorViewComponent', () => {
 
     expect(byField(fixture, 'Observed')?.canEdit()).toBe(false);
     expect(byField(fixture, 'Title')?.canEdit()).toBe(false);
+  });
+
+  /**
+   * Verifies: copying a statement lets a rejected clipboard write escape (current behavior).
+   * Interacts with: HttpClient, navigator.clipboard.writeText, captureUnhandledRxErrors.
+   * Data: one CITE statement in Move 1; clipboard access is refused.
+   */
+  it('leaves a rejected statement clipboard write unhandled', async () => {
+    const errors = captureUnhandledRxErrors();
+    const failure = new Error('clipboard access denied');
+    const { fixture } = await renderAssessorView({
+      moves: [{ id: 'move-1', mselId: 'msel-1', moveNumber: 1, deltaSeconds: 0, description: 'Initial access' }],
+    });
+    const user = userEvent.setup();
+    const writes: string[] = [];
+    vi.spyOn(navigator, 'clipboard', 'get').mockReturnValue({
+      writeText: (text: string) => {
+        writes.push(text);
+        return Promise.reject(failure);
+      },
+    } satisfies Pick<Clipboard, 'writeText'> as Clipboard);
+    const statement = {
+      id: 'stmt-1',
+      timestamp: '2026-10-20T16:00:00Z',
+      actor: { name: 'Blue Analyst' },
+      verb: { id: 'http://adlnet.gov/expapi/verbs/experienced', display: { 'en-US': 'experienced' } },
+      context: { platform: 'cite', contextActivities: { grouping: [{ id: 'https://blueprint.example/move/1' }] } },
+    };
+    await user.click(screen.getByText('Move 1'));
+    TestBed.inject(HttpTestingController)
+      .expectOne((req) => req.url === '/api/xapi/statements' && req.params.get('mselId') === 'msel-1')
+      .flush({ statements: [statement] });
+    fixture.detectChanges();
+
+    await user.click(screen.getByRole('button', { name: 'Copy JSON' }));
+    await flush();
+
+    expect(writes).toEqual([JSON.stringify(statement, null, 2)]);
+    expect(errors).toEqual([failure]);
   });
 
   /**
