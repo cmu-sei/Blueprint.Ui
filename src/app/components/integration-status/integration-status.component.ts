@@ -13,6 +13,8 @@ import { CrucibleDialogService } from '@cmusei/crucible-common';
 })
 export class IntegrationStatusComponent {
   @Input() msel: MselPlus;
+  // the MSEL's Caster workspace, once the push has created it; empty otherwise
+  @Input() casterWorkspaceUrl = '';
   @Output() closed = new EventEmitter<void>();
   cancelClicked = false;
 

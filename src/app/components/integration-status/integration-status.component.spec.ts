@@ -20,7 +20,7 @@ function msel(integrationStatus: string): MselPlus {
   return Object.assign(new MselPlus(), { id: 'msel-1', name: 'Exercise Alpha', integrationStatus });
 }
 
-async function renderStatus(integrationStatus: string) {
+async function renderStatus(integrationStatus: string, casterWorkspaceUrl = '') {
   const mselApi = {
     cancelIntegrations: vi.fn(() => of<unknown>(null)),
     pullIntegrations: vi.fn(() => of<Msel>({ id: 'msel-1', name: 'Exercise Alpha' })),
@@ -35,7 +35,7 @@ async function renderStatus(integrationStatus: string) {
       { provide: MselService, useValue: mselApi },
       { provide: CrucibleDialogService, useValue: dialog },
     ],
-    inputs: { msel: msel(integrationStatus) },
+    inputs: { msel: msel(integrationStatus), casterWorkspaceUrl },
   });
   let closed = 0;
   rendered.fixture.componentInstance.closed.subscribe(() => closed++);
@@ -87,5 +87,24 @@ describe('IntegrationStatusComponent', () => {
     expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Remove Integrations' }));
     expect(mselApi.pullIntegrations).toHaveBeenCalledWith('msel-1');
     expect(closedCount()).toBe(1);
+  });
+
+  /**
+   * Verifies: a failed push links to the MSEL's Caster workspace when it has one, and not otherwise.
+   * Interacts with: the casterWorkspaceUrl input.
+   * Data: a failed Caster plan, with and without a workspace URL.
+   */
+  it.each([
+    ['with a workspace', 'http://caster.example/projects/proj-1?workspace=ws-1'],
+    ['without a workspace', ''],
+  ])('links a failed push to its Caster workspace, %s', async (_label, url) => {
+    await renderStatus('ERROR: Caster - planning failed - Caster run run-1 plan ended Failed.', url);
+
+    const link = screen.queryByRole('link', { name: 'Open Workspace in Caster' });
+    if (url) {
+      expect(link).toHaveAttribute('href', url);
+    } else {
+      expect(link).not.toBeInTheDocument();
+    }
   });
 });

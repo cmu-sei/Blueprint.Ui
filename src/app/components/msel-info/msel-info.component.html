@@ -4,7 +4,7 @@ Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
 @if ((msel?.integrationStatus || integrationRequested) && !integrationDismissed) {
-<app-integration-status [msel]="msel" (closed)="dismissIntegrationStatus()"></app-integration-status>
+<app-integration-status [msel]="msel" [casterWorkspaceUrl]="getCasterWorkspaceUrl()" (closed)="dismissIntegrationStatus()"></app-integration-status>
 } @else {
 <div class="frame">
   <mat-tab-group mat-align-tabs="start" class="tab-group" [selectedIndex]="currentTabIndex"
@@ -337,6 +337,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   }
                   }
                   }
+                  @if (getCasterDirectoryUrl()) {
+                  <a [href]="getCasterDirectoryUrl()" target="_blank" class="integration-link" title="Open directory in Caster">
+                    <mat-icon class="mdi-18px" fontIcon="mdi-open-in-new"></mat-icon>
+                  </a>
+                  }
                 </div>
                 @if (!msel.isTemplate && msel.casterWorkspaceId) {
                 <div class="integration-field">
@@ -345,8 +350,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   @if (casterWorkspaceName) {
                   <span class="integration-name">{{ casterWorkspaceName }}</span>
                   }
-                  @if (getCasterProjectUrl()) {
-                  <a [href]="getCasterProjectUrl()" target="_blank" class="integration-link" title="Open in Caster">
+                  @if (getCasterWorkspaceUrl()) {
+                  <a [href]="getCasterWorkspaceUrl()" target="_blank" class="integration-link" title="Open workspace in Caster">
                     <mat-icon class="mdi-18px" fontIcon="mdi-open-in-new"></mat-icon>
                   </a>
                   }
