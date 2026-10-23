@@ -66,6 +66,7 @@ import { unstubbed } from 'src/app/test-utils/unstubbed';
 @Component({ selector: 'app-integration-status', template: '', standalone: false })
 class IntegrationStatusStub {
   @Input() msel: Msel;
+  @Input() casterWorkspaceUrl: string;
   @Output() closed = new EventEmitter<void>();
 }
 @Component({ selector: 'app-duration-edit', template: '', standalone: false })
@@ -444,6 +445,33 @@ describe('MselInfoComponent', () => {
       expect(await directorySelects(fixture)).toEqual([]);
       expect(screen.getByTitle('dir-1')).toHaveTextContent('dir-1');
       expect(screen.getByText('Range / Base')).toBeInTheDocument();
+    });
+
+    /**
+     * Verifies: while a push or pull is under way, or integrations it made are left, the integration boxes are disabled and the Caster directory is read-only, even with EditMsels.
+     * Interacts with: MselInfoComponent.integrationsLocked, the integration status's closed output, real PermissionDataService (stubbed grants).
+     * Data: EditMsels; a MSEL using Player and Caster with directory dir-1: Pushing after a failed Caster plan, Pulling, and Approved with a workspace a failed pull left.
+     */
+    it.each([
+      { label: 'a push failed at Caster', status: MselItemStatus.Pushing, integrationStatus: 'ERROR: Caster - planning failed - boom', casterWorkspaceId: 'ws-1' },
+      { label: 'a pull is under way', status: MselItemStatus.Pulling, integrationStatus: 'Pulling Integrations', casterWorkspaceId: 'ws-1' },
+      { label: 'a workspace is left over', status: MselItemStatus.Approved, integrationStatus: null, casterWorkspaceId: 'ws-1' },
+    ])('locks the integration settings when $label', async ({ status, integrationStatus, casterWorkspaceId }) => {
+      const { fixture } = await renderInfo({
+        permissions: [SystemPermission.EditMsels],
+        mselExtra: { status, integrationStatus, usePlayer: true, useCaster: true, casterDirectoryId: 'dir-1', casterWorkspaceId },
+      });
+      // the status covers the settings until it is closed
+      fixture.debugElement.query(By.directive(IntegrationStatusStub))?.componentInstance.closed.emit();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      expect(casterBox()).toBeDisabled();
+      expect(screen.getByLabelText('Player')).toBeDisabled();
+      expect(screen.getByLabelText('Gallery')).toBeDisabled();
+      expect(await directorySelects(fixture)).toEqual([]);
+      expect(screen.getByTitle('dir-1')).toHaveTextContent('dir-1');
     });
 
     /**

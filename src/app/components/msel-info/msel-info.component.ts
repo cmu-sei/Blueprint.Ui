@@ -471,6 +471,13 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     return this.pipelineStatuses.includes(this.msel?.status);
   }
 
+  // the integrations were built from these settings, so they stay as they are until Remove Integrations
+  integrationsLocked(): boolean {
+    const msel = this.msel;
+    return this.isPipelineStatus() || !!(msel?.playerViewId || msel?.galleryCollectionId || msel?.galleryExhibitId ||
+      msel?.citeEvaluationId || msel?.steamfitterScenarioId || msel?.casterWorkspaceId);
+  }
+
   // the current status is listed even when it is one the user cannot choose, so the field still shows it
   statusOptions(): MselItemStatus[] {
     return this.isPipelineStatus() ? [...this.itemStatus, this.msel.status] : this.itemStatus;
