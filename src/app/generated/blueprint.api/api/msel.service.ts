@@ -29,6 +29,10 @@ import { Msel } from '../model/msel';
 // @ts-ignore
 import { MselCreate } from '../model/mselCreate';
 // @ts-ignore
+import { DataValueDraftRequest } from '../model/dataValueDraftRequest';
+// @ts-ignore
+import { DataValueDraftResult } from '../model/dataValueDraftResult';
+// @ts-ignore
 import { MselDraftImport } from '../model/mselDraftImport';
 // @ts-ignore
 import { MselDraftRequest } from '../model/mselDraftRequest';
@@ -521,6 +525,79 @@ export class MselService extends BaseService {
             {
                 context: localVarHttpContext,
                 responseType: "blob",
+                ...(withCredentials ? { withCredentials } : {}),
+                headers: localVarHeaders,
+                observe: observe,
+                transferCache: localVarTransferCache,
+                reportProgress: reportProgress
+            }
+        );
+    }
+
+    /**
+     * Write one text field of an inject with AI
+     * Nothing is saved. The model sees the MSEL\&#39;s scenario, moves and other injects, and the inject\&#39;s current values from the request, and the planner decides whether to use what it writes.
+     * @param mselId The id of the MSEL the inject belongs to
+     * @param dataValueDraftRequest The field, the inject\&#39;s current values, and what to do
+     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+     * @param reportProgress flag to report request and response progress.
+     */
+    public draftDataValue(mselId: string, dataValueDraftRequest?: DataValueDraftRequest, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<DataValueDraftResult>;
+    public draftDataValue(mselId: string, dataValueDraftRequest?: DataValueDraftRequest, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<DataValueDraftResult>>;
+    public draftDataValue(mselId: string, dataValueDraftRequest?: DataValueDraftRequest, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<DataValueDraftResult>>;
+    public draftDataValue(mselId: string, dataValueDraftRequest?: DataValueDraftRequest, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+        if (mselId === null || mselId === undefined) {
+            throw new Error('Required parameter mselId was null or undefined when calling draftDataValue.');
+        }
+
+        let localVarHeaders = this.defaultHeaders;
+
+        // authentication (oauth2) required
+        localVarHeaders = this.configuration.addCredentialToHeaders('oauth2', 'Authorization', localVarHeaders, 'Bearer ');
+
+        const localVarHttpHeaderAcceptSelected: string | undefined = options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept([
+            'text/plain',
+            'application/json',
+            'text/json'
+        ]);
+        if (localVarHttpHeaderAcceptSelected !== undefined) {
+            localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
+        }
+
+        const localVarHttpContext: HttpContext = options?.context ?? new HttpContext();
+
+        const localVarTransferCache: boolean = options?.transferCache ?? true;
+
+
+        // to determine the Content-Type header
+        const consumes: string[] = [
+            'application/json',
+            'text/json',
+            'application/*+json'
+        ];
+        const httpContentTypeSelected: string | undefined = this.configuration.selectHeaderContentType(consumes);
+        if (httpContentTypeSelected !== undefined) {
+            localVarHeaders = localVarHeaders.set('Content-Type', httpContentTypeSelected);
+        }
+
+        let responseType_: 'text' | 'json' | 'blob' = 'json';
+        if (localVarHttpHeaderAcceptSelected) {
+            if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
+                responseType_ = 'text';
+            } else if (this.configuration.isJsonMime(localVarHttpHeaderAcceptSelected)) {
+                responseType_ = 'json';
+            } else {
+                responseType_ = 'blob';
+            }
+        }
+
+        let localVarPath = `/api/msels/${this.configuration.encodeParam({name: "mselId", value: mselId, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: "uuid"})}/ai-draft/value`;
+        const { basePath, withCredentials } = this.configuration;
+        return this.httpClient.request<DataValueDraftResult>('post', `${basePath}${localVarPath}`,
+            {
+                context: localVarHttpContext,
+                body: dataValueDraftRequest,
+                responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
                 observe: observe,

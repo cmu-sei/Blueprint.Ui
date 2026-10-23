@@ -1,11 +1,13 @@
 // Copyright 2026 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialog } from '@angular/material/dialog';
+import { dialogRefStub, dismissedDialogRefStub } from 'src/app/test-utils/dialog-refs';
+import { DataValueDraftDialogComponent } from 'src/app/components/data-value-draft-dialog/data-value-draft-dialog.component';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
@@ -35,6 +37,8 @@ class DataValueStub {
   @Input() gallerySourceTypeOptions: unknown[];
   @Input() galleryItemStatusOptions: string[];
   @Input() userOptions: unknown[];
+  @Input() canAiWrite: boolean;
+  @Output() aiWrite = new EventEmitter<void>();
 }
 @Component({ selector: 'app-duration-edit', template: '', standalone: false })
 class DurationEditStub {
@@ -53,6 +57,7 @@ class SteamfitterTaskStub {
 }
 
 const TITLE: DataField = { id: 'df-title', name: 'Title', dataType: DataFieldType.String, displayOrder: 1, onScenarioEventList: true };
+const BODY: DataField = { id: 'df-body', name: 'Description', dataType: DataFieldType.Html, displayOrder: 2, onScenarioEventList: true };
 
 interface Roles {
   isEditor?: boolean;
@@ -100,12 +105,18 @@ function dialogData(roles: Roles = {}) {
   };
 }
 
-async function renderEventEdit(roles: Roles = {}) {
+async function renderEventEdit(roles: Roles = {}, open = vi.fn(), withBody = false) {
   const data = dialogData(roles);
+  if (withBody) {
+    data.dataFields = [TITLE, BODY];
+  }
   const rendered = await renderComponent(ScenarioEventEditDialogComponent, {
     imports: [...CRUCIBLE_DIALOG_IMPORTS, MatFormFieldModule, MatInputModule, MatSelectModule, MatTabsModule],
     declarations: [ScenarioEventEditDialogComponent, DataValueStub, DurationEditStub, SteamfitterTaskStub],
-    providers: [{ provide: MAT_DIALOG_DATA, useValue: data }],
+    providers: [
+      { provide: MAT_DIALOG_DATA, useValue: data },
+      { provide: MatDialog, useValue: { open } satisfies Pick<MatDialog, 'open'> },
+    ],
   });
   // ngModel applies [disabled] in a microtask.
   await rendered.fixture.whenStable();
@@ -219,5 +230,48 @@ describe('ScenarioEventEditDialogComponent', () => {
 
     expect(child(fixture, DataValueStub).gallerySourceTypeOptions).toEqual(['News', 'Social']);
     expect(child(fixture, DataValueStub).galleryItemStatusOptions).toEqual(['Green', 'Red']);
+  });
+
+  /**
+   * Verifies: Write with AI is offered on the Html field only, opens the writer with the inject's unsaved values, and the accepted value lands in the field that had none.
+   * Interacts with: DataValueStub canAiWrite and aiWrite, MatDialog.open, the writer's afterClosed result.
+   * Data: Title "Phishing wave" (String) and Description (Html, no value yet); the writer returns "<p>Users report a fake payroll email.</p>".
+   */
+  it('writes an Html field with AI and keeps the accepted value', async () => {
+    const ref = dialogRefStub<DataValueDraftDialogComponent, string>('<p>Users report a fake payroll email.</p>');
+    const open = vi.fn(() => ref.dialogRef);
+    const { fixture, data } = await renderEventEdit({ isEditor: true }, open, true);
+
+    const [title, body] = fixture.debugElement.queryAll(By.directive(DataValueStub)).map((d) => d.componentInstance as DataValueStub);
+    expect(title.canAiWrite).toBe(false);
+    expect(body.canAiWrite).toBe(true);
+    body.aiWrite.emit();
+
+    expect(open).toHaveBeenCalledWith(DataValueDraftDialogComponent, expect.objectContaining({
+      data: expect.objectContaining({
+        mselId: 'msel-1',
+        scenarioEventId: 'se-1',
+        deltaSeconds: 600,
+        dataField: BODY,
+        values: { 'df-title': 'Phishing wave' },
+        gallerySourceTypes: ['News', 'Social'],
+      }),
+    }));
+    expect(data.scenarioEvent.dataValues).toContainEqual({ dataFieldId: 'df-body', value: '<p>Users report a fake payroll email.</p>' });
+    expect(fixture.componentInstance.blankDataValue.value).toBe('');
+  });
+
+  /**
+   * Verifies: dismissing the writer leaves the event's values alone.
+   * Interacts with: MatDialog.open, afterClosed emitting undefined.
+   * Data: Title "Phishing wave"; Description with no value; the writer dismissed.
+   */
+  it('changes nothing when the writer is dismissed', async () => {
+    const ref = dismissedDialogRefStub<DataValueDraftDialogComponent, string>();
+    const { fixture, data } = await renderEventEdit({ isEditor: true }, vi.fn(() => ref.dialogRef), true);
+
+    fixture.debugElement.queryAll(By.directive(DataValueStub))[1].componentInstance.aiWrite.emit();
+
+    expect(data.scenarioEvent.dataValues).toEqual([{ id: 'dv-1', scenarioEventId: 'se-1', dataFieldId: 'df-title', value: 'Phishing wave' }]);
   });
 });

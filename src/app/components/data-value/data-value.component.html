@@ -213,6 +213,12 @@ project root for license information.
   <div class="full-width">
     <div class="editor-label">
       {{ dataField.name }}
+      @if (canEdit && canAiWrite) {
+      <button mat-icon-button type="button" class="ai-write-button" (click)="aiWrite.emit()"
+        title="Write {{ dataField.name }} with AI" [attr.aria-label]="'Write ' + dataField.name + ' with AI'">
+        <mat-icon class="mdi-24px" fontIcon="mdi-creation"></mat-icon>
+      </button>
+      }
     </div>
     <div>
       <angular-editor [placeholder]="'Enter value ...'" [(ngModel)]="value" (ngModelChange)="valueChangeHandler()"

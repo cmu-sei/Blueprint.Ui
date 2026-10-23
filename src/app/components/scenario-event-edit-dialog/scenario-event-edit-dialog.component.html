@@ -84,7 +84,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
               [organizationOptions]="data.organizationList" [teamOptions]="data.teamList" [unitOptions]="data.unitList"
               [cardOptions]="data.cardList" [moveOptions]="data.moveList"
               [gallerySourceTypeOptions]="data.gallerySourceTypes"
-              [galleryItemStatusOptions]="data.galleryItemStatuses" [userOptions]="data.userList"></app-data-value>
+              [galleryItemStatusOptions]="data.galleryItemStatuses" [userOptions]="data.userList"
+              [canAiWrite]="canAiWrite(df)" (aiWrite)="writeWithAi(df)"></app-data-value>
           </div>
           }
           <!-- metadata-->

@@ -11,6 +11,9 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSelectHarness } from '@angular/material/select/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatIconModule } from '@angular/material/icon';
+import { AngularEditorModule } from '@kolkov/angular-editor';
+import { FormsModule } from '@angular/forms';
 import { NgxMatDatepickerActions, NgxMatDatepickerApply, NgxMatDatepickerCancel, NgxMatDatepickerInput, NgxMatDatetimepicker } from '@ngxmc/datetime-picker';
 import { screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
@@ -22,6 +25,7 @@ import { renderComponent } from 'src/app/test-utils/render-component';
 const SUBJECT: DataField = { id: 'df-subject', name: 'Subject', dataType: DataFieldType.String };
 const STATUS: DataField = { id: 'df-status', name: 'Status', dataType: DataFieldType.Status };
 const ASSIGNED: DataField = { id: 'df-team', name: 'Assigned To', dataType: DataFieldType.Team };
+const BODY: DataField = { id: 'df-body', name: 'Description', dataType: DataFieldType.Html };
 const WHEN: DataField = { id: 'df-when', name: 'When', dataType: DataFieldType.DateTime };
 // The data field that sets a Gallery Article's status, and the statuses the MSEL offers.
 const ARTICLE_STATUS: DataField = { id: 'df-article-status', name: 'Article Status', dataType: DataFieldType.String, galleryArticleParameter: 'Status' };
@@ -32,12 +36,16 @@ interface Flags {
   canApprove?: boolean;
   isOwner?: boolean;
   showValueOnly?: boolean;
+  canAiWrite?: boolean;
 }
 
 async function renderDataValue(dataField: DataField, value: string, flags: Flags = {}, galleryItemStatusOptions: string[] = []) {
-  const { canEdit = false, canApprove = false, isOwner = false, showValueOnly = false } = flags;
+  const { canEdit = false, canApprove = false, isOwner = false, showValueOnly = false, canAiWrite = false } = flags;
   const rendered = await renderComponent(DataValueComponent, {
     imports: [
+      AngularEditorModule,
+      FormsModule,
+      MatIconModule,
       MatCheckboxModule,
       MatDatepickerModule,
       MatFormFieldModule,
@@ -59,6 +67,7 @@ async function renderDataValue(dataField: DataField, value: string, flags: Flags
       canApprove,
       isOwner,
       showValueOnly,
+      canAiWrite,
       unitOptions: [{ id: 'unit-blue', shortName: 'BLUE' }, { id: 'unit-red', shortName: 'RED' }],
       galleryItemStatusOptions,
     },
@@ -300,5 +309,28 @@ describe('DataValueComponent', () => {
     expect(screen.getByText(shown)).toBeInTheDocument();
     const swatch = container.querySelector<HTMLElement>('.gallery-status-swatch');
     expect(swatch?.style.backgroundColor ?? null).toBe(color);
+  });
+
+  /**
+   * Verifies: Write with AI is offered on an Html field only when the dialog allows it and the value is editable, and it emits aiWrite.
+   * Interacts with: canAiWrite and canEdit inputs, aiWrite output.
+   * Data: Description (Html); canAiWrite with canEdit, then canAiWrite without canEdit, then canEdit without canAiWrite.
+   */
+  it.each([
+    { flags: { canEdit: true, canAiWrite: true }, offered: true },
+    { flags: { canEdit: false, canAiWrite: true }, offered: false },
+    { flags: { canEdit: true, canAiWrite: false }, offered: false },
+  ])('offers Write with AI $offered for $flags', async ({ flags, offered }) => {
+    const { fixture } = await renderDataValue(BODY, '<p>Crews restore the grid.</p>', flags);
+    const requests: void[] = [];
+    fixture.componentInstance.aiWrite.subscribe(() => requests.push(undefined));
+
+    const button = screen.queryByRole('button', { name: 'Write Description with AI' });
+    if (!offered) {
+      expect(button).not.toBeInTheDocument();
+      return;
+    }
+    await userEvent.setup().click(button);
+    expect(requests).toHaveLength(1);
   });
 });

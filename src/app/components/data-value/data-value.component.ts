@@ -35,7 +35,9 @@ export class DataValueComponent {
   @Input() gallerySourceTypeOptions: any[] = [];
   @Input() galleryItemStatusOptions: string[] = [];
   @Input() userOptions: any[] = [];
+  @Input() canAiWrite = false; // offers Write with AI on text fields
   @Output() valueChange = new EventEmitter<any>();
+  @Output() aiWrite = new EventEmitter<void>();
   editorConfig = EDITOR_CONFIG;
   viewConfig = VIEW_CONFIG;
   dataType: typeof DataFieldType = DataFieldType;

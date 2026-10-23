@@ -13,7 +13,12 @@ import {
 } from 'src/app/generated/blueprint.api';
 import { Sort } from '@angular/material/sort';
 import { DataValuePlus, IntegrationTarget } from 'src/app/data/scenario-event/scenario-event-data.service';
-import { MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatDialog, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { take } from 'rxjs/operators';
+import {
+  DataValueDraftDialogComponent,
+  DataValueDraftDialogData,
+} from 'src/app/components/data-value-draft-dialog/data-value-draft-dialog.component';
 import { EDITOR_CONFIG, VIEW_CONFIG } from 'src/app/utilities/editor-config';
 import { hasInvalidAddress } from 'src/app/utilities/ip-address';
 
@@ -66,7 +71,8 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
   integrationTarget = IntegrationTarget;
 
   constructor(
-    @Inject(MAT_DIALOG_DATA) public data: any
+    @Inject(MAT_DIALOG_DATA) public data: any,
+    private dialog: MatDialog
   ) {}
 
   ngOnInit() {
@@ -108,6 +114,47 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
     }
     this.getDataValue(dataFieldName).valueArray = newValues;
     this.getDataValue(dataFieldName).value = newValues.join(', ');
+  }
+
+  // Html fields only; the list-backed and typed fields have nothing to write
+  canAiWrite(dataField: DataField): boolean {
+    return !dataField.isChosenFromList && dataField.dataType === DataFieldType.Html;
+  }
+
+  writeWithAi(dataField: DataField) {
+    const values: { [dataFieldId: string]: string } = {};
+    this.data.scenarioEvent.dataValues.forEach((dv) => {
+      if (dv.value) {
+        values[dv.dataFieldId] = dv.value;
+      }
+    });
+    this.dialog
+      .open<DataValueDraftDialogComponent, DataValueDraftDialogData, string>(DataValueDraftDialogComponent, {
+        width: '80%',
+        maxWidth: '1000px',
+        data: {
+          mselId: this.data.scenarioEvent.mselId,
+          scenarioEventId: this.data.isNew ? null : this.data.scenarioEvent.id,
+          deltaSeconds: this.data.scenarioEvent.deltaSeconds ?? 0,
+          dataField,
+          values,
+          gallerySourceTypes: this.data.gallerySourceTypes ?? [],
+        },
+      })
+      .afterClosed()
+      .pipe(take(1))
+      .subscribe((value) => {
+        if (value === undefined || value === null) {
+          return;
+        }
+        const dataValue = this.data.scenarioEvent.dataValues.find((dv) => dv.dataFieldId === dataField.id);
+        if (dataValue) {
+          dataValue.value = value;
+        } else {
+          // never write into blankDataValue, which every missing field shares
+          this.data.scenarioEvent.dataValues.push({ dataFieldId: dataField.id, value });
+        }
+      });
   }
 
   getDataFieldByName(name: string) {

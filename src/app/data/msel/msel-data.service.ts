@@ -17,6 +17,8 @@ import {
   MselItemStatus,
   Move,
   Msel,
+  DataValueDraftRequest,
+  DataValueDraftResult,
   MselDraftImport,
   MselDraftRequest,
   MselDraftResult,
@@ -653,6 +655,11 @@ export class MselDataService {
           this.errorService.handleError(error);
         }
       );
+  }
+
+  // Writing a field saves nothing; the edit dialog keeps the value only if the planner uses it
+  draftDataValue(mselId: string, request: DataValueDraftRequest): Observable<DataValueDraftResult> {
+    return this.mselService.draftDataValue(mselId, request);
   }
 
   // Errors are left to the caller, which shows them in the import dialog
