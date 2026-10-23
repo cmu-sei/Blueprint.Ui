@@ -4,6 +4,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
+import { MselItemStatus } from 'src/app/generated/blueprint.api';
 
 @Component({
   selector: 'app-integration-status',
@@ -13,6 +14,8 @@ import { CrucibleDialogService } from '@cmusei/crucible-common';
 })
 export class IntegrationStatusComponent {
   @Input() msel: MselPlus;
+  // the MSEL's Caster workspace, once the push has created it; empty otherwise
+  @Input() casterWorkspaceUrl = '';
   @Output() closed = new EventEmitter<void>();
   cancelClicked = false;
 
@@ -33,6 +36,12 @@ export class IntegrationStatusComponent {
     return this.msel?.integrationStatus?.startsWith('Pulling') || false;
   }
 
+  // only a push that failed at its last step, Caster, can redo that step alone
+  get canRetryCaster(): boolean {
+    return this.isError && this.msel?.status === MselItemStatus.Pushing &&
+      this.msel.integrationStatus.startsWith('ERROR: Caster - ');
+  }
+
   get statusMessage(): string {
     if (this.isError) {
       return this.msel.integrationStatus.substring(7);
@@ -43,6 +52,10 @@ export class IntegrationStatusComponent {
   cancelPush() {
     this.cancelClicked = true;
     this.mselDataService.cancelIntegrations(this.msel.id);
+  }
+
+  retryCaster() {
+    this.mselDataService.retryCaster(this.msel.id);
   }
 
   pullIntegrations() {

@@ -473,6 +473,27 @@ export class MselDataService {
       );
   }
 
+  retryCaster(mselId: string) {
+    this.mselStore.setLoading(true);
+    this.mselService
+      .retryCasterIntegration(mselId)
+      .pipe(
+        tap(() => {
+          this.mselStore.setLoading(false);
+        }),
+        take(1)
+      )
+      .subscribe(
+        (n) => {
+          this.updateStore(n);
+        },
+        (error) => {
+          this.mselStore.setLoading(false);
+          this.errorService.handleError(error);
+        }
+      );
+  }
+
   cancelIntegrations(mselId: string) {
     this.mselService
       .cancelIntegrations(mselId)
