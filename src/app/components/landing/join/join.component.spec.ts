@@ -34,7 +34,7 @@ const BRAVO: Msel = { id: 'msel-2', name: 'Exercise Bravo', description: 'Anothe
 // A successful join sends the window to Player, which jsdom cannot do, so the
 // default answer stays pending. The page joins the MSEL named in its query
 // parameters; without them it lists the events the user can join.
-async function renderJoin(join: () => Observable<string> = () => NEVER, queryParams: Params = {}, msels: Msel[] = [ALPHA, BRAVO]) {
+async function renderJoin(join: () => Observable<string> = () => NEVER, queryParams: Params = {}, msels: Msel[] = [ALPHA, BRAVO], background?: string) {
   const mselApi = {
     ...({
       getMyJoinMsels: vi.fn(() => of(structuredClone(msels))),
@@ -63,7 +63,7 @@ async function renderJoin(join: () => Observable<string> = () => NEVER, queryPar
       { provide: ErrorService, useValue: { handleError } satisfies Pick<ErrorService, 'handleError'> },
       {
         provide: ComnSettingsService,
-        useValue: { settings: { AppTopBarImage: '/assets/img/logo-white.png', PlayerUrl: 'https://player.example.com' } } satisfies Pick<ComnSettingsService, 'settings'>,
+        useValue: { settings: { AppTopBarImage: '/assets/img/logo-white.png', PlayerUrl: 'https://player.example.com', AppLandingBackgroundImage: background } } satisfies Pick<ComnSettingsService, 'settings'>,
       },
       {
         provide: ComnAuthService,
@@ -171,5 +171,21 @@ describe('JoinComponent', () => {
 
     expect(mselApi.joinMselByInvitation).toHaveBeenCalledWith('msel-1', null);
     expect(handleError).toHaveBeenCalledWith(failure);
+  });
+
+  /**
+   * Verifies: the page shows the background image named in settings, and none without the setting.
+   * Interacts with: ComnSettingsService.settings (stub), JoinComponent template.
+   * Data: AppLandingBackgroundImage set to a relative asset URL, or unset.
+   */
+  it.each([
+    { label: 'with', background: '/assets/local/landing-background.jpg', expected: 'url("/assets/local/landing-background.jpg")' },
+    { label: 'without', background: undefined as string, expected: '' },
+  ])('shows the landing background $label the setting', async ({ background, expected }) => {
+    const { container } = await renderJoin(undefined, {}, undefined, background);
+
+    const page = container.querySelector('.join-page') as HTMLElement;
+    expect(page.style.getPropertyValue('--landing-background')).toBe(expected);
+    expect(page.classList.contains('has-background')).toBe(!!background);
   });
 });

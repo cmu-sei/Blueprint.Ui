@@ -25,6 +25,7 @@ import { UIDataService } from 'src/app/data/ui/ui-data.service';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
 import { MatDialog } from '@angular/material/dialog';
 import { CapabilityDialogComponent, CapabilityData } from '../../capability-dialog/capability-dialog.component';
+import { landingBackground } from 'src/app/utilities/landing-background';
 
 @Component({
   selector: 'app-dashboard',
@@ -44,11 +45,7 @@ export class DashboardComponent implements OnDestroy, OnInit {
   topbarColor = '#ef3a47';
   topbarTextColor = '#FFFFFF';
   topbarImage = this.settingsService.settings.AppTopBarImage;
-  // An optional image URL from settings, so a site can brand the page
-  // without shipping the image in this repo.
-  backgroundImage = this.settingsService.settings.AppLandingBackgroundImage
-    ? `url("${this.settingsService.settings.AppLandingBackgroundImage}")`
-    : null;
+  backgroundImage = landingBackground(this.settingsService.settings);
   TopbarView = TopbarView;
   appTitle = 'Event Dashboard';
   joinClass = 'base-card';
