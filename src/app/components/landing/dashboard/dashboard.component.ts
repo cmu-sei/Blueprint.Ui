@@ -201,17 +201,17 @@ export class DashboardComponent implements OnDestroy, OnInit {
         description: 'Blueprint transforms MSEL development from isolated spreadsheet work into a real-time collaborative experience. Multiple team members can simultaneously edit, review, and approve scenarios.',
         features: [
           'Real-time multi-user editing with instant synchronization',
-          'Role-based access control (Owner, Editor, Approver, Viewer)',
+          'Role-based access control (Owner, Editor, Move Editor, Approver, Evaluator, Viewer)',
           'Contributor management with granular permissions',
           'Live updates visible to all team members',
-          'Comment and approval workflows'
+          'Approval workflow: only Approvers can mark an event Approved'
         ],
         benefits: [
           'Eliminate version control conflicts from Excel files',
           'Reduce planning time by enabling parallel work',
           'Improve coordination across distributed teams',
           'Maintain single source of truth for scenarios',
-          'Track changes and contributions transparently'
+          'See who created each MSEL and who contributes to it'
         ]
       },
       'integrated': {
@@ -230,7 +230,7 @@ export class DashboardComponent implements OnDestroy, OnInit {
           'Ensure consistency across exercise platforms',
           'Reduce setup time from hours to minutes',
           'Simplify exercise deployment workflows',
-          'Maintain synchronization throughout exercise lifecycle'
+          'Remove every integration cleanly when the exercise ends'
         ]
       },
       'scenario': {
@@ -240,14 +240,14 @@ export class DashboardComponent implements OnDestroy, OnInit {
         features: [
           'Move-based timeline organization for structured events',
           'Define organizations, teams, and simulated entities',
-          'Create event templates for rapid scenario building',
+          'Add injects from reusable catalogs and save MSELs as templates',
           'Assign colors and metadata for visual organization',
           'Import existing MSELs or build from scratch'
         ],
         benefits: [
           'Design realistic, complex cyber scenarios efficiently',
           'Reuse templates and components across exercises',
-          'Visualize event sequences and dependencies',
+          'View the full event sequence in the Exercise View',
           'Scale from simple to enterprise-level scenarios',
           'Support both planned and dynamic inject delivery'
         ]
@@ -258,17 +258,14 @@ export class DashboardComponent implements OnDestroy, OnInit {
         description: 'Purpose-built for cybersecurity training and simulation, Blueprint understands the unique requirements of cyber range operations, from incident response to red team exercises.',
         features: [
           'Native support for cyber incident scenarios',
-          'Integration with threat intelligence frameworks',
           'Built for adversary simulation and response training',
-          'Support for tabletop and hands-on exercises',
-          'Designed for DoD and government compliance requirements'
+          'Support for tabletop and hands-on exercises'
         ],
         benefits: [
           'Reduce development time for cyber exercise scenarios',
           'Ensure exercises meet training objectives',
           'Support diverse exercise types and formats',
-          'Built by cybersecurity practitioners for practitioners',
-          'Continuously updated for emerging threats and techniques'
+          'Built by cybersecurity practitioners for practitioners'
         ]
       }
     };
