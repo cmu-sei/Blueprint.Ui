@@ -7,7 +7,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
 <div class="presence-container">
   @for (actor of actors; track actor.id) {
   <span class="presence-chip" [class.presence-offline]="!actor.online">
-    <mat-icon class="presence-icon" fontIcon="mdi-account"></mat-icon>
+    <mat-icon class="presence-icon" fontIcon="mdi-account" />
     <span class="presence-name">{{ actor.name || 'Anonymous' }}</span>
   </span>
   }

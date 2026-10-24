@@ -51,8 +51,7 @@ project root for license information.
           <span (click)="picker.open()">
             {{ data.invitation.expirationDateTime | date: 'dd MMM yyyy HH:mm' }} {{ data.invitation.expirationDateTime | timezoneAbbr }}
           </span>
-          <mat-datepicker-toggle matSuffix title="Choose Date/Time" [for]="picker">
-          </mat-datepicker-toggle>
+          <mat-datepicker-toggle matSuffix title="Choose Date/Time" [for]="picker" />
           <ngx-mat-datetime-picker #picker [showSpinners]=true [showSeconds]=false [stepHour]=1 [stepMinute]=5
             [stepSecond]=1 [touchUi]=false [enableMeridian]=true [disableMinute]=false [hideTime]=false
             [color]="'warn'">

@@ -6,7 +6,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
 <div class="top-container background">
   @if (!hideTopbar) {
   <app-topbar [title]="topbarText" [topbarView]="TopbarView.BLUEPRINT_HOME" [imageFilePath]="topbarImage"
-    (urlNavigate)="topBarNavigate($event)"></app-topbar>
+    (urlNavigate)="topBarNavigate($event)" />
   }
   @if (isStarted) {
   <div class="card-container">
@@ -58,8 +58,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <mat-card-title>Initializing Data</mat-card-title>
         <mat-card-subtitle>Please wait ...</mat-card-subtitle>
       </mat-card-header>
-      <mat-progress-spinner color="primary" mode="indeterminate">
-      </mat-progress-spinner>
+      <mat-progress-spinner color="primary" mode="indeterminate" />
     </mat-card>
   </div>
   }

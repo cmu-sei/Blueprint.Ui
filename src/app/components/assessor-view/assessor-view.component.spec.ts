@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { provideHttpClient } from '@angular/common/http';
@@ -39,28 +39,30 @@ import { ScenarioEventStore } from 'src/app/data/scenario-event/scenario-event.s
 import { AssessorViewComponent } from './assessor-view.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { renderComponent } from 'src/app/test-utils/render-component';
+import { DurationViewComponent } from '../shared/duration-view/duration-view.component';
+import { DataValueComponent } from '../data-value/data-value.component';
 import { captureUnhandledRxErrors, flush } from 'src/app/test-utils/unhandled-rx-errors';
 
-@Component({ selector: 'app-duration-view', template: '', standalone: false })
+@Component({ selector: 'app-duration-view', template: '' })
 class DurationViewStub {
-  @Input() startTime: Date;
-  @Input() durationSeconds: number;
-  @Input() showRealTime: boolean;
+  readonly startTime = input<Date>(undefined);
+  readonly durationSeconds = input<number>(undefined);
+  readonly showRealTime = input<boolean>(undefined);
 }
-@Component({ selector: 'app-data-value', template: '', standalone: false })
+@Component({ selector: 'app-data-value', template: '' })
 class DataValueStub {
-  @Input() value: string;
-  @Output() valueChange = new EventEmitter<string>();
-  @Input() dataField: DataField;
-  @Input() canEdit: boolean;
-  @Input() canApprove: boolean;
-  @Input() isOwner: boolean;
-  @Input() showValueOnly: boolean;
-  @Input() organizationOptions: unknown[];
-  @Input() teamOptions: unknown[];
-  @Input() cardOptions: unknown[];
-  @Input() moveOptions: unknown[];
-  @Input() userOptions: unknown[];
+  readonly value = input<string>(undefined);
+  readonly valueChange = output<string>();
+  readonly dataField = input<DataField>(undefined);
+  readonly canEdit = input<boolean>(undefined);
+  readonly canApprove = input<boolean>(undefined);
+  readonly isOwner = input<boolean>(undefined);
+  readonly showValueOnly = input<boolean>(undefined);
+  readonly organizationOptions = input<unknown[]>(undefined);
+  readonly teamOptions = input<unknown[]>(undefined);
+  readonly cardOptions = input<unknown[]>(undefined);
+  readonly moveOptions = input<unknown[]>(undefined);
+  readonly userOptions = input<unknown[]>(undefined);
 }
 
 const MSEL: Msel = { id: 'msel-1', name: 'Exercise Alpha', teams: [], units: [], userMselRoles: [] };
@@ -105,7 +107,10 @@ async function renderAssessorView(overrides: { canEditCheckboxes?: boolean; move
       MatSortModule,
       MatTooltipModule,
     ],
-    declarations: [AssessorViewComponent, DurationViewStub, DataValueStub],
+    childStubs: [
+      { replace: DurationViewComponent, with: DurationViewStub },
+      { replace: DataValueComponent, with: DataValueStub },
+    ],
     providers: [
       { provide: MselCompetencyService, useValue: poolApi },
       { provide: TeamCompetencyService, useValue: teamCompetencyApi },
@@ -135,7 +140,7 @@ async function renderAssessorView(overrides: { canEditCheckboxes?: boolean; move
 function values(fixture: ComponentFixture<unknown>): DataValueStub[] {
   return fixture.debugElement.queryAll(By.directive(DataValueStub)).map((d) => d.componentInstance);
 }
-const byField = (fixture: ComponentFixture<unknown>, name: string) => values(fixture).find((v) => v.dataField.name === name);
+const byField = (fixture: ComponentFixture<unknown>, name: string) => values(fixture).find((v) => v.dataField().name === name);
 
 describe('AssessorViewComponent', () => {
   beforeEach(() => {
@@ -156,7 +161,7 @@ describe('AssessorViewComponent', () => {
     const { fixture, poolApi } = await renderAssessorView();
 
     expect(poolApi.getMselCompetencies).toHaveBeenCalledWith('msel-1');
-    expect(values(fixture).map((v) => [v.dataField.name, v.value])).toEqual([
+    expect(values(fixture).map((v) => [v.dataField().name, v.value()])).toEqual([
       ['Title', 'Phishing wave'],
       ['Observed', 'false'],
     ]);
@@ -171,12 +176,12 @@ describe('AssessorViewComponent', () => {
   it('lets an assessor tick the checkbox fields with canEditCheckboxes', async () => {
     const { fixture } = await renderAssessorView({ canEditCheckboxes: true });
 
-    expect(byField(fixture, 'Observed')?.canEdit).toBe(true);
-    expect(byField(fixture, 'Title')?.canEdit).toBe(false);
+    expect(byField(fixture, 'Observed')?.canEdit()).toBe(true);
+    expect(byField(fixture, 'Title')?.canEdit()).toBe(false);
     for (const value of values(fixture)) {
-      expect(value.canApprove).toBe(false);
-      expect(value.isOwner).toBe(false);
-      expect(value.showValueOnly).toBe(true);
+      expect(value.canApprove()).toBe(false);
+      expect(value.isOwner()).toBe(false);
+      expect(value.showValueOnly()).toBe(true);
     }
   });
 
@@ -188,8 +193,8 @@ describe('AssessorViewComponent', () => {
   it('makes the checkbox fields read-only without canEditCheckboxes', async () => {
     const { fixture } = await renderAssessorView({ canEditCheckboxes: false });
 
-    expect(byField(fixture, 'Observed')?.canEdit).toBe(false);
-    expect(byField(fixture, 'Title')?.canEdit).toBe(false);
+    expect(byField(fixture, 'Observed')?.canEdit()).toBe(false);
+    expect(byField(fixture, 'Title')?.canEdit()).toBe(false);
   });
 
   /**

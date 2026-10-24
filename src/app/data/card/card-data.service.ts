@@ -6,7 +6,7 @@
 
 import { CardStore } from './card.store';
 import { CardQuery } from './card.query';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { PageEvent } from '@angular/material/paginator';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -22,6 +22,12 @@ import { HttpEventType, HttpResponse } from '@angular/common/http';
   providedIn: 'root',
 })
 export class CardDataService {
+  private cardStore = inject(CardStore);
+  private cardQuery = inject(CardQuery);
+  private cardService = inject(CardService);
+  private router = inject(Router);
+  private activatedRoute = inject(ActivatedRoute);
+
   readonly CardList: Observable<Card[]>;
   readonly filterControl = new UntypedFormControl();
   private _requestedCardId$ = this.activatedRoute.queryParamMap.pipe(
@@ -36,13 +42,9 @@ export class CardDataService {
   private pageIndex: Observable<number>;
   public uploadProgress = new Subject<number>();
 
-  constructor(
-    private cardStore: CardStore,
-    private cardQuery: CardQuery,
-    private cardService: CardService,
-    private router: Router,
-    private activatedRoute: ActivatedRoute
-  ) {
+  constructor() {
+    const activatedRoute = this.activatedRoute;
+
     this.filterTerm = activatedRoute.queryParamMap.pipe(
       map((params) => params.get('cardmask') || '')
     );

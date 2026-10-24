@@ -7,7 +7,7 @@ import {
   CompetencyFrameworkStore,
 } from './competency-framework.store';
 import { CompetencyFramework } from 'src/app/generated/blueprint.api';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
 @QueryConfig({
@@ -18,8 +18,14 @@ import { Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class CompetencyFrameworkQuery extends QueryEntity<CompetencyFrameworkState> {
-  constructor(protected store: CompetencyFrameworkStore) {
+  protected store: CompetencyFrameworkStore;
+
+  constructor() {
+    const store = inject(CompetencyFrameworkStore);
+
     super(store);
+  
+    this.store = store;
   }
 
   selectById(id: string): Observable<CompetencyFramework> {

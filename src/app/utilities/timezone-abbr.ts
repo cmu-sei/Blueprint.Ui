@@ -33,10 +33,7 @@ export function getTimezoneAbbr(
 /*
  {{ value | date: 'dd MMM yyyy HH:mm' }} {{ value | timezoneAbbr }}
 */
-@Pipe({
-  name: 'timezoneAbbr',
-  standalone: false,
-})
+@Pipe({ name: 'timezoneAbbr', })
 export class TimezoneAbbrPipe implements PipeTransform {
   transform(value: Date | string | number): string {
     if (value === null || value === undefined || value === '') {

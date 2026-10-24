@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { describe, it, expect, vi } from 'vitest';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Params, Router, UrlTree } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -18,13 +18,14 @@ import { JoinComponent } from './join.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { activatedRouteStub } from 'src/app/test-utils/activated-route';
 import { renderComponent } from 'src/app/test-utils/render-component';
+import { TopbarComponent } from '../../shared/top-bar/topbar.component';
 
-@Component({ selector: 'app-topbar', template: '', standalone: false })
+@Component({ selector: 'app-topbar', template: '' })
 class TopbarStub {
-  @Input() title: string;
-  @Input() topbarView: unknown;
-  @Input() imageFilePath: string;
-  @Output() urlNavigate = new EventEmitter<string>();
+  readonly title = input<string>(undefined);
+  readonly topbarView = input<unknown>(undefined);
+  readonly imageFilePath = input<string>(undefined);
+  readonly urlNavigate = output<string>();
 }
 
 const ALPHA: Msel = { id: 'msel-1', name: 'Exercise Alpha', description: 'An exercise in progress' };
@@ -49,7 +50,9 @@ async function renderJoin(join: () => Observable<string> = () => NEVER, queryPar
   const handleError = vi.fn();
   const rendered = await renderComponent(JoinComponent, {
     imports: [MatButtonModule, MatCardModule],
-    declarations: [JoinComponent, TopbarStub],
+    childStubs: [
+      { replace: TopbarComponent, with: TopbarStub },
+    ],
     providers: [
       { provide: MselService, useValue: mselApi },
       { provide: UserService, useValue: userApi },

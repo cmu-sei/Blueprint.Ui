@@ -2,10 +2,16 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, EventEmitter, Inject, Output } from '@angular/core';
-import { UntypedFormControl, Validators } from '@angular/forms';
+import { Component, inject, output } from '@angular/core';
+import { UntypedFormControl, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { EDITOR_CONFIG } from 'src/app/utilities/editor-config';
+import { CrucibleDialogComponent, CrucibleDialogContentDirective } from '@cmusei/crucible-common';
+import { MatFormField, MatLabel, MatInput, MatError, MatHint } from '@angular/material/input';
+import { AngularEditorModule } from '@kolkov/angular-editor';
+import { MatSelect } from '@angular/material/select';
+import { MatOption } from '@angular/material/autocomplete';
+import { MatCheckbox } from '@angular/material/checkbox';
 
 const MIN_NAME_LENGTH = 3;
 
@@ -13,11 +19,13 @@ const MIN_NAME_LENGTH = 3;
     selector: 'app-team-edit-dialog',
     templateUrl: './team-edit-dialog.component.html',
     styleUrls: ['./team-edit-dialog.component.scss'],
-    standalone: false
+    imports: [CrucibleDialogComponent, CrucibleDialogContentDirective, MatFormField, MatLabel, MatInput, FormsModule, ReactiveFormsModule, MatError, AngularEditorModule, MatSelect, MatOption, MatHint, MatCheckbox]
 })
 
 export class TeamEditDialogComponent {
-  @Output() editComplete = new EventEmitter<any>();
+  data = inject(MAT_DIALOG_DATA);
+
+  readonly editComplete = output<any>();
 
   public teamNameFormControl = new UntypedFormControl(
     this.data.team.name,
@@ -49,9 +57,7 @@ export class TeamEditDialogComponent {
   );
   editorConfig = EDITOR_CONFIG;
 
-  constructor(
-    @Inject(MAT_DIALOG_DATA) public data: any
-  ) {
+  constructor() {
     // Make CITE Team Type required when CITE is being used
     if (this.data.useCite) {
       this.citeTeamTypeIdFormControl.setValidators([Validators.required]);

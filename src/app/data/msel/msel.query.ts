@@ -10,7 +10,7 @@ import {
   MselStore,
 } from './msel.store';
 import { Msel } from 'src/app/generated/blueprint.api';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { PageEvent } from '@angular/material/paginator';
 import { Observable } from 'rxjs';
 
@@ -22,8 +22,14 @@ import { Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class MselQuery extends QueryEntity<MselState> {
-  constructor(protected store: MselStore) {
+  protected store: MselStore;
+
+  constructor() {
+    const store = inject(MselStore);
+
     super(store);
+  
+    this.store = store;
   }
 
   selectById(id: string): Observable<Msel> {

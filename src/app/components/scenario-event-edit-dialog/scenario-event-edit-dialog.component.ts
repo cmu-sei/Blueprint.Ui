@@ -1,7 +1,7 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, EventEmitter, Inject, OnDestroy, OnInit, Output } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject, output } from '@angular/core';
 import { Subject } from 'rxjs';
 import {
   DataField,
@@ -16,15 +16,26 @@ import { DataValuePlus, IntegrationTarget } from 'src/app/data/scenario-event/sc
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { EDITOR_CONFIG, VIEW_CONFIG } from 'src/app/utilities/editor-config';
 import { hasInvalidDataValue } from 'src/app/utilities/ip-address';
+import { CrucibleDialogComponent, CrucibleDialogContentDirective } from '@cmusei/crucible-common';
+import { MatFormField, MatLabel, MatInput } from '@angular/material/input';
+import { MatSelect } from '@angular/material/select';
+import { FormsModule } from '@angular/forms';
+import { MatOption } from '@angular/material/autocomplete';
+import { MatTabGroup, MatTab } from '@angular/material/tabs';
+import { SteamfitterTaskComponent } from '../steamfitter-task/steamfitter-task.component';
+import { DurationEditComponent } from '../shared/duration-edit/duration-edit.component';
+import { DataValueComponent } from '../data-value/data-value.component';
 
 @Component({
-  selector: 'app-scenario-event-edit-dialog',
-  templateUrl: './scenario-event-edit-dialog.component.html',
-  styleUrls: ['./scenario-event-edit-dialog.component.scss'],
-  standalone: false
+    selector: 'app-scenario-event-edit-dialog',
+    templateUrl: './scenario-event-edit-dialog.component.html',
+    styleUrls: ['./scenario-event-edit-dialog.component.scss'],
+    imports: [CrucibleDialogComponent, CrucibleDialogContentDirective, MatFormField, MatLabel, MatSelect, FormsModule, MatOption, MatTabGroup, MatTab, SteamfitterTaskComponent, DurationEditComponent, DataValueComponent, MatInput]
 })
 export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
-  @Output() editComplete = new EventEmitter<any>();
+  data = inject(MAT_DIALOG_DATA);
+
+  readonly editComplete = output<any>();
   sort: Sort = { active: '', direction: '' };
   sortedScenarioEvents: ScenarioEvent[] = [];
   newScenarioEvent: ScenarioEvent;
@@ -64,10 +75,6 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
   selectedTabName = '';
   currentFilterBy = 'all';
   integrationTarget = IntegrationTarget;
-
-  constructor(
-    @Inject(MAT_DIALOG_DATA) public data: any
-  ) {}
 
   ngOnInit() {
     if (!this.data.isNew && this.showDefaultTab()) {

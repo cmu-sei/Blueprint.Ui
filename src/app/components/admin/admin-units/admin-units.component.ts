@@ -2,10 +2,10 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, ElementRef, Input, OnDestroy, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnDestroy, ViewChild, inject, input, viewChild } from '@angular/core';
 import { MatPaginator } from '@angular/material/paginator';
-import { Sort } from '@angular/material/sort';
-import { MatTable, MatTableDataSource } from '@angular/material/table';
+import { Sort, MatSort, MatSortHeader } from '@angular/material/sort';
+import { MatTable, MatTableDataSource, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { Unit, User } from 'src/app/generated/blueprint.api/model/models';
 import { UnitDataService } from 'src/app/data/unit/unit-data.service';
@@ -18,24 +18,39 @@ import { MatDialog } from '@angular/material/dialog';
 import { AdminUnitEditDialogComponent } from 'src/app/components/admin/admin-unit-edit-dialog/admin-unit-edit-dialog.component';
 import { ItemDownloadDialogComponent } from 'src/app/components/item-download-dialog/item-download-dialog.component';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
+import { MatIcon } from '@angular/material/icon';
+
+import { MatFormField, MatInput, MatSuffix } from '@angular/material/input';
+import { FormsModule } from '@angular/forms';
+import { MatIconButton } from '@angular/material/button';
+import { AdminUnitUsersComponent } from '../admin-unit-users/admin-unit-users.component';
+import { MatCard } from '@angular/material/card';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
 
 @Component({
     selector: 'app-admin-units',
     templateUrl: './admin-units.component.html',
     styleUrls: ['./admin-units.component.scss'],
     animations: [
-      trigger('detailExpand', [
-        state('collapsed', style({ height: '0px', minHeight: '0', visibility: 'hidden' })),
-        state('expanded', style({ height: '*', visibility: 'visible' })),
-        transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
-      ]),
+        trigger('detailExpand', [
+            state('collapsed', style({ height: '0px', minHeight: '0', visibility: 'hidden' })),
+            state('expanded', style({ height: '*', visibility: 'visible' })),
+            transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
+        ]),
     ],
-    standalone: false
+    imports: [MatIcon, MatFormField, MatInput, FormsModule, MatIconButton, MatSuffix, MatPaginator, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatSortHeader, AdminUnitUsersComponent, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, MatCard, MatProgressSpinner]
 })
 export class AdminUnitsComponent implements OnDestroy {
-  @Input() canManage: boolean;
-  @ViewChild('unitTable', { static: false }) unitTable: MatTable<any>;
-  @ViewChild('jsonInput') jsonInput: ElementRef<HTMLInputElement>;
+  private settingsService = inject(ComnSettingsService);
+  private dialog = inject(MatDialog);
+  dialogService = inject(CrucibleDialogService);
+  private unitDataService = inject(UnitDataService);
+  private unitQuery = inject(UnitQuery);
+  private userQuery = inject(UserQuery);
+
+  readonly canManage = input<boolean>(undefined);
+  readonly unitTable = viewChild<MatTable<any>>('unitTable');
+  readonly jsonInput = viewChild<ElementRef<HTMLInputElement>>('jsonInput');
   @ViewChild(MatPaginator) set matPaginator(paginator: MatPaginator) {
     this.unitDataSource.paginator = paginator;
   }
@@ -55,14 +70,7 @@ export class AdminUnitsComponent implements OnDestroy {
   isExpansionDetailRow = (i: number, row: Object) => (row as Unit).id === this.expandedElementId;
   private unsubscribe$ = new Subject();
 
-  constructor(
-    private settingsService: ComnSettingsService,
-    private dialog: MatDialog,
-    public dialogService: CrucibleDialogService,
-    private unitDataService: UnitDataService,
-    private unitQuery: UnitQuery,
-    private userQuery: UserQuery
-  ) {
+  constructor() {
     // subscribe to all units
     this.unitQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(units => {
       this.allUnits = units;
@@ -118,7 +126,7 @@ export class AdminUnitsComponent implements OnDestroy {
       return;
     }
     this.unitDataService.uploadJson(file, 'events', true);
-    this.jsonInput.nativeElement.value = null;
+    this.jsonInput().nativeElement.value = null;
   }
 
   openDownloadDialog() {
@@ -202,7 +210,7 @@ export class AdminUnitsComponent implements OnDestroy {
     } else {
       this.expandedElementId = row.id;
     }
-    this.unitTable.renderRows();
+    this.unitTable().renderRows();
   }
 
   getRowClass(id: string) {

@@ -4,7 +4,7 @@
  project root for license information.
 */
 
-import { Injectable, OnDestroy } from '@angular/core';
+import { Injectable, OnDestroy, inject } from '@angular/core';
 import { ComnAuthService, ComnSettingsService } from '@cmusei/crucible-common';
 import * as signalR from '@microsoft/signalr';
 import {
@@ -71,6 +71,31 @@ export enum ApplicationArea {
   providedIn: 'root',
 })
 export class SignalRService implements OnDestroy {
+  private authService = inject(ComnAuthService);
+  private settingsService = inject(ComnSettingsService);
+  private cardDataService = inject(CardDataService);
+  private cardTeamDataService = inject(CardTeamDataService);
+  private catalogDataService = inject(CatalogDataService);
+  private citeActionDataService = inject(CiteActionDataService);
+  private citeDutyDataService = inject(CiteDutyDataService);
+  private dataFieldDataService = inject(DataFieldDataService);
+  private dataOptionDataService = inject(DataOptionDataService);
+  private dataValueDataService = inject(DataValueDataService);
+  private injectmDataService = inject(InjectmDataService);
+  private injectTypeDataService = inject(InjectTypeDataService);
+  private moveDataService = inject(MoveDataService);
+  private mselDataService = inject(MselDataService);
+  private mselUnitDataService = inject(MselUnitDataService);
+  private unitDataService = inject(UnitDataService);
+  private organizationDataService = inject(OrganizationDataService);
+  private playerApplicationDataService = inject(PlayerApplicationDataService);
+  private playerApplicationTeamDataService = inject(PlayerApplicationTeamDataService);
+  private scenarioEventDataService = inject(ScenarioEventDataService);
+  private teamDataService = inject(TeamDataService);
+  private teamUserDataService = inject(TeamUserDataService);
+  private userDataService = inject(UserDataService);
+  private userMselRoleDataService = inject(UserMselRoleDataService);
+
   private hubConnection: signalR.HubConnection;
   private applicationArea: ApplicationArea;
   private connectionPromise: Promise<void>;
@@ -82,32 +107,7 @@ export class SignalRService implements OnDestroy {
   private presenceColorMap = ['primary', 'accent', 'green', 'orange', 'purple'];
   actors$ = new BehaviorSubject<PresenceActor[]>([]);
 
-  constructor(
-    private authService: ComnAuthService,
-    private settingsService: ComnSettingsService,
-    private cardDataService: CardDataService,
-    private cardTeamDataService: CardTeamDataService,
-    private catalogDataService: CatalogDataService,
-    private citeActionDataService: CiteActionDataService,
-    private citeDutyDataService: CiteDutyDataService,
-    private dataFieldDataService: DataFieldDataService,
-    private dataOptionDataService: DataOptionDataService,
-    private dataValueDataService: DataValueDataService,
-    private injectmDataService: InjectmDataService,
-    private injectTypeDataService: InjectTypeDataService,
-    private moveDataService: MoveDataService,
-    private mselDataService: MselDataService,
-    private mselUnitDataService: MselUnitDataService,
-    private unitDataService: UnitDataService,
-    private organizationDataService: OrganizationDataService,
-    private playerApplicationDataService: PlayerApplicationDataService,
-    private playerApplicationTeamDataService: PlayerApplicationTeamDataService,
-    private scenarioEventDataService: ScenarioEventDataService,
-    private teamDataService: TeamDataService,
-    private teamUserDataService: TeamUserDataService,
-    private userDataService: UserDataService,
-    private userMselRoleDataService: UserMselRoleDataService
-  ) {
+  constructor() {
     this.authService.user$.pipe(takeUntil(this.unsubscribe$)).subscribe(() => {
       this.reconnect();
     });

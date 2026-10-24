@@ -1,8 +1,8 @@
 // Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Subject } from 'rxjs';
 import { take, takeUntil } from 'rxjs/operators';
 import {
@@ -20,14 +20,28 @@ import { Title } from '@angular/platform-browser';
 import { ErrorService } from 'src/app/services/error/error.service';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
 import { XApiService } from 'src/app/services/xapi/xapi.service';
+import { TopbarComponent } from '../../shared/top-bar/topbar.component';
+import { MatCard, MatCardHeader, MatCardTitle, MatCardSubtitle, MatCardActions } from '@angular/material/card';
+import { MatButton } from '@angular/material/button';
 
 @Component({
     selector: 'app-join',
     templateUrl: './join.component.html',
     styleUrls: ['./join.component.scss'],
-    standalone: false
+    imports: [TopbarComponent, MatCard, MatCardHeader, MatCardTitle, MatCardSubtitle, MatCardActions, MatButton, RouterLink]
 })
 export class JoinComponent implements OnDestroy, OnInit {
+  private userDataService = inject(UserDataService);
+  private userQuery = inject(UserQuery);
+  private settingsService = inject(ComnSettingsService);
+  private mselDataService = inject(MselDataService);
+  private activatedRoute = inject(ActivatedRoute);
+  private router = inject(Router);
+  private titleService = inject(Title);
+  private errorService = inject(ErrorService);
+  private uiDataService = inject(UIDataService);
+  private xApiService = inject(XApiService);
+
   joinMselList: Msel[] = [];
   joiningMselId = '';
   imageFilePath = '';
@@ -44,18 +58,7 @@ export class JoinComponent implements OnDestroy, OnInit {
   showChoices = false;
   private unsubscribe$ = new Subject();
 
-  constructor(
-    private userDataService: UserDataService,
-    private userQuery: UserQuery,
-    private settingsService: ComnSettingsService,
-    private mselDataService: MselDataService,
-    private activatedRoute: ActivatedRoute,
-    private router: Router,
-    private titleService: Title,
-    private errorService: ErrorService,
-    private uiDataService: UIDataService,
-    private xApiService: XApiService
-  ) {
+  constructor() {
     this.hideTopbar = this.uiDataService.inIframe();
     // set image
     this.imageFilePath = this.settingsService.settings.AppTopBarImage.replace(

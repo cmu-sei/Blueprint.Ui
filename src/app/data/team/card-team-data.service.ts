@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Injectable, OnDestroy } from '@angular/core';
+import { Injectable, OnDestroy, inject } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ComnAuthQuery, ComnAuthService } from '@cmusei/crucible-common';
@@ -15,6 +15,11 @@ import { CardTeam, Team } from 'src/app/generated/blueprint.api/model/models';
   providedIn: 'root',
 })
 export class CardTeamDataService implements OnDestroy {
+  private cardTeamService = inject(CardTeamService);
+  private authQuery = inject(ComnAuthQuery);
+  private authService = inject(ComnAuthService);
+  private router = inject(Router);
+
   unsubscribe$: Subject<null> = new Subject<null>();
   readonly filterControl = new UntypedFormControl();
   private _cardTeams: CardTeam[] = [];
@@ -24,14 +29,6 @@ export class CardTeamDataService implements OnDestroy {
   private sortIsAscending: Observable<boolean>;
   private pageSize: Observable<number>;
   private pageIndex: Observable<number>;
-
-  constructor(
-    private cardTeamService: CardTeamService,
-    private authQuery: ComnAuthQuery,
-    private authService: ComnAuthService,
-    private router: Router,
-    activatedRoute: ActivatedRoute
-  ) {}
 
   getCardTeamsFromApi(mselId: string) {
     return this.cardTeamService

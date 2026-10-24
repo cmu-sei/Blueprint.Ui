@@ -8,7 +8,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
   <mat-toolbar-row>
     <span class="margin-auto">
       <a mat-icon-button style="outline: none; background-color: var(--crucible-topbar-text);" [routerLink]="['/']">
-        <mat-icon svgIcon="crucible-icon-blueprint"></mat-icon>
+        <mat-icon svgIcon="crucible-icon-blueprint" />
       </a>
     </span>
     <!--
@@ -17,14 +17,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
       a screen reader has a document outline to start from -- Material styles headings inside
       a toolbar to the toolbar's own font, so this reads identically to the <span> it replaces.
     -->
-    <h1 class="view-text">{{ title }}</h1>
+    <h1 class="view-text">{{ title() }}</h1>
     @if (teams && team && teams.length > 0) {
     <div class="team-text">Team:</div>
     <b class="team-text">{{ team.name }}</b>
     @if (teams.length > 1) {
     <div>
       <button mat-button [matMenuTriggerFor]="teamMenu" style="outline: none;">
-        <mat-icon class="icon-color" svgIcon="ic_expand_more"></mat-icon>
+        <mat-icon class="icon-color" svgIcon="ic_expand_more" />
       </button>
       <mat-menu #teamMenu="matMenu" [overlapTrigger]="false">
         @for (val of teams; track val) {
@@ -36,7 +36,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     </div>
     }
     }
-    <app-presence-bar></app-presence-bar>
+    <app-presence-bar />
     <span class="spacer"></span>
     @if (currentUser$ | async; as currentUser) {
     <div class="options-text">
@@ -48,15 +48,15 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <button mat-button class="menu-trigger" [matMenuTriggerFor]="menu" style="outline: none;"
         [attr.aria-label]="currentUser.name">
         <strong class="user-name">{{ currentUser.name }}</strong>
-        <mat-icon aria-hidden="true" class="menu-trigger" fontIcon="mdi-chevron-down"></mat-icon>
+        <mat-icon aria-hidden="true" class="menu-trigger" fontIcon="mdi-chevron-down" />
       </button>
       <mat-menu #menu="matMenu" [overlapTrigger]="false">
-        @if (topbarView === TopbarView.BLUEPRINT_ADMIN) {
+        @if (topbarView() === TopbarView.BLUEPRINT_ADMIN) {
         <button [routerLink]="['/']" mat-menu-item>
           Exit Administration
         </button>
         }
-        @if (topbarView !== TopbarView.BLUEPRINT_ADMIN && canViewAdmin) {
+        @if (topbarView() !== TopbarView.BLUEPRINT_ADMIN && canViewAdmin) {
         <button [routerLink]="['/admin']" [queryParams]="{returnUrl: currentUrl}" mat-menu-item>
           Administration
         </button>

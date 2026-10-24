@@ -7,7 +7,7 @@ import {
   InjectmStore,
 } from './injectm.store';
 import { Injectm } from 'src/app/generated/blueprint.api';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { PageEvent } from '@angular/material/paginator';
 import { Observable } from 'rxjs';
 
@@ -19,8 +19,14 @@ import { Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class InjectmQuery extends QueryEntity<InjectmState> {
-  constructor(protected store: InjectmStore) {
+  protected store: InjectmStore;
+
+  constructor() {
+    const store = inject(InjectmStore);
+
     super(store);
+  
+    this.store = store;
   }
 
   selectById(id: string): Observable<Injectm> {

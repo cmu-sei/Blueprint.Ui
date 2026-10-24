@@ -2,8 +2,8 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, ElementRef, Input, OnDestroy, ViewChild, AfterViewInit } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { Component, ElementRef, OnDestroy, AfterViewInit, inject, input, viewChild } from '@angular/core';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import {
@@ -12,9 +12,9 @@ import {
 } from 'src/app/generated/blueprint.api';
 import { MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
-import { Sort } from '@angular/material/sort';
-import { MatMenuTrigger } from '@angular/material/menu';
-import { MatTableDataSource } from '@angular/material/table';
+import { Sort, MatSort, MatSortHeader } from '@angular/material/sort';
+import { MatMenuTrigger, MatMenu, MatMenuItem } from '@angular/material/menu';
+import { MatTableDataSource, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 import { CiteDutyDataService } from 'src/app/data/cite-duty/cite-duty-data.service';
 import { CiteDutyQuery } from 'src/app/data/cite-duty/cite-duty.query';
@@ -23,17 +23,30 @@ import { MatDialog } from '@angular/material/dialog';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { CiteDutyEditDialogComponent } from '../cite-duty-edit-dialog/cite-duty-edit-dialog.component';
 import { ItemDownloadDialogComponent } from '../item-download-dialog/item-download-dialog.component';
+import { MatIcon } from '@angular/material/icon';
+
+import { MatFormField, MatInput, MatSuffix, MatLabel } from '@angular/material/input';
+import { MatIconButton } from '@angular/material/button';
+import { MatSelect } from '@angular/material/select';
+import { MatOption } from '@angular/material/autocomplete';
 
 @Component({
-  selector: 'app-cite-duty-list',
-  templateUrl: './cite-duty-list.component.html',
-  styleUrls: ['./cite-duty-list.component.scss'],
-  standalone: false
+    selector: 'app-cite-duty-list',
+    templateUrl: './cite-duty-list.component.html',
+    styleUrls: ['./cite-duty-list.component.scss'],
+    imports: [MatIcon, MatFormField, MatInput, FormsModule, ReactiveFormsModule, MatIconButton, MatSuffix, MatLabel, MatSelect, MatOption, MatPaginator, MatMenu, MatMenuItem, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatMenuTrigger, MatCellDef, MatCell, MatSortHeader, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow]
 })
 export class CiteDutyListComponent implements OnDestroy, AfterViewInit {
-  @Input() loggedInUserId: string;
-  @Input() canEdit: boolean;
-  @Input() showTemplates: boolean;
+  private mselQuery = inject(MselQuery);
+  private citeDutyDataService = inject(CiteDutyDataService);
+  private citeDutyQuery = inject(CiteDutyQuery);
+  private teamQuery = inject(TeamQuery);
+  dialog = inject(MatDialog);
+  dialogService = inject(CrucibleDialogService);
+
+  readonly loggedInUserId = input<string>(undefined);
+  readonly canEdit = input<boolean>(undefined);
+  readonly showTemplates = input<boolean>(undefined);
   msel = new MselPlus();
   citeDutyList: CiteDuty[] = [];
   templateList: CiteDuty[] = [];
@@ -51,19 +64,12 @@ export class CiteDutyListComponent implements OnDestroy, AfterViewInit {
   mselTeamList: Team[] = [];
   private unsubscribe$ = new Subject();
   // context menu
-  @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
-  @ViewChild(MatPaginator) paginator: MatPaginator;
-  @ViewChild('jsonInput') jsonInput: ElementRef<HTMLInputElement>;
+  readonly contextMenu = viewChild(MatMenuTrigger);
+  readonly paginator = viewChild(MatPaginator);
+  readonly jsonInput = viewChild<ElementRef<HTMLInputElement>>('jsonInput');
   contextMenuPosition = { x: '0px', y: '0px' };
 
-  constructor(
-    private mselQuery: MselQuery,
-    private citeDutyDataService: CiteDutyDataService,
-    private citeDutyQuery: CiteDutyQuery,
-    private teamQuery: TeamQuery,
-    public dialog: MatDialog,
-    public dialogService: CrucibleDialogService
-  ) {
+  constructor() {
     // subscribe to citeDuties
     this.citeDutyQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(citeDuties => {
       this.citeDutyList = citeDuties;
@@ -72,12 +78,13 @@ export class CiteDutyListComponent implements OnDestroy, AfterViewInit {
     // subscribe to the active MSEL
     (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
       if (msel && this.msel.id !== msel.id) {
-        if (this.showTemplates) {
+        const showTemplates = this.showTemplates();
+        if (showTemplates) {
           this.msel = new MselPlus();
         } else {
           Object.assign(this.msel, msel);
         }
-        this.displayedColumns = this.showTemplates ? ['action', 'name'] : ['action', 'name', 'team'];
+        this.displayedColumns = showTemplates ? ['action', 'name'] : ['action', 'name', 'team'];
         this.sortedCiteDuties = this.getSortedCiteDuties(this.getFilteredCiteDuties(false));
         this.citeDutyDataSource.data = this.sortedCiteDuties;
       }
@@ -105,15 +112,15 @@ export class CiteDutyListComponent implements OnDestroy, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    this.citeDutyDataSource.paginator = this.paginator;
+    this.citeDutyDataSource.paginator = this.paginator();
   }
 
   addOrEditCiteDuty(citeDuty: CiteDuty, makeTemplate: boolean, makeFromTemplate: boolean) {
     if (!citeDuty) {
       citeDuty = {
-        mselId: this.showTemplates ? '' : this.msel.id,
+        mselId: this.showTemplates() ? '' : this.msel.id,
         name: '',
-        isTemplate: this.showTemplates,
+        isTemplate: this.showTemplates(),
         teamId: ''
       };
     } else {
@@ -179,7 +186,7 @@ export class CiteDutyListComponent implements OnDestroy, AfterViewInit {
       return;
     }
     this.citeDutyDataService.uploadJson(file, 'events', true);
-    this.jsonInput.nativeElement.value = null;
+    this.jsonInput().nativeElement.value = null;
   }
 
   openDownloadDialog() {
@@ -238,8 +245,9 @@ export class CiteDutyListComponent implements OnDestroy, AfterViewInit {
     this.sort = sort;
     this.sortedCiteDuties = this.getSortedCiteDuties(this.getFilteredCiteDuties(false));
     this.citeDutyDataSource.data = this.sortedCiteDuties;
-    if (this.paginator) {
-      this.paginator.length = this.sortedCiteDuties.length;
+    const paginator = this.paginator();
+    if (paginator) {
+      paginator.length = this.sortedCiteDuties.length;
     }
     this.templateList = this.getSortedCiteDuties(this.getFilteredCiteDuties(true));
   }
@@ -278,7 +286,7 @@ export class CiteDutyListComponent implements OnDestroy, AfterViewInit {
 
   getFilteredCiteDuties(getTemplatesOnly: boolean): CiteDuty[] {
     const citeDuties = this.citeDutyList;
-    const mselId = getTemplatesOnly || this.showTemplates ? '' : this.msel.id;
+    const mselId = getTemplatesOnly || this.showTemplates() ? '' : this.msel.id;
     let filteredCiteDuties: CiteDuty[] = [];
     if (citeDuties) {
       citeDuties.forEach(citeDuty => {

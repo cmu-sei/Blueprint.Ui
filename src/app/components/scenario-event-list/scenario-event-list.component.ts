@@ -1,10 +1,10 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { UntypedFormControl } from '@angular/forms';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject, input, viewChild } from '@angular/core';
+import { UntypedFormControl, FormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
-import { CdkDragDrop, CdkDragStart, CdkDragEnd } from '@angular/cdk/drag-drop';
+import { CdkDragDrop, CdkDragStart, CdkDragEnd, CdkDropList, CdkDrag, CdkDragHandle } from '@angular/cdk/drag-drop';
 import { Router } from '@angular/router';
 import { Subject, Subscription, Observable, of, take } from 'rxjs';
 import {
@@ -39,8 +39,8 @@ import {
 } from 'src/app/generated/blueprint.api';
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
-import { Sort } from '@angular/material/sort';
-import { MatMenuTrigger } from '@angular/material/menu';
+import { Sort, MatSort, MatSortHeader } from '@angular/material/sort';
+import { MatMenuTrigger, MatMenu, MatMenuItem } from '@angular/material/menu';
 import { CardQuery } from 'src/app/data/card/card.query';
 import { CatalogQuery } from 'src/app/data/catalog/catalog.query';
 import { InjectmDataService } from 'src/app/data/injectm/injectm-data.service';
@@ -66,22 +66,53 @@ import { DataFieldQuery } from 'src/app/data/data-field/data-field.query';
 import { TeamQuery } from 'src/app/data/team/team.query';
 import { UnitQuery } from 'src/app/data/unit/unit.query';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
+import { MatFormField, MatInput, MatSuffix } from '@angular/material/input';
+import { MatIconButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
+import { MatCheckbox } from '@angular/material/checkbox';
+import { DurationViewComponent } from '../shared/duration-view/duration-view.component';
+import { MatSelect } from '@angular/material/select';
+import { MatOption } from '@angular/material/autocomplete';
+import { DataValueComponent } from '../data-value/data-value.component';
 
 interface StringDictionary {
   [key: string]: string;
 };
 
 @Component({
-  selector: 'app-scenario-event-list',
-  templateUrl: './scenario-event-list.component.html',
-  styleUrls: ['./scenario-event-list.component.scss'],
-  standalone: false
+    selector: 'app-scenario-event-list',
+    templateUrl: './scenario-event-list.component.html',
+    styleUrls: ['./scenario-event-list.component.scss'],
+    imports: [MatFormField, MatInput, FormsModule, MatIconButton, MatSuffix, MatIcon, MatSort, MatCheckbox, MatMenuTrigger, MatMenu, MatMenuItem, MatSortHeader, CdkDropList, CdkDrag, CdkDragHandle, DurationViewComponent, MatSelect, MatOption, DataValueComponent]
 })
 export class ScenarioEventListComponent
   implements OnDestroy, OnInit, ScenarioEventView {
-  @Input() loggedInUserId: string;
-  @Input() userTheme: Theme;
-  @Input() isStarterMsel: boolean;
+  private router = inject(Router);
+  private permissionDataService = inject(PermissionDataService);
+  private settingsService = inject(ComnSettingsService);
+  private cardQuery = inject(CardQuery);
+  private catalogQuery = inject(CatalogQuery);
+  private injectmDataService = inject(InjectmDataService);
+  private injectTypeQuery = inject(InjectTypeQuery);
+  private moveQuery = inject(MoveQuery);
+  private mselDataService = inject(MselDataService);
+  private mselQuery = inject(MselQuery);
+  private organizationQuery = inject(OrganizationQuery);
+  private scenarioEventDataService = inject(ScenarioEventDataService);
+  private scenarioEventQuery = inject(ScenarioEventQuery);
+  dialogService = inject(CrucibleDialogService);
+  dialog = inject(MatDialog);
+  private dataFieldQuery = inject(DataFieldQuery);
+  private dataValueDataService = inject(DataValueDataService);
+  private dataValueQuery = inject(DataValueQuery);
+  private teamQuery = inject(TeamQuery);
+  private unitQuery = inject(UnitQuery);
+  private uiDataService = inject(UIDataService);
+  private changeDetectorRef = inject(ChangeDetectorRef);
+
+  readonly loggedInUserId = input<string>(undefined);
+  readonly userTheme = input<Theme>(undefined);
+  readonly isStarterMsel = input<boolean>(undefined);
   msel = new MselPlus();
 
   // ScenarioEventView Fields
@@ -140,7 +171,7 @@ export class ScenarioEventListComponent
     valueArray: [],
   } as DataValuePlus;
   // context menu
-  @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
+  readonly contextMenu = viewChild(MatMenuTrigger);
   contextMenuPosition = { x: '0px', y: '0px' };
   scenarioEventBackgroundColors: Array<string>;
   darkThemeTint = this.settingsService.settings.DarkThemeTint
@@ -167,30 +198,7 @@ export class ScenarioEventListComponent
   mselListForCopy: Msel[] = [];
   integrationTargetOptions: string[] = [];
 
-  constructor(
-    private router: Router,
-    private permissionDataService: PermissionDataService,
-    private settingsService: ComnSettingsService,
-    private cardQuery: CardQuery,
-    private catalogQuery: CatalogQuery,
-    private injectmDataService: InjectmDataService,
-    private injectTypeQuery: InjectTypeQuery,
-    private moveQuery: MoveQuery,
-    private mselDataService: MselDataService,
-    private mselQuery: MselQuery,
-    private organizationQuery: OrganizationQuery,
-    private scenarioEventDataService: ScenarioEventDataService,
-    private scenarioEventQuery: ScenarioEventQuery,
-    public dialogService: CrucibleDialogService,
-    public dialog: MatDialog,
-    private dataFieldQuery: DataFieldQuery,
-    private dataValueDataService: DataValueDataService,
-    private dataValueQuery: DataValueQuery,
-    private teamQuery: TeamQuery,
-    private unitQuery: UnitQuery,
-    private uiDataService: UIDataService,
-    private changeDetectorRef: ChangeDetectorRef
-  ) {
+  constructor() {
     // load the user's build MSELs for use when copying scenario events
     this.mselDataService
       .getMyBuildMsels()
@@ -382,7 +390,7 @@ export class ScenarioEventListComponent
 
   canEditMsel(): boolean {
     return this.permissionDataService.hasPermission(SystemPermission.EditMsels) ||
-      this.msel.hasRole(this.loggedInUserId, '').editor;
+      this.msel.hasRole(this.loggedInUserId(), '').editor;
   }
 
   tabChange(event) {
@@ -559,9 +567,10 @@ export class ScenarioEventListComponent
     event.preventDefault();
     this.contextMenuPosition.x = event.clientX + 'px';
     this.contextMenuPosition.y = event.clientY + 'px';
-    this.contextMenu.menuData = { item: scenarioEvent };
-    this.contextMenu.menu.focusFirstItem('mouse');
-    this.contextMenu.openMenu();
+    const contextMenu = this.contextMenu();
+    contextMenu.menuData = { item: scenarioEvent };
+    contextMenu.menu.focusFirstItem('mouse');
+    contextMenu.openMenu();
   }
 
   applyFilter(filterValue: string) {
@@ -713,13 +722,13 @@ export class ScenarioEventListComponent
   displayEditDialog(scenarioEvent: ScenarioEvent) {
     const isOwner =
       this.canEditMsel() ||
-      this.msel.hasRole(this.loggedInUserId, scenarioEvent.id).owner;
+      this.msel.hasRole(this.loggedInUserId(), scenarioEvent.id).owner;
     const isApprover =
       isOwner ||
-      this.msel.hasRole(this.loggedInUserId, scenarioEvent.id).approver;
+      this.msel.hasRole(this.loggedInUserId(), scenarioEvent.id).approver;
     const isEditor =
       isApprover ||
-      this.msel.hasRole(this.loggedInUserId, scenarioEvent.id).editor;
+      this.msel.hasRole(this.loggedInUserId(), scenarioEvent.id).editor;
 
     const dialogRef = this.dialog.open(ScenarioEventEditDialogComponent, {
       minWidth: '900px',
@@ -741,8 +750,8 @@ export class ScenarioEventListComponent
         isOwner: isOwner,
         isApprover: isApprover,
         isEditor: isEditor,
-        isEditingRestricted: this.isStarterMsel,
-        showScenarioEventType: !this.isStarterMsel,
+        isEditingRestricted: this.isStarterMsel(),
+        showScenarioEventType: !this.isStarterMsel(),
         useCite: this.msel.useCite,
         useGallery: this.msel.useGallery,
         useSteamfitter: this.msel.useSteamfitter,
@@ -900,7 +909,7 @@ export class ScenarioEventListComponent
 
   getStyleFromColor(color: string) {
     const tint =
-      this.userTheme === 'dark-theme'
+      this.userTheme() === 'dark-theme'
         ? this.darkThemeTint
         : this.lightThemeTint;
     return color
@@ -1038,7 +1047,7 @@ export class ScenarioEventListComponent
       height: '90%',
       data: {
         catalog: catalog,
-        loggedInUserId: this.loggedInUserId,
+        loggedInUserId: this.loggedInUserId(),
         isContentDeveloper: this.canEditMsel(),
         injectList: [],
       },

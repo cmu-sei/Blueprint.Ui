@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { describe, it, expect } from 'vitest';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
@@ -17,19 +17,21 @@ import { activatedRouteStub } from 'src/app/test-utils/activated-route';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { permissionApiStubs } from 'src/app/test-utils/mock-permission-data.service';
 import { mselLoadApiProviders, mselLoadApiStubs } from 'src/app/test-utils/msel-load-api-stubs';
+import { TopbarComponent } from '../shared/top-bar/topbar.component';
+import { AssessorViewComponent } from '../assessor-view/assessor-view.component';
 
-@Component({ selector: 'app-topbar', template: '', standalone: false })
+@Component({ selector: 'app-topbar', template: '' })
 class TopbarStub {
-  @Input() title: string;
-  @Input() topbarView: unknown;
-  @Input() imageFilePath: string;
-  @Output() urlNavigate = new EventEmitter<string>();
+  readonly title = input<string>(undefined);
+  readonly topbarView = input<unknown>(undefined);
+  readonly imageFilePath = input<string>(undefined);
+  readonly urlNavigate = output<string>();
 }
-@Component({ selector: 'app-assessor-view', template: '', standalone: false })
+@Component({ selector: 'app-assessor-view', template: '' })
 class AssessorViewStub {
-  @Input() loggedInUserId: string;
-  @Input() userTheme: Theme;
-  @Input() canEditCheckboxes: boolean;
+  readonly loggedInUserId = input<string>(undefined);
+  readonly userTheme = input<Theme>(undefined);
+  readonly canEditCheckboxes = input<boolean>(undefined);
 }
 
 const ME = 'user-me';
@@ -49,7 +51,10 @@ async function renderAssessorPage(overrides: { permissions?: SystemPermission[];
   const { route } = activatedRouteStub({ msel: 'msel-1' });
   const rendered = await renderComponent(AssessorPageComponent, {
     imports: [MatIconModule],
-    declarations: [AssessorPageComponent, TopbarStub, AssessorViewStub],
+    childStubs: [
+      { replace: TopbarComponent, with: TopbarStub },
+      { replace: AssessorViewComponent, with: AssessorViewStub },
+    ],
     providers: [
       ...mselLoadApiProviders(apis),
       { provide: SystemPermissionsService, useValue: permissionApis.systemPermissions },
@@ -80,8 +85,8 @@ describe('AssessorPageComponent', () => {
 
     expect(apis.msel.getMsel).toHaveBeenCalledWith('msel-1');
     expect(apis.userMselRole.getUserMselRolesByMsel).toHaveBeenCalledWith('msel-1');
-    expect(assessorView(fixture)?.canEditCheckboxes).toBe(true);
-    expect(assessorView(fixture)?.loggedInUserId).toBe(ME);
+    expect(assessorView(fixture)?.canEditCheckboxes()).toBe(true);
+    expect(assessorView(fixture)?.loggedInUserId()).toBe(ME);
   });
 
   /**
@@ -98,7 +103,7 @@ describe('AssessorPageComponent', () => {
     const { fixture } = await renderAssessorPage({ myRoles: roles(role) });
 
     expect(screen.queryByText('Access Denied')).not.toBeInTheDocument();
-    expect(assessorView(fixture)?.canEditCheckboxes).toBe(canEditCheckboxes);
+    expect(assessorView(fixture)?.canEditCheckboxes()).toBe(canEditCheckboxes);
   });
 
   /**

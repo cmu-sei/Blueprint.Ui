@@ -1,7 +1,7 @@
 // Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { take, takeUntil } from 'rxjs/operators';
@@ -22,14 +22,31 @@ import { Title } from '@angular/platform-browser';
 import { ErrorService } from 'src/app/services/error/error.service';
 import { ApplicationArea, SignalRService } from 'src/app/services/signalr.service';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
+import { TopbarComponent } from '../../shared/top-bar/topbar.component';
+import { MatCard, MatCardHeader, MatCardTitle, MatCardSubtitle, MatCardContent, MatCardActions } from '@angular/material/card';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
+import { MatButton } from '@angular/material/button';
 
 @Component({
     selector: 'app-launch',
     templateUrl: './launch.component.html',
     styleUrls: ['./launch.component.scss'],
-    standalone: false
+    imports: [TopbarComponent, MatCard, MatCardHeader, MatCardTitle, MatCardSubtitle, MatCardContent, MatProgressSpinner, MatCardActions, MatButton]
 })
 export class LaunchComponent implements OnDestroy, OnInit {
+  private userDataService = inject(UserDataService);
+  private userQuery = inject(UserQuery);
+  private authService = inject(ComnAuthService);
+  private settingsService = inject(ComnSettingsService);
+  private mselDataService = inject(MselDataService);
+  private playerApplicationDataService = inject(PlayerApplicationDataService);
+  private activatedRoute = inject(ActivatedRoute);
+  private router = inject(Router);
+  private titleService = inject(Title);
+  private errorService = inject(ErrorService);
+  private signalRService = inject(SignalRService);
+  private uiDataService = inject(UIDataService);
+
   launchMselList: Msel[] = [];
   imageFilePath = '';
   userList: User[] = [];
@@ -46,20 +63,7 @@ export class LaunchComponent implements OnDestroy, OnInit {
   showChoices = false;
   private unsubscribe$ = new Subject();
 
-  constructor(
-    private userDataService: UserDataService,
-    private userQuery: UserQuery,
-    private authService: ComnAuthService,
-    private settingsService: ComnSettingsService,
-    private mselDataService: MselDataService,
-    private playerApplicationDataService: PlayerApplicationDataService,
-    private activatedRoute: ActivatedRoute,
-    private router: Router,
-    private titleService: Title,
-    private errorService: ErrorService,
-    private signalRService: SignalRService,
-    private uiDataService: UIDataService
-  ) {
+  constructor() {
     this.hideTopbar = this.uiDataService.inIframe();
     // set image
     this.imageFilePath = this.settingsService.settings.AppTopBarImage.replace(
