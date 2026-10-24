@@ -8,17 +8,16 @@ project root for license information.
   <div class="date-time-picker">
     @if (hasStartTime()) {
     <mat-form-field class="datetime-field">
-      <mat-label>{{ timeName }}</mat-label>
+      <mat-label>{{ timeName() }}</mat-label>
       <input matInput [ngxMatDatetimePicker]="picker" [formControl]="endTimeFormControl" (dateChange)="timeUpdated()"
         (dateInput)="timeUpdated()" style="display: none;">
       <!-- <datetime-picker> -->
-      <span (click)="canEdit && picker.open()">
+      <span (click)="canEdit() && picker.open()">
         @if (endTimeFormControl.value) {
         {{ endTimeFormControl.value | date: 'dd MMM yyyy HH:mm'}} {{ endTimeFormControl.value | timezoneAbbr }}
         }
       </span>
-      <mat-datepicker-toggle matSuffix title="Choose Date/Time" [for]="picker" [disabled]="!canEdit">
-      </mat-datepicker-toggle>
+      <mat-datepicker-toggle matSuffix title="Choose Date/Time" [for]="picker" [disabled]="!canEdit()" />
       <ngx-mat-datetime-picker #picker [showSpinners]=true [showSeconds]=false [stepHour]=1 [stepMinute]=5
         [stepSecond]=1 [touchUi]=false [enableMeridian]=true [disableMinute]=false [hideTime]=false [color]="'warn'"
         (close)="alert('woah!')">
@@ -34,29 +33,29 @@ project root for license information.
     <span style="margin-left: 20px; margin-right: 20px;"> &nbsp; </span>
     <span>
       @if (sign > 0) {
-      <mat-icon class="mdi-24px center-self plus-minus" fontIcon="mdi-plus" (click)="canEdit && changeSign()"
-        title="plus/minus" [class.disabled]="!canEdit"></mat-icon>
+      <mat-icon class="mdi-24px center-self plus-minus" fontIcon="mdi-plus" (click)="canEdit() && changeSign()"
+        title="plus/minus" [class.disabled]="!canEdit()" />
       } @else {
-      <mat-icon class="mdi-24px center-self plus-minus" fontIcon="mdi-minus" (click)="canEdit && changeSign()"
-        title="plus/minus" [class.disabled]="!canEdit"></mat-icon>
+      <mat-icon class="mdi-24px center-self plus-minus" fontIcon="mdi-minus" (click)="canEdit() && changeSign()"
+        title="plus/minus" [class.disabled]="!canEdit()" />
       }
     </span>
     <mat-form-field class="two-digits">
       <mat-label>d</mat-label>
       <input matInput [value]="days" placeholder="d" type="number" min="0" step="1" (change)="deltaUpdated($event, 'd')"
-        title="Days from Start" style="width: 40px;" [disabled]="!canEdit" />
+        title="Days from Start" style="width: 40px;" [disabled]="!canEdit()" />
     </mat-form-field>&nbsp;
     <mat-form-field class="two-digits">
       <mat-label>h</mat-label>
       <input matInput [value]="('0' + hours).slice(-2)" placeholder="h" type="number" min="-1" max="24" step="1"
-        (change)="deltaUpdated($event, 'h')" title="Hours from Start" style="width: 40px;" [disabled]="!canEdit" />
+        (change)="deltaUpdated($event, 'h')" title="Hours from Start" style="width: 40px;" [disabled]="!canEdit()" />
     </mat-form-field>:
     <mat-form-field class="two-digits">
       <mat-label>m</mat-label>
       <input matInput [value]="('0' + minutes).slice(-2)" placeholder="m" type="number" min="-1" max="60" step="1"
         onchange="if(parseInt(this.value,10)<10)this.value='0'+this.value;" (change)="deltaUpdated($event, 'm')"
-        title="Minutes from Start" style="width: 40px;" [disabled]="!canEdit" />
+        title="Minutes from Start" style="width: 40px;" [disabled]="!canEdit()" />
     </mat-form-field>
-    <span style="margin-left: 10px;">{{ postScript }}</span>
+    <span style="margin-left: 10px;">{{ postScript() }}</span>
   </div>
 </div>

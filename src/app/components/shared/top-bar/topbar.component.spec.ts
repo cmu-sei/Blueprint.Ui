@@ -22,6 +22,7 @@ import { TopbarComponent } from './topbar.component';
 import { TopbarView } from './topbar.models';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { permissionApiStubs } from 'src/app/test-utils/mock-permission-data.service';
+import { PresenceBarComponent } from '../presence-bar/presence-bar.component';
 import { captureUnhandledRxErrors, flush } from 'src/app/test-utils/unhandled-rx-errors';
 
 @Component({ selector: 'app-presence-bar', template: '' })
@@ -52,9 +53,10 @@ async function renderTopbar(
       MatButtonModule,
       MatMenuModule,
       MatSlideToggleModule,
-      PresenceBarStubComponent,
     ],
-    declarations: [TopbarComponent],
+    childStubs: [
+      { replace: PresenceBarComponent, with: PresenceBarStubComponent },
+    ],
     providers: [
       { provide: SystemPermissionsService, useValue: permissionApis.systemPermissions },
       PermissionDataService,

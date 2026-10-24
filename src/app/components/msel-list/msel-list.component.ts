@@ -1,12 +1,12 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { ChangeDetectorRef, Component, Input, OnDestroy, ViewChild, ElementRef, OnInit } from '@angular/core';
-import { UntypedFormControl } from '@angular/forms';
-import { MatSort, MatSortable, Sort } from '@angular/material/sort';
+import { ChangeDetectorRef, Component, OnDestroy, ViewChild, ElementRef, OnInit, inject, input, viewChild } from '@angular/core';
+import { UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MatSort, MatSortable, Sort, MatSortHeader } from '@angular/material/sort';
 import { MatPaginator } from '@angular/material/paginator';
-import { MatTableDataSource } from '@angular/material/table';
-import { Router } from '@angular/router';
+import { MatTableDataSource, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
+import { Router, RouterLink } from '@angular/router';
 import { Subject, Observable } from 'rxjs';
 import { take, takeUntil } from 'rxjs/operators';
 import {
@@ -24,19 +24,43 @@ import { UIDataService } from 'src/app/data/ui/ui-data.service';
 import { User, SystemPermission } from 'src/app/generated/blueprint.api';
 import { MselItemStatus } from 'src/app/generated/blueprint.api';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
+import { MatIconButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
+import { MatSelect } from '@angular/material/select';
+import { MatOption } from '@angular/material/autocomplete';
+import { MatFormField, MatInput, MatSuffix } from '@angular/material/input';
+import { MatMenuTrigger, MatMenu, MatMenuItem } from '@angular/material/menu';
+import { MatCheckbox } from '@angular/material/checkbox';
+import { MatCard } from '@angular/material/card';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
+import { DatePipe } from '@angular/common';
 
 @Component({
-  selector: 'app-msel-list',
-  templateUrl: './msel-list.component.html',
-  styleUrls: ['./msel-list.component.scss'],
-  standalone: false
+    selector: 'app-msel-list',
+    templateUrl: './msel-list.component.html',
+    styleUrls: ['./msel-list.component.scss'],
+    imports: [MatIconButton, MatIcon, MatSelect, FormsModule, MatOption, MatFormField, MatInput, ReactiveFormsModule, MatSuffix, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatMenuTrigger, MatMenu, MatMenuItem, MatCellDef, MatCell, MatSortHeader, RouterLink, MatCheckbox, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, MatPaginator, MatCard, MatProgressSpinner, DatePipe]
 })
 export class MselListComponent implements OnDestroy, OnInit {
-  @Input() loggedInUserId: string;
-  @Input() canAccessAdminSection: boolean;
-  @ViewChild('jsonInput') jsonInput: ElementRef<HTMLInputElement>;
-  @ViewChild('xlsxInput') xlsxInput: ElementRef<HTMLInputElement>;
-  @ViewChild(MatSort, { static: true }) sort: MatSort;
+  dialogService = inject(CrucibleDialogService);
+  private router = inject(Router);
+  private userDataService = inject(UserDataService);
+  private userQuery = inject(UserQuery);
+  private currentUserQuery = inject(CurrentUserQuery);
+  private settingsService = inject(ComnSettingsService);
+  private mselDataService = inject(MselDataService);
+  private mselQuery = inject(MselQuery);
+  private signalRService = inject(SignalRService);
+  private uiDataService = inject(UIDataService);
+  private permissionDataService = inject(PermissionDataService);
+  private changeDetectorRef = inject(ChangeDetectorRef);
+  private dialog = inject(MatDialog);
+
+  readonly loggedInUserId = input<string>(undefined);
+  readonly canAccessAdminSection = input<boolean>(undefined);
+  readonly jsonInput = viewChild<ElementRef<HTMLInputElement>>('jsonInput');
+  readonly xlsxInput = viewChild<ElementRef<HTMLInputElement>>('xlsxInput');
+  readonly sort = viewChild(MatSort);
   @ViewChild(MatPaginator) set paginator(paginator: MatPaginator) {
     if (paginator && this.mselDataSource) {
       this.mselDataSource.paginator = paginator;
@@ -80,21 +104,7 @@ export class MselListComponent implements OnDestroy, OnInit {
   allMselsAreLoaded = false;
   private unsubscribe$ = new Subject();
 
-  constructor(
-    public dialogService: CrucibleDialogService,
-    private router: Router,
-    private userDataService: UserDataService,
-    private userQuery: UserQuery,
-    private currentUserQuery: CurrentUserQuery,
-    private settingsService: ComnSettingsService,
-    private mselDataService: MselDataService,
-    private mselQuery: MselQuery,
-    private signalRService: SignalRService,
-    private uiDataService: UIDataService,
-    private permissionDataService: PermissionDataService,
-    private changeDetectorRef: ChangeDetectorRef,
-    private dialog: MatDialog
-  ) {
+  constructor() {
     // Initial datasource
     this.mselDataSource = new MatTableDataSource<MselPlus>(
       new Array<MselPlus>()
@@ -129,8 +139,8 @@ export class MselListComponent implements OnDestroy, OnInit {
       .subscribe((cu) => {
         this.currentUserName = cu.name;
       });
-    this.sort.sort(<MatSortable>{ id: 'name', start: 'asc' });
-    this.mselDataSource.sort = this.sort;
+    this.sort().sort(<MatSortable>{ id: 'name', start: 'asc' });
+    this.mselDataSource.sort = this.sort();
     // subscribe to MSELs loading
     this.mselQuery
       .selectLoading()
@@ -218,8 +228,8 @@ export class MselListComponent implements OnDestroy, OnInit {
       this.isReady = true;
       this.importJson(file);
     }
-    this.jsonInput.nativeElement.value = null;
-    this.xlsxInput.nativeElement.value = null;
+    this.jsonInput().nativeElement.value = null;
+    this.xlsxInput().nativeElement.value = null;
   }
 
   importJson(file: File) {
@@ -418,18 +428,18 @@ export class MselListComponent implements OnDestroy, OnInit {
 
   canViewMsel(msel: MselPlus): boolean {
     return this.permissionDataService.hasPermission(SystemPermission.ViewMsels) ||
-      msel?.hasRole(this.loggedInUserId, '').editor ||
+      msel?.hasRole(this.loggedInUserId(), '').editor ||
       (msel?.isTemplate && this.permissionDataService.hasPermission(SystemPermission.CreateMsels));
   }
 
   canEditMsel(msel: MselPlus): boolean {
     return this.permissionDataService.hasPermission(SystemPermission.EditMsels) ||
-      msel?.hasRole(this.loggedInUserId, '').editor;
+      msel?.hasRole(this.loggedInUserId(), '').editor;
   }
 
   canManageMsel(msel: MselPlus): boolean {
     return this.permissionDataService.hasPermission(SystemPermission.ManageMsels) ||
-      msel?.hasRole(this.loggedInUserId, '').owner;
+      msel?.hasRole(this.loggedInUserId(), '').owner;
   }
 
   getDeleteTooltip(msel: MselPlus): string {

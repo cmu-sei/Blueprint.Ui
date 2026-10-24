@@ -1,61 +1,62 @@
 // Copyright 2026 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, inject, input, output } from '@angular/core';
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { MselItemStatus } from 'src/app/generated/blueprint.api';
+import { MatProgressBar } from '@angular/material/progress-bar';
+import { MatButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
 
 @Component({
-  selector: 'app-integration-status',
-  templateUrl: './integration-status.component.html',
-  styleUrls: ['./integration-status.component.scss'],
-  standalone: false
+    selector: 'app-integration-status',
+    templateUrl: './integration-status.component.html',
+    styleUrls: ['./integration-status.component.scss'],
+    imports: [MatProgressBar, MatButton, MatIcon]
 })
 export class IntegrationStatusComponent {
-  @Input() msel: MselPlus;
+  private mselDataService = inject(MselDataService);
+  private dialogService = inject(CrucibleDialogService);
+
+  readonly msel = input<MselPlus>(undefined);
   // the MSEL's Caster workspace, once the push has created it; empty otherwise
-  @Input() casterWorkspaceUrl = '';
-  @Output() closed = new EventEmitter<void>();
+  readonly casterWorkspaceUrl = input('');
+  readonly closed = output<void>();
   cancelClicked = false;
 
-  constructor(
-    private mselDataService: MselDataService,
-    private dialogService: CrucibleDialogService
-  ) {}
-
   get isError(): boolean {
-    return this.msel?.integrationStatus?.startsWith('ERROR') || false;
+    return this.msel()?.integrationStatus?.startsWith('ERROR') || false;
   }
 
   get isCancelling(): boolean {
-    return this.cancelClicked || this.msel?.integrationStatus?.startsWith('Cancelling') || false;
+    return this.cancelClicked || this.msel()?.integrationStatus?.startsWith('Cancelling') || false;
   }
 
   get isPulling(): boolean {
-    return this.msel?.integrationStatus?.startsWith('Pulling') || false;
+    return this.msel()?.integrationStatus?.startsWith('Pulling') || false;
   }
 
   // only a push that failed at its last step, Caster, can redo that step alone
   get canRetryCaster(): boolean {
-    return this.isError && this.msel?.status === MselItemStatus.Pushing &&
-      this.msel.integrationStatus.startsWith('ERROR: Caster - ');
+    return this.isError && this.msel()?.status === MselItemStatus.Pushing &&
+      this.msel().integrationStatus.startsWith('ERROR: Caster - ');
   }
 
   get statusMessage(): string {
     if (this.isError) {
-      return this.msel.integrationStatus.substring(7);
+      return this.msel().integrationStatus.substring(7);
     }
-    return this.msel?.integrationStatus || '';
+    return this.msel()?.integrationStatus || '';
   }
 
   cancelPush() {
     this.cancelClicked = true;
-    this.mselDataService.cancelIntegrations(this.msel.id);
+    this.mselDataService.cancelIntegrations(this.msel().id);
   }
 
   retryCaster() {
-    this.mselDataService.retryCaster(this.msel.id);
+    this.mselDataService.retryCaster(this.msel().id);
   }
 
   pullIntegrations() {
@@ -63,7 +64,7 @@ export class IntegrationStatusComponent {
       .confirm({ title: 'Remove Integrations', message: 'Are you sure you want to remove partial integrations from the associated applications?'
        }).afterClosed().subscribe((result) => {
         if (result) {
-          this.mselDataService.pullIntegrations(this.msel.id);
+          this.mselDataService.pullIntegrations(this.msel().id);
           this.closed.emit();
         }
       });

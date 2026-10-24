@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By, Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
@@ -17,19 +17,21 @@ import { activatedRouteStub } from 'src/app/test-utils/activated-route';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { permissionApiStubs } from 'src/app/test-utils/mock-permission-data.service';
 import { mselLoadApiProviders, mselLoadApiStubs } from 'src/app/test-utils/msel-load-api-stubs';
+import { TopbarComponent } from '../shared/top-bar/topbar.component';
+import { ScenarioEventListComponent } from '../scenario-event-list/scenario-event-list.component';
 
-@Component({ selector: 'app-topbar', template: '', standalone: false })
+@Component({ selector: 'app-topbar', template: '' })
 class TopbarStub {
-  @Input() title: string;
-  @Input() topbarView: unknown;
-  @Input() imageFilePath: string;
-  @Output() urlNavigate = new EventEmitter<string>();
+  readonly title = input<string>(undefined);
+  readonly topbarView = input<unknown>(undefined);
+  readonly imageFilePath = input<string>(undefined);
+  readonly urlNavigate = output<string>();
 }
-@Component({ selector: 'app-scenario-event-list', template: '', standalone: false })
+@Component({ selector: 'app-scenario-event-list', template: '' })
 class ScenarioEventListStub {
-  @Input() loggedInUserId: string;
-  @Input() userTheme: Theme;
-  @Input() isStarterMsel: boolean;
+  readonly loggedInUserId = input<string>(undefined);
+  readonly userTheme = input<Theme>(undefined);
+  readonly isStarterMsel = input<boolean>(undefined);
 }
 
 const MSEL: Msel = { id: 'msel-1', name: 'Starter Exercise', createdBy: 'someone-else', userMselRoles: [] };
@@ -51,7 +53,10 @@ async function renderStarter(overrides: { permissions?: SystemPermission[]; msel
   const permissionApis = permissionApiStubs({ system: permissions });
   const { route } = activatedRouteStub(mselId ? { msel: mselId } : {});
   const rendered = await renderComponent(StarterComponent, {
-    declarations: [StarterComponent, TopbarStub, ScenarioEventListStub],
+    childStubs: [
+      { replace: TopbarComponent, with: TopbarStub },
+      { replace: ScenarioEventListComponent, with: ScenarioEventListStub },
+    ],
     providers: [
       ...mselLoadApiProviders(apis),
       { provide: SystemPermissionsService, useValue: permissionApis.systemPermissions },
@@ -111,7 +116,7 @@ describe('StarterComponent', () => {
     expect(apis.msel.getMsel).not.toHaveBeenCalled();
     expect(signalR.startConnection).toHaveBeenCalledWith(ApplicationArea.home);
     expect(signalR.selectMsel).toHaveBeenCalledWith('');
-    expect(child(fixture, TopbarStub)?.title).toBe('Blueprint Starter');
+    expect(child(fixture, TopbarStub)?.title()).toBe('Blueprint Starter');
     expect(child(fixture, ScenarioEventListStub)).toBeUndefined();
   });
 
@@ -128,10 +133,10 @@ describe('StarterComponent', () => {
     expect(apis.user.getMselUsers).toHaveBeenCalledWith('msel-1');
     expect(TestBed.inject(MselQuery).getActiveId()).toBe('msel-1');
     expect(TestBed.inject(Title).getTitle()).toBe('Blueprint - Starter Exercise');
-    expect(child(fixture, TopbarStub)?.title).toBe('Blueprint - Starter Exercise');
+    expect(child(fixture, TopbarStub)?.title()).toBe('Blueprint - Starter Exercise');
     expect(signalR.selectMsel).toHaveBeenCalledWith('msel-1');
     const events = child(fixture, ScenarioEventListStub);
-    expect(events?.isStarterMsel).toBe(true);
-    expect(events?.loggedInUserId).toBe('user-me');
+    expect(events?.isStarterMsel()).toBe(true);
+    expect(events?.loggedInUserId()).toBe('user-me');
   });
 });

@@ -1,7 +1,7 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { ChangeDetectorRef, Component, EventEmitter, HostListener, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, HostListener, OnDestroy, OnInit, inject, input, output, viewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -24,7 +24,7 @@ import {
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
-import { MatMenuTrigger } from '@angular/material/menu';
+import { MatMenuTrigger, MatMenu, MatMenuItem } from '@angular/material/menu';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { CiteService } from 'src/app/generated/blueprint.api';
 import { PlayerService } from 'src/app/generated/blueprint.api';
@@ -49,23 +49,69 @@ import { EDITOR_CONFIG_PARAGRAPH, VIEW_CONFIG } from 'src/app/utilities/editor-c
 import { casterVmAppWarning } from 'src/app/utilities/caster-vm-app';
 import { ComnSettingsService } from '@cmusei/crucible-common';
 import { ScenarioEventQuery } from 'src/app/data/scenario-event/scenario-event.query';
+import { IntegrationStatusComponent } from '../integration-status/integration-status.component';
+import { MatTabGroup, MatTab, MatTabLabel } from '@angular/material/tabs';
+import { MatIconButton, MatButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
+import { MatLabel, MatFormField, MatInput, MatError, MatHint, MatSuffix } from '@angular/material/input';
+import { FormsModule } from '@angular/forms';
+import { MatCheckbox } from '@angular/material/checkbox';
+import { NgxMatDatepickerInput, NgxMatDatetimepicker, NgxMatDatepickerActions, NgxMatDatepickerApply, NgxMatDatepickerCancel } from '@ngxmc/datetime-picker';
+import { MatDatepickerToggle } from '@angular/material/datepicker';
+import { DurationEditComponent } from '../shared/duration-edit/duration-edit.component';
+import { MatSelect } from '@angular/material/select';
+import { MatOption } from '@angular/material/autocomplete';
+import { ClipboardModule } from 'ngx-clipboard';
+import { MatExpansionPanel, MatExpansionPanelHeader, MatExpansionPanelTitle } from '@angular/material/expansion';
+import { MatTooltip } from '@angular/material/tooltip';
+import { AngularEditorModule } from '@kolkov/angular-editor';
+import { CardEditDialogComponent } from '../card-edit-dialog/card-edit-dialog.component';
+import { DatePipe } from '@angular/common';
+import { TimezoneAbbrPipe } from '../../utilities/timezone-abbr';
 
 @Component({
-  selector: 'app-msel-info',
-  templateUrl: './msel-info.component.html',
-  styleUrls: ['./msel-info.component.scss'],
-  standalone: false
+    selector: 'app-msel-info',
+    templateUrl: './msel-info.component.html',
+    styleUrls: ['./msel-info.component.scss'],
+    imports: [IntegrationStatusComponent, MatTabGroup, MatTab, MatIconButton, MatIcon, MatLabel, MatMenuTrigger, MatMenu, MatMenuItem, MatFormField, MatInput, FormsModule, MatError, MatHint, MatCheckbox, NgxMatDatepickerInput, MatDatepickerToggle, MatSuffix, NgxMatDatetimepicker, NgxMatDatepickerActions, MatButton, NgxMatDatepickerApply, NgxMatDatepickerCancel, DurationEditComponent, MatSelect, MatOption, ClipboardModule, MatExpansionPanel, MatExpansionPanelHeader, MatExpansionPanelTitle, MatTooltip, AngularEditorModule, MatTabLabel, CardEditDialogComponent, DatePipe, TimezoneAbbrPipe]
 })
 export class MselInfoComponent implements OnDestroy, OnInit {
-  @Input() loggedInUserId: string;
-  @Output() deleteThisMsel = new EventEmitter<string>();
+  dialogService = inject(CrucibleDialogService);
+  private teamQuery = inject(TeamQuery);
+  private userQuery = inject(UserQuery);
+  private userDataService = inject(UserDataService);
+  private dataFieldQuery = inject(DataFieldQuery);
+  private mselDataService = inject(MselDataService);
+  private mselService = inject(MselService);
+  private mselQuery = inject(MselQuery);
+  private citeService = inject(CiteService);
+  private playerService = inject(PlayerService);
+  private casterService = inject(CasterService);
+  private playerApplicationDataService = inject(PlayerApplicationDataService);
+  private playerApplicationQuery = inject(PlayerApplicationQuery);
+  private mselPageDataService = inject(MselPageDataService);
+  private mselPageQuery = inject(MselPageQuery);
+  private mselUnitQuery = inject(MselUnitQuery);
+  private mselCompetencyDataService = inject(MselCompetencyDataService);
+  private mselCompetencyQuery = inject(MselCompetencyQuery);
+  private competencyFrameworkQuery = inject(CompetencyFrameworkQuery);
+  private competencyFrameworkDataService = inject(CompetencyFrameworkDataService);
+  private dialog = inject(MatDialog);
+  private permissionDataService = inject(PermissionDataService);
+  private changeDetectorRef = inject(ChangeDetectorRef);
+  private activatedRoute = inject(ActivatedRoute);
+  private settingsService = inject(ComnSettingsService);
+  private scenarioEventQuery = inject(ScenarioEventQuery);
+
+  readonly loggedInUserId = input<string>(undefined);
+  readonly deleteThisMsel = output<string>();
   msel = new MselPlus();
   originalMsel = new MselPlus();
   expandedScenarioEventIds: string[] = [];
   sortedScenarioEvents: ScenarioEvent[];
   private unsubscribe$ = new Subject();
   // context menu
-  @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
+  readonly contextMenu = viewChild(MatMenuTrigger);
   contextMenuPosition = { x: '0px', y: '0px' };
   isChanged = false;
   userList: User[] = [];
@@ -134,34 +180,7 @@ export class MselInfoComponent implements OnDestroy, OnInit {
       ? ''
       : integrationStatus;
   }
-  constructor(
-    public dialogService: CrucibleDialogService,
-    private teamQuery: TeamQuery,
-    private userQuery: UserQuery,
-    private userDataService: UserDataService,
-    private dataFieldQuery: DataFieldQuery,
-    private mselDataService: MselDataService,
-    private mselService: MselService,
-    private mselQuery: MselQuery,
-    private citeService: CiteService,
-    private playerService: PlayerService,
-    private casterService: CasterService,
-    private playerApplicationDataService: PlayerApplicationDataService,
-    private playerApplicationQuery: PlayerApplicationQuery,
-    private mselPageDataService: MselPageDataService,
-    private mselPageQuery: MselPageQuery,
-    private mselUnitQuery: MselUnitQuery,
-    private mselCompetencyDataService: MselCompetencyDataService,
-    private mselCompetencyQuery: MselCompetencyQuery,
-    private competencyFrameworkQuery: CompetencyFrameworkQuery,
-    private competencyFrameworkDataService: CompetencyFrameworkDataService,
-    private dialog: MatDialog,
-    private permissionDataService: PermissionDataService,
-    private changeDetectorRef: ChangeDetectorRef,
-    private activatedRoute: ActivatedRoute,
-    private settingsService: ComnSettingsService,
-    private scenarioEventQuery: ScenarioEventQuery
-  ) {
+  constructor() {
     // subscribe to the active MSEL
     (this.mselQuery.selectActive() as Observable<MselPlus>)
       .pipe(takeUntil(this.unsubscribe$))
@@ -464,7 +483,7 @@ export class MselInfoComponent implements OnDestroy, OnInit {
 
   canEditMsel(): boolean {
     return this.permissionDataService.hasPermission(SystemPermission.EditMsels) ||
-      this.msel.hasRole(this.loggedInUserId, '').editor;
+      this.msel.hasRole(this.loggedInUserId(), '').editor;
   }
 
   isPipelineStatus(): boolean {
@@ -485,7 +504,7 @@ export class MselInfoComponent implements OnDestroy, OnInit {
 
   canManageMsel(): boolean {
     return this.permissionDataService.hasPermission(SystemPermission.ManageMsels) ||
-      this.msel.hasRole(this.loggedInUserId, '').owner;
+      this.msel.hasRole(this.loggedInUserId(), '').owner;
   }
 
   getDeleteTooltip(): string {

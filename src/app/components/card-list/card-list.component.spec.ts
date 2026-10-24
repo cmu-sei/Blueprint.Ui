@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { describe, it, expect, vi } from 'vitest';
-import { Component, Input } from '@angular/core';
+import { Component, input } from '@angular/core';
 import { By } from '@angular/platform-browser';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
@@ -25,11 +25,12 @@ import { ApiStub } from 'src/app/test-utils/api-stub';
 import { dialogRefStub } from 'src/app/test-utils/dialog-refs';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { unstubbed } from 'src/app/test-utils/unstubbed';
+import { CardTeamsComponent } from '../card-teams/card-teams.component';
 
-@Component({ selector: 'app-card-teams', template: '', standalone: false })
+@Component({ selector: 'app-card-teams', template: '' })
 class CardTeamsStub {
-  @Input() cardId: string;
-  @Input() loggedInUserId: string;
+  readonly cardId = input<string>(undefined);
+  readonly loggedInUserId = input<string>(undefined);
 }
 
 const ME = 'user-me';
@@ -62,7 +63,9 @@ async function renderCardList(
       MatSortModule,
       MatTableModule,
     ],
-    declarations: [CardListComponent, CardTeamsStub],
+    childStubs: [
+      { replace: CardTeamsComponent, with: CardTeamsStub },
+    ],
     providers: [
       { provide: CardService, useValue: cardApi },
       { provide: CrucibleDialogService, useValue: dialog },
@@ -193,8 +196,8 @@ describe('CardListComponent', () => {
       await user.click(within(table()).getByText('Situation Card'));
 
       const teams = fixture.debugElement.query(By.directive(CardTeamsStub)).componentInstance as CardTeamsStub;
-      expect(teams.cardId).toBe('card-1');
-      expect(teams.loggedInUserId).toBe(ME);
+      expect(teams.cardId()).toBe('card-1');
+      expect(teams.loggedInUserId()).toBe(ME);
     });
 
     /**

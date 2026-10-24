@@ -6,7 +6,7 @@
 
 import { PlayerApplicationStore } from './player-application.store';
 import { PlayerApplicationQuery } from './player-application.query';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { PageEvent } from '@angular/material/paginator';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -21,6 +21,12 @@ import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
   providedIn: 'root',
 })
 export class PlayerApplicationDataService {
+  private playerApplicationStore = inject(PlayerApplicationStore);
+  private playerApplicationQuery = inject(PlayerApplicationQuery);
+  private playerApplicationService = inject(PlayerApplicationService);
+  private router = inject(Router);
+  private activatedRoute = inject(ActivatedRoute);
+
   readonly PlayerApplicationList: Observable<PlayerApplication[]>;
   readonly filterControl = new UntypedFormControl();
   private _requestedPlayerApplicationId$ = this.activatedRoute.queryParamMap.pipe(
@@ -34,13 +40,9 @@ export class PlayerApplicationDataService {
   private pageSize: Observable<number>;
   private pageIndex: Observable<number>;
 
-  constructor(
-    private playerApplicationStore: PlayerApplicationStore,
-    private playerApplicationQuery: PlayerApplicationQuery,
-    private playerApplicationService: PlayerApplicationService,
-    private router: Router,
-    private activatedRoute: ActivatedRoute
-  ) {
+  constructor() {
+    const activatedRoute = this.activatedRoute;
+
     this.filterTerm = activatedRoute.queryParamMap.pipe(
       map((params) => params.get('playerApplicationmask') || '')
     );

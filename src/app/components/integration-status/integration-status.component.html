@@ -7,7 +7,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
   <div class="status-card">
     @if (!isError) {
       <h2 class="status-heading">Processing integrations ...</h2>
-      <mat-progress-bar mode="indeterminate" class="progress-bar"></mat-progress-bar>
+      <mat-progress-bar mode="indeterminate" class="progress-bar" />
       <p class="status-message">{{ statusMessage }} ...</p>
       @if (!isPulling) {
         <div class="action-buttons">
@@ -27,11 +27,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
     @if (isError) {
       <h2 class="status-heading">Integration Failed</h2>
       <div class="error-message">
-        <mat-icon fontIcon="mdi-alert-circle" class="mdi-24px error-icon"></mat-icon>
+        <mat-icon fontIcon="mdi-alert-circle" class="mdi-24px error-icon" />
         <span>{{ statusMessage }}</span>
       </div>
-      @if (casterWorkspaceUrl) {
-        <a mat-stroked-button [href]="casterWorkspaceUrl" target="_blank"
+      @if (casterWorkspaceUrl()) {
+        <a mat-stroked-button [href]="casterWorkspaceUrl()" target="_blank"
            title="See the terraform output of the failed run in Caster">
           <mat-icon fontIcon="mdi-open-in-new"></mat-icon>
           Open Workspace in Caster

@@ -10,7 +10,7 @@ import {
   ScenarioEventStore,
 } from './scenario-event.store';
 import { ScenarioEvent } from 'src/app/generated/blueprint.api';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
 const querySort = (a: ScenarioEvent, b: ScenarioEvent, m: ScenarioEventState): number => {
@@ -28,8 +28,14 @@ const querySort = (a: ScenarioEvent, b: ScenarioEvent, m: ScenarioEventState): n
   providedIn: 'root',
 })
 export class ScenarioEventQuery extends QueryEntity<ScenarioEventState> {
-  constructor(protected store: ScenarioEventStore) {
+  protected store: ScenarioEventStore;
+
+  constructor() {
+    const store = inject(ScenarioEventStore);
+
     super(store);
+  
+    this.store = store;
   }
 
   selectById(id: string): Observable<ScenarioEvent> {

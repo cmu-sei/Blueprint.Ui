@@ -1,7 +1,7 @@
 // Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 import { Subject, Observable } from 'rxjs';
@@ -25,14 +25,37 @@ import { UserMselRoleDataService } from 'src/app/data/user-msel-role/user-msel-r
 import { UserMselRoleQuery } from 'src/app/data/user-msel-role/user-msel-role.query';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
 import { TopbarView } from '../shared/top-bar/topbar.models';
+import { TopbarComponent } from '../shared/top-bar/topbar.component';
+import { MatIcon } from '@angular/material/icon';
+import { AssessorViewComponent } from '../assessor-view/assessor-view.component';
+import { AsyncPipe } from '@angular/common';
 
 @Component({
-  selector: 'app-assessor-page',
-  templateUrl: './assessor-page.component.html',
-  styleUrls: ['./assessor-page.component.scss'],
-  standalone: false
+    selector: 'app-assessor-page',
+    templateUrl: './assessor-page.component.html',
+    styleUrls: ['./assessor-page.component.scss'],
+    imports: [TopbarComponent, MatIcon, AssessorViewComponent, AsyncPipe]
 })
 export class AssessorPageComponent implements OnDestroy, OnInit {
+  private activatedRoute = inject(ActivatedRoute);
+  private router = inject(Router);
+  private dataFieldDataService = inject(DataFieldDataService);
+  private dataOptionDataService = inject(DataOptionDataService);
+  private dataValueDataService = inject(DataValueDataService);
+  private moveDataService = inject(MoveDataService);
+  private mselDataService = inject(MselDataService);
+  private mselQuery = inject(MselQuery);
+  private scenarioEventDataService = inject(ScenarioEventDataService);
+  private teamDataService = inject(TeamDataService);
+  private userDataService = inject(UserDataService);
+  private currentUserQuery = inject(CurrentUserQuery);
+  private authQuery = inject(ComnAuthQuery);
+  private settingsService = inject(ComnSettingsService);
+  private titleService = inject(Title);
+  private userMselRoleDataService = inject(UserMselRoleDataService);
+  private userMselRoleQuery = inject(UserMselRoleQuery);
+  private permissionDataService = inject(PermissionDataService);
+
   private unsubscribe$ = new Subject();
   private msel: Msel = { name: '' };
   selectedMselId = '';
@@ -50,26 +73,7 @@ export class AssessorPageComponent implements OnDestroy, OnInit {
   canViewAssessorPage = false;
   isSystemAdmin = false;
 
-  constructor(
-    private activatedRoute: ActivatedRoute,
-    private router: Router,
-    private dataFieldDataService: DataFieldDataService,
-    private dataOptionDataService: DataOptionDataService,
-    private dataValueDataService: DataValueDataService,
-    private moveDataService: MoveDataService,
-    private mselDataService: MselDataService,
-    private mselQuery: MselQuery,
-    private scenarioEventDataService: ScenarioEventDataService,
-    private teamDataService: TeamDataService,
-    private userDataService: UserDataService,
-    private currentUserQuery: CurrentUserQuery,
-    private authQuery: ComnAuthQuery,
-    private settingsService: ComnSettingsService,
-    private titleService: Title,
-    private userMselRoleDataService: UserMselRoleDataService,
-    private userMselRoleQuery: UserMselRoleQuery,
-    private permissionDataService: PermissionDataService
-  ) {
+  constructor() {
     this.activatedRoute.queryParamMap
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((params) => {

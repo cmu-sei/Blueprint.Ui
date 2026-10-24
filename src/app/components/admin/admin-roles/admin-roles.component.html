@@ -16,7 +16,7 @@ Released under a MIT (SEI)-style license. See LICENSE.md in the project root for
               (click)="startAddRole()"
               matTooltip="Add New Role"
             >
-              <mat-icon class="mdi-24px" fontIcon="mdi-plus-circle"></mat-icon>
+              <mat-icon class="mdi-24px" fontIcon="mdi-plus-circle" />
             </button>
           }
           @if (isAddingRole) {
@@ -37,7 +37,7 @@ Released under a MIT (SEI)-style license. See LICENSE.md in the project root for
               [disabled]="!newRoleName.trim()"
               matTooltip="Save"
             >
-              <mat-icon class="mdi-24px" fontIcon="mdi-check"></mat-icon>
+              <mat-icon class="mdi-24px" fontIcon="mdi-check" />
             </button>
             <button
               mat-icon-button
@@ -45,7 +45,7 @@ Released under a MIT (SEI)-style license. See LICENSE.md in the project root for
               (click)="cancelAddRole()"
               matTooltip="Cancel"
             >
-              <mat-icon class="mdi-24px" fontIcon="mdi-close"></mat-icon>
+              <mat-icon class="mdi-24px" fontIcon="mdi-close" />
             </button>
           }
         </div>
@@ -58,7 +58,7 @@ Released under a MIT (SEI)-style license. See LICENSE.md in the project root for
             [matTooltip]="getPermissionDescription(permission)"
             [matTooltipShowDelay]="0"
           >
-            <mat-icon class="mdi-24px" fontIcon="mdi-information"></mat-icon>
+            <mat-icon class="mdi-24px" fontIcon="mdi-information" />
           </button>
           <span>{{ permission }}</span>
         </div>
@@ -86,7 +86,7 @@ Released under a MIT (SEI)-style license. See LICENSE.md in the project root for
                 [disabled]="!editingRoleName.trim()"
                 matTooltip="Save"
               >
-                <mat-icon class="mdi-24px" fontIcon="mdi-check"></mat-icon>
+                <mat-icon class="mdi-24px" fontIcon="mdi-check" />
               </button>
               <button
                 mat-icon-button
@@ -94,7 +94,7 @@ Released under a MIT (SEI)-style license. See LICENSE.md in the project root for
                 (click)="cancelEditRole()"
                 matTooltip="Cancel"
               >
-                <mat-icon class="mdi-24px" fontIcon="mdi-close"></mat-icon>
+                <mat-icon class="mdi-24px" fontIcon="mdi-close" />
               </button>
             } @else {
               <span class="role-name">{{ role.name }}</span>
@@ -105,14 +105,14 @@ Released under a MIT (SEI)-style license. See LICENSE.md in the project root for
                   (click)="startEditRole(role)"
                   matTooltip="Rename Role"
                 >
-                  <mat-icon class="mdi-24px" fontIcon="mdi-square-edit-outline"></mat-icon>
+                  <mat-icon class="mdi-24px" fontIcon="mdi-square-edit-outline" />
                 </button>
                 <button
                   mat-icon-button
                   (click)="deleteRole(role)"
                   matTooltip="Delete Role"
                 >
-                  <mat-icon class="mdi-24px" fontIcon="mdi-trash-can-outline"></mat-icon>
+                  <mat-icon class="mdi-24px" fontIcon="mdi-trash-can-outline" />
                 </button>
               }
             }
@@ -120,12 +120,11 @@ Released under a MIT (SEI)-style license. See LICENSE.md in the project root for
         </th>
         <td mat-cell *matCellDef="let permission">
           @if (permission === allPermission || !role.allPermissions) {
-            <mat-checkbox
-              color="primary"
+            <mat-checkbox color="primary"
               [checked]="hasPermission(permission, role)"
               (change)="setPermission(permission, role, $event)"
               [disabled]="role.immutable || !canEdit"
-            ></mat-checkbox>
+             />
           }
         </td>
       </ng-container>

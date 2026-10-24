@@ -3,7 +3,7 @@
 
 import { InjectTypeStore } from './inject-type.store';
 import { InjectTypeQuery } from './inject-type.query';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { PageEvent } from '@angular/material/paginator';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -19,6 +19,12 @@ import { HttpEventType, HttpResponse } from '@angular/common/http';
   providedIn: 'root',
 })
 export class InjectTypeDataService {
+  private injectTypeStore = inject(InjectTypeStore);
+  private injectTypeQuery = inject(InjectTypeQuery);
+  private injectTypeService = inject(InjectTypeService);
+  private router = inject(Router);
+  private activatedRoute = inject(ActivatedRoute);
+
   private _requestedInjectTypeId: string;
   private _requestedInjectTypeId$ = this.activatedRoute.queryParamMap.pipe(
     map((params) => params.get('injectTypeId') || '')
@@ -34,13 +40,9 @@ export class InjectTypeDataService {
   private pageIndex: Observable<number>;
   public uploadProgress = new Subject<number>();
 
-  constructor(
-    private injectTypeStore: InjectTypeStore,
-    private injectTypeQuery: InjectTypeQuery,
-    private injectTypeService: InjectTypeService,
-    private router: Router,
-    private activatedRoute: ActivatedRoute
-  ) {
+  constructor() {
+    const activatedRoute = this.activatedRoute;
+
     this.filterTerm = activatedRoute.queryParamMap.pipe(
       map((params) => params.get('injectTypemask') || '')
     );

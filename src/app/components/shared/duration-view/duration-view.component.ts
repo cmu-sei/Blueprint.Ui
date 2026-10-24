@@ -4,19 +4,18 @@
  project root for license information.
 */
 
-import { Component, Input } from '@angular/core';
+import { Component, input } from '@angular/core';
 import { getTimezoneAbbr } from 'src/app/utilities/timezone-abbr';
 
 @Component({
     selector: 'app-duration-view',
     templateUrl: './duration-view.component.html',
-    styleUrls: ['./duration-view.component.scss'],
-    standalone: false
+    styleUrls: ['./duration-view.component.scss']
 })
 export class DurationViewComponent {
-  @Input() startTime: Date;
-  @Input() durationSeconds: number;
-  @Input() showRealTime: boolean;
+  readonly startTime = input<Date>(undefined);
+  readonly durationSeconds = input<number>(undefined);
+  readonly showRealTime = input<boolean>(undefined);
 
   getDeltaTime(deltaSeconds: number) {
     // get the absolute value and sign
@@ -54,7 +53,7 @@ export class DurationViewComponent {
   }
 
   getDate(deltaSeconds: number) {
-    const startDate = new Date(this.startTime);
+    const startDate = new Date(this.startTime());
     const scenarioEventDate = new Date(startDate.getTime() + deltaSeconds * 1000);
 
     // Format as: dd MMM yyyy HH:mm

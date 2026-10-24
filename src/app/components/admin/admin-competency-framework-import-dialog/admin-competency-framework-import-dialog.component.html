@@ -22,7 +22,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       #fileInput
       style="display: none" />
     <button mat-stroked-button (click)="fileInput.click()">
-      <mat-icon fontIcon="mdi-upload"></mat-icon>
+      <mat-icon fontIcon="mdi-upload" />
       Choose File
     </button>
     @if (fileName) {
@@ -36,7 +36,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
 
   @if (successMessage) {
   <div class="success-banner">
-    <mat-icon fontIcon="mdi-check-circle"></mat-icon>
+    <mat-icon fontIcon="mdi-check-circle" />
     <span>{{ successMessage }}</span>
   </div>
   }
@@ -87,7 +87,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
 
     @if (importRunning) {
     <div class="import-progress">
-      <mat-progress-bar mode="determinate" [value]="importPercent"></mat-progress-bar>
+      <mat-progress-bar mode="determinate" [value]="importPercent" />
       <div class="import-progress-status">
         <span>{{ importPhase }}{{ importCounts ? ' — ' + importCounts : '' }}</span>
         <span>{{ importPercent }}%</span>
@@ -95,7 +95,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     </div>
     } @else if (isProcessing) {
     <div class="processing-message">
-      <mat-spinner diameter="24"></mat-spinner>
+      <mat-spinner diameter="24" />
       <span>Processing file...</span>
     </div>
     }

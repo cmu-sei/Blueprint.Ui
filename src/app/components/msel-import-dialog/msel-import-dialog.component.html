@@ -9,12 +9,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
 <div crucibleDialogContent>
   @if (isImporting) {
   <div class="importing">
-    <mat-spinner diameter="40"></mat-spinner>
+    <mat-spinner diameter="40" />
     <span>Importing {{ data.file.name }}...</span>
   </div>
   } @else if (errorMessage) {
   <div class="error-message" role="alert">
-    <mat-icon fontIcon="mdi-alert-circle-outline"></mat-icon>
+    <mat-icon fontIcon="mdi-alert-circle-outline" />
     <span>{{ errorMessage }}</span>
   </div>
   } @else if (result) {
@@ -38,7 +38,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <ul class="message-list">
       @for (change of result.changes; track $index) {
       <li>
-        <mat-icon fontIcon="mdi-information-outline"></mat-icon>
+        <mat-icon fontIcon="mdi-information-outline" />
         <span>{{ change.message }}</span>
       </li>
       }
@@ -52,7 +52,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <ul class="message-list">
       @for (failure of result.failures; track $index) {
       <li>
-        <mat-icon fontIcon="mdi-alert-circle-outline"></mat-icon>
+        <mat-icon fontIcon="mdi-alert-circle-outline" />
         <span><strong>{{ failure.step }}:</strong> {{ failure.message }}</span>
       </li>
       }

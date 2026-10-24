@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { describe, it, expect, vi } from 'vitest';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -15,14 +15,15 @@ import { ApplicationArea, SignalRService } from 'src/app/services/signalr.servic
 import { LaunchComponent } from './launch.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { renderComponent } from 'src/app/test-utils/render-component';
+import { TopbarComponent } from '../../shared/top-bar/topbar.component';
 import { captureUnhandledRejections, flush } from 'src/app/test-utils/unhandled-rx-errors';
 
-@Component({ selector: 'app-topbar', template: '', standalone: false })
+@Component({ selector: 'app-topbar', template: '' })
 class TopbarStub {
-  @Input() title: string;
-  @Input() topbarView: unknown;
-  @Input() imageFilePath: string;
-  @Output() urlNavigate = new EventEmitter<string>();
+  readonly title = input<string>(undefined);
+  readonly topbarView = input<unknown>(undefined);
+  readonly imageFilePath = input<string>(undefined);
+  readonly urlNavigate = output<string>();
 }
 
 const TEMPLATE: Msel = { id: 'msel-t', name: 'Ransomware Starter', description: 'A launchable template' };
@@ -45,7 +46,9 @@ async function renderLaunch(logout: ComnAuthService['logout'] = () => Promise.re
   } satisfies Pick<SignalRService, 'startConnection' | 'join' | 'selectMsel' | 'leave'>;
   const rendered = await renderComponent(LaunchComponent, {
     imports: [MatButtonModule, MatCardModule, MatProgressSpinnerModule],
-    declarations: [LaunchComponent, TopbarStub],
+    childStubs: [
+      { replace: TopbarComponent, with: TopbarStub },
+    ],
     providers: [
       { provide: MselService, useValue: mselApi },
       { provide: UserService, useValue: userApi },

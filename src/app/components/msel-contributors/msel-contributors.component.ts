@@ -1,7 +1,7 @@
 // Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild, inject, input, viewChild } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { UnitDataService } from 'src/app/data/unit/unit-data.service';
@@ -22,33 +22,54 @@ import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { MselUnitDataService } from 'src/app/data/msel-unit/msel-unit-data.service';
 import { MselUnitQuery } from 'src/app/data/msel-unit/msel-unit.query';
-import { MatMenuTrigger } from '@angular/material/menu';
+import { MatMenuTrigger, MatMenu, MatMenuItem } from '@angular/material/menu';
 import { UserMselRoleDataService } from 'src/app/data/user-msel-role/user-msel-role-data.service';
 import { UserMselRoleQuery } from 'src/app/data/user-msel-role/user-msel-role.query';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
-import { MatTable, MatTableDataSource } from '@angular/material/table';
+import { MatTable, MatTableDataSource, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
-import { Sort } from '@angular/material/sort';
+import { Sort, MatSort, MatSortHeader } from '@angular/material/sort';
 import { animate, state, style, transition, trigger } from '@angular/animations';
+import { MatIcon } from '@angular/material/icon';
+
+import { MatFormField, MatInput, MatSuffix, MatLabel } from '@angular/material/input';
+import { FormsModule } from '@angular/forms';
+import { MatIconButton } from '@angular/material/button';
+import { MatSelect } from '@angular/material/select';
+import { MatOption } from '@angular/material/autocomplete';
+import { MatTooltip } from '@angular/material/tooltip';
 
 @Component({
     selector: 'app-msel-contributors',
     templateUrl: './msel-contributors.component.html',
     styleUrls: ['./msel-contributors.component.scss'],
     animations: [
-      trigger('detailExpand', [
-        state('collapsed', style({ height: '0px', minHeight: '0', visibility: 'hidden' })),
-        state('expanded', style({ height: '*', visibility: 'visible' })),
-        transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
-      ]),
+        trigger('detailExpand', [
+            state('collapsed', style({ height: '0px', minHeight: '0', visibility: 'hidden' })),
+            state('expanded', style({ height: '*', visibility: 'visible' })),
+            transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
+        ]),
     ],
-    standalone: false
+    imports: [MatIcon, MatFormField, MatInput, FormsModule, MatIconButton, MatSuffix, MatPaginator, MatMenu, MatMenuItem, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatMenuTrigger, MatCellDef, MatCell, MatSortHeader, MatLabel, MatSelect, MatOption, MatTooltip, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow]
 })
 export class MselContributorsComponent implements OnDestroy, OnInit {
-  @Input() loggedInUserId: string;
+  private unitDataService = inject(UnitDataService);
+  private unitQuery = inject(UnitQuery);
+  private userQuery = inject(UserQuery);
+  private mselDataService = inject(MselDataService);
+  private mselQuery = inject(MselQuery);
+  private mselUnitDataService = inject(MselUnitDataService);
+  private mselUnitQuery = inject(MselUnitQuery);
+  private userMselRoleDataService = inject(UserMselRoleDataService);
+  private userMselRoleQuery = inject(UserMselRoleQuery);
+  dialogService = inject(CrucibleDialogService);
+  private permissionDataService = inject(PermissionDataService);
+  private changeDetectorRef = inject(ChangeDetectorRef);
+
+  readonly loggedInUserId = input<string>(undefined);
   // context menu
-  @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
-  @ViewChild('contributorTable', { static: false }) contributorTable: MatTable<any>;
+  readonly contextMenu = viewChild(MatMenuTrigger);
+  readonly contributorTable = viewChild<MatTable<any>>('contributorTable');
   @ViewChild(MatPaginator) set matPaginator(paginator: MatPaginator) {
     this.mselUnitDataSource.paginator = paginator;
   }
@@ -99,20 +120,7 @@ export class MselContributorsComponent implements OnDestroy, OnInit {
   private allUnits: Unit[] = [];
   private unsubscribe$ = new Subject();
 
-  constructor(
-    private unitDataService: UnitDataService,
-    private unitQuery: UnitQuery,
-    private userQuery: UserQuery,
-    private mselDataService: MselDataService,
-    private mselQuery: MselQuery,
-    private mselUnitDataService: MselUnitDataService,
-    private mselUnitQuery: MselUnitQuery,
-    private userMselRoleDataService: UserMselRoleDataService,
-    private userMselRoleQuery: UserMselRoleQuery,
-    public dialogService: CrucibleDialogService,
-    private permissionDataService: PermissionDataService,
-    private changeDetectorRef: ChangeDetectorRef
-  ) {
+  constructor() {
     // subscribe to the active MSEL
     (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
       if (msel && this.msel.id !== msel.id) {
@@ -331,7 +339,7 @@ export class MselContributorsComponent implements OnDestroy, OnInit {
     } else {
       this.expandedElementId = row.id;
     }
-    this.contributorTable.renderRows();
+    this.contributorTable().renderRows();
   }
 
   getRowClass(id: string) {
@@ -362,16 +370,16 @@ export class MselContributorsComponent implements OnDestroy, OnInit {
 
   canViewMsel(): boolean {
     return this.permissionDataService.hasPermission(SystemPermission.ViewMsels) ||
-      this.mselUnitList.some(mu => mu.unit?.users?.some(u => u.id === this.loggedInUserId));
+      this.mselUnitList.some(mu => mu.unit?.users?.some(u => u.id === this.loggedInUserId()));
   }
 
   canManageMsel(): boolean {
     return this.permissionDataService.hasPermission(SystemPermission.ManageMsels) ||
-      this.msel.hasRole(this.loggedInUserId, '').owner;
+      this.msel.hasRole(this.loggedInUserId(), '').owner;
   }
 
   isOwnOwnerRole(userId: string, mselRole: MselRole): boolean {
-    return userId === this.loggedInUserId && mselRole === MselRole.Owner && this.hasMselRole(userId, mselRole);
+    return userId === this.loggedInUserId() && mselRole === MselRole.Owner && this.hasMselRole(userId, mselRole);
   }
 
   isCreatorRole(userId: string, mselRole: MselRole): boolean {

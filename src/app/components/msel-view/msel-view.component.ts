@@ -1,9 +1,9 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, Input, OnDestroy, ViewChild } from '@angular/core';
+import { Component, OnDestroy, inject, input, viewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { Sort } from '@angular/material/sort';
+import { Sort, MatSort, MatSortHeader } from '@angular/material/sort';
 import { Subject, Subscription, Observable, of } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import {
@@ -53,18 +53,48 @@ import { CompetencyFrameworkQuery } from 'src/app/data/competency-framework/comp
 import { CompetencyFrameworkDataService } from 'src/app/data/competency-framework/competency-framework-data.service';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
 import { VIEW_CONFIG } from 'src/app/utilities/editor-config';
+import { MatFormField, MatInput, MatSuffix } from '@angular/material/input';
+import { FormsModule } from '@angular/forms';
+import { MatIconButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
+import { DurationViewComponent } from '../shared/duration-view/duration-view.component';
+import { AngularEditorModule } from '@kolkov/angular-editor';
+import { MatCheckbox } from '@angular/material/checkbox';
+import { MatTooltip } from '@angular/material/tooltip';
+import { IsDateTimeValuePipe } from 'src/app/utilities/date-time-value';
 
 @Component({
     selector: 'app-msel-view',
     templateUrl: './msel-view.component.html',
     styleUrls: ['./msel-view.component.scss'],
-    standalone: false
+    imports: [MatSort, MatFormField, MatInput, FormsModule, MatIconButton, MatSuffix, MatIcon, MatSortHeader, DurationViewComponent, AngularEditorModule, MatCheckbox, MatTooltip, IsDateTimeValuePipe]
 })
 export class MselViewComponent implements OnDestroy, ScenarioEventView {
-  @Input() tabHeight: number;
-  @Input() userTheme: Theme;
+  private activatedRoute = inject(ActivatedRoute);
+  private mselDataService = inject(MselDataService);
+  private mselQuery = inject(MselQuery);
+  private organizationQuery = inject(OrganizationQuery);
+  private dataValueDataService = inject(DataValueDataService);
+  private dataValueQuery = inject(DataValueQuery);
+  private teamQuery = inject(TeamQuery);
+  private dataFieldDataService = inject(DataFieldDataService);
+  private dataFieldQuery = inject(DataFieldQuery);
+  private cardQuery = inject(CardQuery);
+  private moveQuery = inject(MoveQuery);
+  private scenarioEventDataService = inject(ScenarioEventDataService);
+  private scenarioEventQuery = inject(ScenarioEventQuery);
+  private mselCompetencyQuery = inject(MselCompetencyQuery);
+  private mselCompetencyDataService = inject(MselCompetencyDataService);
+  private competencyFrameworkQuery = inject(CompetencyFrameworkQuery);
+  private competencyFrameworkDataService = inject(CompetencyFrameworkDataService);
+  private uiDataService = inject(UIDataService);
+  private http = inject(HttpClient);
+  private settingsService = inject(ComnSettingsService);
+
+  readonly tabHeight = input<number>(undefined);
+  readonly userTheme = input<Theme>(undefined);
   // context menu
-  @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
+  readonly contextMenu = viewChild(MatMenuTrigger);
   contextMenuPosition = { x: '0px', y: '0px' };
   myTopHeight = 79;
   msel: Msel = { name: '' };
@@ -110,28 +140,9 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
   private competencyTypeCache = new Map<string, string>();
   viewConfig = VIEW_CONFIG;
 
-  constructor(
-    private activatedRoute: ActivatedRoute,
-    private mselDataService: MselDataService,
-    private mselQuery: MselQuery,
-    private organizationQuery: OrganizationQuery,
-    private dataValueDataService: DataValueDataService,
-    private dataValueQuery: DataValueQuery,
-    private teamQuery: TeamQuery,
-    private dataFieldDataService: DataFieldDataService,
-    private dataFieldQuery: DataFieldQuery,
-    private cardQuery: CardQuery,
-    private moveQuery: MoveQuery,
-    private scenarioEventDataService: ScenarioEventDataService,
-    private scenarioEventQuery: ScenarioEventQuery,
-    private mselCompetencyQuery: MselCompetencyQuery,
-    private mselCompetencyDataService: MselCompetencyDataService,
-    private competencyFrameworkQuery: CompetencyFrameworkQuery,
-    private competencyFrameworkDataService: CompetencyFrameworkDataService,
-    private uiDataService: UIDataService,
-    private http: HttpClient,
-    private settingsService: ComnSettingsService
-  ) {
+  constructor() {
+    const activatedRoute = this.activatedRoute;
+
     // subscribe to the route parameters.  Used when viewing independently.
     this.activatedRoute.params
       .pipe(takeUntil(this.unsubscribe$))
@@ -457,8 +468,9 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
   }
 
   getScrollingHeight() {
-    const topHeight = this.tabHeight
-      ? this.myTopHeight + this.tabHeight
+    const tabHeight = this.tabHeight();
+    const topHeight = tabHeight
+      ? this.myTopHeight + tabHeight
       : this.myTopHeight;
     return 'calc(100% - ' + topHeight + 'px)';
   }
@@ -507,7 +519,7 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
         ? rowMetadata[1] + ', ' + rowMetadata[2] + ', ' + rowMetadata[3]
         : '';
     const tint =
-      this.userTheme === 'dark-theme'
+      this.userTheme() === 'dark-theme'
         ? this.darkThemeTint
         : this.lightThemeTint;
     const style = color
