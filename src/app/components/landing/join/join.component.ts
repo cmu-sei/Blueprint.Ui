@@ -136,15 +136,6 @@ export class JoinComponent implements OnDestroy, OnInit {
       `linear-gradient(135deg, hsl(${hue}, 55%, 42%), hsl(${(hue + 40) % 360}, 60%, 30%))`;
   }
 
-  initials(name: string): string {
-    return (name ?? '')
-      .split(/\s+/)
-      .filter((word) => word)
-      .slice(0, 2)
-      .map((word) => word[0].toUpperCase())
-      .join('');
-  }
-
   topBarNavigate(url): void {
     this.router.navigate([url]);
   }

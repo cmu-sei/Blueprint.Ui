@@ -134,7 +134,7 @@ describe('JoinComponent', () => {
   });
 
   /**
-   * Verifies: an event with an image shows it on its card instead of the generated pattern; an event without one keeps the pattern and its initials.
+   * Verifies: an event with an image shows it on its card instead of the generated pattern; an event without one keeps the generated pattern, with nothing written on it.
    * Interacts with: MselImageService.getMselImage (stub, answers a PNG blob), URL.createObjectURL (stub).
    * Data: Exercise Alpha with ImageDateModified set; Exercise Bravo without.
    */
@@ -144,9 +144,8 @@ describe('JoinComponent', () => {
     const cards = Array.from(fixture.nativeElement.querySelectorAll('.event-card')) as HTMLElement[];
     expect(imageApi.getMselImage.mock.calls).toEqual([['msel-1']]);
     expect((cards[0].querySelector('.card-photo') as HTMLElement).style.backgroundImage).toBe('url("blob:photo")');
-    expect(cards[0].querySelector('.card-initials')).toBeNull();
     expect(cards[1].querySelector('.card-photo')).toBeNull();
-    expect(cards[1].querySelector('.card-initials')).toHaveTextContent('EB');
+    expect(cards[1].querySelector('.card-image')).toBeEmptyDOMElement();
   });
 
   /**
