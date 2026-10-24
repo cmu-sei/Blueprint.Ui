@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { Component, Input } from '@angular/core';
+import { Component, input } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
@@ -38,9 +38,9 @@ import { mselLoadApiProviders, mselLoadApiStubs } from 'src/app/test-utils/msel-
 
 @Component({ selector: 'app-duration-view', template: '', standalone: false })
 class DurationViewStub {
-  @Input() startTime: Date;
-  @Input() durationSeconds: number;
-  @Input() showRealTime: boolean;
+  readonly startTime = input<Date>(undefined);
+  readonly durationSeconds = input<number>(undefined);
+  readonly showRealTime = input<boolean>(undefined);
 }
 
 const MSEL: Msel = { id: 'msel-1', name: 'Exercise Alpha', teams: [], units: [], userMselRoles: [] };

@@ -1,7 +1,7 @@
 // Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { take, takeUntil } from 'rxjs/operators';
@@ -26,14 +26,29 @@ import { PermissionDataService } from 'src/app/data/permission/permission-data.s
 import { MatDialog } from '@angular/material/dialog';
 import { CapabilityDialogComponent, CapabilityData } from '../../capability-dialog/capability-dialog.component';
 import { landingBackground } from 'src/app/utilities/landing-background';
+import { TopbarComponent } from '../../shared/top-bar/topbar.component';
+import { MatButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
 
 @Component({
-  selector: 'app-dashboard',
-  templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.scss'],
-  standalone: false
+    selector: 'app-dashboard',
+    templateUrl: './dashboard.component.html',
+    styleUrls: ['./dashboard.component.scss'],
+    imports: [TopbarComponent, MatButton, MatIcon, MatProgressSpinner]
 })
 export class DashboardComponent implements OnDestroy, OnInit {
+  private userDataService = inject(UserDataService);
+  private userQuery = inject(UserQuery);
+  private currentUserQuery = inject(CurrentUserQuery);
+  private settingsService = inject(ComnSettingsService);
+  private mselDataService = inject(MselDataService);
+  private router = inject(Router);
+  private titleService = inject(Title);
+  private uiDataService = inject(UIDataService);
+  private permissionDataService = inject(PermissionDataService);
+  private dialog = inject(MatDialog);
+
   launchMselList: Msel[] = [];
   joinMselList: Msel[] = [];
   buildMselList: Msel[] = [];
@@ -57,18 +72,7 @@ export class DashboardComponent implements OnDestroy, OnInit {
   isSystemAdmin = false;
   private unsubscribe$ = new Subject();
 
-  constructor(
-    private userDataService: UserDataService,
-    private userQuery: UserQuery,
-    private currentUserQuery: CurrentUserQuery,
-    private settingsService: ComnSettingsService,
-    private mselDataService: MselDataService,
-    private router: Router,
-    private titleService: Title,
-    private uiDataService: UIDataService,
-    private permissionDataService: PermissionDataService,
-    private dialog: MatDialog
-  ) {
+  constructor() {
     this.hideTopbar = this.uiDataService.inIframe();
     // set image
     this.imageFilePath = this.settingsService.settings.AppTopBarImage.replace(

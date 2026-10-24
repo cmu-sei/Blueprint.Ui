@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { describe, it, expect, vi } from 'vitest';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
@@ -18,13 +18,14 @@ import { DashboardComponent } from './dashboard.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { permissionApiStubs } from 'src/app/test-utils/mock-permission-data.service';
+import { TopbarComponent } from '../../shared/top-bar/topbar.component';
 
-@Component({ selector: 'app-topbar', template: '', standalone: false })
+@Component({ selector: 'app-topbar', template: '' })
 class TopbarStub {
-  @Input() title: string;
-  @Input() topbarView: unknown;
-  @Input() imageFilePath: string;
-  @Output() urlNavigate = new EventEmitter<string>();
+  readonly title = input<string>(undefined);
+  readonly topbarView = input<unknown>(undefined);
+  readonly imageFilePath = input<string>(undefined);
+  readonly urlNavigate = output<string>();
 }
 
 const ALPHA: Msel = { id: 'msel-1', name: 'Exercise Alpha' };
@@ -47,7 +48,9 @@ async function renderDashboard(
   const permissionApis = permissionApiStubs({ system: permissions });
   const rendered = await renderComponent(DashboardComponent, {
     imports: [MatCardModule, MatIconModule, MatProgressSpinnerModule],
-    declarations: [DashboardComponent, TopbarStub],
+    childStubs: [
+      { replace: TopbarComponent, with: TopbarStub },
+    ],
     providers: [
       { provide: SystemPermissionsService, useValue: permissionApis.systemPermissions },
       PermissionDataService,

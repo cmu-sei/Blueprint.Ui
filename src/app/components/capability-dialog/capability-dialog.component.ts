@@ -2,8 +2,16 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, Inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { MatButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
+import {
+  CrucibleDialogActionsDirective,
+  CrucibleDialogComponent,
+  CrucibleDialogContentDirective,
+  CrucibleDialogTitleDirective,
+} from '@cmusei/crucible-common';
 
 export interface CapabilityData {
   title: string;
@@ -17,13 +25,18 @@ export interface CapabilityData {
   selector: 'app-capability-dialog',
   templateUrl: './capability-dialog.component.html',
   styleUrls: ['./capability-dialog.component.scss'],
-  standalone: false
+  imports: [
+    CrucibleDialogComponent,
+    CrucibleDialogTitleDirective,
+    CrucibleDialogContentDirective,
+    CrucibleDialogActionsDirective,
+    MatIcon,
+    MatButton,
+  ],
 })
 export class CapabilityDialogComponent {
-  constructor(
-    public dialogRef: MatDialogRef<CapabilityDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: CapabilityData
-  ) {}
+  dialogRef = inject<MatDialogRef<CapabilityDialogComponent>>(MatDialogRef);
+  data = inject<CapabilityData>(MAT_DIALOG_DATA);
 
   close(): void {
     this.dialogRef.close();

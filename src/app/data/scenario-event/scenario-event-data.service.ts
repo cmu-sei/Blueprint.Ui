@@ -5,7 +5,7 @@
 */
 
 import { ScenarioEventStore } from './scenario-event.store';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { isDateTimeValue } from 'src/app/utilities/date-time-value';
 import { Sort } from '@angular/material/sort';
 import {
@@ -76,10 +76,9 @@ export interface ScenarioEventView {
   providedIn: 'root',
 })
 export class ScenarioEventDataService {
-  constructor(
-    private scenarioEventStore: ScenarioEventStore,
-    private scenarioEventService: ScenarioEventService
-  ) {}
+  private scenarioEventStore = inject(ScenarioEventStore);
+  private scenarioEventService = inject(ScenarioEventService);
+
 
   readonly baseSort: Sort[] = [
     { active: 'deltaSeconds', direction: 'asc' },

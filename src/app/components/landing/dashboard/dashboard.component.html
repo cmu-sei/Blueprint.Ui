@@ -6,7 +6,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
 <div class="command-center landing-background" [class.has-background]="backgroundImage" [style.--landing-background]="backgroundImage">
   @if (!hideTopbar) {
   <app-topbar [title]="topbarText" [topbarView]="TopbarView.BLUEPRINT_HOME" [imageFilePath]="topbarImage"
-    (urlNavigate)="topBarNavigate($event)"></app-topbar>
+    (urlNavigate)="topBarNavigate($event)" />
   }
 
   @if (isStarted) {

@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { describe, it, expect } from 'vitest';
-import { Component, Input } from '@angular/core';
+import { Component, input } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatPaginatorModule } from '@angular/material/paginator';
@@ -17,9 +17,9 @@ import { renderComponent } from 'src/app/test-utils/render-component';
 
 @Component({ selector: 'app-duration-view', template: '', standalone: false })
 class DurationViewStub {
-  @Input() startTime: Date;
-  @Input() durationSeconds: number;
-  @Input() showRealTime: boolean;
+  readonly startTime = input<Date>(undefined);
+  readonly durationSeconds = input<number>(undefined);
+  readonly showRealTime = input<boolean>(undefined);
 }
 
 const MSEL: Msel = { id: 'msel-1', name: 'Exercise Alpha', createdBy: 'someone-else', teams: [], units: [], userMselRoles: [] };

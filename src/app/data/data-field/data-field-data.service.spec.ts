@@ -260,7 +260,7 @@ describe('DataFieldDataService', () => {
     expect(stuck.getValue().loading).toBe(true);
     expect(untouched.getValue().loading).toBe(false);
     // An empty error callback swallows the error; with no callback it escapes to
-    // ErrorService, the ErrorHandler app.module.ts provides, which shows it.
+    // ErrorService, the ErrorHandler app.config.ts provides, which shows it.
     expect(errors).toEqual(escapes ? [failure] : []);
   });
 
@@ -279,7 +279,7 @@ describe('DataFieldDataService', () => {
     await flush();
 
     // No error callback and no loading flag: ErrorService, the ErrorHandler
-    // app.module.ts provides, shows the error. Not a defect on its own.
+    // app.config.ts provides, shows the error. Not a defect on its own.
     expect(errors).toEqual([failure]);
   });
 });

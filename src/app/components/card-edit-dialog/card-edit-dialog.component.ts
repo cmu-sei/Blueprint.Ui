@@ -2,19 +2,25 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, EventEmitter, Inject, Output } from '@angular/core';
-import { UntypedFormControl } from '@angular/forms';
+import { Component, inject, output } from '@angular/core';
+import { UntypedFormControl, FormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { CrucibleDialogComponent, CrucibleDialogContentDirective } from '@cmusei/crucible-common';
+import { MatFormField, MatLabel, MatInput } from '@angular/material/input';
+import { MatSelect } from '@angular/material/select';
+import { MatOption } from '@angular/material/autocomplete';
 
 @Component({
     selector: 'app-card-edit-dialog',
     templateUrl: './card-edit-dialog.component.html',
     styleUrls: ['./card-edit-dialog.component.scss'],
-    standalone: false
+    imports: [CrucibleDialogComponent, CrucibleDialogContentDirective, MatFormField, MatLabel, MatInput, FormsModule, MatSelect, MatOption]
 })
 
 export class CardEditDialogComponent {
-  @Output() editComplete = new EventEmitter<any>();
+  data = inject(MAT_DIALOG_DATA);
+
+  readonly editComplete = output<any>();
 
   public situationDateFormControl = new UntypedFormControl(
     this.data.card.situationTime,
@@ -28,10 +34,6 @@ export class CardEditDialogComponent {
     this.data.card.cardStopTime,
     []
   );
-
-  constructor(
-    @Inject(MAT_DIALOG_DATA) public data: any
-  ) {}
 
   saveCard(which: string) {
     switch (which) {

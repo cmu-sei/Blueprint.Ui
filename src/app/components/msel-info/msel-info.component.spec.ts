@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { provideHttpClient } from '@angular/common/http';
@@ -64,21 +64,23 @@ import { TimezoneAbbrPipe } from 'src/app/utilities/timezone-abbr';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { permissionApiStubs } from 'src/app/test-utils/mock-permission-data.service';
 import { unstubbed } from 'src/app/test-utils/unstubbed';
+import { IntegrationStatusComponent } from '../integration-status/integration-status.component';
+import { DurationEditComponent } from '../shared/duration-edit/duration-edit.component';
 
-@Component({ selector: 'app-integration-status', template: '', standalone: false })
+@Component({ selector: 'app-integration-status', template: '' })
 class IntegrationStatusStub {
-  @Input() msel: Msel;
-  @Output() closed = new EventEmitter<void>();
+  readonly msel = input<Msel>(undefined);
+  readonly closed = output<void>();
 }
-@Component({ selector: 'app-duration-edit', template: '', standalone: false })
+@Component({ selector: 'app-duration-edit', template: '' })
 class DurationEditStub {
-  @Input() startTime: Date;
-  @Input() canEdit: boolean;
-  @Input() durationSeconds: number;
-  @Output() durationSecondsChange = new EventEmitter<number>();
-  @Input() timeName: string;
-  @Input() postScript: string;
-  @Output() change = new EventEmitter<number>();
+  readonly startTime = input<Date>(undefined);
+  readonly canEdit = input<boolean>(undefined);
+  readonly durationSeconds = input<number>(undefined);
+  readonly durationSecondsChange = output<number>();
+  readonly timeName = input<string>(undefined);
+  readonly postScript = input<string>(undefined);
+  readonly change = output<number>();
 }
 
 const ME = 'user-me';
@@ -191,7 +193,10 @@ async function renderInfo(
       NgxMatDatepickerInput,
       NgxMatDatetimepicker,
     ],
-    declarations: [MselInfoComponent, IntegrationStatusStub, DurationEditStub, TimezoneAbbrPipe],
+    childStubs: [
+      { replace: IntegrationStatusComponent, with: IntegrationStatusStub },
+      { replace: DurationEditComponent, with: DurationEditStub },
+    ],
     providers: [
       { provide: SystemPermissionsService, useValue: permissionApis.systemPermissions },
       PermissionDataService,
@@ -270,7 +275,7 @@ describe('MselInfoComponent', () => {
     expect(nameInput()).toBeEnabled();
     expect(descriptionInput()).toBeEnabled();
     expect(screen.getByLabelText('Player')).toBeEnabled();
-    expect(durationEdit(fixture).canEdit).toBe(true);
+    expect(durationEdit(fixture).canEdit()).toBe(true);
   });
 
   /**
@@ -284,7 +289,7 @@ describe('MselInfoComponent', () => {
     expect(nameInput()).toBeDisabled();
     expect(descriptionInput()).toBeDisabled();
     expect(screen.getByLabelText('Player')).toBeDisabled();
-    expect(durationEdit(fixture).canEdit).toBe(false);
+    expect(durationEdit(fixture).canEdit()).toBe(false);
   });
 
   /**

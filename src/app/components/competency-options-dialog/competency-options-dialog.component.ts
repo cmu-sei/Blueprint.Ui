@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, Inject, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -14,14 +14,32 @@ import {
 import { MselCompetencyQuery } from 'src/app/data/msel-competency/msel-competency.query';
 import { CompetencyFrameworkService } from 'src/app/generated/blueprint.api/api/api';
 import { v4 as uuidv4 } from 'uuid';
+import { CrucibleDialogComponent, CrucibleDialogContentDirective, CrucibleDialogActionsDirective } from '@cmusei/crucible-common';
+import { MatFormField, MatLabel, MatInput, MatSuffix } from '@angular/material/input';
+import { MatSelect } from '@angular/material/select';
+import { MatOption } from '@angular/material/autocomplete';
+import { FormsModule } from '@angular/forms';
+import { MatIconButton, MatButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
+import { MatCheckbox } from '@angular/material/checkbox';
+import { MatPaginator } from '@angular/material/paginator';
 
 @Component({
     selector: 'app-competency-options-dialog',
     templateUrl: './competency-options-dialog.component.html',
     styleUrls: ['./competency-options-dialog.component.scss'],
-    standalone: false
+    imports: [CrucibleDialogComponent, CrucibleDialogContentDirective, MatFormField, MatLabel, MatSelect, MatOption, MatInput, FormsModule, MatIconButton, MatSuffix, MatIcon, MatCheckbox, MatPaginator, CrucibleDialogActionsDirective, MatButton]
 })
 export class CompetencyOptionsDialogComponent implements OnDestroy {
+  dialogRef = inject<MatDialogRef<CompetencyOptionsDialogComponent>>(MatDialogRef);
+  private mselCompetencyQuery = inject(MselCompetencyQuery);
+  private competencyFrameworkService = inject(CompetencyFrameworkService);
+  data = inject<{
+    dataFieldId: string;
+    dataOptions: DataOption[];
+    canEdit: boolean;
+}>(MAT_DIALOG_DATA);
+
   searchText = '';
   typeFilter = '';
   frameworkFilter = '';
@@ -36,16 +54,7 @@ export class CompetencyOptionsDialogComponent implements OnDestroy {
   selected = new Set<string>(); // tracks by idNumber
   private unsubscribe$ = new Subject();
 
-  constructor(
-    public dialogRef: MatDialogRef<CompetencyOptionsDialogComponent>,
-    private mselCompetencyQuery: MselCompetencyQuery,
-    private competencyFrameworkService: CompetencyFrameworkService,
-    @Inject(MAT_DIALOG_DATA) public data: {
-      dataFieldId: string;
-      dataOptions: DataOption[];
-      canEdit: boolean;
-    }
-  ) {
+  constructor() {
     // Load frameworks
     this.competencyFrameworkService.getCompetencyFrameworks().subscribe(frameworks => {
       this.frameworks = frameworks;

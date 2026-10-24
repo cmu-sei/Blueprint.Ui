@@ -1,16 +1,9 @@
 // Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import {
-  Component,
-  ElementRef,
-  Input,
-  OnDestroy,
-  ViewChild,
-  AfterViewInit,
-} from '@angular/core';
-import { UntypedFormControl } from '@angular/forms';
-import { MatTableDataSource } from '@angular/material/table';
+import { Component, ElementRef, OnDestroy, AfterViewInit, inject, input, viewChild } from '@angular/core';
+import { UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MatTableDataSource, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
 import {
   animate,
   state,
@@ -21,7 +14,7 @@ import {
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { Catalog, InjectType, Team } from 'src/app/generated/blueprint.api';
-import { Sort } from '@angular/material/sort';
+import { Sort, MatSort, MatSortHeader } from '@angular/material/sort';
 import { MatTable } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 import { CatalogDataService } from 'src/app/data/catalog/catalog-data.service';
@@ -31,26 +24,41 @@ import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { AdminCatalogEditDialogComponent } from '../admin-catalog-edit-dialog/admin-catalog-edit-dialog.component';
 import { v4 as uuidv4 } from 'uuid';
 import { InjectTypeQuery } from 'src/app/data/inject-type/inject-type.query';
+import { MatIcon } from '@angular/material/icon';
+
+import { MatFormField, MatInput, MatSuffix } from '@angular/material/input';
+import { MatIconButton } from '@angular/material/button';
+import { MatCheckbox } from '@angular/material/checkbox';
+import { MatExpansionPanel, MatExpansionPanelHeader } from '@angular/material/expansion';
+import { InjectListComponent } from '../../inject-list/inject-list.component';
+import { CatalogUnitsComponent } from '../../catalog-units/catalog-units.component';
+import { MatRipple } from '@angular/material/core';
 
 @Component({
-  selector: 'app-admin-catalog-list',
-  templateUrl: './admin-catalog-list.component.html',
-  styleUrls: ['./admin-catalog-list.component.scss'],
-  animations: [
-    trigger('detailExpand', [
-      state('collapsed', style({ height: '0px', minHeight: '0', visibility: 'hidden' })),
-      state('expanded', style({ height: '*', visibility: 'visible' })),
-      transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
-    ]),
-  ],
-  standalone: false
+    selector: 'app-admin-catalog-list',
+    templateUrl: './admin-catalog-list.component.html',
+    styleUrls: ['./admin-catalog-list.component.scss'],
+    animations: [
+        trigger('detailExpand', [
+            state('collapsed', style({ height: '0px', minHeight: '0', visibility: 'hidden' })),
+            state('expanded', style({ height: '*', visibility: 'visible' })),
+            transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
+        ]),
+    ],
+    imports: [MatIcon, MatFormField, MatInput, FormsModule, ReactiveFormsModule, MatIconButton, MatSuffix, MatPaginator, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatCheckbox, MatSortHeader, MatExpansionPanel, MatExpansionPanelHeader, InjectListComponent, CatalogUnitsComponent, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, MatRipple]
 })
 export class AdminCatalogListComponent implements OnDestroy, AfterViewInit {
-  @Input() loggedInUserId: string;
-  @Input() canEdit: boolean;
-  @ViewChild('catalogTable', { static: false }) catalogTable: MatTable<any>;
-  @ViewChild(MatPaginator) paginator: MatPaginator;
-  @ViewChild('jsonInput') jsonInput: ElementRef<HTMLInputElement>;
+  private catalogDataService = inject(CatalogDataService);
+  private catalogQuery = inject(CatalogQuery);
+  dialog = inject(MatDialog);
+  dialogService = inject(CrucibleDialogService);
+  private injectTypeQuery = inject(InjectTypeQuery);
+
+  readonly loggedInUserId = input<string>(undefined);
+  readonly canEdit = input<boolean>(undefined);
+  readonly catalogTable = viewChild<MatTable<any>>('catalogTable');
+  readonly paginator = viewChild(MatPaginator);
+  readonly jsonInput = viewChild<ElementRef<HTMLInputElement>>('jsonInput');
   contextMenuPosition = { x: '0px', y: '0px' };
   catalogList: Catalog[] = [];
   changedCatalog: Catalog = {};
@@ -77,13 +85,7 @@ export class AdminCatalogListComponent implements OnDestroy, AfterViewInit {
   uploadProgress = 0;
   uploadCatalogId = '';
 
-  constructor(
-    private catalogDataService: CatalogDataService,
-    private catalogQuery: CatalogQuery,
-    public dialog: MatDialog,
-    public dialogService: CrucibleDialogService,
-    private injectTypeQuery: InjectTypeQuery
-  ) {
+  constructor() {
     // subscribe to catalogs
     this.catalogQuery
       .selectAll()
@@ -182,7 +184,7 @@ export class AdminCatalogListComponent implements OnDestroy, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    this.catalogDataSource.paginator = this.paginator;
+    this.catalogDataSource.paginator = this.paginator();
   }
 
   ngOnDestroy() {
@@ -241,7 +243,7 @@ export class AdminCatalogListComponent implements OnDestroy, AfterViewInit {
     } else {
       this.expandedElementId = row.id;
     }
-    this.catalogTable.renderRows();
+    this.catalogTable().renderRows();
   }
 
   getRowClass(id: string) {
@@ -271,7 +273,7 @@ export class AdminCatalogListComponent implements OnDestroy, AfterViewInit {
     }
     this.uploadProgress = 0;
     this.catalogDataService.uploadJson(file, 'events', true);
-    this.jsonInput.nativeElement.value = null;
+    this.jsonInput().nativeElement.value = null;
   }
 
   /**

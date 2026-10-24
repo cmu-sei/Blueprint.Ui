@@ -4,7 +4,7 @@ Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
 @if ((msel?.integrationStatus || integrationRequested) && !integrationDismissed) {
-<app-integration-status [msel]="msel" (closed)="dismissIntegrationStatus()"></app-integration-status>
+<app-integration-status [msel]="msel" (closed)="dismissIntegrationStatus()" />
 } @else {
 <div class="frame">
   <mat-tab-group mat-align-tabs="start" class="tab-group" [selectedIndex]="currentTabIndex"
@@ -15,11 +15,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <span class="edit-buttons-span">
           <button mat-icon-button (click)="saveChanges()" style="outline: none;" title="Save Changes"
             [disabled]="!isChanged || !isMselValid()">
-            <mat-icon class="mdi-24px self-center" fontIcon="mdi-content-save-outline"></mat-icon>
+            <mat-icon class="mdi-24px self-center" fontIcon="mdi-content-save-outline" />
           </button>
           <button mat-icon-button (click)="cancelChanges()" style="outline: none;" title="Cancel Changes"
             [disabled]="!isChanged">
-            <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
+            <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline" />
           </button>
         </span>
         <span class="change-span">
@@ -29,7 +29,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         </span>
         <span class="export-import-span">
           <button mat-icon-button [matMenuTriggerFor]="downloadMenu" title="Download" style="outline: none;">
-            <mat-icon class="mdi-18px" fontIcon="mdi-download"></mat-icon>
+            <mat-icon class="mdi-18px" fontIcon="mdi-download" />
           </button>
           <mat-menu #downloadMenu="matMenu" [overlapTrigger]="false">
             <button mat-menu-item (click)="downloadJsonFile()" title="Download json file">Download json file</button>
@@ -41,7 +41,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <span [title]="getDeleteTooltip()">
             <button mat-icon-button (click)="deleteMsel()"
               [disabled]="msel && (msel.status === 'Deployed' || msel.isTemplate)">
-              <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline" alt="Delete"></mat-icon>
+              <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline" alt="Delete" />
             </button>
           </span>
           }
@@ -127,8 +127,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
               <span (click)="canEditMsel() && picker.open()">
                 {{msel.startTime | date: 'dd MMM yyyy HH:mm'}} {{ msel.startTime | timezoneAbbr }}
               </span>
-              <mat-datepicker-toggle matSuffix title="Choose Date/Time" [for]="picker" [disabled]="!canEditMsel()">
-              </mat-datepicker-toggle>
+              <mat-datepicker-toggle matSuffix title="Choose Date/Time" [for]="picker" [disabled]="!canEditMsel()" />
               <ngx-mat-datetime-picker #picker [showSpinners]=true [showSeconds]=false [stepHour]=1 [stepMinute]=5
                 [stepSecond]=1 [touchUi]=false [enableMeridian]=true [disableMinute]=false [hideTime]=false
                 [color]="'warn'">
@@ -143,7 +142,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <!-- MSEL End/Duration -->
           <app-duration-edit [startTime]="msel.startTime" [(durationSeconds)]="msel.durationSeconds"
             [timeName]="'End Date / Time'" [postScript]="'duration'" [canEdit]="canEditMsel()"
-            (change)="isChanged = true;"></app-duration-edit>
+            (change)="isChanged = true;" />
           <!-- Integration Section -->
           <div class="integration-div">
             <div class="integration-header">
@@ -205,7 +204,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   <span class="integration-name">{{ playerViewName }}</span>
                   }
                   <a [href]="getPlayerViewUrl()" target="_blank" class="integration-link" title="Open in Player">
-                    <mat-icon class="mdi-18px" fontIcon="mdi-open-in-new"></mat-icon>
+                    <mat-icon class="mdi-18px" fontIcon="mdi-open-in-new" />
                   </a>
                 </div>
               </div>
@@ -238,7 +237,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   <span class="integration-name">{{ galleryExhibitName }}</span>
                   }
                   <a [href]="getGalleryExhibitUrl()" target="_blank" class="integration-link" title="Open in Gallery">
-                    <mat-icon class="mdi-18px" fontIcon="mdi-open-in-new"></mat-icon>
+                    <mat-icon class="mdi-18px" fontIcon="mdi-open-in-new" />
                   </a>
                 </div>
               </div>
@@ -266,7 +265,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                     <mat-select [(ngModel)]="msel.citeScoringModelId" (cut)="isChanged = true"
                       (selectionChange)="isChanged = true; updateCiteScoringModelName()" (paste)="isChanged = true"
                       (keypress)="isChanged = true">
-                      <mat-option [value]=""></mat-option>
+                      <mat-option [value]="" />
                       @for (scoringModel of scoringModelList; track scoringModel) {
                       <mat-option [value]="scoringModel.id">
                         {{ scoringModel.description }}
@@ -292,7 +291,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   <span class="integration-name">{{ citeEvaluationName }}</span>
                   }
                   <a [href]="getCiteEvaluationUrl()" target="_blank" class="integration-link" title="Open in CITE">
-                    <mat-icon class="mdi-18px" fontIcon="mdi-open-in-new"></mat-icon>
+                    <mat-icon class="mdi-18px" fontIcon="mdi-open-in-new" />
                   </a>
                 </div>
                 }
@@ -323,7 +322,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   }
                   <a [href]="getSteamfitterScenarioUrl()" target="_blank" class="integration-link"
                     title="Open in Steamfitter">
-                    <mat-icon class="mdi-18px" fontIcon="mdi-open-in-new"></mat-icon>
+                    <mat-icon class="mdi-18px" fontIcon="mdi-open-in-new" />
                   </a>
                 </div>
               </div>
@@ -344,7 +343,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   @if (casterDirectoryList.length > 0 && msel.status !== 'Deployed' && canEditMsel()) {
                   <mat-form-field class="integration-select">
                     <mat-select [(ngModel)]="msel.casterDirectoryId" (selectionChange)="isChanged = true">
-                      <mat-option [value]="null"></mat-option>
+                      <mat-option [value]="null" />
                       @for (directory of casterDirectoryList; track directory.id) {
                       <mat-option [value]="directory.id">
                         {{ casterDirectoryLabel(directory) }}
@@ -371,7 +370,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   }
                   @if (getCasterProjectUrl()) {
                   <a [href]="getCasterProjectUrl()" target="_blank" class="integration-link" title="Open in Caster">
-                    <mat-icon class="mdi-18px" fontIcon="mdi-open-in-new"></mat-icon>
+                    <mat-icon class="mdi-18px" fontIcon="mdi-open-in-new" />
                   </a>
                   }
                 </div>
@@ -421,7 +420,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <div class="url-button-link">
               <button mat-icon-button ngxClipboard [cbContent]="viewUrl" (click)="$event.stopPropagation()"
                 title="Copy Exercise View URL:  {{ viewUrl }}">
-                <mat-icon class="mdi-24px" fontIcon="mdi-content-copy"></mat-icon>
+                <mat-icon class="mdi-24px" fontIcon="mdi-content-copy" />
               </button>
               <a target="_blank" href="{{ viewUrl }}">{{ viewUrl }}</a>
             </div>
@@ -437,7 +436,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <div class="url-button-link">
               <button mat-icon-button ngxClipboard [cbContent]="starterUrl" (click)="$event.stopPropagation()"
                 title="Copy MSEL Starter URL:  {{ starterUrl }}">
-                <mat-icon class="mdi-24px" fontIcon="mdi-content-copy"></mat-icon>
+                <mat-icon class="mdi-24px" fontIcon="mdi-content-copy" />
               </button>
               <a target="_blank" href="{{ starterUrl }}">{{ starterUrl }}</a>
             </div>
@@ -453,7 +452,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <div class="url-button-link">
               <button mat-icon-button ngxClipboard [cbContent]="assessorUrl" (click)="$event.stopPropagation()"
                 title="Copy Assessor View URL:  {{ assessorUrl }}">
-                <mat-icon class="mdi-24px" fontIcon="mdi-content-copy"></mat-icon>
+                <mat-icon class="mdi-24px" fontIcon="mdi-content-copy" />
               </button>
               <a target="_blank" href="{{ assessorUrl }}">{{ assessorUrl }}</a>
             </div>
@@ -462,7 +461,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <div class="competency-section">
             <div class="section-header">
               <mat-icon class="mdi-18px" fontIcon="mdi-certificate-outline"
-                style="color: var(--mat-sys-primary); vertical-align: middle; margin-right: 4px;"></mat-icon>
+                style="color: var(--mat-sys-primary); vertical-align: middle; margin-right: 4px;" />
               <b>Competencies</b>
               @if (competencyFrameworkNames.length > 0) {
               <span
@@ -477,7 +476,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 <mat-expansion-panel-header>
                   <mat-panel-title>
                     <mat-icon class="mdi-18px" fontIcon="mdi-account-hard-hat"
-                      style="color: var(--mat-sys-primary); margin-right: 6px;"></mat-icon>
+                      style="color: var(--mat-sys-primary); margin-right: 6px;" />
                     Work Roles ({{ workRoleCompetencies.length }})
                   </mat-panel-title>
                 </mat-expansion-panel-header>
@@ -496,7 +495,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 <mat-expansion-panel-header>
                   <mat-panel-title>
                     <mat-icon class="mdi-18px" fontIcon="mdi-certificate-outline"
-                      style="color: var(--mat-sys-primary); margin-right: 6px;"></mat-icon>
+                      style="color: var(--mat-sys-primary); margin-right: 6px;" />
                     Competencies ({{ nonWorkRoleCompetencies.length }})
                   </mat-panel-title>
                 </mat-expansion-panel-header>
@@ -516,7 +515,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <!-- LMT Metadata -->
           <div class="section-header">
             <mat-icon class="mdi-18px" fontIcon="mdi-tag-outline"
-              style="color: var(--mat-sys-primary); vertical-align: middle; margin-right: 4px;"></mat-icon>
+              style="color: var(--mat-sys-primary); vertical-align: middle; margin-right: 4px;" />
             <b>Metadata</b>
           </div>
           <div class="lmt-dropdown-row">
@@ -526,7 +525,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
               <mat-label>Difficulty Rating</mat-label>
               <mat-select [(ngModel)]="msel.educationalLevel" [disabled]="!canEditMsel()"
                 (selectionChange)="isChanged = true">
-                <mat-option [value]="null"></mat-option>
+                <mat-option [value]="null" />
                 @for (level of educationalLevels; track level) {
                 <mat-option [value]="level">{{ level }}</mat-option>
                 }
@@ -538,7 +537,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
               <mat-label>Exercise Purpose</mat-label>
               <mat-select [(ngModel)]="msel.educationalUse" [disabled]="!canEditMsel()"
                 (selectionChange)="isChanged = true">
-                <mat-option [value]="null"></mat-option>
+                <mat-option [value]="null" />
                 @for (use of educationalUses; track use) {
                 <mat-option [value]="use">{{ use }}</mat-option>
                 }
@@ -550,7 +549,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
               <mat-label>Exercise Mode</mat-label>
               <mat-select [(ngModel)]="msel.courseMode" [disabled]="!canEditMsel()"
                 (selectionChange)="isChanged = true">
-                <mat-option [value]="null"></mat-option>
+                <mat-option [value]="null" />
                 @for (mode of courseModes; track mode) {
                 <mat-option [value]="mode">{{ mode }}</mat-option>
                 }
@@ -609,32 +608,32 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <span>
           @if (canManageMsel()) {
           <button mat-icon-button (click)="requestPageEdit(page.id)" style="outline: none;" title="Edit Page">
-            <mat-icon class="mdi-24px self-center" fontIcon="mdi-square-edit-outline"></mat-icon>
+            <mat-icon class="mdi-24px self-center" fontIcon="mdi-square-edit-outline" />
           </button>
           }
           <button mat-icon-button (click)="deletePage(page); $event.stopPropagation()" style="outline: none;"
             title="Delete {{ page.name }}">
-            <mat-icon class="mdi-24px self-center" fontIcon="mdi-trash-can-outline"></mat-icon>
+            <mat-icon class="mdi-24px self-center" fontIcon="mdi-trash-can-outline" />
           </button>
           <button mat-icon-button ngxClipboard [cbContent]="basePageUrl + page.id" (click)="$event.stopPropagation()"
             title="Copy page URL">
-            <mat-icon class="mdi-24px" fontIcon="mdi-content-copy"></mat-icon>
+            <mat-icon class="mdi-24px" fontIcon="mdi-content-copy" />
           </button>
           <button mat-icon-button (click)="openContent(page.id)" title="Open page in new tab" class="far-right-button">
-            <mat-icon class="mdi-24px self-center" fontIcon="mdi-open-in-new"></mat-icon>
+            <mat-icon class="mdi-24px self-center" fontIcon="mdi-open-in-new" />
           </button>
           <span
             [title]="page.allCanView ? 'All MSEL users can view this page' : 'Only MSEL contributors can view this page'">
             <button mat-icon-button disabled>
               <mat-icon class="mdi-24px" [fontIcon]="page.allCanView ? 'mdi-eye' : 'mdi-eye-off'"
-                style="color: var(--mat-sys-primary)"></mat-icon>
+                style="color: var(--mat-sys-primary)" />
             </button>
           </span>
           <span [title]="page.includeInPlaybook ? 'Included in playbook' : 'Not included in playbook'">
             <button mat-icon-button disabled>
               <mat-icon class="mdi-24px"
                 [fontIcon]="page.includeInPlaybook ? 'mdi-file-document-check' : 'mdi-file-document-remove'"
-                style="color: var(--mat-sys-primary)"></mat-icon>
+                style="color: var(--mat-sys-primary)" />
             </button>
           </span>
         </span>
@@ -642,10 +641,10 @@ project root for license information or contact permission@sei.cmu.edu for full 
         @if (editingPageId === page.id) {
         <span>
           <button mat-icon-button (click)="saveMselPageEdits()" style="outline: none;" title="Save Changes">
-            <mat-icon class="mdi-24px self-center" fontIcon="mdi-content-save-outline"></mat-icon>
+            <mat-icon class="mdi-24px self-center" fontIcon="mdi-content-save-outline" />
           </button>
           <button mat-icon-button (click)="cancelMselPageEdits()" style="outline: none;" title="Cancel Changes">
-            <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline"></mat-icon>
+            <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline" />
           </button>
           @if (hasUnsavedPageChanges()) {
           <mat-label class="unsaved-warning">Changes have not been saved!</mat-label>
@@ -672,9 +671,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <div>
           @if (editingPageId === page.id) {
           <angular-editor [placeholder]="'Content'" [(ngModel)]="changedMselPage.content"
-            [config]="editorConfig"></angular-editor>
+            [config]="editorConfig" />
           } @else {
-          <angular-editor [placeholder]="'Content'" [ngModel]="page.content" [config]="viewConfig"></angular-editor>
+          <angular-editor [placeholder]="'Content'" [ngModel]="page.content" [config]="viewConfig" />
           }
         </div>
       </div>
@@ -684,7 +683,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     @if (canManageMsel()) {
     <mat-tab>
       <ng-template mat-tab-label>
-        <mat-icon class="mdi-24px" fontIcon="mdi-plus-circle" title="Add MSEL Notes Page"></mat-icon>
+        <mat-icon class="mdi-24px" fontIcon="mdi-plus-circle" title="Add MSEL Notes Page" />
         Add Page
       </ng-template>
       <div class="page-content-region">

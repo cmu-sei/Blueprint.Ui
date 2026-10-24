@@ -5,12 +5,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
 -->
 <div class="join-page landing-background" [class.has-background]="backgroundImage" [style.--landing-background]="backgroundImage">
   @if (!hideTopbar) {
-    <app-topbar
-      [title]="topbarText"
+    <app-topbar [title]="topbarText"
       [topbarView]="TopbarView.BLUEPRINT_HOME"
       [imageFilePath]="topbarImage"
       (urlNavigate)="topBarNavigate($event)"
-    ></app-topbar>
+     />
   }
   <div class="join-container">
     @if (showChoices) {

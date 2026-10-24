@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 import { BreakpointObserver } from '@angular/cdk/layout';
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Observable, Subject } from 'rxjs';
@@ -24,14 +24,51 @@ import { HealthCheckService, SystemPermission, User } from 'src/app/generated/bl
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
 import { InjectTypeDataService } from 'src/app/data/inject-type/inject-type-data.service';
 import { CompetencyFrameworkDataService } from 'src/app/data/competency-framework/competency-framework-data.service';
+import { MatSidenavContainer, MatSidenav, MatSidenavContent } from '@angular/material/sidenav';
+import { MatToolbar } from '@angular/material/toolbar';
+import { MatIcon } from '@angular/material/icon';
+import { MatList, MatListItem, MatListItemIcon } from '@angular/material/list';
+import { NgClass, AsyncPipe } from '@angular/common';
+import { MatIconButton } from '@angular/material/button';
+import { TopbarComponent } from '../../shared/top-bar/topbar.component';
+import { AdminUnitsComponent } from '../admin-units/admin-units.component';
+import { AdminUsersComponent } from '../admin-users/admin-users.component';
+import { AdminRolesComponent } from '../admin-roles/admin-roles.component';
+import { AdminGroupsComponent } from '../admin-groups/admin-groups.component';
+import { DataFieldListComponent } from '../../data-field-list/data-field-list.component';
+import { AdminInjectTypesComponent } from '../admin-inject-types/admin-inject-types.component';
+import { AdminCompetencyFrameworksComponent } from '../admin-competency-frameworks/admin-competency-frameworks.component';
+import { AdminProficiencyScalesComponent } from '../admin-proficiency-scales/admin-proficiency-scales.component';
+import { AdminCatalogListComponent } from '../admin-catalog-list/admin-catalog-list.component';
+import { OrganizationListComponent } from '../../organization-list/organization-list.component';
+import { CardListComponent } from '../../card-list/card-list.component';
+import { CiteActionListComponent } from '../../cite-action-list/cite-action-list.component';
+import { CiteDutyListComponent } from '../../cite-duty-list/cite-duty-list.component';
 
 @Component({
-  selector: 'app-admin-container',
-  templateUrl: './admin-container.component.html',
-  styleUrls: ['./admin-container.component.scss'],
-  standalone: false
+    selector: 'app-admin-container',
+    templateUrl: './admin-container.component.html',
+    styleUrls: ['./admin-container.component.scss'],
+    imports: [MatSidenavContainer, MatSidenav, MatToolbar, MatIcon, MatList, MatListItem, NgClass, MatListItemIcon, MatIconButton, MatSidenavContent, TopbarComponent, AdminUnitsComponent, AdminUsersComponent, AdminRolesComponent, AdminGroupsComponent, DataFieldListComponent, AdminInjectTypesComponent, AdminCompetencyFrameworksComponent, AdminProficiencyScalesComponent, AdminCatalogListComponent, OrganizationListComponent, CardListComponent, CiteActionListComponent, CiteDutyListComponent, AsyncPipe]
 })
 export class AdminContainerComponent implements OnDestroy, OnInit {
+  private router = inject(Router);
+  private activatedRoute = inject(ActivatedRoute);
+  private unitDataService = inject(UnitDataService);
+  private userDataService = inject(UserDataService);
+  private userQuery = inject(UserQuery);
+  private currentUserQuery = inject(CurrentUserQuery);
+  private permissionDataService = inject(PermissionDataService);
+  private healthCheckService = inject(HealthCheckService);
+  private settingsService = inject(ComnSettingsService);
+  private authQuery = inject(ComnAuthQuery);
+  private authService = inject(ComnAuthService);
+  private signalRService = inject(SignalRService);
+  private uiDataService = inject(UIDataService);
+  private injectTypeDataService = inject(InjectTypeDataService);
+  private competencyFrameworkDataService = inject(CompetencyFrameworkDataService);
+  private breakpointObserver = inject(BreakpointObserver);
+
   usersText = 'Users';
   scoringModelsText = 'Scoring Models';
   rolesText = 'Roles';
@@ -105,25 +142,9 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
   returnUrl = '/';
   private unsubscribe$ = new Subject();
 
-  constructor(
-    private router: Router,
-    private activatedRoute: ActivatedRoute,
-    private unitDataService: UnitDataService,
-    private userDataService: UserDataService,
-    private userQuery: UserQuery,
-    private currentUserQuery: CurrentUserQuery,
-    private permissionDataService: PermissionDataService,
-    private healthCheckService: HealthCheckService,
-    private settingsService: ComnSettingsService,
-    private authQuery: ComnAuthQuery,
-    private authService: ComnAuthService,
-    titleService: Title,
-    private signalRService: SignalRService,
-    private uiDataService: UIDataService,
-    private injectTypeDataService: InjectTypeDataService,
-    private competencyFrameworkDataService: CompetencyFrameworkDataService,
-    private breakpointObserver: BreakpointObserver,
-  ) {
+  constructor() {
+    const titleService = inject(Title);
+
     this.theme$ = this.authQuery.userTheme$;
     this.hideTopbar = this.uiDataService.inIframe();
     this.returnUrl = this.activatedRoute.snapshot.queryParamMap.get('returnUrl') || '/';

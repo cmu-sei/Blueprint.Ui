@@ -2,36 +2,35 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import {
-  Component,
-  OnDestroy,
-  OnInit,
-  Input,
-  ElementRef,
-  ViewChild,
-  AfterViewInit,
-} from '@angular/core';
+import { Component, OnDestroy, OnInit, ElementRef, AfterViewInit, inject, input, viewChild } from '@angular/core';
 import { MatPaginator } from '@angular/material/paginator';
-import { Sort } from '@angular/material/sort';
-import { MatTableDataSource } from '@angular/material/table';
+import { Sort, MatSort, MatSortHeader } from '@angular/material/sort';
+import { MatTableDataSource, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
 import { User } from 'src/app/generated/blueprint.api';
 import { UnitUserDataService } from 'src/app/data/user/unit-user-data.service';
 import { UserQuery } from 'src/app/data/user/user.query';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { UntypedFormControl } from '@angular/forms';
+import { UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MatToolbar, MatToolbarRow } from '@angular/material/toolbar';
+import { MatIcon } from '@angular/material/icon';
+import { MatFormField, MatInput, MatSuffix } from '@angular/material/input';
+import { MatIconButton } from '@angular/material/button';
 
 @Component({
     selector: 'app-admin-unit-users',
     templateUrl: './admin-unit-users.component.html',
     styleUrls: ['./admin-unit-users.component.scss'],
-    standalone: false
+    imports: [MatToolbar, MatToolbarRow, MatIcon, MatFormField, MatInput, FormsModule, ReactiveFormsModule, MatIconButton, MatSuffix, MatPaginator, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatSortHeader, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow]
 })
 export class AdminUnitUsersComponent implements OnDestroy, OnInit, AfterViewInit {
-  @Input() unitId: string;
-  @Input() canManage: boolean;
-  @ViewChild('userPaginator') userPaginator: MatPaginator;
-  @ViewChild('unitUserPaginator') unitUserPaginator: MatPaginator;
+  private unitUserDataService = inject(UnitUserDataService);
+  private userQuery = inject(UserQuery);
+
+  readonly unitId = input<string>(undefined);
+  readonly canManage = input<boolean>(undefined);
+  readonly userPaginator = viewChild<MatPaginator>('userPaginator');
+  readonly unitUserPaginator = viewChild<MatPaginator>('unitUserPaginator');
   userList: User[] = [];
   users: User[] = [];
   unitUsers: User[] = [];
@@ -44,12 +43,9 @@ export class AdminUnitUsersComponent implements OnDestroy, OnInit, AfterViewInit
   unitUserFilterString = '';
   private unsubscribe$ = new Subject();
   sort: Sort = { active: 'name', direction: 'asc' };
-  @ViewChild('usersInput') usersInput: ElementRef<HTMLInputElement>;
+  readonly usersInput = viewChild<ElementRef<HTMLInputElement>>('usersInput');
 
-  constructor(
-    private unitUserDataService: UnitUserDataService,
-    private userQuery: UserQuery
-  ) {
+  constructor() {
     this.userQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(users => {
       this.userList = users;
       this.setDataSources();
@@ -65,7 +61,7 @@ export class AdminUnitUsersComponent implements OnDestroy, OnInit, AfterViewInit
       this.unitUsers = tUsers;
       this.setDataSources();
     });
-    this.unitUserDataService.getUnitUsersFromApi(this.unitId);
+    this.unitUserDataService.getUnitUsersFromApi(this.unitId());
     this.filterControl.valueChanges.pipe(takeUntil(this.unsubscribe$)).subscribe(() => {
       this.filterString = this.filterControl.value;
       this.applyFilter();
@@ -77,8 +73,8 @@ export class AdminUnitUsersComponent implements OnDestroy, OnInit, AfterViewInit
   }
 
   ngAfterViewInit() {
-    this.userDataSource.paginator = this.userPaginator;
-    this.unitUserDataSource.paginator = this.unitUserPaginator;
+    this.userDataSource.paginator = this.userPaginator();
+    this.unitUserDataSource.paginator = this.unitUserPaginator();
   }
 
   applyFilter() {
@@ -127,11 +123,13 @@ export class AdminUnitUsersComponent implements OnDestroy, OnInit, AfterViewInit
       }
     });
     this.userDataSource = new MatTableDataSource(newAllUsers);
-    if (this.userPaginator) {
-      this.userDataSource.paginator = this.userPaginator;
+    const userPaginator = this.userPaginator();
+    if (userPaginator) {
+      this.userDataSource.paginator = userPaginator;
     }
-    if (this.unitUserPaginator) {
-      this.unitUserDataSource.paginator = this.unitUserPaginator;
+    const unitUserPaginator = this.unitUserPaginator();
+    if (unitUserPaginator) {
+      this.unitUserDataSource.paginator = unitUserPaginator;
     }
   }
 
@@ -140,7 +138,7 @@ export class AdminUnitUsersComponent implements OnDestroy, OnInit, AfterViewInit
       (tu) => tu.id === user.id
     );
     if (index === -1) {
-      this.unitUserDataService.addUserToUnit(this.unitId, user);
+      this.unitUserDataService.addUserToUnit(this.unitId(), user);
     }
   }
 
@@ -162,8 +160,9 @@ export class AdminUnitUsersComponent implements OnDestroy, OnInit, AfterViewInit
       }
     });
     this.userDataSource.data = data;
-    if (this.userPaginator) {
-      this.userDataSource.paginator = this.userPaginator;
+    const userPaginator = this.userPaginator();
+    if (userPaginator) {
+      this.userDataSource.paginator = userPaginator;
     }
   }
 
@@ -185,8 +184,9 @@ export class AdminUnitUsersComponent implements OnDestroy, OnInit, AfterViewInit
       }
     });
     this.unitUserDataSource.data = data;
-    if (this.unitUserPaginator) {
-      this.unitUserDataSource.paginator = this.unitUserPaginator;
+    const unitUserPaginator = this.unitUserPaginator();
+    if (unitUserPaginator) {
+      this.unitUserDataSource.paginator = unitUserPaginator;
     }
   }
 
@@ -199,7 +199,7 @@ export class AdminUnitUsersComponent implements OnDestroy, OnInit, AfterViewInit
       (tu) => tu.id === user.id
     );
     if (index !== -1) {
-      this.unitUserDataService.removeUnitUser(this.unitId, user.id);
+      this.unitUserDataService.removeUnitUser(this.unitId(), user.id);
     }
   }
 

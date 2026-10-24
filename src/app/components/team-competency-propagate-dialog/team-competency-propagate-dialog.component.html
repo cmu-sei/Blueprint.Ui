@@ -20,13 +20,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <ng-container matColumnDef="select">
       <mat-header-cell *matHeaderCellDef class="col-select">
         <mat-checkbox (change)="toggleAll()" [checked]="isAllSelected()"
-          [indeterminate]="selection.hasValue() && !isAllSelected()">
-        </mat-checkbox>
+          [indeterminate]="selection.hasValue() && !isAllSelected()" />
       </mat-header-cell>
       <mat-cell *matCellDef="let mc" class="col-select">
         <mat-checkbox (click)="$event.stopPropagation()" (change)="selection.toggle(mc)"
-          [checked]="selection.isSelected(mc)">
-        </mat-checkbox>
+          [checked]="selection.isSelected(mc)" />
       </mat-cell>
     </ng-container>
     <!-- idNumber column -->
@@ -43,9 +41,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </mat-cell>
     </ng-container>
     <!-- row definitions -->
-    <mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></mat-header-row>
+    <mat-header-row *matHeaderRowDef="displayedColumns; sticky: true" />
     <mat-row *matRowDef="let row; columns: displayedColumns;"
-      (click)="selection.toggle(row)"></mat-row>
+      (click)="selection.toggle(row)" />
   </mat-table>
 </div>
 </crucible-dialog>

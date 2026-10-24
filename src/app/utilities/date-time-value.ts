@@ -57,7 +57,6 @@ export function isBlankValue(value: unknown): boolean {
 */
 @Pipe({
   name: 'isDateTimeValue',
-  standalone: false,
 })
 export class IsDateTimeValuePipe implements PipeTransform {
   transform(value: unknown): boolean {
