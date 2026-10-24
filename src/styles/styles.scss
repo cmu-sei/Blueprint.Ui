@@ -250,6 +250,9 @@ body .landing-background.has-background {
   background-image: var(--landing-background);
   background-size: cover;
   background-position: center;
+  // Pinned to the window, so the image sits in the same place in every app
+  // whatever the height of its top bar or page.
+  background-attachment: fixed;
 }
 
 .darkMode .landing-background.has-background {
