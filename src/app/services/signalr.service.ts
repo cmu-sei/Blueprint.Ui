@@ -423,6 +423,10 @@ export class SignalRService implements OnDestroy {
       this.mselDataService.updateIntegrationStatus(mselId, integrationStatus);
     });
 
+    this.hubConnection.on('CasterIdsUpdated', (mselId: string, casterWorkspaceId: string, casterRunId: string) => {
+      this.mselDataService.updateCasterIds(mselId, casterWorkspaceId, casterRunId);
+    });
+
   }
 
   private addMselUnitHandlers() {

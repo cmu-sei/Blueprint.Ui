@@ -30,7 +30,20 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <mat-icon fontIcon="mdi-alert-circle" class="mdi-24px error-icon" />
         <span>{{ statusMessage }}</span>
       </div>
+      @if (casterWorkspaceUrl()) {
+        <a mat-stroked-button [href]="casterWorkspaceUrl()" target="_blank"
+           title="See the terraform output of the failed run in Caster">
+          <mat-icon fontIcon="mdi-open-in-new"></mat-icon>
+          Open Workspace in Caster
+        </a>
+      }
       <div class="action-buttons">
+        @if (canRetryCaster) {
+          <button mat-raised-button color="primary" (click)="retryCaster()" [disabled]="retrying()"
+                  title="Run the Caster step again, keeping the other integrations">
+            Retry Caster
+          </button>
+        }
         <button mat-raised-button color="warn" (click)="pullIntegrations()"
                 title="Remove partial integrations from associated applications">
           Pull Integrations
