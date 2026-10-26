@@ -9,6 +9,7 @@ import {
   DataField,
   DataFieldType,
   DataOption,
+  MselRole,
   SystemPermission,
 } from 'src/app/generated/blueprint.api';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
@@ -784,8 +785,13 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
     if (this.showTemplates()) {
       return this.permissionDataService.hasPermission(SystemPermission.ManageDataFields);
     } else {
+      // The API lets EditMsels, the MSEL's owners and its Editors change its data
+      // fields and options. hasRole's editor is also true for an Approver, who
+      // edits events but not the fields, so the Editor role is checked directly.
+      const userId = this.loggedInUserId();
       return this.permissionDataService.hasPermission(SystemPermission.EditMsels) ||
-        this.msel.hasRole(this.loggedInUserId(), '').editor;
+        this.msel.hasRole(userId, '').owner ||
+        (this.msel.userMselRoles ?? []).some((r) => r.userId === userId && r.role === MselRole.Editor);
     }
   }
 

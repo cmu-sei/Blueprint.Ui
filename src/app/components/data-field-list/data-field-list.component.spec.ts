@@ -193,12 +193,16 @@ describe('DataFieldListComponent', () => {
     });
 
     /**
-     * Verifies: an MSEL Viewer without EditMsels gets a read-only list, even with ManageDataFields.
+     * Verifies: without EditMsels, the Editor role or ownership the list is read-only, even with ManageDataFields; an Approver
+     * edits events but not the fields, as the API refuses them.
      * Interacts with: real PermissionDataService (stubbed grants), MselPlus.hasRole.
-     * Data: every permission but EditMsels (near miss: ManageDataFields, ManageMsels); MSEL roles Viewer and Evaluator.
+     * Data: every permission but EditMsels (near miss: ManageDataFields, ManageMsels); MSEL roles Viewer and Evaluator, or Approver.
      */
-    it('lists data fields read-only without EditMsels or the Editor role', async () => {
-      await renderDataFields({ permissions: allBut(SystemPermission.EditMsels), roles: [MselRole.Viewer, MselRole.Evaluator] });
+    it.each([
+      { label: 'a Viewer and Evaluator', roles: [MselRole.Viewer, MselRole.Evaluator] },
+      { label: 'an Approver', roles: [MselRole.Approver] },
+    ])('lists data fields read-only for $label without EditMsels', async ({ roles }) => {
+      await renderDataFields({ permissions: allBut(SystemPermission.EditMsels), roles });
 
       expect(within(table()).getByText('Priority')).toBeInTheDocument();
       for (const title of ['Add data Field', 'Edit Priority', 'Delete Priority', 'Make Priority a template']) {
@@ -229,10 +233,13 @@ describe('DataFieldListComponent', () => {
     /**
      * Verifies: without EditMsels, an Editor role or ownership, the option list dialog opens with canEdit false.
      * Interacts with: DataFieldListComponent.viewDataOptions, MatDialog.open (stub), real PermissionDataService (stubbed grants).
-     * Data: every permission but EditMsels (near miss: ManageDataFields, ManageMsels); MSEL roles Viewer and Evaluator.
+     * Data: every permission but EditMsels (near miss: ManageDataFields, ManageMsels); MSEL roles Viewer and Evaluator, or Approver.
      */
-    it('opens the option list read-only without EditMsels, the Editor role or ownership', async () => {
-      const { dialog } = await renderDataFields({ permissions: allBut(SystemPermission.EditMsels), roles: [MselRole.Viewer, MselRole.Evaluator] });
+    it.each([
+      { label: 'a Viewer and Evaluator', roles: [MselRole.Viewer, MselRole.Evaluator] },
+      { label: 'an Approver', roles: [MselRole.Approver] },
+    ])('opens the option list read-only for $label without EditMsels', async ({ roles }) => {
+      const { dialog } = await renderDataFields({ permissions: allBut(SystemPermission.EditMsels), roles });
       const user = userEvent.setup();
 
       await user.click(optionsCell('Priority'));
