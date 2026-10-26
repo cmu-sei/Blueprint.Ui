@@ -165,10 +165,8 @@ describe('DashboardComponent', () => {
     expect(titles).toEqual([
       'Competency Assessment',
       'Learning Data Capture',
-      'Incident Evaluation',
       'Collaborative Planning',
-      'Team Environments',
-      'Scenario Delivery',
+      'Live Exercise Delivery',
     ]);
     expect(card('Competency Assessment')).toHaveTextContent('Rate each team against NICE, DCWF or your own competency framework');
     expect(card('Learning Data Capture')).toHaveTextContent('Record what participants do as xAPI statements, as evidence for assessors');
@@ -179,7 +177,7 @@ describe('DashboardComponent', () => {
   /**
    * Verifies: clicking a capability card, or pressing Enter on it, opens the dialog with that capability's details, and Close shuts it.
    * Interacts with: real MatDialog and CapabilityDialogComponent.
-   * Data: the Competency Assessment and Scenario Delivery cards.
+   * Data: the Competency Assessment and Live Exercise Delivery cards.
    */
   it('opens the details of a capability card', async () => {
     await renderDashboard();
@@ -190,17 +188,17 @@ describe('DashboardComponent', () => {
     const dialog = within(await screen.findByRole('dialog'));
     expect(dialog.getByText('Competency Assessment')).toBeInTheDocument();
     expect(dialog.getByText(/^Tie the exercise to the competencies it trains/)).toBeInTheDocument();
-    expect(dialog.getByText('Each rating is sent as an xAPI "asserted" statement, with its score on the proficiency scale')).toBeInTheDocument();
-    expect(dialog.getByText('Rate every team on the same scale')).toBeInTheDocument();
-    expect(dialog.queryByText(/^Publish articles as news/)).not.toBeInTheDocument();
+    expect(dialog.getByText('Record each rating as an xAPI competency assertion')).toBeInTheDocument();
+    expect(dialog.getByText('Rate every team on the same proficiency scale')).toBeInTheDocument();
+    expect(dialog.queryByText(/^Publish news/)).not.toBeInTheDocument();
 
     await user.click(dialog.getByRole('button', { name: 'Close' }));
     await vi.waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
 
-    (card('Scenario Delivery') as HTMLElement).focus();
+    (card('Live Exercise Delivery') as HTMLElement).focus();
     await user.keyboard('{Enter}');
     const delivery = within(await screen.findByRole('dialog'));
-    expect(delivery.getByText('Publish articles as news, social media, email, phone calls, intelligence, reporting or orders')).toBeInTheDocument();
-    expect(delivery.getByText('Run commands, read and write files, and power VMs on or off')).toBeInTheDocument();
+    expect(delivery.getByText('Publish news, intelligence and orders to each team move by move')).toBeInTheDocument();
+    expect(delivery.getByText('Teams evaluate each move\'s incident and score their response')).toBeInTheDocument();
   });
 });

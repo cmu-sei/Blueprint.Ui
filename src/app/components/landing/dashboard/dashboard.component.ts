@@ -45,21 +45,17 @@ export const CAPABILITY_CARDS: CapabilityCard[] = [
     data: {
       title: 'Competency Assessment',
       icon: 'mdi-clipboard-check-outline',
-      description: 'Tie the exercise to the competencies it trains, then rate each team against them while the exercise runs. Each rating is recorded as a competency assertion.',
+      description: 'Tie the exercise to the competencies it trains, then rate each team against them while the exercise runs.',
       features: [
-        'Import a competency framework from a NICE JSON file, a DCWF spreadsheet or a Moodle competency CSV, or build your own',
-        'Pick the competencies an exercise covers by framework, work role or category',
-        'Assign each competency to the teams it applies to',
-        'Attach competencies to scenario events',
-        'Rate a team on each competency for an event, a group or a move, with a level from your proficiency scale and a comment',
-        'Each rating is sent as an xAPI "asserted" statement, with its score on the proficiency scale',
-        'Define your own proficiency scales and levels'
+        'Import NICE or DCWF frameworks, or build your own',
+        'Attach competencies to teams and scenario events',
+        'Rate a team on each competency by event, group or move',
+        'Record each rating as an xAPI competency assertion'
       ],
       benefits: [
         'Show which competencies an exercise assessed, not only that it ran',
-        'Rate every team on the same scale',
-        'Send ratings to your learning record store, where other training systems can use them',
-        'Publish each exercise\'s competencies, difficulty, purpose, mode and keywords as IEEE 2881 learning metadata, so a learning management system can find it'
+        'Rate every team on the same proficiency scale',
+        'Send ratings to your learning record store'
       ]
     }
   },
@@ -69,41 +65,17 @@ export const CAPABILITY_CARDS: CapabilityCard[] = [
     data: {
       title: 'Learning Data Capture',
       icon: 'mdi-chart-timeline-variant',
-      description: 'The exercise records what participants do as xAPI statements and sends them to your learning record store (LRS). Assessors see those statements next to the events they rate.',
+      description: 'The exercise records what participants do as xAPI statements and sends them to your learning record store (LRS).',
       features: [
-        'Statements are recorded as the exercise starts and ends, as participants join and move between applications, read and share articles, evaluate and score incidents, and as tasks run',
-        'Checking or clearing a checkbox on an event is recorded as a statement',
-        'The Assessor View shows the statements for each move, group and event',
+        'Record joins, articles read and shared, scores, and tasks run',
+        'Show assessors the statements for each move, group and event',
         'Filter the evidence by team, source and verb',
-        'Open any statement to read its JSON, or copy it'
+        'Open or copy any statement\'s JSON'
       ],
       benefits: [
         'Assess teams on what they did, not on memory',
-        'Keep a standard record that any xAPI learning record store can hold and report on',
+        'Keep a standard record any xAPI learning record store can hold',
         'Keep the evidence after the exercise ends'
-      ]
-    }
-  },
-  {
-    key: 'evaluation',
-    summary: 'Teams evaluate incidents and score their response each move',
-    data: {
-      title: 'Incident Evaluation',
-      icon: 'mdi-scale-balance',
-      description: 'Participants evaluate the incident in each move and score it with the scoring model you choose, as individuals and as a team.',
-      features: [
-        'Create the evaluation with one move for each move of the MSEL',
-        'Choose the scoring model teams score against',
-        'Post a situation time and description for each move',
-        'Suggest actions for each team to consider in each move',
-        'Suggest roles for each team\'s members',
-        'Compare a participant\'s score with their team\'s score, the group average and the official score',
-        'Advance the evaluation to the next move with a scheduled task'
-      ],
-      benefits: [
-        'See how each team judged the same incident',
-        'Compare each team\'s judgment with the official score in the debrief',
-        'Keep every move\'s score for later review'
       ]
     }
   },
@@ -113,64 +85,37 @@ export const CAPABILITY_CARDS: CapabilityCard[] = [
     data: {
       title: 'Collaborative Planning',
       icon: 'mdi-account-group',
-      description: 'Planners build the MSEL together in one place. Everyone sees each change as it is made.',
+      description: 'Planners build the MSEL together in one place, and everyone sees each change as it is made.',
       features: [
         'Several planners edit the same MSEL at once',
-        'Organize scenario events into moves and groups, and view them in real time or delta time',
-        'Add your own data fields to scenario events',
-        'Add injects from reusable catalogs, and save MSELs as templates',
-        'Upload a MSEL from an xlsx or json file, and download it the same way',
-        'Give contributors roles: Owner, Editor, Move Editor, Approver, Evaluator or Viewer. Only Approvers can mark an event Approved',
-        'Print a playbook of the MSEL\'s pages and events'
+        'Organize events into moves and groups, with your own data fields',
+        'Reuse injects from catalogs and MSELs from templates',
+        'Give contributors roles; only Approvers approve events'
       ],
       benefits: [
         'No more conflicting copies of an Excel MSEL',
         'Planners work in parallel',
-        'One source of truth for the scenario',
-        'See who created each MSEL and who contributes to it'
-      ]
-    }
-  },
-  {
-    key: 'environments',
-    summary: 'Give each team its own view, applications and virtual network',
-    data: {
-      title: 'Team Environments',
-      icon: 'mdi-lan',
-      description: 'Push the MSEL to set up the exercise for every team in one step. Remove it all again when the exercise ends.',
-      features: [
-        'Create an exercise view with a team for each MSEL team, and add the participants',
-        'Choose which applications each team sees, and in what order',
-        'Deploy a virtual network from a Terraform template, and map each team to a template variable so the template can give that team its own VMs',
-        'Invite participants to a team by email domain, with an expiry date and a user limit',
-        'Let invited users start their own copy of a template exercise on demand'
-      ],
-      benefits: [
-        'Set up every team the same way, without entering anything twice',
-        'Go from a finished MSEL to a running exercise in one step',
-        'Remove every part of the exercise cleanly when it ends'
+        'One source of truth for the scenario'
       ]
     }
   },
   {
     key: 'delivery',
-    summary: 'Publish news and intelligence feeds and automate tasks as the scenario unfolds',
+    summary: 'Set up every team\'s environment, deliver the scenario, and have teams score their response',
     data: {
-      title: 'Scenario Delivery',
-      icon: 'mdi-newspaper-variant-outline',
-      description: 'Deliver the scenario to participants as it unfolds: publish articles to their feeds, send notifications and email, and run tasks against their VMs.',
+      title: 'Live Exercise Delivery',
+      icon: 'mdi-rocket-launch-outline',
+      description: 'Push the MSEL to set up the exercise for every team in one step, and remove it all again when the exercise ends.',
       features: [
-        'Publish articles as news, social media, email, phone calls, intelligence, reporting or orders',
-        'Group articles under cards that build each team\'s picture of the incident',
-        'Release articles move by move and inject by inject',
-        'Send notifications to a team\'s view, and email to participants',
-        'Run commands, read and write files, and power VMs on or off',
-        'Run tasks at a set time, by hand, or when another task succeeds, fails or completes'
+        'Give each team its own view, applications and virtual network',
+        'Publish news, intelligence and orders to each team move by move',
+        'Run tasks against VMs on a schedule or when another task finishes',
+        'Teams evaluate each move\'s incident and score their response'
       ],
       benefits: [
+        'Go from a finished MSEL to a running exercise in one step',
         'Keep the scenario on schedule without delivering each inject by hand',
-        'Release injects in the order and at the times you planned',
-        'Change the environment mid-exercise without touching each VM'
+        'Compare each team\'s score with the official score in the debrief'
       ]
     }
   }
