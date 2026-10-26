@@ -40,42 +40,22 @@ export interface CapabilityCard {
 // What a planner can do with the exercise stack, described by feature rather than by application.
 export const CAPABILITY_CARDS: CapabilityCard[] = [
   {
-    key: 'competencies',
-    summary: 'Rate each team against NICE, DCWF or your own competency framework',
+    key: 'assessment',
+    summary: 'Capture what teams do as evidence, and rate them against NICE, DCWF or your own competencies',
     data: {
-      title: 'Competency Assessment',
+      title: 'Competency-Based Assessment',
       icon: 'mdi-clipboard-check-outline',
-      description: 'Tie the exercise to the competencies it trains, then rate each team against them while the exercise runs.',
+      description: 'Tie the exercise to the competencies it trains, record what participants do as xAPI evidence, and rate each team against those competencies while the exercise runs.',
       features: [
-        'Import NICE or DCWF frameworks, or build your own',
-        'Attach competencies to teams and scenario events',
-        'Rate a team on each competency by event, group or move',
-        'Record each rating as an xAPI competency assertion'
-      ],
-      benefits: [
-        'Show which competencies an exercise assessed, not only that it ran',
-        'Rate every team on the same proficiency scale',
-        'Send ratings to your learning record store'
-      ]
-    }
-  },
-  {
-    key: 'evidence',
-    summary: 'Record what participants do as xAPI statements, as evidence for assessors',
-    data: {
-      title: 'Learning Data Capture',
-      icon: 'mdi-chart-timeline-variant',
-      description: 'The exercise records what participants do as xAPI statements and sends them to your learning record store (LRS).',
-      features: [
-        'Record joins, articles read and shared, scores, and tasks run',
-        'Show assessors the statements for each move, group and event',
-        'Filter the evidence by team, source and verb',
-        'Open or copy any statement\'s JSON'
+        'Import NICE or DCWF frameworks, and attach competencies to teams and events',
+        'Record what participants do as xAPI evidence',
+        'Assessors review the evidence and rate each team',
+        'Each rating is sent as a competency assertion to your learning record store'
       ],
       benefits: [
         'Assess teams on what they did, not on memory',
-        'Keep a standard record any xAPI learning record store can hold',
-        'Keep the evidence after the exercise ends'
+        'Show which competencies an exercise assessed, not only that it ran',
+        'Rate every team on the same proficiency scale'
       ]
     }
   },
@@ -85,7 +65,7 @@ export const CAPABILITY_CARDS: CapabilityCard[] = [
     data: {
       title: 'Collaborative Planning',
       icon: 'mdi-account-group',
-      description: 'Planners build the MSEL together in one place, and everyone sees each change as it is made.',
+      description: 'Planners build the cyber exercise\'s MSEL together in one place, and everyone sees each change as it is made.',
       features: [
         'Several planners edit the same MSEL at once',
         'Organize events into moves and groups, with your own data fields',
@@ -101,11 +81,11 @@ export const CAPABILITY_CARDS: CapabilityCard[] = [
   },
   {
     key: 'delivery',
-    summary: 'Set up every team\'s environment, deliver the scenario, and have teams score their response',
+    summary: 'Run the exercise on a cyber range, with each team\'s own environment, injects and scoring',
     data: {
-      title: 'Live Exercise Delivery',
+      title: 'Cyber Range Exercises',
       icon: 'mdi-rocket-launch-outline',
-      description: 'Push the MSEL to set up the exercise for every team in one step, and remove it all again when the exercise ends.',
+      description: 'Push the MSEL to stand up the cyber range for every team in one step, run the exercise on it, and tear it all down when the exercise ends.',
       features: [
         'Give each team its own view, applications and virtual network',
         'Publish news, intelligence and orders to each team move by move',

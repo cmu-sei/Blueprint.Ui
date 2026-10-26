@@ -154,7 +154,7 @@ describe('DashboardComponent', () => {
   });
 
   /**
-   * Verifies: the capability cards describe the stack by feature, with assessment, xAPI evidence and competencies first, and name no application.
+   * Verifies: the capability cards describe the stack by feature, with competency-based assessment from xAPI evidence first, and name no application.
    * Interacts with: DashboardComponent template, CAPABILITY_CARDS.
    * Data: no MSELs; no system permission (the cards show for every user).
    */
@@ -163,13 +163,11 @@ describe('DashboardComponent', () => {
 
     const titles = [...container.querySelectorAll('.value-card .value-title')].map((t) => t.textContent?.trim());
     expect(titles).toEqual([
-      'Competency Assessment',
-      'Learning Data Capture',
+      'Competency-Based Assessment',
       'Collaborative Planning',
-      'Live Exercise Delivery',
+      'Cyber Range Exercises',
     ]);
-    expect(card('Competency Assessment')).toHaveTextContent('Rate each team against NICE, DCWF or your own competency framework');
-    expect(card('Learning Data Capture')).toHaveTextContent('Record what participants do as xAPI statements, as evidence for assessors');
+    expect(card('Competency-Based Assessment')).toHaveTextContent('Capture what teams do as evidence, and rate them against NICE, DCWF or your own competencies');
     const allText = CAPABILITY_CARDS.map((c) => [c.summary, c.data.title, c.data.description, ...c.data.features, ...c.data.benefits].join(' ')).join(' ');
     expect(allText).not.toMatch(/\b(Player|Gallery|CITE|Steamfitter|Caster|TopoMojo|Gameboard)\b/);
   });
@@ -177,25 +175,25 @@ describe('DashboardComponent', () => {
   /**
    * Verifies: clicking a capability card, or pressing Enter on it, opens the dialog with that capability's details, and Close shuts it.
    * Interacts with: real MatDialog and CapabilityDialogComponent.
-   * Data: the Competency Assessment and Live Exercise Delivery cards.
+   * Data: the Competency-Based Assessment and Cyber Range Exercises cards.
    */
   it('opens the details of a capability card', async () => {
     await renderDashboard();
     const user = userEvent.setup();
 
-    await user.click(card('Competency Assessment') as HTMLElement);
+    await user.click(card('Competency-Based Assessment') as HTMLElement);
 
     const dialog = within(await screen.findByRole('dialog'));
-    expect(dialog.getByText('Competency Assessment')).toBeInTheDocument();
+    expect(dialog.getByText('Competency-Based Assessment')).toBeInTheDocument();
     expect(dialog.getByText(/^Tie the exercise to the competencies it trains/)).toBeInTheDocument();
-    expect(dialog.getByText('Record each rating as an xAPI competency assertion')).toBeInTheDocument();
+    expect(dialog.getByText('Each rating is sent as a competency assertion to your learning record store')).toBeInTheDocument();
     expect(dialog.getByText('Rate every team on the same proficiency scale')).toBeInTheDocument();
     expect(dialog.queryByText(/^Publish news/)).not.toBeInTheDocument();
 
     await user.click(dialog.getByRole('button', { name: 'Close' }));
     await vi.waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
 
-    (card('Live Exercise Delivery') as HTMLElement).focus();
+    (card('Cyber Range Exercises') as HTMLElement).focus();
     await user.keyboard('{Enter}');
     const delivery = within(await screen.findByRole('dialog'));
     expect(delivery.getByText('Publish news, intelligence and orders to each team move by move')).toBeInTheDocument();
