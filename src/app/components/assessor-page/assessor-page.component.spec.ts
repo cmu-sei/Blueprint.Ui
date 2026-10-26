@@ -116,16 +116,21 @@ describe('AssessorPageComponent', () => {
   });
 
   /**
-   * Verifies: the page shows the view standalone, and only an Owner or an EditMsels holder may choose its data fields.
+   * Verifies: the page shows the view standalone, and offers choosing its data fields only to those the API lets change them:
+   * EditMsels, the MSEL's creator, or an Owner or Editor. CreateMsels alone, an Approver and an Evaluator are near misses.
    * Interacts with: AssessorPageComponent.updateRolePermissions, AssessorViewStub inputs.
-   * Data: one row per case; EditMsels alone (near miss for CreateMsels) still grants choosing.
+   * Data: one row per case; the MSEL is created by someone else unless the row says so.
    */
   it.each([
-    { label: 'an Owner', myRoles: roles(MselRole.Owner), permissions: [], canChooseFields: true },
-    { label: 'an Evaluator', myRoles: roles(MselRole.Evaluator), permissions: [], canChooseFields: false },
-    { label: 'an Evaluator with EditMsels', myRoles: roles(MselRole.Evaluator), permissions: [SystemPermission.EditMsels], canChooseFields: true },
-  ])('lets $label choose the assessor fields: $canChooseFields', async ({ myRoles, permissions, canChooseFields }) => {
-    const { fixture } = await renderAssessorPage({ myRoles, permissions });
+    { label: 'an Owner', myRoles: roles(MselRole.Owner), permissions: [], createdBy: 'someone-else', canChooseFields: true },
+    { label: 'an Editor', myRoles: roles(MselRole.Editor), permissions: [], createdBy: 'someone-else', canChooseFields: true },
+    { label: 'an Approver', myRoles: roles(MselRole.Approver), permissions: [], createdBy: 'someone-else', canChooseFields: false },
+    { label: 'an Evaluator', myRoles: roles(MselRole.Evaluator), permissions: [], createdBy: 'someone-else', canChooseFields: false },
+    { label: 'an Evaluator with EditMsels', myRoles: roles(MselRole.Evaluator), permissions: [SystemPermission.EditMsels], createdBy: 'someone-else', canChooseFields: true },
+    { label: 'an Evaluator who created the MSEL', myRoles: roles(MselRole.Evaluator), permissions: [], createdBy: ME, canChooseFields: true },
+    { label: 'a CreateMsels holder with no role', myRoles: [], permissions: [SystemPermission.CreateMsels], createdBy: 'someone-else', canChooseFields: false },
+  ])('lets $label choose the assessor fields: $canChooseFields', async ({ myRoles, permissions, createdBy, canChooseFields }) => {
+    const { fixture } = await renderAssessorPage({ myRoles, permissions, createdBy });
 
     expect(assessorView(fixture)?.standalone()).toBe(true);
     expect(assessorView(fixture)?.canChooseFields()).toBe(canChooseFields);

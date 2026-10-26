@@ -73,7 +73,7 @@ export class AssessorPageComponent implements OnDestroy, OnInit {
   userMselRole: UserMselRole | null = null;
   canEditAssessorPage = false;
   canViewAssessorPage = false;
-  // Owners and EditMsels holders choose the assessor-visible data fields.
+  // Whether the user may change which data fields the assessor view shows.
   canChooseAssessorFields = false;
   isSystemAdmin = false;
   private canEditMsels = false;
@@ -107,6 +107,7 @@ export class AssessorPageComponent implements OnDestroy, OnInit {
       .subscribe((msel) => {
         if (msel) {
           this.msel = msel;
+          this.updateRolePermissions();
           const prefix = this.appTitle + ' - ';
           this.topbarText = prefix + msel.name;
           this.titleService.setTitle(prefix + msel.name);
@@ -158,20 +159,20 @@ export class AssessorPageComponent implements OnDestroy, OnInit {
       return;
     }
 
-    // System admins have full access
-    if (this.isSystemAdmin) {
-      this.canViewAssessorPage = true;
-      this.canEditAssessorPage = true;
-      this.canChooseAssessorFields = true;
-      return;
-    }
-
     // Find the user's roles for this MSEL. A user can hold several, so all of
     // them count, not only the first.
     const roles = this.userMselRoleQuery.getAll().filter(r =>
       r.userId === this.loggedInUserId && r.mselId === this.selectedMselId
     );
     this.userMselRole = roles[0] || null;
+    this.canChooseAssessorFields = this.canChooseFields(roles);
+
+    // System admins can view and assess any MSEL
+    if (this.isSystemAdmin) {
+      this.canViewAssessorPage = true;
+      this.canEditAssessorPage = true;
+      return;
+    }
 
     // Editor or higher can view assessor page
     const viewRoles: MselRole[] = ['Owner', 'Editor', 'Approver', 'Evaluator'];
@@ -179,8 +180,16 @@ export class AssessorPageComponent implements OnDestroy, OnInit {
 
     // Only the roles that can assess can edit (check/uncheck checkboxes)
     this.canEditAssessorPage = roles.some(r => ASSESS_ROLES.includes(r.role as MselRole));
+  }
 
-    this.canChooseAssessorFields = this.canEditMsels || roles.some(r => r.role === MselRole.Owner);
+  // The API's rule for changing a MSEL's data fields: EditMsels, the MSEL's
+  // creator, or an Owner or Editor on it. CreateMsels alone is not enough.
+  // The API also wants an Owner or Editor to be in one of the MSEL's units,
+  // which this page cannot see; those roles are given to unit members.
+  private canChooseFields(roles: UserMselRole[]): boolean {
+    return this.canEditMsels ||
+      (!!this.loggedInUserId && this.msel?.createdBy === this.loggedInUserId) ||
+      roles.some(r => r.role === MselRole.Owner || r.role === MselRole.Editor);
   }
 
   goToUrl(url): void {
