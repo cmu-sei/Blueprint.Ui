@@ -8,13 +8,13 @@ import { Router } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { screen } from '@testing-library/angular';
+import { screen, within } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { of } from 'rxjs';
 import { ComnAuthService, ComnSettingsService } from '@cmusei/crucible-common';
 import { Msel, MselItemStatus, MselRole, MselService, SystemPermission, SystemPermissionsService, User, UserService } from 'src/app/generated/blueprint.api';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
-import { DashboardComponent } from './dashboard.component';
+import { CAPABILITY_CARDS, DashboardComponent } from './dashboard.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { permissionApiStubs } from 'src/app/test-utils/mock-permission-data.service';
@@ -151,5 +151,56 @@ describe('DashboardComponent', () => {
     expect(assess.querySelector('.metric-value')?.textContent).toBe('1');
     await userEvent.setup().click(assess);
     expect(navigate).toHaveBeenCalledWith(['assess']);
+  });
+
+  /**
+   * Verifies: the capability cards describe the stack by feature, with assessment, xAPI evidence and competencies first, and name no application.
+   * Interacts with: DashboardComponent template, CAPABILITY_CARDS.
+   * Data: no MSELs; no system permission (the cards show for every user).
+   */
+  it('shows a card for each capability, by feature', async () => {
+    const { container } = await renderDashboard();
+
+    const titles = [...container.querySelectorAll('.value-card .value-title')].map((t) => t.textContent?.trim());
+    expect(titles).toEqual([
+      'Competency Assessment',
+      'Learning Data Capture',
+      'Incident Evaluation',
+      'Collaborative Planning',
+      'Team Environments',
+      'Scenario Delivery',
+    ]);
+    expect(card('Competency Assessment')).toHaveTextContent('Rate each team against NICE, DCWF or your own competency framework');
+    expect(card('Learning Data Capture')).toHaveTextContent('Record what participants do as xAPI statements, as evidence for assessors');
+    const allText = CAPABILITY_CARDS.map((c) => [c.summary, c.data.title, c.data.description, ...c.data.features, ...c.data.benefits].join(' ')).join(' ');
+    expect(allText).not.toMatch(/\b(Player|Gallery|CITE|Steamfitter|Caster|TopoMojo|Gameboard)\b/);
+  });
+
+  /**
+   * Verifies: clicking a capability card, or pressing Enter on it, opens the dialog with that capability's details, and Close shuts it.
+   * Interacts with: real MatDialog and CapabilityDialogComponent.
+   * Data: the Competency Assessment and Scenario Delivery cards.
+   */
+  it('opens the details of a capability card', async () => {
+    await renderDashboard();
+    const user = userEvent.setup();
+
+    await user.click(card('Competency Assessment') as HTMLElement);
+
+    const dialog = within(await screen.findByRole('dialog'));
+    expect(dialog.getByText('Competency Assessment')).toBeInTheDocument();
+    expect(dialog.getByText(/^Tie the exercise to the competencies it trains/)).toBeInTheDocument();
+    expect(dialog.getByText('Each rating is sent as an xAPI "asserted" statement, with its score on the proficiency scale')).toBeInTheDocument();
+    expect(dialog.getByText('Rate every team on the same scale')).toBeInTheDocument();
+    expect(dialog.queryByText(/^Publish articles as news/)).not.toBeInTheDocument();
+
+    await user.click(dialog.getByRole('button', { name: 'Close' }));
+    await vi.waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+
+    (card('Scenario Delivery') as HTMLElement).focus();
+    await user.keyboard('{Enter}');
+    const delivery = within(await screen.findByRole('dialog'));
+    expect(delivery.getByText('Publish articles as news, social media, email, phone calls, intelligence, reporting or orders')).toBeInTheDocument();
+    expect(delivery.getByText('Run commands, read and write files, and power VMs on or off')).toBeInTheDocument();
   });
 });

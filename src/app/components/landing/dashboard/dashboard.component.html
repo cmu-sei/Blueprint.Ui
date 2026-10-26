@@ -13,50 +13,19 @@ project root for license information or contact permission@sei.cmu.edu for full 
   <div class="dashboard-container">
     <!-- Value Proposition -->
     <div class="value-section">
-      <div class="value-card" role="button" tabindex="0" (click)="openCapabilityDialog('collaborative')" (keydown.enter)="openCapabilityDialog('collaborative')">
+      @for (card of capabilityCards; track card.key) {
+      <div class="value-card" role="button" tabindex="0" (click)="openCapabilityDialog(card.key)" (keydown.enter)="openCapabilityDialog(card.key)">
         <div class="value-icon">
-          <mat-icon fontIcon="mdi-account-group"></mat-icon>
+          <mat-icon [fontIcon]="card.data.icon"></mat-icon>
         </div>
-        <h3 class="value-title">Collaborative Planning</h3>
-        <p class="value-text">Replace Excel spreadsheets with real-time team coordination</p>
+        <h3 class="value-title">{{ card.data.title }}</h3>
+        <p class="value-text">{{ card.summary }}</p>
         <div class="learn-more">
           <mat-icon class="info-icon" fontIcon="mdi-information"></mat-icon>
           <span>Click to learn more</span>
         </div>
       </div>
-      <div class="value-card" role="button" tabindex="0" (click)="openCapabilityDialog('integrated')" (keydown.enter)="openCapabilityDialog('integrated')">
-        <div class="value-icon">
-          <mat-icon fontIcon="mdi-link-variant"></mat-icon>
-        </div>
-        <h3 class="value-title">Integrated Platform</h3>
-        <p class="value-text">Connect Player, CITE, Gallery & Steamfitter in one workflow</p>
-        <div class="learn-more">
-          <mat-icon class="info-icon" fontIcon="mdi-information"></mat-icon>
-          <span>Click to learn more</span>
-        </div>
-      </div>
-      <div class="value-card" role="button" tabindex="0" (click)="openCapabilityDialog('scenario')" (keydown.enter)="openCapabilityDialog('scenario')">
-        <div class="value-icon">
-          <mat-icon fontIcon="mdi-timeline-text"></mat-icon>
-        </div>
-        <h3 class="value-title">Scenario Design</h3>
-        <p class="value-text">Build complex cyber exercise scenarios with move-based structure</p>
-        <div class="learn-more">
-          <mat-icon class="info-icon" fontIcon="mdi-information"></mat-icon>
-          <span>Click to learn more</span>
-        </div>
-      </div>
-      <div class="value-card" role="button" tabindex="0" (click)="openCapabilityDialog('cyberrange')" (keydown.enter)="openCapabilityDialog('cyberrange')">
-        <div class="value-icon">
-          <mat-icon fontIcon="mdi-shield-check"></mat-icon>
-        </div>
-        <h3 class="value-title">Cyber Range Ready</h3>
-        <p class="value-text">Purpose-built for cybersecurity training and simulation</p>
-        <div class="learn-more">
-          <mat-icon class="info-icon" fontIcon="mdi-information"></mat-icon>
-          <span>Click to learn more</span>
-        </div>
-      </div>
+      }
     </div>
 
     <!-- Main Grid -->
