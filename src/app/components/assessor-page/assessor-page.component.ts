@@ -166,6 +166,12 @@ export class AssessorPageComponent implements OnDestroy, OnInit {
     );
     this.userMselRole = roles[0] || null;
     this.canChooseAssessorFields = this.canChooseFields(roles);
+    // The MSEL's creator is its Owner. The roles endpoint lists only stored role rows, while the
+    // MSEL endpoints, and so the Assess list, add the creator's Owner role, so add it here too.
+    const roleNames = roles.map(r => r.role as MselRole);
+    if (this.msel?.createdBy === this.loggedInUserId) {
+      roleNames.push(MselRole.Owner);
+    }
 
     // System admins can view and assess any MSEL
     if (this.isSystemAdmin) {
@@ -176,10 +182,10 @@ export class AssessorPageComponent implements OnDestroy, OnInit {
 
     // Editor or higher can view assessor page
     const viewRoles: MselRole[] = ['Owner', 'Editor', 'Approver', 'Evaluator'];
-    this.canViewAssessorPage = roles.some(r => viewRoles.includes(r.role as MselRole));
+    this.canViewAssessorPage = roleNames.some(r => viewRoles.includes(r));
 
     // Only the roles that can assess can edit (check/uncheck checkboxes)
-    this.canEditAssessorPage = roles.some(r => ASSESS_ROLES.includes(r.role as MselRole));
+    this.canEditAssessorPage = roleNames.some(r => ASSESS_ROLES.includes(r));
   }
 
   // The API's rule for changing a MSEL's data fields: EditMsels, the MSEL's

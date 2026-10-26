@@ -3,8 +3,8 @@
 // project root for license information.
 import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { Subject, combineLatest } from 'rxjs';
-import { take, takeUntil } from 'rxjs/operators';
+import { Subject, combineLatest, of } from 'rxjs';
+import { take, takeUntil, catchError } from 'rxjs/operators';
 import {
   ComnSettingsService,
 } from '@cmusei/crucible-common';
@@ -133,8 +133,13 @@ export class DashboardComponent implements OnDestroy, OnInit {
         this.joinMselList = msels;
       });
     // load the build MSELs. The ASSESS card depends on whether the user is a
-    // system admin as well, so it waits for the permissions too.
-    combineLatest([this.mselDataService.getMyBuildMsels(), this.permissionDataService.load()])
+    // system admin as well, so it waits for the permissions too. Permissions that
+    // fail to load count as none, so they cannot hold up the dashboard, whose
+    // watchdog would otherwise reload the page.
+    combineLatest([
+      this.mselDataService.getMyBuildMsels(),
+      this.permissionDataService.load().pipe(catchError(() => of([]))),
+    ])
       .pipe(take(1))
       .subscribe(([msels]) => {
         this.buildMselList = msels;

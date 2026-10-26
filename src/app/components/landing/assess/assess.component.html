@@ -57,7 +57,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
         } @empty {
           <div class="empty-state">
             <mat-icon fontIcon="mdi-clipboard-check-outline"></mat-icon>
-            <p>No running events available to assess</p>
+            @if (loadFailed) {
+              <p>The events to assess could not be loaded. Reload the page to try again.</p>
+            } @else {
+              <p>No running events available to assess</p>
+            }
           </div>
         }
       </div>

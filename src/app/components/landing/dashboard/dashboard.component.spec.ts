@@ -10,7 +10,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { ComnAuthService, ComnSettingsService } from '@cmusei/crucible-common';
 import { Msel, MselItemStatus, MselRole, MselService, SystemPermission, SystemPermissionsService, User, UserService } from 'src/app/generated/blueprint.api';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
@@ -32,9 +32,16 @@ const ALPHA: Msel = { id: 'msel-1', name: 'Exercise Alpha' };
 const ALL_BUT_CREATE_MSELS = Object.values(SystemPermission).filter((p) => p !== SystemPermission.CreateMsels);
 
 async function renderDashboard(
-  overrides: { permissions?: SystemPermission[]; join?: Msel[]; launch?: Msel[]; build?: Msel[]; background?: string } = {},
+  overrides: {
+    permissions?: SystemPermission[];
+    permissionsFail?: boolean;
+    join?: Msel[];
+    launch?: Msel[];
+    build?: Msel[];
+    background?: string;
+  } = {},
 ) {
-  const { permissions = [], join = [], launch = [], build = [], background } = overrides;
+  const { permissions = [], permissionsFail = false, join = [], launch = [], build = [], background } = overrides;
   const mselApi = {
     getMyJoinMsels: vi.fn(() => of(structuredClone(join))),
     getMyLaunchMsels: vi.fn(() => of(structuredClone(launch))),
@@ -46,6 +53,9 @@ async function renderDashboard(
   // DashboardComponent loads the permissions itself in ngOnInit, so the real
   // service is provided over the stubbed endpoint, without priming it.
   const permissionApis = permissionApiStubs({ system: permissions });
+  if (permissionsFail) {
+    permissionApis.systemPermissions.getMySystemPermissions.mockImplementation(() => throwError(() => new Error('permissions down')));
+  }
   const rendered = await renderComponent(DashboardComponent, {
     imports: [MatCardModule, MatIconModule, MatProgressSpinnerModule],
     childStubs: [
@@ -75,6 +85,18 @@ async function renderDashboard(
 const card = (title: string) => screen.queryByRole('button', { name: new RegExp(`^${title}`) });
 
 describe('DashboardComponent', () => {
+  /**
+   * Verifies: permissions that fail to load count as none, so the dashboard still starts and its watchdog does not reload the page.
+   * Interacts with: SystemPermissionsService.getMySystemPermissions (stub, errors), real PermissionDataService.
+   * Data: one MSEL to manage; the permissions request fails.
+   */
+  it('starts even when the permissions fail to load', async () => {
+    const { fixture } = await renderDashboard({ build: [ALPHA], permissionsFail: true });
+
+    expect(fixture.componentInstance.isStarted).toBe(true);
+    expect(card('BUILD')).toBeInTheDocument();
+  });
+
   /**
    * Verifies: once the current user is known the dashboard loads the user's MSELs and offers a card for each kind it has.
    * Interacts with: MselService.getMyJoinMsels / getMyLaunchMsels / getMyMsels (stubs), real CurrentUserStore through UserDataService.setCurrentUser.

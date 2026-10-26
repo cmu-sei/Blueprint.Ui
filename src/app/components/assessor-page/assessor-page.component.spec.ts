@@ -161,17 +161,18 @@ describe('AssessorPageComponent', () => {
   });
 
   /**
-   * Verifies: the MSEL's creator without a role row sees Access Denied (current behavior).
+   * Verifies: the MSEL's creator without a role row is its Owner, as the Assess list and the MSEL endpoints count
+   * them, so they can view and assess; the roles endpoint lists only stored rows, which leave the creator out.
    * Interacts with: AssessorPageComponent.updateRolePermissions.
    * Data: no system permission; createdBy the user with no role row.
    */
-  it('denies the assessor page to the MSEL creator without a role row', async () => {
+  it('lets the MSEL creator without a role row assess', async () => {
     const { fixture } = await renderAssessorPage({ myRoles: [], createdBy: ME });
 
-    // Current behavior: the page reads only the role store, which has no row for the creator.
-    expect(screen.getByRole('heading', { name: 'Access Denied' })).toBeInTheDocument();
-    expect(assessorView(fixture)).toBeUndefined();
+    expect(screen.queryByText('Access Denied')).not.toBeInTheDocument();
+    expect(assessorView(fixture)?.canEditCheckboxes()).toBe(true);
   });
+
   /**
    * Verifies: without an msel query parameter the page offers the Assess list instead of a blank page, and loads no MSEL.
    * Interacts with: AssessStub (in place of AssessComponent), the MSEL endpoints (stubs, not called).
