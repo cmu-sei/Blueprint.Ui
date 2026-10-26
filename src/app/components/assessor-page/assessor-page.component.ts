@@ -73,7 +73,10 @@ export class AssessorPageComponent implements OnDestroy, OnInit {
   userMselRole: UserMselRole | null = null;
   canEditAssessorPage = false;
   canViewAssessorPage = false;
+  // Owners and EditMsels holders choose the assessor-visible data fields.
+  canChooseAssessorFields = false;
   isSystemAdmin = false;
+  private canEditMsels = false;
 
   constructor() {
     this.activatedRoute.queryParamMap
@@ -135,6 +138,7 @@ export class AssessorPageComponent implements OnDestroy, OnInit {
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(() => {
         this.isSystemAdmin = this.permissionDataService.hasPermission(SystemPermission.CreateMsels);
+        this.canEditMsels = this.permissionDataService.hasPermission(SystemPermission.EditMsels);
         this.updateRolePermissions();
       });
 
@@ -150,6 +154,7 @@ export class AssessorPageComponent implements OnDestroy, OnInit {
     if (!this.loggedInUserId || !this.selectedMselId) {
       this.canViewAssessorPage = false;
       this.canEditAssessorPage = false;
+      this.canChooseAssessorFields = false;
       return;
     }
 
@@ -157,6 +162,7 @@ export class AssessorPageComponent implements OnDestroy, OnInit {
     if (this.isSystemAdmin) {
       this.canViewAssessorPage = true;
       this.canEditAssessorPage = true;
+      this.canChooseAssessorFields = true;
       return;
     }
 
@@ -173,6 +179,8 @@ export class AssessorPageComponent implements OnDestroy, OnInit {
 
     // Only the roles that can assess can edit (check/uncheck checkboxes)
     this.canEditAssessorPage = roles.some(r => ASSESS_ROLES.includes(r.role as MselRole));
+
+    this.canChooseAssessorFields = this.canEditMsels || roles.some(r => r.role === MselRole.Owner);
   }
 
   goToUrl(url): void {

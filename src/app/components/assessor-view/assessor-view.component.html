@@ -9,7 +9,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <div class="empty-state">
       <mat-icon class="message-icon" fontIcon="mdi-alert-circle-outline" />
       <p>No data fields are marked as assessor-visible.</p>
-      <p>Go to the Data Fields tab and enable "Assessor View" on the fields you want assessors to see.</p>
+      @if (!standalone()) {
+        <p>Go to the Data Fields tab and enable "Assessor View" on the fields you want assessors to see.</p>
+      } @else if (canChooseFields()) {
+        <p>Enable "Assessor View" on this MSEL's Data Fields tab for the fields you want assessors to see.</p>
+        <button mat-flat-button color="primary" class="open-data-fields" (click)="openDataFields()">Open Data Fields</button>
+      } @else {
+        <p>Ask the MSEL owner to enable "Assessor View" on the fields assessors should see.</p>
+      }
     </div>
   } @else {
   <div class="tableFixHead">

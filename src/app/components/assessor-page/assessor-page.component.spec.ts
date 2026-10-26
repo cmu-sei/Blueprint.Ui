@@ -36,6 +36,8 @@ class AssessorViewStub {
   readonly loggedInUserId = input<string>(undefined);
   readonly userTheme = input<Theme>(undefined);
   readonly canEditCheckboxes = input<boolean>(undefined);
+  readonly standalone = input<boolean>(undefined);
+  readonly canChooseFields = input<boolean>(undefined);
 }
 
 const ME = 'user-me';
@@ -111,6 +113,22 @@ describe('AssessorPageComponent', () => {
 
     expect(screen.queryByText('Access Denied')).not.toBeInTheDocument();
     expect(assessorView(fixture)?.canEditCheckboxes()).toBe(canEditCheckboxes);
+  });
+
+  /**
+   * Verifies: the page shows the view standalone, and only an Owner or an EditMsels holder may choose its data fields.
+   * Interacts with: AssessorPageComponent.updateRolePermissions, AssessorViewStub inputs.
+   * Data: one row per case; EditMsels alone (near miss for CreateMsels) still grants choosing.
+   */
+  it.each([
+    { label: 'an Owner', myRoles: roles(MselRole.Owner), permissions: [], canChooseFields: true },
+    { label: 'an Evaluator', myRoles: roles(MselRole.Evaluator), permissions: [], canChooseFields: false },
+    { label: 'an Evaluator with EditMsels', myRoles: roles(MselRole.Evaluator), permissions: [SystemPermission.EditMsels], canChooseFields: true },
+  ])('lets $label choose the assessor fields: $canChooseFields', async ({ myRoles, permissions, canChooseFields }) => {
+    const { fixture } = await renderAssessorPage({ myRoles, permissions });
+
+    expect(assessorView(fixture)?.standalone()).toBe(true);
+    expect(assessorView(fixture)?.canChooseFields()).toBe(canChooseFields);
   });
 
   /**

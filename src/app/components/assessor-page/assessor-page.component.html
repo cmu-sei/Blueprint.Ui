@@ -21,6 +21,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <app-assessor-view [loggedInUserId]="loggedInUserId"
       [userTheme]="userTheme$ | async"
       [canEditCheckboxes]="canEditAssessorPage"
+      [standalone]="true"
+      [canChooseFields]="canChooseAssessorFields"
      />
   }
 </div>

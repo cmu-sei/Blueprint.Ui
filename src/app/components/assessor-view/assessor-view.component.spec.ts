@@ -42,6 +42,8 @@ import { renderComponent } from 'src/app/test-utils/render-component';
 import { DurationViewComponent } from '../shared/duration-view/duration-view.component';
 import { DataValueComponent } from '../data-value/data-value.component';
 import { captureUnhandledRxErrors, flush } from 'src/app/test-utils/unhandled-rx-errors';
+import { Router } from '@angular/router';
+import { UIDataService } from 'src/app/data/ui/ui-data.service';
 
 @Component({ selector: 'app-duration-view', template: '' })
 class DurationViewStub {
@@ -88,8 +90,10 @@ function seeded<S extends { set(entities: unknown[]): void }>(Store: new () => S
   };
 }
 
-async function renderAssessorView(overrides: { canEditCheckboxes?: boolean; moves?: Move[] } = {}) {
-  const { canEditCheckboxes = false, moves = [] } = overrides;
+async function renderAssessorView(
+  overrides: { canEditCheckboxes?: boolean; moves?: Move[]; fields?: DataField[]; standalone?: boolean; canChooseFields?: boolean } = {}
+) {
+  const { canEditCheckboxes = false, moves = [], fields = FIELDS, standalone = false, canChooseFields = false } = overrides;
   const poolApi = {
     getMselCompetencies: vi.fn(() => of<MselCompetency[]>([])),
   } satisfies ApiStub<MselCompetencyService>;
@@ -127,12 +131,12 @@ async function renderAssessorView(overrides: { canEditCheckboxes?: boolean; move
           return store;
         },
       },
-      seeded(DataFieldStore, FIELDS),
+      seeded(DataFieldStore, fields),
       seeded(DataValueStore, VALUES),
       seeded(ScenarioEventStore, [EVENT]),
       seeded(MoveStore, moves),
     ],
-    inputs: { canEditCheckboxes, loggedInUserId: 'user-me' },
+    inputs: { canEditCheckboxes, loggedInUserId: 'user-me', standalone, canChooseFields },
   });
   return { ...rendered, poolApi };
 }
@@ -166,6 +170,52 @@ describe('AssessorViewComponent', () => {
       ['Observed', 'false'],
     ]);
     expect(screen.queryByText('No data fields are marked as assessor-visible.')).not.toBeInTheDocument();
+  });
+
+  describe('with no assessor-visible fields', () => {
+    const HIDDEN = FIELDS.map((f) => ({ ...f, isAssessorVisible: false }));
+
+    /**
+     * Verifies: inside the MSEL editor the empty state points at the Data Fields tab beside it.
+     * Interacts with: real DataFieldQuery (seeded).
+     * Data: no field is assessor-visible; standalone false.
+     */
+    it('points at the Data Fields tab inside the MSEL editor', async () => {
+      await renderAssessorView({ fields: HIDDEN });
+
+      expect(screen.getByText('No data fields are marked as assessor-visible.')).toBeInTheDocument();
+      expect(screen.getByText(/^Go to the Data Fields tab/)).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Open Data Fields' })).not.toBeInTheDocument();
+    });
+
+    /**
+     * Verifies: on the assessor page, a user who can choose the fields gets a button that opens the MSEL editor on its Data Fields tab.
+     * Interacts with: Router.navigate (spy), UIDataService saved MSEL tab (real, localStorage).
+     * Data: no field is assessor-visible; standalone and canChooseFields true.
+     */
+    it('opens the Data Fields tab for a user who can choose the fields', async () => {
+      const { fixture } = await renderAssessorView({ fields: HIDDEN, standalone: true, canChooseFields: true });
+      const router = fixture.debugElement.injector.get(Router);
+      const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+
+      expect(screen.queryByText(/^Go to the Data Fields tab/)).not.toBeInTheDocument();
+      await userEvent.click(screen.getByRole('button', { name: 'Open Data Fields' }));
+
+      expect(navigate).toHaveBeenCalledWith(['/build'], { queryParams: { msel: 'msel-1' } });
+      expect(fixture.debugElement.injector.get(UIDataService).getMselTab()).toBe('Data Fields');
+    });
+
+    /**
+     * Verifies: on the assessor page, a user who cannot choose the fields is told to ask the MSEL owner, with no button.
+     * Interacts with: real DataFieldQuery (seeded).
+     * Data: no field is assessor-visible; standalone true, canChooseFields false.
+     */
+    it('tells a user who cannot choose the fields to ask the MSEL owner', async () => {
+      await renderAssessorView({ fields: HIDDEN, standalone: true });
+
+      expect(screen.getByText(/^Ask the MSEL owner/)).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Open Data Fields' })).not.toBeInTheDocument();
+    });
   });
 
   /**
