@@ -3,7 +3,7 @@ Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
-<div class="top-container background">
+<div class="join-page landing-background" [class.has-background]="backgroundImage" [style.--landing-background]="backgroundImage">
   @if (!hideTopbar) {
     <app-topbar [title]="topbarText"
       [topbarView]="TopbarView.BLUEPRINT_HOME"
@@ -11,28 +11,49 @@ project root for license information or contact permission@sei.cmu.edu for full 
       (urlNavigate)="topBarNavigate($event)"
      />
   }
-  <div class="card-container">
-    @for (msel of joinMselList; track msel) {
-      <mat-card
-        appearance="outlined"
-        class="base-card"
-        tabindex="0"
-        >
-        <mat-card-header>
-          <mat-card-title>{{ msel.name }}</mat-card-title>
-          <mat-card-subtitle>{{ msel.description }}</mat-card-subtitle>
-        </mat-card-header>
-        <mat-card-actions>
-          <a
-            mat-stroked-button
-            [routerLink]="['/join']"
-            [queryParams]="{ msel: msel.id }"
-            title="Join {{ msel.name }}"
-            >
-            Join
-          </a>
-        </mat-card-actions>
-      </mat-card>
+  <div class="join-container">
+    @if (showChoices) {
+      <div class="page-header">
+        <h1 class="page-title">Join an Event</h1>
+        <p class="page-subtitle">Choose an in-progress event to open it in Player.</p>
+      </div>
+      <div class="event-grid">
+        @for (msel of joinMselList; track msel.id) {
+          <div class="event-card">
+            @if (cardPhotos[msel.id]) {
+            <div class="card-image card-photo" [style.background-image]="'url(' + cardPhotos[msel.id] + ')'"
+              aria-hidden="true"></div>
+            } @else {
+            <div class="card-image" [style.background]="cardImage(msel)" aria-hidden="true"></div>
+            }
+            <h2 class="card-title">{{ msel.name }}</h2>
+            @if (msel.description) {
+              <p class="card-description">{{ msel.description }}</p>
+            }
+            <div class="card-footer">
+              <a
+                mat-flat-button
+                color="primary"
+                [routerLink]="['/join']"
+                [queryParams]="{ msel: msel.id }"
+                title="Join {{ msel.name }}"
+              >
+                Join
+              </a>
+            </div>
+          </div>
+        } @empty {
+          <div class="empty-state">
+            <mat-icon fontIcon="mdi-calendar-blank"></mat-icon>
+            <p>No active events available to join</p>
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="joining-state">
+        <mat-progress-spinner color="primary" mode="indeterminate" diameter="60"></mat-progress-spinner>
+        <p>{{ joinStatus[joiningMselId] || 'Joining the event ...' }}</p>
+      </div>
     }
   </div>
-  </div>
+</div>

@@ -485,3 +485,36 @@ a {
 .datetime-field {
   width: 300px;
 }
+
+.msel-image {
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.msel-image-label {
+  font: var(--mat-sys-body-small);
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.msel-image-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+// The join cards crop to 16:7, so the preview shows the same crop.
+.msel-image-preview {
+  width: 240px;
+  aspect-ratio: 16 / 7;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--mat-sys-outline-variant);
+}
+
+.msel-image-none,
+.msel-image-hint {
+  font: var(--mat-sys-body-small);
+  color: var(--mat-sys-on-surface-variant);
+}

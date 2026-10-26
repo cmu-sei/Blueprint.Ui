@@ -149,6 +149,7 @@ export function getDefaultProviders(
           AppTopBarHexColor: '#000000',
           AppTopBarHexTextColor: '#FFFFFF',
           AppTopBarImage: '',
+          AppLandingBackgroundImage: '',
           LightThemeTint: '',
           DarkThemeTint: '',
           DefaultDataFields: [],

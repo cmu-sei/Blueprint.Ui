@@ -24,6 +24,9 @@ import {
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
+import { MselImageDataService } from 'src/app/data/msel/msel-image-data.service';
+import { ErrorService } from 'src/app/services/error/error.service';
+import { SystemMessageService } from 'src/app/services/system-message/system-message.service';
 import { MatMenuTrigger, MatMenu, MatMenuItem } from '@angular/material/menu';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { CiteService } from 'src/app/generated/blueprint.api';
@@ -114,6 +117,14 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   readonly contextMenu = viewChild(MatMenuTrigger);
   contextMenuPosition = { x: '0px', y: '0px' };
   isChanged = false;
+  // The card image is saved on its own, as soon as it is chosen, not with Save.
+  mselImageUrl: string | null = null;
+  isImageBusy = false;
+  readonly mselImageTypes = 'image/png,image/jpeg,image/gif,image/webp';
+  private mselImageKey: string | null = null;
+  private mselImageDataService = inject(MselImageDataService);
+  private errorService = inject(ErrorService);
+  private systemMessageService = inject(SystemMessageService);
   userList: User[] = [];
   teamList: Team[] = [];
   mselUnitList: MselUnit[] = [];
@@ -218,6 +229,7 @@ export class MselInfoComponent implements OnDestroy, OnInit {
           // Fetch integration names for deployed integrations
           this.fetchIntegrationNames();
           this.resolveCreatorName();
+          this.loadMselImage();
           if (this.msel.useCaster) {
             this.loadCasterDirectories();
           }
@@ -500,6 +512,62 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   // the current status is listed even when it is one the user cannot choose, so the field still shows it
   statusOptions(): MselItemStatus[] {
     return this.isPipelineStatus() ? [...this.itemStatus, this.msel.status] : this.itemStatus;
+  }
+
+  // Setting the image follows the API's MSEL update rule: the owner or EditMsels.
+  canSetMselImage(): boolean {
+    return this.permissionDataService.hasPermission(SystemPermission.EditMsels) ||
+      this.msel.hasRole(this.loggedInUserId(), '').owner;
+  }
+
+  uploadMselImage(input: HTMLInputElement) {
+    const file = input.files?.[0];
+    // Clear the input so choosing the same file again still fires change.
+    input.value = '';
+    if (!file) {
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      this.systemMessageService.displayMessage('Image Too Large', 'Choose an image of 2 MB or less.');
+      return;
+    }
+    this.isImageBusy = true;
+    this.mselImageDataService.setImage(this.msel.id, file).subscribe({
+      next: () => (this.isImageBusy = false),
+      error: (err) => {
+        this.isImageBusy = false;
+        this.errorService.handleError(err);
+      },
+    });
+  }
+
+  removeMselImage() {
+    this.isImageBusy = true;
+    this.mselImageDataService.deleteImage(this.msel.id).subscribe({
+      next: () => (this.isImageBusy = false),
+      error: (err) => {
+        this.isImageBusy = false;
+        this.errorService.handleError(err);
+      },
+    });
+  }
+
+  private loadMselImage() {
+    const key = this.msel.id + '|' + (this.msel.imageDateModified ?? '');
+    if (key === this.mselImageKey) {
+      return;
+    }
+    this.mselImageKey = key;
+    this.mselImageUrl = null;
+    this.mselImageDataService
+      .imageUrl(this.msel)
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((url) => {
+        if (key === this.mselImageKey) {
+          this.mselImageUrl = url;
+          this.changeDetectorRef.markForCheck();
+        }
+      });
   }
 
   canManageMsel(): boolean {

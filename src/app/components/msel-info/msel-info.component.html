@@ -76,6 +76,30 @@ project root for license information or contact permission@sei.cmu.edu for full 
               <mat-hint align="end">{{ msel.description?.length || 0 }} / 600 characters</mat-hint>
             </mat-form-field>
           </div>
+          <!-- MSEL Card Image -->
+          <div class="single-detail center-self msel-image">
+            <span class="msel-image-label">Card Image</span>
+            <div class="msel-image-row">
+              @if (mselImageUrl) {
+              <img class="msel-image-preview" [src]="mselImageUrl" alt="Card image for {{ msel.name }}" />
+              } @else {
+              <span class="msel-image-none">No image. The event's cards show a generated pattern.</span>
+              }
+              @if (canSetMselImage()) {
+              <input #mselImageInput type="file" hidden [accept]="mselImageTypes"
+                (change)="uploadMselImage(mselImageInput)" />
+              <button mat-stroked-button [disabled]="isImageBusy" (click)="mselImageInput.click()">
+                {{ msel.imageDateModified ? 'Replace Image' : 'Upload Image' }}
+              </button>
+              @if (msel.imageDateModified) {
+              <button mat-stroked-button [disabled]="isImageBusy" (click)="removeMselImage()">Remove Image</button>
+              }
+              }
+            </div>
+            @if (canSetMselImage()) {
+            <span class="msel-image-hint">PNG, JPEG, GIF or WebP, up to 2 MB.</span>
+            }
+          </div>
           <!-- Is a Template -->
           <div class="single-detail center-self">
             <div class="sub-detail center-self">
