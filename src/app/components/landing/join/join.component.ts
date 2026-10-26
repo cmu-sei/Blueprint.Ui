@@ -22,6 +22,7 @@ import { ErrorService } from 'src/app/services/error/error.service';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
 import { XApiService } from 'src/app/services/xapi/xapi.service';
 import { landingBackground } from 'src/app/utilities/landing-background';
+import { cardImage } from 'src/app/utilities/card-image';
 import { TopbarComponent } from '../../shared/top-bar/topbar.component';
 import { MatButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
@@ -123,18 +124,8 @@ export class JoinComponent implements OnDestroy, OnInit {
       });
   }
 
-  // A card shows the MSEL's own image when it has one. Otherwise it gets a
-  // pattern generated from the MSEL id, so the same event always looks the same.
-  cardImage(msel: Msel): string {
-    let hash = 0;
-    for (const c of msel.id ?? msel.name ?? '') {
-      hash = (hash * 31 + c.charCodeAt(0)) | 0;
-    }
-    const hue = Math.abs(hash) % 360;
-    const angle = 30 + (Math.abs(hash >> 8) % 4) * 30;
-    return `repeating-linear-gradient(${angle}deg, rgba(255, 255, 255, 0.08) 0 12px, transparent 12px 24px), ` +
-      `linear-gradient(135deg, hsl(${hue}, 55%, 42%), hsl(${(hue + 40) % 360}, 60%, 30%))`;
-  }
+  // A card shows the MSEL's own image when it has one, otherwise a generated pattern.
+  readonly cardImage = cardImage;
 
   topBarNavigate(url): void {
     this.router.navigate([url]);

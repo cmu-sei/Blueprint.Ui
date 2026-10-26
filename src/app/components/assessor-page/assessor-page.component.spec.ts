@@ -5,7 +5,7 @@ import { describe, it, expect } from 'vitest';
 import { Component, input, output } from '@angular/core';
 import { ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Params } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { screen } from '@testing-library/angular';
 import { of } from 'rxjs';
@@ -19,6 +19,10 @@ import { permissionApiStubs } from 'src/app/test-utils/mock-permission-data.serv
 import { mselLoadApiProviders, mselLoadApiStubs } from 'src/app/test-utils/msel-load-api-stubs';
 import { TopbarComponent } from '../shared/top-bar/topbar.component';
 import { AssessorViewComponent } from '../assessor-view/assessor-view.component';
+import { AssessComponent } from '../landing/assess/assess.component';
+
+@Component({ selector: 'app-assess', template: '' })
+class AssessStub {}
 
 @Component({ selector: 'app-topbar', template: '' })
 class TopbarStub {
@@ -32,6 +36,8 @@ class AssessorViewStub {
   readonly loggedInUserId = input<string>(undefined);
   readonly userTheme = input<Theme>(undefined);
   readonly canEditCheckboxes = input<boolean>(undefined);
+  readonly standalone = input<boolean>(undefined);
+  readonly canChooseFields = input<boolean>(undefined);
 }
 
 const ME = 'user-me';
@@ -41,19 +47,22 @@ function roles(...list: MselRole[]): UserMselRole[] {
   return list.map((role, i) => ({ id: `umr-${i}`, userId: ME, mselId: 'msel-1', role }));
 }
 
-async function renderAssessorPage(overrides: { permissions?: SystemPermission[]; myRoles?: UserMselRole[]; createdBy?: string } = {}) {
-  const { permissions = [], myRoles = [], createdBy = 'someone-else' } = overrides;
+async function renderAssessorPage(
+  overrides: { permissions?: SystemPermission[]; myRoles?: UserMselRole[]; createdBy?: string; queryParams?: Params } = {},
+) {
+  const { permissions = [], myRoles = [], createdBy = 'someone-else', queryParams = { msel: 'msel-1' } } = overrides;
   const msel: Msel = { id: 'msel-1', name: 'Exercise Alpha', createdBy, userMselRoles: myRoles };
   const apis = mselLoadApiStubs({ msel, userMselRoles: myRoles });
   // AssessorPageComponent loads the permissions itself in ngOnInit, so the
   // real service is provided over the stubbed endpoint, without priming it.
   const permissionApis = permissionApiStubs({ system: permissions });
-  const { route } = activatedRouteStub({ msel: 'msel-1' });
+  const { route } = activatedRouteStub(queryParams);
   const rendered = await renderComponent(AssessorPageComponent, {
     imports: [MatIconModule],
     childStubs: [
       { replace: TopbarComponent, with: TopbarStub },
       { replace: AssessorViewComponent, with: AssessorViewStub },
+      { replace: AssessComponent, with: AssessStub },
     ],
     providers: [
       ...mselLoadApiProviders(apis),
@@ -107,6 +116,27 @@ describe('AssessorPageComponent', () => {
   });
 
   /**
+   * Verifies: the page shows the view standalone, and offers choosing its data fields only to those the API lets change them:
+   * EditMsels, the MSEL's creator, or an Owner or Editor. CreateMsels alone, an Approver and an Evaluator are near misses.
+   * Interacts with: AssessorPageComponent.updateRolePermissions, AssessorViewStub inputs.
+   * Data: one row per case; the MSEL is created by someone else unless the row says so.
+   */
+  it.each([
+    { label: 'an Owner', myRoles: roles(MselRole.Owner), permissions: [], createdBy: 'someone-else', canChooseFields: true },
+    { label: 'an Editor', myRoles: roles(MselRole.Editor), permissions: [], createdBy: 'someone-else', canChooseFields: true },
+    { label: 'an Approver', myRoles: roles(MselRole.Approver), permissions: [], createdBy: 'someone-else', canChooseFields: false },
+    { label: 'an Evaluator', myRoles: roles(MselRole.Evaluator), permissions: [], createdBy: 'someone-else', canChooseFields: false },
+    { label: 'an Evaluator with EditMsels', myRoles: roles(MselRole.Evaluator), permissions: [SystemPermission.EditMsels], createdBy: 'someone-else', canChooseFields: true },
+    { label: 'an Evaluator who created the MSEL', myRoles: roles(MselRole.Evaluator), permissions: [], createdBy: ME, canChooseFields: true },
+    { label: 'a CreateMsels holder with no role', myRoles: [], permissions: [SystemPermission.CreateMsels], createdBy: 'someone-else', canChooseFields: false },
+  ])('lets $label choose the assessor fields: $canChooseFields', async ({ myRoles, permissions, createdBy, canChooseFields }) => {
+    const { fixture } = await renderAssessorPage({ myRoles, permissions, createdBy });
+
+    expect(assessorView(fixture)?.standalone()).toBe(true);
+    expect(assessorView(fixture)?.canChooseFields()).toBe(canChooseFields);
+  });
+
+  /**
    * Verifies: a Viewer or Move Editor without CreateMsels is denied the assessor page.
    * Interacts with: AssessorPageComponent.updateRolePermissions, AssessorPageComponent template.
    * Data: every permission but CreateMsels (near miss); MSEL role Viewer, or MoveEditor.
@@ -119,18 +149,39 @@ describe('AssessorPageComponent', () => {
   });
 
   /**
-   * Verifies: a Viewer who is also an Evaluator, and the MSEL's creator without a role row, see Access Denied (current behavior).
-   * Interacts with: AssessorPageComponent.updateRolePermissions (roles.find).
-   * Data: no system permission; Viewer then Evaluator rows; or createdBy the user with no role row.
+   * Verifies: a user holding several roles on the MSEL gets the access of the strongest one, so a Viewer who is also an Evaluator can assess.
+   * Interacts with: AssessorPageComponent.updateRolePermissions (every role row counts).
+   * Data: no system permission; Viewer then Evaluator rows for the user.
    */
-  it.each([
-    { label: 'a Viewer who is also an Evaluator', myRoles: roles(MselRole.Viewer, MselRole.Evaluator), createdBy: 'someone-else' },
-    { label: 'the MSEL creator without a role row', myRoles: [], createdBy: ME },
-  ])('denies the assessor page to $label', async ({ myRoles, createdBy }) => {
-    const { fixture } = await renderAssessorPage({ myRoles, createdBy });
+  it('lets a Viewer who is also an Evaluator assess', async () => {
+    const { fixture } = await renderAssessorPage({ myRoles: roles(MselRole.Viewer, MselRole.Evaluator), createdBy: 'someone-else' });
 
-    // Current behavior; see agent-docs/ui-test-bugs/blueprint.ui.md.
+    expect(screen.queryByText('Access Denied')).not.toBeInTheDocument();
+    expect(assessorView(fixture)?.canEditCheckboxes()).toBe(true);
+  });
+
+  /**
+   * Verifies: the MSEL's creator without a role row sees Access Denied (current behavior).
+   * Interacts with: AssessorPageComponent.updateRolePermissions.
+   * Data: no system permission; createdBy the user with no role row.
+   */
+  it('denies the assessor page to the MSEL creator without a role row', async () => {
+    const { fixture } = await renderAssessorPage({ myRoles: [], createdBy: ME });
+
+    // Current behavior: the page reads only the role store, which has no row for the creator.
     expect(screen.getByRole('heading', { name: 'Access Denied' })).toBeInTheDocument();
     expect(assessorView(fixture)).toBeUndefined();
+  });
+  /**
+   * Verifies: without an msel query parameter the page offers the Assess list instead of a blank page, and loads no MSEL.
+   * Interacts with: AssessStub (in place of AssessComponent), the MSEL endpoints (stubs, not called).
+   * Data: no query parameters; CreateMsels.
+   */
+  it('offers the Assess list when no event is chosen', async () => {
+    const { fixture, apis } = await renderAssessorPage({ permissions: [SystemPermission.CreateMsels], queryParams: {} });
+
+    expect(fixture.debugElement.query(By.directive(AssessStub))).not.toBeNull();
+    expect(assessorView(fixture)).toBeUndefined();
+    expect(apis.msel.getMsel).not.toHaveBeenCalled();
   });
 });
