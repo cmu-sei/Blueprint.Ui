@@ -1,10 +1,9 @@
 // Copyright 2026 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, inject, input, output } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { Component, inject, input, output, signal } from '@angular/core';
+import { finalize } from 'rxjs/operators';
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
-import { MselQuery } from 'src/app/data/msel/msel.query';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { MselItemStatus } from 'src/app/generated/blueprint.api';
 import { MatProgressBar } from '@angular/material/progress-bar';
@@ -20,8 +19,8 @@ import { MatIcon } from '@angular/material/icon';
 export class IntegrationStatusComponent {
   private mselDataService = inject(MselDataService);
   private dialogService = inject(CrucibleDialogService);
-  // true while a MSEL request is in flight, so a second click cannot send a second retry
-  readonly loading = toSignal(inject(MselQuery).selectLoading(), { initialValue: false });
+  // true from a Retry Caster click until its request answers, so a second click cannot send a second retry
+  readonly retrying = signal(false);
 
   readonly msel = input<MselPlus>(undefined);
   // the MSEL's Caster workspace, once the push has created it; empty otherwise
@@ -60,7 +59,12 @@ export class IntegrationStatusComponent {
   }
 
   retryCaster() {
-    this.mselDataService.retryCaster(this.msel().id);
+    this.retrying.set(true);
+    this.mselDataService
+      .retryCaster(this.msel().id)
+      .pipe(finalize(() => this.retrying.set(false)))
+      // the data service reports a failure; here it only re-enables the button
+      .subscribe({ error: () => {} });
   }
 
   pullIntegrations() {

@@ -7,11 +7,11 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
-import { of } from 'rxjs';
+import { HttpErrorResponse } from '@angular/common/http';
+import { Observable, Subject, of } from 'rxjs';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { Msel, MselItemStatus, MselService } from 'src/app/generated/blueprint.api';
 import { MselPlus } from 'src/app/data/msel/msel-data.service';
-import { MselStore } from 'src/app/data/msel/msel.store';
 import { IntegrationStatusComponent } from './integration-status.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { dialogRefStub } from 'src/app/test-utils/dialog-refs';
@@ -25,12 +25,12 @@ async function renderStatus(
   integrationStatus: string,
   casterWorkspaceUrl = '',
   status: MselItemStatus = MselItemStatus.Pushing,
-  loading = false
+  retryAnswer: Observable<Msel> = of<Msel>({ id: 'msel-1', name: 'Exercise Alpha', integrationStatus: 'Retrying Caster' })
 ) {
   const mselApi = {
     cancelIntegrations: vi.fn(() => of<unknown>(null)),
     pullIntegrations: vi.fn(() => of<Msel>({ id: 'msel-1', name: 'Exercise Alpha' })),
-    retryCasterIntegration: vi.fn(() => of<Msel>({ id: 'msel-1', name: 'Exercise Alpha', integrationStatus: 'Retrying Caster' })),
+    retryCasterIntegration: vi.fn(() => retryAnswer),
   } satisfies ApiStub<MselService>;
   // The user confirms every dialog.
   const confirm = vi.fn(() => dialogRefStub<unknown, boolean>(true).dialogRef);
@@ -41,15 +41,6 @@ async function renderStatus(
     providers: [
       { provide: MselService, useValue: mselApi },
       { provide: CrucibleDialogService, useValue: dialog },
-      // An Akita store starts out loading; the MSEL page's own request would have finished.
-      {
-        provide: MselStore,
-        useFactory: () => {
-          const store = new MselStore();
-          store.setLoading(loading);
-          return store;
-        },
-      },
     ],
     inputs: { msel: msel(integrationStatus, status), casterWorkspaceUrl },
   });
@@ -141,14 +132,26 @@ describe('IntegrationStatusComponent', () => {
   });
 
   /**
-   * Verifies: Retry Caster is disabled while a MSEL request is in flight, so a double-click cannot send a second retry.
-   * Interacts with: IntegrationStatusComponent.loading (real MselQuery over a loading MselStore).
-   * Data: a Pushing MSEL with status "ERROR: Caster - planning failed - ..."; the MSEL store is loading.
+   * Verifies: Retry Caster is disabled until its request answers, so a double-click sends one retry, and is offered again when the request fails.
+   * Interacts with: MselService.retryCasterIntegration (stub that answers when the test says), real MselDataService.
+   * Data: a Pushing MSEL with status "ERROR: Caster - planning failed - ..."; the retry is answered with a 409.
    */
-  it('disables Retry Caster while a MSEL request is in flight', async () => {
-    await renderStatus('ERROR: Caster - planning failed - Caster run run-1 plan ended Failed.', '', MselItemStatus.Pushing, true);
+  it('sends one retry until the request answers', async () => {
+    const answer = new Subject<Msel>();
+    const { mselApi, fixture } = await renderStatus(
+      'ERROR: Caster - planning failed - Caster run run-1 plan ended Failed.', '', MselItemStatus.Pushing, answer);
+    const user = userEvent.setup();
+    const retry = screen.getByRole('button', { name: 'Retry Caster' });
 
-    expect(screen.getByRole('button', { name: 'Retry Caster' })).toBeDisabled();
+    await user.click(retry);
+
+    expect(retry).toBeDisabled();
+
+    answer.error(new HttpErrorResponse({ status: 409 }));
+    fixture.detectChanges();
+
+    expect(mselApi.retryCasterIntegration).toHaveBeenCalledTimes(1);
+    expect(retry).toBeEnabled();
   });
 
   /**

@@ -39,7 +39,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       }
       <div class="action-buttons">
         @if (canRetryCaster) {
-          <button mat-raised-button color="primary" (click)="retryCaster()" [disabled]="loading()"
+          <button mat-raised-button color="primary" (click)="retryCaster()" [disabled]="retrying()"
                   title="Run the Caster step again, keeping the other integrations">
             Retry Caster
           </button>

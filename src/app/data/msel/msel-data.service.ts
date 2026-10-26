@@ -476,25 +476,23 @@ export class MselDataService {
       );
   }
 
-  retryCaster(mselId: string) {
+  // Returned unsubscribed, so the caller can tell when the request has finished.
+  // The store and the error report are still handled here.
+  retryCaster(mselId: string): Observable<Msel> {
     this.mselStore.setLoading(true);
-    this.mselService
-      .retryCasterIntegration(mselId)
-      .pipe(
-        tap(() => {
+    return this.mselService.retryCasterIntegration(mselId).pipe(
+      take(1),
+      tap({
+        next: (n) => {
           this.mselStore.setLoading(false);
-        }),
-        take(1)
-      )
-      .subscribe(
-        (n) => {
           this.updateStore(n);
         },
-        (error) => {
+        error: (error) => {
           this.mselStore.setLoading(false);
           this.errorService.handleError(error);
-        }
-      );
+        },
+      })
+    );
   }
 
   cancelIntegrations(mselId: string) {
