@@ -138,19 +138,20 @@ describe('AssessComponent', () => {
   });
 
   /**
-   * Verifies: an event with no competencies says so and its Assess button is disabled, not a link; one competency reads in the singular.
+   * Verifies: an event with no competencies says so but still opens, since its assessor view shows evidence and checkbox fields; one competency reads in the singular.
    * Interacts with: MselCompetencyService.getMselCompetencies (stub answering per MSEL).
    * Data: Alpha has 0 competencies, Bravo has 1.
    */
-  it('disables an event with nothing to assess', async () => {
+  it('still opens an event with no competencies', async () => {
     await renderAssess({ competencies: (id) => of(competencies(id === 'msel-1' ? 0 : 1)) });
 
     expect(screen.getByText('No competencies to assess')).toBeInTheDocument();
     expect(screen.getByText('1 competency')).toBeInTheDocument();
-    const disabled = screen.getByRole('button', { name: 'Assess' });
-    expect(disabled).toBeDisabled();
-    expect(disabled).toHaveAttribute('title', 'Exercise Alpha has no competencies to assess');
-    expect(assessLinks()).toEqual([['/assess?msel=msel-2', 'Assess Exercise Bravo']]);
+    expect(screen.queryByRole('button', { name: 'Assess' })).not.toBeInTheDocument();
+    expect(assessLinks()).toEqual([
+      ['/assess?msel=msel-1', 'Assess Exercise Alpha'],
+      ['/assess?msel=msel-2', 'Assess Exercise Bravo'],
+    ]);
   });
 
   /**

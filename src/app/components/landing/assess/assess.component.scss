@@ -12,12 +12,3 @@
   min-height: 1.25rem;
 }
 
-.event-card.nothing-to-assess {
-  opacity: 0.6;
-
-  &:hover {
-    transform: none;
-    border-color: var(--mat-sys-outline-variant);
-    box-shadow: none;
-  }
-}

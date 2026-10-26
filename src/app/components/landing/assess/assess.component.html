@@ -23,7 +23,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     } @else {
       <div class="event-grid">
         @for (msel of assessMselList; track msel.id) {
-          <div class="event-card" [class.nothing-to-assess]="hasNothingToAssess(msel)">
+          <div class="event-card">
             @if (cardPhotos[msel.id]) {
             <div class="card-image card-photo" [style.background-image]="'url(' + cardPhotos[msel.id] + ')'"
               aria-hidden="true"></div>
@@ -43,21 +43,15 @@ project root for license information or contact permission@sei.cmu.edu for full 
               }
             </p>
             <div class="card-footer">
-              @if (hasNothingToAssess(msel)) {
-                <button mat-flat-button color="primary" disabled title="{{ msel.name }} has no competencies to assess">
-                  Assess
-                </button>
-              } @else {
-                <a
-                  mat-flat-button
-                  color="primary"
-                  [routerLink]="['/assess']"
-                  [queryParams]="{ msel: msel.id }"
-                  title="Assess {{ msel.name }}"
-                >
-                  Assess
-                </a>
-              }
+              <a
+                mat-flat-button
+                color="primary"
+                [routerLink]="['/assess']"
+                [queryParams]="{ msel: msel.id }"
+                title="Assess {{ msel.name }}"
+              >
+                Assess
+              </a>
             </div>
           </div>
         } @empty {

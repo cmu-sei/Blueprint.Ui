@@ -93,12 +93,6 @@ export class AssessComponent implements OnDestroy, OnInit {
       });
   }
 
-  // An event with no competencies has nothing to rate, so its card says so
-  // and does not open. Until the count arrives the card stays usable.
-  hasNothingToAssess(msel: Msel): boolean {
-    return this.competencyCounts[msel.id] === 0;
-  }
-
   topBarNavigate(url): void {
     this.router.navigate([url]);
   }
