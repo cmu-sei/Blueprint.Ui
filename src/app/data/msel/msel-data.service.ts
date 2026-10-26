@@ -701,6 +701,10 @@ export class MselDataService {
     this.mselStore.update(mselId, { imageDateModified });
   }
 
+  updateCasterIds(mselId: string, casterWorkspaceId: string, casterRunId: string) {
+    this.mselStore.update(mselId, { casterWorkspaceId, casterRunId });
+  }
+
   deleteFromStore(id: string) {
     this.mselStore.remove(id);
   }

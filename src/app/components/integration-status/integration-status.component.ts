@@ -2,7 +2,9 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 import { Component, inject, input, output } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
+import { MselQuery } from 'src/app/data/msel/msel.query';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { MselItemStatus } from 'src/app/generated/blueprint.api';
 import { MatProgressBar } from '@angular/material/progress-bar';
@@ -18,6 +20,8 @@ import { MatIcon } from '@angular/material/icon';
 export class IntegrationStatusComponent {
   private mselDataService = inject(MselDataService);
   private dialogService = inject(CrucibleDialogService);
+  // true while a MSEL request is in flight, so a second click cannot send a second retry
+  readonly loading = toSignal(inject(MselQuery).selectLoading(), { initialValue: false });
 
   readonly msel = input<MselPlus>(undefined);
   // the MSEL's Caster workspace, once the push has created it; empty otherwise
