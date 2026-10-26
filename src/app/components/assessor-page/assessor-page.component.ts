@@ -24,17 +24,19 @@ import { CurrentUserQuery } from 'src/app/data/user/user.query';
 import { UserMselRoleDataService } from 'src/app/data/user-msel-role/user-msel-role-data.service';
 import { UserMselRoleQuery } from 'src/app/data/user-msel-role/user-msel-role.query';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
+import { ASSESS_ROLES } from 'src/app/utilities/assessable-msels';
 import { TopbarView } from '../shared/top-bar/topbar.models';
 import { TopbarComponent } from '../shared/top-bar/topbar.component';
 import { MatIcon } from '@angular/material/icon';
 import { AssessorViewComponent } from '../assessor-view/assessor-view.component';
+import { AssessComponent } from '../landing/assess/assess.component';
 import { AsyncPipe } from '@angular/common';
 
 @Component({
     selector: 'app-assessor-page',
     templateUrl: './assessor-page.component.html',
     styleUrls: ['./assessor-page.component.scss'],
-    imports: [TopbarComponent, MatIcon, AssessorViewComponent, AsyncPipe]
+    imports: [TopbarComponent, MatIcon, AssessorViewComponent, AssessComponent, AsyncPipe]
 })
 export class AssessorPageComponent implements OnDestroy, OnInit {
   private activatedRoute = inject(ActivatedRoute);
@@ -90,6 +92,10 @@ export class AssessorPageComponent implements OnDestroy, OnInit {
           this.scenarioEventDataService.loadByMsel(mselId);
           this.userMselRoleDataService.loadByMsel(mselId);
           this.selectedMselId = mselId;
+        } else if (!mselId) {
+          // Back to the list of events to assess.
+          this.selectedMselId = '';
+          this.updateRolePermissions();
         }
       });
 
@@ -154,25 +160,19 @@ export class AssessorPageComponent implements OnDestroy, OnInit {
       return;
     }
 
-    // Find user's role for this MSEL
-    const roles = this.userMselRoleQuery.getAll();
-    this.userMselRole = roles.find(r =>
+    // Find the user's roles for this MSEL. A user can hold several, so all of
+    // them count, not only the first.
+    const roles = this.userMselRoleQuery.getAll().filter(r =>
       r.userId === this.loggedInUserId && r.mselId === this.selectedMselId
-    ) || null;
-
-    if (!this.userMselRole) {
-      this.canViewAssessorPage = false;
-      this.canEditAssessorPage = false;
-      return;
-    }
+    );
+    this.userMselRole = roles[0] || null;
 
     // Editor or higher can view assessor page
     const viewRoles: MselRole[] = ['Owner', 'Editor', 'Approver', 'Evaluator'];
-    this.canViewAssessorPage = viewRoles.includes(this.userMselRole.role as MselRole);
+    this.canViewAssessorPage = roles.some(r => viewRoles.includes(r.role as MselRole));
 
-    // Only Evaluator, Owner can edit (check/uncheck checkboxes)
-    const editRoles: MselRole[] = ['Owner', 'Evaluator'];
-    this.canEditAssessorPage = editRoles.includes(this.userMselRole.role as MselRole);
+    // Only the roles that can assess can edit (check/uncheck checkboxes)
+    this.canEditAssessorPage = roles.some(r => ASSESS_ROLES.includes(r.role as MselRole));
   }
 
   goToUrl(url): void {

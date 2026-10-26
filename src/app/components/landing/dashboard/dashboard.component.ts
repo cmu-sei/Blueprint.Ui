@@ -3,7 +3,7 @@
 // project root for license information.
 import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { Subject } from 'rxjs';
+import { Subject, combineLatest } from 'rxjs';
 import { take, takeUntil } from 'rxjs/operators';
 import {
   ComnSettingsService,
@@ -13,10 +13,8 @@ import { UserQuery } from 'src/app/data/user/user.query';
 import { CurrentUserQuery } from 'src/app/data/user/user.query';
 import {
   Msel,
-  MselRole,
   SystemPermission,
   User,
-  UserMselRole,
 } from 'src/app/generated/blueprint.api';
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
 import { TopbarView } from '../../shared/top-bar/topbar.models';
@@ -26,6 +24,7 @@ import { PermissionDataService } from 'src/app/data/permission/permission-data.s
 import { MatDialog } from '@angular/material/dialog';
 import { CapabilityDialogComponent, CapabilityData } from '../../capability-dialog/capability-dialog.component';
 import { landingBackground } from 'src/app/utilities/landing-background';
+import { assessableMsels, canAssess } from 'src/app/utilities/assessable-msels';
 import { TopbarComponent } from '../../shared/top-bar/topbar.component';
 import { MatButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
@@ -133,47 +132,24 @@ export class DashboardComponent implements OnDestroy, OnInit {
       .subscribe((msels) => {
         this.joinMselList = msels;
       });
-    // load the build MSELs
-    this.mselDataService
-      .getMyBuildMsels()
+    // load the build MSELs. The ASSESS card depends on whether the user is a
+    // system admin as well, so it waits for the permissions too.
+    combineLatest([this.mselDataService.getMyBuildMsels(), this.permissionDataService.load()])
       .pipe(take(1))
-      .subscribe((msels) => {
+      .subscribe(([msels]) => {
         this.buildMselList = msels;
-        // Check for Evaluator role to show assess card
+        this.isSystemAdmin = this.permissionDataService.hasPermission(SystemPermission.CreateMsels);
         this.checkForAssessorRole(msels);
         this.isStarted = true;
       });
   }
 
+  // The ASSESS card shows for anyone who can assess some MSEL, and opens when
+  // one of those is running.
   checkForAssessorRole(msels: Msel[]) {
-    // System admins always have assessor access
-    if (this.isSystemAdmin) {
-      this.hasAssessorRole = true;
-      // Add all MSELs with scenario events to assessMselList
-      this.assessMselList = msels.filter(
-        (msel) => msel.scenarioEvents && msel.scenarioEvents.length > 0
-      );
-      return;
-    }
-
-    // Check if user has Evaluator role on any MSEL
     const currentUserId = this.currentUserQuery.getValue()?.id;
-    if (!currentUserId) return;
-
-    for (const msel of msels) {
-      if (msel.userMselRoles) {
-        const hasEvaluatorRole = msel.userMselRoles.some(
-          (umr) => umr.userId === currentUserId && umr.role === MselRole.Evaluator
-        );
-        if (hasEvaluatorRole) {
-          this.hasAssessorRole = true;
-          // Add to assessMselList if it has active scenario events
-          if (msel.scenarioEvents && msel.scenarioEvents.length > 0) {
-            this.assessMselList.push(msel);
-          }
-        }
-      }
-    }
+    this.hasAssessorRole = msels.some((msel) => canAssess(msel, currentUserId, this.isSystemAdmin));
+    this.assessMselList = assessableMsels(msels, currentUserId, this.isSystemAdmin);
   }
 
   topBarNavigate(url): void {

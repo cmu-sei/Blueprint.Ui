@@ -1,0 +1,72 @@
+<!--
+Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license, please see LICENSE.md in the
+project root for license information or contact permission@sei.cmu.edu for full terms.
+-->
+<div class="join-page landing-background" [class.has-background]="backgroundImage" [style.--landing-background]="backgroundImage">
+  @if (!hideTopbar) {
+    <app-topbar [title]="topbarText"
+      [topbarView]="TopbarView.BLUEPRINT_HOME"
+      [imageFilePath]="topbarImage"
+      (urlNavigate)="topBarNavigate($event)"
+     />
+  }
+  <div class="join-container">
+    <div class="page-header">
+      <h1 class="page-title">Assess an Event</h1>
+      <p class="page-subtitle">Choose a running event to rate its teams against the event's competencies.</p>
+    </div>
+    @if (isLoading) {
+      <div class="joining-state">
+        <mat-progress-spinner color="primary" mode="indeterminate" diameter="60"></mat-progress-spinner>
+      </div>
+    } @else {
+      <div class="event-grid">
+        @for (msel of assessMselList; track msel.id) {
+          <div class="event-card" [class.nothing-to-assess]="hasNothingToAssess(msel)">
+            @if (cardPhotos[msel.id]) {
+            <div class="card-image card-photo" [style.background-image]="'url(' + cardPhotos[msel.id] + ')'"
+              aria-hidden="true"></div>
+            } @else {
+            <div class="card-image" [style.background]="cardImage(msel)" aria-hidden="true"></div>
+            }
+            <h2 class="card-title">{{ msel.name }}</h2>
+            @if (msel.description) {
+              <p class="card-description">{{ msel.description }}</p>
+            }
+            <p class="card-competencies">
+              @switch (competencyCounts[msel.id]) {
+                @case (undefined) { }
+                @case (0) { No competencies to assess }
+                @case (1) { 1 competency }
+                @default { {{ competencyCounts[msel.id] }} competencies }
+              }
+            </p>
+            <div class="card-footer">
+              @if (hasNothingToAssess(msel)) {
+                <button mat-flat-button color="primary" disabled title="{{ msel.name }} has no competencies to assess">
+                  Assess
+                </button>
+              } @else {
+                <a
+                  mat-flat-button
+                  color="primary"
+                  [routerLink]="['/assess']"
+                  [queryParams]="{ msel: msel.id }"
+                  title="Assess {{ msel.name }}"
+                >
+                  Assess
+                </a>
+              }
+            </div>
+          </div>
+        } @empty {
+          <div class="empty-state">
+            <mat-icon fontIcon="mdi-clipboard-check-outline"></mat-icon>
+            <p>No running events available to assess</p>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>

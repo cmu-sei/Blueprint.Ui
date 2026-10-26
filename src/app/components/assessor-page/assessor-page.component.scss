@@ -31,3 +31,10 @@
     color: rgba(0, 0, 0, 0.6);
   }
 }
+
+// With no event chosen the page is the Assess list, which scrolls inside the
+// host rather than being clipped by it.
+app-assess {
+  height: 100%;
+  overflow-y: auto;
+}
