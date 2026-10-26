@@ -12,7 +12,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { Observable, of } from 'rxjs';
-import { ComnAuthService, Theme } from '@cmusei/crucible-common';
+import { ComnAuthService, ComnSettingsService, Theme } from '@cmusei/crucible-common';
 import {
   HealthCheckService,
   HealthReport,
@@ -57,7 +57,7 @@ class MselStub {
 const MSEL_PERMISSIONS = [SystemPermission.CreateMsels, SystemPermission.ViewMsels, SystemPermission.EditMsels, SystemPermission.ManageMsels];
 
 async function renderHome(
-  overrides: { permissions?: SystemPermission[]; mselId?: string; health?: HealthReport; logout?: ComnAuthService['logout'] } = {},
+  overrides: { permissions?: SystemPermission[]; mselId?: string; health?: HealthReport; logout?: ComnAuthService['logout']; background?: string } = {},
 ) {
   const { permissions = [], mselId, health = { status: HealthStatus.Healthy } } = overrides;
   const healthApi = {
@@ -87,6 +87,12 @@ async function renderHome(
       { provide: HealthCheckService, useValue: healthApi },
       { provide: SignalRService, useValue: signalR },
       { provide: ActivatedRoute, useValue: route },
+      {
+        provide: ComnSettingsService,
+        useValue: {
+          settings: { AppTitle: '', AppTopBarText: '', AppTopBarImage: '', AppLandingBackgroundImage: overrides.background },
+        } satisfies Pick<ComnSettingsService, 'settings'>,
+      },
       {
         provide: ComnAuthService,
         useValue: {
@@ -201,5 +207,24 @@ describe('HomeAppComponent', () => {
     // Current behavior; see agent-docs/ui-test-bugs/blueprint.ui.md.
     expect(screen.getByRole('heading', { name: 'Unhealthy' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Please refresh this page.' })).toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: the MSEL list shows the background image named in settings; an open MSEL, or no setting, shows none.
+   * Interacts with: ComnSettingsService.settings (stub), ActivatedRoute (?msel), HomeAppComponent template.
+   * Data: AppLandingBackgroundImage set to a relative asset URL, or unset; no MSEL or msel-1 open.
+   */
+  it.each([
+    { label: 'on the MSEL list', background: '/assets/local/landing-background.jpg', mselId: undefined as string, shown: true },
+    { label: 'not on an open MSEL', background: '/assets/local/landing-background.jpg', mselId: 'msel-1', shown: false },
+    { label: 'not without the setting', background: undefined as string, mselId: undefined as string, shown: false },
+  ])('shows the landing background $label', async ({ background, mselId, shown }) => {
+    const { container } = await renderHome({ background, mselId });
+
+    const page = container.querySelector('.app-content-container') as HTMLElement;
+    expect(page.classList.contains('has-background')).toBe(shown);
+    if (shown) {
+      expect(page.style.getPropertyValue('--landing-background')).toBe('url("/assets/local/landing-background.jpg")');
+    }
   });
 });

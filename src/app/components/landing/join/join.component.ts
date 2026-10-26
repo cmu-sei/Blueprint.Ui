@@ -15,26 +15,30 @@ import {
   User,
 } from 'src/app/generated/blueprint.api';
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
+import { MselImageDataService } from 'src/app/data/msel/msel-image-data.service';
 import { TopbarView } from '../../shared/top-bar/topbar.models';
 import { Title } from '@angular/platform-browser';
 import { ErrorService } from 'src/app/services/error/error.service';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
 import { XApiService } from 'src/app/services/xapi/xapi.service';
+import { landingBackground } from 'src/app/utilities/landing-background';
 import { TopbarComponent } from '../../shared/top-bar/topbar.component';
-import { MatCard, MatCardHeader, MatCardTitle, MatCardSubtitle, MatCardActions } from '@angular/material/card';
 import { MatButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
 
 @Component({
     selector: 'app-join',
     templateUrl: './join.component.html',
     styleUrls: ['./join.component.scss'],
-    imports: [TopbarComponent, MatCard, MatCardHeader, MatCardTitle, MatCardSubtitle, MatCardActions, MatButton, RouterLink]
+    imports: [TopbarComponent, MatButton, MatIcon, MatProgressSpinner, RouterLink]
 })
 export class JoinComponent implements OnDestroy, OnInit {
   private userDataService = inject(UserDataService);
   private userQuery = inject(UserQuery);
   private settingsService = inject(ComnSettingsService);
   private mselDataService = inject(MselDataService);
+  private mselImageDataService = inject(MselImageDataService);
   private activatedRoute = inject(ActivatedRoute);
   private router = inject(Router);
   private titleService = inject(Title);
@@ -51,11 +55,13 @@ export class JoinComponent implements OnDestroy, OnInit {
   topbarColor = '#ef3a47';
   topbarTextColor = '#FFFFFF';
   topbarImage = this.settingsService.settings.AppTopBarImage;
+  backgroundImage = landingBackground(this.settingsService.settings);
   TopbarView = TopbarView;
   appTitle = 'Join Event';
   joinStatus: { [id: string]: string } = {};
   isJoined: { [id: string]: boolean } = {};
   showChoices = false;
+  cardPhotos: { [id: string]: string } = {};
   private unsubscribe$ = new Subject();
 
   constructor() {
@@ -104,7 +110,30 @@ export class JoinComponent implements OnDestroy, OnInit {
       .pipe(take(1))
       .subscribe((msels) => {
         this.joinMselList = msels;
+        msels.forEach((msel) =>
+          this.mselImageDataService
+            .imageUrl(msel)
+            .pipe(takeUntil(this.unsubscribe$))
+            .subscribe((url) => {
+              if (url) {
+                this.cardPhotos[msel.id] = url;
+              }
+            })
+        );
       });
+  }
+
+  // A card shows the MSEL's own image when it has one. Otherwise it gets a
+  // pattern generated from the MSEL id, so the same event always looks the same.
+  cardImage(msel: Msel): string {
+    let hash = 0;
+    for (const c of msel.id ?? msel.name ?? '') {
+      hash = (hash * 31 + c.charCodeAt(0)) | 0;
+    }
+    const hue = Math.abs(hash) % 360;
+    const angle = 30 + (Math.abs(hash >> 8) % 4) * 30;
+    return `repeating-linear-gradient(${angle}deg, rgba(255, 255, 255, 0.08) 0 12px, transparent 12px 24px), ` +
+      `linear-gradient(135deg, hsl(${hue}, 55%, 42%), hsl(${(hue + 40) % 360}, 60%, 30%))`;
   }
 
   topBarNavigate(url): void {

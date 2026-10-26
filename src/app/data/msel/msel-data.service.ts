@@ -96,6 +96,7 @@ export class MselPlus implements Msel {
   educationalUse?: string;
   courseMode?: string;
   language?: string;
+  imageDateModified?: Date | null;
 
   hasRole(userId: string, scenarioEventId: string) {
     // initialize to no roles
@@ -673,6 +674,10 @@ export class MselDataService {
 
   updateIntegrationStatus(mselId: string, integrationStatus: string) {
     this.mselStore.update(mselId, { integrationStatus });
+  }
+
+  updateImageDateModified(mselId: string, imageDateModified: Date | null) {
+    this.mselStore.update(mselId, { imageDateModified });
   }
 
   deleteFromStore(id: string) {

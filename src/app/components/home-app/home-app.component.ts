@@ -27,6 +27,7 @@ import { MselDataService } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { ApplicationArea, SignalRService } from 'src/app/services/signalr.service';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
+import { landingBackground } from 'src/app/utilities/landing-background';
 import { TopbarComponent } from '../shared/top-bar/topbar.component';
 import { MatIconButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
@@ -79,6 +80,7 @@ export class HomeAppComponent implements OnDestroy, OnInit {
   private unsubscribe$ = new Subject();
   hideTopbar = false;
   topbarImage = this.settingsService.settings.AppTopBarImage;
+  backgroundImage = landingBackground(this.settingsService.settings);
   TopbarView = TopbarView;
   theme$: Observable<Theme>;
   teamList: Team[] = [];
