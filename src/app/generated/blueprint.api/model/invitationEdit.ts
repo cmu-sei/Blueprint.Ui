@@ -24,6 +24,10 @@ export interface InvitationEdit {
     expirationDateTime?: Date | null;
     maxUsersAllowed?: number;
     isTeamLeader?: boolean;
+    /**
+     * The CITE team role, by name, that someone joining through this Invitation gets. Empty gives Member.
+     */
+    citeTeamRole?: string | null;
     wasDeactivated?: boolean;
 }
 
