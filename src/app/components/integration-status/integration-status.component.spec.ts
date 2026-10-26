@@ -11,6 +11,7 @@ import { of } from 'rxjs';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { Msel, MselItemStatus, MselService } from 'src/app/generated/blueprint.api';
 import { MselPlus } from 'src/app/data/msel/msel-data.service';
+import { MselStore } from 'src/app/data/msel/msel.store';
 import { IntegrationStatusComponent } from './integration-status.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { dialogRefStub } from 'src/app/test-utils/dialog-refs';
@@ -20,7 +21,12 @@ function msel(integrationStatus: string, status: MselItemStatus): MselPlus {
   return Object.assign(new MselPlus(), { id: 'msel-1', name: 'Exercise Alpha', integrationStatus, status });
 }
 
-async function renderStatus(integrationStatus: string, casterWorkspaceUrl = '', status: MselItemStatus = MselItemStatus.Pushing) {
+async function renderStatus(
+  integrationStatus: string,
+  casterWorkspaceUrl = '',
+  status: MselItemStatus = MselItemStatus.Pushing,
+  loading = false
+) {
   const mselApi = {
     cancelIntegrations: vi.fn(() => of<unknown>(null)),
     pullIntegrations: vi.fn(() => of<Msel>({ id: 'msel-1', name: 'Exercise Alpha' })),
@@ -35,6 +41,15 @@ async function renderStatus(integrationStatus: string, casterWorkspaceUrl = '', 
     providers: [
       { provide: MselService, useValue: mselApi },
       { provide: CrucibleDialogService, useValue: dialog },
+      // An Akita store starts out loading; the MSEL page's own request would have finished.
+      {
+        provide: MselStore,
+        useFactory: () => {
+          const store = new MselStore();
+          store.setLoading(loading);
+          return store;
+        },
+      },
     ],
     inputs: { msel: msel(integrationStatus, status), casterWorkspaceUrl },
   });
@@ -123,6 +138,17 @@ describe('IntegrationStatusComponent', () => {
     expect(mselApi.retryCasterIntegration).toHaveBeenCalledWith('msel-1');
     expect(confirm).not.toHaveBeenCalled();
     expect(closedCount()).toBe(0);
+  });
+
+  /**
+   * Verifies: Retry Caster is disabled while a MSEL request is in flight, so a double-click cannot send a second retry.
+   * Interacts with: IntegrationStatusComponent.loading (real MselQuery over a loading MselStore).
+   * Data: a Pushing MSEL with status "ERROR: Caster - planning failed - ..."; the MSEL store is loading.
+   */
+  it('disables Retry Caster while a MSEL request is in flight', async () => {
+    await renderStatus('ERROR: Caster - planning failed - Caster run run-1 plan ended Failed.', '', MselItemStatus.Pushing, true);
+
+    expect(screen.getByRole('button', { name: 'Retry Caster' })).toBeDisabled();
   });
 
   /**
