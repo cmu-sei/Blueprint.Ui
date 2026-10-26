@@ -556,7 +556,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
   viewDataOptions(dataField: DataField, event: Event) {
     event.stopPropagation();
     if (dataField.dataType === DataFieldType.Competency || (dataField.dataOptions && dataField.dataOptions.length > 0)) {
-      const hasEditPermission = this.canEdit() || this.msel.hasRole(this.loggedInUserId(), null).owner;
+      const hasEditPermission = this.canEdit();
       const supportsOptionList =
         dataField.dataType === DataFieldType.Double ||
         dataField.dataType === DataFieldType.Integer ||
@@ -578,6 +578,10 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
           }
         });
         compDialogRef.afterClosed().subscribe((updatedOptions) => {
+          // Closing without saving answers nothing; a read-only user has nothing to save.
+          if (!canAddOptions || updatedOptions === undefined) {
+            return;
+          }
           const updated = { ...dataField, dataOptions: updatedOptions || dataField.dataOptions };
           this.dataFieldDataService.updateDataField(updated);
         });
@@ -782,7 +786,8 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
   }
 
   canEdit(): boolean {
-    if (this.showTemplates()) {
+    // Template and inject type fields belong to no MSEL; the API wants ManageDataFields for them.
+    if (this.showTemplates() || this.injectTypeId()) {
       return this.permissionDataService.hasPermission(SystemPermission.ManageDataFields);
     } else {
       // The API lets EditMsels, the MSEL's owners and its Editors change its data
@@ -793,6 +798,20 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
         this.msel.hasRole(userId, '').owner ||
         (this.msel.userMselRoles ?? []).some((r) => r.userId === userId && r.role === MselRole.Editor);
     }
+  }
+
+  // The system rows (Move, Group, Execution Time, Integration Target) are MSEL settings, saved by
+  // updating the MSEL, which the API allows to EditMsels and the MSEL's owners only.
+  canEditRow(dataField: DataField): boolean {
+    return dataField.displayOrder < 0
+      ? this.permissionDataService.hasPermission(SystemPermission.EditMsels) ||
+        this.msel.hasRole(this.loggedInUserId(), '').owner
+      : this.canEdit();
+  }
+
+  // A template is a field of no MSEL, which the API creates only with ManageDataFields.
+  canMakeTemplate(): boolean {
+    return this.canEdit() && this.permissionDataService.hasPermission(SystemPermission.ManageDataFields);
   }
 
   ngOnDestroy() {
