@@ -93,7 +93,7 @@ async function renderInjectTypes(overrides: { canEdit?: boolean } = {}) {
 }
 
 const table = () => screen.getByRole('table');
-const ROW_ACTIONS = ['Edit Email injectType', 'Copy Email', 'Delete Email injectType'];
+const ROW_ACTIONS = ['Edit Email', 'Copy Email', 'Delete Email'];
 const HEADER_ACTIONS = ['Add new inject type', 'Upload Inject Types from JSON', 'Download Inject Types as JSON'];
 
 function injectList(fixture: ComponentFixture<unknown>): InjectListStub {
@@ -160,7 +160,7 @@ describe('AdminInjectTypesComponent', () => {
     const { injectTypeApi, confirm } = await renderInjectTypes({ canEdit: true });
     const user = userEvent.setup();
 
-    await user.click(within(table()).getByRole('button', { name: 'Delete Email injectType' }));
+    await user.click(within(table()).getByRole('button', { name: 'Delete Email' }));
 
     expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Delete Inject Type', message: 'Are you sure that you want to delete Email?', confirmText: 'Delete' }));
     expect(injectTypeApi.deleteInjectType).toHaveBeenCalledWith('it-email');
