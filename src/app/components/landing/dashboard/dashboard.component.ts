@@ -3,8 +3,8 @@
 // project root for license information.
 import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { Subject, combineLatest } from 'rxjs';
-import { take, takeUntil } from 'rxjs/operators';
+import { Subject, combineLatest, of } from 'rxjs';
+import { take, takeUntil, catchError } from 'rxjs/operators';
 import {
   ComnSettingsService,
 } from '@cmusei/crucible-common';
@@ -24,6 +24,7 @@ import { PermissionDataService } from 'src/app/data/permission/permission-data.s
 import { MatDialog } from '@angular/material/dialog';
 import { CapabilityDialogComponent, CapabilityData } from '../../capability-dialog/capability-dialog.component';
 import { landingBackground } from 'src/app/utilities/landing-background';
+import { ErrorService } from 'src/app/services/error/error.service';
 import { assessableMsels, canAssess } from 'src/app/utilities/assessable-msels';
 import { TopbarComponent } from '../../shared/top-bar/topbar.component';
 import { MatButton } from '@angular/material/button';
@@ -38,6 +39,7 @@ import { MatProgressSpinner } from '@angular/material/progress-spinner';
 })
 export class DashboardComponent implements OnDestroy, OnInit {
   private userDataService = inject(UserDataService);
+  private errorService = inject(ErrorService);
   private userQuery = inject(UserQuery);
   private currentUserQuery = inject(CurrentUserQuery);
   private settingsService = inject(ComnSettingsService);
@@ -66,6 +68,10 @@ export class DashboardComponent implements OnDestroy, OnInit {
   launchClass = 'base-card';
   buildClass = 'base-card';
   isStarted = false;
+  // set once startup has begun, so the watchdog leaves slow requests alone
+  private isStartupBegun = false;
+  // set when the MSELs fail to load, to show a message instead of the cards
+  loadFailed = false;
   canCreateMsels = false;
   hasAssessorRole = false;
   isSystemAdmin = false;
@@ -93,23 +99,23 @@ export class DashboardComponent implements OnDestroy, OnInit {
           this.startup();
         }
       });
-    setTimeout(() => {
-      if (!this.isStarted) {
-        window.location.reload();
-      }
-    }, 10000);
-    // Load permissions
-    this.permissionDataService
-      .load()
-      .subscribe(
-        (x) => {
-          this.canCreateMsels = this.permissionDataService.hasPermission(SystemPermission.CreateMsels);
-          this.isSystemAdmin = this.canCreateMsels;
-        }
-      );
+    // Reload only if startup never began, because the current user never arrived; requests that are
+    // merely slow, or that fail, are left to finish or to say so rather than reloading the page.
+    setTimeout(() => this.reloadIfNotStarted(), 10000);
+  }
+
+  reloadIfNotStarted() {
+    if (!this.isStartupBegun) {
+      this.reloadPage();
+    }
+  }
+
+  reloadPage() {
+    window.location.reload();
   }
 
   startup() {
+    this.isStartupBegun = true;
     // subscribe to users
     this.userQuery.selectAll()
       .pipe(takeUntil(this.unsubscribe$))
@@ -133,12 +139,25 @@ export class DashboardComponent implements OnDestroy, OnInit {
         this.joinMselList = msels;
       });
     // load the build MSELs. The ASSESS card depends on whether the user is a
-    // system admin as well, so it waits for the permissions too.
-    combineLatest([this.mselDataService.getMyBuildMsels(), this.permissionDataService.load()])
+    // system admin as well, so it waits for the permissions too. Permissions that
+    // fail to load count as none, so they cannot hold up the dashboard, whose
+    // watchdog would otherwise reload the page.
+    // MSELs that fail to load end the spinner with a message instead of the cards.
+    combineLatest([
+      this.mselDataService.getMyBuildMsels().pipe(
+        catchError((err) => {
+          this.loadFailed = true;
+          this.errorService.handleError(err);
+          return of([] as Msel[]);
+        })
+      ),
+      this.permissionDataService.load().pipe(catchError(() => of([]))),
+    ])
       .pipe(take(1))
       .subscribe(([msels]) => {
         this.buildMselList = msels;
-        this.isSystemAdmin = this.permissionDataService.hasPermission(SystemPermission.CreateMsels);
+        this.canCreateMsels = this.permissionDataService.hasPermission(SystemPermission.CreateMsels);
+        this.isSystemAdmin = this.canCreateMsels;
         this.checkForAssessorRole(msels);
         this.isStarted = true;
       });

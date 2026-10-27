@@ -12,6 +12,7 @@ import { PermissionDataService } from 'src/app/data/permission/permission-data.s
 import { UserDataService } from 'src/app/data/user/user-data.service';
 import { CurrentUserQuery } from 'src/app/data/user/user.query';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
+import { ErrorService } from 'src/app/services/error/error.service';
 import { TopbarView } from '../../shared/top-bar/topbar.models';
 import { TopbarComponent } from '../../shared/top-bar/topbar.component';
 import { OverflowTooltipDirective } from '../../shared/overflow-tooltip/overflow-tooltip.directive';
@@ -40,9 +41,11 @@ export class AssessComponent implements OnDestroy, OnInit {
   private currentUserQuery = inject(CurrentUserQuery);
   private uiDataService = inject(UIDataService);
   private router = inject(Router);
+  private errorService = inject(ErrorService);
 
   assessMselList: Msel[] = [];
   isLoading = true;
+  loadFailed = false;
   // Competency count per MSEL id; absent until its answer arrives.
   competencyCounts: { [id: string]: number } = {};
   cardPhotos: { [id: string]: string } = {};
@@ -60,37 +63,46 @@ export class AssessComponent implements OnDestroy, OnInit {
     // so it waits for both rather than racing them.
     combineLatest([
       this.currentUserQuery.select().pipe(filter((cu) => !!cu?.id), take(1)),
-      this.permissionDataService.load(),
+      // permissions that fail to load count as none, as on the dashboard
+      this.permissionDataService.load().pipe(catchError(() => of([]))),
       this.mselDataService.getMyBuildMsels(),
     ])
       .pipe(take(1), takeUntil(this.unsubscribe$))
-      .subscribe(([cu, , msels]) => {
-        const isSystemAdmin = this.permissionDataService.hasPermission(SystemPermission.CreateMsels);
-        this.assessMselList = assessableMsels(msels, cu.id, isSystemAdmin);
-        this.isLoading = false;
-        this.assessMselList.forEach((msel) => {
-          this.mselImageDataService
-            .imageUrl(msel)
-            .pipe(takeUntil(this.unsubscribe$))
-            .subscribe((url) => {
-              if (url) {
-                this.cardPhotos[msel.id] = url;
-              }
-            });
-          this.mselCompetencyService
-            .getMselCompetencies(msel.id)
-            .pipe(
-              take(1),
-              // A failed count leaves the card usable; the assessor view reports its own errors.
-              catchError(() => of(null)),
-              takeUntil(this.unsubscribe$)
-            )
-            .subscribe((competencies) => {
-              if (competencies) {
-                this.competencyCounts[msel.id] = competencies.length;
-              }
-            });
-        });
+      .subscribe({
+        // a failed request ends the spinner and says so, rather than loading forever
+        error: (err) => {
+          this.isLoading = false;
+          this.loadFailed = true;
+          this.errorService.handleError(err);
+        },
+        next: ([cu, , msels]) => {
+          const isSystemAdmin = this.permissionDataService.hasPermission(SystemPermission.CreateMsels);
+          this.assessMselList = assessableMsels(msels, cu.id, isSystemAdmin);
+          this.isLoading = false;
+          this.assessMselList.forEach((msel) => {
+            this.mselImageDataService
+              .imageUrl(msel)
+              .pipe(takeUntil(this.unsubscribe$))
+              .subscribe((url) => {
+                if (url) {
+                  this.cardPhotos[msel.id] = url;
+                }
+              });
+            this.mselCompetencyService
+              .getMselCompetencies(msel.id)
+              .pipe(
+                take(1),
+                // A failed count leaves the card usable; the assessor view reports its own errors.
+                catchError(() => of(null)),
+                takeUntil(this.unsubscribe$)
+              )
+              .subscribe((competencies) => {
+                if (competencies) {
+                  this.competencyCounts[msel.id] = competencies.length;
+                }
+              });
+          });
+        },
       });
   }
 
