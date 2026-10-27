@@ -21,11 +21,12 @@ export interface PlayerApplication {
     createdBy?: string;
     modifiedBy?: string | null;
     id?: string;
-    mselId?: string;
+    mselId?: string | null;
     name?: string | null;
     url?: string | null;
     icon?: string | null;
     embeddable?: boolean | null;
     loadInBackground?: boolean | null;
+    isTemplate?: boolean;
 }
 
