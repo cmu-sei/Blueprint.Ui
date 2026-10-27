@@ -144,7 +144,7 @@ export class DataFieldEditDialogComponent {
   }
 
   viewAllOptions() {
-    const canEdit = this.data.canEdit || this.data.isOwner;
+    const canEdit = this.data.canEdit;
     const canAddOptions = canEdit && !this.optionListNotAllowed();
 
     if (this.data.dataField.dataType === DataFieldType.Competency) {
