@@ -7,6 +7,7 @@ import { MatPaginator } from '@angular/material/paginator';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import {
+  CiteService,
   Invitation,
   MselItemStatus,
   Team
@@ -28,6 +29,9 @@ import { FormsModule } from '@angular/forms';
 import { MatIconButton } from '@angular/material/button';
 import { ClipboardModule } from 'ngx-clipboard';
 
+// The CITE team role someone joining through an invitation gets when it names none, as CITE does.
+export const DEFAULT_CITE_TEAM_ROLE = 'Member';
+
 @Component({
     selector: 'app-invitation-list',
     templateUrl: './invitation-list.component.html',
@@ -39,6 +43,7 @@ export class InvitationListComponent implements OnDestroy {
   private invitationDataService = inject(InvitationDataService);
   private invitationQuery = inject(InvitationQuery);
   private teamQuery = inject(TeamQuery);
+  private citeService = inject(CiteService);
   dialog = inject(MatDialog);
   dialogService = inject(CrucibleDialogService);
 
@@ -55,6 +60,8 @@ export class InvitationListComponent implements OnDestroy {
   invitationDataSource = new MatTableDataSource<Invitation>(new Array<Invitation>());
   displayedColumns: string[] = ['action', 'teamId', 'emailDomain', 'expirationDateTime', 'usesAllowed', 'usesRemaining'];
   teamList: Team[] = [];
+  // CITE's team roles, by name, for the role a joiner gets; loaded once the MSEL is known to use CITE
+  citeTeamRoles: string[] = [];
   private unsubscribe$ = new Subject();
 
   constructor() {
@@ -68,6 +75,11 @@ export class InvitationListComponent implements OnDestroy {
       if (msel && this.msel.id !== msel.id) {
         Object.assign(this.msel, msel);
         this.applyFilter(this.filterString);
+      }
+      if (msel?.useCite && this.citeTeamRoles.length === 0) {
+        this.citeService.getTeamRoles().pipe(takeUntil(this.unsubscribe$)).subscribe(roles => {
+          this.citeTeamRoles = roles.map(r => r.name).filter(n => !!n);
+        });
       }
     });
     // subscribe to the MSEL teams
@@ -86,11 +98,16 @@ export class InvitationListComponent implements OnDestroy {
         maxUsersAllowed: 1,
         userCount: 0,
         isTeamLeader: false,
+        citeTeamRole: this.msel.useCite ? DEFAULT_CITE_TEAM_ROLE : null,
         wasDeactivated: false
       };
     } else {
-      // edit a copy, because the stored invitation is read-only
-      invitation = { ...invitation };
+      // edit a copy, because the stored invitation is read-only. With CITE, an invitation with no
+      // role gives Member, so that is what it shows.
+      invitation = {
+        ...invitation,
+        citeTeamRole: invitation.citeTeamRole || (this.msel.useCite ? DEFAULT_CITE_TEAM_ROLE : null),
+      };
     }
     const dialogRef = this.dialog.open(InvitationEditDialogComponent, {
       minWidth: '400px',
@@ -98,7 +115,12 @@ export class InvitationListComponent implements OnDestroy {
       width: 'auto',
       data: {
         invitation: invitation,
-        teamList: this.teamList
+        teamList: this.teamList,
+        useCite: this.msel.useCite,
+        // the invitation's own role is offered even before CITE's list arrives, or if CITE lacks it
+        citeTeamRoles: !invitation.citeTeamRole || this.citeTeamRoles.includes(invitation.citeTeamRole)
+          ? this.citeTeamRoles
+          : [invitation.citeTeamRole, ...this.citeTeamRoles],
       },
     });
     dialogRef.componentInstance.editComplete.subscribe((result) => {

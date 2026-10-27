@@ -503,6 +503,13 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     return this.pipelineStatuses.includes(this.msel?.status);
   }
 
+  // the integrations were built from these settings, so they stay as they are until Remove Integrations
+  integrationsLocked(): boolean {
+    const msel = this.msel;
+    return this.isPipelineStatus() || !!(msel?.playerViewId || msel?.galleryCollectionId || msel?.galleryExhibitId ||
+      msel?.citeEvaluationId || msel?.steamfitterScenarioId || msel?.casterWorkspaceId);
+  }
+
   // the current status is listed even when it is one the user cannot choose, so the field still shows it
   statusOptions(): MselItemStatus[] {
     return this.isPipelineStatus() ? [...this.itemStatus, this.msel.status] : this.itemStatus;
@@ -986,15 +993,24 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     return this.casterDirectoryList.find(d => d.id === this.msel.casterDirectoryId);
   }
 
-  // Caster has no route to a single workspace, so link to the project that holds it
-  getCasterProjectUrl(): string {
+  // On its project page, Caster opens a workspace's tab from ?workspace= and expands a directory from ?directory=;
+  // a Caster without them opens the project
+  getCasterWorkspaceUrl(): string {
+    return this.msel.casterWorkspaceId ? this.getCasterProjectUrl(`workspace=${this.msel.casterWorkspaceId}`) : '';
+  }
+
+  getCasterDirectoryUrl(): string {
+    return this.getCasterProjectUrl(`directory=${this.msel.casterDirectoryId}`);
+  }
+
+  private getCasterProjectUrl(query: string): string {
     const directory = this.selectedCasterDirectory;
     if (!directory) return '';
     let baseUrl = this.settingsService.settings.CasterUrl || '';
     if (baseUrl && baseUrl.slice(-1) !== '/') {
       baseUrl = baseUrl + '/';
     }
-    return `${baseUrl}projects/${directory.projectId}`;
+    return `${baseUrl}projects/${directory.projectId}?${query}`;
   }
 
   casterWarningMessage(): string {

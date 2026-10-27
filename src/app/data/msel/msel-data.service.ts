@@ -476,6 +476,25 @@ export class MselDataService {
       );
   }
 
+  // Returned unsubscribed, so the caller can tell when the request has finished.
+  // The store and the error report are still handled here.
+  retryCaster(mselId: string): Observable<Msel> {
+    this.mselStore.setLoading(true);
+    return this.mselService.retryCasterIntegration(mselId).pipe(
+      take(1),
+      tap({
+        next: (n) => {
+          this.mselStore.setLoading(false);
+          this.updateStore(n);
+        },
+        error: (error) => {
+          this.mselStore.setLoading(false);
+          this.errorService.handleError(error);
+        },
+      })
+    );
+  }
+
   cancelIntegrations(mselId: string) {
     this.mselService
       .cancelIntegrations(mselId)
@@ -678,6 +697,10 @@ export class MselDataService {
 
   updateImageDateModified(mselId: string, imageDateModified: Date | null) {
     this.mselStore.update(mselId, { imageDateModified });
+  }
+
+  updateCasterIds(mselId: string, casterWorkspaceId: string, casterRunId: string) {
+    this.mselStore.update(mselId, { casterWorkspaceId, casterRunId });
   }
 
   deleteFromStore(id: string) {

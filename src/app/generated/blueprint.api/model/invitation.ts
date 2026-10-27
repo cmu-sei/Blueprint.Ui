@@ -24,6 +24,7 @@ export interface Invitation {
     maxUsersAllowed?: number;
     userCount?: number;
     isTeamLeader?: boolean;
+    citeTeamRole?: string | null;
     wasDeactivated?: boolean;
 }
 

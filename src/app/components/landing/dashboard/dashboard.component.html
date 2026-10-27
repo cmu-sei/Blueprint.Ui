@@ -164,7 +164,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </div>
       }
 
-      <!-- ASSESS card - shown for users with Evaluator role -->
+      <!-- ASSESS card - shown for users who can assess an MSEL (Owner, Evaluator or system admin) -->
       @if (hasAssessorRole) {
       <div class="mission-card assess-card"
            [class.disabled-card]="assessMselList.length === 0"
@@ -190,7 +190,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             @if (assessMselList.length > 0) {
               Evaluate and score active exercises
             } @else {
-              No active events available to assess
+              No running events available to assess
             }
           </div>
         </div>

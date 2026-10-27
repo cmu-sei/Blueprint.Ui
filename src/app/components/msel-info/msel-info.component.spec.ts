@@ -70,6 +70,7 @@ import { DurationEditComponent } from '../shared/duration-edit/duration-edit.com
 @Component({ selector: 'app-integration-status', template: '' })
 class IntegrationStatusStub {
   readonly msel = input<Msel>(undefined);
+  readonly casterWorkspaceUrl = input<string>(undefined);
   readonly closed = output<void>();
 }
 @Component({ selector: 'app-duration-edit', template: '' })
@@ -462,8 +463,35 @@ describe('MselInfoComponent', () => {
     });
 
     /**
-     * Verifies: a deployed MSEL shows its Caster directory and workspace read-only, with the workspace name and a link to the directory's Caster project (a slash added to CasterUrl when missing), even with EditMsels.
-     * Interacts with: MselService.getMselIntegrationNames (stub), getCasterProjectUrl, ComnSettingsService (stub, CasterUrl).
+     * Verifies: while a push or pull is under way, or integrations it made are left, the integration boxes are disabled and the Caster directory is read-only, even with EditMsels.
+     * Interacts with: MselInfoComponent.integrationsLocked, the integration status's closed output, real PermissionDataService (stubbed grants).
+     * Data: EditMsels; a MSEL using Player and Caster with directory dir-1: Pushing after a failed Caster plan, Pulling, and Approved with a workspace a failed pull left.
+     */
+    it.each([
+      { label: 'a push failed at Caster', status: MselItemStatus.Pushing, integrationStatus: 'ERROR: Caster - planning failed - boom', casterWorkspaceId: 'ws-1' },
+      { label: 'a pull is under way', status: MselItemStatus.Pulling, integrationStatus: 'Pulling Integrations', casterWorkspaceId: 'ws-1' },
+      { label: 'a workspace is left over', status: MselItemStatus.Approved, integrationStatus: null, casterWorkspaceId: 'ws-1' },
+    ])('locks the integration settings when $label', async ({ status, integrationStatus, casterWorkspaceId }) => {
+      const { fixture } = await renderInfo({
+        permissions: [SystemPermission.EditMsels],
+        mselExtra: { status, integrationStatus, usePlayer: true, useCaster: true, casterDirectoryId: 'dir-1', casterWorkspaceId },
+      });
+      // the status covers the settings until it is closed
+      fixture.debugElement.query(By.directive(IntegrationStatusStub))?.componentInstance.closed.emit();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      expect(casterBox()).toBeDisabled();
+      expect(screen.getByLabelText('Player')).toBeDisabled();
+      expect(screen.getByLabelText('Gallery')).toBeDisabled();
+      expect(await directorySelects(fixture)).toEqual([]);
+      expect(screen.getByTitle('dir-1')).toHaveTextContent('dir-1');
+    });
+
+    /**
+     * Verifies: a deployed MSEL shows its Caster directory and workspace read-only, with the workspace name and links that open the workspace and the directory in their Caster project (a slash added to CasterUrl when missing), even with EditMsels.
+     * Interacts with: MselService.getMselIntegrationNames (stub), getCasterWorkspaceUrl, ComnSettingsService (stub, CasterUrl).
      * Data: EditMsels; a deployed MSEL using Player and Caster with directory dir-1 (project proj-1) and workspace ws-1 named blueprint-msel-1; CasterUrl with and without a trailing slash.
      */
     it.each(['http://caster.example/', 'http://caster.example'])('shows the deployed Caster workspace with CasterUrl %s', async (casterUrl) => {
@@ -480,12 +508,13 @@ describe('MselInfoComponent', () => {
       expect(screen.getByTitle('dir-1')).toHaveTextContent('dir-1');
       expect(screen.getByTitle('ws-1')).toHaveTextContent('ws-1');
       expect(screen.getByText('blueprint-msel-1')).toBeInTheDocument();
-      expect(screen.getByTitle('Open in Caster')).toHaveAttribute('href', 'http://caster.example/projects/proj-1');
+      expect(screen.getByTitle('Open workspace in Caster')).toHaveAttribute('href', 'http://caster.example/projects/proj-1?workspace=ws-1');
+      expect(screen.getByTitle('Open directory in Caster')).toHaveAttribute('href', 'http://caster.example/projects/proj-1?directory=dir-1');
     });
 
     /**
-     * Verifies: when Caster does not list the deployed directory to this user, its name comes from Blueprint and there is no link to Caster.
-     * Interacts with: MselService.getMselIntegrationNames (stub), CasterService.getCasterDirectories (stub, empty), getCasterProjectUrl.
+     * Verifies: when Caster does not list the deployed directory to this user, its name comes from Blueprint and there are no links to Caster.
+     * Interacts with: MselService.getMselIntegrationNames (stub), CasterService.getCasterDirectories (stub, empty), getCasterWorkspaceUrl.
      * Data: EditMsels; a deployed MSEL using Caster with directory dir-1 and workspace ws-1; Caster lists no directory; Blueprint names the directory Range / Base.
      */
     it('names a directory Caster does not list from Blueprint, without a Caster link', async () => {
@@ -499,7 +528,8 @@ describe('MselInfoComponent', () => {
       expect(screen.getByTitle('dir-1')).toHaveTextContent('dir-1');
       expect(screen.getByText('Range / Base')).toBeInTheDocument();
       expect(screen.getByText('blueprint-msel-1')).toBeInTheDocument();
-      expect(screen.queryByTitle('Open in Caster')).not.toBeInTheDocument();
+      expect(screen.queryByTitle('Open workspace in Caster')).not.toBeInTheDocument();
+      expect(screen.queryByTitle('Open directory in Caster')).not.toBeInTheDocument();
     });
 
     /**

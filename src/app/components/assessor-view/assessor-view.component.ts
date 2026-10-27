@@ -46,6 +46,7 @@ import {
 } from 'src/app/data/scenario-event/scenario-event-data.service';
 import { ScenarioEventQuery } from 'src/app/data/scenario-event/scenario-event.query';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
+import { Router } from '@angular/router';
 import { getTimezoneAbbr } from 'src/app/utilities/timezone-abbr';
 import { MatIcon } from '@angular/material/icon';
 import { MatFormField, MatLabel, MatInput, MatSuffix } from '@angular/material/input';
@@ -96,6 +97,7 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
   private scenarioEventDataService = inject(ScenarioEventDataService);
   private scenarioEventQuery = inject(ScenarioEventQuery);
   private uiDataService = inject(UIDataService);
+  private router = inject(Router);
   private http = inject(HttpClient);
   private settingsService = inject(ComnSettingsService);
   private mselCompetencyQuery = inject(MselCompetencyQuery);
@@ -108,6 +110,10 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
   readonly loggedInUserId = input<string>(undefined);
   readonly userTheme = input<Theme>(undefined);
   readonly canEditCheckboxes = input(false);
+  // On the standalone assessor page there is no Data Fields tab beside this view,
+  // so the empty state says where the fields are chosen instead of pointing at the tab.
+  readonly standalone = input(false);
+  readonly canChooseFields = input(false);
   msel = new MselPlus();
 
   // ScenarioEventView fields
@@ -1706,6 +1712,12 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
   getLevelName(levelId: string): string {
     const level = this.proficiencyLevels.find(l => l.id === levelId);
     return level ? `${level.name} (${level.value})` : '';
+  }
+
+  // The MSEL editor opens on the tab saved in the UI state, so save Data Fields first.
+  openDataFields() {
+    this.uiDataService.setMselTab('Data Fields');
+    this.router.navigate(['/build'], { queryParams: { msel: this.msel.id } });
   }
 
   ngOnDestroy() {

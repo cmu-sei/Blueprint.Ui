@@ -4,7 +4,7 @@ Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
 @if ((msel?.integrationStatus || integrationRequested) && !integrationDismissed) {
-<app-integration-status [msel]="msel" (closed)="dismissIntegrationStatus()" />
+<app-integration-status [msel]="msel" [casterWorkspaceUrl]="getCasterWorkspaceUrl()" (closed)="dismissIntegrationStatus()" />
 } @else {
 <div class="frame">
   <mat-tab-group mat-align-tabs="start" class="tab-group" [selectedIndex]="currentTabIndex"
@@ -191,7 +191,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <!-- Player Integration -->
             <div class="integration-row">
               <div class="integration-checkbox-cell">
-                <mat-checkbox [(ngModel)]="msel.usePlayer" [disabled]="msel.status === 'Deployed' || !canEditMsel()"
+                <mat-checkbox [(ngModel)]="msel.usePlayer" [disabled]="integrationsLocked() || !canEditMsel()"
                   (cut)="isChanged = true" (change)="isChanged = true" (paste)="isChanged = true"
                   (keypress)="isChanged = true">Player</mat-checkbox>
               </div>
@@ -214,7 +214,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <!-- Gallery Integration -->
             <div class="integration-row">
               <div class="integration-checkbox-cell">
-                <mat-checkbox [(ngModel)]="msel.useGallery" [disabled]="msel.status === 'Deployed' || !canEditMsel()"
+                <mat-checkbox [(ngModel)]="msel.useGallery" [disabled]="integrationsLocked() || !canEditMsel()"
                   (cut)="isChanged = true" (change)="isChanged = true" (paste)="isChanged = true"
                   (keypress)="isChanged = true">Gallery</mat-checkbox>
               </div>
@@ -252,7 +252,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <!-- CITE Integration -->
             <div class="integration-row">
               <div class="integration-checkbox-cell">
-                <mat-checkbox [(ngModel)]="msel.useCite" [disabled]="msel.status === 'Deployed' || !canEditMsel()"
+                <mat-checkbox [(ngModel)]="msel.useCite" [disabled]="integrationsLocked() || !canEditMsel()"
                   (cut)="isChanged = true" (change)="isChanged = true" (paste)="isChanged = true"
                   (keypress)="isChanged = true">CITE</mat-checkbox>
               </div>
@@ -260,7 +260,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
               <div class="integration-details">
                 <div class="integration-field">
                   <span class="integration-label">Scoring Model:</span>
-                  @if (scoringModelList.length > 0 && msel.status !== 'Deployed' && canEditMsel()) {
+                  @if (scoringModelList.length > 0 && !integrationsLocked() && canEditMsel()) {
                   <mat-form-field class="integration-select">
                     <mat-select [(ngModel)]="msel.citeScoringModelId" (cut)="isChanged = true"
                       (selectionChange)="isChanged = true; updateCiteScoringModelName()" (paste)="isChanged = true"
@@ -274,7 +274,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                     </mat-select>
                   </mat-form-field>
                   }
-                  @if (scoringModelList.length === 0 || msel.status === 'Deployed' || !canEditMsel()) {
+                  @if (scoringModelList.length === 0 || integrationsLocked() || !canEditMsel()) {
                   @if (msel.citeScoringModelId) {
                   <span class="integration-guid" [title]="msel.citeScoringModelId">{{ msel.citeScoringModelId }}</span>
                   @if (citeScoringModelName) {
@@ -307,7 +307,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <!-- Steamfitter Integration -->
             <div class="integration-row">
               <div class="integration-checkbox-cell">
-                <mat-checkbox [disabled]="msel.status === 'Deployed' || !canEditMsel()"
+                <mat-checkbox [disabled]="integrationsLocked() || !canEditMsel()"
                   [(ngModel)]="msel.useSteamfitter" (cut)="isChanged = true" (change)="isChanged = true"
                   (paste)="isChanged = true" (keypress)="isChanged = true">Steamfitter</mat-checkbox>
               </div>
@@ -332,7 +332,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <!-- Caster Integration -->
             <div class="integration-row">
               <div class="integration-checkbox-cell">
-                <mat-checkbox [disabled]="msel.status === 'Deployed' || !canEditMsel()"
+                <mat-checkbox [disabled]="integrationsLocked() || !canEditMsel()"
                   [(ngModel)]="msel.useCaster" (cut)="isChanged = true" (change)="isChanged = true; $event.checked && loadCasterDirectories()"
                   (paste)="isChanged = true" (keypress)="isChanged = true">Caster</mat-checkbox>
               </div>
@@ -340,7 +340,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
               <div class="integration-details">
                 <div class="integration-field">
                   <span class="integration-label">Directory:</span>
-                  @if (casterDirectoryList.length > 0 && msel.status !== 'Deployed' && canEditMsel()) {
+                  @if (casterDirectoryList.length > 0 && !integrationsLocked() && canEditMsel()) {
                   <mat-form-field class="integration-select">
                     <mat-select [(ngModel)]="msel.casterDirectoryId" (selectionChange)="isChanged = true">
                       <mat-option [value]="null" />
@@ -352,13 +352,18 @@ project root for license information or contact permission@sei.cmu.edu for full 
                     </mat-select>
                   </mat-form-field>
                   }
-                  @if (casterDirectoryList.length === 0 || msel.status === 'Deployed' || !canEditMsel()) {
+                  @if (casterDirectoryList.length === 0 || integrationsLocked() || !canEditMsel()) {
                   @if (msel.casterDirectoryId) {
                   <span class="integration-guid" [title]="msel.casterDirectoryId">{{ msel.casterDirectoryId }}</span>
                   @if (selectedCasterDirectory || casterDirectoryName) {
                   <span class="integration-name">{{ selectedCasterDirectory ? casterDirectoryLabel(selectedCasterDirectory) : casterDirectoryName }}</span>
                   }
                   }
+                  }
+                  @if (getCasterDirectoryUrl()) {
+                  <a [href]="getCasterDirectoryUrl()" target="_blank" class="integration-link" title="Open directory in Caster">
+                    <mat-icon class="mdi-18px" fontIcon="mdi-open-in-new"></mat-icon>
+                  </a>
                   }
                 </div>
                 @if (!msel.isTemplate && msel.casterWorkspaceId) {
@@ -368,8 +373,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   @if (casterWorkspaceName) {
                   <span class="integration-name">{{ casterWorkspaceName }}</span>
                   }
-                  @if (getCasterProjectUrl()) {
-                  <a [href]="getCasterProjectUrl()" target="_blank" class="integration-link" title="Open in Caster">
+                  @if (getCasterWorkspaceUrl()) {
+                  <a [href]="getCasterWorkspaceUrl()" target="_blank" class="integration-link" title="Open workspace in Caster">
                     <mat-icon class="mdi-18px" fontIcon="mdi-open-in-new" />
                   </a>
                   }

@@ -12,7 +12,7 @@ import { screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { of } from 'rxjs';
 import { ComnAuthService, ComnSettingsService } from '@cmusei/crucible-common';
-import { Msel, MselService, SystemPermission, SystemPermissionsService, User, UserService } from 'src/app/generated/blueprint.api';
+import { Msel, MselItemStatus, MselRole, MselService, SystemPermission, SystemPermissionsService, User, UserService } from 'src/app/generated/blueprint.api';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
 import { DashboardComponent } from './dashboard.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
@@ -131,5 +131,25 @@ describe('DashboardComponent', () => {
     const page = container.querySelector('.command-center') as HTMLElement;
     expect(page.style.getPropertyValue('--landing-background')).toBe(expected);
     expect(page.classList.contains('has-background')).toBe(!!background);
+  });
+  /**
+   * Verifies: ASSESS counts the running events the user can assess, checking every role they hold, and opens /assess.
+   * Interacts with: MselService.getMyMsels (stub), real PermissionDataService (no grants), Router.navigate (spy).
+   * Data: Bravo deployed with Viewer + Evaluator rows; Charlie deployed with Viewer only (near miss on role).
+   */
+  it('counts the events the user can assess', async () => {
+    const roles = (id: string, r: MselRole[]) => r.map((role) => ({ userId: 'user-me', mselId: id, role }));
+    await renderDashboard({
+      build: [
+        { id: 'msel-2', name: 'Exercise Bravo', status: MselItemStatus.Deployed, userMselRoles: roles('msel-2', [MselRole.Viewer, MselRole.Evaluator]) },
+        { id: 'msel-3', name: 'Exercise Charlie', status: MselItemStatus.Deployed, userMselRoles: roles('msel-3', [MselRole.Viewer]) },
+      ],
+    });
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    const assess = card('ASSESS') as HTMLElement;
+
+    expect(assess.querySelector('.metric-value')?.textContent).toBe('1');
+    await userEvent.setup().click(assess);
+    expect(navigate).toHaveBeenCalledWith(['assess']);
   });
 });

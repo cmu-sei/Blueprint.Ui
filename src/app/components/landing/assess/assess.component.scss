@@ -1,0 +1,14 @@
+// Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+// Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
+
+// The cards come from the Join page's styles; these are the Assess additions.
+
+.card-competencies {
+  font: var(--mat-sys-label-large);
+  letter-spacing: var(--mat-sys-label-large-tracking);
+  color: var(--mat-sys-on-surface-variant);
+  margin-top: 0;
+  margin-bottom: 1rem;
+  min-height: 1.25rem;
+}
+
