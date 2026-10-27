@@ -24,7 +24,7 @@ import { CurrentUserQuery } from 'src/app/data/user/user.query';
 import { UserMselRoleDataService } from 'src/app/data/user-msel-role/user-msel-role-data.service';
 import { UserMselRoleQuery } from 'src/app/data/user-msel-role/user-msel-role.query';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
-import { ASSESS_ROLES } from 'src/app/utilities/assessable-msels';
+import { canAssess, canViewAssessor } from 'src/app/utilities/assessable-msels';
 import { TopbarView } from '../shared/top-bar/topbar.models';
 import { TopbarComponent } from '../shared/top-bar/topbar.component';
 import { MatIcon } from '@angular/material/icon';
@@ -166,26 +166,21 @@ export class AssessorPageComponent implements OnDestroy, OnInit {
     );
     this.userMselRole = roles[0] || null;
     this.canChooseAssessorFields = this.canChooseFields(roles);
-    // The MSEL's creator is its Owner. The roles endpoint lists only stored role rows, while the
-    // MSEL endpoints, and so the Assess list, add the creator's Owner role, so add it here too.
-    const roleNames = roles.map(r => r.role as MselRole);
-    if (this.msel?.createdBy === this.loggedInUserId) {
-      roleNames.push(MselRole.Owner);
-    }
 
-    // System admins can view and assess any MSEL
-    if (this.isSystemAdmin) {
-      this.canViewAssessorPage = true;
-      this.canEditAssessorPage = true;
-      return;
-    }
+    // The same rules as the Assess list, on the same MSEL record: viewing takes one of the viewing
+    // roles, and checking a Checkbox field takes one that can assess, which a template never is.
+    const msel = this.mselWithRoles(roles);
+    this.canViewAssessorPage = canViewAssessor(msel, this.loggedInUserId, this.isSystemAdmin);
+    this.canEditAssessorPage = canAssess(msel, this.loggedInUserId, this.isSystemAdmin);
+  }
 
-    // Editor or higher can view assessor page
-    const viewRoles: MselRole[] = ['Owner', 'Editor', 'Approver', 'Evaluator'];
-    this.canViewAssessorPage = roleNames.some(r => viewRoles.includes(r));
-
-    // Only the roles that can assess can edit (check/uncheck checkboxes)
-    this.canEditAssessorPage = roleNames.some(r => ASSESS_ROLES.includes(r));
+  // The loaded MSEL carries only the roles the API sent with it; the role store has the rest.
+  private mselWithRoles(roles: UserMselRole[]): Msel {
+    return {
+      ...this.msel,
+      id: this.selectedMselId,
+      userMselRoles: [...(this.msel?.userMselRoles ?? []), ...roles],
+    };
   }
 
   // The API's rule for changing a MSEL's data fields: EditMsels, the MSEL's

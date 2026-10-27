@@ -48,10 +48,10 @@ function roles(...list: MselRole[]): UserMselRole[] {
 }
 
 async function renderAssessorPage(
-  overrides: { permissions?: SystemPermission[]; myRoles?: UserMselRole[]; createdBy?: string; queryParams?: Params } = {},
+  overrides: { permissions?: SystemPermission[]; myRoles?: UserMselRole[]; createdBy?: string; queryParams?: Params; isTemplate?: boolean } = {},
 ) {
   const { permissions = [], myRoles = [], createdBy = 'someone-else', queryParams = { msel: 'msel-1' } } = overrides;
-  const msel: Msel = { id: 'msel-1', name: 'Exercise Alpha', createdBy, userMselRoles: myRoles };
+  const msel: Msel = { id: 'msel-1', name: 'Exercise Alpha', createdBy, userMselRoles: myRoles, isTemplate: overrides.isTemplate ?? false };
   const apis = mselLoadApiStubs({ msel, userMselRoles: myRoles });
   // AssessorPageComponent loads the permissions itself in ngOnInit, so the
   // real service is provided over the stubbed endpoint, without priming it.
@@ -158,6 +158,19 @@ describe('AssessorPageComponent', () => {
 
     expect(screen.queryByText('Access Denied')).not.toBeInTheDocument();
     expect(assessorView(fixture)?.canEditCheckboxes()).toBe(true);
+  });
+
+  /**
+   * Verifies: a template is not an event to assess, so its Owner can view its assessor page but not check its Checkbox fields,
+   * the same rule the Assess list uses to leave templates out.
+   * Interacts with: AssessorPageComponent.updateRolePermissions, canAssess and canViewAssessor.
+   * Data: no system permission; the Owner role on a template.
+   */
+  it('makes a template read-only for its Owner', async () => {
+    const { fixture } = await renderAssessorPage({ myRoles: roles(MselRole.Owner), isTemplate: true });
+
+    expect(screen.queryByText('Access Denied')).not.toBeInTheDocument();
+    expect(assessorView(fixture)?.canEditCheckboxes()).toBe(false);
   });
 
   /**

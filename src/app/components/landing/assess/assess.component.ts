@@ -62,7 +62,8 @@ export class AssessComponent implements OnDestroy, OnInit {
     // so it waits for both rather than racing them.
     combineLatest([
       this.currentUserQuery.select().pipe(filter((cu) => !!cu?.id), take(1)),
-      this.permissionDataService.load(),
+      // permissions that fail to load count as none, as on the dashboard
+      this.permissionDataService.load().pipe(catchError(() => of([]))),
       this.mselDataService.getMyBuildMsels(),
     ])
       .pipe(take(1), takeUntil(this.unsubscribe$))
