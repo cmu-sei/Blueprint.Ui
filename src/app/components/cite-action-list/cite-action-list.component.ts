@@ -288,7 +288,7 @@ export class CiteActionListComponent implements OnInit, OnDestroy, AfterViewInit
     }
     const title = this.showTemplates() ? 'Delete CITE Action Template' : 'Delete CITE Action';
     this.dialogService
-      .confirm({ title: title, message: 'Are you sure that you want to delete ' + citeAction.description + '?'
+      .confirm({ title: title, message: 'Are you sure that you want to delete ' + citeAction.description + '?', confirmText: 'Delete'
        }).afterClosed().subscribe((result) => {
         if (result) {
           this.citeActionDataService.delete(citeAction.id);

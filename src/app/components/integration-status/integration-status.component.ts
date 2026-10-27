@@ -69,7 +69,7 @@ export class IntegrationStatusComponent {
 
   pullIntegrations() {
     this.dialogService
-      .confirm({ title: 'Remove Integrations', message: 'Are you sure you want to remove partial integrations from the associated applications?'
+      .confirm({ title: 'Remove Integrations', message: 'Are you sure that you want to remove partial integrations from the associated applications?'
        }).afterClosed().subscribe((result) => {
         if (result) {
           this.mselDataService.pullIntegrations(this.msel().id);

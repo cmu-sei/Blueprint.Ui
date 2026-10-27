@@ -119,6 +119,7 @@ async function renderEventList(
   const eventApi = {
     updateScenarioEvent: vi.fn((id: string, se: ScenarioEvent) => of([structuredClone(se)])),
     deleteScenarioEvent: vi.fn(() => of<unknown>(null)),
+    batchDeleteScenarioEvents: vi.fn(() => of<unknown>(null)),
   } satisfies ApiStub<ScenarioEventService>;
   // The user confirms every dialog.
   const confirm = vi.fn(() => dialogRefStub<unknown, boolean>(true).dialogRef);
@@ -338,8 +339,27 @@ describe('ScenarioEventListComponent', () => {
     const user = await openEventMenu(1);
     await user.click(screen.getByRole('menuitem', { name: 'Delete' }));
 
-    expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Delete Event' }));
+    expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Delete Event', confirmText: 'Delete' }));
     expect(eventApi.deleteScenarioEvent).toHaveBeenCalledWith('se-1');
+  });
+
+  /**
+   * Verifies: deleting the selected events asks with the standard Delete title and button before deleting them.
+   * Interacts with: batchDeleteScenarioEvents(), CrucibleDialogService.confirm (stub, confirms), ScenarioEventService.batchDeleteScenarioEvents (stub).
+   * Data: EditMsels; event se-1 selected.
+   */
+  it('confirms deleting the selected events', async () => {
+    const { eventApi, confirm, fixture } = await renderEventList({ permissions: [SystemPermission.EditMsels] });
+
+    fixture.componentInstance.selectedEventIdList = ['se-1'];
+    fixture.componentInstance.batchDeleteScenarioEvents();
+
+    expect(confirm).toHaveBeenCalledWith({
+      title: 'Delete Selected Events',
+      message: 'Are you sure that you want to delete the selected events?',
+      confirmText: 'Delete',
+    });
+    expect(eventApi.batchDeleteScenarioEvents).toHaveBeenCalledWith(['se-1']);
   });
 
   /**

@@ -194,6 +194,11 @@ describe('CiteActionListComponent', () => {
       await user.click(within(table()).getByRole('button', { name: 'Delete Isolate the host' }));
 
       expect(confirm).toHaveBeenCalledTimes(1);
+      expect(confirm).toHaveBeenCalledWith({
+        title: 'Delete CITE Action',
+        message: 'Are you sure that you want to delete Isolate the host?',
+        confirmText: 'Delete',
+      });
       expect(citeActionApi.deleteCiteAction).toHaveBeenCalledWith('ca-1');
       expect(within(table()).queryByText('Isolate the host')).not.toBeInTheDocument();
     });

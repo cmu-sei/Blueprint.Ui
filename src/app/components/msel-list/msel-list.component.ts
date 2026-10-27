@@ -344,7 +344,7 @@ export class MselListComponent implements OnDestroy, OnInit {
 
   delete(msel: MselPlus): void {
     this.dialogService
-      .confirm({ title: 'Delete MSEL', message: 'Are you sure that you want to delete ' + msel.name + '?'
+      .confirm({ title: 'Delete MSEL', message: 'Are you sure that you want to delete ' + msel.name + '?', confirmText: 'Delete'
        }).afterClosed().subscribe((result) => {
         if (result) {
           this.mselDataService.delete(msel.id);

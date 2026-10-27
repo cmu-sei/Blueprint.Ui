@@ -225,7 +225,7 @@ export class AdminProficiencyScalesComponent implements OnInit, OnDestroy {
 
   deleteScale(scale: ProficiencyScale) {
     this.dialogService
-      .confirm({ title: 'Delete Scale', message: 'Are you sure you want to delete ' + scale.name + '?' }).afterClosed().subscribe((result) => {
+      .confirm({ title: 'Delete Proficiency Scale', message: 'Are you sure that you want to delete ' + scale.name + '?', confirmText: 'Delete' }).afterClosed().subscribe((result) => {
         if (result) {
           this.proficiencyScaleService.deleteProficiencyScale(scale.id)
             .pipe(take(1))

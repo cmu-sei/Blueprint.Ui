@@ -253,7 +253,7 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
   deleteCompetencyFramework(competencyFramework: CompetencyFramework): void {
     this.dialogService
       .confirm({ title: 'Delete Competency Framework', message: 'Are you sure that you want to delete ' + competencyFramework.name + '? This will delete ' +
-        (competencyFramework.competencies?.length || 0) + ' competencies.'
+        (competencyFramework.competencies?.length || 0) + ' competencies.', confirmText: 'Delete'
        }).afterClosed().subscribe((result) => {
         if (result) {
           this.competencyFrameworkDataService.delete(competencyFramework.id);
@@ -944,7 +944,7 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
 
   deleteCompetency(competency: Competency): void {
     this.dialogService
-      .confirm({ title: 'Delete Competency', message: 'Are you sure you want to delete ' + (competency.idNumber || competency.shortName) + '?'
+      .confirm({ title: 'Delete Competency', message: 'Are you sure that you want to delete ' + (competency.idNumber || competency.shortName) + '?', confirmText: 'Delete'
        }).afterClosed().subscribe((result) => {
         if (result) {
           this.competencyFrameworkService.deleteCompetency(competency.id)

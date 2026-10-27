@@ -861,7 +861,7 @@ export class ScenarioEventListComponent
 
   deleteScenarioEvent(scenarioEvent: ScenarioEvent, index: number): void {
     this.dialogService
-      .confirm({ title: 'Delete Event', message: 'Are you sure that you want to delete event ' + index + '?'
+      .confirm({ title: 'Delete Event', message: 'Are you sure that you want to delete event ' + index + '?', confirmText: 'Delete'
        }).afterClosed().subscribe((result) => {
         if (result) {
           this.scenarioEventDataService.delete(scenarioEvent.id);
@@ -871,7 +871,7 @@ export class ScenarioEventListComponent
 
   batchDeleteScenarioEvents() {
     this.dialogService
-      .confirm({ title: 'Delete ALL selected Events!', message: 'Are you sure that you want to delete the selected events?'
+      .confirm({ title: 'Delete Selected Events', message: 'Are you sure that you want to delete the selected events?', confirmText: 'Delete'
        }).afterClosed().subscribe((result) => {
         if (result) {
           this.scenarioEventDataService.batchDelete(this.selectedEventIdList);

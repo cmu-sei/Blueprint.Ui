@@ -402,7 +402,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
 
   deleteDataField(dataField: DataField): void {
     this.dialogService
-      .confirm({ title: 'Delete Data Field', message: 'Are you sure that you want to delete ' + dataField.name + '?'
+      .confirm({ title: 'Delete Data Field', message: 'Are you sure that you want to delete ' + dataField.name + '?', confirmText: 'Delete'
        }).afterClosed().subscribe((result) => {
         if (result) {
           this.dataFieldDataService.delete(dataField.id);

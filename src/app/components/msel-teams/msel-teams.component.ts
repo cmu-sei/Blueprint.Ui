@@ -385,7 +385,7 @@ export class MselTeamsComponent implements OnDestroy, OnInit {
 
   deleteTeam(team: Team): void {
     this.dialogService
-      .confirm({ title: 'Delete Team', message: 'Are you sure that you want to delete ' + team.name + '?'
+      .confirm({ title: 'Delete Team', message: 'Are you sure that you want to delete ' + team.name + '?', confirmText: 'Delete'
        }).afterClosed().subscribe((result) => {
         if (result) {
           this.teamDataService.delete(team.id);

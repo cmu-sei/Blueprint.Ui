@@ -232,7 +232,7 @@ export class CiteDutyListComponent implements OnDestroy, AfterViewInit {
     }
     const title = citeDuty.mselId ? 'Delete CITE Duty' : 'Delete CITE Duty Template';
     this.dialogService
-      .confirm({ title: title, message: 'Are you sure that you want to delete ' + citeDuty.name + '?'
+      .confirm({ title: title, message: 'Are you sure that you want to delete ' + citeDuty.name + '?', confirmText: 'Delete'
        }).afterClosed().subscribe((result) => {
         if (result) {
           this.citeDutyDataService.delete(citeDuty.id);

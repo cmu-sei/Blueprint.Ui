@@ -168,7 +168,7 @@ export class AdminUnitsComponent implements OnDestroy {
 
   deleteUnit(unit: Unit): void {
     this.dialogService
-      .confirm({ title: 'Delete Unit', message: 'Are you sure that you want to delete ' + unit.name + '?'
+      .confirm({ title: 'Delete Unit', message: 'Are you sure that you want to delete ' + unit.name + '?', confirmText: 'Delete'
        }).afterClosed().subscribe((result) => {
         if (result) {
           this.unitDataService.delete(unit.id);

@@ -191,7 +191,7 @@ describe('OrganizationListComponent', () => {
 
       await user.click(within(table()).getByRole('button', { name: 'Delete City Police' }));
 
-      expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Delete Organization' }));
+      expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Delete Organization', confirmText: 'Delete' }));
       expect(organizationApi.deleteOrganization).toHaveBeenCalledWith('org-1');
       expect(screen.getByText('No results found')).toBeInTheDocument();
     });

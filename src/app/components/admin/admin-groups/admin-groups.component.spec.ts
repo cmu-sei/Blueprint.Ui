@@ -135,7 +135,7 @@ describe('AdminGroupsComponent', () => {
 
     await user.click(buttonDescribed('Delete Analysts'));
 
-    expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Delete Group?' }));
+    expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Delete Group', message: 'Are you sure that you want to delete Analysts?', confirmText: 'Delete' }));
     expect(groupApi.deleteGroup).toHaveBeenCalledWith('group-1');
     expect(within(table()).queryByText('Analysts')).not.toBeInTheDocument();
   });

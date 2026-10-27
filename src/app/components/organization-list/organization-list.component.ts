@@ -216,7 +216,7 @@ export class OrganizationListComponent implements OnDestroy, OnInit, AfterViewIn
 
   deleteOrganization(organization: Organization): void {
     this.dialogService
-      .confirm({ title: 'Delete Organization', message: 'Are you sure that you want to delete ' + organization.name + '?'
+      .confirm({ title: 'Delete Organization', message: 'Are you sure that you want to delete ' + organization.name + '?', confirmText: 'Delete'
        }).afterClosed().subscribe((result) => {
         if (result) {
           this.organizationDataService.delete(organization.id);
