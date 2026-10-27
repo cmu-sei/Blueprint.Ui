@@ -77,6 +77,7 @@ export class CompetencyOptionsDialogComponent implements OnDestroy {
         this.selected.add(opt.optionName);
       }
     }
+    this.initialSelected = new Set(this.selected);
   }
 
   ngOnDestroy() {
@@ -202,6 +203,14 @@ export class CompetencyOptionsDialogComponent implements OnDestroy {
     }
   }
 
+  // the selection as the dialog opened, to tell an edit from a look
+  private initialSelected = new Set<string>();
+
+  private selectionChanged(): boolean {
+    return this.selected.size !== this.initialSelected.size ||
+      [...this.selected].some((idNumber) => !this.initialSelected.has(idNumber));
+  }
+
   toggleCompetency(mc: MselCompetency): void {
     const idNumber = mc.competency?.idNumber;
     if (!idNumber) return;
@@ -213,6 +222,13 @@ export class CompetencyOptionsDialogComponent implements OnDestroy {
   }
 
   handleClose() {
+    // Viewing saves nothing: a read-only user, or an editor who changed no selection, closes with
+    // nothing to save. Otherwise this rebuilds every option, dropping ones whose competency has left
+    // the MSEL's pool, which on the server deletes them.
+    if (!this.data.canEdit || !this.selectionChanged()) {
+      this.dialogRef.close(undefined);
+      return;
+    }
     const competencyMap = new Map<string, MselCompetency>();
     for (const mc of this.mselCompetencies) {
       if (mc.competency?.idNumber) {

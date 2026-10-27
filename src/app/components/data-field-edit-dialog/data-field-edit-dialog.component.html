@@ -18,7 +18,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <mat-form-field class="full-width">
         <mat-label>Display Order</mat-label>
         <input type="text" matInput [(ngModel)]="data.dataField.displayOrder"
-          [disabled]="!data.canEdit && !data.isOwner" />
+          [disabled]="!data.canEdit" />
       </mat-form-field>
     </div>
   </div>
@@ -27,7 +27,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <div class="single-detail">
       <mat-form-field class="full-width">
         <mat-label>Name</mat-label>
-        <input type="text" matInput [(ngModel)]="data.dataField.name" [disabled]="!data.canEdit && !data.isOwner" />
+        <input type="text" matInput [(ngModel)]="data.dataField.name" [disabled]="!data.canEdit" />
       </mat-form-field>
     </div>
   </div>
@@ -36,7 +36,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <mat-form-field class="full-width">
         <mat-label>Data Type</mat-label>
         <mat-select [value]="data.dataField.dataType" (selectionChange)="changeDataFieldDataType($event.value)"
-          [disabled]="!data.canEdit && !data.isOwner">
+          [disabled]="!data.canEdit">
           @for (dataFieldType of (data.dataFieldTypes | keyvalue); track dataFieldType) {
           <mat-option value="{{ dataFieldType.key }}">{{ dataFieldType.key }}</mat-option>
           }
@@ -49,7 +49,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <div class="partial-detail">
         <div>
           <mat-checkbox [(ngModel)]="data.dataField.isChosenFromList"
-            [disabled]="(!data.canEdit && !data.isOwner) || optionListNotAllowed() || isCompetency()" class="bottom-margin">
+            [disabled]="!data.canEdit || optionListNotAllowed() || isCompetency()" class="bottom-margin">
             Use Option List
           </mat-checkbox>
           @if (data.dataField.isChosenFromList && !optionListNotAllowed()) {
@@ -66,7 +66,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         @if (data.dataField.isChosenFromList) {
         <div>
           <mat-checkbox [(ngModel)]="data.dataField.isMultiSelect"
-            [disabled]="(!data.canEdit && !data.isOwner) || optionListNotAllowed() || isCompetency()" class="bottom-margin left-margin">
+            [disabled]="!data.canEdit || optionListNotAllowed() || isCompetency()" class="bottom-margin left-margin">
             Multi-select
           </mat-checkbox>
         </div>
@@ -77,7 +77,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
   @if (!data.dataField.isTemplate) {
   <div class="data-field-detail" (click)="$event.stopPropagation();">
     <div class="single-detail">
-      <mat-checkbox [(ngModel)]="data.dataField.onScenarioEventList" [disabled]="!data.canEdit && !data.isOwner"
+      <mat-checkbox [(ngModel)]="data.dataField.onScenarioEventList" [disabled]="!data.canEdit"
         class="bottom-margin">Display on the Events
         list</mat-checkbox><br />
     </div>
@@ -86,7 +86,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
   @if (!data.dataField.isTemplate) {
   <div class="data-field-detail" (click)="$event.stopPropagation();">
     <div class="single-detail">
-      <mat-checkbox [(ngModel)]="data.dataField.onExerciseView" [disabled]="!data.canEdit && !data.isOwner"
+      <mat-checkbox [(ngModel)]="data.dataField.onExerciseView" [disabled]="!data.canEdit"
         class="bottom-margin">Display on the Exercise View</mat-checkbox><br />
     </div>
   </div>
@@ -94,28 +94,28 @@ project root for license information or contact permission@sei.cmu.edu for full 
   @if (!data.dataField.isTemplate) {
   <div class="data-field-detail" (click)="$event.stopPropagation();">
     <div class="single-detail">
-      <mat-checkbox [(ngModel)]="data.dataField.isInformationField" [disabled]="!data.canEdit && !data.isOwner"
+      <mat-checkbox [(ngModel)]="data.dataField.isInformationField" [disabled]="!data.canEdit"
         class="bottom-margin">Information Data
         Field</mat-checkbox><br />
     </div>
   </div>
   <div class="data-field-detail" (click)="$event.stopPropagation();">
     <div class="single-detail">
-      <mat-checkbox [(ngModel)]="data.dataField.isFacilitationField" [disabled]="!data.canEdit && !data.isOwner"
+      <mat-checkbox [(ngModel)]="data.dataField.isFacilitationField" [disabled]="!data.canEdit"
         class="bottom-margin">Facilitation Data
         Field</mat-checkbox><br />
     </div>
   </div>
   <div class="data-field-detail" (click)="$event.stopPropagation();">
     <div class="single-detail">
-      <mat-checkbox [(ngModel)]="data.dataField.isShownOnDefaultTab" [disabled]="!data.canEdit && !data.isOwner"
+      <mat-checkbox [(ngModel)]="data.dataField.isShownOnDefaultTab" [disabled]="!data.canEdit"
         class="bottom-margin">Display on "Default" edit
         tab</mat-checkbox><br />
     </div>
   </div>
   <div class="data-field-detail" (click)="$event.stopPropagation();">
     <div class="single-detail">
-      <mat-checkbox [(ngModel)]="data.dataField.isAssessorVisible" [disabled]="!data.canEdit && !data.isOwner"
+      <mat-checkbox [(ngModel)]="data.dataField.isAssessorVisible" [disabled]="!data.canEdit"
         class="bottom-margin">Assessor View</mat-checkbox><br />
     </div>
   </div>
@@ -123,7 +123,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
   @if (!data.dataField.isTemplate) {
   <div class="data-field-detail" (click)="$event.stopPropagation();">
     <div class="single-detail">
-      <mat-checkbox [(ngModel)]="data.dataField.isOnlyShownToOwners" [disabled]="!data.canEdit && !data.isOwner"
+      <mat-checkbox [(ngModel)]="data.dataField.isOnlyShownToOwners" [disabled]="!data.canEdit"
         class="bottom-margin">Display for Content Developers and
         MSEL Owners ONLY !!!</mat-checkbox><br />
     </div>
@@ -134,7 +134,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <div class="single-detail">
       <mat-form-field class="full-width">
         <mat-label>Gallery Article Parameter</mat-label>
-        <mat-select [(ngModel)]="data.dataField.galleryArticleParameter" [disabled]="!data.canEdit && !data.isOwner">
+        <mat-select [(ngModel)]="data.dataField.galleryArticleParameter" [disabled]="!data.canEdit">
           <mat-option value="" />
           @for (parameter of data.galleryArticleParameters; track parameter) {
           <mat-option value="{{ parameter }}">{{ parameter }}</mat-option>
@@ -144,7 +144,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     </div>
   </div>
   }
-  @if ((data.canEdit || data.isOwner) && !data.dataField.isTemplate) {
+  @if (data.canEdit && !data.dataField.isTemplate) {
   <div class="data-field-detail" (click)="$event.stopPropagation();">
     <div class="single-detail">
       <mat-form-field class="full-width">
@@ -154,7 +154,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     </div>
   </div>
   }
-  @if ((data.canEdit || data.isOwner) && !data.dataField.isTemplate) {
+  @if (data.canEdit && !data.dataField.isTemplate) {
   <div class="data-field-detail" (click)="$event.stopPropagation();">
     <div class="single-detail">
       <mat-form-field class="full-width">
