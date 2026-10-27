@@ -34,12 +34,13 @@ import { MatCheckbox } from '@angular/material/checkbox';
 import { MatCard } from '@angular/material/card';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { DatePipe } from '@angular/common';
+import { OverflowTooltipDirective } from '../shared/overflow-tooltip/overflow-tooltip.directive';
 
 @Component({
     selector: 'app-msel-list',
     templateUrl: './msel-list.component.html',
     styleUrls: ['./msel-list.component.scss'],
-    imports: [MatIconButton, MatIcon, MatSelect, FormsModule, MatOption, MatFormField, MatInput, ReactiveFormsModule, MatSuffix, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatMenuTrigger, MatMenu, MatMenuItem, MatCellDef, MatCell, MatSortHeader, RouterLink, MatCheckbox, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, MatPaginator, MatCard, MatProgressSpinner, DatePipe]
+    imports: [MatIconButton, MatIcon, MatSelect, FormsModule, MatOption, MatFormField, MatInput, ReactiveFormsModule, MatSuffix, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatMenuTrigger, MatMenu, MatMenuItem, MatCellDef, MatCell, MatSortHeader, RouterLink, MatCheckbox, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, MatPaginator, MatCard, MatProgressSpinner, DatePipe, OverflowTooltipDirective]
 })
 export class MselListComponent implements OnDestroy, OnInit {
   dialogService = inject(CrucibleDialogService);

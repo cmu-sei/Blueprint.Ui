@@ -172,7 +172,24 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </div>
       }
 
-      @if (joinMselList.length === 0 && launchMselList.length === 0 && buildMselList.length === 0 && !canCreateMsels && !hasAssessorRole) {
+      @if (loadFailed) {
+      <div class="mission-card empty-state">
+        <div class="card-header">
+          <div class="card-icon empty-icon">
+            <mat-icon fontIcon="mdi-alert-circle-outline"></mat-icon>
+          </div>
+          <div class="card-title-section">
+            <h2 class="card-title">NOT LOADED</h2>
+            <p class="card-subtitle">Events Unavailable</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="card-description">
+            Your events could not be loaded. Reload the page to try again.
+          </div>
+        </div>
+      </div>
+      } @else if (joinMselList.length === 0 && launchMselList.length === 0 && buildMselList.length === 0 && !canCreateMsels && !hasAssessorRole) {
       <div class="mission-card empty-state">
         <div class="card-header">
           <div class="card-icon empty-icon">

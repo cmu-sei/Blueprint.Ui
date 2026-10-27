@@ -3,7 +3,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { Msel, MselItemStatus, MselRole } from 'src/app/generated/blueprint.api';
-import { assessableMsels, canAssess } from './assessable-msels';
+import { assessableMsels, canAssess, canViewAssessor } from './assessable-msels';
 
 const ME = 'user-me';
 const msel = (id: string, roles: MselRole[], extra: Partial<Msel> = {}): Msel => ({
@@ -50,6 +50,41 @@ describe('canAssess', () => {
   it('lets a system admin assess anything but a template', () => {
     expect(canAssess(msel('m', []), ME, true)).toBe(true);
     expect(canAssess(msel('t', [MselRole.Owner], { isTemplate: true }), ME, true)).toBe(false);
+  });
+});
+
+describe('the MSEL creator', () => {
+  /**
+   * Verifies: a MSEL's creator is its Owner without a role row, for assessing and for viewing, as the API counts them.
+   * Data: no role rows; createdBy the user; createdBy someone else (near miss).
+   */
+  it('counts the creator as Owner', () => {
+    expect(canAssess(msel('m', [], { createdBy: ME }), ME, false)).toBe(true);
+    expect(canViewAssessor(msel('m', [], { createdBy: ME }), ME, false)).toBe(true);
+    expect(canAssess(msel('m', [], { createdBy: 'user-other' }), ME, false)).toBe(false);
+  });
+});
+
+describe('canViewAssessor', () => {
+  /**
+   * Verifies: Owner, Editor, Approver and Evaluator can open the assessor view; Viewer and Move Editor cannot.
+   * Data: one MSEL per role, each held by the user alone.
+   */
+  it.each(Object.values(MselRole).map((role) => ({
+    role,
+    expected: ([MselRole.Owner, MselRole.Editor, MselRole.Approver, MselRole.Evaluator] as MselRole[]).includes(role),
+  })))('$role can view: $expected', ({ role, expected }) => {
+    expect(canViewAssessor(msel('m', [role]), ME, false)).toBe(expected);
+  });
+
+  /**
+   * Verifies: a template can be viewed but not assessed, so its checkboxes are never editable.
+   * Data: a template with an Owner row.
+   */
+  it('lets a template be viewed but not assessed', () => {
+    const template = msel('t', [MselRole.Owner], { isTemplate: true });
+    expect(canViewAssessor(template, ME, false)).toBe(true);
+    expect(canAssess(template, ME, false)).toBe(false);
   });
 });
 
