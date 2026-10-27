@@ -1,7 +1,7 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, AfterViewInit, inject, input, viewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, AfterViewInit, inject, input, viewChild, OnChanges } from '@angular/core';
 import { UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -9,6 +9,7 @@ import {
   DataField,
   DataFieldType,
   DataOption,
+  MselRole,
   SystemPermission,
 } from 'src/app/generated/blueprint.api';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
@@ -23,6 +24,7 @@ import { CdkDragDrop, CdkDropList, CdkDragHandle, CdkDrag } from '@angular/cdk/d
 import { DataFieldDataService } from 'src/app/data/data-field/data-field-data.service';
 import { DataFieldQuery } from 'src/app/data/data-field/data-field.query';
 import { DataFieldTemplateQuery } from 'src/app/data/data-field/data-field-template.query';
+import { canUpdateMsel } from 'src/app/utilities/msel-permissions';
 import { DataFieldEditDialogComponent } from '../data-field-edit-dialog/data-field-edit-dialog.component';
 import { CompetencyOptionsDialogComponent } from '../competency-options-dialog/competency-options-dialog.component';
 import { DataOptionEditDialogComponent } from '../data-option-edit-dialog/data-option-edit-dialog.component';
@@ -50,7 +52,7 @@ import { MatCheckbox } from '@angular/material/checkbox';
     styleUrls: ['./data-field-list.component.scss'],
     imports: [MatIcon, MatFormField, MatInput, FormsModule, ReactiveFormsModule, MatIconButton, MatSuffix, MatLabel, MatSelect, MatOption, MatPaginator, MatTable, MatSort, CdkDropList, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, CdkDragHandle, CdkDrag, MatMenuTrigger, MatMenu, MatMenuItem, MatSortHeader, MatCheckbox, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow]
 })
-export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit {
+export class DataFieldListComponent implements OnChanges, OnDestroy, OnInit, AfterViewInit {
   private mselQuery = inject(MselQuery);
   private dataFieldDataService = inject(DataFieldDataService);
   private dataFieldQuery = inject(DataFieldQuery);
@@ -109,6 +111,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
   readonly defaultVisibleDisplayColumns: string[] = ['onScenarioEventList', 'onExerciseView'];
   visibleDisplayColumns: string[] = [];
   private unsubscribe$ = new Subject();
+  private editRights = { fields: false, systemRows: false, templates: false };
   // context menu
   readonly contextMenu = viewChild(MatMenuTrigger);
   readonly paginator = viewChild(MatPaginator);
@@ -145,11 +148,17 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
       );
   }
 
+  // the rights depend on loggedInUserId, showTemplates and injectTypeId
+  ngOnChanges() {
+    this.updateEditRights();
+  }
+
   ngOnInit() {
     // Load permissions and trigger change detection when loaded
     this.permissionDataService.load()
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(() => {
+        this.updateEditRights();
         this.changeDetectorRef.markForCheck();
       });
     const saved = this.uiDataService.getVisibleDataFieldColumns();
@@ -181,6 +190,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
           .pipe(takeUntil(this.unsubscribe$))
           .subscribe((m) => {
             Object.assign(this.msel, m);
+            this.updateEditRights();
             this.setDataFieldList();
             if (this.msel && this.msel.id) {
               if (
@@ -324,7 +334,6 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
       data: {
         dataField: dataField,
         canEdit: this.canEdit(),
-        isOwner: this.msel.hasRole(this.loggedInUserId(), null).owner,
         galleryArticleParameters: this.getUnusedGalleryOptions(
           dataField.galleryArticleParameter
         ),
@@ -555,7 +564,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
   viewDataOptions(dataField: DataField, event: Event) {
     event.stopPropagation();
     if (dataField.dataType === DataFieldType.Competency || (dataField.dataOptions && dataField.dataOptions.length > 0)) {
-      const hasEditPermission = this.canEdit() || this.msel.hasRole(this.loggedInUserId(), null).owner;
+      const hasEditPermission = this.canEdit();
       const supportsOptionList =
         dataField.dataType === DataFieldType.Double ||
         dataField.dataType === DataFieldType.Integer ||
@@ -577,7 +586,11 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
           }
         });
         compDialogRef.afterClosed().subscribe((updatedOptions) => {
-          const updated = { ...dataField, dataOptions: updatedOptions || dataField.dataOptions };
+          // Closing without saving answers nothing; a read-only user has nothing to save.
+          if (!canAddOptions || updatedOptions === undefined) {
+            return;
+          }
+          const updated = { ...dataField, dataOptions: updatedOptions };
           this.dataFieldDataService.updateDataField(updated);
         });
       } else {
@@ -780,13 +793,40 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
     }
   }
 
+  // The template asks these for every row on every change detection, so they read rights worked
+  // out once, whenever the MSEL, the permissions or the inputs change.
   canEdit(): boolean {
-    if (this.showTemplates()) {
-      return this.permissionDataService.hasPermission(SystemPermission.ManageDataFields);
-    } else {
-      return this.permissionDataService.hasPermission(SystemPermission.EditMsels) ||
-        this.msel.hasRole(this.loggedInUserId(), '').editor;
-    }
+    return this.editRights.fields;
+  }
+
+  canEditRow(dataField: DataField): boolean {
+    return dataField.displayOrder < 0 ? this.editRights.systemRows : this.editRights.fields;
+  }
+
+  canMakeTemplate(): boolean {
+    return this.editRights.templates;
+  }
+
+  private updateEditRights() {
+    const userId = this.loggedInUserId();
+    const hasEditMsels = this.permissionDataService.hasPermission(SystemPermission.EditMsels);
+    const hasManageDataFields = this.permissionDataService.hasPermission(SystemPermission.ManageDataFields);
+    // Template and inject type fields belong to no MSEL; the API wants ManageDataFields for them.
+    // A MSEL's fields and options: EditMsels, its owners and its Editors. hasRole's editor is also
+    // true for an Approver, who edits events but not the fields, so the Editor role is checked directly.
+    const fields = this.showTemplates() || this.injectTypeId()
+      ? hasManageDataFields
+      : hasEditMsels ||
+        this.msel.hasRole(userId, '').owner ||
+        (this.msel.userMselRoles ?? []).some((r) => r.userId === userId && r.role === MselRole.Editor);
+    this.editRights = {
+      fields,
+      // The system rows (Move, Group, Execution Time, Integration Target) are MSEL settings, saved
+      // by updating the MSEL.
+      systemRows: canUpdateMsel(this.msel, userId, hasEditMsels),
+      // A template is a field of no MSEL, which the API creates only with ManageDataFields.
+      templates: fields && hasManageDataFields,
+    };
   }
 
   ngOnDestroy() {
