@@ -167,7 +167,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <ng-container matColumnDef="description">
           <mat-header-cell *matHeaderCellDef mat-sort-header> Description </mat-header-cell>
           <mat-cell *matCellDef="let element">
-            <div class="description-text">{{ element.description }}</div>
+            <div class="description-text truncated-description" [appOverflowTooltip]="element.description">{{ element.description }}</div>
           </mat-cell>
         </ng-container>
         <!-- row definitions -->

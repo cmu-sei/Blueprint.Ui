@@ -30,9 +30,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
             } @else {
             <div class="card-image" [style.background]="cardImage(msel)" aria-hidden="true"></div>
             }
-            <h2 class="card-title">{{ msel.name }}</h2>
+            <h2 class="card-title" [appOverflowTooltip]="msel.name">{{ msel.name }}</h2>
             @if (msel.description) {
-              <p class="card-description">{{ msel.description }}</p>
+              <p class="card-description" [appOverflowTooltip]="msel.description">{{ msel.description }}</p>
             }
             <p class="card-competencies">
               @switch (competencyCounts[msel.id]) {

@@ -14,6 +14,7 @@ import { CurrentUserQuery } from 'src/app/data/user/user.query';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
 import { TopbarView } from '../../shared/top-bar/topbar.models';
 import { TopbarComponent } from '../../shared/top-bar/topbar.component';
+import { OverflowTooltipDirective } from '../../shared/overflow-tooltip/overflow-tooltip.directive';
 import { landingBackground } from 'src/app/utilities/landing-background';
 import { cardImage } from 'src/app/utilities/card-image';
 import { assessableMsels } from 'src/app/utilities/assessable-msels';
@@ -27,7 +28,7 @@ import { MatProgressSpinner } from '@angular/material/progress-spinner';
     selector: 'app-assess',
     templateUrl: './assess.component.html',
     styleUrls: ['../join/join.component.scss', './assess.component.scss'],
-    imports: [TopbarComponent, MatButton, MatIcon, MatProgressSpinner, RouterLink]
+    imports: [TopbarComponent, MatButton, MatIcon, MatProgressSpinner, RouterLink, OverflowTooltipDirective]
 })
 export class AssessComponent implements OnDestroy, OnInit {
   private settingsService = inject(ComnSettingsService);
