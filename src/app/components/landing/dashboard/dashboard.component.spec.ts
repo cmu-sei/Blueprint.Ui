@@ -216,9 +216,9 @@ describe('DashboardComponent', () => {
     expect(titles).toEqual([
       'Competency-Based Assessment',
       'Collaborative Planning',
-      'Cyber Range Exercises',
+      'Hands-On and Tabletop Exercises',
     ]);
-    expect(card('Competency-Based Assessment')).toHaveTextContent('Capture what teams do as evidence, and rate them against NICE, DCWF or your own competencies');
+    expect(card('Competency-Based Assessment')).toHaveTextContent('See how each team performs against the work roles and skills the exercise is meant to build');
     const allText = CAPABILITY_CARDS.map((c) => [c.summary, c.data.title, c.data.description, ...c.data.features, ...c.data.benefits].join(' ')).join(' ');
     expect(allText).not.toMatch(/\b(Player|Gallery|CITE|Steamfitter|Caster|TopoMojo|Gameboard)\b/);
   });
@@ -226,7 +226,7 @@ describe('DashboardComponent', () => {
   /**
    * Verifies: clicking a capability card, or pressing Enter on it, opens the dialog with that capability's details, and Close shuts it.
    * Interacts with: real MatDialog and CapabilityDialogComponent.
-   * Data: the Competency-Based Assessment and Cyber Range Exercises cards.
+   * Data: the Competency-Based Assessment and Hands-On and Tabletop Exercises cards.
    */
   it('opens the details of a capability card', async () => {
     await renderDashboard();
@@ -236,18 +236,18 @@ describe('DashboardComponent', () => {
 
     const dialog = within(await screen.findByRole('dialog'));
     expect(dialog.getByText('Competency-Based Assessment')).toBeInTheDocument();
-    expect(dialog.getByText(/^Tie the exercise to the competencies it trains/)).toBeInTheDocument();
-    expect(dialog.getByText('Each rating is sent as a competency assertion to your learning record store')).toBeInTheDocument();
-    expect(dialog.getByText('Rate every team on the same proficiency scale')).toBeInTheDocument();
-    expect(dialog.queryByText(/^Publish news/)).not.toBeInTheDocument();
+    expect(dialog.getByText(/^Choose the work roles an exercise trains/)).toBeInTheDocument();
+    expect(dialog.getByText('Use NICE, DCWF, or your own frameworks')).toBeInTheDocument();
+    expect(dialog.getByText('Rate every team on what they did')).toBeInTheDocument();
+    expect(dialog.queryByText(/^Deliver news/)).not.toBeInTheDocument();
 
     await user.click(dialog.getByRole('button', { name: 'Close' }));
     await vi.waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
 
-    (card('Cyber Range Exercises') as HTMLElement).focus();
+    (card('Hands-On and Tabletop Exercises') as HTMLElement).focus();
     await user.keyboard('{Enter}');
     const delivery = within(await screen.findByRole('dialog'));
-    expect(delivery.getByText('Publish news, intelligence and orders to each team move by move')).toBeInTheDocument();
-    expect(delivery.getByText('Teams evaluate each move\'s incident and score their response')).toBeInTheDocument();
+    expect(delivery.getByText('Deliver news, intelligence, and orders move by move')).toBeInTheDocument();
+    expect(delivery.getByText('Run the same exercise again for new teams, from one plan')).toBeInTheDocument();
   });
 });

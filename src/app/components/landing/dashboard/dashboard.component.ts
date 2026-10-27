@@ -42,61 +42,60 @@ export interface CapabilityCard {
 export const CAPABILITY_CARDS: CapabilityCard[] = [
   {
     key: 'assessment',
-    summary: 'Capture what teams do as evidence, and rate them against NICE, DCWF or your own competencies',
+    summary: 'See how each team performs against the work roles and skills the exercise is meant to build',
     data: {
       title: 'Competency-Based Assessment',
       icon: 'mdi-clipboard-check-outline',
-      description: 'Tie the exercise to the competencies it trains, record what participants do as xAPI evidence, and rate each team against those competencies while the exercise runs.',
+      description: 'Choose the work roles an exercise trains and the skills under them, then rate each team on them as the exercise runs.',
       features: [
-        'Import NICE or DCWF frameworks, and attach competencies to teams and events',
-        'Record what participants do as xAPI evidence',
-        'Assessors review the evidence and rate each team',
-        'Each rating is sent as a competency assertion to your learning record store'
+        'Use NICE, DCWF, or your own frameworks',
+        'Pick the work roles an exercise covers, and the knowledge and skills under them',
+        'See each team\'s activity while you rate it',
+        'Rate teams on a consistent scale'
       ],
       benefits: [
-        'Assess teams on what they did, not on memory',
-        'Show which competencies an exercise assessed, not only that it ran',
-        'Rate every team on the same proficiency scale'
+        'Show what an exercise trained, not just that it happened',
+        'Rate every team on what they did'
       ]
     }
   },
   {
     key: 'collaborative',
-    summary: 'Build one MSEL together in real time, in place of a spreadsheet',
+    summary: 'Plan an exercise together in one place, instead of passing a spreadsheet around',
     data: {
       title: 'Collaborative Planning',
       icon: 'mdi-account-group',
-      description: 'Planners build the cyber exercise\'s MSEL together in one place, and everyone sees each change as it is made.',
+      description: 'Your planning team builds the exercise together, and everyone sees changes as they\'re made.',
       features: [
-        'Several planners edit the same MSEL at once',
-        'Organize events into moves and groups, with your own data fields',
-        'Reuse injects from catalogs and MSELs from templates',
-        'Give contributors roles; only Approvers approve events'
+        'Several planners work at once',
+        'Organize the scenario into moves and inject groups',
+        'Reuse injects and whole exercises from templates',
+        'Start from your existing Excel MSEL, and export the plan back to a spreadsheet'
       ],
       benefits: [
-        'No more conflicting copies of an Excel MSEL',
+        'No more conflicting copies',
         'Planners work in parallel',
-        'One source of truth for the scenario'
+        'One version of the plan'
       ]
     }
   },
   {
-    key: 'delivery',
-    summary: 'Run the exercise on a cyber range, with each team\'s own environment, injects and scoring',
+    key: 'exercises',
+    summary: 'Run hands-on cyber range exercises, tabletop exercises, or both, to rehearse missions and train against your objectives',
     data: {
-      title: 'Cyber Range Exercises',
+      title: 'Hands-On and Tabletop Exercises',
       icon: 'mdi-rocket-launch-outline',
-      description: 'Push the MSEL to stand up the cyber range for every team in one step, run the exercise on it, and tear it all down when the exercise ends.',
+      description: 'Run the same plan as a hands-on exercise on the cyber range, a discussion-based tabletop exercise, or a mix of the two. When the plan is ready, Blueprint sets the exercise up and takes it down again when you\'re done.',
       features: [
-        'Give each team its own view, applications and virtual network',
-        'Publish news, intelligence and orders to each team move by move',
-        'Run tasks against VMs on a schedule or when another task finishes',
-        'Teams evaluate each move\'s incident and score their response'
+        'Hands-on: each team works on its own network of virtual machines, alongside the exercise\'s other tools',
+        'Tabletop: teams discuss each incident as it unfolds, then evaluate and score their response',
+        'Deliver news, intelligence, and orders move by move',
+        'Run the same exercise again for new teams, from one plan'
       ],
       benefits: [
-        'Go from a finished MSEL to a running exercise in one step',
-        'Keep the scenario on schedule without delivering each inject by hand',
-        'Compare each team\'s score with the official score in the debrief'
+        'Rehearse a mission before it\'s carried out',
+        'Practice in a realistic environment without risk',
+        'Compare how teams handled the same events'
       ]
     }
   }
@@ -243,7 +242,7 @@ export class DashboardComponent implements OnDestroy, OnInit {
     this.assessMselList = assessableMsels(msels, currentUserId, this.isSystemAdmin);
   }
 
-  topBarNavigate(url): void {
+  topBarNavigate(url: string): void {
     this.router.navigate([url]);
   }
 
@@ -253,6 +252,9 @@ export class DashboardComponent implements OnDestroy, OnInit {
 
   openCapabilityDialog(capability: string): void {
     const capabilityData = this.getCapabilityData(capability);
+    if (!capabilityData) {
+      return;
+    }
     this.dialog.open(CapabilityDialogComponent, {
       data: capabilityData,
       maxWidth: '700px',
@@ -260,7 +262,7 @@ export class DashboardComponent implements OnDestroy, OnInit {
     });
   }
 
-  private getCapabilityData(capability: string): CapabilityData {
+  private getCapabilityData(capability: string): CapabilityData | undefined {
     return this.capabilityCards.find((c) => c.key === capability)?.data;
   }
 
