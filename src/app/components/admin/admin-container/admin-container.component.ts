@@ -44,12 +44,13 @@ import { OrganizationListComponent } from '../../organization-list/organization-
 import { CardListComponent } from '../../card-list/card-list.component';
 import { CiteActionListComponent } from '../../cite-action-list/cite-action-list.component';
 import { CiteDutyListComponent } from '../../cite-duty-list/cite-duty-list.component';
+import { PlayerApplicationListComponent } from '../../player-application-list/player-application-list.component';
 
 @Component({
     selector: 'app-admin-container',
     templateUrl: './admin-container.component.html',
     styleUrls: ['./admin-container.component.scss'],
-    imports: [MatSidenavContainer, MatSidenav, MatToolbar, MatIcon, MatList, MatListItem, NgClass, MatListItemIcon, MatIconButton, MatSidenavContent, TopbarComponent, AdminUnitsComponent, AdminUsersComponent, AdminRolesComponent, AdminGroupsComponent, DataFieldListComponent, AdminInjectTypesComponent, AdminCompetencyFrameworksComponent, AdminProficiencyScalesComponent, AdminCatalogListComponent, OrganizationListComponent, CardListComponent, CiteActionListComponent, CiteDutyListComponent, AsyncPipe]
+    imports: [MatSidenavContainer, MatSidenav, MatToolbar, MatIcon, MatList, MatListItem, NgClass, MatListItemIcon, MatIconButton, MatSidenavContent, TopbarComponent, AdminUnitsComponent, AdminUsersComponent, AdminRolesComponent, AdminGroupsComponent, DataFieldListComponent, AdminInjectTypesComponent, AdminCompetencyFrameworksComponent, AdminProficiencyScalesComponent, AdminCatalogListComponent, OrganizationListComponent, CardListComponent, CiteActionListComponent, CiteDutyListComponent, PlayerApplicationListComponent, AsyncPipe]
 })
 export class AdminContainerComponent implements OnDestroy, OnInit {
   private router = inject(Router);
@@ -81,6 +82,7 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
   galleryCardsText = 'Gallery Cards';
   citeActionsText = 'CITE Actions';
   citeDutiesText = 'CITE Duties';
+  playerApplicationTemplatesText = 'Player Application Templates';
   competencyFrameworksText = 'Competency Frameworks';
   competencyFrameworksSidebarText = 'Competencies';
   proficiencyScalesText = 'Proficiency Scales';
@@ -98,6 +100,7 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
     ['Gallery Cards', 'mdi-view-grid-outline'],
     ['CITE Actions', 'mdi-clipboard-check-outline'],
     ['CITE Duties', 'mdi-clipboard-account-outline'],
+    ['Player Application Templates', 'mdi-application'],
     ['Competency Frameworks', 'mdi-certificate-outline'],
     ['Proficiency Scales', 'mdi-tune-variant'],
     ['Users', 'mdi-account'],
@@ -128,6 +131,8 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
   canManageCiteActions = false;
   canViewCiteDuties = false;
   canManageCiteDuties = false;
+  canViewPlayerApplications = false;
+  canManagePlayerApplications = false;
   canViewDataFields = false;
   canManageDataFields = false;
   canViewCompetencyFrameworks = false;
@@ -209,12 +214,14 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
         this.canManageCiteActions = this.permissionDataService.hasPermission(SystemPermission.ManageCiteActions);
         this.canViewCiteDuties = this.permissionDataService.hasPermission(SystemPermission.ViewCiteDuties);
         this.canManageCiteDuties = this.permissionDataService.hasPermission(SystemPermission.ManageCiteDuties);
+        this.canViewPlayerApplications = this.permissionDataService.hasPermission(SystemPermission.ViewPlayerApplications);
+        this.canManagePlayerApplications = this.permissionDataService.hasPermission(SystemPermission.ManagePlayerApplications);
         this.canViewDataFields = this.permissionDataService.hasPermission(SystemPermission.ViewDataFields);
         this.canManageDataFields = this.permissionDataService.hasPermission(SystemPermission.ManageDataFields);
         this.canViewCompetencyFrameworks = this.permissionDataService.hasPermission(SystemPermission.ViewCompetencyFrameworks);
         this.canManageCompetencyFrameworks = this.permissionDataService.hasPermission(SystemPermission.ManageCompetencyFrameworks);
         // Update canAccessAdminSection based on having any admin permission
-        this.canAccessAdminSection = this.canViewUsers || this.canViewRoles || this.canViewGroups || this.canViewUnits || this.canViewInjectTypes || this.canViewCatalogs || this.canViewOrganizations || this.canViewCiteActions || this.canViewCiteDuties || this.canViewDataFields || this.canViewCompetencyFrameworks;
+        this.canAccessAdminSection = this.canViewUsers || this.canViewRoles || this.canViewGroups || this.canViewUnits || this.canViewInjectTypes || this.canViewCatalogs || this.canViewOrganizations || this.canViewCiteActions || this.canViewCiteDuties || this.canViewPlayerApplications || this.canViewDataFields || this.canViewCompetencyFrameworks;
         // Load additional data if user has permissions
         if (this.canAccessAdminSection) {
           this.unitDataService.load();

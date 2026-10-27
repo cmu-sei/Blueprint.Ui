@@ -50,6 +50,7 @@ import { OrganizationListComponent } from '../../organization-list/organization-
 import { CardListComponent } from '../../card-list/card-list.component';
 import { CiteActionListComponent } from '../../cite-action-list/cite-action-list.component';
 import { CiteDutyListComponent } from '../../cite-duty-list/cite-duty-list.component';
+import { PlayerApplicationListComponent } from '../../player-application-list/player-application-list.component';
 import { captureUnhandledRejections, flush } from 'src/app/test-utils/unhandled-rx-errors';
 
 @Component({ selector: 'app-topbar', template: '' })
@@ -117,6 +118,12 @@ class CiteDutyListStub {
   readonly canEdit = input<boolean>(undefined);
   readonly showTemplates = input<boolean>(undefined);
 }
+@Component({ selector: 'app-player-application-list', template: '' })
+class PlayerApplicationListStub {
+  readonly loggedInUserId = input<string>(undefined);
+  readonly canEdit = input<boolean>(undefined);
+  readonly showTemplates = input<boolean>(undefined);
+}
 
 
 async function renderAdmin(
@@ -174,6 +181,7 @@ async function renderAdmin(
       { replace: CardListComponent, with: CardListStub },
       { replace: CiteActionListComponent, with: CiteActionListStub },
       { replace: CiteDutyListComponent, with: CiteDutyListStub },
+      { replace: PlayerApplicationListComponent, with: PlayerApplicationListStub },
     ],
     providers: [
       { provide: SystemPermissionsService, useValue: permissionApis.systemPermissions },
@@ -204,6 +212,7 @@ const SECTION_VIEWS: SystemPermission[] = [
   SystemPermission.ViewGalleryCards,
   SystemPermission.ViewCiteActions,
   SystemPermission.ViewCiteDuties,
+  SystemPermission.ViewPlayerApplications,
   SystemPermission.ViewCompetencyFrameworks,
   SystemPermission.ViewUsers,
   SystemPermission.ViewRoles,
@@ -251,7 +260,7 @@ describe('AdminContainerComponent', () => {
     expect(permissionApis.systemPermissions.getMySystemPermissions).toHaveBeenCalledTimes(1);
     for (const label of [
       'Units', 'Data Fields', 'Inject Types', 'Catalogs', 'Organizations', 'Gallery Cards',
-      'CITE Actions', 'CITE Duties', 'Competencies', 'Proficiency Scales', 'Users', 'Roles', 'Groups',
+      'CITE Actions', 'CITE Duties', 'Player Application Templates', 'Competencies', 'Proficiency Scales', 'Users', 'Roles', 'Groups',
     ]) {
       expect(within(nav()).queryByText(label)).not.toBeInTheDocument();
     }
@@ -272,6 +281,7 @@ describe('AdminContainerComponent', () => {
     [SystemPermission.ViewGalleryCards, ['Gallery Cards']],
     [SystemPermission.ViewCiteActions, ['CITE Actions']],
     [SystemPermission.ViewCiteDuties, ['CITE Duties']],
+    [SystemPermission.ViewPlayerApplications, ['Player Application Templates']],
     [SystemPermission.ViewCompetencyFrameworks, ['Competencies', 'Proficiency Scales']],
     [SystemPermission.ViewUsers, ['Users']],
     [SystemPermission.ViewRoles, ['Roles']],
@@ -280,7 +290,7 @@ describe('AdminContainerComponent', () => {
     await renderAdmin({ permissions: [permission] });
     const all = [
       'Units', 'Data Fields', 'Inject Types', 'Catalogs', 'Organizations', 'Gallery Cards',
-      'CITE Actions', 'CITE Duties', 'Competencies', 'Proficiency Scales', 'Users', 'Roles', 'Groups',
+      'CITE Actions', 'CITE Duties', 'Player Application Templates', 'Competencies', 'Proficiency Scales', 'Users', 'Roles', 'Groups',
     ];
 
     for (const label of all) {
@@ -321,6 +331,25 @@ describe('AdminContainerComponent', () => {
     expect(child(fixture, OrganizationListStub)).toBeUndefined();
   });
 
+  /**
+   * Verifies: the Player Application Templates section shows the Player application list in template mode, with ManagePlayerApplications as canEdit.
+   * Interacts with: real PermissionDataService (stubbed grants), the nav item click, PlayerApplicationListStub inputs.
+   * Data: ViewPlayerApplications + ManagePlayerApplications.
+   */
+  it('opens Player Application Templates as the template list', async () => {
+    const { fixture } = await renderAdmin({
+      permissions: [SystemPermission.ViewPlayerApplications, SystemPermission.ManagePlayerApplications],
+    });
+    const user = userEvent.setup();
+
+    await user.click(within(nav()).getByText('Player Application Templates'));
+
+    const list = child(fixture, PlayerApplicationListStub);
+    expect(list.showTemplates()).toBe(true);
+    expect(list.canEdit()).toBe(true);
+    expect(list.loggedInUserId()).toBe('user-1');
+  });
+
   // Each section that passes a Manage permission down to its child, with the
   // nav label, the permissions, and how to read the bound input off the stub.
   const MANAGED_SECTIONS = [
@@ -333,6 +362,7 @@ describe('AdminContainerComponent', () => {
     { label: 'Gallery Cards', view: SystemPermission.ViewGalleryCards, manage: SystemPermission.ManageGalleryCards, gate: (f: ComponentFixture<unknown>) => child(f, CardListStub)?.canEdit() },
     { label: 'CITE Actions', view: SystemPermission.ViewCiteActions, manage: SystemPermission.ManageCiteActions, gate: (f: ComponentFixture<unknown>) => child(f, CiteActionListStub)?.canEdit() },
     { label: 'CITE Duties', view: SystemPermission.ViewCiteDuties, manage: SystemPermission.ManageCiteDuties, gate: (f: ComponentFixture<unknown>) => child(f, CiteDutyListStub)?.canEdit() },
+    { label: 'Player Application Templates', view: SystemPermission.ViewPlayerApplications, manage: SystemPermission.ManagePlayerApplications, gate: (f: ComponentFixture<unknown>) => child(f, PlayerApplicationListStub)?.canEdit() },
   ];
 
   /**
