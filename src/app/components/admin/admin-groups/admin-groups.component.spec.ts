@@ -22,7 +22,6 @@ import { ApiStub } from 'src/app/test-utils/api-stub';
 import { dialogRefStub } from 'src/app/test-utils/dialog-refs';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { permissionDataProviders } from 'src/app/test-utils/mock-permission-data.service';
-import { unstubbed } from 'src/app/test-utils/unstubbed';
 import { AdminGroupsDetailComponent } from './admin-groups-detail/admin-groups-detail.component';
 
 @Component({ selector: 'app-admin-groups-detail', template: '' })
@@ -46,6 +45,10 @@ async function renderGroups(permissions: SystemPermission[]) {
   // The user confirms every dialog.
   const confirm = vi.fn(() => dialogRefStub<unknown, boolean>(true).dialogRef);
   const dialog = { confirm } satisfies Pick<CrucibleDialogService, 'confirm'>;
+  // Add and Rename open NameDialogComponent and set its title on the instance;
+  // the user cancels it.
+  const nameDialogRef = { componentInstance: {} as { title?: string }, afterClosed: () => of(undefined) };
+  const matDialog = { open: vi.fn(() => nameDialogRef) };
   const rendered = await renderComponent(AdminGroupsComponent, {
     imports: [
       MatButtonModule,
@@ -64,10 +67,10 @@ async function renderGroups(permissions: SystemPermission[]) {
       { provide: GroupService, useValue: groupApi },
       { provide: UserService, useValue: userApi },
       { provide: CrucibleDialogService, useValue: dialog },
-      unstubbed(MatDialog),
+      { provide: MatDialog, useValue: matDialog },
     ],
   });
-  return { ...rendered, groupApi, userApi, confirm };
+  return { ...rendered, groupApi, userApi, confirm, nameDialogRef };
 }
 
 const table = () => screen.getByRole('table');
@@ -138,5 +141,21 @@ describe('AdminGroupsComponent', () => {
     expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Delete Group', message: 'Are you sure that you want to delete Analysts?', confirmText: 'Delete' }));
     expect(groupApi.deleteGroup).toHaveBeenCalledWith('group-1');
     expect(within(table()).queryByText('Analysts')).not.toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: Add opens the name dialog titled "Add Group" and Rename opens it titled "Rename Group".
+   * Interacts with: the Add New Group and Rename buttons, a MatDialog stub (the name dialog's instance, cancelled).
+   * Data: ManageGroups granted; per row, the button clicked.
+   */
+  it.each([
+    { title: 'Add Group', open: () => buttonDescribed('Add New Group') },
+    { title: 'Rename Group', open: renameButton },
+  ])('titles the name dialog $title', async ({ title, open }) => {
+    const { nameDialogRef } = await renderGroups([SystemPermission.ManageGroups]);
+
+    await userEvent.setup().click(open());
+
+    expect(nameDialogRef.componentInstance.title).toBe(title);
   });
 });
