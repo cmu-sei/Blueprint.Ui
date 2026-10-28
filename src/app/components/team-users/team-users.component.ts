@@ -2,18 +2,10 @@
 // Released under a MIT (SEI)-style license, please see LICENSE.md in the
 // project root for license information or contact permission@sei.cmu.edu for full terms.
 
-import {
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-  Input,
-  ViewChild,
-  AfterViewInit,
-} from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, AfterViewInit, inject, input, viewChild } from '@angular/core';
 import { MatPaginator } from '@angular/material/paginator';
-import { Sort, MatSortable } from '@angular/material/sort';
-import { MatTableDataSource } from '@angular/material/table';
+import { Sort, MatSortable, MatSort, MatSortHeader } from '@angular/material/sort';
+import { MatTableDataSource, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
 import { TeamQuery } from 'src/app/data/team/team.query';
 import { SystemPermission, Team, TeamUser, User, UserTeamRole, MselUnit, Unit, CiteService } from 'src/app/generated/blueprint.api';
 import { TeamUserDataService } from 'src/app/data/team-user/team-user-data.service';
@@ -28,17 +20,37 @@ import { UnitQuery } from 'src/app/data/unit/unit.query';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
 import { Observable, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { UntypedFormControl } from '@angular/forms';
+import { UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MatToolbar, MatToolbarRow } from '@angular/material/toolbar';
+import { MatIcon } from '@angular/material/icon';
+import { MatFormField, MatInput, MatSuffix } from '@angular/material/input';
+import { MatIconButton } from '@angular/material/button';
+import { MatSelect } from '@angular/material/select';
+import { MatOption } from '@angular/material/autocomplete';
 @Component({
-  selector: 'app-team-users',
-  templateUrl: './team-users.component.html',
-  styleUrls: ['./team-users.component.scss'],
-  standalone: false
+    selector: 'app-team-users',
+    templateUrl: './team-users.component.html',
+    styleUrls: ['./team-users.component.scss'],
+    imports: [MatToolbar, MatToolbarRow, MatIcon, MatFormField, MatInput, FormsModule, ReactiveFormsModule, MatIconButton, MatSuffix, MatPaginator, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatSortHeader, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, MatSelect, MatOption]
 })
 export class TeamUsersComponent implements OnDestroy, OnInit, AfterViewInit {
-  @Input() team: Team;
-  @ViewChild('userPaginator') userPaginator: MatPaginator;
-  @ViewChild('teamMemberPaginator') teamMemberPaginator: MatPaginator;
+  private teamQuery = inject(TeamQuery);
+  private teamUserDataService = inject(TeamUserDataService);
+  private teamUserQuery = inject(TeamUserQuery);
+  private userQuery = inject(UserQuery);
+  private currentUserQuery = inject(CurrentUserQuery);
+  private userTeamRoleDataService = inject(UserTeamRoleDataService);
+  private userTeamRoleQuery = inject(UserTeamRoleQuery);
+  private mselQuery = inject(MselQuery);
+  private mselUnitQuery = inject(MselUnitQuery);
+  private unitQuery = inject(UnitQuery);
+  private permissionDataService = inject(PermissionDataService);
+  private citeService = inject(CiteService);
+  private changeDetectorRef = inject(ChangeDetectorRef);
+
+  readonly team = input<Team>(undefined);
+  readonly userPaginator = viewChild<MatPaginator>('userPaginator');
+  readonly teamMemberPaginator = viewChild<MatPaginator>('teamMemberPaginator');
   userList: User[] = [];
   teamUsers: TeamUser[] = [];
   otherTeamUsers: TeamUser[] = [];
@@ -60,21 +72,7 @@ export class TeamUsersComponent implements OnDestroy, OnInit, AfterViewInit {
   loggedInUserId = '';
   private unsubscribe$ = new Subject();
 
-  constructor(
-    private teamQuery: TeamQuery,
-    private teamUserDataService: TeamUserDataService,
-    private teamUserQuery: TeamUserQuery,
-    private userQuery: UserQuery,
-    private currentUserQuery: CurrentUserQuery,
-    private userTeamRoleDataService: UserTeamRoleDataService,
-    private userTeamRoleQuery: UserTeamRoleQuery,
-    private mselQuery: MselQuery,
-    private mselUnitQuery: MselUnitQuery,
-    private unitQuery: UnitQuery,
-    private permissionDataService: PermissionDataService,
-    private citeService: CiteService,
-    private changeDetectorRef: ChangeDetectorRef
-  ) {
+  constructor() {
     // Fetch CITE team roles dynamically
     this.citeService.getTeamRoles().pipe(takeUntil(this.unsubscribe$)).subscribe(roles => {
       this.teamRoles = roles.map(r => r.name).filter(n => !!n);
@@ -84,8 +82,8 @@ export class TeamUsersComponent implements OnDestroy, OnInit, AfterViewInit {
       this.setDataSources();
     });
     this.teamUserQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(tUsers => {
-      this.teamUsers = tUsers.filter(tu => tu.teamId === this.team?.id);
-      this.otherTeamUsers = tUsers.filter(tu => tu.teamId !== this.team?.id);
+      this.teamUsers = tUsers.filter(tu => tu.teamId === this.team()?.id);
+      this.otherTeamUsers = tUsers.filter(tu => tu.teamId !== this.team()?.id);
       this.setDataSources();
     });
     // observe the evaluation teams
@@ -144,14 +142,14 @@ export class TeamUsersComponent implements OnDestroy, OnInit, AfterViewInit {
       this.teamMemberFilterString = this.teamMemberFilterControl.value;
       this.applyTeamMemberFilter();
     });
-    this.teamUsers = this.teamUserQuery.getAll().filter(tu => tu.teamId === this.team?.id);
-    this.otherTeamUsers = this.teamUserQuery.getAll().filter(tu => tu.teamId !== this.team?.id);
+    this.teamUsers = this.teamUserQuery.getAll().filter(tu => tu.teamId === this.team()?.id);
+    this.otherTeamUsers = this.teamUserQuery.getAll().filter(tu => tu.teamId !== this.team()?.id);
     this.setDataSources();
   }
 
   ngAfterViewInit() {
-    this.userDataSource.paginator = this.userPaginator;
-    this.teamUserDataSource.paginator = this.teamMemberPaginator;
+    this.userDataSource.paginator = this.userPaginator();
+    this.teamUserDataSource.paginator = this.teamMemberPaginator();
   }
 
   canEditMsel(): boolean {
@@ -198,11 +196,13 @@ export class TeamUsersComponent implements OnDestroy, OnInit, AfterViewInit {
       }
     });
     this.userDataSource = new MatTableDataSource(newAllUsers);
-    if (this.userPaginator) {
-      this.userDataSource.paginator = this.userPaginator;
+    const userPaginator = this.userPaginator();
+    if (userPaginator) {
+      this.userDataSource.paginator = userPaginator;
     }
-    if (this.teamMemberPaginator) {
-      this.teamUserDataSource.paginator = this.teamMemberPaginator;
+    const teamMemberPaginator = this.teamMemberPaginator();
+    if (teamMemberPaginator) {
+      this.teamUserDataSource.paginator = teamMemberPaginator;
     }
   }
 
@@ -256,8 +256,9 @@ export class TeamUsersComponent implements OnDestroy, OnInit, AfterViewInit {
       }
     });
     this.userDataSource.data = data;
-    if (this.userPaginator) {
-      this.userDataSource.paginator = this.userPaginator;
+    const userPaginator = this.userPaginator();
+    if (userPaginator) {
+      this.userDataSource.paginator = userPaginator;
     }
   }
 
@@ -274,8 +275,9 @@ export class TeamUsersComponent implements OnDestroy, OnInit, AfterViewInit {
       }
     });
     this.teamUserDataSource.data = teamUserData;
-    if (this.teamMemberPaginator) {
-      this.teamUserDataSource.paginator = this.teamMemberPaginator;
+    const teamMemberPaginator = this.teamMemberPaginator();
+    if (teamMemberPaginator) {
+      this.teamUserDataSource.paginator = teamMemberPaginator;
     }
   }
 
@@ -300,7 +302,7 @@ export class TeamUsersComponent implements OnDestroy, OnInit, AfterViewInit {
 
   addUserToTeam(user: User): void {
     const teamUser = {
-      teamId: this.team?.id,
+      teamId: this.team()?.id,
       userId: user.id
     } as TeamUser;
     this.teamUserDataService.add(teamUser);
@@ -316,7 +318,7 @@ export class TeamUsersComponent implements OnDestroy, OnInit, AfterViewInit {
 
   getUserTeamRole(userId: string): string {
     const role = this.userTeamRoles.find(utr =>
-      utr.userId === userId && utr.teamId === this.team?.id
+      utr.userId === userId && utr.teamId === this.team()?.id
     );
     return role ? role.role : '';
   }

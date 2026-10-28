@@ -10,7 +10,7 @@ import {
   HttpUploadProgressEvent,
 } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
-import { EMPTY, Observable, of, throwError } from 'rxjs';
+import { EMPTY, Observable, Subject, of, throwError } from 'rxjs';
 import { Unit, UnitService } from 'src/app/generated/blueprint.api';
 import { UnitStore } from './unit.store';
 import { UnitDataService } from './unit-data.service';
@@ -59,6 +59,27 @@ const names = (list: Unit[]) => list.map((u) => u.name);
 describe('UnitDataService', () => {
   beforeEach(() => {
     TestBed.resetTestingModule();
+  });
+
+  /**
+   * Verifies: load() sends no second request while one is in flight, and a later load() fetches again.
+   * Interacts with: UnitService.getUnits (stub), real UnitStore and UnitQuery.
+   * Data: two load() calls before the response arrives, then one after.
+   */
+  it('load shares an in-flight request', () => {
+    const { service, query, unitApi } = setup();
+    const response = new Subject<Unit[]>();
+    unitApi.getUnits.mockReturnValueOnce(response);
+
+    service.load();
+    service.load();
+    expect(unitApi.getUnits).toHaveBeenCalledTimes(1);
+
+    response.next([unit({ id: 'id-blue', name: 'Blue Team' })]);
+    expect(names(query.getAll())).toEqual(['Blue Team']);
+
+    service.load();
+    expect(unitApi.getUnits).toHaveBeenCalledTimes(2);
   });
 
   /**
@@ -221,7 +242,7 @@ describe('UnitDataService', () => {
 
     expect(TestBed.inject(UnitQuery).getValue().loading).toBe(true);
     // With no error callback the error escapes to ErrorService, the ErrorHandler
-    // app.module.ts provides, which shows it.
+    // app.config.ts provides, which shows it.
     expect(errors).toEqual(escapes ? [failure] : []);
   });
 
@@ -242,7 +263,7 @@ describe('UnitDataService', () => {
     await flush();
 
     // These methods subscribe with no error callback and set no loading flag,
-    // so the error escapes to ErrorService, the ErrorHandler app.module.ts
+    // so the error escapes to ErrorService, the ErrorHandler app.config.ts
     // provides, which shows it to the user. Not a defect on its own.
     expect(errors).toEqual([failure]);
   });

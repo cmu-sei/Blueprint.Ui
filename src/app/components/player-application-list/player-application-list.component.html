@@ -6,7 +6,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
 
 <div class="cssLayoutRowStartCenter">
   <div class="sp-icon">
-    <mat-icon class="mdi-24px" fontIcon="mdi-application" [ngStyle]="{'color': 'var(--mat-sys-primary)'}"></mat-icon>
+    <mat-icon class="mdi-24px" fontIcon="mdi-application" [style.color]="'var(--mat-sys-primary)'" />
   </div>
 </div>
 
@@ -35,25 +35,25 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <!-- action column -->
       <ng-container matColumnDef="action">
         <th mat-header-cell *matHeaderCellDef class="column-action">
-          @if (canEditMsel() || msel.hasRole(loggedInUserId, null).owner) {
+          @if (canEditMsel() || msel.hasRole(loggedInUserId(), null).owner) {
           <button mat-icon-button [matMenuTriggerFor]="addMenu" style="outline: none;" title="Add Player Application"
             (click)="$event.stopPropagation();">
-            <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle"></mat-icon>
+            <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle" />
           </button>
           }
         </th>
         <td mat-cell *matCellDef="let element" class="column-action">
-          @if (canEditMsel() || msel.hasRole(loggedInUserId, null).owner) {
+          @if (canEditMsel() || msel.hasRole(loggedInUserId(), null).owner) {
           <button mat-icon-button
             (click)="addOrEditPlayerApplication(element, 'Edit Player Application'); $event.stopPropagation()"
             title="Edit {{ element.name }}">
-            <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline"></mat-icon>
+            <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline" />
           </button>
           }
-          @if (canEditMsel() || msel.hasRole(loggedInUserId, null).owner) {
+          @if (canEditMsel() || msel.hasRole(loggedInUserId(), null).owner) {
           <button mat-icon-button (click)="deletePlayerApplication(element); $event.stopPropagation()"
             title="Delete {{ element.name }}">
-            <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline"></mat-icon>
+            <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline" />
           </button>
           }
         </td>
@@ -73,7 +73,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <th mat-header-cell *matHeaderCellDef class="column-icon">Icon</th>
         <td mat-cell *matCellDef="let element" class="column-icon" [title]="element.icon || ''">
           @if (element.icon?.startsWith('mdi-')) {
-          <mat-icon class="mdi-24px" [fontIcon]="element.icon"></mat-icon>
+          <mat-icon class="mdi-24px" [fontIcon]="element.icon" />
           } @else if (getIconUrl(element.icon) && !brokenIcons.has(element.icon)) {
           <img class="app-icon" [src]="getIconUrl(element.icon)" [alt]="element.name"
             (error)="brokenIcons.add(element.icon)" />
@@ -85,7 +85,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <th mat-header-cell *matHeaderCellDef class="column-flag"
           matTooltip="Player shows the application inside the view instead of opening it in a new tab">Embeddable</th>
         <td mat-cell *matCellDef="let element" class="column-flag">
-          <mat-checkbox [checked]="element.embeddable" disabled (click)="$event.stopPropagation();"></mat-checkbox>
+          <mat-checkbox [checked]="element.embeddable" disabled (click)="$event.stopPropagation();" />
         </td>
       </ng-container>
       <!-- loadInBackground column -->
@@ -93,7 +93,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <th mat-header-cell *matHeaderCellDef class="column-flag"
           matTooltip="Player loads the application when the view opens, before a participant selects it">Load in Background</th>
         <td mat-cell *matCellDef="let element" class="column-flag">
-          <mat-checkbox [checked]="element.loadInBackground" disabled (click)="$event.stopPropagation();"></mat-checkbox>
+          <mat-checkbox [checked]="element.loadInBackground" disabled (click)="$event.stopPropagation();" />
         </td>
       </ng-container>
       <!-- Expanded Content Column -->
@@ -106,9 +106,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 <span class="title">Select the MSEL teams that will see this application</span>
               </div>
               <div class="single-detail">
-                <app-player-application-teams style="width: 100%;" [loggedInUserId]="loggedInUserId"
-                  [playerApplicationId]="element.id" [mselTeamList]="mselTeamList">
-                </app-player-application-teams>
+                <app-player-application-teams style="width: 100%;" [loggedInUserId]="loggedInUserId()"
+                  [playerApplicationId]="element.id" [mselTeamList]="mselTeamList" />
               </div>
             </div>
             }
@@ -129,8 +128,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <div class="playerApplication-detail" (click)="$event.stopPropagation();">
       <div class="single-detail">
         <app-player-team-app-order style="width: 100%;" [mselTeamList]="mselTeamList"
-          [canEdit]="canEditMsel() || msel.hasRole(loggedInUserId, null).owner">
-        </app-player-team-app-order>
+          [canEdit]="canEditMsel() || msel.hasRole(loggedInUserId(), null).owner" />
       </div>
     </div>
   </mat-expansion-panel>

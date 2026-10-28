@@ -10,7 +10,7 @@ import {
   DataValueStore,
 } from './data-value.store';
 import { DataValue } from 'src/app/generated/blueprint.api';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { PageEvent } from '@angular/material/paginator';
 import { Observable } from 'rxjs';
 
@@ -22,8 +22,14 @@ import { Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class DataValueQuery extends QueryEntity<DataValueState> {
-  constructor(protected store: DataValueStore) {
+  protected store: DataValueStore;
+
+  constructor() {
+    const store = inject(DataValueStore);
+
     super(store);
+  
+    this.store = store;
   }
 
   selectById(id: string): Observable<DataValue> {

@@ -3,7 +3,7 @@
 
 import { UserTeamRoleStore } from './user-team-role.store';
 import { UserTeamRoleQuery } from './user-team-role.query';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { PageEvent } from '@angular/material/paginator';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -18,6 +18,12 @@ import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
   providedIn: 'root',
 })
 export class UserTeamRoleDataService {
+  private userTeamRoleStore = inject(UserTeamRoleStore);
+  private userTeamRoleQuery = inject(UserTeamRoleQuery);
+  private userTeamRoleService = inject(UserTeamRoleService);
+  private router = inject(Router);
+  private activatedRoute = inject(ActivatedRoute);
+
   private _requestedUserTeamRoleId: string;
   private _requestedUserTeamRoleId$ = this.activatedRoute.queryParamMap.pipe(
     map((params) => params.get('userTeamRoleId') || '')
@@ -31,15 +37,6 @@ export class UserTeamRoleDataService {
   readonly pageEvent = new BehaviorSubject<PageEvent>(this._pageEvent);
   private pageSize: Observable<number>;
   private pageIndex: Observable<number>;
-
-  constructor(
-    private userTeamRoleStore: UserTeamRoleStore,
-    private userTeamRoleQuery: UserTeamRoleQuery,
-    private userTeamRoleService: UserTeamRoleService,
-    private router: Router,
-    private activatedRoute: ActivatedRoute
-  ) {
-  }
 
   private sortUserTeamRoles(
     a: UserTeamRole,

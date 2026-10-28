@@ -6,7 +6,7 @@
 
 import { OrganizationStore } from './organization.store';
 import { OrganizationQuery } from './organization.query';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { PageEvent } from '@angular/material/paginator';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -22,6 +22,12 @@ import { HttpEventType, HttpResponse } from '@angular/common/http';
   providedIn: 'root',
 })
 export class OrganizationDataService {
+  private organizationStore = inject(OrganizationStore);
+  private organizationQuery = inject(OrganizationQuery);
+  private organizationService = inject(OrganizationService);
+  private router = inject(Router);
+  private activatedRoute = inject(ActivatedRoute);
+
   readonly OrganizationList: Observable<Organization[]>;
   readonly filterControl = new UntypedFormControl(); private _requestedOrganizationId: string;
   private _requestedOrganizationId$ = this.activatedRoute.queryParamMap.pipe(
@@ -37,13 +43,9 @@ export class OrganizationDataService {
   private pageIndex: Observable<number>;
   public uploadProgress = new Subject<number>();
 
-  constructor(
-    private organizationStore: OrganizationStore,
-    private organizationQuery: OrganizationQuery,
-    private organizationService: OrganizationService,
-    private router: Router,
-    private activatedRoute: ActivatedRoute
-  ) {
+  constructor() {
+    const activatedRoute = this.activatedRoute;
+
     this.filterTerm = activatedRoute.queryParamMap.pipe(
       map((params) => params.get('organizationmask') || '')
     );

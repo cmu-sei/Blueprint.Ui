@@ -2,25 +2,25 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { describe, it, expect } from 'vitest';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
-import { CRUCIBLE_DIALOG_IMPORTS } from '@cmusei/crucible-common';
+import { CRUCIBLE_DIALOG_IMPORTS, CrucibleDialogComponent, CrucibleDialogContentDirective } from '@cmusei/crucible-common';
 import { Catalog, InjectType, Injectm } from 'src/app/generated/blueprint.api';
 import { InjectSelectDialogComponent } from './inject-select-dialog.component';
 import { renderComponent } from 'src/app/test-utils/render-component';
 
-@Component({ selector: 'app-inject-list', template: '', standalone: false })
+@Component({ selector: 'app-inject-list', template: '' })
 class InjectListStub {
-  @Input() catalog: Catalog;
-  @Input() injectType: InjectType;
-  @Input() injectList: Injectm[];
-  @Input() isContentDeveloper: boolean;
-  @Input() loggedInUserId: string;
-  @Output() selectedInjectIdList = new EventEmitter<string[]>();
+  readonly catalog = input<Catalog>(undefined);
+  readonly injectType = input<InjectType>(undefined);
+  readonly injectList = input<Injectm[]>(undefined);
+  readonly isContentDeveloper = input<boolean>(undefined);
+  readonly loggedInUserId = input<string>(undefined);
+  readonly selectedInjectIdList = output<string[]>();
 }
 
 const CATALOG: Catalog = { id: 'cat-1', name: 'Ransomware Catalog', injectTypeId: 'it-email' };
@@ -29,7 +29,13 @@ async function renderInjectSelect() {
   const data = { catalog: CATALOG, injectType: { id: 'it-email', name: 'Email' }, injectList: [], loggedInUserId: 'user-1' };
   const rendered = await renderComponent(InjectSelectDialogComponent, {
     imports: [...CRUCIBLE_DIALOG_IMPORTS],
-    declarations: [InjectSelectDialogComponent, InjectListStub],
+    // The component imports InjectListComponent through forwardRef, which
+    // childStubs cannot match by class, so the imports list is set whole.
+    configureTestBed: (testBed) => {
+      testBed.overrideComponent(InjectSelectDialogComponent, {
+        set: { imports: [CrucibleDialogComponent, CrucibleDialogContentDirective, InjectListStub] },
+      });
+    },
     providers: [{ provide: MAT_DIALOG_DATA, useValue: data }],
   });
   const results: unknown[] = [];
@@ -52,7 +58,7 @@ describe('InjectSelectDialogComponent', () => {
 
     expect(fixture.componentInstance).toBeInstanceOf(InjectSelectDialogComponent);
     expect(screen.getByRole('heading', { name: 'Select Injects to Add' })).toBeInTheDocument();
-    expect(list(fixture).catalog).toEqual(CATALOG);
+    expect(list(fixture).catalog()).toEqual(CATALOG);
     expect(screen.getByRole('button', { name: 'Add' })).toBeDisabled();
   });
 

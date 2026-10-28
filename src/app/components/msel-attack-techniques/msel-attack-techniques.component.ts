@@ -1,10 +1,20 @@
 // Copyright 2026 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { AfterViewInit, Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { UntypedFormControl } from '@angular/forms';
+import { AfterViewInit, Component, OnDestroy, OnInit, inject, input, viewChild } from '@angular/core';
+import { UntypedFormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
-import { MatTableDataSource } from '@angular/material/table';
+import { MatTableDataSource, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
+import { NgStyle } from '@angular/common';
+import { MatIcon } from '@angular/material/icon';
+import { MatFormField, MatLabel, MatInput, MatSuffix, MatHint } from '@angular/material/input';
+import { MatSelect } from '@angular/material/select';
+import { MatOption } from '@angular/material/autocomplete';
+import { MatExpansionPanel, MatExpansionPanelHeader, MatExpansionPanelTitle, MatExpansionPanelDescription } from '@angular/material/expansion';
+import { MatIconButton, MatButton } from '@angular/material/button';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
+import { MatCheckbox } from '@angular/material/checkbox';
+import { MatTooltip } from '@angular/material/tooltip';
 import { Observable, Subject } from 'rxjs';
 import { take, takeUntil } from 'rxjs/operators';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
@@ -38,11 +48,23 @@ import { SystemMessageService } from 'src/app/services/system-message/system-mes
   selector: 'app-msel-attack-techniques',
   templateUrl: './msel-attack-techniques.component.html',
   styleUrls: ['./msel-attack-techniques.component.scss'],
-  standalone: false
+  imports: [MatIcon, MatFormField, MatLabel, MatHint, MatSelect, MatOption, MatExpansionPanel, MatExpansionPanelHeader, MatExpansionPanelTitle, MatExpansionPanelDescription, MatInput, ReactiveFormsModule, MatIconButton, MatSuffix, MatPaginator, MatProgressSpinner, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCheckbox, MatCellDef, MatCell, MatTooltip, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, MatButton, NgStyle]
 })
 export class MselAttackTechniquesComponent implements OnInit, AfterViewInit, OnDestroy {
-  @Input() loggedInUserId: string;
-  @ViewChild('browserPaginator') browserPaginator: MatPaginator;
+  private mselQuery = inject(MselQuery);
+  private mselAttackTechniqueDataService = inject(MselAttackTechniqueDataService);
+  private mselAttackTechniqueQuery = inject(MselAttackTechniqueQuery);
+  private attackReleaseDataService = inject(AttackReleaseDataService);
+  private attackReleaseQuery = inject(AttackReleaseQuery);
+  private attackReleaseService = inject(AttackReleaseService);
+  private permissionDataService = inject(PermissionDataService);
+  private dataFieldQuery = inject(DataFieldQuery);
+  private dataValueQuery = inject(DataValueQuery);
+  private messageService = inject(SystemMessageService);
+  dialogService = inject(CrucibleDialogService);
+
+  readonly loggedInUserId = input<string>(undefined);
+  readonly browserPaginator = viewChild<MatPaginator>('browserPaginator');
   msel = new MselPlus();
   releases: AttackRelease[] = [];
   selectedReleaseId = '';
@@ -72,19 +94,7 @@ export class MselAttackTechniquesComponent implements OnInit, AfterViewInit, OnD
   private tacticNames = new Map<string, string>();
   private unsubscribe$ = new Subject();
 
-  constructor(
-    private mselQuery: MselQuery,
-    private mselAttackTechniqueDataService: MselAttackTechniqueDataService,
-    private mselAttackTechniqueQuery: MselAttackTechniqueQuery,
-    private attackReleaseDataService: AttackReleaseDataService,
-    private attackReleaseQuery: AttackReleaseQuery,
-    private attackReleaseService: AttackReleaseService,
-    private permissionDataService: PermissionDataService,
-    private dataFieldQuery: DataFieldQuery,
-    private dataValueQuery: DataValueQuery,
-    private messageService: SystemMessageService,
-    public dialogService: CrucibleDialogService
-  ) {
+  constructor() {
     (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
       if (msel) {
         const isNewMsel = this.msel.id !== msel.id;
@@ -131,12 +141,12 @@ export class MselAttackTechniquesComponent implements OnInit, AfterViewInit, OnD
   }
 
   ngAfterViewInit() {
-    this.browserDataSource.paginator = this.browserPaginator;
+    this.browserDataSource.paginator = this.browserPaginator();
   }
 
   canEditMsel(): boolean {
     return this.permissionDataService.hasPermission(SystemPermission.ManageMsels) ||
-      this.msel.hasRole(this.loggedInUserId, '').owner;
+      this.msel.hasRole(this.loggedInUserId(), '').owner;
   }
 
   get selectedRelease(): AttackRelease {

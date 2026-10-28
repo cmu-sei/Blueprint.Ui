@@ -10,7 +10,7 @@
 
 import { UnitStore } from './unit.store';
 import { UnitQuery } from './unit.query';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { PageEvent } from '@angular/material/paginator';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -19,13 +19,19 @@ import {
   UnitService
 } from 'src/app/generated/blueprint.api';
 import { map, take, tap } from 'rxjs/operators';
-import { BehaviorSubject, Observable, Subject, combineLatest } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, Subscription, combineLatest } from 'rxjs';
 import { HttpEventType, HttpResponse } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root',
 })
 export class UnitDataService {
+  private unitStore = inject(UnitStore);
+  private unitQuery = inject(UnitQuery);
+  private unitService = inject(UnitService);
+  private router = inject(Router);
+  private activatedRoute = inject(ActivatedRoute);
+
   // private _requestedUnitId: string;
   // private _requestedUnitId$ = this.activatedRoute.queryParamMap.pipe(
   //   map((params) => params.get('unitId') || '')
@@ -42,13 +48,9 @@ export class UnitDataService {
   private pageIndex: Observable<number>;
   public uploadProgress = new Subject<number>();
 
-  constructor(
-    private unitStore: UnitStore,
-    private unitQuery: UnitQuery,
-    private unitService: UnitService,
-    private router: Router,
-    private activatedRoute: ActivatedRoute
-  ) {
+  constructor() {
+    const activatedRoute = this.activatedRoute;
+
     this.filterTerm = activatedRoute.queryParamMap.pipe(
       map((params) => params.get('filter') || '')
     );
@@ -134,9 +136,15 @@ export class UnitDataService {
     // );
   }
 
+  private loadSubscription: Subscription;
+
   load() {
+    // Components that mount together each ask for the units; one request serves them all.
+    if (this.loadSubscription && !this.loadSubscription.closed) {
+      return;
+    }
     this.unitStore.setLoading(true);
-    this.unitService
+    this.loadSubscription = this.unitService
       .getUnits()
       .pipe(
         tap(() => {

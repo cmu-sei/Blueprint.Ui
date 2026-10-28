@@ -3,7 +3,7 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
-import { firstValueFrom, of } from 'rxjs';
+import { firstValueFrom, of, throwError } from 'rxjs';
 import { SystemPermission, SystemPermissionsService } from 'src/app/generated/blueprint.api';
 import { PermissionDataService } from './permission-data.service';
 import { permissionDataProviders } from 'src/app/test-utils/mock-permission-data.service';
@@ -60,6 +60,62 @@ describe('PermissionDataService', () => {
     expect(permissionsApi.getMySystemPermissions).toHaveBeenCalledTimes(1);
     expect(loaded).toEqual([SystemPermission.CreateMsels, SystemPermission.ViewUsers]);
     expect(service.permissions).toEqual(loaded);
+  });
+
+  /**
+   * Verifies: callers that load the permissions together, or later, share one request.
+   * Interacts with: SystemPermissionsService.getMySystemPermissions (stub).
+   * Data: ViewUsers; three load() subscriptions, the last after the first resolved.
+   */
+  it('load fetches the permissions once for every caller', async () => {
+    const { service, permissionsApi } = setup([SystemPermission.ViewUsers]);
+
+    const [first, second] = await Promise.all([
+      firstValueFrom(service.load()),
+      firstValueFrom(service.load()),
+    ]);
+    const later = await firstValueFrom(service.load());
+
+    expect(permissionsApi.getMySystemPermissions).toHaveBeenCalledTimes(1);
+    expect([first, second, later]).toEqual([
+      [SystemPermission.ViewUsers],
+      [SystemPermission.ViewUsers],
+      [SystemPermission.ViewUsers],
+    ]);
+  });
+
+  /**
+   * Verifies: the cached permissions reach a later caller asynchronously, as the request did, so a component's subscription never runs inside its own ngOnInit.
+   * Interacts with: SystemPermissionsService.getMySystemPermissions (stub).
+   * Data: ViewUsers; one load() to fill the cache, then a second subscription.
+   */
+  it('load delivers the cached permissions asynchronously', async () => {
+    const { service } = setup([SystemPermission.ViewUsers]);
+    await firstValueFrom(service.load());
+
+    const received: SystemPermission[][] = [];
+    service.load().subscribe((p) => received.push(p));
+    expect(received).toEqual([]);
+
+    await Promise.resolve();
+    expect(received).toEqual([[SystemPermission.ViewUsers]]);
+  });
+
+  /**
+   * Verifies: a failed fetch is not kept, so the next load() asks again and caches that answer.
+   * Interacts with: SystemPermissionsService.getMySystemPermissions (stub).
+   * Data: a failure, then ViewUsers.
+   */
+  it('load tries again after a failed fetch', async () => {
+    const { service, permissionsApi } = setup([SystemPermission.ViewUsers]);
+    permissionsApi.getMySystemPermissions.mockReturnValueOnce(throwError(() => new Error('offline')));
+
+    await expect(firstValueFrom(service.load())).rejects.toThrow('offline');
+    const loaded = await firstValueFrom(service.load());
+
+    expect(permissionsApi.getMySystemPermissions).toHaveBeenCalledTimes(2);
+    expect(loaded).toEqual([SystemPermission.ViewUsers]);
+    expect(service.permissions).toEqual([SystemPermission.ViewUsers]);
   });
 
   /**

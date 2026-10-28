@@ -55,6 +55,10 @@ td {
   max-height: 300px;
 }
 
+.invalid-value {
+  color: var(--mat-sys-error);
+}
+
 .html-constrainer {
   width: 500px;
   max-height: 300px;

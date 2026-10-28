@@ -7,9 +7,16 @@ project root for license information or contact permission@sei.cmu.edu for full 
   @if (msel) {
   @if (assessorDataFields.length === 0) {
     <div class="empty-state">
-      <mat-icon fontIcon="mdi-alert-circle-outline" style="font-size: 48px; width: 48px; height: 48px;"></mat-icon>
+      <mat-icon class="message-icon" fontIcon="mdi-alert-circle-outline" />
       <p>No data fields are marked as assessor-visible.</p>
-      <p>Go to the Data Fields tab and enable "Assessor View" on the fields you want assessors to see.</p>
+      @if (!standalone()) {
+        <p>Go to the Data Fields tab and enable "Assessor View" on the fields you want assessors to see.</p>
+      } @else if (canChooseFields()) {
+        <p>Enable "Assessor View" on this MSEL's Data Fields tab for the fields you want assessors to see.</p>
+        <button mat-flat-button color="primary" class="open-data-fields" (click)="openDataFields()">Open Data Fields</button>
+      } @else {
+        <p>Ask the MSEL owner to enable "Assessor View" on the fields assessors should see.</p>
+      }
     </div>
   } @else {
   <div class="tableFixHead">
@@ -28,7 +35,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 <input matInput [(ngModel)]="filterString" (ngModelChange)="filterChange.next($event)" />
                 @if (filterString) {
                 <button mat-icon-button matSuffix (click)="applyFilter('')" title="Clear Search">
-                  <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline"></mat-icon>
+                  <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline" />
                 </button>
                 }
               </mat-form-field>
@@ -44,7 +51,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
               }
               @if (hasActiveTopFilters) {
               <button mat-icon-button (click)="clearAllTopFilters()" title="Clear All Filters" class="clear-filters-button">
-                <mat-icon class="mdi-18px" fontIcon="mdi-filter-remove-outline"></mat-icon>
+                <mat-icon class="mdi-18px" fontIcon="mdi-filter-remove-outline" />
               </button>
               }
             </div>
@@ -58,22 +65,22 @@ project root for license information or contact permission@sei.cmu.edu for full 
               @if (!showSearch) {
               <button mat-icon-button (click)="setSearch(true)" class="header-button"
                 title="Search Events">
-                <mat-icon class="mdi-24px" fontIcon="mdi-filter-outline"></mat-icon>
+                <mat-icon class="mdi-24px" fontIcon="mdi-filter-outline" />
               </button>
               }
               @if (showSearch) {
               <button mat-icon-button (click)="setSearch(false)" class="header-button"
                 title="Clear Search">
-                <mat-icon class="mdi-24px" fontIcon="mdi-filter-off-outline"></mat-icon>
+                <mat-icon class="mdi-24px" fontIcon="mdi-filter-off-outline" />
               </button>
               }
               <button mat-icon-button (click)="expandAll()" class="header-button"
                 title="Expand All (Ctrl+Shift+E)" [disabled]="isFullyExpanded">
-                <mat-icon class="mdi-24px" fontIcon="mdi-unfold-more-horizontal"></mat-icon>
+                <mat-icon class="mdi-24px" fontIcon="mdi-unfold-more-horizontal" />
               </button>
               <button mat-icon-button (click)="collapseAll()" class="header-button"
                 title="Collapse All (Ctrl+Shift+C)" [disabled]="isFullyCollapsed">
-                <mat-icon class="mdi-24px" fontIcon="mdi-unfold-less-horizontal"></mat-icon>
+                <mat-icon class="mdi-24px" fontIcon="mdi-unfold-less-horizontal" />
               </button>
             </div>
           </th>
@@ -98,12 +105,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
               @if (!showRealTime) {
               <button mat-icon-button (click)="setRealTime(true)" style="outline: none;" title="Switch to Real Time"
                 [disabled]="!msel || !msel.startTime || msel.startTime.valueOf() < 0">
-                <mat-icon class="mdi-24px" fontIcon="mdi-timer-outline"></mat-icon>
+                <mat-icon class="mdi-24px" fontIcon="mdi-timer-outline" />
               </button>
               }
               @if (showRealTime) {
               <button mat-icon-button (click)="setRealTime(false)" style="outline: none;" title="Switch to Delta Time">
-                <mat-icon class="mdi-24px" fontIcon="mdi-clock-time-four-outline"></mat-icon>
+                <mat-icon class="mdi-24px" fontIcon="mdi-clock-time-four-outline" />
               </button>
               }
               <span>Execution Time</span>
@@ -138,8 +145,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <td class="expand-col">
             <mat-icon class="mdi-24px"
               [fontIcon]="expandedMoveNumbers.has(row.moveNumber) ? 'mdi-chevron-down' : 'mdi-chevron-right'"
-              style="display: flex; align-items: center; justify-content: center; opacity: 0.6;">
-            </mat-icon>
+              style="display: flex; align-items: center; justify-content: center; opacity: 0.6;" />
           </td>
           <td [attr.colspan]="assessorDataFields.length + 1
             + (msel.showMoveOnAssessorView ? 1 : 0)
@@ -147,7 +153,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             + (msel.showTimeOnAssessorView ? 1 : 0)
             + (msel.showIntegrationTargetOnAssessorView ? 1 : 0)">
             <div class="section-header-content">
-              <mat-icon fontIcon="mdi-folder-outline" class="mdi-18px"></mat-icon>
+              <mat-icon fontIcon="mdi-folder-outline" class="mdi-18px" />
               <span class="section-label">Move {{ row.moveNumber }}</span>
               <span class="section-description">{{ getMoveDescription(row.moveNumber) }}</span>
             </div>
@@ -163,7 +169,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <div class="event-detail-split">
               <div class="evidence-panel">
                 <div class="statements-header">
-                  <mat-icon fontIcon="mdi-clipboard-text-outline" class="mdi-18px"></mat-icon>
+                  <mat-icon fontIcon="mdi-clipboard-text-outline" class="mdi-18px" />
                   <span>xAPI Evidence — Move {{ row.moveNumber }}</span>
                   @if (getMoveStatements(row.moveNumber).length > 0) {
                     <span class="statement-count">{{ getFilteredMoveStatements(row.moveNumber).length }} / {{ getMoveStatements(row.moveNumber).length }}</span>
@@ -200,11 +206,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   </div>
                   <button mat-icon-button class="refresh-button" (click)="refreshStatements()"
                     title="Refresh xAPI statements" [disabled]="statementsLoading">
-                    <mat-icon class="mdi-18px" fontIcon="mdi-refresh"></mat-icon>
+                    <mat-icon class="mdi-18px" fontIcon="mdi-refresh" />
                   </button>
                 </div>
                 @if (loadingStatements.has('_all')) {
-                  <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+                  <mat-progress-bar mode="indeterminate" />
                 } @else if (getMoveStatements(row.moveNumber).length === 0) {
                   <div class="no-statements">No xAPI statements found for this move.</div>
                 } @else {
@@ -214,7 +220,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                         <div class="statement-row" (click)="toggleStatement(stmt.id)"
                           [class.statement-expanded]="expandedStatementIds.has(stmt.id)">
                           <button mat-icon-button class="copy-button" (click)="copyStatement(stmt, $event)" title="Copy JSON">
-                            <mat-icon class="mdi-14px" fontIcon="mdi-content-copy"></mat-icon>
+                            <mat-icon class="mdi-14px" fontIcon="mdi-content-copy" />
                           </button>
                           <span class="statement-time">{{ formatTimestamp(stmt.timestamp) }}</span>
                           <span class="stmt-move">{{ getMovePart(stmt) }}</span>
@@ -248,7 +254,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
               @if (getMoveCompetencies(row.moveNumber).length > 0) {
                 <div class="assessment-panel">
                   <div class="assessment-header">
-                    <mat-icon fontIcon="mdi-clipboard-check-outline" class="mdi-18px"></mat-icon>
+                    <mat-icon fontIcon="mdi-clipboard-check-outline" class="mdi-18px" />
                     <span>Move {{ row.moveNumber }} — Competency Assessment</span>
                   </div>
                   @if (teamList.length > 0) {
@@ -285,11 +291,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
                             [disabled]="!canSubmitRating('move-' + row.moveNumber, comp.id)"
                             (click)="submitRating('move-' + row.moveNumber, comp.id)"
                             title="Submit assertion">
-                            <mat-icon class="mdi-18px" fontIcon="mdi-send"></mat-icon>
+                            <mat-icon class="mdi-18px" fontIcon="mdi-send" />
                           </button>
                           @if (isRatingSubmitted('move-' + row.moveNumber, comp.id)) {
                             <span class="rating-submitted-indicator">
-                              <mat-icon fontIcon="mdi-check-circle" class="mdi-14px"></mat-icon>
+                              <mat-icon fontIcon="mdi-check-circle" class="mdi-14px" />
                               Submitted
                             </span>
                           }
@@ -303,7 +309,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                         [disabled]="!hasAnySubmittableRatings('move-' + row.moveNumber)"
                         (click)="submitAllRatings('move-' + row.moveNumber)"
                         class="submit-all-button">
-                        <mat-icon fontIcon="mdi-send-check" class="mdi-18px"></mat-icon>
+                        <mat-icon fontIcon="mdi-send-check" class="mdi-18px" />
                         Submit All
                       </button>
                     </div>
@@ -312,7 +318,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
               } @else {
                 <div class="assessment-panel assessment-panel-empty">
                   <div class="assessment-header assessment-header-inactive">
-                    <mat-icon fontIcon="mdi-clipboard-check-outline" class="mdi-18px"></mat-icon>
+                    <mat-icon fontIcon="mdi-clipboard-check-outline" class="mdi-18px" />
                     <span>Competency Assessment</span>
                   </div>
                   <div class="no-competencies">No competencies in this move.</div>
@@ -329,8 +335,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <td class="expand-col">
             <mat-icon class="mdi-24px"
               [fontIcon]="expandedGroupKeys.has(row.groupKey) ? 'mdi-chevron-down' : 'mdi-chevron-right'"
-              style="display: flex; align-items: center; justify-content: center; opacity: 0.6;">
-            </mat-icon>
+              style="display: flex; align-items: center; justify-content: center; opacity: 0.6;" />
           </td>
           <td [attr.colspan]="assessorDataFields.length + 1
             + (msel.showMoveOnAssessorView ? 1 : 0)
@@ -338,7 +343,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             + (msel.showTimeOnAssessorView ? 1 : 0)
             + (msel.showIntegrationTargetOnAssessorView ? 1 : 0)">
             <div class="section-header-content">
-              <mat-icon fontIcon="mdi-group" class="mdi-18px"></mat-icon>
+              <mat-icon fontIcon="mdi-group" class="mdi-18px" />
               <span class="section-label">Group {{ row.groupNumber }}</span>
             </div>
           </td>
@@ -353,7 +358,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <div class="event-detail-split">
               <div class="evidence-panel">
                 <div class="statements-header">
-                  <mat-icon fontIcon="mdi-clipboard-text-outline" class="mdi-18px"></mat-icon>
+                  <mat-icon fontIcon="mdi-clipboard-text-outline" class="mdi-18px" />
                   <span>xAPI Evidence — Group {{ row.groupNumber }}</span>
                   @if (getGroupStatements(row.groupKey).length > 0) {
                     <span class="statement-count">{{ getFilteredGroupStatements(row.groupKey).length }} / {{ getGroupStatements(row.groupKey).length }}</span>
@@ -390,11 +395,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   </div>
                   <button mat-icon-button class="refresh-button" (click)="refreshStatements()"
                     title="Refresh xAPI statements" [disabled]="statementsLoading">
-                    <mat-icon class="mdi-18px" fontIcon="mdi-refresh"></mat-icon>
+                    <mat-icon class="mdi-18px" fontIcon="mdi-refresh" />
                   </button>
                 </div>
                 @if (loadingStatements.has('_all')) {
-                  <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+                  <mat-progress-bar mode="indeterminate" />
                 } @else if (getGroupStatements(row.groupKey).length === 0) {
                   <div class="no-statements">No xAPI statements found for this group.</div>
                 } @else {
@@ -404,7 +409,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                         <div class="statement-row" (click)="toggleStatement(stmt.id)"
                           [class.statement-expanded]="expandedStatementIds.has(stmt.id)">
                           <button mat-icon-button class="copy-button" (click)="copyStatement(stmt, $event)" title="Copy JSON">
-                            <mat-icon class="mdi-14px" fontIcon="mdi-content-copy"></mat-icon>
+                            <mat-icon class="mdi-14px" fontIcon="mdi-content-copy" />
                           </button>
                           <span class="statement-time">{{ formatTimestamp(stmt.timestamp) }}</span>
                           <span class="stmt-move">{{ getMovePart(stmt) }}</span>
@@ -438,7 +443,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
               @if (getGroupCompetencies(row.groupKey).length > 0) {
                 <div class="assessment-panel">
                   <div class="assessment-header">
-                    <mat-icon fontIcon="mdi-clipboard-check-outline" class="mdi-18px"></mat-icon>
+                    <mat-icon fontIcon="mdi-clipboard-check-outline" class="mdi-18px" />
                     <span>Group {{ row.groupNumber }} — Competency Assessment</span>
                   </div>
                   @if (teamList.length > 0) {
@@ -475,11 +480,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
                             [disabled]="!canSubmitRating('group-' + row.groupKey, comp.id)"
                             (click)="submitRating('group-' + row.groupKey, comp.id)"
                             title="Submit assertion">
-                            <mat-icon class="mdi-18px" fontIcon="mdi-send"></mat-icon>
+                            <mat-icon class="mdi-18px" fontIcon="mdi-send" />
                           </button>
                           @if (isRatingSubmitted('group-' + row.groupKey, comp.id)) {
                             <span class="rating-submitted-indicator">
-                              <mat-icon fontIcon="mdi-check-circle" class="mdi-14px"></mat-icon>
+                              <mat-icon fontIcon="mdi-check-circle" class="mdi-14px" />
                               Submitted
                             </span>
                           }
@@ -493,7 +498,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                         [disabled]="!hasAnySubmittableRatings('group-' + row.groupKey)"
                         (click)="submitAllRatings('group-' + row.groupKey)"
                         class="submit-all-button">
-                        <mat-icon fontIcon="mdi-send-check" class="mdi-18px"></mat-icon>
+                        <mat-icon fontIcon="mdi-send-check" class="mdi-18px" />
                         Submit All
                       </button>
                     </div>
@@ -502,7 +507,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
               } @else {
                 <div class="assessment-panel assessment-panel-empty">
                   <div class="assessment-header assessment-header-inactive">
-                    <mat-icon fontIcon="mdi-clipboard-check-outline" class="mdi-18px"></mat-icon>
+                    <mat-icon fontIcon="mdi-clipboard-check-outline" class="mdi-18px" />
                     <span>Competency Assessment</span>
                   </div>
                   <div class="no-competencies">No competencies in this group.</div>
@@ -520,8 +525,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <td class="expand-col">
             <mat-icon class="mdi-24px"
               [fontIcon]="expandedEventIds.has(row.event.id) ? 'mdi-chevron-down' : 'mdi-chevron-right'"
-              style="display: flex; align-items: center; justify-content: center; opacity: 0.6;">
-            </mat-icon>
+              style="display: flex; align-items: center; justify-content: center; opacity: 0.6;" />
           </td>
           <!-- row number -->
           <td class="row-num-col">
@@ -548,7 +552,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <td>
             <div class="time-span center-self">
               <app-duration-view [startTime]="msel.startTime" [durationSeconds]="row.event.deltaSeconds"
-                [showRealTime]="showRealTime"></app-duration-view>
+                [showRealTime]="showRealTime" />
             </div>
           </td>
           }
@@ -562,11 +566,10 @@ project root for license information or contact permission@sei.cmu.edu for full 
           }
           <!-- Data Field values -->
           @for (df of assessorDataFields; track df.id) {
-          <td [attr.data-field-type]="df.dataType" (click)="df.dataType === 'Checkbox' && canEditCheckboxes ? $event.stopPropagation() : null">
-            <app-data-value
-              [value]="getDataValue(row.event, df.name).value"
+          <td [attr.data-field-type]="df.dataType" (click)="df.dataType === 'Checkbox' && canEditCheckboxes() ? $event.stopPropagation() : null">
+            <app-data-value [value]="getDataValue(row.event, df.name).value"
               [dataField]="df"
-              [canEdit]="canEditCheckboxes && df.dataType === 'Checkbox'"
+              [canEdit]="canEditCheckboxes() && df.dataType === 'Checkbox'"
               [canApprove]="false"
               [isOwner]="false"
               [showValueOnly]="true"
@@ -575,8 +578,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
               [teamOptions]="teamList"
               [cardOptions]="cardList"
               [moveOptions]="moveList"
-              [userOptions]="userList">
-            </app-data-value>
+              [userOptions]="userList" />
           </td>
           }
         </tr>
@@ -592,7 +594,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
               <!-- Left: xAPI Evidence -->
               <div class="evidence-panel">
                 <div class="statements-header">
-                  <mat-icon fontIcon="mdi-clipboard-text-outline" class="mdi-18px"></mat-icon>
+                  <mat-icon fontIcon="mdi-clipboard-text-outline" class="mdi-18px" />
                   <span>xAPI Evidence</span>
                   @if (getStatements(row.event.id).length > 0) {
                     <span class="statement-count">{{ getFilteredStatements(row.event.id).length }} / {{ getStatements(row.event.id).length }}</span>
@@ -629,11 +631,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   </div>
                   <button mat-icon-button class="refresh-button" (click)="refreshStatements()"
                     title="Refresh xAPI statements" [disabled]="isLoading(row.event.id)">
-                    <mat-icon class="mdi-18px" fontIcon="mdi-refresh"></mat-icon>
+                    <mat-icon class="mdi-18px" fontIcon="mdi-refresh" />
                   </button>
                 </div>
                 @if (isLoading(row.event.id)) {
-                  <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+                  <mat-progress-bar mode="indeterminate" />
                 } @else if (getStatements(row.event.id).length === 0) {
                   <div class="no-statements">No xAPI statements found for this event.</div>
                 } @else {
@@ -643,7 +645,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                         <div class="statement-row" (click)="toggleStatement(stmt.id)"
                           [class.statement-expanded]="expandedStatementIds.has(stmt.id)">
                           <button mat-icon-button class="copy-button" (click)="copyStatement(stmt, $event)" title="Copy JSON">
-                            <mat-icon class="mdi-14px" fontIcon="mdi-content-copy"></mat-icon>
+                            <mat-icon class="mdi-14px" fontIcon="mdi-content-copy" />
                           </button>
                           <span class="statement-time">{{ formatTimestamp(stmt.timestamp) }}</span>
                           <span class="stmt-move">{{ getMovePart(stmt) }}</span>
@@ -678,7 +680,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
               @if (getEventCompetencies(row.event.id).length > 0) {
                 <div class="assessment-panel">
                   <div class="assessment-header">
-                    <mat-icon fontIcon="mdi-clipboard-check-outline" class="mdi-18px"></mat-icon>
+                    <mat-icon fontIcon="mdi-clipboard-check-outline" class="mdi-18px" />
                     <span>Competency Assessment</span>
                   </div>
                   @if (teamList.length > 0) {
@@ -715,11 +717,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
                             [disabled]="!canSubmitRating(row.event.id, comp.id)"
                             (click)="submitRating(row.event.id, comp.id)"
                             title="Submit assertion">
-                            <mat-icon class="mdi-18px" fontIcon="mdi-send"></mat-icon>
+                            <mat-icon class="mdi-18px" fontIcon="mdi-send" />
                           </button>
                           @if (isRatingSubmitted(row.event.id, comp.id)) {
                             <span class="rating-submitted-indicator">
-                              <mat-icon fontIcon="mdi-check-circle" class="mdi-14px"></mat-icon>
+                              <mat-icon fontIcon="mdi-check-circle" class="mdi-14px" />
                               Submitted
                             </span>
                           }
@@ -733,7 +735,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                         [disabled]="!hasAnySubmittableRatings(row.event.id)"
                         (click)="submitAllRatings(row.event.id)"
                         class="submit-all-button">
-                        <mat-icon fontIcon="mdi-send-check" class="mdi-18px"></mat-icon>
+                        <mat-icon fontIcon="mdi-send-check" class="mdi-18px" />
                         Submit All
                       </button>
                     </div>
@@ -742,7 +744,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
               } @else {
                 <div class="assessment-panel assessment-panel-empty">
                   <div class="assessment-header assessment-header-inactive">
-                    <mat-icon fontIcon="mdi-clipboard-check-outline" class="mdi-18px"></mat-icon>
+                    <mat-icon fontIcon="mdi-clipboard-check-outline" class="mdi-18px" />
                     <span>Competency Assessment</span>
                   </div>
                   <div class="no-competencies">No competencies on this event.</div>

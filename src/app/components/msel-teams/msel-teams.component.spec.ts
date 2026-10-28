@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { describe, it, expect, vi } from 'vitest';
-import { Component, EventEmitter, Input } from '@angular/core';
+import { Component, EventEmitter, input } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { MatButtonModule } from '@angular/material/button';
@@ -45,10 +45,11 @@ import { dialogRefStub } from 'src/app/test-utils/dialog-refs';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { permissionApiStubs } from 'src/app/test-utils/mock-permission-data.service';
 import { unstubbed } from 'src/app/test-utils/unstubbed';
+import { TeamUsersComponent } from '../team-users/team-users.component';
 
-@Component({ selector: 'app-team-users', template: '', standalone: false })
+@Component({ selector: 'app-team-users', template: '' })
 class TeamUsersStub {
-  @Input() team: Team;
+  readonly team = input<Team>(undefined);
 }
 
 const ME = 'user-me';
@@ -125,7 +126,9 @@ async function renderMselTeams(
       MatTableModule,
       MatTooltipModule,
     ],
-    declarations: [MselTeamsComponent, TeamUsersStub],
+    childStubs: [
+      { replace: TeamUsersComponent, with: TeamUsersStub },
+    ],
     providers: [
       { provide: SystemPermissionsService, useValue: permissionApis.systemPermissions },
       PermissionDataService,
@@ -224,7 +227,7 @@ describe('MselTeamsComponent', () => {
     await user.click(within(table()).getByText('Blue Team'));
 
     const users = fixture.debugElement.query(By.directive(TeamUsersStub)).componentInstance as TeamUsersStub;
-    expect(users.team).toEqual(BLUE);
+    expect(users.team()).toEqual(BLUE);
   });
 
   /**
@@ -461,7 +464,7 @@ describe('MselTeamsComponent', () => {
     it('passes the topology teams to the team dialog', async () => {
       const editComplete = new EventEmitter<unknown>();
       const { dialogRef } = dialogRefStub<TeamEditDialogComponent>();
-      dialogRef.componentInstance = { editComplete } as Pick<TeamEditDialogComponent, 'editComplete'> as TeamEditDialogComponent;
+      dialogRef.componentInstance = { editComplete } as unknown as TeamEditDialogComponent;
       const open = vi.fn(() => dialogRef);
       const teams = [team('Blue Team', 'blue_cell'), team('Cyan Team', 'blue_cell'), team('Red Team'), team('Crimson', 'red_team')];
       await renderMselTeams({
@@ -498,7 +501,7 @@ describe('MselTeamsComponent', () => {
     it('passes the topology teams to the dialog for a new team', async () => {
       const editComplete = new EventEmitter<unknown>();
       const { dialogRef } = dialogRefStub<TeamEditDialogComponent>();
-      dialogRef.componentInstance = { editComplete } as Pick<TeamEditDialogComponent, 'editComplete'> as TeamEditDialogComponent;
+      dialogRef.componentInstance = { editComplete } as unknown as TeamEditDialogComponent;
       const open = vi.fn(() => dialogRef);
       await renderMselTeams({
         permissions: [SystemPermission.ManageMsels],

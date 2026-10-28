@@ -31,6 +31,21 @@ project root for license information.
         }
       </div>
     </div>
+    @if (data.useCite) {
+    <div class="add-margin">
+      <div>
+        <mat-form-field class="full-width">
+          <mat-label>CITE Team Role</mat-label>
+          <mat-select [(ngModel)]="data.invitation.citeTeamRole">
+            @for (role of data.citeTeamRoles; track role) {
+            <mat-option [value]="role">{{ role }}</mat-option>
+            }
+          </mat-select>
+          <mat-hint>What people who join through this invitation can do in CITE. Member can view the team but not answer.</mat-hint>
+        </mat-form-field>
+      </div>
+    </div>
+    }
     <div class="add-margin">
       <div>
         <mat-form-field class="full-width">
@@ -51,8 +66,7 @@ project root for license information.
           <span (click)="picker.open()">
             {{ data.invitation.expirationDateTime | date: 'dd MMM yyyy HH:mm' }} {{ data.invitation.expirationDateTime | timezoneAbbr }}
           </span>
-          <mat-datepicker-toggle matSuffix title="Choose Date/Time" [for]="picker">
-          </mat-datepicker-toggle>
+          <mat-datepicker-toggle matSuffix title="Choose Date/Time" [for]="picker" />
           <ngx-mat-datetime-picker #picker [showSpinners]=true [showSeconds]=false [stepHour]=1 [stepMinute]=5
             [stepSecond]=1 [touchUi]=false [enableMeridian]=true [disableMinute]=false [hideTime]=false
             [color]="'warn'">

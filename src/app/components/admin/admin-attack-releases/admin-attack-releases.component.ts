@@ -1,10 +1,16 @@
 // Copyright 2026 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { AfterViewInit, Component, ElementRef, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { UntypedFormControl } from '@angular/forms';
-import { MatSort } from '@angular/material/sort';
-import { MatTableDataSource } from '@angular/material/table';
+import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, inject, input, viewChild } from '@angular/core';
+import { UntypedFormControl, ReactiveFormsModule } from '@angular/forms';
+import { MatSort, MatSortHeader } from '@angular/material/sort';
+import { MatTableDataSource, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
+import { AsyncPipe, DatePipe, NgStyle } from '@angular/common';
+import { MatIcon } from '@angular/material/icon';
+import { MatFormField, MatLabel, MatInput, MatSuffix, MatHint } from '@angular/material/input';
+import { MatIconButton } from '@angular/material/button';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
+import { MatTooltip } from '@angular/material/tooltip';
 import { Observable, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
@@ -20,13 +26,17 @@ import { AttackReleaseQuery } from 'src/app/data/attack-release/attack-release.q
   selector: 'app-admin-attack-releases',
   templateUrl: './admin-attack-releases.component.html',
   styleUrls: ['./admin-attack-releases.component.scss'],
-  standalone: false
+  imports: [MatIcon, MatFormField, MatLabel, MatHint, MatInput, ReactiveFormsModule, MatIconButton, MatSuffix, MatProgressSpinner, MatTable, MatSort, MatSortHeader, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatTooltip, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, NgStyle, AsyncPipe, DatePipe]
 })
 export class AdminAttackReleasesComponent implements OnInit, AfterViewInit, OnDestroy {
-  @Input() loggedInUserId: string;
-  @Input() canEdit: boolean;
-  @ViewChild(MatSort) sort: MatSort;
-  @ViewChild('stixInput') stixInput: ElementRef<HTMLInputElement>;
+  private attackReleaseDataService = inject(AttackReleaseDataService);
+  private attackReleaseQuery = inject(AttackReleaseQuery);
+  dialogService = inject(CrucibleDialogService);
+
+  readonly loggedInUserId = input<string>(undefined);
+  readonly canEdit = input<boolean>(undefined);
+  readonly sort = viewChild(MatSort);
+  readonly stixInput = viewChild<ElementRef<HTMLInputElement>>('stixInput');
   dataSource = new MatTableDataSource<AttackRelease>([]);
   displayedColumns: string[] = ['action', 'name', 'domain', 'version', 'releaseDate', 'tacticCount', 'techniqueCount'];
   versionControl = new UntypedFormControl('');
@@ -35,11 +45,7 @@ export class AdminAttackReleasesComponent implements OnInit, AfterViewInit, OnDe
   isLoading$: Observable<boolean>;
   private unsubscribe$ = new Subject();
 
-  constructor(
-    private attackReleaseDataService: AttackReleaseDataService,
-    private attackReleaseQuery: AttackReleaseQuery,
-    public dialogService: CrucibleDialogService
-  ) {
+  constructor() {
     this.isLoading$ = this.attackReleaseQuery.selectLoading();
   }
 
@@ -55,7 +61,7 @@ export class AdminAttackReleasesComponent implements OnInit, AfterViewInit, OnDe
   }
 
   ngAfterViewInit() {
-    this.dataSource.sort = this.sort;
+    this.dataSource.sort = this.sort();
   }
 
   selectFile(e: Event) {
@@ -66,7 +72,7 @@ export class AdminAttackReleasesComponent implements OnInit, AfterViewInit, OnDe
     }
     this.attackReleaseDataService.import(file, (this.versionControl.value || '').trim())
       .subscribe(() => this.versionControl.setValue(''));
-    this.stixInput.nativeElement.value = null;
+    this.stixInput().nativeElement.value = null;
   }
 
   deleteRelease(release: AttackRelease) {

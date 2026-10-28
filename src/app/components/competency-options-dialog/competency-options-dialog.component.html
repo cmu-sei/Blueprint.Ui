@@ -40,7 +40,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <input matInput [(ngModel)]="searchText" (ngModelChange)="onFilterChanged()" placeholder="Filter by ID, name, or description">
     @if (searchText) {
     <button matSuffix mat-icon-button (click)="searchText = ''" title="Clear search">
-      <mat-icon fontIcon="mdi-close"></mat-icon>
+      <mat-icon fontIcon="mdi-close" />
     </button>
     }
   </mat-form-field>
@@ -62,11 +62,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <tr>
         @if (data.canEdit) {
         <th class="check-column">
-          <mat-checkbox
-            [checked]="allFilteredSelected"
+          <mat-checkbox [checked]="allFilteredSelected"
             [indeterminate]="someFilteredSelected"
-            (change)="toggleAll()">
-          </mat-checkbox>
+            (change)="toggleAll()" />
         </th>
         }
         <th>ID</th>
@@ -81,11 +79,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <tr (click)="data.canEdit && toggleCompetency(mc)" [class.clickable-row]="data.canEdit" [class.selected-row]="isSelected(mc)">
         @if (data.canEdit) {
         <td class="check-column">
-          <mat-checkbox
-            [checked]="isSelected(mc)"
+          <mat-checkbox [checked]="isSelected(mc)"
             (click)="$event.stopPropagation()"
-            (change)="toggleCompetency(mc)">
-          </mat-checkbox>
+            (change)="toggleCompetency(mc)" />
         </td>
         }
         <td class="id-column">{{ mc.competency?.idNumber }}</td>
@@ -99,14 +95,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
   </table>
   }
 </div>
-<mat-paginator
-  [length]="filteredCompetencies.length"
+<mat-paginator [length]="filteredCompetencies.length"
   [pageSize]="pageSize"
   [pageIndex]="pageIndex"
   [pageSizeOptions]="[25, 50, 100, 250]"
   (page)="onPageChanged($event)"
-  showFirstLastButtons>
-</mat-paginator>
+  showFirstLastButtons />
 </div>
 
 <ng-container crucibleDialogActions>

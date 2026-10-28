@@ -1,9 +1,9 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, ElementRef, Input, OnDestroy, ViewChild, AfterViewInit } from '@angular/core';
-import { UntypedFormControl } from '@angular/forms';
-import { MatTableDataSource } from '@angular/material/table';
+import { Component, ElementRef, OnDestroy, AfterViewInit, inject as inject_1, input, viewChild } from '@angular/core';
+import { UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MatTableDataSource, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
 import { MatTable } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 import { animate, state, style, transition, trigger } from '@angular/animations';
@@ -15,8 +15,8 @@ import {
 } from 'src/app/generated/blueprint.api';
 import { MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
-import { Sort } from '@angular/material/sort';
-import { MatMenuTrigger } from '@angular/material/menu';
+import { Sort, MatSort, MatSortHeader } from '@angular/material/sort';
+import { MatMenuTrigger, MatMenu, MatMenuItem } from '@angular/material/menu';
 import { CardDataService } from 'src/app/data/card/card-data.service';
 import { CardQuery } from 'src/app/data/card/card.query';
 import { MoveQuery } from 'src/app/data/move/move.query';
@@ -25,29 +25,41 @@ import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { CardEditDialogComponent } from '../card-edit-dialog/card-edit-dialog.component';
 import { ItemDownloadDialogComponent } from '../item-download-dialog/item-download-dialog.component';
 import { v4 as uuidv4 } from 'uuid';
+import { MatIcon } from '@angular/material/icon';
+
+import { MatFormField, MatInput, MatSuffix } from '@angular/material/input';
+import { MatIconButton } from '@angular/material/button';
+import { CardTeamsComponent } from '../card-teams/card-teams.component';
 
 @Component({
-  selector: 'app-card-list',
-  templateUrl: './card-list.component.html',
-  styleUrls: ['./card-list.component.scss'],
-  animations: [
-    trigger('detailExpand', [
-      state('collapsed', style({ height: '0px', minHeight: '0', visibility: 'hidden' })),
-      state('expanded', style({ height: '*', visibility: 'visible' })),
-      transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
-    ]),
-  ],
-  standalone: false
+    selector: 'app-card-list',
+    templateUrl: './card-list.component.html',
+    styleUrls: ['./card-list.component.scss'],
+    animations: [
+        trigger('detailExpand', [
+            state('collapsed', style({ height: '0px', minHeight: '0', visibility: 'hidden' })),
+            state('expanded', style({ height: '*', visibility: 'visible' })),
+            transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
+        ]),
+    ],
+    imports: [MatIcon, MatFormField, MatInput, FormsModule, ReactiveFormsModule, MatIconButton, MatSuffix, MatPaginator, MatMenu, MatMenuItem, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatMenuTrigger, MatCellDef, MatCell, MatSortHeader, CardTeamsComponent, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow]
 })
 export class CardListComponent implements OnDestroy, AfterViewInit {
-  @Input() loggedInUserId: string;
-  @Input() canEdit: boolean;
-  @Input() showTemplates: boolean;
+  private mselQuery = inject_1(MselQuery);
+  private cardDataService = inject_1(CardDataService);
+  private cardQuery = inject_1(CardQuery);
+  private moveQuery = inject_1(MoveQuery);
+  dialog = inject_1(MatDialog);
+  dialogService = inject_1(CrucibleDialogService);
+
+  readonly loggedInUserId = input<string>(undefined);
+  readonly canEdit = input<boolean>(undefined);
+  readonly showTemplates = input<boolean>(undefined);
   // context menu
-  @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
-  @ViewChild('cardTable', { static: false }) cardTable: MatTable<any>;
-  @ViewChild(MatPaginator) paginator: MatPaginator;
-  @ViewChild('jsonInput') jsonInput: ElementRef<HTMLInputElement>;
+  readonly contextMenu = viewChild(MatMenuTrigger);
+  readonly cardTable = viewChild<MatTable<any>>('cardTable');
+  readonly paginator = viewChild(MatPaginator);
+  readonly jsonInput = viewChild<ElementRef<HTMLInputElement>>('jsonInput');
   msel = new MselPlus();
   templateList: Card[] = [];
   cardList: Card[] = [];
@@ -64,20 +76,13 @@ export class CardListComponent implements OnDestroy, AfterViewInit {
   isExpansionDetailRow = (i: number, row: Object) => (row as Card).id === this.expandedElementId;
 
   get displayedColumns(): string[] {
-    if (this.showTemplates) {
+    if (this.showTemplates()) {
       return ['action', 'name', 'description'];
     }
     return ['action', 'move', 'name', 'description'];
   }
 
-  constructor(
-    private mselQuery: MselQuery,
-    private cardDataService: CardDataService,
-    private cardQuery: CardQuery,
-    private moveQuery: MoveQuery,
-    public dialog: MatDialog,
-    public dialogService: CrucibleDialogService
-  ) {
+  constructor() {
     // subscribe to cards
     this.cardQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(cards => {
       this.cardList = cards;
@@ -89,7 +94,7 @@ export class CardListComponent implements OnDestroy, AfterViewInit {
     });
     // subscribe to the active MSEL
     (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
-      if (this.showTemplates) {
+      if (this.showTemplates()) {
         this.msel = new MselPlus();
       } else {
         Object.assign(this.msel, msel);
@@ -109,11 +114,11 @@ export class CardListComponent implements OnDestroy, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    this.cardDataSource.paginator = this.paginator;
+    this.cardDataSource.paginator = this.paginator();
   }
 
   rowClicked(row: Card) {
-    if (this.showTemplates) {
+    if (this.showTemplates()) {
       return;
     }
     if (this.expandedElementId === row.id) {
@@ -121,11 +126,11 @@ export class CardListComponent implements OnDestroy, AfterViewInit {
     } else {
       this.expandedElementId = row.id;
     }
-    this.cardTable.renderRows();
+    this.cardTable().renderRows();
   }
 
   getRowClass(id: string) {
-    if (this.showTemplates) {
+    if (this.showTemplates()) {
       return 'element-row no-clicks';
     }
     const rowClass = this.expandedElementId === id
@@ -137,9 +142,9 @@ export class CardListComponent implements OnDestroy, AfterViewInit {
   addOrEditCard(card: Card, makeTemplate: boolean, makeFromTemplate: boolean) {
     if (!card) {
       card = {
-        mselId: this.showTemplates ? '' : this.msel.id,
+        mselId: this.showTemplates() ? '' : this.msel.id,
         move: 0,
-        isTemplate: this.showTemplates,
+        isTemplate: this.showTemplates(),
         inject: 0
       };
     } else {
@@ -199,7 +204,7 @@ export class CardListComponent implements OnDestroy, AfterViewInit {
       return;
     }
     this.cardDataService.uploadJson(file, 'events', true);
-    this.jsonInput.nativeElement.value = null;
+    this.jsonInput().nativeElement.value = null;
   }
 
   openDownloadDialog() {
@@ -255,14 +260,15 @@ export class CardListComponent implements OnDestroy, AfterViewInit {
     this.sortedCards = this.getSortedCards(this.getFilteredCards(false));
     this.templateList = this.getSortedCards(this.getFilteredCards(true));
     this.cardDataSource.data = this.sortedCards;
-    if (this.paginator) {
-      this.paginator.length = this.sortedCards.length;
+    const paginator = this.paginator();
+    if (paginator) {
+      paginator.length = this.sortedCards.length;
     }
   }
 
   getFilteredCards(getTemplatesOnly: boolean): Card[] {
     const cards = this.cardList;
-    const mselId = getTemplatesOnly || this.showTemplates ? '' : this.msel.id;
+    const mselId = getTemplatesOnly || this.showTemplates() ? '' : this.msel.id;
     let filteredCards: Card[] = [];
     if (cards) {
       cards.forEach(card => {

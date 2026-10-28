@@ -1,9 +1,9 @@
 // Copyright 2026 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, ElementRef, Input, OnDestroy, ViewChild, AfterViewInit } from '@angular/core';
-import { UntypedFormControl } from '@angular/forms';
-import { MatTableDataSource, MatTable } from '@angular/material/table';
+import { Component, ElementRef, Input, OnDestroy, AfterViewInit, inject, input, viewChild } from '@angular/core';
+import { UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MatTableDataSource, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatRowDef, MatRow, MatHeaderRowDef, MatHeaderRow } from '@angular/material/table';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { Observable, Subject, Subscription } from 'rxjs';
 import { take, takeUntil } from 'rxjs/operators';
@@ -13,7 +13,7 @@ import {
   CompetencyFrameworkService,
   ProficiencyScaleService,
 } from 'src/app/generated/blueprint.api';
-import { Sort } from '@angular/material/sort';
+import { Sort, MatSort, MatSortHeader } from '@angular/material/sort';
 import { MatPaginator } from '@angular/material/paginator';
 import { CompetencyFrameworkDataService } from 'src/app/data/competency-framework/competency-framework-data.service';
 import { CompetencyFrameworkQuery } from 'src/app/data/competency-framework/competency-framework.query';
@@ -24,27 +24,44 @@ import { AdminCompetencyFrameworkImportDialogComponent, ImportResult } from '../
 import { AdminCompetencyEditDialogComponent } from '../admin-competency-edit-dialog/admin-competency-edit-dialog.component';
 import { AdminCompetencyDetailDialogComponent } from '../admin-competency-detail-dialog/admin-competency-detail-dialog.component';
 import { v4 as uuidv4 } from 'uuid';
+import { MatIcon } from '@angular/material/icon';
+
+import { MatFormField, MatInput, MatSuffix, MatLabel } from '@angular/material/input';
+import { MatIconButton, MatButton } from '@angular/material/button';
+import { MatTooltip } from '@angular/material/tooltip';
+import { MatExpansionPanel, MatExpansionPanelHeader, MatExpansionPanelTitle } from '@angular/material/expansion';
+import { MatSelect } from '@angular/material/select';
+import { MatOption } from '@angular/material/autocomplete';
+import { MatToolbar, MatToolbarRow } from '@angular/material/toolbar';
+import { MatRipple } from '@angular/material/core';
 
 @Component({
-  selector: 'app-admin-competency-frameworks',
-  templateUrl: './admin-competency-frameworks.component.html',
-  styleUrls: ['./admin-competency-frameworks.component.scss'],
-  animations: [
-    trigger('detailExpand', [
-      state('collapsed', style({ height: '0px', minHeight: '0', visibility: 'hidden' })),
-      state('expanded', style({ height: '*', visibility: 'visible' })),
-      transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
-    ]),
-  ],
-  standalone: false
+    selector: 'app-admin-competency-frameworks',
+    templateUrl: './admin-competency-frameworks.component.html',
+    styleUrls: ['./admin-competency-frameworks.component.scss'],
+    animations: [
+        trigger('detailExpand', [
+            state('collapsed', style({ height: '0px', minHeight: '0', visibility: 'hidden' })),
+            state('expanded', style({ height: '*', visibility: 'visible' })),
+            transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
+        ]),
+    ],
+    imports: [MatIcon, MatFormField, MatInput, FormsModule, ReactiveFormsModule, MatIconButton, MatSuffix, MatButton, MatPaginator, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatTooltip, MatSortHeader, MatExpansionPanel, MatExpansionPanelHeader, MatExpansionPanelTitle, MatLabel, MatSelect, MatOption, MatToolbar, MatToolbarRow, MatRowDef, MatRow, MatHeaderRowDef, MatHeaderRow, MatRipple]
 })
 export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewInit {
-  @Input() loggedInUserId: string;
+  private competencyFrameworkDataService = inject(CompetencyFrameworkDataService);
+  private competencyFrameworkQuery = inject(CompetencyFrameworkQuery);
+  private competencyFrameworkService = inject(CompetencyFrameworkService);
+  private proficiencyScaleService = inject(ProficiencyScaleService);
+  dialog = inject(MatDialog);
+  dialogService = inject(CrucibleDialogService);
+
+  readonly loggedInUserId = input<string>(undefined);
   @Input() canEdit: boolean;
-  @ViewChild('competencyFrameworkTable', { static: false }) competencyFrameworkTable: MatTable<any>;
-  @ViewChild('paginator') paginator: MatPaginator;
-  @ViewChild('competencyPaginator') competencyPaginator: MatPaginator;
-  @ViewChild('workRolePaginator') workRolePaginator: MatPaginator;
+  readonly competencyFrameworkTable = viewChild<MatTable<any>>('competencyFrameworkTable');
+  readonly paginator = viewChild<MatPaginator>('paginator');
+  readonly competencyPaginator = viewChild<MatPaginator>('competencyPaginator');
+  readonly workRolePaginator = viewChild<MatPaginator>('workRolePaginator');
   adminCompetencyFrameworks: CompetencyFramework[] = [];
   filterControl = new UntypedFormControl();
   filterString = '';
@@ -99,9 +116,9 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
   relatedTypeFilter = '';
   availableTypes: string[] = [];
   relatedTypes: string[] = [];
-  @ViewChild('availablePaginator') availablePaginator: MatPaginator;
-  @ViewChild('relatedPaginator') relatedPaginator: MatPaginator;
-  @ViewChild('jsonInput') jsonInput: ElementRef<HTMLInputElement>;
+  readonly availablePaginator = viewChild<MatPaginator>('availablePaginator');
+  readonly relatedPaginator = viewChild<MatPaginator>('relatedPaginator');
+  readonly jsonInput = viewChild<ElementRef<HTMLInputElement>>('jsonInput');
   private expandedComp: Competency = null;
   private currentRelatedIdNumbers: string[] = [];
   private relatedFilterSub: Subscription;
@@ -110,14 +127,7 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
   importing = false;
   importError = '';
 
-  constructor(
-    private competencyFrameworkDataService: CompetencyFrameworkDataService,
-    private competencyFrameworkQuery: CompetencyFrameworkQuery,
-    private competencyFrameworkService: CompetencyFrameworkService,
-    private proficiencyScaleService: ProficiencyScaleService,
-    public dialog: MatDialog,
-    public dialogService: CrucibleDialogService
-  ) {
+  constructor() {
     this.proficiencyScaleService.getProficiencyScales()
       .pipe(take(1))
       .subscribe(scales => {
@@ -273,7 +283,7 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
           this.importError = 'Import failed: ' + (err.error?.title || err.message || 'Unknown error');
         },
       });
-    this.jsonInput.nativeElement.value = null;
+    this.jsonInput().nativeElement.value = null;
   }
 
   importFramework(): void {
@@ -327,7 +337,7 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
   }
 
   ngAfterViewInit() {
-    this.competencyFrameworkDataSource.paginator = this.paginator;
+    this.competencyFrameworkDataSource.paginator = this.paginator();
   }
 
   ngOnDestroy() {
@@ -385,7 +395,7 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
       this.expandedElementId = row.id;
       this.loadCompetencies(row.id);
     }
-    this.competencyFrameworkTable.renderRows();
+    this.competencyFrameworkTable().renderRows();
   }
 
   getScaleName(fw: CompetencyFramework): string {
@@ -447,11 +457,13 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
   }
 
   private attachCompetencyPaginators(): void {
-    if (this.competencyPaginator && this.competencyDataSource.paginator !== this.competencyPaginator) {
-      this.competencyDataSource.paginator = this.competencyPaginator;
+    const competencyPaginator = this.competencyPaginator();
+    if (competencyPaginator && this.competencyDataSource.paginator !== competencyPaginator) {
+      this.competencyDataSource.paginator = competencyPaginator;
     }
-    if (this.workRolePaginator && this.workRoleDataSource.paginator !== this.workRolePaginator) {
-      this.workRoleDataSource.paginator = this.workRolePaginator;
+    const workRolePaginator = this.workRolePaginator();
+    if (workRolePaginator && this.workRoleDataSource.paginator !== workRolePaginator) {
+      this.workRoleDataSource.paginator = workRolePaginator;
     }
   }
 
@@ -750,11 +762,13 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
   }
 
   private attachRelatedPaginators(): void {
-    if (this.availablePaginator && this.availableRelatedDataSource.paginator !== this.availablePaginator) {
-      this.availableRelatedDataSource.paginator = this.availablePaginator;
+    const availablePaginator = this.availablePaginator();
+    if (availablePaginator && this.availableRelatedDataSource.paginator !== availablePaginator) {
+      this.availableRelatedDataSource.paginator = availablePaginator;
     }
-    if (this.relatedPaginator && this.relatedDataSource.paginator !== this.relatedPaginator) {
-      this.relatedDataSource.paginator = this.relatedPaginator;
+    const relatedPaginator = this.relatedPaginator();
+    if (relatedPaginator && this.relatedDataSource.paginator !== relatedPaginator) {
+      this.relatedDataSource.paginator = relatedPaginator;
     }
   }
 

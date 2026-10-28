@@ -76,7 +76,7 @@ project root for license information.
         </p>
         <div>
           <angular-editor [placeholder]="'Description'" [formControl]="descriptionFormControl" [config]="editorConfig"
-            (blur)="saveOrganization('description')"></angular-editor>
+            (blur)="saveOrganization('description')" />
           @if (descriptionFormControl.hasError('required')) {
           <mat-error>
             Description is <strong>required</strong>

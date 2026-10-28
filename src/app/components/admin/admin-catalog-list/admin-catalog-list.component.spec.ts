@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { describe, it, expect, vi } from 'vitest';
-import { Component, EventEmitter, Input, Output, Type } from '@angular/core';
+import { Component, Type, input, output } from '@angular/core';
 import { ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { MatButtonModule } from '@angular/material/button';
@@ -25,22 +25,24 @@ import { AdminCatalogListComponent } from './admin-catalog-list.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { dialogRefStub } from 'src/app/test-utils/dialog-refs';
 import { renderComponent } from 'src/app/test-utils/render-component';
+import { InjectListComponent } from '../../inject-list/inject-list.component';
+import { CatalogUnitsComponent } from '../../catalog-units/catalog-units.component';
 
-@Component({ selector: 'app-inject-list', template: '', standalone: false })
+@Component({ selector: 'app-inject-list', template: '' })
 class InjectListStub {
-  @Input() loggedInUserId: string;
-  @Input() canEdit: boolean;
-  @Input() isEditMode: boolean;
-  @Input() catalog: Catalog;
-  @Input() injectType: unknown;
-  @Input() injectList: unknown;
-  @Output() selectedInjectIdList = new EventEmitter<string[]>();
+  readonly loggedInUserId = input<string>(undefined);
+  readonly canEdit = input<boolean>(undefined);
+  readonly isEditMode = input<boolean>(undefined);
+  readonly catalog = input<Catalog>(undefined);
+  readonly injectType = input<unknown>(undefined);
+  readonly injectList = input<unknown>(undefined);
+  readonly selectedInjectIdList = output<string[]>();
 }
-@Component({ selector: 'app-catalog-units', template: '', standalone: false })
+@Component({ selector: 'app-catalog-units', template: '' })
 class CatalogUnitsStub {
-  @Input() loggedInUserId: string;
-  @Input() canEdit: boolean;
-  @Input() catalog: Catalog;
+  readonly loggedInUserId = input<string>(undefined);
+  readonly canEdit = input<boolean>(undefined);
+  readonly catalog = input<Catalog>(undefined);
 }
 
 const CATALOG: Catalog = {
@@ -75,7 +77,10 @@ async function renderCatalogList(overrides: { canEdit?: boolean; catalogs?: Cata
       MatSortModule,
       MatTableModule,
     ],
-    declarations: [AdminCatalogListComponent, InjectListStub, CatalogUnitsStub],
+    childStubs: [
+      { replace: InjectListComponent, with: InjectListStub },
+      { replace: CatalogUnitsComponent, with: CatalogUnitsStub },
+    ],
     providers: [
       { provide: CatalogService, useValue: catalogApi },
       { provide: CrucibleDialogService, useValue: dialog },
@@ -128,8 +133,8 @@ describe('AdminCatalogListComponent', () => {
       expect(within(table()).getByRole('button', { name: title })).toBeEnabled();
     }
     expect(within(table()).getByRole('checkbox')).toBeEnabled();
-    expect(child(fixture, InjectListStub).canEdit).toBe(true);
-    expect(child(fixture, CatalogUnitsStub).canEdit).toBe(true);
+    expect(child(fixture, InjectListStub).canEdit()).toBe(true);
+    expect(child(fixture, CatalogUnitsStub).canEdit()).toBe(true);
   });
 
   /**
@@ -151,8 +156,8 @@ describe('AdminCatalogListComponent', () => {
       expect(within(table()).getByRole('button', { name: title })).toBeDisabled();
     }
     expect(within(table()).getByRole('checkbox')).toBeDisabled();
-    expect(child(fixture, InjectListStub).canEdit).toBe(false);
-    expect(child(fixture, CatalogUnitsStub).canEdit).toBe(false);
+    expect(child(fixture, InjectListStub).canEdit()).toBe(false);
+    expect(child(fixture, CatalogUnitsStub).canEdit()).toBe(false);
   });
 
   /**
@@ -164,8 +169,8 @@ describe('AdminCatalogListComponent', () => {
     const second: Catalog = { ...CATALOG, id: 'cat-2', name: 'Phishing Catalog', description: 'Phishing injects' };
     const { fixture } = await renderCatalogList({ catalogs: [CATALOG, second] });
 
-    const catalogsOf = <T extends { catalog: Catalog }>(stub: Type<T>) =>
-      fixture.debugElement.queryAll(By.directive(stub)).map((d) => (d.componentInstance as T).catalog.id);
+    const catalogsOf = <T extends { catalog: () => Catalog }>(stub: Type<T>) =>
+      fixture.debugElement.queryAll(By.directive(stub)).map((d) => (d.componentInstance as T).catalog().id);
     // Current behavior; see agent-docs/ui-test-bugs/blueprint.ui.md.
     expect(catalogsOf(InjectListStub).sort()).toEqual(['cat-1', 'cat-2']);
     expect(catalogsOf(CatalogUnitsStub).sort()).toEqual(['cat-1', 'cat-2']);

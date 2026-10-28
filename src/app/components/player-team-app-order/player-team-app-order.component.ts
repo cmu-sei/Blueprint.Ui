@@ -1,7 +1,7 @@
 // Copyright 2025 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, Input, OnDestroy, ViewChild } from '@angular/core';
+import { Component, OnDestroy, inject, input, viewChild } from '@angular/core';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import {
@@ -13,27 +13,34 @@ import { PlayerApplicationQuery } from 'src/app/data/player-application/player-a
 import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { PlayerApplicationTeamDataService } from 'src/app/data/team/player-application-team-data.service';
 import { TeamQuery } from 'src/app/data/team/team.query';
-import { MatTable, MatTableDataSource } from '@angular/material/table';
+import { MatTable, MatTableDataSource, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
 import { animate, state, style, transition, trigger } from '@angular/animations';
+import { MatIconButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
 
 @Component({
-  selector: 'app-player-team-app-order',
-  templateUrl: './player-team-app-order.component.html',
-  styleUrls: ['./player-team-app-order.component.scss'],
-  animations: [
-    trigger('detailExpand', [
-      state('collapsed', style({ height: '0px', minHeight: '0', visibility: 'hidden' })),
-      state('expanded', style({ height: '*', visibility: 'visible' })),
-      transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
-    ]),
-  ],
-  standalone: false
+    selector: 'app-player-team-app-order',
+    templateUrl: './player-team-app-order.component.html',
+    styleUrls: ['./player-team-app-order.component.scss'],
+    animations: [
+        trigger('detailExpand', [
+            state('collapsed', style({ height: '0px', minHeight: '0', visibility: 'hidden' })),
+            state('expanded', style({ height: '*', visibility: 'visible' })),
+            transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
+        ]),
+    ],
+    imports: [MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatIconButton, MatIcon, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow]
 })
 export class PlayerTeamAppOrderComponent implements OnDestroy {
-  @Input() loggedInUserId: string;
-  @Input() canEdit: boolean;
-  @Input() mselTeamList: Team[];
-  @ViewChild('teamAppTable', { static: false }) teamAppTable: MatTable<any>;
+  private playerApplicationQuery = inject(PlayerApplicationQuery);
+  private playerApplicationTeamDataService = inject(PlayerApplicationTeamDataService);
+  private teamQuery = inject(TeamQuery);
+  dialogService = inject(CrucibleDialogService);
+
+  readonly loggedInUserId = input<string>(undefined);
+  readonly canEdit = input<boolean>(undefined);
+  readonly mselTeamList = input<Team[]>(undefined);
+  readonly teamAppTable = viewChild<MatTable<any>>('teamAppTable');
   playerApplicationList: PlayerApplication[];
   editTeamId = '';
   playerApplicationTeamList: PlayerApplicationTeam[] = [];
@@ -46,12 +53,7 @@ export class PlayerTeamAppOrderComponent implements OnDestroy {
   activeTeams: Team[] = [];
   private unsubscribe$ = new Subject();
 
-  constructor(
-    private playerApplicationQuery: PlayerApplicationQuery,
-    private playerApplicationTeamDataService: PlayerApplicationTeamDataService,
-    private teamQuery: TeamQuery,
-    public dialogService: CrucibleDialogService,
-  ) {
+  constructor() {
     this.playerApplicationTeamDataService.playerApplicationTeams
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((playerApplicationTeams) => {
@@ -82,7 +84,7 @@ export class PlayerTeamAppOrderComponent implements OnDestroy {
     } else {
       this.expandedElementId = row.id;
     }
-    this.teamAppTable.renderRows();
+    this.teamAppTable().renderRows();
   }
 
   getRowClass(id: string) {

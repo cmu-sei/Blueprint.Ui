@@ -1,10 +1,10 @@
 // Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, Input, OnDestroy, HostListener } from '@angular/core';
+import { Component, OnDestroy, HostListener, inject, input } from '@angular/core';
 import { Subject, Subscription, Observable, of } from 'rxjs';
 import { takeUntil, debounceTime, distinctUntilChanged, mergeMap, delay } from 'rxjs/operators';
-import { Sort } from '@angular/material/sort';
+import { Sort, MatSort, MatSortHeader } from '@angular/material/sort';
 import { HttpClient } from '@angular/common/http';
 import { ComnSettingsService, Theme } from '@cmusei/crucible-common';
 import {
@@ -46,7 +46,20 @@ import {
 } from 'src/app/data/scenario-event/scenario-event-data.service';
 import { ScenarioEventQuery } from 'src/app/data/scenario-event/scenario-event.query';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
+import { Router } from '@angular/router';
 import { getTimezoneAbbr } from 'src/app/utilities/timezone-abbr';
+import { MatIcon } from '@angular/material/icon';
+import { MatFormField, MatLabel, MatInput, MatSuffix } from '@angular/material/input';
+import { FormsModule } from '@angular/forms';
+import { MatIconButton, MatButton } from '@angular/material/button';
+import { MatSelect } from '@angular/material/select';
+import { MatOption } from '@angular/material/autocomplete';
+import { MatProgressBar } from '@angular/material/progress-bar';
+import { NgClass } from '@angular/common';
+import { MatTooltip } from '@angular/material/tooltip';
+import { DurationViewComponent } from '../shared/duration-view/duration-view.component';
+import { DataValueComponent } from '../data-value/data-value.component';
+import { CardEditDialogComponent } from '../card-edit-dialog/card-edit-dialog.component';
 
 export interface XApiStatement {
   id?: string;
@@ -67,15 +80,40 @@ export interface XApiStatement {
 }
 
 @Component({
-  selector: 'app-assessor-view',
-  templateUrl: './assessor-view.component.html',
-  styleUrls: ['./assessor-view.component.scss'],
-  standalone: false
+    selector: 'app-assessor-view',
+    templateUrl: './assessor-view.component.html',
+    styleUrls: ['./assessor-view.component.scss'],
+    imports: [MatIcon, MatSort, MatFormField, MatLabel, MatInput, FormsModule, MatIconButton, MatSuffix, MatSelect, MatOption, MatSortHeader, MatProgressBar, NgClass, MatTooltip, MatButton, DurationViewComponent, DataValueComponent, CardEditDialogComponent]
 })
 export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
-  @Input() loggedInUserId: string;
-  @Input() userTheme: Theme;
-  @Input() canEditCheckboxes = false;
+  private mselQuery = inject(MselQuery);
+  private dataFieldQuery = inject(DataFieldQuery);
+  private dataValueQuery = inject(DataValueQuery);
+  private dataValueDataService = inject(DataValueDataService);
+  private moveQuery = inject(MoveQuery);
+  private cardQuery = inject(CardQuery);
+  private organizationQuery = inject(OrganizationQuery);
+  private teamQuery = inject(TeamQuery);
+  private scenarioEventDataService = inject(ScenarioEventDataService);
+  private scenarioEventQuery = inject(ScenarioEventQuery);
+  private uiDataService = inject(UIDataService);
+  private router = inject(Router);
+  private http = inject(HttpClient);
+  private settingsService = inject(ComnSettingsService);
+  private mselCompetencyQuery = inject(MselCompetencyQuery);
+  private mselCompetencyDataService = inject(MselCompetencyDataService);
+  private teamCompetencyQuery = inject(TeamCompetencyQuery);
+  private teamCompetencyDataService = inject(TeamCompetencyDataService);
+  private competencyFrameworkService = inject(CompetencyFrameworkService);
+  private proficiencyScaleService = inject(ProficiencyScaleService);
+
+  readonly loggedInUserId = input<string>(undefined);
+  readonly userTheme = input<Theme>(undefined);
+  readonly canEditCheckboxes = input(false);
+  // On the standalone assessor page there is no Data Fields tab beside this view,
+  // so the empty state says where the fields are chosen instead of pointing at the tab.
+  readonly standalone = input(false);
+  readonly canChooseFields = input(false);
   msel = new MselPlus();
 
   // ScenarioEventView fields
@@ -154,27 +192,7 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
   private apiUrl: string;
   private unsubscribe$ = new Subject();
 
-  constructor(
-    private mselQuery: MselQuery,
-    private dataFieldQuery: DataFieldQuery,
-    private dataValueQuery: DataValueQuery,
-    private dataValueDataService: DataValueDataService,
-    private moveQuery: MoveQuery,
-    private cardQuery: CardQuery,
-    private organizationQuery: OrganizationQuery,
-    private teamQuery: TeamQuery,
-    private scenarioEventDataService: ScenarioEventDataService,
-    private scenarioEventQuery: ScenarioEventQuery,
-    private uiDataService: UIDataService,
-    private http: HttpClient,
-    private settingsService: ComnSettingsService,
-    private mselCompetencyQuery: MselCompetencyQuery,
-    private mselCompetencyDataService: MselCompetencyDataService,
-    private teamCompetencyQuery: TeamCompetencyQuery,
-    private teamCompetencyDataService: TeamCompetencyDataService,
-    private competencyFrameworkService: CompetencyFrameworkService,
-    private proficiencyScaleService: ProficiencyScaleService
-  ) {
+  constructor() {
     this.apiUrl = this.settingsService.settings.ApiUrl;
     this.showRealTime = this.uiDataService.useRealTime();
 
@@ -342,7 +360,7 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
         ? rowMetadata[1] + ', ' + rowMetadata[2] + ', ' + rowMetadata[3]
         : '';
     const tint =
-      this.userTheme === 'dark-theme'
+      this.userTheme() === 'dark-theme'
         ? this.darkThemeTint
         : this.lightThemeTint;
     const style = color
@@ -1694,6 +1712,12 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
   getLevelName(levelId: string): string {
     const level = this.proficiencyLevels.find(l => l.id === levelId);
     return level ? `${level.name} (${level.value})` : '';
+  }
+
+  // The MSEL editor opens on the tab saved in the UI state, so save Data Fields first.
+  openDataFields() {
+    this.uiDataService.setMselTab('Data Fields');
+    this.router.navigate(['/build'], { queryParams: { msel: this.msel.id } });
   }
 
   ngOnDestroy() {

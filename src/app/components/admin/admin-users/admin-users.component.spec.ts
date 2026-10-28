@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { describe, it, expect, vi } from 'vitest';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { of } from 'rxjs';
@@ -13,15 +13,16 @@ import { AdminUsersComponent } from './admin-users.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { permissionDataProviders } from 'src/app/test-utils/mock-permission-data.service';
+import { AdminUserListComponent } from './admin-user-list/admin-user-list.component';
 
-@Component({ selector: 'app-admin-user-list', template: '', standalone: false })
+@Component({ selector: 'app-admin-user-list', template: '' })
 class UserListStub {
-  @Input() users: User[];
-  @Input() isLoading: boolean;
-  @Input() canEdit: boolean;
-  @Output() create = new EventEmitter<User>();
-  @Output() delete = new EventEmitter<string>();
-  @Output() updateUser = new EventEmitter<User>();
+  readonly users = input<User[]>(undefined);
+  readonly isLoading = input<boolean>(undefined);
+  readonly canEdit = input<boolean>(undefined);
+  readonly create = output<User>();
+  readonly delete = output<string>();
+  readonly updateUser = output<User>();
 }
 
 const ALICE: User = { id: 'user-a', name: 'Alice' };
@@ -35,7 +36,9 @@ async function renderUsers(permissions: SystemPermission[]) {
     updateUser: vi.fn((id: string, user: User) => of(structuredClone(user))),
   } satisfies ApiStub<UserService>;
   const rendered = await renderComponent(AdminUsersComponent, {
-    declarations: [AdminUsersComponent, UserListStub],
+    childStubs: [
+      { replace: AdminUserListComponent, with: UserListStub },
+    ],
     providers: [
       ...permissionDataProviders({ system: permissions }),
       { provide: UserService, useValue: userApi },
@@ -69,9 +72,9 @@ describe('AdminUsersComponent', () => {
   ])('passes canEdit $granted to the user list', async ({ granted, permissions }) => {
     const { fixture } = await renderUsers(permissions);
 
-    expect(list(fixture).canEdit).toBe(granted);
-    expect(list(fixture).users).toEqual([ALICE]);
-    expect(list(fixture).isLoading).toBe(false);
+    expect(list(fixture).canEdit()).toBe(granted);
+    expect(list(fixture).users()).toEqual([ALICE]);
+    expect(list(fixture).isLoading()).toBe(false);
   });
 
   /**

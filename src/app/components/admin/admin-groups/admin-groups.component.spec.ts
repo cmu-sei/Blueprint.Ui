@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { describe, it, expect, vi } from 'vitest';
-import { Component, Input } from '@angular/core';
+import { Component, input } from '@angular/core';
 import { By } from '@angular/platform-browser';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
@@ -23,11 +23,12 @@ import { dialogRefStub } from 'src/app/test-utils/dialog-refs';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { permissionDataProviders } from 'src/app/test-utils/mock-permission-data.service';
 import { unstubbed } from 'src/app/test-utils/unstubbed';
+import { AdminGroupsDetailComponent } from './admin-groups-detail/admin-groups-detail.component';
 
-@Component({ selector: 'app-admin-groups-detail', template: '', standalone: false })
+@Component({ selector: 'app-admin-groups-detail', template: '' })
 class GroupsDetailStub {
-  @Input() groupId: string;
-  @Input() canEdit: boolean;
+  readonly groupId = input<string>(undefined);
+  readonly canEdit = input<boolean>(undefined);
 }
 
 const GROUP: Group = { id: 'group-1', name: 'Analysts' };
@@ -55,7 +56,9 @@ async function renderGroups(permissions: SystemPermission[]) {
       MatTableModule,
       MatTooltipModule,
     ],
-    declarations: [AdminGroupsComponent, GroupsDetailStub],
+    childStubs: [
+      { replace: AdminGroupsDetailComponent, with: GroupsDetailStub },
+    ],
     providers: [
       ...permissionDataProviders({ system: permissions }),
       { provide: GroupService, useValue: groupApi },
@@ -117,8 +120,8 @@ describe('AdminGroupsComponent', () => {
     await user.click(within(table()).getByText('Analysts'));
 
     const detail = fixture.debugElement.query(By.directive(GroupsDetailStub)).componentInstance as GroupsDetailStub;
-    expect(detail.groupId).toBe('group-1');
-    expect(detail.canEdit).toBe(granted);
+    expect(detail.groupId()).toBe('group-1');
+    expect(detail.canEdit()).toBe(granted);
   });
 
   /**

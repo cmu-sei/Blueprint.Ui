@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { afterEach, describe, it, expect, vi } from 'vitest';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { By } from '@angular/platform-browser';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
@@ -26,16 +26,17 @@ import { Move } from 'src/app/generated/blueprint.api';
 import { MoveEditDialogComponent } from './move-edit-dialog.component';
 import { TimezoneAbbrPipe } from 'src/app/utilities/timezone-abbr';
 import { renderComponent } from 'src/app/test-utils/render-component';
+import { DurationEditComponent } from '../shared/duration-edit/duration-edit.component';
 
-@Component({ selector: 'app-duration-edit', template: '', standalone: false })
+@Component({ selector: 'app-duration-edit', template: '' })
 class DurationEditStub {
-  @Input() startTime: Date;
-  @Input() canEdit: boolean;
-  @Input() durationSeconds: number;
-  @Output() durationSecondsChange = new EventEmitter<number>();
-  @Input() timeName: string;
-  @Input() postScript: string;
-  @Output() change = new EventEmitter<number>();
+  readonly startTime = input<Date>(undefined);
+  readonly canEdit = input<boolean>(undefined);
+  readonly durationSeconds = input<number>(undefined);
+  readonly durationSecondsChange = output<number>();
+  readonly timeName = input<string>(undefined);
+  readonly postScript = input<string>(undefined);
+  readonly change = output<number>();
 }
 
 const START = new Date('2026-01-01T12:00:00Z');
@@ -65,7 +66,9 @@ async function renderMoveEdit(move: Move = MOVE) {
       NgxMatDatepickerInput,
       NgxMatDatetimepicker,
     ],
-    declarations: [MoveEditDialogComponent, DurationEditStub, TimezoneAbbrPipe],
+    childStubs: [
+      { replace: DurationEditComponent, with: DurationEditStub },
+    ],
     // angular-editor injects HttpClient for its image upload.
     providers: [{ provide: MAT_DIALOG_DATA, useValue: data }, provideHttpClient(), provideHttpClientTesting()],
   });
@@ -100,8 +103,8 @@ describe('MoveEditDialogComponent', () => {
     expect(screen.getByRole('heading', { name: 'Edit Move' })).toBeInTheDocument();
     expect(description()).toHaveValue('Initial access');
     const duration = fixture.debugElement.query(By.directive(DurationEditStub)).componentInstance as DurationEditStub;
-    expect(duration.durationSeconds).toBe(3600);
-    expect(duration.startTime).toEqual(START);
+    expect(duration.durationSeconds()).toBe(3600);
+    expect(duration.startTime()).toEqual(START);
   });
 
   /**
