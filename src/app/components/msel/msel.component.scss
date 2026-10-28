@@ -240,3 +240,9 @@
   height: auto;
   margin-top: 5px;
 }
+
+.assistant-drawer {
+  width: 420px;
+  max-width: 40vw;
+  border-left: 1px solid var(--mat-sys-outline-variant);
+}

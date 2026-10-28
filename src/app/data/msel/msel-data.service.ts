@@ -29,6 +29,10 @@ import {
   ScenarioEvent,
   Team,
   UserMselRole,
+  MselAssistApply,
+  MselAssistApplyResult,
+  MselAssistRequest,
+  MselAssistResult,
 } from 'src/app/generated/blueprint.api';
 import { map, shareReplay, take, tap } from 'rxjs/operators';
 import { BehaviorSubject, Observable, Subject, combineLatest } from 'rxjs';
@@ -682,6 +686,15 @@ export class MselDataService {
   // Writing a field saves nothing; the edit dialog keeps the value only if the planner uses it
   draftDataValue(mselId: string, request: DataValueDraftRequest): Observable<DataValueDraftResult> {
     return this.mselService.draftDataValue(mselId, request);
+  }
+
+  // Errors are left to the caller, which shows them in the Ask AI panel
+  askAssistant(mselId: string, request: MselAssistRequest): Observable<MselAssistResult> {
+    return this.mselService.askMselAssistant(mselId, request);
+  }
+
+  applyAssistantChanges(mselId: string, apply: MselAssistApply): Observable<MselAssistApplyResult> {
+    return this.mselService.applyMselAssistantChanges(mselId, apply);
   }
 
   // Errors are left to the caller, which shows them in the import dialog

@@ -1,0 +1,112 @@
+// Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+// Released under a MIT (SEI)-style license. See LICENSE.md in the
+// project root for license information.
+
+.assistant-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 0.75rem 1rem;
+  box-sizing: border-box;
+}
+
+.assistant-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.assistant-title {
+  flex: 1;
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.turns {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.5rem 0;
+}
+
+.hint {
+  margin: 0 0 0.5rem 0;
+}
+
+.examples,
+.changes,
+.warnings,
+.results {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.example {
+  text-align: left;
+  height: auto;
+  white-space: normal;
+  margin-bottom: 0.25rem;
+}
+
+.turn {
+  margin: 0.5rem 0;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  white-space: pre-wrap;
+
+  p {
+    margin: 0 0 0.5rem 0;
+  }
+}
+
+.planner {
+  margin-left: 2rem;
+  background-color: var(--mat-sys-primary-container);
+  color: var(--mat-sys-on-primary-container);
+}
+
+.turn.assistant {
+  margin-right: 1rem;
+  background-color: var(--mat-sys-surface-container);
+  color: var(--mat-sys-on-surface);
+}
+
+.warnings li {
+  font-size: 0.875rem;
+  color: var(--mat-sys-on-surface-variant);
+  margin-top: 0.25rem;
+}
+
+.results li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.25rem;
+  margin-top: 0.25rem;
+}
+
+.results li.failed,
+.error-message {
+  color: var(--mat-sys-error);
+}
+
+.thinking {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.25rem;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.prompt {
+  margin-top: 0.5rem;
+}

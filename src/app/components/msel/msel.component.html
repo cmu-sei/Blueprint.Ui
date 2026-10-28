@@ -21,6 +21,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
       }
     </mat-list>
     <div class="bottom-div">
+      @if (canEditMsel()) {
+      <button mat-icon-button title="Ask AI" aria-label="Ask AI" (click)="toggleAssistant()">
+        <mat-icon class="mdi-24px" fontIcon="mdi-creation" />
+      </button>
+      }
       @if (canAccessAdminSection()) {
       <button mat-icon-button title="Administration" (click)="goToUrl('/admin')">
         <mat-icon class="mdi-24px" fontIcon="mdi-cog-outline" />
@@ -73,6 +78,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <div class="bottom-div">
       <div class="admin-and-collapse">
         <div class="admin-section">
+          @if (canEditMsel()) {
+          <button mat-icon-button title="Ask AI" aria-label="Ask AI" (click)="toggleAssistant()">
+            <mat-icon class="mdi-24px" fontIcon="mdi-creation" />
+          </button>
+          }
           @if (canAccessAdminSection()) {
           <button mat-icon-button title="Administration" (click)="goToUrl('/admin')">
             <mat-icon class="mdi-24px" fontIcon="mdi-cog-outline" />
@@ -93,6 +103,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
     </div>
     } @else {
     <div class="bottom-div">
+      @if (canEditMsel()) {
+      <button mat-icon-button title="Ask AI" aria-label="Ask AI" (click)="toggleAssistant()">
+        <mat-icon class="mdi-24px" fontIcon="mdi-creation" />
+      </button>
+      }
       @if (canAccessAdminSection()) {
       <button mat-icon-button title="Administration" (click)="goToUrl('/admin')">
         <mat-icon class="mdi-24px" fontIcon="mdi-cog-outline" />
@@ -103,6 +118,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </button>
     </div>
     }
+  </mat-drawer>
+  }
+  @if (assistantOpen && canEditMsel() && selectedMselId) {
+  <mat-drawer mode="side" position="end" opened class="assistant-drawer">
+    <app-msel-assistant [mselId]="selectedMselId" (closePanel)="toggleAssistant()" />
   </mat-drawer>
   }
   <mat-drawer-content class="content-frame">

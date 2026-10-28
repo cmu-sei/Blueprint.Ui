@@ -37,6 +37,7 @@ import { MselViewComponent } from '../msel-view/msel-view.component';
 import { AssessorViewComponent } from '../assessor-view/assessor-view.component';
 import { InvitationListComponent } from '../invitation-list/invitation-list.component';
 import { MselPlaybookComponent } from '../msel-playbook/msel-playbook.component';
+import { MselAssistantComponent } from '../msel-assistant/msel-assistant.component';
 
 // One stub per tab; each declares the inputs MselComponent binds.
 @Component({ selector: 'app-msel-info', template: '' })
@@ -132,6 +133,12 @@ const MSEL: Msel = {
   userMselRoles: [],
 };
 
+@Component({ selector: 'app-msel-assistant', template: '' })
+class MselAssistantStub {
+  readonly mselId = input<string>(undefined);
+  readonly closePanel = output<void>();
+}
+
 async function renderMsel(
   overrides: { canEditMsel?: boolean; canAccessAdminSection?: boolean; canEditCheckboxes?: boolean; msel?: Msel; mselUnits?: MselUnit[] } = {},
 ) {
@@ -158,6 +165,7 @@ async function renderMsel(
       { replace: AssessorViewComponent, with: AssessorViewStub },
       { replace: InvitationListComponent, with: InvitationListStub },
       { replace: MselPlaybookComponent, with: MselPlaybookStub },
+      { replace: MselAssistantComponent, with: MselAssistantStub },
     ],
     providers: [
       ...mselLoadApiProviders(apis),
@@ -313,5 +321,35 @@ describe('MselComponent', () => {
     await renderMsel({ canAccessAdminSection: false, canEditMsel: true });
 
     expect(screen.queryByRole('button', { name: 'Administration' })).not.toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: an MSEL editor gets Ask AI, which opens the assistant panel for this MSEL beside the tabs, and the panel closes itself.
+   * Interacts with: the Ask AI button, MselAssistantStub mselId and closePanel.
+   * Data: canEditMsel true; MSEL msel-1.
+   */
+  it('opens and closes Ask AI for an editor', async () => {
+    const { fixture } = await renderMsel({ canEditMsel: true });
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole('button', { name: 'Ask AI' }));
+    const panel = child(fixture, MselAssistantStub);
+    expect(panel.mselId()).toBe('msel-1');
+    panel.closePanel.emit();
+    fixture.detectChanges();
+
+    expect(child(fixture, MselAssistantStub)).toBeUndefined();
+  });
+
+  /**
+   * Verifies: without canEditMsel there is no Ask AI button and no panel.
+   * Interacts with: MselComponent template.
+   * Data: canEditMsel false.
+   */
+  it('hides Ask AI without canEditMsel', async () => {
+    const { fixture } = await renderMsel({ canEditMsel: false });
+
+    expect(screen.queryByRole('button', { name: 'Ask AI' })).not.toBeInTheDocument();
+    expect(child(fixture, MselAssistantStub)).toBeUndefined();
   });
 });

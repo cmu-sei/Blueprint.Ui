@@ -58,12 +58,13 @@ import { MselViewComponent } from '../msel-view/msel-view.component';
 import { AssessorViewComponent } from '../assessor-view/assessor-view.component';
 import { InvitationListComponent } from '../invitation-list/invitation-list.component';
 import { MselPlaybookComponent } from '../msel-playbook/msel-playbook.component';
+import { MselAssistantComponent } from '../msel-assistant/msel-assistant.component';
 
 @Component({
     selector: 'app-msel',
     templateUrl: './msel.component.html',
     styleUrls: ['./msel.component.scss'],
-    imports: [MatDrawerContainer, MatDrawer, MatIconButton, MatIcon, MatList, MatDivider, MatListItem, NgClass, MatDrawerContent, MselInfoComponent, MselContributorsComponent, MselTeamsComponent, DataFieldListComponent, OrganizationListComponent, MoveListComponent, PlayerApplicationListComponent, CardListComponent, CiteActionListComponent, CiteDutyListComponent, MselCompetenciesComponent, ScenarioEventListComponent, MselViewComponent, AssessorViewComponent, InvitationListComponent, MselPlaybookComponent, AsyncPipe]
+    imports: [MatDrawerContainer, MatDrawer, MatIconButton, MatIcon, MatList, MatDivider, MatListItem, NgClass, MatDrawerContent, MselInfoComponent, MselContributorsComponent, MselTeamsComponent, DataFieldListComponent, OrganizationListComponent, MoveListComponent, PlayerApplicationListComponent, CardListComponent, CiteActionListComponent, CiteDutyListComponent, MselCompetenciesComponent, ScenarioEventListComponent, MselViewComponent, AssessorViewComponent, InvitationListComponent, MselPlaybookComponent, MselAssistantComponent, AsyncPipe]
 })
 export class MselComponent implements OnDestroy {
   private activatedRoute = inject(ActivatedRoute);
@@ -150,6 +151,8 @@ export class MselComponent implements OnDestroy {
   // The contributor units the MSEL's users were last loaded with; undefined until they load.
   private contributorUnitIds: string;
   sideNavCollapsed = false;
+  // the Ask AI panel, which stays open while the planner moves between tabs
+  assistantOpen = false;
   theme$: Observable<Theme>;
 
   constructor() {
@@ -322,6 +325,10 @@ export class MselComponent implements OnDestroy {
     } else {
       return 'non-selected-item';
     }
+  }
+
+  toggleAssistant() {
+    this.assistantOpen = !this.assistantOpen;
   }
 
   setCollapsed(value: boolean) {
