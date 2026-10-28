@@ -108,3 +108,14 @@ summary {
   color: var(--mat-sys-on-secondary-container);
   white-space: nowrap;
 }
+
+.article-preview {
+  max-width: 720px;
+  max-height: 480px;
+  overflow: auto;
+  margin: 0.5rem 0;
+  border: 1px solid var(--mat-sys-outline-variant);
+  // articles are designed for a white page
+  background-color: #ffffff;
+  color: #000000;
+}

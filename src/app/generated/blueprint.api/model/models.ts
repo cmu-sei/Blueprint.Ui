@@ -5,6 +5,8 @@
 */
 
 export * from './applicationTemplate';
+export * from './articleDraftRequest';
+export * from './articleDraftResult';
 export * from './assembly';
 export * from './calendar';
 export * from './calendarAlgorithmType';

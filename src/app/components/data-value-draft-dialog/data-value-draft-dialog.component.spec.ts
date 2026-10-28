@@ -133,4 +133,20 @@ describe('DataValueDraftDialogComponent', () => {
     expect(screen.getByRole('alert')).toHaveTextContent('AI drafting is not enabled on this server.');
     expect(screen.getByRole('button', { name: 'Write' })).toBeEnabled();
   });
+
+  /**
+   * Verifies: Use this turns the written article's SVG graphics into PNG before handing the value back.
+   * Interacts with: the component's PNG conversion (replaced, as jsdom cannot draw), dialogRef.close.
+   * Data: the model writes an article with one SVG logo.
+   */
+  it('hands back an article with its graphics as PNG', async () => {
+    const { close, fixture } = await renderDraftDialog(undefined, vi.fn(() => of<DataValueDraftResult>({ value: '<img src="data:image/svg+xml;base64,LOGO" alt="Logo">', notes: [] })));
+    fixture.componentInstance.toPng = async (html: string) => html.replace('image/svg+xml', 'image/png');
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole('button', { name: 'Write' }));
+    await user.click(screen.getByRole('button', { name: 'Use this' }));
+
+    await vi.waitFor(() => expect(close).toHaveBeenCalledWith('<img src="data:image/png;base64,LOGO" alt="Logo">'));
+  });
 });

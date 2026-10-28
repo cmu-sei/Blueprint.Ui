@@ -170,4 +170,29 @@ describe('MselAssistantComponent', () => {
 
     expect(askAssistant).toHaveBeenCalledWith('msel-1', { prompt: 'Add a team\nwith a card', history: [] });
   });
+
+  /**
+   * Verifies: Apply turns an inject's SVG graphics into PNG before sending the changes.
+   * Interacts with: the component's PNG conversion (replaced, as jsdom cannot draw), MselDataService.applyAssistantChanges.
+   * Data: an inject.add whose Details hold one SVG logo, and its plain Title.
+   */
+  it('sends inject values with their graphics as PNG', async () => {
+    const article: MselAssistResult = {
+      reply: 'Adding the advisory.',
+      changes: [{ op: 'inject.add', minutes: 30, values: { Title: 'Advisory', Details: '<img src="data:image/svg+xml;base64,LOGO" alt="Logo">' }, label: 'Add inject at 0:30: Advisory' }],
+      warnings: [],
+    };
+    const { applyAssistantChanges, fixture, user } = await renderAssistant(() => of(article));
+    fixture.componentInstance.toPng = async (html: string) => html.replace('image/svg+xml', 'image/png');
+    await askFor(user, 'Add an advisory');
+
+    await user.click(screen.getByRole('button', { name: 'Apply 1 change' }));
+
+    await vi.waitFor(() => expect(applyAssistantChanges).toHaveBeenCalled());
+    const sent = (applyAssistantChanges.mock.calls[0] as unknown[])[1] as { changes: { values: Record<string, string> }[] };
+    expect(sent.changes[0].values).toEqual({
+      Title: 'Advisory',
+      Details: '<img src="data:image/png;base64,LOGO" alt="Logo">',
+    });
+  });
 });

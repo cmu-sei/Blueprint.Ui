@@ -12,7 +12,8 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { screen, within } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
+import { HttpErrorResponse } from '@angular/common/http';
 import { CRUCIBLE_DIALOG_IMPORTS } from '@cmusei/crucible-common';
 import {
   CompetencyFrameworkService,
@@ -50,9 +51,9 @@ function draftResult(): MselDraftResult {
   };
 }
 
-async function renderDraftDialog(result: MselDraftResult = draftResult()) {
+async function renderDraftDialog(result: MselDraftResult = draftResult(), draftArticle: (...args: any[]) => any = vi.fn()) {
   const draftMsel = vi.fn(() => of(result));
-  const mselData = { draftMsel } as Partial<MselDataService>;
+  const mselData = { draftMsel, draftArticle } as Partial<MselDataService>;
   const frameworkApi = {
     getCompetencyFrameworks: vi.fn(() => of([{ id: 'fw-nice', name: 'NICE 2.0.0' }, { id: 'fw-dcwf', name: 'DCWF 5.1' }])),
   } satisfies ApiStub<CompetencyFrameworkService>;
@@ -79,11 +80,11 @@ async function renderDraftDialog(result: MselDraftResult = draftResult()) {
   });
   await rendered.fixture.whenStable();
   rendered.fixture.detectChanges();
-  return { ...rendered, draftMsel, close: ref.close };
+  return { ...rendered, draftMsel, draftArticle, close: ref.close };
 }
 
-async function draftWithDcwf(result?: MselDraftResult) {
-  const rendered = await renderDraftDialog(result);
+async function draftWithDcwf(result?: MselDraftResult, draftArticle?: (...args: any[]) => any) {
+  const rendered = await renderDraftDialog(result, draftArticle);
   const user = userEvent.setup();
   await user.click(screen.getByRole('combobox', { name: 'Competency frameworks' }));
   await user.click(await screen.findByRole('option', { name: 'DCWF 5.1' }));
@@ -152,5 +153,66 @@ describe('MselDraftDialogComponent', () => {
     expect(screen.getByText(/Read-in and facilitator messages\s*\(0 articles\)/)).toBeInTheDocument();
     expect(screen.getByText(/News and social posts\s*\(1 article\)/)).toBeInTheDocument();
     expect(screen.getByTitle('Gallery card')).toHaveTextContent('Public and Media');
+  });
+
+  // a draft whose first two injects are Gallery articles and whose third is not
+  function articleDraft(): MselDraftResult {
+    const result = draftResult();
+    result.fields = [
+      { name: 'Title', dataType: DataFieldType.String },
+      { name: 'Source Type', dataType: DataFieldType.SourceType },
+      { name: 'Details', dataType: DataFieldType.Html },
+    ];
+    result.draft.injects = [
+      { minutes: 10, eventType: 'Inject', values: { Title: 'Cables cut', 'Source Type': 'News', Details: '<p>Two cables cut.</p>' }, competencies: [] },
+      { minutes: 20, eventType: 'Inject', values: { Title: 'Operator notice', 'Source Type': 'Email', Details: '<p>Repairs begin.</p>' }, competencies: [] },
+      { minutes: 30, eventType: 'Facilitation', values: { Title: 'Controller check' }, competencies: [] },
+    ];
+    result.draft.competencies = [];
+    return result;
+  }
+
+  /**
+   * Verifies: after the draft, each Gallery article is written out, the article shows as a preview, and its notes show under it.
+   * Interacts with: MselDataService.draftArticle, once per article with its index; the inject details.
+   * Data: two articles (News, Email) and a facilitation row; the email fails with a 500 titled "The model wrote no article."
+   */
+  it('writes each Gallery article and shows it, or why it could not be written', async () => {
+    const draftArticle = vi.fn((request: { injectIndex: number }) =>
+      request.injectIndex === 0
+        ? of({ fieldName: 'Details', html: '<table width="720"><tbody><tr><td>HARBOUR HERALD</td></tr></tbody></table>', notes: ['Assumed a regional paper.'] })
+        : throwError(() => new HttpErrorResponse({ status: 500, error: { title: 'The model wrote no article.' } }))
+    );
+    const { user } = await draftWithDcwf(articleDraft(), draftArticle);
+
+    expect(draftArticle).toHaveBeenCalledTimes(2);
+    expect(draftArticle).toHaveBeenCalledWith(expect.objectContaining({ templateMselId: 'tpl-1', injectIndex: 0 }));
+    expect(draftArticle).toHaveBeenCalledWith(expect.objectContaining({ injectIndex: 1 }));
+    expect(screen.getByText(/Wrote 1 of 2 Gallery articles/)).toBeInTheDocument();
+    expect(screen.getByRole('alert')).toHaveTextContent('Operator notice: The model wrote no article.');
+    await user.click(screen.getByText('Cables cut', { selector: '.inject-title' }));
+    expect(screen.getByLabelText('Article preview')).toHaveTextContent('HARBOUR HERALD');
+    expect(screen.getByText('Assumed a regional paper.')).toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: Create MSEL turns each written article's SVG graphics into PNG before handing the draft on.
+   * Interacts with: the component's PNG conversion (replaced), dialogRef.close.
+   * Data: the News article written with an SVG logo; the email left as drafted.
+   */
+  it('converts the articles\' graphics to PNG when the MSEL is created', async () => {
+    const draftArticle = vi.fn((request: { injectIndex: number }) =>
+      of({ fieldName: 'Details', html: request.injectIndex === 0 ? '<img src="data:image/svg+xml;base64,LOGO" alt="Logo">' : '<p>Notice</p>', notes: [] })
+    );
+    const { user, close, fixture } = await draftWithDcwf(articleDraft(), draftArticle);
+    // jsdom cannot draw on a canvas; the conversion itself is covered by svg-to-png.spec.ts
+    fixture.componentInstance.toPng = async (html: string) => html.replace('data:image/svg+xml;base64,LOGO', 'data:image/png;base64,LOGO');
+
+    await user.click(screen.getByRole('button', { name: 'Create MSEL' }));
+
+    await vi.waitFor(() => expect(close).toHaveBeenCalled());
+    const draft = close.mock.calls[0][0].draft;
+    expect(draft.injects[0].values.Details).toBe('<img src="data:image/png;base64,LOGO" alt="Logo">');
+    expect(draft.injects[1].values.Details).toBe('<p>Notice</p>');
   });
 });

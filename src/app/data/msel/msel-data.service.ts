@@ -29,6 +29,8 @@ import {
   ScenarioEvent,
   Team,
   UserMselRole,
+  ArticleDraftRequest,
+  ArticleDraftResult,
   MselAssistApply,
   MselAssistApplyResult,
   MselAssistRequest,
@@ -709,6 +711,10 @@ export class MselDataService {
   // Drafting saves nothing, so the store is untouched until the draft is imported
   draftMsel(request: MselDraftRequest): Observable<MselDraftResult> {
     return this.mselService.draftMsel(request);
+  }
+
+  draftArticle(request: ArticleDraftRequest): Observable<ArticleDraftResult> {
+    return this.mselService.draftMselArticle(request);
   }
 
   // Errors are left to the caller, which shows them in the import dialog

@@ -6,6 +6,7 @@ import { Component, Inject } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { take } from 'rxjs/operators';
+import { svgImagesToPng } from 'src/app/utilities/svg-to-png';
 import { FormsModule } from '@angular/forms';
 import { MatButton } from '@angular/material/button';
 import { MatFormField, MatHint, MatLabel } from '@angular/material/form-field';
@@ -125,8 +126,12 @@ export class DataValueDraftDialogComponent {
     this.result = undefined;
   }
 
-  use() {
-    this.dialogRef.close(this.result.value);
+  // drawn on a canvas in the browser; tests give their own
+  toPng = svgImagesToPng;
+
+  // an article's SVG graphics become PNG, which Blueprint's own views show
+  async use() {
+    this.dialogRef.close(await this.toPng(this.result.value));
   }
 
   close() {

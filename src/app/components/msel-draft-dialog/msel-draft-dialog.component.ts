@@ -5,7 +5,9 @@
 import { Component, Inject } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { take } from 'rxjs/operators';
+import { from, of, Subscription } from 'rxjs';
+import { catchError, map, mergeMap, take } from 'rxjs/operators';
+import { svgImagesToPng } from 'src/app/utilities/svg-to-png';
 import { FormsModule } from '@angular/forms';
 import { MatButton, MatIconButton } from '@angular/material/button';
 import { MatFormField, MatHint, MatLabel } from '@angular/material/form-field';
@@ -74,6 +76,16 @@ export class MselDraftDialogComponent {
   isDrafting = false;
   errorMessage = '';
   result: MselDraftResult;
+  // each Gallery article is written out as a document of its source type after the draft comes back
+  articlesTotal = 0;
+  articlesDone = 0;
+  articleErrors: string[] = [];
+  articleNotes = new Map<MselDraftInject, string[]>();
+  private articleFields = new Map<MselDraftInject, string>();
+  private writing: Subscription;
+  isPreparing = false;
+  // drawn on a canvas in the browser; tests give their own
+  toPng = svgImagesToPng;
 
   constructor(
     public dialogRef: MatDialogRef<MselDraftDialogComponent, MselDraftImport>,
@@ -114,6 +126,7 @@ export class MselDraftDialogComponent {
         next: (result) => {
           this.result = result;
           this.isDrafting = false;
+          this.writeArticles();
         },
         error: (err) => {
           this.errorMessage = this.getErrorMessage(err);
@@ -124,7 +137,65 @@ export class MselDraftDialogComponent {
 
   // back to the prompt, keeping it so the planner can reword and draft again
   startOver() {
+    this.stopWriting();
     this.result = undefined;
+  }
+
+  get isWritingArticles(): boolean {
+    return !!this.writing && !this.writing.closed;
+  }
+
+  // the injects with a source type are Gallery articles
+  private articles(): MselDraftInject[] {
+    const sourceType = this.result.fields.find((f) => f.dataType === DataFieldType.SourceType);
+    return sourceType ? this.result.draft.injects.filter((i) => i.values?.[sourceType.name]) : [];
+  }
+
+  // three at a time; the injects are not removed while this runs, so each index stays the article's
+  writeArticles() {
+    const articles = this.articles();
+    this.articlesTotal = articles.length;
+    this.articlesDone = 0;
+    this.articleErrors = [];
+    if (!articles.length) {
+      return;
+    }
+    const draft = this.result.draft;
+    this.writing = from(articles)
+      .pipe(
+        mergeMap(
+          (inject) =>
+            this.mselDataService
+              .draftArticle({ templateMselId: this.result.templateMselId, draft, injectIndex: draft.injects.indexOf(inject) })
+              .pipe(
+                map((article) => ({ inject, article, error: undefined as string })),
+                catchError((err) => of({ inject, article: undefined, error: this.getErrorMessage(err) }))
+              ),
+          3
+        )
+      )
+      .subscribe(({ inject, article, error }) => {
+        this.articlesDone++;
+        if (article) {
+          inject.values[article.fieldName] = article.html;
+          this.articleFields.set(inject, article.fieldName);
+          if (article.notes?.length) {
+            this.articleNotes.set(inject, article.notes);
+          }
+        } else {
+          this.articleErrors.push(`${this.titleFor(inject)}: ${error}`);
+        }
+      });
+  }
+
+  stopWriting() {
+    this.writing?.unsubscribe();
+  }
+
+  // the written article, shown as Gallery will show it
+  articleHtml(inject: MselDraftInject): string {
+    const field = this.articleFields.get(inject);
+    return field ? inject.values?.[field] : undefined;
   }
 
   // the articles the draft puts on a card, as the planner removes injects
@@ -186,7 +257,13 @@ export class MselDraftDialogComponent {
     return `${h}:${m.toString().padStart(2, '0')}`;
   }
 
-  create() {
+  // Blueprint's own views show only PNG, so each article's SVG graphics become PNG before the MSEL is created
+  async create() {
+    this.isPreparing = true;
+    for (const [inject, field] of this.articleFields) {
+      inject.values[field] = await this.toPng(inject.values[field]);
+    }
+    this.isPreparing = false;
     this.dialogRef.close({
       templateMselId: this.result.templateMselId,
       draft: this.result.draft,
@@ -195,6 +272,7 @@ export class MselDraftDialogComponent {
   }
 
   close() {
+    this.stopWriting();
     this.dialogRef.close();
   }
 

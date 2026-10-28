@@ -6,6 +6,7 @@ import { Component, inject, input, output } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { take } from 'rxjs/operators';
+import { svgImagesToPng } from 'src/app/utilities/svg-to-png';
 import { MatButton, MatIconButton } from '@angular/material/button';
 import { MatCheckbox } from '@angular/material/checkbox';
 import { MatFormField, MatLabel } from '@angular/material/form-field';
@@ -120,12 +121,21 @@ export class MselAssistantComponent {
     return (turn.changes ?? []).filter((c) => c.keep).map((c) => c.change);
   }
 
-  apply(turn: AssistTurn) {
+  // drawn on a canvas in the browser; tests give their own
+  toPng = svgImagesToPng;
+
+  async apply(turn: AssistTurn) {
     const changes = this.keptChanges(turn);
     if (!changes.length || this.isApplying) {
       return;
     }
     this.isApplying = true;
+    // an article's SVG graphics become PNG, which Blueprint's own views show
+    for (const change of changes) {
+      for (const [column, value] of Object.entries(change.values ?? {})) {
+        change.values[column] = await this.toPng(value);
+      }
+    }
     this.mselDataService
       .applyAssistantChanges(this.mselId(), { changes })
       .pipe(take(1))

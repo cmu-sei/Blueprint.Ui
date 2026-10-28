@@ -101,6 +101,24 @@ project root for license information or contact permission@sei.cmu.edu for full 
   </section>
   }
 
+  @if (articlesTotal) {
+  <section class="section articles" aria-live="polite">
+    @if (isWritingArticles) {
+    <div class="drafting">
+      <mat-spinner diameter="24"></mat-spinner>
+      <span>Writing articles {{ articlesDone }} of {{ articlesTotal }}...</span>
+      <button matButton type="button" (click)="stopWriting()">Stop</button>
+    </div>
+    } @else {
+    <p>Wrote {{ articlesDone - articleErrors.length }} of {{ articlesTotal }} Gallery articles as documents of their source
+      type. Open an inject to see its article.</p>
+    }
+    @for (error of articleErrors; track $index) {
+    <p class="error-message" role="alert">{{ error }}</p>
+    }
+  </section>
+  }
+
   <section class="section">
     <h3 class="section-title">Injects ({{ result.draft.injects.length }})</h3>
     <ul class="inject-list">
@@ -116,14 +134,23 @@ project root for license information or contact permission@sei.cmu.edu for full 
             @if (inject.card) {
             <span class="inject-card" title="Gallery card">{{ inject.card }}</span>
             }
-            <button mat-icon-button type="button" title="Remove this inject" (click)="removeInject(inject)">
+            <button mat-icon-button type="button" title="Remove this inject" (click)="removeInject(inject)"
+              [disabled]="isWritingArticles">
               <mat-icon fontIcon="mdi-close"></mat-icon>
             </button>
           </summary>
+          @if (articleHtml(inject); as html) {
+          <div class="article-preview" aria-label="Article preview" [innerHTML]="html"></div>
+          @for (note of articleNotes.get(inject); track $index) {
+          <p class="hint">{{ note }}</p>
+          }
+          }
           <dl class="inject-values">
             @for (value of valuesFor(inject); track value.name) {
+            @if (value.value !== articleHtml(inject)) {
             <dt>{{ value.name }}</dt>
             <dd>{{ value.value }}</dd>
+            }
             }
             @if (inject.competencies?.length) {
             <dt>Competencies</dt>
@@ -189,8 +216,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
   } @else {
   <button matButton="outlined" type="button" (click)="close()">Discard</button>
   <button matButton="outlined" type="button" (click)="startOver()">Edit description</button>
-  <button matButton="filled" type="button" (click)="create()" [disabled]="!result.draft.injects.length">
-    Create MSEL
+  <button matButton="filled" type="button" (click)="create()"
+    [disabled]="!result.draft.injects.length || isWritingArticles || isPreparing">
+    {{ isPreparing ? 'Preparing images...' : 'Create MSEL' }}
   </button>
   }
 </ng-container>
