@@ -19,5 +19,9 @@ export interface MselDraftTeam {
     name?: string | null;
     shortName?: string | null;
     description?: string | null;
+    /**
+     * Competency ID numbers the team is expected to demonstrate
+     */
+    competencies?: Array<string> | null;
 }
 

@@ -87,3 +87,15 @@ summary {
     white-space: pre-wrap;
   }
 }
+
+.competency-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.competency-owner {
+  min-width: 4rem;
+  font-weight: 600;
+}

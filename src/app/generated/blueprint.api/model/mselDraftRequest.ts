@@ -27,5 +27,9 @@ export interface MselDraftRequest {
      * The planner\'s description of the exercise
      */
     prompt?: string | null;
+    /**
+     * Frameworks whose competencies the draft may assign. When empty, the template\'s own MSEL competencies are used; when the template has none, no competencies are assigned.
+     */
+    competencyFrameworkIds?: Array<string> | null;
 }
 

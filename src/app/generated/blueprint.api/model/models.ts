@@ -109,6 +109,7 @@ export * from './msel';
 export * from './mselCompetency';
 export * from './mselCreate';
 export * from './mselDraft';
+export * from './mselDraftCompetency';
 export * from './mselDraftField';
 export * from './mselDraftImport';
 export * from './mselDraftInject';

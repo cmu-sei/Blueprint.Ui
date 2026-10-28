@@ -14,6 +14,7 @@
  * Do not edit the class manually.
  */
 import { MselDraft } from './mselDraft';
+import { MselDraftCompetency } from './mselDraftCompetency';
 import { MselDraftField } from './mselDraftField';
 
 
@@ -29,5 +30,9 @@ export interface MselDraftResult {
      * Things the server corrected or dropped from the model\'s answer
      */
     warnings?: Array<string> | null;
+    /**
+     * The competencies the draft assigned, with their names
+     */
+    competencies?: Array<MselDraftCompetency> | null;
 }
 

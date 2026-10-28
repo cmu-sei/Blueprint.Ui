@@ -24,6 +24,15 @@ project root for license information or contact permission@sei.cmu.edu for full 
     }
   </mat-form-field>
   <mat-form-field class="full-width">
+    <mat-label>Competency frameworks</mat-label>
+    <mat-select [(ngModel)]="competencyFrameworkIds" multiple [disabled]="isDrafting">
+      @for (framework of competencyFrameworks; track framework.id) {
+      <mat-option [value]="framework.id">{{ framework.name }}</mat-option>
+      }
+    </mat-select>
+    <mat-hint>Competencies are assigned only from these. With none chosen, the template's competencies are used.</mat-hint>
+  </mat-form-field>
+  <mat-form-field class="full-width">
     <mat-label>Exercise description</mat-label>
     <textarea matInput [(ngModel)]="prompt" rows="7" [disabled]="isDrafting"
       placeholder="Audience, length, scenario, objectives, organizations to simulate, competencies to exercise"></textarea>
@@ -66,6 +75,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <mat-chip [matTooltip]="team.name">{{ team.shortName }}</mat-chip>
       }
     </mat-chip-set>
+    @for (team of result.draft.teams; track team.shortName) {
+    @if (team.competencies?.length) {
+    <div class="competency-row">
+      <span class="competency-owner">{{ team.shortName }}</span>
+      <ng-container *ngTemplateOutlet="competencyChips; context: { owner: team }"></ng-container>
+    </div>
+    }
+    }
     <mat-chip-set aria-label="Organizations">
       @for (organization of result.draft.organizations; track organization.shortName) {
       <mat-chip [matTooltip]="organization.name">{{ organization.shortName }}</mat-chip>
@@ -94,6 +111,10 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <dt>{{ value.name }}</dt>
             <dd>{{ value.value }}</dd>
             }
+            @if (inject.competencies?.length) {
+            <dt>Competencies</dt>
+            <dd><ng-container *ngTemplateOutlet="competencyChips; context: { owner: inject }"></ng-container></dd>
+            }
           </dl>
         </details>
       </li>
@@ -104,7 +125,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
   @if (result.draft.competencies?.length) {
   <section class="section">
     <h3 class="section-title">Competencies</h3>
-    <p>{{ result.draft.competencies.join(', ') }}</p>
+    <ul class="plain-list">
+      @for (idNumber of result.draft.competencies; track idNumber) {
+      <li><strong>{{ idNumber }}</strong> {{ competencyName(idNumber) }}</li>
+      }
+    </ul>
   </section>
   }
 
@@ -129,6 +154,19 @@ project root for license information or contact permission@sei.cmu.edu for full 
   }
   }
 </div>
+
+<ng-template #competencyChips let-owner="owner">
+  <mat-chip-set aria-label="Competencies">
+    @for (idNumber of owner.competencies; track idNumber) {
+    <mat-chip [matTooltip]="competencyName(idNumber)" (removed)="removeCompetency(owner, idNumber)">
+      {{ idNumber }}
+      <button matChipRemove [attr.aria-label]="'Remove ' + idNumber">
+        <mat-icon fontIcon="mdi-close"></mat-icon>
+      </button>
+    </mat-chip>
+    }
+  </mat-chip-set>
+</ng-template>
 
 <ng-container crucibleDialogActions>
   @if (!result) {

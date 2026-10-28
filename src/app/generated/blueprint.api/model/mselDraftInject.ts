@@ -28,5 +28,9 @@ export interface MselDraftInject {
      * Values keyed by the template\'s column (data field) name
      */
     values?: { [key: string]: string | null; } | null;
+    /**
+     * Competency ID numbers participants demonstrate by acting on the inject
+     */
+    competencies?: Array<string> | null;
 }
 

@@ -8,11 +8,14 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { take } from 'rxjs/operators';
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
 import {
+  CompetencyFramework,
+  CompetencyFrameworkService,
   DataFieldType,
   Msel,
   MselDraftImport,
   MselDraftInject,
   MselDraftResult,
+  MselDraftTeam,
 } from 'src/app/generated/blueprint.api';
 
 export interface MselDraftDialogData {
@@ -30,6 +33,9 @@ export interface MselDraftDialogData {
 export class MselDraftDialogComponent {
   templateMselId = '';
   prompt = '';
+  // the draft assigns competencies only from these; none means the template's own
+  competencyFrameworkIds: string[] = [];
+  competencyFrameworks: CompetencyFramework[] = [];
   isDrafting = false;
   errorMessage = '';
   result: MselDraftResult;
@@ -37,12 +43,22 @@ export class MselDraftDialogComponent {
   constructor(
     public dialogRef: MatDialogRef<MselDraftDialogComponent, MselDraftImport>,
     @Inject(MAT_DIALOG_DATA) public data: MselDraftDialogData,
-    private mselDataService: MselDataService
+    private mselDataService: MselDataService,
+    private competencyFrameworkService: CompetencyFrameworkService
   ) {
     dialogRef.disableClose = true;
     if (data.templates.length === 1) {
       this.templateMselId = data.templates[0].id;
     }
+    this.competencyFrameworkService
+      .getCompetencyFrameworks()
+      .pipe(take(1))
+      .subscribe({
+        next: (frameworks) =>
+          (this.competencyFrameworks = [...frameworks].sort((a, b) => a.name.localeCompare(b.name))),
+        // drafting still works without a framework list; the template's competencies are used
+        error: () => (this.competencyFrameworks = []),
+      });
   }
 
   get canDraft(): boolean {
@@ -53,7 +69,11 @@ export class MselDraftDialogComponent {
     this.isDrafting = true;
     this.errorMessage = '';
     this.mselDataService
-      .draftMsel({ templateMselId: this.templateMselId, prompt: this.prompt })
+      .draftMsel({
+        templateMselId: this.templateMselId,
+        prompt: this.prompt,
+        competencyFrameworkIds: this.competencyFrameworkIds,
+      })
       .pipe(take(1))
       .subscribe({
         next: (result) => {
@@ -74,6 +94,18 @@ export class MselDraftDialogComponent {
 
   removeInject(inject: MselDraftInject) {
     this.result.draft.injects = this.result.draft.injects.filter((i) => i !== inject);
+  }
+
+  // the planner removes a competency from an inject or team; the MSEL keeps only those still used
+  removeCompetency(owner: MselDraftInject | MselDraftTeam, idNumber: string) {
+    owner.competencies = owner.competencies.filter((c) => c !== idNumber);
+    const draft = this.result.draft;
+    const used = new Set([...draft.injects, ...draft.teams].flatMap((o) => o.competencies ?? []));
+    draft.competencies = (draft.competencies ?? []).filter((c) => used.has(c));
+  }
+
+  competencyName(idNumber: string): string {
+    return this.result.competencies?.find((c) => c.idNumber === idNumber)?.shortName ?? '';
   }
 
   moveFor(inject: MselDraftInject): number {
@@ -118,6 +150,7 @@ export class MselDraftDialogComponent {
     this.dialogRef.close({
       templateMselId: this.result.templateMselId,
       draft: this.result.draft,
+      competencyFrameworkIds: this.competencyFrameworkIds,
     });
   }
 

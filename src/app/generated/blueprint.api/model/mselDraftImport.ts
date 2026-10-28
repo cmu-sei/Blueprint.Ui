@@ -22,5 +22,9 @@ import { MselDraft } from './mselDraft';
 export interface MselDraftImport { 
     templateMselId?: string;
     draft?: MselDraft;
+    /**
+     * The frameworks the draft chose from, so its competencies are checked against the same list
+     */
+    competencyFrameworkIds?: Array<string> | null;
 }
 
