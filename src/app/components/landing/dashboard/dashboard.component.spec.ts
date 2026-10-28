@@ -8,13 +8,13 @@ import { Router } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { screen } from '@testing-library/angular';
+import { screen, within } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { Observable, Subject, of, throwError } from 'rxjs';
 import { ComnAuthService, ComnSettingsService } from '@cmusei/crucible-common';
 import { Msel, MselItemStatus, MselRole, MselService, SystemPermission, SystemPermissionsService, User, UserService } from 'src/app/generated/blueprint.api';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
-import { DashboardComponent } from './dashboard.component';
+import { CAPABILITY_CARDS, DashboardComponent } from './dashboard.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { permissionApiStubs } from 'src/app/test-utils/mock-permission-data.service';
@@ -202,5 +202,52 @@ describe('DashboardComponent', () => {
     expect(assess.querySelector('.metric-value')?.textContent).toBe('1');
     await userEvent.setup().click(assess);
     expect(navigate).toHaveBeenCalledWith(['assess']);
+  });
+
+  /**
+   * Verifies: the capability cards describe the stack by feature, with competency-based assessment from xAPI evidence first, and name no application.
+   * Interacts with: DashboardComponent template, CAPABILITY_CARDS.
+   * Data: no MSELs; no system permission (the cards show for every user).
+   */
+  it('shows a card for each capability, by feature', async () => {
+    const { container } = await renderDashboard();
+
+    const titles = [...container.querySelectorAll('.value-card .value-title')].map((t) => t.textContent?.trim());
+    expect(titles).toEqual([
+      'Competency-Based Assessment',
+      'Collaborative Planning',
+      'Hands-On and Tabletop Exercises',
+    ]);
+    expect(card('Competency-Based Assessment')).toHaveTextContent('See how each team performs against the work roles and skills the exercise is meant to build');
+    const allText = CAPABILITY_CARDS.map((c) => [c.summary, c.data.title, c.data.description, ...c.data.features, ...c.data.benefits].join(' ')).join(' ');
+    expect(allText).not.toMatch(/\b(Player|Gallery|CITE|Steamfitter|Caster|TopoMojo|Gameboard)\b/);
+  });
+
+  /**
+   * Verifies: clicking a capability card, or pressing Enter on it, opens the dialog with that capability's details, and Close shuts it.
+   * Interacts with: real MatDialog and CapabilityDialogComponent.
+   * Data: the Competency-Based Assessment and Hands-On and Tabletop Exercises cards.
+   */
+  it('opens the details of a capability card', async () => {
+    await renderDashboard();
+    const user = userEvent.setup();
+
+    await user.click(card('Competency-Based Assessment') as HTMLElement);
+
+    const dialog = within(await screen.findByRole('dialog'));
+    expect(dialog.getByText('Competency-Based Assessment')).toBeInTheDocument();
+    expect(dialog.getByText(/^Choose the work roles an exercise trains/)).toBeInTheDocument();
+    expect(dialog.getByText('Use NICE, DCWF, or your own frameworks')).toBeInTheDocument();
+    expect(dialog.getByText('Rate every team on what they did')).toBeInTheDocument();
+    expect(dialog.queryByText(/^Deliver news/)).not.toBeInTheDocument();
+
+    await user.click(dialog.getByRole('button', { name: 'Close' }));
+    await vi.waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+
+    (card('Hands-On and Tabletop Exercises') as HTMLElement).focus();
+    await user.keyboard('{Enter}');
+    const delivery = within(await screen.findByRole('dialog'));
+    expect(delivery.getByText('Deliver news, intelligence, and orders move by move')).toBeInTheDocument();
+    expect(delivery.getByText('Run the same exercise again for new teams, from one plan')).toBeInTheDocument();
   });
 });
