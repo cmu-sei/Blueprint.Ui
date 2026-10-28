@@ -127,6 +127,11 @@ export class MselDraftDialogComponent {
     this.result = undefined;
   }
 
+  // the articles the draft puts on a card, as the planner removes injects
+  articlesOn(cardName: string): number {
+    return this.result?.draft?.injects?.filter((i) => i.card === cardName).length ?? 0;
+  }
+
   removeInject(inject: MselDraftInject) {
     this.result.draft.injects = this.result.draft.injects.filter((i) => i !== inject);
   }

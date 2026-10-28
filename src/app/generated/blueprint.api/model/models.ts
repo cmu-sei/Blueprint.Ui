@@ -116,6 +116,7 @@ export * from './mselChangeResult';
 export * from './mselCompetency';
 export * from './mselCreate';
 export * from './mselDraft';
+export * from './mselDraftCard';
 export * from './mselDraftCompetency';
 export * from './mselDraftField';
 export * from './mselDraftImport';

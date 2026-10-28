@@ -14,6 +14,7 @@
  * Do not edit the class manually.
  */
 import { MselDraftTeam } from './mselDraftTeam';
+import { MselDraftCard } from './mselDraftCard';
 import { MselDraftInject } from './mselDraftInject';
 import { MselDraftMove } from './mselDraftMove';
 import { MselDraftOrganization } from './mselDraftOrganization';
@@ -29,6 +30,10 @@ export interface MselDraft {
     moves?: Array<MselDraftMove> | null;
     teams?: Array<MselDraftTeam> | null;
     organizations?: Array<MselDraftOrganization> | null;
+    /**
+     * Gallery cards, in the order the wall shows them; each Gallery article names one
+     */
+    cards?: Array<MselDraftCard> | null;
     injects?: Array<MselDraftInject> | null;
     /**
      * Competency ID numbers (DCWF or NICE) the exercise exercises; unknown ones are dropped at import

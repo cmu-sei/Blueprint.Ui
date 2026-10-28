@@ -90,6 +90,17 @@ project root for license information or contact permission@sei.cmu.edu for full 
     </mat-chip-set>
   </section>
 
+  @if (result.draft.cards?.length) {
+  <section class="section">
+    <h3 class="section-title">Gallery cards</h3>
+    <ul class="plain-list">
+      @for (card of result.draft.cards; track card.name) {
+      <li><strong>{{ card.name }}</strong> {{ card.description }} ({{ articlesOn(card.name) }} {{ articlesOn(card.name) === 1 ? 'article' : 'articles' }})</li>
+      }
+    </ul>
+  </section>
+  }
+
   <section class="section">
     <h3 class="section-title">Injects ({{ result.draft.injects.length }})</h3>
     <ul class="inject-list">
@@ -102,6 +113,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <span class="inject-type">{{ inject.eventType }}</span>
             <span class="inject-title">{{ titleFor(inject) }}</span>
             <span class="inject-to">{{ recipientsFor(inject) }}</span>
+            @if (inject.card) {
+            <span class="inject-card" title="Gallery card">{{ inject.card }}</span>
+            }
             <button mat-icon-button type="button" title="Remove this inject" (click)="removeInject(inject)">
               <mat-icon fontIcon="mdi-close"></mat-icon>
             </button>

@@ -50,8 +50,8 @@ function draftResult(): MselDraftResult {
   };
 }
 
-async function renderDraftDialog() {
-  const draftMsel = vi.fn(() => of(draftResult()));
+async function renderDraftDialog(result: MselDraftResult = draftResult()) {
+  const draftMsel = vi.fn(() => of(result));
   const mselData = { draftMsel } as Partial<MselDataService>;
   const frameworkApi = {
     getCompetencyFrameworks: vi.fn(() => of([{ id: 'fw-nice', name: 'NICE 2.0.0' }, { id: 'fw-dcwf', name: 'DCWF 5.1' }])),
@@ -82,8 +82,8 @@ async function renderDraftDialog() {
   return { ...rendered, draftMsel, close: ref.close };
 }
 
-async function draftWithDcwf() {
-  const rendered = await renderDraftDialog();
+async function draftWithDcwf(result?: MselDraftResult) {
+  const rendered = await renderDraftDialog(result);
   const user = userEvent.setup();
   await user.click(screen.getByRole('combobox', { name: 'Competency frameworks' }));
   await user.click(await screen.findByRole('option', { name: 'DCWF 5.1' }));
@@ -132,5 +132,25 @@ describe('MselDraftDialogComponent', () => {
     expect(sent.draft.competencies).toEqual(['T0161']);
     const section = screen.getByRole('heading', { name: 'Competencies' }).parentElement;
     expect(within(section).queryByText('T0175')).not.toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: the review lists the draft's Gallery cards with how many articles each holds, and shows each article's card.
+   * Interacts with: MselDataService.draftMsel, the Gallery cards section, the inject rows.
+   * Data: cards Exercise Control and Public and Media; the one inject on Public and Media.
+   */
+  it('shows the Gallery cards and the card each article goes on', async () => {
+    const result = draftResult();
+    result.draft.cards = [
+      { name: 'Exercise Control', description: 'Read-in and facilitator messages' },
+      { name: 'Public and Media', description: 'News and social posts' },
+    ];
+    result.draft.injects[0].card = 'Public and Media';
+    await draftWithDcwf(result);
+
+    expect(screen.getByRole('heading', { name: 'Gallery cards' })).toBeInTheDocument();
+    expect(screen.getByText(/Read-in and facilitator messages\s*\(0 articles\)/)).toBeInTheDocument();
+    expect(screen.getByText(/News and social posts\s*\(1 article\)/)).toBeInTheDocument();
+    expect(screen.getByTitle('Gallery card')).toHaveTextContent('Public and Media');
   });
 });

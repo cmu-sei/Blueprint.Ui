@@ -99,3 +99,12 @@ summary {
   min-width: 4rem;
   font-weight: 600;
 }
+
+.inject-card {
+  font-size: 0.75rem;
+  padding: 0 0.5rem;
+  border-radius: 8px;
+  background-color: var(--mat-sys-secondary-container);
+  color: var(--mat-sys-on-secondary-container);
+  white-space: nowrap;
+}

@@ -32,5 +32,9 @@ export interface MselDraftInject {
      * Competency ID numbers participants demonstrate by acting on the inject
      */
     competencies?: Array<string> | null;
+    /**
+     * The name of the Gallery card the article goes on; empty for an inject that is not a Gallery article
+     */
+    card?: string | null;
 }
 
