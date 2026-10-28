@@ -2,8 +2,10 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, Inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { CrucibleDialogComponent, CrucibleDialogContentDirective } from '@cmusei/crucible-common';
+import { MatCheckbox } from '@angular/material/checkbox';
 
 export interface ItemDownloadOption {
   id: string;
@@ -16,18 +18,22 @@ export interface ItemDownloadDialogData {
 }
 
 @Component({
-  selector: 'app-item-download-dialog',
-  templateUrl: './item-download-dialog.component.html',
-  styleUrls: ['./item-download-dialog.component.scss'],
-  standalone: false,
+    selector: 'app-item-download-dialog',
+    templateUrl: './item-download-dialog.component.html',
+    styleUrls: ['./item-download-dialog.component.scss'],
+    imports: [
+        CrucibleDialogComponent,
+        CrucibleDialogContentDirective,
+        MatCheckbox,
+    ],
 })
 export class ItemDownloadDialogComponent {
+  dialogRef = inject<MatDialogRef<ItemDownloadDialogComponent>>(MatDialogRef);
+  data = inject<ItemDownloadDialogData>(MAT_DIALOG_DATA);
+
   selected: Set<string>;
 
-  constructor(
-    public dialogRef: MatDialogRef<ItemDownloadDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: ItemDownloadDialogData
-  ) {
+  constructor() {
     this.selected = new Set(this.data.items.map((i) => i.id));
   }
 

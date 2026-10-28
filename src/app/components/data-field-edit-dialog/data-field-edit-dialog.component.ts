@@ -2,10 +2,10 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, EventEmitter, Inject, Output } from '@angular/core';
+import { Component, inject, output } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { ComnSettingsService } from '@cmusei/crucible-common';
+import { ComnSettingsService, CrucibleDialogComponent, CrucibleDialogContentDirective } from '@cmusei/crucible-common';
 import {
   DataField,
   DataFieldType,
@@ -16,22 +16,26 @@ import { DataOptionImportDialogComponent } from '../data-option-import-dialog/da
 import { DataOptionListDialogComponent } from '../data-option-list-dialog/data-option-list-dialog.component';
 import { CompetencyOptionsDialogComponent } from '../competency-options-dialog/competency-options-dialog.component';
 import { v4 as uuidv4 } from 'uuid';
+import { MatFormField, MatLabel, MatInput } from '@angular/material/input';
+import { FormsModule } from '@angular/forms';
+import { MatSelect } from '@angular/material/select';
+import { MatOption } from '@angular/material/autocomplete';
+import { MatCheckbox } from '@angular/material/checkbox';
+import { KeyValuePipe } from '@angular/common';
 
 @Component({
     selector: 'app-data-field-edit-dialog',
     templateUrl: './data-field-edit-dialog.component.html',
     styleUrls: ['./data-field-edit-dialog.component.scss'],
-    standalone: false
+    imports: [CrucibleDialogComponent, CrucibleDialogContentDirective, MatFormField, MatLabel, MatInput, FormsModule, MatSelect, MatOption, MatCheckbox, KeyValuePipe]
 })
 
 export class DataFieldEditDialogComponent {
-  @Output() editComplete = new EventEmitter<any>();
+  dialog = inject(MatDialog);
+  data = inject(MAT_DIALOG_DATA);
+  private settingsService = inject(ComnSettingsService);
 
-  constructor(
-    public dialog: MatDialog,
-    @Inject(MAT_DIALOG_DATA) public data: any,
-    private settingsService: ComnSettingsService
-  ) {}
+  readonly editComplete = output<any>();
 
   errorFree() {
     const base = this.data.dataField.name && this.data.dataField.name.length > 0 &&
@@ -140,7 +144,7 @@ export class DataFieldEditDialogComponent {
   }
 
   viewAllOptions() {
-    const canEdit = this.data.canEdit || this.data.isOwner;
+    const canEdit = this.data.canEdit;
     const canAddOptions = canEdit && !this.optionListNotAllowed();
 
     if (this.data.dataField.dataType === DataFieldType.Competency) {

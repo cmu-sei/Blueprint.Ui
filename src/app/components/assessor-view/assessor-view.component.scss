@@ -113,6 +113,18 @@ td {
   p {
     margin: 4px 0;
   }
+
+  .open-data-fields {
+    margin-top: 16px;
+  }
+}
+
+// A font icon clips at the bottom unless its line height matches its size.
+.message-icon {
+  font-size: 48px;
+  width: 48px;
+  height: 48px;
+  line-height: 48px;
 }
 
 .move-header-row {

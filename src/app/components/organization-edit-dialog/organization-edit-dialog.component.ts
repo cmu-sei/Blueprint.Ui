@@ -2,19 +2,24 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, EventEmitter, Inject, Output } from '@angular/core';
-import { UntypedFormControl, Validators } from '@angular/forms';
+import { Component, inject, output } from '@angular/core';
+import { UntypedFormControl, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { EDITOR_CONFIG } from 'src/app/utilities/editor-config';
+import { CrucibleDialogComponent, CrucibleDialogContentDirective } from '@cmusei/crucible-common';
+import { MatFormField, MatLabel, MatInput, MatError } from '@angular/material/input';
+import { AngularEditorModule } from '@kolkov/angular-editor';
 
 @Component({
     selector: 'app-organization-edit-dialog',
     templateUrl: './organization-edit-dialog.component.html',
     styleUrls: ['./organization-edit-dialog.component.scss'],
-    standalone: false
+    imports: [CrucibleDialogComponent, CrucibleDialogContentDirective, MatFormField, MatLabel, MatInput, FormsModule, ReactiveFormsModule, MatError, AngularEditorModule]
 })
 export class OrganizationEditDialogComponent {
-  @Output() editComplete = new EventEmitter<any>();
+  data = inject(MAT_DIALOG_DATA);
+
+  readonly editComplete = output<any>();
 
   public organizationNameFormControl = new UntypedFormControl(
     this.data.organization.name,
@@ -37,10 +42,6 @@ export class OrganizationEditDialogComponent {
     [Validators.required]
   );
   editorConfig = EDITOR_CONFIG;
-
-  constructor(
-    @Inject(MAT_DIALOG_DATA) public data: any
-  ) {}
 
   errorFree() {
     return !(

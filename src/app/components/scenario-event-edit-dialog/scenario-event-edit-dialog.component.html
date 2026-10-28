@@ -49,18 +49,15 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <mat-tab-group mat-stretch-tabs class="full-width" mat-align-tabs="start" [selectedIndex]="selectedTab"
           (selectedTabChange)="tabChange($event)" style="margin-bottom: 20px;">
           @if (showDefaultTab()) {
-          <mat-tab label="Default">
-          </mat-tab>
+          <mat-tab label="Default" />
           }
-          <mat-tab label="All">
-          </mat-tab>
+          <mat-tab label="All" />
           @if (data.useGallery && data.scenarioEvent.integrationTarget?.includes(integrationTarget.Gallery)) {
-          <mat-tab label="Gallery Article">
-          </mat-tab>
+          <mat-tab label="Gallery Article" />
           }
           @if (data.useSteamfitter && data.scenarioEvent.integrationTarget?.includes(integrationTarget.Steamfitter)) {
           <mat-tab label="Steamfitter Task">
-            <app-steamfitter-task [scenarioEvent]="data.scenarioEvent" [canEdit]="data.isEditor"></app-steamfitter-task>
+            <app-steamfitter-task [scenarioEvent]="data.scenarioEvent" [canEdit]="data.isEditor" />
           </mat-tab>
           }
         </mat-tab-group>
@@ -71,21 +68,20 @@ project root for license information or contact permission@sei.cmu.edu for full 
           @if (currentFilterBy === 'all' || data.scenarioEvent.scenarioEventType !== eventType.Inject) {
           <div class="start-time-div">
             <app-duration-edit [startTime]="data.mselStartTime" [(durationSeconds)]="data.scenarioEvent.deltaSeconds"
-              [timeName]="'Execution Date / Time'" [postScript]="''" [canEdit]="data.isEditor">
-            </app-duration-edit>
+              [timeName]="'Execution Date / Time'" [postScript]="''" [canEdit]="data.isEditor" />
           </div>
           }
           <!-- data values for each data field -->
           @for (df of sortedDataFields; track df.id) {
           <div class="full-width">
             <app-data-value [(value)]="getDataValue(df.name).value" [dataField]="df"
-              [canEdit]="data.isEditor && (!data.isEditingRestricted || data.scenarioEvent.scenarioEventType === eventType.Information)"
+              [canEdit]="canEditDataValues()"
               [canApprove]="data.isApprover" [isOwner]="data.isOwner" [showValueOnly]="false"
               [organizationOptions]="data.organizationList" [teamOptions]="data.teamList" [unitOptions]="data.unitList"
               [cardOptions]="data.cardList" [moveOptions]="data.moveList"
               [gallerySourceTypeOptions]="data.gallerySourceTypes"
               [galleryItemStatusOptions]="data.galleryItemStatuses" [userOptions]="data.userList"
-              [canAiWrite]="canAiWrite(df)" (aiWrite)="writeWithAi(df)"></app-data-value>
+              [canAiWrite]="canAiWrite(df)" (aiWrite)="writeWithAi(df)" />
           </div>
           }
           <!-- metadata-->

@@ -1,8 +1,8 @@
 // Copyright 2026 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, Input, OnDestroy, OnInit, ViewChild, AfterViewInit } from '@angular/core';
-import { UntypedFormControl } from '@angular/forms';
+import { Component, OnDestroy, OnInit, AfterViewInit, inject, input, viewChild } from '@angular/core';
+import { UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { SelectionModel } from '@angular/cdk/collections';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { Subject, Observable } from 'rxjs';
@@ -35,29 +35,56 @@ import { DataFieldDataService } from 'src/app/data/data-field/data-field-data.se
 import { DataFieldQuery } from 'src/app/data/data-field/data-field.query';
 import { DataValueDataService } from 'src/app/data/data-value/data-value-data.service';
 import { DataValueQuery } from 'src/app/data/data-value/data-value.query';
-import { MatTableDataSource } from '@angular/material/table';
+import { MatTableDataSource, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
-import { MatSort, Sort } from '@angular/material/sort';
+import { MatSort, Sort, MatSortHeader } from '@angular/material/sort';
+import { MatIcon } from '@angular/material/icon';
+
+import { MatFormField, MatLabel, MatInput, MatSuffix } from '@angular/material/input';
+import { MatSelect } from '@angular/material/select';
+import { MatOption } from '@angular/material/autocomplete';
+import { MatExpansionPanel, MatExpansionPanelHeader, MatExpansionPanelTitle } from '@angular/material/expansion';
+import { MatIconButton, MatButton } from '@angular/material/button';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
+import { MatCheckbox } from '@angular/material/checkbox';
+import { MatTooltip } from '@angular/material/tooltip';
+import { MatToolbar, MatToolbarRow } from '@angular/material/toolbar';
 
 @Component({
-  selector: 'app-msel-competencies',
-  templateUrl: './msel-competencies.component.html',
-  styleUrls: ['./msel-competencies.component.scss'],
-  animations: [
-    trigger('detailExpand', [
-      state('collapsed', style({ height: '0px', minHeight: '0', visibility: 'hidden' })),
-      state('expanded', style({ height: '*', visibility: 'visible' })),
-      transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
-    ]),
-  ],
-  standalone: false
+    selector: 'app-msel-competencies',
+    templateUrl: './msel-competencies.component.html',
+    styleUrls: ['./msel-competencies.component.scss'],
+    animations: [
+        trigger('detailExpand', [
+            state('collapsed', style({ height: '0px', minHeight: '0', visibility: 'hidden' })),
+            state('expanded', style({ height: '*', visibility: 'visible' })),
+            transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
+        ]),
+    ],
+    imports: [MatIcon, MatFormField, MatLabel, MatSelect, MatOption, MatExpansionPanel, MatExpansionPanelHeader, MatExpansionPanelTitle, MatInput, FormsModule, ReactiveFormsModule, MatIconButton, MatSuffix, MatPaginator, MatProgressSpinner, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCheckbox, MatCellDef, MatCell, MatSortHeader, MatTooltip, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, MatButton, MatToolbar, MatToolbarRow]
 })
 export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewInit {
-  @Input() loggedInUserId: string;
-  @ViewChild('competencyPaginator') competencyPaginator: MatPaginator;
-  @ViewChild('workRolePaginator') workRolePaginator: MatPaginator;
-  @ViewChild('workRoleSort') workRoleSort: MatSort;
-  @ViewChild('poolSort') poolSort: MatSort;
+  private mselQuery = inject(MselQuery);
+  private mselCompetencyDataService = inject(MselCompetencyDataService);
+  private mselCompetencyQuery = inject(MselCompetencyQuery);
+  private teamCompetencyDataService = inject(TeamCompetencyDataService);
+  private teamCompetencyQuery = inject(TeamCompetencyQuery);
+  private competencyFrameworkDataService = inject(CompetencyFrameworkDataService);
+  private competencyFrameworkQuery = inject(CompetencyFrameworkQuery);
+  private competencyFrameworkService = inject(CompetencyFrameworkService);
+  private permissionDataService = inject(PermissionDataService);
+  dialog = inject(MatDialog);
+  dialogService = inject(CrucibleDialogService);
+  private dataFieldDataService = inject(DataFieldDataService);
+  private dataFieldQuery = inject(DataFieldQuery);
+  private dataValueDataService = inject(DataValueDataService);
+  private dataValueQuery = inject(DataValueQuery);
+
+  readonly loggedInUserId = input<string>(undefined);
+  readonly competencyPaginator = viewChild<MatPaginator>('competencyPaginator');
+  readonly workRolePaginator = viewChild<MatPaginator>('workRolePaginator');
+  readonly workRoleSort = viewChild<MatSort>('workRoleSort');
+  readonly poolSort = viewChild<MatSort>('poolSort');
   msel = new MselPlus();
   mselCompetencyList: MselCompetency[] = [];
   teamCompetencyList: TeamCompetency[] = [];
@@ -106,23 +133,7 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
 
   private unsubscribe$ = new Subject();
 
-  constructor(
-    private mselQuery: MselQuery,
-    private mselCompetencyDataService: MselCompetencyDataService,
-    private mselCompetencyQuery: MselCompetencyQuery,
-    private teamCompetencyDataService: TeamCompetencyDataService,
-    private teamCompetencyQuery: TeamCompetencyQuery,
-    private competencyFrameworkDataService: CompetencyFrameworkDataService,
-    private competencyFrameworkQuery: CompetencyFrameworkQuery,
-    private competencyFrameworkService: CompetencyFrameworkService,
-    private permissionDataService: PermissionDataService,
-    public dialog: MatDialog,
-    public dialogService: CrucibleDialogService,
-    private dataFieldDataService: DataFieldDataService,
-    private dataFieldQuery: DataFieldQuery,
-    private dataValueDataService: DataValueDataService,
-    private dataValueQuery: DataValueQuery
-  ) {
+  constructor() {
     (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
       if (msel) {
         const isNewMsel = this.msel.id !== msel.id;
@@ -176,14 +187,15 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
   }
 
   ngAfterViewInit() {
-    if (this.poolSort) {
-      this.dataSource.sort = this.poolSort;
+    const poolSort = this.poolSort();
+    if (poolSort) {
+      this.dataSource.sort = poolSort;
     }
   }
 
   canEditMsel(): boolean {
     return this.permissionDataService.hasPermission(SystemPermission.ManageMsels) ||
-      this.msel.hasRole(this.loggedInUserId, '').owner;
+      this.msel.hasRole(this.loggedInUserId(), '').owner;
   }
 
   // =============================================
@@ -223,8 +235,9 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
           this.workRoleFilterControl.setValue('');
           this.applyWorkRoleFilter();
           setTimeout(() => {
-            if (this.workRolePaginator) {
-              this.workRoleDataSource.paginator = this.workRolePaginator;
+            const workRolePaginator = this.workRolePaginator();
+            if (workRolePaginator) {
+              this.workRoleDataSource.paginator = workRolePaginator;
             }
           });
         },
@@ -376,8 +389,9 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
       }
     };
     setTimeout(() => {
-      if (this.workRoleSort) {
-        this.workRoleDataSource.sort = this.workRoleSort;
+      const workRoleSort = this.workRoleSort();
+      if (workRoleSort) {
+        this.workRoleDataSource.sort = workRoleSort;
       }
     });
   }
@@ -631,11 +645,13 @@ export class MselCompetenciesComponent implements OnDestroy, OnInit, AfterViewIn
       }
     };
     setTimeout(() => {
-      if (this.competencyPaginator) {
-        this.dataSource.paginator = this.competencyPaginator;
+      const competencyPaginator = this.competencyPaginator();
+      if (competencyPaginator) {
+        this.dataSource.paginator = competencyPaginator;
       }
-      if (this.poolSort) {
-        this.dataSource.sort = this.poolSort;
+      const poolSort = this.poolSort();
+      if (poolSort) {
+        this.dataSource.sort = poolSort;
       }
     });
   }

@@ -4,7 +4,7 @@
 
 import { CiteActionStore } from './cite-action.store';
 import { CiteActionQuery } from './cite-action.query';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { PageEvent } from '@angular/material/paginator';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -20,6 +20,12 @@ import { HttpEventType, HttpResponse } from '@angular/common/http';
   providedIn: 'root',
 })
 export class CiteActionDataService {
+  private citeActionStore = inject(CiteActionStore);
+  private citeActionQuery = inject(CiteActionQuery);
+  private citeActionService = inject(CiteActionService);
+  private router = inject(Router);
+  private activatedRoute = inject(ActivatedRoute);
+
   private _requestedCiteActionId: string;
   private _requestedCiteActionId$ = this.activatedRoute.queryParamMap.pipe(
     map((params) => params.get('citeActionId') || '')
@@ -35,13 +41,9 @@ export class CiteActionDataService {
   private pageIndex: Observable<number>;
   public uploadProgress = new Subject<number>();
 
-  constructor(
-    private citeActionStore: CiteActionStore,
-    private citeActionQuery: CiteActionQuery,
-    private citeActionService: CiteActionService,
-    private router: Router,
-    private activatedRoute: ActivatedRoute
-  ) {
+  constructor() {
+    const activatedRoute = this.activatedRoute;
+
     this.filterTerm = activatedRoute.queryParamMap.pipe(
       map((params) => params.get('citeActionmask') || '')
     );

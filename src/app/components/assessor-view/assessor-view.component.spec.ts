@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { provideHttpClient } from '@angular/common/http';
@@ -39,27 +39,32 @@ import { ScenarioEventStore } from 'src/app/data/scenario-event/scenario-event.s
 import { AssessorViewComponent } from './assessor-view.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { renderComponent } from 'src/app/test-utils/render-component';
+import { DurationViewComponent } from '../shared/duration-view/duration-view.component';
+import { DataValueComponent } from '../data-value/data-value.component';
+import { captureUnhandledRxErrors, flush } from 'src/app/test-utils/unhandled-rx-errors';
+import { Router } from '@angular/router';
+import { UIDataService } from 'src/app/data/ui/ui-data.service';
 
-@Component({ selector: 'app-duration-view', template: '', standalone: false })
+@Component({ selector: 'app-duration-view', template: '' })
 class DurationViewStub {
-  @Input() startTime: Date;
-  @Input() durationSeconds: number;
-  @Input() showRealTime: boolean;
+  readonly startTime = input<Date>(undefined);
+  readonly durationSeconds = input<number>(undefined);
+  readonly showRealTime = input<boolean>(undefined);
 }
-@Component({ selector: 'app-data-value', template: '', standalone: false })
+@Component({ selector: 'app-data-value', template: '' })
 class DataValueStub {
-  @Input() value: string;
-  @Output() valueChange = new EventEmitter<string>();
-  @Input() dataField: DataField;
-  @Input() canEdit: boolean;
-  @Input() canApprove: boolean;
-  @Input() isOwner: boolean;
-  @Input() showValueOnly: boolean;
-  @Input() organizationOptions: unknown[];
-  @Input() teamOptions: unknown[];
-  @Input() cardOptions: unknown[];
-  @Input() moveOptions: unknown[];
-  @Input() userOptions: unknown[];
+  readonly value = input<string>(undefined);
+  readonly valueChange = output<string>();
+  readonly dataField = input<DataField>(undefined);
+  readonly canEdit = input<boolean>(undefined);
+  readonly canApprove = input<boolean>(undefined);
+  readonly isOwner = input<boolean>(undefined);
+  readonly showValueOnly = input<boolean>(undefined);
+  readonly organizationOptions = input<unknown[]>(undefined);
+  readonly teamOptions = input<unknown[]>(undefined);
+  readonly cardOptions = input<unknown[]>(undefined);
+  readonly moveOptions = input<unknown[]>(undefined);
+  readonly userOptions = input<unknown[]>(undefined);
 }
 
 const MSEL: Msel = { id: 'msel-1', name: 'Exercise Alpha', teams: [], units: [], userMselRoles: [] };
@@ -85,8 +90,10 @@ function seeded<S extends { set(entities: unknown[]): void }>(Store: new () => S
   };
 }
 
-async function renderAssessorView(overrides: { canEditCheckboxes?: boolean; moves?: Move[] } = {}) {
-  const { canEditCheckboxes = false, moves = [] } = overrides;
+async function renderAssessorView(
+  overrides: { canEditCheckboxes?: boolean; moves?: Move[]; fields?: DataField[]; standalone?: boolean; canChooseFields?: boolean } = {}
+) {
+  const { canEditCheckboxes = false, moves = [], fields = FIELDS, standalone = false, canChooseFields = false } = overrides;
   const poolApi = {
     getMselCompetencies: vi.fn(() => of<MselCompetency[]>([])),
   } satisfies ApiStub<MselCompetencyService>;
@@ -104,7 +111,10 @@ async function renderAssessorView(overrides: { canEditCheckboxes?: boolean; move
       MatSortModule,
       MatTooltipModule,
     ],
-    declarations: [AssessorViewComponent, DurationViewStub, DataValueStub],
+    childStubs: [
+      { replace: DurationViewComponent, with: DurationViewStub },
+      { replace: DataValueComponent, with: DataValueStub },
+    ],
     providers: [
       { provide: MselCompetencyService, useValue: poolApi },
       { provide: TeamCompetencyService, useValue: teamCompetencyApi },
@@ -121,12 +131,12 @@ async function renderAssessorView(overrides: { canEditCheckboxes?: boolean; move
           return store;
         },
       },
-      seeded(DataFieldStore, FIELDS),
+      seeded(DataFieldStore, fields),
       seeded(DataValueStore, VALUES),
       seeded(ScenarioEventStore, [EVENT]),
       seeded(MoveStore, moves),
     ],
-    inputs: { canEditCheckboxes, loggedInUserId: 'user-me' },
+    inputs: { canEditCheckboxes, loggedInUserId: 'user-me', standalone, canChooseFields },
   });
   return { ...rendered, poolApi };
 }
@@ -134,7 +144,7 @@ async function renderAssessorView(overrides: { canEditCheckboxes?: boolean; move
 function values(fixture: ComponentFixture<unknown>): DataValueStub[] {
   return fixture.debugElement.queryAll(By.directive(DataValueStub)).map((d) => d.componentInstance);
 }
-const byField = (fixture: ComponentFixture<unknown>, name: string) => values(fixture).find((v) => v.dataField.name === name);
+const byField = (fixture: ComponentFixture<unknown>, name: string) => values(fixture).find((v) => v.dataField().name === name);
 
 describe('AssessorViewComponent', () => {
   beforeEach(() => {
@@ -155,11 +165,57 @@ describe('AssessorViewComponent', () => {
     const { fixture, poolApi } = await renderAssessorView();
 
     expect(poolApi.getMselCompetencies).toHaveBeenCalledWith('msel-1');
-    expect(values(fixture).map((v) => [v.dataField.name, v.value])).toEqual([
+    expect(values(fixture).map((v) => [v.dataField().name, v.value()])).toEqual([
       ['Title', 'Phishing wave'],
       ['Observed', 'false'],
     ]);
     expect(screen.queryByText('No data fields are marked as assessor-visible.')).not.toBeInTheDocument();
+  });
+
+  describe('with no assessor-visible fields', () => {
+    const HIDDEN = FIELDS.map((f) => ({ ...f, isAssessorVisible: false }));
+
+    /**
+     * Verifies: inside the MSEL editor the empty state points at the Data Fields tab beside it.
+     * Interacts with: real DataFieldQuery (seeded).
+     * Data: no field is assessor-visible; standalone false.
+     */
+    it('points at the Data Fields tab inside the MSEL editor', async () => {
+      await renderAssessorView({ fields: HIDDEN });
+
+      expect(screen.getByText('No data fields are marked as assessor-visible.')).toBeInTheDocument();
+      expect(screen.getByText(/^Go to the Data Fields tab/)).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Open Data Fields' })).not.toBeInTheDocument();
+    });
+
+    /**
+     * Verifies: on the assessor page, a user who can choose the fields gets a button that opens the MSEL editor on its Data Fields tab.
+     * Interacts with: Router.navigate (spy), UIDataService saved MSEL tab (real, localStorage).
+     * Data: no field is assessor-visible; standalone and canChooseFields true.
+     */
+    it('opens the Data Fields tab for a user who can choose the fields', async () => {
+      const { fixture } = await renderAssessorView({ fields: HIDDEN, standalone: true, canChooseFields: true });
+      const router = fixture.debugElement.injector.get(Router);
+      const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+
+      expect(screen.queryByText(/^Go to the Data Fields tab/)).not.toBeInTheDocument();
+      await userEvent.click(screen.getByRole('button', { name: 'Open Data Fields' }));
+
+      expect(navigate).toHaveBeenCalledWith(['/build'], { queryParams: { msel: 'msel-1' } });
+      expect(fixture.debugElement.injector.get(UIDataService).getMselTab()).toBe('Data Fields');
+    });
+
+    /**
+     * Verifies: on the assessor page, a user who cannot choose the fields is told to ask the MSEL owner, with no button.
+     * Interacts with: real DataFieldQuery (seeded).
+     * Data: no field is assessor-visible; standalone true, canChooseFields false.
+     */
+    it('tells a user who cannot choose the fields to ask the MSEL owner', async () => {
+      await renderAssessorView({ fields: HIDDEN, standalone: true });
+
+      expect(screen.getByText(/^Ask the MSEL owner/)).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Open Data Fields' })).not.toBeInTheDocument();
+    });
   });
 
   /**
@@ -170,12 +226,12 @@ describe('AssessorViewComponent', () => {
   it('lets an assessor tick the checkbox fields with canEditCheckboxes', async () => {
     const { fixture } = await renderAssessorView({ canEditCheckboxes: true });
 
-    expect(byField(fixture, 'Observed')?.canEdit).toBe(true);
-    expect(byField(fixture, 'Title')?.canEdit).toBe(false);
+    expect(byField(fixture, 'Observed')?.canEdit()).toBe(true);
+    expect(byField(fixture, 'Title')?.canEdit()).toBe(false);
     for (const value of values(fixture)) {
-      expect(value.canApprove).toBe(false);
-      expect(value.isOwner).toBe(false);
-      expect(value.showValueOnly).toBe(true);
+      expect(value.canApprove()).toBe(false);
+      expect(value.isOwner()).toBe(false);
+      expect(value.showValueOnly()).toBe(true);
     }
   });
 
@@ -187,8 +243,47 @@ describe('AssessorViewComponent', () => {
   it('makes the checkbox fields read-only without canEditCheckboxes', async () => {
     const { fixture } = await renderAssessorView({ canEditCheckboxes: false });
 
-    expect(byField(fixture, 'Observed')?.canEdit).toBe(false);
-    expect(byField(fixture, 'Title')?.canEdit).toBe(false);
+    expect(byField(fixture, 'Observed')?.canEdit()).toBe(false);
+    expect(byField(fixture, 'Title')?.canEdit()).toBe(false);
+  });
+
+  /**
+   * Verifies: copying a statement lets a rejected clipboard write escape (current behavior).
+   * Interacts with: HttpClient, navigator.clipboard.writeText, captureUnhandledRxErrors.
+   * Data: one CITE statement in Move 1; clipboard access is refused.
+   */
+  it('leaves a rejected statement clipboard write unhandled', async () => {
+    const errors = captureUnhandledRxErrors();
+    const failure = new Error('clipboard access denied');
+    const { fixture } = await renderAssessorView({
+      moves: [{ id: 'move-1', mselId: 'msel-1', moveNumber: 1, deltaSeconds: 0, description: 'Initial access' }],
+    });
+    const user = userEvent.setup();
+    const writes: string[] = [];
+    vi.spyOn(navigator, 'clipboard', 'get').mockReturnValue({
+      writeText: (text: string) => {
+        writes.push(text);
+        return Promise.reject(failure);
+      },
+    } satisfies Pick<Clipboard, 'writeText'> as Clipboard);
+    const statement = {
+      id: 'stmt-1',
+      timestamp: '2026-10-20T16:00:00Z',
+      actor: { name: 'Blue Analyst' },
+      verb: { id: 'http://adlnet.gov/expapi/verbs/experienced', display: { 'en-US': 'experienced' } },
+      context: { platform: 'cite', contextActivities: { grouping: [{ id: 'https://blueprint.example/move/1' }] } },
+    };
+    await user.click(screen.getByText('Move 1'));
+    TestBed.inject(HttpTestingController)
+      .expectOne((req) => req.url === '/api/xapi/statements' && req.params.get('mselId') === 'msel-1')
+      .flush({ statements: [statement] });
+    fixture.detectChanges();
+
+    await user.click(screen.getByRole('button', { name: 'Copy JSON' }));
+    await flush();
+
+    expect(writes).toEqual([JSON.stringify(statement, null, 2)]);
+    expect(errors).toEqual([failure]);
   });
 
   /**

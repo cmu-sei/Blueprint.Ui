@@ -2,12 +2,16 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { take } from 'rxjs/operators';
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
 import { MselDraftImport, MselImportResult } from 'src/app/generated/blueprint.api';
+import { CrucibleDialogComponent, CrucibleDialogContentDirective, CrucibleDialogActionsDirective } from '@cmusei/crucible-common';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
+import { MatIcon } from '@angular/material/icon';
+import { MatButton } from '@angular/material/button';
 
 // One of file or draft: a JSON file to import, or a reviewed AI draft to create
 export interface MselImportDialogData {
@@ -16,21 +20,30 @@ export interface MselImportDialogData {
 }
 
 @Component({
-  selector: 'app-msel-import-dialog',
-  templateUrl: './msel-import-dialog.component.html',
-  styleUrls: ['./msel-import-dialog.component.scss'],
-  standalone: false,
+    selector: 'app-msel-import-dialog',
+    templateUrl: './msel-import-dialog.component.html',
+    styleUrls: ['./msel-import-dialog.component.scss'],
+    imports: [
+        CrucibleDialogComponent,
+        CrucibleDialogContentDirective,
+        MatProgressSpinner,
+        MatIcon,
+        CrucibleDialogActionsDirective,
+        MatButton,
+    ],
 })
 export class MselImportDialogComponent implements OnInit {
+  dialogRef = inject<MatDialogRef<MselImportDialogComponent, string>>(MatDialogRef);
+  data = inject<MselImportDialogData>(MAT_DIALOG_DATA);
+  private mselDataService = inject(MselDataService);
+
   isImporting = true;
   result: MselImportResult;
   errorMessage = '';
 
-  constructor(
-    public dialogRef: MatDialogRef<MselImportDialogComponent, string>,
-    @Inject(MAT_DIALOG_DATA) public data: MselImportDialogData,
-    private mselDataService: MselDataService
-  ) {
+  constructor() {
+    const dialogRef = this.dialogRef;
+
     dialogRef.disableClose = true;
   }
 

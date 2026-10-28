@@ -1,17 +1,9 @@
 // Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import {
-  Component,
-  EventEmitter,
-  Input,
-  Output,
-  OnDestroy,
-  OnInit,
-  ViewChild,
-} from '@angular/core';
+import { Component, Input, OnDestroy, OnInit, inject as inject_1, input, output, viewChild } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
-import { MatTableDataSource } from '@angular/material/table';
+import { MatTableDataSource, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
 import {
   animate,
   state,
@@ -28,8 +20,8 @@ import {
   Injectm,
   InjectType,
 } from 'src/app/generated/blueprint.api';
-import { Sort } from '@angular/material/sort';
-import { MatMenuTrigger } from '@angular/material/menu';
+import { Sort, MatSort } from '@angular/material/sort';
+import { MatMenuTrigger, MatMenu, MatMenuItem } from '@angular/material/menu';
 import { MatTable } from '@angular/material/table';
 import { CatalogDataService } from 'src/app/data/catalog/catalog-data.service';
 import { CatalogQuery } from 'src/app/data/catalog/catalog.query';
@@ -48,29 +40,48 @@ import { DataFieldQuery } from 'src/app/data/data-field/data-field.query';
 import { UnitQuery } from 'src/app/data/unit/unit.query';
 import { UserQuery } from 'src/app/data/user/user.query';
 import { InjectSelectDialogComponent } from '../inject-select-dialog/inject-select-dialog.component';
+import { NgClass } from '@angular/common';
+import { MatIconButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
+import { MatCheckbox } from '@angular/material/checkbox';
+import { DataValueComponent } from '../data-value/data-value.component';
 
 @Component({
-  selector: 'app-inject-list',
-  templateUrl: './inject-list.component.html',
-  styleUrls: ['./inject-list.component.scss'],
-  animations: [
-    trigger('detailExpand', [
-      state('collapsed', style({ height: '0px', minHeight: '0', visibility: 'hidden' })),
-      state('expanded', style({ height: '*', visibility: 'visible' })),
-      transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
-    ]),
-  ],
-  standalone: false
+    selector: 'app-inject-list',
+    templateUrl: './inject-list.component.html',
+    styleUrls: ['./inject-list.component.scss'],
+    animations: [
+        trigger('detailExpand', [
+            state('collapsed', style({ height: '0px', minHeight: '0', visibility: 'hidden' })),
+            state('expanded', style({ height: '*', visibility: 'visible' })),
+            transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
+        ]),
+    ],
+    imports: [MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, NgClass, MatIconButton, MatMenuTrigger, MatIcon, MatMenu, MatMenuItem, MatCellDef, MatCell, MatCheckbox, DataValueComponent, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow]
 })
 export class InjectListComponent implements OnDestroy, OnInit {
-  @Input() loggedInUserId: string;
-  @Input() canEdit: boolean;
-  @Input() isEditMode: boolean;
-  @Input() catalog: Catalog = {};
-  @Input() injectType: InjectType = {};
+  private catalogQuery = inject_1(CatalogQuery);
+  private catalogInjectDataService = inject_1(CatalogInjectDataService);
+  private catalogInjectQuery = inject_1(CatalogInjectQuery);
+  private injectService = inject_1(InjectService);
+  private injectmDataService = inject_1(InjectmDataService);
+  private injectmQuery = inject_1(InjectmQuery);
+  dialog = inject_1(MatDialog);
+  dialogService = inject_1(CrucibleDialogService);
+  private injectTypeQuery = inject_1(InjectTypeQuery);
+  private dataFieldDataService = inject_1(DataFieldDataService);
+  private dataFieldQuery = inject_1(DataFieldQuery);
+  private unitQuery = inject_1(UnitQuery);
+  private userQuery = inject_1(UserQuery);
+
+  readonly loggedInUserId = input<string>(undefined);
+  readonly canEdit = input<boolean>(undefined);
+  readonly isEditMode = input<boolean>(undefined);
+  readonly catalog = input<Catalog>({});
+  readonly injectType = input<InjectType>({});
   @Input() injectList: Injectm[] = [];
-  @Output() selectedInjectIdList = new EventEmitter<string[]>();
-  @ViewChild('injectTable', { static: false }) injectTable: MatTable<any>;
+  readonly selectedInjectIdList = output<string[]>();
+  readonly injectTable = viewChild<MatTable<any>>('injectTable');
   contextMenuPosition = { x: '0px', y: '0px' };
   selectedInjectIds: string[] = [];
   changedInject: Injectm = {};
@@ -93,21 +104,7 @@ export class InjectListComponent implements OnDestroy, OnInit {
   userList = [];
   catalogList: Catalog[] = [];
 
-  constructor(
-    private catalogQuery: CatalogQuery,
-    private catalogInjectDataService: CatalogInjectDataService,
-    private catalogInjectQuery: CatalogInjectQuery,
-    private injectService: InjectService,
-    private injectmDataService: InjectmDataService,
-    private injectmQuery: InjectmQuery,
-    public dialog: MatDialog,
-    public dialogService: CrucibleDialogService,
-    private injectTypeQuery: InjectTypeQuery,
-    private dataFieldDataService: DataFieldDataService,
-    private dataFieldQuery: DataFieldQuery,
-    private unitQuery: UnitQuery,
-    private userQuery: UserQuery
-  ) {
+  constructor() {
     // subscribe to injects
     this.injectmQuery
       .selectAll()
@@ -193,12 +190,14 @@ export class InjectListComponent implements OnDestroy, OnInit {
 
   ngOnInit() {
     // load injects
-    if (this.catalog.id) {
-      this.catalogInjectDataService.loadByCatalog(this.catalog.id);
-      this.dataFieldDataService.loadByInjectType(this.catalog.injectTypeId);
-    } else if (this.injectType.id) {
-      this.injectmDataService.loadByInjectType(this.injectType.id);
-      this.dataFieldDataService.loadByInjectType(this.injectType.id);
+    const catalog = this.catalog();
+    const injectType = this.injectType();
+    if (catalog.id) {
+      this.catalogInjectDataService.loadByCatalog(catalog.id);
+      this.dataFieldDataService.loadByInjectType(catalog.injectTypeId);
+    } else if (injectType.id) {
+      this.injectmDataService.loadByInjectType(injectType.id);
+      this.dataFieldDataService.loadByInjectType(injectType.id);
     } else {
       this.sortChanged(this.sort);
     }
@@ -214,11 +213,12 @@ export class InjectListComponent implements OnDestroy, OnInit {
   }
 
   addInject() {
+    const catalog = this.catalog();
     const inject = {
       id: uuidv4(),
-      injectTypeId: this.catalog.id
-        ? this.catalog.injectTypeId
-        : this.injectType.id,
+      injectTypeId: catalog.id
+        ? catalog.injectTypeId
+        : this.injectType().id,
     } as Injectm;
     inject.dataValues = this.createNewDataValues(inject.id);
     this.editInject(inject, true);
@@ -239,8 +239,8 @@ export class InjectListComponent implements OnDestroy, OnInit {
     });
     // When in the inject type view (no catalog context), resolve the catalogId from
     // the first catalog that belongs to this inject type.
-    const catalogId = this.catalog.id ||
-      this.catalogList.find(c => c.injectTypeId === this.injectType.id)?.id;
+    const catalogId = this.catalog().id ||
+      this.catalogList.find(c => c.injectTypeId === this.injectType().id)?.id;
     this.editInject(newInject, true, catalogId);
   }
 
@@ -252,7 +252,7 @@ export class InjectListComponent implements OnDestroy, OnInit {
       data: {
         inject: inject,
         dataFieldList: this.dataFieldList,
-        isEditMode: this.isEditMode,
+        isEditMode: this.isEditMode(),
         isNewInject: isNewInject,
         unitList: this.unitList,
         userList: this.userList,
@@ -263,7 +263,7 @@ export class InjectListComponent implements OnDestroy, OnInit {
       if (result.saveChanges && result.inject) {
         // save the inject (add or update)
         if (isNewInject) {
-          this.injectmDataService.add((this.catalog.id || catalogId) as string, result.inject);
+          this.injectmDataService.add((this.catalog().id || catalogId) as string, result.inject);
         } else {
           this.injectmDataService.update(result.inject);
         }
@@ -273,8 +273,9 @@ export class InjectListComponent implements OnDestroy, OnInit {
   }
 
   deleteInject(injectm: Injectm): void {
-    if (this.catalog.id) {
-      this.catalogInjectDataService.deleteByIds(this.catalog.id, injectm.id);
+    const catalog = this.catalog();
+    if (catalog.id) {
+      this.catalogInjectDataService.deleteByIds(catalog.id, injectm.id);
     } else {
       this.dialogService
         .confirm({ title: 'Delete Inject', message: 'Are you sure that you want to delete ' + injectm.name + '?'
@@ -334,7 +335,7 @@ export class InjectListComponent implements OnDestroy, OnInit {
     } else {
       this.expandedElementId = row.id;
     }
-    this.injectTable.renderRows();
+    this.injectTable().renderRows();
   }
 
   getRowClass(id: string) {
@@ -432,7 +433,7 @@ export class InjectListComponent implements OnDestroy, OnInit {
   getDisplayedDataFields(): DataField[] {
     const displayedDataFields = [];
     this.dataFieldList.forEach((df) => {
-      if (this.catalog.listDataFields?.indexOf(df.id) > -1) {
+      if (this.catalog().listDataFields?.indexOf(df.id) > -1) {
         displayedDataFields.push(df);
       }
     });
@@ -457,7 +458,7 @@ export class InjectListComponent implements OnDestroy, OnInit {
         });
     } else {
       this.injectService
-        .getInjectsByInjectType(this.catalog.injectTypeId)
+        .getInjectsByInjectType(this.catalog().injectTypeId)
         .pipe(take(1))
         .subscribe((injects) => {
           this.openSelectDialog(injects);
@@ -477,8 +478,8 @@ export class InjectListComponent implements OnDestroy, OnInit {
         catalog: {},
         injectType: {},
         injectList: existingInjects,
-        loggedInUserId: this.loggedInUserId,
-        isContentDeveloper: this.canEdit,
+        loggedInUserId: this.loggedInUserId(),
+        isContentDeveloper: this.canEdit(),
       },
     });
     dialogRef.componentInstance.editComplete.subscribe((result) => {
@@ -488,7 +489,7 @@ export class InjectListComponent implements OnDestroy, OnInit {
         for (let i = 0; i < result.selectedInjectIdList.length; i++) {
           const catalogInject = {
             id: uuidv4(),
-            catalogId: this.catalog.id,
+            catalogId: this.catalog().id,
             injectId: result.selectedInjectIdList[i],
             isNew: true,
             displayOrder: nextOrder + i,
@@ -503,8 +504,10 @@ export class InjectListComponent implements OnDestroy, OnInit {
 
   getFilteredCatalogs() {
     return this.catalogList.filter(
-      (m) =>
-        m.injectTypeId === this.catalog.injectTypeId && m.id !== this.catalog.id
+      (m) => {
+      const catalog = this.catalog();
+      return m.injectTypeId === catalog.injectTypeId && m.id !== catalog.id;
+    }
     );
   }
 

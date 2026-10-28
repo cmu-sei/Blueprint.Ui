@@ -4,7 +4,7 @@
  project root for license information.
 */
 
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, Input, input, output } from '@angular/core';
 import {
   DataField,
   DataFieldType,
@@ -13,31 +13,46 @@ import {
 import { EDITOR_CONFIG, VIEW_CONFIG } from 'src/app/utilities/editor-config';
 import { ErrorStateMatcher } from '@angular/material/core';
 import { dataValueError } from 'src/app/utilities/ip-address';
+import { AngularEditorModule } from '@kolkov/angular-editor';
+import { MatCheckbox } from '@angular/material/checkbox';
+import { MatTooltip } from '@angular/material/tooltip';
+import { MatFormField, MatLabel, MatInput, MatError, MatSuffix } from '@angular/material/input';
+import { MatSelect, MatSelectTrigger } from '@angular/material/select';
+import { FormsModule } from '@angular/forms';
+import { MatOption } from '@angular/material/autocomplete';
+import { NgxMatDatepickerInput, NgxMatDatetimepicker, NgxMatDatepickerActions, NgxMatDatepickerApply, NgxMatDatepickerCancel } from '@ngxmc/datetime-picker';
+import { MatDatepickerToggle } from '@angular/material/datepicker';
+import { MatButton, MatIconButton } from '@angular/material/button';
+import { MatChipSet, MatChip, MatChipRemove } from '@angular/material/chips';
+import { MatIcon } from '@angular/material/icon';
+import { DatePipe, NgTemplateOutlet } from '@angular/common';
+import { TimezoneAbbrPipe } from '../../utilities/timezone-abbr';
+import { IsDateTimeValuePipe } from '../../utilities/date-time-value';
 
 @Component({
     selector: 'app-data-value',
     templateUrl: './data-value.component.html',
     styleUrls: ['./data-value.component.scss'],
-    standalone: false
+    imports: [AngularEditorModule, MatCheckbox, MatTooltip, MatFormField, MatLabel, MatSelect, FormsModule, MatSelectTrigger, MatOption, MatInput, MatError, NgxMatDatepickerInput, MatDatepickerToggle, MatSuffix, NgxMatDatetimepicker, NgxMatDatepickerActions, MatButton, NgxMatDatepickerApply, NgxMatDatepickerCancel, MatChipSet, MatChip, MatChipRemove, MatIcon, MatIconButton, DatePipe, TimezoneAbbrPipe, NgTemplateOutlet, IsDateTimeValuePipe]
 })
 export class DataValueComponent {
   @Input() value: any;
   @Input() dataField: DataField;
-  @Input() canEdit: boolean; // enables editing of values
-  @Input() canApprove: boolean; // enables editing of status value
-  @Input() isOwner: boolean; // enables editing of assigned unit value
-  @Input() showValueOnly: boolean; // displays the value without a matFormField
-  @Input() organizationOptions: any[] = [];
-  @Input() teamOptions: any[] = [];
-  @Input() unitOptions: any[] = [];
-  @Input() cardOptions: any[] = [];
-  @Input() moveOptions: any[] = [];
-  @Input() gallerySourceTypeOptions: any[] = [];
-  @Input() galleryItemStatusOptions: string[] = [];
-  @Input() userOptions: any[] = [];
-  @Input() canAiWrite = false; // offers Write with AI on text fields
-  @Output() valueChange = new EventEmitter<any>();
-  @Output() aiWrite = new EventEmitter<void>();
+  readonly canEdit = input<boolean>(undefined); // enables editing of values
+  readonly canApprove = input<boolean>(undefined); // enables editing of status value
+  readonly isOwner = input<boolean>(undefined); // enables editing of assigned unit value
+  readonly showValueOnly = input<boolean>(undefined); // displays the value without a matFormField
+  readonly organizationOptions = input<any[]>([]);
+  readonly teamOptions = input<any[]>([]);
+  readonly unitOptions = input<any[]>([]);
+  readonly cardOptions = input<any[]>([]);
+  readonly moveOptions = input<any[]>([]);
+  readonly gallerySourceTypeOptions = input<any[]>([]);
+  readonly galleryItemStatusOptions = input<string[]>([]);
+  readonly userOptions = input<any[]>([]);
+  readonly canAiWrite = input(false); // offers Write with AI on text fields
+  readonly valueChange = output<any>();
+  readonly aiWrite = output<void>();
   editorConfig = EDITOR_CONFIG;
   viewConfig = VIEW_CONFIG;
   dataType: typeof DataFieldType = DataFieldType;
@@ -75,7 +90,7 @@ export class DataValueComponent {
   get useGalleryItemStatusSelect(): boolean {
     return (
       this.isGalleryItemStatus &&
-      this.galleryItemStatusOptions?.length > 0 &&
+      this.galleryItemStatusOptions()?.length > 0 &&
       (this.dataField.isChosenFromList ||
         this.dataField.dataType === DataFieldType.String ||
         this.dataField.dataType === DataFieldType.Url)
@@ -134,12 +149,12 @@ export class DataValueComponent {
     this.valueChangeHandler();
   }
 
-  // shows the address error as soon as it applies, rather than waiting for the field to lose focus
-  addressErrorMatcher: ErrorStateMatcher = {
-    isErrorState: () => !!this.addressError(),
+  // shows the value's error as soon as it applies, rather than waiting for the field to lose focus
+  valueErrorMatcher: ErrorStateMatcher = {
+    isErrorState: () => !!this.valueError(),
   };
 
-  addressError(): string {
+  valueError(): string {
     return dataValueError(this.dataField?.dataType, this.value);
   }
 
@@ -165,12 +180,12 @@ export class DataValueComponent {
   }
 
   getCardName(id: string): string {
-    const card = this.cardOptions?.find((m) => m.id === id);
+    const card = this.cardOptions()?.find((m) => m.id === id);
     return card ? card.name : '';
   }
 
   getMoveTitle(id: string): string {
-    const move = this.moveOptions?.find((m) => m.id === id);
+    const move = this.moveOptions()?.find((m) => m.id === id);
     return move ? move.title : '';
   }
 
@@ -189,7 +204,7 @@ export class DataValueComponent {
   }
 
   getUserName(id: string): string {
-    const user = this.userOptions?.find((m) => m.id === id);
+    const user = this.userOptions()?.find((m) => m.id === id);
     return user ? user.name : '';
   }
 }

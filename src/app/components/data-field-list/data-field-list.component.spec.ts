@@ -51,31 +51,50 @@ const MSEL_FIELD: DataField = {
 };
 const TYPE_FIELD: DataField = { id: 'df-2', injectTypeId: 'it-email', name: 'Subject', dataType: DataFieldType.String, displayOrder: 1, dataOptions: [] };
 
-function msel(roles: MselRole[] = []): Msel {
+const COMPETENCY_FIELD: DataField = {
+  id: 'df-3',
+  mselId: 'msel-1',
+  name: 'Skill',
+  dataType: DataFieldType.Competency,
+  displayOrder: 2,
+  dataOptions: [{ id: 'do-3', dataFieldId: 'df-3', optionName: 'K0001', optionValue: 'K0001', displayOrder: 1 }],
+};
+
+function msel(roles: MselRole[] = [], createdBy = 'someone-else'): Msel {
   return {
     id: 'msel-1',
     name: 'Exercise Alpha',
-    createdBy: 'someone-else',
+    createdBy,
     userMselRoles: roles.map((role, i) => ({ id: `umr-${i}`, userId: ME, mselId: 'msel-1', role })),
   };
 }
 
 async function renderDataFields(
-  overrides: { permissions?: SystemPermission[]; showTemplates?: boolean; injectTypeId?: string; roles?: MselRole[] } = {},
+  overrides: {
+    permissions?: SystemPermission[];
+    showTemplates?: boolean;
+    injectTypeId?: string;
+    roles?: MselRole[];
+    createdBy?: string;
+    fields?: DataField[];
+  } = {},
 ) {
-  const { permissions = [], showTemplates = false, injectTypeId, roles = [] } = overrides;
+  const { permissions = [], showTemplates = false, injectTypeId, roles = [], createdBy, fields = [MSEL_FIELD] } = overrides;
   // The templates answer after the component has initialized, as HTTP does:
   // the component picks them up only once its showTemplates input is set.
   const templates$ = new Subject<DataField[]>();
   const dataFieldApi = {
     getDataFieldTemplates: vi.fn(() => templates$),
     getDataFieldsByInjectType: vi.fn(() => of(structuredClone([TYPE_FIELD]))),
+    updateDataField: vi.fn((_id: string, df: DataField) => of(df)),
   } satisfies ApiStub<DataFieldService>;
   // DataFieldListComponent loads the permissions itself in ngOnInit, so the
   // real service is provided over the stubbed endpoint, without priming it.
   const permissionApis = permissionApiStubs({ system: permissions });
-  // Only the option list dialog is opened in these tests; its return value is not read.
-  const dialog = { open: vi.fn() } satisfies Pick<MatDialog, 'open'>;
+  // A dialog opened here closes without saving, as Escape or a click outside does.
+  const dialog = {
+    open: vi.fn((_component: unknown, _config?: { data?: unknown }) => ({ afterClosed: () => of(undefined) })),
+  };
   const rendered = await renderComponent(DataFieldListComponent, {
     imports: [
       DragDropModule,
@@ -102,7 +121,7 @@ async function renderDataFields(
         provide: MselStore,
         useFactory: () => {
           const store = new MselStore();
-          store.set([msel(roles)]);
+          store.set([msel(roles, createdBy)]);
           store.setActive('msel-1');
           return store;
         },
@@ -111,7 +130,7 @@ async function renderDataFields(
         provide: DataFieldStore,
         useFactory: () => {
           const store = new DataFieldStore();
-          store.set([structuredClone(MSEL_FIELD)]);
+          store.set(structuredClone(fields));
           return store;
         },
       },
@@ -132,6 +151,11 @@ const table = () => screen.getByRole('table');
 const queryButton = (name: string) => within(table()).queryAllByTitle(name).find((el) => el.tagName === 'BUTTON') ?? null;
 const optionsCell = (name: string) =>
   within(within(table()).getByText(name).closest('mat-row') as HTMLElement).getByTitle('Click to manage options');
+// A system row's name also appears as its data type, so its row is found by name among the System Defined rows.
+const systemRowEventsListBox = (name: string) =>
+  (Array.from(table().querySelectorAll('mat-row')) as HTMLElement[])
+    .find((row) => row.textContent?.includes('*System Defined*') && within(row).queryAllByText(name).length > 0)
+    ?.querySelector('[title="Display on Scenario Events list"] input') as HTMLInputElement;
 const eventsListBox = (name: string) =>
   within(within(table()).getByText(name).closest('mat-row') as HTMLElement).getByTitle('Display on Scenario Events list').querySelector('input') as HTMLInputElement;
 
@@ -176,35 +200,90 @@ describe('DataFieldListComponent', () => {
 
   describe('MSEL data fields', () => {
     /**
-     * Verifies: with EditMsels, or as an MSEL Editor without it, the MSEL's data fields can be added, edited, deleted and made templates, and their display flags changed.
+     * Verifies: with EditMsels, as an MSEL Editor or Owner, or as the MSEL's creator, the MSEL's data fields can be added, edited,
+     * deleted and reordered, and their display flags changed.
      * Interacts with: real PermissionDataService (stubbed grants), MselPlus.hasRole, real MselQuery and DataFieldQuery.
-     * Data: EditMsels with no MSEL role; or the Editor role with no system permission.
+     * Data: EditMsels with no MSEL role; the Editor or Owner role with no system permission; or createdBy the user with no role.
      */
     it.each([
-      { label: 'with EditMsels', permissions: [SystemPermission.EditMsels], roles: [] },
-      { label: 'as an MSEL Editor', permissions: [], roles: [MselRole.Editor] },
-    ])('offers data field actions $label', async ({ permissions, roles }) => {
-      await renderDataFields({ permissions, roles });
+      { label: 'with EditMsels', permissions: [SystemPermission.EditMsels], roles: [], createdBy: undefined },
+      { label: 'as an MSEL Editor', permissions: [], roles: [MselRole.Editor], createdBy: undefined },
+      { label: 'as an MSEL Owner', permissions: [], roles: [MselRole.Owner], createdBy: undefined },
+      { label: 'as the MSEL creator', permissions: [], roles: [], createdBy: ME },
+    ])('offers data field actions $label', async ({ permissions, roles, createdBy }) => {
+      await renderDataFields({ permissions, roles, createdBy });
 
-      for (const title of ['Add data Field', 'Edit Priority', 'Delete Priority', 'Make Priority a template']) {
+      for (const title of ['Add data Field', 'Edit Priority', 'Delete Priority']) {
         expect(queryButton(title)).toBeInTheDocument();
       }
       expect(eventsListBox('Priority')).toBeEnabled();
+      expect(table().querySelector('.mdi-drag-vertical')).not.toBeNull();
     });
 
     /**
-     * Verifies: an MSEL Viewer without EditMsels gets a read-only list, even with ManageDataFields.
-     * Interacts with: real PermissionDataService (stubbed grants), MselPlus.hasRole.
-     * Data: every permission but EditMsels (near miss: ManageDataFields, ManageMsels); MSEL roles Viewer and Evaluator.
+     * Verifies: Make a template is offered only with ManageDataFields as well, because a template is a field of no MSEL,
+     * which the API creates only with that permission.
+     * Interacts with: DataFieldListComponent.canMakeTemplate.
+     * Data: the Editor role, with and without ManageDataFields.
      */
-    it('lists data fields read-only without EditMsels or the Editor role', async () => {
-      await renderDataFields({ permissions: allBut(SystemPermission.EditMsels), roles: [MselRole.Viewer, MselRole.Evaluator] });
+    it.each([
+      { permissions: [SystemPermission.ManageDataFields], offered: true },
+      { permissions: [], offered: false },
+    ])('offers Make a template to an Editor only with ManageDataFields: $offered', async ({ permissions, offered }) => {
+      await renderDataFields({ permissions, roles: [MselRole.Editor] });
+
+      expect(queryButton('Make Priority a template') !== null).toBe(offered);
+    });
+
+    /**
+     * Verifies: the system rows are MSEL settings, saved by updating the MSEL, so they follow its rule (EditMsels or Owner):
+     * an Editor can change the Priority field but not the Move row.
+     * Interacts with: DataFieldListComponent.canEditRow.
+     * Data: the Editor role, or the Owner role, with no system permission.
+     */
+    it.each([
+      { role: MselRole.Editor, systemRowEditable: false },
+      { role: MselRole.Owner, systemRowEditable: true },
+    ])('lets $role change the system rows: $systemRowEditable', async ({ role, systemRowEditable }) => {
+      await renderDataFields({ roles: [role] });
+
+      expect(eventsListBox('Priority')).toBeEnabled();
+      expect(systemRowEventsListBox('Move').disabled).toBe(!systemRowEditable);
+    });
+
+    /**
+     * Verifies: closing the competency dialog without saving sends no update, for an editor who only looked
+     * and for a read-only user alike.
+     * Interacts with: MatDialog.open (stub, closes with nothing), DataFieldService.updateDataField (stub).
+     * Data: a Competency field with one option; the Editor role, or the Approver role.
+     */
+    it.each([MselRole.Editor, MselRole.Approver])('saves nothing when the competency dialog closes unsaved, as %s', async (role) => {
+      const { dataFieldApi } = await renderDataFields({ roles: [role], fields: [MSEL_FIELD, COMPETENCY_FIELD] });
+      const user = userEvent.setup();
+
+      await user.click(optionsCell('Skill'));
+
+      expect(dataFieldApi.updateDataField).not.toHaveBeenCalled();
+    });
+
+    /**
+     * Verifies: without EditMsels, the Editor role or ownership the list is read-only, even with ManageDataFields; an Approver
+     * edits events but not the fields, as the API refuses them.
+     * Interacts with: real PermissionDataService (stubbed grants), MselPlus.hasRole.
+     * Data: every permission but EditMsels (near miss: ManageDataFields, ManageMsels); MSEL roles Viewer and Evaluator, or Approver.
+     */
+    it.each([
+      { label: 'a Viewer and Evaluator', roles: [MselRole.Viewer, MselRole.Evaluator] },
+      { label: 'an Approver', roles: [MselRole.Approver] },
+    ])('lists data fields read-only for $label without EditMsels', async ({ roles }) => {
+      await renderDataFields({ permissions: allBut(SystemPermission.EditMsels), roles });
 
       expect(within(table()).getByText('Priority')).toBeInTheDocument();
       for (const title of ['Add data Field', 'Edit Priority', 'Delete Priority', 'Make Priority a template']) {
         expect(queryButton(title)).not.toBeInTheDocument();
       }
       expect(eventsListBox('Priority')).toBeDisabled();
+      expect(table().querySelector('.mdi-drag-vertical')).toBeNull();
     });
 
     /**
@@ -229,10 +308,13 @@ describe('DataFieldListComponent', () => {
     /**
      * Verifies: without EditMsels, an Editor role or ownership, the option list dialog opens with canEdit false.
      * Interacts with: DataFieldListComponent.viewDataOptions, MatDialog.open (stub), real PermissionDataService (stubbed grants).
-     * Data: every permission but EditMsels (near miss: ManageDataFields, ManageMsels); MSEL roles Viewer and Evaluator.
+     * Data: every permission but EditMsels (near miss: ManageDataFields, ManageMsels); MSEL roles Viewer and Evaluator, or Approver.
      */
-    it('opens the option list read-only without EditMsels, the Editor role or ownership', async () => {
-      const { dialog } = await renderDataFields({ permissions: allBut(SystemPermission.EditMsels), roles: [MselRole.Viewer, MselRole.Evaluator] });
+    it.each([
+      { label: 'a Viewer and Evaluator', roles: [MselRole.Viewer, MselRole.Evaluator] },
+      { label: 'an Approver', roles: [MselRole.Approver] },
+    ])('opens the option list read-only for $label without EditMsels', async ({ roles }) => {
+      const { dialog } = await renderDataFields({ permissions: allBut(SystemPermission.EditMsels), roles });
       const user = userEvent.setup();
 
       await user.click(optionsCell('Priority'));
@@ -244,19 +326,19 @@ describe('DataFieldListComponent', () => {
 
   describe('inject type data fields (admin)', () => {
     /**
-     * Verifies: an inject type's data fields are editable with EditMsels and read-only with ManageDataFields alone (current behavior).
+     * Verifies: an inject type's data fields belong to no MSEL, so, as the API does, they are editable with ManageDataFields and
+     * read-only with EditMsels alone.
      * Interacts with: DataFieldService.getDataFieldsByInjectType (stub), DataFieldListComponent.canEdit.
-     * Data: injectTypeId it-email; EditMsels only, or ManageDataFields only.
+     * Data: injectTypeId it-email; ManageDataFields only, or EditMsels only.
      */
     it.each([
-      { permission: SystemPermission.EditMsels, editable: true },
-      { permission: SystemPermission.ManageDataFields, editable: false },
-    ])('gates inject type data fields on EditMsels: $permission edits $editable', async ({ permission, editable }) => {
+      { permission: SystemPermission.ManageDataFields, editable: true },
+      { permission: SystemPermission.EditMsels, editable: false },
+    ])('gates inject type data fields on ManageDataFields: $permission edits $editable', async ({ permission, editable }) => {
       const { dataFieldApi } = await renderDataFields({ injectTypeId: 'it-email', permissions: [permission] });
 
       expect(dataFieldApi.getDataFieldsByInjectType).toHaveBeenCalledWith('it-email');
       expect(within(table()).getByText('Subject')).toBeInTheDocument();
-      // Current behavior; see agent-docs/ui-test-bugs/blueprint.ui.md.
       expect(queryButton('Edit Subject') !== null).toBe(editable);
       expect(queryButton('Make Subject a template')).toBeNull();
     });

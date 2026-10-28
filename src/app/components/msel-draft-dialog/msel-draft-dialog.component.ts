@@ -6,6 +6,21 @@ import { Component, Inject } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { take } from 'rxjs/operators';
+import { FormsModule } from '@angular/forms';
+import { MatButton, MatIconButton } from '@angular/material/button';
+import { MatFormField, MatHint, MatLabel } from '@angular/material/form-field';
+import { MatIcon } from '@angular/material/icon';
+import { MatInput } from '@angular/material/input';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
+import { MatOption, MatSelect } from '@angular/material/select';
+import {
+  CrucibleDialogActionsDirective,
+  CrucibleDialogComponent,
+  CrucibleDialogContentDirective,
+} from '@cmusei/crucible-common';
+import { NgTemplateOutlet } from '@angular/common';
+import { MatChip, MatChipRemove, MatChipSet } from '@angular/material/chips';
+import { MatTooltip } from '@angular/material/tooltip';
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
 import {
   CompetencyFramework,
@@ -28,7 +43,27 @@ export interface MselDraftDialogData {
   selector: 'app-msel-draft-dialog',
   templateUrl: './msel-draft-dialog.component.html',
   styleUrls: ['./msel-draft-dialog.component.scss'],
-  standalone: false,
+  imports: [
+    CrucibleDialogComponent,
+    CrucibleDialogContentDirective,
+    CrucibleDialogActionsDirective,
+    FormsModule,
+    NgTemplateOutlet,
+    MatButton,
+    MatIconButton,
+    MatChip,
+    MatChipRemove,
+    MatChipSet,
+    MatFormField,
+    MatHint,
+    MatLabel,
+    MatIcon,
+    MatInput,
+    MatOption,
+    MatSelect,
+    MatProgressSpinner,
+    MatTooltip,
+  ],
 })
 export class MselDraftDialogComponent {
   templateMselId = '';

@@ -2,11 +2,19 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, Inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { DataOption, DataOptionService } from 'src/app/generated/blueprint.api';
 import { v4 as uuidv4 } from 'uuid';
 import { take } from 'rxjs/operators';
+import { CrucibleDialogComponent, CrucibleDialogContentDirective, CrucibleDialogActionsDirective } from '@cmusei/crucible-common';
+import { MatButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
+import { MatError } from '@angular/material/input';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
+import { MatCheckbox } from '@angular/material/checkbox';
+import { FormsModule } from '@angular/forms';
+import { MatTooltip } from '@angular/material/tooltip';
 
 export interface ImportPreviewItem {
   optionName: string;
@@ -20,24 +28,22 @@ export interface ImportPreviewItem {
     selector: 'app-data-option-import-dialog',
     templateUrl: './data-option-import-dialog.component.html',
     styleUrls: ['./data-option-import-dialog.component.scss'],
-    standalone: false
+    imports: [CrucibleDialogComponent, CrucibleDialogContentDirective, MatButton, MatIcon, MatError, MatProgressSpinner, MatCheckbox, FormsModule, MatTooltip, CrucibleDialogActionsDirective]
 })
 export class DataOptionImportDialogComponent {
+  dialogRef = inject<MatDialogRef<DataOptionImportDialogComponent>>(MatDialogRef);
+  data = inject<{
+    dataFieldId: string;
+    existingOptions: DataOption[];
+    instructions?: string;
+    showDescription?: boolean;
+}>(MAT_DIALOG_DATA);
+  private dataOptionService = inject(DataOptionService);
+
   previewItems: ImportPreviewItem[] = [];
   parseError: string = '';
   isProcessing = false;
   fileName = '';
-
-  constructor(
-    public dialogRef: MatDialogRef<DataOptionImportDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: {
-      dataFieldId: string;
-      existingOptions: DataOption[];
-      instructions?: string;
-      showDescription?: boolean;
-    },
-    private dataOptionService: DataOptionService
-  ) {}
 
   get hasDescription(): boolean {
     return this.data.showDescription === true;

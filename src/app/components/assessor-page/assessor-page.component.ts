@@ -1,7 +1,7 @@
 // Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 import { Subject, Observable } from 'rxjs';
@@ -24,15 +24,40 @@ import { CurrentUserQuery } from 'src/app/data/user/user.query';
 import { UserMselRoleDataService } from 'src/app/data/user-msel-role/user-msel-role-data.service';
 import { UserMselRoleQuery } from 'src/app/data/user-msel-role/user-msel-role.query';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
+import { canAssess, canViewAssessor } from 'src/app/utilities/assessable-msels';
 import { TopbarView } from '../shared/top-bar/topbar.models';
+import { TopbarComponent } from '../shared/top-bar/topbar.component';
+import { MatIcon } from '@angular/material/icon';
+import { AssessorViewComponent } from '../assessor-view/assessor-view.component';
+import { AssessComponent } from '../landing/assess/assess.component';
+import { AsyncPipe } from '@angular/common';
 
 @Component({
-  selector: 'app-assessor-page',
-  templateUrl: './assessor-page.component.html',
-  styleUrls: ['./assessor-page.component.scss'],
-  standalone: false
+    selector: 'app-assessor-page',
+    templateUrl: './assessor-page.component.html',
+    styleUrls: ['./assessor-page.component.scss'],
+    imports: [TopbarComponent, MatIcon, AssessorViewComponent, AssessComponent, AsyncPipe]
 })
 export class AssessorPageComponent implements OnDestroy, OnInit {
+  private activatedRoute = inject(ActivatedRoute);
+  private router = inject(Router);
+  private dataFieldDataService = inject(DataFieldDataService);
+  private dataOptionDataService = inject(DataOptionDataService);
+  private dataValueDataService = inject(DataValueDataService);
+  private moveDataService = inject(MoveDataService);
+  private mselDataService = inject(MselDataService);
+  private mselQuery = inject(MselQuery);
+  private scenarioEventDataService = inject(ScenarioEventDataService);
+  private teamDataService = inject(TeamDataService);
+  private userDataService = inject(UserDataService);
+  private currentUserQuery = inject(CurrentUserQuery);
+  private authQuery = inject(ComnAuthQuery);
+  private settingsService = inject(ComnSettingsService);
+  private titleService = inject(Title);
+  private userMselRoleDataService = inject(UserMselRoleDataService);
+  private userMselRoleQuery = inject(UserMselRoleQuery);
+  private permissionDataService = inject(PermissionDataService);
+
   private unsubscribe$ = new Subject();
   private msel: Msel = { name: '' };
   selectedMselId = '';
@@ -48,28 +73,12 @@ export class AssessorPageComponent implements OnDestroy, OnInit {
   userMselRole: UserMselRole | null = null;
   canEditAssessorPage = false;
   canViewAssessorPage = false;
+  // Whether the user may change which data fields the assessor view shows.
+  canChooseAssessorFields = false;
   isSystemAdmin = false;
+  private canEditMsels = false;
 
-  constructor(
-    private activatedRoute: ActivatedRoute,
-    private router: Router,
-    private dataFieldDataService: DataFieldDataService,
-    private dataOptionDataService: DataOptionDataService,
-    private dataValueDataService: DataValueDataService,
-    private moveDataService: MoveDataService,
-    private mselDataService: MselDataService,
-    private mselQuery: MselQuery,
-    private scenarioEventDataService: ScenarioEventDataService,
-    private teamDataService: TeamDataService,
-    private userDataService: UserDataService,
-    private currentUserQuery: CurrentUserQuery,
-    private authQuery: ComnAuthQuery,
-    private settingsService: ComnSettingsService,
-    private titleService: Title,
-    private userMselRoleDataService: UserMselRoleDataService,
-    private userMselRoleQuery: UserMselRoleQuery,
-    private permissionDataService: PermissionDataService
-  ) {
+  constructor() {
     this.activatedRoute.queryParamMap
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((params) => {
@@ -86,6 +95,10 @@ export class AssessorPageComponent implements OnDestroy, OnInit {
           this.scenarioEventDataService.loadByMsel(mselId);
           this.userMselRoleDataService.loadByMsel(mselId);
           this.selectedMselId = mselId;
+        } else if (!mselId) {
+          // Back to the list of events to assess.
+          this.selectedMselId = '';
+          this.updateRolePermissions();
         }
       });
 
@@ -94,6 +107,7 @@ export class AssessorPageComponent implements OnDestroy, OnInit {
       .subscribe((msel) => {
         if (msel) {
           this.msel = msel;
+          this.updateRolePermissions();
           const prefix = this.appTitle + ' - ';
           this.topbarText = prefix + msel.name;
           this.titleService.setTitle(prefix + msel.name);
@@ -125,6 +139,7 @@ export class AssessorPageComponent implements OnDestroy, OnInit {
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(() => {
         this.isSystemAdmin = this.permissionDataService.hasPermission(SystemPermission.CreateMsels);
+        this.canEditMsels = this.permissionDataService.hasPermission(SystemPermission.EditMsels);
         this.updateRolePermissions();
       });
 
@@ -140,35 +155,42 @@ export class AssessorPageComponent implements OnDestroy, OnInit {
     if (!this.loggedInUserId || !this.selectedMselId) {
       this.canViewAssessorPage = false;
       this.canEditAssessorPage = false;
+      this.canChooseAssessorFields = false;
       return;
     }
 
-    // System admins have full access
-    if (this.isSystemAdmin) {
-      this.canViewAssessorPage = true;
-      this.canEditAssessorPage = true;
-      return;
-    }
-
-    // Find user's role for this MSEL
-    const roles = this.userMselRoleQuery.getAll();
-    this.userMselRole = roles.find(r =>
+    // Find the user's roles for this MSEL. A user can hold several, so all of
+    // them count, not only the first.
+    const roles = this.userMselRoleQuery.getAll().filter(r =>
       r.userId === this.loggedInUserId && r.mselId === this.selectedMselId
-    ) || null;
+    );
+    this.userMselRole = roles[0] || null;
+    this.canChooseAssessorFields = this.canChooseFields(roles);
 
-    if (!this.userMselRole) {
-      this.canViewAssessorPage = false;
-      this.canEditAssessorPage = false;
-      return;
-    }
+    // The same rules as the Assess list, on the same MSEL record: viewing takes one of the viewing
+    // roles, and checking a Checkbox field takes one that can assess, which a template never is.
+    const msel = this.mselWithRoles(roles);
+    this.canViewAssessorPage = canViewAssessor(msel, this.loggedInUserId, this.isSystemAdmin);
+    this.canEditAssessorPage = canAssess(msel, this.loggedInUserId, this.isSystemAdmin);
+  }
 
-    // Editor or higher can view assessor page
-    const viewRoles: MselRole[] = ['Owner', 'Editor', 'Approver', 'Evaluator'];
-    this.canViewAssessorPage = viewRoles.includes(this.userMselRole.role as MselRole);
+  // The loaded MSEL carries only the roles the API sent with it; the role store has the rest.
+  private mselWithRoles(roles: UserMselRole[]): Msel {
+    return {
+      ...this.msel,
+      id: this.selectedMselId,
+      userMselRoles: [...(this.msel?.userMselRoles ?? []), ...roles],
+    };
+  }
 
-    // Only Evaluator, Owner can edit (check/uncheck checkboxes)
-    const editRoles: MselRole[] = ['Owner', 'Evaluator'];
-    this.canEditAssessorPage = editRoles.includes(this.userMselRole.role as MselRole);
+  // The API's rule for changing a MSEL's data fields: EditMsels, the MSEL's
+  // creator, or an Owner or Editor on it. CreateMsels alone is not enough.
+  // The API also wants an Owner or Editor to be in one of the MSEL's units,
+  // which this page cannot see; those roles are given to unit members.
+  private canChooseFields(roles: UserMselRole[]): boolean {
+    return this.canEditMsels ||
+      (!!this.loggedInUserId && this.msel?.createdBy === this.loggedInUserId) ||
+      roles.some(r => r.role === MselRole.Owner || r.role === MselRole.Editor);
   }
 
   goToUrl(url): void {

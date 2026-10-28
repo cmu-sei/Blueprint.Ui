@@ -6,6 +6,18 @@ import { Component, Inject } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { take } from 'rxjs/operators';
+import { FormsModule } from '@angular/forms';
+import { MatButton } from '@angular/material/button';
+import { MatFormField, MatHint, MatLabel } from '@angular/material/form-field';
+import { MatIcon } from '@angular/material/icon';
+import { MatInput } from '@angular/material/input';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
+import { MatOption, MatSelect } from '@angular/material/select';
+import {
+  CrucibleDialogActionsDirective,
+  CrucibleDialogComponent,
+  CrucibleDialogContentDirective,
+} from '@cmusei/crucible-common';
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
 import {
   DataField,
@@ -29,7 +41,21 @@ export interface DataValueDraftDialogData {
   selector: 'app-data-value-draft-dialog',
   templateUrl: './data-value-draft-dialog.component.html',
   styleUrls: ['./data-value-draft-dialog.component.scss'],
-  standalone: false,
+  imports: [
+    CrucibleDialogComponent,
+    CrucibleDialogContentDirective,
+    CrucibleDialogActionsDirective,
+    FormsModule,
+    MatButton,
+    MatFormField,
+    MatHint,
+    MatLabel,
+    MatIcon,
+    MatInput,
+    MatOption,
+    MatSelect,
+    MatProgressSpinner,
+  ],
 })
 export class DataValueDraftDialogComponent {
   actions: { value: DataValueDraftAction; label: string; needsValue: boolean }[] = [

@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { describe, it, expect } from 'vitest';
-import { Component, EventEmitter, Input, Output, Provider } from '@angular/core';
+import { Component, Provider, input, output } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
@@ -24,31 +24,33 @@ import { renderComponent } from 'src/app/test-utils/render-component';
 import { mselLoadApiProviders, mselLoadApiStubs } from 'src/app/test-utils/msel-load-api-stubs';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
 import { permissionDataProviders } from 'src/app/test-utils/mock-permission-data.service';
+import { TopbarComponent } from '../shared/top-bar/topbar.component';
+import { DataValueComponent } from '../data-value/data-value.component';
 
-@Component({ selector: 'app-topbar', template: '', standalone: false })
+@Component({ selector: 'app-topbar', template: '' })
 class TopbarStub {
-  @Input() title: string;
-  @Input() topbarView: unknown;
-  @Input() imageFilePath: string;
-  @Output() urlNavigate = new EventEmitter<string>();
+  readonly title = input<string>(undefined);
+  readonly topbarView = input<unknown>(undefined);
+  readonly imageFilePath = input<string>(undefined);
+  readonly urlNavigate = output<string>();
 }
-@Component({ selector: 'app-data-value', template: '', standalone: false })
+@Component({ selector: 'app-data-value', template: '' })
 class DataValueStub {
-  @Input() value: string;
-  @Output() valueChange = new EventEmitter<string>();
-  @Input() dataField: DataField;
-  @Input() canEdit: boolean;
-  @Input() canApprove: boolean;
-  @Input() isOwner: boolean;
-  @Input() showValueOnly: boolean;
-  @Input() organizationOptions: unknown[];
-  @Input() teamOptions: unknown[];
-  @Input() unitOptions: unknown[];
-  @Input() cardOptions: unknown[];
-  @Input() moveOptions: unknown[];
-  @Input() gallerySourceTypeOptions: unknown[];
-  @Input() galleryItemStatusOptions: string[];
-  @Input() userOptions: unknown[];
+  readonly value = input<string>(undefined);
+  readonly valueChange = output<string>();
+  readonly dataField = input<DataField>(undefined);
+  readonly canEdit = input<boolean>(undefined);
+  readonly canApprove = input<boolean>(undefined);
+  readonly isOwner = input<boolean>(undefined);
+  readonly showValueOnly = input<boolean>(undefined);
+  readonly organizationOptions = input<unknown[]>(undefined);
+  readonly teamOptions = input<unknown[]>(undefined);
+  readonly unitOptions = input<unknown[]>(undefined);
+  readonly cardOptions = input<unknown[]>(undefined);
+  readonly moveOptions = input<unknown[]>(undefined);
+  readonly gallerySourceTypeOptions = input<unknown[]>(undefined);
+  readonly galleryItemStatusOptions = input<string[]>(undefined);
+  readonly userOptions = input<unknown[]>(undefined);
 }
 
 const MSEL: Msel = { id: 'msel-1', name: 'Exercise Alpha', teams: [], units: [], userMselRoles: [] };
@@ -68,7 +70,10 @@ async function renderEventDetail(options: { msel?: Msel; providers?: Provider[] 
   const { route } = activatedRouteStub({ msel: 'msel-1', scenarioEvent: 'se-1' });
   const rendered = await renderComponent(EventDetailPageComponent, {
     imports: [MatButtonModule, MatIconModule],
-    declarations: [EventDetailPageComponent, TopbarStub, DataValueStub],
+    childStubs: [
+      { replace: TopbarComponent, with: TopbarStub },
+      { replace: DataValueComponent, with: DataValueStub },
+    ],
     providers: [...mselLoadApiProviders(apis), { provide: ActivatedRoute, useValue: route }, ...providers],
     inputs: { loggedInUserId: 'user-me' },
   });
@@ -92,7 +97,7 @@ describe('EventDetailPageComponent', () => {
     expect(apis.scenarioEvent.getScenarioEvent).toHaveBeenCalledWith('se-1');
     // A text query: jsdom's CSS engine throws computing this page's styles for a role query.
     expect(screen.getByText('Exercise Alpha Event Details', { selector: 'h2' })).toBeInTheDocument();
-    expect(values(fixture).map((v) => [v.dataField.name, v.value])).toEqual([
+    expect(values(fixture).map((v) => [v.dataField().name, v.value()])).toEqual([
       ['Title', 'Phishing wave'],
       ['Owner', 'user-a'],
     ]);
@@ -107,10 +112,10 @@ describe('EventDetailPageComponent', () => {
     const { fixture } = await renderEventDetail();
 
     for (const value of values(fixture)) {
-      expect(value.canEdit).toBe(false);
-      expect(value.canApprove).toBe(false);
-      expect(value.isOwner).toBe(false);
-      expect(value.showValueOnly).toBe(true);
+      expect(value.canEdit()).toBe(false);
+      expect(value.canApprove()).toBe(false);
+      expect(value.isOwner()).toBe(false);
+      expect(value.showValueOnly()).toBe(true);
     }
   });
 
@@ -135,8 +140,8 @@ describe('EventDetailPageComponent', () => {
     expect(TestBed.inject(PermissionDataService).hasPermission(SystemPermission.EditMsels)).toBe(true);
     expect(values(fixture)).toHaveLength(2);
     for (const value of values(fixture)) {
-      expect(value.canEdit).toBe(false);
-      expect(value.canApprove).toBe(false);
+      expect(value.canEdit()).toBe(false);
+      expect(value.canApprove()).toBe(false);
     }
   });
 
@@ -149,7 +154,7 @@ describe('EventDetailPageComponent', () => {
     const { fixture } = await renderEventDetail();
 
     // Current behavior; see agent-docs/ui-test-bugs/blueprint.ui.md.
-    expect(values(fixture)[1].userOptions).toBeUndefined();
+    expect(values(fixture)[1].userOptions()).toBeUndefined();
   });
 
   /**
@@ -164,8 +169,8 @@ describe('EventDetailPageComponent', () => {
 
     expect(values(fixture)).toHaveLength(2);
     for (const value of values(fixture)) {
-      expect(value.gallerySourceTypeOptions).toEqual(['News', 'Social']);
-      expect(value.galleryItemStatusOptions).toEqual(['Green', 'Red']);
+      expect(value.gallerySourceTypeOptions()).toEqual(['News', 'Social']);
+      expect(value.galleryItemStatusOptions()).toEqual(['Green', 'Red']);
     }
   });
 });

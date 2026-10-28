@@ -4,7 +4,7 @@
 
 import { CiteDutyStore } from './cite-duty.store';
 import { CiteDutyQuery } from './cite-duty.query';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { PageEvent } from '@angular/material/paginator';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -20,6 +20,12 @@ import { HttpEventType, HttpResponse } from '@angular/common/http';
   providedIn: 'root',
 })
 export class CiteDutyDataService {
+  private citeDutyStore = inject(CiteDutyStore);
+  private citeDutyQuery = inject(CiteDutyQuery);
+  private citeDutyService = inject(CiteDutyService);
+  private router = inject(Router);
+  private activatedRoute = inject(ActivatedRoute);
+
   private _requestedCiteDutyId: string;
   private _requestedCiteDutyId$ = this.activatedRoute.queryParamMap.pipe(
     map((params) => params.get('citeDutyId') || '')
@@ -35,13 +41,9 @@ export class CiteDutyDataService {
   private pageIndex: Observable<number>;
   public uploadProgress = new Subject<number>();
 
-  constructor(
-    private citeDutyStore: CiteDutyStore,
-    private citeDutyQuery: CiteDutyQuery,
-    private citeDutyService: CiteDutyService,
-    private router: Router,
-    private activatedRoute: ActivatedRoute
-  ) {
+  constructor() {
+    const activatedRoute = this.activatedRoute;
+
     this.filterTerm = activatedRoute.queryParamMap.pipe(
       map((params) => params.get('citeDutymask') || '')
     );

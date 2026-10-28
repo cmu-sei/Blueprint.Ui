@@ -1,0 +1,45 @@
+<!--
+Copyright 2024 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license, please see LICENSE.md in the
+project root for license information or contact permission@sei.cmu.edu for full terms.
+-->
+
+<crucible-dialog [hideDefaultActions]="true">
+
+<div crucibleDialogTitle class="title-wrapper">
+  <mat-icon class="title-icon" [fontIcon]="data.icon"></mat-icon>
+  <span>{{data.title}}</span>
+</div>
+
+<div crucibleDialogContent>
+  <p class="description">{{data.description}}</p>
+
+  <div class="section">
+    <h3 class="section-title">Key Features</h3>
+    <ul class="feature-list">
+      @for (feature of data.features; track feature) {
+        <li class="feature-item">
+          <mat-icon class="check-icon" fontIcon="mdi-check-circle"></mat-icon>
+          <span>{{feature}}</span>
+        </li>
+      }
+    </ul>
+  </div>
+
+  <div class="section">
+    <h3 class="section-title">Benefits</h3>
+    <ul class="benefit-list">
+      @for (benefit of data.benefits; track benefit) {
+        <li class="benefit-item">
+          <mat-icon class="arrow-icon" fontIcon="mdi-arrow-right"></mat-icon>
+          <span>{{benefit}}</span>
+        </li>
+      }
+    </ul>
+  </div>
+</div>
+
+<ng-container crucibleDialogActions>
+  <button matButton="filled" type="button" (click)="close()">Close</button>
+</ng-container>
+</crucible-dialog>

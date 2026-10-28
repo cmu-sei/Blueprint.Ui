@@ -4,7 +4,7 @@
 
 import { MselStore } from './msel.store';
 import { MselQuery } from './msel.query';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { PageEvent } from '@angular/material/paginator';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -101,6 +101,7 @@ export class MselPlus implements Msel {
   educationalUse?: string;
   courseMode?: string;
   language?: string;
+  imageDateModified?: Date | null;
 
   hasRole(userId: string, scenarioEventId: string) {
     // initialize to no roles
@@ -195,6 +196,13 @@ export class MselPlus implements Msel {
   providedIn: 'root',
 })
 export class MselDataService {
+  private mselStore = inject(MselStore);
+  private mselQuery = inject(MselQuery);
+  private mselService = inject(MselService);
+  private router = inject(Router);
+  private activatedRoute = inject(ActivatedRoute);
+  private errorService = inject(ErrorService);
+
   readonly MselList: Observable<Msel[]>;
   readonly filterControl = new UntypedFormControl();
   private _requestedMselId: string;
@@ -210,14 +218,9 @@ export class MselDataService {
   private pageIndex: Observable<number>;
   public uploadProgress = new Subject<number>();
 
-  constructor(
-    private mselStore: MselStore,
-    private mselQuery: MselQuery,
-    private mselService: MselService,
-    private router: Router,
-    private activatedRoute: ActivatedRoute,
-    private errorService: ErrorService
-  ) {
+  constructor() {
+    const activatedRoute = this.activatedRoute;
+
     this.filterTerm = activatedRoute.queryParamMap.pipe(
       map((params) => params.get('mselmask') || '')
     );
@@ -478,6 +481,25 @@ export class MselDataService {
       );
   }
 
+  // Returned unsubscribed, so the caller can tell when the request has finished.
+  // The store and the error report are still handled here.
+  retryCaster(mselId: string): Observable<Msel> {
+    this.mselStore.setLoading(true);
+    return this.mselService.retryCasterIntegration(mselId).pipe(
+      take(1),
+      tap({
+        next: (n) => {
+          this.mselStore.setLoading(false);
+          this.updateStore(n);
+        },
+        error: (error) => {
+          this.mselStore.setLoading(false);
+          this.errorService.handleError(error);
+        },
+      })
+    );
+  }
+
   cancelIntegrations(mselId: string) {
     this.mselService
       .cancelIntegrations(mselId)
@@ -695,6 +717,14 @@ export class MselDataService {
 
   updateIntegrationStatus(mselId: string, integrationStatus: string) {
     this.mselStore.update(mselId, { integrationStatus });
+  }
+
+  updateImageDateModified(mselId: string, imageDateModified: Date | null) {
+    this.mselStore.update(mselId, { imageDateModified });
+  }
+
+  updateCasterIds(mselId: string, casterWorkspaceId: string, casterRunId: string) {
+    this.mselStore.update(mselId, { casterWorkspaceId, casterRunId });
   }
 
   deleteFromStore(id: string) {

@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { afterEach, describe, it, expect, vi } from 'vitest';
-import { Component, Input } from '@angular/core';
+import { Component, input } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -28,9 +28,9 @@ import { unstubbed } from 'src/app/test-utils/unstubbed';
 
 @Component({ selector: 'app-duration-view', template: '', standalone: false })
 class DurationViewStub {
-  @Input() startTime: Date;
-  @Input() durationSeconds: number;
-  @Input() showRealTime: boolean;
+  readonly startTime = input<Date>(undefined);
+  readonly durationSeconds = input<number>(undefined);
+  readonly showRealTime = input<boolean>(undefined);
 }
 
 const ME = 'user-me';
