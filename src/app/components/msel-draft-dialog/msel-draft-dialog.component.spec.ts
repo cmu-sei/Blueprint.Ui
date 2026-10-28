@@ -247,4 +247,38 @@ describe('MselDraftDialogComponent', () => {
     expect(draft.organizations[0].description).toBe('<h2>NEWS profile</h2><img src="data:image/png;base64,LOGO" alt="Logo">');
     expect(draft.teams[0].description).toContain('data:image/png;base64,LOGO');
   });
+
+  /**
+   * Verifies: the review shows each move's scenario time, the read-in as it will read, and the CITE actions by move and team;
+   * removing one action, or leaving out the read-in, leaves it out of the MSEL.
+   * Interacts with: the Moves, Read-in and CITE actions sections, dialogRef.close.
+   * Data: move 1 opens 05 Mar 2026 12:00 UTC; a read-in; BLUE has two actions in move 0 and SOC one in move 1.
+   */
+  it('shows the scenario clock, read-in and CITE actions for review', async () => {
+    const result = draftResult();
+    result.draft.moves.push({ moveNumber: 1, description: 'Next day', startMinutes: 30, situationTime: '2026-03-05T12:00:00.000Z' });
+    result.draft.readIn = '<h2>Background</h2><p>The port is closed.</p>';
+    result.draft.citeActions = [
+      { moveNumber: 0, team: 'BLUE', description: 'Open an incident ticket' },
+      { moveNumber: 0, team: 'BLUE', description: 'Brief leadership' },
+      { moveNumber: 1, team: 'SOC', description: 'Isolate the affected hosts' },
+    ];
+    const { user, close } = await draftWithDcwf(result);
+
+    expect(screen.getByText(/scenario time 05 Mar 2026/)).toBeInTheDocument();
+    expect(screen.getByLabelText('Read-in preview')).toContainHTML('<h2>Background</h2>');
+    expect(screen.getByRole('heading', { name: 'CITE actions (3)' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Move 0, BLUE' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Move 1, SOC' })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Remove Brief leadership' }));
+    await user.click(screen.getByRole('button', { name: 'Leave out the read-in' }));
+    await user.click(screen.getByRole('button', { name: 'Create MSEL' }));
+
+    const sent = close.mock.calls[0][0] as MselDraftImport;
+    expect(sent.draft.citeActions.map((a) => a.description)).toEqual(['Open an incident ticket', 'Isolate the affected hosts']);
+    expect(sent.draft.readIn).toBeNull();
+    expect(sent.draft.moves[1].situationTime).toBe('2026-03-05T12:00:00.000Z');
+    expect(screen.queryByLabelText('Read-in preview')).not.toBeInTheDocument();
+  });
 });

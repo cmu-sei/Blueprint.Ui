@@ -20,7 +20,8 @@ import {
   CrucibleDialogComponent,
   CrucibleDialogContentDirective,
 } from '@cmusei/crucible-common';
-import { NgTemplateOutlet } from '@angular/common';
+import { DatePipe, NgTemplateOutlet } from '@angular/common';
+import { TimezoneAbbrPipe } from 'src/app/utilities/timezone-abbr';
 import { MatChip, MatChipRemove, MatChipSet } from '@angular/material/chips';
 import { MatTooltip } from '@angular/material/tooltip';
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
@@ -29,6 +30,7 @@ import {
   CompetencyFrameworkService,
   DataFieldType,
   Msel,
+  MselDraftCiteAction,
   MselDraftImport,
   MselDraftInject,
   MselDraftResult,
@@ -52,6 +54,8 @@ export interface MselDraftDialogData {
     CrucibleDialogActionsDirective,
     FormsModule,
     NgTemplateOutlet,
+    DatePipe,
+    TimezoneAbbrPipe,
     MatButton,
     MatIconButton,
     MatChip,
@@ -230,6 +234,23 @@ export class MselDraftDialogComponent {
   // the articles the draft puts on a card, as the planner removes injects
   articlesOn(cardName: string): number {
     return this.result?.draft?.injects?.filter((i) => i.card === cardName).length ?? 0;
+  }
+
+  // the CITE actions by move, then team in the order the draft lists them
+  get citeActionGroups(): { key: string; moveNumber: number; team: string; actions: MselDraftCiteAction[] }[] {
+    const groups = new Map<string, { key: string; moveNumber: number; team: string; actions: MselDraftCiteAction[] }>();
+    for (const action of this.result?.draft?.citeActions ?? []) {
+      const key = `${action.moveNumber} ${action.team}`;
+      if (!groups.has(key)) {
+        groups.set(key, { key, moveNumber: action.moveNumber, team: action.team, actions: [] });
+      }
+      groups.get(key).actions.push(action);
+    }
+    return [...groups.values()];
+  }
+
+  removeCiteAction(action: MselDraftCiteAction) {
+    this.result.draft.citeActions = this.result.draft.citeActions.filter((a) => a !== action);
   }
 
   removeInject(inject: MselDraftInject) {

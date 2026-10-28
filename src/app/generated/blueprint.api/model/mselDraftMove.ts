@@ -23,5 +23,9 @@ export interface MselDraftMove {
      * Minutes from the start of the exercise
      */
     startMinutes?: number;
+    /**
+     * The scenario\'s date and time when the move opens, in ISO 8601 UTC. It runs on its own clock and can jump ahead of the exercise clock, e.g. the next move is the next morning.
+     */
+    situationTime?: string | null;
 }
 

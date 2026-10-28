@@ -40,6 +40,10 @@ export interface MselChange {
      */
     situation?: string | null;
     /**
+     * The scenario date and time when a move opens, in ISO 8601 UTC
+     */
+    situationTime?: string | null;
+    /**
      * An inject\'s event type: Inject, Information or Facilitation
      */
     eventType?: string | null;

@@ -15,6 +15,7 @@
  */
 import { MselDraftTeam } from './mselDraftTeam';
 import { MselDraftCard } from './mselDraftCard';
+import { MselDraftCiteAction } from './mselDraftCiteAction';
 import { MselDraftInject } from './mselDraftInject';
 import { MselDraftMove } from './mselDraftMove';
 import { MselDraftOrganization } from './mselDraftOrganization';
@@ -35,6 +36,14 @@ export interface MselDraft {
      */
     cards?: Array<MselDraftCard> | null;
     injects?: Array<MselDraftInject> | null;
+    /**
+     * The read-in participants get before the first move, in HTML; it becomes a page of the MSEL
+     */
+    readIn?: string | null;
+    /**
+     * What each team should do in each move, which CITE lists for the team to check off
+     */
+    citeActions?: Array<MselDraftCiteAction> | null;
     /**
      * Competency ID numbers (DCWF or NICE) the exercise exercises; unknown ones are dropped at import
      */
