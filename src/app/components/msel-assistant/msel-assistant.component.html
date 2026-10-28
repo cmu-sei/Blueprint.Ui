@@ -15,8 +15,8 @@ project root for license information.
 
   <div class="turns" role="log" aria-live="polite">
     @if (!turns.length) {
-    <p class="hint">Say what to change. You review every change before it is saved. Teams, organizations, Gallery cards
-      and competencies can be changed.</p>
+    <p class="hint">Say what to change. You review every change before it is saved. Teams, organizations, Gallery cards,
+      competencies, moves and injects can be changed.</p>
     <ul class="examples">
       @for (example of examples; track example) {
       <li><button matButton type="button" class="example" (click)="ask(example)" [disabled]="isAsking">{{ example }}</button></li>

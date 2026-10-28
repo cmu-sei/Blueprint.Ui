@@ -16,11 +16,11 @@
 
 
 /**
- * One proposed change. Op says what it does; Target names the existing team, organization or card it changes, or for a competency the team it belongs to (empty for the MSEL itself).
+ * One proposed change. Op says what it does; Target names the existing team, organization or card it changes, the number of the move, or the inject\'s reference (E1, E2, ...), or for a competency the team it belongs to (empty for the MSEL itself).
  */
 export interface MselChange { 
     /**
-     * team.add, team.update, organization.add, organization.update, card.add, card.update, competency.add or competency.remove
+     * team.add, team.update, organization.add, organization.update, card.add, card.update, competency.add, competency.remove, move.add, move.update, inject.add or inject.update
      */
     op?: string | null;
     target?: string | null;
@@ -31,6 +31,26 @@ export interface MselChange {
     move?: number | null;
     inject?: number | null;
     idNumber?: string | null;
+    /**
+     * A move\'s start, or an inject\'s time, in minutes from the start of the exercise
+     */
+    minutes?: number | null;
+    /**
+     * A move\'s situation description
+     */
+    situation?: string | null;
+    /**
+     * An inject\'s event type: Inject, Information or Facilitation
+     */
+    eventType?: string | null;
+    /**
+     * An inject\'s values by column name; for an edit, only the columns that change
+     */
+    values?: { [key: string]: string; } | null;
+    /**
+     * The inject an edit changes, set by the server from Target so a later apply finds the same one
+     */
+    scenarioEventId?: string | null;
     /**
      * The change as the planner reads it, written by the server
      */

@@ -14,6 +14,9 @@ import { CardDataService } from 'src/app/data/card/card-data.service';
 import { CardTeamDataService } from 'src/app/data/team/card-team-data.service';
 import { MselCompetencyDataService } from 'src/app/data/msel-competency/msel-competency-data.service';
 import { TeamCompetencyDataService } from 'src/app/data/team-competency/team-competency-data.service';
+import { MoveDataService } from 'src/app/data/move/move-data.service';
+import { ScenarioEventDataService } from 'src/app/data/scenario-event/scenario-event-data.service';
+import { DataValueDataService } from 'src/app/data/data-value/data-value-data.service';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { MselAssistantComponent } from './msel-assistant.component';
 
@@ -31,6 +34,7 @@ async function renderAssistant(answer: () => any = () => of(PROPOSAL), applied: 
   const applyAssistantChanges = vi.fn(applied);
   const loaders = {
     teams: vi.fn(), organizations: vi.fn(), cards: vi.fn(), cardTeams: vi.fn(), mselCompetencies: vi.fn(), teamCompetencies: vi.fn(),
+    moves: vi.fn(), scenarioEvents: vi.fn(), dataValues: vi.fn(),
   };
   const rendered = await renderComponent(MselAssistantComponent, {
     inputs: { mselId: 'msel-1' },
@@ -42,6 +46,9 @@ async function renderAssistant(answer: () => any = () => of(PROPOSAL), applied: 
       { provide: CardTeamDataService, useValue: { getCardTeamsFromApi: loaders.cardTeams } },
       { provide: MselCompetencyDataService, useValue: { loadByMsel: loaders.mselCompetencies } },
       { provide: TeamCompetencyDataService, useValue: { loadByMsel: loaders.teamCompetencies } },
+      { provide: MoveDataService, useValue: { loadByMsel: loaders.moves } },
+      { provide: ScenarioEventDataService, useValue: { loadByMsel: loaders.scenarioEvents } },
+      { provide: DataValueDataService, useValue: { loadByMsel: loaders.dataValues } },
     ],
   });
   return { ...rendered, askAssistant, applyAssistantChanges, loaders, user: userEvent.setup() };
@@ -61,7 +68,7 @@ describe('MselAssistantComponent', () => {
   it('offers examples that ask when chosen', async () => {
     const { askAssistant, user } = await renderAssistant();
 
-    expect(screen.getByText(/Teams, organizations, Gallery cards\s+and competencies can be changed/)).toBeInTheDocument();
+    expect(screen.getByText(/Teams, organizations, Gallery cards,\s+competencies, moves and injects can be changed/)).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Add a CERT team and a legal team, each with its own Gallery card' }));
 
     expect(askAssistant).toHaveBeenCalledWith('msel-1', { prompt: 'Add a CERT team and a legal team, each with its own Gallery card', history: [] });
@@ -88,7 +95,7 @@ describe('MselAssistantComponent', () => {
 
   /**
    * Verifies: only the ticked changes are applied, each result is shown, and the lists the changes touch are reloaded.
-   * Interacts with: the checkboxes, Apply, MselDataService.applyAssistantChanges, the team/organization/card/competency loaders.
+   * Interacts with: the checkboxes, Apply, MselDataService.applyAssistantChanges, the team/organization/card/competency/move/event loaders.
    * Data: the competency unticked; the team applied; the apply reports it with a refused one alongside.
    */
   it('applies the ticked changes and shows how each went', async () => {

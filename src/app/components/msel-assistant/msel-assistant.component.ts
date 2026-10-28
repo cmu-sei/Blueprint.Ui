@@ -19,6 +19,9 @@ import { MselCompetencyDataService } from 'src/app/data/msel-competency/msel-com
 import { OrganizationDataService } from 'src/app/data/organization/organization-data.service';
 import { TeamCompetencyDataService } from 'src/app/data/team-competency/team-competency-data.service';
 import { TeamDataService } from 'src/app/data/team/team-data.service';
+import { MoveDataService } from 'src/app/data/move/move-data.service';
+import { ScenarioEventDataService } from 'src/app/data/scenario-event/scenario-event-data.service';
+import { DataValueDataService } from 'src/app/data/data-value/data-value-data.service';
 import { MselAssistMessage, MselChange, MselChangeResult } from 'src/app/generated/blueprint.api';
 
 /** One turn of the conversation, with what the assistant proposed and what came of applying it. */
@@ -56,6 +59,9 @@ export class MselAssistantComponent {
   private cardTeamDataService = inject(CardTeamDataService);
   private mselCompetencyDataService = inject(MselCompetencyDataService);
   private teamCompetencyDataService = inject(TeamCompetencyDataService);
+  private moveDataService = inject(MoveDataService);
+  private scenarioEventDataService = inject(ScenarioEventDataService);
+  private dataValueDataService = inject(DataValueDataService);
 
   readonly mselId = input.required<string>();
   readonly closePanel = output<void>();
@@ -69,6 +75,8 @@ export class MselAssistantComponent {
     'Add a CERT team and a legal team, each with its own Gallery card',
     'Give BLUE the Cyber Defense Analyst work role',
     'Add the national cyber agency and two news outlets as organizations',
+    'Add a move where a partner nation leaks the patch early, with three injects',
+    'Make the injects in move 2 more urgent',
   ];
 
   get canAsk(): boolean {
@@ -141,6 +149,9 @@ export class MselAssistantComponent {
     this.organizationDataService.loadByMsel(mselId);
     this.cardDataService.loadByMsel(mselId);
     this.cardTeamDataService.getCardTeamsFromApi(mselId);
+    this.moveDataService.loadByMsel(mselId);
+    this.scenarioEventDataService.loadByMsel(mselId);
+    this.dataValueDataService.loadByMsel(mselId);
     this.mselCompetencyDataService.loadByMsel(mselId);
     this.teamCompetencyDataService.loadByMsel(mselId);
   }
