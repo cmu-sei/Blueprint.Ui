@@ -126,6 +126,12 @@ project root for license information.
     <mat-label>{{ dataField.name }}</mat-label>
     <input type="text" matInput placeholder="{{ dataField.name }}" [(ngModel)]="value"
       (ngModelChange)="valueChangeHandler()" [disabled]="!canEdit()" />
+    @if (canEdit() && canAiWrite() && dataField.dataType === dataType.String) {
+    <button mat-icon-button matSuffix type="button" class="ai-write-button" (click)="aiWrite.emit()"
+      title="Write {{ dataField.name }} with AI" [attr.aria-label]="'Write ' + dataField.name + ' with AI'">
+      <mat-icon class="mdi-24px" fontIcon="mdi-creation"></mat-icon>
+    </button>
+    }
   </mat-form-field>
   }
   @if (showValueOnly()) {

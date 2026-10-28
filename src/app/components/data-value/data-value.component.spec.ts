@@ -395,4 +395,25 @@ describe('DataValueComponent', () => {
     await userEvent.setup().click(button);
     expect(requests).toHaveLength(1);
   });
+
+  /**
+   * Verifies: Write with AI is offered on a plain text field too, and emits aiWrite.
+   * Interacts with: canAiWrite and canEdit inputs, aiWrite output.
+   * Data: Subject (String) "Phishing wave".
+   */
+  it('offers Write with AI on a String field but not on a Url field', async () => {
+    const { fixture } = await renderDataValue(SUBJECT, 'Phishing wave', { canEdit: true, canAiWrite: true });
+    const requests: void[] = [];
+    fixture.componentInstance.aiWrite.subscribe(() => requests.push(undefined));
+
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Write Subject with AI' }));
+    expect(requests).toHaveLength(1);
+  });
+
+  it('offers no Write with AI on a Url field', async () => {
+    const link: DataField = { id: 'df-link', name: 'Link', dataType: DataFieldType.Url };
+    await renderDataValue(link, 'https://example.com/advisory', { canEdit: true, canAiWrite: true });
+
+    expect(screen.queryByRole('button', { name: 'Write Link with AI' })).not.toBeInTheDocument();
+  });
 });

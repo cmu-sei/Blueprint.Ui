@@ -123,9 +123,13 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
     this.getDataValue(dataFieldName).value = newValues.join(', ');
   }
 
-  // Html fields only; the list-backed and typed fields have nothing to write
+  // free-text fields; the list-backed and typed fields, and Gallery's status, have nothing to write
   canAiWrite(dataField: DataField): boolean {
-    return !dataField.isChosenFromList && dataField.dataType === DataFieldType.Html;
+    return (
+      !dataField.isChosenFromList &&
+      dataField.galleryArticleParameter !== 'Status' &&
+      (dataField.dataType === DataFieldType.Html || dataField.dataType === DataFieldType.String)
+    );
   }
 
   writeWithAi(dataField: DataField) {

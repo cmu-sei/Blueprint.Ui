@@ -264,7 +264,7 @@ describe('ScenarioEventEditDialogComponent', () => {
   });
 
   /**
-   * Verifies: Write with AI is offered on the Html field only, opens the writer with the inject's unsaved values, and the accepted value lands in the field that had none.
+   * Verifies: Write with AI is offered on the String and Html fields, opens the writer with the inject's unsaved values, and the accepted value lands in the field that had none.
    * Interacts with: DataValueStub canAiWrite and aiWrite, MatDialog.open, the writer's afterClosed result.
    * Data: Title "Phishing wave" (String) and Description (Html, no value yet); the writer returns "<p>Users report a fake payroll email.</p>".
    */
@@ -274,7 +274,7 @@ describe('ScenarioEventEditDialogComponent', () => {
     const { fixture, data } = await renderEventEdit({ isEditor: true }, open, true);
 
     const [title, body] = fixture.debugElement.queryAll(By.directive(DataValueStub)).map((d) => d.componentInstance as DataValueStub);
-    expect(title.canAiWrite()).toBe(false);
+    expect(title.canAiWrite()).toBe(true);
     expect(body.canAiWrite()).toBe(true);
     body.aiWrite.emit();
 
@@ -304,5 +304,19 @@ describe('ScenarioEventEditDialogComponent', () => {
     (fixture.debugElement.queryAll(By.directive(DataValueStub))[1].componentInstance as DataValueStub).aiWrite.emit();
 
     expect(data.scenarioEvent.dataValues).toEqual([{ id: 'dv-1', scenarioEventId: 'se-1', dataFieldId: 'df-title', value: 'Phishing wave' }]);
+  });
+
+  /**
+   * Verifies: Write with AI is not offered on list-backed fields or on Gallery's status, which has fixed values.
+   * Interacts with: canAiWrite.
+   * Data: a String field chosen from a list; a String field mapped to the Gallery Status; a DateTime field.
+   */
+  it('does not offer Write with AI on fields with fixed values', async () => {
+    const { fixture } = await renderEventEdit({ isEditor: true });
+    const dialog = fixture.componentInstance;
+
+    expect(dialog.canAiWrite({ id: 'df-list', name: 'Priority', dataType: DataFieldType.String, isChosenFromList: true })).toBe(false);
+    expect(dialog.canAiWrite({ id: 'df-status', name: 'Card Status', dataType: DataFieldType.String, galleryArticleParameter: 'Status' })).toBe(false);
+    expect(dialog.canAiWrite({ id: 'df-when', name: 'Simulated Time', dataType: DataFieldType.DateTime })).toBe(false);
   });
 });
