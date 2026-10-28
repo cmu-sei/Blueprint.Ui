@@ -88,6 +88,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <mat-chip [matTooltip]="organization.name">{{ organization.shortName }}</mat-chip>
       }
     </mat-chip-set>
+    @for (owner of writtenProfiles; track owner.shortName) {
+    <details class="profile">
+      <summary>{{ owner.shortName }} profile</summary>
+      <div class="article-preview" [attr.aria-label]="owner.shortName + ' profile'" [innerHTML]="owner.description"></div>
+    </details>
+    }
   </section>
 
   @if (result.draft.cards?.length) {
@@ -106,12 +112,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
     @if (isWritingArticles) {
     <div class="drafting">
       <mat-spinner diameter="24"></mat-spinner>
-      <span>Writing articles {{ articlesDone }} of {{ articlesTotal }}...</span>
+      <span>Writing articles and profiles {{ articlesDone }} of {{ articlesTotal }}...</span>
       <button matButton type="button" (click)="stopWriting()">Stop</button>
     </div>
     } @else {
-    <p>Wrote {{ articlesDone - articleErrors.length }} of {{ articlesTotal }} Gallery articles as documents of their source
-      type. Open an inject to see its article.</p>
+    <p>Wrote {{ articlesDone - articleErrors.length }} of {{ articlesTotal }} Gallery articles and team and organization
+      profiles. Open an inject or a profile to see it.</p>
     }
     @for (error of articleErrors; track $index) {
     <p class="error-message" role="alert">{{ error }}</p>

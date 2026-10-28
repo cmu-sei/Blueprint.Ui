@@ -1,0 +1,44 @@
+<!--
+Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license. See LICENSE.md in the
+project root for license information.
+-->
+
+@if (!isOpen) {
+<button mat-icon-button type="button" class="ai-write-button" (click)="open()"
+  [title]="'Write the ' + kind() + '\'s profile with AI'" [attr.aria-label]="'Write the ' + kind() + '\'s profile with AI'">
+  <mat-icon class="mdi-24px" fontIcon="mdi-creation"></mat-icon>
+</button>
+} @else {
+<div class="writer" role="group" [attr.aria-label]="'Write the ' + kind() + '\'s profile with AI'">
+  <mat-form-field class="full-width">
+    <mat-label>Instruction (optional)</mat-label>
+    <input matInput [(ngModel)]="instruction" [disabled]="isWriting"
+      placeholder="e.g. Add a duty officer and their phone number" />
+  </mat-form-field>
+  @if (isWriting) {
+  <div class="writing">
+    <mat-spinner diameter="24"></mat-spinner>
+    <span>Writing the profile...</span>
+  </div>
+  }
+  @if (errorMessage) {
+  <p class="error-message" role="alert">{{ errorMessage }}</p>
+  }
+  @if (result) {
+  <div class="profile-preview" aria-label="Profile preview" [innerHTML]="result.html"></div>
+  @for (note of result.notes; track $index) {
+  <p class="hint">{{ note }}</p>
+  }
+  }
+  <div class="actions">
+    <button matButton="outlined" type="button" (click)="close()" [disabled]="isWriting">{{ result ? 'Discard' : 'Cancel' }}</button>
+    @if (result) {
+    <button matButton="outlined" type="button" (click)="write()" [disabled]="isWriting">Write again</button>
+    <button matButton="filled" type="button" (click)="use()">Use this</button>
+    } @else {
+    <button matButton="filled" type="button" (click)="write()" [disabled]="isWriting">Write</button>
+    }
+  </div>
+</div>
+}

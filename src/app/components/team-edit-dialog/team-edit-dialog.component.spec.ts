@@ -1,6 +1,9 @@
 // Copyright 2026 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
+import { Component, input, output } from '@angular/core';
+import { By } from '@angular/platform-browser';
+import { ProfileWriterComponent } from '../profile-writer/profile-writer.component';
 import { describe, it, expect } from 'vitest';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
@@ -43,6 +46,17 @@ function teamData(
   };
 }
 
+@Component({ selector: 'app-profile-writer', template: '' })
+class ProfileWriterStub {
+  readonly kind = input<string>(undefined);
+  readonly mselId = input<string>(undefined);
+  readonly shortName = input<string>(undefined);
+  readonly name = input<string>(undefined);
+  readonly summary = input<string>(undefined);
+  readonly description = input<string>(undefined);
+  readonly useProfile = output<string>();
+}
+
 async function renderTeamEdit(data = teamData()) {
   const rendered = await renderComponent(TeamEditDialogComponent, {
     imports: [
@@ -54,6 +68,7 @@ async function renderTeamEdit(data = teamData()) {
       MatSelectModule,
     ],
     declarations: [TeamEditDialogComponent],
+    childStubs: [{ replace: ProfileWriterComponent, with: ProfileWriterStub }],
     // angular-editor injects HttpClient for its image upload.
     providers: [{ provide: MAT_DIALOG_DATA, useValue: data }, provideHttpClient(), provideHttpClientTesting()],
   });
@@ -256,5 +271,31 @@ describe('TeamEditDialogComponent', () => {
       expect(results).toHaveLength(1);
       expect(results[0].team.casterTeamVariable).toBeNull();
     });
+  });
+
+  /**
+   * Verifies: a MSEL's team offers Write with AI with its names and description, and a used profile becomes the description.
+   * Interacts with: ProfileWriterStub inputs and useProfile.
+   * Data: team BLUE "Blue Team" on msel-1 with a short description; the profile "<h2>BLUE</h2>".
+   */
+  it('writes the description with AI for a MSEL team', async () => {
+    const { fixture, data } = await renderTeamEdit(teamData({ team: { id: 'team-1', mselId: 'msel-1', name: 'Blue Team', shortName: 'BLUE', email: '', description: '<p>Defenders</p>' } }));
+
+    const writer = fixture.debugElement.query(By.directive(ProfileWriterStub)).componentInstance as ProfileWriterStub;
+    expect([writer.kind(), writer.mselId(), writer.shortName(), writer.name(), writer.description()]).toEqual(['team', 'msel-1', 'BLUE', 'Blue Team', '<p>Defenders</p>']);
+    writer.useProfile.emit('<h2>BLUE</h2>');
+
+    expect(data.team.description).toBe('<h2>BLUE</h2>');
+  });
+
+  /**
+   * Verifies: a template team, on no MSEL, has no Write with AI, as there is no scenario to write from.
+   * Interacts with: TeamEditDialogComponent template.
+   * Data: team BLUE without a MSEL.
+   */
+  it('offers no Write with AI for a team on no MSEL', async () => {
+    const { fixture } = await renderTeamEdit();
+
+    expect(fixture.debugElement.query(By.directive(ProfileWriterStub))).toBeNull();
   });
 });

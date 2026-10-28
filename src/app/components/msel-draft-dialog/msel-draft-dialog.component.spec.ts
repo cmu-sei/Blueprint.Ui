@@ -51,9 +51,13 @@ function draftResult(): MselDraftResult {
   };
 }
 
-async function renderDraftDialog(result: MselDraftResult = draftResult(), draftArticle: (...args: any[]) => any = vi.fn()) {
+async function renderDraftDialog(
+  result: MselDraftResult = draftResult(),
+  draftArticle: (...args: any[]) => any = vi.fn(),
+  draftProfile: (...args: any[]) => any = vi.fn(() => of({ html: '<p>Profile</p>', notes: [] }))
+) {
   const draftMsel = vi.fn(() => of(result));
-  const mselData = { draftMsel, draftArticle } as Partial<MselDataService>;
+  const mselData = { draftMsel, draftArticle, draftProfile } as Partial<MselDataService>;
   const frameworkApi = {
     getCompetencyFrameworks: vi.fn(() => of([{ id: 'fw-nice', name: 'NICE 2.0.0' }, { id: 'fw-dcwf', name: 'DCWF 5.1' }])),
   } satisfies ApiStub<CompetencyFrameworkService>;
@@ -80,11 +84,11 @@ async function renderDraftDialog(result: MselDraftResult = draftResult(), draftA
   });
   await rendered.fixture.whenStable();
   rendered.fixture.detectChanges();
-  return { ...rendered, draftMsel, draftArticle, close: ref.close };
+  return { ...rendered, draftMsel, draftArticle, draftProfile, close: ref.close };
 }
 
-async function draftWithDcwf(result?: MselDraftResult, draftArticle?: (...args: any[]) => any) {
-  const rendered = await renderDraftDialog(result, draftArticle);
+async function draftWithDcwf(result?: MselDraftResult, draftArticle?: (...args: any[]) => any, draftProfile?: (...args: any[]) => any) {
+  const rendered = await renderDraftDialog(result, draftArticle, draftProfile);
   const user = userEvent.setup();
   await user.click(screen.getByRole('combobox', { name: 'Competency frameworks' }));
   await user.click(await screen.findByRole('option', { name: 'DCWF 5.1' }));
@@ -188,7 +192,7 @@ describe('MselDraftDialogComponent', () => {
     expect(draftArticle).toHaveBeenCalledTimes(2);
     expect(draftArticle).toHaveBeenCalledWith(expect.objectContaining({ templateMselId: 'tpl-1', injectIndex: 0 }));
     expect(draftArticle).toHaveBeenCalledWith(expect.objectContaining({ injectIndex: 1 }));
-    expect(screen.getByText(/Wrote 1 of 2 Gallery articles/)).toBeInTheDocument();
+    expect(screen.getByText(/Wrote 2 of 3 Gallery articles and team and organization\s+profiles/)).toBeInTheDocument();
     expect(screen.getByRole('alert')).toHaveTextContent('Operator notice: The model wrote no article.');
     await user.click(screen.getByText('Cables cut', { selector: '.inject-title' }));
     expect(screen.getByLabelText('Article preview')).toHaveTextContent('HARBOUR HERALD');
@@ -214,5 +218,33 @@ describe('MselDraftDialogComponent', () => {
     const draft = close.mock.calls[0][0].draft;
     expect(draft.injects[0].values.Details).toBe('<img src="data:image/png;base64,LOGO" alt="Logo">');
     expect(draft.injects[1].values.Details).toBe('<p>Notice</p>');
+  });
+
+  /**
+   * Verifies: each drafted team and organization gets a profile, the organization keeps its one-line description as its
+   * summary, the profiles show for review, and Create MSEL converts their logos to PNG.
+   * Interacts with: MselDataService.draftProfile, the profile previews, the component's PNG conversion (replaced), dialogRef.close.
+   * Data: team BLUE and organization NEWS ("Regional paper"); each profile carries an SVG logo.
+   */
+  it('writes a profile for each team and organization', async () => {
+    const result = draftResult();
+    result.draft.organizations = [{ shortName: 'NEWS', name: 'Harbour Herald', description: 'Regional paper' }];
+    const draftProfile = vi.fn((request: { shortName: string }) =>
+      of({ html: `<h2>${request.shortName} profile</h2><img src="data:image/svg+xml;base64,LOGO" alt="Logo">`, notes: [] })
+    );
+    const { user, close, fixture } = await draftWithDcwf(result, undefined, draftProfile);
+    fixture.componentInstance.toPng = async (html: string) => html.replace('image/svg+xml', 'image/png');
+
+    expect(draftProfile).toHaveBeenCalledWith(expect.objectContaining({ kind: 'team', shortName: 'BLUE', name: 'Blue Team' }));
+    expect(draftProfile).toHaveBeenCalledWith(expect.objectContaining({ kind: 'organization', shortName: 'NEWS', summary: 'Regional paper' }));
+    await user.click(screen.getByText('NEWS profile', { selector: 'summary' }));
+    expect(screen.getByLabelText('NEWS profile')).toHaveTextContent('NEWS profile');
+    await user.click(screen.getByRole('button', { name: 'Create MSEL' }));
+
+    await vi.waitFor(() => expect(close).toHaveBeenCalled());
+    const draft = close.mock.calls[0][0].draft;
+    expect(draft.organizations[0].summary).toBe('Regional paper');
+    expect(draft.organizations[0].description).toBe('<h2>NEWS profile</h2><img src="data:image/png;base64,LOGO" alt="Logo">');
+    expect(draft.teams[0].description).toContain('data:image/png;base64,LOGO');
   });
 });

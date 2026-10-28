@@ -10,11 +10,12 @@ import { CrucibleDialogComponent, CrucibleDialogContentDirective } from '@cmusei
 import { MatFormField, MatLabel, MatInput, MatError } from '@angular/material/input';
 import { AngularEditorModule } from '@kolkov/angular-editor';
 
+import { ProfileWriterComponent } from '../profile-writer/profile-writer.component';
 @Component({
     selector: 'app-organization-edit-dialog',
     templateUrl: './organization-edit-dialog.component.html',
     styleUrls: ['./organization-edit-dialog.component.scss'],
-    imports: [CrucibleDialogComponent, CrucibleDialogContentDirective, MatFormField, MatLabel, MatInput, FormsModule, ReactiveFormsModule, MatError, AngularEditorModule]
+    imports: [CrucibleDialogComponent, CrucibleDialogContentDirective, MatFormField, MatLabel, MatInput, FormsModule, ReactiveFormsModule, MatError, AngularEditorModule, ProfileWriterComponent]
 })
 export class OrganizationEditDialogComponent {
   data = inject(MAT_DIALOG_DATA);
@@ -92,6 +93,12 @@ export class OrganizationEditDialogComponent {
   /**
    * Saves the current organization
    */
+  // a profile written with AI replaces the description, and is saved as an edited one is
+  useProfile(html: string) {
+    this.descriptionFormControl.setValue(html);
+    this.saveOrganization('description');
+  }
+
   saveOrganization(changedField): void {
     switch (changedField) {
       case 'name':

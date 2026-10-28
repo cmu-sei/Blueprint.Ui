@@ -32,6 +32,8 @@ import {
   ArticleDraftRequest,
   ArticleDraftResult,
   MselAssistApply,
+  ProfileDraftRequest,
+  ProfileDraftResult,
   MselAssistApplyResult,
   MselAssistRequest,
   MselAssistResult,
@@ -715,6 +717,10 @@ export class MselDataService {
 
   draftArticle(request: ArticleDraftRequest): Observable<ArticleDraftResult> {
     return this.mselService.draftMselArticle(request);
+  }
+
+  draftProfile(request: ProfileDraftRequest): Observable<ProfileDraftResult> {
+    return this.mselService.draftProfile(request);
   }
 
   // Errors are left to the caller, which shows them in the import dialog

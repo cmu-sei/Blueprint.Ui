@@ -1,0 +1,46 @@
+// Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+// Released under a MIT (SEI)-style license. See LICENSE.md in the
+// project root for license information.
+
+.writer {
+  margin: 0.5rem 0;
+  padding: 0.75rem;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 8px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.writing {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+}
+
+.profile-preview {
+  max-height: 420px;
+  overflow: auto;
+  margin: 0.5rem 0;
+  border: 1px solid var(--mat-sys-outline-variant);
+  // profiles are placed on their own white paper; this keeps the margin around it white too
+  background-color: #ffffff;
+}
+
+.hint {
+  font-size: 0.875rem;
+  color: var(--mat-sys-on-surface-variant);
+  margin: 0.25rem 0;
+}
+
+.error-message {
+  color: var(--mat-sys-error);
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}

@@ -160,6 +160,8 @@ export * from './proficiencyLevel';
 export * from './proficiencyLevelCreate';
 export * from './proficiencyLevelEdit';
 export * from './proficiencyScale';
+export * from './profileDraftRequest';
+export * from './profileDraftResult';
 export * from './propertyAttributes';
 export * from './propertyInfo';
 export * from './rightSideDisplay';

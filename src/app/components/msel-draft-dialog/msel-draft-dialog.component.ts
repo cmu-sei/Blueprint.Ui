@@ -32,6 +32,7 @@ import {
   MselDraftImport,
   MselDraftInject,
   MselDraftResult,
+  MselDraftOrganization,
   MselDraftTeam,
 } from 'src/app/generated/blueprint.api';
 
@@ -151,41 +152,69 @@ export class MselDraftDialogComponent {
     return sourceType ? this.result.draft.injects.filter((i) => i.values?.[sourceType.name]) : [];
   }
 
-  // three at a time; the injects are not removed while this runs, so each index stays the article's
+  // the articles, then a profile for each team and organization, three at a time; injects are not removed
+  // while this runs, so each index stays the article's
   writeArticles() {
+    const draft = this.result.draft;
     const articles = this.articles();
-    this.articlesTotal = articles.length;
+    const profiles: (MselDraftTeam | MselDraftOrganization)[] = [...(draft.teams ?? []), ...(draft.organizations ?? [])];
+    this.articlesTotal = articles.length + profiles.length;
     this.articlesDone = 0;
     this.articleErrors = [];
-    if (!articles.length) {
+    if (!this.articlesTotal) {
       return;
     }
-    const draft = this.result.draft;
-    this.writing = from(articles)
-      .pipe(
-        mergeMap(
-          (inject) =>
-            this.mselDataService
-              .draftArticle({ templateMselId: this.result.templateMselId, draft, injectIndex: draft.injects.indexOf(inject) })
-              .pipe(
-                map((article) => ({ inject, article, error: undefined as string })),
-                catchError((err) => of({ inject, article: undefined, error: this.getErrorMessage(err) }))
-              ),
-          3
-        )
-      )
-      .subscribe(({ inject, article, error }) => {
-        this.articlesDone++;
-        if (article) {
+    const templateMselId = this.result.templateMselId;
+    const articleWrites = articles.map((inject) => () =>
+      this.mselDataService.draftArticle({ templateMselId, draft, injectIndex: draft.injects.indexOf(inject) }).pipe(
+        map((article) => () => {
           inject.values[article.fieldName] = article.html;
           this.articleFields.set(inject, article.fieldName);
           if (article.notes?.length) {
             this.articleNotes.set(inject, article.notes);
           }
-        } else {
-          this.articleErrors.push(`${this.titleFor(inject)}: ${error}`);
-        }
+        }),
+        catchError((err) => of(() => this.articleErrors.push(`${this.titleFor(inject)}: ${this.getErrorMessage(err)}`)))
+      )
+    );
+    const profileWrites = profiles.map((owner) => () => {
+      const isTeam = (draft.teams ?? []).includes(owner as MselDraftTeam);
+      const organization = owner as MselDraftOrganization;
+      return this.mselDataService
+        .draftProfile({
+          draft,
+          kind: isTeam ? 'team' : 'organization',
+          shortName: owner.shortName,
+          name: owner.name,
+          summary: isTeam ? undefined : organization.summary || owner.description,
+          description: owner.description,
+        })
+        .pipe(
+          map((profile) => () => {
+            // the one line the draft wrote stays the organization's summary
+            if (!isTeam && !organization.summary) {
+              organization.summary = owner.description;
+            }
+            owner.description = profile.html;
+            this.profiles.add(owner);
+          }),
+          catchError((err) => of(() => this.articleErrors.push(`${owner.shortName}: ${this.getErrorMessage(err)}`)))
+        );
+    });
+    this.writing = from([...articleWrites, ...profileWrites])
+      .pipe(mergeMap((write) => write(), 3))
+      .subscribe((apply) => {
+        this.articlesDone++;
+        apply();
       });
+  }
+
+  // the team or organization profiles written so far, shown as Blueprint will show them
+  profiles = new Set<MselDraftTeam | MselDraftOrganization>();
+
+  get writtenProfiles(): (MselDraftTeam | MselDraftOrganization)[] {
+    const draft = this.result?.draft;
+    return [...(draft?.teams ?? []), ...(draft?.organizations ?? [])].filter((o) => this.profiles.has(o));
   }
 
   stopWriting() {
@@ -262,6 +291,9 @@ export class MselDraftDialogComponent {
     this.isPreparing = true;
     for (const [inject, field] of this.articleFields) {
       inject.values[field] = await this.toPng(inject.values[field]);
+    }
+    for (const owner of this.profiles) {
+      owner.description = await this.toPng(owner.description);
     }
     this.isPreparing = false;
     this.dialogRef.close({

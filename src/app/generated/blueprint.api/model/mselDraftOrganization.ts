@@ -19,5 +19,9 @@ export interface MselDraftOrganization {
     name?: string | null;
     shortName?: string | null;
     description?: string | null;
+    /**
+     * One line on who they are; when empty, the description\'s text is used
+     */
+    summary?: string | null;
 }
 

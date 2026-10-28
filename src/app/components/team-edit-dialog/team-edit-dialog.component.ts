@@ -15,11 +15,12 @@ import { MatCheckbox } from '@angular/material/checkbox';
 
 const MIN_NAME_LENGTH = 3;
 
+import { ProfileWriterComponent } from '../profile-writer/profile-writer.component';
 @Component({
     selector: 'app-team-edit-dialog',
     templateUrl: './team-edit-dialog.component.html',
     styleUrls: ['./team-edit-dialog.component.scss'],
-    imports: [CrucibleDialogComponent, CrucibleDialogContentDirective, MatFormField, MatLabel, MatInput, FormsModule, ReactiveFormsModule, MatError, AngularEditorModule, MatSelect, MatOption, MatHint, MatCheckbox]
+    imports: [CrucibleDialogComponent, CrucibleDialogContentDirective, MatFormField, MatLabel, MatInput, FormsModule, ReactiveFormsModule, MatError, AngularEditorModule, MatSelect, MatOption, MatHint, MatCheckbox, ProfileWriterComponent]
 })
 
 export class TeamEditDialogComponent {
@@ -107,6 +108,12 @@ export class TeamEditDialogComponent {
   /**
    * Saves the current team
    */
+  // a profile written with AI replaces the description, and is saved as an edited one is
+  useProfile(html: string) {
+    this.descriptionFormControl.setValue(html);
+    this.saveTeam('description');
+  }
+
   saveTeam(changedField): void {
     switch (changedField) {
       case 'name':
