@@ -7,7 +7,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { from, of, Subscription } from 'rxjs';
 import { catchError, map, mergeMap, take } from 'rxjs/operators';
-import { svgImagesToPng } from 'src/app/utilities/svg-to-png';
+import { prepareImages } from 'src/app/utilities/svg-to-png';
 import { FormsModule } from '@angular/forms';
 import { MatButton, MatIconButton } from '@angular/material/button';
 import { MatFormField, MatHint, MatLabel } from '@angular/material/form-field';
@@ -89,8 +89,8 @@ export class MselDraftDialogComponent {
   private articleFields = new Map<MselDraftInject, string>();
   private writing: Subscription;
   isPreparing = false;
-  // drawn on a canvas in the browser; tests give their own
-  toPng = svgImagesToPng;
+  // drawn on a canvas in the browser: SVG as PNG, photos at article size; tests give their own
+  toPng = prepareImages;
 
   constructor(
     public dialogRef: MatDialogRef<MselDraftDialogComponent, MselDraftImport>,

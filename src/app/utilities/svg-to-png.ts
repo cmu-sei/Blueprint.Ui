@@ -59,3 +59,61 @@ function drawOnCanvas(svgSrc: string, width: number, height: number): Promise<st
     image.src = svgSrc;
   });
 }
+
+/** Draws a photo data URI at most the given width and answers it as a JPEG data URI. */
+export type Shrink = (src: string, maxWidth: number) => Promise<string>;
+
+// photos are shown 720 pixels wide; half again keeps them sharp on high-density screens
+const PHOTO_WIDTH = 1080;
+
+/**
+ * Redraws each JPEG photo in the HTML at most 1080 pixels wide. The image model makes photos about 2000 pixels
+ * wide, several times what an article shows, and each one is stored in the article. A photo that cannot be
+ * drawn is kept as it is.
+ */
+export async function shrinkPhotos(html: string, shrink: Shrink = shrinkOnCanvas): Promise<string> {
+  if (!html || !html.includes('data:image/jpeg')) {
+    return html;
+  }
+  const document = new DOMParser().parseFromString(html, 'text/html');
+  const images = Array.from(document.querySelectorAll<HTMLImageElement>('img[src^="data:image/jpeg"]'));
+  await Promise.all(
+    images.map(async (image) => {
+      try {
+        image.setAttribute('src', await shrink(image.getAttribute('src'), PHOTO_WIDTH));
+      } catch {
+        // the full-size photo still shows
+      }
+    })
+  );
+  return document.body.innerHTML;
+}
+
+/** The images Blueprint keeps: SVG drawn as PNG, and photos at the size articles show them. */
+export async function prepareImages(html: string): Promise<string> {
+  return shrinkPhotos(await svgImagesToPng(html));
+}
+
+function shrinkOnCanvas(src: string, maxWidth: number): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => {
+      if (image.naturalWidth <= maxWidth) {
+        resolve(src);
+        return;
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = maxWidth;
+      canvas.height = Math.round((image.naturalHeight * maxWidth) / image.naturalWidth);
+      const context = canvas.getContext('2d');
+      if (!context) {
+        reject(new Error('No canvas'));
+        return;
+      }
+      context.drawImage(image, 0, 0, canvas.width, canvas.height);
+      resolve(canvas.toDataURL('image/jpeg', 0.82));
+    };
+    image.onerror = () => reject(new Error('The photo could not be drawn'));
+    image.src = src;
+  });
+}
