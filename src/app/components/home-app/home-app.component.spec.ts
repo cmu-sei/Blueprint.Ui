@@ -1,7 +1,7 @@
 // Copyright 2026 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { Component, input, output } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
@@ -31,6 +31,7 @@ import { TopbarComponent } from '../shared/top-bar/topbar.component';
 import { MselListComponent } from '../msel-list/msel-list.component';
 import { MselComponent } from '../msel/msel.component';
 import { captureUnhandledRejections, flush } from 'src/app/test-utils/unhandled-rx-errors';
+import { FakeImage } from 'src/app/test-utils/fake-image';
 
 @Component({ selector: 'app-topbar', template: '' })
 class TopbarStub {
@@ -209,22 +210,74 @@ describe('HomeAppComponent', () => {
     expect(screen.getByRole('heading', { name: 'Please refresh this page.' })).toBeInTheDocument();
   });
 
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    FakeImage.last = undefined;
+  });
+
   /**
-   * Verifies: the MSEL list shows the background image named in settings; an open MSEL, or no setting, shows none.
-   * Interacts with: ComnSettingsService.settings (stub), ActivatedRoute (?msel), HomeAppComponent template.
-   * Data: AppLandingBackgroundImage set to a relative asset URL, or unset; no MSEL or msel-1 open.
+   * Verifies: the MSEL list shows the background image named in settings once it loads.
+   * Interacts with: ComnSettingsService.settings (stub), a stubbed Image, HomeAppComponent template.
+   * Data: AppLandingBackgroundImage set to a relative asset URL; the image load event fires.
    */
-  it.each([
-    { label: 'on the MSEL list', background: '/assets/local/landing-background.jpg', mselId: undefined as string, shown: true },
-    { label: 'not on an open MSEL', background: '/assets/local/landing-background.jpg', mselId: 'msel-1', shown: false },
-    { label: 'not without the setting', background: undefined as string, mselId: undefined as string, shown: false },
-  ])('shows the landing background $label', async ({ background, mselId, shown }) => {
-    const { container } = await renderHome({ background, mselId });
+  it('shows the landing background once the image loads', async () => {
+    vi.stubGlobal('Image', FakeImage);
+    const { fixture, container } = await renderHome({ background: '/assets/local/landing-background.jpg' });
+
+    expect(FakeImage.last?.src).toBe('/assets/local/landing-background.jpg');
+    FakeImage.last!.onload!();
+    fixture.detectChanges();
 
     const page = container.querySelector('.app-content-container') as HTMLElement;
-    expect(page.classList.contains('has-background')).toBe(shown);
-    if (shown) {
-      expect(page.style.getPropertyValue('--landing-background')).toBe('url("/assets/local/landing-background.jpg")');
-    }
+    expect(page.style.getPropertyValue('--landing-background')).toBe('url("/assets/local/landing-background.jpg")');
+    expect(page.classList.contains('has-background')).toBe(true);
+  });
+
+  /**
+   * Verifies: an image that fails to load leaves the normal page background, as if unset.
+   * Interacts with: ComnSettingsService.settings (stub), a stubbed Image, HomeAppComponent template.
+   * Data: AppLandingBackgroundImage set to a missing image; the image error event fires.
+   */
+  it('keeps the normal background when the image fails to load', async () => {
+    vi.stubGlobal('Image', FakeImage);
+    const { fixture, container } = await renderHome({ background: '/assets/local/missing.jpg' });
+
+    FakeImage.last!.onerror?.();
+    fixture.detectChanges();
+
+    const page = container.querySelector('.app-content-container') as HTMLElement;
+    expect(page.style.getPropertyValue('--landing-background')).toBe('');
+    expect(page.classList.contains('has-background')).toBe(false);
+  });
+
+  /**
+   * Verifies: without the setting, no image is requested and the normal page background is kept.
+   * Interacts with: ComnSettingsService.settings (stub), a stubbed Image, HomeAppComponent template.
+   * Data: AppLandingBackgroundImage unset.
+   */
+  it('keeps the normal background without the setting', async () => {
+    vi.stubGlobal('Image', FakeImage);
+    const { container } = await renderHome();
+
+    expect(FakeImage.last).toBeUndefined();
+    const page = container.querySelector('.app-content-container') as HTMLElement;
+    expect(page.style.getPropertyValue('--landing-background')).toBe('');
+    expect(page.classList.contains('has-background')).toBe(false);
+  });
+
+  /**
+   * Verifies: an open MSEL shows no landing background, even once the image loads.
+   * Interacts with: ComnSettingsService.settings (stub), ActivatedRoute (?msel), a stubbed Image, HomeAppComponent template.
+   * Data: AppLandingBackgroundImage set to a relative asset URL; msel-1 open; the image load event fires.
+   */
+  it('hides the landing background on an open MSEL', async () => {
+    vi.stubGlobal('Image', FakeImage);
+    const { fixture, container } = await renderHome({ background: '/assets/local/landing-background.jpg', mselId: 'msel-1' });
+
+    FakeImage.last!.onload!();
+    fixture.detectChanges();
+
+    const page = container.querySelector('.app-content-container') as HTMLElement;
+    expect(page.classList.contains('has-background')).toBe(false);
   });
 });

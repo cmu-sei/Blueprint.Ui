@@ -57,7 +57,7 @@ export class JoinComponent implements OnDestroy, OnInit {
   topbarColor = '#ef3a47';
   topbarTextColor = '#FFFFFF';
   topbarImage = this.settingsService.settings.AppTopBarImage;
-  backgroundImage = landingBackground(this.settingsService.settings);
+  readonly backgroundImage = landingBackground(this.settingsService.settings);
   TopbarView = TopbarView;
   appTitle = 'Join Event';
   joinStatus: { [id: string]: string } = {};

@@ -80,7 +80,7 @@ export class HomeAppComponent implements OnDestroy, OnInit {
   private unsubscribe$ = new Subject();
   hideTopbar = false;
   topbarImage = this.settingsService.settings.AppTopBarImage;
-  backgroundImage = landingBackground(this.settingsService.settings);
+  readonly backgroundImage = landingBackground(this.settingsService.settings);
   TopbarView = TopbarView;
   theme$: Observable<Theme>;
   teamList: Team[] = [];

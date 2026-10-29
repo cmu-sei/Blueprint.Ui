@@ -52,7 +52,7 @@ export class AssessComponent implements OnDestroy, OnInit {
   hideTopbar = this.uiDataService.inIframe();
   topbarText = 'Assess Events';
   topbarImage = this.settingsService.settings.AppTopBarImage;
-  backgroundImage = landingBackground(this.settingsService.settings);
+  readonly backgroundImage = landingBackground(this.settingsService.settings);
   TopbarView = TopbarView;
   readonly cardImage = cardImage;
   private unsubscribe$ = new Subject();
