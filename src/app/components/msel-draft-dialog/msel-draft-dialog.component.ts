@@ -106,6 +106,7 @@ export class MselDraftDialogComponent {
     dialogRef.disableClose = true;
     if (data.templates.length === 1) {
       this.templateMselId = data.templates[0].id;
+      this.templateChanged();
     }
     this.competencyFrameworkService
       .getCompetencyFrameworks()
@@ -120,6 +121,29 @@ export class MselDraftDialogComponent {
 
   get templateUsesCite(): boolean {
     return !!this.data.templates.find((t) => t.id === this.templateMselId)?.useCite;
+  }
+
+  get templateHasScoringModel(): boolean {
+    return !!this.data.templates.find((t) => t.id === this.templateMselId)?.citeScoringModelId;
+  }
+
+  // a template that links a scoring model keeps it unless the planner chooses another
+  templateChanged() {
+    this.design.citeAssessment = this.templateHasScoringModel ? 'Template' : 'QuestionsByMove';
+  }
+
+  // what creating the MSEL makes in CITE, so the planner is not surprised by it
+  get citeModelNote(): string {
+    switch (this.result?.draft?.design?.citeAssessment) {
+      case 'QuestionsByMove':
+        return `Creating the MSEL also creates the scoring model "${this.result.draft.name} Questions by Move" in CITE, from each move's questions.`;
+      case 'MissionImpact':
+        return 'The MSEL uses the DoD CTT Mission Impact Assessment scoring model, created in CITE if it is not there.';
+      case 'Likelihood':
+        return 'The MSEL uses the DoD CTT Likelihood Assessment Matrix scoring model, created in CITE if it is not there.';
+      default:
+        return '';
+    }
   }
 
   objectiveTask(id: string): string {

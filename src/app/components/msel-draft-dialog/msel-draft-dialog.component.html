@@ -14,7 +14,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
   </p>
   <mat-form-field class="full-width">
     <mat-label>Template</mat-label>
-    <mat-select [(ngModel)]="templateMselId" [disabled]="isDrafting">
+    <mat-select [(ngModel)]="templateMselId" (ngModelChange)="templateChanged()" [disabled]="isDrafting">
       @for (template of data.templates; track template.id) {
       <mat-option [value]="template.id">{{ template.name }}</mat-option>
       }
@@ -54,6 +54,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <mat-form-field>
         <mat-label>CITE assessment</mat-label>
         <mat-select [(ngModel)]="design.citeAssessment" [disabled]="isDrafting">
+          @if (templateHasScoringModel) {
+          <mat-option value="Template">Keep the template's scoring model</mat-option>
+          }
           <mat-option value="QuestionsByMove">Questions by move</mat-option>
           <mat-option value="MissionImpact">DoD CTT mission impact matrix</mat-option>
           <mat-option value="Likelihood">DoD CTT likelihood matrix</mat-option>
@@ -114,6 +117,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
   @if (result.draft.scenario?.problem || result.draft.objectives?.length) {
   <section class="section">
     <h3 class="section-title">Scenario and objectives</h3>
+    <p class="hint">Become the Exercise Overview page participants see, and the Facilitator Guide only exercise control sees.</p>
     @if (result.draft.scenario?.problem) {
     <p><strong>{{ result.draft.scenario.problem }}</strong> {{ result.draft.scenario.premise }}</p>
     }
@@ -184,10 +188,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
   </section>
   }
 
-  @if (result.draft.citeActions?.length) {
+  @if (result.draft.citeActions?.length || citeModelNote) {
   <section class="section">
-    <h3 class="section-title">CITE actions ({{ result.draft.citeActions.length }})</h3>
-    <p class="hint">What each team should do in each move. CITE lists them for the team to check off.</p>
+    <h3 class="section-title">CITE tasks ({{ result.draft.citeActions?.length ?? 0 }})</h3>
+    @if (citeModelNote) {
+    <p class="hint">{{ citeModelNote }}</p>
+    }
+    <p class="hint">What each team must complete in each move. CITE lists them for the team to check off.</p>
     @for (group of citeActionGroups; track group.key) {
     <h4 class="cite-group">Move {{ group.moveNumber }}, {{ group.team }}</h4>
     <ul class="plain-list">
@@ -206,7 +213,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
 
   <section class="section">
     <h3 class="section-title">Teams and organizations</h3>
+    @if (result.draft.design?.profilePages !== false) {
     <p class="hint">Their profiles also go on Team Profiles and Organization Profiles pages, which every participant can see.</p>
+    }
     <mat-chip-set aria-label="Teams">
       @for (team of result.draft.teams; track team.shortName) {
       <mat-chip [matTooltip]="team.name">{{ team.shortName }}</mat-chip>

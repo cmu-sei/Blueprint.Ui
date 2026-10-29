@@ -251,12 +251,12 @@ describe('MselDraftDialogComponent', () => {
   });
 
   /**
-   * Verifies: the review shows each move's scenario time, the read-in as it will read, and the CITE actions by move and team;
+   * Verifies: the review shows each move's scenario time, the read-in as it will read, and the CITE tasks by move and team;
    * removing one action, or leaving out the read-in, leaves it out of the MSEL.
-   * Interacts with: the Moves, Read-in and CITE actions sections, dialogRef.close.
+   * Interacts with: the Moves, Read-in and CITE tasks sections, dialogRef.close.
    * Data: move 1 opens 05 Mar 2026 12:00 UTC; a read-in; BLUE has two actions in move 0 and SOC one in move 1.
    */
-  it('shows the scenario clock, read-in and CITE actions for review', async () => {
+  it('shows the scenario clock, read-in and CITE tasks for review', async () => {
     const result = draftResult();
     result.draft.moves.push({ moveNumber: 1, description: 'Next day', startMinutes: 30, situationTime: '2026-03-05T12:00:00.000Z' });
     result.draft.readIn = '<h2>Background</h2><p>The port is closed.</p>';
@@ -270,7 +270,7 @@ describe('MselDraftDialogComponent', () => {
     expect(screen.getByText(/scenario time 05 Mar 2026/)).toBeInTheDocument();
     expect(screen.getByLabelText('Read-in preview')).toContainHTML('<h2>Background</h2>');
     expect(screen.getByText(/Becomes the Port closure Read-In page/)).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'CITE actions (3)' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'CITE tasks (3)' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Move 0, BLUE' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Move 1, SOC' })).toBeInTheDocument();
 
@@ -352,5 +352,27 @@ describe('MselDraftDialogComponent', () => {
     expect(within(move).getByText('Who leads?')).toBeInTheDocument();
     expect(screen.getByText('Open an incident')).toBeInTheDocument();
     expect(screen.getByText('O1 Reopen the port')).toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: a template that links a scoring model offers to keep it and chooses that by default; the review says what CITE gets.
+   * Interacts with: the CITE assessment select, MselDataService.draftMsel, the CITE tasks section.
+   * Data: a CITE template with a scoring model; then a draft using questions by move.
+   */
+  it('keeps the template scoring model by default and says what CITE gets', async () => {
+    const result = draftResult();
+    result.draft.design = { citeAssessment: 'QuestionsByMove' };
+    const { draftMsel } = await renderDraftDialog(result, undefined, undefined, [
+      { id: 'tpl-1', name: 'Template', useCite: true, citeScoringModelId: 'sm-1' },
+    ]);
+    const user = userEvent.setup();
+
+    await user.click(screen.getByText('Design choices (optional)'));
+    expect(screen.getByRole('combobox', { name: 'CITE assessment' })).toHaveTextContent("Keep the template's scoring model");
+    await user.type(screen.getByRole('textbox', { name: 'Exercise description' }), 'Cables are cut.');
+    await user.click(screen.getByRole('button', { name: 'Draft' }));
+
+    expect(draftMsel).toHaveBeenCalledWith(expect.objectContaining({ design: expect.objectContaining({ citeAssessment: 'Template' }) }));
+    expect(screen.getByText(/also creates the scoring model "Port closure Questions by Move" in CITE/)).toBeInTheDocument();
   });
 });
