@@ -375,4 +375,42 @@ describe('MselDraftDialogComponent', () => {
     expect(draftMsel).toHaveBeenCalledWith(expect.objectContaining({ design: expect.objectContaining({ citeAssessment: 'Template' }) }));
     expect(screen.getByText(/also creates the scoring model "Port closure Questions by Move" in CITE/)).toBeInTheDocument();
   });
+
+  /**
+   * Verifies: a Gallery template offers the card groupings and a CITE template offers NCISS, and both go with the draft.
+   * Interacts with: the Gallery cards and CITE assessment selects, MselDataService.draftMsel.
+   * Data: a template with Gallery and CITE; cards by critical infrastructure sector, CISA NCISS.
+   */
+  it('sends the card grouping and NCISS with the draft', async () => {
+    const { draftMsel } = await renderDraftDialog(undefined, undefined, undefined, [
+      { id: 'tpl-1', name: 'Template', useCite: true, useGallery: true },
+    ]);
+    const user = userEvent.setup();
+
+    await user.click(screen.getByText('Design choices (optional)'));
+    await user.click(screen.getByRole('combobox', { name: 'Gallery cards' }));
+    await user.click(await screen.findByRole('option', { name: 'By critical infrastructure sector' }));
+    await user.click(screen.getByRole('combobox', { name: 'CITE assessment' }));
+    await user.click(await screen.findByRole('option', { name: 'CISA NCISS' }));
+    await user.type(screen.getByRole('textbox', { name: 'Exercise description' }), 'A grid attack.');
+    await user.click(screen.getByRole('button', { name: 'Draft' }));
+
+    expect(draftMsel).toHaveBeenCalledWith(expect.objectContaining({
+      design: expect.objectContaining({ cardGrouping: 'Sectors', citeAssessment: 'Nciss' }),
+    }));
+  });
+
+  /**
+   * Verifies: with several templates, the Crucible MSEL template is chosen to start with.
+   * Interacts with: the Template select.
+   * Data: Standard MSEL and Crucible MSEL templates.
+   */
+  it('starts from the Crucible MSEL template', async () => {
+    await renderDraftDialog(undefined, undefined, undefined, [
+      { id: 'tpl-standard', name: 'Standard MSEL' },
+      { id: 'tpl-crucible', name: 'Crucible MSEL', useCite: true, useGallery: true },
+    ]);
+
+    expect(screen.getByRole('combobox', { name: 'Template' })).toHaveTextContent('Crucible MSEL');
+  });
 });

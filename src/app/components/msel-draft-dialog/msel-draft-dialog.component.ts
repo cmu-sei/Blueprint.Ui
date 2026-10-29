@@ -104,8 +104,10 @@ export class MselDraftDialogComponent {
     private competencyFrameworkService: CompetencyFrameworkService
   ) {
     dialogRef.disableClose = true;
-    if (data.templates.length === 1) {
-      this.templateMselId = data.templates[0].id;
+    // the template built for drafting, ready for every integration, unless there is only one to choose
+    const preferred = data.templates.length === 1 ? data.templates[0] : data.templates.find((t) => t.name === 'Crucible MSEL');
+    if (preferred) {
+      this.templateMselId = preferred.id;
       this.templateChanged();
     }
     this.competencyFrameworkService
@@ -121,6 +123,10 @@ export class MselDraftDialogComponent {
 
   get templateUsesCite(): boolean {
     return !!this.data.templates.find((t) => t.id === this.templateMselId)?.useCite;
+  }
+
+  get templateUsesGallery(): boolean {
+    return !!this.data.templates.find((t) => t.id === this.templateMselId)?.useGallery;
   }
 
   get templateHasScoringModel(): boolean {
@@ -141,6 +147,8 @@ export class MselDraftDialogComponent {
         return 'The MSEL uses the DoD CTT Mission Impact Assessment scoring model, created in CITE if it is not there.';
       case 'Likelihood':
         return 'The MSEL uses the DoD CTT Likelihood Assessment Matrix scoring model, created in CITE if it is not there.';
+      case 'Nciss':
+        return 'The MSEL uses the CISA NCISS scoring model, created in CITE if it is not there.';
       default:
         return '';
     }

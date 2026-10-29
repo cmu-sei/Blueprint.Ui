@@ -25,7 +25,7 @@ export interface MselDraftDesign {
      */
     structure?: string | null;
     /**
-     * The CITE scoring model: None, QuestionsByMove, MissionImpact or Likelihood
+     * The CITE scoring model: Template, QuestionsByMove, MissionImpact, Likelihood, Nciss or None
      */
     citeAssessment?: string | null;
     moves?: number | null;
@@ -41,6 +41,10 @@ export interface MselDraftDesign {
      * Whether the last move is a brief to leadership
      */
     leadershipBrief?: boolean | null;
+    /**
+     * What each Gallery card holds: Sources (a source or thread), Organizations, Sectors (critical infrastructure), Countries or Terrain (networks, subnets and key cyber terrain); empty for the draft to choose
+     */
+    cardGrouping?: string | null;
     /**
      * Whether to add Team Profiles and Organization Profiles pages
      */

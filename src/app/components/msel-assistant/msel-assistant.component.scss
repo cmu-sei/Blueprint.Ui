@@ -85,6 +85,11 @@
   margin-top: 0.25rem;
 }
 
+// a long result must not squeeze the icon narrower than its glyph
+.results li mat-icon {
+  flex-shrink: 0;
+}
+
 .results li.failed,
 .error-message {
   color: var(--mat-sys-error);

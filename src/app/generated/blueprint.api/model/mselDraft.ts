@@ -20,6 +20,7 @@ import { MselDraftDesign } from './mselDraftDesign';
 import { MselDraftObjective } from './mselDraftObjective';
 import { MselDraftScenario } from './mselDraftScenario';
 import { MselDraftInject } from './mselDraftInject';
+import { MselDraftMetadata } from './mselDraftMetadata';
 import { MselDraftMove } from './mselDraftMove';
 import { MselDraftOrganization } from './mselDraftOrganization';
 
@@ -36,6 +37,10 @@ export interface MselDraft {
      */
     design?: MselDraftDesign;
     scenario?: MselDraftScenario;
+    /**
+     * The catalog metadata on the MSEL\'s Info page
+     */
+    metadata?: MselDraftMetadata;
     /**
      * What participants are trained to do; each inject and the AAR trace back to one
      */

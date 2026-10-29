@@ -125,6 +125,7 @@ export * from './mselDraftCompetency';
 export * from './mselDraftField';
 export * from './mselDraftImport';
 export * from './mselDraftInject';
+export * from './mselDraftMetadata';
 export * from './mselDraftObjective';
 export * from './mselDraftMove';
 export * from './mselDraftOrganization';

@@ -60,7 +60,21 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <mat-option value="QuestionsByMove">Questions by move</mat-option>
           <mat-option value="MissionImpact">DoD CTT mission impact matrix</mat-option>
           <mat-option value="Likelihood">DoD CTT likelihood matrix</mat-option>
+          <mat-option value="Nciss">CISA NCISS</mat-option>
           <mat-option value="None">None</mat-option>
+        </mat-select>
+      </mat-form-field>
+      }
+      @if (templateUsesGallery) {
+      <mat-form-field>
+        <mat-label>Gallery cards</mat-label>
+        <mat-select [(ngModel)]="design.cardGrouping" [disabled]="isDrafting">
+          <mat-option [value]="null">Let the draft decide</mat-option>
+          <mat-option value="Sources">By source or thread</mat-option>
+          <mat-option value="Organizations">By organization</mat-option>
+          <mat-option value="Sectors">By critical infrastructure sector</mat-option>
+          <mat-option value="Countries">By country</mat-option>
+          <mat-option value="Terrain">By network segment and key cyber terrain</mat-option>
         </mat-select>
       </mat-form-field>
       }
