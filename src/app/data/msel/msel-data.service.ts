@@ -22,6 +22,7 @@ import {
   MselService,
   Unit,
   ScenarioEvent,
+  SteamfitterScenarioStartMode,
   Team,
   UserMselRole,
 } from 'src/app/generated/blueprint.api';
@@ -52,6 +53,7 @@ export class MselPlus implements Msel {
   citeScoringModelId?: string;
   useSteamfitter?: boolean;
   steamfitterScenarioId?: string;
+  steamfitterScenarioStartMode?: SteamfitterScenarioStartMode;
   useCaster?: boolean;
   casterDirectoryId?: string;
   casterWorkspaceId?: string;
