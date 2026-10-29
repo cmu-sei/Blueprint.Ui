@@ -14,6 +14,8 @@ import {
   MselCompetency,
   MselItemStatus,
   MselPage,
+  MselScoringModel,
+  MselScoringModelService,
   MselService,
   MselUnit,
   ScenarioEvent,
@@ -72,12 +74,15 @@ import { AngularEditorModule } from '@kolkov/angular-editor';
 import { CardEditDialogComponent } from '../card-edit-dialog/card-edit-dialog.component';
 import { DatePipe } from '@angular/common';
 import { TimezoneAbbrPipe } from '../../utilities/timezone-abbr';
+import { MatRadioButton, MatRadioGroup } from '@angular/material/radio';
+import { normalizeScoringModel } from 'src/app/utilities/scoring-model';
+import { MselScoringModelComponent } from '../msel-scoring-model/msel-scoring-model.component';
 
 @Component({
     selector: 'app-msel-info',
     templateUrl: './msel-info.component.html',
     styleUrls: ['./msel-info.component.scss'],
-    imports: [IntegrationStatusComponent, MatTabGroup, MatTab, MatIconButton, MatIcon, MatLabel, MatMenuTrigger, MatMenu, MatMenuItem, MatFormField, MatInput, FormsModule, MatError, MatHint, MatCheckbox, NgxMatDatepickerInput, MatDatepickerToggle, MatSuffix, NgxMatDatetimepicker, NgxMatDatepickerActions, MatButton, NgxMatDatepickerApply, NgxMatDatepickerCancel, DurationEditComponent, MatSelect, MatOption, ClipboardModule, MatExpansionPanel, MatExpansionPanelHeader, MatExpansionPanelTitle, MatTooltip, AngularEditorModule, MatTabLabel, CardEditDialogComponent, DatePipe, TimezoneAbbrPipe]
+    imports: [IntegrationStatusComponent, MatTabGroup, MatTab, MatIconButton, MatIcon, MatLabel, MatMenuTrigger, MatMenu, MatMenuItem, MatFormField, MatInput, FormsModule, MatError, MatHint, MatCheckbox, NgxMatDatepickerInput, MatDatepickerToggle, MatSuffix, NgxMatDatetimepicker, NgxMatDatepickerActions, MatButton, NgxMatDatepickerApply, NgxMatDatepickerCancel, DurationEditComponent, MatSelect, MatOption, ClipboardModule, MatExpansionPanel, MatExpansionPanelHeader, MatExpansionPanelTitle, MatTooltip, AngularEditorModule, MatTabLabel, CardEditDialogComponent, DatePipe, TimezoneAbbrPipe, MatRadioGroup, MatRadioButton, MselScoringModelComponent]
 })
 export class MselInfoComponent implements OnDestroy, OnInit {
   dialogService = inject(CrucibleDialogService);
@@ -106,6 +111,7 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   private activatedRoute = inject(ActivatedRoute);
   private settingsService = inject(ComnSettingsService);
   private scenarioEventQuery = inject(ScenarioEventQuery);
+  private mselScoringModelService = inject(MselScoringModelService);
 
   readonly loggedInUserId = input<string>(undefined);
   readonly deleteThisMsel = output<string>();
@@ -116,6 +122,7 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   private unsubscribe$ = new Subject();
   // context menu
   readonly contextMenu = viewChild(MatMenuTrigger);
+  readonly scoringModelSourceGroup = viewChild(MatRadioGroup);
   contextMenuPosition = { x: '0px', y: '0px' };
   isChanged = false;
   // The card image is saved on its own, as soon as it is chosen, not with Save.
@@ -137,6 +144,9 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   private competencyTypeCache = new Map<string, string>();
   creatorName = 'unknown';
   scoringModelList: ScoringModel[] = [];
+  // A MSEL either links a CITE scoring model or authors its own in Blueprint, which is saved as soon as it changes.
+  authoredScoringModel: MselScoringModel | null = null;
+  citeScoringModelSource: 'link' | 'author' = 'link';
   casterDirectoryList: CasterDirectory[] = [];
   casterDirectoryError = '';
   private casterDirectoriesRequested = false;
@@ -211,6 +221,7 @@ export class MselInfoComponent implements OnDestroy, OnInit {
             // the Caster warning needs to know whether any application opens the VM UI
             this.playerApplicationDataService.loadByMsel(msel.id);
             this.newMselPage.mselId = msel.id;
+            this.loadAuthoredScoringModel(msel.id);
           }
           if (!this.msel?.integrationStatus) {
             this.integrationRequested = '';
@@ -568,6 +579,12 @@ export class MselInfoComponent implements OnDestroy, OnInit {
           this.changeDetectorRef.markForCheck();
         }
       });
+  }
+
+  // the scoring model the MSEL authors follows the API's rule for the MSEL's scoring model link: EditMsels or the owner
+  canAuthorScoringModel(): boolean {
+    return this.permissionDataService.hasPermission(SystemPermission.EditMsels) ||
+      this.msel.hasRole(this.loggedInUserId(), '').owner;
   }
 
   canManageMsel(): boolean {
@@ -936,6 +953,71 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     this.msel.startTime.setHours(8, 0, 0, 0);
     this.msel.startTime.setDate(this.msel.startTime.getDate() + 1);
     this.startTimeCheck();
+  }
+
+  loadAuthoredScoringModel(mselId: string) {
+    this.authoredScoringModel = null;
+    this.citeScoringModelSource = 'link';
+    this.mselScoringModelService
+      .getMselScoringModel(mselId)
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe({
+        next: (model) => {
+          // the answer for a MSEL the user has since left is not this one's
+          if (this.msel.id !== mselId) {
+            return;
+          }
+          this.authoredScoringModel = model ? normalizeScoringModel(model) : null;
+          this.citeScoringModelSource = model ? 'author' : 'link';
+        },
+        error: (error) => console.error('Failed to load the MSEL scoring model:', error),
+      });
+  }
+
+  // the push needs a scoring model to make the CITE evaluation from, linked or authored
+  hasCiteScoringModel(): boolean {
+    return !!this.msel.citeScoringModelId || !!this.authoredScoringModel;
+  }
+
+  onScoringModelSourceChange(source: 'link' | 'author') {
+    if (source !== 'link' || !this.authoredScoringModel) {
+      this.citeScoringModelSource = source;
+      return;
+    }
+    // linking a CITE model replaces the one authored here, which is deleted
+    const authored = this.authoredScoringModel;
+    this.dialogService
+      .confirm({
+        title: 'Link a CITE Scoring Model',
+        message: `Linking a CITE scoring model deletes "${authored.description}", the scoring model authored in Blueprint. Delete it?`,
+        confirmText: 'Delete',
+        cancelText: 'Cancel',
+      })
+      .afterClosed()
+      .subscribe((confirmed) => {
+        if (!confirmed) {
+          this.keepAuthoredSource();
+          return;
+        }
+        this.mselScoringModelService.deleteMselScoringModel(this.msel.id).subscribe({
+          next: () => {
+            this.authoredScoringModel = null;
+            this.citeScoringModelSource = 'link';
+          },
+          error: (err) => {
+            this.keepAuthoredSource();
+            this.errorService.handleError(err);
+          },
+        });
+      });
+  }
+
+  // the radio group moved to the link when it was clicked; the source it is bound to never did
+  private keepAuthoredSource() {
+    const group = this.scoringModelSourceGroup();
+    if (group) {
+      group.value = 'author';
+    }
   }
 
   updateCiteScoringModelName() {

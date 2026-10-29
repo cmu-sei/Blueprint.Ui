@@ -11,7 +11,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -24,7 +24,7 @@ import { MatSelectHarness } from '@angular/material/select/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
-import { Observable, of, throwError } from 'rxjs';
+import { Observable, of, Subject, throwError } from 'rxjs';
 import { AngularEditorModule } from '@kolkov/angular-editor';
 import { ClipboardModule } from 'ngx-clipboard';
 import { NgxMatDatepickerActions, NgxMatDatepickerApply, NgxMatDatepickerCancel, NgxMatDatepickerInput, NgxMatDatetimepicker } from '@ngxmc/datetime-picker';
@@ -44,6 +44,8 @@ import {
   MselIntegrationNames,
   MselPageService,
   MselRole,
+  MselScoringModel,
+  MselScoringModelService,
   MselService,
   PlayerApplication,
   PlayerApplicationService,
@@ -66,6 +68,8 @@ import { permissionApiStubs } from 'src/app/test-utils/mock-permission-data.serv
 import { unstubbed } from 'src/app/test-utils/unstubbed';
 import { IntegrationStatusComponent } from '../integration-status/integration-status.component';
 import { DurationEditComponent } from '../shared/duration-edit/duration-edit.component';
+import { MselScoringModelComponent } from '../msel-scoring-model/msel-scoring-model.component';
+import { MatRadioModule } from '@angular/material/radio';
 
 @Component({ selector: 'app-integration-status', template: '' })
 class IntegrationStatusStub {
@@ -84,7 +88,21 @@ class DurationEditStub {
   readonly change = output<number>();
 }
 
+@Component({ selector: 'app-msel-scoring-model', template: '' })
+class MselScoringModelStub {
+  readonly mselId = input<string>(undefined);
+  readonly scoringModel = input<MselScoringModel | null>(null);
+  readonly canEdit = input<boolean>(false);
+  readonly citeScoringModels = input<ScoringModel[]>([]);
+  readonly scoringModelChange = output<MselScoringModel | null>();
+}
+
 const ME = 'user-me';
+const AUTHORED: MselScoringModel = {
+  mselId: 'msel-1',
+  description: 'Harbor Questions',
+  categories: [{ id: 'cat-1', displayOrder: '1' as unknown as number, description: 'Move 1', moveNumberFirstDisplay: 1, moveNumberLastDisplay: 1, options: [] }],
+};
 const PAGE: MselPage = { id: 'page-1', mselId: 'msel-1', name: 'Read Ahead', content: '<p>Welcome</p>', allCanView: true };
 const ALL = Object.values(SystemPermission);
 const allBut = (...missing: SystemPermission[]) => ALL.filter((p) => !missing.includes(p));
@@ -123,6 +141,7 @@ async function renderInfo(
     apps?: PlayerApplication[];
     names?: MselIntegrationNames;
     casterUrl?: string;
+    authored?: MselScoringModel | null;
   } = {},
 ) {
   const {
@@ -134,6 +153,7 @@ async function renderInfo(
     apps = [],
     names = {},
     casterUrl = 'http://caster.example/',
+    authored = null,
   } = overrides;
   const pageApi = {
     getMselPages: vi.fn(() => of(structuredClone([PAGE]))),
@@ -165,6 +185,10 @@ async function renderInfo(
     setMselImage: vi.fn((id: string) => of<Msel>({ ...msel(myRoles, startTime, mselExtra), id, imageDateModified: new Date('2026-10-23T12:00:00Z') })),
     deleteMselImage: vi.fn((id: string) => of<Msel>({ ...msel(myRoles, startTime, mselExtra), id, imageDateModified: null })),
   } satisfies ApiStub<MselImageService>;
+  const scoringModelApi = {
+    getMselScoringModel: vi.fn(() => of(structuredClone(authored))),
+    deleteMselScoringModel: vi.fn(() => of<unknown>(null)),
+  } satisfies ApiStub<MselScoringModelService>;
   const systemMessage = { displayMessage: vi.fn() } satisfies Pick<SystemMessageService, 'displayMessage'>;
   // The user confirms every dialog.
   const confirm = vi.fn(() => dialogRefStub<unknown, boolean>(true).dialogRef);
@@ -185,6 +209,7 @@ async function renderInfo(
       MatInputModule,
       MatMenuModule,
       MatNativeDateModule,
+      MatRadioModule,
       MatSelectModule,
       MatTabsModule,
       MatTooltipModule,
@@ -197,6 +222,7 @@ async function renderInfo(
     childStubs: [
       { replace: IntegrationStatusComponent, with: IntegrationStatusStub },
       { replace: DurationEditComponent, with: DurationEditStub },
+      { replace: MselScoringModelComponent, with: MselScoringModelStub },
     ],
     providers: [
       { provide: SystemPermissionsService, useValue: permissionApis.systemPermissions },
@@ -210,6 +236,7 @@ async function renderInfo(
       { provide: CasterService, useValue: casterApi },
       { provide: MselService, useValue: mselApi },
       { provide: MselImageService, useValue: imageApi },
+      { provide: MselScoringModelService, useValue: scoringModelApi },
       { provide: SystemMessageService, useValue: systemMessage },
       {
         provide: ComnSettingsService,
@@ -236,7 +263,7 @@ async function renderInfo(
   // ngModel applies [disabled] in a microtask.
   await rendered.fixture.whenStable();
   rendered.fixture.detectChanges();
-  return { ...rendered, pageApi, confirm, appApi, casterApi, mselApi, userApi, imageApi, systemMessage };
+  return { ...rendered, pageApi, confirm, appApi, casterApi, mselApi, userApi, imageApi, scoringModelApi, systemMessage };
 }
 
 // The settings page is large, so queries go by label, title or text: whole-page
@@ -742,6 +769,111 @@ describe('MselInfoComponent', () => {
       expect(imageApi.deleteMselImage.mock.calls).toEqual([['msel-1']]);
       expect(screen.queryByAltText('Card image for Exercise Alpha')).not.toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Upload Image' })).toBeInTheDocument();
+    });
+  });
+  describe('the CITE scoring model', () => {
+    const cite = { useCite: true, usePlayer: false };
+    const scoringModelChild = (fixture: ComponentFixture<unknown>) =>
+      fixture.debugElement.query(By.directive(MselScoringModelStub))?.componentInstance as MselScoringModelStub;
+
+    /**
+     * Verifies: a MSEL with its own scoring model shows it as authored in Blueprint, and may be pushed without a linked CITE model.
+     * Interacts with: MselScoringModelService.getMselScoringModel (stub), hasCiteScoringModel, the Push Integrations button, app-msel-scoring-model (stub).
+     * Data: MSEL role Owner; a pending MSEL using CITE with no linked model; the authored model Harbor Questions.
+     */
+    it('pushes a MSEL with its own scoring model and no linked one', async () => {
+      const { fixture, scoringModelApi } = await renderInfo({ myRoles: [MselRole.Owner], mselExtra: cite, authored: AUTHORED });
+
+      expect(scoringModelApi.getMselScoringModel).toHaveBeenCalledWith('msel-1');
+      expect(screen.getByRole('radio', { name: 'Author it in Blueprint' })).toBeChecked();
+      expect(scoringModelChild(fixture).scoringModel().description).toBe('Harbor Questions');
+      // the API's string display orders arrive as numbers
+      expect(scoringModelChild(fixture).scoringModel().categories[0].displayOrder).toBe(1);
+      expect(scoringModelChild(fixture).canEdit()).toBe(true);
+      expect(screen.getByTitle('Push Integrations')).toBeEnabled();
+    });
+
+    /**
+     * Verifies: a MSEL using CITE with neither a linked nor an authored scoring model cannot be pushed, and offers the link.
+     * Interacts with: hasCiteScoringModel, the Push Integrations button.
+     * Data: MSEL role Owner; a pending MSEL using CITE with no scoring model of either kind.
+     */
+    it('blocks the push without a scoring model of either kind', async () => {
+      const { fixture } = await renderInfo({ myRoles: [MselRole.Owner], mselExtra: cite });
+
+      expect(screen.getByRole('radio', { name: 'Link a CITE scoring model' })).toBeChecked();
+      expect(scoringModelChild(fixture)).toBeUndefined();
+      expect(screen.getByTitle('Push Integrations')).toBeDisabled();
+    });
+
+    /**
+     * Verifies: authoring a model from the child component enables the push, because the MSEL now has one.
+     * Interacts with: the source radio group, app-msel-scoring-model (stub) scoringModelChange.
+     * Data: MSEL role Owner; a pending MSEL using CITE with no scoring model; the child reports Harbor Questions.
+     */
+    it('takes the model the planner authors', async () => {
+      const { fixture } = await renderInfo({ myRoles: [MselRole.Owner], mselExtra: cite });
+
+      await userEvent.setup().click(screen.getByRole('radio', { name: 'Author it in Blueprint' }));
+      fixture.detectChanges();
+      scoringModelChild(fixture).scoringModelChange.emit(AUTHORED);
+      fixture.detectChanges();
+
+      expect(screen.getByTitle('Push Integrations')).toBeEnabled();
+    });
+
+    /**
+     * Verifies: going back to linking a CITE model deletes the authored model once the planner confirms, and the push needs a link again.
+     * Interacts with: CrucibleDialogService.confirm (stub, confirms), MselScoringModelService.deleteMselScoringModel (stub).
+     * Data: MSEL role Owner; a pending MSEL using CITE with the authored model Harbor Questions.
+     */
+    it('deletes the authored model when the planner links a CITE model instead', async () => {
+      const { fixture, confirm, scoringModelApi } = await renderInfo({ myRoles: [MselRole.Owner], mselExtra: cite, authored: AUTHORED });
+
+      await userEvent.setup().click(screen.getByRole('radio', { name: 'Link a CITE scoring model' }));
+      fixture.detectChanges();
+
+      expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Link a CITE Scoring Model', confirmText: 'Delete' }));
+      expect(scoringModelApi.deleteMselScoringModel).toHaveBeenCalledWith('msel-1');
+      expect(scoringModelChild(fixture)).toBeUndefined();
+      expect(screen.getByTitle('Push Integrations')).toBeDisabled();
+    });
+
+    /**
+     * Verifies: declining the confirmation keeps the authored model and its choice.
+     * Interacts with: CrucibleDialogService.confirm (stub, declines once), MselScoringModelService.deleteMselScoringModel (stub).
+     * Data: MSEL role Owner; a pending MSEL using CITE with the authored model Harbor Questions.
+     */
+    it('keeps the authored model when the planner declines', async () => {
+      const { fixture, confirm, scoringModelApi } = await renderInfo({ myRoles: [MselRole.Owner], mselExtra: cite, authored: AUTHORED });
+      // a real confirmation answers after the click has been rendered
+      const declined = new Subject<boolean>();
+      confirm.mockReturnValueOnce({ afterClosed: () => declined.asObservable() } as MatDialogRef<unknown, boolean>);
+
+      await userEvent.setup().click(screen.getByRole('radio', { name: 'Link a CITE scoring model' }));
+      fixture.detectChanges();
+      declined.next(false);
+      fixture.detectChanges();
+
+      expect(scoringModelApi.deleteMselScoringModel).not.toHaveBeenCalled();
+      expect(screen.getByRole('radio', { name: 'Author it in Blueprint' })).toBeChecked();
+      expect(scoringModelChild(fixture).scoringModel().description).toBe('Harbor Questions');
+    });
+
+    /**
+     * Verifies: while the MSEL is pushed its scoring model is shown read-only and its source cannot be changed.
+     * Interacts with: integrationsLocked, the source radio group, app-msel-scoring-model (stub) canEdit.
+     * Data: MSEL role Owner; a deployed MSEL using CITE with an evaluation and the authored model Harbor Questions.
+     */
+    it('locks the scoring model while the MSEL is pushed', async () => {
+      const { fixture } = await renderInfo({
+        myRoles: [MselRole.Owner],
+        mselExtra: { ...cite, status: MselItemStatus.Deployed, citeEvaluationId: 'eval-1' },
+        authored: AUTHORED,
+      });
+
+      expect(screen.getByRole('radio', { name: 'Link a CITE scoring model' })).toBeDisabled();
+      expect(scoringModelChild(fixture).canEdit()).toBe(false);
     });
   });
 });

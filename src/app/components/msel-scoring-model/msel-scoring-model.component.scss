@@ -1,0 +1,35 @@
+// Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+// Released under a MIT (SEI)-style license. See LICENSE.md in the
+// project root for license information.
+
+.authored {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+}
+
+.authored-summary,
+.authored-start {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.authored-name {
+  font-weight: 500;
+}
+
+.authored-counts,
+.authored-none {
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.authored-warning {
+  color: var(--mat-sys-error);
+}
+
+.start-from {
+  min-width: 320px;
+}
