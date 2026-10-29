@@ -15,6 +15,7 @@
  */
 import { MselItemStatus } from './mselItemStatus';
 import { IntegrationType } from './integrationType';
+import { SteamfitterScenarioStartMode } from './steamfitterScenarioStartMode';
 
 
 export interface MselCreate { 
@@ -30,6 +31,7 @@ export interface MselCreate {
     citeIntegrationType?: IntegrationType;
     useSteamfitter?: boolean;
     steamfitterIntegrationType?: IntegrationType;
+    steamfitterScenarioStartMode?: SteamfitterScenarioStartMode;
     isTemplate?: boolean;
     startTime?: Date;
     durationSeconds?: number;

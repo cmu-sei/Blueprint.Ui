@@ -157,6 +157,7 @@ export * from './securityRuleSet';
 export * from './serializationFormat';
 export * from './sortVersion';
 export * from './steamfitterIntegrationType';
+export * from './steamfitterScenarioStartMode';
 export * from './steamfitterTask';
 export * from './steamfitterTaskAction';
 export * from './steamfitterTaskFields';
