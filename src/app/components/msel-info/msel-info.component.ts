@@ -1,6 +1,7 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
+import { CdkTextareaAutosize } from '@angular/cdk/text-field';
 import { ChangeDetectorRef, Component, HostListener, OnDestroy, OnInit, inject, input, output, viewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subject, Observable } from 'rxjs';
@@ -77,7 +78,7 @@ import { TimezoneAbbrPipe } from '../../utilities/timezone-abbr';
     selector: 'app-msel-info',
     templateUrl: './msel-info.component.html',
     styleUrls: ['./msel-info.component.scss'],
-    imports: [IntegrationStatusComponent, MatTabGroup, MatTab, MatIconButton, MatIcon, MatLabel, MatMenuTrigger, MatMenu, MatMenuItem, MatFormField, MatInput, FormsModule, MatError, MatHint, MatCheckbox, NgxMatDatepickerInput, MatDatepickerToggle, MatSuffix, NgxMatDatetimepicker, NgxMatDatepickerActions, MatButton, NgxMatDatepickerApply, NgxMatDatepickerCancel, DurationEditComponent, MatSelect, MatOption, ClipboardModule, MatExpansionPanel, MatExpansionPanelHeader, MatExpansionPanelTitle, MatTooltip, AngularEditorModule, MatTabLabel, CardEditDialogComponent, DatePipe, TimezoneAbbrPipe]
+    imports: [IntegrationStatusComponent, MatTabGroup, MatTab, MatIconButton, MatIcon, MatLabel, MatMenuTrigger, MatMenu, MatMenuItem, MatFormField, MatInput, CdkTextareaAutosize, FormsModule, MatError, MatHint, MatCheckbox, NgxMatDatepickerInput, MatDatepickerToggle, MatSuffix, NgxMatDatetimepicker, NgxMatDatepickerActions, MatButton, NgxMatDatepickerApply, NgxMatDatepickerCancel, DurationEditComponent, MatSelect, MatOption, ClipboardModule, MatExpansionPanel, MatExpansionPanelHeader, MatExpansionPanelTitle, MatTooltip, AngularEditorModule, MatTabLabel, CardEditDialogComponent, DatePipe, TimezoneAbbrPipe]
 })
 export class MselInfoComponent implements OnDestroy, OnInit {
   dialogService = inject(CrucibleDialogService);
