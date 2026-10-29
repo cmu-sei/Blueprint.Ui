@@ -601,6 +601,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
               <input type="text" matInput value="{{ creatorName }}" disabled />
             </mat-form-field>
           </div>
+          @if (canSeeAiUsage()) {
+          <app-ai-usage [mselId]="msel.id" />
+          }
         </div>
       </div>
       }

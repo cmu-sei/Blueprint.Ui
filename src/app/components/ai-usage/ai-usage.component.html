@@ -1,0 +1,57 @@
+<!--
+Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license. See LICENSE.md in the
+project root for license information.
+-->
+
+@if (usage) {
+<section class="ai-usage" aria-labelledby="ai-usage-title">
+  <h3 id="ai-usage-title" class="ai-usage-title">AI usage</h3>
+  <p class="hint">
+    {{ usage.calls }} {{ usage.calls === 1 ? 'call' : 'calls' }} to AI models drafted and changed this MSEL
+    @if (usage.estimatedCostMicros !== null && usage.estimatedCostMicros !== undefined) {
+    , about {{ dollars(usage.estimatedCostMicros) }} at list prices
+    }.
+    @if (usage.refused) {
+    {{ usage.refused }} {{ usage.refused === 1 ? 'was' : 'were' }} declined by the model's safety checks and billed all the same.
+    }
+  </p>
+  <table class="ai-usage-table">
+    <thead>
+      <tr>
+        <th scope="col">Step</th>
+        <th scope="col">Calls</th>
+        <th scope="col">Input tokens</th>
+        <th scope="col">Output tokens</th>
+        <th scope="col">Photos</th>
+        <th scope="col">Estimated cost</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (operation of usage.byOperation; track operation.name) {
+      <tr>
+        <th scope="row">{{ label(operation.name) }}</th>
+        <td>{{ operation.calls }}</td>
+        <td>{{ operation.inputTokens | number }}</td>
+        <td>{{ operation.outputTokens | number }}</td>
+        <td>{{ operation.images || '' }}</td>
+        <td>{{ dollars(operation.estimatedCostMicros) }}</td>
+      </tr>
+      }
+    </tbody>
+    <tfoot>
+      <tr>
+        <th scope="row">Total</th>
+        <td>{{ usage.calls }}</td>
+        <td>{{ usage.inputTokens | number }}</td>
+        <td>{{ usage.outputTokens | number }}</td>
+        <td>{{ usage.images || '' }}</td>
+        <td>{{ dollars(usage.estimatedCostMicros) }}</td>
+      </tr>
+    </tfoot>
+  </table>
+  @if (usage.unpriced?.length) {
+  <p class="hint">No price is set for {{ usage.unpriced.join(', ') }}, so the total has no estimate. Add one under Ai:Prices on the Blueprint API.</p>
+  }
+</section>
+}

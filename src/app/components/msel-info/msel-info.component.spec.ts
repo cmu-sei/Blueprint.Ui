@@ -57,6 +57,7 @@ import { MselStore } from 'src/app/data/msel/msel.store';
 import { UserStore } from 'src/app/data/user/user.store';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
 import { SystemMessageService } from 'src/app/services/system-message/system-message.service';
+import { AiUsageComponent } from '../ai-usage/ai-usage.component';
 import { MselInfoComponent } from './msel-info.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { dialogRefStub } from 'src/app/test-utils/dialog-refs';
@@ -72,6 +73,10 @@ class IntegrationStatusStub {
   readonly msel = input<Msel>(undefined);
   readonly casterWorkspaceUrl = input<string>(undefined);
   readonly closed = output<void>();
+}
+@Component({ selector: 'app-ai-usage', template: '' })
+class AiUsageStub {
+  readonly mselId = input<string>(undefined);
 }
 @Component({ selector: 'app-duration-edit', template: '' })
 class DurationEditStub {
@@ -196,6 +201,7 @@ async function renderInfo(
     ],
     childStubs: [
       { replace: IntegrationStatusComponent, with: IntegrationStatusStub },
+      { replace: AiUsageComponent, with: AiUsageStub },
       { replace: DurationEditComponent, with: DurationEditStub },
     ],
     providers: [
@@ -277,6 +283,26 @@ describe('MselInfoComponent', () => {
     expect(descriptionInput()).toBeEnabled();
     expect(screen.getByLabelText('Player')).toBeEnabled();
     expect(durationEdit(fixture).canEdit()).toBe(true);
+  });
+
+  /**
+   * Verifies: what building the MSEL with AI cost shows for its owner and ViewMsels holders, as the API allows, and not for an editor or a ManageMsels holder.
+   * Interacts with: MselInfoComponent.canSeeAiUsage, the AI usage panel (stub).
+   * Data: the Owner role; ViewMsels; the Editor role; ManageMsels.
+   */
+  it.each([
+    { label: 'the owner', permissions: [], myRoles: [MselRole.Owner], shown: true },
+    { label: 'a ViewMsels holder', permissions: [SystemPermission.ViewMsels], myRoles: [], shown: true },
+    { label: 'an editor', permissions: [], myRoles: [MselRole.Editor], shown: false },
+    { label: 'a ManageMsels holder', permissions: [SystemPermission.ManageMsels], myRoles: [], shown: false },
+  ])('shows the AI usage to $label: $shown', async ({ permissions, myRoles, shown }) => {
+    const { fixture } = await renderInfo({ permissions, myRoles });
+
+    const panel = fixture.debugElement.query(By.directive(AiUsageStub));
+    expect(!!panel).toBe(shown);
+    if (shown) {
+      expect(panel.componentInstance.mselId()).toBe('msel-1');
+    }
   });
 
   /**

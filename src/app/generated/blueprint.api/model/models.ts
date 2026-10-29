@@ -4,6 +4,8 @@
  project root for license information.
 */
 
+export * from './aiUsageSummary';
+export * from './aiUsageTotals';
 export * from './applicationTemplate';
 export * from './articleDraftRequest';
 export * from './articleDraftResult';
