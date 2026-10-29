@@ -75,7 +75,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
   @if (result.draft.readIn) {
   <section class="section">
     <h3 class="section-title">Read-in</h3>
-    <p class="hint">Becomes a Read-In page every participant can see, and part of the playbook.</p>
+    <p class="hint">Becomes the {{ result.draft.name }} Read-In page, which every participant can see and the playbook includes.</p>
     <details>
       <summary>
         <span class="inject-title">Read-in for participants</span>
@@ -110,6 +110,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
 
   <section class="section">
     <h3 class="section-title">Teams and organizations</h3>
+    <p class="hint">Their profiles also go on Team Profiles and Organization Profiles pages, which every participant can see.</p>
     <mat-chip-set aria-label="Teams">
       @for (team of result.draft.teams; track team.shortName) {
       <mat-chip [matTooltip]="team.name">{{ team.shortName }}</mat-chip>

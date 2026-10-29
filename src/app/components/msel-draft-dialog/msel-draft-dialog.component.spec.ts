@@ -267,6 +267,7 @@ describe('MselDraftDialogComponent', () => {
 
     expect(screen.getByText(/scenario time 05 Mar 2026/)).toBeInTheDocument();
     expect(screen.getByLabelText('Read-in preview')).toContainHTML('<h2>Background</h2>');
+    expect(screen.getByText(/Becomes the Port closure Read-In page/)).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'CITE actions (3)' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Move 0, BLUE' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Move 1, SOC' })).toBeInTheDocument();
