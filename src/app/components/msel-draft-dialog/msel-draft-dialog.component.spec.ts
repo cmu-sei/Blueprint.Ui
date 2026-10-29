@@ -54,7 +54,8 @@ function draftResult(): MselDraftResult {
 async function renderDraftDialog(
   result: MselDraftResult = draftResult(),
   draftArticle: (...args: any[]) => any = vi.fn(),
-  draftProfile: (...args: any[]) => any = vi.fn(() => of({ html: '<p>Profile</p>', notes: [] }))
+  draftProfile: (...args: any[]) => any = vi.fn(() => of({ html: '<p>Profile</p>', notes: [] })),
+  templates: MselDraftDialogData['templates'] = [{ id: 'tpl-1', name: 'Template' }]
 ) {
   const draftMsel = vi.fn(() => of(result));
   const mselData = { draftMsel, draftArticle, draftProfile } as Partial<MselDataService>;
@@ -62,7 +63,7 @@ async function renderDraftDialog(
     getCompetencyFrameworks: vi.fn(() => of([{ id: 'fw-nice', name: 'NICE 2.0.0' }, { id: 'fw-dcwf', name: 'DCWF 5.1' }])),
   } satisfies ApiStub<CompetencyFrameworkService>;
   const ref = dialogRefStub<MselDraftDialogComponent, MselDraftImport>();
-  const data: MselDraftDialogData = { templates: [{ id: 'tpl-1', name: 'Template' }] };
+  const data: MselDraftDialogData = { templates };
   const rendered = await renderComponent(MselDraftDialogComponent, {
     imports: [
       ...CRUCIBLE_DIALOG_IMPORTS,
@@ -111,6 +112,7 @@ describe('MselDraftDialogComponent', () => {
       templateMselId: 'tpl-1',
       prompt: 'A hurricane closes the port.',
       competencyFrameworkIds: ['fw-dcwf'],
+      design: { citeAssessment: 'QuestionsByMove', profilePages: true },
     });
     const section = screen.getByRole('heading', { name: 'Competencies' }).parentElement;
     expect(within(section).getByText('Analyze network traffic')).toBeInTheDocument();
@@ -281,5 +283,74 @@ describe('MselDraftDialogComponent', () => {
     expect(sent.draft.readIn).toBeNull();
     expect(sent.draft.moves[1].situationTime).toBe('2026-03-05T12:00:00.000Z');
     expect(screen.queryByLabelText('Read-in preview')).not.toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: the design choices go with the draft request; the CITE assessment is offered only for a template that uses CITE.
+   * Interacts with: the Design choices section, MselDataService.draftMsel.
+   * Data: a CITE template; Discussion format, the mission impact matrix, 4 moves, two parallel teams, no profile pages.
+   */
+  it('sends the design choices with the draft', async () => {
+    const { draftMsel } = await renderDraftDialog(undefined, undefined, undefined, [{ id: 'tpl-1', name: 'Template', useCite: true }]);
+    const user = userEvent.setup();
+
+    await user.click(screen.getByText('Design choices (optional)'));
+    await user.click(screen.getByRole('combobox', { name: 'Format' }));
+    await user.click(await screen.findByRole('option', { name: 'Discussion (tabletop)' }));
+    await user.click(screen.getByRole('combobox', { name: 'CITE assessment' }));
+    await user.click(await screen.findByRole('option', { name: 'DoD CTT mission impact matrix' }));
+    await user.type(screen.getByRole('spinbutton', { name: 'Number of moves' }), '4');
+    await user.type(screen.getByRole('textbox', { name: 'Participant structure' }), 'Two parallel teams');
+    await user.click(screen.getByRole('checkbox', { name: 'Add Team Profiles and Organization Profiles pages' }));
+    await user.type(screen.getByRole('textbox', { name: 'Exercise description' }), 'Cables are cut.');
+    await user.click(screen.getByRole('button', { name: 'Draft' }));
+
+    expect(draftMsel).toHaveBeenCalledWith(expect.objectContaining({
+      design: { format: 'Discussion', citeAssessment: 'MissionImpact', moves: 4, structure: 'Two parallel teams', profilePages: false },
+    }));
+  });
+
+  /**
+   * Verifies: without CITE on the template there is no CITE assessment to choose.
+   * Interacts with: the Design choices section.
+   * Data: a template without CITE.
+   */
+  it('offers no CITE assessment for a template without CITE', async () => {
+    await renderDraftDialog();
+
+    await userEvent.setup().click(screen.getByText('Design choices (optional)'));
+
+    expect(screen.queryByRole('combobox', { name: 'CITE assessment' })).not.toBeInTheDocument();
+    expect(screen.getByRole('combobox', { name: 'Format' })).toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: the review shows the scenario, the objectives, each move's purpose, decisions, notes and questions, and each inject's expected action and objective.
+   * Interacts with: the Scenario and objectives section, the move and inject details.
+   * Data: objective O1; move 0 with a purpose, two decisions, notes and a question; the inject serves O1.
+   */
+  it('shows the design for review', async () => {
+    const result = draftResult();
+    result.draft.scenario = { problem: 'The port is closed.', premise: 'A hurricane hit.', escalationCeiling: 'No loss of life' };
+    result.draft.objectives = [{ id: 'O1', task: 'Reopen the port', condition: 'With half the staff', standard: 'Within a day' }];
+    Object.assign(result.draft.moves[0], {
+      purpose: 'Make them choose a lead',
+      expectedDecisions: ['Choose a lead', 'Close the gates'],
+      controllerNotes: 'Hold the vendor call.',
+      citeQuestions: ['Who leads?'],
+    });
+    Object.assign(result.draft.injects[0], { expectedAction: 'Open an incident', objective: 'O1' });
+    await draftWithDcwf(result);
+
+    expect(screen.getByText('The port is closed.')).toBeInTheDocument();
+    expect(screen.getByText('Escalation ceiling: No loss of life')).toBeInTheDocument();
+    expect(screen.getByText(/Reopen the port/, { selector: 'li' })).toBeInTheDocument();
+    const move = screen.getByLabelText('Move 0 design');
+    expect(within(move).getByText('Make them choose a lead')).toBeInTheDocument();
+    expect(within(move).getByText('Choose a lead; Close the gates')).toBeInTheDocument();
+    expect(within(move).getByText('Hold the vendor call.')).toBeInTheDocument();
+    expect(within(move).getByText('Who leads?')).toBeInTheDocument();
+    expect(screen.getByText('Open an incident')).toBeInTheDocument();
+    expect(screen.getByText('O1 Reopen the port')).toBeInTheDocument();
   });
 });

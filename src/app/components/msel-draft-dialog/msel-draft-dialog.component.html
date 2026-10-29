@@ -37,6 +37,58 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <textarea matInput [(ngModel)]="prompt" rows="7" [disabled]="isDrafting"
       placeholder="Audience, length, scenario, objectives, organizations to simulate, competencies to exercise"></textarea>
   </mat-form-field>
+  <details class="design">
+    <summary>Design choices (optional)</summary>
+    <p class="hint">The choices that change an exercise most. The draft decides any you leave open and says what it chose.</p>
+    <div class="design-grid">
+      <mat-form-field>
+        <mat-label>Format</mat-label>
+        <mat-select [(ngModel)]="design.format" [disabled]="isDrafting">
+          <mat-option [value]="null">Let the draft decide</mat-option>
+          <mat-option value="Discussion">Discussion (tabletop)</mat-option>
+          <mat-option value="Functional">Functional (hands-on in the range)</mat-option>
+          <mat-option value="Hybrid">Hybrid</mat-option>
+        </mat-select>
+      </mat-form-field>
+      @if (templateUsesCite) {
+      <mat-form-field>
+        <mat-label>CITE assessment</mat-label>
+        <mat-select [(ngModel)]="design.citeAssessment" [disabled]="isDrafting">
+          <mat-option value="QuestionsByMove">Questions by move</mat-option>
+          <mat-option value="MissionImpact">DoD CTT mission impact matrix</mat-option>
+          <mat-option value="Likelihood">DoD CTT likelihood matrix</mat-option>
+          <mat-option value="None">None</mat-option>
+        </mat-select>
+      </mat-form-field>
+      }
+      <mat-form-field>
+        <mat-label>Number of moves</mat-label>
+        <input matInput type="number" min="1" max="12" [(ngModel)]="design.moves" [disabled]="isDrafting" />
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>Length (minutes)</mat-label>
+        <input matInput type="number" min="15" [(ngModel)]="design.durationMinutes" [disabled]="isDrafting" />
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>Scenario time covered</mat-label>
+        <input matInput [(ngModel)]="design.scenarioSpan" [disabled]="isDrafting" placeholder="e.g. three days" />
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>Last move is a leadership brief</mat-label>
+        <mat-select [(ngModel)]="design.leadershipBrief" [disabled]="isDrafting">
+          <mat-option [value]="null">Let the draft decide</mat-option>
+          <mat-option [value]="true">Yes</mat-option>
+          <mat-option [value]="false">No</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+    <mat-form-field class="full-width">
+      <mat-label>Participant structure</mat-label>
+      <input matInput [(ngModel)]="design.structure" [disabled]="isDrafting"
+        placeholder="e.g. one combined staff, functional cells, parallel national teams" />
+    </mat-form-field>
+    <mat-checkbox [(ngModel)]="design.profilePages" [disabled]="isDrafting">Add Team Profiles and Organization Profiles pages</mat-checkbox>
+  </details>
   @if (isDrafting) {
   <div class="drafting">
     <mat-spinner diameter="40"></mat-spinner>
@@ -59,15 +111,59 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <textarea matInput [(ngModel)]="result.draft.description" rows="3"></textarea>
   </mat-form-field>
 
+  @if (result.draft.scenario?.problem || result.draft.objectives?.length) {
+  <section class="section">
+    <h3 class="section-title">Scenario and objectives</h3>
+    @if (result.draft.scenario?.problem) {
+    <p><strong>{{ result.draft.scenario.problem }}</strong> {{ result.draft.scenario.premise }}</p>
+    }
+    @if (result.draft.scenario?.escalationCeiling) {
+    <p class="hint">Escalation ceiling: {{ result.draft.scenario.escalationCeiling }}</p>
+    }
+    <ul class="plain-list">
+      @for (objective of result.draft.objectives; track objective.id) {
+      <li><strong>{{ objective.id }}</strong> {{ objective.task }}. <span class="hint">Condition: {{ objective.condition }}
+          Standard: {{ objective.standard }}</span></li>
+      }
+    </ul>
+  </section>
+  }
+
   <section class="section">
     <h3 class="section-title">Moves</h3>
     <p class="hint">Each move starts on the exercise clock, which runs in real time, and opens at a scenario time, which can
       jump ahead between moves.</p>
     <ul class="plain-list">
       @for (move of result.draft.moves; track move.moveNumber) {
-      <li><strong>Move {{ move.moveNumber }}</strong> at {{ formatMinutes(move.startMinutes) }}@if (move.situationTime) {<span
-          class="scenario-time">, scenario time {{ move.situationTime | date: 'dd MMM yyyy HH:mm' }} {{ move.situationTime
-          | timezoneAbbr }}</span>}: {{ move.description }}</li>
+      <li>
+        <details>
+          <summary><strong>Move {{ move.moveNumber }}</strong> at {{ formatMinutes(move.startMinutes) }}@if (move.situationTime) {<span
+              class="scenario-time">, scenario time {{ move.situationTime | date: 'dd MMM yyyy HH:mm' }} {{ move.situationTime
+              | timezoneAbbr }}</span>}: {{ move.description }}</summary>
+          <dl class="inject-values" [attr.aria-label]="'Move ' + move.moveNumber + ' design'">
+            @if (move.purpose) {
+            <dt>Purpose</dt>
+            <dd>{{ move.purpose }}</dd>
+            }
+            @if (move.situationDescription) {
+            <dt>Situation</dt>
+            <dd>{{ move.situationDescription }}</dd>
+            }
+            @if (move.expectedDecisions?.length) {
+            <dt>Expected decisions</dt>
+            <dd>{{ move.expectedDecisions.join('; ') }}</dd>
+            }
+            @if (move.controllerNotes) {
+            <dt>Controller notes</dt>
+            <dd>{{ move.controllerNotes }}</dd>
+            }
+            @if (move.citeQuestions?.length) {
+            <dt>CITE questions</dt>
+            <dd>{{ move.citeQuestions.join(' ') }}</dd>
+            }
+          </dl>
+        </details>
+      </li>
       }
     </ul>
   </section>
@@ -193,6 +289,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
           }
           }
           <dl class="inject-values">
+            @if (inject.expectedAction) {
+            <dt>Expected action</dt>
+            <dd>{{ inject.expectedAction }}</dd>
+            }
+            @if (inject.objective) {
+            <dt>Objective</dt>
+            <dd>{{ inject.objective }} {{ objectiveTask(inject.objective) }}</dd>
+            }
             @for (value of valuesFor(inject); track value.name) {
             @if (value.value !== articleHtml(inject)) {
             <dt>{{ value.name }}</dt>

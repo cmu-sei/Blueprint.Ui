@@ -24,6 +24,7 @@ import { DatePipe, NgTemplateOutlet } from '@angular/common';
 import { TimezoneAbbrPipe } from 'src/app/utilities/timezone-abbr';
 import { MatChip, MatChipRemove, MatChipSet } from '@angular/material/chips';
 import { MatTooltip } from '@angular/material/tooltip';
+import { MatCheckbox } from '@angular/material/checkbox';
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
 import {
   CompetencyFramework,
@@ -31,6 +32,7 @@ import {
   DataFieldType,
   Msel,
   MselDraftCiteAction,
+  MselDraftDesign,
   MselDraftImport,
   MselDraftInject,
   MselDraftResult,
@@ -70,6 +72,7 @@ export interface MselDraftDialogData {
     MatSelect,
     MatProgressSpinner,
     MatTooltip,
+    MatCheckbox,
   ],
 })
 export class MselDraftDialogComponent {
@@ -78,6 +81,8 @@ export class MselDraftDialogComponent {
   // the draft assigns competencies only from these; none means the template's own
   competencyFrameworkIds: string[] = [];
   competencyFrameworks: CompetencyFramework[] = [];
+  // the design questions the author-ttx workflow asks; all optional
+  design: MselDraftDesign = { citeAssessment: 'QuestionsByMove', profilePages: true };
   isDrafting = false;
   errorMessage = '';
   result: MselDraftResult;
@@ -113,6 +118,14 @@ export class MselDraftDialogComponent {
       });
   }
 
+  get templateUsesCite(): boolean {
+    return !!this.data.templates.find((t) => t.id === this.templateMselId)?.useCite;
+  }
+
+  objectiveTask(id: string): string {
+    return this.result?.draft?.objectives?.find((o) => o.id === id)?.task ?? '';
+  }
+
   get canDraft(): boolean {
     return !!this.templateMselId && this.prompt.trim().length > 0 && !this.isDrafting;
   }
@@ -125,6 +138,7 @@ export class MselDraftDialogComponent {
         templateMselId: this.templateMselId,
         prompt: this.prompt,
         competencyFrameworkIds: this.competencyFrameworkIds,
+        design: this.design,
       })
       .pipe(take(1))
       .subscribe({

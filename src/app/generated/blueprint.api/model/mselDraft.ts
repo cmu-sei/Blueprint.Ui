@@ -16,6 +16,9 @@
 import { MselDraftTeam } from './mselDraftTeam';
 import { MselDraftCard } from './mselDraftCard';
 import { MselDraftCiteAction } from './mselDraftCiteAction';
+import { MselDraftDesign } from './mselDraftDesign';
+import { MselDraftObjective } from './mselDraftObjective';
+import { MselDraftScenario } from './mselDraftScenario';
 import { MselDraftInject } from './mselDraftInject';
 import { MselDraftMove } from './mselDraftMove';
 import { MselDraftOrganization } from './mselDraftOrganization';
@@ -28,6 +31,15 @@ export interface MselDraft {
     name?: string | null;
     description?: string | null;
     durationMinutes?: number;
+    /**
+     * The design the draft was written to, so import builds the same pages and CITE model
+     */
+    design?: MselDraftDesign;
+    scenario?: MselDraftScenario;
+    /**
+     * What participants are trained to do; each inject and the AAR trace back to one
+     */
+    objectives?: Array<MselDraftObjective> | null;
     moves?: Array<MselDraftMove> | null;
     teams?: Array<MselDraftTeam> | null;
     organizations?: Array<MselDraftOrganization> | null;

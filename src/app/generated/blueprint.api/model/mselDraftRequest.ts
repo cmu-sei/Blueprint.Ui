@@ -13,6 +13,7 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
+import { MselDraftDesign } from './mselDraftDesign';
 
 
 /**
@@ -31,5 +32,9 @@ export interface MselDraftRequest {
      * Frameworks whose competencies the draft may assign. When empty, the template\'s own MSEL competencies are used; when the template has none, no competencies are assigned.
      */
     competencyFrameworkIds?: Array<string> | null;
+    /**
+     * The planner\'s answers to the design questions; anything left empty the model decides and notes
+     */
+    design?: MselDraftDesign;
 }
 

@@ -36,5 +36,13 @@ export interface MselDraftInject {
      * The name of the Gallery card the article goes on; empty for an inject that is not a Gallery article
      */
     card?: string | null;
+    /**
+     * What participants are expected to do when they get the inject
+     */
+    expectedAction?: string | null;
+    /**
+     * The ID of the objective the inject serves
+     */
+    objective?: string | null;
 }
 

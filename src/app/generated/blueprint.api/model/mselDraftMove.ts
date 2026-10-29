@@ -27,5 +27,21 @@ export interface MselDraftMove {
      * The scenario\'s date and time when the move opens, in ISO 8601 UTC. It runs on its own clock and can jump ahead of the exercise clock, e.g. the next move is the next morning.
      */
     situationTime?: string | null;
+    /**
+     * What the move is for: the reasoning it makes participants do
+     */
+    purpose?: string | null;
+    /**
+     * The decisions participants are expected to reach in the move
+     */
+    expectedDecisions?: Array<string> | null;
+    /**
+     * Notes for controllers and facilitators, never shown to participants
+     */
+    controllerNotes?: string | null;
+    /**
+     * Discussion questions for the move, when the CITE assessment is questions by move
+     */
+    citeQuestions?: Array<string> | null;
 }
 
