@@ -120,7 +120,8 @@ describe('AdminCompetencyFrameworksComponent', () => {
     expect(within(frameworks()).getByTitle('Add new competency framework')).toBeInTheDocument();
     expect(within(frameworks()).getByTitle('Upload Competency Framework from JSON')).toBeInTheDocument();
     expect(within(frameworks()).getByTitle('Edit NICE')).toBeInTheDocument();
-    expect(within(frameworks()).getByTitle('Download NICE as JSON')).toBeInTheDocument();
+    expect(within(frameworks()).getByTitle('Download Competency Frameworks as JSON')).toBeInTheDocument();
+    expect(within(frameworks()).queryByTitle('Download NICE as JSON')).not.toBeInTheDocument();
     expect(deleteButton()).toBeEnabled();
     expect(within(frameworks()).getByText('Five Point')).toBeInTheDocument();
   });
@@ -137,7 +138,7 @@ describe('AdminCompetencyFrameworksComponent', () => {
     expect(within(frameworks()).queryByTitle('Add new competency framework')).not.toBeInTheDocument();
     expect(within(frameworks()).queryByTitle('Upload Competency Framework from JSON')).not.toBeInTheDocument();
     expect(within(frameworks()).queryByTitle('Edit NICE')).not.toBeInTheDocument();
-    expect(within(frameworks()).queryByTitle('Download NICE as JSON')).not.toBeInTheDocument();
+    expect(within(frameworks()).queryByTitle('Download Competency Frameworks as JSON')).not.toBeInTheDocument();
     expect(within(frameworks()).queryByRole('button', { description: 'Delete framework' })).not.toBeInTheDocument();
   });
 
