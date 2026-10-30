@@ -43,7 +43,9 @@ export class MselAiBuildComponent {
 
   readonly visible = computed(() => !!this.build() || !!this.stage());
   readonly remaining = computed(() => this.build()?.remaining ?? this.saved());
-  readonly left = computed(() => (this.remaining()?.articles?.length ?? 0) + (this.remaining()?.profiles?.length ?? 0));
+  readonly left = computed(
+    () => (this.remaining()?.injects?.length ?? 0) + (this.remaining()?.articles?.length ?? 0) + (this.remaining()?.profiles?.length ?? 0)
+  );
   readonly elapsed = computed(() => clock(this.now() - (this.build()?.started ?? this.now())));
 
   constructor() {
@@ -74,9 +76,9 @@ export class MselAiBuildComponent {
   get stepLabel(): string {
     switch (this.build()?.step) {
       case 'injects':
-        return 'Writing the injects, CITE tasks and read-in';
+        return 'Outlining the injects, CITE tasks and read-in';
       case 'articles':
-        return 'Writing the Gallery articles and profiles';
+        return 'Writing each inject, Gallery article and profile';
       case 'finish':
         return 'Adding the pages, Player applications and CITE';
       default:
@@ -93,7 +95,7 @@ export class MselAiBuildComponent {
         plural(counts['injects'], 'inject'),
         plural(counts['citeActions'], 'CITE task'),
       ].filter((p) => p);
-      return parts.length ? `${parts.join(', ')} so far.` : 'This usually takes 3 to 5 minutes.';
+      return parts.length ? `${parts.join(', ')} so far.` : 'This usually takes a few minutes.';
     }
     if (build?.step === 'articles') {
       return `${build.written} of ${build.total}.`;
@@ -104,12 +106,12 @@ export class MselAiBuildComponent {
   get stoppedText(): string {
     const stage = this.remaining()?.stage ?? this.stage();
     if (stage === 'Injects') {
-      return 'Its injects are not written yet.';
+      return 'Its injects are not outlined yet.';
     }
     if (stage === 'Articles') {
       const left = this.left();
       return left
-        ? `${plural(left, 'Gallery article or profile', 'Gallery articles and profiles')} still to write, then the pages, Player applications and CITE.`
+        ? `${plural(left, 'inject, article or profile', 'injects, articles and profiles')} still to write, then the pages, Player applications and CITE.`
         : 'The pages, Player applications and CITE are still to add.';
     }
     return '';

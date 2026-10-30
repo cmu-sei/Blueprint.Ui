@@ -26,6 +26,10 @@ export interface MselBuildStatus {
      */
     stage?: string | null;
     /**
+     * The other injects whose long text is still to write
+     */
+    injects?: Array<MselBuildItem> | null;
+    /**
      * The Gallery articles still to write
      */
     articles?: Array<MselBuildItem> | null;

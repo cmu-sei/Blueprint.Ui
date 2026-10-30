@@ -76,7 +76,7 @@ describe('MselAiBuildComponent', () => {
   it('shows the injects being written and cancels', async () => {
     const { buildService, user } = await renderBanner('Injects', running({ counts: { injects: 12, citeActions: 4 } }));
 
-    expect(screen.getByText('Writing the injects, CITE tasks and read-in.')).toBeInTheDocument();
+    expect(screen.getByText('Outlining the injects, CITE tasks and read-in.')).toBeInTheDocument();
     expect(screen.getByText(/12 injects, 4 CITE tasks so far\./)).toBeInTheDocument();
     expect(screen.getByTitle('Time drafting')).toHaveTextContent('1:15');
 
@@ -92,25 +92,26 @@ describe('MselAiBuildComponent', () => {
   it('counts the articles and profiles as they are written', async () => {
     await renderBanner('Articles', running({ step: 'articles', written: 7, total: 22 }));
 
-    expect(screen.getByText('Writing the Gallery articles and profiles.')).toBeInTheDocument();
+    expect(screen.getByText('Writing each inject, Gallery article and profile.')).toBeInTheDocument();
     expect(screen.getByText(/7 of 22\./)).toBeInTheDocument();
   });
 
   /**
    * Verifies: a MSEL left part-way says what is left and offers Continue drafting, Finish without them and Discard draft, which confirms first.
    * Interacts with: MselBuildService.getMselBuildStatus, MselAiBuildService.run and finishNow, CrucibleDialogService.confirm.
-   * Data: a MSEL at the Articles stage with two articles and a profile left, no run in this tab.
+   * Data: a MSEL at the Articles stage with an inject, two articles and a profile left, no run in this tab.
    */
   it('continues, finishes or discards a stopped draft', async () => {
     const { buildService, getMselBuildStatus, confirm, discard, user } = await renderBanner('Articles', undefined, {
       mselId: 'msel-1',
       stage: 'Articles',
+      injects: [{ id: 'r' }],
       articles: [{ id: 'a' }, { id: 'b' }],
       profiles: [{ id: 'c' }],
     });
 
     expect(getMselBuildStatus).toHaveBeenCalledWith('msel-1');
-    expect(screen.getByText(/3 Gallery articles and profiles still to write/)).toBeInTheDocument();
+    expect(screen.getByText(/4 injects, articles and profiles still to write/)).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Continue drafting' }));
     expect(buildService.run).toHaveBeenCalledWith('msel-1');
@@ -129,7 +130,7 @@ describe('MselAiBuildComponent', () => {
   it('says why a run failed', async () => {
     await renderBanner('Injects', running({ running: false, step: 'failed', errors: ['The draft could not be read.'] }));
 
-    expect(screen.getByText(/Its injects are not written yet\./)).toBeInTheDocument();
+    expect(screen.getByText(/Its injects are not outlined yet\./)).toBeInTheDocument();
     expect(screen.getByRole('alert')).toHaveTextContent('The draft could not be read.');
     expect(screen.queryByRole('button', { name: 'Finish without them' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Continue drafting' })).toBeInTheDocument();

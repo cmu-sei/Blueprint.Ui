@@ -11,6 +11,7 @@ import { MselAiBuild, MselAiBuildService } from './msel-ai-build.service';
 const ARTICLES: MselBuildStatus = {
   mselId: 'msel-1',
   stage: 'Articles',
+  injects: [{ id: 'event-2', kind: 'inject', name: 'Check in' }],
   articles: [{ id: 'event-1', kind: 'article', name: 'Cables cut' }],
   profiles: [{ id: 'team-1', kind: 'team', name: 'SOC' }],
   warnings: [],
@@ -21,6 +22,7 @@ function setup(api: Partial<Record<keyof MselBuildService, (...args: never[]) =>
   const stub = {
     getMselBuildStatus: vi.fn(() => of(status.shift() ?? { mselId: 'msel-1', stage: null })),
     writeMselInjects: vi.fn(() => of({ ...ARTICLES, warnings: ['Dropped a row with no time.'] })),
+    writeMselRow: vi.fn(() => of({ html: '<p>Check in with each lead.</p>' })),
     writeMselArticle: vi.fn(() => of({ fieldName: 'Description', html: '<svg></svg>' })),
     saveMselArticle: vi.fn(() => of(null)),
     writeMselProfile: vi.fn(() => of({ html: '<p>SOC</p>' })),
@@ -50,9 +52,9 @@ const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
 
 describe('MselAiBuildService', () => {
   /**
-   * Verifies: a run writes the injects, then each article and profile, saves an article again with its graphics as PNG, then finishes and says so.
-   * Interacts with: MselBuildService getMselBuildStatus, writeMselInjects, writeMselArticle, saveMselArticle, writeMselProfile, finishMselBuild.
-   * Data: a MSEL at the Injects stage whose injects give one article (with SVG) and one profile (without).
+   * Verifies: a run outlines the injects, then writes each row's text, each article and profile, saves an article again with its graphics as PNG, then finishes and says so.
+   * Interacts with: MselBuildService getMselBuildStatus, writeMselInjects, writeMselRow, writeMselArticle, saveMselArticle, writeMselProfile, finishMselBuild.
+   * Data: a MSEL at the Injects stage whose outline gives one row, one article (with SVG) and one profile (without).
    */
   it('builds the MSEL step by step', async () => {
     const { service, api, last, finished } = setup();
@@ -61,12 +63,13 @@ describe('MselAiBuildService', () => {
     await settle();
 
     expect(api.writeMselInjects).toHaveBeenCalledWith('msel-1');
+    expect(api.writeMselRow).toHaveBeenCalledWith('msel-1', 'event-2');
     expect(api.writeMselArticle).toHaveBeenCalledWith('msel-1', 'event-1');
     expect(api.saveMselArticle).toHaveBeenCalledWith('msel-1', 'event-1', { html: '<img src="data:image/png">' });
     expect(api.writeMselProfile).toHaveBeenCalledWith('msel-1', 'team-1');
     expect(api.saveMselProfile).not.toHaveBeenCalled();
     expect(api.finishMselBuild).toHaveBeenCalledWith('msel-1');
-    expect(last()).toMatchObject({ step: 'done', running: false, written: 2, total: 2 });
+    expect(last()).toMatchObject({ step: 'done', running: false, written: 3, total: 3 });
     expect(last().warnings).toEqual(['Dropped a row with no time.', 'Created the scoring model in CITE.']);
     expect(finished).toEqual(['msel-1']);
   });
@@ -82,7 +85,7 @@ describe('MselAiBuildService', () => {
       getMselBuildStatus: vi
         .fn()
         .mockReturnValueOnce(of({ mselId: 'msel-1', stage: 'Articles', ...ARTICLES }))
-        .mockReturnValueOnce(of({ ...ARTICLES, profiles: [] })),
+        .mockReturnValueOnce(of({ ...ARTICLES, injects: [], profiles: [] })),
     });
 
     service.run('msel-1');

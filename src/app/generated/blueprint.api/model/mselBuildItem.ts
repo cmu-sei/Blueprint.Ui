@@ -21,7 +21,7 @@ export interface MselBuildItem {
      */
     id?: string;
     /**
-     * team or organization, for a profile
+     * article, inject, team or organization
      */
     kind?: string | null;
     name?: string | null;

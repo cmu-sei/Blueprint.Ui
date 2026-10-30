@@ -24,7 +24,8 @@ export class AiUsageComponent {
   private static readonly labels: Record<string, string> = {
     draft: 'Draft MSEL with AI',
     design: 'Design',
-    injects: 'Injects, CITE tasks and read-in',
+    injects: 'Inject outline, CITE tasks and read-in',
+    rows: 'Inject text',
     article: 'Gallery articles',
     profile: 'Team and organization profiles',
     value: 'Write with AI',

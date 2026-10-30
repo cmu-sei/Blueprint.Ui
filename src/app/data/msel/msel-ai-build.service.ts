@@ -10,7 +10,7 @@ import { MselBuildItem, MselBuildService, MselBuildStatus } from 'src/app/genera
 import { SignalRService } from 'src/app/services/signalr.service';
 import { prepareImages } from 'src/app/utilities/svg-to-png';
 
-// injects: the model writes the rows; articles: each article and profile; finish: pages, Player and CITE
+// injects: the model outlines the rows; articles: each row's text, article and profile; finish: pages, Player and CITE
 export type MselAiBuildStep = 'injects' | 'articles' | 'finish' | 'done' | 'stopped' | 'failed';
 
 export interface MselAiBuild {
@@ -32,7 +32,7 @@ export interface MselAiBuild {
 }
 
 /**
- * Builds a MSEL from its approved AI design, step by step, in the browser: the injects, each Gallery article and
+ * Builds a MSEL from its approved AI design, step by step, in the browser: the outline of the injects, each row's text, each Gallery article and
  * profile (their graphics drawn as PNG here and saved again), then the finish. The API saves every step, so a run
  * stopped by Cancel, an error or a closed tab is continued from the MSEL page. A singleton, so a run keeps going
  * while the planner moves around Blueprint.
@@ -144,7 +144,8 @@ export class MselAiBuildService {
   }
 
   private writeArticles(mselId: string, status: MselBuildStatus): Observable<MselBuildStatus> {
-    const items = [...(status.articles ?? []), ...(status.profiles ?? [])];
+    // the rows in time order with the articles, then the profiles
+    const items = [...(status.injects ?? []), ...(status.articles ?? []), ...(status.profiles ?? [])];
     this.patch(mselId, { step: 'articles', stepStarted: Date.now(), written: 0, total: items.length });
     return from(items).pipe(
       mergeMap(
@@ -165,6 +166,10 @@ export class MselAiBuildService {
 
   // writes and saves one article or profile, then saves it again with its graphics as PNG
   private writeItem(mselId: string, item: MselBuildItem): Observable<unknown> {
+    // a row's text has no graphics, so it is saved once, as written
+    if (item.kind === 'inject') {
+      return this.api.writeMselRow(mselId, item.id);
+    }
     const isArticle = item.kind === 'article';
     const write = isArticle ? this.api.writeMselArticle(mselId, item.id) : this.api.writeMselProfile(mselId, item.id);
     return (write as Observable<{ html?: string }>).pipe(
