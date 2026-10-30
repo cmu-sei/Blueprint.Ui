@@ -16,12 +16,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
     </button>
     }
   </mat-form-field>
-  @if (canEdit) {
-  <button mat-stroked-button (click)="importFramework()" [disabled]="importing" title="Import framework from JSON" style="margin-left: 10px;">
-    <mat-icon fontIcon="mdi-upload" />
-    @if (importing) { Importing... } @else { Import }
-  </button>
-  }
   @if (importError) {
   <span style="color: var(--mat-sys-error); margin-left: 10px; font-size: 13px;">{{ importError }}</span>
   }
