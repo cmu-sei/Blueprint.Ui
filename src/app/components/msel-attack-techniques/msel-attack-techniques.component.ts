@@ -162,6 +162,11 @@ export class MselAttackTechniquesComponent implements OnInit, AfterViewInit, OnD
     return !!this.pinnedReleaseId && !!this.selectedReleaseId && this.pinnedReleaseId !== this.selectedReleaseId;
   }
 
+  /** Either table shows MITRE's technique content, which its terms of use say must carry their notice. */
+  get showsMitreContent(): boolean {
+    return this.pool.length > 0 || this.techniques.length > 0;
+  }
+
   // =============================================
   // Release selection
   // =============================================

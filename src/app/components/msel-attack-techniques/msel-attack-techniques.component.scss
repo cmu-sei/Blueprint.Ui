@@ -111,6 +111,12 @@
   color: var(--mat-sys-on-surface-variant);
 }
 
+.attribution {
+  padding: 8px 16px;
+  font-size: 12px;
+  color: var(--mat-sys-on-surface-variant);
+}
+
 ::ng-deep .attack-description-tooltip {
   max-width: 480px !important;
   white-space: pre-line;

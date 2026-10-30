@@ -82,6 +82,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
     MITRE's attack-stix-data repository and import it here.
   </div>
   }
+  <div class="attribution">
+    @if (dataSource.data.length > 0) {
+    &copy; 2026 The MITRE Corporation. This work is reproduced and distributed with the permission of The MITRE Corporation.
+    }
+    MITRE ATT&amp;CK and ATT&amp;CK are registered trademarks of The MITRE Corporation.
+    <a href="https://attack.mitre.org/resources/legal-and-branding/terms-of-use/" target="_blank" rel="noopener">Terms of Use</a>
+  </div>
 </section>
 
 <input hidden (change)="selectFile($event)" #stixInput type="file" accept=".json,application/json" />
