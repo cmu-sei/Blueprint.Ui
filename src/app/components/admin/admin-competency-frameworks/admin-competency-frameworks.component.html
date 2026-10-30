@@ -16,12 +16,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
     </button>
     }
   </mat-form-field>
-  @if (canEdit) {
-  <button mat-stroked-button (click)="importFramework()" [disabled]="importing" title="Import framework from JSON" style="margin-left: 10px;">
-    <mat-icon fontIcon="mdi-upload" />
-    @if (importing) { Importing... } @else { Import }
-  </button>
-  }
   @if (importError) {
   <span style="color: var(--mat-sys-error); margin-left: 10px; font-size: 13px;">{{ importError }}</span>
   }
@@ -46,6 +40,10 @@ project root for license information or contact permission@sei.cmu.edu for full 
           (click)="jsonInput.click(); $event.stopPropagation();">
           <mat-icon class="mdi-24px" fontIcon="mdi-upload" />
         </button>
+        <button mat-icon-button title="Download Competency Frameworks as JSON" style="outline: none;"
+          (click)="openDownloadDialog(); $event.stopPropagation();">
+          <mat-icon class="mdi-24px" fontIcon="mdi-download" />
+        </button>
         } &nbsp;
       </mat-header-cell>
       <mat-cell *matCellDef="let element" class="column-action">
@@ -54,10 +52,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <button mat-icon-button class="msel-action" (click)="addOrEditCompetencyFramework(element); $event.stopPropagation();"
             title="Edit {{ element.name }}">
             <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline" />
-          </button>
-          <button mat-icon-button class="msel-action" (click)="downloadFramework(element); $event.stopPropagation();"
-            title="Download {{ element.name }} as JSON">
-            <mat-icon class="mdi-18px" fontIcon="mdi-download" />
           </button>
           <button mat-icon-button class="msel-action"
             (click)="deleteCompetencyFramework(element); $event.stopPropagation();"

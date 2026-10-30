@@ -19,6 +19,7 @@ import { CompetencyFrameworkDataService } from 'src/app/data/competency-framewor
 import { CompetencyFrameworkQuery } from 'src/app/data/competency-framework/competency-framework.query';
 import { MatDialog } from '@angular/material/dialog';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
+import { ItemDownloadDialogComponent } from '../../item-download-dialog/item-download-dialog.component';
 import { AdminCompetencyFrameworkEditDialogComponent } from '../admin-competency-framework-edit-dialog/admin-competency-framework-edit-dialog.component';
 import { AdminCompetencyFrameworkImportDialogComponent, ImportResult } from '../admin-competency-framework-import-dialog/admin-competency-framework-import-dialog.component';
 import { AdminCompetencyEditDialogComponent } from '../admin-competency-edit-dialog/admin-competency-edit-dialog.component';
@@ -225,6 +226,24 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
     const mselList = check.inUseByMsels.slice(0, 3).join(', ');
     const more = mselCount > 3 ? ` and ${mselCount - 3} more` : '';
     return `In use by ${mselCount} MSEL(s): ${mselList}${more}`;
+  }
+
+  /** A framework file holds one framework, which is all an import reads, so each one chosen is its own file. */
+  openDownloadDialog(): void {
+    const frameworks = this.competencyFrameworkDataSource.data;
+    const dialogRef = this.dialog.open(ItemDownloadDialogComponent, {
+      maxWidth: '90vw',
+      width: 'auto',
+      data: {
+        title: 'Select Competency Frameworks to download',
+        items: frameworks.map((f) => ({ id: f.id, label: f.version ? `${f.name} (${f.version})` : f.name || f.id })),
+      },
+    });
+    dialogRef.afterClosed().subscribe((selectedIds: string[] | undefined) => {
+      frameworks
+        .filter((f) => selectedIds?.includes(f.id))
+        .forEach((f) => this.downloadFramework(f));
+    });
   }
 
   downloadFramework(competencyFramework: CompetencyFramework): void {

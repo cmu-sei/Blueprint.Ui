@@ -108,7 +108,7 @@ async function openCompetencies() {
 
 describe('AdminCompetencyFrameworksComponent', () => {
   /**
-   * Verifies: with canEdit the import, add, upload, edit, download and delete actions are offered for the frameworks.
+   * Verifies: with canEdit the add, upload, edit, download and delete actions are offered for the frameworks.
    * Interacts with: real CompetencyFrameworkStore/Query (seeded), CompetencyFrameworkService.checkCanDeleteCompetencyFramework (stub).
    * Data: canEdit true; framework NICE, not in use.
    */
@@ -116,11 +116,12 @@ describe('AdminCompetencyFrameworksComponent', () => {
     const { frameworkApi } = await renderFrameworks({ canEdit: true });
 
     expect(frameworkApi.checkCanDeleteCompetencyFramework).toHaveBeenCalledWith('fw-1');
-    expect(screen.getByTitle('Import framework from JSON')).toBeInTheDocument();
+    expect(screen.queryByTitle('Import framework from JSON')).not.toBeInTheDocument();
     expect(within(frameworks()).getByTitle('Add new competency framework')).toBeInTheDocument();
     expect(within(frameworks()).getByTitle('Upload Competency Framework from JSON')).toBeInTheDocument();
     expect(within(frameworks()).getByTitle('Edit NICE')).toBeInTheDocument();
-    expect(within(frameworks()).getByTitle('Download NICE as JSON')).toBeInTheDocument();
+    expect(within(frameworks()).getByTitle('Download Competency Frameworks as JSON')).toBeInTheDocument();
+    expect(within(frameworks()).queryByTitle('Download NICE as JSON')).not.toBeInTheDocument();
     expect(deleteButton()).toBeEnabled();
     expect(within(frameworks()).getByText('Five Point')).toBeInTheDocument();
   });
@@ -134,11 +135,10 @@ describe('AdminCompetencyFrameworksComponent', () => {
     await renderFrameworks({ canEdit: false });
 
     expect(within(frameworks()).getByText('NICE')).toBeInTheDocument();
-    expect(screen.queryByTitle('Import framework from JSON')).not.toBeInTheDocument();
     expect(within(frameworks()).queryByTitle('Add new competency framework')).not.toBeInTheDocument();
     expect(within(frameworks()).queryByTitle('Upload Competency Framework from JSON')).not.toBeInTheDocument();
     expect(within(frameworks()).queryByTitle('Edit NICE')).not.toBeInTheDocument();
-    expect(within(frameworks()).queryByTitle('Download NICE as JSON')).not.toBeInTheDocument();
+    expect(within(frameworks()).queryByTitle('Download Competency Frameworks as JSON')).not.toBeInTheDocument();
     expect(within(frameworks()).queryByRole('button', { description: 'Delete framework' })).not.toBeInTheDocument();
   });
 
