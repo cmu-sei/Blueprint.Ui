@@ -260,7 +260,7 @@ describe('AdminContainerComponent', () => {
     expect(permissionApis.systemPermissions.getMySystemPermissions).toHaveBeenCalledTimes(1);
     for (const label of [
       'Units', 'Data Fields', 'Inject Types', 'Catalogs', 'Organizations', 'Gallery Cards',
-      'CITE Actions', 'CITE Duties', 'Player Application Templates', 'Competencies', 'Proficiency Scales', 'Users', 'Roles', 'Groups',
+      'CITE Actions', 'CITE Duties', 'Player Apps', 'Competencies', 'Proficiency Scales', 'Users', 'Roles', 'Groups',
     ]) {
       expect(within(nav()).queryByText(label)).not.toBeInTheDocument();
     }
@@ -281,7 +281,7 @@ describe('AdminContainerComponent', () => {
     [SystemPermission.ViewGalleryCards, ['Gallery Cards']],
     [SystemPermission.ViewCiteActions, ['CITE Actions']],
     [SystemPermission.ViewCiteDuties, ['CITE Duties']],
-    [SystemPermission.ViewPlayerApplications, ['Player Application Templates']],
+    [SystemPermission.ViewPlayerApplications, ['Player Apps']],
     [SystemPermission.ViewCompetencyFrameworks, ['Competencies', 'Proficiency Scales']],
     [SystemPermission.ViewUsers, ['Users']],
     [SystemPermission.ViewRoles, ['Roles']],
@@ -290,7 +290,7 @@ describe('AdminContainerComponent', () => {
     await renderAdmin({ permissions: [permission] });
     const all = [
       'Units', 'Data Fields', 'Inject Types', 'Catalogs', 'Organizations', 'Gallery Cards',
-      'CITE Actions', 'CITE Duties', 'Player Application Templates', 'Competencies', 'Proficiency Scales', 'Users', 'Roles', 'Groups',
+      'CITE Actions', 'CITE Duties', 'Player Apps', 'Competencies', 'Proficiency Scales', 'Users', 'Roles', 'Groups',
     ];
 
     for (const label of all) {
@@ -332,17 +332,17 @@ describe('AdminContainerComponent', () => {
   });
 
   /**
-   * Verifies: the Player Application Templates section shows the Player application list in template mode, with ManagePlayerApplications as canEdit.
+   * Verifies: the Player Apps section shows the Player application list in template mode, with ManagePlayerApplications as canEdit.
    * Interacts with: real PermissionDataService (stubbed grants), the nav item click, PlayerApplicationListStub inputs.
    * Data: ViewPlayerApplications + ManagePlayerApplications.
    */
-  it('opens Player Application Templates as the template list', async () => {
+  it('opens Player Apps as the template list', async () => {
     const { fixture } = await renderAdmin({
       permissions: [SystemPermission.ViewPlayerApplications, SystemPermission.ManagePlayerApplications],
     });
     const user = userEvent.setup();
 
-    await user.click(within(nav()).getByText('Player Application Templates'));
+    await user.click(within(nav()).getByText('Player Apps'));
 
     const list = child(fixture, PlayerApplicationListStub);
     expect(list.showTemplates()).toBe(true);
@@ -362,7 +362,7 @@ describe('AdminContainerComponent', () => {
     { label: 'Gallery Cards', view: SystemPermission.ViewGalleryCards, manage: SystemPermission.ManageGalleryCards, gate: (f: ComponentFixture<unknown>) => child(f, CardListStub)?.canEdit() },
     { label: 'CITE Actions', view: SystemPermission.ViewCiteActions, manage: SystemPermission.ManageCiteActions, gate: (f: ComponentFixture<unknown>) => child(f, CiteActionListStub)?.canEdit() },
     { label: 'CITE Duties', view: SystemPermission.ViewCiteDuties, manage: SystemPermission.ManageCiteDuties, gate: (f: ComponentFixture<unknown>) => child(f, CiteDutyListStub)?.canEdit() },
-    { label: 'Player Application Templates', view: SystemPermission.ViewPlayerApplications, manage: SystemPermission.ManagePlayerApplications, gate: (f: ComponentFixture<unknown>) => child(f, PlayerApplicationListStub)?.canEdit() },
+    { label: 'Player Apps', view: SystemPermission.ViewPlayerApplications, manage: SystemPermission.ManagePlayerApplications, gate: (f: ComponentFixture<unknown>) => child(f, PlayerApplicationListStub)?.canEdit() },
   ];
 
   /**

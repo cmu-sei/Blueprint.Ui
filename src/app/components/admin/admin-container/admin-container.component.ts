@@ -82,7 +82,7 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
   galleryCardsText = 'Gallery Cards';
   citeActionsText = 'CITE Actions';
   citeDutiesText = 'CITE Duties';
-  playerApplicationTemplatesText = 'Player Application Templates';
+  playerApplicationTemplatesText = 'Player Apps';
   competencyFrameworksText = 'Competency Frameworks';
   competencyFrameworksSidebarText = 'Competencies';
   proficiencyScalesText = 'Proficiency Scales';
@@ -100,7 +100,7 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
     ['Gallery Cards', 'mdi-view-grid-outline'],
     ['CITE Actions', 'mdi-clipboard-check-outline'],
     ['CITE Duties', 'mdi-clipboard-account-outline'],
-    ['Player Application Templates', 'mdi-application'],
+    ['Player Apps', 'mdi-application'],
     ['Competency Frameworks', 'mdi-certificate-outline'],
     ['Proficiency Scales', 'mdi-tune-variant'],
     ['Users', 'mdi-account'],
