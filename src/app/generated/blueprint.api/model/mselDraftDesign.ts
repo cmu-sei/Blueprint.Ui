@@ -50,6 +50,10 @@ export interface MselDraftDesign {
      */
     profilePages?: boolean;
     /**
+     * How long before STARTEX the doors open: the pre-exercise move, in minutes; 15 when empty
+     */
+    leadMinutes?: number | null;
+    /**
      * The banner on every Gallery article: None, Exercise, Tlp or Classification; empty for the template\'s
      */
     marking?: string | null;

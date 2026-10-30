@@ -384,4 +384,33 @@ describe('MselDraftDialogComponent', () => {
       design: expect.objectContaining({ marking: 'Classification', markingText: 'UNCLASSIFIED // FOUO' }),
     }));
   });
+
+  /**
+   * Verifies: a CITE template's teams show their CITE duties for editing, and the lead time before STARTEX goes with the design.
+   * Interacts with: the Doors open field, the Teams and organizations tab, MselBuildService.createMselFromDesign.
+   * Data: a CITE template; 20 minutes before STARTEX; BLUE's duties edited to Lead and Scribe.
+   */
+  it('sends the lead time and the edited CITE duties', async () => {
+    const result = designResult();
+    result.draft.teams[0].duties = ['Incident Lead'];
+    const { designMsel, createMselFromDesign } = await renderDraftDialog(() => of(result), [{ id: 'tpl-1', name: 'Template', useCite: true }]);
+    const user = userEvent.setup();
+
+    await user.click(screen.getByText('Design choices (optional)'));
+    await user.type(screen.getByRole('spinbutton', { name: 'Doors open before STARTEX (minutes)' }), '20');
+    await user.type(screen.getByRole('textbox', { name: 'Exercise description' }), 'A grid attack.');
+    await user.click(screen.getByRole('button', { name: 'Draft' }));
+    expect(designMsel).toHaveBeenCalledWith(expect.objectContaining({ design: expect.objectContaining({ leadMinutes: 20 }) }));
+
+    await user.click(screen.getByRole('tab', { name: 'Teams and organizations (2)' }));
+    const duties = screen.getByRole('textbox', { name: 'BLUE CITE duties' });
+    expect(duties).toHaveValue('Incident Lead');
+    await user.clear(duties);
+    await user.type(duties, 'Lead, Scribe');
+    await user.click(screen.getByRole('button', { name: 'Create MSEL' }));
+
+    expect(createMselFromDesign).toHaveBeenCalledWith(expect.objectContaining({
+      draft: expect.objectContaining({ teams: [expect.objectContaining({ shortName: 'BLUE', duties: ['Lead', 'Scribe'] })] }),
+    }));
+  });
 });

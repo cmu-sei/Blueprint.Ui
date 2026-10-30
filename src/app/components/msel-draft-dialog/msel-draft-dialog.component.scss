@@ -172,3 +172,10 @@
   // the actions bar sets no text color, so the theme's is named here for dark mode too
   color: var(--mat-sys-on-surface-variant);
 }
+
+.duties {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.8125rem;
+  color: var(--mat-sys-on-surface-variant);
+}

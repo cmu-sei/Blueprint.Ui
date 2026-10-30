@@ -246,6 +246,18 @@ export class MselDraftDialogComponent {
     this.pruneCompetencies();
   }
 
+  // a team's CITE duties, edited as one comma-separated line
+  duties(owner: MselDraftTeam | MselDraftOrganization): string {
+    return ((owner as MselDraftTeam).duties ?? []).join(', ');
+  }
+
+  setDuties(owner: MselDraftTeam | MselDraftOrganization, text: string) {
+    (owner as MselDraftTeam).duties = text
+      .split(',')
+      .map((d) => d.trim())
+      .filter((d) => d);
+  }
+
   removeObjective(index: number) {
     this.result.draft.objectives = this.result.draft.objectives.filter((_, i) => i !== index);
   }

@@ -88,6 +88,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <input matInput type="number" min="15" [(ngModel)]="design.durationMinutes" [disabled]="isDrafting" />
       </mat-form-field>
       <mat-form-field>
+        <mat-label>Doors open before STARTEX (minutes)</mat-label>
+        <input matInput type="number" min="0" max="240" [(ngModel)]="design.leadMinutes" [disabled]="isDrafting" placeholder="15" />
+        <mat-hint>The pre-exercise move, with the read-in, for those who come early</mat-hint>
+      </mat-form-field>
+      <mat-form-field>
         <mat-label>Scenario time covered</mat-label>
         <input matInput [(ngModel)]="design.scenarioSpan" [disabled]="isDrafting" placeholder="e.g. three days" />
       </mat-form-field>
@@ -250,7 +255,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
 
     <mat-tab [label]="'Moves (' + (result.draft.moves?.length ?? 0) + ')'">
       <p class="hint tab-hint">Each move starts on the exercise clock, which runs in real time, and opens at a scenario
-        time, which can jump ahead between moves.</p>
+        time, which can jump ahead between moves. The MSEL also gets a pre-exercise move 0, from doors open until STARTEX,
+        and a hot wash after ENDEX; these moves become moves 1 and on.</p>
       <table class="design-table" aria-label="Moves">
         <thead>
           <tr><th>Move</th><th>Starts</th><th>Scenario time</th><th>Title</th><th>Purpose</th></tr>
@@ -290,6 +296,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <td><input class="cell-input" [(ngModel)]="owner.name" [attr.aria-label]="owner.shortName + ' name'" /></td>
             <td>
               <textarea class="cell-input" rows="2" [(ngModel)]="owner.description" [attr.aria-label]="owner.shortName + ' description'"></textarea>
+              @if (isTeam(owner) && templateUsesCite) {
+              <label class="duties">CITE duties
+                <input class="cell-input" [ngModel]="duties(owner)" (ngModelChange)="setDuties(owner, $event)"
+                  [attr.aria-label]="owner.shortName + ' CITE duties'" placeholder="Incident Lead, Scribe" />
+              </label>
+              }
               @if (isTeam(owner) && $any(owner).competencies?.length) {
               <ng-container *ngTemplateOutlet="competencyChips; context: { owner: owner }"></ng-container>
               }

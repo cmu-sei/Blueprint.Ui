@@ -23,5 +23,9 @@ export interface MselDraftTeam {
      * Competency ID numbers the team is expected to demonstrate
      */
     competencies?: Array<string> | null;
+    /**
+     * The duties members of the team take on, which CITE lets each member pick: Incident Lead, Scribe ...
+     */
+    duties?: Array<string> | null;
 }
 
