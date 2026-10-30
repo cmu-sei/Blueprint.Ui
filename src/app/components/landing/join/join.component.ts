@@ -24,6 +24,7 @@ import { XApiService } from 'src/app/services/xapi/xapi.service';
 import { landingBackground } from 'src/app/utilities/landing-background';
 import { cardImage } from 'src/app/utilities/card-image';
 import { TopbarComponent } from '../../shared/top-bar/topbar.component';
+import { OverflowTooltipDirective } from '../../shared/overflow-tooltip/overflow-tooltip.directive';
 import { MatButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
@@ -32,7 +33,7 @@ import { MatProgressSpinner } from '@angular/material/progress-spinner';
     selector: 'app-join',
     templateUrl: './join.component.html',
     styleUrls: ['./join.component.scss'],
-    imports: [TopbarComponent, MatButton, MatIcon, MatProgressSpinner, RouterLink]
+    imports: [TopbarComponent, MatButton, MatIcon, MatProgressSpinner, RouterLink, OverflowTooltipDirective]
 })
 export class JoinComponent implements OnDestroy, OnInit {
   private userDataService = inject(UserDataService);

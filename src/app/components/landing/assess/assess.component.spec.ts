@@ -54,13 +54,15 @@ const competencies = (n: number): MselCompetency[] => Array.from({ length: n }, 
 async function renderAssess(
   overrides: {
     msels?: Msel[];
+    mselsFail?: boolean;
+    permissionsFail?: boolean;
     permissions?: SystemPermission[];
     competencies?: (mselId: string) => Observable<MselCompetency[]>;
   } = {},
 ) {
   const { msels = [ALPHA, BRAVO, CHARLIE, DELTA], permissions = [] } = overrides;
   const mselApi = {
-    getMyMsels: vi.fn(() => of(structuredClone(msels))),
+    getMyMsels: vi.fn(() => (overrides.mselsFail ? throwError(() => new Error('msels down')) : of(structuredClone(msels)))),
   } satisfies ApiStub<MselService>;
   const competencyApi = {
     getMselCompetencies: vi.fn(overrides.competencies ?? (() => of(competencies(2)))),
@@ -74,6 +76,9 @@ async function renderAssess(
   // The page loads the permissions itself, so the real service is provided
   // over the stubbed endpoint, without priming it.
   const permissionApis = permissionApiStubs({ system: permissions });
+  if (overrides.permissionsFail) {
+    permissionApis.systemPermissions.getMySystemPermissions.mockImplementation(() => throwError(() => new Error('permissions down')));
+  }
   const rendered = await renderComponent(AssessComponent, {
     imports: [MatButtonModule, MatIconModule, MatProgressSpinnerModule],
     childStubs: [{ replace: TopbarComponent, with: TopbarStub }],
@@ -164,6 +169,33 @@ describe('AssessComponent', () => {
 
     expect(assessLinks()).toEqual([['/assess?msel=msel-1', 'Assess Exercise Alpha']]);
     expect(container.querySelector('.card-competencies')?.textContent.trim()).toBe('');
+  });
+
+  /**
+   * Verifies: permissions that fail to load count as none, as on the dashboard, so the events still list.
+   * Interacts with: SystemPermissionsService.getMySystemPermissions (stub, errors), MselService.getMyMsels (stub).
+   * Data: the permissions request fails; the MSELs load.
+   */
+  it('lists the events when only the permissions fail to load', async () => {
+    await renderAssess({ permissionsFail: true });
+
+    expect(screen.queryByText(/could not be loaded/)).not.toBeInTheDocument();
+    expect(assessLinks()).toEqual([
+      ['/assess?msel=msel-1', 'Assess Exercise Alpha'],
+      ['/assess?msel=msel-2', 'Assess Exercise Bravo'],
+    ]);
+  });
+
+  /**
+   * Verifies: a failed request ends the spinner and says the events could not be loaded, instead of loading forever.
+   * Interacts with: MselService.getMyMsels (stub, errors).
+   * Data: the MSEL list request fails.
+   */
+  it('says so when the events fail to load', async () => {
+    await renderAssess({ mselsFail: true });
+
+    expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
+    expect(screen.getByText(/could not be loaded/)).toBeInTheDocument();
   });
 
   /**

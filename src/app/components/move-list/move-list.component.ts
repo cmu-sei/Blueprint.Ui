@@ -70,12 +70,7 @@ export class MoveListComponent implements OnDestroy, AfterViewInit {
       .subscribe((moves) => {
         this.moveList = moves;
         this.displayedMoves = this.getSortedMoves(this.getFilteredMoves());
-        this.maxMoveNumber = moves.length > 0
-          ? Math.max.apply(Math, moves.map(function (o) { return +o.moveNumber; }))
-          : 0;
-        this.maxMoveStartSeconds = moves.length > 0
-          ? Math.max.apply(Math, moves.map(function (o) { return +o.deltaSeconds; }))
-          : 0;
+        this.setNewMoveDefaults();
       });
     // subscribe to the active MSEL
     (this.mselQuery.selectActive() as Observable<MselPlus>)
@@ -84,6 +79,7 @@ export class MoveListComponent implements OnDestroy, AfterViewInit {
         if (msel && this.msel.id !== msel.id) {
           Object.assign(this.msel, msel);
           this.displayedMoves = this.getSortedMoves(this.getFilteredMoves());
+          this.setNewMoveDefaults();
         }
       });
     this.filterControl.valueChanges
@@ -209,14 +205,28 @@ export class MoveListComponent implements OnDestroy, AfterViewInit {
     }
   }
 
+  // The move store can hold other MSELs' moves as well: a user with EditMsels is sent every
+  // MSEL's move changes. Only this MSEL's moves are listed, or count toward a new move's
+  // defaults and the start time order.
+  private mselMoves(): Move[] {
+    return (this.moveList ?? []).filter((m) => m.mselId === this.msel.id);
+  }
+
+  // A new move gets the next move number and the latest start offset of this MSEL's moves.
+  private setNewMoveDefaults() {
+    const moves = this.mselMoves();
+    this.maxMoveNumber = moves.length > 0
+      ? Math.max(...moves.map((o) => +o.moveNumber))
+      : 0;
+    this.maxMoveStartSeconds = moves.length > 0
+      ? Math.max(...moves.map((o) => +o.deltaSeconds))
+      : 0;
+  }
+
   getFilteredMoves(): Move[] {
     let filteredMoves: Move[] = [];
     if (this.moveList) {
-      this.moveList.forEach((m) => {
-        if (m.mselId === this.msel.id) {
-          filteredMoves.push({ ...m });
-        }
-      });
+      filteredMoves = this.mselMoves().map((m) => ({ ...m }));
       if (filteredMoves && filteredMoves.length > 0 && this.filterString) {
         const filterString = this.filterString.toLowerCase();
         filteredMoves = filteredMoves.filter(
@@ -230,7 +240,7 @@ export class MoveListComponent implements OnDestroy, AfterViewInit {
   }
 
   badMoveTimeOrder(): boolean {
-    const orderedMoves = this.moveList.sort((a, b) =>
+    const orderedMoves = this.mselMoves().sort((a, b) =>
       +a.moveNumber < +b.moveNumber ? -1 : 1
     );
     let deltaSeconds = Number.MIN_SAFE_INTEGER;

@@ -32,8 +32,8 @@ const POOL: MselCompetency[] = [
 ];
 const EXISTING: DataOption = { id: 'opt-1', dataFieldId: 'df-1', optionName: 'K0001', optionValue: 'Networking', displayOrder: 1 };
 
-async function renderCompetencyOptions(overrides: { canEdit?: boolean } = {}) {
-  const { canEdit = true } = overrides;
+async function renderCompetencyOptions(overrides: { canEdit?: boolean; dataOptions?: DataOption[] } = {}) {
+  const { canEdit = true, dataOptions = [EXISTING] } = overrides;
   const frameworkApi = {
     getCompetencyFrameworks: vi.fn(() => of<CompetencyFramework[]>([{ id: 'fw-1', name: 'NICE' }])),
   } satisfies ApiStub<CompetencyFrameworkService>;
@@ -52,7 +52,7 @@ async function renderCompetencyOptions(overrides: { canEdit?: boolean } = {}) {
     declarations: [CompetencyOptionsDialogComponent],
     providers: [
       { provide: CompetencyFrameworkService, useValue: frameworkApi },
-      { provide: MAT_DIALOG_DATA, useValue: { dataFieldId: 'df-1', dataOptions: [EXISTING], canEdit } },
+      { provide: MAT_DIALOG_DATA, useValue: { dataFieldId: 'df-1', dataOptions, canEdit } },
       { provide: MatDialogRef, useValue: ref.dialogRef },
       // The MSEL's competency pool, loaded by the MSEL page; seeded instead.
       {
@@ -105,7 +105,7 @@ describe('CompetencyOptionsDialogComponent', () => {
   });
 
   /**
-   * Verifies: without canEdit there are no checkboxes, clicking a row changes nothing, and Close returns the existing options.
+   * Verifies: without canEdit there are no checkboxes, clicking a row changes nothing, and Close saves nothing.
    * Interacts with: CompetencyOptionsDialogComponent template, MatDialogRef.close (stub).
    * Data: canEdit false; S0002 row clicked.
    */
@@ -118,6 +118,22 @@ describe('CompetencyOptionsDialogComponent', () => {
     expect(screen.getByRole('heading', { name: 'Manage Competencies (1 selected)' })).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Close' }));
 
-    expect(close).toHaveBeenCalledWith([{ ...EXISTING, displayOrder: 1, competencyId: 'c-1' }]);
+    expect(close).toHaveBeenCalledWith(undefined);
+  });
+
+  /**
+   * Verifies: an editor who looks and closes saves nothing, so an option whose competency has left the pool is not
+   * deleted by viewing the list.
+   * Interacts with: MatDialogRef.close (stub).
+   * Data: canEdit true; options K0001 (in the pool) and X9999 (no longer in the pool); nothing ticked.
+   */
+  it('saves nothing when an editor closes without a change', async () => {
+    const stale: DataOption = { id: 'opt-9', dataFieldId: 'df-1', optionName: 'X9999', optionValue: 'Retired', displayOrder: 2 };
+    const { close } = await renderCompetencyOptions({ canEdit: true, dataOptions: [EXISTING, stale] });
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole('button', { name: 'Close' }));
+
+    expect(close).toHaveBeenCalledWith(undefined);
   });
 });

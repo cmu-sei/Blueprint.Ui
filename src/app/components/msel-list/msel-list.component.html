@@ -147,14 +147,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
         </ng-container>
         <!-- dateCreated Column -->
         <ng-container matColumnDef="dateCreated">
-          <mat-header-cell *matHeaderCellDef mat-sort-header> Created </mat-header-cell>
+          <mat-header-cell *matHeaderCellDef mat-sort-header start="desc"> Created </mat-header-cell>
           <mat-cell *matCellDef="let element">
             <div class="description-text">{{ element.dateCreated | date: 'yyyy-MM-dd HH:mm' }}</div>
           </mat-cell>
         </ng-container>
         <!-- dateModified Column -->
         <ng-container matColumnDef="dateModified">
-          <mat-header-cell *matHeaderCellDef mat-sort-header> Modified </mat-header-cell>
+          <mat-header-cell *matHeaderCellDef mat-sort-header start="desc"> Modified </mat-header-cell>
           <mat-cell *matCellDef="let element">
             <div class="description-text">
               @if (isValidDate(element.dateModified)) {
@@ -167,7 +167,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <ng-container matColumnDef="description">
           <mat-header-cell *matHeaderCellDef mat-sort-header> Description </mat-header-cell>
           <mat-cell *matCellDef="let element">
-            <div class="description-text">{{ element.description }}</div>
+            <div class="description-text truncated-description" [appOverflowTooltip]="element.description">{{ element.description }}</div>
           </mat-cell>
         </ng-container>
         <!-- row definitions -->

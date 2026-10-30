@@ -28,8 +28,8 @@ function dataField(overrides: Partial<DataField> = {}): DataField {
   };
 }
 
-async function renderDataFieldEdit(flags: { canEdit?: boolean; isOwner?: boolean } = {}, field = dataField()) {
-  const { canEdit = false, isOwner = false } = flags;
+async function renderDataFieldEdit(flags: { canEdit?: boolean } = {}, field = dataField()) {
+  const { canEdit = false } = flags;
   const open = vi.fn();
   const rendered = await renderComponent(DataFieldEditDialogComponent, {
     imports: [...CRUCIBLE_DIALOG_IMPORTS, MatCheckboxModule, MatFormFieldModule, MatInputModule, MatSelectModule],
@@ -37,7 +37,7 @@ async function renderDataFieldEdit(flags: { canEdit?: boolean; isOwner?: boolean
     providers: [
       {
         provide: MAT_DIALOG_DATA,
-        useValue: { title: 'Edit Data Field', dataField: field, canEdit, isOwner, dataFieldTypes: DataFieldType, useGallery: false },
+        useValue: { title: 'Edit Data Field', dataField: field, canEdit, dataFieldTypes: DataFieldType, useGallery: false },
       },
       { provide: MatDialog, useValue: { open } satisfies Pick<MatDialog, 'open'> },
     ],
@@ -57,15 +57,12 @@ const dataTypeSelect = () => screen.getByLabelText('Data Type');
 
 describe('DataFieldEditDialogComponent', () => {
   /**
-   * Verifies: with canEdit, or as the MSEL owner without it, the data field's settings are editable and the metadata fields are shown.
+   * Verifies: with canEdit, which the list sets for owners too, the data field's settings are editable and the metadata fields are shown.
    * Interacts with: DataFieldEditDialogComponent template.
-   * Data: canEdit true; or canEdit false and isOwner true.
+   * Data: canEdit true.
    */
-  it.each([
-    { label: 'with canEdit', flags: { canEdit: true } },
-    { label: 'as the MSEL owner', flags: { isOwner: true } },
-  ])('edits the data field $label', async ({ flags }) => {
-    await renderDataFieldEdit(flags);
+  it('edits the data field with canEdit', async () => {
+    await renderDataFieldEdit({ canEdit: true });
 
     expect(nameInput()).toBeEnabled();
     expect(orderInput()).toBeEnabled();
@@ -75,12 +72,12 @@ describe('DataFieldEditDialogComponent', () => {
   });
 
   /**
-   * Verifies: without canEdit and not the owner every setting is disabled and the metadata fields are not rendered.
+   * Verifies: without canEdit every setting is disabled and the metadata fields are not rendered.
    * Interacts with: DataFieldEditDialogComponent template.
-   * Data: canEdit false; isOwner false.
+   * Data: canEdit false.
    */
   it('disables the data field settings without canEdit', async () => {
-    await renderDataFieldEdit({ canEdit: false, isOwner: false });
+    await renderDataFieldEdit({ canEdit: false });
 
     expect(nameInput()).toBeDisabled();
     expect(orderInput()).toBeDisabled();
@@ -91,13 +88,12 @@ describe('DataFieldEditDialogComponent', () => {
   });
 
   /**
-   * Verifies: the options link opens the option list with canEdit and canImport following canEdit or ownership.
+   * Verifies: the options link opens the option list with canEdit and canImport following canEdit.
    * Interacts with: viewAllOptions, MatDialog.open (spy).
-   * Data: a String field chosen from a list with one option; canEdit true, owner only, or neither.
+   * Data: a String field chosen from a list with one option; canEdit true, or false.
    */
   it.each([
     { flags: { canEdit: true }, canAddOptions: true },
-    { flags: { isOwner: true }, canAddOptions: true },
     { flags: {}, canAddOptions: false },
   ])('opens the option list with canEdit $canAddOptions', async ({ flags, canAddOptions }) => {
     const { open } = await renderDataFieldEdit(flags);
