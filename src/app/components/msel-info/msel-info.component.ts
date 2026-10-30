@@ -18,6 +18,7 @@ import {
   MselService,
   MselUnit,
   ScenarioEvent,
+  SteamfitterScenarioStartMode,
   SystemPermission,
   Team,
   User
@@ -155,6 +156,12 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     MselItemStatus.Pulling,
     MselItemStatus.Deployed,
   ];
+  // Steamfitter runs no task until its scenario is started
+  readonly steamfitterStartModes: { value: SteamfitterScenarioStartMode; label: string }[] = [
+    { value: SteamfitterScenarioStartMode.Manual, label: 'Manually' },
+    { value: SteamfitterScenarioStartMode.OnPush, label: 'When the push finishes' },
+    { value: SteamfitterScenarioStartMode.AtStartTime, label: 'At the MSEL start time' },
+  ];
   educationalLevels: string[] = ['Beginner', 'Intermediate', 'Advanced'];
   educationalUses: string[] = ['Assessment', 'Instruction', 'Professional Support'];
   courseModes: string[] = ['Online', 'Onsite', 'Blended'];
@@ -183,6 +190,7 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   citeEvaluationName = '';
   citeScoringModelName = '';
   steamfitterScenarioName = '';
+  steamfitterScenarioStatus = '';
   casterDirectoryName = '';
   casterWorkspaceName = '';
   integrationRequested = '';
@@ -977,6 +985,20 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     return `${baseUrl}?evaluation=${this.msel.citeEvaluationId}`;
   }
 
+  // whether the pushed scenario has been started, which tells a facilitator whether its tasks will run
+  steamfitterScenarioStatusLabel(): string {
+    switch (this.steamfitterScenarioStatus) {
+      case 'Ready':
+        return 'Not started';
+      case 'Active':
+        return 'Started';
+      case 'Ended':
+        return 'Ended';
+      default:
+        return '';
+    }
+  }
+
   getSteamfitterScenarioUrl(): string {
     if (!this.msel.steamfitterScenarioId) return '';
     let baseUrl = this.settingsService.settings.SteamfitterUrl || '';
@@ -1048,6 +1070,7 @@ export class MselInfoComponent implements OnDestroy, OnInit {
           this.citeEvaluationName = names.citeEvaluationName || '';
           this.citeScoringModelName = names.citeScoringModelName || '';
           this.steamfitterScenarioName = names.steamfitterScenarioName || '';
+          this.steamfitterScenarioStatus = names.steamfitterScenarioStatus || '';
           this.casterDirectoryName = names.casterDirectoryName || '';
           this.casterWorkspaceName = names.casterWorkspaceName || '';
         },
@@ -1087,6 +1110,7 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     this.citeEvaluationName = '';
     this.citeScoringModelName = '';
     this.steamfitterScenarioName = '';
+    this.steamfitterScenarioStatus = '';
     this.casterDirectoryName = '';
     this.casterWorkspaceName = '';
   }

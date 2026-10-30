@@ -49,6 +49,7 @@ import {
   PlayerApplication,
   PlayerApplicationService,
   ScoringModel,
+  SteamfitterScenarioStartMode,
   SystemPermission,
   SystemPermissionsService,
   User,
@@ -685,6 +686,117 @@ describe('MselInfoComponent', () => {
       });
 
       expect(screen.getByTitle('Remove Integrations')).toBeDisabled();
+    });
+  });
+
+  describe('Steamfitter', () => {
+    const startSelect = (fixture: ComponentFixture<unknown>) =>
+      TestbedHarnessEnvironment.loader(fixture).getHarnessOrNull(MatSelectHarness.with({ selector: '[aria-label="Start the scenario"]' }));
+    const optionTexts = async (select: MatSelectHarness) => {
+      await select.open();
+      const texts = await Promise.all((await select.getOptions()).map((option) => option.getText()));
+      await select.close();
+      return texts;
+    };
+
+    /**
+     * Verifies: with Steamfitter ticked, the three ways to start the scenario are offered, the MSEL's own is chosen, and choosing another marks the MSEL changed.
+     * Interacts with: steamfitterStartModes, real PermissionDataService (stubbed grants), MatSelectHarness.
+     * Data: EditMsels; a pending MSEL using Steamfitter whose scenario starts manually.
+     */
+    it('offers when to start the Steamfitter scenario', async () => {
+      const { fixture } = await renderInfo({
+        permissions: [SystemPermission.EditMsels],
+        mselExtra: { useSteamfitter: true, steamfitterScenarioStartMode: SteamfitterScenarioStartMode.Manual },
+      });
+
+      const select = await startSelect(fixture);
+      expect(await select.getValueText()).toBe('Manually');
+      expect(await optionTexts(select)).toEqual(['Manually', 'When the push finishes', 'At the MSEL start time']);
+
+      await select.clickOptions({ text: 'At the MSEL start time' });
+
+      expect(fixture.componentInstance.msel.steamfitterScenarioStartMode).toBe(SteamfitterScenarioStartMode.AtStartTime);
+      expect(screen.getByText('Changes have not been saved!')).toBeInTheDocument();
+    });
+
+    /**
+     * Verifies: the setting is shown only for a MSEL using Steamfitter.
+     * Interacts with: the Steamfitter checkbox binding.
+     * Data: EditMsels; a pending MSEL not using Steamfitter.
+     */
+    it('hides when to start the scenario without Steamfitter', async () => {
+      const { fixture } = await renderInfo({ permissions: [SystemPermission.EditMsels], mselExtra: { useSteamfitter: false } });
+
+      expect(await startSelect(fixture)).toBeNull();
+    });
+
+    /**
+     * Verifies: a pushed MSEL keeps the setting editable while the Steamfitter box itself is locked, because when the scenario starts changes nothing the push built.
+     * Interacts with: integrationsLocked, canEditMsel.
+     * Data: EditMsels; a deployed MSEL using Steamfitter with scenario sc-1, starting on the push.
+     */
+    it('keeps when to start the scenario editable on a pushed MSEL', async () => {
+      const { fixture } = await renderInfo({
+        permissions: [SystemPermission.EditMsels],
+        mselExtra: {
+          status: MselItemStatus.Deployed,
+          useSteamfitter: true,
+          steamfitterScenarioId: 'sc-1',
+          steamfitterScenarioStartMode: SteamfitterScenarioStartMode.OnPush,
+        },
+      });
+
+      expect(screen.getByLabelText('Steamfitter')).toBeDisabled();
+      const select = await startSelect(fixture);
+      expect(await select.isDisabled()).toBe(false);
+      expect(await select.getValueText()).toBe('When the push finishes');
+    });
+
+    /**
+     * Verifies: without EditMsels or an editing role the setting is shown but cannot be changed.
+     * Interacts with: canEditMsel, real PermissionDataService (stubbed grants).
+     * Data: every permission but EditMsels; the Viewer role. A pending MSEL using Steamfitter starting at the MSEL start time.
+     */
+    it('shows when to start the scenario read-only without EditMsels or an editing role', async () => {
+      const { fixture } = await renderInfo({
+        permissions: allBut(SystemPermission.EditMsels),
+        myRoles: [MselRole.Viewer],
+        mselExtra: { useSteamfitter: true, steamfitterScenarioStartMode: SteamfitterScenarioStartMode.AtStartTime },
+      });
+
+      const select = await startSelect(fixture);
+      expect(await select.isDisabled()).toBe(true);
+      expect(await select.getValueText()).toBe('At the MSEL start time');
+    });
+
+    /**
+     * Verifies: a pushed scenario shows whether it has been started, from the status Blueprint reads with its name, and nothing when Steamfitter could not be read.
+     * Interacts with: MselService.getMselIntegrationNames (stub), steamfitterScenarioStatusLabel.
+     * Data: a deployed MSEL using Steamfitter with scenario sc-1 named Exercise Tasks; statuses Ready, Active, Ended and none.
+     */
+    it.each([
+      { status: 'Ready', label: '(Not started)' },
+      { status: 'Active', label: '(Started)' },
+      { status: 'Ended', label: '(Ended)' },
+    ])('shows a $status scenario as $label', async ({ status, label }) => {
+      await renderInfo({
+        mselExtra: { status: MselItemStatus.Deployed, useSteamfitter: true, steamfitterScenarioId: 'sc-1' },
+        names: { steamfitterScenarioName: 'Exercise Tasks', steamfitterScenarioStatus: status },
+      });
+
+      expect(screen.getByText('Exercise Tasks')).toBeInTheDocument();
+      expect(screen.getByText(label)).toBeInTheDocument();
+    });
+
+    it('shows no scenario status when Steamfitter could not say', async () => {
+      await renderInfo({
+        mselExtra: { status: MselItemStatus.Deployed, useSteamfitter: true, steamfitterScenarioId: 'sc-1' },
+        names: { steamfitterScenarioName: '', steamfitterScenarioStatus: '' },
+      });
+
+      expect(screen.getByTitle('sc-1')).toBeInTheDocument();
+      expect(screen.queryByText(/Not started|Started|Ended/)).not.toBeInTheDocument();
     });
   });
 
