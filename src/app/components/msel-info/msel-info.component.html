@@ -616,6 +616,16 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 (keypress)="isChanged = true" [disabled]="!canEditMsel()" />
             </mat-form-field>
           </div>
+          <div class="single-detail center-self">
+            <mat-form-field class="full-width"
+              matTooltip="The language of the exercise material, as a BCP 47 tag such as en-US — maps to schema:inLanguage"
+              matTooltipShowDelay="800">
+              <mat-label>Language</mat-label>
+              <input type="text" matInput placeholder="en-US" [(ngModel)]="msel.language"
+                (cut)="isChanged = true" (change)="isChanged = true" (paste)="isChanged = true"
+                (keypress)="isChanged = true" [disabled]="!canEditMsel()" />
+            </mat-form-field>
+          </div>
           <!-- row meta data -->
           @if (canManageMsel()) {
           <div class="single-detail center-self">

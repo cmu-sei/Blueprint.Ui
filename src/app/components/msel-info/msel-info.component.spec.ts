@@ -791,4 +791,23 @@ describe('MselInfoComponent', () => {
     expect(info.msel.articleMarking).toBe('Tlp');
     expect(info.isChanged).toBe(true);
   });
+
+  /**
+   * Verifies: the MSEL's language, one of its IEEE 2881 catalog fields, shows and can be edited.
+   * Interacts with: the Language field.
+   * Data: a MSEL in en-US; the editor changes it to fr-CA.
+   */
+  it('shows and edits the MSEL language', async () => {
+    const { fixture } = await renderInfo({ permissions: [SystemPermission.EditMsels], mselExtra: { language: 'en-US' } });
+    const user = userEvent.setup();
+    const language = screen.getByRole('textbox', { name: 'Language' });
+    await fixture.whenStable();
+    expect(language).toHaveValue('en-US');
+
+    await user.clear(language);
+    await user.type(language, 'fr-CA');
+
+    expect(fixture.componentInstance.msel.language).toBe('fr-CA');
+    expect(fixture.componentInstance.isChanged).toBe(true);
+  });
 });
