@@ -1,0 +1,46 @@
+<!--
+Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license. See LICENSE.md in the
+project root for license information.
+-->
+<div class="authored">
+  @if (scoringModel(); as model) {
+  <div class="authored-summary">
+    <span class="authored-name">{{ model.description }}</span>
+    <span class="authored-counts">{{ summary() }}</span>
+    <button mat-stroked-button (click)="openEditor()">
+      {{ canEdit() ? 'Edit Scoring Model' : 'View Scoring Model' }}
+    </button>
+  </div>
+  @if (emptyCategoryWarning()) {
+  <div class="authored-warning">{{ emptyCategoryWarning() }}</div>
+  }
+  } @else if (!canEdit()) {
+  <span class="authored-none">No scoring model has been authored for this MSEL.</span>
+  }
+  @if (canEdit()) {
+  <div class="authored-start">
+    <mat-form-field class="start-from">
+      <mat-label>{{ scoringModel() ? 'Replace With' : 'Start From' }}</mat-label>
+      <mat-select [(ngModel)]="startFrom">
+        @for (preset of presets; track preset.preset) {
+        <mat-option [value]="'preset:' + preset.preset">{{ preset.label }}</mat-option>
+        }
+        @if (citeScoringModels().length > 0) {
+        <mat-optgroup label="Copy a CITE scoring model">
+          @for (citeModel of citeScoringModels(); track citeModel.id) {
+          <mat-option [value]="'cite:' + citeModel.id">{{ citeModel.description }}</mat-option>
+          }
+        </mat-optgroup>
+        }
+      </mat-select>
+      @if (startFromHint()) {
+      <mat-hint>{{ startFromHint() }}</mat-hint>
+      }
+    </mat-form-field>
+    <button mat-stroked-button [disabled]="!startFrom || isBusy" (click)="create()">
+      {{ scoringModel() ? 'Replace Scoring Model' : 'Create Scoring Model' }}
+    </button>
+  </div>
+  }
+</div>

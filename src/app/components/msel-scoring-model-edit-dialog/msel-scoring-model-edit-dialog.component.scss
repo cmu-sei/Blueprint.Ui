@@ -1,0 +1,141 @@
+// Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+// Released under a MIT (SEI)-style license. See LICENSE.md in the
+// project root for license information.
+
+.scoring-model-dialog {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: 24px;
+  max-height: 70vh;
+}
+
+.editor,
+.preview {
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.checkboxes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-bottom: 12px;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 12px 0 8px;
+}
+
+.category {
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 8px;
+  padding: 8px 12px 12px;
+  margin-bottom: 12px;
+}
+
+.category-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.category-title {
+  flex: 1;
+  font-weight: 500;
+}
+
+.category-moves {
+  color: var(--mat-sys-on-surface-variant);
+  white-space: nowrap;
+}
+
+.category-row,
+.option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.selection-field,
+.equation-field {
+  flex: 1;
+  min-width: 200px;
+}
+
+.move-field,
+.weight-field,
+.value-field {
+  width: 140px;
+}
+
+.option-number {
+  width: 24px;
+  text-align: right;
+}
+
+.option-description {
+  flex: 1;
+  min-width: 240px;
+}
+
+.category-error {
+  color: var(--mat-sys-error);
+  margin-bottom: 8px;
+}
+
+.no-options,
+.preview-all {
+  color: var(--mat-sys-on-surface-variant);
+  font-style: italic;
+  margin: 4px 0 8px;
+}
+
+.preview {
+  border-left: 1px solid var(--mat-sys-outline-variant);
+  padding-left: 16px;
+}
+
+.preview-move {
+  width: 240px;
+}
+
+.preview-category {
+  margin-bottom: 16px;
+}
+
+.preview-category-description {
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+
+.preview-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 4px 0;
+
+  &.indent {
+    margin-left: 24px;
+  }
+}
+
+.preview-option-description {
+  flex: 1;
+}
+
+.preview-comment {
+  border: 1px dashed var(--mat-sys-outline-variant);
+  border-radius: 4px;
+  color: var(--mat-sys-on-surface-variant);
+  margin: 2px 0 8px 32px;
+  padding: 6px 8px;
+  min-height: 32px;
+}

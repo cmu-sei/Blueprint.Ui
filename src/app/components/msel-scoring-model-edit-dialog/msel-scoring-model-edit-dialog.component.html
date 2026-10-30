@@ -1,0 +1,226 @@
+<!--
+Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license. See LICENSE.md in the
+project root for license information.
+-->
+
+<crucible-dialog
+  [dialogTitle]="canEdit ? 'Edit Scoring Model' : 'View Scoring Model'"
+  [guardUnsavedWork]="canEdit"
+  [loading]="isSaving"
+  [errorMessage]="errorMessage"
+  submitLabel="Save"
+  [cancelLabel]="canEdit ? 'Cancel' : 'Close'"
+  [submitDisabled]="!canEdit || !isValid()"
+  (cancel)="cancel()"
+  (submit)="save()"
+>
+  <div crucibleDialogContent class="scoring-model-dialog">
+    <div class="editor">
+      <!-- Model settings -->
+      <section class="settings" aria-label="Scoring model settings">
+        <mat-form-field class="full-width">
+          <mat-label>Scoring Model Description</mat-label>
+          <input matInput [(ngModel)]="model.description" required [disabled]="!canEdit"
+            matTooltip="A name or description for this scoring model. CITE shows it with the evaluation." />
+        </mat-form-field>
+        <mat-form-field class="full-width">
+          <mat-label>Calculation Equation</mat-label>
+          <input matInput [(ngModel)]="model.calculationEquation" [disabled]="!canEdit"
+            matTooltip="Formula that computes the overall score from the weighted category scores. Supports {count}, {minPossible}, {maxPossible}, {sum} and {average}, optionally clamped as 'MAX > equation > MIN'." />
+        </mat-form-field>
+        <div class="checkboxes">
+          <mat-checkbox [(ngModel)]="model.useUserScore" [disabled]="!canEdit">Use Individual User Scoring</mat-checkbox>
+          <mat-checkbox [(ngModel)]="model.useTeamScore" [disabled]="!canEdit">Use Team Scoring</mat-checkbox>
+          <mat-checkbox [(ngModel)]="model.useOfficialScore" [disabled]="!canEdit">Use Official Scoring</mat-checkbox>
+          <mat-checkbox [(ngModel)]="model.useTeamAverageScore" [disabled]="!canEdit">Use Team Average Scoring</mat-checkbox>
+          <mat-checkbox [(ngModel)]="model.useTypeAverageScore" [disabled]="!canEdit">Use Type Average Scoring</mat-checkbox>
+          <mat-checkbox [(ngModel)]="model.useSubmit" [disabled]="!canEdit">Use Submit Button for Submissions</mat-checkbox>
+          <mat-checkbox [(ngModel)]="model.hideScoresOnScoreSheet" [disabled]="!canEdit">Hide Option Values On Scoresheet</mat-checkbox>
+          <mat-checkbox [(ngModel)]="model.displayCommentTextBoxes" [disabled]="!canEdit">Display Comments as Textboxes</mat-checkbox>
+          <mat-checkbox [(ngModel)]="model.displayScoringModelByMoveNumber" [disabled]="!canEdit">Use Different Scoring Categories by Move Number</mat-checkbox>
+          <mat-checkbox [(ngModel)]="model.showPastSituationDescriptions" [disabled]="!canEdit">Show Past Situation Descriptions on Dashboard</mat-checkbox>
+        </div>
+        <mat-form-field class="full-width">
+          <mat-label>Right Side Display</mat-label>
+          <mat-select [(ngModel)]="model.rightSideDisplay" [disabled]="!canEdit">
+            @for (display of rightSideDisplays; track display.value) {
+            <mat-option [value]="display.value">{{ display.label }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        @if (model.rightSideDisplay === RightSideDisplay.HtmlBlock) {
+        <mat-form-field class="full-width">
+          <mat-label>Right Side HTML Block</mat-label>
+          <textarea matInput rows="4" [(ngModel)]="model.rightSideHtmlBlock" [disabled]="!canEdit"></textarea>
+          <mat-hint>HTML shown beside the scoresheet. Scripts and styles are removed when it is saved.</mat-hint>
+        </mat-form-field>
+        }
+        @if (model.rightSideDisplay === RightSideDisplay.EmbeddedUrl) {
+        <mat-form-field class="full-width">
+          <mat-label>Right Side URL</mat-label>
+          <input matInput [(ngModel)]="model.rightSideEmbeddedUrl" [disabled]="!canEdit" />
+          <mat-hint>An http or https page that allows being framed.</mat-hint>
+        </mat-form-field>
+        }
+      </section>
+
+      <!-- Categories -->
+      <section class="categories" aria-label="Scoring categories">
+        <div class="section-header">
+          <b>Scoring Categories</b>
+          @if (canEdit) {
+          <button mat-stroked-button (click)="addCategory()">Add Category</button>
+          }
+        </div>
+        @for (category of model.categories; track $index; let i = $index; let first = $first; let last = $last) {
+        <div class="category" [attr.aria-label]="'Category ' + (i + 1)" role="group">
+          <div class="category-header">
+            <span class="category-title">{{ i + 1 }}. {{ category.description || 'New category' }}</span>
+            @if (model.displayScoringModelByMoveNumber) {
+            <span class="category-moves">{{ rangeLabel(category) }}</span>
+            }
+            @if (canEdit) {
+            <span class="category-buttons">
+              <button mat-icon-button title="Move Category Up" [disabled]="first" (click)="moveCategory(i, -1)">
+                <mat-icon class="mdi-18px" fontIcon="mdi-arrow-up" />
+              </button>
+              <button mat-icon-button title="Move Category Down" [disabled]="last" (click)="moveCategory(i, 1)">
+                <mat-icon class="mdi-18px" fontIcon="mdi-arrow-down" />
+              </button>
+              <button mat-icon-button title="Delete Category" (click)="removeCategory(i)">
+                <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline" />
+              </button>
+            </span>
+            }
+          </div>
+          <mat-form-field class="full-width">
+            <mat-label>Scoring Category Description</mat-label>
+            <textarea matInput rows="2" [(ngModel)]="category.description" [disabled]="!canEdit"></textarea>
+          </mat-form-field>
+          <div class="category-row">
+            <mat-form-field class="selection-field">
+              <mat-label>Scoring Option Selection Type</mat-label>
+              <mat-select [(ngModel)]="category.scoringOptionSelection" [disabled]="!canEdit"
+                matTooltip="Single lets a participant pick one option, Multiple several, and None makes the options questions answered in comments.">
+                @for (selection of selections; track selection.value) {
+                <mat-option [value]="selection.value">{{ selection.label }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            @if (model.displayScoringModelByMoveNumber) {
+            <mat-form-field class="move-field">
+              <mat-label>First Move to Display</mat-label>
+              <input matInput type="number" [(ngModel)]="category.moveNumberFirstDisplay" [disabled]="!canEdit" />
+            </mat-form-field>
+            <mat-form-field class="move-field">
+              <mat-label>Last Move to Display</mat-label>
+              <input matInput type="number" [(ngModel)]="category.moveNumberLastDisplay" [disabled]="!canEdit" />
+            </mat-form-field>
+            }
+          </div>
+          @if (+category.moveNumberFirstDisplay > +category.moveNumberLastDisplay) {
+          <div class="category-error" role="alert">The last move to display comes before the first.</div>
+          }
+          @if (!isQuestionCategory(category)) {
+          <div class="category-row">
+            <mat-form-field class="equation-field">
+              <mat-label>Calculation Equation</mat-label>
+              <input matInput [(ngModel)]="category.calculationEquation" [disabled]="!canEdit"
+                matTooltip="Computes this category's score from the selected options: {count}, {min}, {max}, {sum} and {modifier}." />
+            </mat-form-field>
+            <mat-form-field class="weight-field">
+              <mat-label>Calculation Weight</mat-label>
+              <input matInput type="number" [(ngModel)]="category.scoringWeight" [disabled]="!canEdit" />
+            </mat-form-field>
+            <mat-checkbox [(ngModel)]="category.isModifierRequired" [disabled]="!canEdit">Modifier Selection Required</mat-checkbox>
+          </div>
+          }
+          <div class="options" [attr.aria-label]="(isQuestionCategory(category) ? 'Questions' : 'Scoring options') + ' of category ' + (i + 1)" role="list">
+            @for (option of category.options; track $index; let j = $index; let firstOption = $first; let lastOption = $last) {
+            <div class="option" role="listitem">
+              <span class="option-number">{{ j + 1 }}.</span>
+              <mat-form-field class="option-description">
+                <mat-label>{{ isQuestionCategory(category) ? 'Question' : 'Scoring Option Description' }}</mat-label>
+                <textarea matInput rows="1" [(ngModel)]="option.description" [disabled]="!canEdit"></textarea>
+              </mat-form-field>
+              @if (!isQuestionCategory(category)) {
+              <mat-form-field class="value-field">
+                <mat-label>Value</mat-label>
+                <input matInput type="number" [(ngModel)]="option.value" [disabled]="!canEdit" />
+              </mat-form-field>
+              <mat-checkbox [(ngModel)]="option.isModifier" [disabled]="!canEdit">Is a Modifier</mat-checkbox>
+              }
+              @if (canEdit) {
+              <button mat-icon-button [title]="isQuestionCategory(category) ? 'Move Question Up' : 'Move Option Up'" [disabled]="firstOption" (click)="moveOption(category, j, -1)">
+                <mat-icon class="mdi-18px" fontIcon="mdi-arrow-up" />
+              </button>
+              <button mat-icon-button [title]="isQuestionCategory(category) ? 'Move Question Down' : 'Move Option Down'" [disabled]="lastOption" (click)="moveOption(category, j, 1)">
+                <mat-icon class="mdi-18px" fontIcon="mdi-arrow-down" />
+              </button>
+              <button mat-icon-button [title]="isQuestionCategory(category) ? 'Delete Question' : 'Delete Option'" (click)="removeOption(category, j)">
+                <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline" />
+              </button>
+              }
+            </div>
+            } @empty {
+            <div class="no-options">{{ isQuestionCategory(category) ? 'No questions yet.' : 'No scoring options yet.' }}</div>
+            }
+          </div>
+          @if (canEdit) {
+          <button mat-stroked-button class="add-option" (click)="addOption(category)">
+            {{ isQuestionCategory(category) ? 'Add Question' : 'Add Option' }}
+          </button>
+          }
+        </div>
+        } @empty {
+        <div class="no-options">No scoring categories yet.</div>
+        }
+      </section>
+    </div>
+
+    <!-- What a team sees -->
+    <aside class="preview" aria-label="Scoresheet preview">
+      <div class="section-header">
+        <b>What a Team Sees</b>
+        @if (model.displayScoringModelByMoveNumber) {
+        <mat-form-field class="preview-move">
+          <mat-label>Preview Move</mat-label>
+          <mat-select [(ngModel)]="previewMoveNumber">
+            @for (moveNumber of previewMoveNumbers(); track moveNumber) {
+            <mat-option [value]="moveNumber">{{ moveLabel(moveNumber) }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        } @else {
+        <span class="preview-all">For All Moves</span>
+        }
+      </div>
+      @for (category of previewCategories(); track $index; let i = $index) {
+      <div class="preview-category">
+        <div class="preview-category-description">{{ i + 1 }}. {{ category.description }}</div>
+        @for (option of category.options; track $index; let j = $index) {
+        <div class="preview-option" [class.indent]="option.isModifier">
+          @if (isQuestionCategory(category)) {
+          <span class="preview-number">{{ j + 1 }}.</span>
+          } @else if (category.scoringOptionSelection === 'Single') {
+          <mat-icon class="mdi-18px" fontIcon="mdi-radiobox-blank" aria-hidden="true" />
+          } @else {
+          <mat-icon class="mdi-18px" fontIcon="mdi-checkbox-blank-outline" aria-hidden="true" />
+          }
+          <span class="preview-option-description">{{ option.description }}</span>
+          @if (!model.hideScoresOnScoreSheet && !isQuestionCategory(category) && !option.isModifier) {
+          <span class="preview-value">{{ option.value }}</span>
+          }
+        </div>
+        @if (model.displayCommentTextBoxes) {
+        <div class="preview-comment">Comment</div>
+        }
+        }
+      </div>
+      } @empty {
+      <div class="no-options">No scoring categories are shown in this move.</div>
+      }
+    </aside>
+  </div>
+</crucible-dialog>

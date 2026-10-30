@@ -70,9 +70,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <div class="single-detail center-self">
             <mat-form-field class="full-width">
               <mat-label>Description</mat-label>
-              <input type="text" matInput placeholder="Description" [(ngModel)]="msel.description" maxlength="600"
+              <!-- tall enough for all 600 characters; Enter is kept out, as in a one-line field -->
+              <textarea matInput placeholder="Description" [(ngModel)]="msel.description" maxlength="600"
+                cdkTextareaAutosize cdkAutosizeMinRows="2"
                 (cut)="isChanged = true" (change)="isChanged = true" (paste)="isChanged = true"
-                (keypress)="isChanged = true" [disabled]="!canEditMsel()" />
+                (keypress)="isChanged = true" (keydown.enter)="$event.preventDefault()"
+                [disabled]="!canEditMsel()"></textarea>
               <mat-hint align="end">{{ msel.description?.length || 0 }} / 600 characters</mat-hint>
             </mat-form-field>
           </div>
@@ -158,7 +161,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 pushStatus) {
                 <button (click)="pushIntegrations()" title="Push Integrations" class="thin-button" [disabled]="!canManageMsel() ||
                               (msel.useGallery && galleryToDo()) ||
-                              (msel.useCite && !msel.citeScoringModelId) ||
+                              (msel.useCite && !hasCiteScoringModel()) ||
                               (msel.useCite && hasCiteTeamsWithoutType()) ||
                               !!casterWarningMessage() ||
                               isBusy || isChanged || (pushStatus && pushStatus.startsWith('ERROR'))">@if (pushStatus &&
@@ -297,6 +300,23 @@ project root for license information or contact permission@sei.cmu.edu for full 
               <div class="integration-details">
                 <div class="integration-field">
                   <span class="integration-label">Scoring Model:</span>
+                  <mat-radio-group style="display: flex; flex-wrap: wrap; gap: 8px;" aria-label="Scoring model source"
+                    [value]="citeScoringModelSource" [disabled]="integrationsLocked() || !canAuthorScoringModel()"
+                    (change)="onScoringModelSourceChange($event.value)">
+                    <mat-radio-button value="link">Link a CITE scoring model</mat-radio-button>
+                    <mat-radio-button value="author">Author it in Blueprint</mat-radio-button>
+                  </mat-radio-group>
+                </div>
+                @if (citeScoringModelSource === 'author') {
+                <div class="integration-field">
+                  <span class="integration-label"></span>
+                  <app-msel-scoring-model [mselId]="msel.id" [scoringModel]="authoredScoringModel"
+                    [canEdit]="!integrationsLocked() && canAuthorScoringModel()" [citeScoringModels]="scoringModelList"
+                    (scoringModelChange)="authoredScoringModel = $event" />
+                </div>
+                } @else {
+                <div class="integration-field">
+                  <span class="integration-label"></span>
                   @if (scoringModelList.length > 0 && !integrationsLocked() && canEditMsel()) {
                   <mat-form-field class="integration-select">
                     <mat-select [(ngModel)]="msel.citeScoringModelId" (cut)="isChanged = true"
@@ -320,6 +340,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   }
                   }
                 </div>
+                }
                 @if (!msel.isTemplate && msel.citeEvaluationId) {
                 <div class="integration-field">
                   <span class="integration-label">Evaluation:</span>
