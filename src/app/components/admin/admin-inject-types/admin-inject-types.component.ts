@@ -182,7 +182,7 @@ export class AdminInjectTypesComponent implements OnDestroy, AfterViewInit {
 
   deleteInjectType(injectType: InjectType): void {
     this.dialogService
-      .confirm({ title: 'Delete InjectType', message: 'Are you sure that you want to delete ' + injectType.name + '?'
+      .confirm({ title: 'Delete Inject Type', message: 'Are you sure that you want to delete ' + injectType.name + '?', confirmText: 'Delete'
        }).afterClosed().subscribe((result) => {
         if (result) {
           this.injectTypeDataService.delete(injectType.id);

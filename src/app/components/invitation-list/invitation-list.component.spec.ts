@@ -222,7 +222,7 @@ describe('InvitationListComponent', () => {
 
     await user.click(within(table()).getByRole('button', { name: 'Delete example.com invitation' }));
 
-    expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Delete Invitation' }));
+    expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Delete Invitation', confirmText: 'Delete' }));
     expect(invitationApi.deleteInvitation).toHaveBeenCalledWith('inv-1');
     expect(screen.getByText('No invitations found')).toBeInTheDocument();
   });

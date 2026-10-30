@@ -134,7 +134,7 @@ describe('AdminUnitsComponent', () => {
 
     await user.click(within(table()).getByRole('button', { name: 'Delete Blue Team' }));
 
-    expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Delete Unit' }));
+    expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Delete Unit', confirmText: 'Delete' }));
     expect(unitApi.deleteUnit).toHaveBeenCalledWith('unit-1');
     expect(within(table()).queryByText('Blue Team')).not.toBeInTheDocument();
   });

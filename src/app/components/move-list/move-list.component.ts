@@ -159,7 +159,7 @@ export class MoveListComponent implements OnDestroy, AfterViewInit {
       return;
     }
     this.dialogService
-      .confirm({ title: 'Delete Move', message: 'Are you sure that you want to delete ' + move.description + '?'
+      .confirm({ title: 'Delete Move', message: 'Are you sure that you want to delete ' + move.description + '?', confirmText: 'Delete'
        }).afterClosed().subscribe((result) => {
         if (result) {
           this.moveDataService.delete(move.id);

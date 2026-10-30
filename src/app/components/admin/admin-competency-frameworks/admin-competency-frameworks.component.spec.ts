@@ -200,7 +200,7 @@ describe('AdminCompetencyFrameworksComponent', () => {
 
     await user.click(deleteButton());
 
-    expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Delete Competency Framework' }));
+    expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Delete Competency Framework', confirmText: 'Delete' }));
     expect(frameworkApi.deleteCompetencyFramework).toHaveBeenCalledWith('fw-1');
     expect(within(frameworks()).queryByText('NICE')).not.toBeInTheDocument();
   });

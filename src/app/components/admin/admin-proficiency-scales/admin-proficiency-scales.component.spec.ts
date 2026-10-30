@@ -139,7 +139,7 @@ describe('AdminProficiencyScalesComponent', () => {
 
     await user.click(within(scales()).getByTitle('Delete Five Point'));
 
-    expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Delete Scale' }));
+    expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Delete Proficiency Scale', message: 'Are you sure that you want to delete Five Point?', confirmText: 'Delete' }));
     expect(scaleApi.deleteProficiencyScale).toHaveBeenCalledWith('scale-1');
     expect(screen.getByText('No proficiency scales defined')).toBeInTheDocument();
   });

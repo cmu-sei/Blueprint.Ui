@@ -486,7 +486,7 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     if (this.canManageMsel()) {
       this.dialogService
         .confirm({
-          title: 'Delete MSEL', message: 'Are you sure that you want to delete ' + this.msel.name + '?'
+          title: 'Delete MSEL', message: 'Are you sure that you want to delete ' + this.msel.name + '?', confirmText: 'Delete'
         }).afterClosed().subscribe((result) => {
           if (result) {
             this.deleteThisMsel.emit(this.msel.id);
@@ -700,7 +700,7 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   pullIntegrations() {
     this.dialogService
       .confirm({
-        title: 'Remove Integrations', message: 'Are you sure you want to remove this MSEL from the associated applications?'
+        title: 'Remove Integrations', message: 'Are you sure that you want to remove this MSEL from the associated applications?'
       }).afterClosed().subscribe((result) => {
         if (result) {
           this.integrationDismissed = false;
@@ -861,7 +861,7 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   deletePage(page: MselPage): void {
     this.dialogService
       .confirm({
-        title: 'Delete Page', message: 'Are you sure that you want to delete ' + page.name + '?'
+        title: 'Delete Page', message: 'Are you sure that you want to delete ' + page.name + '?', confirmText: 'Delete'
       }).afterClosed().subscribe((result) => {
         if (result) {
           // Clear any unsaved changes for this page

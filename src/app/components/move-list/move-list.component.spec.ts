@@ -144,7 +144,7 @@ describe('MoveListComponent', () => {
 
     await user.click(within(table()).getByRole('button', { name: 'Delete Move 1' }));
 
-    expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Delete Move' }));
+    expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Delete Move', confirmText: 'Delete' }));
     expect(moveApi.deleteMove).toHaveBeenCalledWith('move-1');
     expect(within(table()).queryByText('Initial access')).not.toBeInTheDocument();
   });
