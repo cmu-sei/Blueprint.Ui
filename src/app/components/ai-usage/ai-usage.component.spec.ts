@@ -79,4 +79,23 @@ describe('AiUsageComponent', () => {
 
     expect(screen.queryByRole('heading', { name: 'AI usage' })).not.toBeInTheDocument();
   });
+
+  /**
+   * Verifies: the panel asks for nothing until the Info page's MSEL has loaded, then asks for that MSEL's usage.
+   * Interacts with: AiUsageService.getMselAiUsage.
+   * Data: no MSEL id at first, then msel-1.
+   */
+  it('waits for the MSEL to load', async () => {
+    const getMselAiUsage = vi.fn(() => of(USAGE));
+    const { fixture } = await renderComponent(AiUsageComponent, {
+      providers: [{ provide: AiUsageService, useValue: { getMselAiUsage } }],
+      inputs: { mselId: undefined },
+    });
+    expect(getMselAiUsage).not.toHaveBeenCalled();
+
+    fixture.componentRef.setInput('mselId', 'msel-1');
+    fixture.detectChanges();
+
+    expect(getMselAiUsage).toHaveBeenCalledWith('msel-1');
+  });
 });

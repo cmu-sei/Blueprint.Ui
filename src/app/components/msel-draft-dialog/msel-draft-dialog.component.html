@@ -159,14 +159,17 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <mat-form-field class="full-width">
           <mat-label>The problem</mat-label>
           <textarea matInput [(ngModel)]="result.draft.scenario.problem" rows="2"></textarea>
+          <mat-hint>What the participants face when the exercise starts.</mat-hint>
         </mat-form-field>
         <mat-form-field class="full-width">
           <mat-label>Premise</mat-label>
           <textarea matInput [(ngModel)]="result.draft.scenario.premise" rows="3"></textarea>
+          <mat-hint>How the situation came about: the backstory participants are given.</mat-hint>
         </mat-form-field>
         <mat-form-field class="full-width">
           <mat-label>Escalation ceiling</mat-label>
           <input matInput [(ngModel)]="result.draft.scenario.escalationCeiling" />
+          <mat-hint>The furthest the scenario may go, which no inject passes, e.g. no loss of life. In the Facilitator Guide.</mat-hint>
         </mat-form-field>
         }
         @if (result.draft.objectives?.length) {

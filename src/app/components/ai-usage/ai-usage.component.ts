@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, OnInit, input } from '@angular/core';
+import { Component, effect, inject, input } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { take } from 'rxjs/operators';
 import { AiUsageService, AiUsageSummary } from 'src/app/generated/blueprint.api';
@@ -17,8 +17,8 @@ import { AiUsageService, AiUsageSummary } from 'src/app/generated/blueprint.api'
   styleUrls: ['./ai-usage.component.scss'],
   imports: [DecimalPipe],
 })
-export class AiUsageComponent implements OnInit {
-  readonly mselId = input.required<string>();
+export class AiUsageComponent {
+  readonly mselId = input<string>();
   usage: AiUsageSummary;
 
   private static readonly labels: Record<string, string> = {
@@ -32,11 +32,21 @@ export class AiUsageComponent implements OnInit {
     photo: 'News photos',
   };
 
-  constructor(private aiUsageService: AiUsageService) {}
+  private aiUsageService = inject(AiUsageService);
 
-  ngOnInit() {
+  constructor() {
+    // the Info page renders before its MSEL loads, and keeps this panel when it switches MSEL
+    effect(() => {
+      const mselId = this.mselId();
+      if (mselId) {
+        this.load(mselId);
+      }
+    });
+  }
+
+  private load(mselId: string) {
     this.aiUsageService
-      .getMselAiUsage(this.mselId())
+      .getMselAiUsage(mselId)
       .pipe(take(1))
       .subscribe({
         next: (usage) => (this.usage = usage?.calls ? usage : undefined),
