@@ -47,7 +47,7 @@ export class MselAiBuildService {
   readonly finished$ = new Subject<string>();
   // drawn on a canvas in the browser: SVG as PNG, photos at article size; tests give their own
   toPng: (html: string) => Promise<string> = prepareImages;
-  // articles and profiles written at once
+  // rows, articles and profiles written at once, when the API does not say
   concurrency = 3;
 
   constructor() {
@@ -157,7 +157,7 @@ export class MselAiBuildService {
               return EMPTY;
             })
           ),
-        this.concurrency
+        status.parallel || this.concurrency
       ),
       toArray(),
       mergeMap(() => this.api.getMselBuildStatus(mselId))

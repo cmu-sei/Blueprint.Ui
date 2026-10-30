@@ -26,6 +26,10 @@ export interface MselBuildStatus {
      */
     stage?: string | null;
     /**
+     * How many of the rows, articles and profiles to write at once
+     */
+    parallel?: number;
+    /**
      * The other injects whose long text is still to write
      */
     injects?: Array<MselBuildItem> | null;
