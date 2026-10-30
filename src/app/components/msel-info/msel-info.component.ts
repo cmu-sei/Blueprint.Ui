@@ -110,6 +110,8 @@ export class MselInfoComponent implements OnDestroy, OnInit {
 
   readonly loggedInUserId = input<string>(undefined);
   readonly deleteThisMsel = output<string>();
+  // the TLP 2.0 levels a MSEL's articles can be marked with
+  readonly tlpLevels = ['CLEAR', 'GREEN', 'AMBER', 'AMBER+STRICT', 'RED'];
   msel = new MselPlus();
   originalMsel = new MselPlus();
   expandedScenarioEventIds: string[] = [];

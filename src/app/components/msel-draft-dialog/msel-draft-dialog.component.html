@@ -105,6 +105,35 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <input matInput [(ngModel)]="design.structure" [disabled]="isDrafting"
         placeholder="e.g. one combined staff, functional cells, parallel national teams" />
     </mat-form-field>
+    @if (templateUsesGallery) {
+    <div class="design-grid">
+      <mat-form-field>
+        <mat-label>Article marking</mat-label>
+        <mat-select [(ngModel)]="design.marking" [disabled]="isDrafting">
+          <mat-option value="Exercise">Exercise banner</mat-option>
+          <mat-option value="Tlp">TLP</mat-option>
+          <mat-option value="Classification">Classification banner</mat-option>
+          <mat-option value="None">None</mat-option>
+        </mat-select>
+      </mat-form-field>
+      @if (design.marking === 'Tlp') {
+      <mat-form-field>
+        <mat-label>TLP level</mat-label>
+        <mat-select [(ngModel)]="design.markingText" [disabled]="isDrafting">
+          @for (level of tlpLevels; track level) {
+          <mat-option [value]="level">TLP:{{ level }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      }
+      @if (design.marking === 'Classification') {
+      <mat-form-field>
+        <mat-label>Classification banner text</mat-label>
+        <input matInput [(ngModel)]="design.markingText" [disabled]="isDrafting" placeholder="UNCLASSIFIED // FOR EXERCISE USE ONLY" />
+      </mat-form-field>
+      }
+    </div>
+    }
     <mat-checkbox [(ngModel)]="design.profilePages" [disabled]="isDrafting">Add Team Profiles and Organization Profiles pages</mat-checkbox>
   </details>
   @if (isDrafting) {

@@ -143,9 +143,15 @@ export class MselDraftDialogComponent {
     return !!this.data.templates.find((t) => t.id === this.templateMselId)?.citeScoringModelId;
   }
 
-  // a template that links a scoring model keeps it unless the planner chooses another
+  readonly tlpLevels = ['CLEAR', 'GREEN', 'AMBER', 'AMBER+STRICT', 'RED'];
+
+  // a template that links a scoring model keeps it unless the planner chooses another; its article marking is the starting choice
   templateChanged() {
     this.design.citeAssessment = this.templateHasScoringModel ? 'Template' : 'QuestionsByMove';
+    const template = this.data.templates.find((t) => t.id === this.templateMselId);
+    // only Gallery articles are marked
+    this.design.marking = template?.useGallery ? template.articleMarking || 'Exercise' : undefined;
+    this.design.markingText = template?.useGallery ? template.articleMarkingText ?? (this.design.marking === 'Tlp' ? 'CLEAR' : undefined) : undefined;
   }
 
   // what building the MSEL makes in CITE, so the planner is not surprised by it

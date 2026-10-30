@@ -51,7 +51,7 @@ project root for license information.
     </tfoot>
   </table>
   @if (usage.unpriced?.length) {
-  <p class="hint">No price is set for {{ usage.unpriced.join(', ') }}, so the total has no estimate. Add one under Ai:Prices on the Blueprint API.</p>
+  <p class="hint">The estimate leaves out {{ usage.unpriced.join(', ') }}, which {{ usage.unpriced.length === 1 ? 'has' : 'have' }} no price set. Add one under Ai:Prices on the Blueprint API.</p>
   }
 </section>
 }

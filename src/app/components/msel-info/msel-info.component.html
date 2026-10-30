@@ -249,6 +249,43 @@ project root for license information or contact permission@sei.cmu.edu for full 
             </div>
             }
 
+            @if (msel.useGallery) {
+            <div class="integration-row">
+              <div class="integration-checkbox-cell"></div>
+              <div class="integration-details">
+                <div class="integration-field">
+                  <span class="integration-label">Article marking:</span>
+                  <mat-form-field class="integration-select">
+                    <mat-select [ngModel]="msel.articleMarking || 'Exercise'" aria-label="Article marking"
+                      [disabled]="!canEditMsel()" (ngModelChange)="msel.articleMarking = $event; isChanged = true">
+                      <mat-option value="Exercise">Exercise banner</mat-option>
+                      <mat-option value="Tlp">TLP</mat-option>
+                      <mat-option value="Classification">Classification banner</mat-option>
+                      <mat-option value="None">None</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                  @if (msel.articleMarking === 'Tlp') {
+                  <mat-form-field class="integration-select">
+                    <mat-select [ngModel]="msel.articleMarkingText || 'CLEAR'" aria-label="TLP level" [disabled]="!canEditMsel()"
+                      (ngModelChange)="msel.articleMarkingText = $event; isChanged = true">
+                      @for (level of tlpLevels; track level) {
+                      <mat-option [value]="level">TLP:{{ level }}</mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+                  }
+                  @if (msel.articleMarking === 'Classification') {
+                  <mat-form-field class="integration-select">
+                    <input matInput [(ngModel)]="msel.articleMarkingText" aria-label="Classification banner text" [disabled]="!canEditMsel()"
+                      placeholder="UNCLASSIFIED // FOR EXERCISE USE ONLY" (input)="isChanged = true" />
+                  </mat-form-field>
+                  }
+                </div>
+                <span class="integration-hint">Blueprint puts this banner on every Gallery article it writes. Articles already written keep theirs until rewritten.</span>
+              </div>
+            </div>
+            }
+
             <!-- CITE Integration -->
             <div class="integration-row">
               <div class="integration-checkbox-cell">

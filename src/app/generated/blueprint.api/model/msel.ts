@@ -51,6 +51,14 @@ export interface Msel {
     useCite?: boolean;
     citeEvaluationId?: string | null;
     citeScoringModelId?: string | null;
+    /**
+     * The banner Blueprint puts on the MSEL\'s Gallery articles: None, Exercise (the default), Tlp or Classification
+     */
+    articleMarking?: string | null;
+    /**
+     * The TLP level (CLEAR, GREEN, AMBER, AMBER+STRICT, RED), or the classification banner\'s text
+     */
+    articleMarkingText?: string | null;
     citeIntegrationType?: IntegrationType;
     useSteamfitter?: boolean;
     steamfitterScenarioId?: string | null;

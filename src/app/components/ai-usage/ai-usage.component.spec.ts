@@ -55,15 +55,27 @@ describe('AiUsageComponent', () => {
   });
 
   /**
-   * Verifies: a model with no price leaves the total without an estimate and says which one to price.
+   * Verifies: a model with no price is left out of the total, which still shows for the rest, and is named so it can be priced.
    * Interacts with: AiUsageService.getMselAiUsage.
-   * Data: one call on other-model, which has no price.
+   * Data: the usage above with the photo model unpriced; the rest comes to $0.53.
    */
-  it('names the models that have no price', async () => {
+  it('totals what has a price and names what has none', async () => {
+    await renderUsage(() => of({ ...USAGE, estimatedCostMicros: 532_860, unpriced: ['stability.stable-image-core-v1:1'], refused: 0 }));
+
+    expect(screen.getByText(/about \$0\.53 at list prices/)).toBeInTheDocument();
+    expect(screen.getByText(/The estimate leaves out stability\.stable-image-core-v1:1, which has no price set/)).toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: when no model has a price there is no estimate at all.
+   * Interacts with: AiUsageService.getMselAiUsage.
+   * Data: every call on other-model, which has no price.
+   */
+  it('shows no estimate when nothing has a price', async () => {
     await renderUsage(() => of({ ...USAGE, estimatedCostMicros: null, unpriced: ['other-model'], refused: 0 }));
 
     expect(screen.queryByText(/at list prices/)).not.toBeInTheDocument();
-    expect(screen.getByText(/No price is set for other-model/)).toBeInTheDocument();
+    expect(screen.getByText(/The estimate leaves out other-model/)).toBeInTheDocument();
   });
 
   /**

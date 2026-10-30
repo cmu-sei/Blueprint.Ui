@@ -49,5 +49,13 @@ export interface MselDraftDesign {
      * Whether to add Team Profiles and Organization Profiles pages
      */
     profilePages?: boolean;
+    /**
+     * The banner on every Gallery article: None, Exercise, Tlp or Classification; empty for the template\'s
+     */
+    marking?: string | null;
+    /**
+     * The TLP level, or the classification banner\'s text
+     */
+    markingText?: string | null;
 }
 

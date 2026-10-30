@@ -357,4 +357,31 @@ describe('MselDraftDialogComponent', () => {
 
     expect(screen.getByRole('combobox', { name: 'Template' })).toHaveTextContent('Crucible MSEL');
   });
+
+  /**
+   * Verifies: a Gallery template's article marking is the starting choice, and the planner's choice goes with the design.
+   * Interacts with: the Article marking and TLP level selects, MselBuildService.designMsel.
+   * Data: a Gallery template marked TLP:AMBER; the planner picks a classification banner with its own text.
+   */
+  it('starts from the template marking and sends the chosen one', async () => {
+    const { designMsel } = await renderDraftDialog(undefined, [
+      { id: 'tpl-1', name: 'Template', useGallery: true, articleMarking: 'Tlp', articleMarkingText: 'AMBER' },
+    ]);
+    const user = userEvent.setup();
+
+    await user.click(screen.getByText('Design choices (optional)'));
+    expect(screen.getByRole('combobox', { name: 'Article marking' })).toHaveTextContent('TLP');
+    expect(screen.getByRole('combobox', { name: 'TLP level' })).toHaveTextContent('TLP:AMBER');
+    await user.click(screen.getByRole('combobox', { name: 'Article marking' }));
+    await user.click(await screen.findByRole('option', { name: 'Classification banner' }));
+    const text = screen.getByRole('textbox', { name: 'Classification banner text' });
+    await user.clear(text);
+    await user.type(text, 'UNCLASSIFIED // FOUO');
+    await user.type(screen.getByRole('textbox', { name: 'Exercise description' }), 'A grid attack.');
+    await user.click(screen.getByRole('button', { name: 'Draft' }));
+
+    expect(designMsel).toHaveBeenCalledWith(expect.objectContaining({
+      design: expect.objectContaining({ marking: 'Classification', markingText: 'UNCLASSIFIED // FOUO' }),
+    }));
+  });
 });

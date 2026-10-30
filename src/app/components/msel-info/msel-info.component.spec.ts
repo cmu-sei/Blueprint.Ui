@@ -770,4 +770,25 @@ describe('MselInfoComponent', () => {
       expect(screen.getByRole('button', { name: 'Upload Image' })).toBeInTheDocument();
     });
   });
+
+  /**
+   * Verifies: a Gallery MSEL's article marking defaults to the exercise banner, and choosing TLP offers its levels and marks the MSEL changed.
+   * Interacts with: the Article marking and TLP level selects.
+   * Data: a Gallery MSEL with no marking set; the editor picks TLP, then AMBER.
+   */
+  it('sets the marking for the MSEL articles', async () => {
+    const { fixture } = await renderInfo({ permissions: [SystemPermission.EditMsels], mselExtra: { useGallery: true } });
+    const user = userEvent.setup();
+
+    expect(screen.getByRole('combobox', { name: 'Article marking' })).toHaveTextContent('Exercise banner');
+    await user.click(screen.getByRole('combobox', { name: 'Article marking' }));
+    await user.click(await screen.findByRole('option', { name: 'TLP' }));
+    await user.click(screen.getByRole('combobox', { name: 'TLP level' }));
+    await user.click(await screen.findByRole('option', { name: 'TLP:AMBER' }));
+
+    const info = fixture.componentInstance;
+    expect(info.msel.articleMarkingText).toBe('AMBER');
+    expect(info.msel.articleMarking).toBe('Tlp');
+    expect(info.isChanged).toBe(true);
+  });
 });
