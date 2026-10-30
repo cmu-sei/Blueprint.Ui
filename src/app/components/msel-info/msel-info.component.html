@@ -70,9 +70,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <div class="single-detail center-self">
             <mat-form-field class="full-width">
               <mat-label>Description</mat-label>
-              <input type="text" matInput placeholder="Description" [(ngModel)]="msel.description" maxlength="600"
+              <!-- tall enough for all 600 characters; Enter is kept out, as in a one-line field -->
+              <textarea matInput placeholder="Description" [(ngModel)]="msel.description" maxlength="600"
+                cdkTextareaAutosize cdkAutosizeMinRows="2"
                 (cut)="isChanged = true" (change)="isChanged = true" (paste)="isChanged = true"
-                (keypress)="isChanged = true" [disabled]="!canEditMsel()" />
+                (keypress)="isChanged = true" (keydown.enter)="$event.preventDefault()"
+                [disabled]="!canEditMsel()"></textarea>
               <mat-hint align="end">{{ msel.description?.length || 0 }} / 600 characters</mat-hint>
             </mat-form-field>
           </div>

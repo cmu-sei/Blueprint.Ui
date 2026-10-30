@@ -5,6 +5,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { Component, input, output } from '@angular/core';
 import { ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { CdkTextareaAutosize } from '@angular/cdk/text-field';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { MatButtonModule } from '@angular/material/button';
@@ -278,6 +279,25 @@ describe('MselInfoComponent', () => {
     expect(descriptionInput()).toBeEnabled();
     expect(screen.getByLabelText('Player')).toBeEnabled();
     expect(durationEdit(fixture).canEdit()).toBe(true);
+  });
+
+  /**
+   * Verifies: the description is a field that grows to show all of its 600 characters, and Enter adds no line break to it.
+   * Interacts with: the Description textarea and its CdkTextareaAutosize.
+   * Data: a 600-character description; EditMsels.
+   */
+  it('shows the whole description in a field that grows with it', async () => {
+    const description = 'The port is closed. '.repeat(30);
+    const { fixture } = await renderInfo({ permissions: [SystemPermission.EditMsels], mselExtra: { description } });
+    const field = descriptionInput() as HTMLTextAreaElement;
+
+    expect(field.tagName).toBe('TEXTAREA');
+    expect(field.value).toBe(description);
+    expect(fixture.debugElement.query(By.directive(CdkTextareaAutosize))).not.toBeNull();
+    const user = userEvent.setup();
+    await user.clear(field);
+    await user.type(field, 'One{Enter}line');
+    expect(field.value).toBe('Oneline');
   });
 
   /**

@@ -140,7 +140,8 @@ export class MselListComponent implements OnDestroy, OnInit {
       .subscribe((cu) => {
         this.currentUserName = cu.name;
       });
-    this.sort().sort(<MatSortable>{ id: 'name', start: 'asc' });
+    // newest first, so a MSEL just created or drafted is at the top
+    this.sort().sort(<MatSortable>{ id: 'dateCreated', start: 'desc' });
     this.mselDataSource.sort = this.sort();
     // subscribe to MSELs loading
     this.mselQuery
@@ -183,11 +184,15 @@ export class MselListComponent implements OnDestroy, OnInit {
       'white',
       'blue'
     );
-    // remove case sensitivity from mat-table sort
+    // remove case sensitivity from mat-table sort, and sort dates as times
     this.mselDataSource.sortingDataAccessor = (
       data: any,
       sortHeaderId: string
-    ): string => {
+    ): string | number => {
+      if (sortHeaderId === 'dateCreated' || sortHeaderId === 'dateModified') {
+        const time = new Date(data[sortHeaderId]).getTime();
+        return isNaN(time) ? 0 : time;
+      }
       if (typeof data[sortHeaderId] === 'string') {
         return data[sortHeaderId].toLocaleLowerCase();
       }
