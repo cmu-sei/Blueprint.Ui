@@ -1,0 +1,53 @@
+<!--
+Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license, please see LICENSE.md in the
+project root for license information or contact permission@sei.cmu.edu for full terms.
+-->
+
+@if (visible()) {
+<section class="ai-build" aria-label="Drafting with AI" aria-live="polite">
+  @if (build()?.running) {
+  <mat-spinner diameter="24" />
+  } @else {
+  <mat-icon class="mdi-24px" fontIcon="mdi-creation" />
+  }
+  <div class="text">
+    @if (build()?.running) {
+    <p><strong>{{ stepLabel }}.</strong> {{ stepDetail }} <span class="elapsed" title="Time drafting">{{ elapsed() }}</span></p>
+    <p class="hint">Saved as it is written. You can keep working, or leave and continue later.</p>
+    } @else if (build()?.step === 'done') {
+    <p><strong>Drafted with AI.</strong> Review it before you push it to the integrations.</p>
+    } @else {
+    <p><strong>This MSEL is still being drafted with AI.</strong> {{ stoppedText }}</p>
+    }
+    @for (error of build()?.errors ?? []; track $index) {
+    <p class="error" role="alert">{{ error }}</p>
+    }
+    @if (build()?.warnings?.length) {
+    <details>
+      <summary>{{ build().warnings.length }} {{ build().warnings.length === 1 ? 'note' : 'notes' }} from the draft</summary>
+      <ul>
+        @for (warning of build().warnings; track $index) {
+        <li>{{ warning }}</li>
+        }
+      </ul>
+    </details>
+    }
+  </div>
+  <div class="actions">
+    @if (build()?.running) {
+    <button matButton="outlined" type="button" (click)="cancel()">Cancel</button>
+    } @else if (build()?.step === 'done') {
+    <button mat-icon-button type="button" title="Close" aria-label="Close" (click)="dismiss()">
+      <mat-icon fontIcon="mdi-close" />
+    </button>
+    } @else if (canEdit()) {
+    <button matButton="outlined" type="button" (click)="discardDraft()">Discard draft</button>
+    @if ((remaining()?.stage ?? stage()) === 'Articles' && left()) {
+    <button matButton="outlined" type="button" (click)="finishNow()">Finish without them</button>
+    }
+    <button matButton="filled" type="button" (click)="continue()">Continue drafting</button>
+    }
+  </div>
+</section>
+}

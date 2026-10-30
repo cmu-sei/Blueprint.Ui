@@ -63,6 +63,17 @@ export interface PresenceActor {
   color: string;
 }
 
+// what a model call has written so far, sent to the drafting user while its answer streams in
+export interface AiDraftProgress {
+  operation: string;
+  mselId?: string;
+  draftId?: string;
+  characters: number;
+  // the items in each list of the answer so far: moves, injects, citeActions, ...
+  counts: { [list: string]: number };
+  done: boolean;
+}
+
 export enum ApplicationArea {
   home = '',
   admin = 'Admin',
@@ -106,6 +117,7 @@ export class SignalRService implements OnDestroy {
   private presenceActors: PresenceActor[] = [];
   private presenceColorMap = ['primary', 'accent', 'green', 'orange', 'purple'];
   actors$ = new BehaviorSubject<PresenceActor[]>([]);
+  aiDraftProgress$ = new Subject<AiDraftProgress>();
 
   constructor() {
     this.authService.user$.pipe(takeUntil(this.unsubscribe$)).subscribe(() => {
@@ -425,6 +437,10 @@ export class SignalRService implements OnDestroy {
 
     this.hubConnection.on('CasterIdsUpdated', (mselId: string, casterWorkspaceId: string, casterRunId: string) => {
       this.mselDataService.updateCasterIds(mselId, casterWorkspaceId, casterRunId);
+    });
+
+    this.hubConnection.on('AiDraftProgress', (progress: AiDraftProgress) => {
+      this.aiDraftProgress$.next(progress);
     });
 
   }

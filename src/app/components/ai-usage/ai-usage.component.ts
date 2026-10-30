@@ -23,6 +23,8 @@ export class AiUsageComponent implements OnInit {
 
   private static readonly labels: Record<string, string> = {
     draft: 'Draft MSEL with AI',
+    design: 'Design',
+    injects: 'Injects, CITE tasks and read-in',
     article: 'Gallery articles',
     profile: 'Team and organization profiles',
     value: 'Write with AI',

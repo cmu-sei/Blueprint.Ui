@@ -241,19 +241,20 @@ export class MselListComponent implements OnDestroy, OnInit {
     this.openImportDialog({ file });
   }
 
-  // the draft dialog saves nothing; a reviewed draft goes through the same import report as a json file
+  // the dialog creates the MSEL from the reviewed design; its page shows the rest being written into it
   draftWithAi() {
     this.dialog
       .open(MselDraftDialogComponent, {
         data: { templates: this.mselList.filter((m) => m.isTemplate) },
-        width: '900px',
-        maxWidth: '90vw',
+        width: '1000px',
+        maxWidth: '92vw',
       })
       .afterClosed()
       .pipe(take(1))
-      .subscribe((draft) => {
-        if (draft) {
-          this.openImportDialog({ draft });
+      .subscribe((mselId) => {
+        if (mselId) {
+          this.openMsel(mselId);
+          this.router.navigate(['/build'], { queryParams: { msel: mselId } });
         }
       });
   }

@@ -13,6 +13,7 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
+import { MselDesignQuestion } from './mselDesignQuestion';
 import { MselDraft } from './mselDraft';
 import { MselDraftCompetency } from './mselDraftCompetency';
 import { MselDraftField } from './mselDraftField';
@@ -34,5 +35,9 @@ export interface MselDraftResult {
      * The competencies the draft assigned, with their names
      */
     competencies?: Array<MselDraftCompetency> | null;
+    /**
+     * From the design step: what the planner should decide before the injects are written
+     */
+    questions?: Array<MselDesignQuestion> | null;
 }
 

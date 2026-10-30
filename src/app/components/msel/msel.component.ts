@@ -59,12 +59,14 @@ import { AssessorViewComponent } from '../assessor-view/assessor-view.component'
 import { InvitationListComponent } from '../invitation-list/invitation-list.component';
 import { MselPlaybookComponent } from '../msel-playbook/msel-playbook.component';
 import { MselAssistantComponent } from '../msel-assistant/msel-assistant.component';
+import { MselAiBuildComponent } from '../msel-ai-build/msel-ai-build.component';
+import { MselAiBuildService } from 'src/app/data/msel/msel-ai-build.service';
 
 @Component({
     selector: 'app-msel',
     templateUrl: './msel.component.html',
     styleUrls: ['./msel.component.scss'],
-    imports: [MatDrawerContainer, MatDrawer, MatIconButton, MatIcon, MatList, MatDivider, MatListItem, NgClass, MatDrawerContent, MselInfoComponent, MselContributorsComponent, MselTeamsComponent, DataFieldListComponent, OrganizationListComponent, MoveListComponent, PlayerApplicationListComponent, CardListComponent, CiteActionListComponent, CiteDutyListComponent, MselCompetenciesComponent, ScenarioEventListComponent, MselViewComponent, AssessorViewComponent, InvitationListComponent, MselPlaybookComponent, MselAssistantComponent, AsyncPipe]
+    imports: [MatDrawerContainer, MatDrawer, MatIconButton, MatIcon, MatList, MatDivider, MatListItem, NgClass, MatDrawerContent, MselInfoComponent, MselContributorsComponent, MselTeamsComponent, DataFieldListComponent, OrganizationListComponent, MoveListComponent, PlayerApplicationListComponent, CardListComponent, CiteActionListComponent, CiteDutyListComponent, MselCompetenciesComponent, ScenarioEventListComponent, MselViewComponent, AssessorViewComponent, InvitationListComponent, MselPlaybookComponent, MselAssistantComponent, MselAiBuildComponent, AsyncPipe]
 })
 export class MselComponent implements OnDestroy {
   private activatedRoute = inject(ActivatedRoute);
@@ -96,6 +98,7 @@ export class MselComponent implements OnDestroy {
   private authQuery = inject(ComnAuthQuery);
   private dialogService = inject(CrucibleDialogService);
   private xApiService = inject(XApiService);
+  private mselAiBuildService = inject(MselAiBuildService);
 
   readonly loggedInUserId = input<string>(undefined);
   readonly canEditMsel = input<boolean>(undefined);
@@ -168,41 +171,15 @@ export class MselComponent implements OnDestroy {
           this.contributorUnitIds = undefined;
           // Log xAPI viewed statement
           this.xApiService.viewedMsel(mselId).subscribe();
-          // load the selected MSEL and make it active
-          this.mselDataService.loadById(mselId);
-          this.mselDataService.setActive(mselId);
-          // load the MSELs moves
-          this.moveDataService.loadByMsel(mselId);
-          // load the gallery cards and cardTeams
-          this.cardDataService.loadByMsel(mselId);
-          this.cardTeamDataService.getCardTeamsFromApi(mselId);
-          // load CITE Actions and Roles
-          this.citeActionDataService.loadByMsel(mselId);
-          this.citeDutyDataService.loadByMsel(mselId);
-          // load the MSEL Teams
-          this.teamDataService.loadByMsel(mselId);
-          // load the MSEL organizations and templates
-          this.organizationDataService.loadByMsel(mselId);
-          // load data fields, options, and values
-          this.dataFieldDataService.loadByMsel(mselId);
-          this.dataOptionDataService.loadByMsel(mselId);
-          this.dataValueDataService.loadByMsel(mselId);
-          // load scenario events
-          this.scenarioEventDataService.loadByMsel(mselId);
-          // load user msel roles
-          this.userMselRoleDataService.loadByMsel(mselId);
-          // load msel units
-          this.mselUnitDataService.loadByMsel(mselId);
-          // load user team roles
-          this.userTeamRoleDataService.loadByMsel(mselId);
-          // load the MSEL organizations and templates
-          this.invitationDataService.loadByMsel(mselId);
-          // load the Msel TeamUsers
-          this.teamUserDataService.loadByMsel(mselId);
-          // load the Catalogs
-          this.catalogDataService.loadMine();
-          // load the users
-          this.userDataService.loadByMsel(mselId).subscribe();
+          this.loadMsel(mselId);
+        }
+      });
+    // a build with AI that finishes adds pages, Player applications and CITE settings, which are loaded again
+    this.mselAiBuildService.finished$
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((mselId) => {
+        if (mselId === this.selectedMselId) {
+          this.loadMsel(mselId);
         }
       });
     // subscribe to the active MSEL
@@ -346,6 +323,52 @@ export class MselComponent implements OnDestroy {
         queryParamsHandling: 'merge',
       });
     }
+  }
+
+  private loadMsel(mselId: string) {
+      // load the selected MSEL and make it active
+      this.mselDataService.loadById(mselId);
+      this.mselDataService.setActive(mselId);
+      // load the MSELs moves
+      this.moveDataService.loadByMsel(mselId);
+      // load the gallery cards and cardTeams
+      this.cardDataService.loadByMsel(mselId);
+      this.cardTeamDataService.getCardTeamsFromApi(mselId);
+      // load CITE Actions and Roles
+      this.citeActionDataService.loadByMsel(mselId);
+      this.citeDutyDataService.loadByMsel(mselId);
+      // load the MSEL Teams
+      this.teamDataService.loadByMsel(mselId);
+      // load the MSEL organizations and templates
+      this.organizationDataService.loadByMsel(mselId);
+      // load data fields, options, and values
+      this.dataFieldDataService.loadByMsel(mselId);
+      this.dataOptionDataService.loadByMsel(mselId);
+      this.dataValueDataService.loadByMsel(mselId);
+      // load scenario events
+      this.scenarioEventDataService.loadByMsel(mselId);
+      // load user msel roles
+      this.userMselRoleDataService.loadByMsel(mselId);
+      // load msel units
+      this.mselUnitDataService.loadByMsel(mselId);
+      // load user team roles
+      this.userTeamRoleDataService.loadByMsel(mselId);
+      // load the MSEL organizations and templates
+      this.invitationDataService.loadByMsel(mselId);
+      // load the Msel TeamUsers
+      this.teamUserDataService.loadByMsel(mselId);
+      // load the Catalogs
+      this.catalogDataService.loadMine();
+      // load the users
+      this.userDataService.loadByMsel(mselId).subscribe();
+  }
+
+  get mselName(): string {
+    return this.msel?.name ?? '';
+  }
+
+  get aiDraftStage(): string | null | undefined {
+    return this.msel?.aiDraftStage;
   }
 
   deleteMsel(id: string) {

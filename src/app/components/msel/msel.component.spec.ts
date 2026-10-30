@@ -12,7 +12,7 @@ import { MatListModule } from '@angular/material/list';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { screen, within } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
-import { of } from 'rxjs';
+import { of, Subject } from 'rxjs';
 import { Theme } from '@cmusei/crucible-common';
 import { Msel, MselUnit } from 'src/app/generated/blueprint.api';
 import { MselUnitStore } from 'src/app/data/msel-unit/msel-unit.store';
@@ -38,6 +38,8 @@ import { AssessorViewComponent } from '../assessor-view/assessor-view.component'
 import { InvitationListComponent } from '../invitation-list/invitation-list.component';
 import { MselPlaybookComponent } from '../msel-playbook/msel-playbook.component';
 import { MselAssistantComponent } from '../msel-assistant/msel-assistant.component';
+import { MselAiBuildComponent } from '../msel-ai-build/msel-ai-build.component';
+import { MselAiBuildService } from 'src/app/data/msel/msel-ai-build.service';
 
 // One stub per tab; each declares the inputs MselComponent binds.
 @Component({ selector: 'app-msel-info', template: '' })
@@ -139,6 +141,15 @@ class MselAssistantStub {
   readonly closePanel = output<void>();
 }
 
+@Component({ selector: 'app-msel-ai-build', template: '' })
+class MselAiBuildStub {
+  readonly mselId = input<string>(undefined);
+  readonly mselName = input<string>(undefined);
+  readonly stage = input<string>(undefined);
+  readonly canEdit = input<boolean>(undefined);
+  readonly discard = output<string>();
+}
+
 async function renderMsel(
   overrides: { canEditMsel?: boolean; canAccessAdminSection?: boolean; canEditCheckboxes?: boolean; msel?: Msel; mselUnits?: MselUnit[] } = {},
 ) {
@@ -146,6 +157,7 @@ async function renderMsel(
   const apis = mselLoadApiStubs({ msel, mselUnits });
   const xApi = { viewedMsel: vi.fn(() => of(null)) } satisfies Pick<XApiService, 'viewedMsel'>;
   const { route, setQueryParams } = activatedRouteStub({ msel: 'msel-1' });
+  const finished$ = new Subject<string>();
   const rendered = await renderComponent(MselComponent, {
     imports: [MatButtonModule, MatIconModule, MatListModule, MatSidenavModule],
     childStubs: [
@@ -166,15 +178,17 @@ async function renderMsel(
       { replace: InvitationListComponent, with: InvitationListStub },
       { replace: MselPlaybookComponent, with: MselPlaybookStub },
       { replace: MselAssistantComponent, with: MselAssistantStub },
+      { replace: MselAiBuildComponent, with: MselAiBuildStub },
     ],
     providers: [
       ...mselLoadApiProviders(apis),
       { provide: XApiService, useValue: xApi },
       { provide: ActivatedRoute, useValue: route },
+      { provide: MselAiBuildService, useValue: { finished$ } },
     ],
     inputs: { canEditMsel, canAccessAdminSection, canEditCheckboxes, loggedInUserId: 'user-me', userTheme$: of(Theme.LIGHT) },
   });
-  return { ...rendered, apis, xApi, setQueryParams };
+  return { ...rendered, apis, xApi, setQueryParams, finished$ };
 }
 
 const nav = () => within(document.querySelector('mat-drawer mat-list') as HTMLElement);
@@ -217,6 +231,26 @@ describe('MselComponent', () => {
       expect(endpoint).toHaveBeenCalledWith('msel-1');
     }
     expect(child(fixture, MselInfoStub)?.loggedInUserId()).toBe('user-me');
+  });
+
+  /**
+   * Verifies: the AI draft banner gets the MSEL and its build stage, and a build that finishes loads the MSEL again; another MSEL's does not.
+   * Interacts with: MselAiBuildService.finished$ (stub), the MSEL endpoints (stubs).
+   * Data: msel-1 at the Articles stage; builds of msel-2, then msel-1, finish.
+   */
+  it('shows the AI draft banner and reloads when the build finishes', async () => {
+    const { fixture, apis, finished$ } = await renderMsel({ canEditMsel: true, msel: { ...MSEL, aiDraftStage: 'Articles' } });
+    const banner = child(fixture, MselAiBuildStub);
+
+    expect(banner?.mselId()).toBe('msel-1');
+    expect(banner?.stage()).toBe('Articles');
+    expect(banner?.canEdit()).toBe(true);
+
+    finished$.next('msel-2');
+    expect(apis.msel.getMsel).toHaveBeenCalledTimes(1);
+    finished$.next('msel-1');
+    expect(apis.msel.getMsel).toHaveBeenCalledTimes(2);
+    expect(apis.scenarioEvent.getScenarioEventsByMsel).toHaveBeenCalledTimes(2);
   });
 
   /**

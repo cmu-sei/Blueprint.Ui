@@ -127,6 +127,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
   }
   <mat-drawer-content class="content-frame">
     <div class="main-content">
+      <app-msel-ai-build [mselId]="selectedMselId" [mselName]="mselName" [stage]="aiDraftStage" [canEdit]="canEditMsel()"
+        (discard)="deleteMsel($event)" />
       @if (selectedTab === 'Info') {
       <app-msel-info [loggedInUserId]="loggedInUserId()" (deleteThisMsel)="deleteMsel($event)" />
       }

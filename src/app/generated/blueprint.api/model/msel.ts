@@ -104,6 +104,10 @@ export interface Msel {
     pages?: Array<MselPage> | null;
     invitations?: Array<Invitation> | null;
     mselCompetencies?: Array<MselCompetency> | null;
+    /**
+     * While the MSEL is being built with AI, the stage left: Injects, Articles or Finish
+     */
+    aiDraftStage?: string | null;
 }
 export namespace Msel {
 }
