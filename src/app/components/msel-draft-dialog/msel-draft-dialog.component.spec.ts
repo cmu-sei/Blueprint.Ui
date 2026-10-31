@@ -413,4 +413,21 @@ describe('MselDraftDialogComponent', () => {
       draft: expect.objectContaining({ teams: [expect.objectContaining({ shortName: 'BLUE', duties: ['Lead', 'Scribe'] })] }),
     }));
   });
+
+  /**
+   * Verifies: a template that authors its own scoring model, as the seeded Crucible MSEL does with NCISS, is kept by default too.
+   * Interacts with: the CITE assessment select, MselBuildService.designMsel.
+   * Data: a CITE template with hasScoringModel and no linked model.
+   */
+  it('keeps a template authored scoring model by default', async () => {
+    const { designMsel } = await renderDraftDialog(undefined, [{ id: 'tpl-1', name: 'Crucible MSEL', useCite: true, hasScoringModel: true }]);
+    const user = userEvent.setup();
+
+    await user.click(screen.getByText('Design choices (optional)'));
+    expect(screen.getByRole('combobox', { name: 'CITE assessment' })).toHaveTextContent("Keep the template's scoring model");
+    await user.type(screen.getByRole('textbox', { name: 'Exercise description' }), 'Cables are cut.');
+    await user.click(screen.getByRole('button', { name: 'Draft' }));
+
+    expect(designMsel).toHaveBeenCalledWith(expect.objectContaining({ design: expect.objectContaining({ citeAssessment: 'Template' }) }));
+  });
 });

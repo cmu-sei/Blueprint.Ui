@@ -52,6 +52,10 @@ export interface Msel {
     citeEvaluationId?: string | null;
     citeScoringModelId?: string | null;
     /**
+     * Whether the MSEL authors its own CITE scoring model, which a MSEL drafted or copied from it gets a copy of
+     */
+    hasScoringModel?: boolean;
+    /**
      * The banner Blueprint puts on the MSEL\'s Gallery articles: None, Exercise (the default), Tlp or Classification
      */
     articleMarking?: string | null;

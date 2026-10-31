@@ -139,8 +139,10 @@ export class MselDraftDialogComponent {
     return !!this.data.templates.find((t) => t.id === this.templateMselId)?.useGallery;
   }
 
+  // a template links a CITE scoring model or authors its own, which the drafted MSEL gets a copy of
   get templateHasScoringModel(): boolean {
-    return !!this.data.templates.find((t) => t.id === this.templateMselId)?.citeScoringModelId;
+    const template = this.data.templates.find((t) => t.id === this.templateMselId);
+    return !!template?.citeScoringModelId || !!template?.hasScoringModel;
   }
 
   readonly tlpLevels = ['CLEAR', 'GREEN', 'AMBER', 'AMBER+STRICT', 'RED'];
