@@ -28,6 +28,7 @@ import { MatIcon } from '@angular/material/icon';
 import { DatePipe, NgTemplateOutlet } from '@angular/common';
 import { TimezoneAbbrPipe } from '../../utilities/timezone-abbr';
 import { IsDateTimeValuePipe } from '../../utilities/date-time-value';
+import { GALLERY_ITEM_STATUS_COLORS, LEGACY_GALLERY_ITEM_STATUSES } from '../../utilities/gallery-wall';
 
 @Component({
     selector: 'app-data-value',
@@ -63,21 +64,9 @@ export class DataValueComponent {
     MselItemStatus.Archived,
   ];
   // the color Gallery shows for each article status
-  galleryItemStatusColors: { [status: string]: string } = {
-    Gray: '#b5b5b5',
-    Green: 'rgb(163, 235, 163)',
-    Yellow: 'rgb(250, 235, 100)',
-    Orange: 'rgb(250, 163, 2)',
-    Red: '#ff3333',
-  };
+  galleryItemStatusColors: { [status: string]: string } = GALLERY_ITEM_STATUS_COLORS;
   // the names Gallery used before its statuses were named for colors; existing MSELs still hold them
-  legacyGalleryItemStatuses: { [status: string]: string } = {
-    unused: 'Gray',
-    closed: 'Red',
-    critical: 'Orange',
-    affected: 'Yellow',
-    open: 'Green',
-  };
+  legacyGalleryItemStatuses: { [status: string]: string } = LEGACY_GALLERY_ITEM_STATUSES;
 
   // the data field that sets a Gallery Article's status
   get isGalleryItemStatus(): boolean {
