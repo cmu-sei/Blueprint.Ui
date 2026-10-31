@@ -79,7 +79,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
   @if (dataSource.data.length === 0) {
   <div class="empty-text">
     No MITRE ATT&amp;CK&reg; releases have been imported. Download a STIX bundle such as enterprise-attack.json from
-    MITRE's attack-stix-data repository and import it here.
+    MITRE's attack-stix-data repository and import it here. An ATLAS STIX bundle (stix-atlas.json from the
+    mitre-atlas/atlas-data GitHub releases) can be imported too.
   </div>
   }
   <div class="attribution">
@@ -87,6 +88,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
     &copy; 2026 The MITRE Corporation. This work is reproduced and distributed with the permission of The MITRE Corporation.
     }
     MITRE ATT&amp;CK and ATT&amp;CK are registered trademarks of The MITRE Corporation.
+    @if (hasAtlasRelease) {
+    MITRE ATLAS&trade; is a trademark of The MITRE Corporation.
+    }
     <a href="https://attack.mitre.org/resources/legal-and-branding/terms-of-use/" target="_blank" rel="noopener">Terms of Use</a>
   </div>
 </section>

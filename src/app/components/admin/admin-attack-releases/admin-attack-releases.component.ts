@@ -20,7 +20,8 @@ import { AttackReleaseQuery } from 'src/app/data/attack-release/attack-release.q
 
 /**
  * The MITRE ATT&CK releases planners pick techniques from. An administrator uploads a STIX bundle
- * (enterprise-attack.json, ics-attack.json, mobile-attack.json) from mitre-attack/attack-stix-data.
+ * (enterprise-attack.json, ics-attack.json, mobile-attack.json) from mitre-attack/attack-stix-data, or
+ * stix-atlas.json from mitre-atlas/atlas-data, which imports as a release of the ATLAS domain.
  */
 @Component({
   selector: 'app-admin-attack-releases',
@@ -62,6 +63,11 @@ export class AdminAttackReleasesComponent implements OnInit, AfterViewInit, OnDe
 
   ngAfterViewInit() {
     this.dataSource.sort = this.sort();
+  }
+
+  /** ATLAS is a separate MITRE mark, so its notice is only due once an ATLAS release is listed. */
+  get hasAtlasRelease(): boolean {
+    return this.dataSource.data.some(r => r.domain === 'ATLAS');
   }
 
   selectFile(e: Event) {

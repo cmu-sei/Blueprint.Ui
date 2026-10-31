@@ -167,6 +167,12 @@ export class MselAttackTechniquesComponent implements OnInit, AfterViewInit, OnD
     return this.pool.length > 0 || this.techniques.length > 0;
   }
 
+  /** Either table shows an ATLAS release's techniques, which carry MITRE's separate ATLAS mark. */
+  get showsAtlasContent(): boolean {
+    return (this.pool.length > 0 && this.pinnedRelease?.domain === 'ATLAS') ||
+      (this.techniques.length > 0 && this.selectedRelease?.domain === 'ATLAS');
+  }
+
   // =============================================
   // Release selection
   // =============================================

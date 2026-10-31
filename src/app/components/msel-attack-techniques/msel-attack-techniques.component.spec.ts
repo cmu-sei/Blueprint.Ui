@@ -19,6 +19,8 @@ import { CrucibleDialogService } from '@cmusei/crucible-common';
 import {
   AttackRelease,
   AttackReleaseService,
+  AttackTactic,
+  AttackTechnique,
   Msel,
   MselAttackTechnique,
   MselAttackTechniqueService,
@@ -41,14 +43,23 @@ const T1059: MselAttackTechnique = {
   attackTechnique: { id: 'at-1', attackReleaseId: 'rel-1', externalId: 'T1059', name: 'Command and Scripting Interpreter', url: 'https://attack.mitre.org/techniques/T1059' },
 };
 const TERMS_OF_USE = 'https://attack.mitre.org/resources/legal-and-branding/terms-of-use/';
+const ATLAS_RELEASE: AttackRelease = { id: 'rel-1', domain: 'ATLAS', name: 'ATLAS', version: '2026.10' };
+const AML_T0000: AttackTechnique = {
+  id: 'at-1', attackReleaseId: 'rel-1', externalId: 'AML.T0000', name: 'Search Open Technical Databases',
+  tactics: ['reconnaissance'], url: 'https://atlas.mitre.org/techniques/AML.T0000',
+};
+const ATLAS_IN_POOL: MselAttackTechnique = { id: 'mat-1', mselId: 'msel-1', attackTechniqueId: 'at-1', attackTechnique: AML_T0000 };
 
-// No release is imported, so the Add Techniques browser stays empty and only the pool can put MITRE content on screen.
-async function renderTechniques(pool: MselAttackTechnique[]) {
+// With no release imported the Add Techniques browser stays empty and only the pool can put MITRE content on screen;
+// an imported release is browsed as soon as the component loads it.
+async function renderTechniques(pool: MselAttackTechnique[], releases: AttackRelease[] = [], techniques: AttackTechnique[] = []) {
   const poolApi = {
     getMselAttackTechniques: vi.fn(() => of(structuredClone(pool))),
   } satisfies ApiStub<MselAttackTechniqueService>;
   const releaseApi = {
-    getAttackReleases: vi.fn(() => of<AttackRelease[]>([])),
+    getAttackReleases: vi.fn(() => of(structuredClone(releases))),
+    getAttackTactics: vi.fn(() => of<AttackTactic[]>([])),
+    getAttackTechniques: vi.fn(() => of(structuredClone(techniques))),
   } satisfies ApiStub<AttackReleaseService>;
   // MselAttackTechniquesComponent loads the permissions itself in ngOnInit, so the
   // real service is provided over the stubbed endpoint, without priming it.
@@ -86,7 +97,7 @@ async function renderTechniques(pool: MselAttackTechnique[]) {
     ],
     inputs: { loggedInUserId: ME },
   });
-  return { ...rendered, poolApi };
+  return { ...rendered, poolApi, releaseApi };
 }
 
 describe('MselAttackTechniquesComponent', () => {
@@ -102,6 +113,7 @@ describe('MselAttackTechniquesComponent', () => {
     expect(screen.getByRole('link', { name: 'T1059' })).toBeInTheDocument();
     expect(screen.getByText(/© 2026 The MITRE Corporation/)).toBeInTheDocument();
     expect(screen.getByText(/MITRE ATT&CK and ATT&CK are registered trademarks of The MITRE Corporation/)).toBeInTheDocument();
+    expect(screen.queryByText(/MITRE ATLAS/)).not.toBeInTheDocument();
     const terms = screen.getByRole('link', { name: 'Terms of Use' });
     expect(terms).toHaveAttribute('href', TERMS_OF_USE);
     expect(terms).toHaveAttribute('target', '_blank');
@@ -119,5 +131,19 @@ describe('MselAttackTechniquesComponent', () => {
     expect(screen.getByText(/No techniques yet/)).toBeInTheDocument();
     expect(screen.queryByText(/The MITRE Corporation/)).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Terms of Use' })).not.toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: techniques from an ATLAS release add MITRE's ATLAS trademark sentence to the ATT&CK notice.
+   * Interacts with: AttackReleaseService.getAttackReleases/getAttackTechniques (stubs), showsAtlasContent.
+   * Data: the ATLAS 2026.10 release imported, AML.T0000 in its pool and in the (collapsed) browser.
+   */
+  it('also credits MITRE ATLAS when the techniques are from an ATLAS release', async () => {
+    const { releaseApi } = await renderTechniques([ATLAS_IN_POOL], [ATLAS_RELEASE], [AML_T0000]);
+
+    expect(releaseApi.getAttackTechniques).toHaveBeenCalledWith('rel-1');
+    expect(screen.getByRole('link', { name: 'AML.T0000' })).toHaveAttribute('href', 'https://atlas.mitre.org/techniques/AML.T0000');
+    expect(screen.getByText(/MITRE ATT&CK and ATT&CK are registered trademarks of The MITRE Corporation/)).toBeInTheDocument();
+    expect(screen.getByText(/MITRE ATLAS™ is a trademark of The MITRE Corporation\./)).toBeInTheDocument();
   });
 });
