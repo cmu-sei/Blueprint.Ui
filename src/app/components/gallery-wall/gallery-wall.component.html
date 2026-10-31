@@ -1,0 +1,150 @@
+<!--
+Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license, please see LICENSE.md in the
+project root for license information or contact permission@sei.cmu.edu for full terms.
+-->
+
+<div class="gallery-wall">
+  <div class="wall-header">
+    <div class="wall-title">
+      <h2>Gallery Wall</h2>
+      <div class="wall-subtitle">How Gallery will show this MSEL's articles to a team at the end of a move, using the field mapping the push uses. Read-only.</div>
+      @if (problemNote) {
+      <div class="problem-note" role="status">
+        <mat-icon class="mdi-18px" fontIcon="mdi-alert-circle-outline" />
+        <span>{{ problemNote }}</span>
+      </div>
+      }
+    </div>
+    <div class="wall-controls">
+      <mat-form-field class="control" subscriptSizing="dynamic">
+        <mat-label>Team</mat-label>
+        <mat-select [ngModel]="selectedTeamId" (ngModelChange)="selectTeam($event)" [disabled]="teams.length === 0">
+          @for (team of teams; track team.id) {
+          <mat-option [value]="team.id">{{ team.shortName }} - {{ team.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field class="control" subscriptSizing="dynamic">
+        <mat-label>Move</mat-label>
+        <mat-select [ngModel]="selectedMoveNumber" (ngModelChange)="selectMove($event)" [disabled]="moves.length === 0">
+          @for (move of moves; track move.id) {
+          <mat-option [value]="+move.moveNumber">{{ move.moveNumber }}@if (move.description) { - {{ move.description }}}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+  </div>
+
+  @if (teams.length === 0) {
+  <div class="wall-empty">This MSEL has no teams, so Gallery has no wall to show.</div>
+  } @else if (!hasGalleryEvents) {
+  <div class="wall-empty">No scenario event has Gallery as an integration target, so the push would create no articles.</div>
+  } @else if (wall.tiles.length === 0) {
+  <div class="wall-empty">No Gallery card is shown on {{ selectedTeam?.shortName }}'s wall. Check the card's teams on the Gallery Cards tab.</div>
+  }
+
+  <section class="tiles" aria-label="Gallery cards">
+    @for (tile of wall.tiles; track tile.card.id) {
+    <article class="tile" [class.expanded]="isExpanded(tile)" [style.--tile-status-color]="statusColors[tile.status]"
+      [attr.data-card-id]="tile.card.id" [attr.data-status]="tile.status">
+      <button type="button" class="tile-button" (click)="toggleCard(tile)" [attr.aria-expanded]="isExpanded(tile)"
+        [attr.aria-label]="'Card ' + tile.card.name + ', ' + articleCountLabel(tile)">
+        <div class="tile-status" [title]="'Newest article status: ' + tile.status"></div>
+        <div class="tile-body">
+          <h3 class="tile-name" [title]="tile.card.name">{{ tile.card.name }}</h3>
+          @if (tile.datePosted) {
+          <div class="tile-date">
+            <mat-icon class="mdi-18px" fontIcon="mdi-calendar-clock-outline" />
+            {{ tile.datePosted | date: 'dd MMM yyyy HH:mm' }} {{ tile.datePosted | timezoneAbbr }}
+          </div>
+          }
+          <p class="tile-description">{{ tile.card.description }}</p>
+        </div>
+        <div class="tile-footer">
+          @if (tile.articles.length > 0) {
+          <span class="tile-count">{{ articleCountLabel(tile) }}</span>
+          } @else {
+          <span class="tile-empty">No articles posted</span>
+          }
+          <mat-icon class="mdi-18px" [fontIcon]="isExpanded(tile) ? 'mdi-chevron-up' : 'mdi-chevron-down'" />
+        </div>
+      </button>
+      @if (isExpanded(tile)) {
+      <div class="articles" role="list" [attr.aria-label]="tile.card.name + ' articles'">
+        @if (tile.articles.length === 0) {
+        <div class="article-none">No articles on this card for {{ selectedTeam?.shortName }} by move {{ selectedMoveNumber }}.</div>
+        }
+        @for (article of tile.articles; track article.scenarioEventId) {
+        <ng-container *ngTemplateOutlet="articleRow; context: { $implicit: article }" />
+        }
+      </div>
+      }
+    </article>
+    }
+  </section>
+
+  @if (wall.offWall.length > 0) {
+  <section class="off-wall" aria-label="Articles not on the wall">
+    <h3>Not on {{ selectedTeam?.shortName }}'s wall</h3>
+    <div class="off-wall-note">These articles go to the team but land on no card tile.</div>
+    <div role="list">
+      @for (item of wall.offWall; track item.article.scenarioEventId) {
+      <div class="off-wall-reason">{{ offWallReason(item.reason) }}</div>
+      <ng-container *ngTemplateOutlet="articleRow; context: { $implicit: item.article }" />
+      }
+    </div>
+  </section>
+  }
+</div>
+
+<ng-template #articleRow let-article>
+  <div class="article" role="listitem" [attr.data-scenario-event-id]="article.scenarioEventId">
+    <div class="article-head">
+      <span class="status-chip" [style.background-color]="statusColors[article.status]" [title]="'Status: ' + article.status">{{ article.status }}</span>
+      @if (placeholder(article, 'Status')) {
+      <span class="placeholder">{{ placeholder(article, 'Status') }}</span>
+      }
+      <span class="article-move">Move {{ article.move }}, Inject {{ article.inject }}</span>
+    </div>
+    <h4 class="article-name" [class.placeholder]="placeholder(article, 'Name')">{{ placeholder(article, 'Name') || article.name }}</h4>
+    <div class="article-orgs">
+      <span [class.placeholder]="placeholder(article, 'FromOrg')">{{ fromOrgText(article) }}</span>
+      <mat-icon class="mdi-18px" fontIcon="mdi-arrow-right-thin" />
+      <span [class.placeholder]="placeholder(article, 'ToOrg')">{{ toOrgText(article) }}</span>
+    </div>
+    <div class="article-source">
+      <span [class.placeholder]="placeholder(article, 'SourceType')">{{ placeholder(article, 'SourceType') || article.sourceType }}</span>
+      <span class="separator">/</span>
+      <span [class.placeholder]="placeholder(article, 'SourceName')">{{ placeholder(article, 'SourceName') || article.sourceName }}</span>
+      <span class="separator">·</span>
+      @if (article.datePosted) {
+      <span>{{ article.datePosted | date: 'dd MMM yyyy HH:mm' }} {{ article.datePosted | timezoneAbbr }}</span>
+      } @else {
+      <span class="placeholder">{{ placeholder(article, 'DatePosted') }}</span>
+      }
+    </div>
+    <p class="article-summary" [class.placeholder]="placeholder(article, 'Summary')">{{ placeholder(article, 'Summary') || article.summary }}</p>
+    @if (placeholder(article, 'Description')) {
+    <div class="article-description placeholder">{{ placeholder(article, 'Description') }}</div>
+    } @else {
+    <div class="article-description" [innerHTML]="article.description"></div>
+    }
+    <div class="article-links">
+      @if (placeholder(article, 'CardId')) {
+      <span class="placeholder">{{ placeholder(article, 'CardId') }}</span>
+      }
+      @if (problem(article, 'Url') === 'no-field') {
+      <span class="placeholder">{{ placeholder(article, 'Url') }}</span>
+      } @else if (article.url) {
+      <span class="article-url" [title]="article.url">
+        <mat-icon class="mdi-18px" [fontIcon]="article.openInNewTab ? 'mdi-open-in-new' : 'mdi-link-variant'" />
+        {{ article.url }}
+      </span>
+      }
+      @if (problem(article, 'OpenInNewTab') === 'no-field') {
+      <span class="placeholder">{{ placeholder(article, 'OpenInNewTab') }}</span>
+      }
+    </div>
+  </div>
+</ng-template>

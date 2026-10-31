@@ -58,12 +58,13 @@ import { MselViewComponent } from '../msel-view/msel-view.component';
 import { AssessorViewComponent } from '../assessor-view/assessor-view.component';
 import { InvitationListComponent } from '../invitation-list/invitation-list.component';
 import { MselPlaybookComponent } from '../msel-playbook/msel-playbook.component';
+import { GalleryWallComponent } from '../gallery-wall/gallery-wall.component';
 
 @Component({
     selector: 'app-msel',
     templateUrl: './msel.component.html',
     styleUrls: ['./msel.component.scss'],
-    imports: [MatDrawerContainer, MatDrawer, MatIconButton, MatIcon, MatList, MatDivider, MatListItem, NgClass, MatDrawerContent, MselInfoComponent, MselContributorsComponent, MselTeamsComponent, DataFieldListComponent, OrganizationListComponent, MoveListComponent, PlayerApplicationListComponent, CardListComponent, CiteActionListComponent, CiteDutyListComponent, MselCompetenciesComponent, ScenarioEventListComponent, MselViewComponent, AssessorViewComponent, InvitationListComponent, MselPlaybookComponent, AsyncPipe]
+    imports: [MatDrawerContainer, MatDrawer, MatIconButton, MatIcon, MatList, MatDivider, MatListItem, NgClass, MatDrawerContent, MselInfoComponent, MselContributorsComponent, MselTeamsComponent, DataFieldListComponent, OrganizationListComponent, MoveListComponent, PlayerApplicationListComponent, CardListComponent, CiteActionListComponent, CiteDutyListComponent, MselCompetenciesComponent, ScenarioEventListComponent, MselViewComponent, AssessorViewComponent, InvitationListComponent, MselPlaybookComponent, GalleryWallComponent, AsyncPipe]
 })
 export class MselComponent implements OnDestroy {
   private activatedRoute = inject(ActivatedRoute);
@@ -119,6 +120,7 @@ export class MselComponent implements OnDestroy {
     'CITE Duties',
     'Scenario Events',
     'Exercise View',
+    'Gallery Wall',
     'Assessor View',
     'MSEL Playbook',
     'Invitations',
@@ -137,6 +139,7 @@ export class MselComponent implements OnDestroy {
     ['Competencies', 'mdi-certificate-outline'],
     ['Scenario Events', 'mdi-chart-timeline'],
     ['Exercise View', 'mdi-eye-outline'],
+    ['Gallery Wall', 'mdi-view-dashboard-outline'],
     ['Assessor View', 'mdi-clipboard-check-multiple-outline'],
     ['MSEL Playbook', 'mdi-book'],
     ['Invitations', 'mdi-email-open-outline'],
@@ -298,6 +301,7 @@ export class MselComponent implements OnDestroy {
           }
           break;
         case 'Gallery Cards':
+        case 'Gallery Wall':
           if (this.msel?.useGallery) {
             tabList.push(tab);
           }

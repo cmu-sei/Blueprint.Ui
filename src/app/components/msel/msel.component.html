@@ -149,6 +149,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
       @if (selectedTab === 'Exercise View') {
       <app-msel-view [tabHeight]="48" [userTheme]="userTheme$() | async" />
       }
+      @if (selectedTab === 'Gallery Wall') {
+      <app-gallery-wall />
+      }
       @if (selectedTab === 'Assessor View') {
       <app-assessor-view [loggedInUserId]="loggedInUserId()" [userTheme]="userTheme$() | async"
         [canEditCheckboxes]="canEditCheckboxes()" />

@@ -37,6 +37,7 @@ import { MselViewComponent } from '../msel-view/msel-view.component';
 import { AssessorViewComponent } from '../assessor-view/assessor-view.component';
 import { InvitationListComponent } from '../invitation-list/invitation-list.component';
 import { MselPlaybookComponent } from '../msel-playbook/msel-playbook.component';
+import { GalleryWallComponent } from '../gallery-wall/gallery-wall.component';
 
 // One stub per tab; each declares the inputs MselComponent binds.
 @Component({ selector: 'app-msel-info', template: '' })
@@ -120,6 +121,8 @@ class MselPlaybookStub {
   readonly loggedInUserId = input<string>(undefined);
   readonly canEditMsel = input<boolean>(undefined);
 }
+@Component({ selector: 'app-gallery-wall', template: '' })
+class GalleryWallStub {}
 
 
 const MSEL: Msel = {
@@ -158,6 +161,7 @@ async function renderMsel(
       { replace: AssessorViewComponent, with: AssessorViewStub },
       { replace: InvitationListComponent, with: InvitationListStub },
       { replace: MselPlaybookComponent, with: MselPlaybookStub },
+      { replace: GalleryWallComponent, with: GalleryWallStub },
     ],
     providers: [
       ...mselLoadApiProviders(apis),
@@ -255,9 +259,26 @@ describe('MselComponent', () => {
     await renderMsel({ msel: { ...MSEL, usePlayer: false, useGallery: false, useCite: false } });
 
     expect(nav().getByText('Moves')).toBeInTheDocument();
-    for (const tab of ['Player Apps', 'Gallery Cards', 'CITE Actions', 'CITE Duties']) {
+    for (const tab of ['Player Apps', 'Gallery Cards', 'Gallery Wall', 'CITE Actions', 'CITE Duties']) {
       expect(nav().queryByText(tab)).not.toBeInTheDocument();
     }
+  });
+
+  /**
+   * Verifies: with Gallery in use the Gallery Wall tab follows Exercise View and opens the wall preview.
+   * Interacts with: MselComponent.getTabListItems, the side navigation, GalleryWallStub.
+   * Data: an MSEL with useGallery true.
+   */
+  it('offers the Gallery Wall after Exercise View when the MSEL uses Gallery', async () => {
+    const { fixture } = await renderMsel();
+    const tabs = Array.from(document.querySelectorAll('mat-drawer mat-list mat-list-item')).map((item) => item.textContent.trim());
+
+    expect(tabs.indexOf('Gallery Wall')).toBe(tabs.indexOf('Exercise View') + 1);
+    expect(child(fixture, GalleryWallStub)).toBeUndefined();
+
+    await openTab('Gallery Wall');
+
+    expect(child(fixture, GalleryWallStub)).toBeDefined();
   });
 
   /**
