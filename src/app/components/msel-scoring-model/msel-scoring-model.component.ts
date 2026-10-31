@@ -2,10 +2,10 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, DestroyRef, inject, input, output } from '@angular/core';
+import { Component, DestroyRef, effect, inject, input, output } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { HttpErrorResponse } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
-import { MatDialog } from '@angular/material/dialog';
 import { MatButton } from '@angular/material/button';
 import { MatFormField, MatHint, MatLabel } from '@angular/material/input';
 import { MatOptgroup, MatOption, MatSelect } from '@angular/material/select';
@@ -23,27 +23,25 @@ import { ErrorService } from 'src/app/services/error/error.service';
 import {
   SCORING_MODEL_PRESETS,
   categoriesWithoutOptions,
+  isScoringModelValid,
   normalizeScoringModel,
+  scoringModelCounts,
 } from 'src/app/utilities/scoring-model';
-import {
-  MselScoringModelEditDialogComponent,
-  MselScoringModelEditDialogData,
-} from '../msel-scoring-model-edit-dialog/msel-scoring-model-edit-dialog.component';
+import { MselScoringModelEditorComponent, ScoringModelMove } from '../msel-scoring-model-editor/msel-scoring-model-editor.component';
 
 /**
- * The scoring model a MSEL authors itself, on the MSEL's CITE settings: start one from a preset or a copy of a CITE
- * model, then edit it. The MSEL's info page holds the model; this reports every change back to it.
+ * The scoring model a MSEL authors itself: start one from a preset or a copy of a CITE model, then edit it in place
+ * and Save or Discard the edits. The Scoring Model tab holds the saved model; this reports every change back to it.
  */
 @Component({
   selector: 'app-msel-scoring-model',
   templateUrl: './msel-scoring-model.component.html',
   styleUrls: ['./msel-scoring-model.component.scss'],
-  imports: [FormsModule, MatFormField, MatLabel, MatHint, MatSelect, MatOption, MatOptgroup, MatButton],
+  imports: [FormsModule, MatFormField, MatLabel, MatHint, MatSelect, MatOption, MatOptgroup, MatButton, MselScoringModelEditorComponent],
 })
 export class MselScoringModelComponent {
   private mselScoringModelService = inject(MselScoringModelService);
   private moveQuery = inject(MoveQuery);
-  private dialog = inject(MatDialog);
   private dialogService = inject(CrucibleDialogService);
   private errorService = inject(ErrorService);
   private destroyRef = inject(DestroyRef);
@@ -58,6 +56,12 @@ export class MselScoringModelComponent {
   readonly presets = SCORING_MODEL_PRESETS;
   startFrom = '';
   isBusy = false;
+  isSaving = false;
+  errorMessage = '';
+  // the model as the API holds it, and a copy edited apart from it, so Discard has it to go back to
+  saved: MselScoringModel | null = null;
+  working: MselScoringModel | null = null;
+  private savedSnapshot = '';
   private moves: Move[] = [];
 
   constructor() {
@@ -65,6 +69,21 @@ export class MselScoringModelComponent {
       .selectAll()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((moves) => (this.moves = moves));
+    // each saved model starts a fresh copy to edit
+    effect(() => this.startEditing(this.scoringModel()));
+  }
+
+  private startEditing(saved: MselScoringModel | null) {
+    this.saved = saved;
+    this.working = saved ? normalizeScoringModel(structuredClone(saved)) : null;
+    this.savedSnapshot = JSON.stringify(this.working);
+    this.errorMessage = '';
+  }
+
+  mselMoves(): ScoringModelMove[] {
+    return this.moves
+      .filter((m) => m.mselId === this.mselId())
+      .map((m) => ({ moveNumber: +m.moveNumber, description: m.description }));
   }
 
   startFromHint(): string {
@@ -75,13 +94,11 @@ export class MselScoringModelComponent {
   }
 
   summary(): string {
-    const categories = this.scoringModel()?.categories || [];
-    const options = categories.reduce((n, c) => n + (c.options || []).length, 0);
-    return `${categories.length} ${categories.length === 1 ? 'category' : 'categories'}, ${options} ${options === 1 ? 'option' : 'options'}`;
+    return scoringModelCounts(this.working);
   }
 
   emptyCategoryWarning(): string {
-    const empty = categoriesWithoutOptions(this.scoringModel());
+    const empty = categoriesWithoutOptions(this.working);
     if (!empty.length) {
       return '';
     }
@@ -90,11 +107,19 @@ export class MselScoringModelComponent {
       : `** ${empty.length} scoring categories have no questions or options yet **`;
   }
 
+  isDirty(): boolean {
+    return !!this.working && JSON.stringify(this.working) !== this.savedSnapshot;
+  }
+
+  isValid(): boolean {
+    return isScoringModelValid(this.working);
+  }
+
   create() {
     if (!this.startFrom) {
       return;
     }
-    const current = this.scoringModel();
+    const current = this.saved;
     if (!current) {
       this.apply();
       return;
@@ -133,10 +158,7 @@ export class MselScoringModelComponent {
       next: (model) => {
         this.isBusy = false;
         this.startFrom = '';
-        const created = normalizeScoringModel(model);
-        this.scoringModelChange.emit(created);
-        // a new model is only a start: the planner writes its questions next
-        this.openEditor(created);
+        this.took(model);
       },
       error: (err) => {
         this.isBusy = false;
@@ -145,22 +167,33 @@ export class MselScoringModelComponent {
     });
   }
 
-  openEditor(model: MselScoringModel = this.scoringModel()) {
-    const data: MselScoringModelEditDialogData = {
-      mselId: this.mselId(),
-      scoringModel: model,
-      moves: this.moves
-        .filter((m) => m.mselId === this.mselId())
-        .map((m) => ({ moveNumber: +m.moveNumber, description: m.description })),
-      canEdit: this.canEdit(),
-    };
-    this.dialog
-      .open(MselScoringModelEditDialogComponent, { width: '1280px', maxWidth: '95vw', data })
-      .afterClosed()
-      .subscribe((saved: MselScoringModel) => {
-        if (saved) {
-          this.scoringModelChange.emit(saved);
-        }
-      });
+  save() {
+    if (!this.canEdit() || !this.isValid()) {
+      return;
+    }
+    this.isSaving = true;
+    this.errorMessage = '';
+    // the API numbers the categories and options in the order they are sent
+    this.mselScoringModelService.replaceMselScoringModel(this.mselId(), this.working).subscribe({
+      next: (saved) => {
+        this.isSaving = false;
+        this.took(saved);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.isSaving = false;
+        this.errorMessage = err?.error?.title || err?.message || 'The scoring model could not be saved.';
+      },
+    });
+  }
+
+  discard() {
+    this.startEditing(this.saved);
+  }
+
+  // the model the API now holds: shown at once, and reported so the tab holds it too
+  private took(model: MselScoringModel) {
+    const normalized = normalizeScoringModel(model);
+    this.startEditing(normalized);
+    this.scoringModelChange.emit(normalized);
   }
 }

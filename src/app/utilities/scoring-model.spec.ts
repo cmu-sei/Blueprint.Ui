@@ -3,7 +3,14 @@
 
 import { describe, it, expect } from 'vitest';
 import { CiteScoringOptionSelection, MselScoringCategory, MselScoringModel } from 'src/app/generated/blueprint.api';
-import { categoriesForMove, categoriesWithoutOptions, moveRangeLabel, normalizeScoringModel } from './scoring-model';
+import {
+  categoriesForMove,
+  categoriesWithoutOptions,
+  isScoringModelValid,
+  moveRangeLabel,
+  normalizeScoringModel,
+  scoringModelCounts,
+} from './scoring-model';
 
 // Blueprint writes every int as a JSON string, so a model read from the API looks like this
 const asRead = (n: number) => `${n}` as unknown as number;
@@ -118,5 +125,45 @@ describe('moveRangeLabel', () => {
     { first: 1, last: 999, moves: [], label: 'Moves 1 to 999' },
   ])('labels $first to $last as $label', ({ first, last, moves, label }) => {
     expect(moveRangeLabel(category('c', first, last), moves)).toBe(label);
+  });
+});
+
+describe('scoringModelCounts', () => {
+  /**
+   * Verifies: the summary counts the categories and their options, singular when there is one, and reads an absent model as empty.
+   * Interacts with: scoringModelCounts.
+   * Data: one category with one question; two categories with three options between them; no model.
+   */
+  it.each([
+    { label: 'one of each', model: { description: 'm', categories: [category('a', 1, 1)] }, counts: '1 category, 1 option' },
+    {
+      label: 'several',
+      model: { description: 'm', categories: [category('a', 1, 1), category('b', 2, 2, { options: [{ description: 'x', value: 1 }, { description: 'y', value: 2 }] })] },
+      counts: '2 categories, 3 options',
+    },
+    { label: 'no model', model: null, counts: '0 categories, 0 options' },
+  ])('counts $label', ({ model, counts }) => {
+    expect(scoringModelCounts(model)).toBe(counts);
+  });
+});
+
+describe('isScoringModelValid', () => {
+  const scored = (extra: Partial<MselScoringCategory> = {}): MselScoringCategory =>
+    category('Impact', 1, 2, { scoringOptionSelection: CiteScoringOptionSelection.Single, scoringWeight: 2, options: [{ description: 'Low', value: 1 }], ...extra });
+
+  /**
+   * Verifies: a model needs a description, each category a move range in order, and a scored category a weight and option values; a question set needs no numbers.
+   * Interacts with: isScoringModelValid.
+   * Data: a valid scored model; then one with no description, a range ending before it starts, no weight, an option with no value, and a question set with none of them.
+   */
+  it.each([
+    { label: 'a scored model', model: { description: 'Impact', categories: [scored()] }, valid: true },
+    { label: 'no description', model: { description: ' ', categories: [scored()] }, valid: false },
+    { label: 'a range ending before it starts', model: { description: 'Impact', categories: [scored({ moveNumberLastDisplay: 0 })] }, valid: false },
+    { label: 'a scored category with no weight', model: { description: 'Impact', categories: [scored({ scoringWeight: null })] }, valid: false },
+    { label: 'an option with no value', model: { description: 'Impact', categories: [scored({ options: [{ description: 'Low', value: undefined }] })] }, valid: false },
+    { label: 'a question set without numbers', model: { description: 'Q', categories: [category('q', 1, 1, { scoringWeight: null, options: [{ description: 'Why?', value: undefined }] })] }, valid: true },
+  ])('judges $label', ({ model, valid }) => {
+    expect(isScoringModelValid(model)).toBe(valid);
   });
 });

@@ -90,6 +90,29 @@ export function categoriesWithoutOptions(model: MselScoringModel): MselScoringCa
   return (model?.categories || []).filter((c) => !(c.options || []).length);
 }
 
+/** "2 categories, 5 options", for a summary line. */
+export function scoringModelCounts(model: MselScoringModel): string {
+  const categories = model?.categories || [];
+  const options = categories.reduce((n, c) => n + (c.options || []).length, 0);
+  return `${categories.length} ${categories.length === 1 ? 'category' : 'categories'}, ${options} ${options === 1 ? 'option' : 'options'}`;
+}
+
+/** Whether the API would accept the model: a description, a move range for each category, and a number wherever one is scored. */
+export function isScoringModelValid(model: MselScoringModel): boolean {
+  const isNumber = (n: number) => n !== null && n !== undefined && `${n}` !== '' && Number.isFinite(+n);
+  return (
+    !!model?.description?.trim() &&
+    (model.categories || []).every(
+      (c) =>
+        isNumber(c.moveNumberFirstDisplay) &&
+        isNumber(c.moveNumberLastDisplay) &&
+        +c.moveNumberFirstDisplay <= +c.moveNumberLastDisplay &&
+        (isQuestionCategory(c) || isNumber(c.scoringWeight)) &&
+        (c.options || []).every((o) => isQuestionCategory(c) || isNumber(o.value)),
+    )
+  );
+}
+
 /** "Every move", "Move 2" or "Moves 1 to 3", for a category's move range. */
 export function moveRangeLabel(category: MselScoringCategory, moveNumbers: number[]): string {
   const first = +category.moveNumberFirstDisplay;
