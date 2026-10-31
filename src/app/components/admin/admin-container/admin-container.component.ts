@@ -86,6 +86,7 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
   competencyFrameworksSidebarText = 'Competencies';
   proficiencyScalesText = 'Proficiency Scales';
   attackReleasesText = 'Technique Frameworks';
+  attackReleasesSidebarText = 'Techniques';
   selectedTab = 'Organizations';
   displayedSection = '';
   exitSection = '';
@@ -267,6 +268,7 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
 
   getSidebarLabel(section: string): string {
     if (section === this.competencyFrameworksText) return this.competencyFrameworksSidebarText;
+    if (section === this.attackReleasesText) return this.attackReleasesSidebarText;
     return section;
   }
 
