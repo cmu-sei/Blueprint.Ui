@@ -141,8 +141,9 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
     });
     this.dialog
       .open<DataValueDraftDialogComponent, DataValueDraftDialogData, string>(DataValueDraftDialogComponent, {
-        width: '80%',
-        maxWidth: '1000px',
+        // a Gallery article is 720 pixels wide, and the current and proposed one sit side by side
+        width: '95vw',
+        maxWidth: '1600px',
         data: {
           mselId: this.data.scenarioEvent.mselId,
           scenarioEventId: this.data.isNew ? null : this.data.scenarioEvent.id,

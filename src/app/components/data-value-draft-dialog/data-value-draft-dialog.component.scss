@@ -34,9 +34,10 @@
   flex-shrink: 0;
 }
 
+// current and proposed side by side where both fit at an article's 720 pixels, one above the other where not
 .compare {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 740px), 1fr));
   gap: 1rem;
 }
 
