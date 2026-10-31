@@ -557,7 +557,7 @@ export class DataFieldListComponent implements OnChanges, OnDestroy, OnInit, Aft
     } else if (dataField.dataType === DataFieldType.Competency) {
       return 'Manage';
     } else if (dataField.dataType === DataFieldType.AttackTechnique) {
-      return 'ATT&CK tab';
+      return 'Techniques tab';
     } else {
       return ' ';
     }

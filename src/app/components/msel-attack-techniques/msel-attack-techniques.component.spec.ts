@@ -103,14 +103,14 @@ async function renderTechniques(pool: MselAttackTechnique[], releases: AttackRel
 describe('MselAttackTechniquesComponent', () => {
   /**
    * Verifies: with a technique in the pool, MITRE's copyright and trademark notice follows the tables, with its Terms of Use link.
-   * Interacts with: MselAttackTechniqueService.getMselAttackTechniques (stub), showsMitreContent.
+   * Interacts with: MselAttackTechniqueService.getMselAttackTechniques (stub), showsMitreContent, linkHost.
    * Data: T1059 in the pool; no release imported.
    */
   it('attributes MITRE when the pool lists techniques', async () => {
     const { poolApi } = await renderTechniques([T1059]);
 
     expect(poolApi.getMselAttackTechniques).toHaveBeenCalledWith('msel-1');
-    expect(screen.getByRole('link', { name: 'T1059' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'T1059' })).toHaveAttribute('title', 'Open T1059 on attack.mitre.org');
     expect(screen.getByText(/© 2026 The MITRE Corporation/)).toBeInTheDocument();
     expect(screen.getByText(/MITRE ATT&CK and ATT&CK are registered trademarks of The MITRE Corporation/)).toBeInTheDocument();
     expect(screen.queryByText(/MITRE ATLAS/)).not.toBeInTheDocument();
@@ -134,8 +134,9 @@ describe('MselAttackTechniquesComponent', () => {
   });
 
   /**
-   * Verifies: techniques from an ATLAS release add MITRE's ATLAS trademark sentence to the ATT&CK notice.
-   * Interacts with: AttackReleaseService.getAttackReleases/getAttackTechniques (stubs), showsAtlasContent.
+   * Verifies: techniques from an ATLAS release add MITRE's ATLAS trademark sentence to the ATT&CK notice, and
+   * their links say they open on atlas.mitre.org.
+   * Interacts with: AttackReleaseService.getAttackReleases/getAttackTechniques (stubs), showsAtlasContent, linkHost.
    * Data: the ATLAS 2026.10 release imported, AML.T0000 in its pool and in the (collapsed) browser.
    */
   it('also credits MITRE ATLAS when the techniques are from an ATLAS release', async () => {
@@ -143,6 +144,7 @@ describe('MselAttackTechniquesComponent', () => {
 
     expect(releaseApi.getAttackTechniques).toHaveBeenCalledWith('rel-1');
     expect(screen.getByRole('link', { name: 'AML.T0000' })).toHaveAttribute('href', 'https://atlas.mitre.org/techniques/AML.T0000');
+    expect(screen.getByRole('link', { name: 'AML.T0000' })).toHaveAttribute('title', 'Open AML.T0000 on atlas.mitre.org');
     expect(screen.getByText(/MITRE ATT&CK and ATT&CK are registered trademarks of The MITRE Corporation/)).toBeInTheDocument();
     expect(screen.getByText(/MITRE ATLAS™ is a trademark of The MITRE Corporation\./)).toBeInTheDocument();
   });

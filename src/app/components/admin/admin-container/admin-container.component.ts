@@ -85,7 +85,7 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
   competencyFrameworksText = 'Competency Frameworks';
   competencyFrameworksSidebarText = 'Competencies';
   proficiencyScalesText = 'Proficiency Scales';
-  attackReleasesText = 'MITRE ATT&CK Releases';
+  attackReleasesText = 'Technique Frameworks';
   selectedTab = 'Organizations';
   displayedSection = '';
   exitSection = '';
@@ -102,7 +102,7 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
     ['CITE Duties', 'mdi-clipboard-account-outline'],
     ['Competency Frameworks', 'mdi-certificate-outline'],
     ['Proficiency Scales', 'mdi-tune-variant'],
-    ['MITRE ATT&CK Releases', 'mdi-shield-bug-outline'],
+    ['Technique Frameworks', 'mdi-shield-bug-outline'],
     ['Users', 'mdi-account'],
     ['Roles', 'mdi-shield-account'],
     ['Groups', 'mdi-account-multiple'],

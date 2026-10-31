@@ -41,7 +41,7 @@ import { DataValueQuery } from 'src/app/data/data-value/data-value.query';
 import { SystemMessageService } from 'src/app/services/system-message/system-message.service';
 
 /**
- * A MSEL's ATT&CK technique pool: the techniques its ATT&CK Technique data fields offer. The pool is
+ * A MSEL's technique pool: the techniques its Attack Technique data fields offer. The pool is
  * pinned to one release; picking another release shows its techniques and offers to upgrade the pool to it.
  */
 @Component({
@@ -230,10 +230,10 @@ export class MselAttackTechniquesComponent implements OnInit, AfterViewInit, OnD
     if (!to) return;
     this.dialogService
       .confirm({
-        title: 'Upgrade ATT&CK Techniques',
-        message: `Move this MSEL's ${this.pool.length} ATT&CK technique${this.pool.length === 1 ? '' : 's'} ` +
+        title: 'Upgrade Techniques',
+        message: `Move this MSEL's ${this.pool.length} technique${this.pool.length === 1 ? '' : 's'} ` +
           `from ${from ? from.version : 'their release'} to ${to.name} ${to.version}? ` +
-          'Techniques are matched by their ATT&CK id. Any the new release no longer has are removed from the pool; ' +
+          'Techniques are matched by their id. Any the new release no longer has are removed from the pool; ' +
           'scenario events that name them keep the id.'
       })
       .afterClosed()
@@ -244,7 +244,7 @@ export class MselAttackTechniquesComponent implements OnInit, AfterViewInit, OnD
         this.mselAttackTechniqueDataService.upgrade(this.msel.id, to.id).subscribe(upgrade => {
           const dropped = upgrade.dropped || [];
           this.messageService.displayMessage(
-            'ATT&CK Techniques Upgraded',
+            'Techniques Upgraded',
             `${upgrade.kept} technique${upgrade.kept === 1 ? '' : 's'} moved to ${to.version}.` +
               (dropped.length > 0
                 ? `\n\n${dropped.length} not in ${to.version} and removed: ${dropped.join(', ')}`
@@ -311,7 +311,7 @@ export class MselAttackTechniquesComponent implements OnInit, AfterViewInit, OnD
         'Those events keep the id, but it will no longer be offered. Remove it from this MSEL?'
       : `Remove ${t.externalId} ${t.name} from this MSEL?`;
     this.dialogService
-      .confirm({ title: 'Remove ATT&CK Technique', message })
+      .confirm({ title: 'Remove Technique', message })
       .afterClosed()
       .subscribe(result => {
         if (result) {
@@ -324,7 +324,17 @@ export class MselAttackTechniquesComponent implements OnInit, AfterViewInit, OnD
     return (technique?.tactics || []).map(t => this.tacticNames.get(t) || t).join(', ');
   }
 
-  /** How many of this MSEL's scenario events name the technique in an ATT&CK Technique field. */
+  /** The site a technique's link opens (attack.mitre.org, atlas.mitre.org), for its link title. */
+  linkHost(technique: AttackTechnique): string {
+    const url = technique?.url || '';
+    try {
+      return new URL(url).host;
+    } catch {
+      return url;
+    }
+  }
+
+  /** How many of this MSEL's scenario events name the technique in an Attack Technique field. */
   getEventCount(item: MselAttackTechnique): number {
     const externalId = item.attackTechnique?.externalId;
     if (!externalId) return 0;

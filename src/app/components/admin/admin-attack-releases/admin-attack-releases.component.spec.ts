@@ -58,7 +58,7 @@ async function renderReleases(releases: AttackRelease[]) {
 
 describe('AdminAttackReleasesComponent', () => {
   /**
-   * Verifies: with nothing imported the empty state names the ATT&CK bundles and the ATLAS one, and only the
+   * Verifies: with nothing imported the empty state names the ATT&CK bundle and the ATLAS one, and only the
    * ATT&CK trademark line is shown.
    * Interacts with: AttackReleaseService.getAttackReleases (stub), hasAtlasRelease.
    * Data: no releases.
@@ -69,7 +69,7 @@ describe('AdminAttackReleasesComponent', () => {
     expect(releaseApi.getAttackReleases).toHaveBeenCalled();
     expect(screen.getByText(/enterprise-attack\.json from MITRE's attack-stix-data repository/)).toBeInTheDocument();
     expect(screen.getByText(/stix-atlas\.json from the mitre-atlas\/atlas-data GitHub releases/)).toBeInTheDocument();
-    expect(screen.getByTitle('Import a MITRE ATT&CK STIX bundle')).toBeInTheDocument();
+    expect(screen.getByTitle('Import a STIX bundle')).toBeInTheDocument();
     expect(screen.getByText(TRADEMARKS)).toBeInTheDocument();
     expect(screen.queryByText(/© 2026 The MITRE Corporation/)).not.toBeInTheDocument();
     expect(screen.queryByText(ATLAS_TRADEMARK)).not.toBeInTheDocument();

@@ -539,7 +539,7 @@ project root for license information.
   }
 </span>
 }
-<!-- ATT&CK technique input (chips + search list, offered from the MSEL's ATT&CK techniques) -->
+<!-- Attack Technique input (chips + search list, offered from the MSEL's techniques) -->
 @if (dataField.dataType === dataType.AttackTechnique) {
 <span>
   @if (!showValueOnly()) {
@@ -564,7 +564,7 @@ project root for license information.
     </mat-chip-set>
     @if (canEdit()) {
     <mat-form-field class="full-width">
-      <mat-label>Select ATT&CK techniques</mat-label>
+      <mat-label>Select techniques</mat-label>
       <mat-select multiple [value]="selectedAttackTechniques" (selectionChange)="setAttackTechniques($event.value)" (openedChange)="$event || (attackTechniqueFilter = '')" panelClass="competency-select-panel">
         <div class="competency-search-box">
           <mat-icon fontIcon="mdi-magnify"></mat-icon>
@@ -581,7 +581,7 @@ project root for license information.
         }
         @if (filteredAttackTechniqueOptions.length === 0) {
         <div class="competency-no-results">
-          {{ attackTechniqueOptions.length === 0 ? 'Add techniques on the MSEL\'s ATT&CK tab' : 'No matching techniques' }}
+          {{ attackTechniqueOptions.length === 0 ? 'Add techniques on the MSEL\'s Techniques tab' : 'No matching techniques' }}
         </div>
         }
       </mat-select>

@@ -10,7 +10,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <mat-icon class="mdi-24px" fontIcon="mdi-shield-bug-outline" [ngStyle]="{'color': 'var(--mat-sys-primary)'}"></mat-icon>
   </div>
   <mat-form-field class="release-select">
-    <mat-label>ATT&amp;CK Release</mat-label>
+    <mat-label>Release</mat-label>
     <mat-select [value]="selectedReleaseId" (selectionChange)="onReleaseChange($event.value)">
       @for (release of releases; track release.id) {
       <mat-option [value]="release.id">
@@ -19,7 +19,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       }
     </mat-select>
     @if (releases.length === 0) {
-    <mat-hint>No ATT&amp;CK releases have been imported. An administrator imports them under Administration.</mat-hint>
+    <mat-hint>No releases have been imported. An administrator imports them under Administration.</mat-hint>
     }
   </mat-form-field>
   @if (needsUpgrade && canEditMsel()) {
@@ -73,7 +73,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     @if (isLoadingRelease) {
     <div class="browser-loading">
       <mat-spinner diameter="36"></mat-spinner>
-      <div class="browser-loading-text">Loading ATT&amp;CK techniques...</div>
+      <div class="browser-loading-text">Loading techniques...</div>
     </div>
     }
     <div class="browser-table-scroll" [class.hidden]="isLoadingRelease">
@@ -90,7 +90,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <ng-container matColumnDef="externalId">
           <mat-header-cell *matHeaderCellDef class="col-id">ID</mat-header-cell>
           <mat-cell *matCellDef="let t" class="col-id" [class.sub-technique]="t.isSubTechnique">
-            <a [href]="t.url" target="_blank" rel="noopener" title="Open {{ t.externalId }} on attack.mitre.org">{{ t.externalId }}</a>
+            <a [href]="t.url" target="_blank" rel="noopener" title="Open {{ t.externalId }} on {{ linkHost(t) }}">{{ t.externalId }}</a>
           </mat-cell>
         </ng-container>
         <ng-container matColumnDef="name">
@@ -128,7 +128,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     </mat-expansion-panel-header>
     @if (pool.length === 0) {
     <div class="empty-text">
-      No techniques yet. Add techniques above, then add an ATT&amp;CK Technique data field so scenario events can name them.
+      No techniques yet. Add techniques above, then add an Attack Technique data field so scenario events can name them.
     </div>
     } @else {
     <mat-table [dataSource]="poolDataSource">
@@ -147,7 +147,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <mat-header-cell *matHeaderCellDef class="col-id">ID</mat-header-cell>
         <mat-cell *matCellDef="let item" class="col-id">
           <a [href]="item.attackTechnique?.url" target="_blank" rel="noopener"
-            title="Open {{ item.attackTechnique?.externalId }} on attack.mitre.org">{{ item.attackTechnique?.externalId }}</a>
+            title="Open {{ item.attackTechnique?.externalId }} on {{ linkHost(item.attackTechnique) }}">{{ item.attackTechnique?.externalId }}</a>
         </mat-cell>
       </ng-container>
       <ng-container matColumnDef="name">

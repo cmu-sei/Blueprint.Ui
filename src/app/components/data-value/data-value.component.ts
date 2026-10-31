@@ -198,7 +198,7 @@ export class DataValueComponent implements OnChanges, OnDestroy {
 
   getAttackTechniqueTooltip(externalId: string): string {
     const t = this.attackTechniquesById.get(externalId);
-    return t ? t.name : 'Not in this MSEL\'s ATT&CK techniques';
+    return t ? t.name : 'Not in this MSEL\'s techniques';
   }
 
   // ids the pool no longer offers aren't options, so keep them rather than let the select drop them

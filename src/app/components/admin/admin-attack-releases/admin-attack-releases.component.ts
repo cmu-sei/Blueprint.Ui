@@ -84,7 +84,7 @@ export class AdminAttackReleasesComponent implements OnInit, AfterViewInit, OnDe
   deleteRelease(release: AttackRelease) {
     this.dialogService
       .confirm({
-        title: 'Delete MITRE ATT&CK Release',
+        title: 'Delete Release',
         message: 'Are you sure you want to delete ' + release.name + ' ' + release.version + '? ' +
           'A release that any MSEL still uses cannot be deleted.'
       })
