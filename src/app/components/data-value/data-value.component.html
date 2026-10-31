@@ -52,8 +52,8 @@ project root for license information.
     }
   </span>
   }
-  <!-- dataType.AttackTechnique -->
-  @if (dataField.dataType === dataType.AttackTechnique) {
+  <!-- dataType.AttackTechnique and dataType.DefensiveTechnique -->
+  @if (isTechniqueField) {
   <span>
     @for (id of selectedAttackTechniques; track id; let isLast = $last) {
       <span [matTooltip]="getAttackTechniqueTooltip(id)" matTooltipPosition="above" style="white-space: nowrap;">{{ id }}</span>@if (!isLast) {<span>, </span>}
@@ -64,7 +64,7 @@ project root for license information.
   @if (dataField.dataType !== dataType.DateTime && dataField.dataType !== dataType.Html && dataField.dataType !==
   dataType.Card && dataField.dataType !== dataType.Move && dataField.dataType !== dataType.User && dataField.dataType
   !== dataType.Boolean && dataField.dataType !== dataType.Checkbox && dataField.dataType !== dataType.Competency
-  && dataField.dataType !== dataType.AttackTechnique) {
+  && !isTechniqueField) {
   <span>
     @if (dataField.isMultiSelect) {
     @for (val of getValueArray(); track val) {
@@ -539,8 +539,8 @@ project root for license information.
   }
 </span>
 }
-<!-- Attack Technique input (chips + search list, offered from the MSEL's techniques) -->
-@if (dataField.dataType === dataType.AttackTechnique) {
+<!-- Attack Technique and Defensive Technique input (chips + search list, offered from the MSEL's techniques) -->
+@if (isTechniqueField) {
 <span>
   @if (!showValueOnly()) {
   <div class="competency-field">
@@ -580,11 +580,13 @@ project root for license information.
         <mat-option [value]="option.externalId">{{ option.externalId }} - {{ option.name }}</mat-option>
         }
         @if (filteredAttackTechniqueOptions.length === 0) {
-        <div class="competency-no-results">
-          {{ attackTechniqueOptions.length === 0 ? 'Add techniques on the MSEL\'s Techniques tab' : 'No matching techniques' }}
-        </div>
+        <div class="competency-no-results">No matching techniques</div>
         }
       </mat-select>
+      <!-- a select with nothing to offer never opens, so an empty pool is explained under the field -->
+      @if (attackTechniqueOptions.length === 0) {
+      <mat-hint>Add techniques on the MSEL's Techniques tab</mat-hint>
+      }
     </mat-form-field>
     }
   </div>
@@ -600,7 +602,7 @@ project root for license information.
 }
 <!-- dropdown input -->
 @if (!useGalleryItemStatusSelect && dataField.isChosenFromList && dataField.dataType !== dataType.Competency
-  && dataField.dataType !== dataType.AttackTechnique) {
+  && !isTechniqueField) {
 <span>
   @if (!showValueOnly()) {
   <mat-form-field class="full-width">

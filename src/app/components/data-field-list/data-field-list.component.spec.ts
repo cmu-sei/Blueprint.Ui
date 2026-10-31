@@ -51,6 +51,8 @@ const MSEL_FIELD: DataField = {
 };
 const TYPE_FIELD: DataField = { id: 'df-2', injectTypeId: 'it-email', name: 'Subject', dataType: DataFieldType.String, displayOrder: 1, dataOptions: [] };
 
+const ATTACK_FIELD: DataField = { id: 'df-attack', mselId: 'msel-1', name: 'Techniques', dataType: DataFieldType.AttackTechnique, displayOrder: 3, dataOptions: [] };
+const DEFENSIVE_FIELD: DataField = { id: 'df-defend', mselId: 'msel-1', name: 'Countermeasures', dataType: DataFieldType.DefensiveTechnique, displayOrder: 4, dataOptions: [] };
 const COMPETENCY_FIELD: DataField = {
   id: 'df-3',
   mselId: 'msel-1',
@@ -264,6 +266,27 @@ describe('DataFieldListComponent', () => {
       await user.click(optionsCell('Skill'));
 
       expect(dataFieldApi.updateDataField).not.toHaveBeenCalled();
+    });
+
+    /**
+     * Verifies: the Data Type column names the technique types in two words and points their options at the Techniques
+     * tab, while a String field keeps its key.
+     * Interacts with: DataFieldTypeNamePipe, getDataOptionsString.
+     * Data: a String field, an Attack Technique field and a Defensive Technique field; MSEL Owner.
+     */
+    it('names the technique types and sends their options to the Techniques tab', async () => {
+      await renderDataFields({ roles: [MselRole.Owner], fields: [MSEL_FIELD, ATTACK_FIELD, DEFENSIVE_FIELD] });
+
+      expect(within(table()).getByText('String')).toBeInTheDocument();
+      expect(within(table()).getByText('Attack Technique')).toBeInTheDocument();
+      expect(within(table()).getByText('Defensive Technique')).toBeInTheDocument();
+      expect(within(table()).queryByText('AttackTechnique')).not.toBeInTheDocument();
+      expect(within(table()).queryByText('DefensiveTechnique')).not.toBeInTheDocument();
+      // no option list to manage, so the Options cell is plain text pointing at the tab
+      const row = (name: string) => within(within(table()).getByText(name).closest('mat-row') as HTMLElement);
+      expect(row('Techniques').getByText('Techniques tab')).not.toHaveClass('clickable');
+      expect(row('Countermeasures').getByText('Techniques tab')).not.toHaveClass('clickable');
+      expect(row('Techniques').queryByTitle('Click to manage options')).not.toBeInTheDocument();
     });
 
     /**

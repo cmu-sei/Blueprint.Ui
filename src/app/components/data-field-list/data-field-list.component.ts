@@ -45,12 +45,13 @@ import { MatIconButton } from '@angular/material/button';
 import { MatSelect } from '@angular/material/select';
 import { MatOption } from '@angular/material/autocomplete';
 import { MatCheckbox } from '@angular/material/checkbox';
+import { DataFieldTypeNamePipe } from 'src/app/utilities/data-field-type-name';
 
 @Component({
     selector: 'app-data-field-list',
     templateUrl: './data-field-list.component.html',
     styleUrls: ['./data-field-list.component.scss'],
-    imports: [MatIcon, MatFormField, MatInput, FormsModule, ReactiveFormsModule, MatIconButton, MatSuffix, MatLabel, MatSelect, MatOption, MatPaginator, MatTable, MatSort, CdkDropList, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, CdkDragHandle, CdkDrag, MatMenuTrigger, MatMenu, MatMenuItem, MatSortHeader, MatCheckbox, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow]
+    imports: [MatIcon, MatFormField, MatInput, FormsModule, ReactiveFormsModule, MatIconButton, MatSuffix, MatLabel, MatSelect, MatOption, MatPaginator, MatTable, MatSort, CdkDropList, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, CdkDragHandle, CdkDrag, MatMenuTrigger, MatMenu, MatMenuItem, MatSortHeader, MatCheckbox, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, DataFieldTypeNamePipe]
 })
 export class DataFieldListComponent implements OnChanges, OnDestroy, OnInit, AfterViewInit {
   private mselQuery = inject(MselQuery);
@@ -556,7 +557,7 @@ export class DataFieldListComponent implements OnChanges, OnDestroy, OnInit, Aft
       return `${count} option${count !== 1 ? 's' : ''}`;
     } else if (dataField.dataType === DataFieldType.Competency) {
       return 'Manage';
-    } else if (dataField.dataType === DataFieldType.AttackTechnique) {
+    } else if (dataField.dataType === DataFieldType.AttackTechnique || dataField.dataType === DataFieldType.DefensiveTechnique) {
       return 'Techniques tab';
     } else {
       return ' ';

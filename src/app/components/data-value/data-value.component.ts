@@ -19,7 +19,7 @@ import { dataValueError } from 'src/app/utilities/ip-address';
 import { AngularEditorModule } from '@kolkov/angular-editor';
 import { MatCheckbox } from '@angular/material/checkbox';
 import { MatTooltip } from '@angular/material/tooltip';
-import { MatFormField, MatLabel, MatInput, MatError, MatSuffix } from '@angular/material/input';
+import { MatFormField, MatLabel, MatInput, MatError, MatHint, MatSuffix } from '@angular/material/input';
 import { MatSelect, MatSelectTrigger } from '@angular/material/select';
 import { FormsModule } from '@angular/forms';
 import { MatOption } from '@angular/material/autocomplete';
@@ -33,12 +33,13 @@ import { TimezoneAbbrPipe } from '../../utilities/timezone-abbr';
 import { IsDateTimeValuePipe } from '../../utilities/date-time-value';
 import { MselAttackTechniqueQuery } from 'src/app/data/msel-attack-technique/msel-attack-technique.query';
 import { MselAttackTechniqueDataService } from 'src/app/data/msel-attack-technique/msel-attack-technique-data.service';
+import { TechniqueFamily, techniqueFamily } from 'src/app/utilities/technique-family';
 
 @Component({
     selector: 'app-data-value',
     templateUrl: './data-value.component.html',
     styleUrls: ['./data-value.component.scss'],
-    imports: [AngularEditorModule, MatCheckbox, MatTooltip, MatFormField, MatLabel, MatSelect, FormsModule, MatSelectTrigger, MatOption, MatInput, MatError, NgxMatDatepickerInput, MatDatepickerToggle, MatSuffix, NgxMatDatetimepicker, NgxMatDatepickerActions, MatButton, NgxMatDatepickerApply, NgxMatDatepickerCancel, MatChipSet, MatChip, MatChipRemove, MatIcon, MatIconButton, DatePipe, TimezoneAbbrPipe, NgTemplateOutlet, IsDateTimeValuePipe]
+    imports: [AngularEditorModule, MatCheckbox, MatTooltip, MatFormField, MatLabel, MatHint, MatSelect, FormsModule, MatSelectTrigger, MatOption, MatInput, MatError, NgxMatDatepickerInput, MatDatepickerToggle, MatSuffix, NgxMatDatetimepicker, NgxMatDatepickerActions, MatButton, NgxMatDatepickerApply, NgxMatDatepickerCancel, MatChipSet, MatChip, MatChipRemove, MatIcon, MatIconButton, DatePipe, TimezoneAbbrPipe, NgTemplateOutlet, IsDateTimeValuePipe]
 })
 export class DataValueComponent implements OnChanges, OnDestroy {
   private mselAttackTechniqueQuery = inject(MselAttackTechniqueQuery);
@@ -155,23 +156,41 @@ export class DataValueComponent implements OnChanges, OnDestroy {
     this.valueChangeHandler();
   }
 
-  // --- ATT&CK technique chips + search list, offered from the MSEL's technique pool ---
+  // --- technique chips + search list, offered from the MSEL's technique pool: an Attack Technique field offers
+  // the attack half (ATT&CK, ATLAS), a Defensive Technique field the defensive half (D3FEND) ---
   attackTechniqueFilter = '';
   attackTechniqueOptions: AttackTechnique[] = [];
   private attackTechniquesById = new Map<string, AttackTechnique>();
+  private wholePool: AttackTechnique[] = [];
   private unsubscribe$ = new Subject();
 
   constructor() {
     this.mselAttackTechniqueQuery.selectTechniques().pipe(takeUntil(this.unsubscribe$)).subscribe(techniques => {
-      this.attackTechniqueOptions = techniques;
-      this.attackTechniquesById = new Map(techniques.map(t => [t.externalId, t]));
+      this.wholePool = techniques;
+      this.offerTechniques();
     });
   }
 
   ngOnChanges() {
-    if (this.dataField?.dataType === DataFieldType.AttackTechnique) {
+    if (this.isTechniqueField) {
       this.mselAttackTechniqueDataService.ensureLoaded(this.dataField.mselId);
+      this.offerTechniques();
     }
+  }
+
+  /** An Attack Technique or Defensive Technique field: both pick from the pool, each from its own half. */
+  get isTechniqueField(): boolean {
+    return this.dataField?.dataType === DataFieldType.AttackTechnique || this.dataField?.dataType === DataFieldType.DefensiveTechnique;
+  }
+
+  private get techniqueFamily(): TechniqueFamily {
+    return this.dataField?.dataType === DataFieldType.DefensiveTechnique ? 'defensive' : 'attack';
+  }
+
+  private offerTechniques() {
+    const techniques = this.wholePool.filter(t => techniqueFamily(t.domain) === this.techniqueFamily);
+    this.attackTechniqueOptions = techniques;
+    this.attackTechniquesById = new Map(techniques.map(t => [t.externalId, t]));
   }
 
   ngOnDestroy() {

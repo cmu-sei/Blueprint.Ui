@@ -38,7 +38,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <mat-select [value]="data.dataField.dataType" (selectionChange)="changeDataFieldDataType($event.value)"
           [disabled]="!data.canEdit">
           @for (dataFieldType of (data.dataFieldTypes | keyvalue); track dataFieldType) {
-          <mat-option value="{{ dataFieldType.key }}">{{ dataFieldType.key }}</mat-option>
+          <mat-option value="{{ dataFieldType.key }}">{{ dataFieldType.key | dataFieldTypeName }}</mat-option>
           }
         </mat-select>
       </mat-form-field>
@@ -52,7 +52,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             [disabled]="!data.canEdit || optionListNotAllowed() || isCompetency()" class="bottom-margin">
             Use Option List
           </mat-checkbox>
-          @if (isAttackTechnique()) {
+          @if (isTechniqueField()) {
           <span class="left-margin">Techniques come from the MSEL's Techniques tab</span>
           }
           @if (data.dataField.isChosenFromList && !optionListNotAllowed()) {

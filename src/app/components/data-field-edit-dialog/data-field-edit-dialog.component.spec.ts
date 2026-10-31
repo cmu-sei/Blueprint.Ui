@@ -57,6 +57,32 @@ const dataTypeSelect = () => screen.getByLabelText('Data Type');
 
 describe('DataFieldEditDialogComponent', () => {
   /**
+   * Verifies: the Data Type list reads AttackTechnique and DefensiveTechnique as two words and every other type by its
+   * key; picking Defensive Technique makes the field multi-select without an option list, as Attack Technique does,
+   * and says where its techniques come from.
+   * Interacts with: DataFieldTypeNamePipe, changeDataFieldDataType, isTechniqueField.
+   * Data: a String field with canEdit; choose "Defensive Technique".
+   */
+  it('names the technique types in the Data Type list and sets up a Defensive Technique field', async () => {
+    const { fixture } = await renderDataFieldEdit({ canEdit: true });
+    const user = userEvent.setup();
+
+    await user.click(dataTypeSelect());
+    expect(screen.getByRole('option', { name: 'Attack Technique' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'DateTime' })).toBeInTheDocument();
+    expect(screen.queryByRole('option', { name: 'DefensiveTechnique' })).not.toBeInTheDocument();
+    await user.click(screen.getByRole('option', { name: 'Defensive Technique' }));
+    fixture.detectChanges();
+
+    const field = fixture.componentInstance.data.dataField as DataField;
+    expect(field.dataType).toBe(DataFieldType.DefensiveTechnique);
+    expect(field.isChosenFromList).toBe(false);
+    expect(field.isMultiSelect).toBe(true);
+    expect(field.isFacilitationField).toBe(true);
+    expect(screen.getByText("Techniques come from the MSEL's Techniques tab")).toBeInTheDocument();
+  });
+
+  /**
    * Verifies: with canEdit, which the list sets for owners too, the data field's settings are editable and the metadata fields are shown.
    * Interacts with: DataFieldEditDialogComponent template.
    * Data: canEdit true.

@@ -370,28 +370,33 @@ describe('DataValueComponent', () => {
   });
 });
 
+// The MSEL's pool offers T1059 and T1566 from an ATT&CK release and D3-CH from a D3FEND one; T9999 was dropped
+// from it, but a cell still names it. An Attack Technique field offers the first two, a Defensive Technique field the third.
+const TECHNIQUE_POOL: MselAttackTechnique[] = [
+  { id: 'mat-2', mselId: 'msel-1', attackTechniqueId: 'at-2', attackTechnique: { id: 'at-2', domain: 'enterprise-attack', externalId: 'T1566', name: 'Phishing', url: 'https://attack.mitre.org/techniques/T1566' } },
+  { id: 'mat-1', mselId: 'msel-1', attackTechniqueId: 'at-1', attackTechnique: { id: 'at-1', domain: 'enterprise-attack', externalId: 'T1059', name: 'Command and Scripting Interpreter', url: 'https://attack.mitre.org/techniques/T1059' } },
+  { id: 'mat-3', mselId: 'msel-1', attackTechniqueId: 'at-3', attackTechnique: { id: 'at-3', domain: 'd3fend', externalId: 'D3-CH', name: 'Credential Hardening', url: 'https://d3fend.mitre.org/technique/d3f:CredentialHardening/' } },
+];
+
+async function renderTechniqueField(dataField: DataField, value: string, flags: Flags = {}) {
+  const ensureLoaded = vi.fn();
+  const rendered = await renderComponent(DataValueComponent, {
+    imports: [MatChipsModule, MatFormFieldModule, MatIconModule, MatSelectModule, MatTooltipModule],
+    declarations: [DataValueComponent, TimezoneAbbrPipe],
+    providers: [{ provide: MselAttackTechniqueDataService, useValue: { ensureLoaded } }],
+    inputs: { dataField, value, canEdit: false, canApprove: false, isOwner: false, showValueOnly: false, ...flags },
+  });
+  TestBed.inject(MselAttackTechniqueStore).set(TECHNIQUE_POOL);
+  rendered.fixture.detectChanges();
+  const changes: string[] = [];
+  rendered.fixture.componentInstance.valueChange.subscribe((v) => changes.push(v));
+  return { ...rendered, changes, ensureLoaded };
+}
+
 describe('DataValueComponent ATT&CK techniques', () => {
   const TECHNIQUES: DataField = { id: 'df-attack', mselId: 'msel-1', name: 'Techniques', dataType: DataFieldType.AttackTechnique };
-  // The MSEL's pool offers T1059 and T1566; T9999 was dropped from it, but a cell still names it.
-  const POOL: MselAttackTechnique[] = [
-    { id: 'mat-2', mselId: 'msel-1', attackTechniqueId: 'at-2', attackTechnique: { id: 'at-2', externalId: 'T1566', name: 'Phishing', url: 'https://attack.mitre.org/techniques/T1566' } },
-    { id: 'mat-1', mselId: 'msel-1', attackTechniqueId: 'at-1', attackTechnique: { id: 'at-1', externalId: 'T1059', name: 'Command and Scripting Interpreter', url: 'https://attack.mitre.org/techniques/T1059' } },
-  ];
 
-  async function renderTechniques(value: string, flags: Flags = {}) {
-    const ensureLoaded = vi.fn();
-    const rendered = await renderComponent(DataValueComponent, {
-      imports: [MatChipsModule, MatFormFieldModule, MatIconModule, MatSelectModule, MatTooltipModule],
-      declarations: [DataValueComponent, TimezoneAbbrPipe],
-      providers: [{ provide: MselAttackTechniqueDataService, useValue: { ensureLoaded } }],
-      inputs: { dataField: TECHNIQUES, value, canEdit: false, canApprove: false, isOwner: false, showValueOnly: false, ...flags },
-    });
-    TestBed.inject(MselAttackTechniqueStore).set(POOL);
-    rendered.fixture.detectChanges();
-    const changes: string[] = [];
-    rendered.fixture.componentInstance.valueChange.subscribe((v) => changes.push(v));
-    return { ...rendered, changes, ensureLoaded };
-  }
+  const renderTechniques = (value: string, flags: Flags = {}) => renderTechniqueField(TECHNIQUES, value, flags);
 
   /**
    * Verifies: read-only, a cell lists its technique ids as text, including one the pool no longer offers.
@@ -447,5 +452,62 @@ describe('DataValueComponent ATT&CK techniques', () => {
     await userEvent.click(container.querySelector('mat-chip [matChipRemove]'));
 
     expect(changes).toEqual(['T9999']);
+  });
+});
+
+describe('DataValueComponent D3FEND techniques', () => {
+  const COUNTERMEASURES: DataField = { id: 'df-defend', mselId: 'msel-1', name: 'Countermeasures', dataType: DataFieldType.DefensiveTechnique };
+
+  const renderCountermeasures = (value: string, flags: Flags = {}) => renderTechniqueField(COUNTERMEASURES, value, flags);
+
+  /**
+   * Verifies: a Defensive Technique field draws the same chips as an Attack Technique one, loads the pool, links a
+   * pooled id to its D3FEND page, and marks an id the defensive pool does not offer, even an ATT&CK one the attack
+   * half holds.
+   * Interacts with: ngOnChanges, isTechniqueField, getAttackTechnique, the chip set.
+   * Data: value "D3-CH, T1059"; canEdit.
+   */
+  it('links pooled defensive ids and marks the rest', async () => {
+    const { container, ensureLoaded } = await renderCountermeasures('D3-CH, T1059', { canEdit: true });
+
+    expect(ensureLoaded).toHaveBeenCalledWith('msel-1');
+    expect(screen.getByRole('link', { name: 'D3-CH' })).toHaveAttribute('href', 'https://d3fend.mitre.org/technique/d3f:CredentialHardening/');
+    expect(screen.queryByRole('link', { name: 'T1059' })).not.toBeInTheDocument();
+    const chips = Array.from(container.querySelectorAll('mat-chip'));
+    expect(chips.map((c) => c.classList.contains('attack-not-in-pool'))).toEqual([false, true]);
+  });
+
+  /**
+   * Verifies: the select offers only the defensive half of the pool, and choosing one keeps the ids it does not offer.
+   * Interacts with: filteredAttackTechniqueOptions, setAttackTechniques.
+   * Data: value "T1059"; canEdit; choose "D3-CH - Credential Hardening".
+   */
+  it('offers the defensive pool only', async () => {
+    const { fixture, changes } = await renderCountermeasures('T1059', { canEdit: true });
+    const select = await TestbedHarnessEnvironment.loader(fixture).getHarness(MatSelectHarness);
+    await select.open();
+
+    const options = await select.getOptions();
+    expect(await Promise.all(options.map((o) => o.getText()))).toEqual(['D3-CH - Credential Hardening']);
+    await options[0].click();
+
+    expect(changes).toEqual(['T1059, D3-CH']);
+  });
+
+  /**
+   * Verifies: with no defensive technique in the pool the field says where to add them, even while the attack half is
+   * full; a select with nothing to offer never opens, so the hint sits under the field rather than in its list.
+   * Interacts with: attackTechniqueOptions, the empty-pool hint.
+   * Data: a pool of ATT&CK techniques only; canEdit.
+   */
+  it('says where to add techniques when the defensive pool is empty', async () => {
+    const { fixture } = await renderCountermeasures('', { canEdit: true });
+    expect(screen.queryByText("Add techniques on the MSEL's Techniques tab")).not.toBeInTheDocument();
+
+    TestBed.inject(MselAttackTechniqueStore).set(TECHNIQUE_POOL.filter((m) => m.attackTechnique.domain !== 'd3fend'));
+    fixture.detectChanges();
+
+    expect(screen.getByText("Add techniques on the MSEL's Techniques tab")).toBeInTheDocument();
+    expect(screen.getByLabelText('Select techniques')).toBeInTheDocument();
   });
 });
