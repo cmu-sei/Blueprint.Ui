@@ -27,8 +27,13 @@ const ATLAS: AttackRelease = {
   id: 'rel-2', domain: 'ATLAS', name: 'ATLAS', version: '2026.10',
   releaseDate: new Date('2026-10-28T00:00:00Z'), tacticCount: 16, techniqueCount: 221,
 };
+const D3FEND: AttackRelease = {
+  id: 'rel-3', domain: 'd3fend', name: 'MITRE D3FEND', version: '1.6.0',
+  releaseDate: new Date('2026-08-31T00:12:00Z'), tacticCount: 7, techniqueCount: 271,
+};
 const TRADEMARKS = /MITRE ATT&CK and ATT&CK are registered trademarks of The MITRE Corporation/;
 const ATLAS_TRADEMARK = /MITRE ATLAS™ is a trademark of The MITRE Corporation\./;
+const D3FEND_TRADEMARK = /MITRE D3FEND™ is a trademark of The MITRE Corporation\./;
 
 // The component loads the releases itself in ngOnInit, so the stubbed endpoint is all the store needs.
 async function renderReleases(releases: AttackRelease[]) {
@@ -58,21 +63,24 @@ async function renderReleases(releases: AttackRelease[]) {
 
 describe('AdminAttackReleasesComponent', () => {
   /**
-   * Verifies: with nothing imported the empty state names the ATT&CK bundle and the ATLAS one, and only the
-   * ATT&CK trademark line is shown.
-   * Interacts with: AttackReleaseService.getAttackReleases (stub), hasAtlasRelease.
+   * Verifies: with nothing imported the empty state names the ATT&CK bundle, the ATLAS one and the D3FEND
+   * ontology, the import button takes any of them, and only the ATT&CK trademark line is shown.
+   * Interacts with: AttackReleaseService.getAttackReleases (stub), hasAtlasRelease, hasD3fendRelease.
    * Data: no releases.
    */
-  it('tells an administrator which bundles to import when there are none', async () => {
+  it('tells an administrator which files to import when there are none', async () => {
     const { releaseApi } = await renderReleases([]);
 
     expect(releaseApi.getAttackReleases).toHaveBeenCalled();
     expect(screen.getByText(/enterprise-attack\.json from MITRE's attack-stix-data repository/)).toBeInTheDocument();
     expect(screen.getByText(/stix-atlas\.json from the mitre-atlas\/atlas-data GitHub releases/)).toBeInTheDocument();
-    expect(screen.getByTitle('Import a STIX bundle')).toBeInTheDocument();
+    expect(screen.getByText(/MITRE D3FEND™ ontology \(d3fend\.json from the D3FEND Ontology Resources page\)/)).toBeInTheDocument();
+    expect(screen.getByTitle('Import a release file')).toBeInTheDocument();
     expect(screen.getByText(TRADEMARKS)).toBeInTheDocument();
     expect(screen.queryByText(/© 2026 The MITRE Corporation/)).not.toBeInTheDocument();
     expect(screen.queryByText(ATLAS_TRADEMARK)).not.toBeInTheDocument();
+    expect(screen.queryByText(D3FEND_TRADEMARK)).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'D3FEND Terms of Use' })).not.toBeInTheDocument();
   });
 
   /**
@@ -87,6 +95,28 @@ describe('AdminAttackReleasesComponent', () => {
     expect(screen.getByText(/© 2026 The MITRE Corporation/)).toBeInTheDocument();
     expect(screen.getByText(TRADEMARKS)).toBeInTheDocument();
     expect(screen.queryByText(ATLAS_TRADEMARK)).not.toBeInTheDocument();
+    expect(screen.queryByText(D3FEND_TRADEMARK)).not.toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: a release of the d3fend domain adds MITRE's D3FEND trademark sentence and a link to D3FEND's own
+   * terms of use, beside the ATT&CK sentence and link, which stay.
+   * Interacts with: AttackReleaseService.getAttackReleases (stub), hasD3fendRelease.
+   * Data: Enterprise ATT&CK 17.1 and MITRE D3FEND 1.6.0.
+   */
+  it('also credits MITRE D3FEND and links its terms of use once a D3FEND release is listed', async () => {
+    await renderReleases([ENTERPRISE, D3FEND]);
+
+    expect(screen.getByText('MITRE D3FEND')).toBeInTheDocument();
+    expect(screen.getByText('d3fend')).toBeInTheDocument();
+    expect(screen.getByText(TRADEMARKS)).toBeInTheDocument();
+    expect(screen.getByText(D3FEND_TRADEMARK)).toBeInTheDocument();
+    expect(screen.queryByText(ATLAS_TRADEMARK)).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Terms of Use' })).toHaveAttribute('href', 'https://attack.mitre.org/resources/legal-and-branding/terms-of-use/');
+    const terms = screen.getByRole('link', { name: 'D3FEND Terms of Use' });
+    expect(terms).toHaveAttribute('href', 'https://d3fend.mitre.org/tou/');
+    expect(terms).toHaveAttribute('target', '_blank');
+    expect(terms).toHaveAttribute('rel', 'noopener');
   });
 
   /**

@@ -17,11 +17,13 @@ import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { AttackRelease } from 'src/app/generated/blueprint.api';
 import { AttackReleaseDataService } from 'src/app/data/attack-release/attack-release-data.service';
 import { AttackReleaseQuery } from 'src/app/data/attack-release/attack-release.query';
+import { D3FEND_DOMAIN } from 'src/app/utilities/technique-family';
 
 /**
- * The MITRE ATT&CK releases planners pick techniques from. An administrator uploads a STIX bundle
+ * The technique framework releases planners pick techniques from. An administrator uploads a STIX bundle
  * (enterprise-attack.json, ics-attack.json, mobile-attack.json) from mitre-attack/attack-stix-data, or
- * stix-atlas.json from mitre-atlas/atlas-data, which imports as a release of the ATLAS domain.
+ * stix-atlas.json from mitre-atlas/atlas-data, which imports as a release of the ATLAS domain, or the MITRE
+ * D3FEND ontology (d3fend.json), which imports as a release of the d3fend domain whose techniques are defensive.
  */
 @Component({
   selector: 'app-admin-attack-releases',
@@ -68,6 +70,11 @@ export class AdminAttackReleasesComponent implements OnInit, AfterViewInit, OnDe
   /** ATLAS is a separate MITRE mark, so its notice is only due once an ATLAS release is listed. */
   get hasAtlasRelease(): boolean {
     return this.dataSource.data.some(r => r.domain === 'ATLAS');
+  }
+
+  /** D3FEND is a separate MITRE mark with terms of use of its own, due once a D3FEND release is listed. */
+  get hasD3fendRelease(): boolean {
+    return this.dataSource.data.some(r => r.domain === D3FEND_DOMAIN);
   }
 
   selectFile(e: Event) {
