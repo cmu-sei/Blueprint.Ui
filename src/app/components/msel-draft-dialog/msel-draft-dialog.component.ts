@@ -146,6 +146,14 @@ export class MselDraftDialogComponent {
   }
 
   readonly tlpLevels = ['CLEAR', 'GREEN', 'AMBER', 'AMBER+STRICT', 'RED'];
+  // the 16 critical infrastructure sectors, as CISA names them
+  readonly sectors = [
+    'Chemical', 'Commercial Facilities', 'Communications', 'Critical Manufacturing', 'Dams', 'Defense Industrial Base',
+    'Emergency Services', 'Energy', 'Financial Services', 'Food and Agriculture', 'Government Services and Facilities',
+    'Healthcare and Public Health', 'Information Technology', 'Nuclear Reactors, Materials, and Waste', 'Transportation Systems',
+    'Water and Wastewater Systems',
+  ];
+  readonly sizes = ['Small', 'Medium', 'Large', 'Enterprise'];
 
   // a template that links a scoring model keeps it unless the planner chooses another; its article marking is the starting choice
   templateChanged() {

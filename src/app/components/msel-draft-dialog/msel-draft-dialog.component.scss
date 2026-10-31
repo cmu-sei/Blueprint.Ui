@@ -179,3 +179,19 @@
   font-size: 0.8125rem;
   color: var(--mat-sys-on-surface-variant);
 }
+
+.field-line {
+  margin: 0 0 1rem 0;
+}
+
+// an organization's sector, size, industry and country, in one row under its description
+.facts {
+  display: grid;
+  grid-template-columns: 2fr 1fr 2fr 1.5fr;
+  gap: 0.25rem;
+  margin-top: 0.25rem;
+
+  select.cell-input {
+    appearance: auto;
+  }
+}

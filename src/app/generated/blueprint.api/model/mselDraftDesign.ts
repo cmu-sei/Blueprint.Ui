@@ -50,6 +50,10 @@ export interface MselDraftDesign {
      */
     profilePages?: boolean;
     /**
+     * The CISA critical infrastructure sectors the exercise covers; empty for the draft to choose
+     */
+    sectors?: Array<string> | null;
+    /**
      * How long before STARTEX the doors open: the pre-exercise move, in minutes; 15 when empty
      */
     leadMinutes?: number | null;

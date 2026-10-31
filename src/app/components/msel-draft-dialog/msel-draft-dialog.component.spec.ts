@@ -430,4 +430,43 @@ describe('MselDraftDialogComponent', () => {
 
     expect(designMsel).toHaveBeenCalledWith(expect.objectContaining({ design: expect.objectContaining({ citeAssessment: 'Template' }) }));
   });
+
+  /**
+   * Verifies: the planner's sectors go with the design, the review shows the scenario's sectors, and an organization's sector, size, industry and country can be set.
+   * Interacts with: the Critical infrastructure sectors select, the Design and Teams and organizations tabs, MselBuildService.createMselFromDesign.
+   * Data: Energy and Water chosen; a design whose scenario names Healthcare; NEWS given a sector, size, industry and country.
+   */
+  it('sends the sectors and the organization facts', async () => {
+    const result = designResult();
+    result.draft.scenario.sectors = ['Healthcare and Public Health', 'Energy'];
+    const { designMsel, createMselFromDesign } = await renderDraftDialog(() => of(result));
+    const user = userEvent.setup();
+
+    await user.click(screen.getByText('Design choices (optional)'));
+    await user.click(screen.getByRole('combobox', { name: 'Critical infrastructure sectors' }));
+    await user.click(await screen.findByRole('option', { name: 'Energy' }));
+    await user.click(await screen.findByRole('option', { name: 'Water and Wastewater Systems' }));
+    await user.keyboard('{Escape}');
+    await user.type(screen.getByRole('textbox', { name: 'Exercise description' }), 'A hurricane closes the port.');
+    await user.click(screen.getByRole('button', { name: 'Draft' }));
+    expect(designMsel).toHaveBeenCalledWith(expect.objectContaining({
+      design: expect.objectContaining({ sectors: ['Energy', 'Water and Wastewater Systems'] }),
+    }));
+
+    await user.click(screen.getByRole('tab', { name: 'Design' }));
+    expect(screen.getByText(/Healthcare and Public Health, Energy/)).toBeInTheDocument();
+    await user.click(screen.getByRole('tab', { name: 'Teams and organizations (2)' }));
+    await user.selectOptions(screen.getByRole('combobox', { name: 'NEWS sector' }), 'Communications');
+    await user.selectOptions(screen.getByRole('combobox', { name: 'NEWS size' }), 'Medium');
+    await user.type(screen.getByRole('textbox', { name: 'NEWS industry' }), 'Regional newspaper');
+    await user.type(screen.getByRole('textbox', { name: 'NEWS country' }), 'Island state');
+    expect(screen.queryByRole('combobox', { name: 'BLUE sector' })).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Create MSEL' }));
+
+    expect(createMselFromDesign).toHaveBeenCalledWith(expect.objectContaining({
+      draft: expect.objectContaining({
+        organizations: [expect.objectContaining({ shortName: 'NEWS', sector: 'Communications', size: 'Medium', industry: 'Regional newspaper', country: 'Island state' })],
+      }),
+    }));
+  });
 });

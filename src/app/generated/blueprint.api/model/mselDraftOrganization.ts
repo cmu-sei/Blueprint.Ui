@@ -23,5 +23,18 @@ export interface MselDraftOrganization {
      * One line on who they are; when empty, the description\'s text is used
      */
     summary?: string | null;
+    /**
+     * The CISA critical infrastructure sector the organization belongs to; empty for one outside them, such as a news outlet
+     */
+    sector?: string | null;
+    /**
+     * Small, Medium, Large or Enterprise
+     */
+    size?: string | null;
+    /**
+     * What it does within its sector, e.g. regional acute-care hospital
+     */
+    industry?: string | null;
+    country?: string | null;
 }
 

@@ -30,5 +30,10 @@ export interface MselDraftScenario {
      */
     escalationCeiling?: string | null;
     assumptions?: Array<string> | null;
+    /**
+     * The CISA critical infrastructure sectors the scenario touches, the primary one first
+     */
+    sectors?: Array<string> | null;
+    primarySector?: string | null;
 }
 
