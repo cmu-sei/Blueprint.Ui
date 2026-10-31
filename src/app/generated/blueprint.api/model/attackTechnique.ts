@@ -18,6 +18,10 @@
 export interface AttackTechnique { 
     id?: string;
     attackReleaseId?: string;
+    /**
+     * The release\'s domain (enterprise-attack, ATLAS, d3fend), which says whether the technique is an attack or a defence.
+     */
+    domain?: string | null;
     externalId?: string | null;
     name?: string | null;
     description?: string | null;

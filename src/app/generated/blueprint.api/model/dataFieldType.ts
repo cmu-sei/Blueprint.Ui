@@ -35,7 +35,8 @@ export const DataFieldType = {
     Competency: 'Competency',
     IpAddress: 'IpAddress',
     Network: 'Network',
-    AttackTechnique: 'AttackTechnique'
+    AttackTechnique: 'AttackTechnique',
+    DefensiveTechnique: 'DefensiveTechnique'
 } as const;
 export type DataFieldType = typeof DataFieldType[keyof typeof DataFieldType];
 
