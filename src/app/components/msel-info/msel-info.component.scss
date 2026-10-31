@@ -518,3 +518,13 @@ a {
   font: var(--mat-sys-body-small);
   color: var(--mat-sys-on-surface-variant);
 }
+
+.integration-summary {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 0.875rem;
+  color: var(--mat-sys-on-surface);
+}
+
+.integration-tab-link {
+  margin-left: 8px;
+}

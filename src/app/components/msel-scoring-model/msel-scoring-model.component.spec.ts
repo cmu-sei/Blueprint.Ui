@@ -2,12 +2,12 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { describe, it, expect, vi } from 'vitest';
-import { MatDialog } from '@angular/material/dialog';
+import { HttpErrorResponse } from '@angular/common/http';
 import { MatSelectHarness } from '@angular/material/select/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { ComponentFixture } from '@angular/core/testing';
 import { outputToObservable } from '@angular/core/rxjs-interop';
-import { screen } from '@testing-library/angular';
+import { screen, within } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { of, throwError } from 'rxjs';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
@@ -23,7 +23,6 @@ import { ApiStub } from 'src/app/test-utils/api-stub';
 import { dialogRefStub } from 'src/app/test-utils/dialog-refs';
 import { recordEmissions } from 'src/app/test-utils/record-emissions';
 import { renderComponent } from 'src/app/test-utils/render-component';
-import { MselScoringModelEditDialogComponent } from '../msel-scoring-model-edit-dialog/msel-scoring-model-edit-dialog.component';
 import { MselScoringModelComponent } from './msel-scoring-model.component';
 
 const n = (value: number) => `${value}` as unknown as number;
@@ -43,21 +42,27 @@ const AUTHORED: MselScoringModel = {
 const CREATED: MselScoringModel = { mselId: 'msel-1', description: 'CISA NCISS', categories: [{ id: 'cat-9', displayOrder: n(1), description: 'Functional Impact', moveNumberFirstDisplay: n(0), moveNumberLastDisplay: n(999), options: [] }] };
 const CITE_MODELS: ScoringModel[] = [{ id: 'cite-1', description: 'Project Lagoon Questions by Move' }];
 
-async function renderScoringModel(overrides: { scoringModel?: MselScoringModel | null; canEdit?: boolean; confirmed?: boolean; failing?: boolean } = {}) {
+async function renderScoringModel(
+  overrides: {
+    scoringModel?: MselScoringModel | null;
+    canEdit?: boolean;
+    confirmed?: boolean;
+    failing?: boolean;
+    replace?: () => ReturnType<MselScoringModelService['replaceMselScoringModel']>;
+  } = {},
+) {
   const { scoringModel = null, canEdit = true, confirmed = true, failing = false } = overrides;
   const answer = () => (failing ? throwError(() => new Error('refused')) : of(structuredClone(CREATED)));
   const scoringModelApi = {
     createMselScoringModelFromPreset: vi.fn(answer),
     copyMselScoringModelFromCite: vi.fn(answer),
+    replaceMselScoringModel: vi.fn(overrides.replace ?? ((_id: string, body: MselScoringModel) => of(structuredClone(body)))),
   } satisfies ApiStub<MselScoringModelService>;
-  const saved: MselScoringModel = { ...AUTHORED, description: 'Saved' };
-  const open = vi.fn(() => dialogRefStub<unknown, MselScoringModel>(saved).dialogRef);
   const confirm = vi.fn(() => dialogRefStub<unknown, boolean>(confirmed).dialogRef);
   const errorService = { handleError: vi.fn() };
   const rendered = await renderComponent(MselScoringModelComponent, {
     providers: [
       { provide: MselScoringModelService, useValue: scoringModelApi },
-      { provide: MatDialog, useValue: { open } satisfies Pick<MatDialog, 'open'> },
       { provide: CrucibleDialogService, useValue: { confirm } satisfies Pick<CrucibleDialogService, 'confirm'> },
       { provide: ErrorService, useValue: errorService },
       {
@@ -73,17 +78,23 @@ async function renderScoringModel(overrides: { scoringModel?: MselScoringModel |
         },
       },
     ],
-    inputs: { mselId: 'msel-1', scoringModel, canEdit, citeScoringModels: CITE_MODELS },
+    inputs: { mselId: 'msel-1', scoringModel: scoringModel ? structuredClone(scoringModel) : null, canEdit, citeScoringModels: CITE_MODELS },
   });
+  await rendered.fixture.whenStable();
+  rendered.fixture.detectChanges();
   const changes = recordEmissions(outputToObservable(rendered.fixture.componentInstance.scoringModelChange));
-  return { ...rendered, scoringModelApi, open, confirm, errorService, changes, saved };
+  return { ...rendered, scoringModelApi, confirm, errorService, changes };
 }
 
 async function startFrom(fixture: ComponentFixture<unknown>, text: string) {
-  const select = await TestbedHarnessEnvironment.loader(fixture).getHarness(MatSelectHarness);
+  const select = await TestbedHarnessEnvironment.loader(fixture).getHarness(MatSelectHarness.with({ ancestor: '.start-from' }));
   await select.open();
   return select.clickOptions({ text });
 }
+
+const category = (index: number) => screen.getByRole('group', { name: `Category ${index}` });
+const save = () => screen.getByRole('button', { name: 'Save' });
+const discard = () => screen.getByRole('button', { name: 'Discard' });
 
 describe('MselScoringModelComponent', () => {
   /**
@@ -95,6 +106,7 @@ describe('MselScoringModelComponent', () => {
     const { fixture } = await renderScoringModel();
 
     expect(screen.getByRole('button', { name: 'Create Scoring Model' })).toBeDisabled();
+    expect(screen.queryByLabelText('Scoring Model Description')).not.toBeInTheDocument();
     const select = await TestbedHarnessEnvironment.loader(fixture).getHarness(MatSelectHarness);
     await select.open();
     const options = await select.getOptions();
@@ -108,22 +120,22 @@ describe('MselScoringModelComponent', () => {
   });
 
   /**
-   * Verifies: creating from a preset asks the API for it, reports the model with its numbers as numbers, and opens the editor on it.
-   * Interacts with: MselScoringModelService.createMselScoringModelFromPreset (stub), scoringModelChange, MatDialog.open (stub).
+   * Verifies: creating from a preset asks the API for it, reports the model with its numbers as numbers, and opens it in the editor at once.
+   * Interacts with: MselScoringModelService.createMselScoringModelFromPreset (stub), scoringModelChange, app-msel-scoring-model-editor.
    * Data: no authored model; the CISA NCISS preset, which the API answers with string display orders.
    */
-  it('creates the model from a preset and opens the editor', async () => {
-    const { fixture, scoringModelApi, changes, open } = await renderScoringModel();
+  it('creates the model from a preset and edits it inline', async () => {
+    const { fixture, scoringModelApi, changes } = await renderScoringModel();
 
     await startFrom(fixture, 'CISA NCISS');
     expect(screen.getByText(/eight weighted factors/)).toBeInTheDocument();
     await userEvent.setup().click(screen.getByRole('button', { name: 'Create Scoring Model' }));
+    fixture.detectChanges();
 
     expect(scoringModelApi.createMselScoringModelFromPreset).toHaveBeenCalledWith('msel-1', 'Nciss');
     expect(changes[0].categories[0].moveNumberLastDisplay).toBe(999);
-    expect(open).toHaveBeenCalledWith(MselScoringModelEditDialogComponent, expect.objectContaining({
-      data: expect.objectContaining({ mselId: 'msel-1', canEdit: true }),
-    }));
+    expect(screen.getByLabelText('Scoring Model Description')).toHaveValue('CISA NCISS');
+    expect(save()).toBeDisabled();
   });
 
   /**
@@ -142,31 +154,90 @@ describe('MselScoringModelComponent', () => {
   });
 
   /**
-   * Verifies: the MSEL's model is summarized, with a warning for the categories still without questions.
-   * Interacts with: summary, emptyCategoryWarning.
-   * Data: AUTHORED, two categories of which move 2's has no questions.
+   * Verifies: the MSEL's model is summarized and shown in the editor with this MSEL's moves, with a warning for the categories still without questions.
+   * Interacts with: summary, emptyCategoryWarning, MoveQuery, app-msel-scoring-model-editor.
+   * Data: AUTHORED, two categories of which move 2's has no questions; moves 2 and 1 of this MSEL as the API sends them, and move 7 of another.
    */
-  it('summarizes the model and warns of empty categories', async () => {
-    await renderScoringModel({ scoringModel: AUTHORED });
+  it('summarizes the model, warns of empty categories and edits it with the MSEL moves', async () => {
+    const { fixture } = await renderScoringModel({ scoringModel: AUTHORED });
 
     expect(screen.getByText('Harbor Questions')).toBeInTheDocument();
     expect(screen.getByText('2 categories, 1 option')).toBeInTheDocument();
     expect(screen.getByText('** 1 scoring category has no questions or options yet **')).toBeInTheDocument();
+    expect(screen.getByLabelText('Scoring Model Description')).toHaveValue('Harbor Questions');
+    const select = await TestbedHarnessEnvironment.loader(fixture).getHarness(MatSelectHarness.with({ ancestor: '.preview-move' }));
+    await select.open();
+    expect(await Promise.all((await select.getOptions()).map((o) => o.getText()))).toEqual(['Move 1 - Initial access', 'Move 2 - Recovery']);
   });
 
   /**
-   * Verifies: Edit Scoring Model opens the editor with this MSEL's moves, and reports the model the editor saved.
-   * Interacts with: MatDialog.open (stub, closes with the saved model), MoveQuery, scoringModelChange.
-   * Data: AUTHORED; moves 2 and 1 of this MSEL as the API sends them, and move 7 of another.
+   * Verifies: Save sends the edited model, with a new question and the categories in their new order, through the same endpoint the editor dialog used, and reports what the API stored.
+   * Interacts with: Add Question, Move Category Down, MselScoringModelService.replaceMselScoringModel (stub), scoringModelChange, isDirty.
+   * Data: AUTHORED; a question added to move 2's category, which is then moved first.
    */
-  it('opens the editor with the MSEL moves and takes what it saves', async () => {
-    const { open, changes, saved } = await renderScoringModel({ scoringModel: AUTHORED });
+  it('saves the edited model in the order shown', async () => {
+    const { fixture, scoringModelApi, changes } = await renderScoringModel({ scoringModel: AUTHORED });
+    const user = userEvent.setup();
+    expect(save()).toBeDisabled();
 
-    await userEvent.setup().click(screen.getByRole('button', { name: 'Edit Scoring Model' }));
+    await user.click(within(category(2)).getByRole('button', { name: 'Add Question' }));
+    await user.type(within(category(2)).getByLabelText('Question'), 'What went well?');
+    await user.click(within(category(1)).getByRole('button', { name: 'Move Category Down' }));
+    fixture.detectChanges();
+    expect(screen.getByText('Changes have not been saved!')).toBeInTheDocument();
+    expect(screen.getByText('2 categories, 2 options')).toBeInTheDocument();
+    await user.click(save());
+    fixture.detectChanges();
 
-    const [, config] = open.mock.calls[0] as unknown as [unknown, { data: { moves: { moveNumber: number }[] } }];
-    expect(config.data.moves.map((m) => m.moveNumber).sort()).toEqual([1, 2]);
-    expect(changes).toEqual([saved]);
+    expect(scoringModelApi.replaceMselScoringModel).toHaveBeenCalledTimes(1);
+    const [mselId, sent] = scoringModelApi.replaceMselScoringModel.mock.calls[0];
+    expect(mselId).toBe('msel-1');
+    expect(sent.categories.map((c) => c.description)).toEqual(['Move 2', 'Move 1']);
+    expect(sent.categories[0].options.map((o) => o.description)).toEqual(['What went well?']);
+    expect(changes).toEqual([expect.objectContaining({ description: 'Harbor Questions' })]);
+    expect(screen.queryByText('Changes have not been saved!')).not.toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: Discard puts the saved model back without saving, and nothing is reported.
+   * Interacts with: discard, MselScoringModelService.replaceMselScoringModel (stub), scoringModelChange.
+   * Data: AUTHORED; the description cleared before Discard.
+   */
+  it('discards the edits without saving', async () => {
+    const { fixture, scoringModelApi, changes } = await renderScoringModel({ scoringModel: AUTHORED });
+    const user = userEvent.setup();
+
+    await user.clear(screen.getByLabelText('Scoring Model Description'));
+    fixture.detectChanges();
+    expect(save()).toBeDisabled();
+    await user.click(discard());
+    fixture.detectChanges();
+
+    expect(screen.getByLabelText('Scoring Model Description')).toHaveValue('Harbor Questions');
+    expect(discard()).toBeDisabled();
+    expect(scoringModelApi.replaceMselScoringModel).not.toHaveBeenCalled();
+    expect(changes).toEqual([]);
+  });
+
+  /**
+   * Verifies: a refused save keeps the edits up with the API's reason.
+   * Interacts with: MselScoringModelService.replaceMselScoringModel (stub, 409), the alert.
+   * Data: AUTHORED with its description changed; the API answers that the MSEL is pushed.
+   */
+  it('shows why a save was refused', async () => {
+    const { fixture, changes } = await renderScoringModel({
+      scoringModel: AUTHORED,
+      replace: () => throwError(() => new HttpErrorResponse({ status: 409, error: { title: 'The scoring model cannot be changed while the MSEL is pushed.' } })),
+    });
+    const user = userEvent.setup();
+
+    await user.type(screen.getByLabelText('Scoring Model Description'), ' v2');
+    await user.click(save());
+    fixture.detectChanges();
+
+    expect(screen.getByRole('alert')).toHaveTextContent('The scoring model cannot be changed while the MSEL is pushed.');
+    expect(screen.getByLabelText('Scoring Model Description')).toHaveValue('Harbor Questions v2');
+    expect(changes).toEqual([]);
   });
 
   /**
@@ -185,35 +256,36 @@ describe('MselScoringModelComponent', () => {
       message: 'Replace "Harbor Questions" with DoD CTT Mission Impact Assessment? Its categories and options are discarded.',
     }));
     expect(scoringModelApi.createMselScoringModelFromPreset).not.toHaveBeenCalled();
+    expect(screen.getByLabelText('Scoring Model Description')).toHaveValue('Harbor Questions');
   });
 
   /**
-   * Verifies: a refused create is reported and nothing is opened.
-   * Interacts with: ErrorService.handleError (stub), MatDialog.open (stub).
+   * Verifies: a refused create is reported and nothing is shown or reported.
+   * Interacts with: ErrorService.handleError (stub), scoringModelChange.
    * Data: no authored model; the API refuses the Questions by Move preset.
    */
   it('reports a refused create', async () => {
-    const { fixture, errorService, open, changes } = await renderScoringModel({ failing: true });
+    const { fixture, errorService, changes } = await renderScoringModel({ failing: true });
 
     await startFrom(fixture, 'Questions by Move');
     await userEvent.setup().click(screen.getByRole('button', { name: 'Create Scoring Model' }));
 
     expect(errorService.handleError).toHaveBeenCalled();
-    expect(open).not.toHaveBeenCalled();
+    expect(screen.queryByLabelText('Scoring Model Description')).not.toBeInTheDocument();
     expect(changes).toEqual([]);
   });
 
   /**
-   * Verifies: someone who may not edit can view the model but not create or replace one.
-   * Interacts with: canEdit.
-   * Data: AUTHORED, then no model; canEdit false.
+   * Verifies: someone who may not edit sees the model read-only, with no Save, Discard, Create or Replace.
+   * Interacts with: canEdit, app-msel-scoring-model-editor canEdit.
+   * Data: AUTHORED; canEdit false.
    */
   it('lets someone who may not edit only view the model', async () => {
-    const { open } = await renderScoringModel({ scoringModel: AUTHORED, canEdit: false });
+    await renderScoringModel({ scoringModel: AUTHORED, canEdit: false });
 
-    expect(screen.queryByRole('button', { name: /Replace Scoring Model|Create Scoring Model/ })).not.toBeInTheDocument();
-    await userEvent.setup().click(screen.getByRole('button', { name: 'View Scoring Model' }));
-    expect(open).toHaveBeenCalledWith(MselScoringModelEditDialogComponent, expect.objectContaining({ data: expect.objectContaining({ canEdit: false }) }));
+    expect(screen.queryByRole('button', { name: /Replace Scoring Model|Create Scoring Model|Save|Discard/ })).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Scoring Model Description')).toBeDisabled();
+    expect(screen.queryByRole('button', { name: 'Add Category' })).not.toBeInTheDocument();
   });
 
   it('says so when there is no model and it may not be edited', async () => {

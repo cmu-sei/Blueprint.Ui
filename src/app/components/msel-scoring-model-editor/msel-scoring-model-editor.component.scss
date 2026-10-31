@@ -2,16 +2,15 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-.scoring-model-dialog {
+.scoring-model-editor {
   display: grid;
   grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
   gap: 24px;
-  max-height: 70vh;
+  align-items: start;
 }
 
 .editor,
 .preview {
-  overflow-y: auto;
   padding-right: 8px;
 }
 
@@ -101,6 +100,8 @@
 .preview {
   border-left: 1px solid var(--mat-sys-outline-variant);
   padding-left: 16px;
+  position: sticky;
+  top: 0;
 }
 
 .preview-move {

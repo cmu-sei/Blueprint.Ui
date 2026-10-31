@@ -108,7 +108,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
   <mat-drawer-content class="content-frame">
     <div class="main-content">
       @if (selectedTab === 'Info') {
-      <app-msel-info [loggedInUserId]="loggedInUserId()" (deleteThisMsel)="deleteMsel($event)" />
+      <app-msel-info [loggedInUserId]="loggedInUserId()" (deleteThisMsel)="deleteMsel($event)"
+        (openTab)="tabChange($event)" />
       }
       @if (selectedTab === 'Contributors') {
       <app-msel-contributors [loggedInUserId]="loggedInUserId()" />
@@ -135,6 +136,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
       }
       @if (selectedTab === 'Actions') {
       <app-cite-action-list [loggedInUserId]="loggedInUserId()" [canEdit]="canEditMsel()" />
+      }
+      @if (selectedTab === 'Scoring Model') {
+      <app-msel-scoring-model-tab [loggedInUserId]="loggedInUserId()" />
       }
       @if (selectedTab === 'Duties') {
       <app-cite-duty-list [loggedInUserId]="loggedInUserId()" [canEdit]="canEditMsel()" />

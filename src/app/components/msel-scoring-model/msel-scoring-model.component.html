@@ -4,24 +4,10 @@ Released under a MIT (SEI)-style license. See LICENSE.md in the
 project root for license information.
 -->
 <div class="authored">
-  @if (scoringModel(); as model) {
-  <div class="authored-summary">
-    <span class="authored-name">{{ model.description }}</span>
-    <span class="authored-counts">{{ summary() }}</span>
-    <button mat-stroked-button (click)="openEditor()">
-      {{ canEdit() ? 'Edit Scoring Model' : 'View Scoring Model' }}
-    </button>
-  </div>
-  @if (emptyCategoryWarning()) {
-  <div class="authored-warning">{{ emptyCategoryWarning() }}</div>
-  }
-  } @else if (!canEdit()) {
-  <span class="authored-none">No scoring model has been authored for this MSEL.</span>
-  }
   @if (canEdit()) {
   <div class="authored-start">
     <mat-form-field class="start-from">
-      <mat-label>{{ scoringModel() ? 'Replace With' : 'Start From' }}</mat-label>
+      <mat-label>{{ saved ? 'Replace With' : 'Start From' }}</mat-label>
       <mat-select [(ngModel)]="startFrom">
         @for (preset of presets; track preset.preset) {
         <mat-option [value]="'preset:' + preset.preset">{{ preset.label }}</mat-option>
@@ -39,8 +25,32 @@ project root for license information.
       }
     </mat-form-field>
     <button mat-stroked-button [disabled]="!startFrom || isBusy" (click)="create()">
-      {{ scoringModel() ? 'Replace Scoring Model' : 'Create Scoring Model' }}
+      {{ saved ? 'Replace Scoring Model' : 'Create Scoring Model' }}
     </button>
   </div>
+  }
+  @if (working; as model) {
+  <div class="authored-summary">
+    <span class="authored-name">{{ saved.description }}</span>
+    <span class="authored-counts">{{ summary() }}</span>
+    @if (canEdit()) {
+    <span class="authored-actions">
+      <button mat-flat-button [disabled]="!isDirty() || !isValid() || isSaving" (click)="save()">Save</button>
+      <button mat-stroked-button [disabled]="!isDirty() || isSaving" (click)="discard()">Discard</button>
+      @if (isDirty()) {
+      <span class="authored-unsaved">Changes have not been saved!</span>
+      }
+    </span>
+    }
+  </div>
+  @if (emptyCategoryWarning()) {
+  <div class="authored-warning">{{ emptyCategoryWarning() }}</div>
+  }
+  @if (errorMessage) {
+  <div class="authored-error" role="alert">{{ errorMessage }}</div>
+  }
+  <app-msel-scoring-model-editor [model]="model" [moves]="mselMoves()" [canEdit]="canEdit()" />
+  } @else if (!canEdit()) {
+  <span class="authored-none">No scoring model has been authored for this MSEL.</span>
   }
 </div>

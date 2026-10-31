@@ -27,7 +27,7 @@ import {
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
-import { canUpdateMsel } from 'src/app/utilities/msel-permissions';
+import { canUpdateMsel, integrationsLocked, isPipelineStatus } from 'src/app/utilities/msel-permissions';
 import { MselImageDataService } from 'src/app/data/msel/msel-image-data.service';
 import { ErrorService } from 'src/app/services/error/error.service';
 import { SystemMessageService } from 'src/app/services/system-message/system-message.service';
@@ -75,15 +75,13 @@ import { AngularEditorModule } from '@kolkov/angular-editor';
 import { CardEditDialogComponent } from '../card-edit-dialog/card-edit-dialog.component';
 import { DatePipe } from '@angular/common';
 import { TimezoneAbbrPipe } from '../../utilities/timezone-abbr';
-import { MatRadioButton, MatRadioGroup } from '@angular/material/radio';
-import { normalizeScoringModel } from 'src/app/utilities/scoring-model';
-import { MselScoringModelComponent } from '../msel-scoring-model/msel-scoring-model.component';
+import { normalizeScoringModel, scoringModelCounts } from 'src/app/utilities/scoring-model';
 
 @Component({
     selector: 'app-msel-info',
     templateUrl: './msel-info.component.html',
     styleUrls: ['./msel-info.component.scss'],
-    imports: [IntegrationStatusComponent, MatTabGroup, MatTab, MatIconButton, MatIcon, MatLabel, MatMenuTrigger, MatMenu, MatMenuItem, MatFormField, MatInput, CdkTextareaAutosize, FormsModule, MatError, MatHint, MatCheckbox, NgxMatDatepickerInput, MatDatepickerToggle, MatSuffix, NgxMatDatetimepicker, NgxMatDatepickerActions, MatButton, NgxMatDatepickerApply, NgxMatDatepickerCancel, DurationEditComponent, MatSelect, MatOption, ClipboardModule, MatExpansionPanel, MatExpansionPanelHeader, MatExpansionPanelTitle, MatTooltip, AngularEditorModule, MatTabLabel, CardEditDialogComponent, DatePipe, TimezoneAbbrPipe, MatRadioGroup, MatRadioButton, MselScoringModelComponent]
+    imports: [IntegrationStatusComponent, MatTabGroup, MatTab, MatIconButton, MatIcon, MatLabel, MatMenuTrigger, MatMenu, MatMenuItem, MatFormField, MatInput, CdkTextareaAutosize, FormsModule, MatError, MatHint, MatCheckbox, NgxMatDatepickerInput, MatDatepickerToggle, MatSuffix, NgxMatDatetimepicker, NgxMatDatepickerActions, MatButton, NgxMatDatepickerApply, NgxMatDatepickerCancel, DurationEditComponent, MatSelect, MatOption, ClipboardModule, MatExpansionPanel, MatExpansionPanelHeader, MatExpansionPanelTitle, MatTooltip, AngularEditorModule, MatTabLabel, CardEditDialogComponent, DatePipe, TimezoneAbbrPipe]
 })
 export class MselInfoComponent implements OnDestroy, OnInit {
   dialogService = inject(CrucibleDialogService);
@@ -116,6 +114,8 @@ export class MselInfoComponent implements OnDestroy, OnInit {
 
   readonly loggedInUserId = input<string>(undefined);
   readonly deleteThisMsel = output<string>();
+  /** Asks the MSEL page to open another rail tab, by name. */
+  readonly openTab = output<string>();
   msel = new MselPlus();
   originalMsel = new MselPlus();
   expandedScenarioEventIds: string[] = [];
@@ -123,7 +123,6 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   private unsubscribe$ = new Subject();
   // context menu
   readonly contextMenu = viewChild(MatMenuTrigger);
-  readonly scoringModelSourceGroup = viewChild(MatRadioGroup);
   contextMenuPosition = { x: '0px', y: '0px' };
   isChanged = false;
   // The card image is saved on its own, as soon as it is chosen, not with Save.
@@ -145,9 +144,9 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   private competencyTypeCache = new Map<string, string>();
   creatorName = 'unknown';
   scoringModelList: ScoringModel[] = [];
-  // A MSEL either links a CITE scoring model or authors its own in Blueprint, which is saved as soon as it changes.
+  // A MSEL either links a CITE scoring model or authors its own in Blueprint, on the Scoring Model tab. The push
+  // needs one or the other, and the Config tab summarizes what it has.
   authoredScoringModel: MselScoringModel | null = null;
-  citeScoringModelSource: 'link' | 'author' = 'link';
   casterDirectoryList: CasterDirectory[] = [];
   casterDirectoryError = '';
   private casterDirectoriesRequested = false;
@@ -159,11 +158,6 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     MselItemStatus.Approved,
     MselItemStatus.Complete,
     MselItemStatus.Archived,
-  ];
-  private pipelineStatuses: MselItemStatus[] = [
-    MselItemStatus.Pushing,
-    MselItemStatus.Pulling,
-    MselItemStatus.Deployed,
   ];
   educationalLevels: string[] = ['Beginner', 'Intermediate', 'Advanced'];
   educationalUses: string[] = ['Assessment', 'Instruction', 'Professional Support'];
@@ -512,14 +506,11 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   }
 
   isPipelineStatus(): boolean {
-    return this.pipelineStatuses.includes(this.msel?.status);
+    return isPipelineStatus(this.msel);
   }
 
-  // the integrations were built from these settings, so they stay as they are until Remove Integrations
   integrationsLocked(): boolean {
-    const msel = this.msel;
-    return this.isPipelineStatus() || !!(msel?.playerViewId || msel?.galleryCollectionId || msel?.galleryExhibitId ||
-      msel?.citeEvaluationId || msel?.steamfitterScenarioId || msel?.casterWorkspaceId);
+    return integrationsLocked(this.msel);
   }
 
   // the current status is listed even when it is one the user cannot choose, so the field still shows it
@@ -958,7 +949,6 @@ export class MselInfoComponent implements OnDestroy, OnInit {
 
   loadAuthoredScoringModel(mselId: string) {
     this.authoredScoringModel = null;
-    this.citeScoringModelSource = 'link';
     this.mselScoringModelService
       .getMselScoringModel(mselId)
       .pipe(takeUntil(this.unsubscribe$))
@@ -969,7 +959,6 @@ export class MselInfoComponent implements OnDestroy, OnInit {
             return;
           }
           this.authoredScoringModel = model ? normalizeScoringModel(model) : null;
-          this.citeScoringModelSource = model ? 'author' : 'link';
         },
         error: (error) => console.error('Failed to load the MSEL scoring model:', error),
       });
@@ -980,45 +969,16 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     return !!this.msel.citeScoringModelId || !!this.authoredScoringModel;
   }
 
-  onScoringModelSourceChange(source: 'link' | 'author') {
-    if (source !== 'link' || !this.authoredScoringModel) {
-      this.citeScoringModelSource = source;
-      return;
-    }
-    // linking a CITE model replaces the one authored here, which is deleted
+  // "Harbor Questions (2 categories, 5 options)", the linked CITE model's name, or "not set"
+  scoringModelSummary(): string {
     const authored = this.authoredScoringModel;
-    this.dialogService
-      .confirm({
-        title: 'Link a CITE Scoring Model',
-        message: `Linking a CITE scoring model deletes "${authored.description}", the scoring model authored in Blueprint. Delete it?`,
-        confirmText: 'Delete',
-        cancelText: 'Cancel',
-      })
-      .afterClosed()
-      .subscribe((confirmed) => {
-        if (!confirmed) {
-          this.keepAuthoredSource();
-          return;
-        }
-        this.mselScoringModelService.deleteMselScoringModel(this.msel.id).subscribe({
-          next: () => {
-            this.authoredScoringModel = null;
-            this.citeScoringModelSource = 'link';
-          },
-          error: (err) => {
-            this.keepAuthoredSource();
-            this.errorService.handleError(err);
-          },
-        });
-      });
-  }
-
-  // the radio group moved to the link when it was clicked; the source it is bound to never did
-  private keepAuthoredSource() {
-    const group = this.scoringModelSourceGroup();
-    if (group) {
-      group.value = 'author';
+    if (authored) {
+      return `${authored.description} (${scoringModelCounts(authored)})`;
     }
+    if (this.msel.citeScoringModelId) {
+      return this.citeScoringModelName || this.msel.citeScoringModelId;
+    }
+    return 'not set';
   }
 
   updateCiteScoringModelName() {
