@@ -115,8 +115,8 @@ export class MselComponent implements OnDestroy {
     'Moves',
     'Player Apps',
     'Gallery Cards',
-    'CITE Actions',
-    'CITE Duties',
+    'Actions',
+    'Duties',
     'Scenario Events',
     'Exercise View',
     'Assessor View',
@@ -132,8 +132,8 @@ export class MselComponent implements OnDestroy {
     ['Moves', 'mdi-gamepad'],
     ['Player Apps', 'mdi-apps'],
     ['Gallery Cards', 'mdi-view-grid-outline'],
-    ['CITE Actions', 'mdi-clipboard-check-outline'],
-    ['CITE Duties', 'mdi-clipboard-account-outline'],
+    ['Actions', 'mdi-clipboard-check-outline'],
+    ['Duties', 'mdi-clipboard-account-outline'],
     ['Competencies', 'mdi-certificate-outline'],
     ['Scenario Events', 'mdi-chart-timeline'],
     ['Exercise View', 'mdi-eye-outline'],
@@ -302,8 +302,8 @@ export class MselComponent implements OnDestroy {
             tabList.push(tab);
           }
           break;
-        case 'CITE Actions':
-        case 'CITE Duties':
+        case 'Actions':
+        case 'Duties':
           if (this.msel?.useCite) {
             tabList.push(tab);
           }
