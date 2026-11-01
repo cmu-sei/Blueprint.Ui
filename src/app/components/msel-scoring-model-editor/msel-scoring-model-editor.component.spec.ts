@@ -99,6 +99,18 @@ describe('MselScoringModelEditorComponent', () => {
   });
 
   /**
+   * Verifies: the editor column and the What a Team Sees preview are each a scrolling region, so one scrolls without the other.
+   * Interacts with: the .editor and .preview panes' classes; the layout itself is checked by eye in the app.
+   * Data: QUESTIONS.
+   */
+  it('scrolls the editor and the preview independently', async () => {
+    const { fixture } = await renderEditor();
+
+    expect(fixture.nativeElement.querySelector('.editor')).toHaveClass('scrolling-region');
+    expect(preview()).toHaveClass('scrolling-region');
+  });
+
+  /**
    * Verifies: a scored category shows its weight, equation and option values, and the preview shows the values unless they are hidden.
    * Interacts with: isQuestionCategory, the preview's value column.
    * Data: IMPACT.

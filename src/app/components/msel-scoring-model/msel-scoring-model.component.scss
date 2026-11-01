@@ -2,9 +2,19 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+// the picker and summary rows keep their height; the editor below them takes the rest
 .authored {
   display: flex;
   flex-direction: column;
+  flex: 1;
+  min-height: 0;
   gap: 4px;
   width: 100%;
 }
