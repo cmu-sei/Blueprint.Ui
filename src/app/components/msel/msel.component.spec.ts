@@ -262,13 +262,13 @@ describe('MselComponent', () => {
     await renderMsel({ msel: { ...MSEL, usePlayer: false, useGallery: false, useCite: false } });
 
     expect(nav().getByText('Moves')).toBeInTheDocument();
-    for (const tab of ['Player Apps', 'Gallery Cards', 'Actions', 'Scoring Model', 'Duties']) {
+    for (const tab of ['Player Apps', 'Gallery Cards', 'Scoring Model', 'Actions', 'Duties']) {
       expect(nav().queryByText(tab)).not.toBeInTheDocument();
     }
   });
 
   /**
-   * Verifies: a MSEL using CITE gets the Actions, Scoring Model and Duties tabs, in that order, and the Scoring Model tab opens its page with the user.
+   * Verifies: a MSEL using CITE gets the Scoring Model, Actions and Duties tabs, in that order, and the Scoring Model tab opens its page with the user.
    * Interacts with: MselComponent.getTabListItems, the side navigation, MselScoringModelTabStub input.
    * Data: MSEL with CITE on.
    */
@@ -276,7 +276,7 @@ describe('MselComponent', () => {
     const { fixture } = await renderMsel();
 
     const tabs = Array.from(document.querySelectorAll('mat-drawer mat-list mat-list-item')).map((item) => item.textContent.trim());
-    expect(tabs.slice(tabs.indexOf('Actions'), tabs.indexOf('Actions') + 3)).toEqual(['Actions', 'Scoring Model', 'Duties']);
+    expect(tabs.slice(tabs.indexOf('Scoring Model'), tabs.indexOf('Scoring Model') + 3)).toEqual(['Scoring Model', 'Actions', 'Duties']);
     await openTab('Scoring Model');
 
     expect(child(fixture, MselScoringModelTabStub)?.loggedInUserId()).toBe('user-me');
