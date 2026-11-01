@@ -2,15 +2,27 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
+// The editor fills the height its owner gives it, as the rail tabs do under their toolbars.
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
 .scoring-model-editor {
   display: grid;
   grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  grid-template-rows: minmax(0, 1fr);
   gap: 24px;
-  align-items: start;
+  flex: 1;
+  min-height: 0;
 }
 
-.editor,
-.preview {
+// each pane scrolls on its own, so the preview stays in reach however long the editor gets
+.scrolling-region {
+  min-height: 0;
+  overflow-y: auto;
   padding-right: 8px;
 }
 
@@ -100,8 +112,6 @@
 .preview {
   border-left: 1px solid var(--mat-sys-outline-variant);
   padding-left: 16px;
-  position: sticky;
-  top: 0;
 }
 
 .preview-move {

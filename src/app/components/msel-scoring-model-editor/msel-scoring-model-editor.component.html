@@ -4,7 +4,7 @@ Released under a MIT (SEI)-style license. See LICENSE.md in the
 project root for license information.
 -->
 <div class="scoring-model-editor">
-  <div class="editor">
+  <div class="editor scrolling-region">
     <!-- Model settings -->
     <section class="settings" aria-label="Scoring model settings">
       <mat-form-field class="full-width">
@@ -180,7 +180,7 @@ project root for license information.
   </div>
 
   <!-- What a team sees -->
-  <aside class="preview" aria-label="Scoresheet preview">
+  <aside class="preview scrolling-region" aria-label="Scoresheet preview">
     <div class="section-header">
       <b>What a Team Sees</b>
       @if (model().displayScoringModelByMoveNumber) {

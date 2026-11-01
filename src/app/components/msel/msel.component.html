@@ -156,11 +156,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
       @if (selectedTab === 'Gallery Cards') {
       <app-card-list [loggedInUserId]="loggedInUserId()" [canEdit]="canEditMsel()" [showTemplates]="false" />
       }
-      @if (selectedTab === 'Actions') {
-      <app-cite-action-list [loggedInUserId]="loggedInUserId()" [canEdit]="canEditMsel()" />
-      }
       @if (selectedTab === 'Scoring Model') {
       <app-msel-scoring-model-tab [loggedInUserId]="loggedInUserId()" />
+      }
+      @if (selectedTab === 'Actions') {
+      <app-cite-action-list [loggedInUserId]="loggedInUserId()" [canEdit]="canEditMsel()" />
       }
       @if (selectedTab === 'Duties') {
       <app-cite-duty-list [loggedInUserId]="loggedInUserId()" [canEdit]="canEditMsel()" />
