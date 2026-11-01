@@ -264,7 +264,7 @@ describe('ScenarioEventEditDialogComponent', () => {
   });
 
   /**
-   * Verifies: Write with AI is offered on the String and Html fields, opens the writer with the inject's unsaved values, and the accepted value lands in the field that had none.
+   * Verifies: Write with AI is offered on the Html field but not the short Title, opens the writer with the inject's unsaved values, and the accepted value lands in the field that had none.
    * Interacts with: DataValueStub canAiWrite and aiWrite, MatDialog.open, the writer's afterClosed result.
    * Data: Title "Phishing wave" (String) and Description (Html, no value yet); the writer returns "<p>Users report a fake payroll email.</p>".
    */
@@ -274,7 +274,7 @@ describe('ScenarioEventEditDialogComponent', () => {
     const { fixture, data } = await renderEventEdit({ isEditor: true }, open, true);
 
     const [title, body] = fixture.debugElement.queryAll(By.directive(DataValueStub)).map((d) => d.componentInstance as DataValueStub);
-    expect(title.canAiWrite()).toBe(true);
+    expect(title.canAiWrite()).toBe(false);
     expect(body.canAiWrite()).toBe(true);
     body.aiWrite.emit();
 
@@ -307,14 +307,17 @@ describe('ScenarioEventEditDialogComponent', () => {
   });
 
   /**
-   * Verifies: Write with AI is not offered on list-backed fields or on Gallery's status, which has fixed values.
+   * Verifies: Write with AI is offered only on prose: HTML columns and Gallery's summary, not short strings, list-backed fields,
+   * Gallery's status or typed fields.
    * Interacts with: canAiWrite.
-   * Data: a String field chosen from a list; a String field mapped to the Gallery Status; a DateTime field.
+   * Data: a Gallery Summary String; a plain String; a String chosen from a list; a String mapped to the Gallery Status; a DateTime field.
    */
-  it('does not offer Write with AI on fields with fixed values', async () => {
+  it('offers Write with AI on prose fields only', async () => {
     const { fixture } = await renderEventEdit({ isEditor: true });
     const dialog = fixture.componentInstance;
 
+    expect(dialog.canAiWrite({ id: 'df-summary', name: 'Summary', dataType: DataFieldType.String, galleryArticleParameter: 'Summary' })).toBe(true);
+    expect(dialog.canAiWrite({ id: 'df-from', name: 'From Org', dataType: DataFieldType.String, galleryArticleParameter: 'FromOrg' })).toBe(false);
     expect(dialog.canAiWrite({ id: 'df-list', name: 'Priority', dataType: DataFieldType.String, isChosenFromList: true })).toBe(false);
     expect(dialog.canAiWrite({ id: 'df-status', name: 'Card Status', dataType: DataFieldType.String, galleryArticleParameter: 'Status' })).toBe(false);
     expect(dialog.canAiWrite({ id: 'df-when', name: 'Simulated Time', dataType: DataFieldType.DateTime })).toBe(false);
