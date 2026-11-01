@@ -134,8 +134,9 @@ export class GalleryWallComponent implements OnDestroy {
     if (count === 0) {
       return '';
     }
-    const noun = count === 1 ? 'article has' : 'articles have';
-    return `${count} of ${this.wall.articleCount} ${noun} fields the Gallery push cannot fill`;
+    const noun = this.wall.articleCount === 1 ? 'article' : 'articles';
+    const verb = count === 1 ? 'has' : 'have';
+    return `${count} of ${this.wall.articleCount} ${noun} ${verb} fields the Gallery push cannot fill`;
   }
 
   selectTeam(teamId: string) {
