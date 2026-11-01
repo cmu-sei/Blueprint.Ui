@@ -18,16 +18,26 @@ project root for license information.
           matTooltip="Formula that computes the overall score from the weighted category scores. Supports {count}, {minPossible}, {maxPossible}, {sum} and {average}, optionally clamped as 'MAX > equation > MIN'." />
       </mat-form-field>
       <div class="checkboxes">
-        <mat-checkbox [(ngModel)]="model().useUserScore" [disabled]="!canEdit()">Use Individual User Scoring</mat-checkbox>
-        <mat-checkbox [(ngModel)]="model().useTeamScore" [disabled]="!canEdit()">Use Team Scoring</mat-checkbox>
-        <mat-checkbox [(ngModel)]="model().useOfficialScore" [disabled]="!canEdit()">Use Official Scoring</mat-checkbox>
-        <mat-checkbox [(ngModel)]="model().useTeamAverageScore" [disabled]="!canEdit()">Use Team Average Scoring</mat-checkbox>
-        <mat-checkbox [(ngModel)]="model().useTypeAverageScore" [disabled]="!canEdit()">Use Type Average Scoring</mat-checkbox>
-        <mat-checkbox [(ngModel)]="model().useSubmit" [disabled]="!canEdit()">Use Submit Button for Submissions</mat-checkbox>
-        <mat-checkbox [(ngModel)]="model().hideScoresOnScoreSheet" [disabled]="!canEdit()">Hide Option Values On Scoresheet</mat-checkbox>
-        <mat-checkbox [(ngModel)]="model().displayCommentTextBoxes" [disabled]="!canEdit()">Display Comments as Textboxes</mat-checkbox>
-        <mat-checkbox [(ngModel)]="model().displayScoringModelByMoveNumber" [disabled]="!canEdit()">Use Different Scoring Categories by Move Number</mat-checkbox>
-        <mat-checkbox [(ngModel)]="model().showPastSituationDescriptions" [disabled]="!canEdit()">Show Past Situation Descriptions on Dashboard</mat-checkbox>
+        <mat-checkbox [(ngModel)]="model().useUserScore" [disabled]="!canEdit()"
+          matTooltip="Each team member fills in their own scoresheet and gets a personal score.">Use Individual User Scoring</mat-checkbox>
+        <mat-checkbox [(ngModel)]="model().useTeamScore" [disabled]="!canEdit()"
+          matTooltip="The team fills in one shared scoresheet and submits a single team score.">Use Team Scoring</mat-checkbox>
+        <mat-checkbox [(ngModel)]="model().useOfficialScore" [disabled]="!canEdit()"
+          matTooltip="Teams or users authorized in CITE fill in an official score, how the incident would really score, that the team scores are compared against.">Use Official Scoring</mat-checkbox>
+        <mat-checkbox [(ngModel)]="model().useTeamAverageScore" [disabled]="!canEdit()"
+          matTooltip="Shows each team the average of its members' individual scores; needs Use Individual User Scoring.">Use Team Average Scoring</mat-checkbox>
+        <mat-checkbox [(ngModel)]="model().useTypeAverageScore" [disabled]="!canEdit()"
+          matTooltip="Shows the average of the team scores across all teams of the same team type; needs Use Team Scoring.">Use Type Average Scoring</mat-checkbox>
+        <mat-checkbox [(ngModel)]="model().useSubmit" [disabled]="!canEdit()"
+          matTooltip="The team clicks Submit to finish its response to each move; without it, selections are saved as they are made.">Use Submit Button for Submissions</mat-checkbox>
+        <mat-checkbox [(ngModel)]="model().hideScoresOnScoreSheet" [disabled]="!canEdit()"
+          matTooltip="Hides each option's point value and the computed score from the team's scoresheet.">Hide Option Values On Scoresheet</mat-checkbox>
+        <mat-checkbox [(ngModel)]="model().displayCommentTextBoxes" [disabled]="!canEdit()"
+          matTooltip="Puts a comment textbox under every option, instead of an Add Comment button that opens one.">Display Comments as Textboxes</mat-checkbox>
+        <mat-checkbox [(ngModel)]="model().displayScoringModelByMoveNumber" [disabled]="!canEdit()"
+          matTooltip="Shows each category only in the moves from its First Move to Display through its Last Move to Display, instead of in every move.">Use Different Scoring Categories by Move Number</mat-checkbox>
+        <mat-checkbox [(ngModel)]="model().showPastSituationDescriptions" [disabled]="!canEdit()"
+          matTooltip="The CITE dashboard lists the situation descriptions of the earlier moves under the current one.">Show Past Situation Descriptions on Dashboard</mat-checkbox>
       </div>
       <mat-form-field class="full-width">
         <mat-label>Right Side Display</mat-label>
@@ -121,7 +131,8 @@ project root for license information.
             <mat-label>Calculation Weight</mat-label>
             <input matInput type="number" [(ngModel)]="category.scoringWeight" [disabled]="!canEdit()" />
           </mat-form-field>
-          <mat-checkbox [(ngModel)]="category.isModifierRequired" [disabled]="!canEdit()">Modifier Selection Required</mat-checkbox>
+          <mat-checkbox [(ngModel)]="category.isModifierRequired" [disabled]="!canEdit()"
+            matTooltip="The team must pick one of this category's modifier options; until it does, {modifier} is 0 in the equation instead of 1.">Modifier Selection Required</mat-checkbox>
         </div>
         }
         <div class="options" [attr.aria-label]="(isQuestionCategory(category) ? 'Questions' : 'Scoring options') + ' of category ' + (i + 1)" role="list">
@@ -137,7 +148,8 @@ project root for license information.
               <mat-label>Value</mat-label>
               <input matInput type="number" [(ngModel)]="option.value" [disabled]="!canEdit()" />
             </mat-form-field>
-            <mat-checkbox [(ngModel)]="option.isModifier" [disabled]="!canEdit()">Is a Modifier</mat-checkbox>
+            <mat-checkbox [(ngModel)]="option.isModifier" [disabled]="!canEdit()"
+              matTooltip="Makes this option the category's {modifier} value instead of a scored option; a team picks at most one modifier, and it does not count toward {sum}, {count}, {min} or {max}.">Is a Modifier</mat-checkbox>
             }
             @if (canEdit()) {
             <button mat-icon-button [title]="isQuestionCategory(category) ? 'Move Question Up' : 'Move Option Up'" [disabled]="firstOption" (click)="moveOption(category, j, -1)">

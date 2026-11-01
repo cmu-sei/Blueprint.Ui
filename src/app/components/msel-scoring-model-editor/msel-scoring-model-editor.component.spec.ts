@@ -35,6 +35,15 @@ const QUESTIONS: MselScoringModel = {
     },
   ],
 };
+// a scored model: one Single category, Fully Capable worth 1 and Degraded worth 5, scores shown
+const IMPACT: MselScoringModel = {
+  description: 'Impact', hideScoresOnScoreSheet: false, displayScoringModelByMoveNumber: false,
+  categories: [{
+    description: 'Mission Capability Impact', displayOrder: 1, moveNumberFirstDisplay: 1, moveNumberLastDisplay: 999,
+    scoringOptionSelection: CiteScoringOptionSelection.Single, calculationEquation: '{max}', scoringWeight: 8,
+    options: [{ description: 'Fully Capable', value: 1 }, { description: 'Degraded', value: 5 }],
+  }],
+};
 const MOVES: ScoringModelMove[] = [{ moveNumber: 1, description: 'Initial access' }, { moveNumber: 2, description: 'Recovery' }];
 
 async function renderEditor(overrides: { model?: MselScoringModel; canEdit?: boolean; moves?: ScoringModelMove[] } = {}) {
@@ -92,19 +101,10 @@ describe('MselScoringModelEditorComponent', () => {
   /**
    * Verifies: a scored category shows its weight, equation and option values, and the preview shows the values unless they are hidden.
    * Interacts with: isQuestionCategory, the preview's value column.
-   * Data: a model with one Single category, Fully Capable worth 1 and Degraded worth 5, scores shown.
+   * Data: IMPACT.
    */
   it('shows a scored category with its weights and values', async () => {
-    await renderEditor({
-      model: {
-        description: 'Impact', hideScoresOnScoreSheet: false, displayScoringModelByMoveNumber: false,
-        categories: [{
-          description: 'Mission Capability Impact', displayOrder: 1, moveNumberFirstDisplay: 1, moveNumberLastDisplay: 999,
-          scoringOptionSelection: CiteScoringOptionSelection.Single, calculationEquation: '{max}', scoringWeight: 8,
-          options: [{ description: 'Fully Capable', value: 1 }, { description: 'Degraded', value: 5 }],
-        }],
-      },
-    });
+    await renderEditor({ model: IMPACT });
 
     expect(within(category(1)).getByLabelText('Calculation Weight')).toHaveValue(8);
     expect(within(category(1)).getAllByLabelText('Scoring Option Description')).toHaveLength(2);
@@ -169,5 +169,40 @@ describe('MselScoringModelEditorComponent', () => {
     expect(screen.queryByRole('button', { name: 'Add Category' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Add Question' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Delete Category' })).not.toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: every model, category and option checkbox explains what it does to the team's scoresheet in CITE.
+   * Interacts with: matTooltip on the mat-checkbox hosts (accessible description, set in a microtask).
+   * Data: IMPACT, whose scored category shows the modifier checkboxes.
+   */
+  it('explains each checkbox in its tooltip', async () => {
+    await renderEditor({ model: IMPACT });
+
+    const host = (name: string) => screen.getByRole('checkbox', { name }).closest('mat-checkbox');
+    expect(host('Use Individual User Scoring')).toHaveAccessibleDescription('Each team member fills in their own scoresheet and gets a personal score.');
+    expect(host('Use Team Scoring')).toHaveAccessibleDescription('The team fills in one shared scoresheet and submits a single team score.');
+    expect(host('Use Official Scoring')).toHaveAccessibleDescription(
+      'Teams or users authorized in CITE fill in an official score, how the incident would really score, that the team scores are compared against.',
+    );
+    expect(host('Use Team Average Scoring')).toHaveAccessibleDescription("Shows each team the average of its members' individual scores; needs Use Individual User Scoring.");
+    expect(host('Use Type Average Scoring')).toHaveAccessibleDescription('Shows the average of the team scores across all teams of the same team type; needs Use Team Scoring.');
+    expect(host('Use Submit Button for Submissions')).toHaveAccessibleDescription(
+      'The team clicks Submit to finish its response to each move; without it, selections are saved as they are made.',
+    );
+    expect(host('Hide Option Values On Scoresheet')).toHaveAccessibleDescription("Hides each option's point value and the computed score from the team's scoresheet.");
+    expect(host('Display Comments as Textboxes')).toHaveAccessibleDescription('Puts a comment textbox under every option, instead of an Add Comment button that opens one.');
+    expect(host('Use Different Scoring Categories by Move Number')).toHaveAccessibleDescription(
+      'Shows each category only in the moves from its First Move to Display through its Last Move to Display, instead of in every move.',
+    );
+    expect(host('Show Past Situation Descriptions on Dashboard')).toHaveAccessibleDescription(
+      'The CITE dashboard lists the situation descriptions of the earlier moves under the current one.',
+    );
+    expect(host('Modifier Selection Required')).toHaveAccessibleDescription(
+      "The team must pick one of this category's modifier options; until it does, {modifier} is 0 in the equation instead of 1.",
+    );
+    expect(screen.getAllByRole('checkbox', { name: 'Is a Modifier' })[0].closest('mat-checkbox')).toHaveAccessibleDescription(
+      "Makes this option the category's {modifier} value instead of a scored option; a team picks at most one modifier, and it does not count toward {sum}, {count}, {min} or {max}.",
+    );
   });
 });

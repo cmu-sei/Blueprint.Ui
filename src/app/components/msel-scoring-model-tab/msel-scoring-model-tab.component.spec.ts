@@ -308,4 +308,20 @@ describe('MselScoringModelTabComponent', () => {
     expect(fixture.debugElement.query(By.css('.link-select'))).toBeNull();
     expect(screen.getByText('Project Lagoon Questions by Move')).toBeInTheDocument();
   });
+
+  /**
+   * Verifies: the two source radios explain where the scoring model lives and when it reaches CITE.
+   * Interacts with: matTooltip on the mat-radio-button hosts (accessible description, set in a microtask).
+   * Data: MSEL role Owner; a pending MSEL with nothing linked or authored.
+   */
+  it('explains the two sources in their tooltips', async () => {
+    await renderTab();
+
+    expect(linkRadio().closest('mat-radio-button')).toHaveAccessibleDescription(
+      'Build the CITE evaluation from a scoring model that already exists in CITE and is maintained there.',
+    );
+    expect(authorRadio().closest('mat-radio-button')).toHaveAccessibleDescription(
+      'Write the scoring model here with the MSEL; Blueprint creates it in CITE when the integrations are pushed.',
+    );
+  });
 });
