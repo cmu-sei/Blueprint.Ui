@@ -9,6 +9,7 @@ import { MatIcon } from '@angular/material/icon';
 import { MatFormField, MatLabel } from '@angular/material/input';
 import { MatRadioButton, MatRadioGroup } from '@angular/material/radio';
 import { MatOption, MatSelect } from '@angular/material/select';
+import { MatTooltip } from '@angular/material/tooltip';
 import { Observable, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
@@ -38,7 +39,7 @@ export type ScoringModelSource = 'link' | 'author';
   selector: 'app-msel-scoring-model-tab',
   templateUrl: './msel-scoring-model-tab.component.html',
   styleUrls: ['./msel-scoring-model-tab.component.scss'],
-  imports: [FormsModule, MatIcon, MatIconButton, MatLabel, MatFormField, MatSelect, MatOption, MatRadioGroup, MatRadioButton, MselScoringModelComponent],
+  imports: [FormsModule, MatIcon, MatIconButton, MatLabel, MatFormField, MatSelect, MatOption, MatRadioGroup, MatRadioButton, MatTooltip, MselScoringModelComponent],
 })
 export class MselScoringModelTabComponent implements OnInit, OnDestroy {
   private mselQuery = inject(MselQuery);
