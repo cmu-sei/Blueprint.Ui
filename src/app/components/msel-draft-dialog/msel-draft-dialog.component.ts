@@ -360,28 +360,19 @@ export class MselDraftDialogComponent {
   }
 
   // creates the MSEL from the design, then writes the rest into it while the planner works on the MSEL page
+  // the MSEL's id is chosen here, so the dialog closes and the MSEL's page opens at once while it is created
   create() {
     this.isCreating = true;
-    this.errorMessage = '';
-    this.buildApi
-      .createMselFromDesign({
-        templateMselId: this.result.templateMselId,
-        prompt: this.prompt,
-        draft: this.result.draft,
-        competencyFrameworkIds: this.competencyFrameworkIds,
-        answers: (this.result.questions ?? []).map((q, i) => ({ question: q.question, answer: this.answers[i] ?? '' })),
-      })
-      .pipe(take(1))
-      .subscribe({
-        next: (created) => {
-          this.buildService.run(created.msel.id);
-          this.dialogRef.close(created.msel.id);
-        },
-        error: (err) => {
-          this.errorMessage = errorMessage(err);
-          this.isCreating = false;
-        },
-      });
+    const mselId = crypto.randomUUID();
+    this.buildService.create({
+      mselId,
+      templateMselId: this.result.templateMselId,
+      prompt: this.prompt,
+      draft: this.result.draft,
+      competencyFrameworkIds: this.competencyFrameworkIds,
+      answers: (this.result.questions ?? []).map((q, i) => ({ question: q.question, answer: this.answers[i] ?? '' })),
+    });
+    this.dialogRef.close(mselId);
   }
 
   close() {

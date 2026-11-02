@@ -60,12 +60,13 @@ function designResult(): MselDraftResult {
 async function renderDraftDialog(
   design: () => Observable<unknown> = () => of(designResult()),
   templates: MselDraftDialogData['templates'] = [{ id: 'tpl-1', name: 'Template' }],
-  create: () => Observable<unknown> = () => of({ msel: { id: 'msel-new' } })
+  create: (request?: unknown) => Observable<unknown> = () => of({ msel: { id: "msel-new" } })
 ) {
   const designMsel = vi.fn(design);
   const createMselFromDesign = vi.fn(create);
   const buildApi = { designMsel, createMselFromDesign } as Partial<ApiStub<MselBuildService>>;
-  const run = vi.fn();
+  // the build service creates the MSEL; here it sends the request on, so the tests see what was asked for
+  const run = vi.fn((request: { mselId?: string }) => createMselFromDesign(request).subscribe());
   const progress = new Subject<AiDraftProgress>();
   const frameworkApi = {
     getCompetencyFrameworks: vi.fn(() => of([{ id: 'fw-nice', name: 'NICE 2.0.0' }, { id: 'fw-dcwf', name: 'DCWF 5.1' }])),
@@ -92,7 +93,7 @@ async function renderDraftDialog(
       { provide: MAT_DIALOG_DATA, useValue: data },
       { provide: MatDialogRef, useValue: ref.dialogRef },
       { provide: MselBuildService, useValue: buildApi },
-      { provide: MselAiBuildService, useValue: { run } },
+      { provide: MselAiBuildService, useValue: { create: run } },
       { provide: SignalRService, useValue: { aiDraftProgress$: progress } },
       { provide: CompetencyFrameworkService, useValue: frameworkApi },
     ],
@@ -136,8 +137,9 @@ describe('MselDraftDialogComponent', () => {
   });
 
   /**
-   * Verifies: Create MSEL sends the reviewed design with the planner's answers, starts writing the rest into the new MSEL, and closes with its id.
-   * Interacts with: the Questions and Design tabs, MselBuildService.createMselFromDesign, MselAiBuildService.run.
+   * Verifies: Create MSEL hands the reviewed design, with the planner's answers and an id chosen here, to the build service and
+   * closes at once with that id, so the MSEL's page opens while it is created.
+   * Interacts with: the Questions and Design tabs, MselAiBuildService.create, MselBuildService.createMselFromDesign.
    * Data: the planner rewrites Q1's answer and renames the exercise; Q2 keeps its suggestion.
    */
   it('creates the MSEL from the reviewed design and starts the build', async () => {
@@ -160,8 +162,9 @@ describe('MselDraftDialogComponent', () => {
         { question: 'Is the press involved?', answer: 'Yes, from move 1' },
       ],
     }));
-    expect(run).toHaveBeenCalledWith('msel-new');
-    expect(close).toHaveBeenCalledWith('msel-new');
+    const mselId = run.mock.calls[0][0].mselId;
+    expect(mselId).toMatch(/^[0-9a-f-]{36}$/);
+    expect(close).toHaveBeenCalledWith(mselId);
   });
 
   /**

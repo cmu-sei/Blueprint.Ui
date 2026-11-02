@@ -5,13 +5,13 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { BehaviorSubject, EMPTY, from, Observable, of, Subject, Subscription } from 'rxjs';
-import { catchError, map, mergeMap, tap, toArray } from 'rxjs/operators';
-import { MselBuildItem, MselBuildService, MselBuildStatus } from 'src/app/generated/blueprint.api';
+import { catchError, map, mergeMap, take, tap, toArray } from 'rxjs/operators';
+import { MselDesignBuild, MselBuildItem, MselBuildService, MselBuildStatus } from 'src/app/generated/blueprint.api';
 import { SignalRService } from 'src/app/services/signalr.service';
 import { prepareImages } from 'src/app/utilities/svg-to-png';
 
 // injects: the model outlines the rows; articles: each row's text, article and profile; finish: pages, Player and CITE
-export type MselAiBuildStep = 'injects' | 'articles' | 'finish' | 'done' | 'stopped' | 'failed';
+export type MselAiBuildStep = 'creating' | 'createFailed' | 'injects' | 'articles' | 'finish' | 'done' | 'stopped' | 'failed';
 
 export interface MselAiBuild {
   mselId: string;
@@ -46,6 +46,10 @@ export class MselAiBuildService {
   private runs = new Map<string, Subscription>();
   // a MSEL's id when its build finishes, so its page reloads what the finish added
   readonly finished$ = new Subject<string>();
+  // a MSEL created from its design: the id its page was opened under, and the id it has (another when that one was taken)
+  readonly created$ = new Subject<{ requestedId: string; mselId: string }>();
+  // the create requests, so one that failed can be tried again from the MSEL's page
+  private creates = new Map<string, MselDesignBuild>();
   // drawn on a canvas in the browser: SVG as PNG, photos at article size; tests give their own
   toPng: (html: string) => Promise<string> = prepareImages;
   // rows, articles and profiles written at once, when the API does not say
@@ -66,6 +70,56 @@ export class MselAiBuildService {
 
   isRunning(mselId: string): boolean {
     return !!this.builds.get(mselId)?.value?.running;
+  }
+
+  // the MSEL is being created, so its page has nothing to load yet
+  isCreating(mselId: string): boolean {
+    const build = this.builds.get(mselId)?.value;
+    return build?.step === 'creating' || build?.step === 'createFailed';
+  }
+
+  /**
+   * Creates the MSEL from its reviewed design under the id the browser chose, so the dialog can close and the MSEL's page
+   * open at once; the build runs as soon as it exists. A create that fails can be tried again from the MSEL's page.
+   */
+  create(request: MselDesignBuild) {
+    const mselId = request.mselId;
+    this.creates.set(mselId, request);
+    const now = Date.now();
+    this.subject(mselId).next({
+      mselId,
+      step: 'creating',
+      running: true,
+      started: now,
+      stepStarted: now,
+      counts: {},
+      written: 0,
+      total: 0,
+      errors: [],
+      warnings: [],
+    });
+    this.runs.set(
+      mselId,
+      this.api
+        .createMselFromDesign(request)
+        .pipe(take(1))
+        .subscribe({
+          next: (created) => {
+            this.creates.delete(mselId);
+            this.patch(mselId, { running: false });
+            this.created$.next({ requestedId: mselId, mselId: created.msel.id });
+            this.run(created.msel.id);
+          },
+          error: (err) => this.patch(mselId, { running: false, step: 'createFailed', errors: [errorMessage(err)] }),
+        })
+    );
+  }
+
+  retryCreate(mselId: string) {
+    const request = this.creates.get(mselId);
+    if (request && !this.isRunning(mselId)) {
+      this.create(request);
+    }
   }
 
   // runs whatever is left of the build; a step the API has saved is never run again

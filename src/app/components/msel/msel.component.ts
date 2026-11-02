@@ -174,9 +174,26 @@ export class MselComponent implements OnDestroy {
           this.selectedMselId = mselId;
           this.contributorUnitIds = undefined;
           // Log xAPI viewed statement
-          this.xApiService.viewedMsel(mselId).subscribe();
-          this.loadMsel(mselId);
+          // a MSEL still being created from its design is loaded once it exists
+          if (!this.mselAiBuildService.isCreating(mselId)) {
+            this.xApiService.viewedMsel(mselId).subscribe();
+            this.loadMsel(mselId);
+          }
         }
+      });
+    this.mselAiBuildService.created$
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(({ requestedId, mselId }) => {
+        if (requestedId !== this.selectedMselId) {
+          return;
+        }
+        // the id the page was opened under was taken, so the MSEL has another
+        if (mselId !== requestedId) {
+          this.router.navigate([], { queryParams: { msel: mselId }, queryParamsHandling: 'merge' });
+          return;
+        }
+        this.xApiService.viewedMsel(mselId).subscribe();
+        this.loadMsel(mselId);
       });
     // a build with AI that finishes adds pages, Player applications and CITE settings, which are loaded again
     this.mselAiBuildService.finished$

@@ -75,6 +75,8 @@ export class MselAiBuildComponent {
 
   get stepLabel(): string {
     switch (this.build()?.step) {
+      case 'creating':
+        return 'Creating the MSEL';
       case 'injects':
         return 'Outlining the injects, CITE tasks and read-in';
       case 'articles':
@@ -123,6 +125,11 @@ export class MselAiBuildComponent {
 
   finishNow() {
     this.buildService.finishNow(this.mselId());
+  }
+
+  // a create that failed, sent again with the same design
+  retryCreate() {
+    this.buildService.retryCreate(this.mselId());
   }
 
   cancel() {

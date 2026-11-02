@@ -1,6 +1,7 @@
 // Copyright 2026 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
+import { HttpErrorResponse } from '@angular/common/http';
 import { describe, it, expect, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { NEVER, Observable, of, Subject, throwError } from 'rxjs';
@@ -137,6 +138,51 @@ describe('MselAiBuildService', () => {
    * Interacts with: MselBuildService.writeMselInjects.
    * Data: the API answers with a title and a stack trace as its detail.
    */
+  /**
+   * Verifies: create sends the design under the id the dialog chose, says so while the MSEL is created, then tells its page the MSEL
+   * exists and runs the build.
+   * Interacts with: MselBuildService.createMselFromDesign, created$, then the same steps as run.
+   * Data: a design for msel-1; the API answers msel-1.
+   */
+  it('creates the MSEL under the chosen id and then builds it', async () => {
+    const created$ = new Subject<{ msel: { id: string } }>();
+    const { service, api, builds, last } = setup({ createMselFromDesign: vi.fn(() => created$) });
+    const created: { requestedId: string; mselId: string }[] = [];
+    service.created$.subscribe((c) => created.push(c));
+
+    service.create({ mselId: 'msel-1', templateMselId: 'tpl-1', draft: { name: 'Deep Bite' } });
+    expect(api.createMselFromDesign).toHaveBeenCalledWith(expect.objectContaining({ mselId: 'msel-1', templateMselId: 'tpl-1' }));
+    expect(last()).toMatchObject({ step: 'creating', running: true });
+    expect(service.isCreating('msel-1')).toBe(true);
+
+    created$.next({ msel: { id: 'msel-1' } });
+    await settle();
+    expect(created).toEqual([{ requestedId: 'msel-1', mselId: 'msel-1' }]);
+    expect(api.writeMselInjects).toHaveBeenCalledWith('msel-1');
+    expect(builds.some((b) => b?.step === 'injects')).toBe(true);
+    expect(service.isCreating('msel-1')).toBe(false);
+  });
+
+  /**
+   * Verifies: a create that fails says why, keeps the design, and can be tried again from the MSEL's page.
+   * Interacts with: MselBuildService.createMselFromDesign (fails, then succeeds), retryCreate.
+   * Data: a 500 then the created MSEL.
+   */
+  it('keeps a failed create to try again', async () => {
+    const answers = [throwError(() => new HttpErrorResponse({ status: 500, error: { title: 'CITE is down' } })), of({ msel: { id: 'msel-1' } })];
+    const { service, api, last } = setup({ createMselFromDesign: vi.fn(() => answers.shift()) });
+
+    service.create({ mselId: 'msel-1', templateMselId: 'tpl-1' });
+    expect(last()).toMatchObject({ step: 'createFailed', running: false });
+    expect(last().errors[0]).toContain('CITE is down');
+    expect(service.isCreating('msel-1')).toBe(true);
+
+    service.retryCreate('msel-1');
+    await settle();
+    expect(api.createMselFromDesign).toHaveBeenCalledTimes(2);
+    expect(api.writeMselInjects).toHaveBeenCalledWith('msel-1');
+  });
+
   it('says why the injects failed', () => {
     const { service, last } = setup({
       writeMselInjects: vi.fn(() => throwError(() => ({ error: { title: 'The draft could not be read.', detail: '   at Blueprint.Api...' } }))),

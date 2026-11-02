@@ -157,13 +157,14 @@ class MselAiBuildStub {
 }
 
 async function renderMsel(
-  overrides: { canEditMsel?: boolean; canAccessAdminSection?: boolean; canEditCheckboxes?: boolean; msel?: Msel; mselUnits?: MselUnit[] } = {},
+  overrides: { canEditMsel?: boolean; canAccessAdminSection?: boolean; canEditCheckboxes?: boolean; msel?: Msel; mselUnits?: MselUnit[]; creating?: boolean } = {},
 ) {
-  const { canEditMsel = false, canAccessAdminSection = false, canEditCheckboxes = false, msel = MSEL, mselUnits = [] } = overrides;
+  const { canEditMsel = false, canAccessAdminSection = false, canEditCheckboxes = false, msel = MSEL, mselUnits = [], creating = false } = overrides;
   const apis = mselLoadApiStubs({ msel, mselUnits });
   const xApi = { viewedMsel: vi.fn(() => of(null)) } satisfies Pick<XApiService, 'viewedMsel'>;
   const { route, setQueryParams } = activatedRouteStub({ msel: 'msel-1' });
   const finished$ = new Subject<string>();
+  const created$ = new Subject<{ requestedId: string; mselId: string }>();
   const rendered = await renderComponent(MselComponent, {
     imports: [MatButtonModule, MatIconModule, MatListModule, MatSidenavModule],
     childStubs: [
@@ -191,11 +192,11 @@ async function renderMsel(
       ...mselLoadApiProviders(apis),
       { provide: XApiService, useValue: xApi },
       { provide: ActivatedRoute, useValue: route },
-      { provide: MselAiBuildService, useValue: { finished$ } },
+      { provide: MselAiBuildService, useValue: { finished$, created$, isCreating: () => creating } },
     ],
     inputs: { canEditMsel, canAccessAdminSection, canEditCheckboxes, loggedInUserId: 'user-me', userTheme$: of(Theme.LIGHT) },
   });
-  return { ...rendered, apis, xApi, setQueryParams, finished$ };
+  return { ...rendered, apis, xApi, setQueryParams, finished$, created$ };
 }
 
 const nav = () => within(document.querySelector('mat-drawer mat-list') as HTMLElement);
@@ -258,6 +259,26 @@ describe('MselComponent', () => {
     finished$.next('msel-1');
     expect(apis.msel.getMsel).toHaveBeenCalledTimes(2);
     expect(apis.scenarioEvent.getScenarioEventsByMsel).toHaveBeenCalledTimes(2);
+  });
+
+  /**
+   * Verifies: a MSEL still being created from its design is not loaded until it exists; then it is, and one created under
+   * another id moves the page there.
+   * Interacts with: MselAiBuildService.isCreating and created$ (stubs), the MSEL endpoints (stubs), the router.
+   * Data: msel-1 being created; created as msel-1; a later create of msel-1 answered as msel-9.
+   */
+  it('waits for a MSEL being created before loading it', async () => {
+    const { apis, created$ } = await renderMsel({ creating: true });
+    expect(apis.msel.getMsel).not.toHaveBeenCalled();
+
+    created$.next({ requestedId: 'msel-2', mselId: 'msel-2' });
+    expect(apis.msel.getMsel).not.toHaveBeenCalled();
+    created$.next({ requestedId: 'msel-1', mselId: 'msel-1' });
+    expect(apis.msel.getMsel).toHaveBeenCalledTimes(1);
+
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    created$.next({ requestedId: 'msel-1', mselId: 'msel-9' });
+    expect(navigate).toHaveBeenCalledWith([], { queryParams: { msel: 'msel-9' }, queryParamsHandling: 'merge' });
   });
 
   /**

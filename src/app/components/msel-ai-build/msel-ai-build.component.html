@@ -14,7 +14,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
   <div class="text">
     @if (build()?.running) {
     <p><strong>{{ stepLabel }}.</strong> {{ stepDetail }} <span class="elapsed" title="Time drafting">{{ elapsed() }}</span></p>
+    @if (build()?.step === 'creating') {
+    <p class="hint">From the design you reviewed. The injects are written as soon as it exists.</p>
+    } @else {
     <p class="hint">Saved as it is written. You can keep working, or leave and continue later.</p>
+    }
+    } @else if (build()?.step === 'createFailed') {
+    <p><strong>The MSEL could not be created.</strong> Your design is kept: try again, or go back to My MSELs and draft again.</p>
     } @else if (build()?.step === 'done') {
     <p><strong>Drafted with AI.</strong> Review it before you push it to the integrations.</p>
     } @else {
@@ -35,8 +41,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
     }
   </div>
   <div class="actions">
-    @if (build()?.running) {
+    @if (build()?.running && build()?.step !== 'creating') {
     <button matButton="outlined" type="button" (click)="cancel()">Cancel</button>
+    } @else if (build()?.step === 'createFailed') {
+    <button matButton="filled" type="button" (click)="retryCreate()">Try again</button>
+    } @else if (build()?.running) {
     } @else if (build()?.step === 'done') {
     <button mat-icon-button type="button" title="Close" aria-label="Close" (click)="dismiss()">
       <mat-icon fontIcon="mdi-close" />
