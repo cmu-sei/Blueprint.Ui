@@ -656,6 +656,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <button mat-icon-button (click)="requestPageEdit(page.id)" style="outline: none;" title="Edit Page">
             <mat-icon class="mdi-24px self-center" fontIcon="mdi-square-edit-outline" />
           </button>
+          <!-- the writer edits the page: it opens the page for editing, and what is used is saved with Save Changes -->
+          <button mat-icon-button type="button" (click)="requestPageEdit(page.id); writePageWithAi()" style="outline: none;"
+            [title]="'Write ' + page.name + ' with AI'" [attr.aria-label]="'Write ' + page.name + ' with AI'">
+            <mat-icon class="mdi-24px self-center" fontIcon="mdi-creation" />
+          </button>
           }
           <button mat-icon-button (click)="deletePage(page); $event.stopPropagation()" style="outline: none;"
             title="Delete {{ page.name }}">

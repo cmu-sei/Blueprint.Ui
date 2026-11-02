@@ -403,6 +403,27 @@ describe('MselInfoComponent', () => {
   });
 
   /**
+   * Verifies: Write with AI shows beside Edit Page too: it opens the page for editing and the writer at once, so the page can be
+   * written without finding the editor first.
+   * Interacts with: the harness's empty MatDialog given an open stub.
+   * Data: page Read Ahead, not being edited.
+   */
+  it('writes a page with AI from its tab', async () => {
+    const { fixture } = await renderInfo({ myRoles: [MselRole.Owner] });
+    const info = fixture.componentInstance as unknown as { dialog: Pick<MatDialog, 'open'>; changedMselPage: MselPage; editingPageId: string };
+    const open = vi.fn(() => ({ afterClosed: () => of('<p>Rewritten</p>') }) as unknown as ReturnType<MatDialog['open']>);
+    info.dialog.open = open;
+    const user = await openPage();
+
+    await user.click(screen.getByRole('button', { name: 'Write Read Ahead with AI' }));
+
+    expect(info.editingPageId).toBe('page-1');
+    expect(open).toHaveBeenCalledWith(MselPageDraftDialogComponent, expect.objectContaining({ data: expect.objectContaining({ pageId: 'page-1', content: '<p>Welcome</p>' }) }));
+    expect(info.changedMselPage.content).toBe('<p>Rewritten</p>');
+    expect(screen.getByTitle('Save Changes')).toBeInTheDocument();
+  });
+
+  /**
    * Verifies: without ManageMsels and not the owner there is no Delete, Add Page, Edit Page or header metadata, and Push Integrations is disabled, even with EditMsels as an Editor.
    * Interacts with: real PermissionDataService (stubbed grants), MselInfoComponent.canManageMsel.
    * Data: every permission but ManageMsels (near miss: EditMsels); MSEL roles Editor and Approver.
