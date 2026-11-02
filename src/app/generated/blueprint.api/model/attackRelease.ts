@@ -28,5 +28,9 @@ export interface AttackRelease {
     releaseDate?: Date | null;
     tacticCount?: number;
     techniqueCount?: number;
+    /**
+     * The D3FEND \"countered by\" mappings imported onto the release; 0 for every other domain.
+     */
+    countermeasureCount?: number;
 }
 
