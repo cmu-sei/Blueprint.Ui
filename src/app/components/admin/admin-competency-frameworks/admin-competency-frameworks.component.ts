@@ -1,7 +1,7 @@
 // Copyright 2026 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, ElementRef, Input, OnDestroy, AfterViewInit, inject, input, viewChild } from '@angular/core';
+import { Component, Input, OnDestroy, AfterViewInit, inject, input, viewChild } from '@angular/core';
 import { UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatTableDataSource, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatRowDef, MatRow, MatHeaderRowDef, MatHeaderRow } from '@angular/material/table';
 import { animate, state, style, transition, trigger } from '@angular/animations';
@@ -19,6 +19,7 @@ import { CompetencyFrameworkDataService } from 'src/app/data/competency-framewor
 import { CompetencyFrameworkQuery } from 'src/app/data/competency-framework/competency-framework.query';
 import { MatDialog } from '@angular/material/dialog';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
+import { ItemDownloadDialogComponent } from '../../item-download-dialog/item-download-dialog.component';
 import { AdminCompetencyFrameworkEditDialogComponent } from '../admin-competency-framework-edit-dialog/admin-competency-framework-edit-dialog.component';
 import { AdminCompetencyFrameworkImportDialogComponent, ImportResult } from '../admin-competency-framework-import-dialog/admin-competency-framework-import-dialog.component';
 import { AdminCompetencyEditDialogComponent } from '../admin-competency-edit-dialog/admin-competency-edit-dialog.component';
@@ -118,13 +119,11 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
   relatedTypes: string[] = [];
   readonly availablePaginator = viewChild<MatPaginator>('availablePaginator');
   readonly relatedPaginator = viewChild<MatPaginator>('relatedPaginator');
-  readonly jsonInput = viewChild<ElementRef<HTMLInputElement>>('jsonInput');
   private expandedComp: Competency = null;
   private currentRelatedIdNumbers: string[] = [];
   private relatedFilterSub: Subscription;
   private relatedSideFilterSub: Subscription;
 
-  importing = false;
   importError = '';
 
   constructor() {
@@ -227,6 +226,24 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
     return `In use by ${mselCount} MSEL(s): ${mselList}${more}`;
   }
 
+  /** A framework file holds one framework, which is all an import reads, so each one chosen is its own file. */
+  openDownloadDialog(): void {
+    const frameworks = this.competencyFrameworkDataSource.data;
+    const dialogRef = this.dialog.open(ItemDownloadDialogComponent, {
+      maxWidth: '90vw',
+      width: 'auto',
+      data: {
+        title: 'Select Competency Frameworks to download',
+        items: frameworks.map((f) => ({ id: f.id, label: f.version ? `${f.name} (${f.version})` : f.name || f.id })),
+      },
+    });
+    dialogRef.afterClosed().subscribe((selectedIds: string[] | undefined) => {
+      frameworks
+        .filter((f) => selectedIds?.includes(f.id))
+        .forEach((f) => this.downloadFramework(f));
+    });
+  }
+
   downloadFramework(competencyFramework: CompetencyFramework): void {
     this.competencyFrameworkService.getCompetencyFramework(competencyFramework.id)
       .pipe(take(1))
@@ -260,30 +277,6 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
           this.expandedElementId = '';
         }
       });
-  }
-
-  selectJsonFile(e: Event): void {
-    const input = e.target as HTMLInputElement;
-    const file = input.files && input.files[0];
-    if (!file) {
-      return;
-    }
-    this.importing = true;
-    this.importError = '';
-    // No importId: this path shows only a spinner, so there is no progress to poll.
-    this.competencyFrameworkService.importCompetencyFrameworkJson(undefined, file)
-      .pipe(take(1))
-      .subscribe({
-        next: (created) => {
-          this.competencyFrameworkDataService.updateStore(created);
-          this.importing = false;
-        },
-        error: (err) => {
-          this.importing = false;
-          this.importError = 'Import failed: ' + (err.error?.title || err.message || 'Unknown error');
-        },
-      });
-    this.jsonInput().nativeElement.value = null;
   }
 
   importFramework(): void {

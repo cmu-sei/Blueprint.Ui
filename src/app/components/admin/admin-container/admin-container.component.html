@@ -56,6 +56,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-clipboard-account-outline" />
       </mat-list-item>
       }
+      @if (canViewPlayerApplications) {
+      <mat-list-item [ngClass]="getSelectedClass(playerApplicationTemplatesText)" (click)="gotoSection(playerApplicationTemplatesText)" [title]="playerApplicationTemplatesText">
+        <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-application" />
+      </mat-list-item>
+      }
       @if (canViewCompetencyFrameworks) {
       <mat-list-item [ngClass]="getSelectedClass(competencyFrameworksText)" (click)="gotoSection(competencyFrameworksText)" [title]="competencyFrameworksText">
         <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-certificate-outline" />
@@ -193,6 +198,17 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </button>
         </mat-list-item>
         }
+        <!-- Player Application Templates -->
+        @if (canViewPlayerApplications) {
+        <mat-list-item [ngClass]="getSelectedClass(playerApplicationTemplatesText)" id="wrapper showhand"
+          (click)="gotoSection(playerApplicationTemplatesText)">
+          <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-application" />
+          {{ playerApplicationTemplatesText }}
+          <button aria-labelledby="playerApplicationTemplatesText" mat-icon-button class="pull-right">
+            <mat-icon fontIcon="mdi-chevron-right" />
+          </button>
+        </mat-list-item>
+        }
         @if (canViewCompetencyFrameworks) {
         <!-- Competency Frameworks -->
         <mat-list-item [ngClass]="getSelectedClass(competencyFrameworksText)" id="wrapper showhand"
@@ -323,6 +339,10 @@ project root for license information or contact permission@sei.cmu.edu for full 
     }
     @if (canViewCiteDuties && (selectedTab === citeDutiesText)) {
     <app-cite-duty-list [loggedInUserId]="loggedInUserId" [canEdit]="canManageCiteDuties"
+      [showTemplates]="true" />
+    }
+    @if (canViewPlayerApplications && (selectedTab === playerApplicationTemplatesText)) {
+    <app-player-application-list [loggedInUserId]="loggedInUserId" [canEdit]="canManagePlayerApplications"
       [showTemplates]="true" />
     }
   </mat-sidenav-content>
