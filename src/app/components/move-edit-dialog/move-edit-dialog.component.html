@@ -59,6 +59,12 @@ project root for license information.
       <div>
         <p style="font-size: 13px; font-weight: 400; line-height: 1.125; letter-spacing: normal;">
           Situation Description
+          @if (data.mselId) {
+          <button mat-icon-button type="button" (click)="writeSituationWithAi()" title="Write the situation briefing with AI"
+            aria-label="Write the situation briefing with AI">
+            <mat-icon class="mdi-24px" fontIcon="mdi-creation"></mat-icon>
+          </button>
+          }
         </p>
         <div>
           <angular-editor [placeholder]="'Description'" [(ngModel)]="data.move.situationDescription"

@@ -4,13 +4,13 @@ Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
 
-<crucible-dialog [dialogTitle]="'Write ' + (data.name || 'the page') + ' with AI'" [hideDefaultActions]="true">
+<crucible-dialog [dialogTitle]="data.title || 'Write ' + (data.name || 'the page') + ' with AI'" [hideDefaultActions]="true">
 
 <div crucibleDialogContent>
   @if (!result) {
   <p class="hint">
-    Writes from the MSEL's scenario, moves, teams, organizations and other pages{{ hasContent ? ', changing what you ask and keeping the rest' : '' }}.
-    Nothing changes until you select Use this, and the page is saved only when you save it.
+    {{ data.about || "Writes from the MSEL's scenario, moves, teams, organizations and other pages" }}{{ hasContent ? ', changing what you ask and keeping the rest' : '' }}.
+    Nothing changes until you select Use this, and it is saved only when you save it.
   </p>
   <mat-form-field class="full-width">
     <mat-label>{{ hasContent ? 'What should change?' : 'Instructions (optional)' }}</mat-label>

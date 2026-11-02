@@ -7,6 +7,9 @@ import { By } from '@angular/platform-browser';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { TestBed } from '@angular/core/testing';
+import { MselDataService } from 'src/app/data/msel/msel-data.service';
+import { of } from 'rxjs';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -50,8 +53,8 @@ const MOVE: Move = {
   situationDescription: '<p>Phishing</p>',
 };
 
-async function renderMoveEdit(move: Move = MOVE) {
-  const data = { move: structuredClone(move), mselStartTime: START, title: 'Edit Move' };
+async function renderMoveEdit(move: Move = MOVE, mselId?: string) {
+  const data = { move: structuredClone(move), mselStartTime: START, title: 'Edit Move', mselId };
   const rendered = await renderComponent(MoveEditDialogComponent, {
     imports: [
       ...CRUCIBLE_DIALOG_IMPORTS,
@@ -105,6 +108,41 @@ describe('MoveEditDialogComponent', () => {
     const duration = fixture.debugElement.query(By.directive(DurationEditStub)).componentInstance as DurationEditStub;
     expect(duration.durationSeconds()).toBe(3600);
     expect(duration.startTime()).toEqual(START);
+  });
+
+  /**
+   * Verifies: Write the situation briefing with AI opens the writer for this move with its unsaved values, and the briefing it
+   * hands back goes into the move, which Save still saves.
+   * Interacts with: the component's MatDialog (open replaced), MselDataService.draftMoveSituation (spy).
+   * Data: the move in msel-1; the writer answers "<h4>Day one</h4>".
+   */
+  it('writes the situation briefing with AI', async () => {
+    const { fixture, data } = await renderMoveEdit(MOVE, 'msel-1');
+    const dialog = fixture.componentInstance as unknown as { dialog: { open: (...args: unknown[]) => unknown } };
+    let opened: { data: { title: string; write: (instruction: string) => unknown } } | undefined;
+    dialog.dialog.open = vi.fn((_: unknown, config: typeof opened) => {
+      opened = config;
+      return { afterClosed: () => of('<h4>Day one</h4>') };
+    });
+    const draftMoveSituation = vi.spyOn(TestBed.inject(MselDataService), 'draftMoveSituation').mockReturnValue(of({ html: '<p>x</p>' }));
+
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Write the situation briefing with AI' }));
+
+    expect(opened.data.title).toBe(`Write move ${MOVE.moveNumber}'s situation briefing with AI`);
+    opened.data.write('Say the plant is on manual');
+    expect(draftMoveSituation).toHaveBeenCalledWith('msel-1', expect.objectContaining({ moveNumber: MOVE.moveNumber, instruction: 'Say the plant is on manual' }));
+    expect(data.move.situationDescription).toBe('<h4>Day one</h4>');
+  });
+
+  /**
+   * Verifies: without the MSEL, as from a caller that does not pass it, there is no AI button.
+   * Interacts with: nothing.
+   * Data: no mselId.
+   */
+  it('offers no AI button without the MSEL', async () => {
+    await renderMoveEdit();
+
+    expect(screen.queryByRole('button', { name: 'Write the situation briefing with AI' })).not.toBeInTheDocument();
   });
 
   /**

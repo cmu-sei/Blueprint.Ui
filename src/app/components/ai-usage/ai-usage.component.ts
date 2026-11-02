@@ -35,6 +35,8 @@ export class AiUsageComponent {
     photo: 'News photos',
     image: 'MSEL picture',
     page: 'Pages',
+    move: 'Move situations',
+    metadata: 'Catalog metadata',
   };
 
   private aiUsageService = inject(AiUsageService);

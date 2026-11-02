@@ -21,6 +21,8 @@ import {
   DataValueDraftResult,
   PageDraftRequest,
   PageDraftResult,
+  MoveDraftRequest,
+  MoveDraftResult,
   MselDraftImport,
   MselDraftRequest,
   MselDraftResult,
@@ -700,6 +702,11 @@ export class MselDataService {
   // a MSEL page written with AI; nothing is saved until the planner saves the page
   draftPage(mselId: string, request: PageDraftRequest): Observable<PageDraftResult> {
     return this.mselService.draftMselPage(mselId, request);
+  }
+
+  // a move's situation briefing written with AI; nothing is saved until the planner saves the move
+  draftMoveSituation(mselId: string, request: MoveDraftRequest): Observable<MoveDraftResult> {
+    return this.mselService.draftMoveSituation(mselId, request);
   }
 
   // Errors are left to the caller, which shows them in the Ask AI panel

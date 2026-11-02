@@ -5,6 +5,7 @@
 import { Component, inject } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { Observable } from 'rxjs';
 import { take } from 'rxjs/operators';
 import { FormsModule } from '@angular/forms';
 import { MatButton } from '@angular/material/button';
@@ -26,6 +27,10 @@ export interface MselPageDraftDialogData {
   name: string;
   // the page as the editor holds it, unsaved edits included
   content: string;
+  // for HTML other than a page, such as a move's situation briefing: the dialog's title, what it writes from, and how to write it
+  title?: string;
+  about?: string;
+  write?: (instruction: string) => Observable<PageDraftResult>;
 }
 
 // Writing saves nothing. Closing with a string hands the accepted page back to the
@@ -70,13 +75,15 @@ export class MselPageDraftDialogComponent {
   write() {
     this.isWriting = true;
     this.errorMessage = '';
-    this.mselDataService
-      .draftPage(this.data.mselId, {
-        pageId: this.data.pageId,
-        name: this.data.name,
-        content: this.data.content,
-        instruction: this.instruction,
-      })
+    const request = this.data.write
+      ? this.data.write(this.instruction)
+      : this.mselDataService.draftPage(this.data.mselId, {
+          pageId: this.data.pageId,
+          name: this.data.name,
+          content: this.data.content,
+          instruction: this.instruction,
+        });
+    request
       .pipe(take(1))
       .subscribe({
         next: (result) => {

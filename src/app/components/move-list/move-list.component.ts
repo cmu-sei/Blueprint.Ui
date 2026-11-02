@@ -131,6 +131,8 @@ export class MoveListComponent implements OnDestroy, AfterViewInit {
         move: editMove,
         mselStartTime: this.msel.startTime,
         title: dialogTitle,
+        // the situation briefing can be written with AI
+        mselId: this.msel.id,
       },
     });
     dialogRef.componentInstance.editComplete.subscribe((result) => {

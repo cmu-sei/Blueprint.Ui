@@ -45,6 +45,10 @@ import { PageDraftRequest } from '../model/pageDraftRequest';
 // @ts-ignore
 import { PageDraftResult } from '../model/pageDraftResult';
 // @ts-ignore
+import { MoveDraftRequest } from '../model/moveDraftRequest';
+// @ts-ignore
+import { MoveDraftResult } from '../model/moveDraftResult';
+// @ts-ignore
 import { MselDraftImport } from '../model/mselDraftImport';
 // @ts-ignore
 import { MselDraftRequest } from '../model/mselDraftRequest';
@@ -836,6 +840,79 @@ export class MselService extends BaseService {
             {
                 context: localVarHttpContext,
                 body: pageDraftRequest,
+                responseType: <any>responseType_,
+                ...(withCredentials ? { withCredentials } : {}),
+                headers: localVarHeaders,
+                observe: observe,
+                transferCache: localVarTransferCache,
+                reportProgress: reportProgress
+            }
+        );
+    }
+
+    /**
+     * Write a move\'s situation briefing with AI
+     * Nothing is saved. The model sees the MSEL\'s scenario, its moves, the injects before the move and those of the move, and the move as the edit dialog holds it, and the planner decides whether to use what it writes.
+     * @param mselId The id of the MSEL the inject belongs to
+     * @param moveDraftRequest The field, the inject\&#39;s current values, and what to do
+     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+     * @param reportProgress flag to report request and response progress.
+     */
+    public draftMoveSituation(mselId: string, moveDraftRequest?: MoveDraftRequest, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<MoveDraftResult>;
+    public draftMoveSituation(mselId: string, moveDraftRequest?: MoveDraftRequest, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<MoveDraftResult>>;
+    public draftMoveSituation(mselId: string, moveDraftRequest?: MoveDraftRequest, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<MoveDraftResult>>;
+    public draftMoveSituation(mselId: string, moveDraftRequest?: MoveDraftRequest, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+        if (mselId === null || mselId === undefined) {
+            throw new Error('Required parameter mselId was null or undefined when calling draftMoveSituation.');
+        }
+
+        let localVarHeaders = this.defaultHeaders;
+
+        // authentication (oauth2) required
+        localVarHeaders = this.configuration.addCredentialToHeaders('oauth2', 'Authorization', localVarHeaders, 'Bearer ');
+
+        const localVarHttpHeaderAcceptSelected: string | undefined = options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept([
+            'text/plain',
+            'application/json',
+            'text/json'
+        ]);
+        if (localVarHttpHeaderAcceptSelected !== undefined) {
+            localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
+        }
+
+        const localVarHttpContext: HttpContext = options?.context ?? new HttpContext();
+
+        const localVarTransferCache: boolean = options?.transferCache ?? true;
+
+
+        // to determine the Content-Type header
+        const consumes: string[] = [
+            'application/json',
+            'text/json',
+            'application/*+json'
+        ];
+        const httpContentTypeSelected: string | undefined = this.configuration.selectHeaderContentType(consumes);
+        if (httpContentTypeSelected !== undefined) {
+            localVarHeaders = localVarHeaders.set('Content-Type', httpContentTypeSelected);
+        }
+
+        let responseType_: 'text' | 'json' | 'blob' = 'json';
+        if (localVarHttpHeaderAcceptSelected) {
+            if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
+                responseType_ = 'text';
+            } else if (this.configuration.isJsonMime(localVarHttpHeaderAcceptSelected)) {
+                responseType_ = 'json';
+            } else {
+                responseType_ = 'blob';
+            }
+        }
+
+        let localVarPath = `/api/msels/${this.configuration.encodeParam({name: "mselId", value: mselId, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: "uuid"})}/ai-draft/move`;
+        const { basePath, withCredentials } = this.configuration;
+        return this.httpClient.request<MoveDraftResult>('post', `${basePath}${localVarPath}`,
+            {
+                context: localVarHttpContext,
+                body: moveDraftRequest,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
