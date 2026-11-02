@@ -81,6 +81,8 @@ export class AdminRolesComponent implements OnInit, OnDestroy {
     [SystemPermission.ManageCiteActions, 'Allows managing CITE Actions'],
     [SystemPermission.ViewCiteDuties, 'Allows viewing CITE Duties'],
     [SystemPermission.ManageCiteDuties, 'Allows managing CITE Duties'],
+    [SystemPermission.ViewPlayerApplications, 'Allows viewing Player Application Templates'],
+    [SystemPermission.ManagePlayerApplications, 'Allows managing Player Application Templates'],
     [SystemPermission.ViewUsers, 'Allows viewing all Users. Enables the Users Administration panel'],
     [SystemPermission.ManageUsers, 'Allows managing Users including adding, removing, and changing roles'],
     [SystemPermission.ViewRoles, 'Allows viewing all Roles. Enables the Roles Administration panel'],

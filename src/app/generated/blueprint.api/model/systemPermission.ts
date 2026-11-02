@@ -43,7 +43,9 @@ export const SystemPermission = {
     ViewGroups: 'ViewGroups',
     ManageGroups: 'ManageGroups',
     ViewCompetencyFrameworks: 'ViewCompetencyFrameworks',
-    ManageCompetencyFrameworks: 'ManageCompetencyFrameworks'
+    ManageCompetencyFrameworks: 'ManageCompetencyFrameworks',
+    ViewPlayerApplications: 'ViewPlayerApplications',
+    ManagePlayerApplications: 'ManagePlayerApplications'
 } as const;
 export type SystemPermission = typeof SystemPermission[keyof typeof SystemPermission];
 

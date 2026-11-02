@@ -38,13 +38,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
 <div class="frame">
   <div class="table-container">
     <mat-table #table [dataSource]="dataFieldDataSource" matSort (matSortChange)="sortChanged($event)" cdkDropList
-      [cdkDropListDisabled]="!allowDragAndDrop" (cdkDropListDropped)="dropHandler($event)">
+      [cdkDropListDisabled]="!allowDragAndDrop || !canEdit()" (cdkDropListDropped)="dropHandler($event)">
         <!-- Drag Handler column -->
         <ng-container matColumnDef="draghandle">
           <mat-header-cell *matHeaderCellDef class="column-draghandle" />
           <mat-cell *matCellDef="let element;" class="column-draghandle">
             <div class="draghandle-div">
-              @if (allowDragAndDrop) {
+              @if (allowDragAndDrop && canEdit()) {
               <mat-icon cdkDragHandle cdkDragRootElement="row" cdkDrag [cdkDragData]="element" cdkDragLockAxis="y"
                 [cdkDragPreviewClass]="userTheme()" class="mdi-18px down-12" fontIcon="mdi-drag-vertical" />
               }
@@ -113,7 +113,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                     title="Delete {{ element.name }}" />
                 </button>
                 }
-                @if (!injectTypeId() && !showTemplates() && canEdit()) {
+                @if (!injectTypeId() && !showTemplates() && canMakeTemplate()) {
                 <button mat-icon-button class="msel-action"
                   (click)="addOrEditDataField(element, true); $event.stopPropagation();"
                   title="Make {{ element.name }} a template">
@@ -135,7 +135,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             &nbsp;&nbsp;&nbsp;&nbsp;List
           </mat-header-cell>
           <mat-cell *matCellDef="let element" class="column-display">
-            <mat-checkbox [(ngModel)]="element.onScenarioEventList" [disabled]="!canEdit()"
+            <mat-checkbox [(ngModel)]="element.onScenarioEventList" [disabled]="!canEditRow(element)"
               (change)="saveChange(element)" (click)="$event.stopPropagation()"
               title="Display on Scenario Events list" />
           </mat-cell>
@@ -147,7 +147,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             &nbsp;&nbsp;&nbsp;&nbsp;View
           </mat-header-cell>
           <mat-cell *matCellDef="let element" class="column-display">
-            <mat-checkbox [(ngModel)]="element.onExerciseView" [disabled]="!canEdit()" (change)="saveChange(element)"
+            <mat-checkbox [(ngModel)]="element.onExerciseView" [disabled]="!canEditRow(element)" (change)="saveChange(element)"
               (click)="$event.stopPropagation();" title="Display on the Exercise View" />
           </mat-cell>
         </ng-container>
@@ -158,7 +158,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             &nbsp;&nbsp;&nbsp;&nbsp;Assess
           </mat-header-cell>
           <mat-cell *matCellDef="let element" class="column-display">
-            <mat-checkbox [(ngModel)]="element.isAssessorVisible" [disabled]="!canEdit()"
+            <mat-checkbox [(ngModel)]="element.isAssessorVisible" [disabled]="!canEditRow(element)"
               (change)="saveChange(element)" (click)="$event.stopPropagation();"
               title="Display on the Assessor View" />
           </mat-cell>
@@ -171,7 +171,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </mat-header-cell>
           <mat-cell *matCellDef="let element" class="column-display">
             @if (element.displayOrder >= 0) {
-            <mat-checkbox [(ngModel)]="element.isInformationField" [disabled]="!canEdit()"
+            <mat-checkbox [(ngModel)]="element.isInformationField" [disabled]="!canEditRow(element)"
               (change)="saveChange(element)" (click)="$event.stopPropagation();"
               title="Display for Information Events" />
             }
@@ -185,7 +185,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </mat-header-cell>
           <mat-cell *matCellDef="let element" class="column-display">
             @if (element.displayOrder >= 0) {
-            <mat-checkbox [(ngModel)]="element.isFacilitationField" [disabled]="!canEdit()"
+            <mat-checkbox [(ngModel)]="element.isFacilitationField" [disabled]="!canEditRow(element)"
               (change)="saveChange(element)" (click)="$event.stopPropagation();"
               title="Display for Facilitation Events" />
             }
@@ -199,7 +199,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </mat-header-cell>
           <mat-cell *matCellDef="let element" class="column-display">
             @if (element.displayOrder >= 0) {
-            <mat-checkbox [(ngModel)]="element.isShownOnDefaultTab" [disabled]="!canEdit()"
+            <mat-checkbox [(ngModel)]="element.isShownOnDefaultTab" [disabled]="!canEditRow(element)"
               (change)="saveChange(element)" (click)="$event.stopPropagation();"
               title="Display on the default tab of the scenario event edit dialog" />
             }
@@ -213,7 +213,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </mat-header-cell>
           <mat-cell *matCellDef="let element" class="column-display">
             @if (element.displayOrder >= 0) {
-            <mat-checkbox [(ngModel)]="element.isOnlyShownToOwners" [disabled]="!canEdit()"
+            <mat-checkbox [(ngModel)]="element.isOnlyShownToOwners" [disabled]="!canEditRow(element)"
               (change)="saveChange(element)" (click)="$event.stopPropagation();"
               title="Hide this field from participants on all views - show only to content developers and MSEL owners" />
             }

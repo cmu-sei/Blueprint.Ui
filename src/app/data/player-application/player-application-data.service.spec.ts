@@ -29,6 +29,8 @@ function app(overrides: Partial<PlayerApplication> = {}): PlayerApplication {
 function setup(queryParams: Record<string, string> = {}) {
   const appApi = {
     getApplicationsByMsel: vi.fn(() => of<PlayerApplication[]>([])),
+    getPlayerApplicationTemplates: vi.fn(() => of<PlayerApplication[]>([])),
+    downloadJsonPlayerApplications: vi.fn(() => of(new Blob())),
     getPlayerApplication: vi.fn(() => of<PlayerApplication>({})),
     createPlayerApplication: vi.fn(() => of<PlayerApplication>({})),
     createAndPushPlayerApplication: vi.fn(() => of<PlayerApplication>({})),
@@ -75,6 +77,45 @@ describe('PlayerApplicationDataService', () => {
     service.loadByMsel('msel-1');
     expect(query.getAll()).toEqual([]);
     expect(query.getValue().loading).toBe(false);
+  });
+
+  /**
+   * Verifies: loadTemplates adds Blueprint's templates beside whatever is stored, and a later loadByMsel keeps them while it replaces the MSEL's applications.
+   * Interacts with: PlayerApplicationService.getPlayerApplicationTemplates and getApplicationsByMsel (stubs), real PlayerApplicationStore and Query.
+   * Data: template Map; MSEL application Gallery, then CITE, then a failure.
+   */
+  it('loadTemplates adds the templates, and loadByMsel keeps them', () => {
+    const { service, query, appApi } = setup();
+    const map = app({ id: 'tpl-1', mselId: null, isTemplate: true, name: 'Map' });
+    appApi.getPlayerApplicationTemplates.mockReturnValueOnce(of([map]));
+    appApi.getApplicationsByMsel.mockReturnValueOnce(of([app()]));
+    appApi.getApplicationsByMsel.mockReturnValueOnce(of([app({ id: 'app-2', name: 'CITE' })]));
+    appApi.getApplicationsByMsel.mockReturnValueOnce(throwError(() => new Error('boom')));
+
+    service.loadByMsel('msel-1');
+    service.loadTemplates();
+    expect(appApi.getPlayerApplicationTemplates).toHaveBeenCalledTimes(1);
+    expect(names(query.getAll())).toEqual(['Gallery', 'Map']);
+
+    service.loadByMsel('msel-2');
+    expect(names(query.getAll())).toEqual(['CITE', 'Map']);
+
+    service.loadByMsel('msel-3');
+    expect(names(query.getAll())).toEqual(['Map']);
+  });
+
+  /**
+   * Verifies: downloadJson returns the API's file observable for the ids asked for.
+   * Interacts with: PlayerApplicationService.downloadJsonPlayerApplications (stub).
+   * Data: template ids tpl-1 and tpl-2.
+   */
+  it('downloadJson asks the API for the templates named', () => {
+    const { service, appApi } = setup();
+    const file$ = of(new Blob(['[]']));
+    appApi.downloadJsonPlayerApplications.mockReturnValueOnce(file$);
+
+    expect(service.downloadJson(['tpl-1', 'tpl-2'])).toBe(file$);
+    expect(appApi.downloadJsonPlayerApplications).toHaveBeenCalledWith(['tpl-1', 'tpl-2']);
   });
 
   /**

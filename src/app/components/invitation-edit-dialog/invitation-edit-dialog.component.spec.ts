@@ -20,8 +20,13 @@ import { renderComponent } from 'src/app/test-utils/render-component';
 
 const INVITATION = { id: 'inv-1', mselId: 'msel-1', teamId: 'team-1', emailDomain: '@example.com', expirationDateTime: new Date('2026-12-31T12:00:00Z'), maxUsersAllowed: 5, userCount: 0, isTeamLeader: false } as Invitation;
 
-function dialogData(overrides: Partial<typeof INVITATION> = {}) {
-  return { invitation: { ...structuredClone(INVITATION), ...overrides }, teamList: [{ id: 'team-1', mselId: 'msel-1', name: 'Blue Team', shortName: 'BLUE' }] };
+function dialogData(overrides: Partial<typeof INVITATION> = {}, cite: { useCite?: boolean; citeTeamRoles?: string[] } = {}) {
+  return {
+    invitation: { ...structuredClone(INVITATION), ...overrides },
+    teamList: [{ id: 'team-1', mselId: 'msel-1', name: 'Blue Team', shortName: 'BLUE' }],
+    useCite: cite.useCite ?? false,
+    citeTeamRoles: cite.citeTeamRoles ?? [],
+  };
 }
 
 async function renderInvitationEditDialog(data = dialogData()) {
@@ -42,6 +47,37 @@ describe('InvitationEditDialogComponent', () => {
   // A test that sets TZ runs in a zone with daylight saving time; this restores the host's.
   afterEach(() => {
     vi.unstubAllEnvs();
+  });
+
+  /**
+   * Verifies: with CITE the invitation's CITE team role is shown and the chosen role is saved with it.
+   * Interacts with: the CITE Team Role select, crucible-dialog submit, editComplete output.
+   * Data: useCite true; CITE roles Member and Contributor; the invitation gives Member.
+   */
+  it('saves the CITE team role chosen for the invitation', async () => {
+    const { results } = await renderInvitationEditDialog(
+      dialogData({ citeTeamRole: 'Member' }, { useCite: true, citeTeamRoles: ['Member', 'Contributor'] })
+    );
+    const user = userEvent.setup();
+
+    const select = screen.getByRole('combobox', { name: 'CITE Team Role' });
+    expect(select).toHaveTextContent('Member');
+    await user.click(select);
+    await user.click(screen.getByRole('option', { name: 'Contributor' }));
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+
+    expect(results).toEqual([expect.objectContaining({ saveChanges: true, invitation: expect.objectContaining({ citeTeamRole: 'Contributor' }) })]);
+  });
+
+  /**
+   * Verifies: without CITE there is no CITE team role to choose.
+   * Interacts with: InvitationEditDialogComponent template.
+   * Data: useCite false.
+   */
+  it('hides the CITE team role without CITE', async () => {
+    await renderInvitationEditDialog();
+
+    expect(screen.queryByRole('combobox', { name: 'CITE Team Role' })).not.toBeInTheDocument();
   });
 
   /**

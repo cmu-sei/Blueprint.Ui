@@ -5,6 +5,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { Component, input, output } from '@angular/core';
 import { ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { CdkTextareaAutosize } from '@angular/cdk/text-field';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { MatButtonModule } from '@angular/material/button';
@@ -280,6 +281,25 @@ describe('MselInfoComponent', () => {
   });
 
   /**
+   * Verifies: the description is a field that grows to show all of its 600 characters, and Enter adds no line break to it.
+   * Interacts with: the Description textarea and its CdkTextareaAutosize.
+   * Data: a 600-character description; EditMsels.
+   */
+  it('shows the whole description in a field that grows with it', async () => {
+    const description = 'The port is closed. '.repeat(30);
+    const { fixture } = await renderInfo({ permissions: [SystemPermission.EditMsels], mselExtra: { description } });
+    const field = descriptionInput() as HTMLTextAreaElement;
+
+    expect(field.tagName).toBe('TEXTAREA');
+    expect(field.value).toBe(description);
+    expect(fixture.debugElement.query(By.directive(CdkTextareaAutosize))).not.toBeNull();
+    const user = userEvent.setup();
+    await user.clear(field);
+    await user.type(field, 'One{Enter}line');
+    expect(field.value).toBe('Oneline');
+  });
+
+  /**
    * Verifies: without EditMsels and the Editor role the settings are read-only, even with ManageMsels.
    * Interacts with: real PermissionDataService (stubbed grants), MselInfoComponent.canEditMsel, DurationEditStub input.
    * Data: every permission but EditMsels (near miss: ManageMsels); MSEL roles Viewer and Evaluator.
@@ -327,6 +347,22 @@ describe('MselInfoComponent', () => {
     expect(screen.queryByText(/Add Page/)).not.toBeInTheDocument();
     await openPage();
     expect(screen.queryByTitle('Edit Page')).not.toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: Push Integrations and Remove Integrations are Material stroked buttons like Upload Image, not browser-default buttons.
+   * Interacts with: the mat-stroked-button directive's host classes.
+   * Data: MSEL role Owner; a pending MSEL using Player; or one deployed to Caster with workspace ws-1.
+   */
+  it.each([
+    { title: 'Push Integrations', mselExtra: {} },
+    { title: 'Remove Integrations', mselExtra: { status: MselItemStatus.Deployed, useCaster: true, casterDirectoryId: 'dir-1', casterWorkspaceId: 'ws-1' } },
+  ])('styles $title like the other stroked buttons', async ({ title, mselExtra }) => {
+    await renderInfo({ myRoles: [MselRole.Owner], mselExtra });
+
+    const stroked = Array.from(screen.getByRole('button', { name: 'Upload Image' }).classList).filter((c) => c.startsWith('mat-mdc-'));
+    expect(stroked).toContain('mat-mdc-outlined-button');
+    expect(screen.getByTitle(title)).toHaveClass(...stroked);
   });
 
   /**

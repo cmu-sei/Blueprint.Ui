@@ -3,8 +3,8 @@
 // project root for license information.
 import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { Subject, combineLatest } from 'rxjs';
-import { take, takeUntil } from 'rxjs/operators';
+import { Subject, combineLatest, of } from 'rxjs';
+import { take, takeUntil, catchError } from 'rxjs/operators';
 import {
   ComnSettingsService,
 } from '@cmusei/crucible-common';
@@ -24,11 +24,82 @@ import { PermissionDataService } from 'src/app/data/permission/permission-data.s
 import { MatDialog } from '@angular/material/dialog';
 import { CapabilityDialogComponent, CapabilityData } from '../../capability-dialog/capability-dialog.component';
 import { landingBackground } from 'src/app/utilities/landing-background';
+import { ErrorService } from 'src/app/services/error/error.service';
 import { assessableMsels, canAssess } from 'src/app/utilities/assessable-msels';
 import { TopbarComponent } from '../../shared/top-bar/topbar.component';
 import { MatButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
+
+/** A card below the mission cards: a title and a one-line summary, opening a dialog with the details. */
+export interface CapabilityCard {
+  key: string;
+  summary: string;
+  data: CapabilityData;
+}
+
+// What a planner can do with the exercise stack, described by feature rather than by application.
+export const CAPABILITY_CARDS: CapabilityCard[] = [
+  {
+    key: 'assessment',
+    summary: 'See how each team performs against the work roles and skills the exercise is meant to build',
+    data: {
+      title: 'Competency-Based Assessment',
+      icon: 'mdi-clipboard-check-outline',
+      description: 'Choose the work roles an exercise trains and the skills under them, then rate each team on them as the exercise runs.',
+      features: [
+        'Use NICE, DCWF, or your own frameworks',
+        'Pick the work roles an exercise covers, and the knowledge and skills under them',
+        'See each team\'s activity while you rate it',
+        'Rate teams on a consistent scale'
+      ],
+      benefits: [
+        'Show what an exercise trained, not just that it happened',
+        'Rate every team on what they did'
+      ]
+    }
+  },
+  {
+    key: 'collaborative',
+    summary: 'Plan an exercise together in one place, instead of passing a spreadsheet around',
+    data: {
+      title: 'Collaborative Planning',
+      icon: 'mdi-account-group',
+      description: 'Your planning team builds the exercise together, and everyone sees changes as they\'re made.',
+      features: [
+        'Several planners work at once',
+        'Organize the scenario into moves and inject groups',
+        'Reuse injects and whole exercises from templates',
+        'Start from your existing Excel MSEL, and export the plan back to a spreadsheet'
+      ],
+      benefits: [
+        'No more conflicting copies',
+        'Planners work in parallel',
+        'One version of the plan'
+      ]
+    }
+  },
+  {
+    key: 'exercises',
+    summary: 'Run hands-on cyber range exercises, tabletop exercises, or both, to rehearse missions and train against your objectives',
+    data: {
+      title: 'Hands-On and Tabletop Exercises',
+      icon: 'mdi-rocket-launch-outline',
+      description: 'Run the same plan as a hands-on exercise on the cyber range, a discussion-based tabletop exercise, or a mix of the two. When the plan is ready, Blueprint sets the exercise up and takes it down again when you\'re done.',
+      features: [
+        'Hands-on: each team works on its own network of virtual machines, alongside the exercise\'s other tools',
+        'Tabletop: teams discuss each incident as it unfolds, then evaluate and score their response',
+        'Deliver news, intelligence, and orders move by move',
+        'Run the same exercise again for new teams, from one plan'
+      ],
+      benefits: [
+        'Rehearse a mission before it\'s carried out',
+        'Practice in a realistic environment without risk',
+        'Compare how teams handled the same events'
+      ]
+    }
+  }
+];
 
 @Component({
     selector: 'app-dashboard',
@@ -38,6 +109,7 @@ import { MatProgressSpinner } from '@angular/material/progress-spinner';
 })
 export class DashboardComponent implements OnDestroy, OnInit {
   private userDataService = inject(UserDataService);
+  private errorService = inject(ErrorService);
   private userQuery = inject(UserQuery);
   private currentUserQuery = inject(CurrentUserQuery);
   private settingsService = inject(ComnSettingsService);
@@ -66,9 +138,14 @@ export class DashboardComponent implements OnDestroy, OnInit {
   launchClass = 'base-card';
   buildClass = 'base-card';
   isStarted = false;
+  // set once startup has begun, so the watchdog leaves slow requests alone
+  private isStartupBegun = false;
+  // set when the MSELs fail to load, to show a message instead of the cards
+  loadFailed = false;
   canCreateMsels = false;
   hasAssessorRole = false;
   isSystemAdmin = false;
+  capabilityCards = CAPABILITY_CARDS;
   private unsubscribe$ = new Subject();
 
   constructor() {
@@ -93,23 +170,23 @@ export class DashboardComponent implements OnDestroy, OnInit {
           this.startup();
         }
       });
-    setTimeout(() => {
-      if (!this.isStarted) {
-        window.location.reload();
-      }
-    }, 10000);
-    // Load permissions
-    this.permissionDataService
-      .load()
-      .subscribe(
-        (x) => {
-          this.canCreateMsels = this.permissionDataService.hasPermission(SystemPermission.CreateMsels);
-          this.isSystemAdmin = this.canCreateMsels;
-        }
-      );
+    // Reload only if startup never began, because the current user never arrived; requests that are
+    // merely slow, or that fail, are left to finish or to say so rather than reloading the page.
+    setTimeout(() => this.reloadIfNotStarted(), 10000);
+  }
+
+  reloadIfNotStarted() {
+    if (!this.isStartupBegun) {
+      this.reloadPage();
+    }
+  }
+
+  reloadPage() {
+    window.location.reload();
   }
 
   startup() {
+    this.isStartupBegun = true;
     // subscribe to users
     this.userQuery.selectAll()
       .pipe(takeUntil(this.unsubscribe$))
@@ -133,12 +210,25 @@ export class DashboardComponent implements OnDestroy, OnInit {
         this.joinMselList = msels;
       });
     // load the build MSELs. The ASSESS card depends on whether the user is a
-    // system admin as well, so it waits for the permissions too.
-    combineLatest([this.mselDataService.getMyBuildMsels(), this.permissionDataService.load()])
+    // system admin as well, so it waits for the permissions too. Permissions that
+    // fail to load count as none, so they cannot hold up the dashboard, whose
+    // watchdog would otherwise reload the page.
+    // MSELs that fail to load end the spinner with a message instead of the cards.
+    combineLatest([
+      this.mselDataService.getMyBuildMsels().pipe(
+        catchError((err) => {
+          this.loadFailed = true;
+          this.errorService.handleError(err);
+          return of([] as Msel[]);
+        })
+      ),
+      this.permissionDataService.load().pipe(catchError(() => of([]))),
+    ])
       .pipe(take(1))
       .subscribe(([msels]) => {
         this.buildMselList = msels;
-        this.isSystemAdmin = this.permissionDataService.hasPermission(SystemPermission.CreateMsels);
+        this.canCreateMsels = this.permissionDataService.hasPermission(SystemPermission.CreateMsels);
+        this.isSystemAdmin = this.canCreateMsels;
         this.checkForAssessorRole(msels);
         this.isStarted = true;
       });
@@ -152,7 +242,7 @@ export class DashboardComponent implements OnDestroy, OnInit {
     this.assessMselList = assessableMsels(msels, currentUserId, this.isSystemAdmin);
   }
 
-  topBarNavigate(url): void {
+  topBarNavigate(url: string): void {
     this.router.navigate([url]);
   }
 
@@ -162,6 +252,9 @@ export class DashboardComponent implements OnDestroy, OnInit {
 
   openCapabilityDialog(capability: string): void {
     const capabilityData = this.getCapabilityData(capability);
+    if (!capabilityData) {
+      return;
+    }
     this.dialog.open(CapabilityDialogComponent, {
       data: capabilityData,
       maxWidth: '700px',
@@ -169,84 +262,8 @@ export class DashboardComponent implements OnDestroy, OnInit {
     });
   }
 
-  private getCapabilityData(capability: string): CapabilityData {
-    const capabilities: { [key: string]: CapabilityData } = {
-      'collaborative': {
-        title: 'Collaborative Planning',
-        icon: 'mdi-account-group',
-        description: 'Blueprint transforms MSEL development from isolated spreadsheet work into a real-time collaborative experience. Multiple team members can simultaneously edit, review, and approve scenarios.',
-        features: [
-          'Real-time multi-user editing with instant synchronization',
-          'Role-based access control (Owner, Editor, Move Editor, Approver, Evaluator, Viewer)',
-          'Contributor management with granular permissions',
-          'Live updates visible to all team members',
-          'Approval workflow: only Approvers can mark an event Approved'
-        ],
-        benefits: [
-          'Eliminate version control conflicts from Excel files',
-          'Reduce planning time by enabling parallel work',
-          'Improve coordination across distributed teams',
-          'Maintain single source of truth for scenarios',
-          'See who created each MSEL and who contributes to it'
-        ]
-      },
-      'integrated': {
-        title: 'Integrated Platform',
-        icon: 'mdi-link-variant',
-        description: 'Blueprint serves as the central hub that connects all Crucible applications. Define your MSEL once and automatically integrate with Player, CITE, Gallery, and Steamfitter.',
-        features: [
-          'One-click integration with Player for participant interfaces',
-          'Direct connection to CITE for cyber incident evaluation',
-          'Gallery integration for distributing incident information',
-          'Steamfitter integration for automated task execution',
-          'Unified event management across all platforms'
-        ],
-        benefits: [
-          'Eliminate duplicate data entry across applications',
-          'Ensure consistency across exercise platforms',
-          'Reduce setup time from hours to minutes',
-          'Simplify exercise deployment workflows',
-          'Remove every integration cleanly when the exercise ends'
-        ]
-      },
-      'scenario': {
-        title: 'Scenario Design',
-        icon: 'mdi-timeline-text',
-        description: 'Build sophisticated cyber exercise scenarios with structured timelines, organizational hierarchies, and move-based event orchestration. Blueprint provides the tools to design complex, realistic training environments.',
-        features: [
-          'Move-based timeline organization for structured events',
-          'Define organizations, teams, and simulated entities',
-          'Add injects from reusable catalogs and save MSELs as templates',
-          'Assign colors and metadata for visual organization',
-          'Import existing MSELs or build from scratch'
-        ],
-        benefits: [
-          'Design realistic, complex cyber scenarios efficiently',
-          'Reuse templates and components across exercises',
-          'View the full event sequence in the Exercise View',
-          'Scale from simple to enterprise-level scenarios',
-          'Support both planned and dynamic inject delivery'
-        ]
-      },
-      'cyberrange': {
-        title: 'Cyber Range Ready',
-        icon: 'mdi-shield-check',
-        description: 'Purpose-built for cybersecurity training and simulation, Blueprint understands the unique requirements of cyber range operations, from incident response to red team exercises.',
-        features: [
-          'Native support for cyber incident scenarios',
-          'Built for adversary simulation and response training',
-          'Support for tabletop and hands-on exercises'
-        ],
-        benefits: [
-          'Reduce development time for cyber exercise scenarios',
-          'Ensure exercises meet training objectives',
-          'Support diverse exercise types and formats',
-          'Built by cybersecurity practitioners for practitioners'
-        ]
-      }
-    };
-
-    return capabilities[capability];
+  private getCapabilityData(capability: string): CapabilityData | undefined {
+    return this.capabilityCards.find((c) => c.key === capability)?.data;
   }
 
   ngOnDestroy() {

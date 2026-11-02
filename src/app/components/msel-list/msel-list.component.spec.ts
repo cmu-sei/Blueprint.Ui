@@ -459,4 +459,33 @@ describe('MselListComponent', () => {
       expect(visible()).not.toContain('Approved Exercise');
     });
   });
+
+  describe('sorting', () => {
+    /**
+     * Verifies: the list opens newest created first, by time rather than text, and the Created header turns it around.
+     * Interacts with: MatSort's default sort, the Created sort header.
+     * Data: MSELs created 2025-12-31 23:00, 2026-01-02 and 2026-01-01, named so that name order differs.
+     */
+    it('lists the most recently created MSEL first', async () => {
+      const { fixture } = await renderMselList({
+        msels: [
+          msel({ id: 'm-old', name: 'Alpha Oldest', dateCreated: '2025-12-31T23:00:00Z' as unknown as Date }),
+          msel({ id: 'm-new', name: 'Bravo Newest', dateCreated: '2026-01-02T00:00:00Z' as unknown as Date }),
+          msel({ id: 'm-mid', name: 'Charlie Middle', dateCreated: '2026-01-01T00:00:00Z' as unknown as Date }),
+        ],
+      });
+      const names = () =>
+        within(table())
+          .queryAllByRole('row')
+          .map((r) => r.textContent)
+          .map((t) => ['Bravo Newest', 'Charlie Middle', 'Alpha Oldest'].find((n) => t.includes(n)))
+          .filter((n) => n);
+
+      expect(names()).toEqual(['Bravo Newest', 'Charlie Middle', 'Alpha Oldest']);
+
+      await userEvent.setup().click(within(table()).getByText('Created'));
+      fixture.detectChanges();
+      expect(names()).toEqual(['Alpha Oldest', 'Charlie Middle', 'Bravo Newest']);
+    });
+  });
 });

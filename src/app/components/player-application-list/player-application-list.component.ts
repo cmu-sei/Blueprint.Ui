@@ -1,10 +1,10 @@
 // Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject, input, viewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, inject, input, viewChild } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { PlayerApplication, Move, SystemPermission, Team } from 'src/app/generated/blueprint.api';
+import { ApplicationTemplate, PlayerApplication, Move, SystemPermission, Team } from 'src/app/generated/blueprint.api';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
 import { MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
@@ -17,6 +17,7 @@ import { TeamQuery } from 'src/app/data/team/team.query';
 import { MatDialog } from '@angular/material/dialog';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { PlayerApplicationEditDialogComponent } from '../player-application-edit-dialog/player-application-edit-dialog.component';
+import { ItemDownloadDialogComponent } from '../item-download-dialog/item-download-dialog.component';
 import { PlayerService } from 'src/app/generated/blueprint.api';
 import { v4 as uuidv4 } from 'uuid';
 import { MatTable, MatTableDataSource, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
@@ -30,6 +31,8 @@ import { MatExpansionPanel, MatExpansionPanelHeader } from '@angular/material/ex
 import { MatIconButton } from '@angular/material/button';
 import { MatTooltip } from '@angular/material/tooltip';
 import { MatCheckbox } from '@angular/material/checkbox';
+import { MatDivider } from '@angular/material/divider';
+import { NgTemplateOutlet } from '@angular/common';
 import { PlayerApplicationTeamsComponent } from '../player-application-teams/player-application-teams.component';
 import { PlayerTeamAppOrderComponent } from '../player-team-app-order/player-team-app-order.component';
 
@@ -44,7 +47,7 @@ import { PlayerTeamAppOrderComponent } from '../player-team-app-order/player-tea
             transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
         ]),
     ],
-    imports: [MatIcon, MatMenu, MatMenuItem, MatExpansionPanel, MatExpansionPanelHeader, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatIconButton, MatMenuTrigger, MatCellDef, MatCell, MatSortHeader, MatTooltip, MatCheckbox, PlayerApplicationTeamsComponent, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, PlayerTeamAppOrderComponent]
+    imports: [MatIcon, MatMenu, MatMenuItem, MatExpansionPanel, MatExpansionPanelHeader, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatIconButton, MatMenuTrigger, MatCellDef, MatCell, MatSortHeader, MatTooltip, MatCheckbox, PlayerApplicationTeamsComponent, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, PlayerTeamAppOrderComponent, MatDivider, NgTemplateOutlet]
 })
 export class PlayerApplicationListComponent implements OnDestroy, OnInit {
   private mselQuery = inject(MselQuery);
@@ -60,12 +63,18 @@ export class PlayerApplicationListComponent implements OnDestroy, OnInit {
   private changeDetectorRef = inject(ChangeDetectorRef);
 
   readonly loggedInUserId = input<string>(undefined);
+  // canEdit and showTemplates are set by the admin page, which manages the system-wide templates
+  readonly canEdit = input<boolean>(undefined);
+  readonly showTemplates = input<boolean>(undefined);
   // context menu
   readonly contextMenu = viewChild(MatMenuTrigger);
   readonly appTable = viewChild<MatTable<any>>('appTable');
+  readonly jsonInput = viewChild<ElementRef<HTMLInputElement>>('jsonInput');
   msel = new MselPlus();
   mselTeamList: Team[] = [];
+  // Blueprint's own templates, then the ones Player has, which are offered as a second source
   templateList: PlayerApplication[] = [];
+  playerTemplateList: ApplicationTemplate[] = [];
   playerApplicationList: PlayerApplication[] = [];
   filteredPlayerApplicationList: PlayerApplication[] = [];
   sort: Sort = { active: '', direction: '' };
@@ -85,35 +94,40 @@ export class PlayerApplicationListComponent implements OnDestroy, OnInit {
       this.playerApplicationList = playerApplications;
       this.sortChanged(this.sort);
     });
-    // subscribe to the active MSEL
-    (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
-      Object.assign(this.msel, msel);
-      if (msel) {
-        this.playerApplicationDataService.loadByMsel(msel.id);
-        this.playerApplicationTeamDataService.getPlayerApplicationTeamsFromApi(msel.id);
-      }
-      this.sortedPlayerApplications = this.getSortedPlayerApplications(this.getFilteredPlayerApplications());
-    });
     // subscribe to teams from the store, so a team added on the Teams tab can be added to an application
     this.teamQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(teams => {
       this.mselTeamList = teams;
     });
-    // load playerApplication templates
-    this.playerService.getApplicationTemplates().subscribe(
-      (templates) => {
-        templates.forEach(t => {
-          t.id = '';
-        });
-        this.templateList = templates;
-      },
-      (error) => {
-        console.error('Failed to load Player application templates:', error);
-        this.templateList = [];
-      }
-    );
+    // load Blueprint's playerApplication templates
+    this.playerApplicationDataService.loadTemplates();
   }
 
   ngOnInit() {
+    // the admin page lists the templates alone, with no MSEL behind them
+    if (!this.showTemplates()) {
+      // subscribe to the active MSEL
+      (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
+        Object.assign(this.msel, msel);
+        if (msel) {
+          this.playerApplicationDataService.loadByMsel(msel.id);
+          this.playerApplicationTeamDataService.getPlayerApplicationTeamsFromApi(msel.id);
+        }
+        this.sortedPlayerApplications = this.getSortedPlayerApplications(this.getFilteredPlayerApplications());
+      });
+      // load Player's application templates, offered after Blueprint's own
+      this.playerService.getApplicationTemplates().subscribe(
+        (templates) => {
+          this.playerTemplateList = templates || [];
+        },
+        (error) => {
+          console.error('Failed to load Player application templates:', error);
+          this.playerTemplateList = [];
+        }
+      );
+    } else {
+      // the store may already hold templates, which the constructor filtered before this input was set
+      this.sortChanged(this.sort);
+    }
     // Load permissions and trigger change detection when loaded
     this.permissionDataService.load()
       .pipe(takeUntil(this.unsubscribe$))
@@ -135,6 +149,17 @@ export class PlayerApplicationListComponent implements OnDestroy, OnInit {
       this.msel.hasRole(this.loggedInUserId(), '').editor;
   }
 
+  // whether the rows shown can be added, edited and deleted: the templates on the admin page, or a MSEL's applications
+  canEditList(): boolean {
+    return this.showTemplates()
+      ? !!this.canEdit()
+      : this.canEditMsel() || this.msel.hasRole(this.loggedInUserId(), null).owner;
+  }
+
+  canManageTemplates(): boolean {
+    return this.permissionDataService.hasPermission(SystemPermission.ManagePlayerApplications);
+  }
+
   expandPlayerApplication(playerApplicationId: string) {
     if (playerApplicationId === this.expandedId) {
       this.expandedId = '';
@@ -144,6 +169,10 @@ export class PlayerApplicationListComponent implements OnDestroy, OnInit {
   }
 
   rowClicked(row: PlayerApplication) {
+    // a template is on no team, so it has no team selection to expand
+    if (this.showTemplates()) {
+      return;
+    }
     this.expandPlayerApplication(row.id);
     this.appTable().renderRows();
   }
@@ -157,7 +186,8 @@ export class PlayerApplicationListComponent implements OnDestroy, OnInit {
   addOrEditPlayerApplication(playerApplication: PlayerApplication, dialogTitle: string) {
     if (!playerApplication) {
       playerApplication = {
-        mselId: this.msel.id,
+        mselId: this.showTemplates() ? null : this.msel.id,
+        isTemplate: !!this.showTemplates(),
         name: '',
         url: '',
         icon: '',
@@ -166,7 +196,6 @@ export class PlayerApplicationListComponent implements OnDestroy, OnInit {
       };
     } else {
       playerApplication = { ...playerApplication };
-      playerApplication.mselId = this.msel.id;
     }
     const dialogRef = this.dialog.open(PlayerApplicationEditDialogComponent, {
       minWidth: '700px',
@@ -188,6 +217,33 @@ export class PlayerApplicationListComponent implements OnDestroy, OnInit {
     });
   }
 
+  /**
+   * Opens the add dialog with a copy of a template's values: a Blueprint template, or one of Player's.
+   * The copy is a new application of this MSEL, so it takes neither the template's id nor its flag.
+   */
+  addFromTemplate(template: PlayerApplication | ApplicationTemplate) {
+    this.addOrEditPlayerApplication(this.copyOf(template, this.msel.id, false), 'Add a Player Application');
+  }
+
+  /**
+   * Opens the add dialog for a new template carrying a MSEL application's values.
+   */
+  makeTemplate(playerApplication: PlayerApplication) {
+    this.addOrEditPlayerApplication(this.copyOf(playerApplication, null, true), 'Add a Player Application Template');
+  }
+
+  private copyOf(source: PlayerApplication | ApplicationTemplate, mselId: string, isTemplate: boolean): PlayerApplication {
+    return {
+      mselId: mselId,
+      isTemplate: isTemplate,
+      name: source.name,
+      url: source.url,
+      icon: source.icon,
+      embeddable: source.embeddable,
+      loadInBackground: source.loadInBackground,
+    };
+  }
+
   savePlayerApplication(playerApplication: PlayerApplication) {
     if (playerApplication.id) {
       this.playerApplicationDataService.updatePlayerApplication(playerApplication);
@@ -198,8 +254,9 @@ export class PlayerApplicationListComponent implements OnDestroy, OnInit {
   }
 
   deletePlayerApplication(playerApplication: PlayerApplication): void {
+    const title = this.showTemplates() ? 'Delete Player Application Template' : 'Delete PlayerApplication';
     this.dialogService
-      .confirm({ title: 'Delete PlayerApplication', message: 'Are you sure that you want to delete ' + playerApplication.name + '?'
+      .confirm({ title: title, message: 'Are you sure that you want to delete ' + playerApplication.name + '?'
        }).afterClosed().subscribe((result) => {
         if (result) {
           this.playerApplicationDataService.delete(playerApplication.id);
@@ -208,22 +265,73 @@ export class PlayerApplicationListComponent implements OnDestroy, OnInit {
       });
   }
 
+  selectFile(e: Event) {
+    const input = e.target as HTMLInputElement;
+    const file = input.files && input.files[0];
+    if (!file) {
+      return;
+    }
+    this.playerApplicationDataService.uploadJson(file, 'events', true);
+    this.jsonInput().nativeElement.value = null;
+  }
+
+  openDownloadDialog() {
+    const items = (this.templateList || []).map((a) => ({
+      id: a.id,
+      label: a.name || a.id,
+    }));
+    const dialogRef = this.dialog.open(ItemDownloadDialogComponent, {
+      maxWidth: '90vw',
+      width: 'auto',
+      data: {
+        title: 'Select Player Application templates to download',
+        items,
+      },
+    });
+    dialogRef.afterClosed().subscribe((selectedIds: string[] | undefined) => {
+      if (selectedIds && selectedIds.length > 0) {
+        this.downloadJsonItems(selectedIds);
+      }
+    });
+  }
+
+  downloadJsonItems(ids: string[]) {
+    this.playerApplicationDataService.downloadJson(ids).subscribe(
+      (data) => {
+        const url = window.URL.createObjectURL(data);
+        const link = document.createElement('a');
+        link.href = url;
+        link.target = '_blank';
+        link.download = 'player-application-templates.json';
+        link.click();
+        window.URL.revokeObjectURL(url);
+      },
+      (err) => {
+        window.alert('Error downloading file');
+      }
+    );
+  }
+
   sortChanged(sort: Sort) {
     this.sort = sort;
     this.sortedPlayerApplications = this.getSortedPlayerApplications(
       this.getFilteredPlayerApplications()
     );
+    this.templateList = (this.playerApplicationList || [])
+      .filter((pa) => pa.isTemplate && !pa.mselId)
+      .sort((a, b) => ((a.name || '').toLowerCase() < (b.name || '').toLowerCase() ? -1 : 1));
   }
 
   getFilteredPlayerApplications(): PlayerApplication[] {
     const playerApplications = this.playerApplicationList;
-    const mselId = this.msel?.id;
+    const showTemplates = !!this.showTemplates();
+    const mselId = showTemplates ? '' : this.msel?.id;
     const filteredPlayerApplications: PlayerApplication[] = [];
     if (playerApplications) {
       playerApplications.forEach((playerApplication) => {
         if (
           (mselId && playerApplication.mselId === mselId) ||
-          (!mselId && !playerApplication.mselId)
+          (showTemplates && !playerApplication.mselId && playerApplication.isTemplate)
         ) {
           filteredPlayerApplications.push({ ...playerApplication });
         }

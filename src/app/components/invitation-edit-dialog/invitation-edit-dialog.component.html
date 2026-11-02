@@ -31,6 +31,21 @@ project root for license information.
         }
       </div>
     </div>
+    @if (data.useCite) {
+    <div class="add-margin">
+      <div>
+        <mat-form-field class="full-width">
+          <mat-label>CITE Team Role</mat-label>
+          <mat-select [(ngModel)]="data.invitation.citeTeamRole">
+            @for (role of data.citeTeamRoles; track role) {
+            <mat-option [value]="role">{{ role }}</mat-option>
+            }
+          </mat-select>
+          <mat-hint>What people who join through this invitation can do in CITE. Member can view the team but not answer.</mat-hint>
+        </mat-form-field>
+      </div>
+    </div>
+    }
     <div class="add-margin">
       <div>
         <mat-form-field class="full-width">

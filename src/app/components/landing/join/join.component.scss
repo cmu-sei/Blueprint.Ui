@@ -83,12 +83,20 @@
   background-position: center;
 }
 
+// Every title takes two lines' room, so the descriptions start level across a row; a longer
+// title ends in an ellipsis, with the full name in a tooltip (appOverflowTooltip).
 .card-title {
   font: var(--mat-sys-title-large);
   color: var(--mat-sys-on-surface);
   margin-top: 0;
   margin-bottom: 0.5rem;
   overflow-wrap: anywhere;
+  min-height: calc(2 * var(--mat-sys-title-large-line-height));
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .card-description {
@@ -99,8 +107,8 @@
   margin-bottom: 1rem;
   overflow-wrap: anywhere;
   display: -webkit-box;
-  -webkit-line-clamp: 4;
-  line-clamp: 4;
+  -webkit-line-clamp: 5;
+  line-clamp: 5;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }

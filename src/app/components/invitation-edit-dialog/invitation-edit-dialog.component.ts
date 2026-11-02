@@ -5,7 +5,7 @@
 import { Component, inject, output } from '@angular/core';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { CrucibleDialogComponent, CrucibleDialogContentDirective } from '@cmusei/crucible-common';
-import { MatFormField, MatLabel, MatInput, MatSuffix } from '@angular/material/input';
+import { MatFormField, MatLabel, MatInput, MatSuffix, MatHint } from '@angular/material/input';
 import { MatSelect } from '@angular/material/select';
 import { FormsModule } from '@angular/forms';
 import { MatOption } from '@angular/material/autocomplete';
@@ -20,7 +20,7 @@ import { TimezoneAbbrPipe } from '../../utilities/timezone-abbr';
     selector: 'app-invitation-edit-dialog',
     templateUrl: './invitation-edit-dialog.component.html',
     styleUrls: ['./invitation-edit-dialog.component.scss'],
-    imports: [CrucibleDialogComponent, CrucibleDialogContentDirective, MatFormField, MatLabel, MatSelect, FormsModule, MatOption, MatInput, NgxMatDatepickerInput, MatDatepickerToggle, MatSuffix, NgxMatDatetimepicker, NgxMatDatepickerActions, MatButton, NgxMatDatepickerApply, NgxMatDatepickerCancel, MatCheckbox, DatePipe, TimezoneAbbrPipe]
+    imports: [CrucibleDialogComponent, CrucibleDialogContentDirective, MatFormField, MatLabel, MatHint, MatSelect, FormsModule, MatOption, MatInput, NgxMatDatepickerInput, MatDatepickerToggle, MatSuffix, NgxMatDatetimepicker, NgxMatDatepickerActions, MatButton, NgxMatDatepickerApply, NgxMatDatepickerCancel, MatCheckbox, DatePipe, TimezoneAbbrPipe]
 })
 
 export class InvitationEditDialogComponent {
