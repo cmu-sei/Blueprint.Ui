@@ -25,6 +25,8 @@ import { Observable }                                        from 'rxjs';
 // @ts-ignore
 import { Msel } from '../model/msel';
 // @ts-ignore
+import { MselImageRequest } from '../model/mselImageRequest';
+// @ts-ignore
 import { ProblemDetails } from '../model/problemDetails';
 
 // @ts-ignore
@@ -107,13 +109,14 @@ export class MselImageService extends BaseService {
      * Makes the image of a Msel with AI
      * Asks the server\&#39;s image model for a picture of the MSEL\&#39;s scenario, replaces the MSEL\&#39;s image with it, and returns the updated Msel. A server without an image model answers 400.
      * @param id The id of the Msel
+     * @param mselImageRequest What the picture should show or change; optional
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public generateMselImage(id: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<Msel>;
-    public generateMselImage(id: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Msel>>;
-    public generateMselImage(id: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Msel>>;
-    public generateMselImage(id: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public generateMselImage(id: string, mselImageRequest?: MselImageRequest, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<Msel>;
+    public generateMselImage(id: string, mselImageRequest?: MselImageRequest, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Msel>>;
+    public generateMselImage(id: string, mselImageRequest?: MselImageRequest, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Msel>>;
+    public generateMselImage(id: string, mselImageRequest?: MselImageRequest, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (id === null || id === undefined) {
             throw new Error('Required parameter id was null or undefined when calling generateMselImage.');
         }
@@ -134,6 +137,17 @@ export class MselImageService extends BaseService {
 
         const localVarHttpContext: HttpContext = options?.context ?? new HttpContext();
 
+        // to determine the Content-Type header
+        const consumes: string[] = [
+            'application/json',
+            'text/json',
+            'application/*+json'
+        ];
+        const httpContentTypeSelected: string | undefined = this.configuration.selectHeaderContentType(consumes);
+        if (httpContentTypeSelected !== undefined) {
+            localVarHeaders = localVarHeaders.set('Content-Type', httpContentTypeSelected);
+        }
+
         const localVarTransferCache: boolean = options?.transferCache ?? true;
 
 
@@ -153,6 +167,7 @@ export class MselImageService extends BaseService {
         return this.httpClient.request<Msel>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
+                body: mselImageRequest,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,

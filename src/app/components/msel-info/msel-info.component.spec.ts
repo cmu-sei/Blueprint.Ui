@@ -33,6 +33,7 @@ import { ClipboardModule } from 'ngx-clipboard';
 import { NgxMatDatepickerActions, NgxMatDatepickerApply, NgxMatDatepickerCancel, NgxMatDatepickerInput, NgxMatDatetimepicker } from '@ngxmc/datetime-picker';
 import { ComnSettingsService, CrucibleDialogService } from '@cmusei/crucible-common';
 import {
+  MselImageRequest,
   CasterDirectory,
   CasterService,
   CiteService,
@@ -184,7 +185,7 @@ async function renderInfo(
     getMselImage: vi.fn(() => of(new Blob(['image'], { type: 'image/png' }))),
     setMselImage: vi.fn((id: string) => of<Msel>({ ...msel(myRoles, startTime, mselExtra), id, imageDateModified: new Date('2026-10-23T12:00:00Z') })),
     deleteMselImage: vi.fn((id: string) => of<Msel>({ ...msel(myRoles, startTime, mselExtra), id, imageDateModified: null })),
-    generateMselImage: vi.fn((id: string) => of<Msel>({ ...msel(myRoles, startTime, mselExtra), id, imageDateModified: new Date('2026-10-23T13:00:00Z') })),
+    generateMselImage: vi.fn((id: string, _request?: MselImageRequest) => of<Msel>({ ...msel(myRoles, startTime, mselExtra), id, imageDateModified: new Date('2026-10-23T13:00:00Z') })),
   } satisfies ApiStub<MselImageService>;
   const scoringModelApi = {
     getMselScoringModel: vi.fn(() => of(structuredClone(authored))),
@@ -779,26 +780,32 @@ describe('MselInfoComponent', () => {
     });
 
     /**
-     * Verifies: Generate Image asks the API for a picture of the scenario and shows the result as Regenerate Image; the preview
-     * opens the image at full size.
+     * Verifies: Generate Image opens the picture dialog, and its answer asks the API for a picture with the planner's words; the
+     * result shows as the preview with Regenerate Image, and the preview opens the dialog with the image.
      * Interacts with: MselImageService.generateMselImage (stub), MselImageService.getMselImage (stub), the harness's empty MatDialog given an open stub.
-     * Data: MSEL role Owner; no image, then the generated one.
+     * Data: MSEL role Owner; no image, then the generated one; the dialog answers "the plant at night".
      */
-    it('generates an image from the scenario and opens it at full size', async () => {
+    it('asks for an image through the picture dialog and shows it', async () => {
       const { fixture, imageApi } = await renderInfo({ myRoles: [MselRole.Owner] });
       // the harness gives the component an empty MatDialog, so the real dialog, its focus trap and its animations stay out of the test
       const info = fixture.componentInstance as unknown as { dialog: Pick<MatDialog, 'open'> };
-      const open = vi.fn(() => ({ afterClosed: () => of(undefined) }) as unknown as ReturnType<MatDialog['open']>);
+      let answer: { prompt: string } | undefined = { prompt: 'the plant at night' };
+      const open = vi.fn(() => ({ afterClosed: () => of(answer) }) as unknown as ReturnType<MatDialog['open']>);
       info.dialog.open = open;
       const user = userEvent.setup();
 
       await user.click(screen.getByRole('button', { name: 'Generate Image' }));
       fixture.detectChanges();
 
-      expect(imageApi.generateMselImage.mock.calls).toEqual([['msel-1']]);
+      expect(open).toHaveBeenCalledWith(MselImageDialogComponent, expect.objectContaining({ data: { url: null, name: 'Exercise Alpha', canGenerate: true } }));
+      expect(imageApi.generateMselImage.mock.calls).toEqual([['msel-1', { prompt: 'the plant at night' }]]);
       expect(screen.getByRole('button', { name: 'Regenerate Image' })).toBeInTheDocument();
+
+      // the preview opens the same dialog with the picture; closing it without an answer asks for nothing
+      answer = undefined;
       await user.click(screen.getByRole('button', { name: 'Card image for Exercise Alpha' }));
-      expect(open).toHaveBeenCalledWith(MselImageDialogComponent, expect.objectContaining({ data: { url: 'blob:card', name: 'Exercise Alpha' } }));
+      expect(open).toHaveBeenLastCalledWith(MselImageDialogComponent, expect.objectContaining({ data: { url: 'blob:card', name: 'Exercise Alpha', canGenerate: true } }));
+      expect(imageApi.generateMselImage).toHaveBeenCalledTimes(1);
     });
 
     /**

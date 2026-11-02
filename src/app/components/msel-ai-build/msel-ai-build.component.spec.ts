@@ -74,10 +74,10 @@ describe('MselAiBuildComponent', () => {
    * Data: a run 1:15 in, 12 injects and 4 CITE tasks written so far.
    */
   it('shows the injects being written and cancels', async () => {
-    const { buildService, user } = await renderBanner('Injects', running({ counts: { injects: 12, citeActions: 4 } }));
+    const { buildService, user } = await renderBanner('Injects', running({ counts: { moves: 3, injects: 12, citeActions: 4 } }));
 
     expect(screen.getByText('Outlining the injects, CITE tasks and read-in.')).toBeInTheDocument();
-    expect(screen.getByText(/12 injects, 4 CITE tasks so far\./)).toBeInTheDocument();
+    expect(screen.getByText(/3 move briefings, 12 injects, 4 CITE tasks so far\./)).toBeInTheDocument();
     expect(screen.getByTitle('Time drafting')).toHaveTextContent('1:15');
 
     await user.click(screen.getByRole('button', { name: 'Cancel' }));

@@ -30,7 +30,7 @@ import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { canUpdateMsel, integrationsLocked, isPipelineStatus } from 'src/app/utilities/msel-permissions';
 import { MselImageDataService } from 'src/app/data/msel/msel-image-data.service';
-import { MselImageDialogComponent } from '../msel-image-dialog/msel-image-dialog.component';
+import { MselImageDialogComponent, MselImageDialogData, MselImageDialogResult } from '../msel-image-dialog/msel-image-dialog.component';
 import { ErrorService } from 'src/app/services/error/error.service';
 import { SystemMessageService } from 'src/app/services/system-message/system-message.service';
 import { MatMenuTrigger, MatMenu, MatMenuItem } from '@angular/material/menu';
@@ -548,14 +548,22 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     });
   }
 
-  // the image at full size, since the card preview is small
+  // the image at full size, since the card preview is small, and the way to ask for a new one
   viewMselImage() {
-    this.dialog.open(MselImageDialogComponent, { data: { url: this.mselImageUrl, name: this.msel.name }, maxWidth: '95vw' });
+    const data: MselImageDialogData = { url: this.mselImageUrl, name: this.msel.name, canGenerate: this.canSetMselImage() };
+    this.dialog
+      .open<MselImageDialogComponent, MselImageDialogData, MselImageDialogResult>(MselImageDialogComponent, { data, maxWidth: '95vw' })
+      .afterClosed()
+      .subscribe((result) => {
+        if (result) {
+          this.generateMselImage(result.prompt);
+        }
+      });
   }
 
-  generateMselImage() {
+  generateMselImage(prompt: string) {
     this.isImageBusy = true;
-    this.mselImageDataService.generateImage(this.msel.id).subscribe({
+    this.mselImageDataService.generateImage(this.msel.id, prompt).subscribe({
       next: () => (this.isImageBusy = false),
       error: (err) => {
         this.isImageBusy = false;

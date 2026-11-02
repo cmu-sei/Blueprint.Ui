@@ -96,8 +96,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
               <button mat-stroked-button [disabled]="isImageBusy" (click)="mselImageInput.click()">
                 {{ msel.imageDateModified ? 'Replace Image' : 'Upload Image' }}
               </button>
-              <button mat-stroked-button [disabled]="isImageBusy" (click)="generateMselImage()"
-                matTooltip="Asks the server's image model for a picture of the MSEL's scenario, replacing this one">
+              <button mat-stroked-button [disabled]="isImageBusy" (click)="viewMselImage()"
+                matTooltip="Asks the server's image model for a picture of the MSEL's scenario, and of what you ask for, replacing this one">
                 {{ msel.imageDateModified ? 'Regenerate Image' : 'Generate Image' }}
               </button>
               @if (msel.imageDateModified) {

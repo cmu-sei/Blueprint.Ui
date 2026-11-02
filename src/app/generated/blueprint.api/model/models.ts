@@ -225,3 +225,4 @@ export * from './unitUser';
 export * from './user';
 export * from './userMselRole';
 export * from './userTeamRole';
+export * from './mselImageRequest';

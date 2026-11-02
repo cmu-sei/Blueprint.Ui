@@ -1,6 +1,16 @@
 .full-image {
   display: block;
   max-width: 100%;
-  max-height: 80vh;
-  margin: 0 auto;
+  max-height: 70vh;
+  margin: 0 auto 1rem;
+}
+
+.no-image {
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.full-width {
+  width: 100%;
+  min-width: 32rem;
+  max-width: 48rem;
 }

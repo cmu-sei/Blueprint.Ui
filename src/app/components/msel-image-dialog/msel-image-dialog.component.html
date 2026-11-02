@@ -5,9 +5,23 @@ Released under a MIT (SEI)-style license. See LICENSE.md in the project root for
 
 <crucible-dialog [dialogTitle]="data.name" [hideDefaultActions]="true">
   <ng-container crucibleDialogContent>
+    @if (data.url) {
     <img class="full-image" [src]="data.url" alt="Card image for {{ data.name }}" />
+    } @else {
+    <p class="no-image">No image yet. The picture is made from the MSEL's scenario.</p>
+    }
+    @if (data.canGenerate) {
+    <mat-form-field class="full-width">
+      <mat-label>What should the picture show or change?</mat-label>
+      <textarea matInput rows="2" [(ngModel)]="prompt" placeholder="e.g. the control room at night, no people, rain on the windows"></textarea>
+      <mat-hint>Optional. Left empty, the picture is made again from the scenario, and may come out much the same.</mat-hint>
+    </mat-form-field>
+    }
   </ng-container>
   <ng-container crucibleDialogActions>
-    <button matButton="filled" type="button" (click)="close()">Close</button>
+    <button matButton="outlined" type="button" (click)="close()">Close</button>
+    @if (data.canGenerate) {
+    <button matButton="filled" type="button" (click)="generate()">{{ data.url ? 'Regenerate' : 'Generate' }}</button>
+    }
   </ng-container>
 </crucible-dialog>
