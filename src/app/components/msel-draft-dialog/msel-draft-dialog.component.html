@@ -206,7 +206,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <mat-hint>The furthest the scenario may go, which no inject passes, e.g. no loss of life. In the Facilitator Guide.</mat-hint>
         </mat-form-field>
         }
-        @if (result.draft.objectives?.length) {
         <h3 class="section-title">Objectives</h3>
         <p class="hint">On the Exercise Overview page participants see, and checked in the after-action review.</p>
         <table class="design-table" aria-label="Objectives">
@@ -229,7 +228,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
             }
           </tbody>
         </table>
-        }
+        <button matButton type="button" class="add-row" (click)="addObjective()">
+          <mat-icon fontIcon="mdi-plus"></mat-icon> Add objective
+        </button>
         @if (citeModelNote) {
         <p class="hint">{{ citeModelNote }}</p>
         }
@@ -259,13 +260,16 @@ project root for license information or contact permission@sei.cmu.edu for full 
         and a hot wash after ENDEX; these moves become moves 1 and on.</p>
       <table class="design-table" aria-label="Moves">
         <thead>
-          <tr><th>Move</th><th>Starts</th><th>Scenario time</th><th>Title</th><th>Purpose</th></tr>
+          <tr><th>Move</th><th>Starts (minutes)</th><th>Scenario time</th><th>Title</th><th>Purpose</th><th></th></tr>
         </thead>
         <tbody>
-          @for (move of result.draft.moves; track move.moveNumber) {
+          @for (move of result.draft.moves; track move) {
           <tr>
             <td class="narrow"><strong>{{ move.moveNumber }}</strong></td>
-            <td class="narrow">{{ formatMinutes(move.startMinutes) }}</td>
+            <td class="narrow">
+              <input class="cell-input minutes" type="number" min="0" [(ngModel)]="move.startMinutes" (change)="sortMoves()"
+                [attr.aria-label]="'Move ' + move.moveNumber + ' starts'" [title]="formatMinutes(move.startMinutes) + ' on the exercise clock'" />
+            </td>
             <td class="time">
               @if (move.situationTime) {
               {{ move.situationTime | date: 'dd MMM yyyy HH:mm' }} {{ move.situationTime | timezoneAbbr }}
@@ -273,10 +277,18 @@ project root for license information or contact permission@sei.cmu.edu for full 
             </td>
             <td><textarea class="cell-input" rows="2" [(ngModel)]="move.description" [attr.aria-label]="'Move ' + move.moveNumber + ' title'"></textarea></td>
             <td><textarea class="cell-input" rows="2" [(ngModel)]="move.purpose" [attr.aria-label]="'Move ' + move.moveNumber + ' purpose'"></textarea></td>
+            <td class="narrow">
+              <button mat-icon-button type="button" [title]="'Remove move ' + move.moveNumber" (click)="removeMove(move)">
+                <mat-icon fontIcon="mdi-close"></mat-icon>
+              </button>
+            </td>
           </tr>
           }
         </tbody>
       </table>
+      <button matButton type="button" class="add-row" (click)="addMove()">
+        <mat-icon fontIcon="mdi-plus"></mat-icon> Add move
+      </button>
     </mat-tab>
 
     <mat-tab [label]="'Teams and organizations (' + teamsAndOrganizations.length + ')'">
@@ -366,10 +378,16 @@ project root for license information or contact permission@sei.cmu.edu for full 
           }
         </tbody>
       </table>
+      <button matButton type="button" class="add-row" (click)="addTeam()">
+        <mat-icon fontIcon="mdi-plus"></mat-icon> Add team
+      </button>
+      <button matButton type="button" class="add-row" (click)="addOrganization()">
+        <mat-icon fontIcon="mdi-plus"></mat-icon> Add organization
+      </button>
     </mat-tab>
 
-    @if (result.draft.cards?.length) {
-    <mat-tab [label]="'Gallery cards (' + result.draft.cards.length + ')'">
+    @if (result.draft.cards?.length || templateUsesGallery) {
+    <mat-tab [label]="'Gallery cards (' + (result.draft.cards?.length ?? 0) + ')'">
       <p class="hint tab-hint">The cards on the Gallery wall. Each article is written for one of them.</p>
       <table class="design-table" aria-label="Gallery cards">
         <thead>
@@ -389,6 +407,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
           }
         </tbody>
       </table>
+      <button matButton type="button" class="add-row" (click)="addCard()">
+        <mat-icon fontIcon="mdi-plus"></mat-icon> Add card
+      </button>
     </mat-tab>
     }
   </mat-tab-group>

@@ -34,6 +34,7 @@ import {
   MselBuildService,
   MselDraftDesign,
   MselDraftCompetency,
+  MselDraftMove,
   MselDraftOrganization,
   MselDraftResult,
   MselDraftTeam,
@@ -286,6 +287,72 @@ export class MselDraftDialogComponent {
 
   removeCard(index: number) {
     this.result.draft.cards = this.result.draft.cards.filter((_, i) => i !== index);
+  }
+
+  // what the planner adds to the design is written for like the rest: the injects step writes to the reviewed design
+  addCard() {
+    this.result.draft.cards = [...(this.result.draft.cards ?? []), { name: '', description: '' }];
+  }
+
+  addObjective() {
+    const numbers = (this.result.draft.objectives ?? []).map((o) => Number(/^O(\d+)$/.exec(o.id ?? '')?.[1] ?? 0));
+    const id = `O${Math.max(0, ...numbers) + 1}`;
+    this.result.draft.objectives = [...(this.result.draft.objectives ?? []), { id, task: '', condition: '', standard: '', competencies: [] }];
+  }
+
+  // a new move starts half an hour after the last, a day later on the scenario clock, with as many injects as an average move
+  addMove() {
+    const moves = this.result.draft.moves ?? [];
+    const last = moves[moves.length - 1];
+    const planned = moves.map((m) => m.plannedInjects ?? 0).filter((n) => n > 0);
+    const situationTime = last?.situationTime ? new Date(new Date(last.situationTime).getTime() + 24 * 3600 * 1000).toISOString() : undefined;
+    this.result.draft.moves = [
+      ...moves,
+      {
+        moveNumber: Math.max(-1, ...moves.map((m) => m.moveNumber ?? 0)) + 1,
+        description: '',
+        purpose: '',
+        startMinutes: (last?.startMinutes ?? -30) + 30,
+        situationTime,
+        plannedInjects: planned.length ? Math.round(planned.reduce((a, b) => a + b, 0) / planned.length) : 8,
+        expectedDecisions: [],
+        citeQuestions: [],
+      },
+    ];
+  }
+
+  removeMove(move: MselDraftMove) {
+    this.result.draft.moves = this.result.draft.moves.filter((m) => m !== move);
+    this.renumberMoves();
+  }
+
+  // moves run in start order and are numbered in it, as the MSEL numbers them
+  sortMoves() {
+    this.result.draft.moves = [...this.result.draft.moves].sort((a, b) => (a.startMinutes ?? 0) - (b.startMinutes ?? 0));
+    this.renumberMoves();
+  }
+
+  private renumberMoves() {
+    const first = Math.min(...this.result.draft.moves.map((m) => m.moveNumber ?? 0), 0);
+    this.result.draft.moves.forEach((m, i) => (m.moveNumber = first + i));
+  }
+
+  addTeam() {
+    this.result.draft.teams = [...(this.result.draft.teams ?? []), { shortName: this.newShortName('TEAM'), name: '', description: '', competencies: [], duties: [] }];
+  }
+
+  addOrganization() {
+    this.result.draft.organizations = [...(this.result.draft.organizations ?? []), { shortName: this.newShortName('ORG'), name: '', description: '', summary: '' }];
+  }
+
+  // short names are unique across teams and organizations; the planner renames it
+  private newShortName(prefix: string): string {
+    const taken = new Set(this.teamsAndOrganizations.map((o) => o.shortName?.toUpperCase()));
+    let i = 1;
+    while (taken.has(`${prefix}${i}`)) {
+      i++;
+    }
+    return `${prefix}${i}`;
   }
 
   // the planner removes a competency from a team; the MSEL keeps only those still used

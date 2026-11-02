@@ -425,6 +425,48 @@ describe('MselDraftDialogComponent', () => {
   });
 
   /**
+   * Verifies: the planner can add to the design as well as remove: an objective numbered after the last, a move half an hour
+   * after the last and a day later on the scenario clock, a team and an organization with unique short names, and a card; a move
+   * whose start is moved is put in order and the moves renumbered. What was added goes with Create MSEL.
+   * Interacts with: the Add buttons on the Design, Moves, Teams and organizations and Gallery cards tabs, MselBuildService.createMselFromDesign.
+   * Data: the draft with O1, moves 0 and 1 and BLUE and NEWS; the new move moved to start at 10 minutes.
+   */
+  it('adds objectives, moves, teams, organizations and cards to the design', async () => {
+    const { createMselFromDesign } = await renderDraftDialog(() => of(designResult()), [{ id: 'tpl-1', name: 'Template', useGallery: true }]);
+    const user = userEvent.setup();
+    await user.type(screen.getByRole('textbox', { name: 'Exercise description' }), 'A grid attack.');
+    await user.click(screen.getByRole('button', { name: 'Draft' }));
+
+    await user.click(screen.getByRole('tab', { name: 'Design' }));
+    await user.click(screen.getByRole('button', { name: 'Add objective' }));
+    await user.type(screen.getByRole('textbox', { name: 'O2 task' }), 'Brief the governor');
+
+    await user.click(screen.getByRole('tab', { name: /^Moves/ }));
+    await user.click(screen.getByRole('button', { name: 'Add move' }));
+    await user.type(screen.getByRole('textbox', { name: 'Move 2 title' }), 'Restoration');
+    const start = screen.getByRole('spinbutton', { name: 'Move 2 starts' });
+    await user.clear(start);
+    await user.type(start, '10');
+    start.dispatchEvent(new Event('change'));
+
+    await user.click(screen.getByRole('tab', { name: /^Teams and organizations/ }));
+    await user.click(screen.getByRole('button', { name: 'Add team' }));
+    await user.click(screen.getByRole('button', { name: 'Add organization' }));
+    await user.click(screen.getByRole('tab', { name: /^Gallery cards/ }));
+    await user.click(screen.getByRole('button', { name: 'Add card' }));
+    await user.click(screen.getByRole('button', { name: 'Create MSEL' }));
+
+    const draft = (createMselFromDesign.mock.calls[0] as unknown as [{ draft: MselDraftResult['draft'] }])[0].draft;
+    expect(draft.objectives.map((o) => o.id)).toEqual(['O1', 'O2']);
+    expect(draft.objectives[1].task).toBe('Brief the governor');
+    // the new move, moved to minute 10, comes between the two and the moves are renumbered
+    expect(draft.moves.map((m) => [m.moveNumber, m.description, m.startMinutes])).toEqual([[0, 'Landfall', 0], [1, 'Restoration', 10], [2, 'Recovery', 60]]);
+    expect(draft.teams.map((t) => t.shortName)).toEqual(['BLUE', 'TEAM1']);
+    expect(draft.organizations.map((o) => o.shortName)).toEqual(['NEWS', 'ORG1']);
+    expect(draft.cards).toHaveLength(2);
+  });
+
+  /**
    * Verifies: a team's competencies are labelled, and one of the chosen frameworks' competencies can be added as well as removed;
    * the MSEL's competencies follow.
    * Interacts with: CompetencyFrameworkService.getCompetencyFramework (stub), the Teams and organizations tab, MselBuildService.createMselFromDesign.

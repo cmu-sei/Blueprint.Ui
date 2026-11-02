@@ -214,3 +214,13 @@
     appearance: auto;
   }
 }
+
+// adds a row under a review table; what is added is written for like the rest
+.add-row {
+  margin-top: 0.5rem;
+  margin-right: 0.5rem;
+}
+
+.cell-input.minutes {
+  width: 5rem;
+}
