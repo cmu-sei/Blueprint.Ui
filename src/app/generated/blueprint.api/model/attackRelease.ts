@@ -22,6 +22,10 @@ export interface AttackRelease {
     modifiedBy?: string | null;
     id?: string;
     domain?: string | null;
+    /**
+     * Whether the release\'s techniques are defences (MITRE D3FEND) rather than attacks (ATT&CK, ATLAS).
+     */
+    isDefensive?: boolean;
     version?: string | null;
     name?: string | null;
     description?: string | null;
