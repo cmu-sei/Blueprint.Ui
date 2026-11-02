@@ -1,7 +1,7 @@
 // Copyright 2026 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, ElementRef, Input, OnDestroy, AfterViewInit, inject, input, viewChild } from '@angular/core';
+import { Component, Input, OnDestroy, AfterViewInit, inject, input, viewChild } from '@angular/core';
 import { UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatTableDataSource, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatRowDef, MatRow, MatHeaderRowDef, MatHeaderRow } from '@angular/material/table';
 import { animate, state, style, transition, trigger } from '@angular/animations';
@@ -119,13 +119,11 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
   relatedTypes: string[] = [];
   readonly availablePaginator = viewChild<MatPaginator>('availablePaginator');
   readonly relatedPaginator = viewChild<MatPaginator>('relatedPaginator');
-  readonly jsonInput = viewChild<ElementRef<HTMLInputElement>>('jsonInput');
   private expandedComp: Competency = null;
   private currentRelatedIdNumbers: string[] = [];
   private relatedFilterSub: Subscription;
   private relatedSideFilterSub: Subscription;
 
-  importing = false;
   importError = '';
 
   constructor() {
@@ -279,30 +277,6 @@ export class AdminCompetencyFrameworksComponent implements OnDestroy, AfterViewI
           this.expandedElementId = '';
         }
       });
-  }
-
-  selectJsonFile(e: Event): void {
-    const input = e.target as HTMLInputElement;
-    const file = input.files && input.files[0];
-    if (!file) {
-      return;
-    }
-    this.importing = true;
-    this.importError = '';
-    // No importId: this path shows only a spinner, so there is no progress to poll.
-    this.competencyFrameworkService.importCompetencyFrameworkJson(undefined, file)
-      .pipe(take(1))
-      .subscribe({
-        next: (created) => {
-          this.competencyFrameworkDataService.updateStore(created);
-          this.importing = false;
-        },
-        error: (err) => {
-          this.importing = false;
-          this.importError = 'Import failed: ' + (err.error?.title || err.message || 'Unknown error');
-        },
-      });
-    this.jsonInput().nativeElement.value = null;
   }
 
   importFramework(): void {

@@ -35,9 +35,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
           title="Add new competency framework">
           <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle" />
         </button>
-        <button mat-icon-button title="Upload Competency Framework from JSON" style="outline: none;"
-          [disabled]="importing"
-          (click)="jsonInput.click(); $event.stopPropagation();">
+        <button mat-icon-button title="Upload Competency Frameworks" style="outline: none;"
+          (click)="importFramework(); $event.stopPropagation();">
           <mat-icon class="mdi-24px" fontIcon="mdi-upload" />
         </button>
         <button mat-icon-button title="Download Competency Frameworks as JSON" style="outline: none;"
@@ -566,5 +565,3 @@ project root for license information or contact permission@sei.cmu.edu for full 
   <div class="no-results">No Competency Frameworks found</div>
   }
 </section>
-
-<input hidden type="file" #jsonInput accept=".json" (change)="selectJsonFile($event)" />
