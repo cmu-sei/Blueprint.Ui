@@ -13,7 +13,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
   }
   <div class="text">
     @if (build()?.running) {
-    <p><strong>{{ stepLabel }}.</strong> {{ stepDetail }} <span class="elapsed" title="Time drafting">{{ elapsed() }}</span></p>
+    <p><strong>{{ stepLabel }}.</strong> {{ stepDetail }} <span class="elapsed" title="Time on this step, and in all">{{ elapsed() }}</span></p>
     @if (build()?.step === 'creating') {
     <p class="hint">From the design you reviewed. The injects are written as soon as it exists.</p>
     } @else {

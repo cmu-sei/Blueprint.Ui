@@ -78,7 +78,7 @@ describe('MselAiBuildComponent', () => {
 
     expect(screen.getByText('Outlining the injects, CITE tasks and read-in.')).toBeInTheDocument();
     expect(screen.getByText(/3 move briefings, 12 injects, 4 CITE tasks so far\./)).toBeInTheDocument();
-    expect(screen.getByTitle('Time drafting')).toHaveTextContent('1:15');
+    expect(screen.getByTitle('Time on this step, and in all')).toHaveTextContent('1:15');
 
     await user.click(screen.getByRole('button', { name: 'Cancel' }));
     expect(buildService.cancel).toHaveBeenCalledWith('msel-1');
@@ -101,15 +101,18 @@ describe('MselAiBuildComponent', () => {
   });
 
   /**
-   * Verifies: while articles are written the banner counts them.
+   * Verifies: while articles are written the banner counts them, says how many are being written now and names the last one
+   * done, and its clock shows the step's own time with the whole run's after it.
    * Interacts with: nothing.
-   * Data: 7 of 22 written.
+   * Data: 7 of 22 written, 6 being written, the last "GNN: billing outage"; the step 1:00 into a run 5:00 old.
    */
   it('counts the articles and profiles as they are written', async () => {
-    await renderBanner('Articles', running({ step: 'articles', written: 7, total: 22 }));
+    const now = Date.now();
+    await renderBanner('Articles', running({ step: 'articles', written: 7, total: 22, inProgress: 6, lastDone: 'GNN: billing outage', started: now - 300_000, stepStarted: now - 60_000 }));
 
     expect(screen.getByText('Writing each inject, Gallery article and profile.')).toBeInTheDocument();
-    expect(screen.getByText(/7 of 22\./)).toBeInTheDocument();
+    expect(screen.getByText(/7 of 22 done, 6 being written now\. Last done: GNN: billing outage\./)).toBeInTheDocument();
+    expect(screen.getByTitle('Time on this step, and in all')).toHaveTextContent(/^1:0\d \(5:0\d in all\)$/);
   });
 
   /**

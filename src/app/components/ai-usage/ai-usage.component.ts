@@ -2,9 +2,11 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, effect, inject, input } from '@angular/core';
+import { Component, DestroyRef, effect, inject, input } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DecimalPipe } from '@angular/common';
-import { take } from 'rxjs/operators';
+import { debounceTime, filter, take } from 'rxjs/operators';
+import { SignalRService } from 'src/app/services/signalr.service';
 import { AiUsageService, AiUsageSummary } from 'src/app/generated/blueprint.api';
 
 /**
@@ -36,6 +38,7 @@ export class AiUsageComponent {
   };
 
   private aiUsageService = inject(AiUsageService);
+  private signalRService = inject(SignalRService);
 
   constructor() {
     // the Info page renders before its MSEL loads, and keeps this panel when it switches MSEL
@@ -45,6 +48,15 @@ export class AiUsageComponent {
         this.load(mselId);
       }
     });
+    // each AI call for the MSEL that ends is a call to count, so the table follows a build or an edit as it goes; a burst of
+    // calls, such as articles written six at once, is read once
+    this.signalRService.aiDraftProgress$
+      .pipe(
+        filter((progress) => progress.done && !!progress.mselId && progress.mselId === this.mselId()),
+        debounceTime(2000),
+        takeUntilDestroyed(inject(DestroyRef))
+      )
+      .subscribe(() => this.load(this.mselId()));
   }
 
   private load(mselId: string) {

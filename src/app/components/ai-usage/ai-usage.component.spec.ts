@@ -3,7 +3,8 @@
 
 import { describe, it, expect, vi } from 'vitest';
 import { screen, within } from '@testing-library/angular';
-import { of, throwError } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
+import { AiDraftProgress, SignalRService } from 'src/app/services/signalr.service';
 import { AiUsageService, AiUsageSummary } from 'src/app/generated/blueprint.api';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { AiUsageComponent } from './ai-usage.component';
@@ -26,11 +27,12 @@ const USAGE: AiUsageSummary = {
 
 async function renderUsage(answer: () => any) {
   const getMselAiUsage = vi.fn(answer);
+  const progress = new Subject<AiDraftProgress>();
   const rendered = await renderComponent(AiUsageComponent, {
-    providers: [{ provide: AiUsageService, useValue: { getMselAiUsage } }],
+    providers: [{ provide: AiUsageService, useValue: { getMselAiUsage } }, { provide: SignalRService, useValue: { aiDraftProgress$: progress } }],
     inputs: { mselId: 'msel-1' },
   });
-  return { ...rendered, getMselAiUsage };
+  return { ...rendered, getMselAiUsage, progress };
 }
 
 describe('AiUsageComponent', () => {
@@ -93,6 +95,32 @@ describe('AiUsageComponent', () => {
   });
 
   /**
+   * Verifies: the table follows the AI calls as they end: a burst for the MSEL is read once, two seconds after its last call;
+   * another MSEL's calls, and calls still streaming, are not read.
+   * Interacts with: SignalRService.aiDraftProgress$ (stub), AiUsageService.getMselAiUsage, fake timers.
+   * Data: three article calls end for msel-1 at once; one for msel-2; a call for msel-1 still streaming.
+   */
+  it('reads the usage again as AI calls end', async () => {
+    vi.useFakeTimers();
+    try {
+      const { getMselAiUsage, progress } = await renderUsage(() => of(USAGE));
+      expect(getMselAiUsage).toHaveBeenCalledTimes(1);
+
+      for (let i = 0; i < 3; i++) {
+        progress.next({ operation: 'article', mselId: 'msel-1', characters: 900, counts: {}, done: true });
+      }
+      progress.next({ operation: 'article', mselId: 'msel-2', characters: 900, counts: {}, done: true });
+      progress.next({ operation: 'article', mselId: 'msel-1', characters: 100, counts: {}, done: false });
+      vi.advanceTimersByTime(2100);
+
+      expect(getMselAiUsage).toHaveBeenCalledTimes(2);
+      expect(getMselAiUsage).toHaveBeenLastCalledWith('msel-1');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  /**
    * Verifies: the panel asks for nothing until the Info page's MSEL has loaded, then asks for that MSEL's usage.
    * Interacts with: AiUsageService.getMselAiUsage.
    * Data: no MSEL id at first, then msel-1.
@@ -100,7 +128,7 @@ describe('AiUsageComponent', () => {
   it('waits for the MSEL to load', async () => {
     const getMselAiUsage = vi.fn(() => of(USAGE));
     const { fixture } = await renderComponent(AiUsageComponent, {
-      providers: [{ provide: AiUsageService, useValue: { getMselAiUsage } }],
+      providers: [{ provide: AiUsageService, useValue: { getMselAiUsage } }, { provide: SignalRService, useValue: { aiDraftProgress$: new Subject<AiDraftProgress>() } }],
       inputs: { mselId: undefined },
     });
     expect(getMselAiUsage).not.toHaveBeenCalled();

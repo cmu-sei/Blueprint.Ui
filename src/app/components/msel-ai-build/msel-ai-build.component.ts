@@ -46,7 +46,14 @@ export class MselAiBuildComponent {
   readonly left = computed(
     () => (this.remaining()?.injects?.length ?? 0) + (this.remaining()?.articles?.length ?? 0) + (this.remaining()?.profiles?.length ?? 0)
   );
-  readonly elapsed = computed(() => clock(this.now() - (this.build()?.started ?? this.now())));
+  // the step's own time, and the whole run's after it once it has more than one step behind it
+  readonly elapsed = computed(() => {
+    const build = this.build();
+    const now = this.now();
+    const step = clock(now - (build?.stepStarted ?? build?.started ?? now));
+    const total = clock(now - (build?.started ?? now));
+    return build && build.stepStarted && build.stepStarted - build.started > 1000 ? `${step} (${total} in all)` : step;
+  });
 
   constructor() {
     toObservable(this.mselId)
@@ -104,7 +111,9 @@ export class MselAiBuildComponent {
       return parts.length ? `${parts.join(', ')} so far.` : 'This usually takes a few minutes.';
     }
     if (build?.step === 'articles') {
-      return `${build.written} of ${build.total}.`;
+      const now = build.inProgress ? `, ${build.inProgress} being written now` : '';
+      const last = build.lastDone ? ` Last done: ${build.lastDone}.` : '';
+      return `${build.written} of ${build.total} done${now}.${last}`;
     }
     return '';
   }

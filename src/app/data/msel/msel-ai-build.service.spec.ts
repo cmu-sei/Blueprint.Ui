@@ -70,7 +70,9 @@ describe('MselAiBuildService', () => {
     expect(api.writeMselProfile).toHaveBeenCalledWith('msel-1', 'team-1');
     expect(api.saveMselProfile).not.toHaveBeenCalled();
     expect(api.finishMselBuild).toHaveBeenCalledWith('msel-1');
-    expect(last()).toMatchObject({ step: 'done', running: false, written: 3, total: 3, planned: 54 });
+    expect(last()).toMatchObject({ step: 'done', running: false, written: 3, total: 3, planned: 54, inProgress: 0 });
+    // the last item done is named, so the count is not the only sign of progress
+    expect(['Check in', 'Cables cut', 'SOC']).toContain(last().lastDone);
     expect(last().warnings).toEqual(['Dropped a row with no time.', 'Created the scoring model in CITE.']);
     expect(finished).toEqual(['msel-1']);
   });

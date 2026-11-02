@@ -4,8 +4,8 @@
 
 import { Injectable, inject } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
-import { BehaviorSubject, EMPTY, from, Observable, of, Subject, Subscription } from 'rxjs';
-import { catchError, map, mergeMap, take, tap, toArray } from 'rxjs/operators';
+import { BehaviorSubject, defer, EMPTY, from, Observable, of, Subject, Subscription } from 'rxjs';
+import { catchError, finalize, map, mergeMap, take, tap, toArray } from 'rxjs/operators';
 import { MselDesignBuild, MselBuildItem, MselBuildService, MselBuildStatus } from 'src/app/generated/blueprint.api';
 import { SignalRService } from 'src/app/services/signalr.service';
 import { prepareImages } from 'src/app/utilities/svg-to-png';
@@ -23,9 +23,11 @@ export interface MselAiBuild {
   // while the injects are written: what the model has written so far, and how many the design planned
   counts: { [list: string]: number };
   planned?: number;
-  // the articles and profiles written in this run, of those there were to write
+  // the articles and profiles written in this run, of those there were to write, those being written now, and the last done
   written: number;
   total: number;
+  inProgress?: number;
+  lastDone?: string;
   // what is left once a run stops, from the API
   remaining?: MselBuildStatus;
   errors: string[];
@@ -202,16 +204,21 @@ export class MselAiBuildService {
   private writeArticles(mselId: string, status: MselBuildStatus): Observable<MselBuildStatus> {
     // the rows in time order with the articles, then the profiles
     const items = [...(status.injects ?? []), ...(status.articles ?? []), ...(status.profiles ?? [])];
-    this.patch(mselId, { step: 'articles', stepStarted: Date.now(), written: 0, total: items.length });
+    this.patch(mselId, { step: 'articles', stepStarted: Date.now(), written: 0, total: items.length, inProgress: 0, lastDone: undefined });
     return from(items).pipe(
       mergeMap(
         (item) =>
-          this.writeItem(mselId, item).pipe(
-            tap(() => this.patch(mselId, { written: this.get(mselId).written + 1 })),
+          defer(() => {
+            // the items being written now, so the first minute of a step is not a silent 0
+            this.patch(mselId, { inProgress: (this.get(mselId).inProgress ?? 0) + 1 });
+            return this.writeItem(mselId, item);
+          }).pipe(
+            tap(() => this.patch(mselId, { written: this.get(mselId).written + 1, lastDone: item.name || undefined })),
             catchError((err) => {
               this.patch(mselId, { errors: [...this.get(mselId).errors, `${item.name || 'An article'}: ${errorMessage(err)}`] });
               return EMPTY;
-            })
+            }),
+            finalize(() => this.patch(mselId, { inProgress: Math.max(0, (this.get(mselId).inProgress ?? 1) - 1) }))
           ),
         status.parallel || this.concurrency
       ),
