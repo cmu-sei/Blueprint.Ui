@@ -46,12 +46,24 @@ project root for license information or contact permission@sei.cmu.edu for full 
           title="Delete {{ release.name }} {{ release.version }}">
           <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline"></mat-icon>
         </button>
+        @if (isD3fend(release)) {
+        <button mat-icon-button class="msel-action" (click)="chooseMappingsFile(release)" [disabled]="isLoading$ | async"
+          title="Import ATT&CK mappings"
+          [attr.aria-label]="'Import ATT&CK mappings for ' + release.name + ' ' + release.version">
+          <mat-icon class="mdi-18px" fontIcon="mdi-swap-horizontal"></mat-icon>
+        </button>
+        }
         }
       </mat-cell>
     </ng-container>
     <ng-container matColumnDef="name">
       <mat-header-cell mat-sort-header *matHeaderCellDef class="col-name">Name</mat-header-cell>
-      <mat-cell *matCellDef="let release" class="col-name" [matTooltip]="release.description" matTooltipShowDelay="800">{{ release.name }}</mat-cell>
+      <mat-cell *matCellDef="let release" class="col-name" [matTooltip]="release.description" matTooltipShowDelay="800">
+        {{ release.name }}
+        @if (release.countermeasureCount) {
+        <div class="row-note">{{ release.countermeasureCount }} countermeasure mappings</div>
+        }
+      </mat-cell>
     </ng-container>
     <ng-container matColumnDef="domain">
       <mat-header-cell mat-sort-header *matHeaderCellDef class="col-small">Domain</mat-header-cell>
@@ -81,7 +93,20 @@ project root for license information or contact permission@sei.cmu.edu for full 
     No technique framework releases have been imported. Download a MITRE ATT&amp;CK&reg; STIX bundle such as
     enterprise-attack.json from MITRE's attack-stix-data repository, or an ATLAS STIX bundle (stix-atlas.json from the
     mitre-atlas/atlas-data GitHub releases), or the MITRE D3FEND&trade; ontology (d3fend.json from the D3FEND Ontology
-    Resources page), and import it here.
+    Resources page), and import it here. A D3FEND release then takes its ATT&amp;CK mappings
+    (d3fend-full-mappings.json from {{ mappingsUrl(null) }}; the unversioned path is not served) with the row's
+    Import ATT&amp;CK mappings button.
+  </div>
+  }
+  @if (canEdit() && d3fendReleasesWithoutMappings.length > 0) {
+  <div class="hint-text">
+    @for (release of d3fendReleasesWithoutMappings; track release.id) {
+    <div>
+      {{ release.name }} {{ release.version }} has no ATT&amp;CK mappings yet. Download d3fend-full-mappings.json from
+      <a [href]="mappingsUrl(release)" target="_blank" rel="noopener">{{ mappingsUrl(release) }}</a> (the unversioned path
+      is not served) and import it with the row's Import ATT&amp;CK mappings button.
+    </div>
+    }
   </div>
   }
   <div class="attribution">
@@ -103,3 +128,4 @@ project root for license information or contact permission@sei.cmu.edu for full 
 </section>
 
 <input hidden (change)="selectFile($event)" #stixInput type="file" accept=".json,application/json" />
+<input hidden (change)="selectMappingsFile($event)" #mappingsInput type="file" accept=".json,application/json" data-testid="mappings-file" />

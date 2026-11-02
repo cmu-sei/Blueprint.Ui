@@ -10,10 +10,11 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { screen } from '@testing-library/angular';
+import { fireEvent, screen } from '@testing-library/angular';
 import { of } from 'rxjs';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
-import { AttackRelease, AttackReleaseService } from 'src/app/generated/blueprint.api';
+import { AttackRelease, AttackReleaseService, AttackTechniqueCountermeasureImport } from 'src/app/generated/blueprint.api';
+import { SystemMessageService } from 'src/app/services/system-message/system-message.service';
 import { AdminAttackReleasesComponent } from './admin-attack-releases.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { renderComponent } from 'src/app/test-utils/render-component';
@@ -31,6 +32,9 @@ const D3FEND: AttackRelease = {
   id: 'rel-3', domain: 'd3fend', name: 'MITRE D3FEND', version: '1.6.0',
   releaseDate: new Date('2026-08-31T00:12:00Z'), tacticCount: 7, techniqueCount: 271,
 };
+const D3FEND_WITH_MAPPINGS: AttackRelease = { ...D3FEND, countermeasureCount: 4133 };
+const MAPPINGS_URL = 'https://d3fend.mitre.org/ontologies/d3fend/1.6.0/d3fend-full-mappings.json';
+const IMPORT_RESULT: AttackTechniqueCountermeasureImport = { attackReleaseId: 'rel-3', rowsRead: 9, pairsStored: 5, pairsSkipped: 1, offensiveTechniqueCount: 4 };
 const TRADEMARKS = /MITRE ATT&CK and ATT&CK are registered trademarks of The MITRE Corporation/;
 const ATLAS_TRADEMARK = /MITRE ATLAS™ is a trademark of The MITRE Corporation\./;
 const D3FEND_TRADEMARK = /MITRE D3FEND™ is a trademark of The MITRE Corporation\./;
@@ -39,7 +43,9 @@ const D3FEND_TRADEMARK = /MITRE D3FEND™ is a trademark of The MITRE Corporatio
 async function renderReleases(releases: AttackRelease[]) {
   const releaseApi = {
     getAttackReleases: vi.fn(() => of(structuredClone(releases))),
+    importAttackTechniqueCountermeasures: vi.fn(() => of(structuredClone(IMPORT_RESULT))),
   } satisfies ApiStub<AttackReleaseService>;
+  const messages = { displayMessage: vi.fn() };
   const rendered = await renderComponent(AdminAttackReleasesComponent, {
     imports: [
       MatButtonModule,
@@ -54,11 +60,12 @@ async function renderReleases(releases: AttackRelease[]) {
     declarations: [AdminAttackReleasesComponent],
     providers: [
       { provide: AttackReleaseService, useValue: releaseApi },
+      { provide: SystemMessageService, useValue: messages },
       unstubbed(CrucibleDialogService),
     ],
     inputs: { canEdit: true, loggedInUserId: 'user-1' },
   });
-  return { ...rendered, releaseApi };
+  return { ...rendered, releaseApi, messages };
 }
 
 describe('AdminAttackReleasesComponent', () => {
@@ -76,6 +83,7 @@ describe('AdminAttackReleasesComponent', () => {
     expect(screen.getByText(/stix-atlas\.json from the mitre-atlas\/atlas-data GitHub releases/)).toBeInTheDocument();
     expect(screen.getByText(/MITRE D3FEND™ ontology \(d3fend\.json from the D3FEND Ontology Resources page\)/)).toBeInTheDocument();
     expect(screen.getByTitle('Import a release file')).toBeInTheDocument();
+    expect(screen.getByText(/d3fend-full-mappings\.json from https:\/\/d3fend\.mitre\.org\/ontologies\/d3fend\/<version>\/d3fend-full-mappings\.json; the unversioned path is not served/)).toBeInTheDocument();
     expect(screen.getByText(TRADEMARKS)).toBeInTheDocument();
     expect(screen.queryByText(/© 2026 The MITRE Corporation/)).not.toBeInTheDocument();
     expect(screen.queryByText(ATLAS_TRADEMARK)).not.toBeInTheDocument();
@@ -131,5 +139,60 @@ describe('AdminAttackReleasesComponent', () => {
     expect(screen.getAllByText('ATLAS', { selector: 'mat-cell' })).toHaveLength(2);
     expect(screen.getByText(TRADEMARKS)).toBeInTheDocument();
     expect(screen.getByText(ATLAS_TRADEMARK)).toBeInTheDocument();
+  });
+  /**
+   * Verifies: only a D3FEND row offers Import ATT&CK mappings, a release with mappings says how many on its row, and
+   * no hint is given for it.
+   * Interacts with: AttackReleaseService.getAttackReleases (stub), isD3fend, d3fendReleasesWithoutMappings.
+   * Data: Enterprise ATT&CK 17.1 and MITRE D3FEND 1.6.0 with 4133 mappings.
+   */
+  it('offers the mappings import on a D3FEND row and counts its mappings', async () => {
+    await renderReleases([ENTERPRISE, D3FEND_WITH_MAPPINGS]);
+
+    const buttons = screen.getAllByTitle('Import ATT&CK mappings');
+    expect(buttons).toHaveLength(1);
+    expect(buttons[0]).toHaveAttribute('aria-label', 'Import ATT&CK mappings for MITRE D3FEND 1.6.0');
+    expect(screen.getByText('4133 countermeasure mappings')).toBeInTheDocument();
+    expect(screen.queryByText(/has no ATT&CK mappings yet/)).not.toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: a D3FEND release without mappings gets a hint naming the file, linking the versioned URL and warning
+   * that the unversioned path is not served.
+   * Interacts with: d3fendReleasesWithoutMappings, mappingsUrl.
+   * Data: MITRE D3FEND 1.6.0 with no mappings.
+   */
+  it('tells an administrator where a release\'s mappings file is', async () => {
+    await renderReleases([D3FEND]);
+
+    expect(screen.getByText(/MITRE D3FEND 1\.6\.0 has no ATT&CK mappings yet\. Download d3fend-full-mappings\.json from/)).toBeInTheDocument();
+    const link = screen.getByRole('link', { name: MAPPINGS_URL });
+    expect(link).toHaveAttribute('href', MAPPINGS_URL);
+    expect(screen.getByText(/the unversioned path is not served/)).toBeInTheDocument();
+    expect(screen.queryByText(/countermeasure mappings/)).not.toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: picking a file after the row's Import ATT&CK mappings posts it to that release, reports what was
+   * stored and skipped, and the row shows the stored count.
+   * Interacts with: chooseMappingsFile, selectMappingsFile, AttackReleaseService.importAttackTechniqueCountermeasures
+   * (stub), SystemMessageService.displayMessage (stub), AttackReleaseDataService.importCountermeasures.
+   * Data: MITRE D3FEND 1.6.0 with no mappings; an import that stores 5 pairs and skips 1.
+   */
+  it('imports the mappings file onto the release it was chosen for', async () => {
+    const { releaseApi, messages, fixture } = await renderReleases([ENTERPRISE, D3FEND]);
+    const file = new File(['{}'], 'd3fend-full-mappings.json', { type: 'application/json' });
+
+    fireEvent.click(screen.getByTitle('Import ATT&CK mappings'));
+    fireEvent.change(screen.getByTestId('mappings-file'), { target: { files: [file] } });
+    fixture.detectChanges();
+
+    expect(releaseApi.importAttackTechniqueCountermeasures).toHaveBeenCalledWith('rel-3', file);
+    expect(messages.displayMessage).toHaveBeenCalledWith(
+      'Mappings Imported',
+      '9 rows read. 5 countermeasure mappings for 4 techniques stored on MITRE D3FEND 1.6.0; 1 skipped because their D3FEND technique is not in this release.'
+    );
+    expect(screen.getByText('5 countermeasure mappings')).toBeInTheDocument();
+    expect(screen.queryByText(/has no ATT&CK mappings yet/)).not.toBeInTheDocument();
   });
 });

@@ -4,7 +4,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { MatSelectHarness } from '@angular/material/select/testing';
-import { screen, within } from '@testing-library/angular';
+import { fireEvent, screen, within } from '@testing-library/angular';
 import { of } from 'rxjs';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
 import {
@@ -15,6 +15,7 @@ import {
   Msel,
   MselAttackTechnique,
   MselAttackTechniqueService,
+  MselCountermeasures,
   SystemPermissionsService,
 } from 'src/app/generated/blueprint.api';
 import { MselStore } from 'src/app/data/msel/msel.store';
@@ -48,15 +49,28 @@ const D3_CH: AttackTechnique = {
   tactics: ['harden'], url: 'https://d3fend.mitre.org/technique/d3f:CredentialHardening/',
 };
 const D3_CH_IN_POOL: MselAttackTechnique = { id: 'mat-d3', mselId: 'msel-1', attackTechniqueId: 'at-d3', attackTechnique: D3_CH };
+const NO_MAPPINGS: MselCountermeasures = { mselId: 'msel-1', attackReleaseId: null, hasMappings: false, techniques: [] };
+// D3FEND 1.6.0 counters T1059 with D3-CH, inherited from nothing; D3-CH is in the defensive pool already.
+const T1059_COUNTERED: MselCountermeasures = {
+  mselId: 'msel-1', attackReleaseId: 'rel-d3', hasMappings: true,
+  techniques: [{
+    attackTechniqueId: 'at-1', offensiveExternalId: 'T1059', inheritedFrom: null,
+    countermeasures: [{
+      id: 'cm-1', attackReleaseId: 'rel-d3', offensiveExternalId: 'T1059', defensiveTechniqueId: 'at-d3', defensiveTechnique: D3_CH,
+      defensiveTactic: 'Harden', rationale: 'hardens Credential; T1059 executes Script', weight: 2,
+    }],
+  }],
+};
 
 const attackSection = () => screen.getByText('Attack Techniques').closest('app-technique-pool') as HTMLElement;
 const defensiveSection = () => screen.getByText('Defensive Techniques').closest('app-technique-pool') as HTMLElement;
 
 // With no release imported the Add Techniques browsers stay empty and only the pool can put MITRE content on screen;
 // an imported release is browsed by its family's section as soon as the component loads it.
-async function renderTechniques(pool: MselAttackTechnique[], releases: AttackRelease[] = [], techniques: Record<string, AttackTechnique[]> = {}) {
+async function renderTechniques(pool: MselAttackTechnique[], releases: AttackRelease[] = [], techniques: Record<string, AttackTechnique[]> = {}, countermeasures: MselCountermeasures = NO_MAPPINGS) {
   const poolApi = {
     getMselAttackTechniques: vi.fn(() => of(structuredClone(pool))),
+    getMselCountermeasures: vi.fn(() => of(structuredClone(countermeasures))),
   } satisfies ApiStub<MselAttackTechniqueService>;
   const releaseApi = {
     getAttackReleases: vi.fn(() => of(structuredClone(releases))),
@@ -210,5 +224,42 @@ describe('MselAttackTechniquesComponent', () => {
     expect(within(defensiveSection()).queryByText('Platforms')).not.toBeInTheDocument();
     expect(within(defensiveSection()).getByRole('link', { name: 'D3-CH' })).toBeInTheDocument();
     expect(screen.getByText(/MITRE D3FEND™ is a trademark of The MITRE Corporation\./)).toBeInTheDocument();
+  });
+  /**
+   * Verifies: each pooled attack technique gets a Countered by row loaded for the MSEL once, the defensive pool
+   * gets none, and opening the row lists the D3FEND technique grouped under its tactic, marked as already pooled;
+   * a user who cannot edit the MSEL gets the mark, not a checkbox.
+   * Interacts with: MselAttackTechniqueService.getMselCountermeasures (stub), MselCountermeasureDataService,
+   * TechniquePoolComponent.countermeasuresFor, TechniqueCountermeasuresComponent.
+   * Data: T1059 and D3-CH in the pool; D3FEND 1.6.0 imported with D3-CH countering T1059.
+   */
+  it('lists what counters each pooled attack technique', async () => {
+    const { poolApi } = await renderTechniques([T1059, D3_CH_IN_POOL], [ENTERPRISE_RELEASE, D3FEND_RELEASE], {}, T1059_COUNTERED);
+
+    expect(poolApi.getMselCountermeasures).toHaveBeenCalledTimes(1);
+    expect(poolApi.getMselCountermeasures).toHaveBeenCalledWith('msel-1');
+    const toggle = within(attackSection()).getByRole('button', { name: 'Countered by, T1059' });
+    expect(toggle).toHaveTextContent('Countered by (1)');
+    expect(within(defensiveSection()).queryByRole('button', { name: /Countered by/ })).not.toBeInTheDocument();
+
+    fireEvent.click(toggle);
+
+    expect(within(attackSection()).getByText('Harden')).toBeInTheDocument();
+    expect(within(attackSection()).getByText('Credential Hardening')).toBeInTheDocument();
+    expect(within(attackSection()).getByTitle("In this MSEL's defensive techniques")).toBeInTheDocument();
+    expect(within(attackSection()).queryByRole('checkbox', { name: 'Add D3-CH' })).not.toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: with no D3FEND release imported the Countered by row says so rather than listing nothing.
+   * Interacts with: TechniqueCountermeasuresComponent.emptyMessage, TechniquePoolComponent.hasD3fendRelease.
+   * Data: T1059 in the pool; Enterprise ATT&CK 17.1 the only release.
+   */
+  it('says when no D3FEND release is there to counter with', async () => {
+    await renderTechniques([T1059], [ENTERPRISE_RELEASE], { 'rel-1': [T1059.attackTechnique] });
+
+    fireEvent.click(within(attackSection()).getByRole('button', { name: 'Countered by, T1059' }));
+
+    expect(screen.getByText('No MITRE D3FEND release has been imported. An administrator imports one on the Technique Frameworks page.')).toBeInTheDocument();
   });
 });

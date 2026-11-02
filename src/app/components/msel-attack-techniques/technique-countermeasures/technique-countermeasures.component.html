@@ -1,0 +1,48 @@
+<!--
+Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license, please see LICENSE.md in the
+project root for license information or contact permission@sei.cmu.edu for full terms.
+-->
+
+<div class="countered-by">
+  <button mat-button class="toggle" (click)="expanded = !expanded" [attr.aria-expanded]="expanded"
+    [attr.aria-label]="'Countered by, ' + externalId()">
+    <mat-icon class="mdi-18px" [fontIcon]="expanded ? 'mdi-chevron-down' : 'mdi-chevron-right'"></mat-icon>
+    Countered by@if (count > 0) { ({{ count }})}
+    @if (inheritedFrom) {
+    <span class="inherited-chip" title="{{ externalId() }} has no mappings of its own; these are {{ inheritedFrom }}'s">(from {{ inheritedFrom }})</span>
+    }
+  </button>
+  @if (expanded) {
+  <div class="body">
+    @if (emptyMessage) {
+    <div class="empty-text">{{ emptyMessage }}</div>
+    } @else {
+    @for (group of groups; track group.tactic) {
+    <div class="tactic">
+      <div class="tactic-name">{{ group.tactic }}</div>
+      @for (c of visible(group); track c.id) {
+      <div class="countermeasure">
+        @if (canEdit()) {
+        <mat-checkbox class="add-check" [checked]="isPooled(c)" [disabled]="isPooled(c)" (change)="add(c)"
+          [aria-label]="'Add ' + c.defensiveTechnique?.externalId"
+          [title]="isPooled(c) ? 'In this MSEL\'s defensive techniques' : 'Add to this MSEL\'s defensive techniques'"></mat-checkbox>
+        } @else if (isPooled(c)) {
+        <mat-icon class="mdi-18px pooled-icon" fontIcon="mdi-check" title="In this MSEL's defensive techniques"></mat-icon>
+        }
+        <a class="cm-id" [href]="c.defensiveTechnique?.url" target="_blank" rel="noopener"
+          title="Open {{ c.defensiveTechnique?.externalId }} on d3fend.mitre.org">{{ c.defensiveTechnique?.externalId }}</a>
+        <span class="cm-name" [matTooltip]="tooltip(c)" matTooltipShowDelay="300">{{ c.defensiveTechnique?.name }}</span>
+      </div>
+      }
+      @if (group.countermeasures.length > 3) {
+      <button mat-button class="show-all" (click)="toggleAll(group)">
+        {{ showsAll(group) ? 'Show top 3' : 'Show all ' + group.countermeasures.length }}
+      </button>
+      }
+    </div>
+    }
+    }
+  </div>
+  }
+</div>

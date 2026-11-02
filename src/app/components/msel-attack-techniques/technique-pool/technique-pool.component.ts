@@ -27,6 +27,8 @@ import {
   DataFieldType,
   DataValue,
   MselAttackTechnique,
+  MselCountermeasures,
+  MselTechniqueCountermeasures,
   SystemPermission,
 } from 'src/app/generated/blueprint.api';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
@@ -34,12 +36,14 @@ import { MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { MselAttackTechniqueDataService } from 'src/app/data/msel-attack-technique/msel-attack-technique-data.service';
 import { compareAttackIds, MselAttackTechniqueQuery } from 'src/app/data/msel-attack-technique/msel-attack-technique.query';
+import { MselCountermeasureDataService } from 'src/app/data/msel-attack-technique/msel-countermeasure-data.service';
 import { AttackReleaseDataService } from 'src/app/data/attack-release/attack-release-data.service';
 import { AttackReleaseQuery } from 'src/app/data/attack-release/attack-release.query';
 import { DataFieldQuery } from 'src/app/data/data-field/data-field.query';
 import { DataValueQuery } from 'src/app/data/data-value/data-value.query';
 import { SystemMessageService } from 'src/app/services/system-message/system-message.service';
-import { TechniqueFamily, techniqueFamily } from 'src/app/utilities/technique-family';
+import { D3FEND_DOMAIN, TechniqueFamily, techniqueFamily } from 'src/app/utilities/technique-family';
+import { TechniqueCountermeasuresComponent } from '../technique-countermeasures/technique-countermeasures.component';
 
 /** Whose content the section has on screen, for the notice MITRE's terms of use ask for. */
 export interface TechniqueContentShown {
@@ -51,18 +55,20 @@ export interface TechniqueContentShown {
 /**
  * One family of a MSEL's technique pool: the attack techniques (ATT&CK, ATLAS) its Attack Technique data fields
  * offer, or the defensive techniques (D3FEND) its Defensive Technique fields offer. The family is pinned to one
- * release; picking another release shows its techniques and offers to upgrade the family to it.
+ * release; picking another release shows its techniques and offers to upgrade the family to it. Under each pooled
+ * attack technique a "Countered by" row lists the D3FEND techniques MITRE maps against it.
  */
 @Component({
   selector: 'app-technique-pool',
   templateUrl: './technique-pool.component.html',
   styleUrls: ['./technique-pool.component.scss'],
-  imports: [MatIcon, MatFormField, MatLabel, MatHint, MatSelect, MatOption, MatExpansionPanel, MatExpansionPanelHeader, MatExpansionPanelTitle, MatExpansionPanelDescription, MatInput, ReactiveFormsModule, MatIconButton, MatSuffix, MatPaginator, MatProgressSpinner, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCheckbox, MatCellDef, MatCell, MatTooltip, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, MatButton, NgStyle]
+  imports: [MatIcon, MatFormField, MatLabel, MatHint, MatSelect, MatOption, MatExpansionPanel, MatExpansionPanelHeader, MatExpansionPanelTitle, MatExpansionPanelDescription, MatInput, ReactiveFormsModule, MatIconButton, MatSuffix, MatPaginator, MatProgressSpinner, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCheckbox, MatCellDef, MatCell, MatTooltip, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, MatButton, NgStyle, TechniqueCountermeasuresComponent]
 })
 export class TechniquePoolComponent implements OnInit, AfterViewInit, OnDestroy {
   private mselQuery = inject(MselQuery);
   private mselAttackTechniqueDataService = inject(MselAttackTechniqueDataService);
   private mselAttackTechniqueQuery = inject(MselAttackTechniqueQuery);
+  private mselCountermeasureDataService = inject(MselCountermeasureDataService);
   private attackReleaseDataService = inject(AttackReleaseDataService);
   private attackReleaseQuery = inject(AttackReleaseQuery);
   private attackReleaseService = inject(AttackReleaseService);
@@ -78,6 +84,7 @@ export class TechniquePoolComponent implements OnInit, AfterViewInit, OnDestroy 
   readonly browserPaginator = viewChild<MatPaginator>('browserPaginator');
   msel = new MselPlus();
   releases: AttackRelease[] = [];
+  private allReleases: AttackRelease[] = [];
   selectedReleaseId = '';
   pinnedReleaseId = '';
   tactics: AttackTactic[] = [];
@@ -103,6 +110,11 @@ export class TechniquePoolComponent implements OnInit, AfterViewInit, OnDestroy 
   private allDataFields: DataField[] = [];
   private allDataValues: DataValue[] = [];
   private tacticNames = new Map<string, string>();
+  // the Countered by rows of the attack family
+  countermeasures: MselCountermeasures;
+  private countermeasuresByTechniqueId = new Map<string, MselTechniqueCountermeasures>();
+  /** The attack family's pool table has a Countered by row under each technique; the defensive family's does not. */
+  readonly showsCountermeasures = () => !this.isDefensive;
   private unsubscribe$ = new Subject();
 
   constructor() {
@@ -128,8 +140,17 @@ export class TechniquePoolComponent implements OnInit, AfterViewInit, OnDestroy 
           this.userChoseRelease = false;
           this.panelInitialized = false;
         }
+        if (!this.isDefensive) {
+          this.mselCountermeasureDataService.ensureLoaded(msel.id);
+        }
       }
     });
+    if (!this.isDefensive) {
+      this.mselCountermeasureDataService.countermeasures$.pipe(takeUntil(this.unsubscribe$)).subscribe(countermeasures => {
+        this.countermeasures = countermeasures;
+        this.countermeasuresByTechniqueId = new Map((countermeasures?.techniques || []).map(t => [t.attackTechniqueId, t]));
+      });
+    }
     this.mselAttackTechniqueQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(wholePool => {
       const pool = wholePool.filter(m => techniqueFamily(m.attackTechnique?.domain) === this.family());
       this.pool = [...pool].sort((a, b) => compareAttackIds(a.attackTechnique?.externalId, b.attackTechnique?.externalId));
@@ -145,6 +166,7 @@ export class TechniquePoolComponent implements OnInit, AfterViewInit, OnDestroy 
       this.emitContentShown();
     });
     this.attackReleaseQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(releases => {
+      this.allReleases = releases;
       this.releases = releases.filter(r => techniqueFamily(r.domain) === this.family());
       this.chooseDefaultRelease();
     });
@@ -363,6 +385,15 @@ export class TechniquePoolComponent implements OnInit, AfterViewInit, OnDestroy 
           this.mselAttackTechniqueDataService.delete(item.id);
         }
       });
+  }
+
+  /** Whether any D3FEND release is imported, which tells the Countered by row's empty states apart. */
+  get hasD3fendRelease(): boolean {
+    return this.allReleases.some(r => r.domain === D3FEND_DOMAIN);
+  }
+
+  countermeasuresFor(item: MselAttackTechnique): MselTechniqueCountermeasures {
+    return this.countermeasuresByTechniqueId.get(item.attackTechniqueId);
   }
 
   /** D3FEND tactics have no id of their own (the class id stands in), so only ATT&CK's are worth showing. */

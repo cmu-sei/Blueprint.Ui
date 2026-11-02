@@ -17,13 +17,21 @@ import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { AttackRelease } from 'src/app/generated/blueprint.api';
 import { AttackReleaseDataService } from 'src/app/data/attack-release/attack-release-data.service';
 import { AttackReleaseQuery } from 'src/app/data/attack-release/attack-release.query';
+import { SystemMessageService } from 'src/app/services/system-message/system-message.service';
 import { D3FEND_DOMAIN } from 'src/app/utilities/technique-family';
+
+/** Where MITRE serves a release's d3fend-full-mappings.json; the unversioned "latest" path is not served. */
+export function d3fendMappingsUrl(version: string): string {
+  return `https://d3fend.mitre.org/ontologies/d3fend/${version || '<version>'}/d3fend-full-mappings.json`;
+}
 
 /**
  * The technique framework releases planners pick techniques from. An administrator uploads a STIX bundle
  * (enterprise-attack.json, ics-attack.json, mobile-attack.json) from mitre-attack/attack-stix-data, or
  * stix-atlas.json from mitre-atlas/atlas-data, which imports as a release of the ATLAS domain, or the MITRE
  * D3FEND ontology (d3fend.json), which imports as a release of the d3fend domain whose techniques are defensive.
+ * A D3FEND release also takes its d3fend-full-mappings.json, the "countered by" mappings from ATT&CK techniques to
+ * its own.
  */
 @Component({
   selector: 'app-admin-attack-releases',
@@ -34,12 +42,16 @@ import { D3FEND_DOMAIN } from 'src/app/utilities/technique-family';
 export class AdminAttackReleasesComponent implements OnInit, AfterViewInit, OnDestroy {
   private attackReleaseDataService = inject(AttackReleaseDataService);
   private attackReleaseQuery = inject(AttackReleaseQuery);
+  private messageService = inject(SystemMessageService);
   dialogService = inject(CrucibleDialogService);
 
   readonly loggedInUserId = input<string>(undefined);
   readonly canEdit = input<boolean>(undefined);
   readonly sort = viewChild(MatSort);
   readonly stixInput = viewChild<ElementRef<HTMLInputElement>>('stixInput');
+  readonly mappingsInput = viewChild<ElementRef<HTMLInputElement>>('mappingsInput');
+  /** The D3FEND release the mappings file picker was opened for. */
+  private mappingsRelease: AttackRelease;
   dataSource = new MatTableDataSource<AttackRelease>([]);
   displayedColumns: string[] = ['action', 'name', 'domain', 'version', 'releaseDate', 'tacticCount', 'techniqueCount'];
   versionControl = new UntypedFormControl('');
@@ -77,6 +89,19 @@ export class AdminAttackReleasesComponent implements OnInit, AfterViewInit, OnDe
     return this.dataSource.data.some(r => r.domain === D3FEND_DOMAIN);
   }
 
+  isD3fend(release: AttackRelease): boolean {
+    return release.domain === D3FEND_DOMAIN;
+  }
+
+  /** The D3FEND releases still without their "countered by" mappings, for the hint that says where to get them. */
+  get d3fendReleasesWithoutMappings(): AttackRelease[] {
+    return this.dataSource.data.filter(r => this.isD3fend(r) && !r.countermeasureCount);
+  }
+
+  mappingsUrl(release: AttackRelease): string {
+    return d3fendMappingsUrl(release?.version);
+  }
+
   selectFile(e: Event) {
     const input = e.target as HTMLInputElement;
     const file = input.files && input.files[0];
@@ -86,6 +111,29 @@ export class AdminAttackReleasesComponent implements OnInit, AfterViewInit, OnDe
     this.attackReleaseDataService.import(file, (this.versionControl.value || '').trim())
       .subscribe(() => this.versionControl.setValue(''));
     this.stixInput().nativeElement.value = null;
+  }
+
+  chooseMappingsFile(release: AttackRelease) {
+    this.mappingsRelease = release;
+    this.mappingsInput().nativeElement.click();
+  }
+
+  selectMappingsFile(e: Event) {
+    const input = e.target as HTMLInputElement;
+    const file = input.files && input.files[0];
+    const release = this.mappingsRelease;
+    if (!file || !release) {
+      return;
+    }
+    this.attackReleaseDataService.importCountermeasures(release.id, file).subscribe(result => {
+      this.messageService.displayMessage(
+        'Mappings Imported',
+        `${result.rowsRead} rows read. ${result.pairsStored} countermeasure mappings for ${result.offensiveTechniqueCount} ` +
+          `techniques stored on ${release.name} ${release.version}` +
+          (result.pairsSkipped > 0 ? `; ${result.pairsSkipped} skipped because their D3FEND technique is not in this release.` : '.')
+      );
+    });
+    input.value = null;
   }
 
   deleteRelease(release: AttackRelease) {

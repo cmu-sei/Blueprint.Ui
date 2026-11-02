@@ -108,6 +108,19 @@
   flex: 0 0 80px;
 }
 
+// the Countered by row belongs to the technique row above it
+.pool-row:has(+ .countermeasures-row) {
+  border-bottom: none;
+}
+
+.countermeasures-row {
+  min-height: 0;
+}
+
+.col-countermeasures {
+  padding: 0;
+}
+
 .empty-text {
   padding: 16px;
   color: var(--mat-sys-on-surface-variant);

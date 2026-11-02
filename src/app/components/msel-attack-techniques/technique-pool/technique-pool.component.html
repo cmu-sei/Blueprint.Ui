@@ -131,7 +131,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       No techniques yet. Add techniques above, then add a {{ fieldTypeName }} data field so scenario events can name them.
     </div>
     } @else {
-    <mat-table [dataSource]="poolDataSource">
+    <mat-table [dataSource]="poolDataSource" multiTemplateDataRows>
       <ng-container matColumnDef="action">
         <mat-header-cell *matHeaderCellDef class="col-check"></mat-header-cell>
         <mat-cell *matCellDef="let item" class="col-check">
@@ -163,8 +163,16 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <mat-header-cell *matHeaderCellDef class="col-events">Events</mat-header-cell>
         <mat-cell *matCellDef="let item" class="col-events">{{ getEventCount(item) }}</mat-cell>
       </ng-container>
+      <ng-container matColumnDef="countermeasures">
+        <mat-cell *matCellDef="let item" class="col-countermeasures">
+          <app-technique-countermeasures [mselId]="msel.id" [externalId]="item.attackTechnique?.externalId"
+            [group]="countermeasuresFor(item)" [countermeasures]="countermeasures" [canEdit]="canEditMsel()"
+            [hasD3fendRelease]="hasD3fendRelease"></app-technique-countermeasures>
+        </mat-cell>
+      </ng-container>
       <mat-header-row *matHeaderRowDef="poolColumns"></mat-header-row>
-      <mat-row *matRowDef="let row; columns: poolColumns"></mat-row>
+      <mat-row *matRowDef="let row; columns: poolColumns" class="pool-row"></mat-row>
+      <mat-row *matRowDef="let row; columns: ['countermeasures']; when: showsCountermeasures" class="countermeasures-row"></mat-row>
     </mat-table>
     }
   </mat-expansion-panel>

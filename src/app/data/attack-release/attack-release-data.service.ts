@@ -3,7 +3,7 @@
 
 import { AttackReleaseStore } from './attack-release.store';
 import { Injectable } from '@angular/core';
-import { AttackRelease, AttackReleaseService } from 'src/app/generated/blueprint.api';
+import { AttackRelease, AttackReleaseService, AttackTechniqueCountermeasureImport } from 'src/app/generated/blueprint.api';
 import { take, tap } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 
@@ -47,6 +47,23 @@ export class AttackReleaseDataService {
           next: (release) => {
             this.attackReleaseStore.setLoading(false);
             this.attackReleaseStore.add(release);
+          },
+          error: () => this.attackReleaseStore.setLoading(false),
+        })
+      );
+  }
+
+  /** Imports d3fend-full-mappings.json onto a D3FEND release and shows the stored count on its row. */
+  importCountermeasures(releaseId: string, file: Blob): Observable<AttackTechniqueCountermeasureImport> {
+    this.attackReleaseStore.setLoading(true);
+    return this.attackReleaseService
+      .importAttackTechniqueCountermeasures(releaseId, file)
+      .pipe(
+        take(1),
+        tap({
+          next: (result) => {
+            this.attackReleaseStore.setLoading(false);
+            this.attackReleaseStore.update(releaseId, { countermeasureCount: result.pairsStored });
           },
           error: () => this.attackReleaseStore.setLoading(false),
         })
