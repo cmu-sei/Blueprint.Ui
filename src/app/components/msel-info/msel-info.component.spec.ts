@@ -14,6 +14,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatDialog } from '@angular/material/dialog';
+import { MselImageDialogComponent } from '../msel-image-dialog/msel-image-dialog.component';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -183,6 +184,7 @@ async function renderInfo(
     getMselImage: vi.fn(() => of(new Blob(['image'], { type: 'image/png' }))),
     setMselImage: vi.fn((id: string) => of<Msel>({ ...msel(myRoles, startTime, mselExtra), id, imageDateModified: new Date('2026-10-23T12:00:00Z') })),
     deleteMselImage: vi.fn((id: string) => of<Msel>({ ...msel(myRoles, startTime, mselExtra), id, imageDateModified: null })),
+    generateMselImage: vi.fn((id: string) => of<Msel>({ ...msel(myRoles, startTime, mselExtra), id, imageDateModified: new Date('2026-10-23T13:00:00Z') })),
   } satisfies ApiStub<MselImageService>;
   const scoringModelApi = {
     getMselScoringModel: vi.fn(() => of(structuredClone(authored))),
@@ -774,6 +776,29 @@ describe('MselInfoComponent', () => {
       expect(screen.getByAltText('Card image for Exercise Alpha')).toHaveAttribute('src', 'blob:card');
       expect(screen.getByRole('button', { name: 'Replace Image' })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Remove Image' })).toBeInTheDocument();
+    });
+
+    /**
+     * Verifies: Generate Image asks the API for a picture of the scenario and shows the result as Regenerate Image; the preview
+     * opens the image at full size.
+     * Interacts with: MselImageService.generateMselImage (stub), MselImageService.getMselImage (stub), the harness's empty MatDialog given an open stub.
+     * Data: MSEL role Owner; no image, then the generated one.
+     */
+    it('generates an image from the scenario and opens it at full size', async () => {
+      const { fixture, imageApi } = await renderInfo({ myRoles: [MselRole.Owner] });
+      // the harness gives the component an empty MatDialog, so the real dialog, its focus trap and its animations stay out of the test
+      const info = fixture.componentInstance as unknown as { dialog: Pick<MatDialog, 'open'> };
+      const open = vi.fn(() => ({ afterClosed: () => of(undefined) }) as unknown as ReturnType<MatDialog['open']>);
+      info.dialog.open = open;
+      const user = userEvent.setup();
+
+      await user.click(screen.getByRole('button', { name: 'Generate Image' }));
+      fixture.detectChanges();
+
+      expect(imageApi.generateMselImage.mock.calls).toEqual([['msel-1']]);
+      expect(screen.getByRole('button', { name: 'Regenerate Image' })).toBeInTheDocument();
+      await user.click(screen.getByRole('button', { name: 'Card image for Exercise Alpha' }));
+      expect(open).toHaveBeenCalledWith(MselImageDialogComponent, expect.objectContaining({ data: { url: 'blob:card', name: 'Exercise Alpha' } }));
     });
 
     /**

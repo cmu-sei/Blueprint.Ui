@@ -1,0 +1,13 @@
+<!--
+Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
+-->
+
+<crucible-dialog [dialogTitle]="data.name" [hideDefaultActions]="true">
+  <ng-container crucibleDialogContent>
+    <img class="full-image" [src]="data.url" alt="Card image for {{ data.name }}" />
+  </ng-container>
+  <ng-container crucibleDialogActions>
+    <button matButton="filled" type="button" (click)="close()">Close</button>
+  </ng-container>
+</crucible-dialog>

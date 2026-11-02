@@ -69,6 +69,9 @@ async function renderDraftDialog(
   const progress = new Subject<AiDraftProgress>();
   const frameworkApi = {
     getCompetencyFrameworks: vi.fn(() => of([{ id: 'fw-nice', name: 'NICE 2.0.0' }, { id: 'fw-dcwf', name: 'DCWF 5.1' }])),
+    getCompetencyFramework: vi.fn((id: string) =>
+      of({ id, name: 'NICE 2.0.0', competencies: [{ idNumber: 'T0161', shortName: 'Perform analysis' }, { idNumber: 'T0175', shortName: 'Lead the response' }, { idNumber: 'T0200', shortName: 'Brief leadership' }] })
+    ),
   } satisfies ApiStub<CompetencyFrameworkService>;
   const ref = dialogRefStub<MselDraftDialogComponent, string>();
   const data: MselDraftDialogData = { templates };
@@ -96,7 +99,7 @@ async function renderDraftDialog(
   });
   await rendered.fixture.whenStable();
   rendered.fixture.detectChanges();
-  return { ...rendered, designMsel, createMselFromDesign, run, progress, close: ref.close };
+  return { ...rendered, designMsel, createMselFromDesign, run, progress, frameworkApi, close: ref.close };
 }
 
 async function draftDesign(design?: () => Observable<unknown>) {
@@ -397,21 +400,55 @@ describe('MselDraftDialogComponent', () => {
   it('sends the edited CITE duties', async () => {
     const result = designResult();
     result.draft.teams[0].duties = ['Incident Lead'];
-    const { designMsel, createMselFromDesign } = await renderDraftDialog(() => of(result), [{ id: 'tpl-1', name: 'Template', useCite: true }]);
+    const { createMselFromDesign } = await renderDraftDialog(() => of(result), [{ id: 'tpl-1', name: 'Template', useCite: true }]);
     const user = userEvent.setup();
 
     await user.type(screen.getByRole('textbox', { name: 'Exercise description' }), 'A grid attack.');
     await user.click(screen.getByRole('button', { name: 'Draft' }));
 
     await user.click(screen.getByRole('tab', { name: 'Teams and organizations (2)' }));
-    const duties = screen.getByRole('textbox', { name: 'BLUE CITE duties' });
-    expect(duties).toHaveValue('Incident Lead');
-    await user.clear(duties);
-    await user.type(duties, 'Lead, Scribe');
+    // the duties are chips: one removed, two added from the input, by Enter and by leaving it
+    expect(screen.getByText('Incident Lead')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Remove duty Incident Lead' }));
+    const add = screen.getByRole('textbox', { name: 'Add a CITE duty to BLUE' });
+    await user.type(add, 'Lead{Enter}');
+    await user.type(add, 'Scribe');
+    await user.tab();
     await user.click(screen.getByRole('button', { name: 'Create MSEL' }));
 
     expect(createMselFromDesign).toHaveBeenCalledWith(expect.objectContaining({
       draft: expect.objectContaining({ teams: [expect.objectContaining({ shortName: 'BLUE', duties: ['Lead', 'Scribe'] })] }),
+    }));
+  });
+
+  /**
+   * Verifies: a team's competencies are labelled, and one of the chosen frameworks' competencies can be added as well as removed;
+   * the MSEL's competencies follow.
+   * Interacts with: CompetencyFrameworkService.getCompetencyFramework (stub), the Teams and organizations tab, MselBuildService.createMselFromDesign.
+   * Data: the NICE framework chosen; BLUE has T0175; T0200 is added.
+   */
+  it('adds a competency to a team from the chosen frameworks', async () => {
+    const { createMselFromDesign, frameworkApi } = await renderDraftDialog(() => of(designResult()), [{ id: 'tpl-1', name: 'Template', useCite: true }]);
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole('combobox', { name: 'Competency frameworks' }));
+    await user.click(screen.getByRole('option', { name: 'NICE 2.0.0' }));
+    await user.keyboard('{Escape}');
+    await user.type(screen.getByRole('textbox', { name: 'Exercise description' }), 'A grid attack.');
+    await user.click(screen.getByRole('button', { name: 'Draft' }));
+    expect(frameworkApi.getCompetencyFramework).toHaveBeenCalledWith('fw-nice');
+
+    await user.click(screen.getByRole('tab', { name: 'Teams and organizations (2)' }));
+    expect(screen.getByText('Competencies')).toBeInTheDocument();
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Add a competency to BLUE' }), 'T0200');
+    expect(screen.getByText('T0200')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Create MSEL' }));
+
+    expect(createMselFromDesign).toHaveBeenCalledWith(expect.objectContaining({
+      draft: expect.objectContaining({
+        teams: [expect.objectContaining({ shortName: 'BLUE', competencies: ['T0175', 'T0200'] })],
+        competencies: ['T0161', 'T0175', 'T0200'],
+      }),
     }));
   });
 

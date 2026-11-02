@@ -5,7 +5,7 @@
 import { Component, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { interval, Subscription } from 'rxjs';
+import { forkJoin, interval, Subscription } from 'rxjs';
 import { filter, take } from 'rxjs/operators';
 import { FormsModule } from '@angular/forms';
 import { MatButton, MatIconButton } from '@angular/material/button';
@@ -33,6 +33,7 @@ import {
   Msel,
   MselBuildService,
   MselDraftDesign,
+  MselDraftCompetency,
   MselDraftOrganization,
   MselDraftResult,
   MselDraftTeam,
@@ -90,6 +91,8 @@ export class MselDraftDialogComponent {
   competencyFrameworks: CompetencyFramework[] = [];
   // the design questions the author-ttx workflow asks; all optional
   design: MselDraftDesign = { citeAssessment: 'Auto', profilePages: true };
+  // the chosen frameworks' competencies, offered to the teams on review
+  frameworkCompetencies: MselDraftCompetency[] = [];
   isDrafting = false;
   isCreating = false;
   errorMessage = '';
@@ -218,6 +221,7 @@ export class MselDraftDialogComponent {
       .subscribe({
         next: (result) => {
           this.result = result;
+          this.loadFrameworkCompetencies();
           this.answers = (result.questions ?? []).map((q) => q.suggested ?? '');
           this.selectedTab = 0;
           this.stopDrafting();
@@ -260,16 +264,20 @@ export class MselDraftDialogComponent {
     this.pruneCompetencies();
   }
 
-  // a team's CITE duties, edited as one comma-separated line
-  duties(owner: MselDraftTeam | MselDraftOrganization): string {
-    return ((owner as MselDraftTeam).duties ?? []).join(', ');
+  // a team's CITE duties, as chips: one is added from the input, by Enter or by leaving it
+  addDuty(owner: MselDraftTeam | MselDraftOrganization, input: HTMLInputElement) {
+    const team = owner as MselDraftTeam;
+    const duty = input.value.trim();
+    input.value = '';
+    if (!duty || (team.duties ?? []).some((d) => d.toLowerCase() === duty.toLowerCase())) {
+      return;
+    }
+    team.duties = [...(team.duties ?? []), duty];
   }
 
-  setDuties(owner: MselDraftTeam | MselDraftOrganization, text: string) {
-    (owner as MselDraftTeam).duties = text
-      .split(',')
-      .map((d) => d.trim())
-      .filter((d) => d);
+  removeDuty(owner: MselDraftTeam | MselDraftOrganization, duty: string) {
+    const team = owner as MselDraftTeam;
+    team.duties = (team.duties ?? []).filter((d) => d !== duty);
   }
 
   removeObjective(index: number) {
@@ -284,6 +292,48 @@ export class MselDraftDialogComponent {
   removeCompetency(owner: MselDraftTeam, idNumber: string) {
     owner.competencies = owner.competencies.filter((c) => c !== idNumber);
     this.pruneCompetencies();
+  }
+
+  // the competencies a team may be given: the chosen frameworks' (loaded with the design), or the draft's own
+  availableCompetencies(owner: MselDraftTeam | MselDraftOrganization): MselDraftCompetency[] {
+    const have = new Set((owner as MselDraftTeam).competencies ?? []);
+    const pool = this.frameworkCompetencies.length ? this.frameworkCompetencies : (this.result?.competencies ?? []);
+    return pool.filter((c) => c.idNumber && !have.has(c.idNumber));
+  }
+
+  addCompetency(owner: MselDraftTeam | MselDraftOrganization, idNumber: string) {
+    if (!idNumber) {
+      return;
+    }
+    const team = owner as MselDraftTeam;
+    team.competencies = [...(team.competencies ?? []), idNumber];
+    const draft = this.result.draft;
+    if (!(draft.competencies ?? []).includes(idNumber)) {
+      draft.competencies = [...(draft.competencies ?? []), idNumber];
+    }
+    // the chip shows the name, which the design only knows for the competencies it used
+    if (!this.result.competencies?.some((c) => c.idNumber === idNumber)) {
+      const named = this.frameworkCompetencies.find((c) => c.idNumber === idNumber);
+      this.result.competencies = [...(this.result.competencies ?? []), named ?? { idNumber, shortName: '' }];
+    }
+  }
+
+  // the chosen frameworks' competencies, for adding to a team; the template's own are not listed by the API, so without a
+  // chosen framework only the draft's are offered
+  private loadFrameworkCompetencies() {
+    this.frameworkCompetencies = [];
+    if (!this.competencyFrameworkIds.length) {
+      return;
+    }
+    forkJoin(this.competencyFrameworkIds.map((id) => this.competencyFrameworkService.getCompetencyFramework(id))).subscribe({
+      next: (frameworks) =>
+        (this.frameworkCompetencies = frameworks
+          .flatMap((f) => f.competencies ?? [])
+          .filter((c) => c.idNumber)
+          .map((c) => ({ idNumber: c.idNumber, shortName: c.shortName ?? '' }))
+          .sort((a, b) => a.idNumber.localeCompare(b.idNumber, undefined, { numeric: true }))),
+      error: () => (this.frameworkCompetencies = []),
+    });
   }
 
   private pruneCompetencies() {

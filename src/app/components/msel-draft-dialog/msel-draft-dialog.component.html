@@ -298,30 +298,63 @@ project root for license information or contact permission@sei.cmu.edu for full 
               <textarea class="cell-input" rows="2" [(ngModel)]="owner.description" [attr.aria-label]="owner.shortName + ' description'"></textarea>
               @if (!isTeam(owner)) {
               <div class="facts">
-                <select class="cell-input" [(ngModel)]="$any(owner).sector" [attr.aria-label]="owner.shortName + ' sector'">
-                  <option [ngValue]="null">No sector</option>
-                  @for (sector of sectors; track sector) {
-                  <option [ngValue]="sector">{{ sector }}</option>
-                  }
-                </select>
-                <select class="cell-input" [(ngModel)]="$any(owner).size" [attr.aria-label]="owner.shortName + ' size'">
-                  <option [ngValue]="null">Size</option>
-                  @for (size of sizes; track size) {
-                  <option [ngValue]="size">{{ size }}</option>
-                  }
-                </select>
-                <input class="cell-input" [(ngModel)]="$any(owner).industry" [attr.aria-label]="owner.shortName + ' industry'" placeholder="Industry" />
-                <input class="cell-input" [(ngModel)]="$any(owner).country" [attr.aria-label]="owner.shortName + ' country'" placeholder="Country" />
+                <label class="fact" title="The CISA critical infrastructure sector the organization belongs to, or none for a news outlet, the adversary or exercise control. It shapes what the organization does and knows in the articles.">
+                  <span class="fact-label">Sector</span>
+                  <select class="cell-input" [(ngModel)]="$any(owner).sector" [attr.aria-label]="owner.shortName + ' sector'">
+                    <option [ngValue]="null">No sector</option>
+                    @for (sector of sectors; track sector) {
+                    <option [ngValue]="sector">{{ sector }}</option>
+                    }
+                  </select>
+                </label>
+                <label class="fact" title="How many people the organization has: Small under 100, Medium to 999, Large to 9,999, Enterprise 10,000 or more. It keeps its staff, systems and reach in scale across the articles.">
+                  <span class="fact-label">Size</span>
+                  <select class="cell-input" [(ngModel)]="$any(owner).size" [attr.aria-label]="owner.shortName + ' size'">
+                    <option [ngValue]="null">Size</option>
+                    @for (size of sizes; track size) {
+                    <option [ngValue]="size">{{ size }}</option>
+                    }
+                  </select>
+                </label>
+                <label class="fact" title="What the organization does within its sector, such as a regional acute-care hospital or a municipal wastewater utility. The articles and profiles are written to it.">
+                  <span class="fact-label">Industry</span>
+                  <input class="cell-input" [(ngModel)]="$any(owner).industry" [attr.aria-label]="owner.shortName + ' industry'" placeholder="e.g. regional wastewater utility" />
+                </label>
+                <label class="fact" title="The country the organization is in; fictional where the scenario's geography is.">
+                  <span class="fact-label">Country</span>
+                  <input class="cell-input" [(ngModel)]="$any(owner).country" [attr.aria-label]="owner.shortName + ' country'" placeholder="Country" />
+                </label>
               </div>
               }
               @if (isTeam(owner) && templateUsesCite) {
-              <label class="duties">CITE duties
-                <input class="cell-input" [ngModel]="duties(owner)" (ngModelChange)="setDuties(owner, $event)"
-                  [attr.aria-label]="owner.shortName + ' CITE duties'" placeholder="Incident Lead, Scribe" />
-              </label>
+              <div class="duties" [title]="'The CITE duties members of ' + owner.shortName + ' pick from, such as Incident Lead or Scribe'">
+                <span class="fact-label">CITE duties</span>
+                <mat-chip-set [attr.aria-label]="owner.shortName + ' CITE duties'">
+                  @for (duty of $any(owner).duties ?? []; track duty) {
+                  <mat-chip (removed)="removeDuty(owner, duty)">
+                    {{ duty }}
+                    <button matChipRemove type="button" [attr.aria-label]="'Remove duty ' + duty"><mat-icon fontIcon="mdi-close"></mat-icon></button>
+                  </mat-chip>
+                  }
+                </mat-chip-set>
+                <input class="cell-input add-input" [attr.aria-label]="'Add a CITE duty to ' + owner.shortName" placeholder="Add a duty and press Enter"
+                  (keydown.enter)="addDuty(owner, $any($event.target)); $event.preventDefault()" (blur)="addDuty(owner, $any($event.target))" />
+              </div>
               }
-              @if (isTeam(owner) && $any(owner).competencies?.length) {
-              <ng-container *ngTemplateOutlet="competencyChips; context: { owner: owner }"></ng-container>
+              @if (isTeam(owner) && (($any(owner).competencies?.length) || availableCompetencies(owner).length)) {
+              <div class="competencies" [title]="'The competencies ' + owner.shortName + ' is expected to demonstrate, from the chosen frameworks'">
+                <span class="fact-label">Competencies</span>
+                <ng-container *ngTemplateOutlet="competencyChips; context: { owner: owner }"></ng-container>
+                @if (availableCompetencies(owner).length) {
+                <select class="cell-input add-input" [attr.aria-label]="'Add a competency to ' + owner.shortName" [ngModel]="''"
+                  (ngModelChange)="addCompetency(owner, $event)">
+                  <option value="">Add a competency…</option>
+                  @for (competency of availableCompetencies(owner); track competency.idNumber) {
+                  <option [value]="competency.idNumber">{{ competency.idNumber }}: {{ competency.shortName }}</option>
+                  }
+                </select>
+                }
+              </div>
               }
             </td>
             <td class="narrow">

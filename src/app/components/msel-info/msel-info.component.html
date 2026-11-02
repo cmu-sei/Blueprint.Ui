@@ -84,7 +84,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <span class="msel-image-label">Card Image</span>
             <div class="msel-image-row">
               @if (mselImageUrl) {
-              <img class="msel-image-preview" [src]="mselImageUrl" alt="Card image for {{ msel.name }}" />
+              <button type="button" class="msel-image-button" (click)="viewMselImage()" title="View the image at full size">
+                <img class="msel-image-preview" [src]="mselImageUrl" alt="Card image for {{ msel.name }}" />
+              </button>
               } @else {
               <span class="msel-image-none">No image. The event's cards show a generated pattern.</span>
               }
@@ -93,6 +95,10 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 (change)="uploadMselImage(mselImageInput)" />
               <button mat-stroked-button [disabled]="isImageBusy" (click)="mselImageInput.click()">
                 {{ msel.imageDateModified ? 'Replace Image' : 'Upload Image' }}
+              </button>
+              <button mat-stroked-button [disabled]="isImageBusy" (click)="generateMselImage()"
+                matTooltip="Asks the server's image model for a picture of the MSEL's scenario, replacing this one">
+                {{ msel.imageDateModified ? 'Regenerate Image' : 'Generate Image' }}
               </button>
               @if (msel.imageDateModified) {
               <button mat-stroked-button [disabled]="isImageBusy" (click)="removeMselImage()">Remove Image</button>

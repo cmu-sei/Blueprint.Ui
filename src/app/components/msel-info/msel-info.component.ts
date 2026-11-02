@@ -30,6 +30,7 @@ import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { canUpdateMsel, integrationsLocked, isPipelineStatus } from 'src/app/utilities/msel-permissions';
 import { MselImageDataService } from 'src/app/data/msel/msel-image-data.service';
+import { MselImageDialogComponent } from '../msel-image-dialog/msel-image-dialog.component';
 import { ErrorService } from 'src/app/services/error/error.service';
 import { SystemMessageService } from 'src/app/services/system-message/system-message.service';
 import { MatMenuTrigger, MatMenu, MatMenuItem } from '@angular/material/menu';
@@ -539,6 +540,22 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     }
     this.isImageBusy = true;
     this.mselImageDataService.setImage(this.msel.id, file).subscribe({
+      next: () => (this.isImageBusy = false),
+      error: (err) => {
+        this.isImageBusy = false;
+        this.errorService.handleError(err);
+      },
+    });
+  }
+
+  // the image at full size, since the card preview is small
+  viewMselImage() {
+    this.dialog.open(MselImageDialogComponent, { data: { url: this.mselImageUrl, name: this.msel.name }, maxWidth: '95vw' });
+  }
+
+  generateMselImage() {
+    this.isImageBusy = true;
+    this.mselImageDataService.generateImage(this.msel.id).subscribe({
       next: () => (this.isImageBusy = false),
       error: (err) => {
         this.isImageBusy = false;

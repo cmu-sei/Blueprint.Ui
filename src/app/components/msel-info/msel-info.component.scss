@@ -505,6 +505,15 @@ a {
 }
 
 // The join cards crop to 16:7, so the preview shows the same crop.
+// the preview is a button, so the image opens at full size
+.msel-image-button {
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: zoom-in;
+  line-height: 0;
+}
+
 .msel-image-preview {
   width: 240px;
   aspect-ratio: 16 / 7;

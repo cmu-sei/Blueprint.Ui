@@ -49,6 +49,17 @@ export class MselImageDataService implements OnDestroy {
     );
   }
 
+  // a picture made from the MSEL's scenario replaces the one it has, so the cached URL goes
+  generateImage(mselId: string): Observable<Msel> {
+    return this.mselImageService.generateMselImage(mselId).pipe(
+      take(1),
+      tap((msel: Msel) => {
+        this.revoke(mselId);
+        this.updateStore(msel);
+      })
+    );
+  }
+
   deleteImage(mselId: string): Observable<Msel> {
     return this.mselImageService.deleteMselImage(mselId).pipe(
       take(1),
