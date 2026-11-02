@@ -225,6 +225,28 @@ describe('ScenarioEventListComponent', () => {
   });
 
   /**
+   * Verifies: an Information or Facilitation row shows the columns marked for it; when the MSEL marks none, as a drafted MSEL
+   * did, it shows the event list's columns rather than an empty row.
+   * Interacts with: ScenarioEventListComponent.rowDataFields.
+   * Data: Title on the list and marked for Information; Summary on the list only; then neither marked.
+   */
+  it('shows Information and Facilitation rows with columns', async () => {
+    const { fixture } = await renderEventList({ permissions: [SystemPermission.EditMsels] });
+    const list = fixture.componentInstance as unknown as { mselDataFields: DataField[]; rowDataFields: (e: ScenarioEvent) => DataField[] };
+    const summary: DataField = { id: 'df-summary', mselId: 'msel-1', name: 'Summary', dataType: DataFieldType.String, displayOrder: 2, onScenarioEventList: true };
+    const information: ScenarioEvent = { id: 'se-i', mselId: 'msel-1', scenarioEventType: EventType.Information, deltaSeconds: 0 };
+    const facilitation: ScenarioEvent = { id: 'se-f', mselId: 'msel-1', scenarioEventType: EventType.Facilitation, deltaSeconds: 0 };
+
+    list.mselDataFields = [TITLE, summary];
+    expect(list.rowDataFields(information).map((f) => f.name)).toEqual(['Title']);
+    // nothing is marked for Facilitation, so its rows show the list's columns
+    expect(list.rowDataFields(facilitation).map((f) => f.name)).toEqual(['Title', 'Summary']);
+
+    list.mselDataFields = [{ ...TITLE, isInformationField: false }, summary];
+    expect(list.rowDataFields(information).map((f) => f.name)).toEqual(['Title', 'Summary']);
+  });
+
+  /**
    * Verifies: a Viewer without EditMsels gets a read-only list: no selection or header actions, only View and Edit in the menu, Hide disabled, and read-only values.
    * Interacts with: real PermissionDataService (stubbed grants), MselPlus.hasRole, DataValueStub inputs.
    * Data: every permission but EditMsels (near miss: ManageMsels); MSEL roles Viewer and Evaluator.

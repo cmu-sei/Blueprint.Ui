@@ -1069,15 +1069,18 @@ export class ScenarioEventListComponent
   }
 
   rowDataFields(scenarioEvent: ScenarioEvent): DataField[] {
+    // a MSEL that marks no column for Information or Facilitation rows shows them as it shows injects, rather than as an empty row
+    const anyInformation = this.mselDataFields.some((df) => df.isInformationField);
+    const anyFacilitation = this.mselDataFields.some((df) => df.isFacilitationField);
     const dataFields = new Array<DataField>();
     this.mselDataFields.forEach((df) => {
       if (
         (scenarioEvent.scenarioEventType === EventType.Inject &&
           df.onScenarioEventList) ||
         (scenarioEvent.scenarioEventType === EventType.Information &&
-          df.isInformationField) ||
+          (anyInformation ? df.isInformationField : df.onScenarioEventList)) ||
         (scenarioEvent.scenarioEventType === EventType.Facilitation &&
-          df.isFacilitationField)
+          (anyFacilitation ? df.isFacilitationField : df.onScenarioEventList))
       ) {
         dataFields.push(df);
       }
