@@ -23,6 +23,7 @@ import { TeamDataService } from 'src/app/data/team/team-data.service';
 import { MoveDataService } from 'src/app/data/move/move-data.service';
 import { ScenarioEventDataService } from 'src/app/data/scenario-event/scenario-event-data.service';
 import { DataValueDataService } from 'src/app/data/data-value/data-value-data.service';
+import { DataFieldDataService } from 'src/app/data/data-field/data-field-data.service';
 import { MselAssistMessage, MselChange, MselChangeResult } from 'src/app/generated/blueprint.api';
 
 /** One turn of the conversation, with what the assistant proposed and what came of applying it. */
@@ -63,6 +64,7 @@ export class MselAssistantComponent {
   private moveDataService = inject(MoveDataService);
   private scenarioEventDataService = inject(ScenarioEventDataService);
   private dataValueDataService = inject(DataValueDataService);
+  private dataFieldDataService = inject(DataFieldDataService);
 
   readonly mselId = input.required<string>();
   readonly closePanel = output<void>();
@@ -160,6 +162,8 @@ export class MselAssistantComponent {
     this.cardDataService.loadByMsel(mselId);
     this.cardTeamDataService.getCardTeamsFromApi(mselId);
     this.moveDataService.loadByMsel(mselId);
+    // a column added or changed comes before the values written to it
+    this.dataFieldDataService.loadByMsel(mselId);
     this.scenarioEventDataService.loadByMsel(mselId);
     this.dataValueDataService.loadByMsel(mselId);
     this.mselCompetencyDataService.loadByMsel(mselId);

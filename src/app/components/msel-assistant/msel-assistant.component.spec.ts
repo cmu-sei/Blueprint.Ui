@@ -17,6 +17,7 @@ import { TeamCompetencyDataService } from 'src/app/data/team-competency/team-com
 import { MoveDataService } from 'src/app/data/move/move-data.service';
 import { ScenarioEventDataService } from 'src/app/data/scenario-event/scenario-event-data.service';
 import { DataValueDataService } from 'src/app/data/data-value/data-value-data.service';
+import { DataFieldDataService } from 'src/app/data/data-field/data-field-data.service';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { MselAssistantComponent } from './msel-assistant.component';
 
@@ -34,7 +35,7 @@ async function renderAssistant(answer: () => any = () => of(PROPOSAL), applied: 
   const applyAssistantChanges = vi.fn(applied);
   const loaders = {
     teams: vi.fn(), organizations: vi.fn(), cards: vi.fn(), cardTeams: vi.fn(), mselCompetencies: vi.fn(), teamCompetencies: vi.fn(),
-    moves: vi.fn(), scenarioEvents: vi.fn(), dataValues: vi.fn(),
+    moves: vi.fn(), scenarioEvents: vi.fn(), dataValues: vi.fn(), dataFields: vi.fn(),
   };
   const rendered = await renderComponent(MselAssistantComponent, {
     inputs: { mselId: 'msel-1' },
@@ -49,6 +50,7 @@ async function renderAssistant(answer: () => any = () => of(PROPOSAL), applied: 
       { provide: MoveDataService, useValue: { loadByMsel: loaders.moves } },
       { provide: ScenarioEventDataService, useValue: { loadByMsel: loaders.scenarioEvents } },
       { provide: DataValueDataService, useValue: { loadByMsel: loaders.dataValues } },
+      { provide: DataFieldDataService, useValue: { loadByMsel: loaders.dataFields } },
     ],
   });
   return { ...rendered, askAssistant, applyAssistantChanges, loaders, user: userEvent.setup() };

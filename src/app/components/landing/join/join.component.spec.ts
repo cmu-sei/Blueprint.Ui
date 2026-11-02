@@ -142,7 +142,7 @@ describe('JoinComponent', () => {
     const { fixture, imageApi } = await renderJoin(undefined, {}, [{ ...ALPHA, imageDateModified: new Date('2026-10-23T12:00:00Z') }, BRAVO]);
 
     const cards = Array.from(fixture.nativeElement.querySelectorAll('.event-card')) as HTMLElement[];
-    expect(imageApi.getMselImage.mock.calls).toEqual([['msel-1']]);
+    expect(imageApi.getMselImage.mock.calls).toEqual([['msel-1', '2026-10-23T12:00:00.000Z']]);
     expect((cards[0].querySelector('.card-photo') as HTMLElement).style.backgroundImage).toBe('url("blob:photo")');
     expect(cards[1].querySelector('.card-photo')).toBeNull();
     expect(cards[1].querySelector('.card-image')).toBeEmptyDOMElement();
