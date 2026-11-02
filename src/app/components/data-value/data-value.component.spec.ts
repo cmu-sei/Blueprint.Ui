@@ -17,8 +17,10 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { NgxMatDatepickerActions, NgxMatDatepickerApply, NgxMatDatepickerCancel, NgxMatDatepickerInput, NgxMatDatetimepicker } from '@ngxmc/datetime-picker';
 import { screen, within } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
-import { DataField, DataFieldType, MselAttackTechnique, MselItemStatus } from 'src/app/generated/blueprint.api';
+import { of } from 'rxjs';
+import { DataField, DataFieldType, MselAttackTechnique, MselAttackTechniqueService, MselCountermeasures, MselItemStatus } from 'src/app/generated/blueprint.api';
 import { MselAttackTechniqueDataService } from 'src/app/data/msel-attack-technique/msel-attack-technique-data.service';
+import { ApiStub } from 'src/app/test-utils/api-stub';
 import { MselAttackTechniqueStore } from 'src/app/data/msel-attack-technique/msel-attack-technique.store';
 import { DataValueComponent } from './data-value.component';
 import { TimezoneAbbrPipe } from 'src/app/utilities/timezone-abbr';
@@ -378,19 +380,49 @@ const TECHNIQUE_POOL: MselAttackTechnique[] = [
   { id: 'mat-3', mselId: 'msel-1', attackTechniqueId: 'at-3', attackTechnique: { id: 'at-3', domain: 'd3fend', externalId: 'D3-CH', name: 'Credential Hardening', url: 'https://d3fend.mitre.org/technique/d3f:CredentialHardening/' } },
 ];
 
-async function renderTechniqueField(dataField: DataField, value: string, flags: Flags = {}) {
+// D3-FA is a second defensive technique in the pool, so a Suggested group has something to come before.
+const D3_FA_IN_POOL: MselAttackTechnique = {
+  id: 'mat-4', mselId: 'msel-1', attackTechniqueId: 'at-4',
+  attackTechnique: { id: 'at-4', domain: 'd3fend', externalId: 'D3-FA', name: 'File Analysis', url: 'https://d3fend.mitre.org/technique/d3f:FileAnalysis/' },
+};
+// D3FEND counters T1059 with File Analysis (two paths) and with Network Traffic Filtering, which the pool does not hold.
+const T1059_COUNTERED: MselCountermeasures = {
+  mselId: 'msel-1', attackReleaseId: 'rel-d3', hasMappings: true,
+  techniques: [{
+    attackTechniqueId: 'at-1', offensiveExternalId: 'T1059', inheritedFrom: null,
+    countermeasures: [
+      { id: 'cm-1', offensiveExternalId: 'T1059', defensiveTechniqueId: 'at-4', defensiveTechnique: D3_FA_IN_POOL.attackTechnique, defensiveTactic: 'Detect', weight: 2 },
+      { id: 'cm-2', offensiveExternalId: 'T1059', defensiveTechniqueId: 'at-9', defensiveTechnique: { id: 'at-9', domain: 'd3fend', externalId: 'D3-NTF', name: 'Network Traffic Filtering' }, defensiveTactic: 'Isolate', weight: 1 },
+    ],
+  }],
+};
+
+interface TechniqueOptions {
+  /** The event's Attack Technique value, for a Defensive Technique field. */
+  attackTechniques?: string;
+  countermeasures?: MselCountermeasures;
+  pool?: MselAttackTechnique[];
+}
+
+async function renderTechniqueField(dataField: DataField, value: string, flags: Flags = {}, options: TechniqueOptions = {}) {
   const ensureLoaded = vi.fn();
+  const poolApi = {
+    getMselCountermeasures: vi.fn(() => of(structuredClone(options.countermeasures ?? T1059_COUNTERED))),
+  } satisfies ApiStub<MselAttackTechniqueService>;
   const rendered = await renderComponent(DataValueComponent, {
     imports: [MatChipsModule, MatFormFieldModule, MatIconModule, MatSelectModule, MatTooltipModule],
     declarations: [DataValueComponent, TimezoneAbbrPipe],
-    providers: [{ provide: MselAttackTechniqueDataService, useValue: { ensureLoaded } }],
-    inputs: { dataField, value, canEdit: false, canApprove: false, isOwner: false, showValueOnly: false, ...flags },
+    providers: [
+      { provide: MselAttackTechniqueDataService, useValue: { ensureLoaded } },
+      { provide: MselAttackTechniqueService, useValue: poolApi },
+    ],
+    inputs: { dataField, value, canEdit: false, canApprove: false, isOwner: false, showValueOnly: false, ...flags, ...(options.attackTechniques !== undefined ? { attackTechniques: options.attackTechniques } : {}) },
   });
-  TestBed.inject(MselAttackTechniqueStore).set(TECHNIQUE_POOL);
+  TestBed.inject(MselAttackTechniqueStore).set(options.pool ?? TECHNIQUE_POOL);
   rendered.fixture.detectChanges();
   const changes: string[] = [];
   rendered.fixture.componentInstance.valueChange.subscribe((v) => changes.push(v));
-  return { ...rendered, changes, ensureLoaded };
+  return { ...rendered, changes, ensureLoaded, poolApi };
 }
 
 describe('DataValueComponent ATT&CK techniques', () => {
@@ -458,7 +490,7 @@ describe('DataValueComponent ATT&CK techniques', () => {
 describe('DataValueComponent D3FEND techniques', () => {
   const COUNTERMEASURES: DataField = { id: 'df-defend', mselId: 'msel-1', name: 'Countermeasures', dataType: DataFieldType.DefensiveTechnique };
 
-  const renderCountermeasures = (value: string, flags: Flags = {}) => renderTechniqueField(COUNTERMEASURES, value, flags);
+  const renderCountermeasures = (value: string, flags: Flags = {}, options: TechniqueOptions = {}) => renderTechniqueField(COUNTERMEASURES, value, flags, options);
 
   /**
    * Verifies: a Defensive Technique field draws the same chips as an Attack Technique one, loads the pool, links a
@@ -509,5 +541,53 @@ describe('DataValueComponent D3FEND techniques', () => {
 
     expect(screen.getByText("Add techniques on the MSEL's Techniques tab")).toBeInTheDocument();
     expect(screen.getByLabelText('Select techniques')).toBeInTheDocument();
+  });
+  /**
+   * Verifies: on an event that names an attack technique, the list leads with a Suggested group of the pooled
+   * D3FEND techniques that counter it, strongest first, then the rest of the pool under Other techniques; a
+   * countermeasure the pool does not hold is not offered.
+   * Interacts with: suggestedTechniqueOptions, showsSuggestedGroup, MselCountermeasureDataService,
+   * MselAttackTechniqueService.getMselCountermeasures (stub).
+   * Data: the event's Attack Technique is T1059; D3-CH and D3-FA in the defensive pool; D3-FA and D3-NTF counter T1059.
+   */
+  it('suggests the countermeasures of the event\'s attack techniques first', async () => {
+    const { fixture, poolApi } = await renderCountermeasures('', { canEdit: true }, { attackTechniques: 'T1059', pool: [...TECHNIQUE_POOL, D3_FA_IN_POOL] });
+    const select = await TestbedHarnessEnvironment.loader(fixture).getHarness(MatSelectHarness);
+    await select.open();
+
+    expect(poolApi.getMselCountermeasures).toHaveBeenCalledWith('msel-1');
+    const groups = await select.getOptionGroups();
+    expect(await Promise.all(groups.map((g) => g.getLabelText()))).toEqual(['Suggested', 'Other techniques']);
+    const options = await select.getOptions();
+    expect(await Promise.all(options.map((o) => o.getText()))).toEqual(['D3-FA - File Analysis', 'D3-CH - Credential Hardening']);
+  });
+
+  /**
+   * Verifies: an event with no attack technique keeps the flat list and asks for no countermeasures.
+   * Interacts with: suggestsCountermeasures, showsSuggestedGroup.
+   * Data: no Attack Technique value; D3-CH and D3-FA in the defensive pool.
+   */
+  it('keeps the flat list when the event names no attack technique', async () => {
+    const { fixture, poolApi } = await renderCountermeasures('', { canEdit: true }, { pool: [...TECHNIQUE_POOL, D3_FA_IN_POOL] });
+    const select = await TestbedHarnessEnvironment.loader(fixture).getHarness(MatSelectHarness);
+    await select.open();
+
+    expect(poolApi.getMselCountermeasures).not.toHaveBeenCalled();
+    expect(await select.getOptionGroups()).toHaveLength(0);
+    expect(await Promise.all((await select.getOptions()).map((o) => o.getText()))).toEqual(['D3-CH - Credential Hardening', 'D3-FA - File Analysis']);
+  });
+
+  /**
+   * Verifies: when nothing in the pool counters the event's attack techniques there is no empty Suggested group.
+   * Interacts with: showsSuggestedGroup.
+   * Data: the event's Attack Technique is T1566, which nothing counters.
+   */
+  it('shows no Suggested group when nothing pooled counters the event', async () => {
+    const { fixture } = await renderCountermeasures('', { canEdit: true }, { attackTechniques: 'T1566' });
+    const select = await TestbedHarnessEnvironment.loader(fixture).getHarness(MatSelectHarness);
+    await select.open();
+
+    expect(await select.getOptionGroups()).toHaveLength(0);
+    expect(await Promise.all((await select.getOptions()).map((o) => o.getText()))).toEqual(['D3-CH - Credential Hardening']);
   });
 });

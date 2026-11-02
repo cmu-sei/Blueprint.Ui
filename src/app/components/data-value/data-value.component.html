@@ -576,8 +576,26 @@ project root for license information.
           }
         </div>
         <hr style="margin: 0; border-color: var(--mat-sys-outline-variant);">
+        @if (showsSuggestedGroup) {
+        <!-- a Defensive Technique field on an event that names attack techniques: D3FEND's countermeasures for them first -->
+        @if (filteredSuggestedTechniqueOptions.length > 0) {
+        <mat-optgroup label="Suggested">
+          @for (option of filteredSuggestedTechniqueOptions; track option.externalId) {
+          <mat-option [value]="option.externalId">{{ option.externalId }} - {{ option.name }}</mat-option>
+          }
+        </mat-optgroup>
+        }
+        @if (filteredOtherTechniqueOptions.length > 0) {
+        <mat-optgroup label="Other techniques">
+          @for (option of filteredOtherTechniqueOptions; track option.externalId) {
+          <mat-option [value]="option.externalId">{{ option.externalId }} - {{ option.name }}</mat-option>
+          }
+        </mat-optgroup>
+        }
+        } @else {
         @for (option of filteredAttackTechniqueOptions; track option.externalId) {
         <mat-option [value]="option.externalId">{{ option.externalId }} - {{ option.name }}</mat-option>
+        }
         }
         @if (filteredAttackTechniqueOptions.length === 0) {
         <div class="competency-no-results">No matching techniques</div>

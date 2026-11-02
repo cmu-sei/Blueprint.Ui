@@ -11,6 +11,7 @@ import {
   AttackTechnique,
   DataField,
   DataFieldType,
+  MselCountermeasures,
   MselItemStatus,
 } from 'src/app/generated/blueprint.api';
 import { EDITOR_CONFIG, VIEW_CONFIG } from 'src/app/utilities/editor-config';
@@ -22,7 +23,7 @@ import { MatTooltip } from '@angular/material/tooltip';
 import { MatFormField, MatLabel, MatInput, MatError, MatHint, MatSuffix } from '@angular/material/input';
 import { MatSelect, MatSelectTrigger } from '@angular/material/select';
 import { FormsModule } from '@angular/forms';
-import { MatOption } from '@angular/material/autocomplete';
+import { MatOptgroup, MatOption } from '@angular/material/autocomplete';
 import { NgxMatDatepickerInput, NgxMatDatetimepicker, NgxMatDatepickerActions, NgxMatDatepickerApply, NgxMatDatepickerCancel } from '@ngxmc/datetime-picker';
 import { MatDatepickerToggle } from '@angular/material/datepicker';
 import { MatButton, MatIconButton } from '@angular/material/button';
@@ -33,20 +34,24 @@ import { TimezoneAbbrPipe } from '../../utilities/timezone-abbr';
 import { IsDateTimeValuePipe } from '../../utilities/date-time-value';
 import { MselAttackTechniqueQuery } from 'src/app/data/msel-attack-technique/msel-attack-technique.query';
 import { MselAttackTechniqueDataService } from 'src/app/data/msel-attack-technique/msel-attack-technique-data.service';
+import { MselCountermeasureDataService } from 'src/app/data/msel-attack-technique/msel-countermeasure-data.service';
 import { TechniqueFamily, techniqueFamily } from 'src/app/utilities/technique-family';
 
 @Component({
     selector: 'app-data-value',
     templateUrl: './data-value.component.html',
     styleUrls: ['./data-value.component.scss'],
-    imports: [AngularEditorModule, MatCheckbox, MatTooltip, MatFormField, MatLabel, MatHint, MatSelect, FormsModule, MatSelectTrigger, MatOption, MatInput, MatError, NgxMatDatepickerInput, MatDatepickerToggle, MatSuffix, NgxMatDatetimepicker, NgxMatDatepickerActions, MatButton, NgxMatDatepickerApply, NgxMatDatepickerCancel, MatChipSet, MatChip, MatChipRemove, MatIcon, MatIconButton, DatePipe, TimezoneAbbrPipe, NgTemplateOutlet, IsDateTimeValuePipe]
+    imports: [AngularEditorModule, MatCheckbox, MatTooltip, MatFormField, MatLabel, MatHint, MatSelect, FormsModule, MatSelectTrigger, MatOptgroup, MatOption, MatInput, MatError, NgxMatDatepickerInput, MatDatepickerToggle, MatSuffix, NgxMatDatetimepicker, NgxMatDatepickerActions, MatButton, NgxMatDatepickerApply, NgxMatDatepickerCancel, MatChipSet, MatChip, MatChipRemove, MatIcon, MatIconButton, DatePipe, TimezoneAbbrPipe, NgTemplateOutlet, IsDateTimeValuePipe]
 })
 export class DataValueComponent implements OnChanges, OnDestroy {
   private mselAttackTechniqueQuery = inject(MselAttackTechniqueQuery);
   private mselAttackTechniqueDataService = inject(MselAttackTechniqueDataService);
+  private mselCountermeasureDataService = inject(MselCountermeasureDataService);
 
   @Input() value: any;
   @Input() dataField: DataField;
+  /** The event's Attack Technique value(s), comma-separated: a Defensive Technique field suggests their countermeasures first. */
+  readonly attackTechniques = input<string>(undefined);
   readonly canEdit = input<boolean>(undefined); // enables editing of values
   readonly canApprove = input<boolean>(undefined); // enables editing of status value
   readonly isOwner = input<boolean>(undefined); // enables editing of assigned unit value
@@ -162,6 +167,7 @@ export class DataValueComponent implements OnChanges, OnDestroy {
   attackTechniqueOptions: AttackTechnique[] = [];
   private attackTechniquesById = new Map<string, AttackTechnique>();
   private wholePool: AttackTechnique[] = [];
+  private mselCountermeasures: MselCountermeasures;
   private unsubscribe$ = new Subject();
 
   constructor() {
@@ -169,13 +175,63 @@ export class DataValueComponent implements OnChanges, OnDestroy {
       this.wholePool = techniques;
       this.offerTechniques();
     });
+    this.mselCountermeasureDataService.countermeasures$.pipe(takeUntil(this.unsubscribe$)).subscribe(countermeasures => {
+      this.mselCountermeasures = countermeasures;
+    });
   }
 
   ngOnChanges() {
     if (this.isTechniqueField) {
       this.mselAttackTechniqueDataService.ensureLoaded(this.dataField.mselId);
       this.offerTechniques();
+      if (this.suggestsCountermeasures) {
+        this.mselCountermeasureDataService.ensureLoaded(this.dataField.mselId);
+      }
     }
+  }
+
+  /** A Defensive Technique field on an event that names attack techniques: their countermeasures are offered first. */
+  get suggestsCountermeasures(): boolean {
+    return this.dataField?.dataType === DataFieldType.DefensiveTechnique && this.eventAttackTechniqueIds.length > 0;
+  }
+
+  private get eventAttackTechniqueIds(): string[] {
+    return (this.attackTechniques() || '').split(',').map(v => v.trim()).filter(v => v);
+  }
+
+  /**
+   * The pooled defensive techniques D3FEND maps against the event's attack techniques, strongest first. Only pooled
+   * ones: a cell can only name what the MSEL's Defensive Techniques offer.
+   */
+  get suggestedTechniqueOptions(): AttackTechnique[] {
+    if (!this.suggestsCountermeasures || !this.mselCountermeasures?.techniques) return [];
+    const wanted = new Set(this.eventAttackTechniqueIds);
+    const weights = new Map<string, number>();
+    for (const group of this.mselCountermeasures.techniques) {
+      if (!wanted.has(group.offensiveExternalId)) continue;
+      for (const c of group.countermeasures || []) {
+        const id = c.defensiveTechnique?.externalId;
+        if (id) weights.set(id, Math.max(weights.get(id) || 0, c.weight || 0));
+      }
+    }
+    return this.attackTechniqueOptions
+      .filter(t => weights.has(t.externalId))
+      .sort((a, b) => weights.get(b.externalId) - weights.get(a.externalId) || a.externalId.localeCompare(b.externalId, undefined, { numeric: true }));
+  }
+
+  get filteredSuggestedTechniqueOptions(): AttackTechnique[] {
+    return this.filterTechniques(this.suggestedTechniqueOptions);
+  }
+
+  /** The rest of the pool, after the suggested ones. */
+  get filteredOtherTechniqueOptions(): AttackTechnique[] {
+    const suggested = new Set(this.suggestedTechniqueOptions.map(t => t.externalId));
+    return this.filterTechniques(this.attackTechniqueOptions.filter(t => !suggested.has(t.externalId)));
+  }
+
+  /** The list is split into Suggested and the rest only when there is something to suggest. */
+  get showsSuggestedGroup(): boolean {
+    return this.suggestedTechniqueOptions.length > 0;
   }
 
   /** An Attack Technique or Defensive Technique field: both pick from the pool, each from its own half. */
@@ -203,9 +259,13 @@ export class DataValueComponent implements OnChanges, OnDestroy {
   }
 
   get filteredAttackTechniqueOptions(): AttackTechnique[] {
-    if (!this.attackTechniqueFilter) return this.attackTechniqueOptions;
+    return this.filterTechniques(this.attackTechniqueOptions);
+  }
+
+  private filterTechniques(techniques: AttackTechnique[]): AttackTechnique[] {
+    if (!this.attackTechniqueFilter) return techniques;
     const s = this.attackTechniqueFilter.toLowerCase();
-    return this.attackTechniqueOptions.filter(t =>
+    return techniques.filter(t =>
       t.externalId?.toLowerCase().includes(s) ||
       t.name?.toLowerCase().includes(s)
     );
