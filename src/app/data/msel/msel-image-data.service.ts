@@ -32,7 +32,8 @@ export class MselImageDataService implements OnDestroy {
     }
     this.revoke(msel.id);
     const entry: { key: string; url$: Observable<string | null>; url?: string } = { key, url$: null };
-    entry.url$ = this.mselImageService.getMselImage(msel.id).pipe(
+    // the key on the URL, so a browser cache keyed by URL misses once the image changes
+    entry.url$ = this.mselImageService.getMselImage(msel.id, key).pipe(
       map((blob: Blob) => (entry.url = URL.createObjectURL(blob))),
       // A missing or unreadable image leaves the card on its generated pattern.
       catchError(() => of(null)),

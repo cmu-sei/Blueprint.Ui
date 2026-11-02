@@ -773,7 +773,7 @@ describe('MselInfoComponent', () => {
       fixture.detectChanges();
 
       expect(imageApi.setMselImage.mock.calls).toEqual([['msel-1', file]]);
-      expect(imageApi.getMselImage.mock.calls).toEqual([['msel-1']]);
+      expect(imageApi.getMselImage.mock.calls).toEqual([['msel-1', '2026-10-23T12:00:00.000Z']]);
       expect(screen.getByAltText('Card image for Exercise Alpha')).toHaveAttribute('src', 'blob:card');
       expect(screen.getByRole('button', { name: 'Replace Image' })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Remove Image' })).toBeInTheDocument();
