@@ -113,7 +113,9 @@ export class PlayerApplicationEditDialogComponent {
    * Validates URLs before save
    */
   validateUrls(): boolean {
-    this.urlValidationError = this.validateUrl(this.data.playerApplication.url);
+    this.urlValidationError = this.data.playerApplication.url?.trim()
+      ? this.validateUrl(this.data.playerApplication.url)
+      : 'A URL is required';
     this.iconValidationError = this.validateUrl(this.data.playerApplication.icon);
 
     return !this.urlValidationError && !this.iconValidationError;
