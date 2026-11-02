@@ -157,6 +157,8 @@ export class MselAssistantComponent {
   // the lists the changes touch, so every tab shows them without a page refresh
   private reload() {
     const mselId = this.mselId();
+    // an integration turned on shows on the Info tab and in the rail
+    this.mselDataService.loadById(mselId);
     this.teamDataService.loadByMsel(mselId);
     this.organizationDataService.loadByMsel(mselId);
     this.cardDataService.loadByMsel(mselId);

@@ -35,12 +35,12 @@ async function renderAssistant(answer: () => any = () => of(PROPOSAL), applied: 
   const applyAssistantChanges = vi.fn(applied);
   const loaders = {
     teams: vi.fn(), organizations: vi.fn(), cards: vi.fn(), cardTeams: vi.fn(), mselCompetencies: vi.fn(), teamCompetencies: vi.fn(),
-    moves: vi.fn(), scenarioEvents: vi.fn(), dataValues: vi.fn(), dataFields: vi.fn(),
+    moves: vi.fn(), scenarioEvents: vi.fn(), dataValues: vi.fn(), dataFields: vi.fn(), msel: vi.fn(),
   };
   const rendered = await renderComponent(MselAssistantComponent, {
     inputs: { mselId: 'msel-1' },
     providers: [
-      { provide: MselDataService, useValue: { askAssistant, applyAssistantChanges } as Partial<MselDataService> },
+      { provide: MselDataService, useValue: { askAssistant, applyAssistantChanges, loadById: loaders.msel } as Partial<MselDataService> },
       { provide: TeamDataService, useValue: { loadByMsel: loaders.teams } },
       { provide: OrganizationDataService, useValue: { loadByMsel: loaders.organizations } },
       { provide: CardDataService, useValue: { loadByMsel: loaders.cards } },
