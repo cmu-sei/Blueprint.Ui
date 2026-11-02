@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { afterEach, describe, it, expect, vi } from 'vitest';
-import { Component, input } from '@angular/core';
+import { Component, EventEmitter, input } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -20,11 +20,11 @@ import { Move, MoveService, Msel, MselRole } from 'src/app/generated/blueprint.a
 import { MoveStore } from 'src/app/data/move/move.store';
 import { MselStore } from 'src/app/data/msel/msel.store';
 import { MoveListComponent } from './move-list.component';
+import { MoveEditDialogComponent } from '../move-edit-dialog/move-edit-dialog.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { dialogRefStub } from 'src/app/test-utils/dialog-refs';
 import { TimezoneAbbrPipe } from 'src/app/utilities/timezone-abbr';
 import { renderComponent } from 'src/app/test-utils/render-component';
-import { unstubbed } from 'src/app/test-utils/unstubbed';
 
 @Component({ selector: 'app-duration-view', template: '', standalone: false })
 class DurationViewStub {
@@ -35,6 +35,8 @@ class DurationViewStub {
 
 const ME = 'user-me';
 const MOVE: Move = { id: 'move-1', mselId: 'msel-1', moveNumber: 1, deltaSeconds: 0, description: 'Initial access', situationTime: new Date('2026-01-01T12:00:00Z') };
+// A move of another MSEL. A user with EditMsels is sent every MSEL's move changes, so the store can hold one.
+const OTHER_MSEL_MOVE: Move = { ...MOVE, id: 'move-other', mselId: 'msel-2', moveNumber: 5, deltaSeconds: 7200, description: 'Other exercise' };
 
 function msel(roles: MselRole[] = []): Msel {
   return {
@@ -53,6 +55,12 @@ async function renderMoves(overrides: { canEditMsel?: boolean; roles?: MselRole[
   // The user confirms every dialog.
   const confirm = vi.fn(() => dialogRefStub<unknown, boolean>(true).dialogRef);
   const dialog = { confirm } satisfies Pick<CrucibleDialogService, 'confirm'>;
+  // Add and Edit open MoveEditDialogComponent and subscribe to its editComplete; the
+  // stand-in ref carries that emitter, which never fires here.
+  const editRef = Object.assign(dialogRefStub<MoveEditDialogComponent>().dialogRef, {
+    componentInstance: { editComplete: new EventEmitter<unknown>() },
+  });
+  const open = vi.fn().mockReturnValue(editRef);
   const rendered = await renderComponent(MoveListComponent, {
     imports: [
       MatButtonModule,
@@ -68,7 +76,7 @@ async function renderMoves(overrides: { canEditMsel?: boolean; roles?: MselRole[
     providers: [
       { provide: MoveService, useValue: moveApi },
       { provide: CrucibleDialogService, useValue: dialog },
-      unstubbed(MatDialog),
+      { provide: MatDialog, useValue: { open } satisfies Pick<MatDialog, 'open'> },
       // The MSEL page loads the MSEL and its moves; the stores are seeded instead.
       {
         provide: MselStore,
@@ -90,7 +98,7 @@ async function renderMoves(overrides: { canEditMsel?: boolean; roles?: MselRole[
     ],
     inputs: { canEditMsel, loggedInUserId: ME },
   });
-  return { ...rendered, moveApi, confirm };
+  return { ...rendered, moveApi, confirm, open };
 }
 
 const table = () => screen.getByRole('table');
@@ -147,6 +155,50 @@ describe('MoveListComponent', () => {
     expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Delete Move' }));
     expect(moveApi.deleteMove).toHaveBeenCalledWith('move-1');
     expect(within(table()).queryByText('Initial access')).not.toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: a new move defaults to the next number and the latest start offset of this MSEL's moves, not of another MSEL's moves in the store.
+   * Interacts with: the Add new move button, MoveListComponent.addOrEditMove, MatDialog.open (stub), real MoveQuery (seeded).
+   * Data: this MSEL's Move 1 at +0s; another MSEL's Move 5 at +7200s.
+   */
+  it("defaults a new move from this MSEL's moves only", async () => {
+    const { open } = await renderMoves({ moves: [MOVE, OTHER_MSEL_MOVE] });
+    const user = userEvent.setup();
+
+    expect(within(table()).queryByText('Other exercise')).not.toBeInTheDocument();
+    await user.click(within(table()).getByRole('button', { name: 'Add new move' }));
+
+    expect(open).toHaveBeenCalledTimes(1);
+    expect(open.mock.calls[0][0]).toBe(MoveEditDialogComponent);
+    expect(open.mock.calls[0][1].data.move).toEqual(
+      expect.objectContaining({ moveNumber: 2, deltaSeconds: 0, mselId: 'msel-1' })
+    );
+  });
+
+  /**
+   * Verifies: the out-of-order warning shows when this MSEL's moves do not start in move order, and another MSEL's moves do not raise it.
+   * Interacts with: MoveListComponent.badMoveTimeOrder in the template, real MoveQuery (seeded).
+   * Data: this MSEL's Move 1 at +0s and Move 2 at +3600s or +0s; another MSEL's Move 1 at +9999s.
+   */
+  it.each([
+    { label: 'stays hidden when only another MSEL is out of order', moveTwoSeconds: 3600, shown: false },
+    { label: "shows when this MSEL's moves are out of order", moveTwoSeconds: 0, shown: true },
+  ])('the start time order warning $label', async ({ moveTwoSeconds, shown }) => {
+    const moves: Move[] = [
+      MOVE,
+      { ...MOVE, id: 'move-2', moveNumber: 2, deltaSeconds: moveTwoSeconds, description: 'Lateral movement' },
+      { ...OTHER_MSEL_MOVE, moveNumber: 1, deltaSeconds: 9999 },
+    ];
+
+    await renderMoves({ moves });
+
+    const warning = screen.queryByText(/The moves are not in ascending start time order!/);
+    if (shown) {
+      expect(warning).toBeInTheDocument();
+    } else {
+      expect(warning).not.toBeInTheDocument();
+    }
   });
 
   /**
