@@ -350,6 +350,22 @@ describe('MselInfoComponent', () => {
   });
 
   /**
+   * Verifies: Push Integrations and Remove Integrations are Material stroked buttons like Upload Image, not browser-default buttons.
+   * Interacts with: the mat-stroked-button directive's host classes.
+   * Data: MSEL role Owner; a pending MSEL using Player; or one deployed to Caster with workspace ws-1.
+   */
+  it.each([
+    { title: 'Push Integrations', mselExtra: {} },
+    { title: 'Remove Integrations', mselExtra: { status: MselItemStatus.Deployed, useCaster: true, casterDirectoryId: 'dir-1', casterWorkspaceId: 'ws-1' } },
+  ])('styles $title like the other stroked buttons', async ({ title, mselExtra }) => {
+    await renderInfo({ myRoles: [MselRole.Owner], mselExtra });
+
+    const stroked = Array.from(screen.getByRole('button', { name: 'Upload Image' }).classList).filter((c) => c.startsWith('mat-mdc-'));
+    expect(stroked).toContain('mat-mdc-outlined-button');
+    expect(screen.getByTitle(title)).toHaveClass(...stroked);
+  });
+
+  /**
    * Verifies: a page's Delete button is offered and works without any MSEL permission or role (current behavior).
    * Interacts with: CrucibleDialogService.confirm (stub, confirms), MselPageService.deleteMselPage (stub).
    * Data: no system permission; MSEL role Viewer; page Read Ahead.
