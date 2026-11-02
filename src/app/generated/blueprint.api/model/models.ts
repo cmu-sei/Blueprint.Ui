@@ -226,3 +226,5 @@ export * from './user';
 export * from './userMselRole';
 export * from './userTeamRole';
 export * from './mselImageRequest';
+export * from './pageDraftRequest';
+export * from './pageDraftResult';

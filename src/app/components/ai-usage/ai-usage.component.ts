@@ -32,6 +32,7 @@ export class AiUsageComponent {
     assist: 'Ask AI',
     photo: 'News photos',
     image: 'MSEL picture',
+    page: 'Pages',
   };
 
   private aiUsageService = inject(AiUsageService);

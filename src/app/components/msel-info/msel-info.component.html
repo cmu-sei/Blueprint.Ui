@@ -689,6 +689,10 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <button mat-icon-button (click)="saveMselPageEdits()" style="outline: none;" title="Save Changes">
             <mat-icon class="mdi-24px self-center" fontIcon="mdi-content-save-outline" />
           </button>
+          <button mat-icon-button type="button" (click)="writePageWithAi()" style="outline: none;"
+            [title]="'Write ' + (changedMselPage.name || 'the page') + ' with AI'" [attr.aria-label]="'Write ' + (changedMselPage.name || 'the page') + ' with AI'">
+            <mat-icon class="mdi-24px" fontIcon="mdi-creation"></mat-icon>
+          </button>
           <button mat-icon-button (click)="cancelMselPageEdits()" style="outline: none;" title="Cancel Changes">
             <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline" />
           </button>

@@ -1,0 +1,71 @@
+<!--
+Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license, please see LICENSE.md in the
+project root for license information or contact permission@sei.cmu.edu for full terms.
+-->
+
+<crucible-dialog [dialogTitle]="'Write ' + (data.name || 'the page') + ' with AI'" [hideDefaultActions]="true">
+
+<div crucibleDialogContent>
+  @if (!result) {
+  <p class="hint">
+    Writes from the MSEL's scenario, moves, teams, organizations and other pages{{ hasContent ? ', changing what you ask and keeping the rest' : '' }}.
+    Nothing changes until you select Use this, and the page is saved only when you save it.
+  </p>
+  <mat-form-field class="full-width">
+    <mat-label>{{ hasContent ? 'What should change?' : 'Instructions (optional)' }}</mat-label>
+    <textarea matInput [(ngModel)]="instruction" rows="3" [disabled]="isWriting"
+      [placeholder]="hasContent ? 'Add the two new teams; cut it to one screen; rewrite the rules of play for a hybrid format' : 'Who reads it, how long, what it covers'"></textarea>
+  </mat-form-field>
+  @if (isWriting) {
+  <div class="writing">
+    <mat-spinner diameter="40"></mat-spinner>
+    <span>Writing. This can take a minute.</span>
+  </div>
+  }
+  @if (errorMessage) {
+  <div class="error-message" role="alert">
+    <mat-icon fontIcon="mdi-alert-circle-outline"></mat-icon>
+    <span>{{ errorMessage }}</span>
+  </div>
+  }
+  } @else {
+  <div class="compare">
+    @if (hasContent) {
+    <section>
+      <h3 class="section-title">Current</h3>
+      <div class="value" [innerHtml]="data.content"></div>
+    </section>
+    }
+    <section>
+      <h3 class="section-title">Proposed</h3>
+      <div class="value" [innerHtml]="result.html"></div>
+    </section>
+  </div>
+  @if (result.notes?.length) {
+  <section class="notes">
+    <h3 class="section-title">Check before using</h3>
+    <ul class="message-list">
+      @for (note of result.notes; track $index) {
+      <li>
+        <mat-icon fontIcon="mdi-information-outline"></mat-icon>
+        <span>{{ note }}</span>
+      </li>
+      }
+    </ul>
+  </section>
+  }
+  }
+</div>
+
+<ng-container crucibleDialogActions>
+  @if (!result) {
+  <button matButton="outlined" type="button" (click)="close()" [disabled]="isWriting">Cancel</button>
+  <button matButton="filled" type="button" (click)="write()" [disabled]="!canWrite">Write</button>
+  } @else {
+  <button matButton="outlined" type="button" (click)="close()">Discard</button>
+  <button matButton="outlined" type="button" (click)="tryAgain()">Try again</button>
+  <button matButton="filled" type="button" (click)="use()">Use this</button>
+  }
+</ng-container>
+</crucible-dialog>

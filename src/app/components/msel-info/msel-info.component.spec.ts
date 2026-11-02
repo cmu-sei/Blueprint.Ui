@@ -15,6 +15,7 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatDialog } from '@angular/material/dialog';
 import { MselImageDialogComponent } from '../msel-image-dialog/msel-image-dialog.component';
+import { MselPageDraftDialogComponent } from '../msel-page-draft-dialog/msel-page-draft-dialog.component';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -377,6 +378,28 @@ describe('MselInfoComponent', () => {
     expect(screen.getByText(/Add Page/)).toBeInTheDocument();
     await openPage();
     expect(screen.getByTitle('Edit Page')).toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: while a page is edited, Write with AI opens the page writer with the unsaved page, and the page it hands back goes
+   * into the edit, which the planner still saves.
+   * Interacts with: Edit Page, the harness's empty MatDialog given an open stub.
+   * Data: page Read Ahead; the writer answers "<p>Rewritten</p>".
+   */
+  it('writes the page being edited with AI', async () => {
+    const { fixture } = await renderInfo({ myRoles: [MselRole.Owner] });
+    const info = fixture.componentInstance as unknown as { dialog: Pick<MatDialog, 'open'>; changedMselPage: MselPage };
+    const open = vi.fn(() => ({ afterClosed: () => of('<p>Rewritten</p>') }) as unknown as ReturnType<MatDialog['open']>);
+    info.dialog.open = open;
+    const user = await openPage();
+
+    await user.click(screen.getByTitle('Edit Page'));
+    await user.click(screen.getByRole('button', { name: 'Write Read Ahead with AI' }));
+
+    expect(open).toHaveBeenCalledWith(MselPageDraftDialogComponent, expect.objectContaining({
+      data: { mselId: 'msel-1', pageId: 'page-1', name: 'Read Ahead', content: '<p>Welcome</p>' },
+    }));
+    expect(info.changedMselPage.content).toBe('<p>Rewritten</p>');
   });
 
   /**

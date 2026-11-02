@@ -19,6 +19,8 @@ import {
   Msel,
   DataValueDraftRequest,
   DataValueDraftResult,
+  PageDraftRequest,
+  PageDraftResult,
   MselDraftImport,
   MselDraftRequest,
   MselDraftResult,
@@ -693,6 +695,11 @@ export class MselDataService {
   // Writing a field saves nothing; the edit dialog keeps the value only if the planner uses it
   draftDataValue(mselId: string, request: DataValueDraftRequest): Observable<DataValueDraftResult> {
     return this.mselService.draftDataValue(mselId, request);
+  }
+
+  // a MSEL page written with AI; nothing is saved until the planner saves the page
+  draftPage(mselId: string, request: PageDraftRequest): Observable<PageDraftResult> {
+    return this.mselService.draftMselPage(mselId, request);
   }
 
   // Errors are left to the caller, which shows them in the Ask AI panel

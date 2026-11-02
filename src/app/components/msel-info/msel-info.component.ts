@@ -31,6 +31,7 @@ import { MselQuery } from 'src/app/data/msel/msel.query';
 import { canUpdateMsel, integrationsLocked, isPipelineStatus } from 'src/app/utilities/msel-permissions';
 import { MselImageDataService } from 'src/app/data/msel/msel-image-data.service';
 import { MselImageDialogComponent, MselImageDialogData, MselImageDialogResult } from '../msel-image-dialog/msel-image-dialog.component';
+import { MselPageDraftDialogComponent, MselPageDraftDialogData } from '../msel-page-draft-dialog/msel-page-draft-dialog.component';
 import { ErrorService } from 'src/app/services/error/error.service';
 import { SystemMessageService } from 'src/app/services/system-message/system-message.service';
 import { MatMenuTrigger, MatMenu, MatMenuItem } from '@angular/material/menu';
@@ -546,6 +547,25 @@ export class MselInfoComponent implements OnDestroy, OnInit {
         this.errorService.handleError(err);
       },
     });
+  }
+
+  // the page being edited, written with AI from the MSEL; what the planner uses goes into the edit, which they still save
+  writePageWithAi() {
+    const page = this.changedMselPage;
+    this.dialog
+      .open<MselPageDraftDialogComponent, MselPageDraftDialogData, string>(MselPageDraftDialogComponent, {
+        // the current page and the proposed one sit side by side
+        width: '95vw',
+        maxWidth: '1600px',
+        data: { mselId: this.msel.id, pageId: page.id, name: page.name, content: page.content ?? '' },
+      })
+      .afterClosed()
+      .subscribe((html) => {
+        if (html) {
+          this.changedMselPage.content = html;
+          this.changeDetectorRef.markForCheck();
+        }
+      });
   }
 
   // the image at full size, since the card preview is small, and the way to ask for a new one
