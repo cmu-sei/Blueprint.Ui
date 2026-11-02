@@ -90,9 +90,14 @@ describe('MselAiBuildComponent', () => {
    * Data: 20 injects written of 54 planned.
    */
   it('counts the injects against the planned total', async () => {
-    await renderBanner('Injects', running({ counts: { injects: 20 }, planned: 54 }));
+    const { fixture, build$ } = await renderBanner('Injects', running({ counts: { injects: 20 }, planned: 54 }));
 
     expect(screen.getByText(/20 of about 54 injects so far\./)).toBeInTheDocument();
+
+    // past the plan, the count does not read as more than all
+    build$.next(running({ counts: { injects: 55 }, planned: 52 }));
+    fixture.detectChanges();
+    expect(screen.getByText(/55 injects \(about 52 planned\) so far\./)).toBeInTheDocument();
   });
 
   /**
