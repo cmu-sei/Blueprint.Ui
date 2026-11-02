@@ -22,6 +22,8 @@ import {
 } from 'src/app/generated/blueprint.api';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
 import { SignalRService } from 'src/app/services/signalr.service';
+import { MselStore } from 'src/app/data/msel/msel.store';
+import { Msel } from 'src/app/generated/blueprint.api';
 import { HomeAppComponent } from './home-app.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { activatedRouteStub } from 'src/app/test-utils/activated-route';
@@ -114,6 +116,28 @@ function child<T>(fixture: ComponentFixture<unknown>, stub: new (...args: never[
 describe('HomeAppComponent', () => {
   beforeEach(() => {
     localStorage.clear();
+  });
+
+  /**
+   * Verifies: the page goes back to the list only when the MSEL it showed goes; a MSEL the page was opened for while it is still
+   * created, or still loading, does not send it back.
+   * Interacts with: the real MselStore, Router.navigate (spy).
+   * Data: msel-1 was active; the page is opened for msel-2, which the store does not have yet; then msel-2 arrives and is deleted.
+   */
+  it('goes back to the list only when the shown MSEL goes', async () => {
+    await renderHome({ mselId: 'msel-2' });
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    const store = TestBed.inject(MselStore);
+    store.add({ id: 'msel-1', name: 'Earlier' } as Msel);
+    store.setActive('msel-1');
+
+    store.setActive('msel-2');
+    expect(navigate).not.toHaveBeenCalledWith(['/build']);
+
+    store.add({ id: 'msel-2', name: 'Cold Iron' } as Msel);
+    store.setActive('msel-2');
+    store.remove('msel-2');
+    expect(navigate).toHaveBeenCalledWith(['/build']);
   });
 
   /**
