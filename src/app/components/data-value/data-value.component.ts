@@ -244,7 +244,7 @@ export class DataValueComponent implements OnChanges, OnDestroy {
   }
 
   private offerTechniques() {
-    const techniques = this.wholePool.filter(t => techniqueFamily(t.domain) === this.techniqueFamily);
+    const techniques = this.wholePool.filter(t => techniqueFamily(t) === this.techniqueFamily);
     this.attackTechniqueOptions = techniques;
     this.attackTechniquesById = new Map(techniques.map(t => [t.externalId, t]));
   }

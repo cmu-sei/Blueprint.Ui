@@ -32,7 +32,7 @@ export class MselAttackTechniqueQuery extends QueryEntity<MselAttackTechniqueSta
     return this.selectAll().pipe(
       map((items) => items
         .map((m) => m.attackTechnique)
-        .filter((t) => !!t && (!family || techniqueFamily(t.domain) === family))
+        .filter((t) => !!t && (!family || techniqueFamily(t) === family))
         .sort((a, b) => compareAttackIds(a.externalId, b.externalId)))
     );
   }

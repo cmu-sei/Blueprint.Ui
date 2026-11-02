@@ -29,7 +29,7 @@ const ATLAS: AttackRelease = {
   releaseDate: new Date('2026-10-28T00:00:00Z'), tacticCount: 16, techniqueCount: 221,
 };
 const D3FEND: AttackRelease = {
-  id: 'rel-3', domain: 'd3fend', name: 'MITRE D3FEND', version: '1.6.0',
+  id: 'rel-3', domain: 'd3fend', isDefensive: true, name: 'MITRE D3FEND', version: '1.6.0',
   releaseDate: new Date('2026-08-31T00:12:00Z'), tacticCount: 7, techniqueCount: 271,
 };
 const D3FEND_WITH_MAPPINGS: AttackRelease = { ...D3FEND, countermeasureCount: 4133 };
@@ -143,7 +143,7 @@ describe('AdminAttackReleasesComponent', () => {
   /**
    * Verifies: only a D3FEND row offers Import ATT&CK mappings, a release with mappings says how many on its row, and
    * no hint is given for it.
-   * Interacts with: AttackReleaseService.getAttackReleases (stub), isD3fend, d3fendReleasesWithoutMappings.
+   * Interacts with: AttackReleaseService.getAttackReleases (stub), isDefensive, defensiveReleasesWithoutMappings.
    * Data: Enterprise ATT&CK 17.1 and MITRE D3FEND 1.6.0 with 4133 mappings.
    */
   it('offers the mappings import on a D3FEND row and counts its mappings', async () => {
@@ -159,7 +159,7 @@ describe('AdminAttackReleasesComponent', () => {
   /**
    * Verifies: a D3FEND release without mappings gets a hint naming the file, linking the versioned URL and warning
    * that the unversioned path is not served.
-   * Interacts with: d3fendReleasesWithoutMappings, mappingsUrl.
+   * Interacts with: defensiveReleasesWithoutMappings, mappingsUrl.
    * Data: MITRE D3FEND 1.6.0 with no mappings.
    */
   it('tells an administrator where a release\'s mappings file is', async () => {

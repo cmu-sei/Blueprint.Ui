@@ -19,13 +19,13 @@ import { TechniqueCountermeasuresComponent } from './technique-countermeasures.c
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { renderComponent } from 'src/app/test-utils/render-component';
 
-const D3FEND_RELEASE: AttackRelease = { id: 'rel-d3', domain: 'd3fend', name: 'MITRE D3FEND', version: '1.6.0' };
+const D3FEND_RELEASE: AttackRelease = { id: 'rel-d3', domain: 'd3fend', isDefensive: true, name: 'MITRE D3FEND', version: '1.6.0' };
 const cm = (externalId: string, name: string, tactic: string, weight: number, rationale = `${tactic.toLowerCase()}s something`): AttackTechniqueCountermeasure => ({
   id: `cm-${externalId}`,
   attackReleaseId: 'rel-d3',
   offensiveExternalId: 'T1003.005',
   defensiveTechniqueId: `at-${externalId}`,
-  defensiveTechnique: { id: `at-${externalId}`, attackReleaseId: 'rel-d3', domain: 'd3fend', externalId, name, url: `https://d3fend.mitre.org/technique/d3f:${name.replace(/\W/g, '')}/` },
+  defensiveTechnique: { id: `at-${externalId}`, attackReleaseId: 'rel-d3', domain: 'd3fend', isDefensive: true, externalId, name, url: `https://d3fend.mitre.org/technique/d3f:${name.replace(/\W/g, '')}/` },
   defensiveTactic: tactic,
   rationale,
   weight,
@@ -43,14 +43,14 @@ const GROUP: MselTechniqueCountermeasures = { attackTechniqueId: 'at-1', offensi
 const ANSWER: MselCountermeasures = { mselId: 'msel-1', attackReleaseId: 'rel-d3', hasMappings: true, techniques: [GROUP] };
 const D3_CH_IN_POOL: MselAttackTechnique = {
   id: 'mat-d3', mselId: 'msel-1', attackTechniqueId: 'at-D3-CH',
-  attackTechnique: { id: 'at-D3-CH', attackReleaseId: 'rel-d3', domain: 'd3fend', externalId: 'D3-CH', name: 'Credential Hardening' },
+  attackTechnique: { id: 'at-D3-CH', attackReleaseId: 'rel-d3', domain: 'd3fend', isDefensive: true, externalId: 'D3-CH', name: 'Credential Hardening' },
 };
 
 interface Options {
   group?: MselTechniqueCountermeasures;
   countermeasures?: MselCountermeasures;
   canEdit?: boolean;
-  hasD3fendRelease?: boolean;
+  hasDefensiveRelease?: boolean;
   pool?: MselAttackTechnique[];
   releases?: AttackRelease[];
 }
@@ -59,13 +59,13 @@ async function renderCounteredBy(options: Options = {}) {
   // an explicit undefined is a case under test (nothing loaded yet), not a request for the default
   const group = 'group' in options ? options.group : GROUP;
   const countermeasures = 'countermeasures' in options ? options.countermeasures : ANSWER;
-  const { canEdit = true, hasD3fendRelease = true, pool = [], releases = [D3FEND_RELEASE] } = options;
+  const { canEdit = true, hasDefensiveRelease = true, pool = [], releases = [D3FEND_RELEASE] } = options;
   const poolApi = {
-    createMselAttackTechnique: vi.fn((body) => of({ id: 'mat-new', ...body, attackTechnique: { id: body.attackTechniqueId, domain: 'd3fend' } })),
+    createMselAttackTechnique: vi.fn((body) => of({ id: 'mat-new', ...body, attackTechnique: { id: body.attackTechniqueId, domain: 'd3fend', isDefensive: true } })),
   } satisfies ApiStub<MselAttackTechniqueService>;
   const rendered = await renderComponent(TechniqueCountermeasuresComponent, {
     providers: [{ provide: MselAttackTechniqueService, useValue: poolApi }],
-    inputs: { mselId: 'msel-1', externalId: 'T1003.005', group, countermeasures, canEdit, hasD3fendRelease },
+    inputs: { mselId: 'msel-1', externalId: 'T1003.005', group, countermeasures, canEdit, hasDefensiveRelease },
   });
   TestBed.inject(AttackReleaseStore).set(releases);
   TestBed.inject(MselAttackTechniqueStore).set(pool);
@@ -188,7 +188,7 @@ describe('TechniqueCountermeasuresComponent', () => {
   /**
    * Verifies: each way of having nothing to list is explained: still loading, no D3FEND release imported, no
    * mappings imported on any, the pinned release without mappings, and a technique nothing is mapped to.
-   * Interacts with: emptyMessage, hasD3fendRelease, AttackReleaseQuery.getEntity.
+   * Interacts with: emptyMessage, hasDefensiveRelease, AttackReleaseQuery.getEntity.
    * Data: the answers the API gives in each case.
    */
   it.each([
@@ -199,7 +199,7 @@ describe('TechniqueCountermeasuresComponent', () => {
     },
     {
       name: 'no D3FEND release imported',
-      options: { countermeasures: { mselId: 'msel-1', attackReleaseId: null, hasMappings: false, techniques: [] }, group: undefined as MselTechniqueCountermeasures, hasD3fendRelease: false },
+      options: { countermeasures: { mselId: 'msel-1', attackReleaseId: null, hasMappings: false, techniques: [] }, group: undefined as MselTechniqueCountermeasures, hasDefensiveRelease: false },
       message: 'No MITRE D3FEND release has been imported. An administrator imports one on the Technique Frameworks page.',
     },
     {

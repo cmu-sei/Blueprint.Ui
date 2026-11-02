@@ -38,14 +38,14 @@ const TERMS_OF_USE = 'https://attack.mitre.org/resources/legal-and-branding/term
 const D3FEND_TERMS_OF_USE = 'https://d3fend.mitre.org/tou/';
 const ENTERPRISE_RELEASE: AttackRelease = { id: 'rel-1', domain: 'enterprise-attack', name: 'Enterprise ATT&CK', version: '17.1' };
 const ATLAS_RELEASE: AttackRelease = { id: 'rel-1', domain: 'ATLAS', name: 'ATLAS', version: '2026.10' };
-const D3FEND_RELEASE: AttackRelease = { id: 'rel-d3', domain: 'd3fend', name: 'MITRE D3FEND', version: '1.6.0' };
+const D3FEND_RELEASE: AttackRelease = { id: 'rel-d3', domain: 'd3fend', isDefensive: true, name: 'MITRE D3FEND', version: '1.6.0' };
 const AML_T0000: AttackTechnique = {
   id: 'at-1', attackReleaseId: 'rel-1', domain: 'ATLAS', externalId: 'AML.T0000', name: 'Search Open Technical Databases',
   tactics: ['reconnaissance'], url: 'https://atlas.mitre.org/techniques/AML.T0000',
 };
 const ATLAS_IN_POOL: MselAttackTechnique = { id: 'mat-1', mselId: 'msel-1', attackTechniqueId: 'at-1', attackTechnique: AML_T0000 };
 const D3_CH: AttackTechnique = {
-  id: 'at-d3', attackReleaseId: 'rel-d3', domain: 'd3fend', externalId: 'D3-CH', name: 'Credential Hardening',
+  id: 'at-d3', attackReleaseId: 'rel-d3', domain: 'd3fend', isDefensive: true, externalId: 'D3-CH', name: 'Credential Hardening',
   tactics: ['harden'], url: 'https://d3fend.mitre.org/technique/d3f:CredentialHardening/',
 };
 const D3_CH_IN_POOL: MselAttackTechnique = { id: 'mat-d3', mselId: 'msel-1', attackTechniqueId: 'at-d3', attackTechnique: D3_CH };
@@ -252,7 +252,7 @@ describe('MselAttackTechniquesComponent', () => {
 
   /**
    * Verifies: with no D3FEND release imported the Countered by row says so rather than listing nothing.
-   * Interacts with: TechniqueCountermeasuresComponent.emptyMessage, TechniquePoolComponent.hasD3fendRelease.
+   * Interacts with: TechniqueCountermeasuresComponent.emptyMessage, TechniquePoolComponent.hasDefensiveRelease.
    * Data: T1059 in the pool; Enterprise ATT&CK 17.1 the only release.
    */
   it('says when no D3FEND release is there to counter with', async () => {

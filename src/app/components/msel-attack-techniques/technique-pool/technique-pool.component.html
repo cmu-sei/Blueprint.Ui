@@ -167,7 +167,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <mat-cell *matCellDef="let item" class="col-countermeasures">
           <app-technique-countermeasures [mselId]="msel.id" [externalId]="item.attackTechnique?.externalId"
             [group]="countermeasuresFor(item)" [countermeasures]="countermeasures" [canEdit]="canEditMsel()"
-            [hasD3fendRelease]="hasD3fendRelease"></app-technique-countermeasures>
+            [hasDefensiveRelease]="hasDefensiveRelease"></app-technique-countermeasures>
         </mat-cell>
       </ng-container>
       <mat-header-row *matHeaderRowDef="poolColumns"></mat-header-row>

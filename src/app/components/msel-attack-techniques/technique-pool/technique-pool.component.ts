@@ -42,7 +42,7 @@ import { AttackReleaseQuery } from 'src/app/data/attack-release/attack-release.q
 import { DataFieldQuery } from 'src/app/data/data-field/data-field.query';
 import { DataValueQuery } from 'src/app/data/data-value/data-value.query';
 import { SystemMessageService } from 'src/app/services/system-message/system-message.service';
-import { D3FEND_DOMAIN, TechniqueFamily, techniqueFamily } from 'src/app/utilities/technique-family';
+import { TechniqueFamily, techniqueFamily } from 'src/app/utilities/technique-family';
 import { TechniqueCountermeasuresComponent } from '../technique-countermeasures/technique-countermeasures.component';
 
 /** Whose content the section has on screen, for the notice MITRE's terms of use ask for. */
@@ -152,7 +152,7 @@ export class TechniquePoolComponent implements OnInit, AfterViewInit, OnDestroy 
       });
     }
     this.mselAttackTechniqueQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(wholePool => {
-      const pool = wholePool.filter(m => techniqueFamily(m.attackTechnique?.domain) === this.family());
+      const pool = wholePool.filter(m => techniqueFamily(m.attackTechnique) === this.family());
       this.pool = [...pool].sort((a, b) => compareAttackIds(a.attackTechnique?.externalId, b.attackTechnique?.externalId));
       this.poolByTechniqueId = new Map(pool.map(m => [m.attackTechniqueId, m]));
       this.poolDataSource.data = this.pool;
@@ -167,7 +167,7 @@ export class TechniquePoolComponent implements OnInit, AfterViewInit, OnDestroy 
     });
     this.attackReleaseQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(releases => {
       this.allReleases = releases;
-      this.releases = releases.filter(r => techniqueFamily(r.domain) === this.family());
+      this.releases = releases.filter(r => techniqueFamily(r) === this.family());
       this.chooseDefaultRelease();
     });
     this.dataFieldQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(fields => {
@@ -387,9 +387,9 @@ export class TechniquePoolComponent implements OnInit, AfterViewInit, OnDestroy 
       });
   }
 
-  /** Whether any D3FEND release is imported, which tells the Countered by row's empty states apart. */
-  get hasD3fendRelease(): boolean {
-    return this.allReleases.some(r => r.domain === D3FEND_DOMAIN);
+  /** Whether any defensive release is imported, which tells the Countered by row's empty states apart. */
+  get hasDefensiveRelease(): boolean {
+    return this.allReleases.some(r => techniqueFamily(r) === 'defensive');
   }
 
   countermeasuresFor(item: MselAttackTechnique): MselTechniqueCountermeasures {

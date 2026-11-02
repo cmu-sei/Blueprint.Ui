@@ -6,16 +6,18 @@ import { techniqueFamily } from './technique-family';
 
 describe('techniqueFamily', () => {
   /**
-   * Verifies: only the d3fend domain is the defensive family; ATT&CK's domains, ATLAS and an unknown domain are attack.
+   * Verifies: the API's flag decides the family, not the domain: a defensive release of any domain is defensive,
+   * and an unflagged one, or nothing at all, is attack.
    * Interacts with: techniqueFamily.
-   * Data: d3fend, enterprise-attack, ATLAS, undefined.
+   * Data: d3fend flagged, another domain flagged, enterprise-attack unflagged, undefined.
    */
   it.each([
-    { domain: 'd3fend', family: 'defensive' },
-    { domain: 'enterprise-attack', family: 'attack' },
-    { domain: 'ATLAS', family: 'attack' },
-    { domain: undefined as string, family: 'attack' },
-  ])('puts $domain in the $family family', ({ domain, family }) => {
-    expect(techniqueFamily(domain)).toBe(family);
+    { name: 'a flagged d3fend release', item: { domain: 'd3fend', isDefensive: true }, family: 'defensive' },
+    { name: 'a flagged release of another domain', item: { domain: 'other-defend', isDefensive: true }, family: 'defensive' },
+    { name: 'an unflagged ATT&CK release', item: { domain: 'enterprise-attack', isDefensive: false }, family: 'attack' },
+    { name: 'a release without the flag', item: { domain: 'ATLAS' }, family: 'attack' },
+    { name: 'nothing', item: undefined as { isDefensive?: boolean }, family: 'attack' },
+  ])('puts $name in the $family family', ({ item, family }) => {
+    expect(techniqueFamily(item)).toBe(family);
   });
 });

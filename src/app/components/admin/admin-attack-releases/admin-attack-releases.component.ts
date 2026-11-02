@@ -18,7 +18,6 @@ import { AttackRelease } from 'src/app/generated/blueprint.api';
 import { AttackReleaseDataService } from 'src/app/data/attack-release/attack-release-data.service';
 import { AttackReleaseQuery } from 'src/app/data/attack-release/attack-release.query';
 import { SystemMessageService } from 'src/app/services/system-message/system-message.service';
-import { D3FEND_DOMAIN } from 'src/app/utilities/technique-family';
 
 /** Where MITRE serves a release's d3fend-full-mappings.json; the unversioned "latest" path is not served. */
 export function d3fendMappingsUrl(version: string): string {
@@ -86,16 +85,17 @@ export class AdminAttackReleasesComponent implements OnInit, AfterViewInit, OnDe
 
   /** D3FEND is a separate MITRE mark with terms of use of its own, due once a D3FEND release is listed. */
   get hasD3fendRelease(): boolean {
-    return this.dataSource.data.some(r => r.domain === D3FEND_DOMAIN);
+    return this.dataSource.data.some(r => r.domain === 'd3fend');
   }
 
-  isD3fend(release: AttackRelease): boolean {
-    return release.domain === D3FEND_DOMAIN;
+  /** A defensive release takes the "countered by" mappings; the API flags it, whatever its domain. */
+  isDefensive(release: AttackRelease): boolean {
+    return !!release.isDefensive;
   }
 
-  /** The D3FEND releases still without their "countered by" mappings, for the hint that says where to get them. */
-  get d3fendReleasesWithoutMappings(): AttackRelease[] {
-    return this.dataSource.data.filter(r => this.isD3fend(r) && !r.countermeasureCount);
+  /** The defensive releases still without their "countered by" mappings, for the hint that says where to get them. */
+  get defensiveReleasesWithoutMappings(): AttackRelease[] {
+    return this.dataSource.data.filter(r => this.isDefensive(r) && !r.countermeasureCount);
   }
 
   mappingsUrl(release: AttackRelease): string {

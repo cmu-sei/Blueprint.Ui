@@ -46,7 +46,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           title="Delete {{ release.name }} {{ release.version }}">
           <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline"></mat-icon>
         </button>
-        @if (isD3fend(release)) {
+        @if (isDefensive(release)) {
         <button mat-icon-button class="msel-action" (click)="chooseMappingsFile(release)" [disabled]="isLoading$ | async"
           title="Import ATT&CK mappings"
           [attr.aria-label]="'Import ATT&CK mappings for ' + release.name + ' ' + release.version">
@@ -98,9 +98,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
     Import ATT&amp;CK mappings button.
   </div>
   }
-  @if (canEdit() && d3fendReleasesWithoutMappings.length > 0) {
+  @if (canEdit() && defensiveReleasesWithoutMappings.length > 0) {
   <div class="hint-text">
-    @for (release of d3fendReleasesWithoutMappings; track release.id) {
+    @for (release of defensiveReleasesWithoutMappings; track release.id) {
     <div>
       {{ release.name }} {{ release.version }} has no ATT&amp;CK mappings yet. Download d3fend-full-mappings.json from
       <a [href]="mappingsUrl(release)" target="_blank" rel="noopener">{{ mappingsUrl(release) }}</a> (the unversioned path

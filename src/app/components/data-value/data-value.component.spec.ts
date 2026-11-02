@@ -377,13 +377,13 @@ describe('DataValueComponent', () => {
 const TECHNIQUE_POOL: MselAttackTechnique[] = [
   { id: 'mat-2', mselId: 'msel-1', attackTechniqueId: 'at-2', attackTechnique: { id: 'at-2', domain: 'enterprise-attack', externalId: 'T1566', name: 'Phishing', url: 'https://attack.mitre.org/techniques/T1566' } },
   { id: 'mat-1', mselId: 'msel-1', attackTechniqueId: 'at-1', attackTechnique: { id: 'at-1', domain: 'enterprise-attack', externalId: 'T1059', name: 'Command and Scripting Interpreter', url: 'https://attack.mitre.org/techniques/T1059' } },
-  { id: 'mat-3', mselId: 'msel-1', attackTechniqueId: 'at-3', attackTechnique: { id: 'at-3', domain: 'd3fend', externalId: 'D3-CH', name: 'Credential Hardening', url: 'https://d3fend.mitre.org/technique/d3f:CredentialHardening/' } },
+  { id: 'mat-3', mselId: 'msel-1', attackTechniqueId: 'at-3', attackTechnique: { id: 'at-3', domain: 'd3fend', isDefensive: true, externalId: 'D3-CH', name: 'Credential Hardening', url: 'https://d3fend.mitre.org/technique/d3f:CredentialHardening/' } },
 ];
 
 // D3-FA is a second defensive technique in the pool, so a Suggested group has something to come before.
 const D3_FA_IN_POOL: MselAttackTechnique = {
   id: 'mat-4', mselId: 'msel-1', attackTechniqueId: 'at-4',
-  attackTechnique: { id: 'at-4', domain: 'd3fend', externalId: 'D3-FA', name: 'File Analysis', url: 'https://d3fend.mitre.org/technique/d3f:FileAnalysis/' },
+  attackTechnique: { id: 'at-4', domain: 'd3fend', isDefensive: true, externalId: 'D3-FA', name: 'File Analysis', url: 'https://d3fend.mitre.org/technique/d3f:FileAnalysis/' },
 };
 // D3FEND counters T1059 with File Analysis (two paths) and with Network Traffic Filtering, which the pool does not hold.
 const T1059_COUNTERED: MselCountermeasures = {
@@ -392,7 +392,7 @@ const T1059_COUNTERED: MselCountermeasures = {
     attackTechniqueId: 'at-1', offensiveExternalId: 'T1059', inheritedFrom: null,
     countermeasures: [
       { id: 'cm-1', offensiveExternalId: 'T1059', defensiveTechniqueId: 'at-4', defensiveTechnique: D3_FA_IN_POOL.attackTechnique, defensiveTactic: 'Detect', weight: 2 },
-      { id: 'cm-2', offensiveExternalId: 'T1059', defensiveTechniqueId: 'at-9', defensiveTechnique: { id: 'at-9', domain: 'd3fend', externalId: 'D3-NTF', name: 'Network Traffic Filtering' }, defensiveTactic: 'Isolate', weight: 1 },
+      { id: 'cm-2', offensiveExternalId: 'T1059', defensiveTechniqueId: 'at-9', defensiveTechnique: { id: 'at-9', domain: 'd3fend', isDefensive: true, externalId: 'D3-NTF', name: 'Network Traffic Filtering' }, defensiveTactic: 'Isolate', weight: 1 },
     ],
   }],
 };

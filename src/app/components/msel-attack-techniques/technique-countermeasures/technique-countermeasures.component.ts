@@ -41,8 +41,8 @@ export class TechniqueCountermeasuresComponent implements OnDestroy {
   /** The whole MSEL answer, for the release it came from and whether it has mappings at all. */
   readonly countermeasures = input<MselCountermeasures>(undefined);
   readonly canEdit = input<boolean>(false);
-  /** Whether any D3FEND release is imported, to tell "none imported" from "no mappings imported". */
-  readonly hasD3fendRelease = input<boolean>(false);
+  /** Whether any defensive release is imported, to tell "none imported" from "no mappings imported". */
+  readonly hasDefensiveRelease = input<boolean>(false);
 
   expanded = false;
   private showAll = new Set<string>();
@@ -75,7 +75,7 @@ export class TechniqueCountermeasuresComponent implements OnDestroy {
       return 'Loading countermeasures...';
     }
     if (!all.attackReleaseId) {
-      return this.hasD3fendRelease()
+      return this.hasDefensiveRelease()
         ? 'No ATT&CK mappings have been imported. Import ATT&CK mappings on the Technique Frameworks page.'
         : 'No MITRE D3FEND release has been imported. An administrator imports one on the Technique Frameworks page.';
     }
