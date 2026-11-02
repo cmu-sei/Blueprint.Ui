@@ -18,7 +18,7 @@ const ARTICLES: MselBuildStatus = {
 };
 
 function setup(api: Partial<Record<keyof MselBuildService, (...args: never[]) => Observable<unknown>>> = {}) {
-  const status = [{ mselId: 'msel-1', stage: 'Injects', articles: [], profiles: [] }, { ...ARTICLES, articles: [], profiles: [] }];
+  const status = [{ mselId: 'msel-1', stage: 'Injects', plannedInjects: 54, articles: [], profiles: [] }, { ...ARTICLES, articles: [], profiles: [] }];
   const stub = {
     getMselBuildStatus: vi.fn(() => of(status.shift() ?? { mselId: 'msel-1', stage: null })),
     writeMselInjects: vi.fn(() => of({ ...ARTICLES, warnings: ['Dropped a row with no time.'] })),
@@ -69,7 +69,7 @@ describe('MselAiBuildService', () => {
     expect(api.writeMselProfile).toHaveBeenCalledWith('msel-1', 'team-1');
     expect(api.saveMselProfile).not.toHaveBeenCalled();
     expect(api.finishMselBuild).toHaveBeenCalledWith('msel-1');
-    expect(last()).toMatchObject({ step: 'done', running: false, written: 3, total: 3 });
+    expect(last()).toMatchObject({ step: 'done', running: false, written: 3, total: 3, planned: 54 });
     expect(last().warnings).toEqual(['Dropped a row with no time.', 'Created the scoring model in CITE.']);
     expect(finished).toEqual(['msel-1']);
   });

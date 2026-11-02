@@ -89,7 +89,7 @@ export class MselDraftDialogComponent {
   competencyFrameworkIds: string[] = [];
   competencyFrameworks: CompetencyFramework[] = [];
   // the design questions the author-ttx workflow asks; all optional
-  design: MselDraftDesign = { citeAssessment: 'QuestionsByMove', profilePages: true };
+  design: MselDraftDesign = { citeAssessment: 'Auto', profilePages: true };
   isDrafting = false;
   isCreating = false;
   errorMessage = '';
@@ -155,9 +155,9 @@ export class MselDraftDialogComponent {
   ];
   readonly sizes = ['Small', 'Medium', 'Large', 'Enterprise'];
 
-  // a template that links a scoring model keeps it unless the planner chooses another; its article marking is the starting choice
+  // the model chooses the assessment unless the planner does; the template's article marking is the starting choice
   templateChanged() {
-    this.design.citeAssessment = this.templateHasScoringModel ? 'Template' : 'QuestionsByMove';
+    this.design.citeAssessment = 'Auto';
     const template = this.data.templates.find((t) => t.id === this.templateMselId);
     // only Gallery articles are marked
     this.design.marking = template?.useGallery ? template.articleMarking || 'Exercise' : undefined;
@@ -175,6 +175,10 @@ export class MselDraftDialogComponent {
         return 'The MSEL uses the DoD CTT Likelihood Assessment Matrix scoring model, created in CITE if it is not there.';
       case 'Nciss':
         return 'The MSEL uses the CISA NCISS scoring model, created in CITE if it is not there.';
+      case 'Template':
+        return "The MSEL keeps the template's scoring model.";
+      case 'None':
+        return 'No CITE scoring model.';
       default:
         return '';
     }

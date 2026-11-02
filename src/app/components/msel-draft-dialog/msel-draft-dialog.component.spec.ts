@@ -298,11 +298,12 @@ describe('MselDraftDialogComponent', () => {
   });
 
   /**
-   * Verifies: a template that links a scoring model offers to keep it and chooses that by default; the review says what CITE gets.
+   * Verifies: the assessment is left to the model by default, a template with a scoring model also offers to keep it, and the
+   * review says what CITE gets from the model's choice.
    * Interacts with: the CITE assessment select, MselDataService.designMsel, the CITE tasks section.
-   * Data: a CITE template with a scoring model; then a draft using questions by move.
+   * Data: a CITE template with a scoring model; a draft whose model chose questions by move.
    */
-  it('keeps the template scoring model by default and says what CITE gets', async () => {
+  it('lets the model choose the assessment by default and says what CITE gets', async () => {
     const result = designResult();
     result.draft.design = { citeAssessment: 'QuestionsByMove' };
     const { designMsel } = await renderDraftDialog(() => of(result), [
@@ -311,11 +312,14 @@ describe('MselDraftDialogComponent', () => {
     const user = userEvent.setup();
 
     await user.click(screen.getByText('Design choices (optional)'));
-    expect(screen.getByRole('combobox', { name: 'CITE assessment' })).toHaveTextContent("Keep the template's scoring model");
+    expect(screen.getByRole('combobox', { name: 'CITE assessment' })).toHaveTextContent('Let the model choose');
+    await user.click(screen.getByRole('combobox', { name: 'CITE assessment' }));
+    expect(screen.getByRole('option', { name: "Keep the template's scoring model" })).toBeInTheDocument();
+    await user.click(screen.getByRole('option', { name: 'Let the model choose' }));
     await user.type(screen.getByRole('textbox', { name: 'Exercise description' }), 'Cables are cut.');
     await user.click(screen.getByRole('button', { name: 'Draft' }));
 
-    expect(designMsel).toHaveBeenCalledWith(expect.objectContaining({ design: expect.objectContaining({ citeAssessment: 'Template' }) }));
+    expect(designMsel).toHaveBeenCalledWith(expect.objectContaining({ design: expect.objectContaining({ citeAssessment: 'Auto' }) }));
     await user.click(screen.getByRole('tab', { name: 'Design' }));
     expect(screen.getByText(/also creates the scoring model "Port closure Questions by Move" in CITE/)).toBeInTheDocument();
   });
@@ -386,21 +390,18 @@ describe('MselDraftDialogComponent', () => {
   });
 
   /**
-   * Verifies: a CITE template's teams show their CITE duties for editing, and the lead time before STARTEX goes with the design.
-   * Interacts with: the Doors open field, the Teams and organizations tab, MselBuildService.createMselFromDesign.
-   * Data: a CITE template; 20 minutes before STARTEX; BLUE's duties edited to Lead and Scribe.
+   * Verifies: a CITE template's teams show their CITE duties for editing.
+   * Interacts with: the Teams and organizations tab, MselBuildService.createMselFromDesign.
+   * Data: a CITE template; BLUE's duties edited to Lead and Scribe.
    */
-  it('sends the lead time and the edited CITE duties', async () => {
+  it('sends the edited CITE duties', async () => {
     const result = designResult();
     result.draft.teams[0].duties = ['Incident Lead'];
     const { designMsel, createMselFromDesign } = await renderDraftDialog(() => of(result), [{ id: 'tpl-1', name: 'Template', useCite: true }]);
     const user = userEvent.setup();
 
-    await user.click(screen.getByText('Design choices (optional)'));
-    await user.type(screen.getByRole('spinbutton', { name: 'Doors open before STARTEX (minutes)' }), '20');
     await user.type(screen.getByRole('textbox', { name: 'Exercise description' }), 'A grid attack.');
     await user.click(screen.getByRole('button', { name: 'Draft' }));
-    expect(designMsel).toHaveBeenCalledWith(expect.objectContaining({ design: expect.objectContaining({ leadMinutes: 20 }) }));
 
     await user.click(screen.getByRole('tab', { name: 'Teams and organizations (2)' }));
     const duties = screen.getByRole('textbox', { name: 'BLUE CITE duties' });
@@ -415,16 +416,19 @@ describe('MselDraftDialogComponent', () => {
   });
 
   /**
-   * Verifies: a template that authors its own scoring model, as the seeded Crucible MSEL does with NCISS, is kept by default too.
+   * Verifies: a template that authors its own scoring model, as the seeded Crucible MSEL does with NCISS, offers to keep it, and the
+   * planner's choice to keep it goes with the design.
    * Interacts with: the CITE assessment select, MselBuildService.designMsel.
    * Data: a CITE template with hasScoringModel and no linked model.
    */
-  it('keeps a template authored scoring model by default', async () => {
+  it('offers to keep a template authored scoring model', async () => {
     const { designMsel } = await renderDraftDialog(undefined, [{ id: 'tpl-1', name: 'Crucible MSEL', useCite: true, hasScoringModel: true }]);
     const user = userEvent.setup();
 
     await user.click(screen.getByText('Design choices (optional)'));
-    expect(screen.getByRole('combobox', { name: 'CITE assessment' })).toHaveTextContent("Keep the template's scoring model");
+    expect(screen.getByRole('combobox', { name: 'CITE assessment' })).toHaveTextContent('Let the model choose');
+    await user.click(screen.getByRole('combobox', { name: 'CITE assessment' }));
+    await user.click(screen.getByRole('option', { name: "Keep the template's scoring model" }));
     await user.type(screen.getByRole('textbox', { name: 'Exercise description' }), 'Cables are cut.');
     await user.click(screen.getByRole('button', { name: 'Draft' }));
 

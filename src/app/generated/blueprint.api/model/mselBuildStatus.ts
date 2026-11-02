@@ -32,6 +32,10 @@ export interface MselBuildStatus {
     /**
      * The other injects whose long text is still to write
      */
+    /**
+     * How many injects the design planned, while they are outlined; null once they are
+     */
+    plannedInjects?: number | null;
     injects?: Array<MselBuildItem> | null;
     /**
      * The Gallery articles still to write

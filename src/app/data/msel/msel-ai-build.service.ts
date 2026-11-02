@@ -20,8 +20,9 @@ export interface MselAiBuild {
   // when this run and its current step started, for the elapsed time
   started: number;
   stepStarted: number;
-  // while the injects are written: what the model has written so far
+  // while the injects are written: what the model has written so far, and how many the design planned
   counts: { [list: string]: number };
+  planned?: number;
   // the articles and profiles written in this run, of those there were to write
   written: number;
   total: number;
@@ -88,6 +89,7 @@ export class MselAiBuildService {
     const run = this.api
       .getMselBuildStatus(mselId)
       .pipe(
+        tap((status) => this.patch(mselId, { planned: status.plannedInjects ?? undefined })),
         mergeMap((status) => (status.stage === 'Injects' ? this.writeInjects(mselId) : of(status))),
         mergeMap((status) => (status.stage === 'Articles' ? this.writeArticles(mselId, status) : of(status))),
         mergeMap((status) => this.finish(mselId, status))

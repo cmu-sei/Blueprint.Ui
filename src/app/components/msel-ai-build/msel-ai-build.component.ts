@@ -91,10 +91,9 @@ export class MselAiBuildComponent {
     const build = this.build();
     if (build?.step === 'injects') {
       const counts = build.counts ?? {};
-      const parts = [
-        plural(counts['injects'], 'inject'),
-        plural(counts['citeActions'], 'CITE task'),
-      ].filter((p) => p);
+      // the design planned how many injects; the model's count runs up to about it
+      const injects = build.planned && counts['injects'] ? `${counts['injects']} of about ${build.planned} injects` : plural(counts['injects'], 'inject');
+      const parts = [injects, plural(counts['citeActions'], 'CITE task')].filter((p) => p);
       return parts.length ? `${parts.join(', ')} so far.` : 'This usually takes a few minutes.';
     }
     if (build?.step === 'articles') {

@@ -40,6 +40,10 @@ export interface MselDraftMove {
      */
     controllerNotes?: string | null;
     /**
+     * How many injects the design plans for the move, which the injects step writes to
+     */
+    plannedInjects?: number | null;
+    /**
      * Discussion questions for the move, when the CITE assessment is questions by move
      */
     citeQuestions?: Array<string> | null;

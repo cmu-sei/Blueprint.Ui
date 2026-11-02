@@ -85,6 +85,17 @@ describe('MselAiBuildComponent', () => {
   });
 
   /**
+   * Verifies: with the design's plan known, the injects count runs against it.
+   * Interacts with: the build's planned total.
+   * Data: 20 injects written of 54 planned.
+   */
+  it('counts the injects against the planned total', async () => {
+    await renderBanner('Injects', running({ counts: { injects: 20 }, planned: 54 }));
+
+    expect(screen.getByText(/20 of about 54 injects so far\./)).toBeInTheDocument();
+  });
+
+  /**
    * Verifies: while articles are written the banner counts them.
    * Interacts with: nothing.
    * Data: 7 of 22 written.
