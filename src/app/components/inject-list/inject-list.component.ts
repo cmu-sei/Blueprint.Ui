@@ -278,7 +278,7 @@ export class InjectListComponent implements OnDestroy, OnInit {
       this.catalogInjectDataService.deleteByIds(catalog.id, injectm.id);
     } else {
       this.dialogService
-        .confirm({ title: 'Delete Inject', message: 'Are you sure that you want to delete ' + injectm.name + '?'
+        .confirm({ title: 'Delete Inject', message: 'Are you sure that you want to delete ' + injectm.name + '?', confirmText: 'Delete'
          }).afterClosed().subscribe((result) => {
           if (result) {
             this.injectmDataService.delete(injectm.id);

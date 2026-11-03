@@ -157,7 +157,7 @@ export class AdminCatalogListComponent implements OnDestroy, AfterViewInit {
 
   deleteCatalog(catalog: Catalog): void {
     this.dialogService
-      .confirm({ title: 'Delete Catalog', message: 'Are you sure that you want to delete ' + catalog.name + '?'
+      .confirm({ title: 'Delete Catalog', message: 'Are you sure that you want to delete ' + catalog.name + '?', confirmText: 'Delete'
        }).afterClosed().subscribe((result) => {
         if (result) {
           this.catalogDataService.delete(catalog.id);

@@ -246,7 +246,7 @@ export class CardListComponent implements OnDestroy, AfterViewInit {
 
   deleteCard(card: Card): void {
     this.dialogService
-      .confirm({ title: 'Delete Card', message: 'Are you sure that you want to delete ' + card.name + '?'
+      .confirm({ title: 'Delete Card', message: 'Are you sure that you want to delete ' + card.name + '?', confirmText: 'Delete'
        }).afterClosed().subscribe((result) => {
         if (result) {
           this.cardDataService.delete(card.id);

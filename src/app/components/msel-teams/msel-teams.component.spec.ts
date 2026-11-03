@@ -241,7 +241,7 @@ describe('MselTeamsComponent', () => {
 
     await user.click(within(table()).getByRole('button', { name: 'Delete team' }));
 
-    expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Delete Team' }));
+    expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Delete Team', confirmText: 'Delete' }));
     expect(teamApi.deleteTeam).toHaveBeenCalledWith('team-1');
     expect(within(table()).queryByText('Blue Team')).not.toBeInTheDocument();
   });

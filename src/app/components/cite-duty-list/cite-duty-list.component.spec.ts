@@ -191,6 +191,11 @@ describe('CiteDutyListComponent', () => {
       await user.click(within(table()).getByRole('button', { name: 'Delete Incident commander' }));
 
       expect(confirm).toHaveBeenCalledTimes(1);
+      expect(confirm).toHaveBeenCalledWith({
+        title: 'Delete CITE Duty',
+        message: 'Are you sure that you want to delete Incident commander?',
+        confirmText: 'Delete',
+      });
       expect(citeDutyApi.deleteCiteDuty).toHaveBeenCalledWith('cd-1');
       expect(within(table()).queryByText('Incident commander')).not.toBeInTheDocument();
     });

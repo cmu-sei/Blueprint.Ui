@@ -211,7 +211,7 @@ describe('CardListComponent', () => {
 
       await user.click(within(table()).getByRole('button', { name: 'Delete Situation Card' }));
 
-      expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Delete Card' }));
+      expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Delete Card', confirmText: 'Delete' }));
       expect(cardApi.deleteCard).toHaveBeenCalledWith('card-1');
       expect(within(table()).queryByText('Situation Card')).not.toBeInTheDocument();
     });

@@ -320,7 +320,7 @@ describe('MselListComponent', () => {
 
       await user.click(button(row('Mine'), 'Delete Mine'));
 
-      expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Delete MSEL' }));
+      expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Delete MSEL', confirmText: 'Delete' }));
       expect(mselApi.deleteMsel).toHaveBeenCalledWith('msel-1');
       expect(await screen.findByText('No results found')).toBeInTheDocument();
     });

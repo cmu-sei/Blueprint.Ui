@@ -125,7 +125,7 @@ describe('AdminRolesComponent', () => {
 
     await user.click(within(table()).getByRole('button', { description: 'Delete Role' }));
 
-    expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Delete Role' }));
+    expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Delete Role', message: 'Are you sure that you want to delete Analyst?', confirmText: 'Delete' }));
     expect(rolesApi.deleteSystemRole).toHaveBeenCalledWith('role-analyst');
     fixture.detectChanges();
     expect(within(table()).queryByText('Analyst')).not.toBeInTheDocument();

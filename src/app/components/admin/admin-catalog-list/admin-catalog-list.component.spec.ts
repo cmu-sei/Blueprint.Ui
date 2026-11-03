@@ -187,7 +187,7 @@ describe('AdminCatalogListComponent', () => {
 
     await user.click(within(table()).getByRole('button', { name: 'Delete Ransomware Catalog catalog' }));
 
-    expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Delete Catalog' }));
+    expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Delete Catalog', confirmText: 'Delete' }));
     expect(catalogApi.deleteCatalog).toHaveBeenCalledWith('cat-1');
     expect(within(table()).queryByText('Ransomware Catalog')).not.toBeInTheDocument();
   });
