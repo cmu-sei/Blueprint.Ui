@@ -159,12 +159,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 !msel.casterWorkspaceId &&
                 !msel.isTemplate) ||
                 pushStatus) {
-                <button (click)="pushIntegrations()" title="Push Integrations" class="thin-button" [disabled]="!canManageMsel() ||
+                <button mat-stroked-button (click)="pushIntegrations()" title="Push Integrations" class="thin-button" [disabled]="!canManageMsel() ||
                               (msel.useGallery && galleryToDo()) ||
                               (msel.useCite && !hasCiteScoringModel()) ||
                               (msel.useCite && hasCiteTeamsWithoutType()) ||
                               !!casterWarningMessage() ||
-                              isBusy || isChanged || (pushStatus && pushStatus.startsWith('ERROR'))">@if (pushStatus &&
+                              isBusy || isChanged || (!!pushStatus && pushStatus.startsWith('ERROR'))">@if (pushStatus &&
                   !pushStatus.startsWith('ERROR')) {
                   <span>{{ pushStatus }} ...</span>
                   }@if (!pushStatus || pushStatus.startsWith('ERROR')) {
@@ -177,7 +177,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 msel.steamfitterScenarioId ||
                 msel.casterWorkspaceId) &&
                 !pushStatus) {
-                <button (click)="pullIntegrations()" title="Remove Integrations" class="thin-button"
+                <button mat-stroked-button (click)="pullIntegrations()" title="Remove Integrations" class="thin-button"
                   [disabled]="!canManageMsel() || isChanged">Remove
                   Integrations</button>
                 }

@@ -17,7 +17,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { screen, within } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
-import { of } from 'rxjs';
+import { of, Subject } from 'rxjs';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
 import {
   CompetencyFramework,
@@ -28,6 +28,7 @@ import {
 } from 'src/app/generated/blueprint.api';
 import { CompetencyFrameworkStore } from 'src/app/data/competency-framework/competency-framework.store';
 import { AdminCompetencyFrameworksComponent } from './admin-competency-frameworks.component';
+import { AdminCompetencyFrameworkImportDialogComponent } from '../admin-competency-framework-import-dialog/admin-competency-framework-import-dialog.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { dialogRefStub } from 'src/app/test-utils/dialog-refs';
 import { renderComponent } from 'src/app/test-utils/render-component';
@@ -44,9 +45,9 @@ const FRAMEWORK: CompetencyFramework = {
 };
 
 async function renderFrameworks(
-  overrides: { canEdit?: boolean; deleteCheck?: FrameworkDeleteCheck } = {},
+  overrides: { canEdit?: boolean; deleteCheck?: FrameworkDeleteCheck; matDialog?: Pick<MatDialog, 'open'> } = {},
 ) {
-  const { canEdit = true, deleteCheck = { canDelete: true, affectedMsels: [] } } = overrides;
+  const { canEdit = true, deleteCheck = { canDelete: true, affectedMsels: [] }, matDialog } = overrides;
   const frameworkApi = {
     checkCanDeleteCompetencyFramework: vi.fn(() => of(structuredClone(deleteCheck))),
     getCompetencyFramework: vi.fn(() => of(structuredClone(FRAMEWORK))),
@@ -78,7 +79,7 @@ async function renderFrameworks(
       { provide: CompetencyFrameworkService, useValue: frameworkApi },
       { provide: ProficiencyScaleService, useValue: scaleApi },
       { provide: CrucibleDialogService, useValue: dialog },
-      unstubbed(MatDialog),
+      matDialog ? { provide: MatDialog, useValue: matDialog } : unstubbed(MatDialog),
       // The admin container loads the frameworks; the store is seeded instead.
       {
         provide: CompetencyFrameworkStore,
@@ -108,7 +109,7 @@ async function openCompetencies() {
 
 describe('AdminCompetencyFrameworksComponent', () => {
   /**
-   * Verifies: with canEdit the import, add, upload, edit, download and delete actions are offered for the frameworks.
+   * Verifies: with canEdit the add, upload, edit, download and delete actions are offered for the frameworks.
    * Interacts with: real CompetencyFrameworkStore/Query (seeded), CompetencyFrameworkService.checkCanDeleteCompetencyFramework (stub).
    * Data: canEdit true; framework NICE, not in use.
    */
@@ -116,11 +117,12 @@ describe('AdminCompetencyFrameworksComponent', () => {
     const { frameworkApi } = await renderFrameworks({ canEdit: true });
 
     expect(frameworkApi.checkCanDeleteCompetencyFramework).toHaveBeenCalledWith('fw-1');
-    expect(screen.getByTitle('Import framework from JSON')).toBeInTheDocument();
+    expect(screen.queryByTitle('Import framework from JSON')).not.toBeInTheDocument();
     expect(within(frameworks()).getByTitle('Add new competency framework')).toBeInTheDocument();
-    expect(within(frameworks()).getByTitle('Upload Competency Framework from JSON')).toBeInTheDocument();
+    expect(within(frameworks()).getByTitle('Upload Competency Frameworks')).toBeInTheDocument();
     expect(within(frameworks()).getByTitle('Edit NICE')).toBeInTheDocument();
-    expect(within(frameworks()).getByTitle('Download NICE as JSON')).toBeInTheDocument();
+    expect(within(frameworks()).getByTitle('Download Competency Frameworks as JSON')).toBeInTheDocument();
+    expect(within(frameworks()).queryByTitle('Download NICE as JSON')).not.toBeInTheDocument();
     expect(deleteButton()).toBeEnabled();
     expect(within(frameworks()).getByText('Five Point')).toBeInTheDocument();
   });
@@ -134,11 +136,10 @@ describe('AdminCompetencyFrameworksComponent', () => {
     await renderFrameworks({ canEdit: false });
 
     expect(within(frameworks()).getByText('NICE')).toBeInTheDocument();
-    expect(screen.queryByTitle('Import framework from JSON')).not.toBeInTheDocument();
     expect(within(frameworks()).queryByTitle('Add new competency framework')).not.toBeInTheDocument();
-    expect(within(frameworks()).queryByTitle('Upload Competency Framework from JSON')).not.toBeInTheDocument();
+    expect(within(frameworks()).queryByTitle('Upload Competency Frameworks')).not.toBeInTheDocument();
     expect(within(frameworks()).queryByTitle('Edit NICE')).not.toBeInTheDocument();
-    expect(within(frameworks()).queryByTitle('Download NICE as JSON')).not.toBeInTheDocument();
+    expect(within(frameworks()).queryByTitle('Download Competency Frameworks as JSON')).not.toBeInTheDocument();
     expect(within(frameworks()).queryByRole('button', { description: 'Delete framework' })).not.toBeInTheDocument();
   });
 
@@ -203,5 +204,20 @@ describe('AdminCompetencyFrameworksComponent', () => {
     expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Delete Competency Framework' }));
     expect(frameworkApi.deleteCompetencyFramework).toHaveBeenCalledWith('fw-1');
     expect(within(frameworks()).queryByText('NICE')).not.toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: the header Upload button opens the Import Competency Framework dialog, which takes CSV, JSON and XLSX.
+   * Interacts with: MatDialog.open (stub; the dialog's own spec covers its formats).
+   * Data: canEdit true.
+   */
+  it('opens the import dialog from the header Upload button', async () => {
+    const open = vi.fn(() => ({ componentInstance: { importComplete: new Subject() } }));
+    await renderFrameworks({ canEdit: true, matDialog: { open } as unknown as Pick<MatDialog, 'open'> });
+    const user = userEvent.setup();
+
+    await user.click(within(frameworks()).getByTitle('Upload Competency Frameworks'));
+
+    expect(open).toHaveBeenCalledWith(AdminCompetencyFrameworkImportDialogComponent, expect.anything());
   });
 });
