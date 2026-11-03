@@ -293,6 +293,23 @@ describe('ScenarioEventEditDialogComponent', () => {
   });
 
   /**
+   * Verifies: the writer is told the inject's Gallery source type, which decides the audio and video it offers.
+   * Interacts with: MatDialog.open.
+   * Data: a Source Type field mapped to Gallery's SourceType, valued Phone.
+   */
+  it('tells the writer the inject source type', async () => {
+    const ref = dismissedDialogRefStub<DataValueDraftDialogComponent, string>();
+    const open = vi.fn(() => ref.dialogRef);
+    const { fixture, data } = await renderEventEdit({ isEditor: true }, open, true);
+    data.dataFields.push({ id: 'df-source', name: 'Source Type', dataType: DataFieldType.SourceType, displayOrder: 3, galleryArticleParameter: 'SourceType' });
+    data.scenarioEvent.dataValues.push({ dataFieldId: 'df-source', value: 'Phone' });
+
+    (fixture.debugElement.queryAll(By.directive(DataValueStub))[1].componentInstance as DataValueStub).aiWrite.emit();
+
+    expect(open).toHaveBeenCalledWith(DataValueDraftDialogComponent, expect.objectContaining({ data: expect.objectContaining({ sourceType: 'Phone' }) }));
+  });
+
+  /**
    * Verifies: dismissing the writer leaves the event's values alone.
    * Interacts with: MatDialog.open, afterClosed emitting undefined.
    * Data: Title "Phishing wave"; Description with no value; the writer dismissed.

@@ -7,7 +7,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
 <crucible-dialog [dialogTitle]="'Write ' + data.dataField.name + ' with AI'" [hideDefaultActions]="true">
 
 <div crucibleDialogContent>
-  @if (!result) {
+  @if (!result && !audio) {
   <p class="hint">
     Writes from this inject's other values, the MSEL's scenario and moves, and the injects before it.
     Nothing changes until you select Use this.
@@ -20,9 +20,20 @@ project root for license information or contact permission@sei.cmu.edu for full 
       }
     </mat-select>
     @if (!hasValue) {
-    <mat-hint>{{ data.dataField.name }} is empty, so it can only be drafted.</mat-hint>
+    <mat-hint>{{ data.dataField.name }} is empty, so the options that change it are off.</mat-hint>
     }
   </mat-form-field>
+  @if (hasFormat) {
+  <mat-form-field class="full-width">
+    <mat-label>Format</mat-label>
+    <mat-select [(ngModel)]="format" [disabled]="isWriting">
+      @for (option of formats; track option.value) {
+      <mat-option [value]="option.value">{{ option.label }}</mat-option>
+      }
+    </mat-select>
+    <mat-hint>Video is made in your browser and goes into the article with captions and a transcript.</mat-hint>
+  </mat-form-field>
+  }
   @if (isRewrite) {
   <mat-form-field class="full-width">
     <mat-label>Write it as</mat-label>
@@ -41,7 +52,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
   @if (isWriting) {
   <div class="writing">
     <mat-spinner diameter="40"></mat-spinner>
-    <span>Writing. This can take a minute.</span>
+    <span>{{ progress || 'Writing. This can take a minute.' }}</span>
   </div>
   }
   @if (errorMessage) {
@@ -49,6 +60,36 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <mat-icon fontIcon="mdi-alert-circle-outline"></mat-icon>
     <span>{{ errorMessage }}</span>
   </div>
+  }
+  } @else if (audio) {
+  <p class="hint">{{ audioSummary }}. Play it before you use it.</p>
+  @if (isReel && data.sourceType?.toLowerCase() === 'news') {
+  <p class="hint">A reel belongs on a Social inject: Copy HTML, then paste it into that inject's field in the editor's HTML view. Use this puts it in this article instead.</p>
+  }
+  <div class="compare">
+    @if (hasValue) {
+    <section>
+      <h3 class="section-title">Current</h3>
+      <div class="value"><div appFitWidth [innerHtml]="currentValue"></div></div>
+    </section>
+    }
+    <section>
+      <h3 class="section-title">Proposed</h3>
+      <div class="value"><div appFitWidth [innerHtml]="audio.value"></div></div>
+    </section>
+  </div>
+  @if (audio.notes.length) {
+  <section class="notes">
+    <h3 class="section-title">Check before using</h3>
+    <ul class="message-list">
+      @for (note of audio.notes; track $index) {
+      <li>
+        <mat-icon fontIcon="mdi-information-outline"></mat-icon>
+        <span>{{ note }}</span>
+      </li>
+      }
+    </ul>
+  </section>
   }
   } @else {
   <div class="compare">
@@ -80,12 +121,15 @@ project root for license information or contact permission@sei.cmu.edu for full 
 </div>
 
 <ng-container crucibleDialogActions>
-  @if (!result) {
+  @if (!result && !audio) {
   <button matButton="outlined" type="button" (click)="close()" [disabled]="isWriting">Cancel</button>
   <button matButton="filled" type="button" (click)="write()" [disabled]="!canWrite">Write</button>
   } @else {
   <button matButton="outlined" type="button" (click)="close()">Discard</button>
   <button matButton="outlined" type="button" (click)="tryAgain()">Try again</button>
+  @if (isReel) {
+  <button matButton="outlined" type="button" (click)="copyHtml()">{{ copied ? 'Copied' : 'Copy HTML' }}</button>
+  }
   <button matButton="filled" type="button" (click)="use()">Use this</button>
   }
 </ng-container>

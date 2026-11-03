@@ -152,6 +152,7 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
           dataField,
           values,
           gallerySourceTypes: this.data.gallerySourceTypes ?? [],
+          sourceType: this.sourceTypeOf(values),
         },
       })
       .afterClosed()
@@ -168,6 +169,12 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
           this.data.scenarioEvent.dataValues.push({ dataFieldId: dataField.id, value });
         }
       });
+  }
+
+  // the Gallery source type the inject's values give it, which decides the audio and video it may have
+  private sourceTypeOf(values: { [dataFieldId: string]: string }): string | undefined {
+    const field = this.data.dataFields?.find((df) => df.galleryArticleParameter === 'SourceType' || df.dataType === DataFieldType.SourceType);
+    return field ? values[field.id] : undefined;
   }
 
   getDataFieldByName(name: string) {
