@@ -55,12 +55,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
     @if (hasValue) {
     <section>
       <h3 class="section-title">Current</h3>
-      <div class="value" [innerHtml]="currentValue"></div>
+      <div class="value"><div appFitWidth [innerHtml]="currentValue"></div></div>
     </section>
     }
     <section>
       <h3 class="section-title">Proposed</h3>
-      <div class="value" [innerHtml]="result.value"></div>
+      <div class="value"><div appFitWidth [innerHtml]="result.value"></div></div>
     </section>
   </div>
   @if (result.notes?.length) {

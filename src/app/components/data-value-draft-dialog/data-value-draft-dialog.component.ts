@@ -19,6 +19,7 @@ import {
   CrucibleDialogComponent,
   CrucibleDialogContentDirective,
 } from '@cmusei/crucible-common';
+import { FitWidthDirective } from './fit-width.directive';
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
 import {
   DataField,
@@ -46,6 +47,7 @@ export interface DataValueDraftDialogData {
     CrucibleDialogComponent,
     CrucibleDialogContentDirective,
     CrucibleDialogActionsDirective,
+    FitWidthDirective,
     FormsModule,
     MatButton,
     MatFormField,
