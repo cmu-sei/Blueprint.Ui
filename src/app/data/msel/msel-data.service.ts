@@ -17,6 +17,9 @@ import {
   MselItemStatus,
   Move,
   Msel,
+  AudioDraftAvailability,
+  AudioDraftRequest,
+  AudioDraftResult,
   DataValueDraftRequest,
   DataValueDraftResult,
   PageDraftRequest,
@@ -702,6 +705,17 @@ export class MselDataService {
   // a MSEL page written with AI; nothing is saved until the planner saves the page
   draftPage(mselId: string, request: PageDraftRequest): Observable<PageDraftResult> {
     return this.mselService.draftMselPage(mselId, request);
+  }
+
+  // an inject voiced: its article read aloud, or a voicemail, call, broadcast or reel written with AI. Nothing is saved;
+  // the browser makes the audio or video from the voiced lines
+  draftAudio(mselId: string, request: AudioDraftRequest): Observable<AudioDraftResult> {
+    return this.mselService.draftAudio(mselId, request);
+  }
+
+  // whether this server can voice the MSEL's injects, and write their scripts
+  getAudioDraftAvailability(mselId: string): Observable<AudioDraftAvailability> {
+    return this.mselService.getAudioDraftAvailability(mselId);
   }
 
   // a move's situation briefing written with AI; nothing is saved until the planner saves the move

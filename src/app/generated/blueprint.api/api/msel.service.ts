@@ -29,6 +29,12 @@ import { ProfileDraftRequest } from '../model/profileDraftRequest';
 // @ts-ignore
 import { ArticleDraftResult } from '../model/articleDraftResult';
 // @ts-ignore
+import { AudioDraftAvailability } from '../model/audioDraftAvailability';
+// @ts-ignore
+import { AudioDraftRequest } from '../model/audioDraftRequest';
+// @ts-ignore
+import { AudioDraftResult } from '../model/audioDraftResult';
+// @ts-ignore
 import { ArticleDraftRequest } from '../model/articleDraftRequest';
 // @ts-ignore
 import { DataTable } from '../model/dataTable';
@@ -705,6 +711,79 @@ export class MselService extends BaseService {
     }
 
     /**
+     * Voice an inject: its article read aloud, or a voicemail, call, broadcast or news reel written with AI
+     * Nothing is saved. Listen reads the field\'s article as written, in its outlet\'s voice, with no text model. The other kinds have the model write a short script from the inject first. Each line comes back as an MP3 data URI with when its sentences and words start, for the planner\'s browser to join into audio or video. 400 when no speech provider is configured.
+     * @param mselId The id of the MSEL the inject belongs to
+     * @param audioDraftRequest The field, the inject\&#39;s current values, and the kind of clip
+     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+     * @param reportProgress flag to report request and response progress.
+     */
+    public draftAudio(mselId: string, audioDraftRequest?: AudioDraftRequest, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<AudioDraftResult>;
+    public draftAudio(mselId: string, audioDraftRequest?: AudioDraftRequest, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<AudioDraftResult>>;
+    public draftAudio(mselId: string, audioDraftRequest?: AudioDraftRequest, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<AudioDraftResult>>;
+    public draftAudio(mselId: string, audioDraftRequest?: AudioDraftRequest, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+        if (mselId === null || mselId === undefined) {
+            throw new Error('Required parameter mselId was null or undefined when calling draftAudio.');
+        }
+
+        let localVarHeaders = this.defaultHeaders;
+
+        // authentication (oauth2) required
+        localVarHeaders = this.configuration.addCredentialToHeaders('oauth2', 'Authorization', localVarHeaders, 'Bearer ');
+
+        const localVarHttpHeaderAcceptSelected: string | undefined = options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept([
+            'text/plain',
+            'application/json',
+            'text/json'
+        ]);
+        if (localVarHttpHeaderAcceptSelected !== undefined) {
+            localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
+        }
+
+        const localVarHttpContext: HttpContext = options?.context ?? new HttpContext();
+
+        const localVarTransferCache: boolean = options?.transferCache ?? true;
+
+
+        // to determine the Content-Type header
+        const consumes: string[] = [
+            'application/json',
+            'text/json',
+            'application/*+json'
+        ];
+        const httpContentTypeSelected: string | undefined = this.configuration.selectHeaderContentType(consumes);
+        if (httpContentTypeSelected !== undefined) {
+            localVarHeaders = localVarHeaders.set('Content-Type', httpContentTypeSelected);
+        }
+
+        let responseType_: 'text' | 'json' | 'blob' = 'json';
+        if (localVarHttpHeaderAcceptSelected) {
+            if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
+                responseType_ = 'text';
+            } else if (this.configuration.isJsonMime(localVarHttpHeaderAcceptSelected)) {
+                responseType_ = 'json';
+            } else {
+                responseType_ = 'blob';
+            }
+        }
+
+        let localVarPath = `/api/msels/${this.configuration.encodeParam({name: "mselId", value: mselId, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: "uuid"})}/ai-draft/audio`;
+        const { basePath, withCredentials } = this.configuration;
+        return this.httpClient.request<AudioDraftResult>('post', `${basePath}${localVarPath}`,
+            {
+                context: localVarHttpContext,
+                body: audioDraftRequest,
+                responseType: <any>responseType_,
+                ...(withCredentials ? { withCredentials } : {}),
+                headers: localVarHeaders,
+                observe: observe,
+                transferCache: localVarTransferCache,
+                reportProgress: reportProgress
+            }
+        );
+    }
+
+    /**
      * Write one text field of an inject with AI
      * Nothing is saved. The model sees the MSEL\&#39;s scenario, moves and other injects, and the inject\&#39;s current values from the request, and the planner decides whether to use what it writes.
      * @param mselId The id of the MSEL the inject belongs to
@@ -1238,6 +1317,66 @@ export class MselService extends BaseService {
         let localVarPath = `/api/msels/${this.configuration.encodeParam({name: "id", value: id, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: "uuid"})}/data`;
         const { basePath, withCredentials } = this.configuration;
         return this.httpClient.request<DataTable>('get', `${basePath}${localVarPath}`,
+            {
+                context: localVarHttpContext,
+                responseType: <any>responseType_,
+                ...(withCredentials ? { withCredentials } : {}),
+                headers: localVarHeaders,
+                observe: observe,
+                transferCache: localVarTransferCache,
+                reportProgress: reportProgress
+            }
+        );
+    }
+
+    /**
+     * Which audio and video this server can make for a MSEL\'s injects
+     * Available when a speech provider is configured (Ai:Speech); Scripts when a text model is too, for voicemails, calls, broadcasts and reels; Photos when an image model can make a reel\'s picture.
+     * @param mselId The id of the MSEL
+     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+     * @param reportProgress flag to report request and response progress.
+     */
+    public getAudioDraftAvailability(mselId: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<AudioDraftAvailability>;
+    public getAudioDraftAvailability(mselId: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<AudioDraftAvailability>>;
+    public getAudioDraftAvailability(mselId: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<AudioDraftAvailability>>;
+    public getAudioDraftAvailability(mselId: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+        if (mselId === null || mselId === undefined) {
+            throw new Error('Required parameter mselId was null or undefined when calling getAudioDraftAvailability.');
+        }
+
+        let localVarHeaders = this.defaultHeaders;
+
+        // authentication (oauth2) required
+        localVarHeaders = this.configuration.addCredentialToHeaders('oauth2', 'Authorization', localVarHeaders, 'Bearer ');
+
+        const localVarHttpHeaderAcceptSelected: string | undefined = options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept([
+            'text/plain',
+            'application/json',
+            'text/json'
+        ]);
+        if (localVarHttpHeaderAcceptSelected !== undefined) {
+            localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
+        }
+
+        const localVarHttpContext: HttpContext = options?.context ?? new HttpContext();
+
+        const localVarTransferCache: boolean = options?.transferCache ?? true;
+
+
+        let responseType_: 'text' | 'json' | 'blob' = 'json';
+        if (localVarHttpHeaderAcceptSelected) {
+            if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
+                responseType_ = 'text';
+            } else if (this.configuration.isJsonMime(localVarHttpHeaderAcceptSelected)) {
+                responseType_ = 'json';
+            } else {
+                responseType_ = 'blob';
+            }
+        }
+
+        let localVarPath = `/api/msels/${this.configuration.encodeParam({name: "mselId", value: mselId, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: "uuid"})}/ai-draft/audio/available`;
+        const { basePath, withCredentials } = this.configuration;
+        return this.httpClient.request<AudioDraftAvailability>('get', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 responseType: <any>responseType_,

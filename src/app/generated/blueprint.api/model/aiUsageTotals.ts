@@ -20,7 +20,7 @@
  */
 export interface AiUsageTotals { 
     /**
-     * The MSEL\'s name, or the operation: draft, article, profile, value, assist or photo
+     * The MSEL\'s name, or the operation: draft, article, profile, value, assist, photo, script or audio
      */
     name?: string | null;
     calls?: number;
@@ -33,6 +33,10 @@ export interface AiUsageTotals {
     cacheReadTokens?: number;
     cacheWriteTokens?: number;
     images?: number;
+    /**
+     * Characters read aloud by a speech model
+     */
+    characters?: number;
     /**
      * The estimated cost in millionths of a US dollar (1,000,000 is $1), from the configured prices; null when a model used has no price. A whole number, as every number the API sends is.
      */
