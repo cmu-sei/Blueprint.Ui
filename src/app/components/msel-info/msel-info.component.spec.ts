@@ -39,6 +39,7 @@ import {
   Msel,
   MselCompetency,
   MselCompetencyService,
+  MselEdit,
   MselImageService,
   MselItemStatus,
   MselPage,
@@ -125,6 +126,8 @@ async function renderInfo(
     apps?: PlayerApplication[];
     names?: MselIntegrationNames;
     casterUrl?: string;
+    confirms?: boolean;
+    updateMsel?: (id: string, edit: MselEdit) => Observable<Msel>;
   } = {},
 ) {
   const {
@@ -136,6 +139,10 @@ async function renderInfo(
     apps = [],
     names = {},
     casterUrl = 'http://caster.example/',
+    confirms = true,
+    // the API answers with the saved MSEL, which always has its created and modified dates
+    updateMsel = (id: string, edit: MselEdit) =>
+      of<Msel>({ ...msel(myRoles, startTime, mselExtra), ...edit, id, dateCreated: new Date('2026-10-01T12:00:00Z'), dateModified: new Date() }),
   } = overrides;
   const pageApi = {
     getMselPages: vi.fn(() => of(structuredClone([PAGE]))),
@@ -161,6 +168,8 @@ async function renderInfo(
   } satisfies ApiStub<CasterService>;
   const mselApi = {
     getMselIntegrationNames: vi.fn(() => of(structuredClone(names))),
+    updateMsel: vi.fn(updateMsel),
+    pushIntegrations: vi.fn((id: string) => of<Msel>({ ...msel(myRoles, startTime, mselExtra), id, status: MselItemStatus.Pushing })),
   } satisfies ApiStub<MselService>;
   const imageApi = {
     getMselImage: vi.fn(() => of(new Blob(['image'], { type: 'image/png' }))),
@@ -168,8 +177,8 @@ async function renderInfo(
     deleteMselImage: vi.fn((id: string) => of<Msel>({ ...msel(myRoles, startTime, mselExtra), id, imageDateModified: null })),
   } satisfies ApiStub<MselImageService>;
   const systemMessage = { displayMessage: vi.fn() } satisfies Pick<SystemMessageService, 'displayMessage'>;
-  // The user confirms every dialog.
-  const confirm = vi.fn(() => dialogRefStub<unknown, boolean>(true).dialogRef);
+  // The user confirms every dialog, unless the test says otherwise.
+  const confirm = vi.fn(() => dialogRefStub<unknown, boolean>(confirms).dialogRef);
   const dialog = { confirm } satisfies Pick<CrucibleDialogService, 'confirm'>;
   // MselInfoComponent loads the permissions itself in ngOnInit, so the real
   // service is provided over the stubbed endpoint, without priming it.
@@ -813,6 +822,98 @@ describe('MselInfoComponent', () => {
 
       expect(screen.getByTitle('sc-1')).toBeInTheDocument();
       expect(screen.queryByText(/Not started|Started|Ended/)).not.toBeInTheDocument();
+    });
+  });
+
+  describe('Push Integrations start time', () => {
+    const HOUR = 60 * 60 * 1000;
+    const pushButton = () => screen.getByTitle('Push Integrations');
+    const push = async (fixture: ComponentFixture<unknown>) => {
+      await userEvent.click(pushButton());
+      await fixture.whenStable();
+    };
+
+    /**
+     * Verifies: a push of a MSEL whose start time is past, or that has none, first says the start time will be set to now, and on Continue saves the current time as the start time and only then pushes.
+     * Interacts with: CrucibleDialogService.confirm (stub, confirms), MselService.updateMsel and pushIntegrations (stubs), MselDataService.
+     * Data: the Owner role; a pending MSEL using Player, starting an hour ago, or with no start time (near miss: the year-1 date the Set a Start Time box clears to).
+     */
+    it.each([
+      { label: 'a start time in the past', startTime: () => new Date(Date.now() - HOUR), reason: /^The MSEL start time, .+, is in the past\. / },
+      { label: 'no start time', startTime: () => undefined, reason: /^This MSEL has no start time\. / },
+      { label: 'the cleared start time', startTime: () => new Date('0001-01-02T08:00:00'), reason: /^This MSEL has no start time\. / },
+    ])('sets the start time to now before pushing a MSEL with $label', async ({ startTime, reason }) => {
+      const { fixture, confirm, mselApi } = await renderInfo({ myRoles: [MselRole.Owner], startTime: startTime() });
+
+      const before = Date.now();
+      await push(fixture);
+      const after = Date.now();
+
+      expect(confirm).toHaveBeenCalledTimes(1);
+      expect(confirm).toHaveBeenCalledWith(expect.objectContaining({
+        title: 'Push Integrations',
+        message: expect.stringMatching(new RegExp(`${reason.source}The start time will be set to the current date and time before pushing\\.$`)),
+        confirmText: 'Continue',
+        cancelText: 'Cancel',
+      }));
+      expect(mselApi.updateMsel).toHaveBeenCalledTimes(1);
+      const [id, edit] = mselApi.updateMsel.mock.calls[0];
+      expect(id).toBe('msel-1');
+      expect(edit.startTime.valueOf()).toBeGreaterThanOrEqual(before);
+      expect(edit.startTime.valueOf()).toBeLessThanOrEqual(after);
+      expect(edit.durationSeconds).toBe(3600);
+      expect(mselApi.pushIntegrations).toHaveBeenCalledWith('msel-1');
+      expect(mselApi.updateMsel.mock.invocationCallOrder[0]).toBeLessThan(mselApi.pushIntegrations.mock.invocationCallOrder[0]);
+    });
+
+    /**
+     * Verifies: a start time still to come is kept, and the push is confirmed as before.
+     * Interacts with: CrucibleDialogService.confirm (stub, confirms), MselService.updateMsel and pushIntegrations (stubs).
+     * Data: the Owner role; a pending MSEL using Player, starting in an hour.
+     */
+    it('pushes a MSEL whose start time is still to come without changing it', async () => {
+      const { fixture, confirm, mselApi } = await renderInfo({ myRoles: [MselRole.Owner], startTime: new Date(Date.now() + HOUR) });
+
+      await push(fixture);
+
+      expect(confirm).toHaveBeenCalledWith(expect.objectContaining({
+        title: 'Push Integrations',
+        message: 'Are you sure that you want to push MSEL data to the selected applications?',
+      }));
+      expect(mselApi.updateMsel).not.toHaveBeenCalled();
+      expect(mselApi.pushIntegrations).toHaveBeenCalledWith('msel-1');
+    });
+
+    /**
+     * Verifies: Cancel leaves the start time alone and pushes nothing.
+     * Interacts with: CrucibleDialogService.confirm (stub, cancels), MselService.updateMsel and pushIntegrations (stubs).
+     * Data: the Owner role; a pending MSEL using Player, starting an hour ago.
+     */
+    it('neither saves nor pushes when the start time dialog is cancelled', async () => {
+      const { fixture, confirm, mselApi } = await renderInfo({ myRoles: [MselRole.Owner], startTime: new Date(Date.now() - HOUR), confirms: false });
+
+      await push(fixture);
+
+      expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ confirmText: 'Continue', cancelText: 'Cancel' }));
+      expect(mselApi.updateMsel).not.toHaveBeenCalled();
+      expect(mselApi.pushIntegrations).not.toHaveBeenCalled();
+    });
+
+    /**
+     * Verifies: a start time that cannot be saved is not pushed with, so the push never runs on a start time the MSEL does not have.
+     * Interacts with: CrucibleDialogService.confirm (stub, confirms), MselService.updateMsel (stub, fails), MselService.pushIntegrations (stub).
+     * Data: the Owner role; a pending MSEL using Player with no start time; the save answers 403.
+     */
+    it('does not push when the new start time cannot be saved', async () => {
+      const { fixture, mselApi } = await renderInfo({
+        myRoles: [MselRole.Owner],
+        updateMsel: () => throwError(() => ({ status: 403 })),
+      });
+
+      await push(fixture);
+
+      expect(mselApi.updateMsel).toHaveBeenCalledTimes(1);
+      expect(mselApi.pushIntegrations).not.toHaveBeenCalled();
     });
   });
 
