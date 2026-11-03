@@ -28,5 +28,9 @@ export interface ArticleDraftResult {
      * Corrections made to the model\'s HTML, and its assumptions
      */
     notes?: Array<string> | null;
+    /**
+     * What the server corrected that the planner should know of, such as values outside the scenario\'s indicator set
+     */
+    warnings?: Array<string> | null;
 }
 

@@ -78,6 +78,29 @@ describe('MselAiBuildService', () => {
   });
 
   /**
+   * Verifies: what the server replaced in a row or an article, values outside the scenario's indicator set, joins the build's warnings.
+   * Interacts with: MselBuildService writeMselRow, writeMselArticle.
+   * Data: a row and an article whose answers carry a warning each.
+   */
+  it('adds what the check replaced in each item to the warnings', async () => {
+    const { service, last } = setup({
+      writeMselRow: vi.fn(() => of({ html: '<p>Block it.</p>', warnings: ['Replaced 1 value not in the scenario\'s indicator set in "Check in": 8.8.4.4 with 203.0.113.10.'] })),
+      writeMselArticle: vi.fn(() => of({ fieldName: 'Description', html: '<p>Beacon</p>', warnings: ['Replaced 2 values not in the scenario\'s indicator set in "Cables cut".'] })),
+    });
+
+    service.run('msel-1');
+    await settle();
+
+    expect(last().warnings).toEqual(
+      expect.arrayContaining([
+        'Replaced 1 value not in the scenario\'s indicator set in "Check in": 8.8.4.4 with 203.0.113.10.',
+        'Replaced 2 values not in the scenario\'s indicator set in "Cables cut".',
+      ])
+    );
+    expect(last().warnings).toHaveLength(4);
+  });
+
+  /**
    * Verifies: an article that fails stops the run before the finish, saying which, with what is left.
    * Interacts with: MselBuildService.writeMselArticle, finishMselBuild.
    * Data: the article call fails; the status after it still lists the article.

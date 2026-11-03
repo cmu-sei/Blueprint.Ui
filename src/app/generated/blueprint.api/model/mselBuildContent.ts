@@ -20,5 +20,9 @@
  */
 export interface MselBuildContent { 
     html?: string | null;
+    /**
+     * What the server corrected in what was written, such as values outside the scenario\'s indicator set
+     */
+    warnings?: Array<string> | null;
 }
 

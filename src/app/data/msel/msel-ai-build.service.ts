@@ -6,7 +6,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { BehaviorSubject, defer, EMPTY, from, Observable, of, Subject, Subscription } from 'rxjs';
 import { catchError, finalize, map, mergeMap, take, tap, toArray } from 'rxjs/operators';
-import { MselDesignBuild, MselBuildItem, MselBuildService, MselBuildStatus } from 'src/app/generated/blueprint.api';
+import { MselBuildContent, MselDesignBuild, MselBuildItem, MselBuildService, MselBuildStatus } from 'src/app/generated/blueprint.api';
 import { SignalRService } from 'src/app/services/signalr.service';
 import { prepareImages } from 'src/app/utilities/svg-to-png';
 
@@ -227,15 +227,19 @@ export class MselAiBuildService {
     );
   }
 
-  // writes and saves one article or profile, then saves it again with its graphics as PNG
+  // writes and saves one article or profile, then saves it again with its graphics as PNG; what the server corrected in it,
+  // such as values outside the scenario's indicators, joins the build's warnings
   private writeItem(mselId: string, item: MselBuildItem): Observable<unknown> {
     // a row's text has no graphics, so it is saved once, as written
     if (item.kind === 'inject') {
-      return this.api.writeMselRow(mselId, item.id);
+      return (this.api.writeMselRow(mselId, item.id) as Observable<MselBuildContent>).pipe(
+        tap((written: MselBuildContent) => this.addWarnings(mselId, written?.warnings))
+      );
     }
     const isArticle = item.kind === 'article';
     const write = isArticle ? this.api.writeMselArticle(mselId, item.id) : this.api.writeMselProfile(mselId, item.id);
-    return (write as Observable<{ html?: string }>).pipe(
+    return (write as Observable<{ html?: string; warnings?: string[] }>).pipe(
+      tap((written: { html?: string; warnings?: string[] }) => this.addWarnings(mselId, written?.warnings)),
       mergeMap((written) => from(this.toPng(written.html ?? '')).pipe(map((png) => ({ html: written.html, png })))),
       mergeMap(({ html, png }) =>
         png === html
