@@ -37,6 +37,8 @@ export class AiUsageComponent {
     page: 'Pages',
     move: 'Move situations',
     metadata: 'Catalog metadata',
+    script: 'Audio scripts',
+    audio: 'Audio',
   };
 
   private aiUsageService = inject(AiUsageService);

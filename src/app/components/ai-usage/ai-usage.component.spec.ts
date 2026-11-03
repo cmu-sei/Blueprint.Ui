@@ -57,6 +57,42 @@ describe('AiUsageComponent', () => {
   });
 
   /**
+   * Verifies: audio shows as its own steps, the script calls and the characters voiced, with a Characters voiced column only
+   * when something was voiced.
+   * Interacts with: AiUsageService.getMselAiUsage.
+   * Data: a script call and 1,800 characters voiced for $0.03.
+   */
+  it('shows the audio steps and the characters voiced', async () => {
+    await renderUsage(() =>
+      of({
+        ...USAGE,
+        characters: 1800,
+        byOperation: [
+          { name: 'audio', calls: 2, inputTokens: 0, outputTokens: 0, images: 0, characters: 1800, estimatedCostMicros: 28800 },
+          { name: 'script', calls: 1, inputTokens: 1000, outputTokens: 500, images: 0, estimatedCostMicros: 7000 },
+        ],
+      })
+    );
+
+    expect(screen.getByRole('columnheader', { name: 'Characters voiced' })).toBeInTheDocument();
+    const audio = screen.getAllByRole('row').find((row) => row.querySelector('th')?.textContent.trim() === 'Audio');
+    expect(audio).toHaveTextContent('1,800');
+    expect(audio).toHaveTextContent('$0.03');
+    expect(screen.getByRole('row', { name: /Audio scripts/ })).toHaveTextContent('1,000');
+  });
+
+  /**
+   * Verifies: without audio there is no Characters voiced column.
+   * Interacts with: AiUsageService.getMselAiUsage.
+   * Data: the usage above, nothing voiced.
+   */
+  it('has no characters column without audio', async () => {
+    await renderUsage(() => of(USAGE));
+
+    expect(screen.queryByRole('columnheader', { name: 'Characters voiced' })).not.toBeInTheDocument();
+  });
+
+  /**
    * Verifies: a model with no price is left out of the total, which still shows for the rest, and is named so it can be priced.
    * Interacts with: AiUsageService.getMselAiUsage.
    * Data: the usage above with the photo model unpriced; the rest comes to $0.53.

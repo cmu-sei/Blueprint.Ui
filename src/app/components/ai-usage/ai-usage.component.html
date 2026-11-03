@@ -24,6 +24,9 @@ project root for license information.
         <th scope="col">Input tokens</th>
         <th scope="col">Output tokens</th>
         <th scope="col">Photos</th>
+        @if (usage.characters) {
+        <th scope="col">Characters voiced</th>
+        }
         <th scope="col">Estimated cost</th>
       </tr>
     </thead>
@@ -35,6 +38,9 @@ project root for license information.
         <td>{{ operation.inputTokens | number }}</td>
         <td>{{ operation.outputTokens | number }}</td>
         <td>{{ operation.images || '' }}</td>
+        @if (usage.characters) {
+        <td>{{ operation.characters ? (operation.characters | number) : '' }}</td>
+        }
         <td>{{ dollars(operation.estimatedCostMicros) }}</td>
       </tr>
       }
@@ -46,6 +52,9 @@ project root for license information.
         <td>{{ usage.inputTokens | number }}</td>
         <td>{{ usage.outputTokens | number }}</td>
         <td>{{ usage.images || '' }}</td>
+        @if (usage.characters) {
+        <td>{{ usage.characters | number }}</td>
+        }
         <td>{{ dollars(usage.estimatedCostMicros) }}</td>
       </tr>
     </tfoot>
