@@ -77,6 +77,7 @@ import { permissionApiStubs } from 'src/app/test-utils/mock-permission-data.serv
 import { unstubbed } from 'src/app/test-utils/unstubbed';
 import { IntegrationStatusComponent } from '../integration-status/integration-status.component';
 import { DurationEditComponent } from '../shared/duration-edit/duration-edit.component';
+import { TopologyMapPanelComponent } from '../topology-map-panel/topology-map-panel.component';
 
 @Component({ selector: 'app-integration-status', template: '' })
 class IntegrationStatusStub {
@@ -87,6 +88,12 @@ class IntegrationStatusStub {
 @Component({ selector: 'app-ai-usage', template: '' })
 class AiUsageStub {
   readonly mselId = input<string>(undefined);
+}
+@Component({ selector: 'app-topology-map-panel', template: '' })
+class TopologyMapPanelStub {
+  readonly msel = input<Msel>(undefined);
+  readonly casterWorkspaceUrl = input<string>(undefined);
+  readonly canUpdate = input<boolean>(undefined);
 }
 @Component({ selector: 'app-duration-edit', template: '' })
 class DurationEditStub {
@@ -235,6 +242,7 @@ async function renderInfo(
       { replace: IntegrationStatusComponent, with: IntegrationStatusStub },
       { replace: AiUsageComponent, with: AiUsageStub },
       { replace: DurationEditComponent, with: DurationEditStub },
+      { replace: TopologyMapPanelComponent, with: TopologyMapPanelStub },
     ],
     providers: [
       { provide: SystemPermissionsService, useValue: permissionApis.systemPermissions },
@@ -647,6 +655,37 @@ describe('MselInfoComponent', () => {
       expect(screen.getByText('blueprint-msel-1')).toBeInTheDocument();
       expect(screen.getByTitle('Open workspace in Caster')).toHaveAttribute('href', 'http://caster.example/projects/proj-1?workspace=ws-1');
       expect(screen.getByTitle('Open directory in Caster')).toHaveAttribute('href', 'http://caster.example/projects/proj-1?directory=dir-1');
+    });
+
+    /**
+     * Verifies: a MSEL using Player and Caster shows the network map panel, given the workspace's Caster link to edit the layout,
+     * and Update map only for whoever may push; a MSEL using Caster without Player shows none.
+     * Interacts with: TopologyMapPanelComponent (stub), getCasterWorkspaceUrl, canManageMsel.
+     * Data: a deployed MSEL using Caster with directory dir-1 and workspace ws-1; ManageMsels, then EditMsels only; then no Player.
+     */
+    it.each([
+      { permissions: [SystemPermission.ManageMsels], canUpdate: true },
+      { permissions: [SystemPermission.EditMsels], canUpdate: false },
+    ])('shows the network map panel (canUpdate $canUpdate)', async ({ permissions, canUpdate }) => {
+      const { fixture } = await renderInfo({
+        permissions,
+        mselExtra: { status: MselItemStatus.Deployed, usePlayer: true, useCaster: true, casterDirectoryId: 'dir-1', casterWorkspaceId: 'ws-1' },
+      });
+
+      const panel = fixture.debugElement.query(By.directive(TopologyMapPanelStub))?.componentInstance as TopologyMapPanelStub;
+      expect(panel).toBeTruthy();
+      expect(panel.msel().casterWorkspaceId).toBe('ws-1');
+      expect(panel.casterWorkspaceUrl()).toBe('http://caster.example/projects/proj-1?workspace=ws-1');
+      expect(panel.canUpdate()).toBe(canUpdate);
+    });
+
+    it('shows no network map panel without Player', async () => {
+      const { fixture } = await renderInfo({
+        permissions: [SystemPermission.ManageMsels],
+        mselExtra: { status: MselItemStatus.Deployed, usePlayer: false, useCaster: true, casterDirectoryId: 'dir-1', casterWorkspaceId: 'ws-1' },
+      });
+
+      expect(fixture.debugElement.query(By.directive(TopologyMapPanelStub))).toBeNull();
     });
 
     /**

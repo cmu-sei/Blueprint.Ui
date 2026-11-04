@@ -61,6 +61,7 @@ import { casterVmAppWarning } from 'src/app/utilities/caster-vm-app';
 import { ComnSettingsService } from '@cmusei/crucible-common';
 import { ScenarioEventQuery } from 'src/app/data/scenario-event/scenario-event.query';
 import { IntegrationStatusComponent } from '../integration-status/integration-status.component';
+import { TopologyMapPanelComponent } from '../topology-map-panel/topology-map-panel.component';
 import { MatTabGroup, MatTab, MatTabLabel } from '@angular/material/tabs';
 import { MatIconButton, MatButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
@@ -85,7 +86,7 @@ import { normalizeScoringModel, scoringModelCounts } from 'src/app/utilities/sco
     selector: 'app-msel-info',
     templateUrl: './msel-info.component.html',
     styleUrls: ['./msel-info.component.scss'],
-    imports: [AiUsageComponent, IntegrationStatusComponent, MatTabGroup, MatTab, MatIconButton, MatIcon, MatLabel, MatMenuTrigger, MatMenu, MatMenuItem, MatFormField, MatInput, CdkTextareaAutosize, FormsModule, MatError, MatHint, MatCheckbox, NgxMatDatepickerInput, MatDatepickerToggle, MatSuffix, NgxMatDatetimepicker, NgxMatDatepickerActions, MatButton, NgxMatDatepickerApply, NgxMatDatepickerCancel, DurationEditComponent, MatSelect, MatOption, ClipboardModule, MatExpansionPanel, MatExpansionPanelHeader, MatExpansionPanelTitle, MatTooltip, AngularEditorModule, MatTabLabel, CardEditDialogComponent, DatePipe, TimezoneAbbrPipe]
+    imports: [AiUsageComponent, IntegrationStatusComponent, MatTabGroup, MatTab, MatIconButton, MatIcon, MatLabel, MatMenuTrigger, MatMenu, MatMenuItem, MatFormField, MatInput, CdkTextareaAutosize, FormsModule, MatError, MatHint, MatCheckbox, NgxMatDatepickerInput, MatDatepickerToggle, MatSuffix, NgxMatDatetimepicker, NgxMatDatepickerActions, MatButton, NgxMatDatepickerApply, NgxMatDatepickerCancel, DurationEditComponent, MatSelect, MatOption, ClipboardModule, MatExpansionPanel, MatExpansionPanelHeader, MatExpansionPanelTitle, MatTooltip, AngularEditorModule, MatTabLabel, CardEditDialogComponent, DatePipe, TimezoneAbbrPipe, TopologyMapPanelComponent]
 })
 export class MselInfoComponent implements OnDestroy, OnInit {
   dialogService = inject(CrucibleDialogService);
