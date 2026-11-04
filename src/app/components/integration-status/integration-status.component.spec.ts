@@ -116,6 +116,29 @@ describe('IntegrationStatusComponent', () => {
   });
 
   /**
+   * Verifies: a push at its Caster step links to the workspace, so the planner can watch the run; other steps,
+   * and a Caster step with no workspace yet, show no link.
+   * Interacts with: the casterWorkspaceUrl input.
+   * Data: running statuses with and without a workspace URL.
+   */
+  it.each([
+    ['Caster - applying', 'http://caster.example/projects/proj-1?workspace=ws-1', true],
+    ['Caster - planning', 'http://caster.example/projects/proj-1?workspace=ws-1', true],
+    ['Caster - creating workspace', '', false],
+    ['Pushing to Gallery', 'http://caster.example/projects/proj-1?workspace=ws-1', false],
+  ])('links a running push to its Caster workspace at "%s"', async (status, url, shown) => {
+    await renderStatus(status, url);
+
+    const link = screen.queryByRole('link', { name: 'Open Workspace in Caster' });
+    if (shown) {
+      expect(link).toHaveAttribute('href', url);
+      expect(link).toHaveAttribute('target', '_blank');
+    } else {
+      expect(link).not.toBeInTheDocument();
+    }
+  });
+
+  /**
    * Verifies: a push that failed at its Caster step offers Retry Caster, which asks the API to retry and leaves the status open.
    * Interacts with: MselService.retryCasterIntegration (stub), real MselDataService, closed output.
    * Data: a Pushing MSEL with status "ERROR: Caster - planning failed - ...".
