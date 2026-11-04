@@ -16,6 +16,12 @@
   align-items: flex-start;
   gap: 1rem;
   padding: 1rem 0;
+  // held at the bottom of the dialog while the design is written, so it shows however far the form is scrolled
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  background: var(--mat-dialog-container-color, var(--mat-sys-surface-container-high));
+  border-top: 1px solid var(--mat-sys-outline-variant);
 
   p {
     margin: 0 0 0.25rem 0;

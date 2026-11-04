@@ -244,6 +244,7 @@ describe('MselDraftDialogComponent', () => {
     fixture.detectChanges();
     expect(screen.getByText('Writing the design.')).toBeInTheDocument();
     expect(screen.getByText(/2 moves, 1 team so far\./)).toBeInTheDocument();
+    expect(screen.getByText(/Stop discards this design; your description and choices stay\./)).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Stop' }));
 
