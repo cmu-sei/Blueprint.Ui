@@ -3,7 +3,6 @@
  Released under a MIT (SEI)-style license. See LICENSE.md in the
  project root for license information.
 */
-
 /**
  * Blueprint API
  *
@@ -13,6 +12,7 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
+import { MselBuildBuilder } from './mselBuildBuilder';
 import { MselBuildItem } from './mselBuildItem';
 
 
@@ -30,12 +30,12 @@ export interface MselBuildStatus {
      */
     parallel?: number;
     /**
-     * The other injects whose long text is still to write
-     */
-    /**
      * How many injects the design planned, while they are outlined; null once they are
      */
     plannedInjects?: number | null;
+    /**
+     * The other injects whose long text is still to write
+     */
     injects?: Array<MselBuildItem> | null;
     /**
      * The Gallery articles still to write
@@ -46,5 +46,6 @@ export interface MselBuildStatus {
      */
     profiles?: Array<MselBuildItem> | null;
     warnings?: Array<string> | null;
+    builder?: MselBuildBuilder;
 }
 

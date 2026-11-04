@@ -6,7 +6,8 @@ import { screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { BehaviorSubject, of } from 'rxjs';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
-import { MselBuildService, MselBuildStatus } from 'src/app/generated/blueprint.api';
+import { MselBuildBuilder, MselBuildService, MselBuildStatus } from 'src/app/generated/blueprint.api';
+import { CurrentUserQuery } from 'src/app/data/user/user.query';
 import { MselAiBuild, MselAiBuildService } from 'src/app/data/msel/msel-ai-build.service';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { MselAiBuildComponent } from './msel-ai-build.component';
@@ -34,8 +35,12 @@ async function renderBanner(
   confirmed = true
 ) {
   const build$ = new BehaviorSubject<MselAiBuild>(build);
+  // who is building, as the build service hears it; the saved status says so when the page opens
+  const builder$ = new BehaviorSubject<MselBuildBuilder | null>(null);
   const buildService = {
     build$: vi.fn(() => build$),
+    builder$: vi.fn(() => builder$),
+    noteBuilder: vi.fn((_id: string, builder: MselBuildBuilder | null) => builder$.next(builder ?? null)),
     run: vi.fn(),
     finishNow: vi.fn(),
     cancel: vi.fn(),
@@ -49,11 +54,12 @@ async function renderBanner(
       { provide: MselAiBuildService, useValue: buildService },
       { provide: MselBuildService, useValue: { getMselBuildStatus } },
       { provide: CrucibleDialogService, useValue: { confirm } },
+      { provide: CurrentUserQuery, useValue: { getValue: () => ({ id: 'me' }) } },
     ],
     inputs: { mselId: 'msel-1', mselName: 'Deep Bite', stage, canEdit: true },
     on: { discard },
   });
-  return { ...rendered, build$, buildService, getMselBuildStatus, confirm, discard, user: userEvent.setup() };
+  return { ...rendered, build$, builder$, buildService, getMselBuildStatus, confirm, discard, user: userEvent.setup() };
 }
 
 describe('MselAiBuildComponent', () => {
@@ -130,6 +136,8 @@ describe('MselAiBuildComponent', () => {
     });
 
     expect(getMselBuildStatus).toHaveBeenCalledWith('msel-1');
+    // no tab is building it, so it says the drafting stopped rather than that it is still going
+    expect(screen.getByText('Drafting with AI stopped before it finished.')).toBeInTheDocument();
     expect(screen.getByText(/4 injects, articles and profiles still to write/)).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Continue drafting' }));
@@ -168,5 +176,49 @@ describe('MselAiBuildComponent', () => {
 
     await user.click(screen.getByRole('button', { name: 'Close' }));
     expect(buildService.dismiss).toHaveBeenCalledWith('msel-1');
+  });
+  /**
+   * Verifies: a MSEL another person is building names them and offers Take over, not Continue drafting or Discard draft;
+   * Take over runs the build here with takeOver.
+   * Interacts with: MselBuildService.getMselBuildStatus (names the builder), MselAiBuildService.run.
+   * Data: Grace Hopper is building the MSEL; this tab runs nothing.
+   */
+  it('names who else is building and takes it over', async () => {
+    const { buildService, user } = await renderBanner('Articles', undefined, {
+      mselId: 'msel-1',
+      stage: 'Articles',
+      articles: [{ id: 'a' }],
+      profiles: [],
+      builder: { userId: 'grace', userName: 'Grace Hopper' },
+    });
+
+    expect(screen.getByText('Grace Hopper is building this MSEL with AI.')).toBeInTheDocument();
+    expect(screen.getByText('Take over to build it here; the other tab stops, and what it wrote is kept.')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Continue drafting' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Discard draft' })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Take over' }));
+    expect(buildService.run).toHaveBeenCalledWith('msel-1', true);
+  });
+
+  /**
+   * Verifies: the planner's own build in another tab is called that, and when that tab stops the banner offers Continue drafting.
+   * Interacts with: MselAiBuildService.builder$.
+   * Data: the current user builds in another tab, then no tab does.
+   */
+  it('tells the planner their other tab is building it', async () => {
+    const { builder$ } = await renderBanner('Articles', undefined, {
+      mselId: 'msel-1',
+      stage: 'Articles',
+      articles: [{ id: 'a' }],
+      profiles: [],
+      builder: { userId: 'me', userName: 'Ada Lovelace' },
+    });
+
+    expect(screen.getByText('You are building this MSEL with AI in another tab.')).toBeInTheDocument();
+
+    builder$.next(null);
+    await screen.findByRole('button', { name: 'Continue drafting' });
+    expect(screen.getByText('Drafting with AI stopped before it finished.')).toBeInTheDocument();
   });
 });

@@ -23,10 +23,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <p><strong>The MSEL could not be created.</strong> Your design is kept: try again, or go back to My MSELs and draft again.</p>
     } @else if (build()?.step === 'done') {
     <p><strong>Drafted with AI.</strong> Review it before you push it to the integrations.</p>
+    } @else if (buildingElsewhere()) {
+    <p><strong>{{ elsewhereText }}</strong> {{ stoppedText }}</p>
+    <p class="hint">Take over to build it here; the other tab stops, and what it wrote is kept.</p>
     } @else {
-    <p><strong>This MSEL is still being drafted with AI.</strong> {{ stoppedText }}</p>
+    <p><strong>Drafting with AI stopped before it finished.</strong> {{ stoppedText }}</p>
     }
-    @for (error of build()?.errors ?? []; track $index) {
+    @for (error of buildingElsewhere() && build()?.step === 'busy' ? [] : (build()?.errors ?? []); track $index) {
     <p class="error" role="alert">{{ error }}</p>
     }
     @if (build()?.warnings?.length) {
@@ -50,6 +53,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <button mat-icon-button type="button" title="Close" aria-label="Close" (click)="dismiss()">
       <mat-icon fontIcon="mdi-close" />
     </button>
+    } @else if (canEdit() && buildingElsewhere()) {
+    <button matButton="filled" type="button" (click)="takeOver()">Take over</button>
     } @else if (canEdit()) {
     <button matButton="outlined" type="button" (click)="discardDraft()">Discard draft</button>
     @if ((remaining()?.stage ?? stage()) === 'Articles' && left()) {

@@ -3,7 +3,6 @@
  Released under a MIT (SEI)-style license. See LICENSE.md in the
  project root for license information.
 */
-
 /**
  * Blueprint API
  *
@@ -24,6 +23,8 @@ import { Observable }                                        from 'rxjs';
 
 // @ts-ignore
 import { ArticleDraftResult } from '../model/articleDraftResult';
+// @ts-ignore
+import { MselBuildBuilder } from '../model/mselBuildBuilder';
 // @ts-ignore
 import { MselBuildContent } from '../model/mselBuildContent';
 // @ts-ignore
@@ -58,8 +59,146 @@ export class MselBuildService extends BaseService {
     }
 
     /**
+     * Build a MSEL with AI in this browser tab
+     * One tab builds a MSEL at a time; the others are told who is building it. With takeOver, this tab takes the build from the one that has it, which is told to stop. Every writing step claims the build too, while no tab has it.
+     * @param id The MSEL
+     * @param connectionId This tab\&#39;s hub connection id
+     * @param takeOver Take the build from another tab
+     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+     * @param reportProgress flag to report request and response progress.
+     */
+    public claimMselBuild(id: string, connectionId?: string, takeOver?: boolean, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<MselBuildBuilder>;
+    public claimMselBuild(id: string, connectionId?: string, takeOver?: boolean, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<MselBuildBuilder>>;
+    public claimMselBuild(id: string, connectionId?: string, takeOver?: boolean, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<MselBuildBuilder>>;
+    public claimMselBuild(id: string, connectionId?: string, takeOver?: boolean, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+        if (id === null || id === undefined) {
+            throw new Error('Required parameter id was null or undefined when calling claimMselBuild.');
+        }
+
+        let localVarQueryParameters = new HttpParams({encoder: this.encoder});
+        localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
+          <any>connectionId, 'connectionId');
+        localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
+          <any>takeOver, 'takeOver');
+
+        let localVarHeaders = this.defaultHeaders;
+
+        // authentication (oauth2) required
+        localVarHeaders = this.configuration.addCredentialToHeaders('oauth2', 'Authorization', localVarHeaders, 'Bearer ');
+
+        const localVarHttpHeaderAcceptSelected: string | undefined = options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept([
+            'text/plain',
+            'application/json',
+            'text/json'
+        ]);
+        if (localVarHttpHeaderAcceptSelected !== undefined) {
+            localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
+        }
+
+        const localVarHttpContext: HttpContext = options?.context ?? new HttpContext();
+
+        const localVarTransferCache: boolean = options?.transferCache ?? true;
+
+
+        let responseType_: 'text' | 'json' | 'blob' = 'json';
+        if (localVarHttpHeaderAcceptSelected) {
+            if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
+                responseType_ = 'text';
+            } else if (this.configuration.isJsonMime(localVarHttpHeaderAcceptSelected)) {
+                responseType_ = 'json';
+            } else {
+                responseType_ = 'blob';
+            }
+        }
+
+        let localVarPath = `/api/msels/${this.configuration.encodeParam({name: "id", value: id, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: "uuid"})}/ai-draft/claim`;
+        const { basePath, withCredentials } = this.configuration;
+        return this.httpClient.request<MselBuildBuilder>('post', `${basePath}${localVarPath}`,
+            {
+                context: localVarHttpContext,
+                params: localVarQueryParameters,
+                responseType: <any>responseType_,
+                ...(withCredentials ? { withCredentials } : {}),
+                headers: localVarHeaders,
+                observe: observe,
+                transferCache: localVarTransferCache,
+                reportProgress: reportProgress
+            }
+        );
+    }
+
+    /**
+     * Create a MSEL from a reviewed AI design
+     * The MSEL\&#39;s injects, articles and profiles are written into it in the steps that follow.
+     * @param mselDesignBuild 
+     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+     * @param reportProgress flag to report request and response progress.
+     */
+    public createMselFromDesign(mselDesignBuild?: MselDesignBuild, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<MselImportResult>;
+    public createMselFromDesign(mselDesignBuild?: MselDesignBuild, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<MselImportResult>>;
+    public createMselFromDesign(mselDesignBuild?: MselDesignBuild, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<MselImportResult>>;
+    public createMselFromDesign(mselDesignBuild?: MselDesignBuild, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+
+        let localVarHeaders = this.defaultHeaders;
+
+        // authentication (oauth2) required
+        localVarHeaders = this.configuration.addCredentialToHeaders('oauth2', 'Authorization', localVarHeaders, 'Bearer ');
+
+        const localVarHttpHeaderAcceptSelected: string | undefined = options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept([
+            'text/plain',
+            'application/json',
+            'text/json'
+        ]);
+        if (localVarHttpHeaderAcceptSelected !== undefined) {
+            localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
+        }
+
+        const localVarHttpContext: HttpContext = options?.context ?? new HttpContext();
+
+        const localVarTransferCache: boolean = options?.transferCache ?? true;
+
+
+        // to determine the Content-Type header
+        const consumes: string[] = [
+            'application/json',
+            'text/json',
+            'application/*+json'
+        ];
+        const httpContentTypeSelected: string | undefined = this.configuration.selectHeaderContentType(consumes);
+        if (httpContentTypeSelected !== undefined) {
+            localVarHeaders = localVarHeaders.set('Content-Type', httpContentTypeSelected);
+        }
+
+        let responseType_: 'text' | 'json' | 'blob' = 'json';
+        if (localVarHttpHeaderAcceptSelected) {
+            if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
+                responseType_ = 'text';
+            } else if (this.configuration.isJsonMime(localVarHttpHeaderAcceptSelected)) {
+                responseType_ = 'json';
+            } else {
+                responseType_ = 'blob';
+            }
+        }
+
+        let localVarPath = `/api/msels/ai-draft/create`;
+        const { basePath, withCredentials } = this.configuration;
+        return this.httpClient.request<MselImportResult>('post', `${basePath}${localVarPath}`,
+            {
+                context: localVarHttpContext,
+                body: mselDesignBuild,
+                responseType: <any>responseType_,
+                ...(withCredentials ? { withCredentials } : {}),
+                headers: localVarHeaders,
+                observe: observe,
+                transferCache: localVarTransferCache,
+                reportProgress: reportProgress
+            }
+        );
+    }
+
+    /**
      * Design a MSEL with AI
-     * The scenario, objectives, moves, teams and cards, and up to five questions for the planner. Nothing is saved.
+     * The first step: the scenario, objectives, moves, teams, organizations and Gallery cards, and up to five questions for the planner, each with the answer the draft would use. Nothing is saved.
      * @param mselDraftRequest 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
@@ -127,16 +266,24 @@ export class MselBuildService extends BaseService {
     }
 
     /**
-     * Create a MSEL from a reviewed AI design
-     * The MSEL\'s injects, articles and profiles are written into it in the steps that follow.
-     * @param mselDesignBuild 
+     * Finish building a MSEL with AI
+     * The overview, facilitator and profile pages, the Player applications, and CITE.
+     * @param id 
+     * @param connectionId 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public createMselFromDesign(mselDesignBuild?: MselDesignBuild, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<MselImportResult>;
-    public createMselFromDesign(mselDesignBuild?: MselDesignBuild, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<MselImportResult>>;
-    public createMselFromDesign(mselDesignBuild?: MselDesignBuild, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<MselImportResult>>;
-    public createMselFromDesign(mselDesignBuild?: MselDesignBuild, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public finishMselBuild(id: string, connectionId?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<MselBuildStatus>;
+    public finishMselBuild(id: string, connectionId?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<MselBuildStatus>>;
+    public finishMselBuild(id: string, connectionId?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<MselBuildStatus>>;
+    public finishMselBuild(id: string, connectionId?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+        if (id === null || id === undefined) {
+            throw new Error('Required parameter id was null or undefined when calling finishMselBuild.');
+        }
+
+        let localVarQueryParameters = new HttpParams({encoder: this.encoder});
+        localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
+          <any>connectionId, 'connectionId');
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -157,17 +304,6 @@ export class MselBuildService extends BaseService {
         const localVarTransferCache: boolean = options?.transferCache ?? true;
 
 
-        // to determine the Content-Type header
-        const consumes: string[] = [
-            'application/json',
-            'text/json',
-            'application/*+json'
-        ];
-        const httpContentTypeSelected: string | undefined = this.configuration.selectHeaderContentType(consumes);
-        if (httpContentTypeSelected !== undefined) {
-            localVarHeaders = localVarHeaders.set('Content-Type', httpContentTypeSelected);
-        }
-
         let responseType_: 'text' | 'json' | 'blob' = 'json';
         if (localVarHttpHeaderAcceptSelected) {
             if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
@@ -179,12 +315,12 @@ export class MselBuildService extends BaseService {
             }
         }
 
-        let localVarPath = `/api/msels/ai-draft/create`;
+        let localVarPath = `/api/msels/${this.configuration.encodeParam({name: "id", value: id, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: "uuid"})}/ai-draft/finish`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<MselImportResult>('post', `${basePath}${localVarPath}`,
+        return this.httpClient.request<MselBuildStatus>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: mselDesignBuild,
+                params: localVarQueryParameters,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
@@ -255,19 +391,24 @@ export class MselBuildService extends BaseService {
     }
 
     /**
-     * Write a MSEL\'s injects with AI
-     * The injects, CITE tasks and questions, and read-in, written to the MSEL\'s design and saved.
+     * Stop building a MSEL with AI in this browser tab
+     * Frees the build for another tab; what is written stays.
      * @param id 
+     * @param connectionId 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public writeMselInjects(id: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<MselBuildStatus>;
-    public writeMselInjects(id: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<MselBuildStatus>>;
-    public writeMselInjects(id: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<MselBuildStatus>>;
-    public writeMselInjects(id: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public releaseMselBuild(id: string, connectionId?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any>;
+    public releaseMselBuild(id: string, connectionId?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<any>>;
+    public releaseMselBuild(id: string, connectionId?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<any>>;
+    public releaseMselBuild(id: string, connectionId?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (id === null || id === undefined) {
-            throw new Error('Required parameter id was null or undefined when calling writeMselInjects.');
+            throw new Error('Required parameter id was null or undefined when calling releaseMselBuild.');
         }
+
+        let localVarQueryParameters = new HttpParams({encoder: this.encoder});
+        localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
+          <any>connectionId, 'connectionId');
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -275,9 +416,7 @@ export class MselBuildService extends BaseService {
         localVarHeaders = this.configuration.addCredentialToHeaders('oauth2', 'Authorization', localVarHeaders, 'Bearer ');
 
         const localVarHttpHeaderAcceptSelected: string | undefined = options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept([
-            'text/plain',
-            'application/json',
-            'text/json'
+            'application/json'
         ]);
         if (localVarHttpHeaderAcceptSelected !== undefined) {
             localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
@@ -299,11 +438,12 @@ export class MselBuildService extends BaseService {
             }
         }
 
-        let localVarPath = `/api/msels/${this.configuration.encodeParam({name: "id", value: id, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: "uuid"})}/ai-draft/injects`;
+        let localVarPath = `/api/msels/${this.configuration.encodeParam({name: "id", value: id, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: "uuid"})}/ai-draft/claim`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<MselBuildStatus>('post', `${basePath}${localVarPath}`,
+        return this.httpClient.request<any>('delete', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
+                params: localVarQueryParameters,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
@@ -315,23 +455,28 @@ export class MselBuildService extends BaseService {
     }
 
     /**
-     * Write the long text of one of a MSEL\'s drafted injects with AI
-     * The injects are outlined first; each one\'s document, message or description is then written and saved on its own.
+     * Save a written Gallery article again, with its graphics as PNG
      * @param id 
      * @param scenarioEventId 
+     * @param connectionId 
+     * @param mselBuildContent 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public writeMselRow(id: string, scenarioEventId: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<MselBuildContent>;
-    public writeMselRow(id: string, scenarioEventId: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<MselBuildContent>>;
-    public writeMselRow(id: string, scenarioEventId: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<MselBuildContent>>;
-    public writeMselRow(id: string, scenarioEventId: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public saveMselArticle(id: string, scenarioEventId: string, connectionId?: string, mselBuildContent?: MselBuildContent, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any>;
+    public saveMselArticle(id: string, scenarioEventId: string, connectionId?: string, mselBuildContent?: MselBuildContent, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<any>>;
+    public saveMselArticle(id: string, scenarioEventId: string, connectionId?: string, mselBuildContent?: MselBuildContent, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<any>>;
+    public saveMselArticle(id: string, scenarioEventId: string, connectionId?: string, mselBuildContent?: MselBuildContent, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (id === null || id === undefined) {
-            throw new Error('Required parameter id was null or undefined when calling writeMselRow.');
+            throw new Error('Required parameter id was null or undefined when calling saveMselArticle.');
         }
         if (scenarioEventId === null || scenarioEventId === undefined) {
-            throw new Error('Required parameter scenarioEventId was null or undefined when calling writeMselRow.');
+            throw new Error('Required parameter scenarioEventId was null or undefined when calling saveMselArticle.');
         }
+
+        let localVarQueryParameters = new HttpParams({encoder: this.encoder});
+        localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
+          <any>connectionId, 'connectionId');
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -339,9 +484,7 @@ export class MselBuildService extends BaseService {
         localVarHeaders = this.configuration.addCredentialToHeaders('oauth2', 'Authorization', localVarHeaders, 'Bearer ');
 
         const localVarHttpHeaderAcceptSelected: string | undefined = options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept([
-            'text/plain',
-            'application/json',
-            'text/json'
+            'application/json'
         ]);
         if (localVarHttpHeaderAcceptSelected !== undefined) {
             localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
@@ -351,6 +494,17 @@ export class MselBuildService extends BaseService {
 
         const localVarTransferCache: boolean = options?.transferCache ?? true;
 
+
+        // to determine the Content-Type header
+        const consumes: string[] = [
+            'application/json',
+            'text/json',
+            'application/*+json'
+        ];
+        const httpContentTypeSelected: string | undefined = this.configuration.selectHeaderContentType(consumes);
+        if (httpContentTypeSelected !== undefined) {
+            localVarHeaders = localVarHeaders.set('Content-Type', httpContentTypeSelected);
+        }
 
         let responseType_: 'text' | 'json' | 'blob' = 'json';
         if (localVarHttpHeaderAcceptSelected) {
@@ -363,11 +517,13 @@ export class MselBuildService extends BaseService {
             }
         }
 
-        let localVarPath = `/api/msels/${this.configuration.encodeParam({name: "id", value: id, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: "uuid"})}/ai-draft/rows/${this.configuration.encodeParam({name: "scenarioEventId", value: scenarioEventId, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: "uuid"})}`;
+        let localVarPath = `/api/msels/${this.configuration.encodeParam({name: "id", value: id, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: "uuid"})}/ai-draft/articles/${this.configuration.encodeParam({name: "scenarioEventId", value: scenarioEventId, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: "uuid"})}`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<MselBuildContent>('post', `${basePath}${localVarPath}`,
+        return this.httpClient.request<any>('put', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
+                body: mselBuildContent,
+                params: localVarQueryParameters,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
@@ -379,23 +535,108 @@ export class MselBuildService extends BaseService {
     }
 
     /**
-     * Write one of a MSEL\'s Gallery articles with AI
+     * Save a written profile again, with its logo as PNG
+     * @param id 
+     * @param ownerId 
+     * @param connectionId 
+     * @param mselBuildContent 
+     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+     * @param reportProgress flag to report request and response progress.
+     */
+    public saveMselProfile(id: string, ownerId: string, connectionId?: string, mselBuildContent?: MselBuildContent, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any>;
+    public saveMselProfile(id: string, ownerId: string, connectionId?: string, mselBuildContent?: MselBuildContent, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<any>>;
+    public saveMselProfile(id: string, ownerId: string, connectionId?: string, mselBuildContent?: MselBuildContent, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<any>>;
+    public saveMselProfile(id: string, ownerId: string, connectionId?: string, mselBuildContent?: MselBuildContent, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+        if (id === null || id === undefined) {
+            throw new Error('Required parameter id was null or undefined when calling saveMselProfile.');
+        }
+        if (ownerId === null || ownerId === undefined) {
+            throw new Error('Required parameter ownerId was null or undefined when calling saveMselProfile.');
+        }
+
+        let localVarQueryParameters = new HttpParams({encoder: this.encoder});
+        localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
+          <any>connectionId, 'connectionId');
+
+        let localVarHeaders = this.defaultHeaders;
+
+        // authentication (oauth2) required
+        localVarHeaders = this.configuration.addCredentialToHeaders('oauth2', 'Authorization', localVarHeaders, 'Bearer ');
+
+        const localVarHttpHeaderAcceptSelected: string | undefined = options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept([
+            'application/json'
+        ]);
+        if (localVarHttpHeaderAcceptSelected !== undefined) {
+            localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
+        }
+
+        const localVarHttpContext: HttpContext = options?.context ?? new HttpContext();
+
+        const localVarTransferCache: boolean = options?.transferCache ?? true;
+
+
+        // to determine the Content-Type header
+        const consumes: string[] = [
+            'application/json',
+            'text/json',
+            'application/*+json'
+        ];
+        const httpContentTypeSelected: string | undefined = this.configuration.selectHeaderContentType(consumes);
+        if (httpContentTypeSelected !== undefined) {
+            localVarHeaders = localVarHeaders.set('Content-Type', httpContentTypeSelected);
+        }
+
+        let responseType_: 'text' | 'json' | 'blob' = 'json';
+        if (localVarHttpHeaderAcceptSelected) {
+            if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
+                responseType_ = 'text';
+            } else if (this.configuration.isJsonMime(localVarHttpHeaderAcceptSelected)) {
+                responseType_ = 'json';
+            } else {
+                responseType_ = 'blob';
+            }
+        }
+
+        let localVarPath = `/api/msels/${this.configuration.encodeParam({name: "id", value: id, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: "uuid"})}/ai-draft/profiles/${this.configuration.encodeParam({name: "ownerId", value: ownerId, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: "uuid"})}`;
+        const { basePath, withCredentials } = this.configuration;
+        return this.httpClient.request<any>('put', `${basePath}${localVarPath}`,
+            {
+                context: localVarHttpContext,
+                body: mselBuildContent,
+                params: localVarQueryParameters,
+                responseType: <any>responseType_,
+                ...(withCredentials ? { withCredentials } : {}),
+                headers: localVarHeaders,
+                observe: observe,
+                transferCache: localVarTransferCache,
+                reportProgress: reportProgress
+            }
+        );
+    }
+
+    /**
+     * Write one of a MSEL\&#39;s Gallery articles with AI
      * Saved on its row as written; its graphics are SVG until saved again as PNG.
      * @param id 
      * @param scenarioEventId 
+     * @param connectionId 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public writeMselArticle(id: string, scenarioEventId: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<ArticleDraftResult>;
-    public writeMselArticle(id: string, scenarioEventId: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<ArticleDraftResult>>;
-    public writeMselArticle(id: string, scenarioEventId: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<ArticleDraftResult>>;
-    public writeMselArticle(id: string, scenarioEventId: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public writeMselArticle(id: string, scenarioEventId: string, connectionId?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<ArticleDraftResult>;
+    public writeMselArticle(id: string, scenarioEventId: string, connectionId?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<ArticleDraftResult>>;
+    public writeMselArticle(id: string, scenarioEventId: string, connectionId?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<ArticleDraftResult>>;
+    public writeMselArticle(id: string, scenarioEventId: string, connectionId?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (id === null || id === undefined) {
             throw new Error('Required parameter id was null or undefined when calling writeMselArticle.');
         }
         if (scenarioEventId === null || scenarioEventId === undefined) {
             throw new Error('Required parameter scenarioEventId was null or undefined when calling writeMselArticle.');
         }
+
+        let localVarQueryParameters = new HttpParams({encoder: this.encoder});
+        localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
+          <any>connectionId, 'connectionId');
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -432,6 +673,7 @@ export class MselBuildService extends BaseService {
         return this.httpClient.request<ArticleDraftResult>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
+                params: localVarQueryParameters,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
@@ -443,23 +685,24 @@ export class MselBuildService extends BaseService {
     }
 
     /**
-     * Save a written Gallery article again, with its graphics as PNG
+     * Write a MSEL\&#39;s injects with AI
+     * The injects, CITE tasks and questions, and read-in, written to the MSEL\&#39;s design and saved.
      * @param id 
-     * @param scenarioEventId 
-     * @param mselBuildContent 
+     * @param connectionId 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public saveMselArticle(id: string, scenarioEventId: string, mselBuildContent?: MselBuildContent, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any>;
-    public saveMselArticle(id: string, scenarioEventId: string, mselBuildContent?: MselBuildContent, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<any>>;
-    public saveMselArticle(id: string, scenarioEventId: string, mselBuildContent?: MselBuildContent, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<any>>;
-    public saveMselArticle(id: string, scenarioEventId: string, mselBuildContent?: MselBuildContent, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public writeMselInjects(id: string, connectionId?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<MselBuildStatus>;
+    public writeMselInjects(id: string, connectionId?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<MselBuildStatus>>;
+    public writeMselInjects(id: string, connectionId?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<MselBuildStatus>>;
+    public writeMselInjects(id: string, connectionId?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (id === null || id === undefined) {
-            throw new Error('Required parameter id was null or undefined when calling saveMselArticle.');
+            throw new Error('Required parameter id was null or undefined when calling writeMselInjects.');
         }
-        if (scenarioEventId === null || scenarioEventId === undefined) {
-            throw new Error('Required parameter scenarioEventId was null or undefined when calling saveMselArticle.');
-        }
+
+        let localVarQueryParameters = new HttpParams({encoder: this.encoder});
+        localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
+          <any>connectionId, 'connectionId');
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -480,17 +723,6 @@ export class MselBuildService extends BaseService {
         const localVarTransferCache: boolean = options?.transferCache ?? true;
 
 
-        // to determine the Content-Type header
-        const consumes: string[] = [
-            'application/json',
-            'text/json',
-            'application/*+json'
-        ];
-        const httpContentTypeSelected: string | undefined = this.configuration.selectHeaderContentType(consumes);
-        if (httpContentTypeSelected !== undefined) {
-            localVarHeaders = localVarHeaders.set('Content-Type', httpContentTypeSelected);
-        }
-
         let responseType_: 'text' | 'json' | 'blob' = 'json';
         if (localVarHttpHeaderAcceptSelected) {
             if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
@@ -502,12 +734,12 @@ export class MselBuildService extends BaseService {
             }
         }
 
-        let localVarPath = `/api/msels/${this.configuration.encodeParam({name: "id", value: id, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: "uuid"})}/ai-draft/articles/${this.configuration.encodeParam({name: "scenarioEventId", value: scenarioEventId, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: "uuid"})}`;
+        let localVarPath = `/api/msels/${this.configuration.encodeParam({name: "id", value: id, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: "uuid"})}/ai-draft/injects`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<any>('put', `${basePath}${localVarPath}`,
+        return this.httpClient.request<MselBuildStatus>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: mselBuildContent,
+                params: localVarQueryParameters,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
@@ -519,22 +751,27 @@ export class MselBuildService extends BaseService {
     }
 
     /**
-     * Write a drafted team\'s or organization\'s profile with AI
+     * Write a drafted team\&#39;s or organization\&#39;s profile with AI
      * @param id 
      * @param ownerId 
+     * @param connectionId 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public writeMselProfile(id: string, ownerId: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<ProfileDraftResult>;
-    public writeMselProfile(id: string, ownerId: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<ProfileDraftResult>>;
-    public writeMselProfile(id: string, ownerId: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<ProfileDraftResult>>;
-    public writeMselProfile(id: string, ownerId: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public writeMselProfile(id: string, ownerId: string, connectionId?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<ProfileDraftResult>;
+    public writeMselProfile(id: string, ownerId: string, connectionId?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<ProfileDraftResult>>;
+    public writeMselProfile(id: string, ownerId: string, connectionId?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<ProfileDraftResult>>;
+    public writeMselProfile(id: string, ownerId: string, connectionId?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (id === null || id === undefined) {
             throw new Error('Required parameter id was null or undefined when calling writeMselProfile.');
         }
         if (ownerId === null || ownerId === undefined) {
             throw new Error('Required parameter ownerId was null or undefined when calling writeMselProfile.');
         }
+
+        let localVarQueryParameters = new HttpParams({encoder: this.encoder});
+        localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
+          <any>connectionId, 'connectionId');
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -571,6 +808,7 @@ export class MselBuildService extends BaseService {
         return this.httpClient.request<ProfileDraftResult>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
+                params: localVarQueryParameters,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
@@ -582,95 +820,28 @@ export class MselBuildService extends BaseService {
     }
 
     /**
-     * Save a written profile again, with its logo as PNG
+     * Write the long text of one of a MSEL\&#39;s drafted injects with AI
+     * The injects are outlined first; each one\&#39;s document, message or description is then written and saved on its own.
      * @param id 
-     * @param ownerId 
-     * @param mselBuildContent 
+     * @param scenarioEventId 
+     * @param connectionId 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public saveMselProfile(id: string, ownerId: string, mselBuildContent?: MselBuildContent, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any>;
-    public saveMselProfile(id: string, ownerId: string, mselBuildContent?: MselBuildContent, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<any>>;
-    public saveMselProfile(id: string, ownerId: string, mselBuildContent?: MselBuildContent, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<any>>;
-    public saveMselProfile(id: string, ownerId: string, mselBuildContent?: MselBuildContent, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public writeMselRow(id: string, scenarioEventId: string, connectionId?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<MselBuildContent>;
+    public writeMselRow(id: string, scenarioEventId: string, connectionId?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<MselBuildContent>>;
+    public writeMselRow(id: string, scenarioEventId: string, connectionId?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<MselBuildContent>>;
+    public writeMselRow(id: string, scenarioEventId: string, connectionId?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (id === null || id === undefined) {
-            throw new Error('Required parameter id was null or undefined when calling saveMselProfile.');
+            throw new Error('Required parameter id was null or undefined when calling writeMselRow.');
         }
-        if (ownerId === null || ownerId === undefined) {
-            throw new Error('Required parameter ownerId was null or undefined when calling saveMselProfile.');
-        }
-
-        let localVarHeaders = this.defaultHeaders;
-
-        // authentication (oauth2) required
-        localVarHeaders = this.configuration.addCredentialToHeaders('oauth2', 'Authorization', localVarHeaders, 'Bearer ');
-
-        const localVarHttpHeaderAcceptSelected: string | undefined = options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept([
-            'text/plain',
-            'application/json',
-            'text/json'
-        ]);
-        if (localVarHttpHeaderAcceptSelected !== undefined) {
-            localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
+        if (scenarioEventId === null || scenarioEventId === undefined) {
+            throw new Error('Required parameter scenarioEventId was null or undefined when calling writeMselRow.');
         }
 
-        const localVarHttpContext: HttpContext = options?.context ?? new HttpContext();
-
-        const localVarTransferCache: boolean = options?.transferCache ?? true;
-
-
-        // to determine the Content-Type header
-        const consumes: string[] = [
-            'application/json',
-            'text/json',
-            'application/*+json'
-        ];
-        const httpContentTypeSelected: string | undefined = this.configuration.selectHeaderContentType(consumes);
-        if (httpContentTypeSelected !== undefined) {
-            localVarHeaders = localVarHeaders.set('Content-Type', httpContentTypeSelected);
-        }
-
-        let responseType_: 'text' | 'json' | 'blob' = 'json';
-        if (localVarHttpHeaderAcceptSelected) {
-            if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
-                responseType_ = 'text';
-            } else if (this.configuration.isJsonMime(localVarHttpHeaderAcceptSelected)) {
-                responseType_ = 'json';
-            } else {
-                responseType_ = 'blob';
-            }
-        }
-
-        let localVarPath = `/api/msels/${this.configuration.encodeParam({name: "id", value: id, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: "uuid"})}/ai-draft/profiles/${this.configuration.encodeParam({name: "ownerId", value: ownerId, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: "uuid"})}`;
-        const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<any>('put', `${basePath}${localVarPath}`,
-            {
-                context: localVarHttpContext,
-                body: mselBuildContent,
-                responseType: <any>responseType_,
-                ...(withCredentials ? { withCredentials } : {}),
-                headers: localVarHeaders,
-                observe: observe,
-                transferCache: localVarTransferCache,
-                reportProgress: reportProgress
-            }
-        );
-    }
-
-    /**
-     * Finish building a MSEL with AI
-     * The overview, facilitator and profile pages, the Player applications, and CITE.
-     * @param id 
-     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
-     * @param reportProgress flag to report request and response progress.
-     */
-    public finishMselBuild(id: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<MselBuildStatus>;
-    public finishMselBuild(id: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<MselBuildStatus>>;
-    public finishMselBuild(id: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<MselBuildStatus>>;
-    public finishMselBuild(id: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
-        if (id === null || id === undefined) {
-            throw new Error('Required parameter id was null or undefined when calling finishMselBuild.');
-        }
+        let localVarQueryParameters = new HttpParams({encoder: this.encoder});
+        localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
+          <any>connectionId, 'connectionId');
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -702,11 +873,12 @@ export class MselBuildService extends BaseService {
             }
         }
 
-        let localVarPath = `/api/msels/${this.configuration.encodeParam({name: "id", value: id, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: "uuid"})}/ai-draft/finish`;
+        let localVarPath = `/api/msels/${this.configuration.encodeParam({name: "id", value: id, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: "uuid"})}/ai-draft/rows/${this.configuration.encodeParam({name: "scenarioEventId", value: scenarioEventId, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: "uuid"})}`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<MselBuildStatus>('post', `${basePath}${localVarPath}`,
+        return this.httpClient.request<MselBuildContent>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
+                params: localVarQueryParameters,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
@@ -716,4 +888,5 @@ export class MselBuildService extends BaseService {
             }
         );
     }
+
 }

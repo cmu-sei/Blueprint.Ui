@@ -74,6 +74,18 @@ export interface AiDraftProgress {
   done: boolean;
 }
 
+// who is building a MSEL with AI in a browser tab, sent to every tab on the MSEL when it changes; null when no tab is
+export interface AiBuilderChange {
+  mselId: string;
+  builder?: { userId: string; userName?: string } | null;
+}
+
+// sent to the tab that was building a MSEL when another tab takes the build over
+export interface AiBuildTakenOver {
+  mselId: string;
+  userName?: string;
+}
+
 export enum ApplicationArea {
   home = '',
   admin = 'Admin',
@@ -118,6 +130,13 @@ export class SignalRService implements OnDestroy {
   private presenceColorMap = ['primary', 'accent', 'green', 'orange', 'purple'];
   actors$ = new BehaviorSubject<PresenceActor[]>([]);
   aiDraftProgress$ = new Subject<AiDraftProgress>();
+  aiBuilderChanged$ = new Subject<AiBuilderChange>();
+  aiBuildTakenOver$ = new Subject<AiBuildTakenOver>();
+
+  // this tab's hub connection, which the API knows the tab building a MSEL by; undefined until it is connected
+  get connectionId(): string | undefined {
+    return this.hubConnection?.connectionId ?? undefined;
+  }
 
   constructor() {
     this.authService.user$.pipe(takeUntil(this.unsubscribe$)).subscribe(() => {
@@ -441,6 +460,14 @@ export class SignalRService implements OnDestroy {
 
     this.hubConnection.on('AiDraftProgress', (progress: AiDraftProgress) => {
       this.aiDraftProgress$.next(progress);
+    });
+
+    this.hubConnection.on('AiBuilderChanged', (change: AiBuilderChange) => {
+      this.aiBuilderChanged$.next(change);
+    });
+
+    this.hubConnection.on('AiBuildTakenOver', (takenOver: AiBuildTakenOver) => {
+      this.aiBuildTakenOver$.next(takenOver);
     });
 
   }

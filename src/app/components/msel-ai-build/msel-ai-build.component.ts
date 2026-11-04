@@ -11,7 +11,8 @@ import { MatIcon } from '@angular/material/icon';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { MselAiBuild, MselAiBuildService } from 'src/app/data/msel/msel-ai-build.service';
-import { MselBuildService, MselBuildStatus } from 'src/app/generated/blueprint.api';
+import { MselBuildBuilder, MselBuildService, MselBuildStatus } from 'src/app/generated/blueprint.api';
+import { CurrentUserQuery } from 'src/app/data/user/user.query';
 
 /**
  * A MSEL being drafted with AI: what is being written now, how long it has run, and Cancel; or, when a build
@@ -28,6 +29,7 @@ export class MselAiBuildComponent {
   private api = inject(MselBuildService);
   private dialogService = inject(CrucibleDialogService);
   private destroyRef = inject(DestroyRef);
+  private currentUserQuery = inject(CurrentUserQuery);
 
   readonly mselId = input.required<string>();
   readonly mselName = input<string>('');
@@ -40,6 +42,10 @@ export class MselAiBuildComponent {
   // what is left of a build that was not run in this tab, from the API
   readonly saved = signal<MselBuildStatus | undefined>(undefined);
   private readonly now = signal(Date.now());
+  // who is building the MSEL in a browser tab, this one or another
+  readonly builder = signal<MselBuildBuilder | null>(null);
+  // another tab has the build, so this one offers Take over rather than Continue drafting
+  readonly buildingElsewhere = computed(() => !!this.builder() && !this.build()?.running);
 
   readonly visible = computed(() => !!this.build() || !!this.stage());
   readonly remaining = computed(() => this.build()?.remaining ?? this.saved());
@@ -62,6 +68,12 @@ export class MselAiBuildComponent {
         takeUntilDestroyed()
       )
       .subscribe((build) => this.build.set(build));
+    toObservable(this.mselId)
+      .pipe(
+        switchMap((id) => this.buildService.builder$(id)),
+        takeUntilDestroyed()
+      )
+      .subscribe((builder) => this.builder.set(builder));
     // the clock ticks only while a run is writing, so an idle page has nothing pending
     toObservable(this.build)
       .pipe(
@@ -84,6 +96,8 @@ export class MselAiBuildComponent {
     switch (this.build()?.step) {
       case 'creating':
         return 'Creating the MSEL';
+      case 'claiming':
+        return 'Starting';
       case 'injects':
         return 'Outlining the injects, CITE tasks and read-in';
       case 'articles':
@@ -118,6 +132,13 @@ export class MselAiBuildComponent {
     return '';
   }
 
+  get elsewhereText(): string {
+    const builder = this.builder();
+    return builder?.userId && builder.userId === this.currentUserQuery.getValue()?.id
+      ? 'You are building this MSEL with AI in another tab.'
+      : `${builder?.userName || 'Someone else'} is building this MSEL with AI.`;
+  }
+
   get stoppedText(): string {
     const stage = this.remaining()?.stage ?? this.stage();
     if (stage === 'Injects') {
@@ -134,6 +155,11 @@ export class MselAiBuildComponent {
 
   continue() {
     this.buildService.run(this.mselId());
+  }
+
+  // builds here, and the tab that has the build stops; what it wrote is kept
+  takeOver() {
+    this.buildService.run(this.mselId(), true);
   }
 
   finishNow() {
@@ -175,7 +201,10 @@ export class MselAiBuildComponent {
         catchError(() => of(undefined)),
         takeUntilDestroyed(this.destroyRef)
       )
-      .subscribe((status) => this.saved.set(status));
+      .subscribe((status) => {
+        this.saved.set(status);
+        this.buildService.noteBuilder(this.mselId(), status?.builder);
+      });
   }
 }
 

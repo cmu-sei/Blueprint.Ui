@@ -126,6 +126,7 @@ export * from './mselAssistRequest';
 export * from './mselAssistResult';
 export * from './mselChange';
 export * from './mselChangeResult';
+export * from './mselBuildBuilder';
 export * from './mselBuildContent';
 export * from './mselBuildItem';
 export * from './mselBuildStatus';
