@@ -824,32 +824,24 @@ describe('MselInfoComponent', () => {
     });
 
     /**
-     * Verifies: Generate Image opens the picture dialog, and its answer asks the API for a picture with the planner's words; the
-     * result shows as the preview with Regenerate Image, and the preview opens the dialog with the image.
-     * Interacts with: MselImageService.generateMselImage (stub), MselImageService.getMselImage (stub), the harness's empty MatDialog given an open stub.
-     * Data: MSEL role Owner; no image, then the generated one; the dialog answers "the plant at night".
+     * Verifies: Generate Image opens the picture dialog for the MSEL, which makes, shows and saves a new picture itself, so the
+     * Info page asks the API for nothing; the preview opens the same dialog with the picture.
+     * Interacts with: the harness's empty MatDialog given an open stub, MselImageService.generateMselImage (not called).
+     * Data: MSEL role Owner; no image, then the one the store has.
      */
-    it('asks for an image through the picture dialog and shows it', async () => {
+    it('opens the picture dialog for the MSEL', async () => {
       const { fixture, imageApi } = await renderInfo({ myRoles: [MselRole.Owner] });
       // the harness gives the component an empty MatDialog, so the real dialog, its focus trap and its animations stay out of the test
       const info = fixture.componentInstance as unknown as { dialog: Pick<MatDialog, 'open'> };
-      let answer: { prompt: string } | undefined = { prompt: 'the plant at night' };
-      const open = vi.fn(() => ({ afterClosed: () => of(answer) }) as unknown as ReturnType<MatDialog['open']>);
+      const open = vi.fn(() => ({ afterClosed: () => of(undefined) }) as unknown as ReturnType<MatDialog['open']>);
       info.dialog.open = open;
       const user = userEvent.setup();
 
       await user.click(screen.getByRole('button', { name: 'Generate Image' }));
       fixture.detectChanges();
 
-      expect(open).toHaveBeenCalledWith(MselImageDialogComponent, expect.objectContaining({ data: { url: null, name: 'Exercise Alpha', canGenerate: true } }));
-      expect(imageApi.generateMselImage.mock.calls).toEqual([['msel-1', { prompt: 'the plant at night' }]]);
-      expect(screen.getByRole('button', { name: 'Regenerate Image' })).toBeInTheDocument();
-
-      // the preview opens the same dialog with the picture; closing it without an answer asks for nothing
-      answer = undefined;
-      await user.click(screen.getByRole('button', { name: 'Card image for Exercise Alpha' }));
-      expect(open).toHaveBeenLastCalledWith(MselImageDialogComponent, expect.objectContaining({ data: { url: 'blob:card', name: 'Exercise Alpha', canGenerate: true } }));
-      expect(imageApi.generateMselImage).toHaveBeenCalledTimes(1);
+      expect(open).toHaveBeenCalledWith(MselImageDialogComponent, expect.objectContaining({ data: { mselId: 'msel-1', url: null, name: 'Exercise Alpha', canGenerate: true } }));
+      expect(imageApi.generateMselImage).not.toHaveBeenCalled();
     });
 
     /**

@@ -570,26 +570,9 @@ export class MselInfoComponent implements OnDestroy, OnInit {
 
   // the image at full size, since the card preview is small, and the way to ask for a new one
   viewMselImage() {
-    const data: MselImageDialogData = { url: this.mselImageUrl, name: this.msel.name, canGenerate: this.canSetMselImage() };
-    this.dialog
-      .open<MselImageDialogComponent, MselImageDialogData, MselImageDialogResult>(MselImageDialogComponent, { data, maxWidth: '95vw' })
-      .afterClosed()
-      .subscribe((result) => {
-        if (result) {
-          this.generateMselImage(result.prompt);
-        }
-      });
-  }
-
-  generateMselImage(prompt: string) {
-    this.isImageBusy = true;
-    this.mselImageDataService.generateImage(this.msel.id, prompt).subscribe({
-      next: () => (this.isImageBusy = false),
-      error: (err) => {
-        this.isImageBusy = false;
-        this.errorService.handleError(err);
-      },
-    });
+    const data: MselImageDialogData = { mselId: this.msel.id, url: this.mselImageUrl, name: this.msel.name, canGenerate: this.canSetMselImage() };
+    // the dialog makes, shows and saves a new picture itself; a kept one reaches the card through the MSEL's store
+    this.dialog.open<MselImageDialogComponent, MselImageDialogData, MselImageDialogResult>(MselImageDialogComponent, { data, maxWidth: '95vw' });
   }
 
   removeMselImage() {

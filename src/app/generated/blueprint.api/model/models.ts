@@ -232,6 +232,7 @@ export * from './unitUser';
 export * from './user';
 export * from './userMselRole';
 export * from './userTeamRole';
+export * from './mselImagePreview';
 export * from './mselImageRequest';
 export * from './pageDraftRequest';
 export * from './pageDraftResult';

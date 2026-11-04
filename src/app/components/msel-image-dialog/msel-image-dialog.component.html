@@ -5,23 +5,51 @@ Released under a MIT (SEI)-style license. See LICENSE.md in the project root for
 
 <crucible-dialog [dialogTitle]="data.name" [hideDefaultActions]="true">
   <ng-container crucibleDialogContent>
-    @if (data.url) {
-    <img class="full-image" [src]="data.url" alt="Card image for {{ data.name }}" />
-    } @else {
-    <p class="no-image">No image yet. The picture is made from the MSEL's scenario.</p>
+    <div class="pictures" [class.compare]="!!proposed()">
+      <figure>
+        @if (proposed()) {
+        <figcaption>Current</figcaption>
+        }
+        @if (data.url) {
+        <img class="full-image" [src]="data.url" alt="Card image for {{ data.name }}" />
+        } @else {
+        <p class="no-image">No image yet. The picture is made from the MSEL's scenario.</p>
+        }
+      </figure>
+      @if (proposed(); as image) {
+      <figure>
+        <figcaption>New</figcaption>
+        <img class="full-image" [src]="image" alt="New card image for {{ data.name }}" />
+      </figure>
+      }
+    </div>
+    @if (busy() === 'making') {
+    <div class="busy" role="status">
+      <mat-spinner diameter="28"></mat-spinner>
+      <span>Making the picture. This takes a few seconds.</span>
+    </div>
+    }
+    @if (error()) {
+    <p class="error" role="alert">{{ error() }}</p>
     }
     @if (data.canGenerate) {
     <mat-form-field class="full-width">
       <mat-label>What should the picture show or change?</mat-label>
-      <textarea matInput rows="2" [(ngModel)]="prompt" placeholder="e.g. the control room at night, no people, rain on the windows"></textarea>
-      <mat-hint>Optional. Left empty, the picture is made again from the scenario, and may come out much the same.</mat-hint>
+      <textarea matInput rows="2" [(ngModel)]="prompt" [disabled]="!!busy()" placeholder="e.g. the control room at night, no people, rain on the windows"></textarea>
+      <mat-hint>Optional. Left empty, the picture is made again from the scenario, and may come out much the same. Nothing is saved until you use it.</mat-hint>
     </mat-form-field>
     }
   </ng-container>
   <ng-container crucibleDialogActions>
-    <button matButton="outlined" type="button" (click)="close()">Close</button>
+    @if (proposed()) {
+    <button matButton="outlined" type="button" (click)="discard()" [disabled]="!!busy()">Discard</button>
+    <button matButton="outlined" type="button" (click)="generate()" [disabled]="!!busy()">Try again</button>
+    <button matButton="filled" type="button" (click)="use()" [disabled]="!!busy()">Use this</button>
+    } @else {
+    <button matButton="outlined" type="button" (click)="close()" [disabled]="!!busy()">Close</button>
     @if (data.canGenerate) {
-    <button matButton="filled" type="button" (click)="generate()">{{ data.url ? 'Regenerate' : 'Generate' }}</button>
+    <button matButton="filled" type="button" (click)="generate()" [disabled]="!!busy()">{{ data.url ? 'Regenerate' : 'Generate' }}</button>
+    }
     }
   </ng-container>
 </crucible-dialog>

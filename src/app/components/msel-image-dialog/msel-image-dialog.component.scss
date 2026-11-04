@@ -2,11 +2,46 @@
   display: block;
   max-width: 100%;
   max-height: 70vh;
-  margin: 0 auto 1rem;
+  margin: 0 auto;
+}
+
+// the current and the new picture side by side, each half the dialog
+.pictures {
+  margin-bottom: 1rem;
+
+  &.compare {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+    gap: 1rem;
+
+    .full-image {
+      max-height: 50vh;
+    }
+  }
+
+  figure {
+    margin: 0;
+  }
+
+  figcaption {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
 }
 
 .no-image {
   color: var(--mat-sys-on-surface-variant);
+}
+
+.busy {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.error {
+  color: var(--mat-sys-error);
 }
 
 .full-width {

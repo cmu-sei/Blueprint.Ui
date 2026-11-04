@@ -4,7 +4,7 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { catchError, map, shareReplay, take, tap } from 'rxjs/operators';
-import { Msel, MselImageService } from 'src/app/generated/blueprint.api';
+import { Msel, MselImagePreview, MselImageService } from 'src/app/generated/blueprint.api';
 import { MselDataService } from './msel-data.service';
 
 // The image endpoint needs the bearer token, so an <img src> can't load it.
@@ -59,6 +59,20 @@ export class MselImageDataService implements OnDestroy {
         this.updateStore(msel);
       })
     );
+  }
+
+  // a new picture made the same way, but not saved, so the planner sees it before keeping it
+  previewImage(mselId: string, prompt?: string): Observable<MselImagePreview> {
+    return this.mselImageService.previewMselImage(mselId, { prompt: prompt || null }).pipe(take(1));
+  }
+
+  // a previewed picture kept: saved as an upload is, so it passes the same checks
+  saveImage(mselId: string, dataUri: string): Observable<Msel> {
+    const [head, base64] = dataUri.split(',', 2);
+    const type = /data:([^;]+)/.exec(head)?.[1] ?? 'image/png';
+    const bytes = Uint8Array.from(atob(base64 ?? ''), (c) => c.charCodeAt(0));
+    const file = new File([bytes], `msel-image.${type.split('/')[1] ?? 'png'}`, { type });
+    return this.setImage(mselId, file).pipe(tap(() => this.revoke(mselId)));
   }
 
   deleteImage(mselId: string): Observable<Msel> {
