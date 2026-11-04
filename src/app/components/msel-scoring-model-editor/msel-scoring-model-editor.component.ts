@@ -7,7 +7,7 @@ import { FormsModule } from '@angular/forms';
 import { MatIconButton, MatButton } from '@angular/material/button';
 import { MatCheckbox } from '@angular/material/checkbox';
 import { MatIcon } from '@angular/material/icon';
-import { MatFormField, MatHint, MatInput, MatLabel } from '@angular/material/input';
+import { MatError, MatFormField, MatHint, MatInput, MatLabel } from '@angular/material/input';
 import { MatOption, MatSelect } from '@angular/material/select';
 import { MatTooltip } from '@angular/material/tooltip';
 import {
@@ -16,7 +16,7 @@ import {
   MselScoringCategory,
   MselScoringModel,
 } from 'src/app/generated/blueprint.api';
-import { RIGHT_SIDE_DISPLAYS, categoriesForMove, isQuestionCategory, moveRangeLabel } from 'src/app/utilities/scoring-model';
+import { RIGHT_SIDE_DISPLAYS, categoriesForMove, fillHiddenNumbers, isQuestionCategory, moveRangeLabel } from 'src/app/utilities/scoring-model';
 
 export interface ScoringModelMove {
   moveNumber: number;
@@ -32,7 +32,7 @@ export interface ScoringModelMove {
   selector: 'app-msel-scoring-model-editor',
   templateUrl: './msel-scoring-model-editor.component.html',
   styleUrls: ['./msel-scoring-model-editor.component.scss'],
-  imports: [FormsModule, MatFormField, MatLabel, MatInput, MatHint, MatSelect, MatOption, MatCheckbox, MatButton, MatIconButton, MatIcon, MatTooltip],
+  imports: [FormsModule, MatFormField, MatLabel, MatInput, MatHint, MatError, MatSelect, MatOption, MatCheckbox, MatButton, MatIconButton, MatIcon, MatTooltip],
 })
 export class MselScoringModelEditorComponent {
   readonly model = input.required<MselScoringModel>();
@@ -51,6 +51,8 @@ export class MselScoringModelEditorComponent {
   previewMoveNumber = 0;
 
   isQuestionCategory = isQuestionCategory;
+  // a category made a question set keeps the weight and values it no longer shows
+  fillHiddenNumbers = fillHiddenNumbers;
 
   constructor() {
     // another model previews from its first move

@@ -125,6 +125,42 @@ describe('MselScoringModelEditorComponent', () => {
   });
 
   /**
+   * Verifies: a scored category's weight is required, and saying so takes the place of the cleared number.
+   * Interacts with: the Calculation Weight field's required validator and mat-error.
+   * Data: IMPACT, its weight cleared.
+   */
+  it('requires a weight', async () => {
+    const { fixture, working } = await renderEditor({ model: IMPACT });
+    const user = userEvent.setup();
+
+    await user.clear(within(category(1)).getByLabelText(/Calculation Weight/));
+    await user.tab();
+    fixture.detectChanges();
+
+    expect(working.categories[0].scoringWeight).toBeNull();
+    expect(within(category(1)).getByText('A weight is required.')).toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: a category made a question set, which hides its weight and values, keeps a weight of 1 for the one it lost, and the values it had.
+   * Interacts with: the Scoring Option Selection Type select (MatSelectHarness), fillHiddenNumbers.
+   * Data: IMPACT, its weight cleared, then made None.
+   */
+  it('keeps a weight when a category becomes a question set', async () => {
+    const { fixture, working } = await renderEditor({ model: IMPACT });
+    const user = userEvent.setup();
+
+    await user.clear(within(category(1)).getByLabelText(/Calculation Weight/));
+    const selection = await TestbedHarnessEnvironment.loader(fixture).getHarness(MatSelectHarness.with({ ancestor: '.selection-field' }));
+    await selection.open();
+    await selection.clickOptions({ text: 'None' });
+
+    expect(working.categories[0].scoringOptionSelection).toBe(CiteScoringOptionSelection.None);
+    expect(working.categories[0].scoringWeight).toBe(1);
+    expect(working.categories[0].options.map((o) => o.value)).toEqual([1, 5]);
+  });
+
+  /**
    * Verifies: the editor changes the model it was given, in place: a question added and the categories reordered.
    * Interacts with: Add Question, Move Category Down, the model input.
    * Data: QUESTIONS; a question added to the after-action review, which is then moved first.

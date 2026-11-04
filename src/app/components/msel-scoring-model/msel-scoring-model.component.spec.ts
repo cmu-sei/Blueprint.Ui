@@ -23,6 +23,7 @@ import { ApiStub } from 'src/app/test-utils/api-stub';
 import { dialogRefStub } from 'src/app/test-utils/dialog-refs';
 import { recordEmissions } from 'src/app/test-utils/record-emissions';
 import { renderComponent } from 'src/app/test-utils/render-component';
+import { CITE_ACCESS_DENIED } from 'src/app/utilities/cite-access';
 import { MselScoringModelComponent } from './msel-scoring-model.component';
 
 const n = (value: number) => `${value}` as unknown as number;
@@ -32,10 +33,10 @@ const AUTHORED: MselScoringModel = {
   displayScoringModelByMoveNumber: true,
   categories: [
     {
-      id: 'cat-1', displayOrder: 1, description: 'Move 1', moveNumberFirstDisplay: 1, moveNumberLastDisplay: 1,
+      id: 'cat-1', displayOrder: 1, description: 'Move 1', moveNumberFirstDisplay: 1, moveNumberLastDisplay: 1, scoringWeight: 1,
       scoringOptionSelection: CiteScoringOptionSelection.None, options: [{ id: 'opt-1', displayOrder: 1, description: 'Who calls?', value: 1 }],
     },
-    { id: 'cat-2', displayOrder: 2, description: 'Move 2', moveNumberFirstDisplay: 2, moveNumberLastDisplay: 2, scoringOptionSelection: CiteScoringOptionSelection.None, options: [] },
+    { id: 'cat-2', displayOrder: 2, description: 'Move 2', moveNumberFirstDisplay: 2, moveNumberLastDisplay: 2, scoringWeight: 1, scoringOptionSelection: CiteScoringOptionSelection.None, options: [] },
   ],
 };
 // as the API answers it, every int a string
@@ -170,6 +171,42 @@ describe('MselScoringModelComponent', () => {
     await userEvent.setup().click(screen.getByRole('button', { name: 'Create Scoring Model' }));
 
     expect(scoringModelApi.copyMselScoringModelFromCite).toHaveBeenCalledWith('msel-1', 'cite-1');
+  });
+
+  /**
+   * Verifies: when CITE will not let the user read the model to copy, a dialog gives the API's reason instead of the error report, and nothing is created.
+   * Interacts with: MselScoringModelService.copyMselScoringModelFromCite (stub, 403 with the CITE access denied problem type), CrucibleDialogService.confirm (stub), ErrorService.handleError (stub).
+   * Data: no authored model; the CITE model cite-1, which CITE shows the user only as a participant.
+   */
+  it('explains in a dialog when CITE refuses the copy', async () => {
+    const { fixture, scoringModelApi, confirm, errorService, changes } = await renderScoringModel();
+    const reason = 'You can view the CITE scoring model "Project Lagoon Questions by Move" only as a participant, without its equations and weights.';
+    scoringModelApi.copyMselScoringModelFromCite.mockReturnValueOnce(
+      throwError(() => new HttpErrorResponse({ status: 403, error: { type: CITE_ACCESS_DENIED, title: reason } })));
+
+    await startFrom(fixture, 'Project Lagoon Questions by Move');
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Create Scoring Model' }));
+
+    expect(confirm).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ title: 'CITE Access Denied', message: reason, cancelText: 'OK' }));
+    expect(errorService.handleError).not.toHaveBeenCalled();
+    expect(changes).toEqual([]);
+  });
+
+  /**
+   * Verifies: a 403 that is Blueprint's own, with no CITE problem type, goes to the error report as before.
+   * Interacts with: MselScoringModelService.copyMselScoringModelFromCite (stub, plain 403), CrucibleDialogService.confirm (stub), ErrorService.handleError (stub).
+   * Data: no authored model; the CITE model cite-1.
+   */
+  it('reports a refusal of Blueprint\'s own as any other error', async () => {
+    const { fixture, scoringModelApi, confirm, errorService } = await renderScoringModel();
+    scoringModelApi.copyMselScoringModelFromCite.mockReturnValueOnce(
+      throwError(() => new HttpErrorResponse({ status: 403, error: { title: 'Insufficient Permissions' } })));
+
+    await startFrom(fixture, 'Project Lagoon Questions by Move');
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Create Scoring Model' }));
+
+    expect(confirm).not.toHaveBeenCalled();
+    expect(errorService.handleError).toHaveBeenCalled();
   });
 
   /**

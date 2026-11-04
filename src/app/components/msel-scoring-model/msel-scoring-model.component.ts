@@ -20,6 +20,7 @@ import {
 } from 'src/app/generated/blueprint.api';
 import { MoveQuery } from 'src/app/data/move/move.query';
 import { ErrorService } from 'src/app/services/error/error.service';
+import { showCiteAccessDenied } from 'src/app/utilities/cite-access';
 import {
   SCORING_MODEL_PRESETS,
   categoriesWithoutOptions,
@@ -160,9 +161,12 @@ export class MselScoringModelComponent {
         this.startFrom = '';
         this.took(model);
       },
-      error: (err) => {
+      error: (err: HttpErrorResponse) => {
         this.isBusy = false;
-        this.errorService.handleError(err);
+        // CITE may refuse the copy: the model is not the user's to read, or only as a participant
+        if (!showCiteAccessDenied(this.dialogService, err)) {
+          this.errorService.handleError(err);
+        }
       },
     });
   }

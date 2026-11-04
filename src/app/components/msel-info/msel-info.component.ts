@@ -160,11 +160,6 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     MselItemStatus.Complete,
     MselItemStatus.Archived,
   ];
-  private pipelineStatuses: MselItemStatus[] = [
-    MselItemStatus.Pushing,
-    MselItemStatus.Pulling,
-    MselItemStatus.Deployed,
-  ];
   // Steamfitter runs no task until its scenario is started
   readonly steamfitterStartModes: { value: SteamfitterScenarioStartMode; label: string }[] = [
     { value: SteamfitterScenarioStartMode.Manual, label: 'Manually' },
@@ -584,12 +579,6 @@ export class MselInfoComponent implements OnDestroy, OnInit {
           this.changeDetectorRef.markForCheck();
         }
       });
-  }
-
-  // the scoring model the MSEL authors follows the API's rule for the MSEL's scoring model link: EditMsels or the owner
-  canAuthorScoringModel(): boolean {
-    return this.permissionDataService.hasPermission(SystemPermission.EditMsels) ||
-      this.msel.hasRole(this.loggedInUserId(), '').owner;
   }
 
   canManageMsel(): boolean {

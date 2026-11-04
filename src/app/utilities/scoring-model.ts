@@ -97,20 +97,46 @@ export function scoringModelCounts(model: MselScoringModel): string {
   return `${categories.length} ${categories.length === 1 ? 'category' : 'categories'}, ${options} ${options === 1 ? 'option' : 'options'}`;
 }
 
-/** Whether the API would accept the model: a description, a move range for each category, and a number wherever one is scored. */
+/** Whether a number field holds a number: a cleared number input gives null, or an empty string. */
+export function hasNumber(n: number): boolean {
+  return n !== null && n !== undefined && `${n}` !== '' && Number.isFinite(+n);
+}
+
+/**
+ * Whether the API would accept the model: a description, a move range for each category, a weight for each
+ * category and a value for each option. The API's weights and values are numbers that cannot be left out, so a
+ * question set, which hides them, still carries them.
+ */
 export function isScoringModelValid(model: MselScoringModel): boolean {
-  const isNumber = (n: number) => n !== null && n !== undefined && `${n}` !== '' && Number.isFinite(+n);
   return (
     !!model?.description?.trim() &&
     (model.categories || []).every(
       (c) =>
-        isNumber(c.moveNumberFirstDisplay) &&
-        isNumber(c.moveNumberLastDisplay) &&
+        hasNumber(c.moveNumberFirstDisplay) &&
+        hasNumber(c.moveNumberLastDisplay) &&
         +c.moveNumberFirstDisplay <= +c.moveNumberLastDisplay &&
-        (isQuestionCategory(c) || isNumber(c.scoringWeight)) &&
-        (c.options || []).every((o) => isQuestionCategory(c) || isNumber(o.value)),
+        hasNumber(c.scoringWeight) &&
+        (c.options || []).every((o) => hasNumber(o.value)),
     )
   );
+}
+
+/**
+ * A question set hides its weight and its options' values, so a category becoming one keeps a number in each: a
+ * missing weight counts once, as a new category does, and a missing value is a question's 1.
+ */
+export function fillHiddenNumbers(category: MselScoringCategory): void {
+  if (!isQuestionCategory(category)) {
+    return;
+  }
+  if (!hasNumber(category.scoringWeight)) {
+    category.scoringWeight = 1;
+  }
+  for (const option of category.options || []) {
+    if (!hasNumber(option.value)) {
+      option.value = 1;
+    }
+  }
 }
 
 /** "Every move", "Move 2" or "Moves 1 to 3", for a category's move range. */

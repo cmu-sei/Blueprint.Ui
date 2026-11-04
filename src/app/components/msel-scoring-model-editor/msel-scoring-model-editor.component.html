@@ -99,7 +99,7 @@ project root for license information.
         <div class="category-row">
           <mat-form-field class="selection-field">
             <mat-label>Scoring Option Selection Type</mat-label>
-            <mat-select [(ngModel)]="category.scoringOptionSelection" [disabled]="!canEdit()"
+            <mat-select [(ngModel)]="category.scoringOptionSelection" [disabled]="!canEdit()" (selectionChange)="fillHiddenNumbers(category)"
               matTooltip="Single lets a participant pick one option, Multiple several, and None makes the options questions answered in comments.">
               @for (selection of selections; track selection.value) {
               <mat-option [value]="selection.value">{{ selection.label }}</mat-option>
@@ -129,7 +129,8 @@ project root for license information.
           </mat-form-field>
           <mat-form-field class="weight-field">
             <mat-label>Calculation Weight</mat-label>
-            <input matInput type="number" [(ngModel)]="category.scoringWeight" [disabled]="!canEdit()" />
+            <input matInput type="number" required [(ngModel)]="category.scoringWeight" [disabled]="!canEdit()" />
+            <mat-error>A weight is required.</mat-error>
           </mat-form-field>
           <mat-checkbox [(ngModel)]="category.isModifierRequired" [disabled]="!canEdit()"
             matTooltip="The team must pick one of this category's modifier options; until it does, {modifier} is 0 in the equation instead of 1.">Modifier Selection Required</mat-checkbox>
@@ -146,7 +147,8 @@ project root for license information.
             @if (!isQuestionCategory(category)) {
             <mat-form-field class="value-field">
               <mat-label>Value</mat-label>
-              <input matInput type="number" [(ngModel)]="option.value" [disabled]="!canEdit()" />
+              <input matInput type="number" required [(ngModel)]="option.value" [disabled]="!canEdit()" />
+              <mat-error>A value is required.</mat-error>
             </mat-form-field>
             <mat-checkbox [(ngModel)]="option.isModifier" [disabled]="!canEdit()"
               matTooltip="Makes this option the category's {modifier} value instead of a scored option; a team picks at most one modifier, and it does not count toward {sum}, {count}, {min} or {max}.">Is a Modifier</mat-checkbox>
