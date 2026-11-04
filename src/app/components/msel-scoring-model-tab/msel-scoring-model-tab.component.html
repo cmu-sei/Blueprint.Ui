@@ -43,7 +43,7 @@ project root for license information.
   } @else {
   <div class="link-row">
     @if (scoringModelList.length > 0 && canLink()) {
-    <mat-form-field class="link-select">
+    <mat-form-field class="link-select" subscriptSizing="dynamic">
       <mat-label>CITE Scoring Model</mat-label>
       <mat-select [(ngModel)]="msel.citeScoringModelId" (selectionChange)="isChanged = true">
         <mat-option [value]="">-- None --</mat-option>

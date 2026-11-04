@@ -53,3 +53,12 @@
 .start-from {
   min-width: 320px;
 }
+
+// the field grows with its hint, so the row keeps to its top and the button sits beside the field, not its hint
+.authored-start {
+  align-items: flex-start;
+
+  > button {
+    margin-top: 10px;
+  }
+}

@@ -34,6 +34,7 @@ import {
   MselService,
   Unit,
   ScenarioEvent,
+  SteamfitterScenarioStartMode,
   Team,
   UserMselRole,
   ArticleDraftRequest,
@@ -75,6 +76,7 @@ export class MselPlus implements Msel {
   articleMarkingText?: string;
   useSteamfitter?: boolean;
   steamfitterScenarioId?: string;
+  steamfitterScenarioStartMode?: SteamfitterScenarioStartMode;
   useCaster?: boolean;
   casterDirectoryId?: string;
   casterWorkspaceId?: string;

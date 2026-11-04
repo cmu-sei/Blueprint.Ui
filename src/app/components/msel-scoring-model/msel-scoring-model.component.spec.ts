@@ -120,6 +120,25 @@ describe('MselScoringModelComponent', () => {
   });
 
   /**
+   * Verifies: a chosen preset's description shows under Start From in a hint that grows the field, so a long one pushes the
+   * summary down rather than running over it.
+   * Interacts with: the Start From select (MatSelectHarness), mat-hint, subscriptSizing.
+   * Data: the Questions by Move preset, whose hint is two lines in a narrow field.
+   */
+  it('shows the preset description in a hint that grows the field', async () => {
+    const { fixture } = await renderScoringModel();
+    const select = await TestbedHarnessEnvironment.loader(fixture).getHarness(MatSelectHarness);
+
+    await select.open();
+    await select.clickOptions({ text: 'Questions by Move' });
+    fixture.detectChanges();
+
+    expect(screen.getByText(/Discussion questions for each move/)).toBeInTheDocument();
+    const field = fixture.nativeElement.querySelector('mat-form-field.start-from') as HTMLElement;
+    expect(field.querySelector('.mat-mdc-form-field-subscript-dynamic-size')).not.toBeNull();
+  });
+
+  /**
    * Verifies: creating from a preset asks the API for it, reports the model with its numbers as numbers, and opens it in the editor at once.
    * Interacts with: MselScoringModelService.createMselScoringModelFromPreset (stub), scoringModelChange, app-msel-scoring-model-editor.
    * Data: no authored model; the CISA NCISS preset, which the API answers with string display orders.
