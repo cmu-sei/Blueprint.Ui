@@ -15,15 +15,10 @@
  */
 
 
-export interface TextInfo { 
-    readonly ansiCodePage?: number;
-    readonly oemCodePage?: number;
-    readonly macCodePage?: number;
-    readonly ebcdicCodePage?: number;
-    readonly lcid?: number;
-    readonly cultureName?: string | null;
-    readonly isReadOnly?: boolean;
-    listSeparator?: string | null;
-    readonly isRightToLeft?: boolean;
+export interface SeverityLevel { 
+    name: string;
+    minimumScore?: number;
+    color: string;
+    description?: string | null;
 }
 

@@ -15,9 +15,10 @@
  */
 
 
-export const SchemaSerializationMode = {
-    IncludeSchema: 'IncludeSchema',
-    ExcludeSchema: 'ExcludeSchema'
-} as const;
-export type SchemaSerializationMode = typeof SchemaSerializationMode[keyof typeof SchemaSerializationMode];
+/**
+ * The CITE scoring model a MSEL links, or none.
+ */
+export interface MselScoringModelLink { 
+    citeScoringModelId?: string | null;
+}
 
