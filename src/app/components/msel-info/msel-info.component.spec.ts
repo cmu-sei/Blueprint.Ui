@@ -40,6 +40,7 @@ import {
   Msel,
   MselCompetency,
   MselCompetencyService,
+  MselEdit,
   MselImageService,
   MselItemStatus,
   MselPage,
@@ -52,6 +53,7 @@ import {
   PlayerApplication,
   PlayerApplicationService,
   ScoringModel,
+  SteamfitterScenarioStartMode,
   SystemPermission,
   SystemPermissionsService,
   User,
@@ -135,6 +137,8 @@ async function renderInfo(
     casterUrl?: string;
     authored?: MselScoringModel | null;
     citeModels?: ScoringModel[];
+    confirms?: boolean;
+    updateMsel?: (id: string, edit: MselEdit) => Observable<Msel>;
   } = {},
 ) {
   const {
@@ -148,6 +152,10 @@ async function renderInfo(
     casterUrl = 'http://caster.example/',
     authored = null,
     citeModels = [],
+    confirms = true,
+    // the API answers with the saved MSEL, which always has its created and modified dates
+    updateMsel = (id: string, edit: MselEdit) =>
+      of<Msel>({ ...msel(myRoles, startTime, mselExtra), ...edit, id, dateCreated: new Date('2026-10-01T12:00:00Z'), dateModified: new Date() }),
   } = overrides;
   const pageApi = {
     getMselPages: vi.fn(() => of(structuredClone([PAGE]))),
@@ -173,6 +181,8 @@ async function renderInfo(
   } satisfies ApiStub<CasterService>;
   const mselApi = {
     getMselIntegrationNames: vi.fn(() => of(structuredClone(names))),
+    updateMsel: vi.fn(updateMsel),
+    pushIntegrations: vi.fn((id: string) => of<Msel>({ ...msel(myRoles, startTime, mselExtra), id, status: MselItemStatus.Pushing })),
   } satisfies ApiStub<MselService>;
   const imageApi = {
     getMselImage: vi.fn(() => of(new Blob(['image'], { type: 'image/png' }))),
@@ -184,8 +194,8 @@ async function renderInfo(
     deleteMselScoringModel: vi.fn(() => of<unknown>(null)),
   } satisfies ApiStub<MselScoringModelService>;
   const systemMessage = { displayMessage: vi.fn() } satisfies Pick<SystemMessageService, 'displayMessage'>;
-  // The user confirms every dialog.
-  const confirm = vi.fn(() => dialogRefStub<unknown, boolean>(true).dialogRef);
+  // The user confirms every dialog, unless the test says otherwise.
+  const confirm = vi.fn(() => dialogRefStub<unknown, boolean>(confirms).dialogRef);
   const dialog = { confirm } satisfies Pick<CrucibleDialogService, 'confirm'>;
   // MselInfoComponent loads the permissions itself in ngOnInit, so the real
   // service is provided over the stubbed endpoint, without priming it.
@@ -719,6 +729,209 @@ describe('MselInfoComponent', () => {
       });
 
       expect(screen.getByTitle('Remove Integrations')).toBeDisabled();
+    });
+  });
+
+  describe('Steamfitter', () => {
+    const startSelect = (fixture: ComponentFixture<unknown>) =>
+      TestbedHarnessEnvironment.loader(fixture).getHarnessOrNull(MatSelectHarness.with({ selector: '[aria-label="Start the scenario"]' }));
+    const optionTexts = async (select: MatSelectHarness) => {
+      await select.open();
+      const texts = await Promise.all((await select.getOptions()).map((option) => option.getText()));
+      await select.close();
+      return texts;
+    };
+
+    /**
+     * Verifies: with Steamfitter ticked, the three ways to start the scenario are offered, the MSEL's own is chosen, and choosing another marks the MSEL changed.
+     * Interacts with: steamfitterStartModes, real PermissionDataService (stubbed grants), MatSelectHarness.
+     * Data: EditMsels; a pending MSEL using Steamfitter whose scenario starts manually.
+     */
+    it('offers when to start the Steamfitter scenario', async () => {
+      const { fixture } = await renderInfo({
+        permissions: [SystemPermission.EditMsels],
+        mselExtra: { useSteamfitter: true, steamfitterScenarioStartMode: SteamfitterScenarioStartMode.Manual },
+      });
+
+      const select = await startSelect(fixture);
+      expect(await select.getValueText()).toBe('Manually');
+      expect(await optionTexts(select)).toEqual(['Manually', 'When the push finishes', 'At the MSEL start time']);
+
+      await select.clickOptions({ text: 'At the MSEL start time' });
+
+      expect(fixture.componentInstance.msel.steamfitterScenarioStartMode).toBe(SteamfitterScenarioStartMode.AtStartTime);
+      expect(screen.getByText('Changes have not been saved!')).toBeInTheDocument();
+    });
+
+    /**
+     * Verifies: the setting is shown only for a MSEL using Steamfitter.
+     * Interacts with: the Steamfitter checkbox binding.
+     * Data: EditMsels; a pending MSEL not using Steamfitter.
+     */
+    it('hides when to start the scenario without Steamfitter', async () => {
+      const { fixture } = await renderInfo({ permissions: [SystemPermission.EditMsels], mselExtra: { useSteamfitter: false } });
+
+      expect(await startSelect(fixture)).toBeNull();
+    });
+
+    /**
+     * Verifies: a pushed MSEL keeps the setting editable while the Steamfitter box itself is locked, because when the scenario starts changes nothing the push built.
+     * Interacts with: integrationsLocked, canEditMsel.
+     * Data: EditMsels; a deployed MSEL using Steamfitter with scenario sc-1, starting on the push.
+     */
+    it('keeps when to start the scenario editable on a pushed MSEL', async () => {
+      const { fixture } = await renderInfo({
+        permissions: [SystemPermission.EditMsels],
+        mselExtra: {
+          status: MselItemStatus.Deployed,
+          useSteamfitter: true,
+          steamfitterScenarioId: 'sc-1',
+          steamfitterScenarioStartMode: SteamfitterScenarioStartMode.OnPush,
+        },
+      });
+
+      expect(screen.getByLabelText('Steamfitter')).toBeDisabled();
+      const select = await startSelect(fixture);
+      expect(await select.isDisabled()).toBe(false);
+      expect(await select.getValueText()).toBe('When the push finishes');
+    });
+
+    /**
+     * Verifies: without EditMsels or an editing role the setting is shown but cannot be changed.
+     * Interacts with: canEditMsel, real PermissionDataService (stubbed grants).
+     * Data: every permission but EditMsels; the Viewer role. A pending MSEL using Steamfitter starting at the MSEL start time.
+     */
+    it('shows when to start the scenario read-only without EditMsels or an editing role', async () => {
+      const { fixture } = await renderInfo({
+        permissions: allBut(SystemPermission.EditMsels),
+        myRoles: [MselRole.Viewer],
+        mselExtra: { useSteamfitter: true, steamfitterScenarioStartMode: SteamfitterScenarioStartMode.AtStartTime },
+      });
+
+      const select = await startSelect(fixture);
+      expect(await select.isDisabled()).toBe(true);
+      expect(await select.getValueText()).toBe('At the MSEL start time');
+    });
+
+    /**
+     * Verifies: a pushed scenario shows whether it has been started, from the status Blueprint reads with its name, and nothing when Steamfitter could not be read.
+     * Interacts with: MselService.getMselIntegrationNames (stub), steamfitterScenarioStatusLabel.
+     * Data: a deployed MSEL using Steamfitter with scenario sc-1 named Exercise Tasks; statuses Ready, Active, Ended and none.
+     */
+    it.each([
+      { status: 'Ready', label: '(Not started)' },
+      { status: 'Active', label: '(Started)' },
+      { status: 'Ended', label: '(Ended)' },
+    ])('shows a $status scenario as $label', async ({ status, label }) => {
+      await renderInfo({
+        mselExtra: { status: MselItemStatus.Deployed, useSteamfitter: true, steamfitterScenarioId: 'sc-1' },
+        names: { steamfitterScenarioName: 'Exercise Tasks', steamfitterScenarioStatus: status },
+      });
+
+      expect(screen.getByText('Exercise Tasks')).toBeInTheDocument();
+      expect(screen.getByText(label)).toBeInTheDocument();
+    });
+
+    it('shows no scenario status when Steamfitter could not say', async () => {
+      await renderInfo({
+        mselExtra: { status: MselItemStatus.Deployed, useSteamfitter: true, steamfitterScenarioId: 'sc-1' },
+        names: { steamfitterScenarioName: '', steamfitterScenarioStatus: '' },
+      });
+
+      expect(screen.getByTitle('sc-1')).toBeInTheDocument();
+      expect(screen.queryByText(/Not started|Started|Ended/)).not.toBeInTheDocument();
+    });
+  });
+
+  describe('Push Integrations start time', () => {
+    const HOUR = 60 * 60 * 1000;
+    const pushButton = () => screen.getByTitle('Push Integrations');
+    const push = async (fixture: ComponentFixture<unknown>) => {
+      await userEvent.click(pushButton());
+      await fixture.whenStable();
+    };
+
+    /**
+     * Verifies: a push of a MSEL whose start time is past, or that has none, first says the start time will be set to now, and on Continue saves the current time as the start time and only then pushes.
+     * Interacts with: CrucibleDialogService.confirm (stub, confirms), MselService.updateMsel and pushIntegrations (stubs), MselDataService.
+     * Data: the Owner role; a pending MSEL using Player, starting an hour ago, or with no start time (near miss: the year-1 date the Set a Start Time box clears to).
+     */
+    it.each([
+      { label: 'a start time in the past', startTime: () => new Date(Date.now() - HOUR), reason: /^The MSEL start time, .+, is in the past\. / },
+      { label: 'no start time', startTime: () => undefined, reason: /^This MSEL has no start time\. / },
+      { label: 'the cleared start time', startTime: () => new Date('0001-01-02T08:00:00'), reason: /^This MSEL has no start time\. / },
+    ])('sets the start time to now before pushing a MSEL with $label', async ({ startTime, reason }) => {
+      const { fixture, confirm, mselApi } = await renderInfo({ myRoles: [MselRole.Owner], startTime: startTime() });
+
+      const before = Date.now();
+      await push(fixture);
+      const after = Date.now();
+
+      expect(confirm).toHaveBeenCalledTimes(1);
+      expect(confirm).toHaveBeenCalledWith(expect.objectContaining({
+        title: 'Push Integrations',
+        message: expect.stringMatching(new RegExp(`${reason.source}The start time will be set to the current date and time before pushing\\.$`)),
+        confirmText: 'Continue',
+        cancelText: 'Cancel',
+      }));
+      expect(mselApi.updateMsel).toHaveBeenCalledTimes(1);
+      const [id, edit] = mselApi.updateMsel.mock.calls[0];
+      expect(id).toBe('msel-1');
+      expect(edit.startTime.valueOf()).toBeGreaterThanOrEqual(before);
+      expect(edit.startTime.valueOf()).toBeLessThanOrEqual(after);
+      expect(edit.durationSeconds).toBe(3600);
+      expect(mselApi.pushIntegrations).toHaveBeenCalledWith('msel-1');
+      expect(mselApi.updateMsel.mock.invocationCallOrder[0]).toBeLessThan(mselApi.pushIntegrations.mock.invocationCallOrder[0]);
+    });
+
+    /**
+     * Verifies: a start time still to come is kept, and the push is confirmed as before.
+     * Interacts with: CrucibleDialogService.confirm (stub, confirms), MselService.updateMsel and pushIntegrations (stubs).
+     * Data: the Owner role; a pending MSEL using Player, starting in an hour.
+     */
+    it('pushes a MSEL whose start time is still to come without changing it', async () => {
+      const { fixture, confirm, mselApi } = await renderInfo({ myRoles: [MselRole.Owner], startTime: new Date(Date.now() + HOUR) });
+
+      await push(fixture);
+
+      expect(confirm).toHaveBeenCalledWith(expect.objectContaining({
+        title: 'Push Integrations',
+        message: 'Are you sure that you want to push MSEL data to the selected applications?',
+      }));
+      expect(mselApi.updateMsel).not.toHaveBeenCalled();
+      expect(mselApi.pushIntegrations).toHaveBeenCalledWith('msel-1');
+    });
+
+    /**
+     * Verifies: Cancel leaves the start time alone and pushes nothing.
+     * Interacts with: CrucibleDialogService.confirm (stub, cancels), MselService.updateMsel and pushIntegrations (stubs).
+     * Data: the Owner role; a pending MSEL using Player, starting an hour ago.
+     */
+    it('neither saves nor pushes when the start time dialog is cancelled', async () => {
+      const { fixture, confirm, mselApi } = await renderInfo({ myRoles: [MselRole.Owner], startTime: new Date(Date.now() - HOUR), confirms: false });
+
+      await push(fixture);
+
+      expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ confirmText: 'Continue', cancelText: 'Cancel' }));
+      expect(mselApi.updateMsel).not.toHaveBeenCalled();
+      expect(mselApi.pushIntegrations).not.toHaveBeenCalled();
+    });
+
+    /**
+     * Verifies: a start time that cannot be saved is not pushed with, so the push never runs on a start time the MSEL does not have.
+     * Interacts with: CrucibleDialogService.confirm (stub, confirms), MselService.updateMsel (stub, fails), MselService.pushIntegrations (stub).
+     * Data: the Owner role; a pending MSEL using Player with no start time; the save answers 403.
+     */
+    it('does not push when the new start time cannot be saved', async () => {
+      const { fixture, mselApi } = await renderInfo({
+        myRoles: [MselRole.Owner],
+        updateMsel: () => throwError(() => ({ status: 403 })),
+      });
+
+      await push(fixture);
+
+      expect(mselApi.updateMsel).toHaveBeenCalledTimes(1);
+      expect(mselApi.pushIntegrations).not.toHaveBeenCalled();
     });
   });
 

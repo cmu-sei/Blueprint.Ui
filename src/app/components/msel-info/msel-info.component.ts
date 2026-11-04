@@ -20,6 +20,7 @@ import {
   MselService,
   MselUnit,
   ScenarioEvent,
+  SteamfitterScenarioStartMode,
   SystemPermission,
   Team,
   User
@@ -73,7 +74,7 @@ import { MatExpansionPanel, MatExpansionPanelHeader, MatExpansionPanelTitle } fr
 import { MatTooltip } from '@angular/material/tooltip';
 import { AngularEditorModule } from '@kolkov/angular-editor';
 import { CardEditDialogComponent } from '../card-edit-dialog/card-edit-dialog.component';
-import { DatePipe } from '@angular/common';
+import { DatePipe, formatDate } from '@angular/common';
 import { TimezoneAbbrPipe } from '../../utilities/timezone-abbr';
 import { normalizeScoringModel, scoringModelCounts } from 'src/app/utilities/scoring-model';
 
@@ -159,6 +160,17 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     MselItemStatus.Complete,
     MselItemStatus.Archived,
   ];
+  private pipelineStatuses: MselItemStatus[] = [
+    MselItemStatus.Pushing,
+    MselItemStatus.Pulling,
+    MselItemStatus.Deployed,
+  ];
+  // Steamfitter runs no task until its scenario is started
+  readonly steamfitterStartModes: { value: SteamfitterScenarioStartMode; label: string }[] = [
+    { value: SteamfitterScenarioStartMode.Manual, label: 'Manually' },
+    { value: SteamfitterScenarioStartMode.OnPush, label: 'When the push finishes' },
+    { value: SteamfitterScenarioStartMode.AtStartTime, label: 'At the MSEL start time' },
+  ];
   educationalLevels: string[] = ['Beginner', 'Intermediate', 'Advanced'];
   educationalUses: string[] = ['Assessment', 'Instruction', 'Professional Support'];
   courseModes: string[] = ['Online', 'Onsite', 'Blended'];
@@ -187,6 +199,7 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   citeEvaluationName = '';
   citeScoringModelName = '';
   steamfitterScenarioName = '';
+  steamfitterScenarioStatus = '';
   casterDirectoryName = '';
   casterWorkspaceName = '';
   integrationRequested = '';
@@ -688,21 +701,52 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   }
 
   pushIntegrations() {
-    let message = 'Are you sure that you want to push MSEL data to the selected applications?';
+    let galleryWarning = '';
     if (this.msel.useGallery && this.hasGalleryEventsWithMissingData()) {
-      message += '\n\n** WARNING: One or more Scenario Events marked as a Gallery integration is missing required fields. **';
+      galleryWarning = '\n\n** WARNING: One or more Scenario Events marked as a Gallery integration is missing required fields. **';
+    }
+    // a push starts the exercise now, so a start time that is missing or past is moved to now first
+    if (!this.hasStartTime() || this.msel.startTime.valueOf() < Date.now()) {
+      const reason = this.hasStartTime()
+        ? `The MSEL start time, ${formatDate(this.msel.startTime, 'dd MMM yyyy HH:mm', 'en-US')}, is in the past.`
+        : 'This MSEL has no start time.';
+      this.dialogService
+        .confirm({
+          title: 'Push Integrations',
+          message: `${reason} The start time will be set to the current date and time before pushing.${galleryWarning}`,
+          confirmText: 'Continue',
+          cancelText: 'Cancel',
+        }).afterClosed().subscribe((result) => {
+          if (result) {
+            this.setStartTimeToNowAndPush();
+          }
+        });
+      return;
     }
     this.dialogService
       .confirm({
-        title: 'Push Integrations', message: message
+        title: 'Push Integrations', message: 'Are you sure that you want to push MSEL data to the selected applications?' + galleryWarning
       }).afterClosed().subscribe((result) => {
         if (result) {
-          this.integrationDismissed = false;
-          this.clearDismissedIntegrationError();
-          this.integrationRequested = 'push';
-          this.mselDataService.pushIntegrations(this.msel.id);
+          this.startPush();
         }
       });
+  }
+
+  // Push Integrations is disabled while there are unsaved changes, so this saves the start time alone.
+  // The push waits for the save; a failed save is reported by MselDataService and nothing is pushed.
+  private setStartTimeToNowAndPush() {
+    this.mselDataService.updateMsel({ ...this.msel, startTime: new Date() }).subscribe({
+      next: () => this.startPush(),
+      error: () => {},
+    });
+  }
+
+  private startPush() {
+    this.integrationDismissed = false;
+    this.clearDismissedIntegrationError();
+    this.integrationRequested = 'push';
+    this.mselDataService.pushIntegrations(this.msel.id);
   }
 
   pullIntegrations() {
@@ -1019,6 +1063,20 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     return `${baseUrl}?evaluation=${this.msel.citeEvaluationId}`;
   }
 
+  // whether the pushed scenario has been started, which tells a facilitator whether its tasks will run
+  steamfitterScenarioStatusLabel(): string {
+    switch (this.steamfitterScenarioStatus) {
+      case 'Ready':
+        return 'Not started';
+      case 'Active':
+        return 'Started';
+      case 'Ended':
+        return 'Ended';
+      default:
+        return '';
+    }
+  }
+
   getSteamfitterScenarioUrl(): string {
     if (!this.msel.steamfitterScenarioId) return '';
     let baseUrl = this.settingsService.settings.SteamfitterUrl || '';
@@ -1090,6 +1148,7 @@ export class MselInfoComponent implements OnDestroy, OnInit {
           this.citeEvaluationName = names.citeEvaluationName || '';
           this.citeScoringModelName = names.citeScoringModelName || '';
           this.steamfitterScenarioName = names.steamfitterScenarioName || '';
+          this.steamfitterScenarioStatus = names.steamfitterScenarioStatus || '';
           this.casterDirectoryName = names.casterDirectoryName || '';
           this.casterWorkspaceName = names.casterWorkspaceName || '';
         },
@@ -1129,6 +1188,7 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     this.citeEvaluationName = '';
     this.citeScoringModelName = '';
     this.steamfitterScenarioName = '';
+    this.steamfitterScenarioStatus = '';
     this.casterDirectoryName = '';
     this.casterWorkspaceName = '';
   }
