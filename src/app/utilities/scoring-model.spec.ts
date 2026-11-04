@@ -153,14 +153,16 @@ describe('isScoringModelValid', () => {
     category('Impact', 1, 2, { scoringOptionSelection: CiteScoringOptionSelection.Single, scoringWeight: 2, options: [{ description: 'Low', value: 1 }], ...extra });
 
   /**
-   * Verifies: a model needs a description, each category a move range in order and a weight, and each option a value, a question set's hidden ones too, since the API's weights and values cannot be left out.
+   * Verifies: a model needs a description, each category move numbers, in order when the model displays by move, and a weight, and each option a value, a question set's hidden ones too, since the API's weights and values cannot be left out.
    * Interacts with: isScoringModelValid.
    * Data: a valid scored model; then one with no description, a range ending before it starts, no weight, an option with no value, and question sets with and without their numbers.
    */
   it.each([
     { label: 'a scored model', model: { description: 'Impact', categories: [scored()] }, valid: true },
     { label: 'no description', model: { description: ' ', categories: [scored()] }, valid: false },
-    { label: 'a range ending before it starts', model: { description: 'Impact', categories: [scored({ moveNumberLastDisplay: 0 })] }, valid: false },
+    { label: 'a range ending before it starts', model: { description: 'Impact', displayScoringModelByMoveNumber: true, categories: [scored({ moveNumberLastDisplay: 0 })] }, valid: false },
+    { label: 'a hidden range ending before it starts', model: { description: 'Impact', displayScoringModelByMoveNumber: false, categories: [scored({ moveNumberLastDisplay: 0 })] }, valid: true },
+    { label: 'a hidden range with no number', model: { description: 'Impact', displayScoringModelByMoveNumber: false, categories: [scored({ moveNumberLastDisplay: null })] }, valid: false },
     { label: 'a scored category with no weight', model: { description: 'Impact', categories: [scored({ scoringWeight: null })] }, valid: false },
     { label: 'an option with no value', model: { description: 'Impact', categories: [scored({ options: [{ description: 'Low', value: undefined }] })] }, valid: false },
     { label: 'a weight cleared to an empty string', model: { description: 'Impact', categories: [scored({ scoringWeight: '' as unknown as number })] }, valid: false },

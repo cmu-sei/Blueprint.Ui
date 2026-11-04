@@ -157,6 +157,10 @@ export class MselComponent implements OnDestroy {
   theme$: Observable<Theme>;
 
   constructor() {
+    // restore the saved tab before the active MSEL, which can arrive at once, checks it; a saved name that is no
+    // longer a tab (CITE Actions and CITE Duties were renamed) opens the default tab
+    this.selectedTab = this.uiDataService.getMselTab();
+    this.keepSelectedTabShown(this.tabList);
     this.theme$ = this.authQuery.userTheme$;
     // subscribe to route changes
     this.activatedRoute.queryParamMap
@@ -212,6 +216,8 @@ export class MselComponent implements OnDestroy {
       .subscribe((msel) => {
         if (msel) {
           this.msel = msel;
+          // a saved tab this MSEL's settings hide (CITE, Player or Gallery not used) would show nothing
+          this.keepSelectedTabShown(this.getTabListItems());
         } else {
           this.msel = { name: '' };
         }
@@ -236,13 +242,6 @@ export class MselComponent implements OnDestroy {
     this.unitDataService.load();
     // load the organization templates
     this.organizationDataService.loadTemplates();
-    // set the selected tab
-    let selectedTab = this.uiDataService.getMselTab();
-    if (!selectedTab) {
-      this.uiDataService.setMselTab(this.defaultTab);
-      selectedTab = this.defaultTab;
-    }
-    this.selectedTab = selectedTab;
     // set the side nav expansion
     this.sideNavCollapsed = this.uiDataService.isNavCollapsed();
   }
@@ -303,6 +302,14 @@ export class MselComponent implements OnDestroy {
       return 'You have unsaved changes on the Scoring Model page. Are you sure you want to discard them?';
     }
     return '';
+  }
+
+  // the content area has a page only for the tabs listed, so any other selection falls back to the default tab
+  private keepSelectedTabShown(tabs: string[]) {
+    if (!tabs.includes(this.selectedTab)) {
+      this.selectedTab = this.defaultTab;
+      this.uiDataService.setMselTab(this.defaultTab);
+    }
   }
 
   getTabListItems(): string[] {

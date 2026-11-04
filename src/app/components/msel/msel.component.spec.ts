@@ -283,6 +283,26 @@ describe('MselComponent', () => {
   });
 
   /**
+   * Verifies: the saved tab is reopened, unless it is no longer a tab (renamed from CITE Actions or CITE Duties) or this MSEL's settings hide it, when the Info tab opens and is saved instead of a blank page.
+   * Interacts with: real UIDataService over localStorage, MselComponent.keepSelectedTabShown, child stubs.
+   * Data: the saved tabs CITE Actions and CITE Duties; Gallery Cards on a MSEL without Gallery; Actions on a MSEL with CITE.
+   */
+  it.each([
+    { saved: 'CITE Actions', msel: MSEL, opens: 'Info' },
+    { saved: 'CITE Duties', msel: MSEL, opens: 'Info' },
+    { saved: 'Gallery Cards', msel: { ...MSEL, useGallery: false }, opens: 'Info' },
+    { saved: 'Actions', msel: MSEL, opens: 'Actions' },
+  ])('reopens a saved $saved tab as $opens', async ({ saved, msel, opens }) => {
+    localStorage.setItem('uiState', JSON.stringify({ selectedMselTab: saved }));
+
+    const { fixture } = await renderMsel({ msel });
+
+    expect(fixture.componentInstance.selectedTab).toBe(opens);
+    expect(opens === 'Info' ? child(fixture, MselInfoStub) : child(fixture, CiteActionListStub)).toBeDefined();
+    expect(JSON.parse(localStorage.getItem('uiState')).selectedMselTab).toBe(opens);
+  });
+
+  /**
    * Verifies: the Info page's Open the Scoring Model tab request opens that tab, through the same change as a click on the rail.
    * Interacts with: MselInfoStub openTab, MselComponent.tabChange, real UIDataService.
    * Data: MSEL with CITE on; the Info tab open.

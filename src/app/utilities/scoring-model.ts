@@ -103,9 +103,10 @@ export function hasNumber(n: number): boolean {
 }
 
 /**
- * Whether the API would accept the model: a description, a move range for each category, a weight for each
- * category and a value for each option. The API's weights and values are numbers that cannot be left out, so a
- * question set, which hides them, still carries them.
+ * Whether the API would accept the model: a description, move numbers for each category, in order when the model
+ * displays by move number (otherwise the fields are hidden and CITE ignores them), a weight for each category and a
+ * value for each option. The API's numbers cannot be left out, so a question set, which hides its weight and values,
+ * still carries them.
  */
 export function isScoringModelValid(model: MselScoringModel): boolean {
   return (
@@ -114,7 +115,7 @@ export function isScoringModelValid(model: MselScoringModel): boolean {
       (c) =>
         hasNumber(c.moveNumberFirstDisplay) &&
         hasNumber(c.moveNumberLastDisplay) &&
-        +c.moveNumberFirstDisplay <= +c.moveNumberLastDisplay &&
+        (!model.displayScoringModelByMoveNumber || +c.moveNumberFirstDisplay <= +c.moveNumberLastDisplay) &&
         hasNumber(c.scoringWeight) &&
         (c.options || []).every((o) => hasNumber(o.value)),
     )

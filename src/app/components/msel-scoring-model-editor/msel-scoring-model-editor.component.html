@@ -34,7 +34,7 @@ project root for license information.
           matTooltip="Hides each option's point value and the computed score from the team's scoresheet.">Hide Option Values On Scoresheet</mat-checkbox>
         <mat-checkbox [(ngModel)]="model().displayCommentTextBoxes" [disabled]="!canEdit()"
           matTooltip="Puts a comment textbox under every option, instead of an Add Comment button that opens one.">Display Comments as Textboxes</mat-checkbox>
-        <mat-checkbox [(ngModel)]="model().displayScoringModelByMoveNumber" [disabled]="!canEdit()"
+        <mat-checkbox [(ngModel)]="model().displayScoringModelByMoveNumber" [disabled]="!canEdit()" (change)="keepHiddenMoveNumbers()"
           matTooltip="Shows each category only in the moves from its First Move to Display through its Last Move to Display, instead of in every move.">Use Different Scoring Categories by Move Number</mat-checkbox>
         <mat-checkbox [(ngModel)]="model().showPastSituationDescriptions" [disabled]="!canEdit()"
           matTooltip="The CITE dashboard lists the situation descriptions of the earlier moves under the current one.">Show Past Situation Descriptions on Dashboard</mat-checkbox>
@@ -117,7 +117,7 @@ project root for license information.
           </mat-form-field>
           }
         </div>
-        @if (+category.moveNumberFirstDisplay > +category.moveNumberLastDisplay) {
+        @if (model().displayScoringModelByMoveNumber && +category.moveNumberFirstDisplay > +category.moveNumberLastDisplay) {
         <div class="category-error" role="alert">The last move to display comes before the first.</div>
         }
         @if (!isQuestionCategory(category)) {

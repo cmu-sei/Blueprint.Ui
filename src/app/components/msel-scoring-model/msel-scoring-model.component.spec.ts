@@ -6,6 +6,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { MatSelectHarness } from '@angular/material/select/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { ComponentFixture } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { outputToObservable } from '@angular/core/rxjs-interop';
 import { screen, within } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
@@ -24,6 +25,7 @@ import { dialogRefStub } from 'src/app/test-utils/dialog-refs';
 import { recordEmissions } from 'src/app/test-utils/record-emissions';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { CITE_ACCESS_DENIED } from 'src/app/utilities/cite-access';
+import { MselScoringModelEditorComponent } from '../msel-scoring-model-editor/msel-scoring-model-editor.component';
 import { MselScoringModelComponent } from './msel-scoring-model.component';
 
 const n = (value: number) => `${value}` as unknown as number;
@@ -171,6 +173,27 @@ describe('MselScoringModelComponent', () => {
     await userEvent.setup().click(screen.getByRole('button', { name: 'Create Scoring Model' }));
 
     expect(scoringModelApi.copyMselScoringModelFromCite).toHaveBeenCalledWith('msel-1', 'cite-1');
+  });
+
+  /**
+   * Verifies: the move picked in What a Team Sees stays picked through later edits: the MSEL's moves reach the editor as the same list each change detection, so the editor does not go back to the first move.
+   * Interacts with: mselMoves (computed), the editor's preview move select (MatSelectHarness), the description field.
+   * Data: AUTHORED; this MSEL's moves 1 and 2; Move 2 picked, then the description typed in.
+   */
+  it('keeps the previewed move through later edits', async () => {
+    const { fixture } = await renderScoringModel({ scoringModel: AUTHORED });
+    const select = await TestbedHarnessEnvironment.loader(fixture).getHarness(MatSelectHarness.with({ ancestor: '.preview-move' }));
+
+    await select.open();
+    await select.clickOptions({ text: 'Move 2 - Recovery' });
+    await userEvent.setup().type(screen.getByLabelText('Scoring Model Description'), ' edited');
+    // ngModel writes the select's value a microtask after change detection
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(fixture.debugElement.query(By.directive(MselScoringModelEditorComponent)).componentInstance.previewMoveNumber).toBe(2);
+    expect(await select.getValueText()).toBe('Move 2 - Recovery');
   });
 
   /**
