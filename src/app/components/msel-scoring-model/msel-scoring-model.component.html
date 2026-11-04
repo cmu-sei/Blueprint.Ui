@@ -6,7 +6,8 @@ project root for license information.
 <div class="authored">
   @if (canEdit()) {
   <div class="authored-start">
-    <mat-form-field class="start-from">
+    <!-- the hint grows the field, so a long description pushes the summary down instead of running over it -->
+    <mat-form-field class="start-from" subscriptSizing="dynamic">
       <mat-label>{{ saved ? 'Replace With' : 'Start From' }}</mat-label>
       <mat-select [(ngModel)]="startFrom">
         @for (preset of presets; track preset.preset) {
