@@ -193,7 +193,8 @@ export function insertMedia(html: string, media: string, position: 'top' | 'body
   }
   const doc = new DOMParser().parseFromString(`<body>${value}</body>`, 'text/html');
   const marking = doc.querySelector('table[title="Marking"]');
-  const anchor = headlineElement(doc, headline, marking) ?? marking;
+  const heading = headlineElement(doc, headline, marking) ?? firstHeading(doc, marking);
+  const anchor = heading ? pastBylines(heading) : marking;
   if (!anchor) {
     return media + value;
   }
@@ -221,6 +222,38 @@ function headlineElement(doc: Document, headline: string | undefined, marking: E
     }
   }
   return found;
+}
+
+// the article writes its own headline, which need not be the inject's title: its first heading after the marking
+function firstHeading(doc: Document, marking: Element | null): Element | null {
+  return (
+    Array.from(doc.body.querySelectorAll('h1, h2, h3')).find(
+      (h) => !marking || (!marking.contains(h) && !!(marking.compareDocumentPosition(h) & Node.DOCUMENT_POSITION_FOLLOWING))
+    ) ?? null
+  );
+}
+
+// a headline's dek and byline stay with it: the short paragraphs straight after it that are an italic dek or a "By" line,
+// so the player sits under the title and author as a news site puts it, and before the story
+function pastBylines(heading: Element): Element {
+  let anchor = heading;
+  for (let i = 0; i < 2; i++) {
+    const next = anchor.nextElementSibling;
+    const text = normalizeText(next?.textContent);
+    if (!next || next.tagName !== 'P' || !text || text.length > 200) {
+      break;
+    }
+    const byline = text.startsWith('by ');
+    const dek = !!next.querySelector('i, em') && normalizeText(next.querySelector('i, em')?.textContent) === text;
+    if (!byline && !dek) {
+      break;
+    }
+    anchor = next;
+    if (byline) {
+      break;
+    }
+  }
+  return anchor;
 }
 
 function normalizeText(text: string | null | undefined): string {

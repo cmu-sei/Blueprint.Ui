@@ -181,7 +181,10 @@ describe('media-clip', () => {
       '<table title="Marking"><tbody><tr><td>EXERCISE</td></tr></tbody></table><table><tbody><tr><td><font>GNN</font><h1>Pumps stop</h1><audio></audio><p>One.</p></td></tr></tbody></table>'
     );
     expect(insertMedia(article, '<audio></audio>', 'top')).toBe(
-      '<table title="Marking"><tbody><tr><td>EXERCISE</td></tr></tbody></table><audio></audio><table><tbody><tr><td><font>GNN</font><h1>Pumps stop</h1><p>One.</p></td></tr></tbody></table>'
+      '<table title="Marking"><tbody><tr><td>EXERCISE</td></tr></tbody></table><table><tbody><tr><td><font>GNN</font><h1>Pumps stop</h1><audio></audio><p>One.</p></td></tr></tbody></table>'
+    );
+    expect(insertMedia('<table title="Marking"><tbody><tr><td>EXERCISE</td></tr></tbody></table><div>No headline</div>', '<audio></audio>', 'top')).toBe(
+      '<table title="Marking"><tbody><tr><td>EXERCISE</td></tr></tbody></table><audio></audio><div>No headline</div>'
     );
     expect(insertMedia(article, '<video></video>', 'body')).toBe(
       '<table title="Marking"><tbody><tr><td>EXERCISE</td></tr></tbody></table><table><tbody><tr><td><font>GNN</font><h1>Pumps stop</h1><video></video><p>One.</p></td></tr></tbody></table>'
@@ -205,6 +208,22 @@ describe('media-clip', () => {
     expect(out.indexOf('<audio></audio>')).toBeGreaterThan(out.indexOf('Payroll due, merchants cash only'));
     expect(out.indexOf('<audio></audio>')).toBeLessThan(out.indexOf('Text.'));
     expect(out.indexOf('EXERCISE')).toBeLessThan(out.indexOf('<audio></audio>'));
+  });
+
+  /**
+   * Verifies: when the article's headline is not the inject's title, Listen goes under the article's first heading, past its
+   * dek and byline, and before the body.
+   * Data: the layout of a drafted GNN article: masthead, h1 headline, an italic dek, a "By" byline, then the body.
+   */
+  it('puts Listen under the byline of the article\'s own headline', () => {
+    const article =
+      '<table title="Marking"><tbody><tr><td>EXERCISE</td></tr></tbody></table><table><tbody><tr><td><img alt="GNN masthead"></td></tr>' +
+      '<tr><td><h1>Day three: fuel shortages deepen as 1.3 million remain without power</h1><p><i>Hospitals are first in line.</i></p>' +
+      '<p>By GNN Staff | Gulf Coast | Thursday</p><p>The long first paragraph of the story.</p></td></tr></tbody></table>';
+
+    const out = insertMedia(article, '<audio></audio>', 'top', 'GNN: Day three, fuel shortages deepen');
+
+    expect(out).toContain('<p>By GNN Staff | Gulf Coast | Thursday</p><audio></audio><p>The long first paragraph');
   });
 
   /**
