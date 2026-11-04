@@ -233,7 +233,7 @@ export class DataValueDraftDialogComponent {
       this.audio = {
         result,
         clip,
-        value: insertMedia(this.currentValue, clip.html, clip.position),
+        value: insertMedia(this.currentValue, clip.html, clip.position, result.headline),
         notes: [...(result.notes ?? []), ...clip.notes],
       };
     } catch (err) {

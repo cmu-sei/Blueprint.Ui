@@ -176,10 +176,11 @@ export function outletColor(name: string): string {
 }
 
 /**
- * The article with the media in it. At the top means under the marking banner at the head of the article; the body is where
- * its first paragraph starts, or the top when it has none.
+ * The article with the media in it. At the top means under the headline, as a news site puts its player, else under the
+ * marking banner, wherever the article's layout put it, else first; the body is where its first paragraph starts, or the
+ * top when it has none.
  */
-export function insertMedia(html: string, media: string, position: 'top' | 'body'): string {
+export function insertMedia(html: string, media: string, position: 'top' | 'body', headline?: string): string {
   const value = html ?? '';
   if (!value.trim()) {
     return media;
@@ -190,9 +191,40 @@ export function insertMedia(html: string, media: string, position: 'top' | 'body
       return value.slice(0, paragraph) + media + value.slice(paragraph);
     }
   }
-  const markings = /^(\s*<table\b[^>]*\btitle="Marking"[^>]*>[\s\S]*?<\/table>)+/i.exec(value);
-  const at = markings ? markings[0].length : 0;
-  return value.slice(0, at) + media + value.slice(at);
+  const doc = new DOMParser().parseFromString(`<body>${value}</body>`, 'text/html');
+  const marking = doc.querySelector('table[title="Marking"]');
+  const anchor = headlineElement(doc, headline, marking) ?? marking;
+  if (!anchor) {
+    return media + value;
+  }
+  const holder = doc.createElement('template');
+  holder.innerHTML = media;
+  anchor.after(holder.content);
+  return doc.body.innerHTML;
+}
+
+// the smallest element after the marking whose text is the headline
+function headlineElement(doc: Document, headline: string | undefined, marking: Element | null): Element | null {
+  const wanted = normalizeText(headline);
+  if (!wanted) {
+    return null;
+  }
+  let found: Element | null = null;
+  for (const element of Array.from(doc.body.querySelectorAll('*'))) {
+    if (marking && (marking === element || marking.contains(element) || !(marking.compareDocumentPosition(element) & Node.DOCUMENT_POSITION_FOLLOWING))) {
+      continue;
+    }
+    if (normalizeText(element.textContent) === wanted) {
+      found = element;
+    } else if (found && !found.contains(element)) {
+      break;
+    }
+  }
+  return found;
+}
+
+function normalizeText(text: string | null | undefined): string {
+  return (text ?? '').replace(/\s+/g, ' ').trim().toLowerCase();
 }
 
 /** "Listen to this article", with the player, as a bar of its own colours, so it reads the same in light and dark themes */

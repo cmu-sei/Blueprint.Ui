@@ -169,21 +169,42 @@ describe('media-clip', () => {
   });
 
   /**
-   * Verifies: Listen goes under the marking at the top; the others go where the first paragraph starts; an empty field is
-   * just the media.
-   * Data: an article with a marking banner, a masthead and paragraphs.
+   * Verifies: Listen goes under the headline, else under the marking wherever the layout put it, else first; the others go
+   * where the first paragraph starts; an empty field is just the media.
+   * Data: an article with a marking banner, a masthead and paragraphs; the same article wrapped in an outer layout table,
+   * as Gallery articles are.
    */
   it('puts the media where it belongs in the article', () => {
-    const article = '<table title="Marking"><tr><td>EXERCISE</td></tr></table><table><tr><td><h1>Pumps stop</h1><p>One.</p></td></tr></table>';
+    const article = '<table title="Marking"><tbody><tr><td>EXERCISE</td></tr></tbody></table><table><tbody><tr><td><font>GNN</font><h1>Pumps stop</h1><p>One.</p></td></tr></tbody></table>';
 
+    expect(insertMedia(article, '<audio></audio>', 'top', 'Pumps stop')).toBe(
+      '<table title="Marking"><tbody><tr><td>EXERCISE</td></tr></tbody></table><table><tbody><tr><td><font>GNN</font><h1>Pumps stop</h1><audio></audio><p>One.</p></td></tr></tbody></table>'
+    );
     expect(insertMedia(article, '<audio></audio>', 'top')).toBe(
-      '<table title="Marking"><tr><td>EXERCISE</td></tr></table><audio></audio><table><tr><td><h1>Pumps stop</h1><p>One.</p></td></tr></table>'
+      '<table title="Marking"><tbody><tr><td>EXERCISE</td></tr></tbody></table><audio></audio><table><tbody><tr><td><font>GNN</font><h1>Pumps stop</h1><p>One.</p></td></tr></tbody></table>'
     );
     expect(insertMedia(article, '<video></video>', 'body')).toBe(
-      '<table title="Marking"><tr><td>EXERCISE</td></tr></table><table><tr><td><h1>Pumps stop</h1><video></video><p>One.</p></td></tr></table>'
+      '<table title="Marking"><tbody><tr><td>EXERCISE</td></tr></tbody></table><table><tbody><tr><td><font>GNN</font><h1>Pumps stop</h1><video></video><p>One.</p></td></tr></tbody></table>'
     );
     expect(insertMedia('<div>No paragraphs</div>', '<video></video>', 'body')).toBe('<video></video><div>No paragraphs</div>');
     expect(insertMedia('', '<video></video>', 'body')).toBe('<video></video>');
+  });
+
+  /**
+   * Verifies: a marking inside the article's outer layout table is still found, and the headline under it is where Listen
+   * goes, not above the marking.
+   * Data: a drafted article: an outer table holding the marking, then the masthead and the headline in a nested table.
+   */
+  it('puts Listen under the headline of an article wrapped in a layout table', () => {
+    const article =
+      '<table width="720"><tbody><tr><td><font><table title="Marking"><tbody><tr><td>EXERCISE</td></tr></tbody></table>' +
+      '<table><tbody><tr><td><font size="6"><b>GNN</b></font><br><font size="5"><b>Payroll due, merchants cash only</b></font><p>Text.</p></td></tr></tbody></table></font></td></tr></tbody></table>';
+
+    const out = insertMedia(article, '<audio></audio>', 'top', 'Payroll due, merchants cash only');
+
+    expect(out.indexOf('<audio></audio>')).toBeGreaterThan(out.indexOf('Payroll due, merchants cash only'));
+    expect(out.indexOf('<audio></audio>')).toBeLessThan(out.indexOf('Text.'));
+    expect(out.indexOf('EXERCISE')).toBeLessThan(out.indexOf('<audio></audio>'));
   });
 
   /**

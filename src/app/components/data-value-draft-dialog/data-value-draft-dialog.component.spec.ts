@@ -275,9 +275,9 @@ describe('DataValueDraftDialogComponent', () => {
    */
   it('adds Listen to this article at the top', async () => {
     const draftAudio = vi.fn(() => of<AudioDraftResult>({ ...VOICED, kind: AudioDraftKind.Listen }));
-    const article = '<table title="Marking"><tr><td>EXERCISE</td></tr></table><p>NWS expects landfall.</p>';
+    const article = '<table title="Marking"><tbody><tr><td>EXERCISE</td></tr></tbody></table><p>NWS expects landfall.</p>';
     const { fixture, close } = await renderDraftDialog(article, undefined, { sourceType: 'News', availability: { available: true }, draftAudio });
-    fixture.componentInstance.makeMedia = vi.fn(async () => ({ ...CLIP, html: '<table><tr><td>Listen</td></tr></table>', position: 'top' as const }));
+    fixture.componentInstance.makeMedia = vi.fn(async () => ({ ...CLIP, html: '<table><tbody><tr><td>Listen</td></tr></tbody></table>', position: 'top' as const }));
     fixture.componentInstance.toPng = async (html: string) => html;
     const user = userEvent.setup();
 
@@ -288,7 +288,7 @@ describe('DataValueDraftDialogComponent', () => {
     await user.click(await screen.findByRole('button', { name: 'Use this' }));
 
     await vi.waitFor(() =>
-      expect(close).toHaveBeenCalledWith('<table title="Marking"><tr><td>EXERCISE</td></tr></table><table><tr><td>Listen</td></tr></table><p>NWS expects landfall.</p>')
+      expect(close).toHaveBeenCalledWith('<table title="Marking"><tbody><tr><td>EXERCISE</td></tr></tbody></table><table><tbody><tr><td>Listen</td></tr></tbody></table><p>NWS expects landfall.</p>')
     );
   });
 
