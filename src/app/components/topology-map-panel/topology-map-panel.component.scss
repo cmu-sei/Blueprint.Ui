@@ -1,0 +1,59 @@
+// Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+// Released under a MIT (SEI)-style license. See LICENSE.md in the
+// project root for license information.
+
+.topology-map-panel {
+  margin: 8px 0 0 0;
+}
+
+.topology-map-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.integration-label {
+  font-weight: 500;
+}
+
+.thin-button {
+  line-height: 28px;
+  height: 30px;
+}
+
+.topology-map-note,
+.topology-map-summary {
+  font-size: small;
+  margin: 6px 0;
+}
+
+.topology-map-message {
+  font-size: small;
+  margin: 6px 0;
+  color: var(--mat-sys-primary, #2563eb);
+}
+
+.topology-map-image {
+  display: block;
+  max-width: 100%;
+  max-height: 480px;
+  margin: 8px 0;
+  border: 1px solid rgba(128, 128, 128, 0.4);
+  border-radius: 4px;
+  // the drawing has a white background of its own, so it reads the same in dark mode
+  background: #ffffff;
+}
+
+.integration-warning {
+  margin-top: 8px;
+  padding: 8px 12px;
+  background-color: rgba(255, 152, 0, 0.1);
+  border-left: 3px solid orangered;
+  border-radius: 4px;
+}
+
+.gallery-warning {
+  font-size: small;
+  color: orangered;
+}

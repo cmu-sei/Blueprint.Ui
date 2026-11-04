@@ -1,0 +1,70 @@
+<!--
+Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license. See LICENSE.md in the
+project root for license information.
+-->
+<div class="topology-map-panel">
+  <div class="topology-map-header">
+    <span class="integration-label">Network Map:</span>
+    @if (workspaceId()) {
+      @if (canUpdate()) {
+        <button mat-stroked-button class="thin-button" (click)="updateMap()"
+          [disabled]="!hasView() || updating() || loading() || (!!preview() && !hasMachines())"
+          title="Redraw the map from Caster's saved layout and write it to the Player view">
+          {{ updating() ? 'Updating ...' : 'Update map' }}
+        </button>
+        <button mat-stroked-button class="thin-button" (click)="loadPreview()" [disabled]="loading() || updating()"
+          title="Redraw the preview from Caster's saved layout">
+          Refresh preview
+        </button>
+      }
+      @if (casterWorkspaceUrl()) {
+        <a mat-stroked-button class="thin-button" [href]="casterWorkspaceUrl()" target="_blank"
+          title="Open the workspace in Caster, then its Topology view">
+          Edit layout in Caster
+          <mat-icon class="mdi-18px" fontIcon="mdi-open-in-new" />
+        </a>
+      }
+    }
+  </div>
+
+  @if (!workspaceId()) {
+    <p class="topology-map-note">
+      The push draws the map from the Caster workspace once it is applied, and adds a Network Map application for the teams.
+    </p>
+  } @else {
+    <p class="topology-map-note">
+      Drawn from the layout saved in Caster's topology view, with the machines' Player names. Move machines there, then
+      Update map. Changes made in Player's map editor are overwritten by the next Update map or push.
+    </p>
+    @if (loading()) {
+      <mat-progress-bar mode="indeterminate" />
+    }
+    @if (error()) {
+      <div class="integration-warning"><span class="gallery-warning">{{ error() }}</span></div>
+    }
+    @if (message()) {
+      <div class="topology-map-message">{{ message() }}</div>
+    }
+    @if (preview(); as map) {
+      @if (map.machineCount) {
+        <img class="topology-map-image" [src]="map.imageUrl" alt="Network map of the Caster workspace" />
+        <div class="topology-map-summary">
+          {{ map.machineCount }} {{ map.machineCount === 1 ? 'machine' : 'machines' }} on
+          {{ map.networkCount }} {{ map.networkCount === 1 ? 'network' : 'networks' }},
+          {{ map.clickPoints?.length || 0 }} with a Player console to open from the map.
+        </div>
+        @if (map.machinesWithoutConsole?.length) {
+          <div class="topology-map-summary">
+            No Player console, so not clickable: {{ map.machinesWithoutConsole.join(', ') }}
+          </div>
+        }
+      } @else {
+        <p class="topology-map-note">The Caster workspace has no machines yet, so there is nothing to map.</p>
+      }
+    }
+    @if (!hasView() && canUpdate()) {
+      <p class="topology-map-note">Update map needs the Player view the push creates.</p>
+    }
+  }
+</div>
