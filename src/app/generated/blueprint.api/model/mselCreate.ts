@@ -51,6 +51,7 @@ export interface MselCreate {
     showMoveOnAssessorView?: boolean;
     showGroupOnAssessorView?: boolean;
     showIntegrationTargetOnAssessorView?: boolean;
+    hideNamesOnAssessorView?: boolean;
     headerRowMetadata?: string | null;
     educationalLevel?: string | null;
     subject?: string | null;

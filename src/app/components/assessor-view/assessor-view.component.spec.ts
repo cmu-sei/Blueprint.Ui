@@ -91,9 +91,16 @@ function seeded<S extends { set(entities: unknown[]): void }>(Store: new () => S
 }
 
 async function renderAssessorView(
-  overrides: { canEditCheckboxes?: boolean; moves?: Move[]; fields?: DataField[]; standalone?: boolean; canChooseFields?: boolean } = {}
+  overrides: {
+    canEditCheckboxes?: boolean;
+    moves?: Move[];
+    fields?: DataField[];
+    standalone?: boolean;
+    canChooseFields?: boolean;
+    msel?: Msel;
+  } = {}
 ) {
-  const { canEditCheckboxes = false, moves = [], fields = FIELDS, standalone = false, canChooseFields = false } = overrides;
+  const { canEditCheckboxes = false, moves = [], fields = FIELDS, standalone = false, canChooseFields = false, msel = MSEL } = overrides;
   const poolApi = {
     getMselCompetencies: vi.fn(() => of<MselCompetency[]>([])),
   } satisfies ApiStub<MselCompetencyService>;
@@ -126,7 +133,7 @@ async function renderAssessorView(
         provide: MselStore,
         useFactory: () => {
           const store = new MselStore();
-          store.set([structuredClone(MSEL)]);
+          store.set([structuredClone(msel)]);
           store.setActive('msel-1');
           return store;
         },
@@ -315,5 +322,64 @@ describe('AssessorViewComponent', () => {
       '20 Oct 2026 12:00 EDT',
       '20 Nov 2026 12:00 EST',
     ]);
+  });
+
+  describe('who a statement is about', () => {
+    const MOVE: Move = { id: 'move-1', mselId: 'msel-1', moveNumber: 1, deltaSeconds: 0, description: 'Initial access' };
+    const statement = (id: string, actor: object) => ({
+      id,
+      timestamp: '2026-10-20T16:00:00Z',
+      actor,
+      verb: { id: 'https://w3id.org/xapi/tla/verbs/asserted', display: { 'en-US': 'asserted' } },
+      context: {
+        platform: 'blueprint',
+        team: { objectType: 'Group', name: 'BLU', account: { homePage: 'https://blueprint.example/', name: 'team-1' } },
+        contextActivities: { grouping: [{ id: 'https://blueprint.example/move/1' }] },
+      },
+    });
+
+    async function actorsShown(msel: Msel, statements: object[]) {
+      const { fixture } = await renderAssessorView({ moves: [MOVE], msel });
+      await userEvent.setup().click(screen.getByText('Move 1'));
+      TestBed.inject(HttpTestingController)
+        .expectOne((req) => req.url === '/api/xapi/statements' && req.params.get('mselId') === 'msel-1')
+        .flush({ statements });
+      fixture.detectChanges();
+      return Array.from(document.querySelectorAll('.statement-row'), (row) => [
+        row.querySelector('.stmt-actor')?.textContent,
+        row.querySelector('.stmt-team')?.textContent,
+      ]);
+    }
+
+    /**
+     * Verifies: on a MSEL that hides names, a statement the API stripped of its actor shows as a team member of its team.
+     * Interacts with: toggleMoveExpand, HttpClient GET api/xapi/statements (HttpTestingController), getActorLabel.
+     * Data: hideNamesOnAssessorView on; one statement with an empty actor and team BLU.
+     */
+    it('shows a team member of the team when the MSEL hides names', async () => {
+      expect(await actorsShown({ ...MSEL, hideNamesOnAssessorView: true }, [statement('stmt-1', { objectType: 'Agent' })])).toEqual([
+        ['Team member', 'BLU'],
+      ]);
+    });
+
+    /**
+     * Verifies: the MSEL's owner, whom the API sends the names, still sees them on a MSEL that hides names.
+     * Interacts with: getActorLabel.
+     * Data: hideNamesOnAssessorView on; one statement whose actor is Pat Learner.
+     */
+    it('shows the name the API sent on a MSEL that hides names', async () => {
+      expect(await actorsShown({ ...MSEL, hideNamesOnAssessorView: true }, [statement('stmt-1', { name: 'Pat Learner' })])).toEqual([
+        ['Pat Learner', 'BLU'],
+      ]);
+    });
+
+    /**
+     * Verifies: on a MSEL that shows names, a statement with no actor identity is Unknown, as before.
+     * Interacts with: getActorLabel.
+     * Data: hideNamesOnAssessorView off; one statement with an empty actor.
+     */
+    it('calls an actor with no name Unknown when the MSEL shows names', async () => {
+      expect(await actorsShown(MSEL, [statement('stmt-1', { objectType: 'Agent' })])).toEqual([['Unknown', 'BLU']]);
+    });
   });
 });
