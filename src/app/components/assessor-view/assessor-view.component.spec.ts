@@ -5,6 +5,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { Component, input, output } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { CdkTextareaAutosize } from '@angular/cdk/text-field';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { MatButtonModule } from '@angular/material/button';
@@ -28,6 +29,7 @@ import {
   MselCompetency,
   MselCompetencyService,
   ScenarioEvent,
+  Team,
   TeamCompetency,
   TeamCompetencyService,
 } from 'src/app/generated/blueprint.api';
@@ -36,6 +38,7 @@ import { DataValueStore } from 'src/app/data/data-value/data-value.store';
 import { MoveStore } from 'src/app/data/move/move.store';
 import { MselStore } from 'src/app/data/msel/msel.store';
 import { ScenarioEventStore } from 'src/app/data/scenario-event/scenario-event.store';
+import { TeamStore } from 'src/app/data/team/team.store';
 import { AssessorViewComponent } from './assessor-view.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { renderComponent } from 'src/app/test-utils/render-component';
@@ -91,14 +94,34 @@ function seeded<S extends { set(entities: unknown[]): void }>(Store: new () => S
 }
 
 async function renderAssessorView(
-  overrides: { canEditCheckboxes?: boolean; moves?: Move[]; fields?: DataField[]; standalone?: boolean; canChooseFields?: boolean } = {}
+  overrides: {
+    canEditCheckboxes?: boolean;
+    moves?: Move[];
+    fields?: DataField[];
+    values?: DataValue[];
+    standalone?: boolean;
+    canChooseFields?: boolean;
+    teams?: Team[];
+    mselCompetencies?: MselCompetency[];
+    teamCompetencies?: TeamCompetency[];
+  } = {}
 ) {
-  const { canEditCheckboxes = false, moves = [], fields = FIELDS, standalone = false, canChooseFields = false } = overrides;
+  const {
+    canEditCheckboxes = false,
+    moves = [],
+    fields = FIELDS,
+    values = VALUES,
+    standalone = false,
+    canChooseFields = false,
+    teams = [],
+    mselCompetencies = [],
+    teamCompetencies = [],
+  } = overrides;
   const poolApi = {
-    getMselCompetencies: vi.fn(() => of<MselCompetency[]>([])),
+    getMselCompetencies: vi.fn(() => of<MselCompetency[]>(structuredClone(mselCompetencies))),
   } satisfies ApiStub<MselCompetencyService>;
   const teamCompetencyApi = {
-    getMselTeamCompetencies: vi.fn(() => of<TeamCompetency[]>([])),
+    getMselTeamCompetencies: vi.fn(() => of<TeamCompetency[]>(structuredClone(teamCompetencies))),
   } satisfies ApiStub<TeamCompetencyService>;
   const rendered = await renderComponent(AssessorViewComponent, {
     imports: [
@@ -132,9 +155,10 @@ async function renderAssessorView(
         },
       },
       seeded(DataFieldStore, fields),
-      seeded(DataValueStore, VALUES),
+      seeded(DataValueStore, values),
       seeded(ScenarioEventStore, [EVENT]),
       seeded(MoveStore, moves),
+      seeded(TeamStore, teams),
     ],
     inputs: { canEditCheckboxes, loggedInUserId: 'user-me', standalone, canChooseFields },
   });
@@ -315,5 +339,136 @@ describe('AssessorViewComponent', () => {
       '20 Oct 2026 12:00 EDT',
       '20 Nov 2026 12:00 EST',
     ]);
+  });
+
+  describe('an opened move', () => {
+    const MOVE_1: Move = { id: 'move-1', mselId: 'msel-1', moveNumber: 1, deltaSeconds: 0, description: 'Initial access' };
+    const COMPETENCY_FIELD: DataField = {
+      id: 'df-comp', mselId: 'msel-1', name: 'Competencies', dataType: DataFieldType.Competency, displayOrder: 4, isAssessorVisible: false,
+    };
+    const BLUE: Team = { id: 'team-blue', mselId: 'msel-1', name: 'Blue Team', shortName: 'Blue' };
+    const EXCON: Team = { id: 'team-excon', mselId: 'msel-1', name: 'Exercise Control', shortName: 'EXCON' };
+    // Move 1 holds se-1, tagged with competency T0001; Blue and EXCON are both assigned T0001.
+    const ASSESSABLE = {
+      moves: [MOVE_1],
+      fields: [...FIELDS, COMPETENCY_FIELD],
+      values: [...VALUES, { id: 'dv-comp', scenarioEventId: 'se-1', dataFieldId: 'df-comp', value: 'T0001' }],
+      teams: [BLUE, EXCON],
+      mselCompetencies: [{ id: 'mc-1', mselId: 'msel-1', competencyId: 'comp-1', competency: { id: 'comp-1', idNumber: 'T0001' } }],
+      teamCompetencies: [
+        { id: 'tc-1', teamId: 'team-blue', competencyId: 'comp-1' },
+        { id: 'tc-2', teamId: 'team-excon', competencyId: 'comp-1' },
+      ],
+    };
+
+    async function openMove(fixture: ComponentFixture<unknown>) {
+      const user = userEvent.setup();
+      await user.click(screen.getByText('Move 1'));
+      TestBed.inject(HttpTestingController)
+        .expectOne((req) => req.url === '/api/xapi/statements')
+        .flush({ statements: [] });
+      fixture.detectChanges();
+      return user;
+    }
+
+    /** Toggles one team in the evidence Team filter (a multiple select) and closes it. */
+    async function toggleTeamFilter(fixture: ComponentFixture<unknown>, user: ReturnType<typeof userEvent.setup>, team: string) {
+      await user.click(screen.getByRole('combobox', { name: 'Team' }));
+      await user.click(await screen.findByRole('option', { name: team }));
+      await user.keyboard('{Escape}');
+      fixture.detectChanges();
+    }
+
+    const assessTeam = () => screen.getByRole('combobox', { name: 'Assess Team' });
+
+    describe('Assess Team', () => {
+      /**
+       * Verifies: a Team filter of exactly one team, set before the move is opened, is preselected in Assess Team.
+       * Interacts with: filterByTeams (called before the row opens, as an earlier opening of the row leaves it), toggleMoveExpand (move header clicked), Assess Team mat-select.
+       * Data: Move 1 with competency T0001 assigned to Blue and EXCON; the move's Team filter is EXCON.
+       */
+      it('preselects the one team the evidence was filtered to before the move opened', async () => {
+        const { fixture } = await renderAssessorView(ASSESSABLE);
+        fixture.componentInstance.filterByTeams('move-1', ['team-excon']);
+
+        await openMove(fixture);
+
+        expect(assessTeam()).toHaveTextContent('EXCON');
+      });
+
+      /**
+       * Verifies: changing the Team filter of an open move to exactly one team selects that team in Assess Team, each time it changes; two teams leave it alone.
+       * Interacts with: toggleMoveExpand (move header clicked), evidence Team mat-select (filterByTeams), Assess Team mat-select.
+       * Data: Move 1 with competency T0001 assigned to Blue and EXCON; the filter goes Blue, then Blue + EXCON, then EXCON.
+       */
+      it('follows the Team filter whenever it narrows to one team after the move opened', async () => {
+        const { fixture } = await renderAssessorView(ASSESSABLE);
+        const user = await openMove(fixture);
+        expect(assessTeam()).toHaveTextContent('None');
+
+        await toggleTeamFilter(fixture, user, 'Blue');
+        expect(assessTeam()).toHaveTextContent('Blue');
+
+        await toggleTeamFilter(fixture, user, 'EXCON');
+        expect(assessTeam()).toHaveTextContent('Blue');
+
+        await toggleTeamFilter(fixture, user, 'Blue');
+        expect(assessTeam()).toHaveTextContent('EXCON');
+      });
+
+      /**
+       * Verifies: a team the user picked in Assess Team is kept when the Team filter later narrows to a different team.
+       * Interacts with: toggleMoveExpand (move header clicked), Assess Team mat-select (setAssertionTeam), evidence Team mat-select (filterByTeams).
+       * Data: Move 1 with competency T0001 assigned to Blue and EXCON; Blue is picked by hand, then the filter is set to EXCON.
+       */
+      it('keeps a team picked by hand when the Team filter changes', async () => {
+        const { fixture } = await renderAssessorView(ASSESSABLE);
+        const user = await openMove(fixture);
+
+        await user.click(assessTeam());
+        await user.click(await screen.findByRole('option', { name: 'Blue' }));
+        fixture.detectChanges();
+        await toggleTeamFilter(fixture, user, 'EXCON');
+
+        expect(assessTeam()).toHaveTextContent('Blue');
+      });
+    });
+
+    /**
+     * Verifies: the Refresh evidence button is named and described for what it reloads, and reloads the MSEL's xAPI statements.
+     * Interacts with: refreshStatements (button clicked), MatTooltip description, HttpClient GET api/xapi/statements (HttpTestingController).
+     * Data: Move 1 opened with no statements yet.
+     */
+    it('reloads the statements with Refresh evidence', async () => {
+      const { fixture } = await renderAssessorView(ASSESSABLE);
+      const user = await openMove(fixture);
+      const refresh = screen.getByRole('button', { name: 'Refresh evidence' });
+
+      expect(refresh).toHaveAccessibleDescription('Reload the xAPI statements and the CITE answers shown');
+      await user.click(refresh);
+
+      TestBed.inject(HttpTestingController)
+        .expectOne((req) => req.url === '/api/xapi/statements' && req.params.get('mselId') === 'msel-1')
+        .flush({ statements: [] });
+      expect(screen.queryByRole('button', { name: 'Refresh xAPI statements' })).not.toBeInTheDocument();
+    });
+
+    /**
+     * Verifies: each competency card puts its id beside its submit control, and its Rating beside a Comment that grows as it is typed in.
+     * Interacts with: toggleMoveExpand (move header clicked), the rating card layout containers, CdkTextareaAutosize.
+     * Data: Move 1 with competency T0001.
+     */
+    it('lays out each competency card in two rows', async () => {
+      const { fixture } = await renderAssessorView(ASSESSABLE);
+      await openMove(fixture);
+
+      const header = screen.getByText('T0001').closest('.rating-card-header');
+      expect(header).toContainElement(screen.getByRole('button', { name: 'Submit assertion' }));
+      const fields = screen.getByRole('combobox', { name: 'Rating' }).closest('.rating-fields');
+      const comment = screen.getByRole('textbox', { name: 'Comment' });
+      expect(fields).toContainElement(comment);
+      expect(comment.tagName).toBe('TEXTAREA');
+      expect(fixture.debugElement.query(By.directive(CdkTextareaAutosize)).nativeElement).toBe(comment);
+    });
   });
 });

@@ -205,7 +205,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
                     </mat-form-field>
                   </div>
                   <button mat-icon-button class="refresh-button" (click)="refreshStatements()"
-                    title="Refresh xAPI statements" [disabled]="statementsLoading">
+                    aria-label="Refresh evidence"
+                    matTooltip="Reload the xAPI statements and the CITE answers shown" [disabled]="statementsLoading">
                     <mat-icon class="mdi-18px" fontIcon="mdi-refresh" />
                   </button>
                 </div>
@@ -271,34 +272,38 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   <div class="competency-ratings">
                     @for (comp of getMoveCompetencies(row.moveNumber); track comp.id) {
                       <div class="rating-card" [class.rating-submitted]="isRatingSubmitted('move-' + row.moveNumber, comp.id)">
-                        <div class="rating-comp-id" [matTooltip]="getCompetencyTooltip(comp)" matTooltipPosition="above">{{ comp.idNumber }}</div>
-                        <mat-form-field class="rating-level-field" subscriptSizing="dynamic">
-                          <mat-label>Rating</mat-label>
-                          <mat-select [value]="getRating('move-' + row.moveNumber, comp.id).levelId"
-                            (selectionChange)="setRatingLevel('move-' + row.moveNumber, comp.id, $event.value)">
-                            @for (level of proficiencyLevels; track level.id) {
-                              <mat-option [value]="level.id" [title]="level.description">{{ level.name }} ({{ level.value }})</mat-option>
+                        <div class="rating-card-header">
+                          <div class="rating-comp-id" [matTooltip]="getCompetencyTooltip(comp)" matTooltipPosition="above">{{ comp.idNumber }}</div>
+                          <div class="rating-actions">
+                            <button mat-icon-button class="rating-submit-button"
+                              [disabled]="!canSubmitRating('move-' + row.moveNumber, comp.id)"
+                              (click)="submitRating('move-' + row.moveNumber, comp.id)"
+                              title="Submit assertion">
+                              <mat-icon class="mdi-18px" fontIcon="mdi-send" />
+                            </button>
+                            @if (isRatingSubmitted('move-' + row.moveNumber, comp.id)) {
+                              <span class="rating-submitted-indicator">
+                                <mat-icon fontIcon="mdi-check-circle" class="mdi-14px" />
+                                Submitted
+                              </span>
                             }
-                          </mat-select>
-                        </mat-form-field>
-                        <mat-form-field class="rating-comment-field" subscriptSizing="dynamic">
-                          <mat-label>Comment</mat-label>
-                          <input matInput [value]="getRating('move-' + row.moveNumber, comp.id).comment"
-                            (input)="setRatingComment('move-' + row.moveNumber, comp.id, $event.target.value)" />
-                        </mat-form-field>
-                        <div class="rating-actions">
-                          <button mat-icon-button class="rating-submit-button"
-                            [disabled]="!canSubmitRating('move-' + row.moveNumber, comp.id)"
-                            (click)="submitRating('move-' + row.moveNumber, comp.id)"
-                            title="Submit assertion">
-                            <mat-icon class="mdi-18px" fontIcon="mdi-send" />
-                          </button>
-                          @if (isRatingSubmitted('move-' + row.moveNumber, comp.id)) {
-                            <span class="rating-submitted-indicator">
-                              <mat-icon fontIcon="mdi-check-circle" class="mdi-14px" />
-                              Submitted
-                            </span>
-                          }
+                          </div>
+                        </div>
+                        <div class="rating-fields">
+                          <mat-form-field class="rating-level-field" subscriptSizing="dynamic">
+                            <mat-label>Rating</mat-label>
+                            <mat-select [value]="getRating('move-' + row.moveNumber, comp.id).levelId"
+                              (selectionChange)="setRatingLevel('move-' + row.moveNumber, comp.id, $event.value)">
+                              @for (level of proficiencyLevels; track level.id) {
+                                <mat-option [value]="level.id" [title]="level.description">{{ level.name }} ({{ level.value }})</mat-option>
+                              }
+                            </mat-select>
+                          </mat-form-field>
+                          <mat-form-field class="rating-comment-field" subscriptSizing="dynamic">
+                            <mat-label>Comment</mat-label>
+                            <textarea matInput cdkTextareaAutosize cdkAutosizeMinRows="1" [value]="getRating('move-' + row.moveNumber, comp.id).comment"
+                              (input)="setRatingComment('move-' + row.moveNumber, comp.id, $event.target.value)"></textarea>
+                          </mat-form-field>
                         </div>
                       </div>
                     }
@@ -394,7 +399,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
                     </mat-form-field>
                   </div>
                   <button mat-icon-button class="refresh-button" (click)="refreshStatements()"
-                    title="Refresh xAPI statements" [disabled]="statementsLoading">
+                    aria-label="Refresh evidence"
+                    matTooltip="Reload the xAPI statements and the CITE answers shown" [disabled]="statementsLoading">
                     <mat-icon class="mdi-18px" fontIcon="mdi-refresh" />
                   </button>
                 </div>
@@ -460,34 +466,38 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   <div class="competency-ratings">
                     @for (comp of getGroupCompetencies(row.groupKey); track comp.id) {
                       <div class="rating-card" [class.rating-submitted]="isRatingSubmitted('group-' + row.groupKey, comp.id)">
-                        <div class="rating-comp-id" [matTooltip]="getCompetencyTooltip(comp)" matTooltipPosition="above">{{ comp.idNumber }}</div>
-                        <mat-form-field class="rating-level-field" subscriptSizing="dynamic">
-                          <mat-label>Rating</mat-label>
-                          <mat-select [value]="getRating('group-' + row.groupKey, comp.id).levelId"
-                            (selectionChange)="setRatingLevel('group-' + row.groupKey, comp.id, $event.value)">
-                            @for (level of proficiencyLevels; track level.id) {
-                              <mat-option [value]="level.id" [title]="level.description">{{ level.name }} ({{ level.value }})</mat-option>
+                        <div class="rating-card-header">
+                          <div class="rating-comp-id" [matTooltip]="getCompetencyTooltip(comp)" matTooltipPosition="above">{{ comp.idNumber }}</div>
+                          <div class="rating-actions">
+                            <button mat-icon-button class="rating-submit-button"
+                              [disabled]="!canSubmitRating('group-' + row.groupKey, comp.id)"
+                              (click)="submitRating('group-' + row.groupKey, comp.id)"
+                              title="Submit assertion">
+                              <mat-icon class="mdi-18px" fontIcon="mdi-send" />
+                            </button>
+                            @if (isRatingSubmitted('group-' + row.groupKey, comp.id)) {
+                              <span class="rating-submitted-indicator">
+                                <mat-icon fontIcon="mdi-check-circle" class="mdi-14px" />
+                                Submitted
+                              </span>
                             }
-                          </mat-select>
-                        </mat-form-field>
-                        <mat-form-field class="rating-comment-field" subscriptSizing="dynamic">
-                          <mat-label>Comment</mat-label>
-                          <input matInput [value]="getRating('group-' + row.groupKey, comp.id).comment"
-                            (input)="setRatingComment('group-' + row.groupKey, comp.id, $event.target.value)" />
-                        </mat-form-field>
-                        <div class="rating-actions">
-                          <button mat-icon-button class="rating-submit-button"
-                            [disabled]="!canSubmitRating('group-' + row.groupKey, comp.id)"
-                            (click)="submitRating('group-' + row.groupKey, comp.id)"
-                            title="Submit assertion">
-                            <mat-icon class="mdi-18px" fontIcon="mdi-send" />
-                          </button>
-                          @if (isRatingSubmitted('group-' + row.groupKey, comp.id)) {
-                            <span class="rating-submitted-indicator">
-                              <mat-icon fontIcon="mdi-check-circle" class="mdi-14px" />
-                              Submitted
-                            </span>
-                          }
+                          </div>
+                        </div>
+                        <div class="rating-fields">
+                          <mat-form-field class="rating-level-field" subscriptSizing="dynamic">
+                            <mat-label>Rating</mat-label>
+                            <mat-select [value]="getRating('group-' + row.groupKey, comp.id).levelId"
+                              (selectionChange)="setRatingLevel('group-' + row.groupKey, comp.id, $event.value)">
+                              @for (level of proficiencyLevels; track level.id) {
+                                <mat-option [value]="level.id" [title]="level.description">{{ level.name }} ({{ level.value }})</mat-option>
+                              }
+                            </mat-select>
+                          </mat-form-field>
+                          <mat-form-field class="rating-comment-field" subscriptSizing="dynamic">
+                            <mat-label>Comment</mat-label>
+                            <textarea matInput cdkTextareaAutosize cdkAutosizeMinRows="1" [value]="getRating('group-' + row.groupKey, comp.id).comment"
+                              (input)="setRatingComment('group-' + row.groupKey, comp.id, $event.target.value)"></textarea>
+                          </mat-form-field>
                         </div>
                       </div>
                     }
@@ -630,7 +640,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
                     </mat-form-field>
                   </div>
                   <button mat-icon-button class="refresh-button" (click)="refreshStatements()"
-                    title="Refresh xAPI statements" [disabled]="isLoading(row.event.id)">
+                    aria-label="Refresh evidence"
+                    matTooltip="Reload the xAPI statements and the CITE answers shown" [disabled]="isLoading(row.event.id)">
                     <mat-icon class="mdi-18px" fontIcon="mdi-refresh" />
                   </button>
                 </div>
@@ -697,34 +708,38 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   <div class="competency-ratings">
                     @for (comp of getEventCompetencies(row.event.id); track comp.id) {
                       <div class="rating-card" [class.rating-submitted]="isRatingSubmitted(row.event.id, comp.id)">
-                        <div class="rating-comp-id" [matTooltip]="getCompetencyTooltip(comp)" matTooltipPosition="above">{{ comp.idNumber }}</div>
-                        <mat-form-field class="rating-level-field" subscriptSizing="dynamic">
-                          <mat-label>Rating</mat-label>
-                          <mat-select [value]="getRating(row.event.id, comp.id).levelId"
-                            (selectionChange)="setRatingLevel(row.event.id, comp.id, $event.value)">
-                            @for (level of proficiencyLevels; track level.id) {
-                              <mat-option [value]="level.id" [title]="level.description">{{ level.name }} ({{ level.value }})</mat-option>
+                        <div class="rating-card-header">
+                          <div class="rating-comp-id" [matTooltip]="getCompetencyTooltip(comp)" matTooltipPosition="above">{{ comp.idNumber }}</div>
+                          <div class="rating-actions">
+                            <button mat-icon-button class="rating-submit-button"
+                              [disabled]="!canSubmitRating(row.event.id, comp.id)"
+                              (click)="submitRating(row.event.id, comp.id)"
+                              title="Submit assertion">
+                              <mat-icon class="mdi-18px" fontIcon="mdi-send" />
+                            </button>
+                            @if (isRatingSubmitted(row.event.id, comp.id)) {
+                              <span class="rating-submitted-indicator">
+                                <mat-icon fontIcon="mdi-check-circle" class="mdi-14px" />
+                                Submitted
+                              </span>
                             }
-                          </mat-select>
-                        </mat-form-field>
-                        <mat-form-field class="rating-comment-field" subscriptSizing="dynamic">
-                          <mat-label>Comment</mat-label>
-                          <input matInput [value]="getRating(row.event.id, comp.id).comment"
-                            (input)="setRatingComment(row.event.id, comp.id, $event.target.value)" />
-                        </mat-form-field>
-                        <div class="rating-actions">
-                          <button mat-icon-button class="rating-submit-button"
-                            [disabled]="!canSubmitRating(row.event.id, comp.id)"
-                            (click)="submitRating(row.event.id, comp.id)"
-                            title="Submit assertion">
-                            <mat-icon class="mdi-18px" fontIcon="mdi-send" />
-                          </button>
-                          @if (isRatingSubmitted(row.event.id, comp.id)) {
-                            <span class="rating-submitted-indicator">
-                              <mat-icon fontIcon="mdi-check-circle" class="mdi-14px" />
-                              Submitted
-                            </span>
-                          }
+                          </div>
+                        </div>
+                        <div class="rating-fields">
+                          <mat-form-field class="rating-level-field" subscriptSizing="dynamic">
+                            <mat-label>Rating</mat-label>
+                            <mat-select [value]="getRating(row.event.id, comp.id).levelId"
+                              (selectionChange)="setRatingLevel(row.event.id, comp.id, $event.value)">
+                              @for (level of proficiencyLevels; track level.id) {
+                                <mat-option [value]="level.id" [title]="level.description">{{ level.name }} ({{ level.value }})</mat-option>
+                              }
+                            </mat-select>
+                          </mat-form-field>
+                          <mat-form-field class="rating-comment-field" subscriptSizing="dynamic">
+                            <mat-label>Comment</mat-label>
+                            <textarea matInput cdkTextareaAutosize cdkAutosizeMinRows="1" [value]="getRating(row.event.id, comp.id).comment"
+                              (input)="setRatingComment(row.event.id, comp.id, $event.target.value)"></textarea>
+                          </mat-form-field>
                         </div>
                       </div>
                     }
