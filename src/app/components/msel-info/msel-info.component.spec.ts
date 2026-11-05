@@ -825,6 +825,52 @@ describe('MselInfoComponent', () => {
     });
   });
 
+  describe('Hide individual names from assessors', () => {
+    const box = () => screen.getByLabelText('Hide individual names from assessors');
+
+    /**
+     * Verifies: ticking the box marks the MSEL changed, and Save sends hideNamesOnAssessorView.
+     * Interacts with: MselService.updateMsel (stub), saveChanges, real PermissionDataService (stubbed grants).
+     * Data: EditMsels; a pending MSEL that shows names.
+     */
+    it('saves hiding names from assessors', async () => {
+      const { mselApi } = await renderInfo({ permissions: [SystemPermission.EditMsels] });
+      const user = userEvent.setup();
+
+      expect(box()).not.toBeChecked();
+      await user.click(box());
+      expect(screen.getByText('Changes have not been saved!')).toBeInTheDocument();
+      await user.click(screen.getAllByTitle('Save Changes')[0]);
+
+      expect(mselApi.updateMsel).toHaveBeenCalledTimes(1);
+      expect(mselApi.updateMsel.mock.calls[0][1].hideNamesOnAssessorView).toBe(true);
+    });
+
+    /**
+     * Verifies: the box stays editable on a pushed MSEL, since it changes only what the Assessor View lists.
+     * Interacts with: canEditMsel, integrationsLocked.
+     * Data: EditMsels; a deployed MSEL that hides names.
+     */
+    it('keeps hiding names editable on a pushed MSEL', async () => {
+      await renderInfo({ permissions: [SystemPermission.EditMsels], mselExtra: { status: MselItemStatus.Deployed, hideNamesOnAssessorView: true } });
+
+      expect(box()).toBeChecked();
+      expect(box()).toBeEnabled();
+    });
+
+    /**
+     * Verifies: without EditMsels or an editing role the box is shown but cannot be changed.
+     * Interacts with: canEditMsel, real PermissionDataService (stubbed grants).
+     * Data: every permission but EditMsels; the Viewer role; a MSEL that hides names.
+     */
+    it('shows hiding names read-only without EditMsels or an editing role', async () => {
+      await renderInfo({ permissions: allBut(SystemPermission.EditMsels), myRoles: [MselRole.Viewer], mselExtra: { hideNamesOnAssessorView: true } });
+
+      expect(box()).toBeChecked();
+      expect(box()).toBeDisabled();
+    });
+  });
+
   describe('Push Integrations start time', () => {
     const HOUR = 60 * 60 * 1000;
     const pushButton = () => screen.getByTitle('Push Integrations');

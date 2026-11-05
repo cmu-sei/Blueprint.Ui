@@ -81,6 +81,7 @@ export interface Msel {
     showMoveOnAssessorView?: boolean;
     showGroupOnAssessorView?: boolean;
     showIntegrationTargetOnAssessorView?: boolean;
+    hideNamesOnAssessorView?: boolean;
     moves?: Array<Move> | null;
     dataFields?: Array<DataField> | null;
     scenarioEvents?: Array<ScenarioEvent> | null;
