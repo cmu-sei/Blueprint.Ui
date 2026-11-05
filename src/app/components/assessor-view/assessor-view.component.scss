@@ -253,6 +253,28 @@ td {
   background-color: var(--mat-sys-surface-container);
 }
 
+// A group of repeated statements: the count stands where a statement has its Copy JSON button.
+.statement-group-count {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 10px;
+  text-align: center;
+  white-space: nowrap;
+  background-color: var(--mat-sys-secondary-container);
+  color: var(--mat-sys-on-secondary-container);
+}
+
+.statement-group-row:focus-visible {
+  outline: 2px solid var(--mat-sys-primary);
+  outline-offset: -2px;
+}
+
+// The statements of an expanded group, marked off from the rows around them.
+.statement-member .statement-row {
+  box-shadow: inset 3px 0 0 var(--mat-sys-secondary);
+}
+
 .statement-json {
   grid-column: 1 / -1;
   margin: 0;

@@ -64,10 +64,22 @@ import { CardEditDialogComponent } from '../card-edit-dialog/card-edit-dialog.co
 
 export interface XApiStatement {
   id?: string;
-  actor?: { name?: string; account?: { name?: string } };
+  actor?: {
+    objectType?: string;
+    name?: string;
+    mbox?: string;
+    mbox_sha1sum?: string;
+    openid?: string;
+    account?: { homePage?: string; name?: string };
+  };
   verb?: { id?: string; display?: { 'en-US'?: string } };
   object?: { id?: string; definition?: { name?: { 'en-US'?: string }; type?: string; extensions?: Record<string, any> } };
-  result?: { score?: { raw?: number }; completion?: boolean; success?: boolean; response?: string };
+  result?: {
+    score?: { raw?: number; scaled?: number; min?: number; max?: number };
+    completion?: boolean;
+    success?: boolean;
+    response?: string;
+  };
   timestamp?: string;
   context?: {
     team?: { name?: string; account?: { name?: string } };
@@ -78,6 +90,36 @@ export interface XApiStatement {
       other?: { id?: string; definition?: { name?: { 'en-US'?: string }; type?: string } }[];
     };
   };
+}
+
+/** How the xAPI Evidence lists collapse repeated statements. */
+export type StatementGrouping = 'user' | 'team' | 'off';
+
+/** Repeated statements shown as one row; a group of one is a plain statement row. */
+export interface StatementGroup {
+  key: string;
+  /** In time order, oldest first. */
+  statements: XApiStatement[];
+  /** Timestamp of the group's newest statement, which places the group in the list. */
+  newest: string;
+  timeLabel: string;
+  actorLabel: string;
+}
+
+/** One row of a statement list: a group header, or a statement (alone, or inside an expanded group). */
+export interface StatementListItem {
+  key: string;
+  group?: StatementGroup;
+  stmt?: XApiStatement;
+  member?: boolean;
+}
+
+interface StatementListCacheEntry {
+  deps: unknown[];
+  filtered: XApiStatement[];
+  groups: StatementGroup[];
+  items: StatementListItem[];
+  itemsVersion: number;
 }
 
 @Component({
@@ -171,6 +213,17 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
   groupStatements: Map<string, XApiStatement[]> = new Map();
   loadingStatements: Set<string> = new Set();
 
+  // Statement grouping. The saved choice is kept while User isn't offered, so it comes back
+  // on a MSEL whose statements carry names.
+  private savedStatementGrouping: StatementGrouping = 'team';
+  userGroupingAvailable = false;
+  private expandedStatementGroups = new Set<string>();
+  private statementGroupExpansionVersion = 0;
+  // Filtered and grouped statement lists per section (move-N, group-N-M, event-<id>), rebuilt
+  // only when the section's statements, filters or the grouping change, not per change detection.
+  private statementListCache = new Map<string, StatementListCacheEntry>();
+  private static EMPTY_STATEMENTS: XApiStatement[] = [];
+
   // Competency assessment
   mselCompetencies: MselCompetency[] = [];
   teamCompetencies: TeamCompetency[] = [];
@@ -198,6 +251,10 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
   constructor() {
     this.apiUrl = this.settingsService.settings.ApiUrl;
     this.showRealTime = this.uiDataService.useRealTime();
+    const savedGrouping = this.uiDataService.getStatementGrouping();
+    if (savedGrouping === 'user' || savedGrouping === 'team' || savedGrouping === 'off') {
+      this.savedStatementGrouping = savedGrouping;
+    }
 
     (this.mselQuery.selectActive() as Observable<MselPlus>)
       .pipe(takeUntil(this.unsubscribe$))
@@ -689,19 +746,216 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
   }
 
   getMoveStatements(moveNumber: number): XApiStatement[] {
-    return this.moveStatements.get(moveNumber) || [];
+    return this.moveStatements.get(moveNumber) || AssessorViewComponent.EMPTY_STATEMENTS;
   }
 
   getGroupStatements(groupKey: string): XApiStatement[] {
-    return this.groupStatements.get(groupKey) || [];
+    return this.groupStatements.get(groupKey) || AssessorViewComponent.EMPTY_STATEMENTS;
   }
 
   getFilteredMoveStatements(moveNumber: number): XApiStatement[] {
-    return this.applyStatementFilters(this.getMoveStatements(moveNumber), `move-${moveNumber}`);
+    return this.getStatementList(`move-${moveNumber}`, this.getMoveStatements(moveNumber)).filtered;
   }
 
   getFilteredGroupStatements(groupKey: string): XApiStatement[] {
-    return this.applyStatementFilters(this.getGroupStatements(groupKey), `group-${groupKey}`);
+    return this.getStatementList(`group-${groupKey}`, this.getGroupStatements(groupKey)).filtered;
+  }
+
+  getMoveStatementItems(moveNumber: number): StatementListItem[] {
+    return this.getStatementList(`move-${moveNumber}`, this.getMoveStatements(moveNumber)).items;
+  }
+
+  getGroupStatementItems(groupKey: string): StatementListItem[] {
+    return this.getStatementList(`group-${groupKey}`, this.getGroupStatements(groupKey)).items;
+  }
+
+  getEventStatementItems(eventId: string): StatementListItem[] {
+    return this.getStatementList(`event-${eventId}`, this.getStatements(eventId), true).items;
+  }
+
+  /** The grouping in effect: the saved choice, or Team when User was saved but isn't offered. */
+  get statementGrouping(): StatementGrouping {
+    if (this.savedStatementGrouping === 'user' && !this.userGroupingAvailable) return 'team';
+    return this.savedStatementGrouping;
+  }
+
+  setStatementGrouping(value: StatementGrouping) {
+    this.savedStatementGrouping = value;
+    this.uiDataService.setStatementGrouping(value);
+  }
+
+  isStatementGroupExpanded(sectionKey: string, groupKey: string): boolean {
+    return this.expandedStatementGroups.has(`${sectionKey}|${groupKey}`);
+  }
+
+  toggleStatementGroup(sectionKey: string, groupKey: string) {
+    const key = `${sectionKey}|${groupKey}`;
+    if (this.expandedStatementGroups.has(key)) {
+      this.expandedStatementGroups.delete(key);
+    } else {
+      this.expandedStatementGroups.add(key);
+    }
+    this.statementGroupExpansionVersion++;
+  }
+
+  /**
+   * A section's filtered statements, their groups and the rows shown for them, cached per
+   * section. Rebuilt when one of its inputs is a different object than last time: the filter
+   * selects and distributeStatements always store new arrays, so a reference check is enough.
+   */
+  private getStatementList(sectionKey: string, source: XApiStatement[], isEvent = false): StatementListCacheEntry {
+    const deps: unknown[] = [
+      source,
+      this.statementGrouping,
+      this.sectionSourceFilter.get(sectionKey),
+      this.sectionVerbFilter.get(sectionKey),
+      this.sectionTeamFilter.get(sectionKey),
+      this.teamList,
+      isEvent ? this.selectedMoveNumber : null,
+      this.msel,
+    ];
+    let entry = this.statementListCache.get(sectionKey);
+    if (!entry || deps.some((dep, i) => dep !== entry.deps[i])) {
+      let filtered = this.applyStatementFilters(source, sectionKey);
+      if (isEvent) filtered = this.filterToSelectedMove(filtered);
+      entry = {
+        deps,
+        filtered,
+        groups: this.buildStatementGroups(filtered, this.statementGrouping),
+        items: [],
+        itemsVersion: -1,
+      };
+      this.statementListCache.set(sectionKey, entry);
+    }
+    if (entry.itemsVersion !== this.statementGroupExpansionVersion) {
+      entry.items = this.buildStatementItems(sectionKey, entry.groups);
+      entry.itemsVersion = this.statementGroupExpansionVersion;
+    }
+    return entry;
+  }
+
+  /**
+   * Collapses repeated statements: same platform, verb, object and team (and, by User, the
+   * same actor) with the same result. Groups are placed by their newest statement, oldest first
+   * like the list itself.
+   */
+  private buildStatementGroups(stmts: XApiStatement[], mode: StatementGrouping): StatementGroup[] {
+    const groups: StatementGroup[] = [];
+    const byKey = new Map<string, StatementGroup>();
+    stmts.forEach((stmt, i) => {
+      const key = mode === 'off' ? null : this.statementGroupKey(stmt, mode);
+      if (key === null) {
+        groups.push({ key: `s:${i}:${stmt.id ?? ''}`, statements: [stmt], newest: '', timeLabel: '', actorLabel: '' });
+        return;
+      }
+      let group = byKey.get(key);
+      if (!group) {
+        group = { key: `g:${key}`, statements: [], newest: '', timeLabel: '', actorLabel: '' };
+        byKey.set(key, group);
+        groups.push(group);
+      }
+      group.statements.push(stmt);
+    });
+    for (const group of groups) {
+      const stmts = group.statements;
+      for (const stmt of stmts) {
+        if ((stmt.timestamp || '') > group.newest) group.newest = stmt.timestamp || '';
+      }
+      if (stmts.length > 1) {
+        const first = this.formatTimestamp(stmts[0].timestamp);
+        const last = this.formatTimestamp(stmts[stmts.length - 1].timestamp);
+        group.timeLabel = first === last ? first : `${first} – ${last}`;
+        group.actorLabel = this.statementGroupActorLabel(stmts, mode);
+      }
+    }
+    // Array.prototype.sort is stable, so groups with the same newest time keep their order.
+    return groups.sort((a, b) => a.newest.localeCompare(b.newest));
+  }
+
+  private buildStatementItems(sectionKey: string, groups: StatementGroup[]): StatementListItem[] {
+    const items: StatementListItem[] = [];
+    for (const group of groups) {
+      if (group.statements.length === 1) {
+        items.push({ key: group.key, stmt: group.statements[0] });
+        continue;
+      }
+      items.push({ key: group.key, group });
+      if (this.isStatementGroupExpanded(sectionKey, group.key)) {
+        group.statements.forEach((stmt, i) => items.push({ key: `${group.key}#${i}`, stmt, member: true }));
+      }
+    }
+    return items;
+  }
+
+  /** The key repeated statements share, or null for a statement that is always its own row. */
+  private statementGroupKey(stmt: XApiStatement, mode: StatementGrouping): string | null {
+    if (this.isNeverGrouped(stmt)) return null;
+    const result = stmt.result;
+    return JSON.stringify([
+      (stmt.context?.platform || '').toLowerCase(),
+      stmt.verb?.id || '',
+      stmt.object?.id || '',
+      stmt.context?.team?.account?.name || '',
+      mode === 'user' ? this.actorIdentityKey(stmt.actor) : '',
+      result ? [result.score ?? null, result.success ?? null, result.completion ?? null, result.response ?? null] : null,
+    ]);
+  }
+
+  /** Competency assertions, CITE submissions and scores, and scored results each keep their own row. */
+  private isNeverGrouped(stmt: XApiStatement): boolean {
+    const verbId = (stmt.verb?.id || '').toLowerCase();
+    if (verbId.endsWith('/asserted')) return true;
+    const platform = (stmt.context?.platform || '').toLowerCase();
+    if (platform === 'cite' && AssessorViewComponent.CITE_RESULT_VERB.test(verbId)) return true;
+    return stmt.result?.score != null;
+  }
+
+  // CITE sends dod-isd verbs/submitted when a submission is completed and verbs/evaluated when it is scored.
+  private static CITE_RESULT_VERB = /\/(submitted|scored|evaluated)$/;
+
+  /** Who an actor is, from the first identifier xAPI gives it; '' when the API removed them all. */
+  private actorIdentityKey(actor: XApiStatement['actor']): string {
+    if (!actor) return '';
+    if (actor.account && (actor.account.homePage || actor.account.name)) {
+      return `account:${actor.account.homePage || ''}|${actor.account.name || ''}`;
+    }
+    if (actor.mbox) return `mbox:${actor.mbox}`;
+    if (actor.mbox_sha1sum) return `sha1:${actor.mbox_sha1sum}`;
+    if (actor.openid) return `openid:${actor.openid}`;
+    if (actor.name) return `name:${actor.name}`;
+    return '';
+  }
+
+  private statementGroupActorLabel(stmts: XApiStatement[], mode: StatementGrouping): string {
+    if (mode === 'user') return this.groupingActorLabel(stmts[0]);
+    const people = new Map<string, XApiStatement>();
+    for (const stmt of stmts) {
+      const identity = this.actorIdentityKey(stmt.actor);
+      if (identity && !people.has(identity)) people.set(identity, stmt);
+    }
+    if (people.size === 0) return this.groupingActorLabel(stmts[0]);
+    const first = this.groupingActorLabel(people.values().next().value);
+    const others = people.size - 1;
+    if (others === 0) return first;
+    return `${first} + ${others} ${others === 1 ? 'other' : 'others'}`;
+  }
+
+  /**
+   * The actor's name or account name. On a MSEL that hides names, the API leaves out the actor's
+   * identity for an assessor, so the statement is about one of the team's members.
+   * TODO: fold into getActorLabel (cmu-sei/Blueprint.Ui#398) when that is merged.
+   */
+  private groupingActorLabel(stmt: XApiStatement): string {
+    const label = stmt.actor?.name || stmt.actor?.account?.name;
+    if (label) return label;
+    return (this.msel as Msel & { hideNamesOnAssessorView?: boolean })?.hideNamesOnAssessorView ? 'Team member' : 'Unknown';
+  }
+
+  /** User grouping is offered only when the API sent at least one agent's name or account. */
+  private hasAgentIdentity(stmt: XApiStatement): boolean {
+    const actor = stmt.actor;
+    if (!actor || (actor.objectType && actor.objectType !== 'Agent')) return false;
+    return !!(actor.name || actor.account);
   }
 
   getMoveDescription(moveNumber: number): string {
@@ -888,6 +1142,8 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
   }
 
   private distributeStatements() {
+    this.statementListCache.clear();
+    this.userGroupingAvailable = this.allMselStatements.some(s => this.hasAgentIdentity(s));
     this.eventStatements.clear();
     this.moveStatements.clear();
     this.groupStatements.clear();
@@ -1205,12 +1461,14 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
   }
 
   getStatements(eventId: string): XApiStatement[] {
-    return this.eventStatements.get(eventId) || [];
+    return this.eventStatements.get(eventId) || AssessorViewComponent.EMPTY_STATEMENTS;
   }
 
   getFilteredStatements(eventId: string): XApiStatement[] {
-    let stmts = this.getStatements(eventId);
-    stmts = this.applyStatementFilters(stmts, `event-${eventId}`);
+    return this.getStatementList(`event-${eventId}`, this.getStatements(eventId), true).filtered;
+  }
+
+  private filterToSelectedMove(stmts: XApiStatement[]): XApiStatement[] {
     if (this.selectedMoveNumber != null) {
       const move = this.moveList.find(m => +m.moveNumber === +this.selectedMoveNumber);
       const targetName = move?.description?.toLowerCase();

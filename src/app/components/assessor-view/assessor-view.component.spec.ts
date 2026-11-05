@@ -313,10 +313,11 @@ describe('AssessorViewComponent', () => {
   /**
    * Verifies: each xAPI statement in an opened move is timed with the zone in effect on its own date.
    * Interacts with: toggleMoveExpand (move header clicked), HttpClient GET api/xapi/statements (HttpTestingController), formatTimestamp, getTimezoneAbbr.
-   * Data: TZ America/New_York; Move 1 at 0 s; two CITE statements for move 1, 20 Oct 2026 16:00 UTC (EDT) and 20 Nov 2026 17:00 UTC (EST).
+   * Data: TZ America/New_York; Move 1 at 0 s; two CITE statements for move 1, 20 Oct 2026 16:00 UTC (EDT) and 20 Nov 2026 17:00 UTC (EST); grouping Off, as the two are otherwise one group.
    */
   it('times each move statement with the zone in effect on its date', async () => {
     vi.stubEnv('TZ', 'America/New_York');
+    localStorage.setItem('uiState', JSON.stringify({ statementGrouping: 'off' }));
     const { fixture } = await renderAssessorView({
       moves: [{ id: 'move-1', mselId: 'msel-1', moveNumber: 1, deltaSeconds: 0, description: 'Initial access' }],
     });
@@ -339,6 +340,302 @@ describe('AssessorViewComponent', () => {
       '20 Oct 2026 12:00 EDT',
       '20 Nov 2026 12:00 EST',
     ]);
+  });
+
+  describe('statement grouping', () => {
+    const MOVE_1: Move = { id: 'move-1', mselId: 'msel-1', moveNumber: 1, deltaSeconds: 0, description: 'Initial access' };
+    const BLUE: Team = { id: 'team-blue', mselId: 'msel-1', name: 'Blue Team', shortName: 'Blue' };
+    const RED: Team = { id: 'team-red', mselId: 'msel-1', name: 'Red Team', shortName: 'Red' };
+    const VIEWED = 'http://id.tincanapi.com/verb/viewed';
+    const ANN = { objectType: 'Agent', name: 'Ann Analyst', account: { homePage: 'https://id.example', name: 'ann' } };
+    const BO = { objectType: 'Agent', name: 'Bo Builder', account: { homePage: 'https://id.example', name: 'bo' } };
+    const CY = { objectType: 'Agent', name: 'Cy Cipher', account: { homePage: 'https://id.example', name: 'cy' } };
+    const REX = { objectType: 'Agent', name: 'Rex Raider', account: { homePage: 'https://id.example', name: 'rex' } };
+    // What the API leaves of an agent for an assessor on a MSEL that hides names.
+    const MASKED = { objectType: 'Agent' };
+
+    /** A Move 1 statement; by default Blue views the Phishing email in Gallery at 12:0<minute> EDT on 20 Oct 2026. */
+    function statement(id: string, minute: number, overrides: Record<string, unknown> = {}) {
+      const { team = BLUE, platform = 'gallery', verb = VIEWED, object = 'https://gallery.example/article/phish', ...rest } = overrides as {
+        team?: Team;
+        platform?: string;
+        verb?: string;
+        object?: string;
+      };
+      return {
+        id,
+        timestamp: `2026-10-20T16:0${minute}:00Z`,
+        actor: ANN,
+        verb: { id: verb, display: { 'en-US': verb.split('/').pop() } },
+        object: { id: object, definition: { name: { 'en-US': object.split('/').pop() } } },
+        context: {
+          platform,
+          team: { objectType: 'Group', name: team.name, account: { homePage: 'https://blueprint.example', name: team.id } },
+          contextActivities: { grouping: [{ id: 'https://blueprint.example/move/1' }] },
+        },
+        ...rest,
+      };
+    }
+
+    /** Opens Move 1 with the statements given and returns the user. */
+    async function openMoveWith(statements: unknown[], options: { hideNames?: boolean } = {}) {
+      vi.stubEnv('TZ', 'America/New_York');
+      const rendered = await renderAssessorView({ moves: [MOVE_1], teams: [BLUE, RED] });
+      if (options.hideNames) {
+        TestBed.inject(MselStore).update('msel-1', { hideNamesOnAssessorView: true } as Partial<Msel>);
+      }
+      const user = userEvent.setup();
+      await user.click(screen.getByText('Move 1'));
+      TestBed.inject(HttpTestingController)
+        .expectOne((req) => req.url === '/api/xapi/statements' && req.params.get('mselId') === 'msel-1')
+        .flush({ statements });
+      rendered.fixture.detectChanges();
+      return { ...rendered, user };
+    }
+
+    /** Each statement row shown: its count badge ('' for a single statement), actor and team. */
+    const rowsShown = () =>
+      Array.from(document.querySelectorAll('.statement-row'), (row) => [
+        row.querySelector('.statement-group-count')?.textContent ?? '',
+        row.querySelector('.stmt-actor')?.textContent,
+        row.querySelector('.stmt-team')?.textContent,
+      ]);
+
+    async function chooseGrouping(fixture: ComponentFixture<unknown>, user: ReturnType<typeof userEvent.setup>, option: string) {
+      await user.click(screen.getByRole('combobox', { name: 'Group by' }));
+      await user.click(await screen.findByRole('option', { name: option }));
+      fixture.detectChanges();
+    }
+
+    // Ann, Bo, Cy and Ann again view the same article for Blue; Rex views it for Red.
+    const REPEATS = () => [
+      statement('s-ann-1', 0),
+      statement('s-bo', 1, { actor: BO }),
+      statement('s-cy', 2, { actor: CY }),
+      statement('s-rex', 3, { actor: REX, team: RED }),
+      statement('s-ann-2', 4),
+    ];
+
+    /**
+     * Verifies: by default (Team) repeats by different members of a team collapse into one row that names the first person, counts the others, spans first–last time and shows ×N; another team's repeat stays apart.
+     * Interacts with: toggleMoveExpand, HttpClient GET api/xapi/statements (HttpTestingController), getMoveStatementItems, buildStatementGroups, formatTimestamp.
+     * Data: TZ America/New_York; Ann, Bo, Cy, Ann view one article for Blue (12:00–12:04 EDT), Rex views it for Red at 12:03.
+     */
+    it('merges a team\'s repeats across its members by default', async () => {
+      await openMoveWith(REPEATS());
+
+      expect(screen.getByRole('combobox', { name: 'Group by' })).toHaveTextContent('Team');
+      expect(rowsShown()).toEqual([
+        ['', 'Rex Raider', 'Red Team'],
+        ['×4', 'Ann Analyst + 2 others', 'Blue Team'],
+      ]);
+      expect(screen.getByRole('button', { name: /^×4/ })).toHaveTextContent('20 Oct 2026 12:00 EDT – 20 Oct 2026 12:04 EDT');
+      expect(screen.getByText('5 / 5')).toBeInTheDocument();
+    });
+
+    /**
+     * Verifies: by User, each person's repeats collapse separately, and groups are placed by their newest statement.
+     * Interacts with: Group by mat-select (setStatementGrouping), getMoveStatementItems.
+     * Data: the same five statements; Ann's two are at 12:00 and 12:04.
+     */
+    it('keeps different people apart by User', async () => {
+      const { fixture, user } = await openMoveWith(REPEATS());
+
+      await chooseGrouping(fixture, user, 'User');
+
+      expect(rowsShown()).toEqual([
+        ['', 'Bo Builder', 'Blue Team'],
+        ['', 'Cy Cipher', 'Blue Team'],
+        ['', 'Rex Raider', 'Red Team'],
+        ['×2', 'Ann Analyst', 'Blue Team'],
+      ]);
+    });
+
+    /**
+     * Verifies: Off shows every statement as its own row, in time order.
+     * Interacts with: Group by mat-select (setStatementGrouping), getMoveStatementItems.
+     * Data: the same five statements.
+     */
+    it('shows every statement with grouping Off', async () => {
+      const { fixture, user } = await openMoveWith(REPEATS());
+
+      await chooseGrouping(fixture, user, 'Off');
+
+      expect(rowsShown()).toEqual([
+        ['', 'Ann Analyst', 'Blue Team'],
+        ['', 'Bo Builder', 'Blue Team'],
+        ['', 'Cy Cipher', 'Blue Team'],
+        ['', 'Rex Raider', 'Red Team'],
+        ['', 'Ann Analyst', 'Blue Team'],
+      ]);
+    });
+
+    /**
+     * Verifies: when the API removed every actor's identity, Group by offers only Team and Off, and a group is labeled Team member.
+     * Interacts with: MselStore (hideNamesOnAssessorView set), Group by mat-select options, statementGroupActorLabel.
+     * Data: MSEL hides names; three Blue statements on one article whose actors carry only objectType Agent.
+     */
+    it('offers only Team and Off when the statements carry no names', async () => {
+      const { user } = await openMoveWith(
+        [0, 1, 2].map((m) => statement(`s-${m}`, m, { actor: MASKED })),
+        { hideNames: true },
+      );
+
+      expect(rowsShown()).toEqual([['×3', 'Team member', 'Blue Team']]);
+      await user.click(screen.getByRole('combobox', { name: 'Group by' }));
+      expect((await screen.findAllByRole('option')).map((o) => o.textContent.trim())).toEqual(['Team', 'Off']);
+    });
+
+    /**
+     * Verifies: competency assertions and CITE submitted and evaluated statements always keep their own rows, while the same verb from another app still groups.
+     * Interacts with: isNeverGrouped, getMoveStatementItems.
+     * Data: two identical Blueprint asserted statements, two CITE submitted, two CITE evaluated (none with a score), and two Gallery submitted.
+     */
+    it('never groups assertions or CITE submissions and scores', async () => {
+      await openMoveWith([
+        statement('s-assert-1', 0, { platform: 'blueprint', verb: 'https://w3id.org/xapi/tla/verbs/asserted' }),
+        statement('s-assert-2', 1, { platform: 'blueprint', verb: 'https://w3id.org/xapi/tla/verbs/asserted' }),
+        statement('s-submit-1', 2, { platform: 'cite', verb: 'https://w3id.org/xapi/dod-isd/verbs/submitted' }),
+        statement('s-submit-2', 3, { platform: 'cite', verb: 'https://w3id.org/xapi/dod-isd/verbs/submitted' }),
+        statement('s-eval-1', 4, { platform: 'cite', verb: 'https://w3id.org/xapi/dod-isd/verbs/evaluated' }),
+        statement('s-eval-2', 5, { platform: 'cite', verb: 'https://w3id.org/xapi/dod-isd/verbs/evaluated' }),
+        statement('s-gallery-1', 6, { verb: 'https://w3id.org/xapi/dod-isd/verbs/submitted' }),
+        statement('s-gallery-2', 7, { verb: 'https://w3id.org/xapi/dod-isd/verbs/submitted' }),
+      ]);
+
+      expect(rowsShown().map(([count]) => count)).toEqual(['', '', '', '', '', '', '×2']);
+    });
+
+    /**
+     * Verifies: statements with different results never merge, statements with the same result do, and a scored statement is always its own row.
+     * Interacts with: statementGroupKey (result part), isNeverGrouped (score rule).
+     * Data: Blue answers one question: success true, success false, success true again, and two identical score 5 results.
+     */
+    it('does not merge statements with different results', async () => {
+      const answered = 'http://adlnet.gov/expapi/verbs/answered';
+      await openMoveWith([
+        statement('s-right-1', 0, { verb: answered, result: { success: true, response: 'A' } }),
+        statement('s-wrong', 1, { verb: answered, result: { success: false, response: 'B' } }),
+        statement('s-right-2', 2, { verb: answered, result: { success: true, response: 'A' } }),
+        statement('s-score-1', 3, { verb: answered, result: { score: { raw: 5 } } }),
+        statement('s-score-2', 4, { verb: answered, result: { score: { raw: 5 } } }),
+      ]);
+
+      expect(rowsShown().map(([count]) => count)).toEqual(['', '×2', '', '']);
+    });
+
+    /**
+     * Verifies: clicking a group lists its statements in time order under it, each still shows its JSON and copies it; clicking again collapses it.
+     * Interacts with: toggleStatementGroup, toggleStatement, copyStatement, navigator.clipboard.writeText (spy).
+     * Data: Ann, Bo and Cy view one article for Blue.
+     */
+    it('expands a group to its statements, which still copy their JSON', async () => {
+      const statements = REPEATS().slice(0, 3);
+      const { fixture, user } = await openMoveWith(statements);
+      const writes: string[] = [];
+      vi.spyOn(navigator, 'clipboard', 'get').mockReturnValue({
+        writeText: (text: string) => {
+          writes.push(text);
+          return Promise.resolve();
+        },
+      } satisfies Pick<Clipboard, 'writeText'> as Clipboard);
+      const group = screen.getByRole('button', { name: /^×3/ });
+      expect(group).toHaveAttribute('aria-expanded', 'false');
+      expect(screen.queryByRole('button', { name: 'Copy JSON' })).not.toBeInTheDocument();
+
+      await user.click(group);
+      fixture.detectChanges();
+
+      expect(group).toHaveAttribute('aria-expanded', 'true');
+      expect(rowsShown()).toEqual([
+        ['×3', 'Ann Analyst + 2 others', 'Blue Team'],
+        ['', 'Ann Analyst', 'Blue Team'],
+        ['', 'Bo Builder', 'Blue Team'],
+        ['', 'Cy Cipher', 'Blue Team'],
+      ]);
+      await user.click(screen.getAllByRole('button', { name: 'Copy JSON' })[1]);
+      expect(writes).toEqual([JSON.stringify(statements[1], null, 2)]);
+      await user.click(screen.getByText('Bo Builder'));
+      fixture.detectChanges();
+      expect(screen.getByText('"actor"')).toBeInTheDocument();
+
+      await user.click(group);
+      fixture.detectChanges();
+      expect(rowsShown()).toEqual([['×3', 'Ann Analyst + 2 others', 'Blue Team']]);
+    });
+
+    /**
+     * Verifies: the Group by choice is saved in the browser's UI state.
+     * Interacts with: setStatementGrouping, UIDataService (real, localStorage).
+     * Data: the five repeats; Off is chosen.
+     */
+    it('remembers the choice in localStorage', async () => {
+      const { fixture, user } = await openMoveWith(REPEATS());
+
+      await chooseGrouping(fixture, user, 'Off');
+
+      expect(JSON.parse(localStorage.getItem('uiState')).statementGrouping).toBe('off');
+    });
+
+    /**
+     * Verifies: a choice saved in an earlier visit is restored.
+     * Interacts with: UIDataService.getStatementGrouping (real, localStorage), statementGrouping.
+     * Data: saved Off; the five repeats.
+     */
+    it('restores the saved choice', async () => {
+      localStorage.setItem('uiState', JSON.stringify({ statementGrouping: 'off' }));
+      await openMoveWith(REPEATS());
+      expect(screen.getByRole('combobox', { name: 'Group by' })).toHaveTextContent('Off');
+      expect(rowsShown()).toHaveLength(5);
+    });
+
+    /**
+     * Verifies: a saved User falls back to Team when the statements carry no names, and what was saved is kept.
+     * Interacts with: UIDataService.getStatementGrouping (real, localStorage), statementGrouping.
+     * Data: saved User; MSEL hides names; three masked Blue statements on one article.
+     */
+    it('falls back from a saved User to Team when names are hidden', async () => {
+      localStorage.setItem('uiState', JSON.stringify({ statementGrouping: 'user' }));
+      await openMoveWith(
+        [0, 1, 2].map((m) => statement(`s-${m}`, m, { actor: MASKED })),
+        { hideNames: true },
+      );
+
+      expect(screen.getByRole('combobox', { name: 'Group by' })).toHaveTextContent('Team');
+      expect(rowsShown()).toEqual([['×3', 'Team member', 'Blue Team']]);
+      expect(JSON.parse(localStorage.getItem('uiState')).statementGrouping).toBe('user');
+    });
+
+    /**
+     * Verifies: the Team and Verb filters narrow the statements before they are grouped, so a group counts only what passes.
+     * Interacts with: evidence Team and Verb mat-selects (filterByTeams, filterByVerbs), getStatementList cache.
+     * Data: Ann and Bo view the article for Blue and Bo also launches it; Rex views it for Red.
+     */
+    it('applies the filters before grouping', async () => {
+      const { fixture, user } = await openMoveWith([
+        statement('s-ann', 0),
+        statement('s-bo', 1, { actor: BO }),
+        statement('s-bo-launch', 2, { actor: BO, verb: 'http://adlnet.gov/expapi/verbs/launched' }),
+        statement('s-rex', 3, { actor: REX, team: RED }),
+        statement('s-rex-2', 4, { actor: REX, team: RED }),
+      ]);
+      expect(rowsShown()).toEqual([
+        ['×2', 'Ann Analyst + 1 other', 'Blue Team'],
+        ['', 'Bo Builder', 'Blue Team'],
+        ['×2', 'Rex Raider', 'Red Team'],
+      ]);
+
+      await user.click(screen.getByRole('combobox', { name: 'Team' }));
+      await user.click(await screen.findByRole('option', { name: 'Blue' }));
+      await user.keyboard('{Escape}');
+      await user.click(screen.getByRole('combobox', { name: 'Verb' }));
+      await user.click(await screen.findByRole('option', { name: 'viewed' }));
+      await user.keyboard('{Escape}');
+      fixture.detectChanges();
+
+      expect(screen.getByText('2 / 5')).toBeInTheDocument();
+      expect(rowsShown()).toEqual([['×2', 'Ann Analyst + 1 other', 'Blue Team']]);
+    });
   });
 
   describe('an opened move', () => {

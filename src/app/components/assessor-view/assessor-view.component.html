@@ -203,6 +203,16 @@ project root for license information or contact permission@sei.cmu.edu for full 
                         }
                       </mat-select>
                     </mat-form-field>
+                    <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
+                      <mat-label>Group by</mat-label>
+                      <mat-select [value]="statementGrouping" (selectionChange)="setStatementGrouping($event.value)">
+                        @if (userGroupingAvailable) {
+                          <mat-option value="user">User</mat-option>
+                        }
+                        <mat-option value="team">Team</mat-option>
+                        <mat-option value="off">Off</mat-option>
+                      </mat-select>
+                    </mat-form-field>
                   </div>
                   <button mat-icon-button class="refresh-button" (click)="refreshStatements()"
                     aria-label="Refresh evidence"
@@ -216,8 +226,29 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   <div class="no-statements">No xAPI statements found for this move.</div>
                 } @else {
                   <div class="statements-list">
-                    @for (stmt of getFilteredMoveStatements(row.moveNumber); track $index) {
-                      <div class="statement-entry">
+                    @for (item of getMoveStatementItems(row.moveNumber); track item.key) {
+                      @if (item.group; as group) {
+                        <div class="statement-entry">
+                          <div class="statement-row statement-group-row" role="button" tabindex="0"
+                            [attr.aria-expanded]="isStatementGroupExpanded('move-' + row.moveNumber, group.key)"
+                            [class.statement-expanded]="isStatementGroupExpanded('move-' + row.moveNumber, group.key)"
+                            (click)="toggleStatementGroup('move-' + row.moveNumber, group.key)"
+                            (keydown.enter)="toggleStatementGroup('move-' + row.moveNumber, group.key)"
+                            (keydown.space)="$event.preventDefault(); toggleStatementGroup('move-' + row.moveNumber, group.key)">
+                            <span class="statement-group-count" [title]="group.statements.length + ' statements'">×{{ group.statements.length }}</span>
+                            <span class="statement-time">{{ group.timeLabel }}</span>
+                            <span class="stmt-move">{{ getMovePart(group.statements[0]) }}</span>
+                            <span class="stmt-group">{{ getGroupPart(group.statements[0]) }}</span>
+                            <span class="platform-badge" [ngClass]="getPlatformClass(group.statements[0])">{{ group.statements[0].context?.platform || '?' }}</span>
+                            <span class="stmt-actor">{{ group.actorLabel }}</span>
+                            <span class="stmt-team">{{ group.statements[0].context?.team?.name || '' }}</span>
+                            <span class="stmt-verb">{{ group.statements[0].verb?.display?.['en-US'] || group.statements[0].verb?.id?.split('/').pop() || '?' }}</span>
+                            <span class="stmt-object">{{ group.statements[0].object?.definition?.name?.['en-US'] || group.statements[0].object?.id || '?' }}</span>
+                          </div>
+                        </div>
+                      } @else {
+                      @let stmt = item.stmt;
+                      <div class="statement-entry" [class.statement-member]="item.member">
                         <div class="statement-row" (click)="toggleStatement(stmt.id)"
                           [class.statement-expanded]="expandedStatementIds.has(stmt.id)">
                           <button mat-icon-button class="copy-button" (click)="copyStatement(stmt, $event)" title="Copy JSON">
@@ -248,6 +279,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                           </div>
                         }
                       </div>
+                      }
                     }
                   </div>
                 }
@@ -397,6 +429,16 @@ project root for license information or contact permission@sei.cmu.edu for full 
                         }
                       </mat-select>
                     </mat-form-field>
+                    <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
+                      <mat-label>Group by</mat-label>
+                      <mat-select [value]="statementGrouping" (selectionChange)="setStatementGrouping($event.value)">
+                        @if (userGroupingAvailable) {
+                          <mat-option value="user">User</mat-option>
+                        }
+                        <mat-option value="team">Team</mat-option>
+                        <mat-option value="off">Off</mat-option>
+                      </mat-select>
+                    </mat-form-field>
                   </div>
                   <button mat-icon-button class="refresh-button" (click)="refreshStatements()"
                     aria-label="Refresh evidence"
@@ -410,8 +452,29 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   <div class="no-statements">No xAPI statements found for this group.</div>
                 } @else {
                   <div class="statements-list">
-                    @for (stmt of getFilteredGroupStatements(row.groupKey); track $index) {
-                      <div class="statement-entry">
+                    @for (item of getGroupStatementItems(row.groupKey); track item.key) {
+                      @if (item.group; as group) {
+                        <div class="statement-entry">
+                          <div class="statement-row statement-group-row" role="button" tabindex="0"
+                            [attr.aria-expanded]="isStatementGroupExpanded('group-' + row.groupKey, group.key)"
+                            [class.statement-expanded]="isStatementGroupExpanded('group-' + row.groupKey, group.key)"
+                            (click)="toggleStatementGroup('group-' + row.groupKey, group.key)"
+                            (keydown.enter)="toggleStatementGroup('group-' + row.groupKey, group.key)"
+                            (keydown.space)="$event.preventDefault(); toggleStatementGroup('group-' + row.groupKey, group.key)">
+                            <span class="statement-group-count" [title]="group.statements.length + ' statements'">×{{ group.statements.length }}</span>
+                            <span class="statement-time">{{ group.timeLabel }}</span>
+                            <span class="stmt-move">{{ getMovePart(group.statements[0]) }}</span>
+                            <span class="stmt-group">{{ getGroupPart(group.statements[0]) }}</span>
+                            <span class="platform-badge" [ngClass]="getPlatformClass(group.statements[0])">{{ group.statements[0].context?.platform || '?' }}</span>
+                            <span class="stmt-actor">{{ group.actorLabel }}</span>
+                            <span class="stmt-team">{{ group.statements[0].context?.team?.name || '' }}</span>
+                            <span class="stmt-verb">{{ group.statements[0].verb?.display?.['en-US'] || group.statements[0].verb?.id?.split('/').pop() || '?' }}</span>
+                            <span class="stmt-object">{{ group.statements[0].object?.definition?.name?.['en-US'] || group.statements[0].object?.id || '?' }}</span>
+                          </div>
+                        </div>
+                      } @else {
+                      @let stmt = item.stmt;
+                      <div class="statement-entry" [class.statement-member]="item.member">
                         <div class="statement-row" (click)="toggleStatement(stmt.id)"
                           [class.statement-expanded]="expandedStatementIds.has(stmt.id)">
                           <button mat-icon-button class="copy-button" (click)="copyStatement(stmt, $event)" title="Copy JSON">
@@ -442,6 +505,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                           </div>
                         }
                       </div>
+                      }
                     }
                   </div>
                 }
@@ -638,6 +702,16 @@ project root for license information or contact permission@sei.cmu.edu for full 
                         }
                       </mat-select>
                     </mat-form-field>
+                    <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
+                      <mat-label>Group by</mat-label>
+                      <mat-select [value]="statementGrouping" (selectionChange)="setStatementGrouping($event.value)">
+                        @if (userGroupingAvailable) {
+                          <mat-option value="user">User</mat-option>
+                        }
+                        <mat-option value="team">Team</mat-option>
+                        <mat-option value="off">Off</mat-option>
+                      </mat-select>
+                    </mat-form-field>
                   </div>
                   <button mat-icon-button class="refresh-button" (click)="refreshStatements()"
                     aria-label="Refresh evidence"
@@ -651,8 +725,29 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   <div class="no-statements">No xAPI statements found for this event.</div>
                 } @else {
                   <div class="statements-list">
-                    @for (stmt of getFilteredStatements(row.event.id); track $index) {
-                      <div class="statement-entry">
+                    @for (item of getEventStatementItems(row.event.id); track item.key) {
+                      @if (item.group; as group) {
+                        <div class="statement-entry">
+                          <div class="statement-row statement-group-row" role="button" tabindex="0"
+                            [attr.aria-expanded]="isStatementGroupExpanded('event-' + row.event.id, group.key)"
+                            [class.statement-expanded]="isStatementGroupExpanded('event-' + row.event.id, group.key)"
+                            (click)="toggleStatementGroup('event-' + row.event.id, group.key)"
+                            (keydown.enter)="toggleStatementGroup('event-' + row.event.id, group.key)"
+                            (keydown.space)="$event.preventDefault(); toggleStatementGroup('event-' + row.event.id, group.key)">
+                            <span class="statement-group-count" [title]="group.statements.length + ' statements'">×{{ group.statements.length }}</span>
+                            <span class="statement-time">{{ group.timeLabel }}</span>
+                            <span class="stmt-move">{{ getMovePart(group.statements[0]) }}</span>
+                            <span class="stmt-group">{{ getGroupPart(group.statements[0]) }}</span>
+                            <span class="platform-badge" [ngClass]="getPlatformClass(group.statements[0])">{{ group.statements[0].context?.platform || '?' }}</span>
+                            <span class="stmt-actor">{{ group.actorLabel }}</span>
+                            <span class="stmt-team">{{ group.statements[0].context?.team?.name || '' }}</span>
+                            <span class="stmt-verb">{{ group.statements[0].verb?.display?.['en-US'] || group.statements[0].verb?.id?.split('/').pop() || '?' }}</span>
+                            <span class="stmt-object">{{ group.statements[0].object?.definition?.name?.['en-US'] || group.statements[0].object?.id || '?' }}</span>
+                          </div>
+                        </div>
+                      } @else {
+                      @let stmt = item.stmt;
+                      <div class="statement-entry" [class.statement-member]="item.member">
                         <div class="statement-row" (click)="toggleStatement(stmt.id)"
                           [class.statement-expanded]="expandedStatementIds.has(stmt.id)">
                           <button mat-icon-button class="copy-button" (click)="copyStatement(stmt, $event)" title="Copy JSON">
@@ -683,6 +778,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                           </div>
                         }
                       </div>
+                      }
                     }
                   </div>
                 }
