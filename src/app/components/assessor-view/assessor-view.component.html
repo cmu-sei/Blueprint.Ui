@@ -226,7 +226,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                           <span class="stmt-move">{{ getMovePart(stmt) }}</span>
                           <span class="stmt-group">{{ getGroupPart(stmt) }}</span>
                           <span class="platform-badge" [ngClass]="getPlatformClass(stmt)">{{ stmt.context?.platform || '?' }}</span>
-                          <span class="stmt-actor">{{ stmt.actor?.name || stmt.actor?.account?.name || 'Unknown' }}</span>
+                          <span class="stmt-actor">{{ getActorLabel(stmt) }}</span>
                           <span class="stmt-team">{{ stmt.context?.team?.name || '' }}</span>
                           <span class="stmt-verb">{{ stmt.verb?.display?.['en-US'] || stmt.verb?.id?.split('/').pop() || '?' }}</span>
                           <span class="stmt-object">{{ stmt.object?.definition?.name?.['en-US'] || stmt.object?.id || '?' }}</span>
@@ -415,7 +415,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                           <span class="stmt-move">{{ getMovePart(stmt) }}</span>
                           <span class="stmt-group">{{ getGroupPart(stmt) }}</span>
                           <span class="platform-badge" [ngClass]="getPlatformClass(stmt)">{{ stmt.context?.platform || '?' }}</span>
-                          <span class="stmt-actor">{{ stmt.actor?.name || stmt.actor?.account?.name || 'Unknown' }}</span>
+                          <span class="stmt-actor">{{ getActorLabel(stmt) }}</span>
                           <span class="stmt-team">{{ stmt.context?.team?.name || '' }}</span>
                           <span class="stmt-verb">{{ stmt.verb?.display?.['en-US'] || stmt.verb?.id?.split('/').pop() || '?' }}</span>
                           <span class="stmt-object">{{ stmt.object?.definition?.name?.['en-US'] || stmt.object?.id || '?' }}</span>
@@ -651,7 +651,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                           <span class="stmt-move">{{ getMovePart(stmt) }}</span>
                           <span class="stmt-group">{{ getGroupPart(stmt) }}</span>
                           <span class="platform-badge" [ngClass]="getPlatformClass(stmt)">{{ stmt.context?.platform || '?' }}</span>
-                          <span class="stmt-actor">{{ stmt.actor?.name || stmt.actor?.account?.name || 'Unknown' }}</span>
+                          <span class="stmt-actor">{{ getActorLabel(stmt) }}</span>
                           <span class="stmt-team">{{ stmt.context?.team?.name || '' }}</span>
                           <span class="stmt-verb">{{ stmt.verb?.display?.['en-US'] || stmt.verb?.id?.split('/').pop() || '?' }}</span>
                           <span class="stmt-object">{{ stmt.object?.definition?.name?.['en-US'] || stmt.object?.id || '?' }}</span>

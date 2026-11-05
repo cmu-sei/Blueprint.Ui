@@ -507,6 +507,17 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
       });
   }
 
+  /**
+   * Who a statement is about. On a MSEL that hides names, the API leaves out everyone but the team
+   * for an assessor, so a statement with no name or account is about one of the team's members.
+   */
+  getActorLabel(stmt: XApiStatement): string {
+    const actor = stmt.actor;
+    const label = actor?.name || actor?.account?.name;
+    if (label) return label;
+    return this.msel?.hideNamesOnAssessorView ? 'Team member' : 'Unknown';
+  }
+
   getPlatformClass(stmt: XApiStatement): string {
     const platform = (stmt.context?.platform || '').toLowerCase();
     return `platform-${platform || 'unknown'}`;
@@ -1294,7 +1305,7 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
       if (typeof val === 'string') {
         preview = val;
       } else if (key === 'actor') {
-        preview = val?.name || val?.account?.name || '';
+        preview = this.getActorLabel(stmt);
       } else if (key === 'verb') {
         preview = val?.display?.['en-US'] || val?.id?.split('/').pop() || '';
       } else if (key === 'object') {
