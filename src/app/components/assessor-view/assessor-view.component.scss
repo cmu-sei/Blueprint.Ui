@@ -200,6 +200,7 @@ td {
 
 .statements-header {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
   font-weight: 500;
@@ -471,13 +472,20 @@ td {
 
 .evidence-filters {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   align-items: center;
   gap: 8px;
   margin-left: auto;
+  // the filters wrap inside the evidence panel rather than running over the
+  // Competency Assessment beside it on a narrow screen
+  min-width: 0;
+  max-width: 100%;
 }
 
 .evidence-filter-field {
-  min-width: 120px;
+  flex: 1 1 96px;
+  min-width: 96px;
   max-width: 200px;
   font-size: 12px;
 }
