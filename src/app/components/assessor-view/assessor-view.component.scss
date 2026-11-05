@@ -518,6 +518,9 @@ td {
 .evidence-panel {
   flex: 6;
   min-width: 0;
+  // Its statements grid would otherwise set the table's minimum width and give the
+  // page a horizontal scrollbar; contained, it takes only the width the row gives it.
+  contain: inline-size;
   padding: 12px 16px;
   background-color: var(--mat-sys-surface-container-lowest);
 }
