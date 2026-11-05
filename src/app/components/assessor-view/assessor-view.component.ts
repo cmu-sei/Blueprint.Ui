@@ -9,6 +9,7 @@ import { HttpClient } from '@angular/common/http';
 import { ComnSettingsService, Theme } from '@cmusei/crucible-common';
 import {
   Card,
+  CiteTeamResponses,
   Competency,
   CompetencyFramework,
   DataField,
@@ -37,7 +38,7 @@ import { MselCompetencyQuery } from 'src/app/data/msel-competency/msel-competenc
 import { MselCompetencyDataService } from 'src/app/data/msel-competency/msel-competency-data.service';
 import { TeamCompetencyQuery } from 'src/app/data/team-competency/team-competency.query';
 import { TeamCompetencyDataService } from 'src/app/data/team-competency/team-competency-data.service';
-import { CompetencyFrameworkService, ProficiencyScaleService } from 'src/app/generated/blueprint.api/api/api';
+import { CiteService, CompetencyFrameworkService, ProficiencyScaleService } from 'src/app/generated/blueprint.api/api/api';
 import {
   DataValuePlus,
   ScenarioEventDataService,
@@ -60,6 +61,14 @@ import { MatTooltip } from '@angular/material/tooltip';
 import { DurationViewComponent } from '../shared/duration-view/duration-view.component';
 import { DataValueComponent } from '../data-value/data-value.component';
 import { CardEditDialogComponent } from '../card-edit-dialog/card-edit-dialog.component';
+import { TeamResponsesComponent } from '../team-responses/team-responses.component';
+
+/** A team's CITE answers for one move, as the Team Responses panel shows them. */
+export interface TeamResponsesState {
+  loading: boolean;
+  error: string | null;
+  responses: CiteTeamResponses | null;
+}
 
 export interface XApiStatement {
   id?: string;
@@ -83,7 +92,7 @@ export interface XApiStatement {
     selector: 'app-assessor-view',
     templateUrl: './assessor-view.component.html',
     styleUrls: ['./assessor-view.component.scss'],
-    imports: [MatIcon, MatSort, MatFormField, MatLabel, MatInput, FormsModule, MatIconButton, MatSuffix, MatSelect, MatOption, MatSortHeader, MatProgressBar, NgClass, MatTooltip, MatButton, DurationViewComponent, DataValueComponent, CardEditDialogComponent]
+    imports: [MatIcon, MatSort, MatFormField, MatLabel, MatInput, FormsModule, MatIconButton, MatSuffix, MatSelect, MatOption, MatSortHeader, MatProgressBar, NgClass, MatTooltip, MatButton, DurationViewComponent, DataValueComponent, CardEditDialogComponent, TeamResponsesComponent]
 })
 export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
   private mselQuery = inject(MselQuery);
@@ -106,6 +115,7 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
   private teamCompetencyDataService = inject(TeamCompetencyDataService);
   private competencyFrameworkService = inject(CompetencyFrameworkService);
   private proficiencyScaleService = inject(ProficiencyScaleService);
+  private citeService = inject(CiteService);
 
   readonly loggedInUserId = input<string>(undefined);
   readonly userTheme = input<Theme>(undefined);
@@ -180,6 +190,9 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
   submittingAssertions = new Set<string>();
   assertionTeam = new Map<string, string>();
 
+  // Team Responses: each team's CITE answers, keyed by team and move
+  private teamResponses = new Map<string, TeamResponsesState>();
+
   // Precomputed competency caches — rebuilt on data change, not per change detection
   private baseEventCompetencies = new Map<string, Competency[]>();
   private baseMoveCompetencies = new Map<number, Competency[]>();
@@ -202,6 +215,9 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
         if (msel) {
           const mselChanged = this.msel.id !== msel.id;
           this.msel = { ...msel } as MselPlus;
+          if (mselChanged) {
+            this.teamResponses.clear();
+          }
           if (mselChanged && msel.id) {
             this.mselCompetencyDataService.loadByMsel(msel.id);
             this.teamCompetencyDataService.loadByMsel(msel.id);
@@ -470,6 +486,7 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
 
 
   refreshStatements() {
+    this.refreshTeamResponses();
     if (this.statementsLoading || !this.msel.id) return;
     this.statementsLoading = true;
     this.loadingStatements.add('_all');
@@ -1575,6 +1592,65 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
 
   setAssertionTeam(eventId: string, teamId: string) {
     this.assertionTeam.set(eventId, teamId);
+  }
+
+  /**
+   * The CITE answers of the team chosen in Assess Team for this context, for
+   * the move the context is in. Group and event rows show their move's answers.
+   * Starts loading them the first time they are asked for. Null when no team
+   * is chosen.
+   */
+  getTeamResponses(contextKey: string, moveNumber: number): TeamResponsesState | null {
+    const teamId = this.getAssertionTeam(contextKey);
+    if (!teamId || !this.msel.id || moveNumber === null || moveNumber === undefined) {
+      return null;
+    }
+    const key = this.teamResponsesKey(teamId, moveNumber);
+    let state = this.teamResponses.get(key);
+    if (!state) {
+      state = { loading: true, error: null, responses: null };
+      this.teamResponses.set(key, state);
+      this.loadTeamResponses(key, teamId, moveNumber);
+    }
+    return state;
+  }
+
+  getTeamShortName(teamId: string): string {
+    return this.teamList.find(t => t.id === teamId)?.shortName ?? '';
+  }
+
+  /** Reloads every team's answers already shown, alongside the xAPI statements. */
+  refreshTeamResponses() {
+    for (const [key, state] of this.teamResponses) {
+      if (state.loading) continue;
+      const [teamId, moveNumber] = key.split('|');
+      this.teamResponses.set(key, { ...state, loading: true, error: null });
+      this.loadTeamResponses(key, teamId, +moveNumber);
+    }
+  }
+
+  private teamResponsesKey(teamId: string, moveNumber: number): string {
+    return `${teamId}|${moveNumber}`;
+  }
+
+  private loadTeamResponses(key: string, teamId: string, moveNumber: number) {
+    const mselId = this.msel.id;
+    this.citeService.getMselCiteTeamResponses(mselId, teamId, moveNumber)
+      .subscribe({
+        next: (responses) => {
+          if (this.msel.id !== mselId) return;
+          this.teamResponses.set(key, { loading: false, error: null, responses });
+        },
+        error: () => {
+          if (this.msel.id !== mselId) return;
+          const previous = this.teamResponses.get(key);
+          this.teamResponses.set(key, {
+            loading: false,
+            error: 'Team responses could not be loaded.',
+            responses: previous?.responses ?? null,
+          });
+        }
+      });
   }
 
   getTeamsForContext(contextKey: string): Team[] {

@@ -1,0 +1,89 @@
+<!--
+Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license. See LICENSE.md in the
+project root for license information.
+-->
+
+<div class="team-responses">
+  <div class="team-responses-header">
+    <mat-icon fontIcon="mdi-comment-text-multiple-outline" class="mdi-18px" />
+    <span>Team Responses</span>
+    @if (teamName()) {
+      <span class="team-responses-team">{{ teamName() }}</span>
+    }
+  </div>
+  @if (loading()) {
+    <mat-progress-bar mode="indeterminate" class="team-responses-loading" />
+  }
+  @if (error()) {
+    <div class="team-responses-note team-responses-error">
+      <mat-icon fontIcon="mdi-alert-circle-outline" class="mdi-14px" />
+      {{ error() }}
+    </div>
+  } @else if (explanation()) {
+    <div class="team-responses-note" [class.team-responses-error]="unavailable()">
+      <mat-icon [fontIcon]="unavailable() ? 'mdi-alert-circle-outline' : 'mdi-information-outline'" class="mdi-14px" />
+      {{ explanation() }}
+    </div>
+  } @else if (responses(); as current) {
+    @if (current.scoringModelDescription) {
+      <div class="team-responses-model">{{ current.scoringModelDescription }}</div>
+    }
+    @if (notAnswered()) {
+      <div class="team-responses-note">Team has not answered.</div>
+    }
+    @if (answered()) {
+      <ng-container [ngTemplateOutlet]="submissionView"
+        [ngTemplateOutletContext]="{ $implicit: current.teamSubmission, label: 'Team' }" />
+    }
+    @for (other of others(); track other.label) {
+      <ng-container [ngTemplateOutlet]="submissionView"
+        [ngTemplateOutletContext]="{ $implicit: other.submission, label: other.label }" />
+    }
+  } @else if (!loading() && prompt()) {
+    <div class="team-responses-note">{{ prompt() }}</div>
+  }
+</div>
+
+<ng-template #submissionView let-submission let-label="label">
+  <div class="team-responses-submission">
+    <div class="team-responses-submission-header">
+      <span class="team-responses-submission-label">{{ label }}</span>
+      <span class="team-responses-score">Score {{ submission.score }}</span>
+      @if (submission.dateModified) {
+        <span class="team-responses-time">
+          {{ submission.dateModified | date: 'MMM d, h:mm a' }} {{ submission.dateModified | timezoneAbbr }}
+        </span>
+      }
+    </div>
+    @for (category of submission.categories; track category.scoringCategoryId) {
+      <div class="team-responses-category">
+        <div class="team-responses-category-header">
+          <span class="team-responses-category-name">{{ category.description }}</span>
+          <span class="team-responses-category-score">{{ category.score }}</span>
+        </div>
+        @if (category.selectedOptions?.length) {
+          <ul class="team-responses-options">
+            @for (option of category.selectedOptions; track $index) {
+              <li>
+                {{ option.description }}
+                <span class="team-responses-option-value">({{ option.value }})</span>
+                @if (submission.isAverage) {
+                  <span class="team-responses-option-count">chosen by {{ option.selectedCount }}</span>
+                }
+              </li>
+            }
+          </ul>
+        } @else {
+          <div class="team-responses-none">Nothing selected</div>
+        }
+        @for (comment of category.comments; track $index) {
+          <div class="team-responses-comment" [title]="'On ' + comment.optionDescription">
+            <mat-icon fontIcon="mdi-comment-outline" class="mdi-14px" />
+            <span>{{ comment.text }}</span>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</ng-template>

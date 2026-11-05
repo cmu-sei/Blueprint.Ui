@@ -17,8 +17,11 @@ import { MatSortModule } from '@angular/material/sort';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
-import { of } from 'rxjs';
+import { Observable, of, Subject } from 'rxjs';
 import {
+  CiteService,
+  CiteTeamResponses,
+  CiteTeamResponsesStatus,
   DataField,
   DataFieldType,
   DataValue,
@@ -28,6 +31,7 @@ import {
   MselCompetency,
   MselCompetencyService,
   ScenarioEvent,
+  Team,
   TeamCompetency,
   TeamCompetencyService,
 } from 'src/app/generated/blueprint.api';
@@ -36,11 +40,13 @@ import { DataValueStore } from 'src/app/data/data-value/data-value.store';
 import { MoveStore } from 'src/app/data/move/move.store';
 import { MselStore } from 'src/app/data/msel/msel.store';
 import { ScenarioEventStore } from 'src/app/data/scenario-event/scenario-event.store';
+import { TeamStore } from 'src/app/data/team/team.store';
 import { AssessorViewComponent } from './assessor-view.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { DurationViewComponent } from '../shared/duration-view/duration-view.component';
 import { DataValueComponent } from '../data-value/data-value.component';
+import { TeamResponsesComponent } from '../team-responses/team-responses.component';
 import { captureUnhandledRxErrors, flush } from 'src/app/test-utils/unhandled-rx-errors';
 import { Router } from '@angular/router';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
@@ -67,6 +73,15 @@ class DataValueStub {
   readonly userOptions = input<unknown[]>(undefined);
 }
 
+@Component({ selector: 'app-team-responses', template: '' })
+class TeamResponsesStub {
+  readonly responses = input<CiteTeamResponses | null>(null);
+  readonly loading = input(false);
+  readonly error = input<string | null>(null);
+  readonly teamName = input<string>('');
+  readonly prompt = input<string>('');
+}
+
 const MSEL: Msel = { id: 'msel-1', name: 'Exercise Alpha', teams: [], units: [], userMselRoles: [] };
 const FIELDS: DataField[] = [
   { id: 'df-title', mselId: 'msel-1', name: 'Title', dataType: DataFieldType.String, displayOrder: 1, isAssessorVisible: true },
@@ -91,15 +106,42 @@ function seeded<S extends { set(entities: unknown[]): void }>(Store: new () => S
 }
 
 async function renderAssessorView(
-  overrides: { canEditCheckboxes?: boolean; moves?: Move[]; fields?: DataField[]; standalone?: boolean; canChooseFields?: boolean } = {}
+  overrides: {
+    canEditCheckboxes?: boolean;
+    moves?: Move[];
+    fields?: DataField[];
+    values?: DataValue[];
+    standalone?: boolean;
+    canChooseFields?: boolean;
+    msel?: Msel;
+    teams?: Team[];
+    mselCompetencies?: MselCompetency[];
+    teamCompetencies?: TeamCompetency[];
+    teamResponses?: (mselId: string, teamId: string, moveNumber: number) => Observable<CiteTeamResponses>;
+  } = {}
 ) {
-  const { canEditCheckboxes = false, moves = [], fields = FIELDS, standalone = false, canChooseFields = false } = overrides;
+  const {
+    canEditCheckboxes = false,
+    moves = [],
+    fields = FIELDS,
+    values = VALUES,
+    standalone = false,
+    canChooseFields = false,
+    msel = MSEL,
+    teams = [],
+    mselCompetencies = [],
+    teamCompetencies = [],
+    teamResponses = () => of<CiteTeamResponses>({}),
+  } = overrides;
   const poolApi = {
-    getMselCompetencies: vi.fn(() => of<MselCompetency[]>([])),
+    getMselCompetencies: vi.fn(() => of<MselCompetency[]>(structuredClone(mselCompetencies))),
   } satisfies ApiStub<MselCompetencyService>;
   const teamCompetencyApi = {
-    getMselTeamCompetencies: vi.fn(() => of<TeamCompetency[]>([])),
+    getMselTeamCompetencies: vi.fn(() => of<TeamCompetency[]>(structuredClone(teamCompetencies))),
   } satisfies ApiStub<TeamCompetencyService>;
+  const citeApi = {
+    getMselCiteTeamResponses: vi.fn(teamResponses),
+  } satisfies ApiStub<CiteService>;
   const rendered = await renderComponent(AssessorViewComponent, {
     imports: [
       MatButtonModule,
@@ -114,10 +156,12 @@ async function renderAssessorView(
     childStubs: [
       { replace: DurationViewComponent, with: DurationViewStub },
       { replace: DataValueComponent, with: DataValueStub },
+      { replace: TeamResponsesComponent, with: TeamResponsesStub },
     ],
     providers: [
       { provide: MselCompetencyService, useValue: poolApi },
       { provide: TeamCompetencyService, useValue: teamCompetencyApi },
+      { provide: CiteService, useValue: citeApi },
       // The component reads xAPI statements over HttpClient when an event is expanded.
       provideHttpClient(),
       provideHttpClientTesting(),
@@ -126,19 +170,20 @@ async function renderAssessorView(
         provide: MselStore,
         useFactory: () => {
           const store = new MselStore();
-          store.set([structuredClone(MSEL)]);
+          store.set([structuredClone(msel)]);
           store.setActive('msel-1');
           return store;
         },
       },
       seeded(DataFieldStore, fields),
-      seeded(DataValueStore, VALUES),
+      seeded(DataValueStore, values),
       seeded(ScenarioEventStore, [EVENT]),
       seeded(MoveStore, moves),
+      seeded(TeamStore, teams),
     ],
     inputs: { canEditCheckboxes, loggedInUserId: 'user-me', standalone, canChooseFields },
   });
-  return { ...rendered, poolApi };
+  return { ...rendered, poolApi, citeApi };
 }
 
 function values(fixture: ComponentFixture<unknown>): DataValueStub[] {
@@ -315,5 +360,143 @@ describe('AssessorViewComponent', () => {
       '20 Oct 2026 12:00 EDT',
       '20 Nov 2026 12:00 EST',
     ]);
+  });
+
+  describe('Team Responses', () => {
+    const MOVE_1: Move = { id: 'move-1', mselId: 'msel-1', moveNumber: 1, deltaSeconds: 0, description: 'Initial access' };
+    const COMPETENCY_FIELD: DataField = {
+      id: 'df-comp', mselId: 'msel-1', name: 'Competencies', dataType: DataFieldType.Competency, displayOrder: 4, isAssessorVisible: false,
+    };
+    const BLUE: Team = { id: 'team-blue', mselId: 'msel-1', name: 'Blue Team', shortName: 'Blue' };
+    const ANSWERED: CiteTeamResponses = {
+      mselId: 'msel-1', teamId: 'team-blue', moveNumber: 1, status: CiteTeamResponsesStatus.Answered,
+      teamSubmission: { score: 7.5, isAverage: false, categories: [] },
+    };
+    /** Each call to CiteService.getMselCiteTeamResponses, answered when the test says. */
+    let calls: Subject<CiteTeamResponses>[];
+    const teamResponses = () => {
+      const call = new Subject<CiteTeamResponses>();
+      calls.push(call);
+      return call;
+    };
+    const answer = (call: Subject<CiteTeamResponses>, responses: CiteTeamResponses) => {
+      call.next(responses);
+      call.complete();
+    };
+    const assessable = (msel: Msel) => ({
+      msel,
+      moves: [MOVE_1],
+      fields: [...FIELDS, COMPETENCY_FIELD],
+      values: [...VALUES, { id: 'dv-comp', scenarioEventId: 'se-1', dataFieldId: 'df-comp', value: 'T0001' }],
+      teams: [BLUE],
+      mselCompetencies: [{ id: 'mc-1', mselId: 'msel-1', competencyId: 'comp-1', competency: { id: 'comp-1', idNumber: 'T0001' } }],
+      teamCompetencies: [{ id: 'tc-1', teamId: 'team-blue', competencyId: 'comp-1' }],
+      teamResponses,
+    });
+    const panel = (fixture: ComponentFixture<unknown>) =>
+      fixture.debugElement.query(By.directive(TeamResponsesStub))?.componentInstance as TeamResponsesStub | undefined;
+
+    beforeEach(() => {
+      calls = [];
+    });
+
+    async function openMove(fixture: ComponentFixture<unknown>) {
+      const user = userEvent.setup();
+      await user.click(screen.getByText('Move 1'));
+      TestBed.inject(HttpTestingController)
+        .expectOne((req) => req.url === '/api/xapi/statements')
+        .flush({ statements: [] });
+      fixture.detectChanges();
+      return user;
+    }
+
+    async function chooseBlue(fixture: ComponentFixture<unknown>, user: ReturnType<typeof userEvent.setup>) {
+      await user.click(screen.getByRole('combobox', { name: 'Assess Team' }));
+      await user.click(await screen.findByRole('option', { name: 'Blue' }));
+      fixture.detectChanges();
+    }
+
+    /**
+     * Verifies: an opened move shows the Team Responses panel beside Competency Assessment, prompting for a team until one is chosen in Assess Team, then loading and showing that team's answers for the move.
+     * Interacts with: toggleMoveExpand (move header clicked), Assess Team mat-select, CiteService.getMselCiteTeamResponses (stub, answered by a Subject), TeamResponsesStub inputs.
+     * Data: MSEL uses CITE; Move 1 holds se-1 tagged with competency T0001, assigned to Blue; CITE answers Answered with a score of 7.5.
+     */
+    it('loads the answers of the team chosen in Assess Team', async () => {
+      const { fixture, citeApi } = await renderAssessorView(assessable({ ...MSEL, useCite: true, citeEvaluationId: 'eval-1' }));
+      const user = await openMove(fixture);
+
+      expect(panel(fixture).prompt()).toBe('Choose a team in Assess Team to see its CITE answers.');
+      expect(panel(fixture).responses()).toBeNull();
+      expect(citeApi.getMselCiteTeamResponses).not.toHaveBeenCalled();
+
+      await chooseBlue(fixture, user);
+
+      expect(citeApi.getMselCiteTeamResponses).toHaveBeenCalledExactlyOnceWith('msel-1', 'team-blue', 1);
+      expect(panel(fixture).loading()).toBe(true);
+      expect(panel(fixture).teamName()).toBe('Blue');
+      answer(calls[0], ANSWERED);
+      fixture.detectChanges();
+
+      expect(panel(fixture).loading()).toBe(false);
+      expect(panel(fixture).responses()).toEqual(ANSWERED);
+    });
+
+    /**
+     * Verifies: Refresh xAPI statements reloads the team answers already shown, alongside the statements.
+     * Interacts with: refreshStatements (refresh button), HttpClient GET api/xapi/statements (HttpTestingController), CiteService.getMselCiteTeamResponses (stub).
+     * Data: Blue's answers for move 1 loaded once as NotAnswered, then Answered on refresh.
+     */
+    it('reloads the answers with Refresh xAPI statements', async () => {
+      const { fixture, citeApi } = await renderAssessorView(assessable({ ...MSEL, useCite: true, citeEvaluationId: 'eval-1' }));
+      const user = await openMove(fixture);
+      await chooseBlue(fixture, user);
+      answer(calls[0], { ...ANSWERED, status: CiteTeamResponsesStatus.NotAnswered, teamSubmission: null });
+      fixture.detectChanges();
+
+      await user.click(screen.getByTitle('Refresh xAPI statements'));
+      fixture.detectChanges();
+
+      expect(citeApi.getMselCiteTeamResponses).toHaveBeenCalledTimes(2);
+      expect(citeApi.getMselCiteTeamResponses).toHaveBeenLastCalledWith('msel-1', 'team-blue', 1);
+      expect(panel(fixture).loading()).toBe(true);
+      TestBed.inject(HttpTestingController).expectOne((req) => req.url === '/api/xapi/statements').flush({ statements: [] });
+      answer(calls[1], ANSWERED);
+      fixture.detectChanges();
+
+      expect(panel(fixture).loading()).toBe(false);
+      expect(panel(fixture).responses().status).toBe(CiteTeamResponsesStatus.Answered);
+    });
+
+    /**
+     * Verifies: a failed load is passed to the panel as an error rather than leaving it loading.
+     * Interacts with: CiteService.getMselCiteTeamResponses (stub, errors).
+     * Data: Blue chosen for move 1; the request fails.
+     */
+    it('passes a load failure to the panel', async () => {
+      const { fixture } = await renderAssessorView(assessable({ ...MSEL, useCite: true, citeEvaluationId: 'eval-1' }));
+      const user = await openMove(fixture);
+      await chooseBlue(fixture, user);
+
+      calls[0].error(new Error('500 Server Error'));
+      fixture.detectChanges();
+
+      expect(panel(fixture).loading()).toBe(false);
+      expect(panel(fixture).error()).toBe('Team responses could not be loaded.');
+    });
+
+    /**
+     * Verifies: a MSEL that does not use CITE shows no Team Responses panel and asks for no answers.
+     * Interacts with: toggleMoveExpand, Assess Team mat-select, CiteService.getMselCiteTeamResponses (stub).
+     * Data: useCite false; otherwise the same assessable move and team.
+     */
+    it('is not shown for a MSEL that does not use CITE', async () => {
+      const { fixture, citeApi } = await renderAssessorView(assessable({ ...MSEL, useCite: false }));
+      const user = await openMove(fixture);
+      await chooseBlue(fixture, user);
+
+      expect(screen.getByText('Move 1 — Competency Assessment')).toBeInTheDocument();
+      expect(panel(fixture)).toBeUndefined();
+      expect(citeApi.getMselCiteTeamResponses).not.toHaveBeenCalled();
+    });
   });
 });
