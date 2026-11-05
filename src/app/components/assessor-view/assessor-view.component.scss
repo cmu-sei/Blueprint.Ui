@@ -131,23 +131,24 @@ td {
 // label; group rows sit between them and the event rows.
 .move-header-row {
   td {
-    padding: 8px;
-    background-color: var(--mat-sys-secondary-container);
-    color: var(--mat-sys-on-secondary-container);
+    padding: 10px 8px;
+    background-color: var(--mat-sys-primary-container);
+    color: var(--mat-sys-on-primary-container);
+    border-top: 2px solid var(--mat-sys-primary);
   }
   td:first-child {
-    box-shadow: inset 4px 0 0 var(--mat-sys-primary);
+    box-shadow: inset 6px 0 0 var(--mat-sys-primary);
   }
   border-bottom: 2px solid var(--mat-sys-outline);
 
   .section-header-content,
   .section-label,
   .section-description {
-    color: var(--mat-sys-on-secondary-container);
+    color: var(--mat-sys-on-primary-container);
   }
 
   .section-header-content {
-    font-size: 15px;
+    font-size: 16px;
   }
 
   .section-label {
@@ -219,7 +220,9 @@ td {
 // Columns: copy, time, move, group, platform, actor, team, verb, object.
 .statements-list {
   display: grid;
-  grid-template-columns: repeat(8, max-content) minmax(0, 1fr);
+  // actor, team and verb shrink with an ellipsis when the panel is narrow, so the
+  // row never pushes the page wider than the window
+  grid-template-columns: repeat(5, max-content) repeat(3, minmax(0, max-content)) minmax(0, 1fr);
   column-gap: 6px;
   row-gap: 2px;
 }
@@ -338,7 +341,8 @@ td {
   flex-shrink: 0;
   font-weight: 500;
   color: var(--mat-sys-on-surface);
-  width: 120px;
+  min-width: 0;
+  max-width: 120px;
   margin-left: 6px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -349,7 +353,8 @@ td {
   flex-shrink: 0;
   color: var(--mat-sys-on-surface-variant);
   font-size: 12px;
-  width: 80px;
+  min-width: 0;
+  max-width: 80px;
   margin-left: 6px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -360,7 +365,8 @@ td {
   flex-shrink: 0;
   font-weight: 600;
   color: var(--mat-sys-tertiary);
-  width: 80px;
+  min-width: 0;
+  max-width: 80px;
   margin-left: 6px;
   overflow: hidden;
   text-overflow: ellipsis;
