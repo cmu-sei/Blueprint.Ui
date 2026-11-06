@@ -9,7 +9,8 @@ import {
 } from '@cmusei/crucible-common';
 import { ActivatedRoute} from '@angular/router';
 import { takeUntil } from 'rxjs/operators';
-import { Subject, Observable } from 'rxjs';
+import { Subject, Observable, forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { MoveDataService } from 'src/app/data/move/move-data.service';
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
 import { TeamDataService } from 'src/app/data/team/team-data.service';
@@ -34,6 +35,10 @@ import {
   MselItemStatus,
   Card,
   MselPage,
+  Competency,
+  CompetencyFrameworkService,
+  MselCompetencyService,
+  TeamCompetencyService,
 } from 'src/app/generated/blueprint.api';
 import { UntypedFormControl } from '@angular/forms';
 import { MselPlus } from 'src/app/data/msel/msel-data.service';
@@ -51,6 +56,23 @@ import { DurationViewComponent } from '../shared/duration-view/duration-view.com
 import { DatePipe, DOCUMENT } from '@angular/common';
 import { MselImageDataService } from 'src/app/data/msel/msel-image-data.service';
 import { TimezoneAbbrPipe } from 'src/app/utilities/timezone-abbr';
+
+/** Competencies listed together in the print: a framework's, or a team's. */
+export interface PlaybookCompetencyGroup {
+  name: string;
+  competencies: Competency[];
+}
+
+/** A competency as the print lists it: its ID number, then its name, or its description where it has no name. */
+export function competencyLabel(competency: Competency): string {
+  const name = competency.shortName?.trim() || competency.description?.trim() || '';
+  return [competency.idNumber?.trim(), name.length > 160 ? name.slice(0, 157) + '...' : name].filter((part) => part).join(' ');
+}
+
+// competencies in ID number order, the numbers inside them compared as numbers (T-2 before T-10)
+function byIdNumber(a: Competency, b: Competency): number {
+  return (a.idNumber ?? '').localeCompare(b.idNumber ?? '', undefined, { numeric: true, sensitivity: 'base' });
+}
 
 /** One move as the print-all output shows it: its title block and contents entry. */
 export interface PlaybookPrintMove {
@@ -113,6 +135,13 @@ export class MselPlaybookComponent implements OnDestroy {
   private activatedRoute = inject(ActivatedRoute);
   private mselImageDataService = inject(MselImageDataService);
   private document = inject(DOCUMENT);
+  private mselCompetencyService = inject(MselCompetencyService);
+  private teamCompetencyService = inject(TeamCompetencyService);
+  private competencyFrameworkService = inject(CompetencyFrameworkService);
+  // the MSEL's competencies by framework, and each team's, for the print's Competencies section
+  competencyGroups: PlaybookCompetencyGroup[] = [];
+  teamCompetencyGroups: PlaybookCompetencyGroup[] = [];
+  private competenciesMselId = '';
 
   readonly userTheme = input<Theme>(undefined);
   readonly canEditMsel = input<boolean>(undefined);
@@ -193,6 +222,7 @@ export class MselPlaybookComponent implements OnDestroy {
         }
         if (msel) {
           this.loadMselImage(msel);
+          this.loadCompetencies(msel);
         }
       });
     // subscribe to data fields
@@ -264,6 +294,47 @@ export class MselPlaybookComponent implements OnDestroy {
   ngOnDestroy() {
     this.unsubscribe$.next(null);
     this.unsubscribe$.complete();
+  }
+
+  // read once per MSEL; a list that cannot be read leaves its part of the section out rather than failing the playbook
+  private loadCompetencies(msel: MselPlus) {
+    if (msel.id === this.competenciesMselId) {
+      return;
+    }
+    this.competenciesMselId = msel.id;
+    forkJoin({
+      msel: this.mselCompetencyService.getMselCompetencies(msel.id).pipe(catchError(() => of([]))),
+      teams: this.teamCompetencyService.getMselTeamCompetencies(msel.id).pipe(catchError(() => of([]))),
+      frameworks: this.competencyFrameworkService.getCompetencyFrameworks().pipe(catchError(() => of([]))),
+    })
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(({ msel: mselCompetencies, teams, frameworks }) => {
+        if (msel.id !== this.competenciesMselId) {
+          return;
+        }
+        const frameworkNames = new Map(frameworks.map((f) => [f.id, f.name ?? ''] as [string, string]));
+        const byFramework = new Map<string, Competency[]>();
+        for (const competency of mselCompetencies.map((mc) => mc.competency).filter((c): c is Competency => !!c)) {
+          const name = frameworkNames.get(competency.competencyFrameworkId) || 'Competencies';
+          byFramework.set(name, [...(byFramework.get(name) ?? []), competency]);
+        }
+        this.competencyGroups = [...byFramework.entries()]
+          .sort(([a], [b]) => a.localeCompare(b))
+          .map(([name, competencies]) => ({ name, competencies: competencies.sort(byIdNumber) }));
+        const teamNames = new Map((this.msel.teams ?? []).map((t) => [t.id, t.name || t.shortName] as [string, string]));
+        const byTeam = new Map<string, Competency[]>();
+        for (const tc of teams.filter((tc) => tc.competency && teamNames.has(tc.teamId))) {
+          const name = teamNames.get(tc.teamId);
+          byTeam.set(name, [...(byTeam.get(name) ?? []), tc.competency]);
+        }
+        this.teamCompetencyGroups = [...byTeam.entries()]
+          .sort(([a], [b]) => a.localeCompare(b))
+          .map(([name, competencies]) => ({ name, competencies: competencies.sort(byIdNumber) }));
+      });
+  }
+
+  competencyLabel(competency: Competency): string {
+    return competencyLabel(competency);
   }
 
   private loadMselImage(msel: MselPlus) {

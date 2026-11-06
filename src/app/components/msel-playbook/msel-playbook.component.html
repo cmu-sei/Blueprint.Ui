@@ -77,10 +77,13 @@ project root for license information.
                   <dd>{{ msel.keywords }}</dd>
                 }
               </dl>
-              @if (mselPages.length || printMoves.length) {
+              @if (mselPages.length || printMoves.length || competencyGroups.length || teamCompetencyGroups.length) {
                 <nav class="cover-contents" aria-label="Contents">
                   <h2>Contents</h2>
                   <ol>
+                    @if (competencyGroups.length || teamCompetencyGroups.length) {
+                      <li>Competencies</li>
+                    }
                     @for (page of mselPages; track page.id) {
                       <li>{{ page.name }}</li>
                     }
@@ -92,6 +95,30 @@ project root for license information.
               }
             </div>
           </section>
+          @if (competencyGroups.length || teamCompetencyGroups.length) {
+            <section class="playbook-competencies print-only" aria-label="Competencies">
+              <h2>Competencies</h2>
+              @for (group of competencyGroups; track group.name) {
+                <h3>{{ group.name }}</h3>
+                <ul>
+                  @for (competency of group.competencies; track competency.id) {
+                    <li>{{ competencyLabel(competency) }}</li>
+                  }
+                </ul>
+              }
+              @if (teamCompetencyGroups.length) {
+                <h3>Team competencies</h3>
+                @for (team of teamCompetencyGroups; track team.name) {
+                  <h4>{{ team.name }}</h4>
+                  <ul>
+                    @for (competency of team.competencies; track competency.id) {
+                      <li>{{ competencyLabel(competency) }}</li>
+                    }
+                  </ul>
+                }
+              }
+            </section>
+          }
           @for (page of mselPages; track page.id) {
             <section class="msel-page-content print-only" [attr.aria-label]="page.name">
               @if (!pagesTitledInContent.has(page.id)) {

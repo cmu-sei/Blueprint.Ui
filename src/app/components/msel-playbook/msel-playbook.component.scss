@@ -182,6 +182,37 @@ mat-paginator {
   }
 }
 
+.playbook-competencies {
+  break-before: page;
+
+  h2 {
+    font-size: 18pt;
+    margin: 0 0 4mm 0;
+    padding-bottom: 2mm;
+    border-bottom: 2px solid var(--mat-sys-primary);
+  }
+
+  h3 {
+    font-size: 13pt;
+    margin: 5mm 0 2mm 0;
+  }
+
+  h4 {
+    font-size: 11pt;
+    margin: 3mm 0 1mm 0;
+  }
+
+  ul {
+    margin: 0;
+    padding-left: 5mm;
+  }
+
+  li {
+    break-inside: avoid;
+    margin-bottom: 1mm;
+  }
+}
+
 .msel-page-content {
   break-before: page;
 
