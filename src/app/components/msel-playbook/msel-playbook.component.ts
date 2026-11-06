@@ -63,10 +63,10 @@ export interface PlaybookCompetencyGroup {
   competencies: Competency[];
 }
 
-/** A competency as the print lists it: its ID number, then its name, or its description where it has no name. */
+/** A competency as the print lists it, in full: its ID number, then its name, or its description where it has no name. */
 export function competencyLabel(competency: Competency): string {
   const name = competency.shortName?.trim() || competency.description?.trim() || '';
-  return [competency.idNumber?.trim(), name.length > 160 ? name.slice(0, 157) + '...' : name].filter((part) => part).join(' ');
+  return [competency.idNumber?.trim(), name].filter((part) => part).join(' ');
 }
 
 // competencies in ID number order, the numbers inside them compared as numbers (T-2 before T-10)
