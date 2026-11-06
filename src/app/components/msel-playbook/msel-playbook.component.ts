@@ -143,6 +143,9 @@ export class MselPlaybookComponent implements OnDestroy {
   mselPages: MselPage[] = [];
   // the pages whose content opens with a heading of their own name, which the print does not repeat above it
   pagesTitledInContent = new Set<string>();
+  // true while the playbook is drawn for print, when rows show no audio or video players
+  printing = false;
+  private readonly printedValues = new Map<string, string>();
   filteredScenarioEventList: ScenarioEvent[] = [];
   filterString = '';
   blankDataValue = {
@@ -439,12 +442,24 @@ export class MselPlaybookComponent implements OnDestroy {
     if (dataValue) {
       if (dataField.dataType === 'Card') {
         return this.getCardNameById(dataValue.value);
+      } else if (dataValue.value == null) {
+        return '';
       } else {
-        return dataValue.value != null ? dataValue.value : '';
+        return this.printing ? this.printable(dataValue.value) : dataValue.value;
       }
     } else {
       return '';
     }
+  }
+
+  // a value as it prints, worked out once per value
+  private printable(html: string): string {
+    let printed = this.printedValues.get(html);
+    if (printed === undefined) {
+      printed = withoutMedia(html);
+      this.printedValues.set(html, printed);
+    }
+    return printed;
   }
 
   getScenarioEventById(id: string): ScenarioEvent | undefined {
@@ -472,17 +487,23 @@ export class MselPlaybookComponent implements OnDestroy {
     return scenarioEvent ? this.getScenarioEventTitle(scenarioEvent) : '';
   }
 
+  // the rows are drawn again without their audio and video before the page is copied for print, so the browser never
+  // loads a clip it cannot play on paper; the page reloads afterward, which draws them with their players again
   printpage() {
-    this.setPrintFooter();
-    const printContents = document.getElementById('printable-area').innerHTML;
-    document.body.innerHTML = printContents;
-    window.print();
-    location.reload();
+    this.printing = true;
+    setTimeout(() => {
+      this.setPrintFooter();
+      const printContents = document.getElementById('printable-area').innerHTML;
+      document.body.innerHTML = printContents;
+      window.print();
+      location.reload();
+    }, 250);
   }
 
   printAllEvents() {
     const originalPageSize = this.pageSize;
     this.pageSize = this.sortedScenarioEvents.length;
+    this.printing = true;
     setTimeout(() => {
       this.setPrintFooter();
       const printContents = document.getElementById('printable-area').innerHTML;
@@ -596,4 +617,27 @@ export function opensWithHeading(content: string | null | undefined, name: strin
   const heading = new DOMParser().parseFromString(content, 'text/html').body.querySelector('h1, h2, h3, h4, h5, h6');
   const normalize = (text: string) => text.replace(/\s+/g, ' ').trim().toLowerCase();
   return !!heading && normalize(heading.textContent ?? '') === normalize(name);
+}
+
+/**
+ * A value as the playbook prints it: each audio or video player becomes a line saying where the clip plays, since paper
+ * cannot play it and loading a clip only slows the print, and each transcript is opened so it prints in full.
+ */
+export function withoutMedia(html: string): string {
+  if (!/<(audio|video|details)\b/i.test(html)) {
+    return html;
+  }
+  // a template's content is inert, so the clip is not loaded while it is taken out
+  const template = document.createElement('template');
+  template.innerHTML = html;
+  template.content.querySelectorAll('audio, video').forEach((player) => {
+    const note = document.createElement('p');
+    note.className = 'playbook-media-note';
+    const label = document.createElement('em');
+    label.textContent = `${player.tagName.toLowerCase() === 'video' ? 'Video' : 'Audio'} clip: plays in Gallery.`;
+    note.appendChild(label);
+    player.replaceWith(note);
+  });
+  template.content.querySelectorAll('details').forEach((details) => details.setAttribute('open', ''));
+  return template.innerHTML;
 }
