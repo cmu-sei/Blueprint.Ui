@@ -5,9 +5,26 @@ Released under a MIT (SEI)-style license. See LICENSE.md in the project root for
 
 <div class="article-container background">
   <div class="page">
+    @if (banner(); as marking) {
+    <ng-container [ngTemplateOutlet]="markingBar" [ngTemplateOutletContext]="{ $implicit: marking }" />
+    }
     <angular-editor [placeholder]="'Description'"
       [(ngModel)]="mselPage.content"
       [config]="viewConfig"
      />
+    @if (banner(); as marking) {
+    <ng-container [ngTemplateOutlet]="markingBar" [ngTemplateOutletContext]="{ $implicit: marking }" />
+    }
   </div>
 </div>
+
+<!-- the same banner Blueprint puts on the MSEL's Gallery articles -->
+<ng-template #markingBar let-marking>
+  <div class="marking" role="note" aria-label="Marking" [style.background-color]="marking.background"
+    [style.text-align]="marking.align">
+    <b [style.color]="marking.color">{{ marking.text }}</b>
+    @if (marking.subtext) {
+    <br><span class="marking-subtext">{{ marking.subtext }}</span>
+    }
+  </div>
+</ng-template>
