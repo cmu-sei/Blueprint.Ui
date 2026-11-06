@@ -94,7 +94,9 @@ project root for license information.
           </section>
           @for (page of mselPages; track page.id) {
             <section class="msel-page-content print-only" [attr.aria-label]="page.name">
+              @if (!pagesTitledInContent.has(page.id)) {
               <h2>{{ page.name }}</h2>
+              }
               <div [innerHTML]="page.content"></div>
             </section>
           }
