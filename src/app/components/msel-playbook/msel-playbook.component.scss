@@ -37,6 +37,14 @@
   text-align: left;
 }
 
+#eventDetails .label-cell {
+  font-weight: bold;
+}
+
+#eventDetails th.label-cell {
+  width: 180px;
+}
+
 #eventDetails th,
 #eventDetails td {
   padding: 8px;
@@ -84,54 +92,172 @@ mat-paginator {
   background: transparent;
 }
 
-.page-break {
-  page-break-after: always;
-}
-
 .print-only {
   display: none;
 }
 
-.msel-header {
-  text-align: center;
-  padding: 16px;
+// Print output. Printing copies the printable area into the page body, so
+// these rules apply to the copy. The "playbook" named page carries the
+// footer: the MSEL name (bottom left, set by the component when printing)
+// and the page number (bottom right).
+.playbook-print {
+  page: playbook;
+}
+
+@page playbook {
+  margin: 16mm 14mm 18mm;
+
+  @bottom-left {
+    font-size: 9pt;
+    color: #555;
+  }
+
+  @bottom-right {
+    content: 'Page ' counter(page) ' of ' counter(pages);
+    font-size: 9pt;
+    color: #555;
+  }
+}
+
+.playbook-cover {
+  break-after: page;
+
+  .cover-image {
+    display: block;
+    width: 100%;
+    max-height: 90mm;
+    object-fit: cover;
+  }
+
+  .cover-band {
+    height: 40mm;
+    background-color: var(--mat-sys-primary);
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .cover-title {
+    font-size: 28pt;
+    line-height: 1.2;
+    margin: 12mm 0 4mm 0;
+  }
+
+  .cover-description {
+    font-size: 12pt;
+    white-space: pre-line;
+    margin: 0 0 8mm 0;
+  }
+
+  .cover-facts {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 2mm 8mm;
+    margin: 0 0 10mm 0;
+
+    dt {
+      font-weight: bold;
+    }
+
+    dd {
+      margin: 0;
+    }
+  }
+
+  .cover-contents {
+    h2 {
+      font-size: 14pt;
+      margin: 0 0 3mm 0;
+      padding-bottom: 2mm;
+      border-bottom: 2px solid var(--mat-sys-primary);
+    }
+
+    ol {
+      margin: 0;
+      padding-left: 6mm;
+    }
+
+    li {
+      margin: 1mm 0;
+    }
+  }
+}
+
+.msel-page-content {
+  break-before: page;
 
   h2 {
-    margin: 0 0 8px 0;
+    font-size: 18pt;
+    margin: 0 0 4mm 0;
+    padding-bottom: 2mm;
+    border-bottom: 2px solid var(--mat-sys-primary);
   }
 }
 
-.move-header {
-  padding: 12px 16px;
-  border: 2px solid black;
-  background-color: #f0f0f0;
+.move-title {
+  break-before: page;
+  break-inside: avoid;
+  margin-bottom: 6mm;
+  padding-left: 4mm;
+  border-left: 6px solid var(--mat-sys-primary);
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
 
-  h3 {
-    margin: 0 0 6px 0;
-    font-size: 1.3em;
-    border-bottom: 1px solid black;
-    padding-bottom: 4px;
+  .move-number {
+    font-size: 26pt;
+    font-weight: bold;
+    line-height: 1.1;
   }
 
-  p {
-    margin: 4px 0;
-  }
-}
-
-@media print {
-  .msel-header,
-  .move-header {
-    page-break-after: always;
+  .move-description {
+    font-size: 15pt;
+    margin: 1mm 0 3mm 0;
   }
 
-  #eventDetails thead {
-    display: table-row-group;
+  .move-situation-time {
+    margin: 0 0 3mm 0;
+  }
+
+  .move-briefing {
+    padding: 3mm 4mm;
+    background-color: #f0f0f0;
+    border: 1px solid lightgray;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .move-briefing-label {
+    font-weight: bold;
+    margin-bottom: 1mm;
   }
 }
 
 @media print {
   .print-only {
     display: block;
+  }
+
+  .playbook-print {
+    color: black;
+  }
+
+  #eventDetails tr {
+    break-inside: avoid;
+  }
+
+  // Keep the title row with the event's first row.
+  #eventDetails thead tr {
+    break-after: avoid;
+  }
+
+  // The label column carries the shading in print instead of striped rows.
+  #eventDetails tr:nth-child(even) {
+    background-color: transparent;
+  }
+
+  #eventDetails td.label-cell {
+    background-color: #f0f0f0;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 }
 
