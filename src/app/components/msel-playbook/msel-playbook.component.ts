@@ -48,13 +48,50 @@ import { PageEvent, MatPaginator } from '@angular/material/paginator';
 import { MatIconButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { DurationViewComponent } from '../shared/duration-view/duration-view.component';
-import { DatePipe } from '@angular/common';
+import { DatePipe, DOCUMENT } from '@angular/common';
+import { MselImageDataService } from 'src/app/data/msel/msel-image-data.service';
+import { TimezoneAbbrPipe } from 'src/app/utilities/timezone-abbr';
+
+/** One move as the print-all output shows it: its title block and contents entry. */
+export interface PlaybookPrintMove {
+  firstEventId: string;
+  moveNumber: number;
+  move?: Move;
+}
+
+/**
+ * The print footer's MSEL name, as an @page margin box for the "playbook"
+ * named page. Margin box content can't read the DOM, so the name is written
+ * into a CSS string.
+ */
+export function playbookFooterCss(mselName: string): string {
+  const name = (mselName ?? '')
+    .replace(/[\r\n]+/g, ' ')
+    .replace(/\\/g, '\\\\')
+    .replace(/"/g, '\\"');
+  return `@page playbook { @bottom-left { content: "${name}"; } }`;
+}
+
+/** A duration as days, hours and minutes, e.g. "1 day 4 hours 30 minutes". */
+export function formatPlaybookDuration(totalSeconds: number): string {
+  const seconds = Math.max(0, Math.round(+totalSeconds || 0));
+  const parts: [number, string][] = [
+    [Math.floor(seconds / 86400), 'day'],
+    [Math.floor((seconds % 86400) / 3600), 'hour'],
+    [Math.floor((seconds % 3600) / 60), 'minute'],
+  ];
+  const text = parts
+    .filter(([n]) => n > 0)
+    .map(([n, unit]) => `${n} ${unit}${n === 1 ? '' : 's'}`)
+    .join(' ');
+  return text || `${seconds} second${seconds === 1 ? '' : 's'}`;
+}
 
 @Component({
     selector: 'app-msel-playbook',
     templateUrl: './msel-playbook.component.html',
     styleUrls: ['./msel-playbook.component.scss'],
-    imports: [MatPaginator, MatIconButton, MatIcon, DurationViewComponent, DatePipe]
+    imports: [MatPaginator, MatIconButton, MatIcon, DurationViewComponent, DatePipe, TimezoneAbbrPipe]
 })
 export class MselPlaybookComponent implements OnDestroy {
   private settingsService = inject(ComnSettingsService);
@@ -74,6 +111,8 @@ export class MselPlaybookComponent implements OnDestroy {
   private cardQuery = inject(CardQuery);
   private mselPageQuery = inject(MselPageQuery);
   private activatedRoute = inject(ActivatedRoute);
+  private mselImageDataService = inject(MselImageDataService);
+  private document = inject(DOCUMENT);
 
   readonly userTheme = input<Theme>(undefined);
   readonly canEditMsel = input<boolean>(undefined);
@@ -83,6 +122,10 @@ export class MselPlaybookComponent implements OnDestroy {
   defaultPageSizeOptions = [1, 5, 10, 20];
   pageSizeOptions = this.defaultPageSizeOptions;
   imageFilePath = '';
+  // The cover's image. MselImageDataService owns the object URL (it is shared
+  // with the MSEL cards and revoked there when the image changes).
+  mselImageUrl: string | null = null;
+  private mselImageKey: string | null = null;
   scenarioEventId = '';
   selectedMselId = '';
   selectedScenarioEventId = '';
@@ -142,6 +185,9 @@ export class MselPlaybookComponent implements OnDestroy {
       .subscribe((msel) => {
         if (msel && this.msel.id !== msel.id) {
           this.msel = this.getEditableMsel(msel) as MselPlus;
+        }
+        if (msel) {
+          this.loadMselImage(msel);
         }
       });
     // subscribe to data fields
@@ -212,6 +258,23 @@ export class MselPlaybookComponent implements OnDestroy {
   ngOnDestroy() {
     this.unsubscribe$.next(null);
     this.unsubscribe$.complete();
+  }
+
+  private loadMselImage(msel: MselPlus) {
+    const key = msel.id + '|' + (msel.imageDateModified ?? '');
+    if (key === this.mselImageKey) {
+      return;
+    }
+    this.mselImageKey = key;
+    this.mselImageUrl = null;
+    this.mselImageDataService
+      .imageUrl(msel)
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((url) => {
+        if (key === this.mselImageKey) {
+          this.mselImageUrl = url;
+        }
+      });
   }
 
   getEditableMsel(msel: MselPlus): MselPlus {
@@ -407,6 +470,7 @@ export class MselPlaybookComponent implements OnDestroy {
   }
 
   printpage() {
+    this.setPrintFooter();
     const printContents = document.getElementById('printable-area').innerHTML;
     document.body.innerHTML = printContents;
     window.print();
@@ -417,6 +481,7 @@ export class MselPlaybookComponent implements OnDestroy {
     const originalPageSize = this.pageSize;
     this.pageSize = this.sortedScenarioEvents.length;
     setTimeout(() => {
+      this.setPrintFooter();
       const printContents = document.getElementById('printable-area').innerHTML;
       document.body.innerHTML = printContents;
       window.print();
@@ -482,5 +547,40 @@ export class MselPlaybookComponent implements OnDestroy {
 
   isShowingAllEvents(): boolean {
     return this.pageSize >= this.sortedScenarioEvents.length;
+  }
+
+  /** The moves in print order: one entry where each move's events start. */
+  getPrintMoves(): PlaybookPrintMove[] {
+    const printMoves: PlaybookPrintMove[] = [];
+    this.getPagedScenarioEvents().forEach((scenarioEvent, i, events) => {
+      if (i === 0 || this.isMoveBoundary(scenarioEvent.id, events[i - 1].id)) {
+        printMoves.push({
+          firstEventId: scenarioEvent.id,
+          moveNumber: this.getMoveNumber(scenarioEvent.id),
+          move: this.getMoveForEvent(scenarioEvent.id),
+        });
+      }
+    });
+    return printMoves;
+  }
+
+  getTeamNames(): string {
+    return (this.msel.teams ?? []).map((t) => t.name || t.shortName).join(', ');
+  }
+
+  formatDuration(totalSeconds: number): string {
+    return formatPlaybookDuration(totalSeconds);
+  }
+
+  // Puts the MSEL name in the print footer; the page number is in the scss.
+  private setPrintFooter() {
+    const id = 'playbook-print-footer';
+    let style = this.document.getElementById(id) as HTMLStyleElement | null;
+    if (!style) {
+      style = this.document.createElement('style');
+      style.id = id;
+      this.document.head.appendChild(style);
+    }
+    style.textContent = playbookFooterCss(this.msel.name);
   }
 }
