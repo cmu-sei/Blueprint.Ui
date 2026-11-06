@@ -57,6 +57,7 @@ import { MatOption } from '@angular/material/autocomplete';
 import { MatProgressBar } from '@angular/material/progress-bar';
 import { NgClass } from '@angular/common';
 import { MatTooltip } from '@angular/material/tooltip';
+import { CdkTextareaAutosize } from '@angular/cdk/text-field';
 import { DurationViewComponent } from '../shared/duration-view/duration-view.component';
 import { DataValueComponent } from '../data-value/data-value.component';
 import { CardEditDialogComponent } from '../card-edit-dialog/card-edit-dialog.component';
@@ -83,7 +84,7 @@ export interface XApiStatement {
     selector: 'app-assessor-view',
     templateUrl: './assessor-view.component.html',
     styleUrls: ['./assessor-view.component.scss'],
-    imports: [MatIcon, MatSort, MatFormField, MatLabel, MatInput, FormsModule, MatIconButton, MatSuffix, MatSelect, MatOption, MatSortHeader, MatProgressBar, NgClass, MatTooltip, MatButton, DurationViewComponent, DataValueComponent, CardEditDialogComponent]
+    imports: [MatIcon, MatSort, MatFormField, MatLabel, MatInput, FormsModule, MatIconButton, MatSuffix, MatSelect, MatOption, MatSortHeader, MatProgressBar, NgClass, MatTooltip, MatButton, CdkTextareaAutosize, DurationViewComponent, DataValueComponent, CardEditDialogComponent]
 })
 export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
   private mselQuery = inject(MselQuery);
@@ -179,6 +180,8 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
   submittedAssertions = new Set<string>();
   submittingAssertions = new Set<string>();
   assertionTeam = new Map<string, string>();
+  // Contexts whose Assess Team the user picked by hand; the Team filter never overrides those.
+  private assertionTeamPicked = new Set<string>();
 
   // Precomputed competency caches — rebuilt on data change, not per change detection
   private baseEventCompetencies = new Map<string, Competency[]>();
@@ -416,6 +419,7 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
   filterByTeams(sectionKey: string, teamIds: string[]) {
     this.sectionTeamFilter.set(sectionKey, teamIds);
     this.sectionTeamInitialized.add(sectionKey);
+    this.preselectAssertionTeam(this.contextKeyForSection(sectionKey));
   }
 
   filterBySources(sectionKey: string, sources: string[]) {
@@ -1563,18 +1567,39 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
     this.eventRatings.get(key).set(competencyId, { ...existing, comment });
   }
 
-  getAssertionTeam(eventId: string): string {
-    if (!this.assertionTeam.has(eventId)) {
-      const teamIds = this.getSectionTeams('event-' + eventId);
-      if (teamIds.length === 1) {
-        this.assertionTeam.set(eventId, teamIds[0]);
-      }
+  getAssertionTeam(contextKey: string): string {
+    if (!this.assertionTeam.has(contextKey)) {
+      this.preselectAssertionTeam(contextKey);
     }
-    return this.assertionTeam.get(eventId) ?? '';
+    return this.assertionTeam.get(contextKey) ?? '';
   }
 
-  setAssertionTeam(eventId: string, teamId: string) {
-    this.assertionTeam.set(eventId, teamId);
+  /** Called when the user picks a team in Assess Team. */
+  setAssertionTeam(contextKey: string, teamId: string) {
+    this.assertionTeam.set(contextKey, teamId);
+    this.assertionTeamPicked.add(contextKey);
+  }
+
+  /**
+   * When the evidence is filtered to exactly one team that Assess Team offers,
+   * selects that team, unless the user picked a team in Assess Team by hand.
+   */
+  private preselectAssertionTeam(contextKey: string) {
+    if (this.assertionTeamPicked.has(contextKey)) return;
+    const teamIds = this.getSectionTeams(this.sectionKeyForContext(contextKey));
+    if (teamIds.length !== 1) return;
+    if (!this.getTeamsForContext(contextKey).some(t => t.id === teamIds[0])) return;
+    this.assertionTeam.set(contextKey, teamIds[0]);
+  }
+
+  // Filter sections are keyed move-N, group-N-M and event-<id>; assessment contexts
+  // are move-N, group-N-M and the bare event id.
+  private sectionKeyForContext(contextKey: string): string {
+    return contextKey.startsWith('move-') || contextKey.startsWith('group-') ? contextKey : `event-${contextKey}`;
+  }
+
+  private contextKeyForSection(sectionKey: string): string {
+    return sectionKey.startsWith('event-') ? sectionKey.slice('event-'.length) : sectionKey;
   }
 
   getTeamsForContext(contextKey: string): Team[] {
