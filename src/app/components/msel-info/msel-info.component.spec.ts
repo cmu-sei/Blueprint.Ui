@@ -887,11 +887,11 @@ describe('MselInfoComponent', () => {
     });
 
     /**
-     * Verifies: a pushed MSEL keeps the setting editable while the Steamfitter box itself is locked, because when the scenario starts changes nothing the push built.
+     * Verifies: a pushed MSEL locks the setting with the Steamfitter box, so a deployed MSEL cannot be switched to start at its start time after the push.
      * Interacts with: integrationsLocked, canEditMsel.
      * Data: EditMsels; a deployed MSEL using Steamfitter with scenario sc-1, starting on the push.
      */
-    it('keeps when to start the scenario editable on a pushed MSEL', async () => {
+    it('locks when to start the scenario on a pushed MSEL', async () => {
       const { fixture } = await renderInfo({
         permissions: [SystemPermission.EditMsels],
         mselExtra: {
@@ -904,7 +904,7 @@ describe('MselInfoComponent', () => {
 
       expect(screen.getByLabelText('Steamfitter')).toBeDisabled();
       const select = await startSelect(fixture);
-      expect(await select.isDisabled()).toBe(false);
+      expect(await select.isDisabled()).toBe(true);
       expect(await select.getValueText()).toBe('When the push finishes');
     });
 
