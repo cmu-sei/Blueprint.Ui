@@ -17,6 +17,12 @@ import {
   MselImageService,
   MselPage,
   ScenarioEvent,
+  Competency,
+  CompetencyFrameworkService,
+  MselCompetency,
+  MselCompetencyService,
+  TeamCompetency,
+  TeamCompetencyService,
 } from 'src/app/generated/blueprint.api';
 import { DataFieldStore } from 'src/app/data/data-field/data-field.store';
 import { DataValueStore } from 'src/app/data/data-value/data-value.store';
@@ -64,6 +70,8 @@ interface PlaybookData {
   events?: ScenarioEvent[];
   values?: DataValue[];
   getMselImage?: ApiStub<MselImageService>['getMselImage'];
+  mselCompetencies?: MselCompetency[];
+  teamCompetencies?: TeamCompetency[];
 }
 
 async function renderPlaybook(canEditMsel: boolean, data: PlaybookData = {}) {
@@ -90,6 +98,9 @@ async function renderPlaybook(canEditMsel: boolean, data: PlaybookData = {}) {
       seeded(MoveStore, data.moves ?? []),
       seeded(MselPageStore, data.pages ?? []),
       { provide: MselImageService, useValue: imageApi },
+      { provide: MselCompetencyService, useValue: { getMselCompetencies: vi.fn(() => of(data.mselCompetencies ?? [])) } },
+      { provide: TeamCompetencyService, useValue: { getMselTeamCompetencies: vi.fn(() => of(data.teamCompetencies ?? [])) } },
+      { provide: CompetencyFrameworkService, useValue: { getCompetencyFrameworks: vi.fn(() => of([{ id: 'fw-1', name: 'DCWF 5.1' }, { id: 'fw-2', name: 'NICE 2.0' }])) } },
     ],
     inputs: { canEditMsel, loggedInUserId: 'user-1' },
   });
@@ -354,6 +365,36 @@ describe('MselPlaybookComponent', () => {
     expect(withoutMedia('<video controls><source src="data:video/mp4;base64,AAAA"></video>')).toBe(
       '<p class="playbook-media-note"><em>Video clip: plays in Gallery.</em></p>'
     );
+  });
+
+  /**
+   * Verifies: after the cover the print lists the MSEL's competencies by framework, each as its ID number and name in
+   * number order, then each team's, and the contents name the section; a MSEL with none prints no section.
+   * Interacts with: MselCompetencyService, TeamCompetencyService, CompetencyFrameworkService (stubs), competencyLabel.
+   * Data: two DCWF competencies out of order and one NICE one; team BLUE with one; a competency with no name.
+   */
+  it('lists the MSEL and team competencies after the cover', async () => {
+    const t10: Competency = { id: 'c-10', competencyFrameworkId: 'fw-1', idNumber: 'T-10', shortName: 'Analyze logs' };
+    const t2: Competency = { id: 'c-2', competencyFrameworkId: 'fw-1', idNumber: 'T-2', shortName: 'Triage alerts' };
+    const nice: Competency = { id: 'c-n', competencyFrameworkId: 'fw-2', idNumber: 'K0001', description: 'Knowledge of networking.' };
+    await renderPlaybook(true, {
+      msel: { teams: [{ id: 'team-blue', name: 'Blue Team', shortName: 'BLUE' }] },
+      mselCompetencies: [t10, t2, nice].map((competency) => ({ id: competency.id, mselId: 'msel-1', competencyId: competency.id, competency })),
+      teamCompetencies: [{ id: 'tc-1', teamId: 'team-blue', competencyId: 'c-2', competency: t2 }],
+    });
+
+    const section = within(screen.getByLabelText('Competencies'));
+    expect(section.getAllByRole('heading', hidden).map((h) => h.textContent)).toEqual(['Competencies', 'DCWF 5.1', 'NICE 2.0', 'Team competencies', 'Blue Team']);
+    expect(section.getAllByRole('listitem', hidden).map((li) => li.textContent)).toEqual([
+      'T-2 Triage alerts', 'T-10 Analyze logs', 'K0001 Knowledge of networking.', 'T-2 Triage alerts',
+    ]);
+    expect(within(screen.getByLabelText('Contents')).getAllByRole('listitem', hidden)[0]).toHaveTextContent('Competencies');
+  });
+
+  it('prints no Competencies section for a MSEL without any', async () => {
+    await renderPlaybook(true);
+
+    expect(screen.queryByLabelText('Competencies')).toBeNull();
   });
 
   /**
