@@ -24,7 +24,7 @@ import { MselStore } from 'src/app/data/msel/msel.store';
 import { MoveStore } from 'src/app/data/move/move.store';
 import { MselPageStore } from 'src/app/data/msel-page/msel-page.store';
 import { ScenarioEventStore } from 'src/app/data/scenario-event/scenario-event.store';
-import { formatPlaybookDuration, MselPlaybookComponent, playbookFooterCss } from './msel-playbook.component';
+import { formatPlaybookDuration, MselPlaybookComponent, opensWithHeading, playbookFooterCss } from './msel-playbook.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { renderComponent } from 'src/app/test-utils/render-component';
 
@@ -304,6 +304,25 @@ describe('MselPlaybookComponent', () => {
     expect(map.getByText('Three subnets.')).toBeInTheDocument();
     expect(map.queryByText('No production systems.')).toBeNull();
     expect(screen.queryByLabelText('Planner Notes')).toBeNull();
+  });
+
+  /**
+   * Verifies: a page whose content opens with a heading of its own name, as a drafted profiles page does, prints that
+   * heading once, not the page name above it as well; a page without one still gets the name.
+   * Interacts with: real MselPageQuery (seeded), opensWithHeading.
+   * Data: Team Profiles, whose content starts with <h2>Team Profiles</h2> inside the article table, and Rules of Engagement.
+   */
+  it('prints a page title once when the content already has it', async () => {
+    const profiles: MselPage = {
+      id: 'page-4', mselId: 'msel-1', name: 'Team Profiles', includeInPlaybook: true,
+      content: '<table><tbody><tr><td><section><h2>Team  profiles</h2><p>The participant teams.</p></section></td></tr></tbody></table>',
+    };
+    await renderPlaybook(true, { pages: [PAGES[0], profiles] });
+
+    expect(within(screen.getByLabelText('Team Profiles')).getAllByRole('heading', hidden)).toHaveLength(1);
+    expect(within(screen.getByLabelText('Rules of Engagement')).getByRole('heading', hidden)).toHaveTextContent('Rules of Engagement');
+    expect(opensWithHeading('<p>Intro</p><h3>Other</h3>', 'Team Profiles')).toBe(false);
+    expect(opensWithHeading('<p>No heading.</p>', 'Team Profiles')).toBe(false);
   });
 
   /**

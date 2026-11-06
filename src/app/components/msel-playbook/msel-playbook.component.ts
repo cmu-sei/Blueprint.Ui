@@ -141,6 +141,8 @@ export class MselPlaybookComponent implements OnDestroy {
   moveAndGroupNumbers: Record<string, number[]>[] = [];
   moveList: Move[] = [];
   mselPages: MselPage[] = [];
+  // the pages whose content opens with a heading of their own name, which the print does not repeat above it
+  pagesTitledInContent = new Set<string>();
   filteredScenarioEventList: ScenarioEvent[] = [];
   filterString = '';
   blankDataValue = {
@@ -252,6 +254,7 @@ export class MselPlaybookComponent implements OnDestroy {
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((pages) => {
         this.mselPages = pages.filter(p => p.includeInPlaybook);
+        this.pagesTitledInContent = new Set(this.mselPages.filter(p => opensWithHeading(p.content, p.name)).map(p => p.id));
       });
   }
 
@@ -583,4 +586,14 @@ export class MselPlaybookComponent implements OnDestroy {
     }
     style.textContent = playbookFooterCss(this.msel.name);
   }
+}
+
+// whether a page's content starts with a heading that says its name, as a drafted profiles page does
+export function opensWithHeading(content: string | null | undefined, name: string | null | undefined): boolean {
+  if (!content || !name) {
+    return false;
+  }
+  const heading = new DOMParser().parseFromString(content, 'text/html').body.querySelector('h1, h2, h3, h4, h5, h6');
+  const normalize = (text: string) => text.replace(/\s+/g, ' ').trim().toLowerCase();
+  return !!heading && normalize(heading.textContent ?? '') === normalize(name);
 }
