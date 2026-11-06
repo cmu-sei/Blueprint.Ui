@@ -3,7 +3,7 @@
 // project root for license information.
 import { Component, OnDestroy, HostListener, inject, input } from '@angular/core';
 import { Subject, Subscription, Observable, of } from 'rxjs';
-import { takeUntil, debounceTime, distinctUntilChanged, mergeMap, delay } from 'rxjs/operators';
+import { takeUntil, debounceTime, distinctUntilChanged, mergeMap, delay, take } from 'rxjs/operators';
 import { Sort, MatSort, MatSortHeader } from '@angular/material/sort';
 import { HttpClient } from '@angular/common/http';
 import { ComnSettingsService, Theme } from '@cmusei/crucible-common';
@@ -55,7 +55,10 @@ import { MatIconButton, MatButton } from '@angular/material/button';
 import { MatSelect } from '@angular/material/select';
 import { MatOption } from '@angular/material/autocomplete';
 import { MatProgressBar } from '@angular/material/progress-bar';
-import { NgClass } from '@angular/common';
+import { DatePipe, DOCUMENT, NgClass, NgTemplateOutlet } from '@angular/common';
+import { TimezoneAbbrPipe } from 'src/app/utilities/timezone-abbr';
+import { MselImageDataService } from 'src/app/data/msel/msel-image-data.service';
+import { formatPrintDuration, plainText, printFooterCss } from 'src/app/utilities/print-report';
 import { MatTooltip } from '@angular/material/tooltip';
 import { DurationViewComponent } from '../shared/duration-view/duration-view.component';
 import { DataValueComponent } from '../data-value/data-value.component';
@@ -79,11 +82,75 @@ export interface XApiStatement {
   };
 }
 
+/** An assessor's competency assertion as read from its xAPI statement. */
+export interface AssessmentAssertion {
+  // a scenario event id, 'move-N' or 'group-N-M', as the view keys its ratings
+  contextKey: string;
+  competency: Competency;
+  teamId: string;
+  scoreRaw: number | null;
+  comment: string;
+  assessor: string;
+  timestamp: string;
+}
+
+/** One competency rating on a row of a team's table: "T-1 Expert", and the assessor's comment if there is one. */
+export interface AssessmentRating {
+  competency: Competency;
+  level: string;
+  comment: string;
+}
+
+/** An inject a team was assessed on (or a move or group assessed as a whole), as one row of its table. */
+export interface AssessmentReportRow {
+  key: string;
+  kind: 'event' | 'group' | 'move';
+  title: string;
+  deltaSeconds: number;
+  ratings: AssessmentRating[];
+}
+
+/** A team's page of the printed report, and its row of the team summary. */
+export interface AssessmentReportTeam {
+  teamId: string;
+  name: string;
+  rows: AssessmentReportRow[];
+  assessedInjectCount: number;
+  // the titles of the injects with competencies the team could be assessed on but was not
+  notAssessed: string[];
+  // per level, in the report's level order
+  levelCounts: number[];
+}
+
+/** A row of a results table: an objective or a competency, the injects that exercise it, and how it was rated. */
+export interface AssessmentMeasureRow {
+  code: string;
+  name: string;
+  injects: number;
+  assessed: number;
+  // per level, in the report's level order, across all teams
+  levelCounts: number[];
+}
+
+/** The printed assessment report: purpose and results first, then a page per team. */
+export interface AssessmentReport {
+  // the data field whose values are the injects' objectives, when the MSEL has one
+  objectiveField: string | null;
+  objectives: AssessmentMeasureRow[];
+  competencies: AssessmentMeasureRow[];
+  // the proficiency levels (and any score matching none) the counts are in
+  levels: string[];
+  teams: AssessmentReportTeam[];
+  assessors: string[];
+  injectCount: number;
+  statementsUnavailable: boolean;
+}
+
 @Component({
     selector: 'app-assessor-view',
     templateUrl: './assessor-view.component.html',
     styleUrls: ['./assessor-view.component.scss'],
-    imports: [MatIcon, MatSort, MatFormField, MatLabel, MatInput, FormsModule, MatIconButton, MatSuffix, MatSelect, MatOption, MatSortHeader, MatProgressBar, NgClass, MatTooltip, MatButton, DurationViewComponent, DataValueComponent, CardEditDialogComponent]
+    imports: [MatIcon, MatSort, MatFormField, MatLabel, MatInput, FormsModule, MatIconButton, MatSuffix, MatSelect, MatOption, MatSortHeader, MatProgressBar, NgClass, MatTooltip, MatButton, DurationViewComponent, DataValueComponent, CardEditDialogComponent, DatePipe, TimezoneAbbrPipe, NgTemplateOutlet]
 })
 export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
   private mselQuery = inject(MselQuery);
@@ -106,6 +173,8 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
   private teamCompetencyDataService = inject(TeamCompetencyDataService);
   private competencyFrameworkService = inject(CompetencyFrameworkService);
   private proficiencyScaleService = inject(ProficiencyScaleService);
+  private mselImageDataService = inject(MselImageDataService);
+  private document = inject(DOCUMENT);
 
   readonly loggedInUserId = input<string>(undefined);
   readonly userTheme = input<Theme>(undefined);
@@ -528,7 +597,14 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
   // xAPI evidence
   private allMselStatements: XApiStatement[] = [];
   private statementsLoaded = false;
+  private statementsFailed = false;
   statementsLoading = false;
+
+  // The printed assessment report, drawn into the print-only area only while printing
+  printing = false;
+  report: AssessmentReport | null = null;
+  reportImageUrl: string | null = null;
+  printedAt: Date | null = null;
 
   toggleEvent(eventId: string) {
     if (this.expandedEventIds.has(eventId)) {
@@ -831,7 +907,8 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
     return stmts;
   }
 
-  private loadAllStatements() {
+  // onDone runs once the statements are in, or once reading them failed
+  private loadAllStatements(onDone?: () => void) {
     if (this.statementsLoading || !this.msel.id) return;
     this.statementsLoading = true;
     this.loadingStatements.add('_all');
@@ -846,17 +923,21 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
             (a.timestamp || '').localeCompare(b.timestamp || '')
           );
           this.statementsLoaded = true;
+          this.statementsFailed = false;
           this.statementsLoading = false;
           this.loadingStatements.delete('_all');
           this.filterToCurrentSession();
           this.distributeStatements();
           this.buildVerbList();
+          onDone?.();
         },
         error: () => {
           this.allMselStatements = [];
           this.statementsLoaded = true;
+          this.statementsFailed = true;
           this.statementsLoading = false;
           this.loadingStatements.delete('_all');
+          onDone?.();
         }
       });
   }
@@ -1003,57 +1084,22 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
     if (this.mselCompetencies.length === 0 || this.proficiencyLevels.length === 0) return;
 
     for (const stmt of this.allMselStatements) {
-      const verbId = stmt.verb?.id || '';
-      if (verbId !== 'https://w3id.org/xapi/tla/verbs/asserted' && verbId !== 'https://w3id.org/xapi/dod-isd/verbs/asserted') continue;
-      const objType = stmt.object?.definition?.type || '';
-      if (objType !== 'https://w3id.org/xapi/tla/activity-types/competency' && objType !== 'http://adlnet.gov/expapi/activities/competency') continue;
+      const assertion = this.readAssertion(stmt);
+      if (!assertion) continue;
+      const { contextKey, teamId, scoreRaw } = assertion;
+      const mc = { competency: assertion.competency };
 
-      const grouping = stmt.context?.contextActivities?.grouping || [];
-
-      let contextKey: string | null = null;
-      const eventGrouping = grouping.find(g => (g.id || '').includes('scenarioevents/'));
-      if (eventGrouping) {
-        contextKey = eventGrouping.id.split('scenarioevents/').pop();
-        if (!this.eventStatements.has(contextKey)) contextKey = null;
-      }
-      if (!contextKey) {
-        const groupGrouping = grouping.find(g => (g.id || '').includes('/groups/'));
-        const moveGrouping = grouping.find(g => (g.id || '').includes('/moves/') && !(g.id || '').includes('/groups/'));
-        if (groupGrouping) {
-          const parts = groupGrouping.id.match(/moves\/(\d+)\/groups\/(\d+)/);
-          if (parts) contextKey = `group-${parts[1]}-${parts[2]}`;
-        } else if (moveGrouping) {
-          const parts = moveGrouping.id.match(/moves\/(\d+)/);
-          if (parts) contextKey = `move-${parts[1]}`;
-        }
-      }
-      if (!contextKey) continue;
-
-      const objectId = stmt.object?.id || '';
-      const compIdentifier = stmt.object?.definition?.extensions?.['https://w3id.org/xapi/tla/extensions/competency-identifier'] || '';
-      const mc = this.mselCompetencies.find(mc => {
-        const comp = mc.competency;
-        if (!comp) return false;
-        if (compIdentifier && comp.idNumber === compIdentifier) return true;
-        if (comp.idNumber?.startsWith('http') && objectId === comp.idNumber) return true;
-        if (objectId.includes('competencies/' + comp.id)) return true;
-        return false;
-      });
-      if (!mc?.competency) continue;
-
-      const scoreRaw = stmt.result?.score?.raw;
       const matchedLevel = scoreRaw != null
         ? this.proficiencyLevels.find(pl => pl.value === scoreRaw)
         : null;
 
-      const teamId = stmt.context?.team?.account?.name || '';
       const assertKey = `${contextKey}:${mc.competency.id}:${teamId}`;
 
       if (this.submittedAssertions.has(assertKey)) continue;
 
       const ratingData = {
         levelId: matchedLevel?.id || '',
-        comment: stmt.result?.response || '',
+        comment: assertion.comment,
       };
 
       const keysToPopulate = [contextKey];
@@ -1082,6 +1128,59 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
         }
       }
     }
+  }
+
+  // A competency assertion statement as the view reads it: what it was made on (an event, a group or a move), the
+  // MSEL competency it rates, and for which team. Anything else, or an assertion on a competency the MSEL doesn't
+  // have, is null.
+  private readAssertion(stmt: XApiStatement): AssessmentAssertion | null {
+    const verbId = stmt.verb?.id || '';
+    if (verbId !== 'https://w3id.org/xapi/tla/verbs/asserted' && verbId !== 'https://w3id.org/xapi/dod-isd/verbs/asserted') return null;
+    const objType = stmt.object?.definition?.type || '';
+    if (objType !== 'https://w3id.org/xapi/tla/activity-types/competency' && objType !== 'http://adlnet.gov/expapi/activities/competency') return null;
+
+    const grouping = stmt.context?.contextActivities?.grouping || [];
+
+    let contextKey: string | null = null;
+    const eventGrouping = grouping.find(g => (g.id || '').includes('scenarioevents/'));
+    if (eventGrouping) {
+      contextKey = eventGrouping.id.split('scenarioevents/').pop();
+      if (!this.eventStatements.has(contextKey)) contextKey = null;
+    }
+    if (!contextKey) {
+      const groupGrouping = grouping.find(g => (g.id || '').includes('/groups/'));
+      const moveGrouping = grouping.find(g => (g.id || '').includes('/moves/') && !(g.id || '').includes('/groups/'));
+      if (groupGrouping) {
+        const parts = groupGrouping.id.match(/moves\/(\d+)\/groups\/(\d+)/);
+        if (parts) contextKey = `group-${parts[1]}-${parts[2]}`;
+      } else if (moveGrouping) {
+        const parts = moveGrouping.id.match(/moves\/(\d+)/);
+        if (parts) contextKey = `move-${parts[1]}`;
+      }
+    }
+    if (!contextKey) return null;
+
+    const objectId = stmt.object?.id || '';
+    const compIdentifier = stmt.object?.definition?.extensions?.['https://w3id.org/xapi/tla/extensions/competency-identifier'] || '';
+    const mc = this.mselCompetencies.find(mc => {
+      const comp = mc.competency;
+      if (!comp) return false;
+      if (compIdentifier && comp.idNumber === compIdentifier) return true;
+      if (comp.idNumber?.startsWith('http') && objectId === comp.idNumber) return true;
+      if (objectId.includes('competencies/' + comp.id)) return true;
+      return false;
+    });
+    if (!mc?.competency) return null;
+
+    return {
+      contextKey,
+      competency: mc.competency,
+      teamId: stmt.context?.team?.account?.name || '',
+      scoreRaw: stmt.result?.score?.raw ?? null,
+      comment: stmt.result?.response || '',
+      assessor: stmt.actor?.name || stmt.actor?.account?.name || '',
+      timestamp: stmt.timestamp || '',
+    };
   }
 
   private extractMoveFromStatement(stmt: XApiStatement): { name: string | null; number: number | null; group: number | null } {
@@ -1720,6 +1819,243 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
     this.router.navigate(['/build'], { queryParams: { msel: this.msel.id } });
   }
 
+  // --- Printed assessment report ---
+
+  // Reads the statements and the MSEL image if they aren't in yet, draws the report into the print-only area, then
+  // prints it the way the MSEL Playbook does: the area is copied into the page body, printed, and the page reloads.
+  printReport() {
+    if (this.printing || this.statementsLoading) return;
+    const draw = () => {
+      this.mselImageDataService
+        .imageUrl(this.msel)
+        .pipe(take(1), takeUntil(this.unsubscribe$))
+        .subscribe((url) => {
+          this.reportImageUrl = url;
+          this.report = this.buildAssessmentReport();
+          this.printedAt = new Date();
+          this.printing = true;
+          // a short wait so Angular draws the report before it is copied
+          setTimeout(() => this.printDocument(), 250);
+        });
+    };
+    if (this.statementsLoaded) {
+      draw();
+    } else {
+      this.loadAllStatements(draw);
+    }
+  }
+
+  protected printDocument() {
+    this.setPrintFooter();
+    const printContents = this.document.getElementById('assessment-print-area')?.innerHTML ?? '';
+    this.document.body.innerHTML = printContents;
+    window.print();
+    location.reload();
+  }
+
+  // Puts the MSEL name in the print footer; the page number is in the scss.
+  private setPrintFooter() {
+    const id = 'assessment-print-footer';
+    let style = this.document.getElementById(id) as HTMLStyleElement | null;
+    if (!style) {
+      style = this.document.createElement('style');
+      style.id = id;
+      this.document.head.appendChild(style);
+    }
+    style.textContent = printFooterCss('assessment', this.msel.name);
+  }
+
+  formatDuration(totalSeconds: number): string {
+    return formatPrintDuration(totalSeconds);
+  }
+
+  /**
+   * The report as the view records it, summary first. Results roll the latest assertion of each competency, for each
+   * team and inject (or move or group), up by objective, when the MSEL has a data field named for objectives, and by
+   * competency. Then each of the MSEL's teams gets its assessed injects in time order and the injects it was not
+   * assessed on.
+   */
+  buildAssessmentReport(): AssessmentReport {
+    // the statements are in time order, so the last one read for a competency, team and context is the latest
+    const latestByKey = new Map<string, AssessmentAssertion>();
+    for (const stmt of this.allMselStatements) {
+      const assertion = this.readAssertion(stmt);
+      if (assertion) {
+        latestByKey.set(`${assertion.contextKey}:${assertion.competency.id}:${assertion.teamId}`, assertion);
+      }
+    }
+    const assertions = [...latestByKey.values()];
+
+    const levelName = (scoreRaw: number | null): string => {
+      if (scoreRaw == null) return 'No rating';
+      return this.proficiencyLevels.find(l => l.value === scoreRaw)?.name || `Score ${scoreRaw}`;
+    };
+    const usedLevels = new Set(assertions.map(a => levelName(a.scoreRaw)));
+    const scaleNames = this.proficiencyLevels.map(l => l.name || '');
+    const levels = [
+      ...scaleNames.filter(n => usedLevels.has(n)),
+      ...[...usedLevels].filter(n => !scaleNames.includes(n)).sort(),
+    ];
+    const countLevels = (list: AssessmentAssertion[]) =>
+      levels.map(level => list.filter(a => levelName(a.scoreRaw) === level).length);
+
+    const events = [...this.mselScenarioEvents]
+      .filter(e => !this.msel.id || !e.mselId || e.mselId === this.msel.id)
+      .sort((a, b) => (+a.deltaSeconds || 0) - (+b.deltaSeconds || 0));
+    const eventIds = new Set(events.map(e => e.id));
+
+    // --- results by competency: every competency an inject exercises or an assertion rates ---
+    const competencies = new Map<string, Competency>();
+    for (const event of events) {
+      for (const comp of this.baseEventCompetencies.get(event.id) ?? []) competencies.set(comp.id, comp);
+    }
+    for (const a of assertions) competencies.set(a.competency.id, a.competency);
+    const competencyRows: AssessmentMeasureRow[] = [...competencies.values()]
+      .sort((a, b) => (a.idNumber ?? '').localeCompare(b.idNumber ?? '', undefined, { numeric: true, sensitivity: 'base' }))
+      .map(comp => {
+        const injects = events.filter(e => (this.baseEventCompetencies.get(e.id) ?? []).some(c => c.id === comp.id));
+        const rated = assertions.filter(a => a.competency.id === comp.id);
+        return {
+          code: comp.idNumber || '',
+          name: comp.shortName || comp.description || '',
+          injects: injects.length,
+          assessed: injects.filter(e => rated.some(a => a.contextKey === e.id)).length,
+          levelCounts: countLevels(rated),
+        };
+      });
+
+    // --- results by objective, when the MSEL has an objective data field ---
+    const objectiveField = this.allDataFields.find(df =>
+      /objective/i.test(df.name || '') && df.dataType?.toString() !== 'Competency'
+    );
+    const objectiveRows: AssessmentMeasureRow[] = [];
+    if (objectiveField) {
+      const byObjective = new Map<string, string[]>();
+      for (const event of events) {
+        // read straight from the values: the field need not be one the assessors see
+        const objective = plainText(this.dataValues.find(v =>
+          v.scenarioEventId === event.id && v.dataFieldId === objectiveField.id
+        )?.value);
+        if (objective) byObjective.set(objective, [...(byObjective.get(objective) ?? []), event.id]);
+      }
+      for (const [objective, ids] of byObjective) {
+        const rated = assertions.filter(a => ids.includes(a.contextKey));
+        objectiveRows.push({
+          code: '',
+          name: objective,
+          injects: ids.length,
+          assessed: ids.filter(id => rated.some(a => a.contextKey === id)).length,
+          levelCounts: countLevels(rated),
+        });
+      }
+    }
+
+    // --- one page per team, plus "No team" for assertions on no team of the MSEL ---
+    const teams = this.reportTeams();
+    const teamIds = new Set(teams.map(t => t.id));
+    const sections = teams.map(t => ({ teamId: t.id, name: t.name || t.shortName || '' }));
+    if (assertions.some(a => !teamIds.has(a.teamId))) {
+      sections.push({ teamId: '', name: 'No team' });
+    }
+    const kindOrder = { move: 0, group: 1, event: 2 };
+    const reportTeams = sections.map(section => {
+      const mine = assertions.filter(a => (section.teamId ? a.teamId === section.teamId : !teamIds.has(a.teamId)));
+      const byContext = new Map<string, AssessmentAssertion[]>();
+      for (const a of mine) byContext.set(a.contextKey, [...(byContext.get(a.contextKey) ?? []), a]);
+
+      const rows: AssessmentReportRow[] = [];
+      for (const [contextKey, list] of byContext) {
+        const row = this.reportRow(contextKey, events);
+        if (!row) continue;
+        row.ratings = list
+          .map(a => ({ competency: a.competency, level: levelName(a.scoreRaw), comment: a.comment }))
+          .sort((x, y) => (x.competency.idNumber ?? '').localeCompare(y.competency.idNumber ?? '', undefined, { numeric: true }));
+        rows.push(row);
+      }
+      rows.sort((a, b) => a.deltaSeconds - b.deltaSeconds || kindOrder[a.kind] - kindOrder[b.kind]);
+
+      return {
+        teamId: section.teamId,
+        name: section.name,
+        rows,
+        assessedInjectCount: rows.filter(r => r.kind === 'event' && eventIds.has(r.key)).length,
+        notAssessed: section.teamId
+          ? events
+            .filter(e => !byContext.has(e.id) && this.isAssessableFor(e.id, section.teamId))
+            .map(e => this.injectTitle(e))
+          : [],
+        levelCounts: countLevels(mine),
+      } as AssessmentReportTeam;
+    });
+
+    return {
+      objectiveField: objectiveRows.length ? objectiveField.name : null,
+      objectives: objectiveRows,
+      competencies: competencyRows,
+      levels,
+      teams: reportTeams,
+      assessors: [...new Set(assertions.map(a => a.assessor).filter(a => a))].sort(),
+      injectCount: events.length,
+      statementsUnavailable: this.statementsFailed,
+    };
+  }
+
+  // the moves that have a description, which says what each move is for
+  get reportMoves(): Move[] {
+    return this.moveList.filter(m => (m.description || '').trim());
+  }
+
+  // the MSEL's teams, by name
+  private reportTeams(): Team[] {
+    const teams = this.msel.teams?.length
+      ? this.msel.teams
+      : this.teamList.filter(t => t.mselId === this.msel.id);
+    return [...teams].sort((a, b) =>
+      (a.name || a.shortName || '').localeCompare(b.name || b.shortName || '')
+    );
+  }
+
+  // Whether the view would ask for this team's assessment on the event: it has competencies, and the team has one of
+  // them assigned (or the MSEL assigns competencies to no team).
+  private isAssessableFor(eventId: string, teamId: string): boolean {
+    const comps = this.baseEventCompetencies.get(eventId);
+    if (!comps?.length) return false;
+    if (this.teamCompIdSets.size === 0) return true;
+    const teamComps = this.teamCompIdSets.get(teamId);
+    return !!teamComps && comps.some(c => teamComps.has(c.id));
+  }
+
+  private injectTitle(event: ScenarioEvent): string {
+    return plainText(this.getDataValue(event, 'Title').value) || 'Untitled inject';
+  }
+
+  private reportRow(contextKey: string, events: ScenarioEvent[]): AssessmentReportRow | null {
+    const moveMatch = contextKey.match(/^move-(\d+)$/);
+    if (moveMatch) {
+      const moveNumber = +moveMatch[1];
+      const move = this.moveList.find(m => +m.moveNumber === moveNumber);
+      return { key: contextKey, kind: 'move', title: `Move ${moveNumber} (whole move)`, deltaSeconds: +(move?.deltaSeconds ?? 0) || 0, ratings: [] };
+    }
+    const groupMatch = contextKey.match(/^group-(\d+)-(\d+)$/);
+    if (groupMatch) {
+      const moveNumber = +groupMatch[1];
+      const groupNumber = +groupMatch[2];
+      const first = events.find(e => {
+        const nums = this.moveAndGroupNumbers[e.id];
+        return nums && +nums[0] === moveNumber && +nums[1] === groupNumber;
+      });
+      return {
+        key: contextKey,
+        kind: 'group',
+        title: `Move ${moveNumber}, Group ${groupNumber} (whole group)`,
+        deltaSeconds: +(first?.deltaSeconds ?? 0) || 0,
+        ratings: [],
+      };
+    }
+    const event = events.find(e => e.id === contextKey);
+    if (!event) return null;
+    return { key: contextKey, kind: 'event', title: this.injectTitle(event), deltaSeconds: +event.deltaSeconds || 0, ratings: [] };
+  }
   ngOnDestroy() {
     this.unsubscribe$.next(null);
     this.unsubscribe$.complete();

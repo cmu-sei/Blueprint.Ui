@@ -82,6 +82,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 title="Collapse All (Ctrl+Shift+C)" [disabled]="isFullyCollapsed">
                 <mat-icon class="mdi-24px" fontIcon="mdi-unfold-less-horizontal" />
               </button>
+              <button mat-icon-button (click)="printReport()" class="header-button no-print"
+                title="Print Assessment Report" aria-label="Print Assessment Report"
+                [disabled]="printing || statementsLoading">
+                <mat-icon class="mdi-24px" fontIcon="mdi-printer" />
+              </button>
             </div>
           </th>
           <!-- row number header -->
@@ -759,6 +764,182 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </tbody>
     </table>
   </div>
+  @if (printing && report) {
+  <!-- The printed assessment report. Print-only: printing copies it into the page body. -->
+  <div id="assessment-print-area" class="print-only">
+    <div class="assessment-print">
+      <section class="report-cover" aria-label="Cover">
+        @if (reportImageUrl) {
+          <img class="cover-image" [src]="reportImageUrl" alt="MSEL image" />
+        } @else {
+          <div class="cover-band" data-testid="cover-band" aria-hidden="true"></div>
+        }
+        <div class="cover-kicker">Assessment Report</div>
+        <h1 class="cover-title">{{ msel.name }}</h1>
+        <dl class="cover-facts" aria-label="Exercise facts">
+          @if (msel.startTime) {
+            <dt>Start</dt>
+            <dd>{{ msel.startTime | date: 'dd MMM yyyy HH:mm' }} {{ msel.startTime | timezoneAbbr }}</dd>
+          }
+          @if (msel.durationSeconds) {
+            <dt>Duration</dt>
+            <dd>{{ formatDuration(msel.durationSeconds) }}</dd>
+          }
+          <dt>Moves</dt>
+          <dd>{{ moveList.length }}</dd>
+          <dt>Injects</dt>
+          <dd>{{ report.injectCount }}</dd>
+          <dt>Teams</dt>
+          <dd>{{ report.teams.length }}</dd>
+          @if (report.assessors.length) {
+            <dt>Assessors</dt>
+            <dd>{{ report.assessors.join(', ') }}</dd>
+          }
+          <dt>Printed</dt>
+          <dd>{{ printedAt | date: 'dd MMM yyyy HH:mm' }} {{ printedAt | timezoneAbbr }}</dd>
+        </dl>
+        @if (msel.description || reportMoves.length) {
+          <div class="cover-purpose" aria-label="Purpose">
+            <h2 class="report-heading">Purpose</h2>
+            @if (msel.description) {
+              <p class="purpose-description">{{ msel.description }}</p>
+            }
+            @if (reportMoves.length) {
+              <ul class="purpose-moves">
+                @for (move of reportMoves; track move.id) {
+                  <li><strong>Move {{ move.moveNumber }}:</strong> {{ move.description }}</li>
+                }
+              </ul>
+            }
+          </div>
+        }
+        @if (report.statementsUnavailable) {
+          <p class="report-warning">The xAPI statements could not be read, so this report shows no assessments.</p>
+        }
+      </section>
+      <section class="report-results" aria-label="Results">
+        @if (report.objectiveField) {
+          <h2 class="report-heading">Results by objective</h2>
+          <p class="report-note">Objectives are the values of the {{ report.objectiveField }} data field.</p>
+          <ng-container *ngTemplateOutlet="measureTable; context: { $implicit: report.objectives, label: 'Objective', name: 'Results by objective' }" />
+        }
+        <h2 class="report-heading">Results by competency</h2>
+        @if (!report.objectiveField) {
+          <p class="report-note">This MSEL has no objectives, so its competencies measure the results.</p>
+        }
+        @if (report.competencies.length) {
+          <ng-container *ngTemplateOutlet="measureTable; context: { $implicit: report.competencies, label: 'Competency', name: 'Results by competency' }" />
+        } @else {
+          <p class="report-empty">No injects exercise a competency.</p>
+        }
+        <h2 class="report-heading">Results by team</h2>
+        @if (report.teams.length === 0) {
+          <p class="report-empty">This MSEL has no teams.</p>
+        } @else {
+          <table class="report-table" aria-label="Results by team">
+            <thead>
+              <tr>
+                <th>Team</th>
+                <th class="count-cell">Injects assessed</th>
+                <th class="count-cell">Not assessed</th>
+                @for (level of report.levels; track level) {
+                  <th class="count-cell">{{ level }}</th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (team of report.teams; track team.teamId) {
+                <tr>
+                  <td>{{ team.name }}</td>
+                  <td class="count-cell">{{ team.assessedInjectCount }}</td>
+                  <td class="count-cell">{{ team.teamId ? team.notAssessed.length : '' }}</td>
+                  @for (count of team.levelCounts; track $index) {
+                    <td class="count-cell">{{ count }}</td>
+                  }
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+        @if (report.levels.length) {
+          <p class="report-note">Level columns count the latest rating of each competency, for each team, on each inject, move or group.</p>
+        }
+      </section>
+      @for (team of report.teams; track team.teamId) {
+        <section class="report-team" [attr.aria-label]="team.name">
+          <h2 class="team-title">{{ team.name }}</h2>
+          @if (team.rows.length === 0) {
+            <p class="report-empty">No assessments recorded for this team.</p>
+          } @else {
+            <table class="report-table team-table">
+              <thead>
+                <tr>
+                  <th class="time-cell">Time</th>
+                  <th>Inject</th>
+                  <th>Rating</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of team.rows; track row.key) {
+                  <tr>
+                    <td class="time-cell">
+                      <app-duration-view [startTime]="msel.startTime" [durationSeconds]="row.deltaSeconds" [showRealTime]="!!msel.startTime" />
+                    </td>
+                    <td>{{ row.title }}</td>
+                    <td>
+                      @for (rating of row.ratings; track rating.competency.id) {
+                        <div class="rating">
+                          <span class="rating-level">{{ rating.competency.idNumber }} {{ rating.level }}</span>
+                          @if (rating.comment) {
+                            <span class="rating-comment">&ngsp;{{ rating.comment }}</span>
+                          }
+                        </div>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          }
+          @if (team.notAssessed.length) {
+            <p class="not-assessed"><strong>Not assessed:</strong> {{ team.notAssessed.join(', ') }}</p>
+          }
+        </section>
+      }
+    </div>
+  </div>
+  <ng-template #measureTable let-rows let-label="label" let-name="name">
+    <table class="report-table" [attr.aria-label]="name">
+      <thead>
+        <tr>
+          <th>{{ label }}</th>
+          <th class="count-cell">Injects</th>
+          <th class="count-cell">Assessed</th>
+          @for (level of report.levels; track level) {
+            <th class="count-cell">{{ level }}</th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of rows; track $index) {
+          <tr>
+            <td>
+              @if (row.code) {
+                <strong>{{ row.code }}</strong>
+              }
+              {{ row.name }}
+            </td>
+            <td class="count-cell">{{ row.injects }}</td>
+            <td class="count-cell">{{ row.assessed }}</td>
+            @for (count of row.levelCounts; track $index) {
+              <td class="count-cell">{{ count }}</td>
+            }
+          </tr>
+        }
+      </tbody>
+    </table>
+  </ng-template>
+  }
   }
   }
 </div>
