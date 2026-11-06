@@ -24,7 +24,7 @@ import { MselStore } from 'src/app/data/msel/msel.store';
 import { MoveStore } from 'src/app/data/move/move.store';
 import { MselPageStore } from 'src/app/data/msel-page/msel-page.store';
 import { ScenarioEventStore } from 'src/app/data/scenario-event/scenario-event.store';
-import { formatPlaybookDuration, MselPlaybookComponent, opensWithHeading, playbookFooterCss } from './msel-playbook.component';
+import { formatPlaybookDuration, MselPlaybookComponent, opensWithHeading, playbookFooterCss, withoutMedia } from './msel-playbook.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { renderComponent } from 'src/app/test-utils/render-component';
 
@@ -323,6 +323,38 @@ describe('MselPlaybookComponent', () => {
     expect(within(screen.getByLabelText('Rules of Engagement')).getByRole('heading', hidden)).toHaveTextContent('Rules of Engagement');
     expect(opensWithHeading('<p>Intro</p><h3>Other</h3>', 'Team Profiles')).toBe(false);
     expect(opensWithHeading('<p>No heading.</p>', 'Team Profiles')).toBe(false);
+  });
+
+  /**
+   * Verifies: on screen a row's audio plays in the playbook; drawn for print, the player becomes a line saying where the
+   * clip plays and the transcript opens, so the print never loads the clip.
+   * Interacts with: the printing flag, withoutMedia, the rows' innerHTML.
+   * Data: a Detail with an audio player of a data URI and a closed transcript.
+   */
+  it('keeps audio playable on screen and prints a note instead', async () => {
+    const audio = '<p>Listen.</p><audio controls src="data:audio/mpeg;base64,AAAA"></audio><details><summary>Transcript</summary><p>Hello.</p></details>';
+    const values: DataValue[] = [VALUES[0], { ...VALUES[1], value: audio }];
+    const { fixture, container } = await renderPlaybook(true, { values });
+
+    expect(container.querySelector('audio')).not.toBeNull();
+
+    fixture.componentInstance.printing = true;
+    fixture.detectChanges();
+
+    expect(container.querySelector('audio')).toBeNull();
+    expect(screen.getByText('Audio clip: plays in Gallery.')).toBeInTheDocument();
+    expect(container.querySelector('details')?.hasAttribute('open')).toBe(true);
+  });
+
+  /**
+   * Verifies: withoutMedia leaves a value with no media or transcript as it is, and names a video clip as video.
+   * Interacts with: withoutMedia.
+   */
+  it('takes only audio and video out of a printed value', () => {
+    expect(withoutMedia('<p>No media.</p>')).toBe('<p>No media.</p>');
+    expect(withoutMedia('<video controls><source src="data:video/mp4;base64,AAAA"></video>')).toBe(
+      '<p class="playbook-media-note"><em>Video clip: plays in Gallery.</em></p>'
+    );
   });
 
   /**
