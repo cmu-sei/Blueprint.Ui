@@ -376,7 +376,9 @@ describe('MselPlaybookComponent', () => {
   it('lists the MSEL and team competencies after the cover', async () => {
     const t10: Competency = { id: 'c-10', competencyFrameworkId: 'fw-1', idNumber: 'T-10', shortName: 'Analyze logs' };
     const t2: Competency = { id: 'c-2', competencyFrameworkId: 'fw-1', idNumber: 'T-2', shortName: 'Triage alerts' };
-    const nice: Competency = { id: 'c-n', competencyFrameworkId: 'fw-2', idNumber: 'K0001', description: 'Knowledge of networking.' };
+    // a task's wording is long; the print keeps all of it
+    const long = 'Knowledge of networking. '.repeat(10).trim();
+    const nice: Competency = { id: 'c-n', competencyFrameworkId: 'fw-2', idNumber: 'K0001', description: long };
     await renderPlaybook(true, {
       msel: { teams: [{ id: 'team-blue', name: 'Blue Team', shortName: 'BLUE' }] },
       mselCompetencies: [t10, t2, nice].map((competency) => ({ id: competency.id, mselId: 'msel-1', competencyId: competency.id, competency })),
@@ -386,7 +388,7 @@ describe('MselPlaybookComponent', () => {
     const section = within(screen.getByLabelText('Competencies'));
     expect(section.getAllByRole('heading', hidden).map((h) => h.textContent)).toEqual(['Competencies', 'DCWF 5.1', 'NICE 2.0', 'Team competencies', 'Blue Team']);
     expect(section.getAllByRole('listitem', hidden).map((li) => li.textContent)).toEqual([
-      'T-2 Triage alerts', 'T-10 Analyze logs', 'K0001 Knowledge of networking.', 'T-2 Triage alerts',
+      'T-2 Triage alerts', 'T-10 Analyze logs', `K0001 ${long}`, 'T-2 Triage alerts',
     ]);
     expect(within(screen.getByLabelText('Contents')).getAllByRole('listitem', hidden)[0]).toHaveTextContent('Competencies');
   });
