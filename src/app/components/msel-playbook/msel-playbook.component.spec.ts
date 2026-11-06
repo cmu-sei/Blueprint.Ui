@@ -177,7 +177,8 @@ describe('MselPlaybookComponent', () => {
     await renderPlaybook(true, { msel: { imageDateModified: new Date('2026-10-23T12:00:00Z') }, getMselImage });
 
     const cover = within(screen.getByLabelText('Cover'));
-    expect(getMselImage.mock.calls).toEqual([['msel-1']]);
+    // once, for this MSEL; the image service adds its own cache key
+    expect((getMselImage.mock.calls as unknown[][]).map((call) => call[0])).toEqual(['msel-1']);
     expect(cover.getByAltText('MSEL image')).toHaveAttribute('src', 'blob:cover');
     expect(cover.queryByTestId('cover-band')).toBeNull();
   });
