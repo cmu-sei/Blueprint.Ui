@@ -51,6 +51,8 @@ export class MselPlus implements Msel {
   useCite?: boolean;
   citeEvaluationId?: string;
   citeScoringModelId?: string;
+  articleMarking?: string;
+  articleMarkingText?: string;
   useSteamfitter?: boolean;
   steamfitterScenarioId?: string;
   steamfitterScenarioStartMode?: SteamfitterScenarioStartMode;

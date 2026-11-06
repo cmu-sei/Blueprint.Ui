@@ -74,6 +74,7 @@ import { AngularEditorModule } from '@kolkov/angular-editor';
 import { CardEditDialogComponent } from '../card-edit-dialog/card-edit-dialog.component';
 import { DatePipe, formatDate } from '@angular/common';
 import { TimezoneAbbrPipe } from '../../utilities/timezone-abbr';
+import { CLASSIFICATION_MAX_LENGTH, MSEL_MARKINGS, TLP_LEVELS } from '../../utilities/msel-marking';
 
 @Component({
     selector: 'app-msel-info',
@@ -120,6 +121,10 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   readonly contextMenu = viewChild(MatMenuTrigger);
   contextMenuPosition = { x: '0px', y: '0px' };
   isChanged = false;
+  // the marking on the MSEL's pages and pushed Gallery articles
+  readonly markings = MSEL_MARKINGS;
+  readonly tlpLevels = TLP_LEVELS;
+  readonly classificationMaxLength = CLASSIFICATION_MAX_LENGTH;
   // The card image is saved on its own, as soon as it is chosen, not with Save.
   mselImageUrl: string | null = null;
   isImageBusy = false;
@@ -961,6 +966,15 @@ export class MselInfoComponent implements OnDestroy, OnInit {
       this.msel.startTime.toLocaleString() !==
       this.savedStartTime.toLocaleString()
     ) {
+      this.isChanged = true;
+    }
+  }
+
+  // a TLP level and a classification's words mean nothing to the other markings, so a new marking starts without one
+  setMarking(marking: string) {
+    if (marking !== (this.msel.articleMarking || 'None')) {
+      this.msel.articleMarking = marking;
+      this.msel.articleMarkingText = marking === 'Tlp' ? 'CLEAR' : null;
       this.isChanged = true;
     }
   }

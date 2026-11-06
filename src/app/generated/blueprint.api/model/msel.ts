@@ -52,6 +52,8 @@ export interface Msel {
     useCite?: boolean;
     citeEvaluationId?: string | null;
     citeScoringModelId?: string | null;
+    articleMarking?: string | null;
+    articleMarkingText?: string | null;
     citeIntegrationType?: IntegrationType;
     useSteamfitter?: boolean;
     steamfitterScenarioId?: string | null;

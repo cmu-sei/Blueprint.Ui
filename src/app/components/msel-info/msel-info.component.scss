@@ -517,3 +517,17 @@ a {
   font: var(--mat-sys-body-small);
   color: var(--mat-sys-on-surface-variant);
 }
+
+.msel-marking {
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.marking-select {
+  width: 220px;
+}
+
+.marking-text {
+  flex: 1;
+  min-width: 280px;
+}

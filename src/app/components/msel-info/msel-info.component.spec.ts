@@ -993,4 +993,116 @@ describe('MselInfoComponent', () => {
       expect(screen.getByRole('button', { name: 'Upload Image' })).toBeInTheDocument();
     });
   });
+
+  describe('Marking', () => {
+    const markingSelect = (fixture: ComponentFixture<unknown>) =>
+      TestbedHarnessEnvironment.loader(fixture).getHarnessOrNull(MatSelectHarness.with({ selector: '[aria-label="Marking"]' }));
+    const levelSelect = (fixture: ComponentFixture<unknown>) =>
+      TestbedHarnessEnvironment.loader(fixture).getHarnessOrNull(MatSelectHarness.with({ selector: '[aria-label="TLP level"]' }));
+    const save = async () => {
+      await userEvent.setup().click(screen.getAllByTitle('Save Changes')[0]);
+    };
+
+    /**
+     * Verifies: a MSEL whose marking was never set shows None, offers the four markings, and asks for neither a TLP level nor a classification.
+     * Interacts with: markings, MatSelectHarness.
+     * Data: EditMsels; a MSEL with no marking, not using Gallery.
+     */
+    it('shows None for a MSEL with no marking set', async () => {
+      const { fixture } = await renderInfo({ permissions: [SystemPermission.EditMsels] });
+
+      const select = await markingSelect(fixture);
+      expect(await select.getValueText()).toBe('None');
+      await select.open();
+      expect(await Promise.all((await select.getOptions()).map((option) => option.getText())))
+        .toEqual(['None', 'Exercise banner', 'TLP', 'Classification banner']);
+      await select.close();
+      expect(await levelSelect(fixture)).toBeNull();
+      expect(screen.queryByLabelText('Classification banner')).not.toBeInTheDocument();
+    });
+
+    /**
+     * Verifies: choosing TLP offers its levels, starting at CLEAR, and Save sends the marking and the level chosen.
+     * Interacts with: setMarking, saveChanges, MselService.updateMsel (stub).
+     * Data: EditMsels; a MSEL with no marking; the editor picks TLP, then TLP:AMBER, then saves.
+     */
+    it('saves a TLP marking with its level', async () => {
+      const { fixture, mselApi } = await renderInfo({ permissions: [SystemPermission.EditMsels] });
+
+      await (await markingSelect(fixture)).clickOptions({ text: 'TLP' });
+      const level = await levelSelect(fixture);
+      expect(await level.getValueText()).toBe('TLP:CLEAR');
+      await level.clickOptions({ text: 'TLP:AMBER' });
+      expect(screen.getByText('Changes have not been saved!')).toBeInTheDocument();
+      await save();
+
+      expect(mselApi.updateMsel).toHaveBeenCalledTimes(1);
+      const [id, edit] = mselApi.updateMsel.mock.calls[0];
+      expect(id).toBe('msel-1');
+      expect(edit).toEqual(expect.objectContaining({ articleMarking: 'Tlp', articleMarkingText: 'AMBER' }));
+    });
+
+    /**
+     * Verifies: a classification banner is the planner's words, kept to the API's 120 characters, and Save sends them.
+     * Interacts with: the Classification banner input, saveChanges, MselService.updateMsel (stub).
+     * Data: EditMsels; a MSEL marked TLP:RED; the editor picks Classification banner and types its words.
+     */
+    it('saves a classification banner in the planner\'s words', async () => {
+      const { fixture, mselApi } = await renderInfo({
+        permissions: [SystemPermission.EditMsels],
+        mselExtra: { articleMarking: 'Tlp', articleMarkingText: 'RED' },
+      });
+      const user = userEvent.setup();
+
+      await (await markingSelect(fixture)).clickOptions({ text: 'Classification banner' });
+      const words = screen.getByLabelText('Classification banner');
+      expect(words).toHaveValue('');
+      expect(words).toHaveAttribute('maxlength', '120');
+      await user.type(words, 'UNCLASSIFIED // FOR EXERCISE USE ONLY');
+      await save();
+
+      const [, edit] = mselApi.updateMsel.mock.calls[0];
+      expect(edit).toEqual(expect.objectContaining({
+        articleMarking: 'Classification',
+        articleMarkingText: 'UNCLASSIFIED // FOR EXERCISE USE ONLY',
+      }));
+    });
+
+    /**
+     * Verifies: choosing None drops the level a TLP marking had, so Save sends no text.
+     * Interacts with: setMarking, saveChanges, MselService.updateMsel (stub).
+     * Data: EditMsels; a MSEL marked TLP:GREEN; the editor picks None and saves.
+     */
+    it('saves None without the old TLP level', async () => {
+      const { fixture, mselApi } = await renderInfo({
+        permissions: [SystemPermission.EditMsels],
+        mselExtra: { articleMarking: 'Tlp', articleMarkingText: 'GREEN' },
+      });
+
+      expect(await (await levelSelect(fixture)).getValueText()).toBe('TLP:GREEN');
+      await (await markingSelect(fixture)).clickOptions({ text: 'None' });
+      expect(await levelSelect(fixture)).toBeNull();
+      await save();
+
+      const [, edit] = mselApi.updateMsel.mock.calls[0];
+      expect(edit).toEqual(expect.objectContaining({ articleMarking: 'None', articleMarkingText: null }));
+    });
+
+    /**
+     * Verifies: without EditMsels or an editing role the marking is shown but cannot be changed.
+     * Interacts with: canEditMsel, real PermissionDataService (stubbed grants).
+     * Data: every permission but EditMsels; the Viewer role; a MSEL with an exercise banner.
+     */
+    it('shows the marking read-only without EditMsels or an editing role', async () => {
+      const { fixture } = await renderInfo({
+        permissions: allBut(SystemPermission.EditMsels),
+        myRoles: [MselRole.Viewer],
+        mselExtra: { articleMarking: 'Exercise' },
+      });
+
+      const select = await markingSelect(fixture);
+      expect(await select.isDisabled()).toBe(true);
+      expect(await select.getValueText()).toBe('Exercise banner');
+    });
+  });
 });
