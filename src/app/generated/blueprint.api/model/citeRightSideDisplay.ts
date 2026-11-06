@@ -15,15 +15,12 @@
  */
 
 
-export interface TextInfo { 
-    readonly ansiCodePage?: number;
-    readonly oemCodePage?: number;
-    readonly macCodePage?: number;
-    readonly ebcdicCodePage?: number;
-    readonly lcid?: number;
-    readonly cultureName?: string | null;
-    readonly isReadOnly?: boolean;
-    listSeparator?: string | null;
-    readonly isRightToLeft?: boolean;
-}
+export const CiteRightSideDisplay = {
+    ScoreSummary: 'ScoreSummary',
+    HtmlBlock: 'HtmlBlock',
+    EmbeddedUrl: 'EmbeddedUrl',
+    Scoresheet: 'Scoresheet',
+    None: 'None'
+} as const;
+export type CiteRightSideDisplay = typeof CiteRightSideDisplay[keyof typeof CiteRightSideDisplay];
 
