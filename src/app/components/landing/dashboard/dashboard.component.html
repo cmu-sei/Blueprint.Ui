@@ -33,6 +33,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <!-- JOIN card - always shown -->
       <div class="mission-card join-card"
            [class.disabled-card]="joinMselList.length === 0"
+           [attr.aria-disabled]="joinMselList.length === 0"
            tabindex="1"
            role="button"
            (click)="joinMselList.length > 0 && gotoUrl('join')">
@@ -100,11 +101,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </div>
       }
 
-      @if (buildMselList.length > 0 || canCreateMsels) {
+      <!-- BUILD card - always shown, greyed out for a user who has no events to build and cannot create one -->
       <div class="mission-card build-card"
+           [class.disabled-card]="!canBuild"
+           [attr.aria-disabled]="!canBuild"
            tabindex="3"
            role="button"
-           (click)="gotoUrl('build')">
+           (click)="canBuild && gotoUrl('build')">
         <div class="card-corner-accent"></div>
         <div class="card-header">
           <div class="card-icon">
@@ -121,22 +124,25 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <span class="metric-label">Events Draft</span>
           </div>
           <div class="card-description">
-            Create and configure events, manage MSEL planning
+            @if (canBuild) {
+              Create and configure events, manage MSEL planning
+            } @else {
+              You have no events to build, and no permission to create one
+            }
           </div>
         </div>
         <div class="card-footer">
-          <button mat-button color="primary">
+          <button mat-button color="primary" [disabled]="!canBuild">
             Manage Events
             <mat-icon class="inline-icon" fontIcon="mdi-arrow-right"></mat-icon>
           </button>
         </div>
       </div>
-      }
 
-      <!-- ASSESS card - shown for users who can assess an MSEL (Owner, Evaluator or system admin) -->
-      @if (hasAssessorRole) {
+      <!-- ASSESS card - always shown, greyed out unless the user can assess a running event (Owner, Evaluator or system admin) -->
       <div class="mission-card assess-card"
            [class.disabled-card]="assessMselList.length === 0"
+           [attr.aria-disabled]="assessMselList.length === 0"
            tabindex="4"
            role="button"
            (click)="assessMselList.length > 0 && gotoUrl('assess')">
@@ -158,8 +164,10 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <div class="card-description">
             @if (assessMselList.length > 0) {
               Evaluate and score active exercises
-            } @else {
+            } @else if (hasAssessorRole) {
               No running events available to assess
+            } @else {
+              You are not an assessor on any event
             }
           </div>
         </div>
@@ -170,7 +178,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </button>
         </div>
       </div>
-      }
 
       @if (loadFailed) {
       <div class="mission-card empty-state">
