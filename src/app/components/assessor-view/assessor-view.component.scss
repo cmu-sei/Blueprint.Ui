@@ -127,18 +127,43 @@ td {
   line-height: 48px;
 }
 
+// Move rows carry the strongest background, a left accent bar and the largest
+// label; group rows sit between them and the event rows.
 .move-header-row {
   td {
-    padding: 6px 8px;
-    background-color: var(--mat-sys-surface-container);
+    padding: 10px 8px;
+    background-color: var(--mat-sys-primary-container);
+    color: var(--mat-sys-on-primary-container);
+    border-top: 2px solid var(--mat-sys-primary);
+  }
+  td:first-child {
+    box-shadow: inset 6px 0 0 var(--mat-sys-primary);
   }
   border-bottom: 2px solid var(--mat-sys-outline);
+
+  .section-header-content,
+  .section-label,
+  .section-description {
+    color: var(--mat-sys-on-primary-container);
+  }
+
+  .section-header-content {
+    font-size: 16px;
+  }
+
+  .section-label {
+    font-weight: 700;
+  }
+
+  .section-description {
+    font-weight: 500;
+  }
 }
 
 .group-header-row {
   td {
     padding: 4px 8px;
-    background-color: var(--mat-sys-surface-container-low);
+    background-color: var(--mat-sys-surface-container);
   }
   border-bottom: 1px solid var(--mat-sys-outline-variant);
 }
@@ -175,6 +200,7 @@ td {
 
 .statements-header {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
   font-weight: 500;
@@ -190,19 +216,30 @@ td {
   padding: 8px 0;
 }
 
+// The list is a grid and each row a subgrid of it, so the time, move and group
+// columns are as wide as their widest entry and still line up from row to row.
+// Columns: copy, time, move, group, platform, actor, team, verb, object.
 .statements-list {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+  display: grid;
+  // actor, team and verb shrink with an ellipsis when the panel is narrow, so the
+  // row never pushes the page wider than the window
+  grid-template-columns: repeat(5, max-content) repeat(3, minmax(0, max-content)) minmax(0, 1fr);
+  column-gap: 6px;
+  row-gap: 2px;
 }
 
 .statement-entry {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
   border-radius: 2px;
 }
 
 .statement-row {
-  display: flex;
-  gap: 12px;
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+  align-items: center;
   padding: 4px 8px;
   font-size: 13px;
   border-radius: 2px;
@@ -217,7 +254,57 @@ td {
   background-color: var(--mat-sys-surface-container);
 }
 
+// Without subgrid (Chrome before 117, Safari before 16) the rows would collapse to one
+// column; each row lays its cells out in a line instead, which only loses the alignment.
+@supports not (grid-template-columns: subgrid) {
+  .statements-list,
+  .statement-entry {
+    display: block;
+  }
+
+  .statements-list .statement-entry + .statement-entry {
+    margin-top: 2px;
+  }
+
+  .statement-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    > :not(.stmt-actor, .stmt-team, .stmt-verb, .stmt-object) {
+      flex-shrink: 0;
+    }
+
+    > .stmt-object {
+      flex: 1;
+    }
+  }
+}
+
+// A group of repeated statements: the count stands where a statement has its Copy JSON button.
+.statement-group-count {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 10px;
+  text-align: center;
+  white-space: nowrap;
+  background-color: var(--mat-sys-secondary-container);
+  color: var(--mat-sys-on-secondary-container);
+}
+
+.statement-group-row:focus-visible {
+  outline: 2px solid var(--mat-sys-primary);
+  outline-offset: -2px;
+}
+
+// The statements of an expanded group, marked off from the rows around them.
+.statement-member .statement-row {
+  box-shadow: inset 3px 0 0 var(--mat-sys-secondary);
+}
+
 .statement-json {
+  grid-column: 1 / -1;
   margin: 0;
   padding: 8px 12px;
   font-size: 11px;
@@ -273,58 +360,62 @@ td {
 }
 
 .statement-time {
-  flex-shrink: 0;
   color: var(--mat-sys-on-surface-variant);
   font-family: monospace;
   font-size: 12px;
-  width: 180px;
+  white-space: nowrap;
+}
+
+// A group's time range: the end goes on a second line, so the column stays one timestamp wide.
+.statement-time-range {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
 }
 
 .stmt-move {
-  flex-shrink: 0;
   font-family: monospace;
   font-weight: 600;
   font-size: 12px;
   color: var(--mat-sys-primary);
-  width: 30px;
+  white-space: nowrap;
   text-align: center;
 }
 
 .stmt-group {
-  flex-shrink: 0;
   font-family: monospace;
   font-weight: 600;
   font-size: 12px;
   color: var(--mat-sys-primary);
-  width: 30px;
+  white-space: nowrap;
   text-align: center;
 }
 
 .stmt-actor {
-  flex-shrink: 0;
   font-weight: 500;
   color: var(--mat-sys-on-surface);
-  width: 120px;
+  min-width: 0;
+  max-width: 120px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .stmt-team {
-  flex-shrink: 0;
   color: var(--mat-sys-on-surface-variant);
   font-size: 12px;
-  width: 80px;
+  min-width: 0;
+  max-width: 80px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .stmt-verb {
-  flex-shrink: 0;
   font-weight: 600;
   color: var(--mat-sys-tertiary);
-  width: 80px;
+  min-width: 0;
+  max-width: 80px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -332,7 +423,7 @@ td {
 
 .stmt-object {
   color: var(--mat-sys-on-surface);
-  flex: 1;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -353,7 +444,6 @@ td {
   width: 22px !important;
   height: 22px !important;
   padding: 0 !important;
-  flex-shrink: 0;
   opacity: 0.4;
   &:hover {
     opacity: 1;
@@ -404,13 +494,20 @@ td {
 
 .evidence-filters {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   align-items: center;
   gap: 8px;
   margin-left: auto;
+  // the filters wrap inside the evidence panel rather than running over the
+  // Competency Assessment beside it on a narrow screen
+  min-width: 0;
+  max-width: 100%;
 }
 
 .evidence-filter-field {
-  min-width: 120px;
+  flex: 1 1 96px;
+  min-width: 96px;
   max-width: 200px;
   font-size: 12px;
 }
@@ -422,7 +519,6 @@ td {
 }
 
 .platform-badge {
-  flex-shrink: 0;
   font-size: 11px;
   font-weight: 600;
   padding: 1px 6px;
@@ -473,6 +569,9 @@ td {
 .evidence-panel {
   flex: 6;
   min-width: 0;
+  // Its statements grid would otherwise set the table's minimum width and give the
+  // page a horizontal scrollbar; contained, it takes only the width the row gives it.
+  contain: inline-size;
   padding: 12px 16px;
   background-color: var(--mat-sys-surface-container-lowest);
 }
@@ -481,22 +580,18 @@ td {
   flex: 1;
 }
 
-.assessment-panel-spacer {
-  flex: 4;
-  min-width: 300px;
-  background-color: var(--mat-sys-surface-container-lowest);
-}
-
 .assessment-panel {
-  flex: 4;
-  min-width: 300px;
+  flex: 3;
+  min-width: 260px;
+  max-width: 380px;
   padding: 12px 16px;
   background-color: var(--mat-sys-surface-container-lowest);
 }
 
+// Team Responses also carries .assessment-panel, so it keeps that panel's flex,
+// padding, background and 380px cap beside the evidence and the assessment.
 .team-responses-panel {
-  flex: 3;
-  min-width: 260px;
+  min-width: 240px;
 }
 
 .assessment-header {
@@ -533,11 +628,28 @@ td {
   background-color: var(--mat-sys-primary-container);
 }
 
+// The competency id and its submit control share the card's top row.
+.rating-card-header {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .rating-comp-id {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
   font-family: monospace;
   font-size: 11px;
   color: var(--mat-sys-on-surface-variant);
   line-height: 1.2;
+}
+
+// Rating and Comment share a line; Comment takes the rest of it.
+.rating-fields {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
 }
 
 .rating-comp-name {
@@ -549,27 +661,33 @@ td {
 }
 
 .rating-level-field {
-  width: 100%;
+  flex: 0 0 110px;
+  width: 110px;
   font-size: 12px;
 }
 
 .rating-comment-field {
-  width: 100%;
+  flex: 1;
+  min-width: 0;
   font-size: 12px;
+
+  textarea {
+    resize: none;
+    overflow: hidden;
+  }
 }
 
 .rating-submit-button {
   width: 28px !important;
   height: 28px !important;
   padding: 0 !important;
-  float: right;
 }
 
 .rating-actions {
   display: flex;
   align-items: center;
   gap: 4px;
-  margin-top: 2px;
+  flex-shrink: 0;
 }
 
 .rating-submitted-indicator {
@@ -614,6 +732,7 @@ td {
   .assessment-panel {
     width: 100%;
     min-width: unset;
+    max-width: none;
     max-height: none;
     border-top: 1px solid var(--mat-sys-outline-variant);
   }

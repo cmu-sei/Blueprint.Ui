@@ -5,6 +5,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { Component, input, output } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { CdkTextareaAutosize } from '@angular/cdk/text-field';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { MatButtonModule } from '@angular/material/button';
@@ -22,6 +23,8 @@ import {
   CiteService,
   CiteTeamResponses,
   CiteTeamResponsesStatus,
+  CompetencyFramework,
+  CompetencyFrameworkService,
   DataField,
   DataFieldType,
   DataValue,
@@ -30,6 +33,9 @@ import {
   Msel,
   MselCompetency,
   MselCompetencyService,
+  ProficiencyLevel,
+  ProficiencyScale,
+  ProficiencyScaleService,
   ScenarioEvent,
   Team,
   TeamCompetency,
@@ -93,6 +99,17 @@ const VALUES: DataValue[] = [
   { id: 'dv-1', scenarioEventId: 'se-1', dataFieldId: 'df-title', value: 'Phishing wave' },
   { id: 'dv-2', scenarioEventId: 'se-1', dataFieldId: 'df-done', value: 'false' },
 ];
+const MOVE_1: Move = { id: 'move-1', mselId: 'msel-1', moveNumber: 1, deltaSeconds: 0, description: 'Initial access' };
+const BLUE: Team = { id: 'team-blue', mselId: 'msel-1', name: 'Blue Team', shortName: 'Blue' };
+const RED: Team = { id: 'team-red', mselId: 'msel-1', name: 'Red Team', shortName: 'Red' };
+const EXCON: Team = { id: 'team-excon', mselId: 'msel-1', name: 'Exercise Control', shortName: 'EXCON' };
+const COMPETENCY_FIELD: DataField = {
+  id: 'df-comp', mselId: 'msel-1', name: 'Competencies', dataType: DataFieldType.Competency, displayOrder: 4, isAssessorVisible: false,
+};
+// se-1 tagged with T0001, the MSEL's one competency; Move 1 holds se-1, so the move has it too.
+const ASSESSABLE_FIELDS = [...FIELDS, COMPETENCY_FIELD];
+const ASSESSABLE_VALUES: DataValue[] = [...VALUES, { id: 'dv-comp', scenarioEventId: 'se-1', dataFieldId: 'df-comp', value: 'T0001' }];
+const T0001: MselCompetency[] = [{ id: 'mc-1', mselId: 'msel-1', competencyId: 'comp-1', competency: { id: 'comp-1', idNumber: 'T0001' } }];
 
 function seeded<S extends { set(entities: unknown[]): void }>(Store: new () => S, entities: unknown[]) {
   return {
@@ -118,6 +135,8 @@ async function renderAssessorView(
     mselCompetencies?: MselCompetency[];
     teamCompetencies?: TeamCompetency[];
     teamResponses?: (mselId: string, moveNumber: number, teamId: string) => Observable<CiteTeamResponses>;
+    /** The levels of the proficiency scale, loaded for a competency that has a framework. */
+    proficiencyLevels?: ProficiencyLevel[];
   } = {}
 ) {
   const {
@@ -132,6 +151,7 @@ async function renderAssessorView(
     mselCompetencies = [],
     teamCompetencies = [],
     teamResponses = () => of<CiteTeamResponses>({}),
+    proficiencyLevels = [],
   } = overrides;
   const poolApi = {
     getMselCompetencies: vi.fn(() => of<MselCompetency[]>(structuredClone(mselCompetencies))),
@@ -142,6 +162,12 @@ async function renderAssessorView(
   const citeApi = {
     getMselCiteTeamResponses: vi.fn(teamResponses),
   } satisfies ApiStub<CiteService>;
+  const frameworkApi = {
+    getCompetencyFramework: vi.fn((id: string) => of<CompetencyFramework>({ id, defaultProficiencyScaleId: 'scale-1' })),
+  } satisfies ApiStub<CompetencyFrameworkService>;
+  const scaleApi = {
+    getProficiencyScale: vi.fn((id: string) => of<ProficiencyScale>({ id, proficiencyLevels: structuredClone(proficiencyLevels) })),
+  } satisfies ApiStub<ProficiencyScaleService>;
   const rendered = await renderComponent(AssessorViewComponent, {
     imports: [
       MatButtonModule,
@@ -162,6 +188,8 @@ async function renderAssessorView(
       { provide: MselCompetencyService, useValue: poolApi },
       { provide: TeamCompetencyService, useValue: teamCompetencyApi },
       { provide: CiteService, useValue: citeApi },
+      { provide: CompetencyFrameworkService, useValue: frameworkApi },
+      { provide: ProficiencyScaleService, useValue: scaleApi },
       // The component reads xAPI statements over HttpClient when an event is expanded.
       provideHttpClient(),
       provideHttpClientTesting(),
@@ -190,6 +218,17 @@ function values(fixture: ComponentFixture<unknown>): DataValueStub[] {
   return fixture.debugElement.queryAll(By.directive(DataValueStub)).map((d) => d.componentInstance);
 }
 const byField = (fixture: ComponentFixture<unknown>, name: string) => values(fixture).find((v) => v.dataField().name === name);
+
+/** Opens Move 1 and answers the MSEL's statement request with `statements`; returns the user. */
+async function openMove(fixture: ComponentFixture<unknown>, statements: unknown[] = []) {
+  const user = userEvent.setup();
+  await user.click(screen.getByText('Move 1'));
+  TestBed.inject(HttpTestingController)
+    .expectOne((req) => req.url === '/api/xapi/statements' && req.params.get('mselId') === 'msel-1')
+    .flush({ statements });
+  fixture.detectChanges();
+  return user;
+}
 
 describe('AssessorViewComponent', () => {
   beforeEach(() => {
@@ -334,10 +373,11 @@ describe('AssessorViewComponent', () => {
   /**
    * Verifies: each xAPI statement in an opened move is timed with the zone in effect on its own date.
    * Interacts with: toggleMoveExpand (move header clicked), HttpClient GET api/xapi/statements (HttpTestingController), formatTimestamp, getTimezoneAbbr.
-   * Data: TZ America/New_York; Move 1 at 0 s; two CITE statements for move 1, 20 Oct 2026 16:00 UTC (EDT) and 20 Nov 2026 17:00 UTC (EST).
+   * Data: TZ America/New_York; Move 1 at 0 s; two CITE statements for move 1, 20 Oct 2026 16:00 UTC (EDT) and 20 Nov 2026 17:00 UTC (EST); grouping Off, as the two are otherwise one group.
    */
   it('times each move statement with the zone in effect on its date', async () => {
     vi.stubEnv('TZ', 'America/New_York');
+    localStorage.setItem('uiState', JSON.stringify({ statementGrouping: 'off' }));
     const { fixture } = await renderAssessorView({
       moves: [{ id: 'move-1', mselId: 'msel-1', moveNumber: 1, deltaSeconds: 0, description: 'Initial access' }],
     });
@@ -362,13 +402,621 @@ describe('AssessorViewComponent', () => {
     ]);
   });
 
-  describe('Team Responses', () => {
-    const MOVE_1: Move = { id: 'move-1', mselId: 'msel-1', moveNumber: 1, deltaSeconds: 0, description: 'Initial access' };
-    const COMPETENCY_FIELD: DataField = {
-      id: 'df-comp', mselId: 'msel-1', name: 'Competencies', dataType: DataFieldType.Competency, displayOrder: 4, isAssessorVisible: false,
+  describe('statement grouping', () => {
+    const VIEWED = 'http://id.tincanapi.com/verb/viewed';
+    const ANN = { objectType: 'Agent', name: 'Ann Analyst', account: { homePage: 'https://id.example', name: 'ann' } };
+    const BO = { objectType: 'Agent', name: 'Bo Builder', account: { homePage: 'https://id.example', name: 'bo' } };
+    const CY = { objectType: 'Agent', name: 'Cy Cipher', account: { homePage: 'https://id.example', name: 'cy' } };
+    const REX = { objectType: 'Agent', name: 'Rex Raider', account: { homePage: 'https://id.example', name: 'rex' } };
+    // What the API leaves of an agent for an assessor on a MSEL that hides names.
+    const MASKED = { objectType: 'Agent' };
+
+    /** A Move 1 statement; by default Blue views the Phishing email in Gallery at 12:0<minute> EDT on 20 Oct 2026. */
+    function statement(id: string, minute: number, overrides: Record<string, unknown> = {}) {
+      const { team = BLUE, platform = 'gallery', verb = VIEWED, object = 'https://gallery.example/article/phish', ...rest } = overrides as {
+        team?: Team;
+        platform?: string;
+        verb?: string;
+        object?: string;
+      };
+      return {
+        id,
+        timestamp: `2026-10-20T16:0${minute}:00Z`,
+        actor: ANN,
+        verb: { id: verb, display: { 'en-US': verb.split('/').pop() } },
+        object: { id: object, definition: { name: { 'en-US': object.split('/').pop() } } },
+        context: {
+          platform,
+          team: { objectType: 'Group', name: team.name, account: { homePage: 'https://blueprint.example', name: team.id } },
+          contextActivities: { grouping: [{ id: 'https://blueprint.example/move/1' }] },
+        },
+        ...rest,
+      };
+    }
+
+    /** Opens Move 1 with the statements given and returns the user. */
+    async function openMoveWith(statements: unknown[], options: { hideNames?: boolean } = {}) {
+      vi.stubEnv('TZ', 'America/New_York');
+      const rendered = await renderAssessorView({ moves: [MOVE_1], teams: [BLUE, RED] });
+      if (options.hideNames) {
+        TestBed.inject(MselStore).update('msel-1', { hideNamesOnAssessorView: true } as Partial<Msel>);
+      }
+      const user = await openMove(rendered.fixture, statements);
+      return { ...rendered, user };
+    }
+
+    /** Each statement row shown: its count badge ('' for a single statement), actor and team. */
+    const rowsShown = () =>
+      Array.from(document.querySelectorAll('.statement-row'), (row) => [
+        row.querySelector('.statement-group-count')?.textContent ?? '',
+        row.querySelector('.stmt-actor')?.textContent,
+        row.querySelector('.stmt-team')?.textContent,
+      ]);
+
+    async function chooseGrouping(fixture: ComponentFixture<unknown>, user: ReturnType<typeof userEvent.setup>, option: string) {
+      await user.click(screen.getByRole('combobox', { name: 'Group by' }));
+      await user.click(await screen.findByRole('option', { name: option }));
+      fixture.detectChanges();
+    }
+
+    // Ann, Bo, Cy and Ann again view the same article for Blue; Rex views it for Red.
+    const REPEATS = () => [
+      statement('s-ann-1', 0),
+      statement('s-bo', 1, { actor: BO }),
+      statement('s-cy', 2, { actor: CY }),
+      statement('s-rex', 3, { actor: REX, team: RED }),
+      statement('s-ann-2', 4),
+    ];
+
+    /**
+     * Verifies: by default (Team) repeats by different members of a team collapse into one row that names the first person, counts the others, spans first–last time (the end on its own line, only its time on the same day) and shows ×N; another team's repeat stays apart.
+     * Interacts with: toggleMoveExpand, HttpClient GET api/xapi/statements (HttpTestingController), getSectionStatementList, buildStatementGroups, formatRangeEnd.
+     * Data: TZ America/New_York; Ann, Bo, Cy, Ann view one article for Blue (12:00–12:04 EDT), Rex views it for Red at 12:03.
+     */
+    it('merges a team\'s repeats across its members by default', async () => {
+      await openMoveWith(REPEATS());
+
+      expect(screen.getByRole('combobox', { name: 'Group by' })).toHaveTextContent('Team');
+      expect(rowsShown()).toEqual([
+        ['', 'Rex Raider', 'Red Team'],
+        ['×4', 'Ann Analyst + 2 others', 'Blue Team'],
+      ]);
+      const range = screen.getByRole('button', { name: /^×4/ }).querySelector('.statement-time-range');
+      expect(Array.from(range.children, (line) => line.textContent.trim())).toEqual(['20 Oct 2026 12:00 EDT', '– 12:04 EDT']);
+      expect(screen.getByText('5 / 5')).toBeInTheDocument();
+    });
+
+    /**
+     * Verifies: by User, each person's repeats collapse separately, and groups are placed by their newest statement.
+     * Interacts with: Group by mat-select (setStatementGrouping), getSectionStatementList.
+     * Data: the same five statements; Ann's two are at 12:00 and 12:04.
+     */
+    it('keeps different people apart by User', async () => {
+      const { fixture, user } = await openMoveWith(REPEATS());
+
+      await chooseGrouping(fixture, user, 'User');
+
+      expect(rowsShown()).toEqual([
+        ['', 'Bo Builder', 'Blue Team'],
+        ['', 'Cy Cipher', 'Blue Team'],
+        ['', 'Rex Raider', 'Red Team'],
+        ['×2', 'Ann Analyst', 'Blue Team'],
+      ]);
+    });
+
+    /**
+     * Verifies: Off shows every statement as its own row, in time order.
+     * Interacts with: Group by mat-select (setStatementGrouping), getSectionStatementList.
+     * Data: the same five statements.
+     */
+    it('shows every statement with grouping Off', async () => {
+      const { fixture, user } = await openMoveWith(REPEATS());
+
+      await chooseGrouping(fixture, user, 'Off');
+
+      expect(rowsShown()).toEqual([
+        ['', 'Ann Analyst', 'Blue Team'],
+        ['', 'Bo Builder', 'Blue Team'],
+        ['', 'Cy Cipher', 'Blue Team'],
+        ['', 'Rex Raider', 'Red Team'],
+        ['', 'Ann Analyst', 'Blue Team'],
+      ]);
+    });
+
+    /**
+     * Verifies: when the API removed every actor's identity, Group by offers only Team and Off, and a group is labeled Team member.
+     * Interacts with: MselStore (hideNamesOnAssessorView set), Group by mat-select options, statementGroupActorLabel.
+     * Data: MSEL hides names; three Blue statements on one article whose actors carry only objectType Agent.
+     */
+    it('offers only Team and Off when the statements carry no names', async () => {
+      const { user } = await openMoveWith(
+        [0, 1, 2].map((m) => statement(`s-${m}`, m, { actor: MASKED })),
+        { hideNames: true },
+      );
+
+      expect(rowsShown()).toEqual([['×3', 'Team member', 'Blue Team']]);
+      await user.click(screen.getByRole('combobox', { name: 'Group by' }));
+      expect((await screen.findAllByRole('option')).map((o) => o.textContent.trim())).toEqual(['Team', 'Off']);
+    });
+
+    /**
+     * Verifies: competency assertions and CITE submitted and evaluated statements always keep their own rows, while the same verb from another app still groups.
+     * Interacts with: isNeverGrouped, getSectionStatementList.
+     * Data: two identical Blueprint asserted statements, two CITE submitted, two CITE evaluated (none with a score), and two Gallery submitted.
+     */
+    it('never groups assertions or CITE submissions and scores', async () => {
+      await openMoveWith([
+        statement('s-assert-1', 0, { platform: 'blueprint', verb: 'https://w3id.org/xapi/tla/verbs/asserted' }),
+        statement('s-assert-2', 1, { platform: 'blueprint', verb: 'https://w3id.org/xapi/tla/verbs/asserted' }),
+        statement('s-submit-1', 2, { platform: 'cite', verb: 'https://w3id.org/xapi/dod-isd/verbs/submitted' }),
+        statement('s-submit-2', 3, { platform: 'cite', verb: 'https://w3id.org/xapi/dod-isd/verbs/submitted' }),
+        statement('s-eval-1', 4, { platform: 'cite', verb: 'https://w3id.org/xapi/dod-isd/verbs/evaluated' }),
+        statement('s-eval-2', 5, { platform: 'cite', verb: 'https://w3id.org/xapi/dod-isd/verbs/evaluated' }),
+        statement('s-gallery-1', 6, { verb: 'https://w3id.org/xapi/dod-isd/verbs/submitted' }),
+        statement('s-gallery-2', 7, { verb: 'https://w3id.org/xapi/dod-isd/verbs/submitted' }),
+      ]);
+
+      expect(rowsShown().map(([count]) => count)).toEqual(['', '', '', '', '', '', '×2']);
+    });
+
+    /**
+     * Verifies: statements with different results never merge, statements with the same result do, and a scored statement is always its own row.
+     * Interacts with: statementGroupKey (result part), isNeverGrouped (score rule).
+     * Data: Blue answers one question: success true, success false, success true again, and two identical score 5 results.
+     */
+    it('does not merge statements with different results', async () => {
+      const answered = 'http://adlnet.gov/expapi/verbs/answered';
+      await openMoveWith([
+        statement('s-right-1', 0, { verb: answered, result: { success: true, response: 'A' } }),
+        statement('s-wrong', 1, { verb: answered, result: { success: false, response: 'B' } }),
+        statement('s-right-2', 2, { verb: answered, result: { success: true, response: 'A' } }),
+        statement('s-score-1', 3, { verb: answered, result: { score: { raw: 5 } } }),
+        statement('s-score-2', 4, { verb: answered, result: { score: { raw: 5 } } }),
+      ]);
+
+      expect(rowsShown().map(([count]) => count)).toEqual(['', '×2', '', '']);
+    });
+
+    /**
+     * Verifies: clicking a group lists its statements in time order under it, each still shows its JSON and copies it; clicking again collapses it.
+     * Interacts with: toggleStatementGroup, toggleStatement, copyStatement, navigator.clipboard.writeText (spy).
+     * Data: Ann, Bo and Cy view one article for Blue.
+     */
+    it('expands a group to its statements, which still copy their JSON', async () => {
+      const statements = REPEATS().slice(0, 3);
+      const { fixture, user } = await openMoveWith(statements);
+      const writes: string[] = [];
+      vi.spyOn(navigator, 'clipboard', 'get').mockReturnValue({
+        writeText: (text: string) => {
+          writes.push(text);
+          return Promise.resolve();
+        },
+      } satisfies Pick<Clipboard, 'writeText'> as Clipboard);
+      const group = screen.getByRole('button', { name: /^×3/ });
+      expect(group).toHaveAttribute('aria-expanded', 'false');
+      expect(screen.queryByRole('button', { name: 'Copy JSON' })).not.toBeInTheDocument();
+
+      await user.click(group);
+      fixture.detectChanges();
+
+      expect(group).toHaveAttribute('aria-expanded', 'true');
+      expect(rowsShown()).toEqual([
+        ['×3', 'Ann Analyst + 2 others', 'Blue Team'],
+        ['', 'Ann Analyst', 'Blue Team'],
+        ['', 'Bo Builder', 'Blue Team'],
+        ['', 'Cy Cipher', 'Blue Team'],
+      ]);
+      await user.click(screen.getAllByRole('button', { name: 'Copy JSON' })[1]);
+      expect(writes).toEqual([JSON.stringify(statements[1], null, 2)]);
+      await user.click(screen.getByText('Bo Builder'));
+      fixture.detectChanges();
+      expect(screen.getByText('"actor"')).toBeInTheDocument();
+
+      await user.click(group);
+      fixture.detectChanges();
+      expect(rowsShown()).toEqual([['×3', 'Ann Analyst + 2 others', 'Blue Team']]);
+    });
+
+    /**
+     * Verifies: the Group by choice is saved in the browser's UI state.
+     * Interacts with: setStatementGrouping, UIDataService (real, localStorage).
+     * Data: the five repeats; Off is chosen.
+     */
+    it('remembers the choice in localStorage', async () => {
+      const { fixture, user } = await openMoveWith(REPEATS());
+
+      await chooseGrouping(fixture, user, 'Off');
+
+      expect(JSON.parse(localStorage.getItem('uiState')).statementGrouping).toBe('off');
+    });
+
+    /**
+     * Verifies: a choice saved in an earlier visit is restored.
+     * Interacts with: UIDataService.getStatementGrouping (real, localStorage), statementGrouping.
+     * Data: saved Off; the five repeats.
+     */
+    it('restores the saved choice', async () => {
+      localStorage.setItem('uiState', JSON.stringify({ statementGrouping: 'off' }));
+      await openMoveWith(REPEATS());
+      expect(screen.getByRole('combobox', { name: 'Group by' })).toHaveTextContent('Off');
+      expect(rowsShown()).toHaveLength(5);
+    });
+
+    /**
+     * Verifies: a saved User falls back to Team when the statements carry no names, and what was saved is kept.
+     * Interacts with: UIDataService.getStatementGrouping (real, localStorage), statementGrouping.
+     * Data: saved User; MSEL hides names; three masked Blue statements on one article.
+     */
+    it('falls back from a saved User to Team when names are hidden', async () => {
+      localStorage.setItem('uiState', JSON.stringify({ statementGrouping: 'user' }));
+      await openMoveWith(
+        [0, 1, 2].map((m) => statement(`s-${m}`, m, { actor: MASKED })),
+        { hideNames: true },
+      );
+
+      expect(screen.getByRole('combobox', { name: 'Group by' })).toHaveTextContent('Team');
+      expect(rowsShown()).toEqual([['×3', 'Team member', 'Blue Team']]);
+      expect(JSON.parse(localStorage.getItem('uiState')).statementGrouping).toBe('user');
+    });
+
+    /**
+     * Verifies: a range that ends on another day shows the end's full date.
+     * Interacts with: buildStatementGroups, formatRangeEnd.
+     * Data: TZ America/New_York; Ann views the article for Blue at 12:00 EDT on 20 Oct and at 09:00 EDT on 21 Oct.
+     */
+    it('dates the end of a range that ends on another day', async () => {
+      await openMoveWith([statement('s-1', 0), statement('s-2', 0, { timestamp: '2026-10-21T13:00:00Z' })]);
+
+      const range = screen.getByRole('button', { name: /^×2/ }).querySelector('.statement-time-range');
+      expect(Array.from(range.children, (line) => line.textContent.trim())).toEqual(['20 Oct 2026 12:00 EDT', '– 21 Oct 2026 09:00 EDT']);
+    });
+
+    /**
+     * Verifies: an inject's repeats from different groups stay apart, so each row's G column is true of all its statements.
+     * Interacts with: statementGroupKey (move, group and inject parts), getGroupPart, toggleEvent (event row clicked).
+     * Data: Blue views the same article for inject se-1 twice in group 1 and once in group 2; all three are routed to se-1.
+     */
+    it('keeps an inject\'s repeats from different groups apart', async () => {
+      const inGroup = (group: number) => ({
+        platform: 'gallery',
+        team: { objectType: 'Group', name: BLUE.name, account: { homePage: 'https://blueprint.example', name: BLUE.id } },
+        contextActivities: {
+          grouping: [{ id: 'https://blueprint.example/scenarioevents/se-1' }, { id: `https://blueprint.example/group/${group}` }],
+        },
+      });
+      const { fixture, user } = await openMoveWith([
+        statement('s-g1-a', 0, { context: inGroup(1) }),
+        statement('s-g1-b', 1, { context: inGroup(1) }),
+        statement('s-g2', 2, { context: inGroup(2) }),
+      ]);
+
+      await user.click(screen.getByTitle('Click to expand/collapse'));
+      fixture.detectChanges();
+
+      expect(rowsShown().map(([count]) => count)).toEqual(['×2', '']);
+      expect(Array.from(document.querySelectorAll('.stmt-group'), (e) => e.textContent)).toEqual(['G1', 'G2']);
+    });
+
+    /**
+     * Verifies: opening a group rebuilds only its own section's rows, and a MSEL change that does not touch names does not rebuild the lists.
+     * Interacts with: getSectionStatementList (cache), toggleStatementGroup, MselStore update (the MSEL subscription replaces this.msel).
+     * Data: the five repeats in Move 1; the MSEL is renamed; the ×4 group is opened.
+     */
+    it('rebuilds only the section whose group was opened', async () => {
+      const { fixture, user } = await openMoveWith(REPEATS());
+      const view = fixture.componentInstance as AssessorViewComponent;
+      const move = view.getSectionStatementList('move-1');
+      const { filtered, items } = move;
+      const eventItems = view.getSectionStatementList('event-se-1').items;
+
+      TestBed.inject(MselStore).update('msel-1', { name: 'Exercise Alpha, renamed' });
+      fixture.detectChanges();
+      expect(view.getSectionStatementList('move-1').filtered).toBe(filtered);
+
+      await user.click(screen.getByRole('button', { name: /^×4/ }));
+      fixture.detectChanges();
+      expect(view.getSectionStatementList('move-1').items).not.toBe(items);
+      expect(view.getSectionStatementList('event-se-1').items).toBe(eventItems);
+    });
+
+    /**
+     * Verifies: the Team and Verb filters narrow the statements before they are grouped, so a group counts only what passes.
+     * Interacts with: evidence Team and Verb mat-selects (filterByTeams, filterByVerbs), getStatementList cache.
+     * Data: Ann and Bo view the article for Blue and Bo also launches it; Rex views it for Red.
+     */
+    it('applies the filters before grouping', async () => {
+      const { fixture, user } = await openMoveWith([
+        statement('s-ann', 0),
+        statement('s-bo', 1, { actor: BO }),
+        statement('s-bo-launch', 2, { actor: BO, verb: 'http://adlnet.gov/expapi/verbs/launched' }),
+        statement('s-rex', 3, { actor: REX, team: RED }),
+        statement('s-rex-2', 4, { actor: REX, team: RED }),
+      ]);
+      expect(rowsShown()).toEqual([
+        ['×2', 'Ann Analyst + 1 other', 'Blue Team'],
+        ['', 'Bo Builder', 'Blue Team'],
+        ['×2', 'Rex Raider', 'Red Team'],
+      ]);
+
+      await user.click(screen.getByRole('combobox', { name: 'Team' }));
+      await user.click(await screen.findByRole('option', { name: 'Blue' }));
+      await user.keyboard('{Escape}');
+      await user.click(screen.getByRole('combobox', { name: 'Verb' }));
+      await user.click(await screen.findByRole('option', { name: 'viewed' }));
+      await user.keyboard('{Escape}');
+      fixture.detectChanges();
+
+      expect(screen.getByText('2 / 5')).toBeInTheDocument();
+      expect(rowsShown()).toEqual([['×2', 'Ann Analyst + 1 other', 'Blue Team']]);
+    });
+  });
+
+  describe('an opened move', () => {
+    // Move 1 holds se-1, tagged with competency T0001; Blue and EXCON are both assigned T0001.
+    const ASSESSABLE = {
+      moves: [MOVE_1],
+      fields: ASSESSABLE_FIELDS,
+      values: ASSESSABLE_VALUES,
+      teams: [BLUE, EXCON],
+      mselCompetencies: T0001,
+      teamCompetencies: [
+        { id: 'tc-1', teamId: 'team-blue', competencyId: 'comp-1' },
+        { id: 'tc-2', teamId: 'team-excon', competencyId: 'comp-1' },
+      ],
     };
-    const BLUE: Team = { id: 'team-blue', mselId: 'msel-1', name: 'Blue Team', shortName: 'Blue' };
-    const RED: Team = { id: 'team-red', mselId: 'msel-1', name: 'Red Team', shortName: 'Red' };
+
+    /** Toggles one team in the evidence Team filter (a multiple select) and closes it. */
+    async function toggleTeamFilter(fixture: ComponentFixture<unknown>, user: ReturnType<typeof userEvent.setup>, team: string) {
+      await user.click(screen.getByRole('combobox', { name: 'Team' }));
+      await user.click(await screen.findByRole('option', { name: team }));
+      await user.keyboard('{Escape}');
+      fixture.detectChanges();
+    }
+
+    async function pickAssessTeam(fixture: ComponentFixture<unknown>, user: ReturnType<typeof userEvent.setup>, team: string) {
+      await user.click(assessTeam());
+      await user.click(await screen.findByRole('option', { name: team }));
+      fixture.detectChanges();
+    }
+
+    const assessTeam = () => screen.getByRole('combobox', { name: 'Assess Team' });
+
+    describe('Assess Team', () => {
+      /**
+       * Verifies: a Team filter of exactly one team, set before the move is opened, is preselected in Assess Team.
+       * Interacts with: filterByTeams (called before the row opens, as an earlier opening of the row leaves it), toggleMoveExpand (move header clicked), Assess Team mat-select.
+       * Data: Move 1 with competency T0001 assigned to Blue and EXCON; the move's Team filter is EXCON.
+       */
+      it('preselects the one team the evidence was filtered to before the move opened', async () => {
+        const { fixture } = await renderAssessorView(ASSESSABLE);
+        fixture.componentInstance.filterByTeams('move-1', ['team-excon']);
+
+        await openMove(fixture);
+
+        expect(assessTeam()).toHaveTextContent('EXCON');
+      });
+
+      /**
+       * Verifies: while the Team filter of an open move names exactly one team, Assess Team shows that team; when it names two or none, the team it chose is cleared.
+       * Interacts with: toggleMoveExpand (move header clicked), evidence Team mat-select (filterByTeams), Assess Team mat-select.
+       * Data: Move 1 with competency T0001 assigned to Blue and EXCON; the filter goes Blue, Blue + EXCON, EXCON, then none.
+       */
+      it('follows the Team filter while it names one team, and clears when it does not', async () => {
+        const { fixture } = await renderAssessorView(ASSESSABLE);
+        const user = await openMove(fixture);
+        expect(assessTeam()).toHaveTextContent('None');
+
+        await toggleTeamFilter(fixture, user, 'Blue');
+        expect(assessTeam()).toHaveTextContent('Blue');
+
+        await toggleTeamFilter(fixture, user, 'EXCON');
+        expect(assessTeam()).toHaveTextContent('None');
+
+        await toggleTeamFilter(fixture, user, 'Blue');
+        expect(assessTeam()).toHaveTextContent('EXCON');
+
+        await toggleTeamFilter(fixture, user, 'EXCON');
+        expect(assessTeam()).toHaveTextContent('None');
+      });
+
+      /**
+       * Verifies: a team chosen from the filter is cleared when the filter moves to one team that Assess Team does not offer.
+       * Interacts with: filterByTeams (evidence Team mat-select, then called with Red alone), getTeamsForContext.
+       * Data: Move 1 with T0001 assigned to Blue and EXCON only; Red has no competency, so Assess Team does not offer it.
+       */
+      it('clears a chosen team when the filter moves to a team Assess Team does not offer', async () => {
+        const { fixture } = await renderAssessorView({ ...ASSESSABLE, teams: [BLUE, EXCON, RED] });
+        const user = await openMove(fixture);
+        await toggleTeamFilter(fixture, user, 'Blue');
+        expect(assessTeam()).toHaveTextContent('Blue');
+
+        fixture.componentInstance.filterByTeams('move-1', ['team-red']);
+        fixture.detectChanges();
+
+        expect(assessTeam()).toHaveTextContent('None');
+      });
+
+      /**
+       * Verifies: a team the user picked in Assess Team is kept when the Team filter later narrows to a different team.
+       * Interacts with: toggleMoveExpand (move header clicked), Assess Team mat-select (setAssertionTeam), evidence Team mat-select (filterByTeams).
+       * Data: Move 1 with competency T0001 assigned to Blue and EXCON; Blue is picked by hand, then the filter is set to EXCON.
+       */
+      it('keeps a team picked by hand when the Team filter changes', async () => {
+        const { fixture } = await renderAssessorView(ASSESSABLE);
+        const user = await openMove(fixture);
+
+        await pickAssessTeam(fixture, user, 'Blue');
+        await toggleTeamFilter(fixture, user, 'EXCON');
+
+        expect(assessTeam()).toHaveTextContent('Blue');
+      });
+
+      /**
+       * Verifies: once a rating is started under a team the filter chose, a later filter change keeps that team, so the unsubmitted comment stays on screen.
+       * Interacts with: evidence Team mat-select (filterByTeams), Comment textarea (setRatingComment), getRating.
+       * Data: Move 1 with T0001 assigned to Blue and EXCON; the filter chooses Blue, a comment is typed, then the filter goes to EXCON.
+       */
+      it('keeps the team a rating was started for when the Team filter changes', async () => {
+        const { fixture } = await renderAssessorView(ASSESSABLE);
+        const user = await openMove(fixture);
+        await toggleTeamFilter(fixture, user, 'Blue');
+
+        await user.type(screen.getByRole('textbox', { name: 'Comment' }), 'Phished twice');
+        await toggleTeamFilter(fixture, user, 'Blue');
+        await toggleTeamFilter(fixture, user, 'EXCON');
+
+        expect(assessTeam()).toHaveTextContent('Blue');
+        expect(screen.getByRole('textbox', { name: 'Comment' })).toHaveValue('Phished twice');
+      });
+
+      /**
+       * Verifies: a team picked by hand on one MSEL does not carry over to the same move of another MSEL, so the filter preselects there again.
+       * Interacts with: Assess Team mat-select (setAssertionTeam), MselStore active MSEL (resetAssertionTeams), evidence Team mat-select (filterByTeams).
+       * Data: Blue picked by hand on Move 1 of msel-1; the active MSEL goes to msel-2 and back; the filter is then set to EXCON.
+       */
+      it('forgets the teams picked on a MSEL when another MSEL is opened', async () => {
+        const { fixture } = await renderAssessorView(ASSESSABLE);
+        const user = await openMove(fixture);
+        await pickAssessTeam(fixture, user, 'Blue');
+
+        const mselStore = TestBed.inject(MselStore);
+        mselStore.add({ ...MSEL, id: 'msel-2', name: 'Exercise Bravo' });
+        mselStore.setActive('msel-2');
+        mselStore.setActive('msel-1');
+        fixture.detectChanges();
+
+        expect(assessTeam()).toHaveTextContent('None');
+        await toggleTeamFilter(fixture, user, 'EXCON');
+        expect(assessTeam()).toHaveTextContent('EXCON');
+      });
+
+      /**
+       * Verifies: the filter preselect runs when its inputs change, not on every change detection.
+       * Interacts with: preselectAssertionTeam (spied on the prototype), getAssertionTeam (template, ngDoCheck), filterByTeams.
+       * Data: Move 1 with T0001 assigned to Blue and EXCON; nothing is chosen, then the filter is set to Blue.
+       */
+      it('runs the filter preselect only when its inputs change', async () => {
+        const { fixture } = await renderAssessorView(ASSESSABLE);
+        const user = await openMove(fixture);
+        const preselect = vi.spyOn(
+          AssessorViewComponent.prototype as unknown as { preselectAssertionTeam: (contextKey: string, filterChanged?: boolean) => void },
+          'preselectAssertionTeam',
+        );
+
+        fixture.detectChanges();
+        fixture.detectChanges();
+        expect(preselect).not.toHaveBeenCalled();
+
+        await toggleTeamFilter(fixture, user, 'Blue');
+        expect(preselect).toHaveBeenCalledWith('move-1', true);
+        preselect.mockRestore();
+      });
+
+      describe('with assertions already submitted', () => {
+        const PROFICIENT: ProficiencyLevel = { id: 'level-3', name: 'Proficient', value: 3, displayOrder: 3 };
+        const SUBMITTED = {
+          ...ASSESSABLE,
+          // A competency with a framework, so the component loads the framework's proficiency scale.
+          mselCompetencies: [{ ...T0001[0], competency: { ...T0001[0].competency, competencyFrameworkId: 'framework-1' } }],
+          proficiencyLevels: [PROFICIENT],
+        };
+        /** Another assessor's assertion that Blue is Proficient at T0001 in Move 1. */
+        const BLUE_ASSERTION = {
+          id: 's-assert',
+          timestamp: '2026-10-20T16:00:00Z',
+          actor: { name: 'Another Assessor' },
+          verb: { id: 'https://w3id.org/xapi/tla/verbs/asserted' },
+          object: {
+            id: 'https://blueprint.example/competencies/comp-1',
+            definition: { type: 'https://w3id.org/xapi/tla/activity-types/competency' },
+          },
+          result: { score: { raw: 3 }, response: 'Clicked nothing' },
+          context: {
+            platform: 'blueprint',
+            team: { name: 'Blue Team', account: { name: 'team-blue' } },
+            contextActivities: { grouping: [{ id: 'https://blueprint.example/msels/msel-1/moves/1' }] },
+          },
+        };
+
+        /**
+         * Verifies: with no team chosen, Assess Team shows the team of an assertion already submitted, with its rating.
+         * Interacts with: syncAssertionsFromStatements (on load), CompetencyFrameworkService / ProficiencyScaleService (stubs), Assess Team and Rating mat-selects.
+         * Data: Move 1's statements hold Blue's T0001 assertion at Proficient (3).
+         */
+        it('shows the team and rating of a submitted assertion when no team was chosen', async () => {
+          const { fixture } = await renderAssessorView(SUBMITTED);
+
+          await openMove(fixture, [BLUE_ASSERTION]);
+
+          expect(assessTeam()).toHaveTextContent('Blue');
+          expect(screen.getByRole('combobox', { name: 'Rating' })).toHaveTextContent('Proficient (3)');
+          expect(screen.getByText('Submitted')).toBeInTheDocument();
+        });
+
+        /**
+         * Verifies: a team picked by hand, or chosen by the Team filter, is kept when Refresh evidence brings in another team's assertion.
+         * Interacts with: Refresh evidence (refreshStatements → distributeStatements → syncAssertionsFromStatements), Assess Team mat-select, filterByTeams.
+         * Data: EXCON picked by hand, or the filter set to EXCON; the refresh returns Blue's T0001 assertion.
+         */
+        it.each([
+          ['picked by hand', (fixture: ComponentFixture<unknown>, user: ReturnType<typeof userEvent.setup>) => pickAssessTeam(fixture, user, 'EXCON')],
+          ['chosen by the filter', (fixture: ComponentFixture<unknown>, user: ReturnType<typeof userEvent.setup>) => toggleTeamFilter(fixture, user, 'EXCON')],
+        ])('keeps a team %s when Refresh evidence brings another team\'s assertion', async (_, choose) => {
+          const { fixture } = await renderAssessorView(SUBMITTED);
+          const user = await openMove(fixture);
+          await choose(fixture, user);
+
+          await user.click(screen.getByRole('button', { name: 'Refresh evidence' }));
+          TestBed.inject(HttpTestingController)
+            .expectOne((req) => req.url === '/api/xapi/statements')
+            .flush({ statements: [BLUE_ASSERTION] });
+          fixture.detectChanges();
+
+          expect(assessTeam()).toHaveTextContent('EXCON');
+          expect(screen.queryByText('Submitted')).not.toBeInTheDocument();
+        });
+      });
+    });
+
+    /**
+     * Verifies: the Refresh evidence button is named and described for what it reloads, and reloads the MSEL's xAPI statements.
+     * Interacts with: refreshStatements (button clicked), MatTooltip description, HttpClient GET api/xapi/statements (HttpTestingController).
+     * Data: Move 1 opened with no statements yet, on a MSEL that does not use CITE.
+     */
+    it('reloads the statements with Refresh evidence', async () => {
+      const { fixture } = await renderAssessorView(ASSESSABLE);
+      const user = await openMove(fixture);
+      const refresh = screen.getByRole('button', { name: 'Refresh evidence' });
+
+      expect(refresh).toHaveAccessibleDescription('Reload the xAPI statements');
+      await user.click(refresh);
+
+      TestBed.inject(HttpTestingController)
+        .expectOne((req) => req.url === '/api/xapi/statements' && req.params.get('mselId') === 'msel-1')
+        .flush({ statements: [] });
+      expect(screen.queryByRole('button', { name: 'Refresh xAPI statements' })).not.toBeInTheDocument();
+    });
+
+    /**
+     * Verifies: each competency card puts its id beside its submit control, and its Rating beside a Comment that grows as it is typed in.
+     * Interacts with: toggleMoveExpand (move header clicked), the rating card layout containers, CdkTextareaAutosize.
+     * Data: Move 1 with competency T0001.
+     */
+    it('lays out each competency card in two rows', async () => {
+      const { fixture } = await renderAssessorView(ASSESSABLE);
+      await openMove(fixture);
+
+      const header = screen.getByText('T0001').closest('.rating-card-header');
+      expect(header).toContainElement(screen.getByRole('button', { name: 'Submit assertion' }));
+      const fields = screen.getByRole('combobox', { name: 'Rating' }).closest('.rating-fields');
+      const comment = screen.getByRole('textbox', { name: 'Comment' });
+      expect(fields).toContainElement(comment);
+      expect(comment.tagName).toBe('TEXTAREA');
+      expect(fixture.debugElement.query(By.directive(CdkTextareaAutosize)).nativeElement).toBe(comment);
+    });
+  });
+
+  describe('Team Responses', () => {
     const ANSWERED: CiteTeamResponses = {
       mselId: 'msel-1', teamId: 'team-blue', moveNumber: 1, status: CiteTeamResponsesStatus.Answered,
       teamSubmission: { score: 7.5, isAverage: false, categories: [] },
@@ -387,10 +1035,10 @@ describe('AssessorViewComponent', () => {
     const assessable = (msel: Msel) => ({
       msel,
       moves: [MOVE_1],
-      fields: [...FIELDS, COMPETENCY_FIELD],
-      values: [...VALUES, { id: 'dv-comp', scenarioEventId: 'se-1', dataFieldId: 'df-comp', value: 'T0001' }],
+      fields: ASSESSABLE_FIELDS,
+      values: ASSESSABLE_VALUES,
       teams: [BLUE],
-      mselCompetencies: [{ id: 'mc-1', mselId: 'msel-1', competencyId: 'comp-1', competency: { id: 'comp-1', idNumber: 'T0001' } }],
+      mselCompetencies: T0001,
       teamCompetencies: [{ id: 'tc-1', teamId: 'team-blue', competencyId: 'comp-1' }],
       teamResponses,
     });
@@ -404,16 +1052,6 @@ describe('AssessorViewComponent', () => {
     afterEach(() => {
       vi.restoreAllMocks();
     });
-
-    async function openMove(fixture: ComponentFixture<unknown>) {
-      const user = userEvent.setup();
-      await user.click(screen.getByText('Move 1'));
-      TestBed.inject(HttpTestingController)
-        .expectOne((req) => req.url === '/api/xapi/statements')
-        .flush({ statements: [] });
-      fixture.detectChanges();
-      return user;
-    }
 
     async function chooseBlue(fixture: ComponentFixture<unknown>, user: ReturnType<typeof userEvent.setup>) {
       await chooseTeam(fixture, user, 'Blue');
@@ -461,18 +1099,20 @@ describe('AssessorViewComponent', () => {
     });
 
     /**
-     * Verifies: Refresh xAPI statements reloads the team answers already shown, alongside the statements.
+     * Verifies: on a MSEL using CITE, Refresh evidence says it reloads the CITE answers, and reloads the team answers already shown, alongside the statements.
      * Interacts with: refreshStatements (refresh button), HttpClient GET api/xapi/statements (HttpTestingController), CiteService.getMselCiteTeamResponses (stub).
      * Data: Blue's answers for move 1 loaded once as NotAnswered, then Answered on refresh.
      */
-    it('reloads the answers with Refresh xAPI statements', async () => {
+    it('reloads the answers with Refresh evidence', async () => {
       const { fixture, citeApi } = await renderAssessorView(assessable({ ...MSEL, useCite: true, citeEvaluationId: 'eval-1' }));
       const user = await openMove(fixture);
       await chooseBlue(fixture, user);
       answer(calls[0], { ...ANSWERED, status: CiteTeamResponsesStatus.NotAnswered, teamSubmission: null });
       fixture.detectChanges();
 
-      await user.click(screen.getByTitle('Refresh xAPI statements'));
+      const refresh = screen.getByRole('button', { name: 'Refresh evidence' });
+      expect(refresh).toHaveAccessibleDescription('Reload the xAPI statements and the CITE answers shown');
+      await user.click(refresh);
       fixture.detectChanges();
 
       expect(citeApi.getMselCiteTeamResponses).toHaveBeenCalledTimes(2);
@@ -622,7 +1262,7 @@ describe('AssessorViewComponent', () => {
       answer(calls[1], { ...ANSWERED, teamId: 'team-red' });
       fixture.detectChanges();
 
-      await user.click(screen.getByTitle('Refresh xAPI statements'));
+      await user.click(screen.getByRole('button', { name: 'Refresh evidence' }));
       TestBed.inject(HttpTestingController).expectOne((req) => req.url === '/api/xapi/statements').flush({ statements: [] });
       fixture.detectChanges();
 
