@@ -51,7 +51,7 @@ export class CiteService extends BaseService {
 
     /**
      * Gets a team\&#39;s CITE answers for a move
-     * Returns what the team answered on the MSEL\&#39;s CITE scoring model for one move: per scoring category, the selected options, comments and score, plus the official and team-average submissions when the scoring model uses them. Team-level answers only; no participant\&#39;s own submission.  When there is nothing to read, the status says why: the MSEL is not pushed to CITE, the team or the move is not in CITE, the move has not started, or CITE could not be read.  Accessible with the ViewMsels permission, or to the MSEL\&#39;s Owners, Editors, Approvers and Evaluators
+     * Returns what the team answered on the MSEL\&#39;s CITE scoring model for one move: per scoring category, the selected options, comments and score, plus the official and team-average submissions when the scoring model uses them. Team-level answers only; no participant\&#39;s own submission. &lt;para /&gt; When there is nothing to read, the status says why: the MSEL is not pushed to CITE, the team or the move is not in CITE, the move has not started, or CITE could not be read. &lt;para /&gt; Accessible with the ViewMsels permission, or to the MSEL\&#39;s Owners, Editors, Approvers and Evaluators
      * @param mselId The MSEL
      * @param teamId The MSEL team
      * @param moveNumber The move number
@@ -102,7 +102,7 @@ export class CiteService extends BaseService {
             }
         }
 
-        let localVarPath = `/api/msels/${this.configuration.encodeParam({name: "mselId", value: mselId, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: "uuid"})}/citeSubmissions`;
+        let localVarPath = `/api/msels/${this.configuration.encodeParam({name: "mselId", value: mselId, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: "uuid"})}/citesubmissions`;
         const { basePath, withCredentials } = this.configuration;
         return this.httpClient.request<CiteTeamResponses>('get', `${basePath}${localVarPath}`,
             {

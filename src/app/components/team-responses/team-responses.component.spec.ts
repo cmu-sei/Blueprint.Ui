@@ -17,7 +17,7 @@ const ANSWERED: CiteTeamResponses = {
   teamSubmission: {
     score: 7.5,
     status: 'Active',
-    dateModified: '2026-11-20T17:45:00Z',
+    dateModified: new Date('2026-11-20T17:45:00Z'),
     isAverage: false,
     categories: [
       {
