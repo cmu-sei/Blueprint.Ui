@@ -154,7 +154,7 @@ export class MselImageService extends BaseService {
 
     /**
      * Sets the image of a Msel
-     * Replaces the Msel\&#39;s image with a PNG, JPEG, GIF or WebP file of 2 MB or less, and returns the updated Msel.
+     * Replaces the Msel\&#39;s image with a PNG, JPEG, GIF or WebP file of 2 MB or less, and returns the updated Msel. A larger file answers 400, except that a request body over 2 MB + 64 KB is refused with 413 before it is read.
      * @param id The id of the Msel
      * @param toUpload 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.

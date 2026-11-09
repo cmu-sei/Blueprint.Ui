@@ -166,165 +166,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
             + (msel.showGroupOnAssessorView ? 1 : 0)
             + (msel.showTimeOnAssessorView ? 1 : 0)
             + (msel.showIntegrationTargetOnAssessorView ? 1 : 0)">
-            <div class="event-detail-split">
-              <div class="evidence-panel">
-                <div class="statements-header">
-                  <mat-icon fontIcon="mdi-clipboard-text-outline" class="mdi-18px" />
-                  <span>xAPI Evidence — Move {{ row.moveNumber }}</span>
-                  @if (getMoveStatements(row.moveNumber).length > 0) {
-                    <span class="statement-count">{{ getFilteredMoveStatements(row.moveNumber).length }} / {{ getMoveStatements(row.moveNumber).length }}</span>
-                  }
-                  <div class="evidence-filters">
-                    @if (teamList.length > 0) {
-                    <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
-                      <mat-label>Team</mat-label>
-                      <mat-select [value]="getSectionTeams('move-' + row.moveNumber)" (selectionChange)="filterByTeams('move-' + row.moveNumber, $event.value)" multiple>
-                        @for (team of teamList; track team.id) {
-                          <mat-option [value]="team.id">{{ team.shortName }}</mat-option>
-                        }
-                      </mat-select>
-                    </mat-form-field>
-                    }
-                    <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
-                      <mat-label>Source</mat-label>
-                      <mat-select [value]="getSectionSources('move-' + row.moveNumber)" (selectionChange)="filterBySources('move-' + row.moveNumber, $event.value)" multiple>
-                        <mat-option value="blueprint">Blueprint</mat-option>
-                        <mat-option value="cite">CITE</mat-option>
-                        <mat-option value="steamfitter">Steamfitter</mat-option>
-                        <mat-option value="player">Player</mat-option>
-                        <mat-option value="gallery">Gallery</mat-option>
-                      </mat-select>
-                    </mat-form-field>
-                    <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
-                      <mat-label>Verb</mat-label>
-                      <mat-select [value]="getSectionVerbs('move-' + row.moveNumber)" (selectionChange)="filterByVerbs('move-' + row.moveNumber, $event.value)" multiple>
-                        @for (verb of availableVerbs; track verb) {
-                          <mat-option [value]="verb">{{ verb }}</mat-option>
-                        }
-                      </mat-select>
-                    </mat-form-field>
-                  </div>
-                  <button mat-icon-button class="refresh-button" (click)="refreshStatements()"
-                    title="Refresh xAPI statements" [disabled]="statementsLoading">
-                    <mat-icon class="mdi-18px" fontIcon="mdi-refresh" />
-                  </button>
-                </div>
-                @if (loadingStatements.has('_all')) {
-                  <mat-progress-bar mode="indeterminate" />
-                } @else if (getMoveStatements(row.moveNumber).length === 0) {
-                  <div class="no-statements">No xAPI statements found for this move.</div>
-                } @else {
-                  <div class="statements-list">
-                    @for (stmt of getFilteredMoveStatements(row.moveNumber); track $index) {
-                      <div class="statement-entry">
-                        <div class="statement-row" (click)="toggleStatement(stmt.id)"
-                          [class.statement-expanded]="expandedStatementIds.has(stmt.id)">
-                          <button mat-icon-button class="copy-button" (click)="copyStatement(stmt, $event)" title="Copy JSON">
-                            <mat-icon class="mdi-14px" fontIcon="mdi-content-copy" />
-                          </button>
-                          <span class="statement-time">{{ formatTimestamp(stmt.timestamp) }}</span>
-                          <span class="stmt-move">{{ getMovePart(stmt) }}</span>
-                          <span class="stmt-group">{{ getGroupPart(stmt) }}</span>
-                          <span class="platform-badge" [ngClass]="getPlatformClass(stmt)">{{ stmt.context?.platform || '?' }}</span>
-                          <span class="stmt-actor">{{ getActorLabel(stmt) }}</span>
-                          <span class="stmt-team">{{ stmt.context?.team?.name || '' }}</span>
-                          <span class="stmt-verb">{{ stmt.verb?.display?.['en-US'] || stmt.verb?.id?.split('/').pop() || '?' }}</span>
-                          <span class="stmt-object">{{ stmt.object?.definition?.name?.['en-US'] || stmt.object?.id || '?' }}</span>
-                        </div>
-                        @if (expandedStatementIds.has(stmt.id)) {
-                          <div class="statement-json">
-                            @for (section of getStatementSections(stmt); track section.key) {
-                              <div class="json-section" (click)="toggleJsonSection(stmt.id, section.key); $event.stopPropagation()">
-                                <span class="json-toggle">{{ isJsonSectionExpanded(stmt.id, section.key) ? '▼' : '▶' }}</span>
-                                <span class="json-key">"{{ section.key }}"</span>:
-                                @if (!isJsonSectionExpanded(stmt.id, section.key)) {
-                                  <span class="json-preview">{{ section.preview || '{...}' }}</span>
-                                } @else {
-                                  <pre class="json-value">{{ formatJson(section.value) }}</pre>
-                                }
-                              </div>
-                            }
-                          </div>
-                        }
-                      </div>
-                    }
-                  </div>
-                }
-              </div>
-              @if (getMoveCompetencies(row.moveNumber).length > 0) {
-                <div class="assessment-panel">
-                  <div class="assessment-header">
-                    <mat-icon fontIcon="mdi-clipboard-check-outline" class="mdi-18px" />
-                    <span>Move {{ row.moveNumber }} — Competency Assessment</span>
-                  </div>
-                  @if (teamList.length > 0) {
-                    <mat-form-field class="assessment-team-field" subscriptSizing="dynamic">
-                      <mat-label>Assess Team</mat-label>
-                      <mat-select [value]="getAssertionTeam('move-' + row.moveNumber)" (selectionChange)="setAssertionTeam('move-' + row.moveNumber, $event.value)">
-                        <mat-option value="">None</mat-option>
-                        @for (team of getTeamsForContext('move-' + row.moveNumber); track team.id) {
-                          <mat-option [value]="team.id">{{ team.shortName }}</mat-option>
-                        }
-                      </mat-select>
-                    </mat-form-field>
-                  }
-                  <div class="competency-ratings">
-                    @for (comp of getMoveCompetencies(row.moveNumber); track comp.id) {
-                      <div class="rating-card" [class.rating-submitted]="isRatingSubmitted('move-' + row.moveNumber, comp.id)">
-                        <div class="rating-comp-id" [matTooltip]="getCompetencyTooltip(comp)" matTooltipPosition="above">{{ comp.idNumber }}</div>
-                        <mat-form-field class="rating-level-field" subscriptSizing="dynamic">
-                          <mat-label>Rating</mat-label>
-                          <mat-select [value]="getRating('move-' + row.moveNumber, comp.id).levelId"
-                            (selectionChange)="setRatingLevel('move-' + row.moveNumber, comp.id, $event.value)">
-                            @for (level of proficiencyLevels; track level.id) {
-                              <mat-option [value]="level.id" [title]="level.description">{{ level.name }} ({{ level.value }})</mat-option>
-                            }
-                          </mat-select>
-                        </mat-form-field>
-                        <mat-form-field class="rating-comment-field" subscriptSizing="dynamic">
-                          <mat-label>Comment</mat-label>
-                          <input matInput [value]="getRating('move-' + row.moveNumber, comp.id).comment"
-                            (input)="setRatingComment('move-' + row.moveNumber, comp.id, $event.target.value)" />
-                        </mat-form-field>
-                        <div class="rating-actions">
-                          <button mat-icon-button class="rating-submit-button"
-                            [disabled]="!canSubmitRating('move-' + row.moveNumber, comp.id)"
-                            (click)="submitRating('move-' + row.moveNumber, comp.id)"
-                            title="Submit assertion">
-                            <mat-icon class="mdi-18px" fontIcon="mdi-send" />
-                          </button>
-                          @if (isRatingSubmitted('move-' + row.moveNumber, comp.id)) {
-                            <span class="rating-submitted-indicator">
-                              <mat-icon fontIcon="mdi-check-circle" class="mdi-14px" />
-                              Submitted
-                            </span>
-                          }
-                        </div>
-                      </div>
-                    }
-                  </div>
-                  @if (hasAnyRatings('move-' + row.moveNumber)) {
-                    <div class="assessment-actions">
-                      <button mat-stroked-button
-                        [disabled]="!hasAnySubmittableRatings('move-' + row.moveNumber)"
-                        (click)="submitAllRatings('move-' + row.moveNumber)"
-                        class="submit-all-button">
-                        <mat-icon fontIcon="mdi-send-check" class="mdi-18px" />
-                        Submit All
-                      </button>
-                    </div>
-                  }
-                </div>
-              } @else {
-                <div class="assessment-panel assessment-panel-empty">
-                  <div class="assessment-header assessment-header-inactive">
-                    <mat-icon fontIcon="mdi-clipboard-check-outline" class="mdi-18px" />
-                    <span>Competency Assessment</span>
-                  </div>
-                  <div class="no-competencies">No competencies in this move.</div>
-                </div>
-              }
-            </div>
+            <ng-container [ngTemplateOutlet]="detailPanel"
+              [ngTemplateOutletContext]="{ sectionKey: 'move-' + row.moveNumber, contextKey: 'move-' + row.moveNumber, moveNumber: row.moveNumber, scope: 'Move ' + row.moveNumber, noun: 'move' }" />
           </td>
         </tr>
         }
@@ -355,165 +198,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
             + (msel.showGroupOnAssessorView ? 1 : 0)
             + (msel.showTimeOnAssessorView ? 1 : 0)
             + (msel.showIntegrationTargetOnAssessorView ? 1 : 0)">
-            <div class="event-detail-split">
-              <div class="evidence-panel">
-                <div class="statements-header">
-                  <mat-icon fontIcon="mdi-clipboard-text-outline" class="mdi-18px" />
-                  <span>xAPI Evidence — Group {{ row.groupNumber }}</span>
-                  @if (getGroupStatements(row.groupKey).length > 0) {
-                    <span class="statement-count">{{ getFilteredGroupStatements(row.groupKey).length }} / {{ getGroupStatements(row.groupKey).length }}</span>
-                  }
-                  <div class="evidence-filters">
-                    @if (teamList.length > 0) {
-                    <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
-                      <mat-label>Team</mat-label>
-                      <mat-select [value]="getSectionTeams('group-' + row.groupKey)" (selectionChange)="filterByTeams('group-' + row.groupKey, $event.value)" multiple>
-                        @for (team of teamList; track team.id) {
-                          <mat-option [value]="team.id">{{ team.shortName }}</mat-option>
-                        }
-                      </mat-select>
-                    </mat-form-field>
-                    }
-                    <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
-                      <mat-label>Source</mat-label>
-                      <mat-select [value]="getSectionSources('group-' + row.groupKey)" (selectionChange)="filterBySources('group-' + row.groupKey, $event.value)" multiple>
-                        <mat-option value="blueprint">Blueprint</mat-option>
-                        <mat-option value="cite">CITE</mat-option>
-                        <mat-option value="steamfitter">Steamfitter</mat-option>
-                        <mat-option value="player">Player</mat-option>
-                        <mat-option value="gallery">Gallery</mat-option>
-                      </mat-select>
-                    </mat-form-field>
-                    <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
-                      <mat-label>Verb</mat-label>
-                      <mat-select [value]="getSectionVerbs('group-' + row.groupKey)" (selectionChange)="filterByVerbs('group-' + row.groupKey, $event.value)" multiple>
-                        @for (verb of availableVerbs; track verb) {
-                          <mat-option [value]="verb">{{ verb }}</mat-option>
-                        }
-                      </mat-select>
-                    </mat-form-field>
-                  </div>
-                  <button mat-icon-button class="refresh-button" (click)="refreshStatements()"
-                    title="Refresh xAPI statements" [disabled]="statementsLoading">
-                    <mat-icon class="mdi-18px" fontIcon="mdi-refresh" />
-                  </button>
-                </div>
-                @if (loadingStatements.has('_all')) {
-                  <mat-progress-bar mode="indeterminate" />
-                } @else if (getGroupStatements(row.groupKey).length === 0) {
-                  <div class="no-statements">No xAPI statements found for this group.</div>
-                } @else {
-                  <div class="statements-list">
-                    @for (stmt of getFilteredGroupStatements(row.groupKey); track $index) {
-                      <div class="statement-entry">
-                        <div class="statement-row" (click)="toggleStatement(stmt.id)"
-                          [class.statement-expanded]="expandedStatementIds.has(stmt.id)">
-                          <button mat-icon-button class="copy-button" (click)="copyStatement(stmt, $event)" title="Copy JSON">
-                            <mat-icon class="mdi-14px" fontIcon="mdi-content-copy" />
-                          </button>
-                          <span class="statement-time">{{ formatTimestamp(stmt.timestamp) }}</span>
-                          <span class="stmt-move">{{ getMovePart(stmt) }}</span>
-                          <span class="stmt-group">{{ getGroupPart(stmt) }}</span>
-                          <span class="platform-badge" [ngClass]="getPlatformClass(stmt)">{{ stmt.context?.platform || '?' }}</span>
-                          <span class="stmt-actor">{{ getActorLabel(stmt) }}</span>
-                          <span class="stmt-team">{{ stmt.context?.team?.name || '' }}</span>
-                          <span class="stmt-verb">{{ stmt.verb?.display?.['en-US'] || stmt.verb?.id?.split('/').pop() || '?' }}</span>
-                          <span class="stmt-object">{{ stmt.object?.definition?.name?.['en-US'] || stmt.object?.id || '?' }}</span>
-                        </div>
-                        @if (expandedStatementIds.has(stmt.id)) {
-                          <div class="statement-json">
-                            @for (section of getStatementSections(stmt); track section.key) {
-                              <div class="json-section" (click)="toggleJsonSection(stmt.id, section.key); $event.stopPropagation()">
-                                <span class="json-toggle">{{ isJsonSectionExpanded(stmt.id, section.key) ? '▼' : '▶' }}</span>
-                                <span class="json-key">"{{ section.key }}"</span>:
-                                @if (!isJsonSectionExpanded(stmt.id, section.key)) {
-                                  <span class="json-preview">{{ section.preview || '{...}' }}</span>
-                                } @else {
-                                  <pre class="json-value">{{ formatJson(section.value) }}</pre>
-                                }
-                              </div>
-                            }
-                          </div>
-                        }
-                      </div>
-                    }
-                  </div>
-                }
-              </div>
-              @if (getGroupCompetencies(row.groupKey).length > 0) {
-                <div class="assessment-panel">
-                  <div class="assessment-header">
-                    <mat-icon fontIcon="mdi-clipboard-check-outline" class="mdi-18px" />
-                    <span>Group {{ row.groupNumber }} — Competency Assessment</span>
-                  </div>
-                  @if (teamList.length > 0) {
-                    <mat-form-field class="assessment-team-field" subscriptSizing="dynamic">
-                      <mat-label>Assess Team</mat-label>
-                      <mat-select [value]="getAssertionTeam('group-' + row.groupKey)" (selectionChange)="setAssertionTeam('group-' + row.groupKey, $event.value)">
-                        <mat-option value="">None</mat-option>
-                        @for (team of getTeamsForContext('group-' + row.groupKey); track team.id) {
-                          <mat-option [value]="team.id">{{ team.shortName }}</mat-option>
-                        }
-                      </mat-select>
-                    </mat-form-field>
-                  }
-                  <div class="competency-ratings">
-                    @for (comp of getGroupCompetencies(row.groupKey); track comp.id) {
-                      <div class="rating-card" [class.rating-submitted]="isRatingSubmitted('group-' + row.groupKey, comp.id)">
-                        <div class="rating-comp-id" [matTooltip]="getCompetencyTooltip(comp)" matTooltipPosition="above">{{ comp.idNumber }}</div>
-                        <mat-form-field class="rating-level-field" subscriptSizing="dynamic">
-                          <mat-label>Rating</mat-label>
-                          <mat-select [value]="getRating('group-' + row.groupKey, comp.id).levelId"
-                            (selectionChange)="setRatingLevel('group-' + row.groupKey, comp.id, $event.value)">
-                            @for (level of proficiencyLevels; track level.id) {
-                              <mat-option [value]="level.id" [title]="level.description">{{ level.name }} ({{ level.value }})</mat-option>
-                            }
-                          </mat-select>
-                        </mat-form-field>
-                        <mat-form-field class="rating-comment-field" subscriptSizing="dynamic">
-                          <mat-label>Comment</mat-label>
-                          <input matInput [value]="getRating('group-' + row.groupKey, comp.id).comment"
-                            (input)="setRatingComment('group-' + row.groupKey, comp.id, $event.target.value)" />
-                        </mat-form-field>
-                        <div class="rating-actions">
-                          <button mat-icon-button class="rating-submit-button"
-                            [disabled]="!canSubmitRating('group-' + row.groupKey, comp.id)"
-                            (click)="submitRating('group-' + row.groupKey, comp.id)"
-                            title="Submit assertion">
-                            <mat-icon class="mdi-18px" fontIcon="mdi-send" />
-                          </button>
-                          @if (isRatingSubmitted('group-' + row.groupKey, comp.id)) {
-                            <span class="rating-submitted-indicator">
-                              <mat-icon fontIcon="mdi-check-circle" class="mdi-14px" />
-                              Submitted
-                            </span>
-                          }
-                        </div>
-                      </div>
-                    }
-                  </div>
-                  @if (hasAnyRatings('group-' + row.groupKey)) {
-                    <div class="assessment-actions">
-                      <button mat-stroked-button
-                        [disabled]="!hasAnySubmittableRatings('group-' + row.groupKey)"
-                        (click)="submitAllRatings('group-' + row.groupKey)"
-                        class="submit-all-button">
-                        <mat-icon fontIcon="mdi-send-check" class="mdi-18px" />
-                        Submit All
-                      </button>
-                    </div>
-                  }
-                </div>
-              } @else {
-                <div class="assessment-panel assessment-panel-empty">
-                  <div class="assessment-header assessment-header-inactive">
-                    <mat-icon fontIcon="mdi-clipboard-check-outline" class="mdi-18px" />
-                    <span>Competency Assessment</span>
-                  </div>
-                  <div class="no-competencies">No competencies in this group.</div>
-                </div>
-              }
-            </div>
+            <ng-container [ngTemplateOutlet]="detailPanel"
+              [ngTemplateOutletContext]="{ sectionKey: 'group-' + row.groupKey, contextKey: 'group-' + row.groupKey, moveNumber: row.moveNumber, scope: 'Group ' + row.groupNumber, noun: 'group' }" />
           </td>
         </tr>
         }
@@ -590,167 +276,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
             + (msel.showGroupOnAssessorView ? 1 : 0)
             + (msel.showTimeOnAssessorView ? 1 : 0)
             + (msel.showIntegrationTargetOnAssessorView ? 1 : 0)">
-            <div class="event-detail-split">
-              <!-- Left: xAPI Evidence -->
-              <div class="evidence-panel">
-                <div class="statements-header">
-                  <mat-icon fontIcon="mdi-clipboard-text-outline" class="mdi-18px" />
-                  <span>xAPI Evidence</span>
-                  @if (getStatements(row.event.id).length > 0) {
-                    <span class="statement-count">{{ getFilteredStatements(row.event.id).length }} / {{ getStatements(row.event.id).length }}</span>
-                  }
-                  <div class="evidence-filters">
-                    @if (teamList.length > 0) {
-                    <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
-                      <mat-label>Team</mat-label>
-                      <mat-select [value]="getSectionTeams('event-' + row.event.id)" (selectionChange)="filterByTeams('event-' + row.event.id, $event.value)" multiple>
-                        @for (team of teamList; track team.id) {
-                          <mat-option [value]="team.id">{{ team.shortName }}</mat-option>
-                        }
-                      </mat-select>
-                    </mat-form-field>
-                    }
-                    <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
-                      <mat-label>Source</mat-label>
-                      <mat-select [value]="getSectionSources('event-' + row.event.id)" (selectionChange)="filterBySources('event-' + row.event.id, $event.value)" multiple>
-                        <mat-option value="blueprint">Blueprint</mat-option>
-                        <mat-option value="cite">CITE</mat-option>
-                        <mat-option value="steamfitter">Steamfitter</mat-option>
-                        <mat-option value="player">Player</mat-option>
-                        <mat-option value="gallery">Gallery</mat-option>
-                      </mat-select>
-                    </mat-form-field>
-                    <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
-                      <mat-label>Verb</mat-label>
-                      <mat-select [value]="getSectionVerbs('event-' + row.event.id)" (selectionChange)="filterByVerbs('event-' + row.event.id, $event.value)" multiple>
-                        @for (verb of availableVerbs; track verb) {
-                          <mat-option [value]="verb">{{ verb }}</mat-option>
-                        }
-                      </mat-select>
-                    </mat-form-field>
-                  </div>
-                  <button mat-icon-button class="refresh-button" (click)="refreshStatements()"
-                    title="Refresh xAPI statements" [disabled]="isLoading(row.event.id)">
-                    <mat-icon class="mdi-18px" fontIcon="mdi-refresh" />
-                  </button>
-                </div>
-                @if (isLoading(row.event.id)) {
-                  <mat-progress-bar mode="indeterminate" />
-                } @else if (getStatements(row.event.id).length === 0) {
-                  <div class="no-statements">No xAPI statements found for this event.</div>
-                } @else {
-                  <div class="statements-list">
-                    @for (stmt of getFilteredStatements(row.event.id); track $index) {
-                      <div class="statement-entry">
-                        <div class="statement-row" (click)="toggleStatement(stmt.id)"
-                          [class.statement-expanded]="expandedStatementIds.has(stmt.id)">
-                          <button mat-icon-button class="copy-button" (click)="copyStatement(stmt, $event)" title="Copy JSON">
-                            <mat-icon class="mdi-14px" fontIcon="mdi-content-copy" />
-                          </button>
-                          <span class="statement-time">{{ formatTimestamp(stmt.timestamp) }}</span>
-                          <span class="stmt-move">{{ getMovePart(stmt) }}</span>
-                          <span class="stmt-group">{{ getGroupPart(stmt) }}</span>
-                          <span class="platform-badge" [ngClass]="getPlatformClass(stmt)">{{ stmt.context?.platform || '?' }}</span>
-                          <span class="stmt-actor">{{ getActorLabel(stmt) }}</span>
-                          <span class="stmt-team">{{ stmt.context?.team?.name || '' }}</span>
-                          <span class="stmt-verb">{{ stmt.verb?.display?.['en-US'] || stmt.verb?.id?.split('/').pop() || '?' }}</span>
-                          <span class="stmt-object">{{ stmt.object?.definition?.name?.['en-US'] || stmt.object?.id || '?' }}</span>
-                        </div>
-                        @if (expandedStatementIds.has(stmt.id)) {
-                          <div class="statement-json">
-                            @for (section of getStatementSections(stmt); track section.key) {
-                              <div class="json-section" (click)="toggleJsonSection(stmt.id, section.key); $event.stopPropagation()">
-                                <span class="json-toggle">{{ isJsonSectionExpanded(stmt.id, section.key) ? '▼' : '▶' }}</span>
-                                <span class="json-key">"{{ section.key }}"</span>:
-                                @if (!isJsonSectionExpanded(stmt.id, section.key)) {
-                                  <span class="json-preview">{{ section.preview || '{...}' }}</span>
-                                } @else {
-                                  <pre class="json-value">{{ formatJson(section.value) }}</pre>
-                                }
-                              </div>
-                            }
-                          </div>
-                        }
-                      </div>
-                    }
-                  </div>
-                }
-              </div>
-              <!-- Right: Competency Assessment -->
-              @if (getEventCompetencies(row.event.id).length > 0) {
-                <div class="assessment-panel">
-                  <div class="assessment-header">
-                    <mat-icon fontIcon="mdi-clipboard-check-outline" class="mdi-18px" />
-                    <span>Competency Assessment</span>
-                  </div>
-                  @if (teamList.length > 0) {
-                    <mat-form-field class="assessment-team-field" subscriptSizing="dynamic">
-                      <mat-label>Assess Team</mat-label>
-                      <mat-select [value]="getAssertionTeam(row.event.id)" (selectionChange)="setAssertionTeam(row.event.id, $event.value)">
-                        <mat-option value="">None</mat-option>
-                        @for (team of getTeamsForContext(row.event.id); track team.id) {
-                          <mat-option [value]="team.id">{{ team.shortName }}</mat-option>
-                        }
-                      </mat-select>
-                    </mat-form-field>
-                  }
-                  <div class="competency-ratings">
-                    @for (comp of getEventCompetencies(row.event.id); track comp.id) {
-                      <div class="rating-card" [class.rating-submitted]="isRatingSubmitted(row.event.id, comp.id)">
-                        <div class="rating-comp-id" [matTooltip]="getCompetencyTooltip(comp)" matTooltipPosition="above">{{ comp.idNumber }}</div>
-                        <mat-form-field class="rating-level-field" subscriptSizing="dynamic">
-                          <mat-label>Rating</mat-label>
-                          <mat-select [value]="getRating(row.event.id, comp.id).levelId"
-                            (selectionChange)="setRatingLevel(row.event.id, comp.id, $event.value)">
-                            @for (level of proficiencyLevels; track level.id) {
-                              <mat-option [value]="level.id" [title]="level.description">{{ level.name }} ({{ level.value }})</mat-option>
-                            }
-                          </mat-select>
-                        </mat-form-field>
-                        <mat-form-field class="rating-comment-field" subscriptSizing="dynamic">
-                          <mat-label>Comment</mat-label>
-                          <input matInput [value]="getRating(row.event.id, comp.id).comment"
-                            (input)="setRatingComment(row.event.id, comp.id, $event.target.value)" />
-                        </mat-form-field>
-                        <div class="rating-actions">
-                          <button mat-icon-button class="rating-submit-button"
-                            [disabled]="!canSubmitRating(row.event.id, comp.id)"
-                            (click)="submitRating(row.event.id, comp.id)"
-                            title="Submit assertion">
-                            <mat-icon class="mdi-18px" fontIcon="mdi-send" />
-                          </button>
-                          @if (isRatingSubmitted(row.event.id, comp.id)) {
-                            <span class="rating-submitted-indicator">
-                              <mat-icon fontIcon="mdi-check-circle" class="mdi-14px" />
-                              Submitted
-                            </span>
-                          }
-                        </div>
-                      </div>
-                    }
-                  </div>
-                  @if (hasAnyRatings(row.event.id)) {
-                    <div class="assessment-actions">
-                      <button mat-stroked-button
-                        [disabled]="!hasAnySubmittableRatings(row.event.id)"
-                        (click)="submitAllRatings(row.event.id)"
-                        class="submit-all-button">
-                        <mat-icon fontIcon="mdi-send-check" class="mdi-18px" />
-                        Submit All
-                      </button>
-                    </div>
-                  }
-                </div>
-              } @else {
-                <div class="assessment-panel assessment-panel-empty">
-                  <div class="assessment-header assessment-header-inactive">
-                    <mat-icon fontIcon="mdi-clipboard-check-outline" class="mdi-18px" />
-                    <span>Competency Assessment</span>
-                  </div>
-                  <div class="no-competencies">No competencies on this event.</div>
-                </div>
-              }
-            </div>
+            <ng-container [ngTemplateOutlet]="detailPanel"
+              [ngTemplateOutletContext]="{ sectionKey: 'event-' + row.event.id, contextKey: row.event.id, moveNumber: row.moveNumber, scope: '', noun: 'event' }" />
           </td>
         </tr>
         }
@@ -762,3 +289,235 @@ project root for license information or contact permission@sei.cmu.edu for full 
   }
   }
 </div>
+
+<!--
+  An opened move, group or event: its xAPI evidence, its competency assessment and,
+  on a MSEL using CITE, the chosen team's CITE answers.
+  sectionKey keys the evidence filters and lists (move-N, group-N-M, event-<id>);
+  contextKey keys the assessment (move-N, group-N-M, the bare event id).
+  scope names the row in the panel titles ('' for an event); noun is move, group or event.
+-->
+<ng-template #detailPanel let-sectionKey="sectionKey" let-contextKey="contextKey" let-moveNumber="moveNumber"
+  let-scope="scope" let-noun="noun">
+  @let statements = getSectionStatements(sectionKey);
+  @let statementList = getSectionStatementList(sectionKey);
+  @let competencies = getContextCompetencies(contextKey);
+  <div class="event-detail-split">
+    <!-- Left: xAPI Evidence -->
+    <div class="evidence-panel">
+      <div class="statements-header">
+        <mat-icon fontIcon="mdi-clipboard-text-outline" class="mdi-18px" />
+        <span>xAPI Evidence{{ scope ? ' — ' + scope : '' }}</span>
+        @if (statements.length > 0) {
+          <span class="statement-count">{{ statementList.filtered.length }} / {{ statements.length }}</span>
+        }
+        <div class="evidence-filters">
+          @if (teamList.length > 0) {
+          <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
+            <mat-label>Team</mat-label>
+            <mat-select [value]="getSectionTeams(sectionKey)" (selectionChange)="filterByTeams(sectionKey, $event.value)" multiple>
+              @for (team of teamList; track team.id) {
+                <mat-option [value]="team.id">{{ team.shortName }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          }
+          <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
+            <mat-label>Source</mat-label>
+            <mat-select [value]="getSectionSources(sectionKey)" (selectionChange)="filterBySources(sectionKey, $event.value)" multiple>
+              <mat-option value="blueprint">Blueprint</mat-option>
+              <mat-option value="cite">CITE</mat-option>
+              <mat-option value="steamfitter">Steamfitter</mat-option>
+              <mat-option value="player">Player</mat-option>
+              <mat-option value="gallery">Gallery</mat-option>
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
+            <mat-label>Verb</mat-label>
+            <mat-select [value]="getSectionVerbs(sectionKey)" (selectionChange)="filterByVerbs(sectionKey, $event.value)" multiple>
+              @for (verb of availableVerbs; track verb) {
+                <mat-option [value]="verb">{{ verb }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field class="evidence-filter-field" subscriptSizing="dynamic">
+            <mat-label>Group by</mat-label>
+            <mat-select [value]="statementGrouping" (selectionChange)="setStatementGrouping($event.value)">
+              @if (userGroupingAvailable) {
+                <mat-option value="user">User</mat-option>
+              }
+              <mat-option value="team">Team</mat-option>
+              <mat-option value="off">Off</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <button mat-icon-button class="refresh-button" (click)="refreshStatements()"
+          aria-label="Refresh evidence"
+          [matTooltip]="msel.useCite ? 'Reload the xAPI statements and the CITE answers shown' : 'Reload the xAPI statements'"
+          [disabled]="statementsLoading">
+          <mat-icon class="mdi-18px" fontIcon="mdi-refresh" />
+        </button>
+      </div>
+      @if (loadingStatements.has('_all')) {
+        <mat-progress-bar mode="indeterminate" />
+      } @else if (statements.length === 0) {
+        <div class="no-statements">No xAPI statements found for this {{ noun }}.</div>
+      } @else {
+        <div class="statements-list">
+          @for (item of statementList.items; track item.key) {
+            @if (item.group; as group) {
+              @let groupExpanded = isStatementGroupExpanded(sectionKey, group.key);
+              @let first = group.statements[0];
+              <div class="statement-entry">
+                <div class="statement-row statement-group-row" role="button" tabindex="0"
+                  [attr.aria-expanded]="groupExpanded"
+                  [class.statement-expanded]="groupExpanded"
+                  (click)="toggleStatementGroup(sectionKey, group.key)"
+                  (keydown.enter)="toggleStatementGroup(sectionKey, group.key)"
+                  (keydown.space)="$event.preventDefault(); toggleStatementGroup(sectionKey, group.key)">
+                  <span class="statement-group-count" [title]="group.statements.length + ' statements'">×{{ group.statements.length }}</span>
+                  <!-- The range takes two lines, so it is no wider than one statement's time. -->
+                  <span class="statement-time statement-time-range">
+                    <span class="statement-time-start">{{ group.timeStart }}</span>
+                    @if (group.timeEnd) {
+                      <span class="statement-time-end">– {{ group.timeEnd }}</span>
+                    }
+                  </span>
+                  <span class="stmt-move">{{ getMovePart(first) }}</span>
+                  <span class="stmt-group">{{ getGroupPart(first) }}</span>
+                  <span class="platform-badge" [ngClass]="getPlatformClass(first)">{{ first.context?.platform || '?' }}</span>
+                  <span class="stmt-actor">{{ group.actorLabel }}</span>
+                  <span class="stmt-team">{{ first.context?.team?.name || '' }}</span>
+                  <span class="stmt-verb">{{ first.verb?.display?.['en-US'] || first.verb?.id?.split('/').pop() || '?' }}</span>
+                  <span class="stmt-object">{{ first.object?.definition?.name?.['en-US'] || first.object?.id || '?' }}</span>
+                </div>
+              </div>
+            } @else {
+            @let stmt = item.stmt;
+            <div class="statement-entry" [class.statement-member]="item.member">
+              <div class="statement-row" (click)="toggleStatement(stmt.id)"
+                [class.statement-expanded]="expandedStatementIds.has(stmt.id)">
+                <button mat-icon-button class="copy-button" (click)="copyStatement(stmt, $event)" title="Copy JSON">
+                  <mat-icon class="mdi-14px" fontIcon="mdi-content-copy" />
+                </button>
+                <span class="statement-time">{{ formatTimestamp(stmt.timestamp) }}</span>
+                <span class="stmt-move">{{ getMovePart(stmt) }}</span>
+                <span class="stmt-group">{{ getGroupPart(stmt) }}</span>
+                <span class="platform-badge" [ngClass]="getPlatformClass(stmt)">{{ stmt.context?.platform || '?' }}</span>
+                <span class="stmt-actor">{{ getActorLabel(stmt) }}</span>
+                <span class="stmt-team">{{ stmt.context?.team?.name || '' }}</span>
+                <span class="stmt-verb">{{ stmt.verb?.display?.['en-US'] || stmt.verb?.id?.split('/').pop() || '?' }}</span>
+                <span class="stmt-object">{{ stmt.object?.definition?.name?.['en-US'] || stmt.object?.id || '?' }}</span>
+              </div>
+              @if (expandedStatementIds.has(stmt.id)) {
+                <div class="statement-json">
+                  @for (section of getStatementSections(stmt); track section.key) {
+                    <div class="json-section" (click)="toggleJsonSection(stmt.id, section.key); $event.stopPropagation()">
+                      <span class="json-toggle">{{ isJsonSectionExpanded(stmt.id, section.key) ? '▼' : '▶' }}</span>
+                      <span class="json-key">"{{ section.key }}"</span>:
+                      @if (!isJsonSectionExpanded(stmt.id, section.key)) {
+                        <span class="json-preview">{{ section.preview || '{...}' }}</span>
+                      } @else {
+                        <pre class="json-value">{{ formatJson(section.value) }}</pre>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+            }
+          }
+        </div>
+      }
+    </div>
+    <!-- Right: Competency Assessment -->
+    @if (competencies.length > 0) {
+      <div class="assessment-panel">
+        <div class="assessment-header">
+          <mat-icon fontIcon="mdi-clipboard-check-outline" class="mdi-18px" />
+          <span>{{ scope ? scope + ' — ' : '' }}Competency Assessment</span>
+        </div>
+        @if (teamList.length > 0) {
+          <mat-form-field class="assessment-team-field" subscriptSizing="dynamic">
+            <mat-label>Assess Team</mat-label>
+            <mat-select [value]="getAssertionTeam(contextKey)" (selectionChange)="setAssertionTeam(contextKey, $event.value)">
+              <mat-option value="">None</mat-option>
+              @for (team of getTeamsForContext(contextKey); track team.id) {
+                <mat-option [value]="team.id">{{ team.shortName }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        }
+        <div class="competency-ratings">
+          @for (comp of competencies; track comp.id) {
+            @let submitted = isRatingSubmitted(contextKey, comp.id);
+            @let rating = getRating(contextKey, comp.id);
+            <div class="rating-card" [class.rating-submitted]="submitted">
+              <div class="rating-card-header">
+                <div class="rating-comp-id" [matTooltip]="getCompetencyTooltip(comp)" matTooltipPosition="above">{{ comp.idNumber }}</div>
+                <div class="rating-actions">
+                  <button mat-icon-button class="rating-submit-button"
+                    [disabled]="!canSubmitRating(contextKey, comp.id)"
+                    (click)="submitRating(contextKey, comp.id)"
+                    title="Submit assertion">
+                    <mat-icon class="mdi-18px" fontIcon="mdi-send" />
+                  </button>
+                  @if (submitted) {
+                    <span class="rating-submitted-indicator">
+                      <mat-icon fontIcon="mdi-check-circle" class="mdi-14px" />
+                      Submitted
+                    </span>
+                  }
+                </div>
+              </div>
+              <div class="rating-fields">
+                <mat-form-field class="rating-level-field" subscriptSizing="dynamic">
+                  <mat-label>Rating</mat-label>
+                  <mat-select [value]="rating.levelId"
+                    (selectionChange)="setRatingLevel(contextKey, comp.id, $event.value)">
+                    @for (level of proficiencyLevels; track level.id) {
+                      <mat-option [value]="level.id" [title]="level.description">{{ level.name }} ({{ level.value }})</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+                <mat-form-field class="rating-comment-field" subscriptSizing="dynamic">
+                  <mat-label>Comment</mat-label>
+                  <textarea matInput cdkTextareaAutosize cdkAutosizeMinRows="1" [value]="rating.comment"
+                    (input)="setRatingComment(contextKey, comp.id, $event.target.value)"></textarea>
+                </mat-form-field>
+              </div>
+            </div>
+          }
+        </div>
+        @if (hasAnyRatings(contextKey)) {
+          <div class="assessment-actions">
+            <button mat-stroked-button
+              [disabled]="!hasAnySubmittableRatings(contextKey)"
+              (click)="submitAllRatings(contextKey)"
+              class="submit-all-button">
+              <mat-icon fontIcon="mdi-send-check" class="mdi-18px" />
+              Submit All
+            </button>
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="assessment-panel assessment-panel-empty">
+        <div class="assessment-header assessment-header-inactive">
+          <mat-icon fontIcon="mdi-clipboard-check-outline" class="mdi-18px" />
+          <span>Competency Assessment</span>
+        </div>
+        <div class="no-competencies">No competencies {{ noun === 'event' ? 'on' : 'in' }} this {{ noun }}.</div>
+      </div>
+    }
+    @if (msel.useCite && teamList.length > 0 && competencies.length > 0) {
+      @let teamResponses = getTeamResponses(contextKey, moveNumber);
+      <app-team-responses class="assessment-panel team-responses-panel"
+        [responses]="teamResponses?.responses ?? null"
+        [loading]="teamResponses?.loading ?? false"
+        [error]="teamResponses?.error ?? null"
+        [teamName]="getTeamShortName(getAssertionTeam(contextKey))"
+        prompt="Choose a team in Assess Team to see its CITE answers." />
+    }
+  </div>
+</ng-template>

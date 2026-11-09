@@ -1,0 +1,67 @@
+<!--
+Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+Released under a MIT (SEI)-style license. See LICENSE.md in the
+project root for license information.
+-->
+<div class="top-toolbar">
+  <div class="sp-icon">
+    <mat-icon class="mdi-24px" fontIcon="mdi-clipboard-list-outline" [style.color]="'var(--mat-sys-primary)'" />
+  </div>
+  <span class="toolbar-title">Scoring Model</span>
+  @if (source === 'link' && canEdit()) {
+  <span class="edit-buttons-span">
+    <button mat-icon-button (click)="saveChanges()" style="outline: none;" title="Save Changes" [disabled]="!isChanged">
+      <mat-icon class="mdi-24px self-center" fontIcon="mdi-content-save-outline" />
+    </button>
+    <button mat-icon-button (click)="cancelChanges()" style="outline: none;" title="Cancel Changes" [disabled]="!isChanged">
+      <mat-icon class="mdi-24px self-center" fontIcon="mdi-close-circle-outline" />
+    </button>
+  </span>
+  @if (isChanged) {
+  <mat-label class="change-span">Changes have not been saved!</mat-label>
+  }
+  }
+</div>
+<div class="content-area">
+  @if (msel.id) {
+  <p class="source-help">
+    The CITE evaluation is built from this scoring model when the integrations are pushed.
+    @if (integrationsLocked()) {
+    It is locked while the integrations are deployed; Remove Integrations on the Config tab unlocks it.
+    }
+  </p>
+  <mat-radio-group class="source-group" aria-label="Scoring model source" [value]="source"
+    [disabled]="!canEdit()" (change)="onSourceChange($event.value)">
+    <mat-radio-button value="link"
+      matTooltip="Build the CITE evaluation from a scoring model that already exists in CITE and is maintained there.">Link a CITE scoring model</mat-radio-button>
+    <mat-radio-button value="author"
+      matTooltip="Write the scoring model here with the MSEL; Blueprint creates it in CITE when the integrations are pushed.">Author it in Blueprint</mat-radio-button>
+  </mat-radio-group>
+  @if (source === 'author') {
+  <app-msel-scoring-model [mselId]="msel.id" [scoringModel]="authoredScoringModel" [canEdit]="canEdit()"
+    [citeScoringModels]="scoringModelList" (scoringModelChange)="authoredScoringModel = $event" />
+  } @else {
+  <div class="link-row">
+    @if (scoringModelList.length > 0 && canEdit()) {
+    <mat-form-field class="link-select" subscriptSizing="dynamic">
+      <mat-label>CITE Scoring Model</mat-label>
+      <mat-select [(ngModel)]="msel.citeScoringModelId" (selectionChange)="isChanged = true">
+        <mat-option [value]="">-- None --</mat-option>
+        @for (scoringModel of scoringModelList; track scoringModel.id) {
+        <mat-option [value]="scoringModel.id">{{ scoringModel.description }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+    } @else if (msel.citeScoringModelId) {
+    <span class="link-label">CITE Scoring Model:</span>
+    <span class="link-guid" [title]="msel.citeScoringModelId">{{ msel.citeScoringModelId }}</span>
+    @if (linkedScoringModelName()) {
+    <span class="link-name">{{ linkedScoringModelName() }}</span>
+    }
+    } @else {
+    <span class="link-none">No CITE scoring model is linked.</span>
+    }
+  </div>
+  }
+  }
+</div>

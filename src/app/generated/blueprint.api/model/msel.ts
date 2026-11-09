@@ -28,8 +28,8 @@ import { Move } from './move';
 import { MselItemStatus } from './mselItemStatus';
 import { Team } from './team';
 import { IntegrationType } from './integrationType';
-import { SteamfitterScenarioStartMode } from './steamfitterScenarioStartMode';
 import { PlayerApplication } from './playerApplication';
+import { SteamfitterScenarioStartMode } from './steamfitterScenarioStartMode';
 
 
 export interface Msel { 

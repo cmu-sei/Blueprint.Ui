@@ -1,0 +1,64 @@
+// Copyright 2026 Carnegie Mellon University. All Rights Reserved.
+// Released under a MIT (SEI)-style license. See LICENSE.md in the
+// project root for license information.
+
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+// the picker and summary rows keep their height; the editor below them takes the rest
+.authored {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  gap: 4px;
+  width: 100%;
+}
+
+.authored-summary,
+.authored-start,
+.authored-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.authored-actions {
+  margin-left: auto;
+}
+
+.authored-name {
+  font-weight: 500;
+}
+
+.authored-counts,
+.authored-none {
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.authored-unsaved {
+  color: orangered;
+}
+
+.authored-warning,
+.authored-error {
+  color: var(--mat-sys-error);
+}
+
+.start-from {
+  min-width: 320px;
+}
+
+// the field grows with its hint, so the row keeps to its top and the button sits beside the field, not its hint
+.authored-start {
+  align-items: flex-start;
+
+  > button {
+    margin-top: 10px;
+  }
+}

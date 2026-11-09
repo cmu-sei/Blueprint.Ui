@@ -32,6 +32,12 @@ export interface MselEdit {
     useSteamfitter?: boolean;
     steamfitterIntegrationType?: IntegrationType;
     steamfitterScenarioStartMode?: SteamfitterScenarioStartMode;
+    useCaster?: boolean;
+    /**
+     * The Caster directory a push deploys from, which the caller must be able to view.
+     */
+    casterDirectoryId?: string | null;
+    casterIntegrationType?: IntegrationType;
     isTemplate?: boolean;
     startTime?: Date;
     durationSeconds?: number;

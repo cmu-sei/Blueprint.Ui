@@ -25,13 +25,14 @@ describe('UIDataService', () => {
     expect(ui.isNavCollapsed()).toBeUndefined();
     expect(ui.useRealTime()).toBeUndefined();
     expect(ui.getVisibleDataFieldColumns()).toEqual([]);
+    expect(ui.getStatementGrouping()).toBeUndefined();
     expect(ui.isItemExpanded('anything')).toBe(false);
   });
 
   /**
    * Verifies: every setter persists to localStorage and a new service instance restores the saved state.
    * Interacts with: UIDataService setters/getters, localStorage.
-   * Data: tab, admin tab, theme, nav, real-time and visible column choices.
+   * Data: tab, admin tab, theme, nav, real-time, visible column and statement grouping choices.
    */
   it('persists choices and restores them in a new instance', () => {
     const ui = new UIDataService();
@@ -41,6 +42,7 @@ describe('UIDataService', () => {
     ui.setNavCollapsed(true);
     ui.setUseRealTime(true);
     ui.setVisibleDataFieldColumns(['Title', 'Assigned To']);
+    ui.setStatementGrouping('user');
 
     expect(saved()).toMatchObject({
       selectedMselTab: 'Scenario Events',
@@ -49,6 +51,7 @@ describe('UIDataService', () => {
       navCollapsed: true,
       useRealTime: true,
       visibleDataFieldColumns: ['Title', 'Assigned To'],
+      statementGrouping: 'user',
     });
 
     const restored = new UIDataService();
@@ -58,6 +61,7 @@ describe('UIDataService', () => {
     expect(restored.isNavCollapsed()).toBe(true);
     expect(restored.useRealTime()).toBe(true);
     expect(restored.getVisibleDataFieldColumns()).toEqual(['Title', 'Assigned To']);
+    expect(restored.getStatementGrouping()).toBe('user');
   });
 
   /**
