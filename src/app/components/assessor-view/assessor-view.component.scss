@@ -494,6 +494,11 @@ td {
   background-color: var(--mat-sys-surface-container-lowest);
 }
 
+.team-responses-panel {
+  flex: 3;
+  min-width: 260px;
+}
+
 .assessment-header {
   display: flex;
   align-items: center;
