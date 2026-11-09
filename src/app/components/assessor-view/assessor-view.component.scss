@@ -200,6 +200,7 @@ td {
 
 .statements-header {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
   font-weight: 500;
@@ -251,6 +252,28 @@ td {
 
 .statement-expanded {
   background-color: var(--mat-sys-surface-container);
+}
+
+// A group of repeated statements: the count stands where a statement has its Copy JSON button.
+.statement-group-count {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 10px;
+  text-align: center;
+  white-space: nowrap;
+  background-color: var(--mat-sys-secondary-container);
+  color: var(--mat-sys-on-secondary-container);
+}
+
+.statement-group-row:focus-visible {
+  outline: 2px solid var(--mat-sys-primary);
+  outline-offset: -2px;
+}
+
+// The statements of an expanded group, marked off from the rows around them.
+.statement-member .statement-row {
+  box-shadow: inset 3px 0 0 var(--mat-sys-secondary);
 }
 
 .statement-json {
@@ -449,13 +472,20 @@ td {
 
 .evidence-filters {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   align-items: center;
   gap: 8px;
   margin-left: auto;
+  // the filters wrap inside the evidence panel rather than running over the
+  // Competency Assessment beside it on a narrow screen
+  min-width: 0;
+  max-width: 100%;
 }
 
 .evidence-filter-field {
-  min-width: 120px;
+  flex: 1 1 96px;
+  min-width: 96px;
   max-width: 200px;
   font-size: 12px;
 }
