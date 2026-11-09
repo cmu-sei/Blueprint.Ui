@@ -524,7 +524,7 @@ describe('AssessorViewComponent', () => {
     });
 
     /**
-     * Verifies: when the API removed every actor's identity, Group by offers only Team and Off, and a group is labeled Team member.
+     * Verifies: when the API removed every actor's identity, Group by offers only Team and Off, and a group is labeled Names hidden, as it cannot tell one person from several.
      * Interacts with: MselStore (hideNamesOnAssessorView set), Group by mat-select options, statementGroupActorLabel.
      * Data: MSEL hides names; three Blue statements on one article whose actors carry only objectType Agent.
      */
@@ -534,7 +534,7 @@ describe('AssessorViewComponent', () => {
         { hideNames: true },
       );
 
-      expect(rowsShown()).toEqual([['×3', 'Team member', 'Blue Team']]);
+      expect(rowsShown()).toEqual([['×3', 'Names hidden', 'Blue Team']]);
       await user.click(screen.getByRole('combobox', { name: 'Group by' }));
       expect((await screen.findAllByRole('option')).map((o) => o.textContent.trim())).toEqual(['Team', 'Off']);
     });
@@ -570,6 +570,144 @@ describe('AssessorViewComponent', () => {
       await openMoveWith([statement('s-1', 0, { actor: MASKED })]);
 
       expect(rowsShown()).toEqual([['', 'Unknown', 'Blue Team']]);
+    });
+
+    /**
+     * Verifies: on a MSEL that hides names, a person the API sent no identity for on a statement with no team (a facilitator's launch) is a hidden name, not a team member.
+     * Interacts with: MselStore (hideNamesOnAssessorView set), getActorLabel.
+     * Data: MSEL hides names; one Blueprint launched statement with no context.team whose actor carries only objectType Agent.
+     */
+    it('calls a person with no team a hidden name when the MSEL hides names', async () => {
+      await openMoveWith(
+        [statement('s-1', 0, {
+          actor: MASKED,
+          context: { platform: 'blueprint', contextActivities: { grouping: [{ id: 'https://blueprint.example/move/1' }] } },
+        })],
+        { hideNames: true },
+      );
+
+      expect(rowsShown()).toEqual([['', 'Name hidden', '']]);
+    });
+
+    /**
+     * Verifies: an actor the API sent with only an email address (as it does for the MSEL's owner) is shown by that address, not as a team member.
+     * Interacts with: MselStore (hideNamesOnAssessorView set), getActorLabel, agentName.
+     * Data: MSEL hides names; one Blue statement whose actor is mailto:pat@example.com.
+     */
+    it('shows the email address the API sent on a MSEL that hides names', async () => {
+      await openMoveWith([statement('s-1', 0, { actor: { objectType: 'Agent', mbox: 'mailto:pat@example.com' } })], { hideNames: true });
+
+      expect(rowsShown()).toEqual([['', 'pat@example.com', 'Blue Team']]);
+    });
+
+    /**
+     * Verifies: a Group actor with no name is Unknown, not one team member, since the API never strips a group's own identity.
+     * Interacts with: MselStore (hideNamesOnAssessorView set), getActorLabel, isAnonymousActor.
+     * Data: MSEL hides names; one Blue statement whose actor is a Group with no name.
+     */
+    it('calls a group actor with no name Unknown when the MSEL hides names', async () => {
+      await openMoveWith([statement('s-1', 0, { actor: { objectType: 'Group' } })], { hideNames: true });
+
+      expect(rowsShown()).toEqual([['', 'Unknown', 'Blue Team']]);
+    });
+
+    /**
+     * Verifies: a statement about a person whose identity the API removed shows Name hidden in the object column, and a named one shows the name.
+     * Interacts with: MselStore (hideNamesOnAssessorView set), getObjectLabel, isAnonymousAgentObject.
+     * Data: MSEL hides names; grouping Off; two Blue statements whose objects are an Agent with only objectType, then Ann Analyst.
+     */
+    it('shows a person a statement is about as a hidden name', async () => {
+      localStorage.setItem('uiState', JSON.stringify({ statementGrouping: 'off' }));
+      await openMoveWith(
+        [statement('s-1', 0, { object: undefined }), statement('s-2', 1, { object: undefined })].map((stmt, i) => ({
+          ...stmt,
+          object: i === 0 ? MASKED : ANN,
+        })),
+        { hideNames: true },
+      );
+
+      expect(Array.from(document.querySelectorAll('.stmt-object'), (e) => e.textContent)).toEqual(['Name hidden', 'Ann Analyst']);
+    });
+
+    /**
+     * Verifies: actors whose account has a homePage but no name are not told apart, so User grouping is not offered for them.
+     * Interacts with: Group by mat-select options, hasAgentIdentity, agentIdentityKey.
+     * Data: MSEL shows names; three Blue statements whose actors carry only account.homePage https://lrs.example.
+     */
+    it('does not offer User grouping for accounts with no name', async () => {
+      const { user } = await openMoveWith(
+        [0, 1, 2].map((m) => statement(`s-${m}`, m, { actor: { objectType: 'Agent', account: { homePage: 'https://lrs.example' } } })),
+      );
+
+      await user.click(screen.getByRole('combobox', { name: 'Group by' }));
+      expect((await screen.findAllByRole('option')).map((o) => o.textContent.trim())).toEqual(['Team', 'Off']);
+    });
+
+    /** The preview beside an opened statement's actor section ('{...}' when it has none). */
+    const actorPreview = () =>
+      Array.from(document.querySelectorAll('.json-section'))
+        .find((section) => section.querySelector('.json-key')?.textContent === '"actor"')
+        ?.querySelector('.json-preview')?.textContent;
+
+    /**
+     * Verifies: on a MSEL that shows names, an opened statement whose actor has no identity previews its actor section as {...}, as before, not as Unknown.
+     * Interacts with: toggleStatement (row clicked), getStatementSections.
+     * Data: MSEL shows names; one Blue statement whose actor carries only objectType Agent.
+     */
+    it('previews an actor with no name as {...} when the MSEL shows names', async () => {
+      const { user } = await openMoveWith([statement('s-1', 0, { actor: MASKED })]);
+
+      await user.click(screen.getByText('Unknown'));
+
+      expect(actorPreview()).toBe('{...}');
+    });
+
+    describe('when the MSEL starts hiding names', () => {
+      const statements = () => TestBed.inject(HttpTestingController);
+      const hideNames = () => TestBed.inject(MselStore).update('msel-1', { hideNamesOnAssessorView: true });
+      const isFullRead = (req: { url: string; params: { get(name: string): string | null; has(name: string): boolean } }) =>
+        req.url === '/api/xapi/statements' && req.params.get('mselId') === 'msel-1' && !req.params.has('since');
+
+      /**
+       * Verifies: hiding names on an open Assessor View reads every statement again, so the names already on screen, in the rows and an opened statement's preview, are replaced by what the API now sends.
+       * Interacts with: MselStore update (as a MselUpdated broadcast does), reloadStatements, HttpClient GET api/xapi/statements without since (HttpTestingController), getStatementSections.
+       * Data: MSEL shows names; one Blue statement by Ann Analyst, opened; the MSEL then hides names and the API sends it back masked.
+       */
+      it('reads the statements again without the names', async () => {
+        const { fixture, user } = await openMoveWith([statement('s-1', 0)]);
+        await user.click(screen.getByText('Ann Analyst'));
+        expect(actorPreview()).toBe('Ann Analyst');
+
+        hideNames();
+        statements().expectOne(isFullRead).flush({ statements: [statement('s-1', 0, { actor: MASKED })] });
+        fixture.detectChanges();
+
+        expect(rowsShown()).toEqual([['', 'Team member', 'Blue Team']]);
+        expect(screen.queryByText('Ann Analyst')).not.toBeInTheDocument();
+        // The statement stays open, and its preview is rebuilt from the masked statement.
+        expect(actorPreview()).toBe('Team member');
+      });
+
+      /**
+       * Verifies: a refresh under way when names are hidden is dropped, since the API answered it with the names, and every statement is read again.
+       * Interacts with: refreshStatements (Refresh evidence clicked), MselStore update, restartStatementsIfStale, HttpTestingController.
+       * Data: MSEL shows names; one Blue statement by Ann Analyst; Refresh is clicked, the MSEL hides names, then the refresh answers with a newer Bo Builder statement.
+       */
+      it('drops a refresh that was under way and reads again', async () => {
+        const { fixture, user } = await openMoveWith([statement('s-1', 0)]);
+        await user.click(screen.getAllByRole('button', { name: 'Refresh evidence' })[0]);
+        const refresh = statements().expectOne((req) => req.url === '/api/xapi/statements' && req.params.has('since'));
+
+        hideNames();
+        refresh.flush({ statements: [statement('s-2', 1, { actor: BO })] });
+        statements()
+          .expectOne(isFullRead)
+          .flush({ statements: [statement('s-1', 0, { actor: MASKED }), statement('s-2', 1, { actor: MASKED })] });
+        fixture.detectChanges();
+
+        expect(rowsShown()).toEqual([['×2', 'Names hidden', 'Blue Team']]);
+        expect(screen.queryByText(/Ann Analyst|Bo Builder/)).not.toBeInTheDocument();
+      });
     });
 
     /**
@@ -688,7 +826,7 @@ describe('AssessorViewComponent', () => {
       );
 
       expect(screen.getByRole('combobox', { name: 'Group by' })).toHaveTextContent('Team');
-      expect(rowsShown()).toEqual([['×3', 'Team member', 'Blue Team']]);
+      expect(rowsShown()).toEqual([['×3', 'Names hidden', 'Blue Team']]);
       expect(JSON.parse(localStorage.getItem('uiState')).statementGrouping).toBe('user');
     });
 

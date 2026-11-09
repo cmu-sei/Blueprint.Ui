@@ -877,12 +877,27 @@ describe('MselInfoComponent', () => {
     });
 
     /**
-     * Verifies: without EditMsels or an editing role the box is shown but cannot be changed.
-     * Interacts with: canEditMsel, real PermissionDataService (stubbed grants).
-     * Data: every permission but EditMsels; the Viewer role; a MSEL that hides names.
+     * Verifies: the MSEL's owner can change the box without EditMsels, as the API's MSEL update allows.
+     * Interacts with: canUpdateMsel, real PermissionDataService (stubbed grants).
+     * Data: every permission but EditMsels; the Owner role; a MSEL that hides names.
      */
-    it('shows hiding names read-only without EditMsels or an editing role', async () => {
-      await renderInfo({ permissions: allBut(SystemPermission.EditMsels), myRoles: [MselRole.Viewer], mselExtra: { hideNamesOnAssessorView: true } });
+    it('lets the MSEL owner change hiding names', async () => {
+      await renderInfo({ permissions: allBut(SystemPermission.EditMsels), myRoles: [MselRole.Owner], mselExtra: { hideNamesOnAssessorView: true } });
+
+      expect(box()).toBeEnabled();
+    });
+
+    /**
+     * Verifies: without EditMsels the box is read-only to everyone but the owner, including an Editor, whom it hides names from
+     * and whose save the API's MSEL update refuses.
+     * Interacts with: canUpdateMsel, real PermissionDataService (stubbed grants).
+     * Data: every permission but EditMsels; the Viewer role, then the Editor role; a MSEL that hides names.
+     */
+    it.each([
+      { label: 'a Viewer', role: MselRole.Viewer },
+      { label: 'an Editor', role: MselRole.Editor },
+    ])('shows hiding names read-only to $label without EditMsels', async ({ role }) => {
+      await renderInfo({ permissions: allBut(SystemPermission.EditMsels), myRoles: [role], mselExtra: { hideNamesOnAssessorView: true } });
 
       expect(box()).toBeChecked();
       expect(box()).toBeDisabled();

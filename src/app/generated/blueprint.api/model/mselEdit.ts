@@ -57,6 +57,9 @@ export interface MselEdit {
     showMoveOnAssessorView?: boolean;
     showGroupOnAssessorView?: boolean;
     showIntegrationTargetOnAssessorView?: boolean;
+    /**
+     * Leaves out who each xAPI statement is about when the Assessor View lists them, so an assessor rates the team\'s work without seeing its members\' names. The MSEL\'s owners and anyone with ViewMsels still see the names. The statements in the LRS are unchanged.
+     */
     hideNamesOnAssessorView?: boolean;
     headerRowMetadata?: string | null;
     educationalLevel?: string | null;

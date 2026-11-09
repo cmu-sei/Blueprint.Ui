@@ -63,6 +63,7 @@ import { DurationViewComponent } from '../shared/duration-view/duration-view.com
 import { DataValueComponent } from '../data-value/data-value.component';
 import { CardEditDialogComponent } from '../card-edit-dialog/card-edit-dialog.component';
 import { TeamResponsesComponent } from '../team-responses/team-responses.component';
+import { agentIdentityKey, agentName, isAnonymousActor, isAnonymousAgentObject, XApiAgent } from 'src/app/utilities/xapi-agent';
 
 /** A team's CITE answers for one move, as the Team Responses panel shows them. */
 export interface TeamResponsesState {
@@ -89,16 +90,10 @@ const SETTLED_TEAM_RESPONSE_STATUSES: ReadonlySet<CiteTeamResponsesStatus> = new
 
 export interface XApiStatement {
   id?: string;
-  actor?: {
-    objectType?: string;
-    name?: string;
-    mbox?: string;
-    mbox_sha1sum?: string;
-    openid?: string;
-    account?: { homePage?: string; name?: string };
-  };
+  actor?: XApiAgent;
   verb?: { id?: string; display?: { 'en-US'?: string } };
-  object?: { id?: string; definition?: { name?: { 'en-US'?: string }; type?: string; extensions?: Record<string, any> } };
+  /** An activity, or an Agent or Group when the statement is about a person or a team. */
+  object?: XApiAgent & { id?: string; definition?: { name?: { 'en-US'?: string }; type?: string; extensions?: Record<string, any> } };
   result?: {
     score?: { raw?: number; scaled?: number; min?: number; max?: number };
     completion?: boolean;
@@ -131,6 +126,7 @@ export interface StatementGroup {
   timeStart: string;
   timeEnd: string;
   actorLabel: string;
+  objectLabel: string;
 }
 
 /** One row of a statement list: a group header, or a statement (alone, or inside an expanded group). */
@@ -139,6 +135,9 @@ export interface StatementListItem {
   group?: StatementGroup;
   stmt?: XApiStatement;
   member?: boolean;
+  /** A statement row's actor and object columns, worked out once when the list is built. */
+  actorLabel?: string;
+  objectLabel?: string;
 }
 
 interface StatementListCacheEntry {
@@ -316,10 +315,14 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
       .subscribe(msel => {
         if (msel) {
           const mselChanged = this.msel.id !== msel.id;
+          const hidingChanged = !mselChanged && !!this.msel.hideNamesOnAssessorView !== !!msel.hideNamesOnAssessorView;
           this.msel = { ...msel } as MselPlus;
           if (mselChanged) {
             this.resetTeamResponses();
             this.resetAssertionTeams();
+          }
+          if (hidingChanged) {
+            this.reloadStatements();
           }
           if (mselChanged && msel.id) {
             this.mselCompetencyDataService.loadByMsel(msel.id);
@@ -608,6 +611,7 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
     this.http.get<any>(`${baseUrl}api/xapi/statements`, { params })
       .subscribe({
         next: (response) => {
+          if (this.restartStatementsIfStale()) return;
           const statements = response?.statements || response || [];
           const newStmts: XApiStatement[] = Array.isArray(statements) ? statements : [];
           const existingIds = new Set(this.allMselStatements.map(s => s.id));
@@ -624,21 +628,44 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
           this.loadingStatements.delete('_all');
         },
         error: () => {
+          if (this.restartStatementsIfStale()) return;
           this.statementsLoading = false;
           this.loadingStatements.delete('_all');
         }
       });
   }
 
-  /**
-   * Who a statement is about. On a MSEL that hides names, the API leaves out everyone but the team
-   * for an assessor, so a statement with no name or account is about one of the team's members.
-   */
+  /** Who a statement is about, for its actor column; Unknown when the statement does not say. */
   getActorLabel(stmt: XApiStatement): string {
-    const actor = stmt.actor;
-    const label = actor?.name || actor?.account?.name;
-    if (label) return label;
-    return this.hidesNames ? 'Team member' : 'Unknown';
+    return this.actorName(stmt) || 'Unknown';
+  }
+
+  /** What a statement is about, for its object column; ? when the statement does not say. */
+  getObjectLabel(stmt: XApiStatement): string {
+    return this.objectName(stmt) || '?';
+  }
+
+  /**
+   * The actor's name, account name, email address or OpenID, whichever the API sent. On a MSEL that
+   * hides names, the API removes all of them for an assessor, so a person it sent no identity for is
+   * a member of the statement's team, or, with no team (a facilitator's launch, say), a hidden name.
+   * '' when the statement names no one for any other reason.
+   */
+  private actorName(stmt: XApiStatement): string {
+    const name = agentName(stmt.actor);
+    if (name) return name;
+    if (this.hidesNames && isAnonymousActor(stmt.actor)) {
+      return stmt.context?.team?.name ? 'Team member' : 'Name hidden';
+    }
+    return '';
+  }
+
+  /** The activity's name or id, or the person or team the statement is about; '' when it has none. */
+  private objectName(stmt: XApiStatement): string {
+    const object = stmt.object;
+    const name = object?.definition?.name?.['en-US'] || agentName(object) || object?.id;
+    if (name) return name;
+    return this.hidesNames && isAnonymousAgentObject(object) ? 'Name hidden' : '';
   }
 
   getPlatformClass(stmt: XApiStatement): string {
@@ -663,6 +690,8 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
   private allMselStatements: XApiStatement[] = [];
   private statementsLoaded = false;
   statementsLoading = false;
+  /** Set when names were hidden or shown while a read was under way, so its answer is out of date. */
+  private statementsStale = false;
 
   toggleEvent(eventId: string) {
     if (this.expandedEventIds.has(eventId)) {
@@ -914,12 +943,12 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
     stmts.forEach((stmt, i) => {
       const key = mode === 'off' ? null : this.statementGroupKey(stmt, mode);
       if (key === null) {
-        groups.push({ key: `s:${i}:${stmt.id ?? ''}`, statements: [stmt], newest: '', timeStart: '', timeEnd: '', actorLabel: '' });
+        groups.push({ key: `s:${i}:${stmt.id ?? ''}`, statements: [stmt], newest: '', timeStart: '', timeEnd: '', actorLabel: '', objectLabel: '' });
         return;
       }
       let group = byKey.get(key);
       if (!group) {
-        group = { key: `g:${key}`, statements: [], newest: '', timeStart: '', timeEnd: '', actorLabel: '' };
+        group = { key: `g:${key}`, statements: [], newest: '', timeStart: '', timeEnd: '', actorLabel: '', objectLabel: '' };
         byKey.set(key, group);
         groups.push(group);
       }
@@ -934,6 +963,7 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
         group.timeStart = this.formatTimestamp(stmts[0].timestamp);
         group.timeEnd = this.formatRangeEnd(stmts[0].timestamp, stmts[stmts.length - 1].timestamp);
         group.actorLabel = this.statementGroupActorLabel(stmts, mode);
+        group.objectLabel = this.getObjectLabel(stmts[0]);
       }
     }
     // Array.prototype.sort is stable, so groups with the same newest time keep their order.
@@ -944,15 +974,19 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
     const items: StatementListItem[] = [];
     for (const group of groups) {
       if (group.statements.length === 1) {
-        items.push({ key: group.key, stmt: group.statements[0] });
+        items.push(this.statementItem(group.key, group.statements[0]));
         continue;
       }
       items.push({ key: group.key, group });
       if (this.isStatementGroupExpanded(sectionKey, group.key)) {
-        group.statements.forEach((stmt, i) => items.push({ key: `${group.key}#${i}`, stmt, member: true }));
+        group.statements.forEach((stmt, i) => items.push({ ...this.statementItem(`${group.key}#${i}`, stmt), member: true }));
       }
     }
     return items;
+  }
+
+  private statementItem(key: string, stmt: XApiStatement): StatementListItem {
+    return { key, stmt, actorLabel: this.getActorLabel(stmt), objectLabel: this.getObjectLabel(stmt) };
   }
 
   /** The key repeated statements share, or null for a statement that is always its own row. */
@@ -968,7 +1002,7 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
       this.getMovePart(stmt),
       this.getGroupPart(stmt),
       this.statementEventId(stmt),
-      mode === 'user' ? this.actorIdentityKey(stmt.actor) : '',
+      mode === 'user' ? agentIdentityKey(stmt.actor) : '',
       // A scored statement is never grouped, so the score is not part of the key.
       result ? [result.success ?? null, result.completion ?? null, result.response ?? null] : null,
     ]);
@@ -993,26 +1027,15 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
   // CITE sends dod-isd verbs/submitted when a submission is completed and verbs/evaluated when it is scored.
   private static CITE_RESULT_VERB = /\/(submitted|scored|evaluated)$/;
 
-  /** Who an actor is, from the first identifier xAPI gives it; '' when the API removed them all. */
-  private actorIdentityKey(actor: XApiStatement['actor']): string {
-    if (!actor) return '';
-    if (actor.account && (actor.account.homePage || actor.account.name)) {
-      return `account:${actor.account.homePage || ''}|${actor.account.name || ''}`;
-    }
-    if (actor.mbox) return `mbox:${actor.mbox}`;
-    if (actor.mbox_sha1sum) return `sha1:${actor.mbox_sha1sum}`;
-    if (actor.openid) return `openid:${actor.openid}`;
-    if (actor.name) return `name:${actor.name}`;
-    return '';
-  }
-
   private statementGroupActorLabel(stmts: XApiStatement[], mode: StatementGrouping): string {
     if (mode === 'user') return this.getActorLabel(stmts[0]);
     const people = new Map<string, XApiStatement>();
     for (const stmt of stmts) {
-      const identity = this.actorIdentityKey(stmt.actor);
+      const identity = agentIdentityKey(stmt.actor);
       if (identity && !people.has(identity)) people.set(identity, stmt);
     }
+    // With every name hidden there is no telling whether one person did these or several.
+    if (people.size === 0 && this.hidesNames && stmts.every((stmt) => isAnonymousActor(stmt.actor))) return 'Names hidden';
     if (people.size === 0) return this.getActorLabel(stmts[0]);
     const first = this.getActorLabel(people.values().next().value);
     const others = people.size - 1;
@@ -1025,11 +1048,14 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
     return !!this.msel?.hideNamesOnAssessorView;
   }
 
-  /** User grouping is offered only when the API sent at least one agent's name or account. */
+  /**
+   * User grouping is offered only when the API sent at least one agent's identity, by the same rule
+   * the User grouping keys on, so it never offers to group people it cannot tell apart.
+   */
   private hasAgentIdentity(stmt: XApiStatement): boolean {
     const actor = stmt.actor;
     if (!actor || (actor.objectType && actor.objectType !== 'Agent')) return false;
-    return !!(actor.name || actor.account);
+    return agentIdentityKey(actor) !== '';
   }
 
   getMoveDescription(moveNumber: number): string {
@@ -1172,6 +1198,7 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
     this.http.get<any>(`${baseUrl}api/xapi/statements`, { params: { mselId: this.msel.id } })
       .subscribe({
         next: (response) => {
+          if (this.restartStatementsIfStale()) return;
           const statements = response?.statements || response || [];
           this.allMselStatements = Array.isArray(statements) ? statements : [];
           this.allMselStatements.sort((a, b) =>
@@ -1185,12 +1212,37 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
           this.buildVerbList();
         },
         error: () => {
+          if (this.restartStatementsIfStale()) return;
           this.allMselStatements = [];
           this.statementsLoaded = true;
           this.statementsLoading = false;
           this.loadingStatements.delete('_all');
         }
       });
+  }
+
+  /**
+   * Reads every statement again. The API decides whether to leave out names when it answers, so after
+   * the MSEL starts or stops hiding them the statements on screen came back the other way, and a
+   * refresh only adds newer ones. Nothing to do before the first read, which will be right.
+   */
+  private reloadStatements() {
+    if (this.statementsLoading) {
+      this.statementsStale = true;
+    } else if (this.statementsLoaded) {
+      this.statementsLoaded = false;
+      this.loadAllStatements();
+    }
+  }
+
+  /** When a read was under way as names were hidden or shown, drops its answer and reads again. */
+  private restartStatementsIfStale(): boolean {
+    if (!this.statementsStale) return false;
+    this.statementsStale = false;
+    this.statementsLoading = false;
+    this.statementsLoaded = false;
+    this.loadAllStatements();
+    return true;
   }
 
   private redistributeStatementsIfLoaded() {
@@ -1217,6 +1269,8 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
 
   private distributeStatements() {
     this.statementListCache.clear();
+    // A reload can bring the same statements back with or without names, so the previews are rebuilt too.
+    this.statementSectionsCache.clear();
     this.userGroupingAvailable = this.allMselStatements.some(s => this.hasAgentIdentity(s));
     this.eventStatements.clear();
     this.moveStatements.clear();
@@ -1633,11 +1687,11 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
       if (typeof val === 'string') {
         preview = val;
       } else if (key === 'actor') {
-        preview = this.getActorLabel(stmt);
+        preview = this.actorName(stmt);
       } else if (key === 'verb') {
         preview = val?.display?.['en-US'] || val?.id?.split('/').pop() || '';
       } else if (key === 'object') {
-        preview = val?.definition?.name?.['en-US'] || val?.id || '';
+        preview = this.objectName(stmt);
       } else if (key === 'result') {
         const parts: string[] = [];
         if (val?.score?.raw != null) parts.push(`score: ${val.score.raw}`);

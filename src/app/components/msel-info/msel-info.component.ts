@@ -528,6 +528,12 @@ export class MselInfoComponent implements OnDestroy, OnInit {
 
   // Setting the image follows the API's MSEL update rule: the owner or EditMsels.
   canSetMselImage(): boolean {
+    return this.canUpdateMsel();
+  }
+
+  // The API's MSEL update rule: the owner or EditMsels. Hiding names is held to it rather than to
+  // canEditMsel, since an Editor is one of the people it hides names from.
+  canUpdateMsel(): boolean {
     return canUpdateMsel(this.msel, this.loggedInUserId(), this.permissionDataService.hasPermission(SystemPermission.EditMsels));
   }
 
