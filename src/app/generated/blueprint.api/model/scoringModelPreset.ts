@@ -15,9 +15,14 @@
  */
 
 
-export const SerializationFormat = {
-    Xml: 'Xml',
-    Binary: 'Binary'
+/**
+ * The starting points a MSEL\'s own scoring model can be created from.
+ */
+export const ScoringModelPreset = {
+    QuestionsByMove: 'QuestionsByMove',
+    MissionImpact: 'MissionImpact',
+    Likelihood: 'Likelihood',
+    Nciss: 'Nciss'
 } as const;
-export type SerializationFormat = typeof SerializationFormat[keyof typeof SerializationFormat];
+export type ScoringModelPreset = typeof ScoringModelPreset[keyof typeof ScoringModelPreset];
 

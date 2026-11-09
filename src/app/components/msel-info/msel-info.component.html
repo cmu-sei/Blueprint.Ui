@@ -161,7 +161,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 pushStatus) {
                 <button mat-stroked-button (click)="pushIntegrations()" title="Push Integrations" class="thin-button" [disabled]="!canManageMsel() ||
                               (msel.useGallery && galleryToDo()) ||
-                              (msel.useCite && !msel.citeScoringModelId) ||
+                              (msel.useCite && !hasCiteScoringModel()) ||
                               (msel.useCite && hasCiteTeamsWithoutType()) ||
                               !!casterWarningMessage() ||
                               isBusy || isChanged || (!!pushStatus && pushStatus.startsWith('ERROR'))">@if (pushStatus &&
@@ -263,28 +263,10 @@ project root for license information or contact permission@sei.cmu.edu for full 
               <div class="integration-details">
                 <div class="integration-field">
                   <span class="integration-label">Scoring Model:</span>
-                  @if (scoringModelList.length > 0 && !integrationsLocked() && canEditMsel()) {
-                  <mat-form-field class="integration-select">
-                    <mat-select [(ngModel)]="msel.citeScoringModelId" (cut)="isChanged = true"
-                      (selectionChange)="isChanged = true; updateCiteScoringModelName()" (paste)="isChanged = true"
-                      (keypress)="isChanged = true">
-                      <mat-option [value]="" />
-                      @for (scoringModel of scoringModelList; track scoringModel) {
-                      <mat-option [value]="scoringModel.id">
-                        {{ scoringModel.description }}
-                      </mat-option>
-                      }
-                    </mat-select>
-                  </mat-form-field>
-                  }
-                  @if (scoringModelList.length === 0 || integrationsLocked() || !canEditMsel()) {
-                  @if (msel.citeScoringModelId) {
-                  <span class="integration-guid" [title]="msel.citeScoringModelId">{{ msel.citeScoringModelId }}</span>
-                  @if (citeScoringModelName) {
-                  <span class="integration-name">{{ citeScoringModelName }}</span>
-                  }
-                  }
-                  }
+                  <span class="integration-summary">{{ scoringModelSummary() }}</span>
+                  <button mat-stroked-button class="integration-tab-link" (click)="openTab.emit('Scoring Model')">
+                    Open the Scoring Model tab
+                  </button>
                 </div>
                 @if (!msel.isTemplate && msel.citeEvaluationId) {
                 <div class="integration-field">

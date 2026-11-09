@@ -15,11 +15,10 @@
  */
 
 
-export const MappingType = {
-    Element: 'Element',
-    Attribute: 'Attribute',
-    SimpleContent: 'SimpleContent',
-    Hidden: 'Hidden'
-} as const;
-export type MappingType = typeof MappingType[keyof typeof MappingType];
+/**
+ * The CITE scoring model a MSEL links, or none.
+ */
+export interface MselScoringModelLink { 
+    citeScoringModelId?: string | null;
+}
 

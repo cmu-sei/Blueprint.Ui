@@ -15,18 +15,10 @@
  */
 
 
-export interface CompetencyElement { 
-    dateCreated?: Date;
-    dateModified?: Date | null;
-    createdBy?: string;
-    modifiedBy?: string | null;
-    id?: string;
-    competencyFrameworkId?: string;
-    elementIdentifier?: string | null;
-    elementType?: string | null;
-    name?: string | null;
+export interface SeverityLevel { 
+    name: string;
+    minimumScore?: number;
+    color: string;
     description?: string | null;
-    parentId?: string | null;
-    children?: Array<CompetencyElement> | null;
 }
 

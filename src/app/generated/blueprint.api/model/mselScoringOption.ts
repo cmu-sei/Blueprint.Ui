@@ -13,14 +13,13 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-import { IComponent } from './iComponent';
-import { IContainer } from './iContainer';
 
 
-export interface ISite { 
-    component?: IComponent;
-    container?: IContainer;
-    readonly designMode?: boolean;
-    name?: string | null;
+export interface MselScoringOption { 
+    id?: string;
+    displayOrder?: number;
+    description?: string | null;
+    isModifier?: boolean;
+    value?: number;
 }
 

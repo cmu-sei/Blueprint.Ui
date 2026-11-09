@@ -15,9 +15,10 @@
  */
 
 
-export const SchemaSerializationMode = {
-    IncludeSchema: 'IncludeSchema',
-    ExcludeSchema: 'ExcludeSchema'
+export const CiteScoringOptionSelection = {
+    Single: 'Single',
+    Multiple: 'Multiple',
+    None: 'None'
 } as const;
-export type SchemaSerializationMode = typeof SchemaSerializationMode[keyof typeof SchemaSerializationMode];
+export type CiteScoringOptionSelection = typeof CiteScoringOptionSelection[keyof typeof CiteScoringOptionSelection];
 

@@ -118,7 +118,7 @@ export class PlayerApplicationService extends BaseService {
 
     /**
      * Creates a new PlayerApplication
-     * Creates a new PlayerApplication with the attributes specified &lt;para /&gt; Accessible only to a ContentDeveloper or an Administrator
+     * Creates a new PlayerApplication with the attributes specified. A PlayerApplication with no MSEL is a template. &lt;para /&gt; Accessible only to a ContentDeveloper or an Administrator
      * @param playerApplicationCreate The data used to create the PlayerApplication
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
@@ -481,7 +481,7 @@ export class PlayerApplicationService extends BaseService {
 
     /**
      * Updates a  PlayerApplication
-     * Updates a PlayerApplication with the attributes specified. The application stays in its MSEL: the MSEL cannot be changed. &lt;para /&gt; Accessible only to a ContentDeveloper or an Administrator
+     * Updates a PlayerApplication with the attributes specified. The application stays where it is: its MSEL and template flag cannot be changed. &lt;para /&gt; Accessible only to a ContentDeveloper or an Administrator
      * @param id The Id of the PlayerApplication to update
      * @param playerApplicationEdit The updated PlayerApplication values
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
