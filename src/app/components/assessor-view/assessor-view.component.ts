@@ -1635,7 +1635,7 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
 
   private loadTeamResponses(key: string, teamId: string, moveNumber: number) {
     const mselId = this.msel.id;
-    this.citeService.getMselCiteTeamResponses(mselId, teamId, moveNumber)
+    this.citeService.getMselCiteTeamResponses(mselId, moveNumber, teamId)
       .subscribe({
         next: (responses) => {
           if (this.msel.id !== mselId) return;

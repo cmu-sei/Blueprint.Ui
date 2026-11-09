@@ -117,7 +117,7 @@ async function renderAssessorView(
     teams?: Team[];
     mselCompetencies?: MselCompetency[];
     teamCompetencies?: TeamCompetency[];
-    teamResponses?: (mselId: string, teamId: string, moveNumber: number) => Observable<CiteTeamResponses>;
+    teamResponses?: (mselId: string, moveNumber: number, teamId: string) => Observable<CiteTeamResponses>;
   } = {}
 ) {
   const {
@@ -431,7 +431,7 @@ describe('AssessorViewComponent', () => {
 
       await chooseBlue(fixture, user);
 
-      expect(citeApi.getMselCiteTeamResponses).toHaveBeenCalledExactlyOnceWith('msel-1', 'team-blue', 1);
+      expect(citeApi.getMselCiteTeamResponses).toHaveBeenCalledExactlyOnceWith('msel-1', 1, 'team-blue');
       expect(panel(fixture).loading()).toBe(true);
       expect(panel(fixture).teamName()).toBe('Blue');
       answer(calls[0], ANSWERED);
@@ -457,7 +457,7 @@ describe('AssessorViewComponent', () => {
       fixture.detectChanges();
 
       expect(citeApi.getMselCiteTeamResponses).toHaveBeenCalledTimes(2);
-      expect(citeApi.getMselCiteTeamResponses).toHaveBeenLastCalledWith('msel-1', 'team-blue', 1);
+      expect(citeApi.getMselCiteTeamResponses).toHaveBeenLastCalledWith('msel-1', 1, 'team-blue');
       expect(panel(fixture).loading()).toBe(true);
       TestBed.inject(HttpTestingController).expectOne((req) => req.url === '/api/xapi/statements').flush({ statements: [] });
       answer(calls[1], ANSWERED);

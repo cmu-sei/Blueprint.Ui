@@ -51,19 +51,22 @@ export class CiteService extends BaseService {
 
     /**
      * Gets a team\&#39;s CITE answers for a move
-     * Returns what the team answered on the MSEL\&#39;s CITE scoring model for one move: per scoring category, the selected options, comments and score, plus the official and team-average submissions when the scoring model uses them. Team-level answers only; no participant\&#39;s own submission. &lt;para /&gt; When there is nothing to read, the status says why: the MSEL is not pushed to CITE, the team or the move is not in CITE, the move has not started, or CITE could not be read. &lt;para /&gt; Accessible with the ViewMsels permission, or to the MSEL\&#39;s Owners, Editors, Approvers and Evaluators
+     * Returns what the team answered on the MSEL\&#39;s CITE scoring model for one move: per scoring category, the selected options, comments and score, plus the official and team-average submissions when the scoring model uses them. Team-level answers only; no participant\&#39;s own submission. &lt;para /&gt; When there is nothing to read, the status says why: the MSEL is not pushed to CITE, the team or the move is not in CITE, the move has not started, or CITE could not be read, with a message naming what failed: Blueprint\&#39;s CITE API URL, the identity provider, or CITE, a timeout included. &lt;para /&gt; Accessible with the ViewMsels permission, or to the MSEL\&#39;s Owners, Editors, Approvers and Evaluators
      * @param mselId The MSEL
+     * @param moveNumber The move number. Required: without it the request is a 400 rather than move 0\&#39;s answers
      * @param teamId The MSEL team
-     * @param moveNumber The move number
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public getMselCiteTeamResponses(mselId: string, teamId?: string, moveNumber?: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<CiteTeamResponses>;
-    public getMselCiteTeamResponses(mselId: string, teamId?: string, moveNumber?: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<CiteTeamResponses>>;
-    public getMselCiteTeamResponses(mselId: string, teamId?: string, moveNumber?: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<CiteTeamResponses>>;
-    public getMselCiteTeamResponses(mselId: string, teamId?: string, moveNumber?: number, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public getMselCiteTeamResponses(mselId: string, moveNumber: number, teamId?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<CiteTeamResponses>;
+    public getMselCiteTeamResponses(mselId: string, moveNumber: number, teamId?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<CiteTeamResponses>>;
+    public getMselCiteTeamResponses(mselId: string, moveNumber: number, teamId?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<CiteTeamResponses>>;
+    public getMselCiteTeamResponses(mselId: string, moveNumber: number, teamId?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (mselId === null || mselId === undefined) {
             throw new Error('Required parameter mselId was null or undefined when calling getMselCiteTeamResponses.');
+        }
+        if (moveNumber === null || moveNumber === undefined) {
+            throw new Error('Required parameter moveNumber was null or undefined when calling getMselCiteTeamResponses.');
         }
 
         let localVarQueryParameters = new HttpParams({encoder: this.encoder});
