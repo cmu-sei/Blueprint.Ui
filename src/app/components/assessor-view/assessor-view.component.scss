@@ -254,6 +254,33 @@ td {
   background-color: var(--mat-sys-surface-container);
 }
 
+// Without subgrid (Chrome before 117, Safari before 16) the rows would collapse to one
+// column; each row lays its cells out in a line instead, which only loses the alignment.
+@supports not (grid-template-columns: subgrid) {
+  .statements-list,
+  .statement-entry {
+    display: block;
+  }
+
+  .statements-list .statement-entry + .statement-entry {
+    margin-top: 2px;
+  }
+
+  .statement-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    > :not(.stmt-actor, .stmt-team, .stmt-verb, .stmt-object) {
+      flex-shrink: 0;
+    }
+
+    > .stmt-object {
+      flex: 1;
+    }
+  }
+}
+
 // A group of repeated statements: the count stands where a statement has its Copy JSON button.
 .statement-group-count {
   font-size: 11px;
@@ -333,15 +360,20 @@ td {
 }
 
 .statement-time {
-  flex-shrink: 0;
   color: var(--mat-sys-on-surface-variant);
   font-family: monospace;
   font-size: 12px;
   white-space: nowrap;
 }
 
+// A group's time range: the end goes on a second line, so the column stays one timestamp wide.
+.statement-time-range {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
 .stmt-move {
-  flex-shrink: 0;
   font-family: monospace;
   font-weight: 600;
   font-size: 12px;
@@ -351,7 +383,6 @@ td {
 }
 
 .stmt-group {
-  flex-shrink: 0;
   font-family: monospace;
   font-weight: 600;
   font-size: 12px;
@@ -361,36 +392,30 @@ td {
 }
 
 .stmt-actor {
-  flex-shrink: 0;
   font-weight: 500;
   color: var(--mat-sys-on-surface);
   min-width: 0;
   max-width: 120px;
-  margin-left: 6px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .stmt-team {
-  flex-shrink: 0;
   color: var(--mat-sys-on-surface-variant);
   font-size: 12px;
   min-width: 0;
   max-width: 80px;
-  margin-left: 6px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .stmt-verb {
-  flex-shrink: 0;
   font-weight: 600;
   color: var(--mat-sys-tertiary);
   min-width: 0;
   max-width: 80px;
-  margin-left: 6px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -399,7 +424,6 @@ td {
 .stmt-object {
   color: var(--mat-sys-on-surface);
   min-width: 0;
-  margin-left: 6px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -420,8 +444,6 @@ td {
   width: 22px !important;
   height: 22px !important;
   padding: 0 !important;
-  flex-shrink: 0;
-  margin-right: 6px;
   opacity: 0.4;
   &:hover {
     opacity: 1;
@@ -497,7 +519,6 @@ td {
 }
 
 .platform-badge {
-  flex-shrink: 0;
   font-size: 11px;
   font-weight: 600;
   padding: 1px 6px;
@@ -559,14 +580,6 @@ td {
   flex: 1;
 }
 
-// The spacer takes the same width as the panel it stands in for.
-.assessment-panel-spacer {
-  flex: 3;
-  min-width: 260px;
-  max-width: 380px;
-  background-color: var(--mat-sys-surface-container-lowest);
-}
-
 .assessment-panel {
   flex: 3;
   min-width: 260px;
@@ -575,10 +588,9 @@ td {
   background-color: var(--mat-sys-surface-container-lowest);
 }
 
-// Team Responses also carries .assessment-panel, so it keeps that panel's
+// Team Responses also carries .assessment-panel, so it keeps that panel's flex,
 // padding, background and 380px cap beside the evidence and the assessment.
 .team-responses-panel {
-  flex: 3;
   min-width: 240px;
 }
 
@@ -626,6 +638,7 @@ td {
 .rating-comp-id {
   flex: 1;
   min-width: 0;
+  overflow-wrap: anywhere;
   font-family: monospace;
   font-size: 11px;
   color: var(--mat-sys-on-surface-variant);
@@ -716,8 +729,7 @@ td {
     flex-direction: column;
   }
 
-  .assessment-panel,
-  .assessment-panel-spacer {
+  .assessment-panel {
     width: 100%;
     min-width: unset;
     max-width: none;

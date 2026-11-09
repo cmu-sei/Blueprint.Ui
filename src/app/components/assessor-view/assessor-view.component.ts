@@ -57,7 +57,7 @@ import { MatIconButton, MatButton } from '@angular/material/button';
 import { MatSelect } from '@angular/material/select';
 import { MatOption } from '@angular/material/autocomplete';
 import { MatProgressBar } from '@angular/material/progress-bar';
-import { DOCUMENT, NgClass } from '@angular/common';
+import { DOCUMENT, NgClass, NgTemplateOutlet } from '@angular/common';
 import { MatTooltip } from '@angular/material/tooltip';
 import { CdkTextareaAutosize } from '@angular/cdk/text-field';
 import { DurationViewComponent } from '../shared/duration-view/duration-view.component';
@@ -128,7 +128,9 @@ export interface StatementGroup {
   statements: XApiStatement[];
   /** Timestamp of the group's newest statement, which places the group in the list. */
   newest: string;
-  timeLabel: string;
+  /** First statement's time, and the last one's ('' when the same minute; only the time on the same day). */
+  timeStart: string;
+  timeEnd: string;
   actorLabel: string;
 }
 
@@ -152,7 +154,7 @@ interface StatementListCacheEntry {
     selector: 'app-assessor-view',
     templateUrl: './assessor-view.component.html',
     styleUrls: ['./assessor-view.component.scss'],
-    imports: [MatIcon, MatSort, MatFormField, MatLabel, MatInput, FormsModule, MatIconButton, MatSuffix, MatSelect, MatOption, MatSortHeader, MatProgressBar, NgClass, MatTooltip, MatButton, CdkTextareaAutosize, DurationViewComponent, DataValueComponent, CardEditDialogComponent, TeamResponsesComponent]
+    imports: [MatIcon, MatSort, MatFormField, MatLabel, MatInput, FormsModule, MatIconButton, MatSuffix, MatSelect, MatOption, MatSortHeader, MatProgressBar, NgClass, NgTemplateOutlet, MatTooltip, MatButton, CdkTextareaAutosize, DurationViewComponent, DataValueComponent, CardEditDialogComponent, TeamResponsesComponent]
 })
 export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventView {
   private mselQuery = inject(MselQuery);
@@ -245,7 +247,8 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
   private savedStatementGrouping: StatementGrouping = 'team';
   userGroupingAvailable = false;
   private expandedStatementGroups = new Set<string>();
-  private statementGroupExpansionVersion = 0;
+  // Per section, bumped when one of its groups opens or closes, so only that section's rows are rebuilt.
+  private statementGroupExpansionVersions = new Map<string, number>();
   // Filtered and grouped statement lists per section (move-N, group-N-M, event-<id>), rebuilt
   // only when the section's statements, filters or the grouping change, not per change detection.
   private statementListCache = new Map<string, StatementListCacheEntry>();
@@ -260,8 +263,18 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
   submittedAssertions = new Set<string>();
   submittingAssertions = new Set<string>();
   assertionTeam = new Map<string, string>();
-  // Contexts whose Assess Team the user picked by hand; the Team filter never overrides those.
-  private assertionTeamPicked = new Set<string>();
+  /**
+   * Where each context's Assess Team came from:
+   * - picked: chosen by hand (None included), or a rating was started under it. Nothing else
+   *   changes it, so a draft rating is never hidden behind another team.
+   * - filter: the one team the evidence Team filter names. It follows the filter, and is
+   *   cleared when the filter no longer names exactly one team that Assess Team offers.
+   * - assertion: the team of an assertion already submitted for the context. An evidence
+   *   filter change replaces it; loading statements never replaces picked or filter.
+   */
+  private assertionTeamSource = new Map<string, 'picked' | 'filter' | 'assertion'>();
+  // Contexts whose filter preselect is up to date with the filter, the teams and the competencies.
+  private assertionTeamPreselected = new Set<string>();
 
   // Team Responses: each team's CITE answers, keyed by team and move
   private teamResponses = new Map<string, TeamResponsesState>();
@@ -307,6 +320,7 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
           this.msel = { ...msel } as MselPlus;
           if (mselChanged) {
             this.resetTeamResponses();
+            this.resetAssertionTeams();
           }
           if (mselChanged && msel.id) {
             this.mselCompetencyDataService.loadByMsel(msel.id);
@@ -393,6 +407,7 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(teams => {
         this.teamList = teams;
+        this.assertionTeamPreselected.clear();
       });
 
     this.mselCompetencyQuery.selectAll()
@@ -522,7 +537,7 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
   filterByTeams(sectionKey: string, teamIds: string[]) {
     this.sectionTeamFilter.set(sectionKey, teamIds);
     this.sectionTeamInitialized.add(sectionKey);
-    this.preselectAssertionTeam(this.contextKeyForSection(sectionKey));
+    this.preselectAssertionTeam(this.contextKeyForSection(sectionKey), true);
   }
 
   filterBySources(sectionKey: string, sources: string[]) {
@@ -572,6 +587,7 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
 
     if (matchedIds.length > 0) {
       this.sectionTeamFilter.set(sectionKey, matchedIds);
+      this.assertionTeamPreselected.delete(eventId);
     }
   }
 
@@ -800,24 +816,16 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
     return this.groupStatements.get(groupKey) || AssessorViewComponent.EMPTY_STATEMENTS;
   }
 
-  getFilteredMoveStatements(moveNumber: number): XApiStatement[] {
-    return this.getStatementList(`move-${moveNumber}`, this.getMoveStatements(moveNumber)).filtered;
+  /** All of a section's statements; sections are keyed move-N, group-N-M and event-<id>. */
+  getSectionStatements(sectionKey: string): XApiStatement[] {
+    if (sectionKey.startsWith('move-')) return this.getMoveStatements(+sectionKey.slice('move-'.length));
+    if (sectionKey.startsWith('group-')) return this.getGroupStatements(sectionKey.slice('group-'.length));
+    return this.getStatements(sectionKey.slice('event-'.length));
   }
 
-  getFilteredGroupStatements(groupKey: string): XApiStatement[] {
-    return this.getStatementList(`group-${groupKey}`, this.getGroupStatements(groupKey)).filtered;
-  }
-
-  getMoveStatementItems(moveNumber: number): StatementListItem[] {
-    return this.getStatementList(`move-${moveNumber}`, this.getMoveStatements(moveNumber)).items;
-  }
-
-  getGroupStatementItems(groupKey: string): StatementListItem[] {
-    return this.getStatementList(`group-${groupKey}`, this.getGroupStatements(groupKey)).items;
-  }
-
-  getEventStatementItems(eventId: string): StatementListItem[] {
-    return this.getStatementList(`event-${eventId}`, this.getStatements(eventId), true).items;
+  /** A section's filtered statements and the rows shown for them. */
+  getSectionStatementList(sectionKey: string): StatementListCacheEntry {
+    return this.getStatementList(sectionKey, this.getSectionStatements(sectionKey), sectionKey.startsWith('event-'));
   }
 
   /** The grouping in effect: the saved choice, or Team when User was saved but isn't offered. */
@@ -842,13 +850,14 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
     } else {
       this.expandedStatementGroups.add(key);
     }
-    this.statementGroupExpansionVersion++;
+    this.statementGroupExpansionVersions.set(sectionKey, (this.statementGroupExpansionVersions.get(sectionKey) ?? 0) + 1);
   }
 
   /**
    * A section's filtered statements, their groups and the rows shown for them, cached per
    * section. Rebuilt when one of its inputs is a different object than last time: the filter
    * selects and distributeStatements always store new arrays, so a reference check is enough.
+   * Opening or closing a group rebuilds only its own section's rows.
    */
   private getStatementList(sectionKey: string, source: XApiStatement[], isEvent = false): StatementListCacheEntry {
     const deps: unknown[] = [
@@ -859,7 +868,9 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
       this.sectionTeamFilter.get(sectionKey),
       this.teamList,
       isEvent ? this.selectedMoveNumber : null,
-      this.msel,
+      // Move numbers (getMovePart, the selected-move filter) and the Team member label
+      this.moveList,
+      this.hidesNames,
     ];
     let entry = this.statementListCache.get(sectionKey);
     if (!entry || deps.some((dep, i) => dep !== entry.deps[i])) {
@@ -874,17 +885,18 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
       };
       this.statementListCache.set(sectionKey, entry);
     }
-    if (entry.itemsVersion !== this.statementGroupExpansionVersion) {
+    const expansionVersion = this.statementGroupExpansionVersions.get(sectionKey) ?? 0;
+    if (entry.itemsVersion !== expansionVersion) {
       entry.items = this.buildStatementItems(sectionKey, entry.groups);
-      entry.itemsVersion = this.statementGroupExpansionVersion;
+      entry.itemsVersion = expansionVersion;
     }
     return entry;
   }
 
   /**
    * Collapses repeated statements: same platform, verb, object and team (and, by User, the
-   * same actor) with the same result. Groups are placed by their newest statement, oldest first
-   * like the list itself.
+   * same actor) in the same move, group and inject, with the same result. Groups are placed
+   * by their newest statement, oldest first like the list itself.
    */
   private buildStatementGroups(stmts: XApiStatement[], mode: StatementGrouping): StatementGroup[] {
     const groups: StatementGroup[] = [];
@@ -892,12 +904,12 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
     stmts.forEach((stmt, i) => {
       const key = mode === 'off' ? null : this.statementGroupKey(stmt, mode);
       if (key === null) {
-        groups.push({ key: `s:${i}:${stmt.id ?? ''}`, statements: [stmt], newest: '', timeLabel: '', actorLabel: '' });
+        groups.push({ key: `s:${i}:${stmt.id ?? ''}`, statements: [stmt], newest: '', timeStart: '', timeEnd: '', actorLabel: '' });
         return;
       }
       let group = byKey.get(key);
       if (!group) {
-        group = { key: `g:${key}`, statements: [], newest: '', timeLabel: '', actorLabel: '' };
+        group = { key: `g:${key}`, statements: [], newest: '', timeStart: '', timeEnd: '', actorLabel: '' };
         byKey.set(key, group);
         groups.push(group);
       }
@@ -909,9 +921,8 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
         if ((stmt.timestamp || '') > group.newest) group.newest = stmt.timestamp || '';
       }
       if (stmts.length > 1) {
-        const first = this.formatTimestamp(stmts[0].timestamp);
-        const last = this.formatTimestamp(stmts[stmts.length - 1].timestamp);
-        group.timeLabel = first === last ? first : `${first} – ${last}`;
+        group.timeStart = this.formatTimestamp(stmts[0].timestamp);
+        group.timeEnd = this.formatRangeEnd(stmts[0].timestamp, stmts[stmts.length - 1].timestamp);
         group.actorLabel = this.statementGroupActorLabel(stmts, mode);
       }
     }
@@ -943,9 +954,21 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
       stmt.verb?.id || '',
       stmt.object?.id || '',
       stmt.context?.team?.account?.name || '',
+      // A group row shows its first statement's move and group, so those must be the same for all of them.
+      this.getMovePart(stmt),
+      this.getGroupPart(stmt),
+      this.statementEventId(stmt),
       mode === 'user' ? this.actorIdentityKey(stmt.actor) : '',
-      result ? [result.score ?? null, result.success ?? null, result.completion ?? null, result.response ?? null] : null,
+      // A scored statement is never grouped, so the score is not part of the key.
+      result ? [result.success ?? null, result.completion ?? null, result.response ?? null] : null,
     ]);
+  }
+
+  /** The scenario event (inject) a statement was recorded against, or ''. */
+  private statementEventId(stmt: XApiStatement): string {
+    const grouping = stmt.context?.contextActivities?.grouping || [];
+    const event = grouping.find(g => (g.id || '').includes('scenarioevents/'));
+    return event ? event.id.split('scenarioevents/').pop() : '';
   }
 
   /** Competency assertions, CITE submissions and scores, and scored results each keep their own row. */
@@ -995,7 +1018,12 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
   private groupingActorLabel(stmt: XApiStatement): string {
     const label = stmt.actor?.name || stmt.actor?.account?.name;
     if (label) return label;
-    return (this.msel as Msel & { hideNamesOnAssessorView?: boolean })?.hideNamesOnAssessorView ? 'Team member' : 'Unknown';
+    return this.hidesNames ? 'Team member' : 'Unknown';
+  }
+
+  /** Whether the MSEL hides people's names on the Assessor View (not in the generated client yet). */
+  private get hidesNames(): boolean {
+    return !!(this.msel as Msel & { hideNamesOnAssessorView?: boolean })?.hideNamesOnAssessorView;
   }
 
   /** User grouping is offered only when the API sent at least one agent's name or account. */
@@ -1385,7 +1413,10 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
 
       if (teamId) {
         for (const ck of keysToPopulate) {
+          const source = this.assertionTeamSource.get(ck);
+          if (source === 'picked' || source === 'filter') continue;
           this.assertionTeam.set(ck, teamId);
+          this.assertionTeamSource.set(ck, 'assertion');
         }
       }
     }
@@ -1651,14 +1682,35 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
 
   formatTimestamp(timestamp: string): string {
     if (!timestamp) return '';
+    const { date, time } = this.timestampParts(timestamp);
+    return `${date} ${time}`;
+  }
+
+  /**
+   * The end of a time range that starts at `start`: just the time when it is on the same
+   * day, so a group's range is no wider than one timestamp; '' when it is the same minute.
+   */
+  private formatRangeEnd(start: string, end: string): string {
+    if (!end) return '';
+    const first = this.timestampParts(start);
+    const last = this.timestampParts(end);
+    if (first.date === last.date) {
+      return first.time === last.time ? '' : last.time;
+    }
+    return `${last.date} ${last.time}`;
+  }
+
+  /** '20 Oct 2026' and '12:00 EDT', in the browser's time zone. */
+  private timestampParts(timestamp: string): { date: string; time: string } {
     const d = new Date(timestamp);
     const day = String(d.getDate()).padStart(2, '0');
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const month = months[d.getMonth()];
-    const year = d.getFullYear();
     const hours = String(d.getHours()).padStart(2, '0');
     const minutes = String(d.getMinutes()).padStart(2, '0');
-    return `${day} ${month} ${year} ${hours}:${minutes} ${getTimezoneAbbr(d)}`;
+    return {
+      date: `${day} ${months[d.getMonth()]} ${d.getFullYear()}`,
+      time: `${hours}:${minutes} ${getTimezoneAbbr(d)}`,
+    };
   }
 
   // --- Competency assessment methods ---
@@ -1711,6 +1763,7 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
   private static EMPTY_COMPETENCIES: Competency[] = [];
 
   private rebuildCompetencyCaches() {
+    this.assertionTeamPreselected.clear();
     this.baseEventCompetencies.clear();
     this.baseMoveCompetencies.clear();
     this.baseGroupCompetencies.clear();
@@ -1776,6 +1829,7 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
   }
 
   private rebuildTeamCompIdSets() {
+    this.assertionTeamPreselected.clear();
     this.teamCompIdSets.clear();
     for (const tc of this.teamCompetencies) {
       if (!this.teamCompIdSets.has(tc.teamId)) this.teamCompIdSets.set(tc.teamId, new Set());
@@ -1859,6 +1913,7 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
   }
 
   setRatingLevel(contextKey: string, competencyId: string, levelId: string) {
+    this.keepAssertionTeam(contextKey);
     const key = this.ratingKey(contextKey);
     if (!this.eventRatings.has(key)) this.eventRatings.set(key, new Map());
     const existing = this.getRating(contextKey, competencyId);
@@ -1866,14 +1921,19 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
   }
 
   setRatingComment(contextKey: string, competencyId: string, comment: string) {
+    this.keepAssertionTeam(contextKey);
     const key = this.ratingKey(contextKey);
     if (!this.eventRatings.has(key)) this.eventRatings.set(key, new Map());
     const existing = this.getRating(contextKey, competencyId);
     this.eventRatings.get(key).set(competencyId, { ...existing, comment });
   }
 
+  /**
+   * The context's Assess Team. Called many times per change detection, so the filter
+   * preselect runs only after one of its inputs changed.
+   */
   getAssertionTeam(contextKey: string): string {
-    if (!this.assertionTeam.has(contextKey)) {
+    if (!this.assertionTeamPreselected.has(contextKey)) {
       this.preselectAssertionTeam(contextKey);
     }
     return this.assertionTeam.get(contextKey) ?? '';
@@ -1882,19 +1942,40 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
   /** Called when the user picks a team in Assess Team. */
   setAssertionTeam(contextKey: string, teamId: string) {
     this.assertionTeam.set(contextKey, teamId);
-    this.assertionTeamPicked.add(contextKey);
+    this.assertionTeamSource.set(contextKey, 'picked');
+  }
+
+  /** Keeps the team a rating is being written for, whatever the filter does next. */
+  private keepAssertionTeam(contextKey: string) {
+    this.assertionTeam.set(contextKey, this.getAssertionTeam(contextKey));
+    this.assertionTeamSource.set(contextKey, 'picked');
   }
 
   /**
-   * When the evidence is filtered to exactly one team that Assess Team offers,
-   * selects that team, unless the user picked a team in Assess Team by hand.
+   * Makes Assess Team follow the evidence Team filter when that names exactly one team
+   * Assess Team offers (see assertionTeamSource). An assertion's team gives way only to a
+   * filter the user changed, not to the filter an event starts with.
    */
-  private preselectAssertionTeam(contextKey: string) {
-    if (this.assertionTeamPicked.has(contextKey)) return;
+  private preselectAssertionTeam(contextKey: string, filterChanged = false) {
+    this.assertionTeamPreselected.add(contextKey);
+    const source = this.assertionTeamSource.get(contextKey);
+    if (source === 'picked' || (source === 'assertion' && !filterChanged)) return;
     const teamIds = this.getSectionTeams(this.sectionKeyForContext(contextKey));
-    if (teamIds.length !== 1) return;
-    if (!this.getTeamsForContext(contextKey).some(t => t.id === teamIds[0])) return;
-    this.assertionTeam.set(contextKey, teamIds[0]);
+    const offered = teamIds.length === 1 && this.getTeamsForContext(contextKey).some(t => t.id === teamIds[0]);
+    if (offered) {
+      this.assertionTeam.set(contextKey, teamIds[0]);
+      this.assertionTeamSource.set(contextKey, 'filter');
+    } else if (source === 'filter') {
+      this.assertionTeam.delete(contextKey);
+      this.assertionTeamSource.delete(contextKey);
+    }
+  }
+
+  /** Forgets every context's Assess Team, for another MSEL: its moves and events reuse the keys. */
+  private resetAssertionTeams() {
+    this.assertionTeam.clear();
+    this.assertionTeamSource.clear();
+    this.assertionTeamPreselected.clear();
   }
 
   // Filter sections are keyed move-N, group-N-M and event-<id>; assessment contexts
@@ -2171,7 +2252,7 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
     }
   }
 
-  private getContextCompetencies(contextKey: string): Competency[] {
+  getContextCompetencies(contextKey: string): Competency[] {
     if (contextKey.startsWith('move-')) {
       return this.getMoveCompetencies(parseInt(contextKey.replace('move-', ''), 10));
     } else if (contextKey.startsWith('group-')) {
