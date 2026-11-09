@@ -41,7 +41,7 @@ import { MoveStore } from 'src/app/data/move/move.store';
 import { MselStore } from 'src/app/data/msel/msel.store';
 import { ScenarioEventStore } from 'src/app/data/scenario-event/scenario-event.store';
 import { TeamStore } from 'src/app/data/team/team.store';
-import { AssessorViewComponent } from './assessor-view.component';
+import { AssessorViewComponent, TEAM_RESPONSES_STALE_MS } from './assessor-view.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { DurationViewComponent } from '../shared/duration-view/duration-view.component';
@@ -368,6 +368,7 @@ describe('AssessorViewComponent', () => {
       id: 'df-comp', mselId: 'msel-1', name: 'Competencies', dataType: DataFieldType.Competency, displayOrder: 4, isAssessorVisible: false,
     };
     const BLUE: Team = { id: 'team-blue', mselId: 'msel-1', name: 'Blue Team', shortName: 'Blue' };
+    const RED: Team = { id: 'team-red', mselId: 'msel-1', name: 'Red Team', shortName: 'Red' };
     const ANSWERED: CiteTeamResponses = {
       mselId: 'msel-1', teamId: 'team-blue', moveNumber: 1, status: CiteTeamResponsesStatus.Answered,
       teamSubmission: { score: 7.5, isAverage: false, categories: [] },
@@ -400,6 +401,10 @@ describe('AssessorViewComponent', () => {
       calls = [];
     });
 
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
     async function openMove(fixture: ComponentFixture<unknown>) {
       const user = userEvent.setup();
       await user.click(screen.getByText('Move 1'));
@@ -411,8 +416,22 @@ describe('AssessorViewComponent', () => {
     }
 
     async function chooseBlue(fixture: ComponentFixture<unknown>, user: ReturnType<typeof userEvent.setup>) {
-      await user.click(screen.getByRole('combobox', { name: 'Assess Team' }));
-      await user.click(await screen.findByRole('option', { name: 'Blue' }));
+      await chooseTeam(fixture, user, 'Blue');
+    }
+
+    async function chooseTeam(
+      fixture: ComponentFixture<unknown>, user: ReturnType<typeof userEvent.setup>, name: string, select = 0,
+    ) {
+      await user.click(screen.getAllByRole('combobox', { name: 'Assess Team' })[select]);
+      await user.click(await screen.findByRole('option', { name }));
+      fixture.detectChanges();
+    }
+
+    /** Collapses Move 1 and opens it again, as an Evaluator coming back to it. */
+    async function reopenMove(fixture: ComponentFixture<unknown>, user: ReturnType<typeof userEvent.setup>) {
+      await user.click(screen.getByText('Move 1'));
+      fixture.detectChanges();
+      await user.click(screen.getByText('Move 1'));
       fixture.detectChanges();
     }
 
@@ -497,6 +516,160 @@ describe('AssessorViewComponent', () => {
       expect(screen.getByText('Move 1 — Competency Assessment')).toBeInTheDocument();
       expect(panel(fixture)).toBeUndefined();
       expect(citeApi.getMselCiteTeamResponses).not.toHaveBeenCalled();
+    });
+
+    /**
+     * Verifies: a move CITE had not reached is read again when the move is shown again, so the answers appear once CITE advances.
+     * Interacts with: toggleMoveExpand (collapse, expand), ngDoCheck, CiteService.getMselCiteTeamResponses (stub).
+     * Data: Blue chosen for move 1; CITE first answers MoveNotStarted, then Answered.
+     */
+    it('reads a move that had not started again when it is shown again', async () => {
+      const { fixture, citeApi } = await renderAssessorView(assessable({ ...MSEL, useCite: true, citeEvaluationId: 'eval-1' }));
+      const user = await openMove(fixture);
+      await chooseBlue(fixture, user);
+      answer(calls[0], { ...ANSWERED, status: CiteTeamResponsesStatus.MoveNotStarted, teamSubmission: null });
+      fixture.detectChanges();
+
+      await reopenMove(fixture, user);
+
+      expect(citeApi.getMselCiteTeamResponses).toHaveBeenCalledTimes(2);
+      answer(calls[1], ANSWERED);
+      fixture.detectChanges();
+      expect(panel(fixture).responses().status).toBe(CiteTeamResponsesStatus.Answered);
+    });
+
+    /**
+     * Verifies: a failed load is read again when the move is shown again rather than kept.
+     * Interacts with: toggleMoveExpand (collapse, expand), CiteService.getMselCiteTeamResponses (stub, errors once).
+     * Data: Blue chosen for move 1; the first request fails.
+     */
+    it('reads a failed load again when it is shown again', async () => {
+      const { fixture, citeApi } = await renderAssessorView(assessable({ ...MSEL, useCite: true, citeEvaluationId: 'eval-1' }));
+      const user = await openMove(fixture);
+      await chooseBlue(fixture, user);
+      calls[0].error(new Error('500 Server Error'));
+      fixture.detectChanges();
+
+      await reopenMove(fixture, user);
+
+      expect(citeApi.getMselCiteTeamResponses).toHaveBeenCalledTimes(2);
+      expect(panel(fixture).error()).toBeNull();
+      expect(panel(fixture).loading()).toBe(true);
+    });
+
+    /**
+     * Verifies: answers stay fresh for TEAM_RESPONSES_STALE_MS, then are read again when shown, with the previous answers on screen while they load.
+     * Interacts with: toggleMoveExpand (collapse, expand), Date.now (spied), CiteService.getMselCiteTeamResponses (stub).
+     * Data: Blue's Answered result for move 1; the move reopened just inside, then just past, the window.
+     */
+    it('keeps answers fresh for a while, then reads them again when shown', async () => {
+      const now = vi.spyOn(Date, 'now').mockReturnValue(1_000_000);
+      const { fixture, citeApi } = await renderAssessorView(assessable({ ...MSEL, useCite: true, citeEvaluationId: 'eval-1' }));
+      const user = await openMove(fixture);
+      await chooseBlue(fixture, user);
+      answer(calls[0], ANSWERED);
+      fixture.detectChanges();
+
+      now.mockReturnValue(1_000_000 + TEAM_RESPONSES_STALE_MS);
+      await reopenMove(fixture, user);
+      expect(citeApi.getMselCiteTeamResponses).toHaveBeenCalledTimes(1);
+
+      now.mockReturnValue(1_000_001 + TEAM_RESPONSES_STALE_MS);
+      await reopenMove(fixture, user);
+      expect(citeApi.getMselCiteTeamResponses).toHaveBeenCalledTimes(2);
+      expect(panel(fixture).loading()).toBe(true);
+      expect(panel(fixture).responses()).toEqual(ANSWERED);
+    });
+
+    /**
+     * Verifies: an open panel left alone is not read again on a timer, but coming back to the browser tab re-reads it once stale.
+     * Interacts with: document visibilitychange, CiteService.getMselCiteTeamResponses (stub).
+     * Data: Blue chosen for move 1; CITE answers MoveNotStarted.
+     */
+    it('reads stale answers on screen again when the tab is shown', async () => {
+      const { fixture, citeApi } = await renderAssessorView(assessable({ ...MSEL, useCite: true, citeEvaluationId: 'eval-1' }));
+      const user = await openMove(fixture);
+      await chooseBlue(fixture, user);
+      answer(calls[0], { ...ANSWERED, status: CiteTeamResponsesStatus.MoveNotStarted, teamSubmission: null });
+      fixture.detectChanges();
+      fixture.detectChanges();
+      expect(citeApi.getMselCiteTeamResponses).toHaveBeenCalledTimes(1);
+
+      document.dispatchEvent(new Event('visibilitychange'));
+      fixture.detectChanges();
+
+      expect(citeApi.getMselCiteTeamResponses).toHaveBeenCalledTimes(2);
+    });
+
+    /**
+     * Verifies: Refresh reloads only the answers on screen, and drops the others so they load fresh when shown again.
+     * Interacts with: refreshStatements (refresh button), Assess Team mat-select, CiteService.getMselCiteTeamResponses (stub).
+     * Data: Blue's answers for move 1 loaded, then Red chosen instead; both teams assigned the move's competency.
+     */
+    it('refreshes only the answers on screen', async () => {
+      const { fixture, citeApi } = await renderAssessorView({
+        ...assessable({ ...MSEL, useCite: true, citeEvaluationId: 'eval-1' }),
+        teams: [BLUE, RED],
+        teamCompetencies: [
+          { id: 'tc-1', teamId: 'team-blue', competencyId: 'comp-1' },
+          { id: 'tc-2', teamId: 'team-red', competencyId: 'comp-1' },
+        ],
+      });
+      const user = await openMove(fixture);
+      await chooseBlue(fixture, user);
+      answer(calls[0], ANSWERED);
+      await chooseTeam(fixture, user, 'Red');
+      answer(calls[1], { ...ANSWERED, teamId: 'team-red' });
+      fixture.detectChanges();
+
+      await user.click(screen.getByTitle('Refresh xAPI statements'));
+      TestBed.inject(HttpTestingController).expectOne((req) => req.url === '/api/xapi/statements').flush({ statements: [] });
+      fixture.detectChanges();
+
+      expect(citeApi.getMselCiteTeamResponses).toHaveBeenCalledTimes(3);
+      expect(citeApi.getMselCiteTeamResponses).toHaveBeenLastCalledWith('msel-1', 1, 'team-red');
+
+      await chooseBlue(fixture, user);
+      expect(citeApi.getMselCiteTeamResponses).toHaveBeenCalledTimes(4);
+      expect(citeApi.getMselCiteTeamResponses).toHaveBeenLastCalledWith('msel-1', 1, 'team-blue');
+      expect(panel(fixture).responses()).toBeNull();
+    });
+
+    /**
+     * Verifies: a move panel and an event panel for the same team and move share one read.
+     * Interacts with: toggleMoveExpand, toggleEvent, both Assess Team mat-selects, CiteService.getMselCiteTeamResponses (stub).
+     * Data: Blue chosen on Move 1 and on its event se-1.
+     */
+    it('reads a team and move once for every panel showing it', async () => {
+      const { fixture, citeApi } = await renderAssessorView(assessable({ ...MSEL, useCite: true, citeEvaluationId: 'eval-1' }));
+      const user = await openMove(fixture);
+      await chooseBlue(fixture, user);
+      answer(calls[0], ANSWERED);
+      await user.click(screen.getByTitle('Click to expand/collapse'));
+      fixture.detectChanges();
+      await chooseTeam(fixture, user, 'Blue', 1);
+
+      expect(citeApi.getMselCiteTeamResponses).toHaveBeenCalledTimes(1);
+      const panels = fixture.debugElement.queryAll(By.directive(TeamResponsesStub))
+        .map(d => d.componentInstance as TeamResponsesStub);
+      expect(panels).toHaveLength(2);
+      expect(panels.map(p => p.responses())).toEqual([ANSWERED, ANSWERED]);
+    });
+
+    /**
+     * Verifies: leaving the Assessor View cancels a read still in flight.
+     * Interacts with: ngOnDestroy, CiteService.getMselCiteTeamResponses (stub).
+     * Data: Blue chosen for move 1; CITE has not answered yet.
+     */
+    it('cancels a read in flight when the view is left', async () => {
+      const { fixture } = await renderAssessorView(assessable({ ...MSEL, useCite: true, citeEvaluationId: 'eval-1' }));
+      const user = await openMove(fixture);
+      await chooseBlue(fixture, user);
+      expect(calls[0].observed).toBe(true);
+
+      fixture.destroy();
+
+      expect(calls[0].observed).toBe(false);
     });
   });
 });
