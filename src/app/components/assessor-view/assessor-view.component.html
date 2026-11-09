@@ -361,6 +361,15 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   <div class="no-competencies">No competencies in this move.</div>
                 </div>
               }
+              @if (msel.useCite && teamList.length > 0 && getMoveCompetencies(row.moveNumber).length > 0) {
+                @let teamResponses = getTeamResponses('move-' + row.moveNumber, row.moveNumber);
+                <app-team-responses class="assessment-panel team-responses-panel"
+                  [responses]="teamResponses?.responses ?? null"
+                  [loading]="teamResponses?.loading ?? false"
+                  [error]="teamResponses?.error ?? null"
+                  [teamName]="getTeamShortName(getAssertionTeam('move-' + row.moveNumber))"
+                  prompt="Choose a team in Assess Team to see its CITE answers." />
+              }
             </div>
           </td>
         </tr>
@@ -586,6 +595,15 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   </div>
                   <div class="no-competencies">No competencies in this group.</div>
                 </div>
+              }
+              @if (msel.useCite && teamList.length > 0 && getGroupCompetencies(row.groupKey).length > 0) {
+                @let teamResponses = getTeamResponses('group-' + row.groupKey, row.moveNumber);
+                <app-team-responses class="assessment-panel team-responses-panel"
+                  [responses]="teamResponses?.responses ?? null"
+                  [loading]="teamResponses?.loading ?? false"
+                  [error]="teamResponses?.error ?? null"
+                  [teamName]="getTeamShortName(getAssertionTeam('group-' + row.groupKey))"
+                  prompt="Choose a team in Assess Team to see its CITE answers." />
               }
             </div>
           </td>
@@ -860,6 +878,15 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   </div>
                   <div class="no-competencies">No competencies on this event.</div>
                 </div>
+              }
+              @if (msel.useCite && teamList.length > 0 && getEventCompetencies(row.event.id).length > 0) {
+                @let teamResponses = getTeamResponses(row.event.id, row.moveNumber);
+                <app-team-responses class="assessment-panel team-responses-panel"
+                  [responses]="teamResponses?.responses ?? null"
+                  [loading]="teamResponses?.loading ?? false"
+                  [error]="teamResponses?.error ?? null"
+                  [teamName]="getTeamShortName(getAssertionTeam(row.event.id))"
+                  prompt="Choose a team in Assess Team to see its CITE answers." />
               }
             </div>
           </td>

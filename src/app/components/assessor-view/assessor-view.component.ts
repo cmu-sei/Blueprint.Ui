@@ -1,14 +1,16 @@
 // Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, OnDestroy, HostListener, inject, input } from '@angular/core';
-import { Subject, Subscription, Observable, of } from 'rxjs';
+import { Component, DoCheck, OnDestroy, HostListener, inject, input } from '@angular/core';
+import { Subject, Subscription, Observable, fromEvent, of } from 'rxjs';
 import { takeUntil, debounceTime, distinctUntilChanged, mergeMap, delay } from 'rxjs/operators';
 import { Sort, MatSort, MatSortHeader } from '@angular/material/sort';
 import { HttpClient } from '@angular/common/http';
 import { ComnSettingsService, Theme } from '@cmusei/crucible-common';
 import {
   Card,
+  CiteTeamResponses,
+  CiteTeamResponsesStatus,
   Competency,
   CompetencyFramework,
   DataField,
@@ -37,7 +39,7 @@ import { MselCompetencyQuery } from 'src/app/data/msel-competency/msel-competenc
 import { MselCompetencyDataService } from 'src/app/data/msel-competency/msel-competency-data.service';
 import { TeamCompetencyQuery } from 'src/app/data/team-competency/team-competency.query';
 import { TeamCompetencyDataService } from 'src/app/data/team-competency/team-competency-data.service';
-import { CompetencyFrameworkService, ProficiencyScaleService } from 'src/app/generated/blueprint.api/api/api';
+import { CiteService, CompetencyFrameworkService, ProficiencyScaleService } from 'src/app/generated/blueprint.api/api/api';
 import {
   DataValuePlus,
   ScenarioEventDataService,
@@ -55,12 +57,36 @@ import { MatIconButton, MatButton } from '@angular/material/button';
 import { MatSelect } from '@angular/material/select';
 import { MatOption } from '@angular/material/autocomplete';
 import { MatProgressBar } from '@angular/material/progress-bar';
-import { NgClass } from '@angular/common';
+import { DOCUMENT, NgClass } from '@angular/common';
 import { MatTooltip } from '@angular/material/tooltip';
 import { CdkTextareaAutosize } from '@angular/cdk/text-field';
 import { DurationViewComponent } from '../shared/duration-view/duration-view.component';
 import { DataValueComponent } from '../data-value/data-value.component';
 import { CardEditDialogComponent } from '../card-edit-dialog/card-edit-dialog.component';
+import { TeamResponsesComponent } from '../team-responses/team-responses.component';
+
+/** A team's CITE answers for one move, as the Team Responses panel shows them. */
+export interface TeamResponsesState {
+  teamId: string;
+  moveNumber: number;
+  loading: boolean;
+  error: string | null;
+  responses: CiteTeamResponses | null;
+  /** When the last read finished, in ms since the epoch; 0 before the first one. */
+  fetchedAt: number;
+}
+
+/**
+ * How long a team's answers or non-answer stay fresh. Teams keep submitting
+ * during a move, so a panel shown again after this re-reads them.
+ */
+export const TEAM_RESPONSES_STALE_MS = 60_000;
+
+/** Statuses that say what the team answered, as opposed to why there is nothing to read. */
+const SETTLED_TEAM_RESPONSE_STATUSES: ReadonlySet<CiteTeamResponsesStatus> = new Set([
+  CiteTeamResponsesStatus.Answered,
+  CiteTeamResponsesStatus.NotAnswered,
+]);
 
 export interface XApiStatement {
   id?: string;
@@ -126,9 +152,9 @@ interface StatementListCacheEntry {
     selector: 'app-assessor-view',
     templateUrl: './assessor-view.component.html',
     styleUrls: ['./assessor-view.component.scss'],
-    imports: [MatIcon, MatSort, MatFormField, MatLabel, MatInput, FormsModule, MatIconButton, MatSuffix, MatSelect, MatOption, MatSortHeader, MatProgressBar, NgClass, MatTooltip, MatButton, CdkTextareaAutosize, DurationViewComponent, DataValueComponent, CardEditDialogComponent]
+    imports: [MatIcon, MatSort, MatFormField, MatLabel, MatInput, FormsModule, MatIconButton, MatSuffix, MatSelect, MatOption, MatSortHeader, MatProgressBar, NgClass, MatTooltip, MatButton, CdkTextareaAutosize, DurationViewComponent, DataValueComponent, CardEditDialogComponent, TeamResponsesComponent]
 })
-export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
+export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventView {
   private mselQuery = inject(MselQuery);
   private dataFieldQuery = inject(DataFieldQuery);
   private dataValueQuery = inject(DataValueQuery);
@@ -149,6 +175,7 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
   private teamCompetencyDataService = inject(TeamCompetencyDataService);
   private competencyFrameworkService = inject(CompetencyFrameworkService);
   private proficiencyScaleService = inject(ProficiencyScaleService);
+  private citeService = inject(CiteService);
 
   readonly loggedInUserId = input<string>(undefined);
   readonly userTheme = input<Theme>(undefined);
@@ -236,6 +263,13 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
   // Contexts whose Assess Team the user picked by hand; the Team filter never overrides those.
   private assertionTeamPicked = new Set<string>();
 
+  // Team Responses: each team's CITE answers, keyed by team and move
+  private teamResponses = new Map<string, TeamResponsesState>();
+  private teamResponseLoads = new Map<string, Subscription>();
+  /** The team|move keys whose panel was on screen at the last check. */
+  private shownTeamResponses = new Set<string>();
+  private document = inject(DOCUMENT);
+
   // Precomputed competency caches — rebuilt on data change, not per change detection
   private baseEventCompetencies = new Map<string, Competency[]>();
   private baseMoveCompetencies = new Map<number, Competency[]>();
@@ -256,12 +290,24 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
       this.savedStatementGrouping = savedGrouping;
     }
 
+    // Coming back to the tab re-reads the stale answers on screen
+    fromEvent(this.document, 'visibilitychange')
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(() => {
+        if (this.document.visibilityState === 'visible') {
+          this.revalidateTeamResponses();
+        }
+      });
+
     (this.mselQuery.selectActive() as Observable<MselPlus>)
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(msel => {
         if (msel) {
           const mselChanged = this.msel.id !== msel.id;
           this.msel = { ...msel } as MselPlus;
+          if (mselChanged) {
+            this.resetTeamResponses();
+          }
           if (mselChanged && msel.id) {
             this.mselCompetencyDataService.loadByMsel(msel.id);
             this.teamCompetencyDataService.loadByMsel(msel.id);
@@ -531,6 +577,7 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
 
 
   refreshStatements() {
+    this.refreshTeamResponses();
     if (this.statementsLoading || !this.msel.id) return;
     this.statementsLoading = true;
     this.loadingStatements.add('_all');
@@ -1858,6 +1905,169 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
 
   private contextKeyForSection(sectionKey: string): string {
     return sectionKey.startsWith('event-') ? sectionKey.slice('event-'.length) : sectionKey;
+  }
+
+  /**
+   * The CITE answers of the team chosen in Assess Team for this context, for
+   * the move the context is in. Group and event rows show their move's answers.
+   * A lookup only: ngDoCheck starts the loads. Null when no team is chosen.
+   */
+  getTeamResponses(contextKey: string, moveNumber: number): TeamResponsesState | null {
+    const teamId = this.getAssertionTeam(contextKey);
+    if (!teamId || moveNumber === null || moveNumber === undefined) {
+      return null;
+    }
+    return this.teamResponses.get(this.teamResponsesKey(teamId, moveNumber)) ?? null;
+  }
+
+  getTeamShortName(teamId: string): string {
+    return this.teamList.find(t => t.id === teamId)?.shortName ?? '';
+  }
+
+  /**
+   * Loads the answers of every panel on screen that has none yet, and
+   * re-reads a stale one when its panel comes back into view: a row
+   * expanded, a team chosen, a filter cleared. Runs before the view is
+   * checked, so the template only looks the answers up.
+   */
+  ngDoCheck() {
+    const visible = this.visibleTeamResponses();
+    for (const [key, target] of visible) {
+      const state = this.teamResponses.get(key);
+      if (!state || (!this.shownTeamResponses.has(key) && this.isStale(state))) {
+        this.loadTeamResponses(key, target);
+      }
+    }
+    this.shownTeamResponses = new Set(visible.keys());
+  }
+
+  /**
+   * Reloads the answers on screen, alongside the xAPI statements, and drops
+   * the rest so they load fresh when shown again.
+   */
+  refreshTeamResponses() {
+    const visible = this.visibleTeamResponses();
+    for (const key of [...this.teamResponses.keys()]) {
+      if (!visible.has(key)) {
+        this.dropTeamResponses(key);
+      }
+    }
+    for (const [key, target] of visible) {
+      if (!this.teamResponses.get(key)?.loading) {
+        this.loadTeamResponses(key, target);
+      }
+    }
+  }
+
+  /** Re-reads the stale answers on screen. */
+  private revalidateTeamResponses() {
+    for (const [key, target] of this.visibleTeamResponses()) {
+      const state = this.teamResponses.get(key);
+      if (!state || this.isStale(state)) {
+        this.loadTeamResponses(key, target);
+      }
+    }
+  }
+
+  /**
+   * A non-answer (the move has not started, CITE could not be read, ...) or a
+   * failed load is stale at once: whatever caused it may be fixed by now.
+   * Answers are stale after TEAM_RESPONSES_STALE_MS.
+   */
+  private isStale(state: TeamResponsesState): boolean {
+    if (state.loading) return false;
+    if (state.error || !state.responses?.status || !SETTLED_TEAM_RESPONSE_STATUSES.has(state.responses.status)) {
+      return true;
+    }
+    return Date.now() - state.fetchedAt > TEAM_RESPONSES_STALE_MS;
+  }
+
+  /**
+   * The team and move of every Team Responses panel the template renders: an
+   * expanded row on a MSEL using CITE, with competencies and a team chosen.
+   * Panels for the same team and move share one entry.
+   */
+  private visibleTeamResponses(): Map<string, { teamId: string; moveNumber: number }> {
+    const visible = new Map<string, { teamId: string; moveNumber: number }>();
+    if (!this.msel.id || !this.msel.useCite || this.teamList.length === 0 || this.isFullyCollapsed) {
+      return visible;
+    }
+    const add = (contextKey: string, moveNumber: number) => {
+      const teamId = this.getAssertionTeam(contextKey);
+      if (teamId && moveNumber !== null && moveNumber !== undefined) {
+        visible.set(this.teamResponsesKey(teamId, moveNumber), { teamId, moveNumber });
+      }
+    };
+    for (const row of this.displayRows) {
+      if (row.type === 'move') {
+        if (this.expandedMoveNumbers.has(row.moveNumber) && this.getMoveCompetencies(row.moveNumber).length > 0) {
+          add('move-' + row.moveNumber, row.moveNumber);
+        }
+      } else if (row.type === 'group') {
+        if (this.expandedGroupKeys.has(row.groupKey) && this.getGroupCompetencies(row.groupKey).length > 0) {
+          add('group-' + row.groupKey, row.moveNumber);
+        }
+      } else if (row.event?.id) {
+        if (this.expandedEventIds.has(row.event.id) && this.getEventCompetencies(row.event.id).length > 0) {
+          add(row.event.id, row.moveNumber);
+        }
+      }
+    }
+    return visible;
+  }
+
+  private teamResponsesKey(teamId: string, moveNumber: number): string {
+    return `${teamId}|${moveNumber}`;
+  }
+
+  /** Reads one team's answers, keeping the previous ones on screen meanwhile. */
+  private loadTeamResponses(key: string, target: { teamId: string; moveNumber: number }) {
+    this.teamResponseLoads.get(key)?.unsubscribe();
+    const previous = this.teamResponses.get(key);
+    this.teamResponses.set(key, {
+      ...target,
+      loading: true,
+      error: null,
+      responses: previous?.responses ?? null,
+      fetchedAt: previous?.fetchedAt ?? 0,
+    });
+    const mselId = this.msel.id;
+    const load = this.citeService.getMselCiteTeamResponses(mselId, target.moveNumber, target.teamId)
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe({
+        next: (responses) => {
+          if (this.msel.id !== mselId) return;
+          this.teamResponses.set(key, { ...target, loading: false, error: null, responses, fetchedAt: Date.now() });
+        },
+        error: () => {
+          if (this.msel.id !== mselId) return;
+          this.teamResponses.set(key, {
+            ...target,
+            loading: false,
+            error: 'Team responses could not be loaded.',
+            responses: this.teamResponses.get(key)?.responses ?? null,
+            fetchedAt: Date.now(),
+          });
+        }
+      });
+    this.teamResponseLoads.set(key, load);
+  }
+
+  /** Forgets one team's answers, cancelling a read still in flight. */
+  private dropTeamResponses(key: string) {
+    this.teamResponseLoads.get(key)?.unsubscribe();
+    this.teamResponseLoads.delete(key);
+    this.teamResponses.delete(key);
+  }
+
+  /** Forgets every team's answers, for another MSEL. */
+  private resetTeamResponses() {
+    for (const load of this.teamResponseLoads.values()) {
+      load.unsubscribe();
+    }
+    this.teamResponseLoads.clear();
+    this.teamResponses.clear();
+    this.shownTeamResponses.clear();
   }
 
   getTeamsForContext(contextKey: string): Team[] {
