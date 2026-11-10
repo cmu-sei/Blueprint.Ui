@@ -368,9 +368,10 @@ export class MselContributorsComponent implements OnDestroy, OnInit {
     return mselRoles;
   }
 
+  // membership of a contributing unit opens nothing on its own: the member needs a role on the MSEL
   canViewMsel(): boolean {
     return this.permissionDataService.hasPermission(SystemPermission.ViewMsels) ||
-      this.mselUnitList.some(mu => mu.unit?.users?.some(u => u.id === this.loggedInUserId()));
+      this.msel.hasRole(this.loggedInUserId(), '').viewer;
   }
 
   canManageMsel(): boolean {

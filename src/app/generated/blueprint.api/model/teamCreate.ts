@@ -23,6 +23,7 @@ export interface TeamCreate {
     email?: string | null;
     canTeamLeaderInvite?: boolean;
     canTeamMemberInvite?: boolean;
+    casterTeamVariable?: string | null;
     id?: string;
     mselId?: string | null;
 }

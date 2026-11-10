@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { describe, it, expect, vi } from 'vitest';
-import { Component, input } from '@angular/core';
+import { Component, EventEmitter, input } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { MatButtonModule } from '@angular/material/button';
@@ -38,9 +38,9 @@ import { PermissionDataService } from 'src/app/data/permission/permission-data.s
 import { PlayerApplicationListComponent } from './player-application-list.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { dialogRefStub } from 'src/app/test-utils/dialog-refs';
+import { PlayerApplicationEditDialogComponent } from '../player-application-edit-dialog/player-application-edit-dialog.component';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { permissionApiStubs } from 'src/app/test-utils/mock-permission-data.service';
-import { unstubbed } from 'src/app/test-utils/unstubbed';
 import { PlayerApplicationTeamsComponent } from '../player-application-teams/player-application-teams.component';
 import { PlayerTeamAppOrderComponent } from '../player-team-app-order/player-team-app-order.component';
 
@@ -60,6 +60,14 @@ class AppOrderStub {
 const ME = 'user-me';
 const BLUE: Team = { id: 'team-1', mselId: 'msel-1', name: 'Blue Team', shortName: 'BLUE' };
 const MAIL: PlayerApplication = { id: 'app-1', mselId: 'msel-1', name: 'Mail', url: 'https://mail.example.com' };
+// Blueprint's own templates: no MSEL, the template flag set.
+const VMS: PlayerApplication = {
+  id: 'tpl-vms', mselId: null, isTemplate: true, name: 'Virtual Machines', url: 'http://vm.example/views/{playerViewId}?{theme}',
+  icon: 'mdi-monitor', embeddable: true, loadInBackground: true,
+};
+const MAP: PlayerApplication = { id: 'tpl-map', mselId: null, isTemplate: true, name: 'Map', url: 'http://vm.example/views/{playerViewId}/map' };
+// Player's templates, offered as the second source.
+const WIKI: ApplicationTemplate = { id: 't-1', name: 'Wiki', url: 'https://wiki.example.com', icon: 'assets/wiki.png', embeddable: false, loadInBackground: false };
 const ALL_BUT_EDIT_MSELS = Object.values(SystemPermission).filter((p) => p !== SystemPermission.EditMsels);
 
 // A MSEL that deploys its topology through Caster: Player in use and a directory chosen.
@@ -78,18 +86,32 @@ function msel(roles: MselRole[] = [], extra: Partial<Msel> = {}): Msel {
 }
 
 async function renderAppList(
-  overrides: { permissions?: SystemPermission[]; roles?: MselRole[]; apps?: PlayerApplication[]; mselExtra?: Partial<Msel> } = {},
+  overrides: {
+    permissions?: SystemPermission[];
+    roles?: MselRole[];
+    apps?: PlayerApplication[];
+    templates?: PlayerApplication[];
+    playerTemplates?: ApplicationTemplate[];
+    mselExtra?: Partial<Msel>;
+    showTemplates?: boolean;
+    canEdit?: boolean;
+  } = {},
 ) {
-  const { permissions = [], roles = [], apps = [MAIL], mselExtra = {} } = overrides;
+  const {
+    permissions = [], roles = [], apps = [MAIL], templates = [], playerTemplates = [WIKI], mselExtra = {},
+    showTemplates = false, canEdit = false,
+  } = overrides;
   const appApi = {
     getApplicationsByMsel: vi.fn(() => of(structuredClone(apps))),
+    getPlayerApplicationTemplates: vi.fn(() => of(structuredClone(templates))),
+    createPlayerApplication: vi.fn((pa: PlayerApplication) => of(structuredClone(pa))),
     deletePlayerApplication: vi.fn(() => of<unknown>(null)),
   } satisfies ApiStub<PlayerApplicationService>;
   const appTeamApi = {
     getMselPlayerApplicationTeams: vi.fn(() => of<PlayerApplicationTeam[]>([])),
   } satisfies ApiStub<PlayerApplicationTeamService>;
   const playerApi = {
-    getApplicationTemplates: vi.fn(() => of<ApplicationTemplate[]>([{ id: 't-1', name: 'Wiki', url: 'https://wiki.example.com' }])),
+    getApplicationTemplates: vi.fn(() => of<ApplicationTemplate[]>(structuredClone(playerTemplates))),
   } satisfies ApiStub<PlayerService>;
   // The user confirms every dialog.
   const confirm = vi.fn(() => dialogRefStub<unknown, boolean>(true).dialogRef);
@@ -97,6 +119,13 @@ async function renderAppList(
   // PlayerApplicationListComponent loads the permissions itself in ngOnInit,
   // so the real service is provided over the stubbed endpoint, without priming it.
   const permissionApis = permissionApiStubs({ system: permissions });
+  // Add and edit open PlayerApplicationEditDialogComponent and subscribe to its editComplete;
+  // a test emits on it to save.
+  const editComplete = new EventEmitter<unknown>();
+  const editRef = Object.assign(dialogRefStub<PlayerApplicationEditDialogComponent>().dialogRef, {
+    componentInstance: { editComplete },
+  });
+  const open = vi.fn().mockReturnValue(editRef);
   const rendered = await renderComponent(PlayerApplicationListComponent, {
     imports: [MatButtonModule, MatCheckboxModule, MatExpansionModule, MatIconModule, MatMenuModule, MatSortModule, MatTableModule, MatTooltipModule],
     childStubs: [
@@ -111,7 +140,7 @@ async function renderAppList(
       { provide: PlayerService, useValue: playerApi },
       { provide: CrucibleDialogService, useValue: dialog },
       { provide: ComnSettingsService, useValue: { settings: SETTINGS } satisfies Pick<ComnSettingsService, 'settings'> },
-      unstubbed(MatDialog),
+      { provide: MatDialog, useValue: { open } satisfies Pick<MatDialog, 'open'> },
       {
         provide: MselStore,
         useFactory: () => {
@@ -131,12 +160,21 @@ async function renderAppList(
         },
       },
     ],
-    inputs: { loggedInUserId: ME },
+    inputs: showTemplates ? { loggedInUserId: ME, showTemplates, canEdit } : { loggedInUserId: ME },
   });
   const user = userEvent.setup();
-  await user.click(screen.getByRole('heading', { name: 'Player Applications' }));
-  return { ...rendered, appApi, appTeamApi, playerApi, confirm, user };
+  // The MSEL tab folds the table into an expansion panel; the admin page shows it directly.
+  if (!showTemplates) {
+    await user.click(screen.getByRole('heading', { name: 'Player Applications' }));
+  }
+  return { ...rendered, appApi, appTeamApi, playerApi, confirm, open, editComplete, user };
 }
+
+// The values a dialog opened to add from a template is handed, and the create carries.
+const copyOf = (t: PlayerApplication | ApplicationTemplate, mselId: string | null, isTemplate: boolean): PlayerApplication => ({
+  mselId, isTemplate, name: t.name, url: t.url, icon: t.icon, embeddable: t.embeddable, loadInBackground: t.loadInBackground,
+});
+const menuItems = () => screen.getAllByRole('menuitem').map((item) => item.textContent.trim());
 
 const table = () => screen.getByRole('table');
 const ACTIONS = ['Add Player Application', 'Edit Mail', 'Delete Mail'];
@@ -145,7 +183,7 @@ const orderStub = (fixture: ComponentFixture<unknown>): AppOrderStub =>
 
 describe('PlayerApplicationListComponent', () => {
   /**
-   * Verifies: the active MSEL's applications, application teams and the Player templates are loaded.
+   * Verifies: the active MSEL's applications, application teams, Blueprint's templates and the Player templates are loaded.
    * Interacts with: PlayerApplicationService, PlayerApplicationTeamService and PlayerService (stubs), real data services.
    * Data: MSEL msel-1 with application Mail.
    */
@@ -153,6 +191,7 @@ describe('PlayerApplicationListComponent', () => {
     const { appApi, appTeamApi, playerApi } = await renderAppList({ permissions: [SystemPermission.EditMsels] });
 
     expect(appApi.getApplicationsByMsel).toHaveBeenCalledWith('msel-1');
+    expect(appApi.getPlayerApplicationTemplates).toHaveBeenCalledTimes(1);
     expect(appTeamApi.getMselPlayerApplicationTeams).toHaveBeenCalledWith('msel-1');
     expect(playerApi.getApplicationTemplates).toHaveBeenCalledTimes(1);
     expect(within(table()).getByText('https://mail.example.com')).toBeInTheDocument();
@@ -329,5 +368,240 @@ describe('PlayerApplicationListComponent', () => {
 
     const teams = fixture.debugElement.query(By.directive(AppTeamsStub)).componentInstance as AppTeamsStub;
     expect(teams.mselTeamList()).toEqual([BLUE, green]);
+  });
+  describe('templates in the Add menu', () => {
+    /**
+     * Verifies: the Add menu offers New Player Application, then Blueprint's templates by name, then Player's templates in a From Player group.
+     * Interacts with: PlayerApplicationService.getPlayerApplicationTemplates and PlayerService.getApplicationTemplates (stubs), the Add menu.
+     * Data: EditMsels; Blueprint templates Virtual Machines and Map; Player template Wiki.
+     */
+    it("lists Blueprint's templates first, then Player's under From Player", async () => {
+      const { user } = await renderAppList({ permissions: [SystemPermission.EditMsels], templates: [VMS, MAP] });
+
+      await user.click(within(table()).getByRole('button', { name: 'Add Player Application' }));
+
+      expect(menuItems()).toEqual(['New Player Application', 'Map', 'Virtual Machines', 'Wiki']);
+      const fromPlayer = screen.getByRole('group', { name: 'From Player' });
+      expect(within(fromPlayer).getAllByRole('menuitem').map((item) => item.textContent.trim())).toEqual(['Wiki']);
+    });
+
+    /**
+     * Verifies: without Player templates there is no From Player group, and Blueprint's templates are still offered.
+     * Interacts with: PlayerService.getApplicationTemplates (stub, empty), the Add menu.
+     * Data: EditMsels; Blueprint template Map; no Player templates.
+     */
+    it('leaves out the From Player group when Player has no templates', async () => {
+      const { user } = await renderAppList({ permissions: [SystemPermission.EditMsels], templates: [MAP], playerTemplates: [] });
+
+      await user.click(within(table()).getByRole('button', { name: 'Add Player Application' }));
+
+      expect(menuItems()).toEqual(['New Player Application', 'Map']);
+      expect(screen.queryByText('From Player')).not.toBeInTheDocument();
+    });
+
+    /**
+     * Verifies: the menu tracks each template by its own id, so templates that share a name raise no duplicate-key (NG0955) warning.
+     * Interacts with: the @for track expressions of the Add menu, console.warn and console.error (spies).
+     * Data: EditMsels; two Blueprint templates named Map; two Player templates named Wiki.
+     */
+    it('tracks the templates by their ids without an NG0955 warning', async () => {
+      const warn = vi.spyOn(console, 'warn');
+      const error = vi.spyOn(console, 'error');
+      const { user } = await renderAppList({
+        permissions: [SystemPermission.EditMsels],
+        templates: [MAP, { ...MAP, id: 'tpl-map-2' }],
+        playerTemplates: [WIKI, { ...WIKI, id: 't-2' }],
+      });
+
+      await user.click(within(table()).getByRole('button', { name: 'Add Player Application' }));
+
+      expect(menuItems()).toEqual(['New Player Application', 'Map', 'Map', 'Wiki', 'Wiki']);
+      const logged = [...warn.mock.calls, ...error.mock.calls].map((call) => String(call[0]));
+      expect(logged.filter((message) => message.includes('NG0955'))).toEqual([]);
+    });
+
+    /**
+     * Verifies: the MSEL's table lists its own applications, never the templates held in the same store.
+     * Interacts with: real PlayerApplicationStore (templates upserted beside the MSEL's applications).
+     * Data: EditMsels; application Mail; Blueprint templates Virtual Machines and Map.
+     */
+    it("keeps the templates out of the MSEL's table", async () => {
+      await renderAppList({ permissions: [SystemPermission.EditMsels], templates: [VMS, MAP] });
+
+      expect(within(table()).getByText('Mail')).toBeInTheDocument();
+      expect(within(table()).queryByText('Virtual Machines')).not.toBeInTheDocument();
+      expect(within(table()).queryByText('Map')).not.toBeInTheDocument();
+    });
+
+    /**
+     * Verifies: choosing a Blueprint template opens the add dialog with a copy of its values for this MSEL, and saving creates a new application with its own id, leaving the template alone.
+     * Interacts with: the Add menu, MatDialog.open (stub), editComplete, PlayerApplicationService.createPlayerApplication (stub).
+     * Data: EditMsels; Blueprint template Virtual Machines (icon, embeddable, loads in background).
+     */
+    it('adds a copy of a Blueprint template to the MSEL', async () => {
+      const { fixture, user, open, editComplete, appApi } = await renderAppList({ permissions: [SystemPermission.EditMsels], templates: [VMS] });
+
+      await user.click(within(table()).getByRole('button', { name: 'Add Player Application' }));
+      await user.click(screen.getByRole('menuitem', { name: 'Virtual Machines' }));
+
+      expect(open).toHaveBeenCalledTimes(1);
+      expect(open.mock.calls[0][1].data).toEqual(expect.objectContaining({
+        title: 'Add a Player Application',
+        playerApplication: copyOf(VMS, 'msel-1', false),
+      }));
+      editComplete.emit({ saveChanges: true, playerApplication: open.mock.calls[0][1].data.playerApplication });
+      fixture.detectChanges();
+
+      expect(appApi.createPlayerApplication).toHaveBeenCalledTimes(1);
+      const created = appApi.createPlayerApplication.mock.calls[0][0];
+      expect(created).toEqual(expect.objectContaining(copyOf(VMS, 'msel-1', false)));
+      expect(created.id).toMatch(/^[0-9a-f-]{36}$/);
+      expect(created.id).not.toBe(VMS.id);
+      expect(within(table()).getByText('Virtual Machines')).toBeInTheDocument();
+    });
+
+    /**
+     * Verifies: choosing a Player template opens the add dialog with a copy of its values for this MSEL, without Player's id.
+     * Interacts with: the From Player group of the Add menu, MatDialog.open (stub).
+     * Data: EditMsels; Player template Wiki (id t-1).
+     */
+    it("adds a copy of one of Player's templates to the MSEL", async () => {
+      const { user, open } = await renderAppList({ permissions: [SystemPermission.EditMsels] });
+
+      await user.click(within(table()).getByRole('button', { name: 'Add Player Application' }));
+      await user.click(screen.getByRole('menuitem', { name: 'Wiki' }));
+
+      expect(open.mock.calls[0][1].data.playerApplication).toEqual(copyOf(WIKI, 'msel-1', false));
+    });
+
+    /**
+     * Verifies: with ManagePlayerApplications a MSEL's application can be made a template: the dialog gets a copy with no MSEL, and saving creates the template.
+     * Interacts with: real PermissionDataService (stubbed grants), MatDialog.open (stub), editComplete, PlayerApplicationService.createPlayerApplication (stub).
+     * Data: EditMsels and ManagePlayerApplications; application Mail.
+     */
+    it("makes a template of a MSEL's application with ManagePlayerApplications", async () => {
+      const { fixture, user, open, editComplete, appApi } = await renderAppList({
+        permissions: [SystemPermission.EditMsels, SystemPermission.ManagePlayerApplications],
+      });
+
+      await user.click(within(table()).getByRole('button', { name: 'Make Mail a template' }));
+
+      expect(open.mock.calls[0][1].data).toEqual(expect.objectContaining({
+        title: 'Add a Player Application Template',
+        playerApplication: copyOf(MAIL, null, true),
+      }));
+      editComplete.emit({ saveChanges: true, playerApplication: open.mock.calls[0][1].data.playerApplication });
+      fixture.detectChanges();
+      expect(appApi.createPlayerApplication).toHaveBeenCalledWith(expect.objectContaining({ mselId: null, isTemplate: true, name: 'Mail' }));
+      // the new template joins the Add menu, not the MSEL's table
+      expect(within(table()).getAllByText('Mail')).toHaveLength(1);
+    });
+
+    /**
+     * Verifies: without ManagePlayerApplications there is no Make template button.
+     * Interacts with: real PermissionDataService (stubbed grants).
+     * Data: every permission but ManagePlayerApplications (near miss: ManageCiteActions).
+     */
+    it('offers no Make template without ManagePlayerApplications', async () => {
+      await renderAppList({ permissions: Object.values(SystemPermission).filter((p) => p !== SystemPermission.ManagePlayerApplications) });
+
+      expect(within(table()).getByRole('button', { name: 'Edit Mail' })).toBeInTheDocument();
+      expect(within(table()).queryByRole('button', { name: 'Make Mail a template' })).not.toBeInTheDocument();
+    });
+  });
+
+  describe('templates (admin)', () => {
+    const TEMPLATE_HEADER = [
+      'Add a template Player Application',
+      'Upload Player Application templates from JSON',
+      'Download Player Application templates as JSON',
+    ];
+
+    /**
+     * Verifies: on the admin page the list shows Blueprint's templates alone, with add, upload, download, edit and delete for canEdit, and loads neither a MSEL nor Player's templates.
+     * Interacts with: PlayerApplicationService.getPlayerApplicationTemplates (stub), real PlayerApplicationDataService and Query.
+     * Data: showTemplates true; canEdit true; templates Virtual Machines and Map.
+     */
+    it('lists the templates with their actions for canEdit', async () => {
+      const { appApi, appTeamApi, playerApi } = await renderAppList({ showTemplates: true, canEdit: true, templates: [VMS, MAP] });
+
+      expect(appApi.getPlayerApplicationTemplates).toHaveBeenCalledTimes(1);
+      expect(appApi.getApplicationsByMsel).not.toHaveBeenCalled();
+      expect(appTeamApi.getMselPlayerApplicationTeams).not.toHaveBeenCalled();
+      expect(playerApi.getApplicationTemplates).not.toHaveBeenCalled();
+      expect(screen.queryByRole('heading', { name: 'Team Application Order' })).not.toBeInTheDocument();
+      for (const title of TEMPLATE_HEADER) {
+        expect(within(table()).getByTitle(title)).toBeInTheDocument();
+      }
+      for (const name of ['Edit Virtual Machines', 'Delete Virtual Machines', 'Edit Map', 'Delete Map']) {
+        expect(within(table()).getByRole('button', { name })).toBeInTheDocument();
+      }
+      expect(within(table()).queryByRole('button', { name: 'Add Player Application' })).not.toBeInTheDocument();
+      expect(within(table()).queryByRole('button', { name: /^Make / })).not.toBeInTheDocument();
+    });
+
+    /**
+     * Verifies: without canEdit the template list is read-only, even with EditMsels.
+     * Interacts with: the canEdit input, real PermissionDataService (stubbed grants).
+     * Data: showTemplates true; canEdit false; EditMsels; template Map.
+     */
+    it('lists the templates read-only without canEdit', async () => {
+      await renderAppList({ showTemplates: true, canEdit: false, templates: [MAP], permissions: [SystemPermission.EditMsels] });
+
+      expect(within(table()).getByText('Map')).toBeInTheDocument();
+      for (const title of TEMPLATE_HEADER) {
+        expect(within(table()).queryByTitle(title)).not.toBeInTheDocument();
+      }
+      expect(within(table()).queryByRole('button', { name: 'Edit Map' })).not.toBeInTheDocument();
+      expect(within(table()).queryByRole('button', { name: 'Delete Map' })).not.toBeInTheDocument();
+    });
+
+    /**
+     * Verifies: adding a template opens the dialog for an application with no MSEL and the template flag, and saving creates it.
+     * Interacts with: MatDialog.open (stub), editComplete, PlayerApplicationService.createPlayerApplication (stub).
+     * Data: showTemplates true; canEdit true; no templates; the user names it Gallery.
+     */
+    it('adds a template', async () => {
+      const { fixture, user, open, editComplete, appApi } = await renderAppList({ showTemplates: true, canEdit: true });
+
+      await user.click(within(table()).getByTitle('Add a template Player Application'));
+
+      const data = open.mock.calls[0][1].data;
+      expect(data.title).toBe('Add a Player Application Template');
+      expect(data.playerApplication).toEqual(expect.objectContaining({ mselId: null, isTemplate: true }));
+      editComplete.emit({ saveChanges: true, playerApplication: { ...data.playerApplication, name: 'Gallery', url: 'http://gallery.example' } });
+      fixture.detectChanges();
+
+      expect(appApi.createPlayerApplication).toHaveBeenCalledWith(expect.objectContaining({ mselId: null, isTemplate: true, name: 'Gallery' }));
+      expect(within(table()).getByText('Gallery')).toBeInTheDocument();
+    });
+
+    /**
+     * Verifies: a template row does not expand into a team selection, since a template is on no team.
+     * Interacts with: row click, AppTeamsStub.
+     * Data: showTemplates true; canEdit true; template Map.
+     */
+    it('does not expand a template into a team selection', async () => {
+      const { fixture, user } = await renderAppList({ showTemplates: true, canEdit: true, templates: [MAP] });
+
+      await user.click(within(table()).getByText('Map'));
+
+      expect(fixture.debugElement.query(By.directive(AppTeamsStub))).toBeNull();
+    });
+
+    /**
+     * Verifies: confirming Delete removes the template through the API and from the list, under a template title.
+     * Interacts with: CrucibleDialogService.confirm (stub, confirms), PlayerApplicationService.deletePlayerApplication (stub).
+     * Data: showTemplates true; canEdit true; template Map.
+     */
+    it('deletes a template after confirmation', async () => {
+      const { appApi, confirm, user } = await renderAppList({ showTemplates: true, canEdit: true, templates: [MAP] });
+
+      await user.click(within(table()).getByRole('button', { name: 'Delete Map' }));
+
+      expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Delete Player Application Template' }));
+      expect(appApi.deletePlayerApplication).toHaveBeenCalledWith('tpl-map');
+      expect(within(table()).queryByText('Map')).not.toBeInTheDocument();
+    });
   });
 });

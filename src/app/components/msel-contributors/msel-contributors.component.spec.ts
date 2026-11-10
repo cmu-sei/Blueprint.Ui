@@ -181,17 +181,18 @@ describe('MselContributorsComponent', () => {
   });
 
   /**
-   * Verifies: canViewMsel, which neither the template nor any other code calls (dead code), holds with ViewMsels or for a member of a contributing unit, and not otherwise.
-   * Interacts with: MselContributorsComponent.canViewMsel, real PermissionDataService, real MselUnitQuery.
-   * Data: ViewMsels; or the user in Blue Cell; or neither (near miss: every other permission).
+   * Verifies: canViewMsel, which neither the template nor any other code calls (dead code), holds with ViewMsels or for a holder of any MSEL role, and not for a contributing unit's member without one.
+   * Interacts with: MselContributorsComponent.canViewMsel, real PermissionDataService, MselPlus.hasRole.
+   * Data: ViewMsels; or Viewer; or the user in Blue Cell with no role (near miss); or neither (near miss: every other permission).
    */
   it.each([
-    { label: 'with ViewMsels', permissions: [SystemPermission.ViewMsels], inUnit: false, expected: true },
-    { label: 'as a contributing unit member', permissions: [], inUnit: true, expected: true },
-    { label: 'otherwise', permissions: Object.values(SystemPermission).filter((p) => p !== SystemPermission.ViewMsels), inUnit: false, expected: false },
-  ])('canViewMsel (unused) is $expected $label', async ({ permissions, inUnit, expected }) => {
+    { label: 'with ViewMsels', permissions: [SystemPermission.ViewMsels], myRoles: [], inUnit: false, expected: true },
+    { label: 'as a Viewer', permissions: [], myRoles: [MselRole.Viewer], inUnit: true, expected: true },
+    { label: 'as a contributing unit member without a role', permissions: [], myRoles: [], inUnit: true, expected: false },
+    { label: 'otherwise', permissions: Object.values(SystemPermission).filter((p) => p !== SystemPermission.ViewMsels), myRoles: [], inUnit: false, expected: false },
+  ])('canViewMsel (unused) is $expected $label', async ({ permissions, myRoles, inUnit, expected }) => {
     const units = inUnit ? [{ ...BLUE_CONTRIBUTES, unit: { ...BLUE_UNIT, users: [{ id: ME, name: 'Me' }] } }] : [BLUE_CONTRIBUTES];
-    const { fixture } = await renderContributors({ permissions, mselUnits: units });
+    const { fixture } = await renderContributors({ permissions, myRoles, mselUnits: units });
 
     expect(fixture.componentInstance.canViewMsel()).toBe(expected);
   });
