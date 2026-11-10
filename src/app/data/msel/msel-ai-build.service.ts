@@ -298,7 +298,8 @@ export class MselAiBuildService {
             }),
             finalize(() => this.patch(mselId, { inProgress: Math.max(0, (this.get(mselId).inProgress ?? 1) - 1) }))
           ),
-        status.parallel || this.concurrency
+        // the API writes numbers as strings, and mergeMap takes a string as no limit at all
+        Number(status.parallel) || this.concurrency
       ),
       toArray(),
       mergeMap(() => this.api.getMselBuildStatus(mselId))

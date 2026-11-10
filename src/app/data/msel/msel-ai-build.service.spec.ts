@@ -87,6 +87,28 @@ describe('MselAiBuildService', () => {
   });
 
   /**
+   * Verifies: the rows, articles and profiles are written only as many at once as the API says, even though the API sends the number as a string.
+   * Interacts with: MselBuildService writeMselInjects, writeMselRow, writeMselArticle, writeMselProfile.
+   * Data: three items to write, parallel "2" as the API writes it, and writes that never answer.
+   */
+  it('writes only as many items at once as the API says', async () => {
+    const writes = [vi.fn(() => NEVER), vi.fn(() => NEVER), vi.fn(() => NEVER)];
+    const { service, last } = setup({
+      writeMselInjects: vi.fn(() => of({ ...ARTICLES, parallel: '2' as unknown as number })),
+      writeMselRow: writes[0],
+      writeMselArticle: writes[1],
+      writeMselProfile: writes[2],
+    });
+
+    service.run('msel-1');
+    await settle();
+
+    const started = writes.reduce((sum, write) => sum + write.mock.calls.length, 0);
+    expect(started).toBe(2);
+    expect(last()).toMatchObject({ step: 'articles', total: 3, written: 0, inProgress: 2 });
+  });
+
+  /**
    * Verifies: what the server replaced in a row or an article, values outside the scenario's indicator set, joins the build's warnings.
    * Interacts with: MselBuildService writeMselRow, writeMselArticle.
    * Data: a row and an article whose answers carry a warning each.
