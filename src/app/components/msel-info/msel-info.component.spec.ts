@@ -843,6 +843,67 @@ describe('MselInfoComponent', () => {
     });
   });
 
+  describe('Hide individual names from assessors', () => {
+    const box = () => screen.getByLabelText('Hide individual names from assessors');
+
+    /**
+     * Verifies: ticking the box marks the MSEL changed, and Save sends hideNamesOnAssessorView.
+     * Interacts with: MselService.updateMsel (stub), saveChanges, real PermissionDataService (stubbed grants).
+     * Data: EditMsels; a pending MSEL that shows names.
+     */
+    it('saves hiding names from assessors', async () => {
+      const { mselApi } = await renderInfo({ permissions: [SystemPermission.EditMsels] });
+      const user = userEvent.setup();
+
+      expect(box()).not.toBeChecked();
+      await user.click(box());
+      expect(screen.getByText('Changes have not been saved!')).toBeInTheDocument();
+      await user.click(screen.getAllByTitle('Save Changes')[0]);
+
+      expect(mselApi.updateMsel).toHaveBeenCalledTimes(1);
+      expect(mselApi.updateMsel.mock.calls[0][1].hideNamesOnAssessorView).toBe(true);
+    });
+
+    /**
+     * Verifies: the box stays editable on a pushed MSEL, since it changes only what the Assessor View lists.
+     * Interacts with: canEditMsel, integrationsLocked.
+     * Data: EditMsels; a deployed MSEL that hides names.
+     */
+    it('keeps hiding names editable on a pushed MSEL', async () => {
+      await renderInfo({ permissions: [SystemPermission.EditMsels], mselExtra: { status: MselItemStatus.Deployed, hideNamesOnAssessorView: true } });
+
+      expect(box()).toBeChecked();
+      expect(box()).toBeEnabled();
+    });
+
+    /**
+     * Verifies: the MSEL's owner can change the box without EditMsels, as the API's MSEL update allows.
+     * Interacts with: canUpdateMsel, real PermissionDataService (stubbed grants).
+     * Data: every permission but EditMsels; the Owner role; a MSEL that hides names.
+     */
+    it('lets the MSEL owner change hiding names', async () => {
+      await renderInfo({ permissions: allBut(SystemPermission.EditMsels), myRoles: [MselRole.Owner], mselExtra: { hideNamesOnAssessorView: true } });
+
+      expect(box()).toBeEnabled();
+    });
+
+    /**
+     * Verifies: without EditMsels the box is read-only to everyone but the owner, including an Editor, whom it hides names from
+     * and whose save the API's MSEL update refuses.
+     * Interacts with: canUpdateMsel, real PermissionDataService (stubbed grants).
+     * Data: every permission but EditMsels; the Viewer role, then the Editor role; a MSEL that hides names.
+     */
+    it.each([
+      { label: 'a Viewer', role: MselRole.Viewer },
+      { label: 'an Editor', role: MselRole.Editor },
+    ])('shows hiding names read-only to $label without EditMsels', async ({ role }) => {
+      await renderInfo({ permissions: allBut(SystemPermission.EditMsels), myRoles: [role], mselExtra: { hideNamesOnAssessorView: true } });
+
+      expect(box()).toBeChecked();
+      expect(box()).toBeDisabled();
+    });
+  });
+
   describe('Push Integrations start time', () => {
     const HOUR = 60 * 60 * 1000;
     const pushButton = () => screen.getByTitle('Push Integrations');

@@ -68,11 +68,17 @@ model/catalogUnit.ts
 model/citeAction.ts
 model/citeActionCreate.ts
 model/citeActionEdit.ts
+model/citeCategoryResponse.ts
+model/citeCommentResponse.ts
 model/citeDuty.ts
 model/citeDutyCreate.ts
 model/citeDutyEdit.ts
+model/citeOptionResponse.ts
 model/citeRightSideDisplay.ts
 model/citeScoringOptionSelection.ts
+model/citeSubmissionResponse.ts
+model/citeTeamResponses.ts
+model/citeTeamResponsesStatus.ts
 model/competency.ts
 model/competencyAssertion.ts
 model/competencyFramework.ts

@@ -77,6 +77,7 @@ export class MselPlus implements Msel {
   showMoveOnAssessorView?: boolean;
   showGroupOnAssessorView?: boolean;
   showIntegrationTargetOnAssessorView?: boolean;
+  hideNamesOnAssessorView?: boolean;
   moves?: Array<Move>;
   dataFields?: Array<DataField>;
   scenarioEvents?: Array<ScenarioEvent>;

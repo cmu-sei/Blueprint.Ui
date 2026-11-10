@@ -112,6 +112,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 Template</mat-checkbox>
             </div>
           </div>
+          <!-- Hide names from assessors -->
+          <div class="single-checkbox">
+            <mat-checkbox [(ngModel)]="msel.hideNamesOnAssessorView" [disabled]="!canUpdateMsel()"
+              (change)="isChanged = true"
+              title="The Assessor View shows only the team on each xAPI statement. The MSEL's owners and users who can view every MSEL still see the names; everyone else, including its Editors and Evaluators, does not. The LRS still records them.">Hide
+              individual names from assessors</mat-checkbox>
+          </div>
           <!-- MSEL Start Time -->
           <div class="single-checkbox">
             <mat-checkbox [checked]="msel.startTime?.valueOf() > 0" [disabled]="!canEditMsel()"
