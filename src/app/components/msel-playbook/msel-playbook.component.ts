@@ -36,8 +36,12 @@ import {
   Card,
   MselPage,
   Competency,
+  CompetencyFramework,
   CompetencyFrameworkService,
+  MselCompetency,
   MselCompetencyService,
+  Team,
+  TeamCompetency,
   TeamCompetencyService,
 } from 'src/app/generated/blueprint.api';
 import { UntypedFormControl } from '@angular/forms';
@@ -53,14 +57,75 @@ import { PageEvent, MatPaginator } from '@angular/material/paginator';
 import { MatIconButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { DurationViewComponent } from '../shared/duration-view/duration-view.component';
-import { DatePipe, DOCUMENT } from '@angular/common';
+import { DatePipe, DOCUMENT, NgTemplateOutlet } from '@angular/common';
 import { MselImageDataService } from 'src/app/data/msel/msel-image-data.service';
 import { TimezoneAbbrPipe } from 'src/app/utilities/timezone-abbr';
 
 /** Competencies listed together in the print: a framework's, or a team's. */
 export interface PlaybookCompetencyGroup {
+  // the framework or team id ('' for competencies whose framework isn't known)
+  key: string;
   name: string;
   competencies: Competency[];
+}
+
+// groups in heading order; a heading that two groups share gets each one's qualifier (a framework's version, a team's
+// short name), so neither group is mistaken for the other
+function namedGroups(
+  groups: { key: string; name: string; qualifier: string; competencies: Competency[] }[],
+): PlaybookCompetencyGroup[] {
+  const counts = new Map<string, number>();
+  groups.forEach((g) => counts.set(g.name, (counts.get(g.name) ?? 0) + 1));
+  return groups
+    .map((g) => ({
+      key: g.key,
+      name: counts.get(g.name) > 1 && g.qualifier && g.qualifier !== g.name ? `${g.name} (${g.qualifier})` : g.name,
+      competencies: g.competencies.sort(byIdNumber),
+    }))
+    .sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
+}
+
+/**
+ * The MSEL's competencies by framework, keyed by framework id so same-named frameworks (versions of one framework)
+ * stay apart. Competencies whose framework isn't in the list are listed last, together.
+ */
+export function frameworkCompetencyGroups(
+  mselCompetencies: MselCompetency[],
+  frameworks: CompetencyFramework[],
+): PlaybookCompetencyGroup[] {
+  const frameworksById = new Map(frameworks.map((f) => [f.id, f] as [string, CompetencyFramework]));
+  const byFramework = new Map<string, Competency[]>();
+  for (const competency of mselCompetencies.map((mc) => mc.competency).filter((c): c is Competency => !!c)) {
+    const key = frameworksById.has(competency.competencyFrameworkId) ? competency.competencyFrameworkId : '';
+    byFramework.set(key, [...(byFramework.get(key) ?? []), competency]);
+  }
+  const known = [...byFramework.entries()]
+    .filter(([key]) => key)
+    .map(([key, competencies]) => {
+      const framework = frameworksById.get(key);
+      return { key, name: framework.name?.trim() || 'Unnamed framework', qualifier: framework.version?.trim() ?? '', competencies };
+    });
+  const groups = namedGroups(known);
+  const unknown = byFramework.get('');
+  if (unknown) {
+    groups.push({ key: '', name: groups.length ? 'Other competencies' : 'Competencies', competencies: unknown.sort(byIdNumber) });
+  }
+  return groups;
+}
+
+/** Each team's competencies, keyed by team id so same-named teams stay apart; teams not on the MSEL are left out. */
+export function teamCompetencyGroups(teamCompetencies: TeamCompetency[], teams: Team[]): PlaybookCompetencyGroup[] {
+  const teamsById = new Map(teams.map((t) => [t.id, t] as [string, Team]));
+  const byTeam = new Map<string, Competency[]>();
+  for (const tc of teamCompetencies.filter((tc) => tc.competency && teamsById.has(tc.teamId))) {
+    byTeam.set(tc.teamId, [...(byTeam.get(tc.teamId) ?? []), tc.competency]);
+  }
+  return namedGroups(
+    [...byTeam.entries()].map(([key, competencies]) => {
+      const team = teamsById.get(key);
+      return { key, name: team.name || team.shortName || '', qualifier: team.shortName ?? '', competencies };
+    }),
+  );
 }
 
 /** A competency as the print lists it, in full: its ID number, then its name, or its description where it has no name. */
@@ -74,11 +139,24 @@ function byIdNumber(a: Competency, b: Competency): number {
   return (a.idNumber ?? '').localeCompare(b.idNumber ?? '', undefined, { numeric: true, sensitivity: 'base' });
 }
 
-/** One move as the print-all output shows it: its title block and contents entry. */
+/** One move as the print-all output shows it: its title page, contents entry and events. */
 export interface PlaybookPrintMove {
-  firstEventId: string;
+  // -1 for events that come before the first move, or for every event when the MSEL has no moves
   moveNumber: number;
+  // "Move N", or for moveNumber -1 "Before Move N" or "Scenario Events"
+  label: string;
   move?: Move;
+  events: ScenarioEvent[];
+}
+
+/** Waits until the images under root have loaded, or failed, for at most timeoutMs, so a print doesn't catch a blank where one goes. */
+export function imagesReady(root: ParentNode, timeoutMs = 10000): Promise<void> {
+  const decoded = Array.from(root.querySelectorAll('img')).map((img) =>
+    typeof img.decode === 'function' ? img.decode().catch(() => undefined) : undefined
+  );
+  let timer: ReturnType<typeof setTimeout>;
+  const timeout = new Promise<void>((resolve) => (timer = setTimeout(resolve, timeoutMs)));
+  return Promise.race([Promise.all(decoded).then(() => undefined), timeout]).finally(() => clearTimeout(timer));
 }
 
 /**
@@ -113,7 +191,7 @@ export function formatPlaybookDuration(totalSeconds: number): string {
     selector: 'app-msel-playbook',
     templateUrl: './msel-playbook.component.html',
     styleUrls: ['./msel-playbook.component.scss'],
-    imports: [MatPaginator, MatIconButton, MatIcon, DurationViewComponent, DatePipe, TimezoneAbbrPipe]
+    imports: [MatPaginator, MatIconButton, MatIcon, DurationViewComponent, DatePipe, NgTemplateOutlet, TimezoneAbbrPipe]
 })
 export class MselPlaybookComponent implements OnDestroy {
   private settingsService = inject(ComnSettingsService);
@@ -142,6 +220,12 @@ export class MselPlaybookComponent implements OnDestroy {
   competencyGroups: PlaybookCompetencyGroup[] = [];
   teamCompetencyGroups: PlaybookCompetencyGroup[] = [];
   private competenciesMselId = '';
+  // the competency lists as read, kept so the groups can be drawn again when the MSEL's teams change
+  private competencyData: {
+    mselCompetencies: MselCompetency[];
+    teamCompetencies: TeamCompetency[];
+    frameworks: CompetencyFramework[];
+  } | null = null;
 
   readonly userTheme = input<Theme>(undefined);
   readonly canEditMsel = input<boolean>(undefined);
@@ -217,12 +301,12 @@ export class MselPlaybookComponent implements OnDestroy {
     (this.mselQuery.selectActive() as Observable<MselPlus>)
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((msel) => {
-        if (msel && this.msel.id !== msel.id) {
-          this.msel = this.getEditableMsel(msel) as MselPlus;
-        }
         if (msel) {
+          // every update, not just a new MSEL, so the cover and the team competencies follow the MSEL's teams
+          this.msel = this.getEditableMsel(msel) as MselPlus;
           this.loadMselImage(msel);
           this.loadCompetencies(msel);
+          this.setCompetencyGroups();
         }
       });
     // subscribe to data fields
@@ -302,6 +386,8 @@ export class MselPlaybookComponent implements OnDestroy {
       return;
     }
     this.competenciesMselId = msel.id;
+    this.competencyData = null;
+    this.setCompetencyGroups();
     forkJoin({
       msel: this.mselCompetencyService.getMselCompetencies(msel.id).pipe(catchError(() => of([]))),
       teams: this.teamCompetencyService.getMselTeamCompetencies(msel.id).pipe(catchError(() => of([]))),
@@ -312,25 +398,16 @@ export class MselPlaybookComponent implements OnDestroy {
         if (msel.id !== this.competenciesMselId) {
           return;
         }
-        const frameworkNames = new Map(frameworks.map((f) => [f.id, f.name ?? ''] as [string, string]));
-        const byFramework = new Map<string, Competency[]>();
-        for (const competency of mselCompetencies.map((mc) => mc.competency).filter((c): c is Competency => !!c)) {
-          const name = frameworkNames.get(competency.competencyFrameworkId) || 'Competencies';
-          byFramework.set(name, [...(byFramework.get(name) ?? []), competency]);
-        }
-        this.competencyGroups = [...byFramework.entries()]
-          .sort(([a], [b]) => a.localeCompare(b))
-          .map(([name, competencies]) => ({ name, competencies: competencies.sort(byIdNumber) }));
-        const teamNames = new Map((this.msel.teams ?? []).map((t) => [t.id, t.name || t.shortName] as [string, string]));
-        const byTeam = new Map<string, Competency[]>();
-        for (const tc of teams.filter((tc) => tc.competency && teamNames.has(tc.teamId))) {
-          const name = teamNames.get(tc.teamId);
-          byTeam.set(name, [...(byTeam.get(name) ?? []), tc.competency]);
-        }
-        this.teamCompetencyGroups = [...byTeam.entries()]
-          .sort(([a], [b]) => a.localeCompare(b))
-          .map(([name, competencies]) => ({ name, competencies: competencies.sort(byIdNumber) }));
+        this.competencyData = { mselCompetencies, teamCompetencies: teams, frameworks };
+        this.setCompetencyGroups();
       });
+  }
+
+  // the team groups use the MSEL's current teams, so this runs again on each MSEL update
+  private setCompetencyGroups() {
+    const data = this.competencyData;
+    this.competencyGroups = data ? frameworkCompetencyGroups(data.mselCompetencies, data.frameworks) : [];
+    this.teamCompetencyGroups = data ? teamCompetencyGroups(data.teamCompetencies, this.msel.teams ?? []) : [];
   }
 
   competencyLabel(competency: Competency): string {
@@ -357,15 +434,15 @@ export class MselPlaybookComponent implements OnDestroy {
   getEditableMsel(msel: MselPlus): MselPlus {
     const editableMsel = new MselPlus();
     Object.assign(editableMsel, msel);
-    editableMsel.teams = editableMsel.teams
+    editableMsel.teams = (editableMsel.teams ?? [])
       .slice(0)
       .sort((a, b) =>
-        a.shortName.toLowerCase() < b.shortName.toLowerCase() ? -1 : 1
+        (a.shortName ?? '').toLowerCase() < (b.shortName ?? '').toLowerCase() ? -1 : 1
       );
-    editableMsel.units = editableMsel.units
+    editableMsel.units = (editableMsel.units ?? [])
       .slice(0)
       .sort((a, b) =>
-        a.shortName.toLowerCase() < b.shortName.toLowerCase() ? -1 : 1
+        (a.shortName ?? '').toLowerCase() < (b.shortName ?? '').toLowerCase() ? -1 : 1
       );
 
     return editableMsel;
@@ -561,26 +638,26 @@ export class MselPlaybookComponent implements OnDestroy {
   // the rows are drawn again without their audio and video before the page is copied for print, so the browser never
   // loads a clip it cannot play on paper; the page reloads afterward, which draws them with their players again
   printpage() {
-    this.printing = true;
-    setTimeout(() => {
-      this.setPrintFooter();
-      const printContents = document.getElementById('printable-area').innerHTML;
-      document.body.innerHTML = printContents;
-      window.print();
-      location.reload();
-    }, 250);
+    this.print();
   }
 
+  // every event on one page, from the first: a page index left over from paging would slice past the end
   printAllEvents() {
-    const originalPageSize = this.pageSize;
+    this.pageIndex = 0;
     this.pageSize = this.sortedScenarioEvents.length;
+    this.print();
+  }
+
+  // the copied body's images (the cover, images in pages and rows) load again from their URLs, so the print waits
+  // for them rather than catching blanks
+  private print() {
     this.printing = true;
-    setTimeout(() => {
+    setTimeout(async () => {
       this.setPrintFooter();
       const printContents = document.getElementById('printable-area').innerHTML;
       document.body.innerHTML = printContents;
+      await imagesReady(document.body);
       window.print();
-      this.pageSize = originalPageSize;
       location.reload();
     }, 250);
   }
@@ -631,32 +708,39 @@ export class MselPlaybookComponent implements OnDestroy {
       : 0;
   }
 
-  getMoveForEvent(scenarioEventId: string): Move | undefined {
-    const moveNumber = this.getMoveNumber(scenarioEventId);
-    return this.moveList.find((m) => +m.moveNumber === moveNumber);
-  }
-
-  isMoveBoundary(scenarioEventId: string, previousScenarioEventId: string): boolean {
-    return this.getMoveNumber(scenarioEventId) !== this.getMoveNumber(previousScenarioEventId);
-  }
-
   isShowingAllEvents(): boolean {
     return this.pageSize >= this.sortedScenarioEvents.length;
   }
 
-  /** The moves in print order: one entry where each move's events start. */
+  /**
+   * Every move in move number order with its events, including moves with no events, which print a page saying so.
+   * Events before the first move (or in a MSEL with no moves) come first, under moveNumber -1.
+   */
   getPrintMoves(): PlaybookPrintMove[] {
-    const printMoves: PlaybookPrintMove[] = [];
-    this.getPagedScenarioEvents().forEach((scenarioEvent, i, events) => {
-      if (i === 0 || this.isMoveBoundary(scenarioEvent.id, events[i - 1].id)) {
-        printMoves.push({
-          firstEventId: scenarioEvent.id,
-          moveNumber: this.getMoveNumber(scenarioEvent.id),
-          move: this.getMoveForEvent(scenarioEvent.id),
-        });
+    const byNumber = new Map<number, PlaybookPrintMove>();
+    for (const move of this.moveList) {
+      const moveNumber = +move.moveNumber;
+      if (!byNumber.has(moveNumber)) {
+        byNumber.set(moveNumber, { moveNumber, label: `Move ${moveNumber}`, move, events: [] });
       }
-    });
-    return printMoves;
+    }
+    for (const scenarioEvent of this.getPagedScenarioEvents()) {
+      const moveNumber = this.getMoveNumber(scenarioEvent.id);
+      let printMove = byNumber.get(moveNumber);
+      if (!printMove) {
+        printMove = { moveNumber, label: this.unmovedLabel(moveNumber), events: [] };
+        byNumber.set(moveNumber, printMove);
+      }
+      printMove.events.push(scenarioEvent);
+    }
+    return [...byNumber.values()].sort((a, b) => a.moveNumber - b.moveNumber);
+  }
+
+  private unmovedLabel(moveNumber: number): string {
+    if (moveNumber >= 0) {
+      return `Move ${moveNumber}`;
+    }
+    return this.moveList.length ? `Before Move ${this.moveList[0].moveNumber}` : 'Scenario Events';
   }
 
   getTeamNames(): string {
@@ -680,12 +764,25 @@ export class MselPlaybookComponent implements OnDestroy {
   }
 }
 
-// whether a page's content starts with a heading that says its name, as a drafted profiles page does
+// content that shows without text: when one of these comes first, the content doesn't open with a heading
+const NON_TEXT_CONTENT = 'img, svg, video, audio, iframe, object, embed, canvas, hr';
+
+// whether a page's content starts with a heading that says its name, as a drafted profiles page does; the first thing
+// that shows (text or an image) must be in that heading, wrappers and empty paragraphs aside
 export function opensWithHeading(content: string | null | undefined, name: string | null | undefined): boolean {
   if (!content || !name) {
     return false;
   }
-  const heading = new DOMParser().parseFromString(content, 'text/html').body.querySelector('h1, h2, h3, h4, h5, h6');
+  const doc = new DOMParser().parseFromString(content, 'text/html');
+  const walker = doc.createTreeWalker(doc.body, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT, {
+    acceptNode: (node) =>
+      node.nodeType === Node.TEXT_NODE
+        ? (node.textContent ?? '').trim() ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP
+        : (node as Element).matches(NON_TEXT_CONTENT) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP,
+  });
+  const first = walker.nextNode();
+  const firstElement = first?.nodeType === Node.TEXT_NODE ? first.parentElement : (first as Element | null);
+  const heading = firstElement?.closest('h1, h2, h3, h4, h5, h6');
   const normalize = (text: string) => text.replace(/\s+/g, ' ').trim().toLowerCase();
   return !!heading && normalize(heading.textContent ?? '') === normalize(name);
 }

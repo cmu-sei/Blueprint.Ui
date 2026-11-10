@@ -18,6 +18,7 @@ import {
   MselPage,
   ScenarioEvent,
   Competency,
+  CompetencyFramework,
   CompetencyFrameworkService,
   MselCompetency,
   MselCompetencyService,
@@ -30,7 +31,16 @@ import { MselStore } from 'src/app/data/msel/msel.store';
 import { MoveStore } from 'src/app/data/move/move.store';
 import { MselPageStore } from 'src/app/data/msel-page/msel-page.store';
 import { ScenarioEventStore } from 'src/app/data/scenario-event/scenario-event.store';
-import { formatPlaybookDuration, MselPlaybookComponent, opensWithHeading, playbookFooterCss, withoutMedia } from './msel-playbook.component';
+import { TestBed } from '@angular/core/testing';
+import {
+  formatPlaybookDuration,
+  frameworkCompetencyGroups,
+  imagesReady,
+  MselPlaybookComponent,
+  opensWithHeading,
+  playbookFooterCss,
+  withoutMedia,
+} from './msel-playbook.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { renderComponent } from 'src/app/test-utils/render-component';
 
@@ -72,6 +82,7 @@ interface PlaybookData {
   getMselImage?: ApiStub<MselImageService>['getMselImage'];
   mselCompetencies?: MselCompetency[];
   teamCompetencies?: TeamCompetency[];
+  frameworks?: CompetencyFramework[];
 }
 
 async function renderPlaybook(canEditMsel: boolean, data: PlaybookData = {}) {
@@ -100,7 +111,7 @@ async function renderPlaybook(canEditMsel: boolean, data: PlaybookData = {}) {
       { provide: MselImageService, useValue: imageApi },
       { provide: MselCompetencyService, useValue: { getMselCompetencies: vi.fn(() => of(data.mselCompetencies ?? [])) } },
       { provide: TeamCompetencyService, useValue: { getMselTeamCompetencies: vi.fn(() => of(data.teamCompetencies ?? [])) } },
-      { provide: CompetencyFrameworkService, useValue: { getCompetencyFrameworks: vi.fn(() => of([{ id: 'fw-1', name: 'DCWF 5.1' }, { id: 'fw-2', name: 'NICE 2.0' }])) } },
+      { provide: CompetencyFrameworkService, useValue: { getCompetencyFrameworks: vi.fn(() => of(data.frameworks ?? [{ id: 'fw-1', name: 'DCWF 5.1' }, { id: 'fw-2', name: 'NICE 2.0' }])) } },
     ],
     inputs: { canEditMsel, loggedInUserId: 'user-1' },
   });
@@ -333,6 +344,11 @@ describe('MselPlaybookComponent', () => {
     expect(within(screen.getByLabelText('Rules of Engagement')).getByRole('heading', hidden)).toHaveTextContent('Rules of Engagement');
     expect(opensWithHeading('<p>Intro</p><h3>Other</h3>', 'Team Profiles')).toBe(false);
     expect(opensWithHeading('<p>No heading.</p>', 'Team Profiles')).toBe(false);
+    // the heading has to come first: an intro or an image before it keeps the page's own title
+    expect(opensWithHeading('<p>Intro.</p><h3>Team Profiles</h3>', 'Team Profiles')).toBe(false);
+    expect(opensWithHeading('<p><img src="x.png"></p><h2>Team Profiles</h2>', 'Team Profiles')).toBe(false);
+    // empty paragraphs and wrappers before it don't count
+    expect(opensWithHeading('<p><br></p>\n<div><h2>Team Profiles</h2><p>Text.</p></div>', 'Team Profiles')).toBe(true);
   });
 
   /**
@@ -397,6 +413,185 @@ describe('MselPlaybookComponent', () => {
     await renderPlaybook(true);
 
     expect(screen.queryByLabelText('Competencies')).toBeNull();
+  });
+
+  /**
+   * Verifies: competencies group by framework id and team id, not by name, so two versions of a framework or two teams
+   * with one name print apart, each heading told apart by version or short name.
+   * Interacts with: CompetencyFrameworkService and the competency services (stubs), frameworkCompetencyGroups.
+   * Data: NICE 1.0 and NICE 2.0 (one name), two teams named Blue Team (BLUE1, BLUE2).
+   */
+  it('keeps same-named frameworks and teams apart', async () => {
+    const v1: Competency = { id: 'c-1', competencyFrameworkId: 'fw-1', idNumber: 'K0001', shortName: 'Networking' };
+    const v2: Competency = { id: 'c-2', competencyFrameworkId: 'fw-2', idNumber: 'K0001', shortName: 'Networks' };
+    await renderPlaybook(true, {
+      msel: {
+        teams: [
+          { id: 'team-1', name: 'Blue Team', shortName: 'BLUE1' },
+          { id: 'team-2', name: 'Blue Team', shortName: 'BLUE2' },
+        ],
+      },
+      frameworks: [
+        { id: 'fw-2', name: 'NICE', version: '2.0' },
+        { id: 'fw-1', name: 'NICE', version: '1.0' },
+      ],
+      mselCompetencies: [v1, v2].map((competency) => ({ id: competency.id, mselId: 'msel-1', competencyId: competency.id, competency })),
+      teamCompetencies: [
+        { id: 'tc-1', teamId: 'team-1', competencyId: 'c-1', competency: v1 },
+        { id: 'tc-2', teamId: 'team-2', competencyId: 'c-2', competency: v2 },
+      ],
+    });
+
+    const section = within(screen.getByLabelText('Competencies'));
+    expect(section.getAllByRole('heading', hidden).map((h) => h.textContent)).toEqual([
+      'Competencies', 'NICE (1.0)', 'NICE (2.0)', 'Team competencies', 'Blue Team (BLUE1)', 'Blue Team (BLUE2)',
+    ]);
+    expect(section.getAllByRole('listitem', hidden).map((li) => li.textContent)).toEqual([
+      'K0001 Networking', 'K0001 Networks', 'K0001 Networking', 'K0001 Networks',
+    ]);
+  });
+
+  /**
+   * Verifies: competencies whose framework isn't in the list are listed last, apart from a real framework that happens
+   * to be called "Competencies".
+   * Interacts with: frameworkCompetencyGroups.
+   */
+  it('lists competencies of an unknown framework apart', () => {
+    const known: Competency = { id: 'c-1', competencyFrameworkId: 'fw-1', idNumber: 'A1' };
+    const unknown: Competency = { id: 'c-2', competencyFrameworkId: 'fw-gone', idNumber: 'B1' };
+    const groups = frameworkCompetencyGroups(
+      [known, unknown].map((competency) => ({ id: competency.id, competency })),
+      [{ id: 'fw-1', name: 'Competencies' }],
+    );
+    expect(groups.map((g) => [g.key, g.name, g.competencies.map((c) => c.id)])).toEqual([
+      ['fw-1', 'Competencies', ['c-1']],
+      ['', 'Other competencies', ['c-2']],
+    ]);
+    expect(frameworkCompetencyGroups([{ id: 'c-2', competency: unknown }], []).map((g) => g.name)).toEqual(['Competencies']);
+  });
+
+  /**
+   * Verifies: a team that reaches the MSEL after the competencies were read still gets its competencies, and the cover's
+   * Teams fact follows it.
+   * Interacts with: real MselStore and MselQuery; TeamCompetencyService (stub).
+   * Data: Exercise Alpha with no teams at first, then Blue Team; one team competency for Blue Team.
+   */
+  it('shows team competencies for teams added after load', async () => {
+    const t2: Competency = { id: 'c-2', competencyFrameworkId: 'fw-1', idNumber: 'T-2', shortName: 'Triage alerts' };
+    const { fixture } = await renderPlaybook(true, {
+      mselCompetencies: [{ id: 'mc-1', mselId: 'msel-1', competencyId: 'c-2', competency: t2 }],
+      teamCompetencies: [{ id: 'tc-1', teamId: 'team-blue', competencyId: 'c-2', competency: t2 }],
+    });
+    expect(within(screen.getByLabelText('Competencies')).queryByText('Team competencies')).toBeNull();
+
+    TestBed.inject(MselStore).update('msel-1', { teams: [{ id: 'team-blue', name: 'Blue Team', shortName: 'BLUE' }] });
+    fixture.detectChanges();
+
+    const section = within(screen.getByLabelText('Competencies'));
+    expect(section.getAllByRole('heading', hidden).map((h) => h.textContent)).toEqual(['Competencies', 'DCWF 5.1', 'Team competencies', 'Blue Team']);
+    const facts = Array.from(screen.getByLabelText('MSEL facts').querySelectorAll('dt')).map((dt) => [dt.textContent.trim(), dt.nextElementSibling.textContent.trim()]);
+    expect(facts).toContainEqual(['Teams', 'Blue Team']);
+  });
+
+  /**
+   * Verifies: every move prints its own page, in the contents too, and a move with no events says so; the cover's move
+   * count matches the pages.
+   * Interacts with: real MoveQuery and ScenarioEventQuery (seeded); getPrintMoves.
+   * Data: moves 1 and 2 with one event each, and move 3 with none.
+   */
+  it('prints a page for a move with no events', async () => {
+    const move3: Move = { id: 'move-3', mselId: 'msel-1', moveNumber: 3, description: 'Recovery', deltaSeconds: 7200 };
+    const { container } = await renderPlaybook(true, { moves: [...MOVES, move3], events: MOVE_EVENTS, values: MOVE_VALUES });
+
+    const contents = within(screen.getByLabelText('Contents'));
+    expect(contents.getAllByRole('listitem', hidden).map((li) => li.textContent.trim())).toEqual([
+      'Move 1: Initial access',
+      'Move 2: Containment',
+      'Move 3: Recovery',
+    ]);
+    const facts = Array.from(screen.getByLabelText('MSEL facts').querySelectorAll('dt')).map((dt) => [dt.textContent.trim(), dt.nextElementSibling.textContent.trim()]);
+    expect(facts).toContainEqual(['Moves', '3']);
+
+    expect(within(screen.getByLabelText('Move 3')).getByRole('heading', hidden)).toHaveTextContent('Recovery');
+    const order = Array.from(container.querySelectorAll('.move-title, #eventDetails thead th:last-child, .move-no-events')).map((el) =>
+      el.classList.contains('move-title') ? el.getAttribute('aria-label') : el.textContent.trim()
+    );
+    expect(order).toEqual(['Move 1', 'Phishing wave', 'Move 2', 'Isolate hosts', 'Move 3', 'No events for this move']);
+  });
+
+  /**
+   * Verifies: events in a MSEL with no moves print under "Scenario Events", not "Move -1", and events before the first
+   * move print ahead of it under "Before Move N".
+   * Interacts with: real MoveQuery and ScenarioEventQuery (seeded); getPrintMoves.
+   */
+  it('labels events outside any move', async () => {
+    await renderPlaybook(true);
+    expect(screen.getByLabelText('Scenario Events')).toHaveTextContent('Scenario Events');
+    expect(screen.queryByLabelText('Move -1')).toBeNull();
+  });
+
+  it('labels events before the first move', async () => {
+    const lateMove: Move = { id: 'move-1', mselId: 'msel-1', moveNumber: 1, description: 'Late start', deltaSeconds: 3600 };
+    const { container } = await renderPlaybook(true, { moves: [lateMove], events: MOVE_EVENTS, values: MOVE_VALUES });
+
+    const order = Array.from(container.querySelectorAll('.move-title, #eventDetails thead th:last-child')).map((el) =>
+      el.classList.contains('move-title') ? el.getAttribute('aria-label') : el.textContent.trim()
+    );
+    expect(order).toEqual(['Before Move 1', 'Phishing wave', 'Move 1', 'Isolate hosts']);
+  });
+
+  /**
+   * Verifies: Print All Events from a later paginator page still prints every event, by starting from the first page.
+   * Interacts with: the paginator state (changePage), printAllEvents; the print itself is held back by fake timers.
+   * Data: two moves with one event each, the playbook paged one event at a time and on page 2.
+   */
+  it('prints every event from a later page', async () => {
+    const { fixture } = await renderPlaybook(true, { moves: MOVES, events: MOVE_EVENTS, values: MOVE_VALUES });
+    const playbook = fixture.componentInstance;
+    playbook.changePage({ pageIndex: 1, pageSize: 1, length: 2 });
+    fixture.detectChanges();
+
+    vi.useFakeTimers();
+    try {
+      playbook.printAllEvents();
+      fixture.detectChanges();
+      expect(playbook.getPrintMoves().map((m) => [m.label, m.events.map((e) => e.id)])).toEqual([
+        ['Move 1', ['se-1']],
+        ['Move 2', ['se-2']],
+      ]);
+    } finally {
+      // the print would replace the page body and reload
+      vi.clearAllTimers();
+      vi.useRealTimers();
+    }
+  });
+
+  /**
+   * Verifies: the print waits for the copied body's images to decode, but not past its time limit, and an image that
+   * fails doesn't hold it.
+   * Interacts with: imagesReady.
+   */
+  it('waits for images before printing', async () => {
+    const root = document.createElement('div');
+    const loaded = document.createElement('img');
+    const failed = document.createElement('img');
+    let finishLoad: () => void;
+    loaded.decode = vi.fn(() => new Promise<void>((resolve) => (finishLoad = resolve)));
+    failed.decode = vi.fn(() => Promise.reject(new Error('broken')));
+    root.append(loaded, failed);
+
+    let ready = false;
+    const waiting = imagesReady(root).then(() => (ready = true));
+    await Promise.resolve();
+    expect(ready).toBe(false);
+    finishLoad();
+    await waiting;
+    expect(ready).toBe(true);
+
+    const stuck = document.createElement('img');
+    stuck.decode = vi.fn(() => new Promise<void>(() => undefined));
+    root.replaceChildren(stuck);
+    await expect(imagesReady(root, 10)).resolves.toBeUndefined();
   });
 
   /**

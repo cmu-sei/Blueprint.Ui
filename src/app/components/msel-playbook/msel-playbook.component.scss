@@ -224,6 +224,11 @@ mat-paginator {
   }
 }
 
+.move-no-events {
+  font-style: italic;
+  color: #555;
+}
+
 .move-title {
   break-before: page;
   break-inside: avoid;
