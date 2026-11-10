@@ -13,50 +13,19 @@ project root for license information or contact permission@sei.cmu.edu for full 
   <div class="dashboard-container">
     <!-- Value Proposition -->
     <div class="value-section">
-      <div class="value-card" role="button" tabindex="0" (click)="openCapabilityDialog('collaborative')" (keydown.enter)="openCapabilityDialog('collaborative')">
+      @for (card of capabilityCards; track card.key) {
+      <div class="value-card" role="button" tabindex="0" (click)="openCapabilityDialog(card.key)" (keydown.enter)="openCapabilityDialog(card.key)">
         <div class="value-icon">
-          <mat-icon fontIcon="mdi-account-group"></mat-icon>
+          <mat-icon [fontIcon]="card.data.icon"></mat-icon>
         </div>
-        <h3 class="value-title">Collaborative Planning</h3>
-        <p class="value-text">Replace Excel spreadsheets with real-time team coordination</p>
+        <h3 class="value-title">{{ card.data.title }}</h3>
+        <p class="value-text">{{ card.summary }}</p>
         <div class="learn-more">
           <mat-icon class="info-icon" fontIcon="mdi-information"></mat-icon>
           <span>Click to learn more</span>
         </div>
       </div>
-      <div class="value-card" role="button" tabindex="0" (click)="openCapabilityDialog('integrated')" (keydown.enter)="openCapabilityDialog('integrated')">
-        <div class="value-icon">
-          <mat-icon fontIcon="mdi-link-variant"></mat-icon>
-        </div>
-        <h3 class="value-title">Integrated Platform</h3>
-        <p class="value-text">Connect Player, CITE, Gallery & Steamfitter in one workflow</p>
-        <div class="learn-more">
-          <mat-icon class="info-icon" fontIcon="mdi-information"></mat-icon>
-          <span>Click to learn more</span>
-        </div>
-      </div>
-      <div class="value-card" role="button" tabindex="0" (click)="openCapabilityDialog('scenario')" (keydown.enter)="openCapabilityDialog('scenario')">
-        <div class="value-icon">
-          <mat-icon fontIcon="mdi-timeline-text"></mat-icon>
-        </div>
-        <h3 class="value-title">Scenario Design</h3>
-        <p class="value-text">Build complex cyber exercise scenarios with move-based structure</p>
-        <div class="learn-more">
-          <mat-icon class="info-icon" fontIcon="mdi-information"></mat-icon>
-          <span>Click to learn more</span>
-        </div>
-      </div>
-      <div class="value-card" role="button" tabindex="0" (click)="openCapabilityDialog('cyberrange')" (keydown.enter)="openCapabilityDialog('cyberrange')">
-        <div class="value-icon">
-          <mat-icon fontIcon="mdi-shield-check"></mat-icon>
-        </div>
-        <h3 class="value-title">Cyber Range Ready</h3>
-        <p class="value-text">Purpose-built for cybersecurity training and simulation</p>
-        <div class="learn-more">
-          <mat-icon class="info-icon" fontIcon="mdi-information"></mat-icon>
-          <span>Click to learn more</span>
-        </div>
-      </div>
+      }
     </div>
 
     <!-- Main Grid -->
@@ -64,6 +33,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <!-- JOIN card - always shown -->
       <div class="mission-card join-card"
            [class.disabled-card]="joinMselList.length === 0"
+           [attr.aria-disabled]="joinMselList.length === 0"
            tabindex="1"
            role="button"
            (click)="joinMselList.length > 0 && gotoUrl('join')">
@@ -131,11 +101,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </div>
       }
 
-      @if (buildMselList.length > 0 || canCreateMsels) {
+      <!-- BUILD card - always shown, greyed out for a user who has no events to build and cannot create one -->
       <div class="mission-card build-card"
+           [class.disabled-card]="!canBuild"
+           [attr.aria-disabled]="!canBuild"
            tabindex="3"
            role="button"
-           (click)="gotoUrl('build')">
+           (click)="canBuild && gotoUrl('build')">
         <div class="card-corner-accent"></div>
         <div class="card-header">
           <div class="card-icon">
@@ -152,22 +124,25 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <span class="metric-label">Events Draft</span>
           </div>
           <div class="card-description">
-            Create and configure events, manage MSEL planning
+            @if (canBuild) {
+              Create and configure events, manage MSEL planning
+            } @else {
+              You have no events to build, and no permission to create one
+            }
           </div>
         </div>
         <div class="card-footer">
-          <button mat-button color="primary">
+          <button mat-button color="primary" [disabled]="!canBuild">
             Manage Events
             <mat-icon class="inline-icon" fontIcon="mdi-arrow-right"></mat-icon>
           </button>
         </div>
       </div>
-      }
 
-      <!-- ASSESS card - shown for users who can assess an MSEL (Owner, Evaluator or system admin) -->
-      @if (hasAssessorRole) {
+      <!-- ASSESS card - always shown, greyed out unless the user can assess a running event (Owner, Evaluator or system admin) -->
       <div class="mission-card assess-card"
            [class.disabled-card]="assessMselList.length === 0"
+           [attr.aria-disabled]="assessMselList.length === 0"
            tabindex="4"
            role="button"
            (click)="assessMselList.length > 0 && gotoUrl('assess')">
@@ -189,8 +164,10 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <div class="card-description">
             @if (assessMselList.length > 0) {
               Evaluate and score active exercises
-            } @else {
+            } @else if (hasAssessorRole) {
               No running events available to assess
+            } @else {
+              You are not an assessor on any event
             }
           </div>
         </div>
@@ -201,9 +178,25 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </button>
         </div>
       </div>
-      }
 
-      @if (joinMselList.length === 0 && launchMselList.length === 0 && buildMselList.length === 0 && !canCreateMsels && !hasAssessorRole) {
+      @if (loadFailed) {
+      <div class="mission-card empty-state">
+        <div class="card-header">
+          <div class="card-icon empty-icon">
+            <mat-icon fontIcon="mdi-alert-circle-outline"></mat-icon>
+          </div>
+          <div class="card-title-section">
+            <h2 class="card-title">NOT LOADED</h2>
+            <p class="card-subtitle">Events Unavailable</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="card-description">
+            Your events could not be loaded. Reload the page to try again.
+          </div>
+        </div>
+      </div>
+      } @else if (joinMselList.length === 0 && launchMselList.length === 0 && buildMselList.length === 0 && !canCreateMsels && !hasAssessorRole) {
       <div class="mission-card empty-state">
         <div class="card-header">
           <div class="card-icon empty-icon">

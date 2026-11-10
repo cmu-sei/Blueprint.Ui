@@ -58,12 +58,13 @@ import { MselViewComponent } from '../msel-view/msel-view.component';
 import { AssessorViewComponent } from '../assessor-view/assessor-view.component';
 import { InvitationListComponent } from '../invitation-list/invitation-list.component';
 import { MselPlaybookComponent } from '../msel-playbook/msel-playbook.component';
+import { MselScoringModelTabComponent } from '../msel-scoring-model-tab/msel-scoring-model-tab.component';
 
 @Component({
     selector: 'app-msel',
     templateUrl: './msel.component.html',
     styleUrls: ['./msel.component.scss'],
-    imports: [MatDrawerContainer, MatDrawer, MatIconButton, MatIcon, MatList, MatDivider, MatListItem, NgClass, MatDrawerContent, MselInfoComponent, MselContributorsComponent, MselTeamsComponent, DataFieldListComponent, OrganizationListComponent, MoveListComponent, PlayerApplicationListComponent, CardListComponent, CiteActionListComponent, CiteDutyListComponent, MselCompetenciesComponent, ScenarioEventListComponent, MselViewComponent, AssessorViewComponent, InvitationListComponent, MselPlaybookComponent, AsyncPipe]
+    imports: [MatDrawerContainer, MatDrawer, MatIconButton, MatIcon, MatList, MatDivider, MatListItem, NgClass, MatDrawerContent, MselInfoComponent, MselContributorsComponent, MselTeamsComponent, DataFieldListComponent, OrganizationListComponent, MoveListComponent, PlayerApplicationListComponent, CardListComponent, CiteActionListComponent, CiteDutyListComponent, MselCompetenciesComponent, ScenarioEventListComponent, MselViewComponent, AssessorViewComponent, InvitationListComponent, MselPlaybookComponent, MselScoringModelTabComponent, AsyncPipe]
 })
 export class MselComponent implements OnDestroy {
   private activatedRoute = inject(ActivatedRoute);
@@ -105,6 +106,7 @@ export class MselComponent implements OnDestroy {
   readonly tabGroup0 = viewChild<MatTabGroup>('tabGroup0');
   readonly tabs = viewChildren<MatTab>('MatTab');
   readonly mselInfoComponent = viewChild(MselInfoComponent);
+  readonly scoringModelTab = viewChild(MselScoringModelTabComponent);
   tabList: string[] = [
     'Info',
     'Contributors',
@@ -115,8 +117,9 @@ export class MselComponent implements OnDestroy {
     'Moves',
     'Player Apps',
     'Gallery Cards',
-    'CITE Actions',
-    'CITE Duties',
+    'Scoring Model',
+    'Actions',
+    'Duties',
     'Scenario Events',
     'Exercise View',
     'Assessor View',
@@ -132,8 +135,9 @@ export class MselComponent implements OnDestroy {
     ['Moves', 'mdi-gamepad'],
     ['Player Apps', 'mdi-apps'],
     ['Gallery Cards', 'mdi-view-grid-outline'],
-    ['CITE Actions', 'mdi-clipboard-check-outline'],
-    ['CITE Duties', 'mdi-clipboard-account-outline'],
+    ['Scoring Model', 'mdi-clipboard-list-outline'],
+    ['Actions', 'mdi-clipboard-check-outline'],
+    ['Duties', 'mdi-clipboard-account-outline'],
     ['Competencies', 'mdi-certificate-outline'],
     ['Scenario Events', 'mdi-chart-timeline'],
     ['Exercise View', 'mdi-eye-outline'],
@@ -153,6 +157,10 @@ export class MselComponent implements OnDestroy {
   theme$: Observable<Theme>;
 
   constructor() {
+    // restore the saved tab before the active MSEL, which can arrive at once, checks it; a saved name that is no
+    // longer a tab (CITE Actions and CITE Duties were renamed) opens the default tab
+    this.selectedTab = this.uiDataService.getMselTab();
+    this.keepSelectedTabShown(this.tabList);
     this.theme$ = this.authQuery.userTheme$;
     // subscribe to route changes
     this.activatedRoute.queryParamMap
@@ -208,6 +216,8 @@ export class MselComponent implements OnDestroy {
       .subscribe((msel) => {
         if (msel) {
           this.msel = msel;
+          // a saved tab this MSEL's settings hide (CITE, Player or Gallery not used) would show nothing
+          this.keepSelectedTabShown(this.getTabListItems());
         } else {
           this.msel = { name: '' };
         }
@@ -232,13 +242,6 @@ export class MselComponent implements OnDestroy {
     this.unitDataService.load();
     // load the organization templates
     this.organizationDataService.loadTemplates();
-    // set the selected tab
-    let selectedTab = this.uiDataService.getMselTab();
-    if (!selectedTab) {
-      this.uiDataService.setMselTab(this.defaultTab);
-      selectedTab = this.defaultTab;
-    }
-    this.selectedTab = selectedTab;
     // set the side nav expansion
     this.sideNavCollapsed = this.uiDataService.isNavCollapsed();
   }
@@ -256,9 +259,10 @@ export class MselComponent implements OnDestroy {
       }
     };
 
-    if (this.selectedTab === 'Info' && tabName !== 'Info' && this.mselInfoComponent()?.hasPendingChanges()) {
+    const unsaved = tabName !== this.selectedTab ? this.unsavedChangesMessage() : '';
+    if (unsaved) {
       this.dialogService
-        .confirm({ title: 'Unsaved Changes', message: 'You have unsaved changes on the MSEL Info page. Are you sure that you want to discard them?' }).afterClosed().subscribe((result) => {
+        .confirm({ title: 'Unsaved Changes', message: unsaved }).afterClosed().subscribe((result) => {
           if (result) {
             doTabChange();
           }
@@ -276,15 +280,35 @@ export class MselComponent implements OnDestroy {
       });
     };
 
-    if (this.selectedTab === 'Info' && this.mselInfoComponent()?.hasPendingChanges()) {
+    const unsaved = this.unsavedChangesMessage();
+    if (unsaved) {
       this.dialogService
-        .confirm({ title: 'Unsaved Changes', message: 'You have unsaved changes on the MSEL Info page. Are you sure that you want to discard them?' }).afterClosed().subscribe((result) => {
+        .confirm({ title: 'Unsaved Changes', message: unsaved }).afterClosed().subscribe((result) => {
           if (result) {
             doNavigate();
           }
         });
     } else {
       doNavigate();
+    }
+  }
+
+  // the open tab's unsaved work, for the pages that hold edits until they are saved
+  private unsavedChangesMessage(): string {
+    if (this.selectedTab === 'Info' && this.mselInfoComponent()?.hasPendingChanges()) {
+      return 'You have unsaved changes on the MSEL Info page. Are you sure that you want to discard them?';
+    }
+    if (this.selectedTab === 'Scoring Model' && this.scoringModelTab()?.hasPendingChanges()) {
+      return 'You have unsaved changes on the Scoring Model page. Are you sure that you want to discard them?';
+    }
+    return '';
+  }
+
+  // the content area has a page only for the tabs listed, so any other selection falls back to the default tab
+  private keepSelectedTabShown(tabs: string[]) {
+    if (!tabs.includes(this.selectedTab)) {
+      this.selectedTab = this.defaultTab;
+      this.uiDataService.setMselTab(this.defaultTab);
     }
   }
 
@@ -302,8 +326,9 @@ export class MselComponent implements OnDestroy {
             tabList.push(tab);
           }
           break;
-        case 'CITE Actions':
-        case 'CITE Duties':
+        case 'Scoring Model':
+        case 'Actions':
+        case 'Duties':
           if (this.msel?.useCite) {
             tabList.push(tab);
           }

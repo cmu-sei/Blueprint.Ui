@@ -34,12 +34,13 @@ import { MatCheckbox } from '@angular/material/checkbox';
 import { MatCard } from '@angular/material/card';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { DatePipe } from '@angular/common';
+import { OverflowTooltipDirective } from '../shared/overflow-tooltip/overflow-tooltip.directive';
 
 @Component({
     selector: 'app-msel-list',
     templateUrl: './msel-list.component.html',
     styleUrls: ['./msel-list.component.scss'],
-    imports: [MatIconButton, MatIcon, MatSelect, FormsModule, MatOption, MatFormField, MatInput, ReactiveFormsModule, MatSuffix, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatMenuTrigger, MatMenu, MatMenuItem, MatCellDef, MatCell, MatSortHeader, RouterLink, MatCheckbox, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, MatPaginator, MatCard, MatProgressSpinner, DatePipe]
+    imports: [MatIconButton, MatIcon, MatSelect, FormsModule, MatOption, MatFormField, MatInput, ReactiveFormsModule, MatSuffix, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatMenuTrigger, MatMenu, MatMenuItem, MatCellDef, MatCell, MatSortHeader, RouterLink, MatCheckbox, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, MatPaginator, MatCard, MatProgressSpinner, DatePipe, OverflowTooltipDirective]
 })
 export class MselListComponent implements OnDestroy, OnInit {
   dialogService = inject(CrucibleDialogService);
@@ -139,7 +140,8 @@ export class MselListComponent implements OnDestroy, OnInit {
       .subscribe((cu) => {
         this.currentUserName = cu.name;
       });
-    this.sort().sort(<MatSortable>{ id: 'name', start: 'asc' });
+    // newest first, so a MSEL just created or drafted is at the top
+    this.sort().sort(<MatSortable>{ id: 'dateCreated', start: 'desc' });
     this.mselDataSource.sort = this.sort();
     // subscribe to MSELs loading
     this.mselQuery
@@ -182,11 +184,15 @@ export class MselListComponent implements OnDestroy, OnInit {
       'white',
       'blue'
     );
-    // remove case sensitivity from mat-table sort
+    // remove case sensitivity from mat-table sort, and sort dates as times
     this.mselDataSource.sortingDataAccessor = (
       data: any,
       sortHeaderId: string
-    ): string => {
+    ): string | number => {
+      if (sortHeaderId === 'dateCreated' || sortHeaderId === 'dateModified') {
+        const time = new Date(data[sortHeaderId]).getTime();
+        return isNaN(time) ? 0 : time;
+      }
       if (typeof data[sortHeaderId] === 'string') {
         return data[sortHeaderId].toLocaleLowerCase();
       }
@@ -426,9 +432,11 @@ export class MselListComponent implements OnDestroy, OnInit {
     return this.permissionDataService.hasPermission(SystemPermission.CreateMsels);
   }
 
+  // whether the MSEL opens on the build page: any role on it (Viewer and up) opens it, read-only
+  // unless canEditMsel; editing stays gated there and in the MSEL's own components
   canViewMsel(msel: MselPlus): boolean {
     return this.permissionDataService.hasPermission(SystemPermission.ViewMsels) ||
-      msel?.hasRole(this.loggedInUserId(), '').editor ||
+      msel?.hasRole(this.loggedInUserId(), '').viewer ||
       (msel?.isTemplate && this.permissionDataService.hasPermission(SystemPermission.CreateMsels));
   }
 

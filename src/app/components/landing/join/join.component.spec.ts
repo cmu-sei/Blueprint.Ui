@@ -94,7 +94,7 @@ describe('JoinComponent', () => {
 
     expect(fixture.componentInstance).toBeInstanceOf(JoinComponent);
     expect(xApi.viewedJoinPage).toHaveBeenCalledTimes(1);
-    expect(screen.getByText('Exercise Alpha')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Exercise Alpha' })).toBeInTheDocument();
     expect(screen.getByTitle('Join Exercise Alpha')).toBeInTheDocument();
   });
 

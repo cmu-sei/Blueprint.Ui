@@ -5,6 +5,8 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { Component, input, output } from '@angular/core';
 import { ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { outputToObservable } from '@angular/core/rxjs-interop';
+import { CdkTextareaAutosize } from '@angular/cdk/text-field';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { MatButtonModule } from '@angular/material/button';
@@ -38,16 +40,20 @@ import {
   Msel,
   MselCompetency,
   MselCompetencyService,
+  MselEdit,
   MselImageService,
   MselItemStatus,
   MselPage,
   MselIntegrationNames,
   MselPageService,
   MselRole,
+  MselScoringModel,
+  MselScoringModelService,
   MselService,
   PlayerApplication,
   PlayerApplicationService,
   ScoringModel,
+  SteamfitterScenarioStartMode,
   SystemPermission,
   SystemPermissionsService,
   User,
@@ -61,6 +67,7 @@ import { MselInfoComponent } from './msel-info.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { dialogRefStub } from 'src/app/test-utils/dialog-refs';
 import { TimezoneAbbrPipe } from 'src/app/utilities/timezone-abbr';
+import { recordEmissions } from 'src/app/test-utils/record-emissions';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { permissionApiStubs } from 'src/app/test-utils/mock-permission-data.service';
 import { unstubbed } from 'src/app/test-utils/unstubbed';
@@ -85,6 +92,11 @@ class DurationEditStub {
 }
 
 const ME = 'user-me';
+const AUTHORED: MselScoringModel = {
+  mselId: 'msel-1',
+  description: 'Harbor Questions',
+  categories: [{ id: 'cat-1', displayOrder: '1' as unknown as number, description: 'Move 1', moveNumberFirstDisplay: 1, moveNumberLastDisplay: 1, options: [] }],
+};
 const PAGE: MselPage = { id: 'page-1', mselId: 'msel-1', name: 'Read Ahead', content: '<p>Welcome</p>', allCanView: true };
 const ALL = Object.values(SystemPermission);
 const allBut = (...missing: SystemPermission[]) => ALL.filter((p) => !missing.includes(p));
@@ -123,6 +135,10 @@ async function renderInfo(
     apps?: PlayerApplication[];
     names?: MselIntegrationNames;
     casterUrl?: string;
+    authored?: MselScoringModel | null;
+    citeModels?: ScoringModel[];
+    confirms?: boolean;
+    updateMsel?: (id: string, edit: MselEdit) => Observable<Msel>;
   } = {},
 ) {
   const {
@@ -134,6 +150,12 @@ async function renderInfo(
     apps = [],
     names = {},
     casterUrl = 'http://caster.example/',
+    authored = null,
+    citeModels = [],
+    confirms = true,
+    // the API answers with the saved MSEL, which always has its created and modified dates
+    updateMsel = (id: string, edit: MselEdit) =>
+      of<Msel>({ ...msel(myRoles, startTime, mselExtra), ...edit, id, dateCreated: new Date('2026-10-01T12:00:00Z'), dateModified: new Date() }),
   } = overrides;
   const pageApi = {
     getMselPages: vi.fn(() => of(structuredClone([PAGE]))),
@@ -146,7 +168,7 @@ async function renderInfo(
     getCompetencyFrameworks: vi.fn(() => of<CompetencyFramework[]>([])),
   } satisfies ApiStub<CompetencyFrameworkService>;
   const citeApi = {
-    getScoringModels: vi.fn(() => of<ScoringModel[]>([])),
+    getScoringModels: vi.fn(() => of(structuredClone(citeModels))),
   } satisfies ApiStub<CiteService>;
   const userApi = {
     getUser: vi.fn(() => of<User>({ id: 'user-creator', name: 'Casey Creator' })),
@@ -159,15 +181,21 @@ async function renderInfo(
   } satisfies ApiStub<CasterService>;
   const mselApi = {
     getMselIntegrationNames: vi.fn(() => of(structuredClone(names))),
+    updateMsel: vi.fn(updateMsel),
+    pushIntegrations: vi.fn((id: string) => of<Msel>({ ...msel(myRoles, startTime, mselExtra), id, status: MselItemStatus.Pushing })),
   } satisfies ApiStub<MselService>;
   const imageApi = {
     getMselImage: vi.fn(() => of(new Blob(['image'], { type: 'image/png' }))),
     setMselImage: vi.fn((id: string) => of<Msel>({ ...msel(myRoles, startTime, mselExtra), id, imageDateModified: new Date('2026-10-23T12:00:00Z') })),
     deleteMselImage: vi.fn((id: string) => of<Msel>({ ...msel(myRoles, startTime, mselExtra), id, imageDateModified: null })),
   } satisfies ApiStub<MselImageService>;
+  const scoringModelApi = {
+    getMselScoringModel: vi.fn(() => of(structuredClone(authored))),
+    deleteMselScoringModel: vi.fn(() => of<unknown>(null)),
+  } satisfies ApiStub<MselScoringModelService>;
   const systemMessage = { displayMessage: vi.fn() } satisfies Pick<SystemMessageService, 'displayMessage'>;
-  // The user confirms every dialog.
-  const confirm = vi.fn(() => dialogRefStub<unknown, boolean>(true).dialogRef);
+  // The user confirms every dialog, unless the test says otherwise.
+  const confirm = vi.fn(() => dialogRefStub<unknown, boolean>(confirms).dialogRef);
   const dialog = { confirm } satisfies Pick<CrucibleDialogService, 'confirm'>;
   // MselInfoComponent loads the permissions itself in ngOnInit, so the real
   // service is provided over the stubbed endpoint, without priming it.
@@ -210,6 +238,7 @@ async function renderInfo(
       { provide: CasterService, useValue: casterApi },
       { provide: MselService, useValue: mselApi },
       { provide: MselImageService, useValue: imageApi },
+      { provide: MselScoringModelService, useValue: scoringModelApi },
       { provide: SystemMessageService, useValue: systemMessage },
       {
         provide: ComnSettingsService,
@@ -236,7 +265,7 @@ async function renderInfo(
   // ngModel applies [disabled] in a microtask.
   await rendered.fixture.whenStable();
   rendered.fixture.detectChanges();
-  return { ...rendered, pageApi, confirm, appApi, casterApi, mselApi, userApi, imageApi, systemMessage };
+  return { ...rendered, pageApi, confirm, appApi, casterApi, mselApi, userApi, imageApi, scoringModelApi, systemMessage };
 }
 
 // The settings page is large, so queries go by label, title or text: whole-page
@@ -277,6 +306,25 @@ describe('MselInfoComponent', () => {
     expect(descriptionInput()).toBeEnabled();
     expect(screen.getByLabelText('Player')).toBeEnabled();
     expect(durationEdit(fixture).canEdit()).toBe(true);
+  });
+
+  /**
+   * Verifies: the description is a field that grows to show all of its 600 characters, and Enter adds no line break to it.
+   * Interacts with: the Description textarea and its CdkTextareaAutosize.
+   * Data: a 600-character description; EditMsels.
+   */
+  it('shows the whole description in a field that grows with it', async () => {
+    const description = 'The port is closed. '.repeat(30);
+    const { fixture } = await renderInfo({ permissions: [SystemPermission.EditMsels], mselExtra: { description } });
+    const field = descriptionInput() as HTMLTextAreaElement;
+
+    expect(field.tagName).toBe('TEXTAREA');
+    expect(field.value).toBe(description);
+    expect(fixture.debugElement.query(By.directive(CdkTextareaAutosize))).not.toBeNull();
+    const user = userEvent.setup();
+    await user.clear(field);
+    await user.type(field, 'One{Enter}line');
+    expect(field.value).toBe('Oneline');
   });
 
   /**
@@ -327,6 +375,22 @@ describe('MselInfoComponent', () => {
     expect(screen.queryByText(/Add Page/)).not.toBeInTheDocument();
     await openPage();
     expect(screen.queryByTitle('Edit Page')).not.toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: Push Integrations and Remove Integrations are Material stroked buttons like Upload Image, not browser-default buttons.
+   * Interacts with: the mat-stroked-button directive's host classes.
+   * Data: MSEL role Owner; a pending MSEL using Player; or one deployed to Caster with workspace ws-1.
+   */
+  it.each([
+    { title: 'Push Integrations', mselExtra: {} },
+    { title: 'Remove Integrations', mselExtra: { status: MselItemStatus.Deployed, useCaster: true, casterDirectoryId: 'dir-1', casterWorkspaceId: 'ws-1' } },
+  ])('styles $title like the other stroked buttons', async ({ title, mselExtra }) => {
+    await renderInfo({ myRoles: [MselRole.Owner], mselExtra });
+
+    const stroked = Array.from(screen.getByRole('button', { name: 'Upload Image' }).classList).filter((c) => c.startsWith('mat-mdc-'));
+    expect(stroked).toContain('mat-mdc-outlined-button');
+    expect(screen.getByTitle(title)).toHaveClass(...stroked);
   });
 
   /**
@@ -668,6 +732,270 @@ describe('MselInfoComponent', () => {
     });
   });
 
+  describe('Steamfitter', () => {
+    const startSelect = (fixture: ComponentFixture<unknown>) =>
+      TestbedHarnessEnvironment.loader(fixture).getHarnessOrNull(MatSelectHarness.with({ selector: '[aria-label="Start the scenario"]' }));
+    const optionTexts = async (select: MatSelectHarness) => {
+      await select.open();
+      const texts = await Promise.all((await select.getOptions()).map((option) => option.getText()));
+      await select.close();
+      return texts;
+    };
+
+    /**
+     * Verifies: with Steamfitter ticked, the three ways to start the scenario are offered, the MSEL's own is chosen, and choosing another marks the MSEL changed.
+     * Interacts with: steamfitterStartModes, real PermissionDataService (stubbed grants), MatSelectHarness.
+     * Data: EditMsels; a pending MSEL using Steamfitter whose scenario starts manually.
+     */
+    it('offers when to start the Steamfitter scenario', async () => {
+      const { fixture } = await renderInfo({
+        permissions: [SystemPermission.EditMsels],
+        mselExtra: { useSteamfitter: true, steamfitterScenarioStartMode: SteamfitterScenarioStartMode.Manual },
+      });
+
+      const select = await startSelect(fixture);
+      expect(await select.getValueText()).toBe('Manually');
+      expect(await optionTexts(select)).toEqual(['Manually', 'When the push finishes', 'At the MSEL start time']);
+
+      await select.clickOptions({ text: 'At the MSEL start time' });
+
+      expect(fixture.componentInstance.msel.steamfitterScenarioStartMode).toBe(SteamfitterScenarioStartMode.AtStartTime);
+      expect(screen.getByText('Changes have not been saved!')).toBeInTheDocument();
+    });
+
+    /**
+     * Verifies: the setting is shown only for a MSEL using Steamfitter.
+     * Interacts with: the Steamfitter checkbox binding.
+     * Data: EditMsels; a pending MSEL not using Steamfitter.
+     */
+    it('hides when to start the scenario without Steamfitter', async () => {
+      const { fixture } = await renderInfo({ permissions: [SystemPermission.EditMsels], mselExtra: { useSteamfitter: false } });
+
+      expect(await startSelect(fixture)).toBeNull();
+    });
+
+    /**
+     * Verifies: a pushed MSEL keeps the setting editable while the Steamfitter box itself is locked, because when the scenario starts changes nothing the push built.
+     * Interacts with: integrationsLocked, canEditMsel.
+     * Data: EditMsels; a deployed MSEL using Steamfitter with scenario sc-1, starting on the push.
+     */
+    it('keeps when to start the scenario editable on a pushed MSEL', async () => {
+      const { fixture } = await renderInfo({
+        permissions: [SystemPermission.EditMsels],
+        mselExtra: {
+          status: MselItemStatus.Deployed,
+          useSteamfitter: true,
+          steamfitterScenarioId: 'sc-1',
+          steamfitterScenarioStartMode: SteamfitterScenarioStartMode.OnPush,
+        },
+      });
+
+      expect(screen.getByLabelText('Steamfitter')).toBeDisabled();
+      const select = await startSelect(fixture);
+      expect(await select.isDisabled()).toBe(false);
+      expect(await select.getValueText()).toBe('When the push finishes');
+    });
+
+    /**
+     * Verifies: without EditMsels or an editing role the setting is shown but cannot be changed.
+     * Interacts with: canEditMsel, real PermissionDataService (stubbed grants).
+     * Data: every permission but EditMsels; the Viewer role. A pending MSEL using Steamfitter starting at the MSEL start time.
+     */
+    it('shows when to start the scenario read-only without EditMsels or an editing role', async () => {
+      const { fixture } = await renderInfo({
+        permissions: allBut(SystemPermission.EditMsels),
+        myRoles: [MselRole.Viewer],
+        mselExtra: { useSteamfitter: true, steamfitterScenarioStartMode: SteamfitterScenarioStartMode.AtStartTime },
+      });
+
+      const select = await startSelect(fixture);
+      expect(await select.isDisabled()).toBe(true);
+      expect(await select.getValueText()).toBe('At the MSEL start time');
+    });
+
+    /**
+     * Verifies: a pushed scenario shows whether it has been started, from the status Blueprint reads with its name, and nothing when Steamfitter could not be read.
+     * Interacts with: MselService.getMselIntegrationNames (stub), steamfitterScenarioStatusLabel.
+     * Data: a deployed MSEL using Steamfitter with scenario sc-1 named Exercise Tasks; statuses Ready, Active, Ended and none.
+     */
+    it.each([
+      { status: 'Ready', label: '(Not started)' },
+      { status: 'Active', label: '(Started)' },
+      { status: 'Ended', label: '(Ended)' },
+    ])('shows a $status scenario as $label', async ({ status, label }) => {
+      await renderInfo({
+        mselExtra: { status: MselItemStatus.Deployed, useSteamfitter: true, steamfitterScenarioId: 'sc-1' },
+        names: { steamfitterScenarioName: 'Exercise Tasks', steamfitterScenarioStatus: status },
+      });
+
+      expect(screen.getByText('Exercise Tasks')).toBeInTheDocument();
+      expect(screen.getByText(label)).toBeInTheDocument();
+    });
+
+    it('shows no scenario status when Steamfitter could not say', async () => {
+      await renderInfo({
+        mselExtra: { status: MselItemStatus.Deployed, useSteamfitter: true, steamfitterScenarioId: 'sc-1' },
+        names: { steamfitterScenarioName: '', steamfitterScenarioStatus: '' },
+      });
+
+      expect(screen.getByTitle('sc-1')).toBeInTheDocument();
+      expect(screen.queryByText(/Not started|Started|Ended/)).not.toBeInTheDocument();
+    });
+  });
+
+  describe('Hide individual names from assessors', () => {
+    const box = () => screen.getByLabelText('Hide individual names from assessors');
+
+    /**
+     * Verifies: ticking the box marks the MSEL changed, and Save sends hideNamesOnAssessorView.
+     * Interacts with: MselService.updateMsel (stub), saveChanges, real PermissionDataService (stubbed grants).
+     * Data: EditMsels; a pending MSEL that shows names.
+     */
+    it('saves hiding names from assessors', async () => {
+      const { mselApi } = await renderInfo({ permissions: [SystemPermission.EditMsels] });
+      const user = userEvent.setup();
+
+      expect(box()).not.toBeChecked();
+      await user.click(box());
+      expect(screen.getByText('Changes have not been saved!')).toBeInTheDocument();
+      await user.click(screen.getAllByTitle('Save Changes')[0]);
+
+      expect(mselApi.updateMsel).toHaveBeenCalledTimes(1);
+      expect(mselApi.updateMsel.mock.calls[0][1].hideNamesOnAssessorView).toBe(true);
+    });
+
+    /**
+     * Verifies: the box stays editable on a pushed MSEL, since it changes only what the Assessor View lists.
+     * Interacts with: canEditMsel, integrationsLocked.
+     * Data: EditMsels; a deployed MSEL that hides names.
+     */
+    it('keeps hiding names editable on a pushed MSEL', async () => {
+      await renderInfo({ permissions: [SystemPermission.EditMsels], mselExtra: { status: MselItemStatus.Deployed, hideNamesOnAssessorView: true } });
+
+      expect(box()).toBeChecked();
+      expect(box()).toBeEnabled();
+    });
+
+    /**
+     * Verifies: the MSEL's owner can change the box without EditMsels, as the API's MSEL update allows.
+     * Interacts with: canUpdateMsel, real PermissionDataService (stubbed grants).
+     * Data: every permission but EditMsels; the Owner role; a MSEL that hides names.
+     */
+    it('lets the MSEL owner change hiding names', async () => {
+      await renderInfo({ permissions: allBut(SystemPermission.EditMsels), myRoles: [MselRole.Owner], mselExtra: { hideNamesOnAssessorView: true } });
+
+      expect(box()).toBeEnabled();
+    });
+
+    /**
+     * Verifies: without EditMsels the box is read-only to everyone but the owner, including an Editor, whom it hides names from
+     * and whose save the API's MSEL update refuses.
+     * Interacts with: canUpdateMsel, real PermissionDataService (stubbed grants).
+     * Data: every permission but EditMsels; the Viewer role, then the Editor role; a MSEL that hides names.
+     */
+    it.each([
+      { label: 'a Viewer', role: MselRole.Viewer },
+      { label: 'an Editor', role: MselRole.Editor },
+    ])('shows hiding names read-only to $label without EditMsels', async ({ role }) => {
+      await renderInfo({ permissions: allBut(SystemPermission.EditMsels), myRoles: [role], mselExtra: { hideNamesOnAssessorView: true } });
+
+      expect(box()).toBeChecked();
+      expect(box()).toBeDisabled();
+    });
+  });
+
+  describe('Push Integrations start time', () => {
+    const HOUR = 60 * 60 * 1000;
+    const pushButton = () => screen.getByTitle('Push Integrations');
+    const push = async (fixture: ComponentFixture<unknown>) => {
+      await userEvent.click(pushButton());
+      await fixture.whenStable();
+    };
+
+    /**
+     * Verifies: a push of a MSEL whose start time is past, or that has none, first says the start time will be set to now, and on Continue saves the current time as the start time and only then pushes.
+     * Interacts with: CrucibleDialogService.confirm (stub, confirms), MselService.updateMsel and pushIntegrations (stubs), MselDataService.
+     * Data: the Owner role; a pending MSEL using Player, starting an hour ago, or with no start time (near miss: the year-1 date the Set a Start Time box clears to).
+     */
+    it.each([
+      { label: 'a start time in the past', startTime: () => new Date(Date.now() - HOUR), reason: /^The MSEL start time, .+, is in the past\. / },
+      { label: 'no start time', startTime: () => undefined, reason: /^This MSEL has no start time\. / },
+      { label: 'the cleared start time', startTime: () => new Date('0001-01-02T08:00:00'), reason: /^This MSEL has no start time\. / },
+    ])('sets the start time to now before pushing a MSEL with $label', async ({ startTime, reason }) => {
+      const { fixture, confirm, mselApi } = await renderInfo({ myRoles: [MselRole.Owner], startTime: startTime() });
+
+      const before = Date.now();
+      await push(fixture);
+      const after = Date.now();
+
+      expect(confirm).toHaveBeenCalledTimes(1);
+      expect(confirm).toHaveBeenCalledWith(expect.objectContaining({
+        title: 'Push Integrations',
+        message: expect.stringMatching(new RegExp(`${reason.source}The start time will be set to the current date and time before pushing\\.$`)),
+        confirmText: 'Continue',
+        cancelText: 'Cancel',
+      }));
+      expect(mselApi.updateMsel).toHaveBeenCalledTimes(1);
+      const [id, edit] = mselApi.updateMsel.mock.calls[0];
+      expect(id).toBe('msel-1');
+      expect(edit.startTime.valueOf()).toBeGreaterThanOrEqual(before);
+      expect(edit.startTime.valueOf()).toBeLessThanOrEqual(after);
+      expect(edit.durationSeconds).toBe(3600);
+      expect(mselApi.pushIntegrations).toHaveBeenCalledWith('msel-1');
+      expect(mselApi.updateMsel.mock.invocationCallOrder[0]).toBeLessThan(mselApi.pushIntegrations.mock.invocationCallOrder[0]);
+    });
+
+    /**
+     * Verifies: a start time still to come is kept, and the push is confirmed as before.
+     * Interacts with: CrucibleDialogService.confirm (stub, confirms), MselService.updateMsel and pushIntegrations (stubs).
+     * Data: the Owner role; a pending MSEL using Player, starting in an hour.
+     */
+    it('pushes a MSEL whose start time is still to come without changing it', async () => {
+      const { fixture, confirm, mselApi } = await renderInfo({ myRoles: [MselRole.Owner], startTime: new Date(Date.now() + HOUR) });
+
+      await push(fixture);
+
+      expect(confirm).toHaveBeenCalledWith(expect.objectContaining({
+        title: 'Push Integrations',
+        message: 'Are you sure that you want to push MSEL data to the selected applications?',
+      }));
+      expect(mselApi.updateMsel).not.toHaveBeenCalled();
+      expect(mselApi.pushIntegrations).toHaveBeenCalledWith('msel-1');
+    });
+
+    /**
+     * Verifies: Cancel leaves the start time alone and pushes nothing.
+     * Interacts with: CrucibleDialogService.confirm (stub, cancels), MselService.updateMsel and pushIntegrations (stubs).
+     * Data: the Owner role; a pending MSEL using Player, starting an hour ago.
+     */
+    it('neither saves nor pushes when the start time dialog is cancelled', async () => {
+      const { fixture, confirm, mselApi } = await renderInfo({ myRoles: [MselRole.Owner], startTime: new Date(Date.now() - HOUR), confirms: false });
+
+      await push(fixture);
+
+      expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ confirmText: 'Continue', cancelText: 'Cancel' }));
+      expect(mselApi.updateMsel).not.toHaveBeenCalled();
+      expect(mselApi.pushIntegrations).not.toHaveBeenCalled();
+    });
+
+    /**
+     * Verifies: a start time that cannot be saved is not pushed with, so the push never runs on a start time the MSEL does not have.
+     * Interacts with: CrucibleDialogService.confirm (stub, confirms), MselService.updateMsel (stub, fails), MselService.pushIntegrations (stub).
+     * Data: the Owner role; a pending MSEL using Player with no start time; the save answers 403.
+     */
+    it('does not push when the new start time cannot be saved', async () => {
+      const { fixture, mselApi } = await renderInfo({
+        myRoles: [MselRole.Owner],
+        updateMsel: () => throwError(() => ({ status: 403 })),
+      });
+
+      await push(fixture);
+
+      expect(mselApi.updateMsel).toHaveBeenCalledTimes(1);
+      expect(mselApi.pushIntegrations).not.toHaveBeenCalled();
+    });
+  });
+
   describe('card image', () => {
     // jsdom has no object URLs.
     beforeEach(() => {
@@ -742,6 +1070,89 @@ describe('MselInfoComponent', () => {
       expect(imageApi.deleteMselImage.mock.calls).toEqual([['msel-1']]);
       expect(screen.queryByAltText('Card image for Exercise Alpha')).not.toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Upload Image' })).toBeInTheDocument();
+    });
+  });
+  describe('the CITE scoring model', () => {
+    const cite = { useCite: true, usePlayer: false };
+    const openTabs = (fixture: ComponentFixture<MselInfoComponent>) =>
+      recordEmissions(outputToObservable(fixture.componentInstance.openTab));
+
+    /**
+     * Verifies: a MSEL with its own scoring model summarizes it on the Config tab, and may be pushed without a linked CITE model.
+     * Interacts with: MselScoringModelService.getMselScoringModel (stub), scoringModelSummary, hasCiteScoringModel, the Push Integrations button.
+     * Data: MSEL role Owner; a pending MSEL using CITE with no linked model; the authored model Harbor Questions, one category without options.
+     */
+    it('summarizes the authored model and pushes without a linked one', async () => {
+      const { scoringModelApi } = await renderInfo({ myRoles: [MselRole.Owner], mselExtra: cite, authored: AUTHORED });
+
+      expect(scoringModelApi.getMselScoringModel).toHaveBeenCalledWith('msel-1');
+      expect(screen.getByText('Scoring Model:')).toBeInTheDocument();
+      expect(screen.getByText('Harbor Questions (1 category, 0 options)')).toBeInTheDocument();
+      expect(screen.getByTitle('Push Integrations')).toBeEnabled();
+    });
+
+    /**
+     * Verifies: a MSEL linked to a CITE scoring model summarizes it by the name CITE gives it.
+     * Interacts with: CiteService.getScoringModels (stub), updateCiteScoringModelName, scoringModelSummary.
+     * Data: MSEL role Owner; a pending MSEL using CITE linked to cite-1, which CITE lists as Project Lagoon Questions by Move.
+     */
+    it('summarizes the linked CITE model by name', async () => {
+      await renderInfo({
+        myRoles: [MselRole.Owner],
+        mselExtra: { ...cite, citeScoringModelId: 'cite-1' },
+        citeModels: [{ id: 'cite-1', description: 'Project Lagoon Questions by Move' }],
+      });
+
+      expect(screen.getByText('Project Lagoon Questions by Move')).toBeInTheDocument();
+      expect(screen.getByTitle('Push Integrations')).toBeEnabled();
+    });
+
+    /**
+     * Verifies: a MSEL using CITE with neither a linked nor an authored scoring model says so and cannot be pushed; the radio, picker and editor are no longer on the Config tab.
+     * Interacts with: scoringModelSummary, hasCiteScoringModel, the Push Integrations button.
+     * Data: MSEL role Owner; a pending MSEL using CITE with no scoring model of either kind.
+     */
+    it('blocks the push without a scoring model of either kind', async () => {
+      await renderInfo({ myRoles: [MselRole.Owner], mselExtra: cite });
+
+      expect(screen.getByText('not set')).toBeInTheDocument();
+      expect(screen.queryByRole('radio', { name: 'Link a CITE scoring model' })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /Scoring Model$/ })).not.toBeInTheDocument();
+      expect(screen.getByTitle('Push Integrations')).toBeDisabled();
+    });
+
+    /**
+     * Verifies: Open the Scoring Model tab asks the MSEL page to open that rail tab.
+     * Interacts with: openTab.
+     * Data: MSEL role Owner; a pending MSEL using CITE.
+     */
+    it('opens the Scoring Model tab', async () => {
+      const { fixture } = await renderInfo({ myRoles: [MselRole.Owner], mselExtra: cite });
+      const opened = openTabs(fixture);
+
+      await userEvent.setup().click(screen.getByRole('button', { name: 'Open the Scoring Model tab' }));
+
+      expect(opened).toEqual(['Scoring Model']);
+    });
+
+    /**
+     * Verifies: once pushed, the Config tab still summarizes the model and adds the evaluation with its link into CITE.
+     * Interacts with: integrationsLocked, getCiteEvaluationUrl, MselService.getMselIntegrationNames (stub).
+     * Data: MSEL role Owner; a deployed MSEL using CITE with evaluation eval-1 named Harbor Evaluation and the authored model Harbor Questions.
+     */
+    it('shows the evaluation after the push', async () => {
+      await renderInfo({
+        myRoles: [MselRole.Owner],
+        mselExtra: { ...cite, status: MselItemStatus.Deployed, citeEvaluationId: 'eval-1' },
+        authored: AUTHORED,
+        names: { citeEvaluationName: 'Harbor Evaluation' },
+      });
+
+      expect(screen.getByText('Harbor Questions (1 category, 0 options)')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Open the Scoring Model tab' })).toBeInTheDocument();
+      expect(screen.getByText('Evaluation:')).toBeInTheDocument();
+      expect(screen.getByText('Harbor Evaluation')).toBeInTheDocument();
+      expect(screen.getByTitle('Open in CITE')).toHaveAttribute('href', expect.stringContaining('evaluation=eval-1'));
     });
   });
 });

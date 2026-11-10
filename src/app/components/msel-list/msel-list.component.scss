@@ -103,6 +103,14 @@
   text-align: left;
 }
 
+// one line, ending in an ellipsis; the full text is in a tooltip (appOverflowTooltip)
+.truncated-description {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
 .shrink {
   margin: 0;
   padding: 0;

@@ -29,6 +29,7 @@ import { MselItemStatus } from './mselItemStatus';
 import { Team } from './team';
 import { IntegrationType } from './integrationType';
 import { PlayerApplication } from './playerApplication';
+import { SteamfitterScenarioStartMode } from './steamfitterScenarioStartMode';
 
 
 export interface Msel { 
@@ -55,6 +56,7 @@ export interface Msel {
     useSteamfitter?: boolean;
     steamfitterScenarioId?: string | null;
     steamfitterIntegrationType?: IntegrationType;
+    steamfitterScenarioStartMode?: SteamfitterScenarioStartMode;
     useCaster?: boolean;
     casterDirectoryId?: string | null;
     casterWorkspaceId?: string | null;
@@ -79,6 +81,7 @@ export interface Msel {
     showMoveOnAssessorView?: boolean;
     showGroupOnAssessorView?: boolean;
     showIntegrationTargetOnAssessorView?: boolean;
+    hideNamesOnAssessorView?: boolean;
     moves?: Array<Move> | null;
     dataFields?: Array<DataField> | null;
     scenarioEvents?: Array<ScenarioEvent> | null;

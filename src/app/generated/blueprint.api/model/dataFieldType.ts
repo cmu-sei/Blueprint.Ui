@@ -32,8 +32,8 @@ export const DataFieldType = {
     Checkbox: 'Checkbox',
     Url: 'Url',
     Move: 'Move',
-    IpAddress: 'IpAddress',
     Competency: 'Competency',
+    IpAddress: 'IpAddress',
     Network: 'Network'
 } as const;
 export type DataFieldType = typeof DataFieldType[keyof typeof DataFieldType];

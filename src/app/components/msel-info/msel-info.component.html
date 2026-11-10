@@ -70,9 +70,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <div class="single-detail center-self">
             <mat-form-field class="full-width">
               <mat-label>Description</mat-label>
-              <input type="text" matInput placeholder="Description" [(ngModel)]="msel.description" maxlength="600"
+              <!-- tall enough for all 600 characters; Enter is kept out, as in a one-line field -->
+              <textarea matInput placeholder="Description" [(ngModel)]="msel.description" maxlength="600"
+                cdkTextareaAutosize cdkAutosizeMinRows="2"
                 (cut)="isChanged = true" (change)="isChanged = true" (paste)="isChanged = true"
-                (keypress)="isChanged = true" [disabled]="!canEditMsel()" />
+                (keypress)="isChanged = true" (keydown.enter)="$event.preventDefault()"
+                [disabled]="!canEditMsel()"></textarea>
               <mat-hint align="end">{{ msel.description?.length || 0 }} / 600 characters</mat-hint>
             </mat-form-field>
           </div>
@@ -108,6 +111,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 (keypress)="isChanged = true" title="Mark this MSEL as a reusable template for creating new MSELs">Is a
                 Template</mat-checkbox>
             </div>
+          </div>
+          <!-- Hide names from assessors -->
+          <div class="single-checkbox">
+            <mat-checkbox [(ngModel)]="msel.hideNamesOnAssessorView" [disabled]="!canUpdateMsel()"
+              (change)="isChanged = true"
+              title="The Assessor View shows only the team on each xAPI statement. The MSEL's owners and users who can view every MSEL still see the names; everyone else, including its Editors and Evaluators, does not. The LRS still records them.">Hide
+              individual names from assessors</mat-checkbox>
           </div>
           <!-- MSEL Start Time -->
           <div class="single-checkbox">
@@ -156,12 +166,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 !msel.casterWorkspaceId &&
                 !msel.isTemplate) ||
                 pushStatus) {
-                <button (click)="pushIntegrations()" title="Push Integrations" class="thin-button" [disabled]="!canManageMsel() ||
+                <button mat-stroked-button (click)="pushIntegrations()" title="Push Integrations" class="thin-button" [disabled]="!canManageMsel() ||
                               (msel.useGallery && galleryToDo()) ||
-                              (msel.useCite && !msel.citeScoringModelId) ||
+                              (msel.useCite && !hasCiteScoringModel()) ||
                               (msel.useCite && hasCiteTeamsWithoutType()) ||
                               !!casterWarningMessage() ||
-                              isBusy || isChanged || (pushStatus && pushStatus.startsWith('ERROR'))">@if (pushStatus &&
+                              isBusy || isChanged || (!!pushStatus && pushStatus.startsWith('ERROR'))">@if (pushStatus &&
                   !pushStatus.startsWith('ERROR')) {
                   <span>{{ pushStatus }} ...</span>
                   }@if (!pushStatus || pushStatus.startsWith('ERROR')) {
@@ -174,7 +184,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 msel.steamfitterScenarioId ||
                 msel.casterWorkspaceId) &&
                 !pushStatus) {
-                <button (click)="pullIntegrations()" title="Remove Integrations" class="thin-button"
+                <button mat-stroked-button (click)="pullIntegrations()" title="Remove Integrations" class="thin-button"
                   [disabled]="!canManageMsel() || isChanged">Remove
                   Integrations</button>
                 }
@@ -260,28 +270,10 @@ project root for license information or contact permission@sei.cmu.edu for full 
               <div class="integration-details">
                 <div class="integration-field">
                   <span class="integration-label">Scoring Model:</span>
-                  @if (scoringModelList.length > 0 && !integrationsLocked() && canEditMsel()) {
-                  <mat-form-field class="integration-select">
-                    <mat-select [(ngModel)]="msel.citeScoringModelId" (cut)="isChanged = true"
-                      (selectionChange)="isChanged = true; updateCiteScoringModelName()" (paste)="isChanged = true"
-                      (keypress)="isChanged = true">
-                      <mat-option [value]="" />
-                      @for (scoringModel of scoringModelList; track scoringModel) {
-                      <mat-option [value]="scoringModel.id">
-                        {{ scoringModel.description }}
-                      </mat-option>
-                      }
-                    </mat-select>
-                  </mat-form-field>
-                  }
-                  @if (scoringModelList.length === 0 || integrationsLocked() || !canEditMsel()) {
-                  @if (msel.citeScoringModelId) {
-                  <span class="integration-guid" [title]="msel.citeScoringModelId">{{ msel.citeScoringModelId }}</span>
-                  @if (citeScoringModelName) {
-                  <span class="integration-name">{{ citeScoringModelName }}</span>
-                  }
-                  }
-                  }
+                  <span class="integration-summary">{{ scoringModelSummary() }}</span>
+                  <button mat-stroked-button class="integration-tab-link" (click)="openTab.emit('Scoring Model')">
+                    Open the Scoring Model tab
+                  </button>
                 </div>
                 @if (!msel.isTemplate && msel.citeEvaluationId) {
                 <div class="integration-field">
@@ -311,8 +303,23 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   [(ngModel)]="msel.useSteamfitter" (cut)="isChanged = true" (change)="isChanged = true"
                   (paste)="isChanged = true" (keypress)="isChanged = true">Steamfitter</mat-checkbox>
               </div>
-              @if (!msel.isTemplate && msel.useSteamfitter && msel.steamfitterScenarioId) {
+              @if (msel.useSteamfitter) {
               <div class="integration-details">
+                <!-- not locked with the other settings: when the scenario starts changes nothing the push built -->
+                <div class="integration-field">
+                  <span class="integration-label">Start the scenario:</span>
+                  <mat-form-field class="integration-select">
+                    <mat-select [(ngModel)]="msel.steamfitterScenarioStartMode" [disabled]="!canEditMsel()"
+                      aria-label="Start the scenario" (selectionChange)="isChanged = true">
+                      @for (startMode of steamfitterStartModes; track startMode.value) {
+                      <mat-option [value]="startMode.value">
+                        {{ startMode.label }}
+                      </mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+                @if (!msel.isTemplate && msel.steamfitterScenarioId) {
                 <div class="integration-field">
                   <span class="integration-label">Scenario:</span>
                   <span class="integration-guid" [title]="msel.steamfitterScenarioId">{{ msel.steamfitterScenarioId
@@ -320,11 +327,15 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   @if (steamfitterScenarioName) {
                   <span class="integration-name">{{ steamfitterScenarioName }}</span>
                   }
+                  @if (steamfitterScenarioStatusLabel()) {
+                  <span class="integration-name">({{ steamfitterScenarioStatusLabel() }})</span>
+                  }
                   <a [href]="getSteamfitterScenarioUrl()" target="_blank" class="integration-link"
                     title="Open in Steamfitter">
                     <mat-icon class="mdi-18px" fontIcon="mdi-open-in-new" />
                   </a>
                 </div>
+                }
               </div>
               }
             </div>
