@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, input, output } from '@angular/core';
 import { ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { DragDropModule } from '@angular/cdk/drag-drop';
@@ -43,30 +43,32 @@ import { ApiStub } from 'src/app/test-utils/api-stub';
 import { dialogRefStub } from 'src/app/test-utils/dialog-refs';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { permissionApiStubs } from 'src/app/test-utils/mock-permission-data.service';
+import { DurationViewComponent } from '../shared/duration-view/duration-view.component';
+import { DataValueComponent } from '../data-value/data-value.component';
 
-@Component({ selector: 'app-duration-view', template: '', standalone: false })
+@Component({ selector: 'app-duration-view', template: '' })
 class DurationViewStub {
-  @Input() startTime: Date;
-  @Input() durationSeconds: number;
-  @Input() showRealTime: boolean;
+  readonly startTime = input<Date>(undefined);
+  readonly durationSeconds = input<number>(undefined);
+  readonly showRealTime = input<boolean>(undefined);
 }
-@Component({ selector: 'app-data-value', template: '', standalone: false })
+@Component({ selector: 'app-data-value', template: '' })
 class DataValueStub {
-  @Input() value: string;
-  @Output() valueChange = new EventEmitter<string>();
-  @Input() dataField: DataField;
-  @Input() canEdit: boolean;
-  @Input() canApprove: boolean;
-  @Input() isOwner: boolean;
-  @Input() showValueOnly: boolean;
-  @Input() organizationOptions: unknown[];
-  @Input() teamOptions: unknown[];
-  @Input() unitOptions: unknown[];
-  @Input() cardOptions: unknown[];
-  @Input() moveOptions: unknown[];
-  @Input() gallerySourceTypeOptions: unknown[];
-  @Input() galleryItemStatusOptions: string[];
-  @Input() userOptions: unknown[];
+  readonly value = input<string>(undefined);
+  readonly valueChange = output<string>();
+  readonly dataField = input<DataField>(undefined);
+  readonly canEdit = input<boolean>(undefined);
+  readonly canApprove = input<boolean>(undefined);
+  readonly isOwner = input<boolean>(undefined);
+  readonly showValueOnly = input<boolean>(undefined);
+  readonly organizationOptions = input<unknown[]>(undefined);
+  readonly teamOptions = input<unknown[]>(undefined);
+  readonly unitOptions = input<unknown[]>(undefined);
+  readonly cardOptions = input<unknown[]>(undefined);
+  readonly moveOptions = input<unknown[]>(undefined);
+  readonly gallerySourceTypeOptions = input<unknown[]>(undefined);
+  readonly galleryItemStatusOptions = input<string[]>(undefined);
+  readonly userOptions = input<unknown[]>(undefined);
 }
 
 const ME = 'user-me';
@@ -142,7 +144,10 @@ async function renderEventList(
       MatSelectModule,
       MatSortModule,
     ],
-    declarations: [ScenarioEventListComponent, DurationViewStub, DataValueStub],
+    childStubs: [
+      { replace: DurationViewComponent, with: DurationViewStub },
+      { replace: DataValueComponent, with: DataValueStub },
+    ],
     providers: [
       { provide: SystemPermissionsService, useValue: permissionApis.systemPermissions },
       PermissionDataService,
@@ -193,7 +198,7 @@ describe('ScenarioEventListComponent', () => {
   it('lists the events with their values', async () => {
     const { fixture } = await renderEventList({ permissions: [SystemPermission.EditMsels] });
 
-    expect(dataValues(fixture).map((v) => v.value)).toEqual(['Phishing wave', 'Ransom note', 'Status update']);
+    expect(dataValues(fixture).map((v) => v.value())).toEqual(['Phishing wave', 'Ransom note', 'Status update']);
   });
 
   /**
@@ -215,8 +220,8 @@ describe('ScenarioEventListComponent', () => {
     for (const name of ['Highlight', 'Copy', 'Delete']) {
       expect(screen.getByRole('menuitem', { name })).toBeInTheDocument();
     }
-    expect(dataValues(fixture)[0].canEdit).toBe(true);
-    expect(dataValues(fixture)[0].isOwner).toBe(true);
+    expect(dataValues(fixture)[0].canEdit()).toBe(true);
+    expect(dataValues(fixture)[0].isOwner()).toBe(true);
   });
 
   /**
@@ -232,9 +237,9 @@ describe('ScenarioEventListComponent', () => {
     expect(row(1).queryByTitle('Select event 1')).not.toBeInTheDocument();
     expect(row(1).getByRole('button', { name: 'Hide event 1 on the Exercise View' })).toBeDisabled();
     for (const value of dataValues(fixture)) {
-      expect(value.canEdit).toBe(false);
-      expect(value.canApprove).toBe(false);
-      expect(value.isOwner).toBe(false);
+      expect(value.canEdit()).toBe(false);
+      expect(value.canApprove()).toBe(false);
+      expect(value.isOwner()).toBe(false);
     }
     await openEventMenu(1);
     expect(screen.getByRole('menuitem', { name: 'Edit' })).toBeInTheDocument();
@@ -252,8 +257,8 @@ describe('ScenarioEventListComponent', () => {
     const { fixture } = await renderEventList({ myRoles: [MselRole.Approver] });
 
     for (const value of dataValues(fixture)) {
-      expect(value.canApprove).toBe(true);
-      expect(value.canEdit).toBe(true);
+      expect(value.canApprove()).toBe(true);
+      expect(value.canEdit()).toBe(true);
     }
   });
 
@@ -314,7 +319,7 @@ describe('ScenarioEventListComponent', () => {
   it('restricts a starter MSEL', async () => {
     const { fixture } = await renderEventList({ permissions: [SystemPermission.EditMsels], isStarterMsel: true });
 
-    expect(dataValues(fixture)[0].canEdit).toBe(false);
+    expect(dataValues(fixture)[0].canEdit()).toBe(false);
     expect(row(1).queryByRole('button', { name: 'Hide event 1 on the Exercise View' })).not.toBeInTheDocument();
     expect(row(2).queryByRole('button', { name: 'Unhide event 2 on the Exercise View' })).not.toBeInTheDocument();
     await openEventMenu(1);
@@ -350,8 +355,8 @@ describe('ScenarioEventListComponent', () => {
 
     expect(dataValues(fixture)).toHaveLength(3);
     for (const value of dataValues(fixture)) {
-      expect(value.gallerySourceTypeOptions).toEqual(['News', 'Social']);
-      expect(value.galleryItemStatusOptions).toEqual(['Green', 'Red']);
+      expect(value.gallerySourceTypeOptions()).toEqual(['News', 'Social']);
+      expect(value.galleryItemStatusOptions()).toEqual(['Green', 'Red']);
     }
     const user = await openEventMenu(1);
     await user.click(screen.getByTitle('Edit event 1'));

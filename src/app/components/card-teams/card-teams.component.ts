@@ -2,18 +2,10 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import {
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-  Input,
-  ElementRef,
-  ViewChild,
-} from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, ElementRef, inject, input, viewChild } from '@angular/core';
 import { PageEvent, MatPaginator } from '@angular/material/paginator';
 import { MatSort, MatSortable } from '@angular/material/sort';
-import { MatTableDataSource } from '@angular/material/table';
+import { MatTableDataSource, MatTable, MatColumnDef, MatCellDef, MatCell, MatRowDef, MatRow, MatHeaderCellDef, MatHeaderCell, MatHeaderRowDef, MatHeaderRow } from '@angular/material/table';
 import { CardTeam, SystemPermission, Team } from 'src/app/generated/blueprint.api';
 import { CardTeamDataService } from 'src/app/data/team/card-team-data.service';
 import { MselPlus } from 'src/app/data/msel/msel-data.service';
@@ -21,22 +13,34 @@ import { MselQuery } from 'src/app/data/msel/msel.query';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
 import { Observable, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { MatIcon } from '@angular/material/icon';
+import { MatFormField, MatInput, MatSuffix } from '@angular/material/input';
+import { FormsModule } from '@angular/forms';
+import { MatIconButton } from '@angular/material/button';
+import { MatCard } from '@angular/material/card';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
+import { MatCheckbox } from '@angular/material/checkbox';
 
 @Component({
     selector: 'app-card-teams',
     templateUrl: './card-teams.component.html',
     styleUrls: ['./card-teams.component.scss'],
-    standalone: false
+    imports: [MatIcon, MatFormField, MatInput, FormsModule, MatIconButton, MatSuffix, MatTable, MatSort, MatColumnDef, MatCellDef, MatCell, MatRowDef, MatRow, MatCard, MatProgressSpinner, MatHeaderCellDef, MatHeaderCell, MatCheckbox, MatHeaderRowDef, MatHeaderRow]
 })
 
 export class CardTeamsComponent implements OnDestroy, OnInit {
-  @Input() cardId: string;
-  @Input() loggedInUserId: string;
+  private cardTeamDataService = inject(CardTeamDataService);
+  private mselQuery = inject(MselQuery);
+  private permissionDataService = inject(PermissionDataService);
+  private changeDetectorRef = inject(ChangeDetectorRef);
+
+  readonly cardId = input<string>(undefined);
+  readonly loggedInUserId = input<string>(undefined);
   msel = new MselPlus();
   mselTeamList: Team[] = [];
-  @ViewChild('teamsInput') teamsInput: ElementRef<HTMLInputElement>;
-  @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
-  @ViewChild(MatSort, { static: true }) sort: MatSort; teams: Team[];
+  readonly teamsInput = viewChild<ElementRef<HTMLInputElement>>('teamsInput');
+  readonly paginator = viewChild(MatPaginator);
+  readonly sort = viewChild(MatSort); teams: Team[];
   cardTeams: CardTeam[];
   mselTeamColumns: string[] = ['name', 'id'];
   cardTeamColumns: string[] = ['name', 'isShownOnWall', 'canPostArticles', 'id'];
@@ -48,12 +52,7 @@ export class CardTeamsComponent implements OnDestroy, OnInit {
   pageEvent: PageEvent;
   private unsubscribe$ = new Subject();
 
-  constructor(
-    private cardTeamDataService: CardTeamDataService,
-    private mselQuery: MselQuery,
-    private permissionDataService: PermissionDataService,
-    private changeDetectorRef: ChangeDetectorRef
-  ) {
+  constructor() {
     // subscribe to the active MSEL
     (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
       if (msel) {
@@ -70,15 +69,15 @@ export class CardTeamsComponent implements OnDestroy, OnInit {
       .subscribe(() => {
         this.changeDetectorRef.markForCheck();
       });
-    this.sort.sort(<MatSortable>{ id: 'name', start: 'asc' });
-    this.teamDataSource.sort = this.sort;
+    this.sort().sort(<MatSortable>{ id: 'name', start: 'asc' });
+    this.teamDataSource.sort = this.sort();
     this.pageEvent = new PageEvent();
     this.pageEvent.pageIndex = 0;
     this.pageEvent.pageSize = this.defaultPageSize;
     this.cardTeamDataService.cardTeams.pipe(takeUntil(this.unsubscribe$)).subscribe(cardTeams => {
       this.cardTeams = cardTeams ?
         cardTeams
-          .filter(et => et.cardId === this.cardId)
+          .filter(et => et.cardId === this.cardId())
           .sort((a, b) => {
             if (this.getTeamShortName(a.teamId).toLowerCase() < this.getTeamShortName(b.teamId).toLowerCase()) {
               return -1;
@@ -111,7 +110,7 @@ export class CardTeamsComponent implements OnDestroy, OnInit {
       mselTeams = this.mselTeamList.filter(mt => !this.cardTeams.some(ct => ct.teamId === mt.id));
     }
     this.teamDataSource = new MatTableDataSource(mselTeams);
-    this.teamDataSource.sort = this.sort;
+    this.teamDataSource.sort = this.sort();
   }
 
   getTeamShortName(teamId: string) {
@@ -121,7 +120,7 @@ export class CardTeamsComponent implements OnDestroy, OnInit {
 
 
   addTeamToCard(team: Team): void {
-    this.cardTeamDataService.addTeamToCard(this.cardId, team);
+    this.cardTeamDataService.addTeamToCard(this.cardId(), team);
   }
 
   setIsShownOnWall(cardTeam: CardTeam, value: boolean) {
@@ -152,7 +151,7 @@ export class CardTeamsComponent implements OnDestroy, OnInit {
 
   canEditMsel(): boolean {
     return this.permissionDataService.hasPermission(SystemPermission.EditMsels) ||
-      this.msel.hasRole(this.loggedInUserId, '').editor;
+      this.msel.hasRole(this.loggedInUserId(), '').editor;
   }
 
   ngOnDestroy() {

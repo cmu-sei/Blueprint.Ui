@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { Component, Input } from '@angular/core';
+import { Component, input } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
@@ -30,6 +30,7 @@ import {
 } from 'src/app/generated/blueprint.api';
 import { MselStore } from 'src/app/data/msel/msel.store';
 import { MselViewComponent } from './msel-view.component';
+import { IsDateTimeValuePipe } from 'src/app/utilities/date-time-value';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { activatedRouteStub } from 'src/app/test-utils/activated-route';
 import { renderComponent } from 'src/app/test-utils/render-component';
@@ -37,20 +38,23 @@ import { mselLoadApiProviders, mselLoadApiStubs } from 'src/app/test-utils/msel-
 
 @Component({ selector: 'app-duration-view', template: '', standalone: false })
 class DurationViewStub {
-  @Input() startTime: Date;
-  @Input() durationSeconds: number;
-  @Input() showRealTime: boolean;
+  readonly startTime = input<Date>(undefined);
+  readonly durationSeconds = input<number>(undefined);
+  readonly showRealTime = input<boolean>(undefined);
 }
 
 const MSEL: Msel = { id: 'msel-1', name: 'Exercise Alpha', teams: [], units: [], userMselRoles: [] };
 const FIELDS: DataField[] = [
   { id: 'df-title', mselId: 'msel-1', name: 'Title', dataType: DataFieldType.String, displayOrder: 1, onExerciseView: true },
   { id: 'df-notes', mselId: 'msel-1', name: 'Planner Notes', dataType: DataFieldType.String, displayOrder: 2, onExerciseView: false },
+  { id: 'df-when', mselId: 'msel-1', name: 'When', dataType: DataFieldType.DateTime, displayOrder: 3, onExerciseView: true },
 ];
 const EVENTS: ScenarioEvent[] = [{ id: 'se-1', mselId: 'msel-1', scenarioEventType: EventType.Inject, deltaSeconds: 0, groupOrder: 1, isHidden: false }];
 const VALUES: DataValue[] = [
   { id: 'dv-1', scenarioEventId: 'se-1', dataFieldId: 'df-title', value: 'Phishing wave' },
   { id: 'dv-2', scenarioEventId: 'se-1', dataFieldId: 'df-notes', value: 'Planner only' },
+  // left behind when When was changed to DateTime
+  { id: 'dv-3', scenarioEventId: 'se-1', dataFieldId: 'df-when', value: 'Team 2' },
 ];
 
 async function renderMselView() {
@@ -74,7 +78,7 @@ async function renderMselView() {
       MatSortModule,
       MatTooltipModule,
     ],
-    declarations: [MselViewComponent, DurationViewStub],
+    declarations: [MselViewComponent, DurationViewStub, IsDateTimeValuePipe],
     providers: [
       ...mselLoadApiProviders(apis),
       { provide: MselCompetencyService, useValue: competencyApi },
@@ -129,5 +133,17 @@ describe('MselViewComponent', () => {
 
     expect(table.getByText('Phishing wave')).toBeInTheDocument();
     expect(table.queryByText('Planner only')).not.toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: a DateTime value that is not a date is shown as its text, marked as not a date, rather than as an empty cell.
+   * Interacts with: the DateTime cell of the MSEL view, IsDateTimeValuePipe, ScenarioEventDataService.getDisplayValueFromView.
+   * Data: When (DateTime, on the exercise view) = "Team 2".
+   */
+  it('shows a DateTime value that is not a date as its text', async () => {
+    await renderMselView();
+    const table = within(screen.getByRole('table'));
+
+    expect(table.getByText('Team 2')).toHaveAttribute('title', 'Not a date and time');
   });
 });

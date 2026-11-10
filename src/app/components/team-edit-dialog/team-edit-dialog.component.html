@@ -75,7 +75,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </p>
           <div>
             <angular-editor [placeholder]="'Description'" [formControl]="descriptionFormControl" [config]="editorConfig"
-              (blur)="saveTeam('description')"></angular-editor>
+              (blur)="saveTeam('description')" />
           </div>
         </div>
       </div>
@@ -89,7 +89,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                 [formControl]="citeTeamTypeIdFormControl"
                 (selectionChange)="saveTeam('citeTeamTypeId')"
                 >
-                <mat-option [value]="''"></mat-option>
+                <mat-option [value]="''" />
                 @for (teamType of data.teamTypeList; track teamType) {
                   <mat-option [value]="teamType.id">
                     {{ teamType.name }}

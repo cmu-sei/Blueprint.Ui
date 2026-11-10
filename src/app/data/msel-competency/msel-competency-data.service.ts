@@ -3,7 +3,7 @@
 
 import { MselCompetencyStore } from './msel-competency.store';
 import { MselCompetencyQuery } from './msel-competency.query';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import {
   MselCompetency,
   MselCompetencyService,
@@ -15,13 +15,13 @@ import { Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class MselCompetencyDataService {
+  private mselCompetencyStore = inject(MselCompetencyStore);
+  private mselCompetencyQuery = inject(MselCompetencyQuery);
+  private mselCompetencyService = inject(MselCompetencyService);
+
   readonly MselCompetencyList: Observable<MselCompetency[]>;
 
-  constructor(
-    private mselCompetencyStore: MselCompetencyStore,
-    private mselCompetencyQuery: MselCompetencyQuery,
-    private mselCompetencyService: MselCompetencyService
-  ) {
+  constructor() {
     this.MselCompetencyList = this.mselCompetencyQuery.selectAll();
   }
 

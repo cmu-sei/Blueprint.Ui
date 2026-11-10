@@ -4,7 +4,7 @@
 import { Order, Query, QueryConfig, QueryEntity } from '@datorama/akita';
 import { CatalogInjectState, CatalogInjectStore } from './catalog-inject.store';
 import { CatalogInject } from 'src/app/generated/blueprint.api';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { PageEvent } from '@angular/material/paginator';
 import { Observable } from 'rxjs';
 
@@ -16,8 +16,14 @@ import { Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class CatalogInjectQuery extends QueryEntity<CatalogInjectState> {
-  constructor(protected store: CatalogInjectStore) {
+  protected store: CatalogInjectStore;
+
+  constructor() {
+    const store = inject(CatalogInjectStore);
+
     super(store);
+  
+    this.store = store;
   }
 
   selectById(id: string): Observable<CatalogInject> {

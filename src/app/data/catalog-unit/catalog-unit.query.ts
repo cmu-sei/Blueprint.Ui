@@ -7,7 +7,7 @@ import {
   CatalogUnitStore,
 } from './catalog-unit.store';
 import { CatalogUnit } from 'src/app/generated/blueprint.api';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { PageEvent } from '@angular/material/paginator';
 import { Observable } from 'rxjs';
 
@@ -19,8 +19,14 @@ import { Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class CatalogUnitQuery extends QueryEntity<CatalogUnitState> {
-  constructor(protected store: CatalogUnitStore) {
+  protected store: CatalogUnitStore;
+
+  constructor() {
+    const store = inject(CatalogUnitStore);
+
     super(store);
+  
+    this.store = store;
   }
 
   selectById(id: string): Observable<CatalogUnit> {

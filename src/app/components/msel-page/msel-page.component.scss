@@ -9,6 +9,8 @@
 }
 
 .article-container {
+  // keeps the page's margins inside the background instead of collapsing through it
+  display: flow-root;
   min-height: 100%;
   background-color: var(--mat-sys-background);
 }

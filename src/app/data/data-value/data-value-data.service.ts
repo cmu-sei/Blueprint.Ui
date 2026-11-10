@@ -6,7 +6,7 @@
 
 import { DataValueStore } from './data-value.store';
 import { DataValueQuery } from './data-value.query';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import {
   DataValue,
   DataValueService
@@ -18,13 +18,11 @@ import { map, take, tap } from 'rxjs/operators';
   providedIn: 'root',
 })
 export class DataValueDataService {
+  private dataValueService = inject(DataValueService);
+  private mselDataService = inject(MselDataService);
+  private dataValueQuery = inject(DataValueQuery);
+  private dataValueStore = inject(DataValueStore);
 
-  constructor(
-    private dataValueService: DataValueService,
-    private mselDataService: MselDataService,
-    private dataValueQuery: DataValueQuery,
-    private dataValueStore: DataValueStore
-  ) {}
 
   loadByMsel(mselId: string) {
     this.dataValueStore.setLoading(true);

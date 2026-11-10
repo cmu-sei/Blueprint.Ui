@@ -1,16 +1,16 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, Input, OnDestroy, ViewChild, AfterViewInit } from '@angular/core';
-import { UntypedFormControl } from '@angular/forms';
-import { MatTableDataSource } from '@angular/material/table';
+import { Component, OnDestroy, AfterViewInit, inject, input, viewChild } from '@angular/core';
+import { UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MatTableDataSource, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { Move } from 'src/app/generated/blueprint.api';
 import { MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
-import { Sort } from '@angular/material/sort';
+import { Sort, MatSort, MatSortHeader } from '@angular/material/sort';
 import { MatMenuTrigger } from '@angular/material/menu';
 import { MoveDataService } from 'src/app/data/move/move-data.service';
 import { MoveQuery } from 'src/app/data/move/move.query';
@@ -18,16 +18,28 @@ import { MoveEditDialogComponent } from '../move-edit-dialog/move-edit-dialog.co
 import { MatDialog } from '@angular/material/dialog';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { v4 as uuidv4 } from 'uuid';
+import { MatIcon } from '@angular/material/icon';
+import { DatePipe } from '@angular/common';
+import { MatFormField, MatInput, MatSuffix } from '@angular/material/input';
+import { MatIconButton } from '@angular/material/button';
+import { DurationViewComponent } from '../shared/duration-view/duration-view.component';
+import { TimezoneAbbrPipe } from '../../utilities/timezone-abbr';
 
 @Component({
-  selector: 'app-move-list',
-  templateUrl: './move-list.component.html',
-  styleUrls: ['./move-list.component.scss'],
-  standalone: false
+    selector: 'app-move-list',
+    templateUrl: './move-list.component.html',
+    styleUrls: ['./move-list.component.scss'],
+    imports: [MatIcon, MatFormField, MatInput, FormsModule, ReactiveFormsModule, MatIconButton, MatSuffix, MatPaginator, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatSortHeader, DurationViewComponent, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, DatePipe, TimezoneAbbrPipe]
 })
 export class MoveListComponent implements OnDestroy, AfterViewInit {
-  @Input() loggedInUserId: string;
-  @Input() canEditMsel: boolean;
+  private mselQuery = inject(MselQuery);
+  private moveDataService = inject(MoveDataService);
+  private moveQuery = inject(MoveQuery);
+  dialog = inject(MatDialog);
+  dialogService = inject(CrucibleDialogService);
+
+  readonly loggedInUserId = input<string>(undefined);
+  readonly canEditMsel = input<boolean>(undefined);
   msel = new MselPlus();
   moveList: Move[] = [];
   changedMove: Move = {};
@@ -46,17 +58,11 @@ export class MoveListComponent implements OnDestroy, AfterViewInit {
 
   private unsubscribe$ = new Subject();
   // context menu
-  @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
-  @ViewChild(MatPaginator) paginator: MatPaginator;
+  readonly contextMenu = viewChild(MatMenuTrigger);
+  readonly paginator = viewChild(MatPaginator);
   contextMenuPosition = { x: '0px', y: '0px' };
 
-  constructor(
-    private mselQuery: MselQuery,
-    private moveDataService: MoveDataService,
-    private moveQuery: MoveQuery,
-    public dialog: MatDialog,
-    public dialogService: CrucibleDialogService
-  ) {
+  constructor() {
     // subscribe to move changes
     this.moveQuery
       .selectAll()
@@ -64,12 +70,7 @@ export class MoveListComponent implements OnDestroy, AfterViewInit {
       .subscribe((moves) => {
         this.moveList = moves;
         this.displayedMoves = this.getSortedMoves(this.getFilteredMoves());
-        this.maxMoveNumber = moves.length > 0
-          ? Math.max.apply(Math, moves.map(function (o) { return +o.moveNumber; }))
-          : 0;
-        this.maxMoveStartSeconds = moves.length > 0
-          ? Math.max.apply(Math, moves.map(function (o) { return +o.deltaSeconds; }))
-          : 0;
+        this.setNewMoveDefaults();
       });
     // subscribe to the active MSEL
     (this.mselQuery.selectActive() as Observable<MselPlus>)
@@ -78,6 +79,7 @@ export class MoveListComponent implements OnDestroy, AfterViewInit {
         if (msel && this.msel.id !== msel.id) {
           Object.assign(this.msel, msel);
           this.displayedMoves = this.getSortedMoves(this.getFilteredMoves());
+          this.setNewMoveDefaults();
         }
       });
     this.filterControl.valueChanges
@@ -89,7 +91,7 @@ export class MoveListComponent implements OnDestroy, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    this.moveDataSource.paginator = this.paginator;
+    this.moveDataSource.paginator = this.paginator();
   }
 
   getSortedMoves(moves: Move[]) {
@@ -203,14 +205,28 @@ export class MoveListComponent implements OnDestroy, AfterViewInit {
     }
   }
 
+  // The move store can hold other MSELs' moves as well: a user with EditMsels is sent every
+  // MSEL's move changes. Only this MSEL's moves are listed, or count toward a new move's
+  // defaults and the start time order.
+  private mselMoves(): Move[] {
+    return (this.moveList ?? []).filter((m) => m.mselId === this.msel.id);
+  }
+
+  // A new move gets the next move number and the latest start offset of this MSEL's moves.
+  private setNewMoveDefaults() {
+    const moves = this.mselMoves();
+    this.maxMoveNumber = moves.length > 0
+      ? Math.max(...moves.map((o) => +o.moveNumber))
+      : 0;
+    this.maxMoveStartSeconds = moves.length > 0
+      ? Math.max(...moves.map((o) => +o.deltaSeconds))
+      : 0;
+  }
+
   getFilteredMoves(): Move[] {
     let filteredMoves: Move[] = [];
     if (this.moveList) {
-      this.moveList.forEach((m) => {
-        if (m.mselId === this.msel.id) {
-          filteredMoves.push({ ...m });
-        }
-      });
+      filteredMoves = this.mselMoves().map((m) => ({ ...m }));
       if (filteredMoves && filteredMoves.length > 0 && this.filterString) {
         const filterString = this.filterString.toLowerCase();
         filteredMoves = filteredMoves.filter(
@@ -224,7 +240,7 @@ export class MoveListComponent implements OnDestroy, AfterViewInit {
   }
 
   badMoveTimeOrder(): boolean {
-    const orderedMoves = this.moveList.sort((a, b) =>
+    const orderedMoves = this.mselMoves().sort((a, b) =>
       +a.moveNumber < +b.moveNumber ? -1 : 1
     );
     let deltaSeconds = Number.MIN_SAFE_INTEGER;

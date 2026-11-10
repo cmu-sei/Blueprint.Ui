@@ -7,7 +7,7 @@
 import { DataFieldStore } from './data-field.store';
 import { DataFieldTemplateStore } from './data-field-template.store';
 import { DataFieldQuery } from './data-field.query';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { PageEvent } from '@angular/material/paginator';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -23,6 +23,13 @@ import { HttpEventType, HttpResponse } from '@angular/common/http';
   providedIn: 'root',
 })
 export class DataFieldDataService {
+  private dataFieldStore = inject(DataFieldStore);
+  private dataFieldTemplateStore = inject(DataFieldTemplateStore);
+  private dataFieldQuery = inject(DataFieldQuery);
+  private dataFieldService = inject(DataFieldService);
+  private router = inject(Router);
+  private activatedRoute = inject(ActivatedRoute);
+
   readonly DataFieldList: Observable<DataField[]>;
   readonly filterControl = new UntypedFormControl();
   private _requestedDataFieldId$ = this.activatedRoute.queryParamMap.pipe(
@@ -37,14 +44,9 @@ export class DataFieldDataService {
   private pageIndex: Observable<number>;
   public uploadProgress = new Subject<number>();
 
-  constructor(
-    private dataFieldStore: DataFieldStore,
-    private dataFieldTemplateStore: DataFieldTemplateStore,
-    private dataFieldQuery: DataFieldQuery,
-    private dataFieldService: DataFieldService,
-    private router: Router,
-    private activatedRoute: ActivatedRoute
-  ) {
+  constructor() {
+    const activatedRoute = this.activatedRoute;
+
     this.filterTerm = activatedRoute.queryParamMap.pipe(
       map((params) => params.get('dataFieldmask') || '')
     );

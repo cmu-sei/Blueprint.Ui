@@ -2,8 +2,8 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, ElementRef, Input, OnDestroy, OnInit, ViewChild, AfterViewInit } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { Component, ElementRef, OnDestroy, OnInit, AfterViewInit, inject, input, viewChild } from '@angular/core';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import {
@@ -15,27 +15,41 @@ import { MoveQuery } from 'src/app/data/move/move.query';
 import { MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { TeamQuery } from 'src/app/data/team/team.query';
-import { Sort } from '@angular/material/sort';
-import { MatTableDataSource } from '@angular/material/table';
+import { Sort, MatSort, MatSortHeader } from '@angular/material/sort';
+import { MatTableDataSource, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
-import { MatMenuTrigger } from '@angular/material/menu';
+import { MatMenuTrigger, MatMenu, MatMenuItem } from '@angular/material/menu';
 import { CiteActionDataService } from 'src/app/data/cite-action/cite-action-data.service';
 import { CiteActionQuery } from 'src/app/data/cite-action/cite-action.query';
 import { MatDialog } from '@angular/material/dialog';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { CiteActionEditDialogComponent } from '../cite-action-edit-dialog/cite-action-edit-dialog.component';
 import { ItemDownloadDialogComponent } from '../item-download-dialog/item-download-dialog.component';
+import { MatIcon } from '@angular/material/icon';
+
+import { MatFormField, MatInput, MatSuffix, MatLabel } from '@angular/material/input';
+import { MatIconButton } from '@angular/material/button';
+import { MatSelect } from '@angular/material/select';
+import { MatOption } from '@angular/material/autocomplete';
 
 @Component({
-  selector: 'app-cite-action-list',
-  templateUrl: './cite-action-list.component.html',
-  styleUrls: ['./cite-action-list.component.scss'],
-  standalone: false
+    selector: 'app-cite-action-list',
+    templateUrl: './cite-action-list.component.html',
+    styleUrls: ['./cite-action-list.component.scss'],
+    imports: [MatIcon, MatFormField, MatInput, FormsModule, ReactiveFormsModule, MatIconButton, MatSuffix, MatLabel, MatSelect, MatOption, MatPaginator, MatMenu, MatMenuItem, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatMenuTrigger, MatCellDef, MatCell, MatSortHeader, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow]
 })
 export class CiteActionListComponent implements OnInit, OnDestroy, AfterViewInit {
-  @Input() loggedInUserId: string;
-  @Input() canEdit: boolean;
-  @Input() showTemplates: boolean;
+  private mselQuery = inject(MselQuery);
+  private citeActionDataService = inject(CiteActionDataService);
+  private citeActionQuery = inject(CiteActionQuery);
+  private moveQuery = inject(MoveQuery);
+  private teamQuery = inject(TeamQuery);
+  dialog = inject(MatDialog);
+  dialogService = inject(CrucibleDialogService);
+
+  readonly loggedInUserId = input<string>(undefined);
+  readonly canEdit = input<boolean>(undefined);
+  readonly showTemplates = input<boolean>(undefined);
   msel = new MselPlus();
   citeActionList: CiteAction[] = [];
   templateList: CiteAction[] = [];
@@ -56,20 +70,12 @@ export class CiteActionListComponent implements OnInit, OnDestroy, AfterViewInit
   moveList: Move[] = [];
   private unsubscribe$ = new Subject();
   // context menu
-  @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
-  @ViewChild(MatPaginator) paginator: MatPaginator;
-  @ViewChild('jsonInput') jsonInput: ElementRef<HTMLInputElement>;
+  readonly contextMenu = viewChild(MatMenuTrigger);
+  readonly paginator = viewChild(MatPaginator);
+  readonly jsonInput = viewChild<ElementRef<HTMLInputElement>>('jsonInput');
   contextMenuPosition = { x: '0px', y: '0px' };
 
-  constructor(
-    private mselQuery: MselQuery,
-    private citeActionDataService: CiteActionDataService,
-    private citeActionQuery: CiteActionQuery,
-    private moveQuery: MoveQuery,
-    private teamQuery: TeamQuery,
-    public dialog: MatDialog,
-    public dialogService: CrucibleDialogService
-  ) {
+  constructor() {
     // subscribe to citeActions
     this.citeActionQuery
       .selectAll()
@@ -83,7 +89,7 @@ export class CiteActionListComponent implements OnInit, OnDestroy, AfterViewInit
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((msel) => {
         if (msel && this.msel.id !== msel.id) {
-          if (this.showTemplates) {
+          if (this.showTemplates()) {
             this.msel = new MselPlus();
           } else {
             Object.assign(this.msel, msel);
@@ -133,13 +139,13 @@ export class CiteActionListComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   ngOnInit() {
-    this.displayedColumns = this.showTemplates
+    this.displayedColumns = this.showTemplates()
       ? ['action', 'description']
       : ['action', 'moveNumber', 'team', 'actionNumber', 'description'];
   }
 
   ngAfterViewInit() {
-    this.citeActionDataSource.paginator = this.paginator;
+    this.citeActionDataSource.paginator = this.paginator();
   }
 
   addOrEditCiteAction(
@@ -149,9 +155,9 @@ export class CiteActionListComponent implements OnInit, OnDestroy, AfterViewInit
   ) {
     if (!citeAction) {
       citeAction = {
-        mselId: this.showTemplates ? '' : this.msel.id,
+        mselId: this.showTemplates() ? '' : this.msel.id,
         moveNumber: 0,
-        isTemplate: this.showTemplates,
+        isTemplate: this.showTemplates(),
         actionNumber: 0,
         teamId: '',
       };
@@ -233,7 +239,7 @@ export class CiteActionListComponent implements OnInit, OnDestroy, AfterViewInit
       return;
     }
     this.citeActionDataService.uploadJson(file, 'events', true);
-    this.jsonInput.nativeElement.value = null;
+    this.jsonInput().nativeElement.value = null;
   }
 
   openDownloadDialog() {
@@ -280,7 +286,7 @@ export class CiteActionListComponent implements OnInit, OnDestroy, AfterViewInit
     ) {
       return;
     }
-    const title = this.showTemplates ? 'Delete CITE Action Template' : 'Delete CITE Action';
+    const title = this.showTemplates() ? 'Delete CITE Action Template' : 'Delete CITE Action';
     this.dialogService
       .confirm({ title: title, message: 'Are you sure that you want to delete ' + citeAction.description + '?'
        }).afterClosed().subscribe((result) => {
@@ -297,8 +303,9 @@ export class CiteActionListComponent implements OnInit, OnDestroy, AfterViewInit
       this.getFilteredCiteActions(false)
     );
     this.citeActionDataSource.data = this.sortedCiteActions;
-    if (this.paginator) {
-      this.paginator.length = this.sortedCiteActions.length;
+    const paginator = this.paginator();
+    if (paginator) {
+      paginator.length = this.sortedCiteActions.length;
     }
     this.templateList = this.getSortedCiteActions(
       this.getFilteredCiteActions(true)
@@ -362,7 +369,7 @@ export class CiteActionListComponent implements OnInit, OnDestroy, AfterViewInit
 
   getFilteredCiteActions(getTemplatesOnly: boolean): CiteAction[] {
     const citeActions = this.citeActionList;
-    const mselId = getTemplatesOnly || this.showTemplates ? '' : this.msel.id;
+    const mselId = getTemplatesOnly || this.showTemplates() ? '' : this.msel.id;
     let filteredCiteActions: CiteAction[] = [];
     if (citeActions) {
       citeActions.forEach((citeAction) => {

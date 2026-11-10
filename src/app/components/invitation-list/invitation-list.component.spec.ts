@@ -12,10 +12,10 @@ import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { screen, within } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
-import { of } from 'rxjs';
+import { of, Subject } from 'rxjs';
 import { ClipboardModule } from 'ngx-clipboard';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
-import { Invitation, InvitationService, Msel, MselItemStatus, MselRole } from 'src/app/generated/blueprint.api';
+import { CiteService, Invitation, InvitationService, Msel, MselItemStatus, MselRole } from 'src/app/generated/blueprint.api';
 import { InvitationStore } from 'src/app/data/invitation/invitation.store';
 import { MselStore } from 'src/app/data/msel/msel.store';
 import { TeamStore } from 'src/app/data/team/team.store';
@@ -23,7 +23,6 @@ import { InvitationListComponent } from './invitation-list.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { dialogRefStub } from 'src/app/test-utils/dialog-refs';
 import { renderComponent } from 'src/app/test-utils/render-component';
-import { unstubbed } from 'src/app/test-utils/unstubbed';
 
 const ME = 'user-me';
 const INVITATION: Invitation = { id: 'inv-1', mselId: 'msel-1', teamId: 'team-1', emailDomain: 'example.com', maxUsersAllowed: 5, userCount: 2 };
@@ -40,6 +39,13 @@ async function renderInvitations(overrides: { canEditMsel?: boolean; activeMsel?
   // The user confirms every dialog.
   const confirm = vi.fn(() => dialogRefStub<unknown, boolean>(true).dialogRef);
   const dialog = { confirm } satisfies Pick<CrucibleDialogService, 'confirm'>;
+  const citeApi = {
+    getTeamRoles: vi.fn(() => of([{ id: 'r-1', name: 'Member' }, { id: 'r-2', name: 'Contributor' }, { id: 'r-3', name: 'Submitter' }])),
+  } satisfies ApiStub<CiteService>;
+  // The invitation dialog is not rendered; open records the data it is given.
+  const matDialog = {
+    open: vi.fn(() => ({ componentInstance: { editComplete: new Subject() }, close: vi.fn() })),
+  };
   const rendered = await renderComponent(InvitationListComponent, {
     imports: [
       ClipboardModule,
@@ -54,8 +60,9 @@ async function renderInvitations(overrides: { canEditMsel?: boolean; activeMsel?
     declarations: [InvitationListComponent],
     providers: [
       { provide: InvitationService, useValue: invitationApi },
+      { provide: CiteService, useValue: citeApi },
       { provide: CrucibleDialogService, useValue: dialog },
-      unstubbed(MatDialog),
+      { provide: MatDialog, useValue: matDialog },
       // The MSEL page loads the MSEL, its teams and invitations; the stores are seeded instead.
       {
         provide: MselStore,
@@ -85,13 +92,65 @@ async function renderInvitations(overrides: { canEditMsel?: boolean; activeMsel?
     ],
     inputs: { canEditMsel, loggedInUserId: ME },
   });
-  return { ...rendered, invitationApi, confirm };
+  return { ...rendered, invitationApi, citeApi, confirm, matDialog };
+}
+
+// The data the invitation dialog is opened with, from the MatDialog stub.
+type InvitationDialogData = { invitation: Invitation; useCite: boolean; citeTeamRoles: string[] };
+async function openedDialogData(matDialog: { open: ReturnType<typeof vi.fn> }, buttonTitle: string): Promise<InvitationDialogData> {
+  await userEvent.setup().click(screen.getByTitle(buttonTitle));
+  return matDialog.open.mock.calls[0][1]?.data as InvitationDialogData;
 }
 
 const table = () => screen.getByRole('table');
 const ACTIONS = ['Add an invitation', 'Edit example.com invitation', 'Delete example.com invitation'];
 
 describe('InvitationListComponent', () => {
+  describe('CITE team role', () => {
+    /**
+     * Verifies: with CITE, a new invitation starts at Member and the dialog is offered CITE's team roles.
+     * Interacts with: CiteService.getTeamRoles (stub), MatDialog.open (stub).
+     * Data: a deployed MSEL using CITE; CITE has Member, Contributor and Submitter.
+     */
+    it('starts a new invitation at Member and offers CITE\'s team roles', async () => {
+      const { matDialog } = await renderInvitations({ activeMsel: msel({ useCite: true }) });
+
+      const data = await openedDialogData(matDialog, 'Add an invitation');
+
+      expect(data.useCite).toBe(true);
+      expect(data.invitation.citeTeamRole).toBe('Member');
+      expect(data.citeTeamRoles).toEqual(['Member', 'Contributor', 'Submitter']);
+    });
+
+    /**
+     * Verifies: with CITE, an invitation that names no role is shown as Member, the role it gives.
+     * Interacts with: MatDialog.open (stub).
+     * Data: a deployed MSEL using CITE; the seeded invitation has no citeTeamRole.
+     */
+    it('shows Member for an invitation that names no role', async () => {
+      const { matDialog } = await renderInvitations({ activeMsel: msel({ useCite: true }) });
+
+      const data = await openedDialogData(matDialog, 'Edit example.com invitation');
+
+      expect(data.invitation.citeTeamRole).toBe('Member');
+    });
+
+    /**
+     * Verifies: without CITE, a new invitation names no CITE role and CITE's roles are not fetched.
+     * Interacts with: CiteService.getTeamRoles (stub, not called), MatDialog.open (stub).
+     * Data: a deployed MSEL not using CITE.
+     */
+    it('gives a new invitation no CITE role without CITE', async () => {
+      const { matDialog, citeApi } = await renderInvitations({ activeMsel: msel({ useCite: false }) });
+
+      const data = await openedDialogData(matDialog, 'Add an invitation');
+
+      expect(data.useCite).toBe(false);
+      expect(data.invitation.citeTeamRole).toBeNull();
+      expect(citeApi.getTeamRoles).not.toHaveBeenCalled();
+    });
+  });
+
   /**
    * Verifies: with canEditMsel the invitations can be added, edited and deleted, and a deployed MSEL's invitation link can be copied.
    * Interacts with: real MselQuery, TeamQuery and InvitationQuery (seeded), InvitationListComponent template.

@@ -10,7 +10,7 @@ import {
   PlayerApplicationStore,
 } from './player-application.store';
 import { PlayerApplication } from 'src/app/generated/blueprint.api';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { PageEvent } from '@angular/material/paginator';
 import { Observable } from 'rxjs';
 
@@ -22,8 +22,14 @@ import { Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class PlayerApplicationQuery extends QueryEntity<PlayerApplicationState> {
-  constructor(protected store: PlayerApplicationStore) {
+  protected store: PlayerApplicationStore;
+
+  constructor() {
+    const store = inject(PlayerApplicationStore);
+
     super(store);
+  
+    this.store = store;
   }
 
   selectById(id: string): Observable<PlayerApplication> {

@@ -3,7 +3,7 @@ Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 Released under a MIT (SEI)-style license, please see LICENSE.md in the
 project root for license information or contact permission@sei.cmu.edu for full terms.
 -->
-@if (catalog) {
+@if (catalog()) {
 <div>
   <div class="table-container">
     <table mat-table [dataSource]="catalogUnitList">
@@ -14,7 +14,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           @if (canEdit) {
           <button mat-icon-button (click)="removeUnitFromCatalog(element.id); $event.stopPropagation();"
             title="Remove {{ getUnit(element.unitId).shortName }} from this catalog">
-            <mat-icon class="mdi-24px self-center" fontIcon="mdi-minus-circle-outline"></mat-icon>
+            <mat-icon class="mdi-24px self-center" fontIcon="mdi-minus-circle-outline" />
           </button>
           }
         </td>
@@ -51,7 +51,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <div class="other-units-div">
         <button mat-icon-button (click)="addUnitToCatalog(unit.id); $event.stopPropagation();"
           title="Add {{ unit.shortName }} to this catalog" [disabled]="!canEdit">
-          <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline"></mat-icon>
+          <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle-outline" />
         </button>
         <span class="center-self">{{ unit.shortName }} - {{ unit.name }}</span>
       </div>

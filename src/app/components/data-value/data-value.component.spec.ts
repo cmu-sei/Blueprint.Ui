@@ -12,11 +12,12 @@ import { MatSelectHarness } from '@angular/material/select/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { NgxMatDatepickerActions, NgxMatDatepickerApply, NgxMatDatepickerCancel, NgxMatDatepickerInput, NgxMatDatetimepicker } from '@ngxmc/datetime-picker';
-import { screen } from '@testing-library/angular';
+import { screen, within } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { DataField, DataFieldType, MselItemStatus } from 'src/app/generated/blueprint.api';
 import { DataValueComponent } from './data-value.component';
 import { TimezoneAbbrPipe } from 'src/app/utilities/timezone-abbr';
+import { IsDateTimeValuePipe } from 'src/app/utilities/date-time-value';
 import { renderComponent } from 'src/app/test-utils/render-component';
 
 const SUBJECT: DataField = { id: 'df-subject', name: 'Subject', dataType: DataFieldType.String };
@@ -51,7 +52,7 @@ async function renderDataValue(dataField: DataField, value: string, flags: Flags
       NgxMatDatepickerInput,
       NgxMatDatetimepicker,
     ],
-    declarations: [DataValueComponent, TimezoneAbbrPipe],
+    declarations: [DataValueComponent, TimezoneAbbrPipe, IsDateTimeValuePipe],
     inputs: {
       dataField,
       value,
@@ -179,6 +180,67 @@ describe('DataValueComponent', () => {
     await renderDataValue(WHEN, value, flags);
 
     expect(screen.getByText(label)).toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: a DateTime value that is not a date, such as a team left behind by a data type change, is shown as its text instead of breaking the page or showing a made-up date, in each of the three places the template shows a date.
+   * Interacts with: IsDateTimeValuePipe, the dateTimeValue template (view-only display, editable field, value-only view for an editor).
+   * Data: When = "TEAM1" (the date pipe throws), "Team 2" or "42" (new Date() reads both as dates); showValueOnly with no flags, canEdit alone, or showValueOnly with canEdit, canApprove and isOwner.
+   */
+  it.each(
+    [
+      { view: 'shown read-only', flags: { showValueOnly: true } },
+      { view: 'in the editable field', flags: { canEdit: true } },
+      { view: 'shown as a value to its editor', flags: { showValueOnly: true, canEdit: true, canApprove: true, isOwner: true } },
+    ].flatMap((v) => ['TEAM1', 'Team 2', '42'].map((value) => ({ ...v, value }))),
+  )('shows the date-time value $value as its text $view', async ({ flags, value }) => {
+    await renderDataValue(WHEN, value, flags);
+
+    expect(screen.getByText(value)).toHaveAttribute('title', 'Not a date and time');
+  });
+
+  /**
+   * Verifies: the editable DateTime field says how to fix a value that is not a date.
+   * Interacts with: valueError, valueErrorMatcher, mat-error.
+   * Data: When = "Team 2"; canEdit.
+   */
+  it('asks for a new date in the editable field when the value is not a date', async () => {
+    await renderDataValue(WHEN, 'Team 2', { canEdit: true });
+
+    expect(screen.getByText('Not a date and time. Choose a new one.')).toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: a DateTime value of only spaces, as a blank spreadsheet cell can leave, is empty: no error and no red text.
+   * Interacts with: valueError, the dateTimeValue template.
+   * Data: When = "   "; canEdit.
+   */
+  it('treats a date-time value of only spaces as empty', async () => {
+    const { container } = await renderDataValue(WHEN, '   ', { canEdit: true });
+
+    expect(screen.queryByText('Not a date and time. Choose a new one.')).not.toBeInTheDocument();
+    expect(container.querySelector('.invalid-value')).toBeNull();
+  });
+
+  /**
+   * Verifies: picking a date, which writes a Date rather than a string into the value, shows it with no error and throws nothing on change detection.
+   * Interacts with: the date picker toggle, a day in the calendar, the picker's Save, valueError, valueChange output.
+   * Data: When (DateTime) empty; canEdit; the 15th of the month picked.
+   */
+  it('shows a picked date with no error', async () => {
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { fixture, changes } = await renderDataValue(WHEN, '', { canEdit: true });
+    const user = userEvent.setup();
+
+    await user.click(within(screen.getByTitle('Choose Date/Time')).getByRole('button'));
+    await user.click(await screen.findByText('15'));
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+    fixture.detectChanges();
+
+    expect(changes.at(-1)).toBeInstanceOf(Date);
+    expect(screen.queryByText('Not a date and time. Choose a new one.')).not.toBeInTheDocument();
+    expect(consoleError).not.toHaveBeenCalled();
+    consoleError.mockRestore();
   });
 
   /**

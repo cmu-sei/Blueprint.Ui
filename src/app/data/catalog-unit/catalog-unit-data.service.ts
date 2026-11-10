@@ -3,7 +3,7 @@
 
 import { CatalogUnitStore } from './catalog-unit.store';
 import { CatalogUnitQuery } from './catalog-unit.query';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { PageEvent } from '@angular/material/paginator';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -18,6 +18,12 @@ import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
   providedIn: 'root',
 })
 export class CatalogUnitDataService {
+  private catalogUnitStore = inject(CatalogUnitStore);
+  private catalogUnitQuery = inject(CatalogUnitQuery);
+  private catalogUnitService = inject(CatalogUnitService);
+  private router = inject(Router);
+  private activatedRoute = inject(ActivatedRoute);
+
   private _requestedCatalogUnitId: string;
   private _requestedCatalogUnitId$ = this.activatedRoute.queryParamMap.pipe(
     map((params) => params.get('catalogUnitId') || '')
@@ -32,13 +38,9 @@ export class CatalogUnitDataService {
   private pageSize: Observable<number>;
   private pageIndex: Observable<number>;
 
-  constructor(
-    private catalogUnitStore: CatalogUnitStore,
-    private catalogUnitQuery: CatalogUnitQuery,
-    private catalogUnitService: CatalogUnitService,
-    private router: Router,
-    private activatedRoute: ActivatedRoute
-  ) {
+  constructor() {
+    const activatedRoute = this.activatedRoute;
+
     this.filterTerm = activatedRoute.queryParamMap.pipe(
       map((params) => params.get('catalogUnitmask') || '')
     );

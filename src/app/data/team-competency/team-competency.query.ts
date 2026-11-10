@@ -7,7 +7,7 @@ import {
   TeamCompetencyStore,
 } from './team-competency.store';
 import { TeamCompetency } from 'src/app/generated/blueprint.api';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
 @QueryConfig({
@@ -18,8 +18,14 @@ import { Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class TeamCompetencyQuery extends QueryEntity<TeamCompetencyState> {
-  constructor(protected store: TeamCompetencyStore) {
+  protected store: TeamCompetencyStore;
+
+  constructor() {
+    const store = inject(TeamCompetencyStore);
+
     super(store);
+  
+    this.store = store;
   }
 
   selectById(id: string): Observable<TeamCompetency> {

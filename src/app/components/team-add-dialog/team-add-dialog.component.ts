@@ -2,24 +2,27 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, EventEmitter, Inject, Output } from '@angular/core';
+import { Component, inject, output } from '@angular/core';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Unit } from 'src/app/generated/blueprint.api';
+import { CrucibleDialogComponent, CrucibleDialogContentDirective, CrucibleDialogActionsDirective } from '@cmusei/crucible-common';
+import { MatFormField, MatLabel, MatInput, MatSuffix } from '@angular/material/input';
+import { FormsModule } from '@angular/forms';
+import { MatIconButton, MatButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
 
 @Component({
     selector: 'app-team-add-dialog',
     templateUrl: './team-add-dialog.component.html',
     styleUrls: ['./team-add-dialog.component.scss'],
-    standalone: false
+    imports: [CrucibleDialogComponent, CrucibleDialogContentDirective, MatFormField, MatLabel, MatInput, FormsModule, MatIconButton, MatSuffix, MatIcon, MatButton, CrucibleDialogActionsDirective]
 })
 
 export class TeamAddDialogComponent {
-  @Output() editComplete = new EventEmitter<any>();
-  public filterString = '';
+  data = inject(MAT_DIALOG_DATA);
 
-  constructor(
-    @Inject(MAT_DIALOG_DATA) public data: any
-  ) {}
+  readonly editComplete = output<any>();
+  public filterString = '';
 
   /**
    * Closes the edit screen

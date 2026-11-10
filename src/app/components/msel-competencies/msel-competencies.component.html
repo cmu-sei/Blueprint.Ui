@@ -7,7 +7,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
 @if (msel) {
 <div class="top-toolbar">
   <div class="sp-icon">
-    <mat-icon class="mdi-24px" fontIcon="mdi-certificate-outline" [ngStyle]="{'color': 'var(--mat-sys-primary)'}"></mat-icon>
+    <mat-icon class="mdi-24px" fontIcon="mdi-certificate-outline" [style.color]="'var(--mat-sys-primary)'" />
   </div>
   <mat-form-field class="framework-select">
     <mat-label>Competency Framework</mat-label>
@@ -24,7 +24,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
   <mat-expansion-panel class="section-panel" [(expanded)]="addPanelExpanded">
     <mat-expansion-panel-header>
       <mat-panel-title>
-        <mat-icon class="mdi-18px panel-icon" fontIcon="mdi-plus-circle-outline"></mat-icon>
+        <mat-icon class="mdi-18px panel-icon" fontIcon="mdi-plus-circle-outline" />
         Add Competencies
       </mat-panel-title>
     </mat-expansion-panel-header>
@@ -34,7 +34,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <input matInput [formControl]="workRoleFilterControl" placeholder="Search work roles" />
         @if (workRoleFilterString) {
         <button mat-icon-button matSuffix (click)="workRoleFilterControl.setValue('')" title="Clear">
-          <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline"></mat-icon>
+          <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline" />
         </button>
         }
       </mat-form-field>
@@ -42,7 +42,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <input matInput [formControl]="competencySearchControl" placeholder="Search competencies" />
         @if (competencySearchString) {
         <button mat-icon-button matSuffix (click)="competencySearchControl.setValue('')" title="Clear">
-          <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline"></mat-icon>
+          <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline" />
         </button>
         }
       </mat-form-field>
@@ -58,13 +58,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </mat-form-field>
       }
       <div class="button-end">
-        <mat-paginator #workRolePaginator [pageSize]="10" [pageSizeOptions]="[10, 25, 50, 100]"></mat-paginator>
+        <mat-paginator #workRolePaginator [pageSize]="10" [pageSizeOptions]="[10, 25, 50, 100]" />
       </div>
       }
     </div>
     @if (isLoadingFramework) {
     <div class="browser-loading">
-      <mat-spinner diameter="36"></mat-spinner>
+      <mat-spinner diameter="36" />
       <div class="browser-loading-text">Loading framework competencies...</div>
     </div>
     } @else if (selectedFramework && frameworkWorkRoles.length > 0) {
@@ -75,15 +75,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <mat-header-cell *matHeaderCellDef class="wr-col-check">
             @if (canEditMsel()) {
             <mat-checkbox (change)="toggleAllWorkRoles()" [checked]="isAllWorkRolesSelected()"
-              [indeterminate]="hasWorkRoleSelection() && !isAllWorkRolesSelected()">
-            </mat-checkbox>
+              [indeterminate]="hasWorkRoleSelection() && !isAllWorkRolesSelected()" />
             }
           </mat-header-cell>
           <mat-cell *matCellDef="let wr" class="wr-col-check">
             @if (canEditMsel()) {
             <mat-checkbox (click)="$event.stopPropagation()" (change)="togglePoolItem(wr)"
-              [checked]="isInPool(wr.id)">
-            </mat-checkbox>
+              [checked]="isInPool(wr.id)" />
             }
           </mat-cell>
         </ng-container>
@@ -131,16 +129,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   [pageSize]="browserChildrenPageSize"
                   [pageIndex]="browserChildrenPageIndex"
                   [pageSizeOptions]="[25, 50, 100]"
-                  (page)="onBrowserChildrenPage($event)">
-                </mat-paginator>
+                  (page)="onBrowserChildrenPage($event)" />
               </div>
               <div class="browser-children-list">
                 @for (child of getPaginatedChildren(wr); track child.id) {
                 <div class="browser-child-row">
                   @if (canEditMsel()) {
                   <mat-checkbox (click)="$event.stopPropagation()" (change)="togglePoolItem(child)"
-                    [checked]="isInPool(child.id)" class="browser-child-check">
-                  </mat-checkbox>
+                    [checked]="isInPool(child.id)" class="browser-child-check" />
                   }
                   <span class="browser-child-id">{{ child.idNumber }}</span>
                   <span class="browser-child-type">{{ getCompetencyType(child) }}</span>
@@ -155,13 +151,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </mat-cell>
         </ng-container>
         <!-- row definitions -->
-        <mat-header-row *matHeaderRowDef="workRoleDisplayedColumns; sticky: true"></mat-header-row>
+        <mat-header-row *matHeaderRowDef="workRoleDisplayedColumns; sticky: true" />
         <mat-row *matRowDef="let row; columns: workRoleDisplayedColumns;"
           class="browser-row"
           [class.browser-row-expanded]="isBrowserExpanded(row)"
-          (click)="toggleBrowserExpand(row)"></mat-row>
+          (click)="toggleBrowserExpand(row)" />
         <mat-row *matRowDef="let row; columns: ['expandedDetail']" class="detail-row"
-          [@detailExpand]="isBrowserExpanded(row) ? 'expanded' : 'collapsed'"></mat-row>
+          [@detailExpand]="isBrowserExpanded(row) ? 'expanded' : 'collapsed'" />
       </mat-table>
       @if (workRoleDataSource.data.length === 0) {
       <div class="no-results-inline">No work roles found</div>
@@ -178,7 +174,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
   <mat-expansion-panel class="section-panel" [expanded]="true">
     <mat-expansion-panel-header>
       <mat-panel-title>
-        <mat-icon class="mdi-18px panel-icon" fontIcon="mdi-certificate-outline"></mat-icon>
+        <mat-icon class="mdi-18px panel-icon" fontIcon="mdi-certificate-outline" />
         MSEL Competencies ({{ mselCompetencyList.length }})
       </mat-panel-title>
     </mat-expansion-panel-header>
@@ -186,7 +182,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       @if (canEditMsel() && selection.hasValue()) {
       <button mat-stroked-button (click)="removeSelected(); $event.stopPropagation();"
         title="Remove selected" style="margin-right: 10px;">
-        <mat-icon fontIcon="mdi-delete-sweep-outline"></mat-icon>
+        <mat-icon fontIcon="mdi-delete-sweep-outline" />
         Remove {{ selection.selected.length }}
       </button>
       }
@@ -194,7 +190,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <input matInput [formControl]="filterControl" placeholder="Search competencies" />
         @if (filterString) {
         <button mat-icon-button matSuffix (click)="filterControl.setValue('')" title="Clear Search">
-          <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline"></mat-icon>
+          <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline" />
         </button>
         }
       </mat-form-field>
@@ -221,7 +217,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </mat-form-field>
       }
       <div class="button-end">
-        <mat-paginator #competencyPaginator [pageSize]="20" [pageSizeOptions]="[10, 20, 50, 100, 200]"></mat-paginator>
+        <mat-paginator #competencyPaginator [pageSize]="20" [pageSizeOptions]="[10, 20, 50, 100, 200]" />
       </div>
     </div>
     <div class="pool-table-scroll">
@@ -230,23 +226,21 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <ng-container matColumnDef="select">
           <mat-header-cell *matHeaderCellDef class="pool-col-select">
             <mat-checkbox (change)="toggleAllRows()" [checked]="isAllSelected()"
-              [indeterminate]="selection.hasValue() && !isAllSelected()">
-            </mat-checkbox>
+              [indeterminate]="selection.hasValue() && !isAllSelected()" />
           </mat-header-cell>
           <mat-cell *matCellDef="let element" class="pool-col-select">
             <mat-checkbox (click)="$event.stopPropagation()" (change)="selection.toggle(element)"
-              [checked]="selection.isSelected(element)">
-            </mat-checkbox>
+              [checked]="selection.isSelected(element)" />
           </mat-cell>
         </ng-container>
         <!-- action column -->
         <ng-container matColumnDef="action">
-          <mat-header-cell *matHeaderCellDef class="pool-col-action"></mat-header-cell>
+          <mat-header-cell *matHeaderCellDef class="pool-col-action" />
           <mat-cell *matCellDef="let element" class="pool-col-action">
             @if (canEditMsel()) {
             <button mat-icon-button (click)="removeMselCompetency(element); $event.stopPropagation();"
               title="Remove from MSEL">
-              <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline"></mat-icon>
+              <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline" />
             </button>
             }
           </mat-cell>
@@ -294,7 +288,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
               <div class="related-list-container mat-elevation-z8">
                 <mat-toolbar class="related-toolbar">
                   <mat-toolbar-row>
-                    <mat-icon class="mdi-24px header-icon" fontIcon="mdi-account-multiple"></mat-icon>
+                    <mat-icon class="mdi-24px header-icon" fontIcon="mdi-account-multiple" />
                     <p matTooltip="Teams that can be assigned to this competency" matTooltipShowDelay="800">Available Teams</p>
                   </mat-toolbar-row>
                 </mat-toolbar>
@@ -308,7 +302,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                       <td mat-cell *matCellDef="let team" class="related-col-btn">
                         <button mat-icon-button (click)="addTeamToCompetency(element, team)" title="Add {{ team.shortName }}"
                           [disabled]="!canEditMsel()">
-                          <mat-icon class="mdi-18px" fontIcon="mdi-plus-circle-outline"></mat-icon>
+                          <mat-icon class="mdi-18px" fontIcon="mdi-plus-circle-outline" />
                         </button>
                       </td>
                     </ng-container>
@@ -322,7 +316,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
               <div class="related-list-container mat-elevation-z8">
                 <mat-toolbar class="related-toolbar">
                   <mat-toolbar-row>
-                    <mat-icon class="mdi-24px header-icon" fontIcon="mdi-account-group"></mat-icon>
+                    <mat-icon class="mdi-24px header-icon" fontIcon="mdi-account-group" />
                     <p matTooltip="Teams currently assigned to this competency" matTooltipShowDelay="800">Assigned ({{ getAssignedTeams(element).length }})</p>
                   </mat-toolbar-row>
                 </mat-toolbar>
@@ -336,7 +330,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
                       <td mat-cell *matCellDef="let team" class="related-col-btn">
                         <button mat-icon-button (click)="removeTeamFromCompetency(element, team)" title="Remove {{ team.shortName }}"
                           [disabled]="!canEditMsel()">
-                          <mat-icon class="mdi-18px" fontIcon="mdi-minus-circle-outline"></mat-icon>
+                          <mat-icon class="mdi-18px" fontIcon="mdi-minus-circle-outline" />
                         </button>
                       </td>
                     </ng-container>
@@ -352,13 +346,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </mat-cell>
         </ng-container>
         <!-- row definitions -->
-        <mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></mat-header-row>
+        <mat-header-row *matHeaderRowDef="displayedColumns; sticky: true" />
         <mat-row *matRowDef="let row; columns: displayedColumns;"
           class="pool-row"
           [class.pool-row-expanded]="expandedCompetencyId === row.competencyId"
-          (click)="toggleExpand(row)"></mat-row>
+          (click)="toggleExpand(row)" />
         <mat-row *matRowDef="let row; columns: ['expandedDetail']" class="detail-row"
-          [@detailExpand]="expandedCompetencyId === row.competencyId ? 'expanded' : 'collapsed'"></mat-row>
+          [@detailExpand]="expandedCompetencyId === row.competencyId ? 'expanded' : 'collapsed'" />
       </mat-table>
       @if (dataSource.data.length === 0) {
       <div class="no-results">No competencies associated with this MSEL.</div>

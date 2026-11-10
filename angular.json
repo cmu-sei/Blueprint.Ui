@@ -134,10 +134,10 @@
               "html"
             ],
             "coverageThresholds": {
-              "statements": 64,
-              "branches": 44,
-              "functions": 64,
-              "lines": 64
+              "statements": 66,
+              "branches": 47,
+              "functions": 66,
+              "lines": 66
             }
           },
           "configurations": {

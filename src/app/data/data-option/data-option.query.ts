@@ -10,7 +10,7 @@ import {
   DataOptionStore,
 } from './data-option.store';
 import { DataOption } from 'src/app/generated/blueprint.api';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
 @QueryConfig({
@@ -21,8 +21,14 @@ import { Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class DataOptionQuery extends QueryEntity<DataOptionState> {
-  constructor(protected store: DataOptionStore) {
+  protected store: DataOptionStore;
+
+  constructor() {
+    const store = inject(DataOptionStore);
+
     super(store);
+  
+    this.store = store;
   }
 
   selectById(id: string): Observable<DataOption> {

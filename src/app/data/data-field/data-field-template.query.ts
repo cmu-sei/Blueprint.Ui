@@ -10,7 +10,7 @@ import {
   DataFieldTemplateStore,
 } from './data-field-template.store';
 import { DataField } from 'src/app/generated/blueprint.api';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
 @QueryConfig({
@@ -21,8 +21,14 @@ import { Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class DataFieldTemplateQuery extends QueryEntity<DataFieldTemplateState> {
-  constructor(protected store: DataFieldTemplateStore) {
+  protected store: DataFieldTemplateStore;
+
+  constructor() {
+    const store = inject(DataFieldTemplateStore);
+
     super(store);
+  
+    this.store = store;
   }
 
   selectById(id: string): Observable<DataField> {

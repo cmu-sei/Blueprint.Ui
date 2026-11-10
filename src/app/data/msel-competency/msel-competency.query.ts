@@ -7,7 +7,7 @@ import {
   MselCompetencyStore,
 } from './msel-competency.store';
 import { MselCompetency } from 'src/app/generated/blueprint.api';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
 @QueryConfig({
@@ -18,8 +18,14 @@ import { Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class MselCompetencyQuery extends QueryEntity<MselCompetencyState> {
-  constructor(protected store: MselCompetencyStore) {
+  protected store: MselCompetencyStore;
+
+  constructor() {
+    const store = inject(MselCompetencyStore);
+
     super(store);
+  
+    this.store = store;
   }
 
   selectById(id: string): Observable<MselCompetency> {

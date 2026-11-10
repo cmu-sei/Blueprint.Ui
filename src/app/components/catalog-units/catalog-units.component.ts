@@ -1,7 +1,7 @@
 // Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit, inject, input, viewChild } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { UnitQuery } from 'src/app/data/unit/unit.query';
@@ -19,19 +19,29 @@ import { CatalogQuery } from 'src/app/data/catalog/catalog.query';
 import { CatalogUnitDataService } from 'src/app/data/catalog-unit/catalog-unit-data.service';
 import { CatalogUnitQuery } from 'src/app/data/catalog-unit/catalog-unit.query';
 import { MatMenuTrigger } from '@angular/material/menu';
+import { MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
+import { MatIconButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
+import { MatExpansionPanel, MatExpansionPanelHeader } from '@angular/material/expansion';
 
 @Component({
-  selector: 'app-catalog-units',
-  templateUrl: './catalog-units.component.html',
-  styleUrls: ['./catalog-units.component.scss'],
-  standalone: false
+    selector: 'app-catalog-units',
+    templateUrl: './catalog-units.component.html',
+    styleUrls: ['./catalog-units.component.scss'],
+    imports: [MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatIconButton, MatIcon, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, MatExpansionPanel, MatExpansionPanelHeader]
 })
 export class CatalogUnitsComponent implements OnDestroy, OnInit {
-  @Input() loggedInUserId: string;
+  private unitQuery = inject(UnitQuery);
+  private userQuery = inject(UserQuery);
+  private catalogDataService = inject(CatalogDataService);
+  private catalogUnitDataService = inject(CatalogUnitDataService);
+  private catalogUnitQuery = inject(CatalogUnitQuery);
+
+  readonly loggedInUserId = input<string>(undefined);
   @Input() canEdit: boolean;
-  @Input() catalog: Catalog;
+  readonly catalog = input<Catalog>(undefined);
   // context menu
-  @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
+  readonly contextMenu = viewChild(MatMenuTrigger);
   contextMenuPosition = { x: '0px', y: '0px' };
   displayedColumns: string[] = ['action', 'shortName', 'name'];
   expandedSectionIds: string[] = [];
@@ -43,13 +53,7 @@ export class CatalogUnitsComponent implements OnDestroy, OnInit {
   private allUnits: Unit[] = [];
   private unsubscribe$ = new Subject();
 
-  constructor(
-    private unitQuery: UnitQuery,
-    private userQuery: UserQuery,
-    private catalogDataService: CatalogDataService,
-    private catalogUnitDataService: CatalogUnitDataService,
-    private catalogUnitQuery: CatalogUnitQuery,
-  ) {
+  constructor() {
     // subscribe to users
     this.userQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(users => {
       this.userList = users;
@@ -78,7 +82,7 @@ export class CatalogUnitsComponent implements OnDestroy, OnInit {
 
   ngOnInit() {
     // load the CatalogUnits
-    this.catalogUnitDataService.loadByCatalog(this.catalog.id);
+    this.catalogUnitDataService.loadByCatalog(this.catalog().id);
   }
 
   getSortedDataFields(dataFields: DataField[]): DataField[] {
@@ -94,7 +98,7 @@ export class CatalogUnitsComponent implements OnDestroy, OnInit {
 
   getUnitList() {
     let unitList = this.allUnits;
-    if (this.catalog && this.catalogUnitList && this.catalogUnitList.length > 0 && unitList.length > 0) {
+    if (this.catalog() && this.catalogUnitList && this.catalogUnitList.length > 0 && unitList.length > 0) {
       const catalogUnitIds = new Set(this.catalogUnitList.map(mt => mt.unitId));
       unitList = this.allUnits.filter(t => !catalogUnitIds.has(t.id));
     }
@@ -114,7 +118,7 @@ export class CatalogUnitsComponent implements OnDestroy, OnInit {
 
   addUnitToCatalog(unitId: string) {
     const catalogUnit: CatalogUnit = {
-      catalogId: this.catalog.id,
+      catalogId: this.catalog().id,
       unitId: unitId
     };
     this.catalogUnitDataService.add(catalogUnit);
@@ -129,7 +133,7 @@ export class CatalogUnitsComponent implements OnDestroy, OnInit {
   }
 
   saveChanges() {
-    this.catalogDataService.update(this.catalog);
+    this.catalogDataService.update(this.catalog());
     this.isEditEnabled = false;
   }
 

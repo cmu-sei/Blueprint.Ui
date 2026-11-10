@@ -2,12 +2,19 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, EventEmitter, OnDestroy, Output } from '@angular/core';
+import { Component, OnDestroy, inject, output } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
 import { CompetencyFrameworkService } from 'src/app/generated/blueprint.api';
 import { EMPTY, Subscription, timer } from 'rxjs';
 import { catchError, switchMap, take } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
+import { CrucibleDialogComponent, CrucibleDialogContentDirective, CrucibleDialogActionsDirective } from '@cmusei/crucible-common';
+import { MatButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
+import { MatFormField, MatLabel, MatInput } from '@angular/material/input';
+import { FormsModule } from '@angular/forms';
+import { MatProgressBar } from '@angular/material/progress-bar';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
 
 interface ElementTypeCount {
   type: string;
@@ -27,10 +34,13 @@ export interface ImportResult {
     selector: 'app-admin-competency-framework-import-dialog',
     templateUrl: './admin-competency-framework-import-dialog.component.html',
     styleUrls: ['./admin-competency-framework-import-dialog.component.scss'],
-    standalone: false
+    imports: [CrucibleDialogComponent, CrucibleDialogContentDirective, MatButton, MatIcon, MatFormField, MatLabel, MatInput, FormsModule, MatProgressBar, MatProgressSpinner, CrucibleDialogActionsDirective]
 })
 export class AdminCompetencyFrameworkImportDialogComponent implements OnDestroy {
-  @Output() importComplete = new EventEmitter<ImportResult | null>();
+  dialogRef = inject<MatDialogRef<AdminCompetencyFrameworkImportDialogComponent>>(MatDialogRef);
+  private competencyFrameworkService = inject(CompetencyFrameworkService);
+
+  readonly importComplete = output<ImportResult | null>();
   fileName = '';
   parseError = '';
   successMessage = '';
@@ -53,11 +63,6 @@ export class AdminCompetencyFrameworkImportDialogComponent implements OnDestroy 
   importCounts = '';
   private importId = '';
   private progressSub: Subscription;
-
-  constructor(
-    public dialogRef: MatDialogRef<AdminCompetencyFrameworkImportDialogComponent>,
-    private competencyFrameworkService: CompetencyFrameworkService
-  ) {}
 
   onFileSelected(event: any) {
     const file = event.target.files[0];

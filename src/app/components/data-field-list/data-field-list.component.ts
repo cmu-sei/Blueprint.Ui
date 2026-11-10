@@ -1,28 +1,30 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { ChangeDetectorRef, Component, ElementRef, Input, OnDestroy, OnInit, ViewChild, AfterViewInit } from '@angular/core';
-import { UntypedFormControl } from '@angular/forms';
+import { ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, AfterViewInit, inject, input, viewChild, OnChanges } from '@angular/core';
+import { UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import {
   DataField,
   DataFieldType,
   DataOption,
+  MselRole,
   SystemPermission,
 } from 'src/app/generated/blueprint.api';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
 import { Theme } from '@cmusei/crucible-common';
 import { MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
-import { Sort } from '@angular/material/sort';
-import { MatTableDataSource } from '@angular/material/table';
-import { MatMenuTrigger } from '@angular/material/menu';
+import { Sort, MatSort, MatSortHeader } from '@angular/material/sort';
+import { MatTableDataSource, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
+import { MatMenuTrigger, MatMenu, MatMenuItem } from '@angular/material/menu';
 import { MatPaginator } from '@angular/material/paginator';
-import { CdkDragDrop } from '@angular/cdk/drag-drop';
+import { CdkDragDrop, CdkDropList, CdkDragHandle, CdkDrag } from '@angular/cdk/drag-drop';
 import { DataFieldDataService } from 'src/app/data/data-field/data-field-data.service';
 import { DataFieldQuery } from 'src/app/data/data-field/data-field.query';
 import { DataFieldTemplateQuery } from 'src/app/data/data-field/data-field-template.query';
+import { canUpdateMsel } from 'src/app/utilities/msel-permissions';
 import { DataFieldEditDialogComponent } from '../data-field-edit-dialog/data-field-edit-dialog.component';
 import { CompetencyOptionsDialogComponent } from '../competency-options-dialog/competency-options-dialog.component';
 import { DataOptionEditDialogComponent } from '../data-option-edit-dialog/data-option-edit-dialog.component';
@@ -36,18 +38,38 @@ import { MatDialog } from '@angular/material/dialog';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
 import { v4 as uuidv4 } from 'uuid';
+import { MatIcon } from '@angular/material/icon';
+
+import { MatFormField, MatInput, MatSuffix, MatLabel } from '@angular/material/input';
+import { MatIconButton } from '@angular/material/button';
+import { MatSelect } from '@angular/material/select';
+import { MatOption } from '@angular/material/autocomplete';
+import { MatCheckbox } from '@angular/material/checkbox';
 
 @Component({
-  selector: 'app-data-field-list',
-  templateUrl: './data-field-list.component.html',
-  styleUrls: ['./data-field-list.component.scss'],
-  standalone: false
+    selector: 'app-data-field-list',
+    templateUrl: './data-field-list.component.html',
+    styleUrls: ['./data-field-list.component.scss'],
+    imports: [MatIcon, MatFormField, MatInput, FormsModule, ReactiveFormsModule, MatIconButton, MatSuffix, MatLabel, MatSelect, MatOption, MatPaginator, MatTable, MatSort, CdkDropList, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, CdkDragHandle, CdkDrag, MatMenuTrigger, MatMenu, MatMenuItem, MatSortHeader, MatCheckbox, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow]
 })
-export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit {
-  @Input() loggedInUserId: string;
-  @Input() showTemplates: boolean;
-  @Input() userTheme: Theme;
-  @Input() injectTypeId: string;
+export class DataFieldListComponent implements OnChanges, OnDestroy, OnInit, AfterViewInit {
+  private mselQuery = inject(MselQuery);
+  private dataFieldDataService = inject(DataFieldDataService);
+  private dataFieldQuery = inject(DataFieldQuery);
+  private dataFieldTemplateQuery = inject(DataFieldTemplateQuery);
+  private injectTypeDataService = inject(InjectTypeDataService);
+  private injectTypeQuery = inject(InjectTypeQuery);
+  private mselDataService = inject(MselDataService);
+  dialog = inject(MatDialog);
+  dialogService = inject(CrucibleDialogService);
+  private permissionDataService = inject(PermissionDataService);
+  private uiDataService = inject(UIDataService);
+  private changeDetectorRef = inject(ChangeDetectorRef);
+
+  readonly loggedInUserId = input<string>(undefined);
+  readonly showTemplates = input<boolean>(undefined);
+  readonly userTheme = input<Theme>(undefined);
+  readonly injectTypeId = input<string>(undefined);
   msel = new MselPlus();
   allDataFields: DataField[] = [];
   dataFieldList: DataField[] = [];
@@ -89,26 +111,14 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
   readonly defaultVisibleDisplayColumns: string[] = ['onScenarioEventList', 'onExerciseView'];
   visibleDisplayColumns: string[] = [];
   private unsubscribe$ = new Subject();
+  private editRights = { fields: false, systemRows: false, templates: false };
   // context menu
-  @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
-  @ViewChild(MatPaginator) paginator: MatPaginator;
-  @ViewChild('jsonInput') jsonInput: ElementRef<HTMLInputElement>;
+  readonly contextMenu = viewChild(MatMenuTrigger);
+  readonly paginator = viewChild(MatPaginator);
+  readonly jsonInput = viewChild<ElementRef<HTMLInputElement>>('jsonInput');
   contextMenuPosition = { x: '0px', y: '0px' };
 
-  constructor(
-    private mselQuery: MselQuery,
-    private dataFieldDataService: DataFieldDataService,
-    private dataFieldQuery: DataFieldQuery,
-    private dataFieldTemplateQuery: DataFieldTemplateQuery,
-    private injectTypeDataService: InjectTypeDataService,
-    private injectTypeQuery: InjectTypeQuery,
-    private mselDataService: MselDataService,
-    public dialog: MatDialog,
-    public dialogService: CrucibleDialogService,
-    private permissionDataService: PermissionDataService,
-    private uiDataService: UIDataService,
-    private changeDetectorRef: ChangeDetectorRef
-  ) {
+  constructor() {
     this.msel.id = null;
     // subscribe to filter string changes
     this.filterControl.valueChanges
@@ -127,7 +137,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
         (templates) => {
           this.templateList = templates;
           // if on the templates page, the dataFieldList is the templates
-          if (this.showTemplates) {
+          if (this.showTemplates()) {
             this.dataFieldList = templates;
           }
           this.sortChanged(this.sort);
@@ -138,11 +148,17 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
       );
   }
 
+  // the rights depend on loggedInUserId, showTemplates and injectTypeId
+  ngOnChanges() {
+    this.updateEditRights();
+  }
+
   ngOnInit() {
     // Load permissions and trigger change detection when loaded
     this.permissionDataService.load()
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(() => {
+        this.updateEditRights();
         this.changeDetectorRef.markForCheck();
       });
     const saved = this.uiDataService.getVisibleDataFieldColumns();
@@ -150,7 +166,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
     const availableKeys = this.availableDisplayOptions().map((o) => o.key);
     this.visibleDisplayColumns = seed.filter((k) => availableKeys.includes(k));
     this.applyVisibleDisplayColumns();
-    if (this.showTemplates) {
+    if (this.showTemplates()) {
       this.msel = new MselPlus();
       this.mselDataService.setActive('');
     } else {
@@ -162,17 +178,19 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
           this.allDataFields = dataFields;
           this.setDataFieldList();
         });
-      if (this.injectTypeId) {
+      const injectTypeId = this.injectTypeId();
+      if (injectTypeId) {
         this.msel = new MselPlus();
         this.mselDataService.setActive('');
         // load data fields for the inject type
-        this.dataFieldDataService.loadByInjectType(this.injectTypeId);
+        this.dataFieldDataService.loadByInjectType(injectTypeId);
       } else {
         // subscribe to the active MSEL changes to get future changes
         (this.mselQuery.selectActive() as Observable<MselPlus>)
           .pipe(takeUntil(this.unsubscribe$))
           .subscribe((m) => {
             Object.assign(this.msel, m);
+            this.updateEditRights();
             this.setDataFieldList();
             if (this.msel && this.msel.id) {
               if (
@@ -196,7 +214,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
   }
 
   ngAfterViewInit() {
-    this.dataFieldDataSource.paginator = this.paginator;
+    this.dataFieldDataSource.paginator = this.paginator();
   }
 
   setDataFieldList() {
@@ -204,7 +222,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
     this.allDataFields.forEach((df) => {
       if (
         (df.mselId && df.mselId === this.msel.id) ||
-        (df.injectTypeId && df.injectTypeId === this.injectTypeId)
+        (df.injectTypeId && df.injectTypeId === this.injectTypeId())
       ) {
         this.dataFieldList.push({ ...df });
       }
@@ -275,7 +293,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
     if (!dataField) {
       dataField = {
         mselId: this.msel.id,
-        injectTypeId: this.injectTypeId,
+        injectTypeId: this.injectTypeId(),
         displayOrder: this.dataFieldList.length + 1,
         isShownOnDefaultTab: true,
         onScenarioEventList: true,
@@ -296,7 +314,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
         dataField.injectTypeId = null;
       } else {
         dataField.mselId = this.msel.id;
-        dataField.injectTypeId = this.injectTypeId;
+        dataField.injectTypeId = this.injectTypeId();
         dataField.displayOrder = dataField.isTemplate
           ? this.dataFieldList.length + 1
           : dataField.displayOrder;
@@ -316,7 +334,6 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
       data: {
         dataField: dataField,
         canEdit: this.canEdit(),
-        isOwner: this.msel.hasRole(this.loggedInUserId, null).owner,
         galleryArticleParameters: this.getUnusedGalleryOptions(
           dataField.galleryArticleParameter
         ),
@@ -352,7 +369,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
       return;
     }
     this.dataFieldDataService.uploadJson(file, 'events', true);
-    this.jsonInput.nativeElement.value = null;
+    this.jsonInput().nativeElement.value = null;
   }
 
   openDownloadDialog() {
@@ -410,16 +427,17 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
     ) {
       this.allowDragAndDrop = false;
     } else {
-      this.allowDragAndDrop = !this.showTemplates;
+      this.allowDragAndDrop = !this.showTemplates();
     }
     const filteredData = this.getFilteredDataFields(
       this.msel.id,
-      this.injectTypeId,
+      this.injectTypeId(),
       this.dataFieldList
     );
     this.dataFieldDataSource.data = filteredData;
-    if (this.paginator) {
-      this.paginator.length = filteredData.length;
+    const paginator = this.paginator();
+    if (paginator) {
+      paginator.length = filteredData.length;
     }
     this.templateDataSource.data = this.templateList.sort((a, b) =>
       this.sortDataFields(a, b)
@@ -488,7 +506,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
   }
 
   sortDataFields(a: DataField, b: DataField): number {
-    const defaultSort: Sort = this.showTemplates
+    const defaultSort: Sort = this.showTemplates()
       ? { active: 'name', direction: 'asc' }
       : { active: 'displayOrder', direction: 'asc' };
     let sortResult = 0;
@@ -523,7 +541,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
     }
 
     const returnArray =
-      this.showTemplates || (!mselId && !injectTypeId)
+      this.showTemplates() || (!mselId && !injectTypeId)
         ? filteredDataFields
         : this.systemDefinedDataFields.concat(filteredDataFields);
     return returnArray;
@@ -546,7 +564,7 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
   viewDataOptions(dataField: DataField, event: Event) {
     event.stopPropagation();
     if (dataField.dataType === DataFieldType.Competency || (dataField.dataOptions && dataField.dataOptions.length > 0)) {
-      const hasEditPermission = this.canEdit() || this.msel.hasRole(this.loggedInUserId, null).owner;
+      const hasEditPermission = this.canEdit();
       const supportsOptionList =
         dataField.dataType === DataFieldType.Double ||
         dataField.dataType === DataFieldType.Integer ||
@@ -568,7 +586,11 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
           }
         });
         compDialogRef.afterClosed().subscribe((updatedOptions) => {
-          const updated = { ...dataField, dataOptions: updatedOptions || dataField.dataOptions };
+          // Closing without saving answers nothing; a read-only user has nothing to save.
+          if (!canAddOptions || updatedOptions === undefined) {
+            return;
+          }
+          const updated = { ...dataField, dataOptions: updatedOptions };
           this.dataFieldDataService.updateDataField(updated);
         });
       } else {
@@ -651,8 +673,8 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
 
   availableDisplayOptions() {
     return this.displayOptions.filter((opt) => {
-      if (this.showTemplates && opt.hideInAdmin) return false;
-      if (this.injectTypeId && opt.hideInInjectType) return false;
+      if (this.showTemplates() && opt.hideInAdmin) return false;
+      if (this.injectTypeId() && opt.hideInInjectType) return false;
       return true;
     });
   }
@@ -771,13 +793,40 @@ export class DataFieldListComponent implements OnDestroy, OnInit, AfterViewInit 
     }
   }
 
+  // The template asks these for every row on every change detection, so they read rights worked
+  // out once, whenever the MSEL, the permissions or the inputs change.
   canEdit(): boolean {
-    if (this.showTemplates) {
-      return this.permissionDataService.hasPermission(SystemPermission.ManageDataFields);
-    } else {
-      return this.permissionDataService.hasPermission(SystemPermission.EditMsels) ||
-        this.msel.hasRole(this.loggedInUserId, '').editor;
-    }
+    return this.editRights.fields;
+  }
+
+  canEditRow(dataField: DataField): boolean {
+    return dataField.displayOrder < 0 ? this.editRights.systemRows : this.editRights.fields;
+  }
+
+  canMakeTemplate(): boolean {
+    return this.editRights.templates;
+  }
+
+  private updateEditRights() {
+    const userId = this.loggedInUserId();
+    const hasEditMsels = this.permissionDataService.hasPermission(SystemPermission.EditMsels);
+    const hasManageDataFields = this.permissionDataService.hasPermission(SystemPermission.ManageDataFields);
+    // Template and inject type fields belong to no MSEL; the API wants ManageDataFields for them.
+    // A MSEL's fields and options: EditMsels, its owners and its Editors. hasRole's editor is also
+    // true for an Approver, who edits events but not the fields, so the Editor role is checked directly.
+    const fields = this.showTemplates() || this.injectTypeId()
+      ? hasManageDataFields
+      : hasEditMsels ||
+        this.msel.hasRole(userId, '').owner ||
+        (this.msel.userMselRoles ?? []).some((r) => r.userId === userId && r.role === MselRole.Editor);
+    this.editRights = {
+      fields,
+      // The system rows (Move, Group, Execution Time, Integration Target) are MSEL settings, saved
+      // by updating the MSEL.
+      systemRows: canUpdateMsel(this.msel, userId, hasEditMsels),
+      // A template is a field of no MSEL, which the API creates only with ManageDataFields.
+      templates: fields && hasManageDataFields,
+    };
   }
 
   ngOnDestroy() {

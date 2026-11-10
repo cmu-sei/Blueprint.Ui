@@ -2,6 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { Injector, runInInjectionContext } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { firstValueFrom, of, throwError } from 'rxjs';
 import {
@@ -440,9 +441,9 @@ describe('ScenarioEventDataService', () => {
     });
 
     /**
-     * Verifies: getDisplayValueFromView shows card/user names, formats DateTime values as "dd MMM yyyy HH:mm TZ", and blanks unparseable dates.
+     * Verifies: getDisplayValueFromView shows card/user names, formats DateTime values as "dd MMM yyyy HH:mm TZ", and shows a DateTime value that is not a date as its text.
      * Interacts with: ScenarioEventDataService.getDisplayValueFromView.
-     * Data: se-1 with a card, user, local date-time, plain text; se-2 with an invalid date.
+     * Data: se-1 with a card, user, local date-time, plain text; se-2 with " not a date " in a DateTime field.
      */
     it('getDisplayValueFromView formats values for display', () => {
       const { service } = setup();
@@ -452,7 +453,7 @@ describe('ScenarioEventDataService', () => {
           value('se-1', 'f-owner', 'user-1'),
           value('se-1', 'f-when', '2026-03-04T05:06:00'),
           value('se-1', 'f-title', 'Phishing'),
-          value('se-2', 'f-when', 'not a date'),
+          value('se-2', 'f-when', ' not a date '),
         ],
       });
       index(service, v);
@@ -467,7 +468,7 @@ describe('ScenarioEventDataService', () => {
         /^04 Mar 2026 05:06 \S+$/,
       );
       expect(service.getDisplayValueFromView(v, se1, 'Title')).toBe('Phishing');
-      expect(service.getDisplayValueFromView(v, se2, 'When')).toBe(' ');
+      expect(service.getDisplayValueFromView(v, se2, 'When')).toBe('not a date');
       expect(service.getDisplayValueFromView(v, se2, 'Title')).toBe('');
     });
 
@@ -559,7 +560,7 @@ describe('ScenarioEventDataService', () => {
 
     expect(TestBed.inject(ScenarioEventQuery).getValue().loading).toBe(true);
     // With no error callback the error escapes to ErrorService, the ErrorHandler
-    // app.module.ts provides, which shows it.
+    // app.config.ts provides, which shows it.
     expect(errors).toEqual(escapes ? [failure] : []);
   });
 
@@ -582,7 +583,7 @@ describe('ScenarioEventDataService', () => {
     await flush();
 
     // These methods subscribe with no error callback and set no loading flag,
-    // so the error escapes to ErrorService, the ErrorHandler app.module.ts
+    // so the error escapes to ErrorService, the ErrorHandler app.config.ts
     // provides, which shows it to the user. Not a defect on its own.
     expect(errors).toEqual([failure]);
   });
@@ -596,7 +597,10 @@ describe('ScenarioEventQuery', () => {
    */
   it('orders events by time then group', async () => {
     const store = new ScenarioEventStore();
-    const query = new ScenarioEventQuery(store);
+    const injector = Injector.create({
+      providers: [{ provide: ScenarioEventStore, useValue: store }],
+    });
+    const query = runInInjectionContext(injector, () => new ScenarioEventQuery());
     store.set([
       event({ id: 'late', deltaSeconds: 120 }),
       event({ id: 'mid-2', deltaSeconds: 60, groupOrder: 2 }),

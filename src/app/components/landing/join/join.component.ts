@@ -1,8 +1,8 @@
 // Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Subject } from 'rxjs';
 import { take, takeUntil } from 'rxjs/operators';
 import {
@@ -15,19 +15,39 @@ import {
   User,
 } from 'src/app/generated/blueprint.api';
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
+import { MselImageDataService } from 'src/app/data/msel/msel-image-data.service';
 import { TopbarView } from '../../shared/top-bar/topbar.models';
 import { Title } from '@angular/platform-browser';
 import { ErrorService } from 'src/app/services/error/error.service';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
 import { XApiService } from 'src/app/services/xapi/xapi.service';
+import { landingBackground } from 'src/app/utilities/landing-background';
+import { cardImage } from 'src/app/utilities/card-image';
+import { TopbarComponent } from '../../shared/top-bar/topbar.component';
+import { OverflowTooltipDirective } from '../../shared/overflow-tooltip/overflow-tooltip.directive';
+import { MatButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
 
 @Component({
     selector: 'app-join',
     templateUrl: './join.component.html',
     styleUrls: ['./join.component.scss'],
-    standalone: false
+    imports: [TopbarComponent, MatButton, MatIcon, MatProgressSpinner, RouterLink, OverflowTooltipDirective]
 })
 export class JoinComponent implements OnDestroy, OnInit {
+  private userDataService = inject(UserDataService);
+  private userQuery = inject(UserQuery);
+  private settingsService = inject(ComnSettingsService);
+  private mselDataService = inject(MselDataService);
+  private mselImageDataService = inject(MselImageDataService);
+  private activatedRoute = inject(ActivatedRoute);
+  private router = inject(Router);
+  private titleService = inject(Title);
+  private errorService = inject(ErrorService);
+  private uiDataService = inject(UIDataService);
+  private xApiService = inject(XApiService);
+
   joinMselList: Msel[] = [];
   joiningMselId = '';
   imageFilePath = '';
@@ -37,25 +57,16 @@ export class JoinComponent implements OnDestroy, OnInit {
   topbarColor = '#ef3a47';
   topbarTextColor = '#FFFFFF';
   topbarImage = this.settingsService.settings.AppTopBarImage;
+  backgroundImage = landingBackground(this.settingsService.settings);
   TopbarView = TopbarView;
   appTitle = 'Join Event';
   joinStatus: { [id: string]: string } = {};
   isJoined: { [id: string]: boolean } = {};
   showChoices = false;
+  cardPhotos: { [id: string]: string } = {};
   private unsubscribe$ = new Subject();
 
-  constructor(
-    private userDataService: UserDataService,
-    private userQuery: UserQuery,
-    private settingsService: ComnSettingsService,
-    private mselDataService: MselDataService,
-    private activatedRoute: ActivatedRoute,
-    private router: Router,
-    private titleService: Title,
-    private errorService: ErrorService,
-    private uiDataService: UIDataService,
-    private xApiService: XApiService
-  ) {
+  constructor() {
     this.hideTopbar = this.uiDataService.inIframe();
     // set image
     this.imageFilePath = this.settingsService.settings.AppTopBarImage.replace(
@@ -101,8 +112,21 @@ export class JoinComponent implements OnDestroy, OnInit {
       .pipe(take(1))
       .subscribe((msels) => {
         this.joinMselList = msels;
+        msels.forEach((msel) =>
+          this.mselImageDataService
+            .imageUrl(msel)
+            .pipe(takeUntil(this.unsubscribe$))
+            .subscribe((url) => {
+              if (url) {
+                this.cardPhotos[msel.id] = url;
+              }
+            })
+        );
       });
   }
+
+  // A card shows the MSEL's own image when it has one, otherwise a generated pattern.
+  readonly cardImage = cardImage;
 
   topBarNavigate(url): void {
     this.router.navigate([url]);

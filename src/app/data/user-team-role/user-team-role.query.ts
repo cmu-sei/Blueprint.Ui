@@ -7,7 +7,7 @@ import {
   UserTeamRoleStore,
 } from './user-team-role.store';
 import { UserTeamRole } from 'src/app/generated/blueprint.api';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { PageEvent } from '@angular/material/paginator';
 import { Observable } from 'rxjs';
 
@@ -19,8 +19,14 @@ import { Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class UserTeamRoleQuery extends QueryEntity<UserTeamRoleState> {
-  constructor(protected store: UserTeamRoleStore) {
+  protected store: UserTeamRoleStore;
+
+  constructor() {
+    const store = inject(UserTeamRoleStore);
+
     super(store);
+  
+    this.store = store;
   }
 
   selectById(id: string): Observable<UserTeamRole> {

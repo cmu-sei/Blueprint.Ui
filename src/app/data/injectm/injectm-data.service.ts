@@ -3,7 +3,7 @@
 
 import { InjectmStore } from './injectm.store';
 import { InjectmQuery } from './injectm.query';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { PageEvent } from '@angular/material/paginator';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -18,6 +18,12 @@ import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
   providedIn: 'root',
 })
 export class InjectmDataService {
+  private injectmStore = inject(InjectmStore);
+  private injectmQuery = inject(InjectmQuery);
+  private injectService = inject(InjectService);
+  private router = inject(Router);
+  private activatedRoute = inject(ActivatedRoute);
+
   private _requestedInjectmId: string;
   private _requestedInjectmId$ = this.activatedRoute.queryParamMap.pipe(
     map((params) => params.get('injectmId') || '')
@@ -32,13 +38,9 @@ export class InjectmDataService {
   private pageSize: Observable<number>;
   private pageIndex: Observable<number>;
 
-  constructor(
-    private injectmStore: InjectmStore,
-    private injectmQuery: InjectmQuery,
-    private injectService: InjectService,
-    private router: Router,
-    private activatedRoute: ActivatedRoute
-  ) {
+  constructor() {
+    const activatedRoute = this.activatedRoute;
+
     this.filterTerm = activatedRoute.queryParamMap.pipe(
       map((params) => params.get('injectmmask') || '')
     );

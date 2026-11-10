@@ -8,76 +8,147 @@
   min-height: 0;
 }
 
-.top-container {
+.join-page {
   display: flex;
   flex-direction: column;
   flex: 1;
   min-height: 100%;
+  background-color: var(--mat-sys-surface);
 }
 
-.background {
-  background-color: var(--mat-sys-background);
-}
-.card-container {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: stretch;
-  padding-top: 40px;
-  gap: 4%;
-}
-
-.base-card {
+.join-container {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  text-align: center;
-  margin-top: 10px;
-  margin-bottom: 10px;
-  width: 30%;
-  max-width: 400px;
+  flex: 1;
+  padding: 2rem;
+  overflow-y: auto;
+}
+
+.page-header {
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+}
+
+.page-title {
+  font: var(--mat-sys-headline-medium);
+  color: var(--mat-sys-on-surface);
+  margin: 0 0 0.5rem 0;
+}
+
+.page-subtitle {
+  font: var(--mat-sys-body-medium);
+  letter-spacing: var(--mat-sys-body-medium-tracking);
+  color: var(--mat-sys-on-surface-variant);
+  margin: 0;
+}
+
+.event-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.event-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--mat-sys-surface-container);
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    border-color: var(--mat-sys-primary);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  > :not(.card-image) {
+    margin-left: 1.25rem;
+    margin-right: 1.25rem;
+  }
 }
 
 .card-image {
-  width: 90%;
-  margin-left: 5%;
-  margin-right: 5%;
-}
-
-mat-card-title {
-  color: var(--mat-sys-on-surface-variant) !important;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-  word-break: break-word;
-  min-height: 60px;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 16 / 7;
+  margin-bottom: 1rem;
 }
 
-mat-card-subtitle {
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-  word-break: break-word;
-  text-align: left;
-  margin-top: 12px;
-  line-height: 1.5;
+.card-photo {
+  background-size: cover;
+  background-position: center;
 }
 
-.base-card mat-card-header {
-  padding-top: 16px;
-  padding-bottom: 0;
-  padding-left: 16px;
-  padding-right: 16px;
-  flex-shrink: 0;
-  overflow: visible;
+// Every title takes two lines' room, so the descriptions start level across a row; a longer
+// title ends in an ellipsis, with the full name in a tooltip (appOverflowTooltip).
+.card-title {
+  font: var(--mat-sys-title-large);
+  color: var(--mat-sys-on-surface);
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  overflow-wrap: anywhere;
+  min-height: calc(2 * var(--mat-sys-title-large-line-height));
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-.base-card mat-card-actions {
-  padding-top: 24px;
-  padding-bottom: 16px;
-  padding-left: 16px;
-  padding-right: 16px;
-  margin: 0;
+.card-description {
+  font: var(--mat-sys-body-medium);
+  letter-spacing: var(--mat-sys-body-medium-tracking);
+  color: var(--mat-sys-on-surface-variant);
+  margin-top: 0;
+  margin-bottom: 1rem;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.card-footer {
+  display: flex;
+  justify-content: flex-end;
   margin-top: auto;
+  padding: 1rem 0;
+  border-top: 1px solid var(--mat-sys-outline-variant);
+}
+
+.empty-state,
+.joining-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 3rem 1rem;
+  color: var(--mat-sys-on-surface-variant);
+
+  p {
+    margin: 0;
+    font: var(--mat-sys-body-large);
+    letter-spacing: var(--mat-sys-body-large-tracking);
+  }
+}
+
+.empty-state {
+  grid-column: 1 / -1;
+
+  mat-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    line-height: 48px;
+  }
+}
+
+.joining-state {
+  flex: 1;
+  justify-content: center;
 }

@@ -3,7 +3,7 @@
 
 import { TeamCompetencyStore } from './team-competency.store';
 import { TeamCompetencyQuery } from './team-competency.query';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import {
   TeamCompetency,
   TeamCompetencyService,
@@ -15,13 +15,13 @@ import { Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class TeamCompetencyDataService {
+  private teamCompetencyStore = inject(TeamCompetencyStore);
+  private teamCompetencyQuery = inject(TeamCompetencyQuery);
+  private teamCompetencyService = inject(TeamCompetencyService);
+
   readonly TeamCompetencyList: Observable<TeamCompetency[]>;
 
-  constructor(
-    private teamCompetencyStore: TeamCompetencyStore,
-    private teamCompetencyQuery: TeamCompetencyQuery,
-    private teamCompetencyService: TeamCompetencyService
-  ) {
+  constructor() {
     this.TeamCompetencyList = this.teamCompetencyQuery.selectAll();
   }
 

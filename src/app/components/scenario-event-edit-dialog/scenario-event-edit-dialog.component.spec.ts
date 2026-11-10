@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { describe, it, expect } from 'vitest';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
@@ -17,39 +17,42 @@ import { DataField, DataFieldType, EventType, ScenarioEvent } from 'src/app/gene
 import { IntegrationTarget } from 'src/app/data/scenario-event/scenario-event-data.service';
 import { ScenarioEventEditDialogComponent } from './scenario-event-edit-dialog.component';
 import { renderComponent } from 'src/app/test-utils/render-component';
+import { DataValueComponent } from '../data-value/data-value.component';
+import { DurationEditComponent } from '../shared/duration-edit/duration-edit.component';
+import { SteamfitterTaskComponent } from '../steamfitter-task/steamfitter-task.component';
 
-@Component({ selector: 'app-data-value', template: '', standalone: false })
+@Component({ selector: 'app-data-value', template: '' })
 class DataValueStub {
-  @Input() value: string;
-  @Output() valueChange = new EventEmitter<string>();
-  @Input() dataField: DataField;
-  @Input() canEdit: boolean;
-  @Input() canApprove: boolean;
-  @Input() isOwner: boolean;
-  @Input() showValueOnly: boolean;
-  @Input() organizationOptions: unknown[];
-  @Input() teamOptions: unknown[];
-  @Input() unitOptions: unknown[];
-  @Input() cardOptions: unknown[];
-  @Input() moveOptions: unknown[];
-  @Input() gallerySourceTypeOptions: unknown[];
-  @Input() galleryItemStatusOptions: string[];
-  @Input() userOptions: unknown[];
+  readonly value = input<string>(undefined);
+  readonly valueChange = output<string>();
+  readonly dataField = input<DataField>(undefined);
+  readonly canEdit = input<boolean>(undefined);
+  readonly canApprove = input<boolean>(undefined);
+  readonly isOwner = input<boolean>(undefined);
+  readonly showValueOnly = input<boolean>(undefined);
+  readonly organizationOptions = input<unknown[]>(undefined);
+  readonly teamOptions = input<unknown[]>(undefined);
+  readonly unitOptions = input<unknown[]>(undefined);
+  readonly cardOptions = input<unknown[]>(undefined);
+  readonly moveOptions = input<unknown[]>(undefined);
+  readonly gallerySourceTypeOptions = input<unknown[]>(undefined);
+  readonly galleryItemStatusOptions = input<string[]>(undefined);
+  readonly userOptions = input<unknown[]>(undefined);
 }
-@Component({ selector: 'app-duration-edit', template: '', standalone: false })
+@Component({ selector: 'app-duration-edit', template: '' })
 class DurationEditStub {
-  @Input() startTime: Date;
-  @Input() canEdit: boolean;
-  @Input() durationSeconds: number;
-  @Output() durationSecondsChange = new EventEmitter<number>();
-  @Input() timeName: string;
-  @Input() postScript: string;
-  @Output() change = new EventEmitter<number>();
+  readonly startTime = input<Date>(undefined);
+  readonly canEdit = input<boolean>(undefined);
+  readonly durationSeconds = input<number>(undefined);
+  readonly durationSecondsChange = output<number>();
+  readonly timeName = input<string>(undefined);
+  readonly postScript = input<string>(undefined);
+  readonly change = output<number>();
 }
-@Component({ selector: 'app-steamfitter-task', template: '', standalone: false })
+@Component({ selector: 'app-steamfitter-task', template: '' })
 class SteamfitterTaskStub {
-  @Input() scenarioEvent: ScenarioEvent;
-  @Input() canEdit: boolean;
+  readonly scenarioEvent = input<ScenarioEvent>(undefined);
+  readonly canEdit = input<boolean>(undefined);
 }
 
 const TITLE: DataField = { id: 'df-title', name: 'Title', dataType: DataFieldType.String, displayOrder: 1, onScenarioEventList: true };
@@ -61,10 +64,15 @@ interface Roles {
   isEditingRestricted?: boolean;
   // The event targets Steamfitter and the MSEL uses it, so the Steamfitter Task tab is offered.
   steamfitter?: boolean;
+  // A When (DateTime) field holding this value, shown on the All tab only while Title is on the Default tab.
+  when?: string;
+  titleOnDefaultTab?: boolean;
 }
 
+const WHEN: DataField = { id: 'df-when', name: 'When', dataType: DataFieldType.DateTime, displayOrder: 2, onScenarioEventList: true };
+
 function dialogData(roles: Roles = {}) {
-  const { isEditor = false, isApprover = false, isOwner = false, isEditingRestricted = false, steamfitter = false } = roles;
+  const { isEditor = false, isApprover = false, isOwner = false, isEditingRestricted = false, steamfitter = false, when, titleOnDefaultTab = false } = roles;
   return {
     scenarioEvent: {
       id: 'se-1',
@@ -72,13 +80,16 @@ function dialogData(roles: Roles = {}) {
       scenarioEventType: EventType.Inject,
       deltaSeconds: 600,
       rowMetadata: '',
-      dataValues: [{ id: 'dv-1', scenarioEventId: 'se-1', dataFieldId: 'df-title', value: 'Phishing wave' }],
+      dataValues: [
+        { id: 'dv-1', scenarioEventId: 'se-1', dataFieldId: 'df-title', value: 'Phishing wave' },
+        ...(when === undefined ? [] : [{ id: 'dv-2', scenarioEventId: 'se-1', dataFieldId: 'df-when', value: when }]),
+      ],
       integrationTarget: steamfitter ? IntegrationTarget.Steamfitter : undefined,
       steamfitterTask: { id: 'task-1', name: steamfitter ? 'Ping the VM' : 'Unused task' },
       steamfitterTaskId: 'task-1',
     } as ScenarioEvent,
     integrationTargetOptions: [],
-    dataFields: [TITLE],
+    dataFields: [{ ...TITLE, isShownOnDefaultTab: titleOnDefaultTab }, ...(when === undefined ? [] : [WHEN])],
     organizationList: [],
     teamList: [],
     unitList: [],
@@ -104,7 +115,11 @@ async function renderEventEdit(roles: Roles = {}) {
   const data = dialogData(roles);
   const rendered = await renderComponent(ScenarioEventEditDialogComponent, {
     imports: [...CRUCIBLE_DIALOG_IMPORTS, MatFormFieldModule, MatInputModule, MatSelectModule, MatTabsModule],
-    declarations: [ScenarioEventEditDialogComponent, DataValueStub, DurationEditStub, SteamfitterTaskStub],
+    childStubs: [
+      { replace: DataValueComponent, with: DataValueStub },
+      { replace: DurationEditComponent, with: DurationEditStub },
+      { replace: SteamfitterTaskComponent, with: SteamfitterTaskStub },
+    ],
     providers: [{ provide: MAT_DIALOG_DATA, useValue: data }],
   });
   // ngModel applies [disabled] in a microtask.
@@ -130,12 +145,12 @@ describe('ScenarioEventEditDialogComponent', () => {
     const user = userEvent.setup();
 
     expect(screen.getByRole('button', { name: 'Save' })).toBeEnabled();
-    expect(child(fixture, DataValueStub).canEdit).toBe(true);
-    expect(child(fixture, DataValueStub).canApprove).toBe(false);
-    expect(child(fixture, DurationEditStub).canEdit).toBe(true);
+    expect(child(fixture, DataValueStub).canEdit()).toBe(true);
+    expect(child(fixture, DataValueStub).canApprove()).toBe(false);
+    expect(child(fixture, DurationEditStub).canEdit()).toBe(true);
     expect(screen.getByRole('textbox', { name: 'Row Metadata' })).toBeEnabled();
     await user.click(screen.getByText('Steamfitter Task'));
-    expect(child(fixture, SteamfitterTaskStub).canEdit).toBe(true);
+    expect(child(fixture, SteamfitterTaskStub).canEdit()).toBe(true);
   });
 
   /**
@@ -148,11 +163,11 @@ describe('ScenarioEventEditDialogComponent', () => {
     const user = userEvent.setup();
 
     expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled();
-    expect(child(fixture, DataValueStub).canEdit).toBe(false);
-    expect(child(fixture, DurationEditStub).canEdit).toBe(false);
+    expect(child(fixture, DataValueStub).canEdit()).toBe(false);
+    expect(child(fixture, DurationEditStub).canEdit()).toBe(false);
     expect(screen.getByRole('textbox', { name: 'Row Metadata' })).toBeDisabled();
     await user.click(screen.getByText('Steamfitter Task'));
-    expect(child(fixture, SteamfitterTaskStub).canEdit).toBe(false);
+    expect(child(fixture, SteamfitterTaskStub).canEdit()).toBe(false);
   });
 
   /**
@@ -163,8 +178,8 @@ describe('ScenarioEventEditDialogComponent', () => {
   it.each([true, false])('passes canApprove and isOwner %s to the data values', async (granted) => {
     const { fixture } = await renderEventEdit({ isEditor: true, isApprover: granted, isOwner: granted });
 
-    expect(child(fixture, DataValueStub).canApprove).toBe(granted);
-    expect(child(fixture, DataValueStub).isOwner).toBe(granted);
+    expect(child(fixture, DataValueStub).canApprove()).toBe(granted);
+    expect(child(fixture, DataValueStub).isOwner()).toBe(granted);
   });
 
   /**
@@ -175,7 +190,7 @@ describe('ScenarioEventEditDialogComponent', () => {
   it('restricts inject values on a starter MSEL', async () => {
     const { fixture } = await renderEventEdit({ isEditor: true, isEditingRestricted: true });
 
-    expect(child(fixture, DataValueStub).canEdit).toBe(false);
+    expect(child(fixture, DataValueStub).canEdit()).toBe(false);
     expect(screen.queryByRole('combobox', { name: 'Scenario Event Type' })).not.toBeInTheDocument();
   });
 
@@ -210,6 +225,22 @@ describe('ScenarioEventEditDialogComponent', () => {
   });
 
   /**
+   * Verifies: a DateTime value that is not a date disables Save only when it is on screen and can be edited, so Save never waits on a value that can't be fixed; a value of only spaces is empty.
+   * Interacts with: hasBadData, canEditDataValues, sortedDataFields, crucible-dialog submitDisabled.
+   * Data: isEditor; When (DateTime) = "Team 2" editable, on a starter MSEL (isEditingRestricted), or hidden from the Default tab (Title on it); When = "  ".
+   */
+  it.each([
+    { label: 'that can be edited', roles: { when: 'Team 2' }, disabled: true },
+    { label: 'on a starter MSEL, where inject values are read-only', roles: { when: 'Team 2', isEditingRestricted: true }, disabled: false },
+    { label: 'hidden from the Default tab', roles: { when: 'Team 2', titleOnDefaultTab: true }, disabled: false },
+    { label: 'that is only spaces', roles: { when: '  ' }, disabled: false },
+  ])('sets Save disabled $disabled for a DateTime value $label', async ({ roles, disabled }) => {
+    await renderEventEdit({ isEditor: true, ...roles });
+
+    expect(screen.getByRole('button', { name: 'Save' }).hasAttribute('disabled')).toBe(disabled);
+  });
+
+  /**
    * Verifies: the event's data values get the MSEL's Gallery source types and Gallery article statuses the list passed in.
    * Interacts with: DataValueStub inputs, MAT_DIALOG_DATA.
    * Data: gallerySourceTypes News and Social; galleryItemStatuses Green and Red; isEditor.
@@ -217,7 +248,7 @@ describe('ScenarioEventEditDialogComponent', () => {
   it("passes the MSEL's Gallery source types and statuses to the data values", async () => {
     const { fixture } = await renderEventEdit({ isEditor: true });
 
-    expect(child(fixture, DataValueStub).gallerySourceTypeOptions).toEqual(['News', 'Social']);
-    expect(child(fixture, DataValueStub).galleryItemStatusOptions).toEqual(['Green', 'Red']);
+    expect(child(fixture, DataValueStub).gallerySourceTypeOptions()).toEqual(['News', 'Social']);
+    expect(child(fixture, DataValueStub).galleryItemStatusOptions()).toEqual(['Green', 'Red']);
   });
 });

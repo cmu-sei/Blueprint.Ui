@@ -8,7 +8,7 @@ project root for license information.
   <div class="team-list-container elevate">
     <div class="team-list-header">
       <div class="center-self">
-        <mat-icon class="mdi-24px header-icon" fontIcon="mdi-account-multiple-outline"></mat-icon>
+        <mat-icon class="mdi-24px header-icon" fontIcon="mdi-account-multiple-outline" />
       </div>
       <div class="center-self">
         MSEL Teams
@@ -20,7 +20,7 @@ project root for license information.
         </mat-form-field>
         <button [disabled]="!filterString" mat-icon-button (click)="clearFilter()"
           style="outline: none; margin-top: -10px;" title="Clear Search">
-          <mat-icon class="mdi-24px" fontIcon="mdi-close-circle-outline"></mat-icon>
+          <mat-icon class="mdi-24px" fontIcon="mdi-close-circle-outline" />
         </button>
       </div>
     </div>
@@ -46,13 +46,13 @@ project root for license information.
           @if (canEditMsel()) {
           <div>
             <button mat-icon-button (click)="addTeamToPlayerApplication(element)" title="Add {{ element.name }}">
-              <mat-icon class="mdi-18px" fontIcon="mdi-plus-circle-outline" title="Add {{ element.name }}"></mat-icon>
+              <mat-icon class="mdi-18px" fontIcon="mdi-plus-circle-outline" title="Add {{ element.name }}" />
             </button>
           </div>
           }
         </mat-cell>
       </ng-container>
-      <mat-row *matRowDef="let row; columns: mselTeamColumns"></mat-row>
+      <mat-row *matRowDef="let row; columns: mselTeamColumns" />
     </mat-table>
     }
     @if (teamDataSource.filteredData.length === 0) {
@@ -63,7 +63,7 @@ project root for license information.
   <div class="player-application-list-container elevate">
     <div class="player-application-list-header">
       <div class="head-name center-self">
-        <mat-icon class="mdi-24px header-icon" fontIcon="mdi-account-group-outline"></mat-icon>
+        <mat-icon class="mdi-24px header-icon" fontIcon="mdi-account-group-outline" />
         Player Application Teams
       </div>
       <div class="head-right">&nbsp;</div>
@@ -72,8 +72,7 @@ project root for license information.
 
     @if (false) {
     <mat-card appearance="outlined" style="display: flex; justify-content: center; align-items: center;">
-      <mat-progress-spinner color="primary" mode="indeterminate">
-      </mat-progress-spinner>
+      <mat-progress-spinner color="primary" mode="indeterminate" />
     </mat-card>
     }
 
@@ -91,14 +90,14 @@ project root for license information.
             <button mat-icon-button (click)="removeTeamFromPlayerApplication(element.id)"
               title="Remove {{ element.name }}">
               <mat-icon class="mdi-18px" fontIcon="mdi-minus-circle-outline"
-                title="Remove {{ element.name }}"></mat-icon>
+                title="Remove {{ element.name }}" />
             </button>
           </div>
           }
         </mat-cell>
       </ng-container>
 
-      <mat-row *matRowDef="let row; columns: playerApplicationTeamColumns"></mat-row>
+      <mat-row *matRowDef="let row; columns: playerApplicationTeamColumns" />
     </mat-table>
 
   </div>

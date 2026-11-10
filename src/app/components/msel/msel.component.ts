@@ -1,7 +1,7 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, EventEmitter, Input, OnDestroy, Output, ViewChild, ViewChildren, QueryList } from '@angular/core';
+import { Component, OnDestroy, inject, input, output, viewChild, viewChildren } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { MselInfoComponent } from '../msel-info/msel-info.component';
@@ -38,23 +38,75 @@ import { UserDataService } from 'src/app/data/user/user-data.service';
 import { UserMselRoleDataService } from 'src/app/data/user-msel-role/user-msel-role-data.service';
 import { UserTeamRoleDataService } from 'src/app/data/user-team-role/user-team-role-data.service';
 import { XApiService } from 'src/app/services/xapi/xapi.service';
+import { MatDrawerContainer, MatDrawer, MatDrawerContent } from '@angular/material/sidenav';
+import { MatIconButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
+import { MatList, MatDivider, MatListItem } from '@angular/material/list';
+import { NgClass, AsyncPipe } from '@angular/common';
+import { MselContributorsComponent } from '../msel-contributors/msel-contributors.component';
+import { MselTeamsComponent } from '../msel-teams/msel-teams.component';
+import { DataFieldListComponent } from '../data-field-list/data-field-list.component';
+import { OrganizationListComponent } from '../organization-list/organization-list.component';
+import { MoveListComponent } from '../move-list/move-list.component';
+import { PlayerApplicationListComponent } from '../player-application-list/player-application-list.component';
+import { CardListComponent } from '../card-list/card-list.component';
+import { CiteActionListComponent } from '../cite-action-list/cite-action-list.component';
+import { CiteDutyListComponent } from '../cite-duty-list/cite-duty-list.component';
+import { MselCompetenciesComponent } from '../msel-competencies/msel-competencies.component';
+import { ScenarioEventListComponent } from '../scenario-event-list/scenario-event-list.component';
+import { MselViewComponent } from '../msel-view/msel-view.component';
+import { AssessorViewComponent } from '../assessor-view/assessor-view.component';
+import { InvitationListComponent } from '../invitation-list/invitation-list.component';
+import { MselPlaybookComponent } from '../msel-playbook/msel-playbook.component';
+import { MselScoringModelTabComponent } from '../msel-scoring-model-tab/msel-scoring-model-tab.component';
 
 @Component({
-  selector: 'app-msel',
-  templateUrl: './msel.component.html',
-  styleUrls: ['./msel.component.scss'],
-  standalone: false
+    selector: 'app-msel',
+    templateUrl: './msel.component.html',
+    styleUrls: ['./msel.component.scss'],
+    imports: [MatDrawerContainer, MatDrawer, MatIconButton, MatIcon, MatList, MatDivider, MatListItem, NgClass, MatDrawerContent, MselInfoComponent, MselContributorsComponent, MselTeamsComponent, DataFieldListComponent, OrganizationListComponent, MoveListComponent, PlayerApplicationListComponent, CardListComponent, CiteActionListComponent, CiteDutyListComponent, MselCompetenciesComponent, ScenarioEventListComponent, MselViewComponent, AssessorViewComponent, InvitationListComponent, MselPlaybookComponent, MselScoringModelTabComponent, AsyncPipe]
 })
 export class MselComponent implements OnDestroy {
-  @Input() loggedInUserId: string;
-  @Input() canEditMsel: boolean;
-  @Input() canAccessAdminSection: boolean;
-  @Input() canEditCheckboxes = false;
-  @Input() userTheme$: Observable<Theme>;
-  @Output() deleteThisMsel = new EventEmitter<string>();
-  @ViewChild('tabGroup0', { static: false }) tabGroup0: MatTabGroup;
-  @ViewChildren('MatTab') tabs: QueryList<MatTab>;
-  @ViewChild(MselInfoComponent) mselInfoComponent: MselInfoComponent;
+  private activatedRoute = inject(ActivatedRoute);
+  private router = inject(Router);
+  private cardDataService = inject(CardDataService);
+  private cardTeamDataService = inject(CardTeamDataService);
+  private catalogDataService = inject(CatalogDataService);
+  private catalogUnitDataService = inject(CatalogUnitDataService);
+  private citeActionDataService = inject(CiteActionDataService);
+  private citeDutyDataService = inject(CiteDutyDataService);
+  private dataFieldDataService = inject(DataFieldDataService);
+  private dataOptionDataService = inject(DataOptionDataService);
+  private dataValueDataService = inject(DataValueDataService);
+  private invitationDataService = inject(InvitationDataService);
+  private moveDataService = inject(MoveDataService);
+  private mselDataService = inject(MselDataService);
+  private mselUnitDataService = inject(MselUnitDataService);
+  private mselQuery = inject(MselQuery);
+  private mselUnitQuery = inject(MselUnitQuery);
+  private organizationDataService = inject(OrganizationDataService);
+  private scenarioEventDataService = inject(ScenarioEventDataService);
+  private teamDataService = inject(TeamDataService);
+  private teamUserDataService = inject(TeamUserDataService);
+  private unitDataService = inject(UnitDataService);
+  private uiDataService = inject(UIDataService);
+  private userDataService = inject(UserDataService);
+  private userMselRoleDataService = inject(UserMselRoleDataService);
+  private userTeamRoleDataService = inject(UserTeamRoleDataService);
+  private authQuery = inject(ComnAuthQuery);
+  private dialogService = inject(CrucibleDialogService);
+  private xApiService = inject(XApiService);
+
+  readonly loggedInUserId = input<string>(undefined);
+  readonly canEditMsel = input<boolean>(undefined);
+  readonly canAccessAdminSection = input<boolean>(undefined);
+  readonly canEditCheckboxes = input(false);
+  readonly userTheme$ = input<Observable<Theme>>(undefined);
+  readonly deleteThisMsel = output<string>();
+  readonly tabGroup0 = viewChild<MatTabGroup>('tabGroup0');
+  readonly tabs = viewChildren<MatTab>('MatTab');
+  readonly mselInfoComponent = viewChild(MselInfoComponent);
+  readonly scoringModelTab = viewChild(MselScoringModelTabComponent);
   tabList: string[] = [
     'Info',
     'Contributors',
@@ -65,8 +117,9 @@ export class MselComponent implements OnDestroy {
     'Moves',
     'Player Apps',
     'Gallery Cards',
-    'CITE Actions',
-    'CITE Duties',
+    'Scoring Model',
+    'Actions',
+    'Duties',
     'Scenario Events',
     'Exercise View',
     'Assessor View',
@@ -82,8 +135,9 @@ export class MselComponent implements OnDestroy {
     ['Moves', 'mdi-gamepad'],
     ['Player Apps', 'mdi-apps'],
     ['Gallery Cards', 'mdi-view-grid-outline'],
-    ['CITE Actions', 'mdi-clipboard-check-outline'],
-    ['CITE Duties', 'mdi-clipboard-account-outline'],
+    ['Scoring Model', 'mdi-clipboard-list-outline'],
+    ['Actions', 'mdi-clipboard-check-outline'],
+    ['Duties', 'mdi-clipboard-account-outline'],
     ['Competencies', 'mdi-certificate-outline'],
     ['Scenario Events', 'mdi-chart-timeline'],
     ['Exercise View', 'mdi-eye-outline'],
@@ -102,37 +156,11 @@ export class MselComponent implements OnDestroy {
   sideNavCollapsed = false;
   theme$: Observable<Theme>;
 
-  constructor(
-    private activatedRoute: ActivatedRoute,
-    private router: Router,
-    private cardDataService: CardDataService,
-    private cardTeamDataService: CardTeamDataService,
-    private catalogDataService: CatalogDataService,
-    private catalogUnitDataService: CatalogUnitDataService,
-    private citeActionDataService: CiteActionDataService,
-    private citeDutyDataService: CiteDutyDataService,
-    private dataFieldDataService: DataFieldDataService,
-    private dataOptionDataService: DataOptionDataService,
-    private dataValueDataService: DataValueDataService,
-    private invitationDataService: InvitationDataService,
-    private moveDataService: MoveDataService,
-    private mselDataService: MselDataService,
-    private mselUnitDataService: MselUnitDataService,
-    private mselQuery: MselQuery,
-    private mselUnitQuery: MselUnitQuery,
-    private organizationDataService: OrganizationDataService,
-    private scenarioEventDataService: ScenarioEventDataService,
-    private teamDataService: TeamDataService,
-    private teamUserDataService: TeamUserDataService,
-    private unitDataService: UnitDataService,
-    private uiDataService: UIDataService,
-    private userDataService: UserDataService,
-    private userMselRoleDataService: UserMselRoleDataService,
-    private userTeamRoleDataService: UserTeamRoleDataService,
-    private authQuery: ComnAuthQuery,
-    private dialogService: CrucibleDialogService,
-    private xApiService: XApiService
-  ) {
+  constructor() {
+    // restore the saved tab before the active MSEL, which can arrive at once, checks it; a saved name that is no
+    // longer a tab (CITE Actions and CITE Duties were renamed) opens the default tab
+    this.selectedTab = this.uiDataService.getMselTab();
+    this.keepSelectedTabShown(this.tabList);
     this.theme$ = this.authQuery.userTheme$;
     // subscribe to route changes
     this.activatedRoute.queryParamMap
@@ -188,6 +216,8 @@ export class MselComponent implements OnDestroy {
       .subscribe((msel) => {
         if (msel) {
           this.msel = msel;
+          // a saved tab this MSEL's settings hide (CITE, Player or Gallery not used) would show nothing
+          this.keepSelectedTabShown(this.getTabListItems());
         } else {
           this.msel = { name: '' };
         }
@@ -212,13 +242,6 @@ export class MselComponent implements OnDestroy {
     this.unitDataService.load();
     // load the organization templates
     this.organizationDataService.loadTemplates();
-    // set the selected tab
-    let selectedTab = this.uiDataService.getMselTab();
-    if (!selectedTab) {
-      this.uiDataService.setMselTab(this.defaultTab);
-      selectedTab = this.defaultTab;
-    }
-    this.selectedTab = selectedTab;
     // set the side nav expansion
     this.sideNavCollapsed = this.uiDataService.isNavCollapsed();
   }
@@ -236,9 +259,10 @@ export class MselComponent implements OnDestroy {
       }
     };
 
-    if (this.selectedTab === 'Info' && tabName !== 'Info' && this.mselInfoComponent?.hasPendingChanges()) {
+    const unsaved = tabName !== this.selectedTab ? this.unsavedChangesMessage() : '';
+    if (unsaved) {
       this.dialogService
-        .confirm({ title: 'Unsaved Changes', message: 'You have unsaved changes on the MSEL Info page. Are you sure you want to discard them?' }).afterClosed().subscribe((result) => {
+        .confirm({ title: 'Unsaved Changes', message: unsaved }).afterClosed().subscribe((result) => {
           if (result) {
             doTabChange();
           }
@@ -256,15 +280,35 @@ export class MselComponent implements OnDestroy {
       });
     };
 
-    if (this.selectedTab === 'Info' && this.mselInfoComponent?.hasPendingChanges()) {
+    const unsaved = this.unsavedChangesMessage();
+    if (unsaved) {
       this.dialogService
-        .confirm({ title: 'Unsaved Changes', message: 'You have unsaved changes on the MSEL Info page. Are you sure you want to discard them?' }).afterClosed().subscribe((result) => {
+        .confirm({ title: 'Unsaved Changes', message: unsaved }).afterClosed().subscribe((result) => {
           if (result) {
             doNavigate();
           }
         });
     } else {
       doNavigate();
+    }
+  }
+
+  // the open tab's unsaved work, for the pages that hold edits until they are saved
+  private unsavedChangesMessage(): string {
+    if (this.selectedTab === 'Info' && this.mselInfoComponent()?.hasPendingChanges()) {
+      return 'You have unsaved changes on the MSEL Info page. Are you sure you want to discard them?';
+    }
+    if (this.selectedTab === 'Scoring Model' && this.scoringModelTab()?.hasPendingChanges()) {
+      return 'You have unsaved changes on the Scoring Model page. Are you sure you want to discard them?';
+    }
+    return '';
+  }
+
+  // the content area has a page only for the tabs listed, so any other selection falls back to the default tab
+  private keepSelectedTabShown(tabs: string[]) {
+    if (!tabs.includes(this.selectedTab)) {
+      this.selectedTab = this.defaultTab;
+      this.uiDataService.setMselTab(this.defaultTab);
     }
   }
 
@@ -282,8 +326,9 @@ export class MselComponent implements OnDestroy {
             tabList.push(tab);
           }
           break;
-        case 'CITE Actions':
-        case 'CITE Duties':
+        case 'Scoring Model':
+        case 'Actions':
+        case 'Duties':
           if (this.msel?.useCite) {
             tabList.push(tab);
           }

@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { describe, it, expect, vi } from 'vitest';
-import { Component, Input } from '@angular/core';
+import { Component, input } from '@angular/core';
 import { By } from '@angular/platform-browser';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -24,11 +24,12 @@ import { ApiStub } from 'src/app/test-utils/api-stub';
 import { dialogRefStub } from 'src/app/test-utils/dialog-refs';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { unstubbed } from 'src/app/test-utils/unstubbed';
+import { AdminUnitUsersComponent } from '../admin-unit-users/admin-unit-users.component';
 
-@Component({ selector: 'app-admin-unit-users', template: '', standalone: false })
+@Component({ selector: 'app-admin-unit-users', template: '' })
 class UnitUsersStub {
-  @Input() unitId: string;
-  @Input() canManage: boolean;
+  readonly unitId = input<string>(undefined);
+  readonly canManage = input<boolean>(undefined);
 }
 
 const UNIT: Unit = { id: 'unit-1', name: 'Blue Team', shortName: 'BLUE', description: 'Defenders' };
@@ -54,7 +55,9 @@ async function renderUnits(overrides: { canManage?: boolean } = {}) {
       MatSortModule,
       MatTableModule,
     ],
-    declarations: [AdminUnitsComponent, UnitUsersStub],
+    childStubs: [
+      { replace: AdminUnitUsersComponent, with: UnitUsersStub },
+    ],
     providers: [
       { provide: UnitService, useValue: unitApi },
       { provide: CrucibleDialogService, useValue: dialog },
@@ -116,8 +119,8 @@ describe('AdminUnitsComponent', () => {
     await user.click(within(table()).getByText('Blue Team'));
 
     const users = fixture.debugElement.query(By.directive(UnitUsersStub)).componentInstance as UnitUsersStub;
-    expect(users.unitId).toBe('unit-1');
-    expect(users.canManage).toBe(canManage);
+    expect(users.unitId()).toBe('unit-1');
+    expect(users.canManage()).toBe(canManage);
   });
 
   /**

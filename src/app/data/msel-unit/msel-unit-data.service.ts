@@ -3,7 +3,7 @@
 
 import { MselUnitStore } from './msel-unit.store';
 import { MselUnitQuery } from './msel-unit.query';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { PageEvent } from '@angular/material/paginator';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -18,6 +18,12 @@ import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
   providedIn: 'root',
 })
 export class MselUnitDataService {
+  private mselUnitStore = inject(MselUnitStore);
+  private mselUnitQuery = inject(MselUnitQuery);
+  private mselUnitService = inject(MselUnitService);
+  private router = inject(Router);
+  private activatedRoute = inject(ActivatedRoute);
+
   private _requestedMselUnitId: string;
   private _requestedMselUnitId$ = this.activatedRoute.queryParamMap.pipe(
     map((params) => params.get('mselUnitId') || '')
@@ -32,13 +38,9 @@ export class MselUnitDataService {
   private pageSize: Observable<number>;
   private pageIndex: Observable<number>;
 
-  constructor(
-    private mselUnitStore: MselUnitStore,
-    private mselUnitQuery: MselUnitQuery,
-    private mselUnitService: MselUnitService,
-    private router: Router,
-    private activatedRoute: ActivatedRoute
-  ) {
+  constructor() {
+    const activatedRoute = this.activatedRoute;
+
     this.filterTerm = activatedRoute.queryParamMap.pipe(
       map((params) => params.get('mselUnitmask') || '')
     );

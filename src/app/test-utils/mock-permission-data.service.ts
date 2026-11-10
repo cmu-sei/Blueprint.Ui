@@ -6,7 +6,7 @@
 // Blueprint's PermissionDataService only holds system permissions; MSEL and
 // team roles arrive on the MSEL itself and are seeded through the MSEL store.
 
-import { inject, Provider } from '@angular/core';
+import { Provider } from '@angular/core';
 import { vi } from 'vitest';
 import { of } from 'rxjs';
 import {
@@ -36,12 +36,10 @@ export function permissionDataProviders(
     { provide: SystemPermissionsService, useValue: stubs.systemPermissions },
     {
       provide: PermissionDataService,
-      // inject() resolves the stub above (or a test's own override) with the
-      // real type, so the partial stub needs no cast.
+      // The service's inject() call resolves the stub above (or a test's own
+      // override) with the real type, so the partial stub needs no cast.
       useFactory: () => {
-        const service = new PermissionDataService(
-          inject(SystemPermissionsService),
-        );
+        const service = new PermissionDataService();
         // For components that read the cached permissions without calling
         // load() themselves (admin-users, admin-roles, admin-groups);
         // StarterComponent loads them when the app opens. A component that

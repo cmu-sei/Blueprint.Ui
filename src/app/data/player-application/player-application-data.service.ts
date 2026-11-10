@@ -6,7 +6,7 @@
 
 import { PlayerApplicationStore } from './player-application.store';
 import { PlayerApplicationQuery } from './player-application.query';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { PageEvent } from '@angular/material/paginator';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -15,12 +15,19 @@ import {
   PlayerApplicationService,
 } from 'src/app/generated/blueprint.api';
 import { map, take, tap } from 'rxjs/operators';
-import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, combineLatest } from 'rxjs';
+import { HttpEventType, HttpResponse } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root',
 })
 export class PlayerApplicationDataService {
+  private playerApplicationStore = inject(PlayerApplicationStore);
+  private playerApplicationQuery = inject(PlayerApplicationQuery);
+  private playerApplicationService = inject(PlayerApplicationService);
+  private router = inject(Router);
+  private activatedRoute = inject(ActivatedRoute);
+
   readonly PlayerApplicationList: Observable<PlayerApplication[]>;
   readonly filterControl = new UntypedFormControl();
   private _requestedPlayerApplicationId$ = this.activatedRoute.queryParamMap.pipe(
@@ -33,14 +40,11 @@ export class PlayerApplicationDataService {
   readonly pageEvent = new BehaviorSubject<PageEvent>(this._pageEvent); private _requestedPlayerApplicationId: string;
   private pageSize: Observable<number>;
   private pageIndex: Observable<number>;
+  public uploadProgress = new Subject<number>();
 
-  constructor(
-    private playerApplicationStore: PlayerApplicationStore,
-    private playerApplicationQuery: PlayerApplicationQuery,
-    private playerApplicationService: PlayerApplicationService,
-    private router: Router,
-    private activatedRoute: ActivatedRoute
-  ) {
+  constructor() {
+    const activatedRoute = this.activatedRoute;
+
     this.filterTerm = activatedRoute.queryParamMap.pipe(
       map((params) => params.get('playerApplicationmask') || '')
     );
@@ -98,6 +102,24 @@ export class PlayerApplicationDataService {
     );
   }
 
+  loadTemplates() {
+    this.playerApplicationStore.setLoading(true);
+    this.playerApplicationService
+      .getPlayerApplicationTemplates()
+      .pipe(
+        tap(() => {
+          this.playerApplicationStore.setLoading(false);
+        }),
+        take(1)
+      )
+      .subscribe(
+        (templates) => {
+          this.playerApplicationStore.upsertMany(templates);
+        },
+        (error) => {}
+      );
+  }
+
   loadByMsel(mselId: string) {
     this.playerApplicationStore.setLoading(true);
     this.playerApplicationService
@@ -110,12 +132,17 @@ export class PlayerApplicationDataService {
       )
       .subscribe(
         (playerApplications) => {
-          this.playerApplicationStore.set(playerApplications);
+          // the templates share the store, so replacing the MSEL's applications keeps them
+          this.playerApplicationStore.set([...this.templatesInStore(), ...playerApplications]);
         },
         (error) => {
-          this.playerApplicationStore.set([]);
+          this.playerApplicationStore.set(this.templatesInStore());
         }
       );
+  }
+
+  private templatesInStore(): PlayerApplication[] {
+    return this.playerApplicationQuery.getAll({ filterBy: (pa) => !pa.mselId });
   }
 
   loadById(id: string) {
@@ -178,6 +205,37 @@ export class PlayerApplicationDataService {
       .subscribe((r) => {
         this.deleteFromStore(id);
       });
+  }
+
+  downloadJson(ids: string[]) {
+    return this.playerApplicationService.downloadJsonPlayerApplications(ids);
+  }
+
+  uploadJson(file: File, observe: any, reportProgress: boolean) {
+    this.playerApplicationStore.setLoading(true);
+    this.playerApplicationService
+      .uploadJsonPlayerApplications(file, observe, reportProgress)
+      .subscribe(
+        (event: any) => {
+          if (event.type === HttpEventType.UploadProgress) {
+            const uploadProgress = Math.round(
+              (100 * event.loaded) / event.total
+            );
+            this.uploadProgress.next(uploadProgress);
+          } else if (event instanceof HttpResponse) {
+            this.uploadProgress.next(0);
+            this.playerApplicationStore.setLoading(false);
+            if (event.status === 200) {
+              const items = event.body || [];
+              this.playerApplicationStore.upsertMany(items);
+            }
+          }
+        },
+        (error) => {
+          this.playerApplicationStore.setLoading(false);
+          this.uploadProgress.next(0);
+        }
+      );
   }
 
   setPageEvent(pageEvent: PageEvent) {

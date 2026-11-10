@@ -1,10 +1,10 @@
 // Copyright 2026 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, ElementRef, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { UntypedFormControl } from '@angular/forms';
+import { Component, ElementRef, OnDestroy, OnInit, inject, input, viewChild } from '@angular/core';
+import { UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
-import { MatTable, MatTableDataSource } from '@angular/material/table';
+import { MatTable, MatTableDataSource, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { Subject } from 'rxjs';
 import { take, takeUntil } from 'rxjs/operators';
@@ -14,50 +14,53 @@ import {
   ProficiencyScaleService,
   ProficiencyLevelService,
 } from 'src/app/generated/blueprint.api';
-import { Sort } from '@angular/material/sort';
+import { Sort, MatSort, MatSortHeader } from '@angular/material/sort';
 import { MatDialog } from '@angular/material/dialog';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { AdminProficiencyScaleEditDialogComponent } from '../admin-proficiency-scale-edit-dialog/admin-proficiency-scale-edit-dialog.component';
 import { AdminProficiencyLevelEditDialogComponent } from '../admin-proficiency-level-edit-dialog/admin-proficiency-level-edit-dialog.component';
 import { ItemDownloadDialogComponent } from '../../item-download-dialog/item-download-dialog.component';
 import { HttpEventType, HttpResponse } from '@angular/common/http';
+import { MatIcon } from '@angular/material/icon';
+
+import { MatFormField, MatInput, MatSuffix } from '@angular/material/input';
+import { MatIconButton } from '@angular/material/button';
+import { MatRipple } from '@angular/material/core';
 
 @Component({
-  selector: 'app-admin-proficiency-scales',
-  templateUrl: './admin-proficiency-scales.component.html',
-  styleUrls: ['./admin-proficiency-scales.component.scss'],
-  animations: [
-    trigger('detailExpand', [
-      state('collapsed', style({ height: '0px', minHeight: '0', visibility: 'hidden' })),
-      state('expanded', style({ height: '*', visibility: 'visible' })),
-      transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
-    ]),
-  ],
-  standalone: false
+    selector: 'app-admin-proficiency-scales',
+    templateUrl: './admin-proficiency-scales.component.html',
+    styleUrls: ['./admin-proficiency-scales.component.scss'],
+    animations: [
+        trigger('detailExpand', [
+            state('collapsed', style({ height: '0px', minHeight: '0', visibility: 'hidden' })),
+            state('expanded', style({ height: '*', visibility: 'visible' })),
+            transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
+        ]),
+    ],
+    imports: [MatIcon, MatFormField, MatInput, FormsModule, ReactiveFormsModule, MatIconButton, MatSuffix, MatPaginator, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatSortHeader, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, MatRipple]
 })
 export class AdminProficiencyScalesComponent implements OnInit, OnDestroy {
-  @Input() loggedInUserId: string;
-  @Input() canEdit: boolean;
+  private proficiencyScaleService = inject(ProficiencyScaleService);
+  private proficiencyLevelService = inject(ProficiencyLevelService);
+  dialog = inject(MatDialog);
+  dialogService = inject(CrucibleDialogService);
+
+  readonly loggedInUserId = input<string>(undefined);
+  readonly canEdit = input<boolean>(undefined);
   scales: ProficiencyScale[] = [];
   scaleDataSource = new MatTableDataSource<ProficiencyScale>([]);
   scaleDisplayedColumns: string[] = ['action', 'name', 'description', 'levels'];
   levelDisplayedColumns: string[] = ['action', 'name', 'value', 'displayOrder', 'description'];
   scaleSort: Sort = { active: 'name', direction: 'asc' };
   levelSort: Sort = { active: 'displayOrder', direction: 'asc' };
-  @ViewChild('scaleTable', { static: false }) scaleTable: MatTable<any>;
-  @ViewChild('paginator') paginator: MatPaginator;
-  @ViewChild('jsonInput') jsonInput: ElementRef<HTMLInputElement>;
+  readonly scaleTable = viewChild<MatTable<any>>('scaleTable');
+  readonly paginator = viewChild<MatPaginator>('paginator');
+  readonly jsonInput = viewChild<ElementRef<HTMLInputElement>>('jsonInput');
   expandedScaleId = '';
   filterControl = new UntypedFormControl();
   filterString = '';
   private unsubscribe$ = new Subject();
-
-  constructor(
-    private proficiencyScaleService: ProficiencyScaleService,
-    private proficiencyLevelService: ProficiencyLevelService,
-    public dialog: MatDialog,
-    public dialogService: CrucibleDialogService
-  ) {}
 
   ngOnInit() {
     this.loadScales();
@@ -90,7 +93,7 @@ export class AdminProficiencyScalesComponent implements OnInit, OnDestroy {
           this.loadScales();
         }
       });
-    this.jsonInput.nativeElement.value = null;
+    this.jsonInput().nativeElement.value = null;
   }
 
   openDownloadDialog() {
@@ -152,8 +155,9 @@ export class AdminProficiencyScalesComponent implements OnInit, OnDestroy {
       bVal = (b[col] || '').toString().toLowerCase();
       return (aVal < bVal ? -1 : aVal > bVal ? 1 : 0) * (isAsc ? 1 : -1);
     });
-    if (this.paginator) {
-      this.scaleDataSource.paginator = this.paginator;
+    const paginator = this.paginator();
+    if (paginator) {
+      this.scaleDataSource.paginator = paginator;
     }
   }
 
@@ -164,7 +168,7 @@ export class AdminProficiencyScalesComponent implements OnInit, OnDestroy {
 
   toggleScaleExpand(row: ProficiencyScale) {
     this.expandedScaleId = this.expandedScaleId === row.id ? '' : row.id;
-    this.scaleTable.renderRows();
+    this.scaleTable().renderRows();
   }
 
   getLevelDataSource(scale: ProficiencyScale): MatTableDataSource<ProficiencyLevel> {

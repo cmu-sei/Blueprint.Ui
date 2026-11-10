@@ -29,6 +29,7 @@ import { MselItemStatus } from './mselItemStatus';
 import { Team } from './team';
 import { IntegrationType } from './integrationType';
 import { PlayerApplication } from './playerApplication';
+import { SteamfitterScenarioStartMode } from './steamfitterScenarioStartMode';
 
 
 export interface Msel { 
@@ -55,6 +56,7 @@ export interface Msel {
     useSteamfitter?: boolean;
     steamfitterScenarioId?: string | null;
     steamfitterIntegrationType?: IntegrationType;
+    steamfitterScenarioStartMode?: SteamfitterScenarioStartMode;
     useCaster?: boolean;
     casterDirectoryId?: string | null;
     casterWorkspaceId?: string | null;
@@ -84,6 +86,7 @@ export interface Msel {
     showMoveOnAssessorView?: boolean;
     showGroupOnAssessorView?: boolean;
     showIntegrationTargetOnAssessorView?: boolean;
+    hideNamesOnAssessorView?: boolean;
     moves?: Array<Move> | null;
     dataFields?: Array<DataField> | null;
     scenarioEvents?: Array<ScenarioEvent> | null;
@@ -97,6 +100,7 @@ export interface Msel {
     educationalUse?: string | null;
     courseMode?: string | null;
     language?: string | null;
+    imageDateModified?: Date | null;
     organizations?: Array<Organization> | null;
     cards?: Array<Card> | null;
     galleryArticleParameters?: Array<string> | null;

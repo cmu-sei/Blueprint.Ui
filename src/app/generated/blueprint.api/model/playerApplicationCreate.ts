@@ -22,6 +22,10 @@ export interface PlayerApplicationCreate {
     embeddable?: boolean | null;
     loadInBackground?: boolean | null;
     id?: string;
-    mselId?: string;
+    /**
+     * The MSEL the application belongs to, or null for a template.
+     */
+    mselId?: string | null;
+    isTemplate?: boolean;
 }
 

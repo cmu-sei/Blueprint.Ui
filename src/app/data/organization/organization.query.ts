@@ -10,7 +10,7 @@ import {
   OrganizationStore,
 } from './organization.store';
 import { Organization } from 'src/app/generated/blueprint.api';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
 @QueryConfig({
@@ -21,8 +21,14 @@ import { Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class OrganizationQuery extends QueryEntity<OrganizationState> {
-  constructor(protected store: OrganizationStore) {
+  protected store: OrganizationStore;
+
+  constructor() {
+    const store = inject(OrganizationStore);
+
     super(store);
+  
+    this.store = store;
   }
 
   selectById(id: string): Observable<Organization> {

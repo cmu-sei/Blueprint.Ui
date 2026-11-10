@@ -6,7 +6,7 @@
 
 import { MoveStore } from './move.store';
 import { MoveQuery } from './move.query';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { PageEvent } from '@angular/material/paginator';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -22,6 +22,12 @@ import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
   providedIn: 'root',
 })
 export class MoveDataService {
+  private moveStore = inject(MoveStore);
+  private moveQuery = inject(MoveQuery);
+  private moveService = inject(MoveService);
+  private router = inject(Router);
+  private activatedRoute = inject(ActivatedRoute);
+
   readonly MoveList: Observable<Move[]>;
   readonly filterControl = new UntypedFormControl();
   private _requestedMoveId: string;
@@ -36,13 +42,9 @@ export class MoveDataService {
   private pageSize: Observable<number>;
   private pageIndex: Observable<number>;
 
-  constructor(
-    private moveStore: MoveStore,
-    private moveQuery: MoveQuery,
-    private moveService: MoveService,
-    private router: Router,
-    private activatedRoute: ActivatedRoute
-  ) {
+  constructor() {
+    const activatedRoute = this.activatedRoute;
+
     this.filterTerm = activatedRoute.queryParamMap.pipe(
       map((params) => params.get('movemask') || '')
     );

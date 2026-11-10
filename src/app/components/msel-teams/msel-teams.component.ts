@@ -1,7 +1,7 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild, inject, input, viewChild } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { TeamDataService } from 'src/app/data/team/team-data.service';
@@ -19,7 +19,7 @@ import {
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
-import { MatMenuTrigger } from '@angular/material/menu';
+import { MatMenuTrigger, MatMenu, MatMenuItem } from '@angular/material/menu';
 import { CasterService, CiteService } from 'src/app/generated/blueprint.api';
 import { MatDialog } from '@angular/material/dialog';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
@@ -27,10 +27,18 @@ import { TeamAddDialogComponent } from '../team-add-dialog/team-add-dialog.compo
 import { TeamEditDialogComponent } from '../team-edit-dialog/team-edit-dialog.component';
 import { UnitDataService } from 'src/app/data/unit/unit-data.service';
 import { UnitQuery } from 'src/app/data/unit/unit.query';
-import { MatTable, MatTableDataSource } from '@angular/material/table';
+import { MatTable, MatTableDataSource, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
-import { Sort } from '@angular/material/sort';
+import { Sort, MatSort, MatSortHeader } from '@angular/material/sort';
 import { animate, state, style, transition, trigger } from '@angular/animations';
+import { MatIcon } from '@angular/material/icon';
+
+import { MatFormField, MatInput, MatSuffix } from '@angular/material/input';
+import { FormsModule } from '@angular/forms';
+import { MatIconButton } from '@angular/material/button';
+import { MatTooltip } from '@angular/material/tooltip';
+import { MatCheckbox } from '@angular/material/checkbox';
+import { TeamUsersComponent } from '../team-users/team-users.component';
 
 const PLAYER_ADMIN_TEAM_VARIABLE = 'admin';
 const PLAYER_ADMIN_TEAM_NAME = 'Player\'s Admin team';
@@ -48,20 +56,34 @@ interface TeamVariableWriter {
     templateUrl: './msel-teams.component.html',
     styleUrls: ['./msel-teams.component.scss'],
     animations: [
-      trigger('detailExpand', [
-        state('collapsed', style({ height: '0px', minHeight: '0', visibility: 'hidden' })),
-        state('expanded', style({ height: '*', visibility: 'visible' })),
-        transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
-      ]),
+        trigger('detailExpand', [
+            state('collapsed', style({ height: '0px', minHeight: '0', visibility: 'hidden' })),
+            state('expanded', style({ height: '*', visibility: 'visible' })),
+            transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
+        ]),
     ],
-    standalone: false
+    imports: [MatIcon, MatFormField, MatInput, FormsModule, MatIconButton, MatSuffix, MatPaginator, MatMenu, MatMenuItem, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatMenuTrigger, MatCellDef, MatCell, MatSortHeader, MatTooltip, MatCheckbox, TeamUsersComponent, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow]
 })
 export class MselTeamsComponent implements OnDestroy, OnInit {
-  @Input() loggedInUserId: string;
+  private teamQuery = inject(TeamQuery);
+  private teamDataService = inject(TeamDataService);
+  private userQuery = inject(UserQuery);
+  private mselDataService = inject(MselDataService);
+  private mselQuery = inject(MselQuery);
+  private citeService = inject(CiteService);
+  private casterService = inject(CasterService);
+  private unitDataService = inject(UnitDataService);
+  private unitQuery = inject(UnitQuery);
+  private dialog = inject(MatDialog);
+  dialogService = inject(CrucibleDialogService);
+  private permissionDataService = inject(PermissionDataService);
+  private changeDetectorRef = inject(ChangeDetectorRef);
+
+  readonly loggedInUserId = input<string>(undefined);
   @Input() teamTypeList: TeamType[];
   // context menu
-  @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
-  @ViewChild('teamTable', { static: false }) teamTable: MatTable<any>;
+  readonly contextMenu = viewChild(MatMenuTrigger);
+  readonly teamTable = viewChild<MatTable<any>>('teamTable');
   @ViewChild(MatPaginator) set matPaginator(paginator: MatPaginator) {
     this.teamDataSource.paginator = paginator;
   }
@@ -96,21 +118,7 @@ export class MselTeamsComponent implements OnDestroy, OnInit {
   private mselTeams: Team[] = [];
   private unsubscribe$ = new Subject();
 
-  constructor(
-    private teamQuery: TeamQuery,
-    private teamDataService: TeamDataService,
-    private userQuery: UserQuery,
-    private mselDataService: MselDataService,
-    private mselQuery: MselQuery,
-    private citeService: CiteService,
-    private casterService: CasterService,
-    private unitDataService: UnitDataService,
-    private unitQuery: UnitQuery,
-    private dialog: MatDialog,
-    public dialogService: CrucibleDialogService,
-    private permissionDataService: PermissionDataService,
-    private changeDetectorRef: ChangeDetectorRef
-  ) {
+  constructor() {
     // subscribe to the active MSEL
     (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
       if (msel && this.msel.id !== msel.id) {
@@ -170,7 +178,7 @@ export class MselTeamsComponent implements OnDestroy, OnInit {
 
   canEditMsel(): boolean {
     return this.permissionDataService.hasPermission(SystemPermission.ManageMsels) ||
-      this.msel.hasRole(this.loggedInUserId, '').owner;
+      this.msel.hasRole(this.loggedInUserId(), '').owner;
   }
 
   getTeamList() {
@@ -464,7 +472,7 @@ export class MselTeamsComponent implements OnDestroy, OnInit {
     } else {
       this.expandedElementId = row.id;
     }
-    this.teamTable.renderRows();
+    this.teamTable().renderRows();
   }
 
   getRowClass(id: string) {

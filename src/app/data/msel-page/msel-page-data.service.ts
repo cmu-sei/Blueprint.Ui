@@ -3,7 +3,7 @@
 
 import { MselPageStore } from './msel-page.store';
 import { MselPageQuery } from './msel-page.query';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { PageEvent } from '@angular/material/paginator';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -18,6 +18,12 @@ import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
   providedIn: 'root',
 })
 export class MselPageDataService {
+  private mselPageStore = inject(MselPageStore);
+  private mselPageQuery = inject(MselPageQuery);
+  private mselPageService = inject(MselPageService);
+  private router = inject(Router);
+  private activatedRoute = inject(ActivatedRoute);
+
   private _requestedMselPageId: string;
   private _requestedMselPageId$ = this.activatedRoute.queryParamMap.pipe(
     map((params) => params.get('mselPageId') || '')
@@ -32,13 +38,9 @@ export class MselPageDataService {
   private pageSize: Observable<number>;
   private pageIndex: Observable<number>;
 
-  constructor(
-    private mselPageStore: MselPageStore,
-    private mselPageQuery: MselPageQuery,
-    private mselPageService: MselPageService,
-    private router: Router,
-    private activatedRoute: ActivatedRoute
-  ) {
+  constructor() {
+    const activatedRoute = this.activatedRoute;
+
     this.filterTerm = activatedRoute.queryParamMap.pipe(
       map((params) => params.get('mselPagemask') || '')
     );

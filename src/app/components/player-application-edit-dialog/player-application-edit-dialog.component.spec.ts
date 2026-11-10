@@ -80,6 +80,21 @@ describe('PlayerApplicationEditDialogComponent', () => {
   });
 
   /**
+   * Verifies: Save refuses an application with no URL, or only spaces, and says a URL is required.
+   * Interacts with: validateUrls, crucible-dialog submit, editComplete output.
+   * Data: an empty URL and a URL of spaces.
+   */
+  it.each(['', '   '])('refuses a blank URL (%j)', async (url) => {
+    const { results } = await renderPlayerApplicationEditDialog(dialogData({ url }));
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+
+    expect(results).toEqual([]);
+    expect(screen.getByText('A URL is required')).toBeInTheDocument();
+  });
+
+  /**
    * Verifies: Save accepts an application URL or icon that uses the Caster and VM UI variables.
    * Interacts with: validateUrls, crucible-dialog submit, editComplete output.
    * Data: a URL or icon using {vmUrl} with {playerViewId}, {casterUrl} or {casterWorkspaceId}.

@@ -2,26 +2,29 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, EventEmitter, Inject, OnInit, Output } from '@angular/core';
+import { Component, OnInit, inject, output } from '@angular/core';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { ProficiencyScale, ProficiencyScaleService } from 'src/app/generated/blueprint.api';
 import { take } from 'rxjs/operators';
+import { CrucibleDialogComponent, CrucibleDialogContentDirective } from '@cmusei/crucible-common';
+import { MatFormField, MatLabel, MatInput } from '@angular/material/input';
+import { FormsModule } from '@angular/forms';
+import { MatSelect } from '@angular/material/select';
+import { MatOption } from '@angular/material/autocomplete';
 
 @Component({
     selector: 'app-admin-competency-framework-edit-dialog',
     templateUrl: './admin-competency-framework-edit-dialog.component.html',
     styleUrls: ['./admin-competency-framework-edit-dialog.component.scss'],
-    standalone: false
+    imports: [CrucibleDialogComponent, CrucibleDialogContentDirective, MatFormField, MatLabel, MatInput, FormsModule, MatSelect, MatOption]
 })
 
 export class AdminCompetencyFrameworkEditDialogComponent implements OnInit {
-  @Output() editComplete = new EventEmitter<any>();
-  proficiencyScales: ProficiencyScale[] = [];
+  data = inject(MAT_DIALOG_DATA);
+  private proficiencyScaleService = inject(ProficiencyScaleService);
 
-  constructor(
-    @Inject(MAT_DIALOG_DATA) public data: any,
-    private proficiencyScaleService: ProficiencyScaleService
-  ) {}
+  readonly editComplete = output<any>();
+  proficiencyScales: ProficiencyScale[] = [];
 
   ngOnInit() {
     this.proficiencyScaleService.getProficiencyScales()

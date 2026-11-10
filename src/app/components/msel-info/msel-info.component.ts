@@ -1,7 +1,8 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { ChangeDetectorRef, Component, EventEmitter, HostListener, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
+import { CdkTextareaAutosize } from '@angular/cdk/text-field';
+import { ChangeDetectorRef, Component, HostListener, OnDestroy, OnInit, inject, input, output, viewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -14,9 +15,12 @@ import {
   MselCompetency,
   MselItemStatus,
   MselPage,
+  MselScoringModel,
+  MselScoringModelService,
   MselService,
   MselUnit,
   ScenarioEvent,
+  SteamfitterScenarioStartMode,
   SystemPermission,
   Team,
   User
@@ -24,7 +28,11 @@ import {
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
-import { MatMenuTrigger } from '@angular/material/menu';
+import { canUpdateMsel, integrationsLocked, isPipelineStatus } from 'src/app/utilities/msel-permissions';
+import { MselImageDataService } from 'src/app/data/msel/msel-image-data.service';
+import { ErrorService } from 'src/app/services/error/error.service';
+import { SystemMessageService } from 'src/app/services/system-message/system-message.service';
+import { MatMenuTrigger, MatMenu, MatMenuItem } from '@angular/material/menu';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { CiteService } from 'src/app/generated/blueprint.api';
 import { PlayerService } from 'src/app/generated/blueprint.api';
@@ -49,25 +57,83 @@ import { EDITOR_CONFIG_PARAGRAPH, VIEW_CONFIG } from 'src/app/utilities/editor-c
 import { casterVmAppWarning } from 'src/app/utilities/caster-vm-app';
 import { ComnSettingsService } from '@cmusei/crucible-common';
 import { ScenarioEventQuery } from 'src/app/data/scenario-event/scenario-event.query';
+import { IntegrationStatusComponent } from '../integration-status/integration-status.component';
+import { MatTabGroup, MatTab, MatTabLabel } from '@angular/material/tabs';
+import { MatIconButton, MatButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
+import { MatLabel, MatFormField, MatInput, MatError, MatHint, MatSuffix } from '@angular/material/input';
+import { FormsModule } from '@angular/forms';
+import { MatCheckbox } from '@angular/material/checkbox';
+import { NgxMatDatepickerInput, NgxMatDatetimepicker, NgxMatDatepickerActions, NgxMatDatepickerApply, NgxMatDatepickerCancel } from '@ngxmc/datetime-picker';
+import { MatDatepickerToggle } from '@angular/material/datepicker';
+import { DurationEditComponent } from '../shared/duration-edit/duration-edit.component';
+import { MatSelect } from '@angular/material/select';
+import { MatOption } from '@angular/material/autocomplete';
+import { ClipboardModule } from 'ngx-clipboard';
+import { MatExpansionPanel, MatExpansionPanelHeader, MatExpansionPanelTitle } from '@angular/material/expansion';
+import { MatTooltip } from '@angular/material/tooltip';
+import { AngularEditorModule } from '@kolkov/angular-editor';
+import { CardEditDialogComponent } from '../card-edit-dialog/card-edit-dialog.component';
+import { DatePipe, formatDate } from '@angular/common';
+import { TimezoneAbbrPipe } from '../../utilities/timezone-abbr';
+import { normalizeScoringModel, scoringModelCounts } from 'src/app/utilities/scoring-model';
 
 @Component({
-  selector: 'app-msel-info',
-  templateUrl: './msel-info.component.html',
-  styleUrls: ['./msel-info.component.scss'],
-  standalone: false
+    selector: 'app-msel-info',
+    templateUrl: './msel-info.component.html',
+    styleUrls: ['./msel-info.component.scss'],
+    imports: [IntegrationStatusComponent, MatTabGroup, MatTab, MatIconButton, MatIcon, MatLabel, MatMenuTrigger, MatMenu, MatMenuItem, MatFormField, MatInput, CdkTextareaAutosize, FormsModule, MatError, MatHint, MatCheckbox, NgxMatDatepickerInput, MatDatepickerToggle, MatSuffix, NgxMatDatetimepicker, NgxMatDatepickerActions, MatButton, NgxMatDatepickerApply, NgxMatDatepickerCancel, DurationEditComponent, MatSelect, MatOption, ClipboardModule, MatExpansionPanel, MatExpansionPanelHeader, MatExpansionPanelTitle, MatTooltip, AngularEditorModule, MatTabLabel, CardEditDialogComponent, DatePipe, TimezoneAbbrPipe]
 })
 export class MselInfoComponent implements OnDestroy, OnInit {
-  @Input() loggedInUserId: string;
-  @Output() deleteThisMsel = new EventEmitter<string>();
+  dialogService = inject(CrucibleDialogService);
+  private teamQuery = inject(TeamQuery);
+  private userQuery = inject(UserQuery);
+  private userDataService = inject(UserDataService);
+  private dataFieldQuery = inject(DataFieldQuery);
+  private mselDataService = inject(MselDataService);
+  private mselService = inject(MselService);
+  private mselQuery = inject(MselQuery);
+  private citeService = inject(CiteService);
+  private playerService = inject(PlayerService);
+  private casterService = inject(CasterService);
+  private playerApplicationDataService = inject(PlayerApplicationDataService);
+  private playerApplicationQuery = inject(PlayerApplicationQuery);
+  private mselPageDataService = inject(MselPageDataService);
+  private mselPageQuery = inject(MselPageQuery);
+  private mselUnitQuery = inject(MselUnitQuery);
+  private mselCompetencyDataService = inject(MselCompetencyDataService);
+  private mselCompetencyQuery = inject(MselCompetencyQuery);
+  private competencyFrameworkQuery = inject(CompetencyFrameworkQuery);
+  private competencyFrameworkDataService = inject(CompetencyFrameworkDataService);
+  private dialog = inject(MatDialog);
+  private permissionDataService = inject(PermissionDataService);
+  private changeDetectorRef = inject(ChangeDetectorRef);
+  private activatedRoute = inject(ActivatedRoute);
+  private settingsService = inject(ComnSettingsService);
+  private scenarioEventQuery = inject(ScenarioEventQuery);
+  private mselScoringModelService = inject(MselScoringModelService);
+
+  readonly loggedInUserId = input<string>(undefined);
+  readonly deleteThisMsel = output<string>();
+  /** Asks the MSEL page to open another rail tab, by name. */
+  readonly openTab = output<string>();
   msel = new MselPlus();
   originalMsel = new MselPlus();
   expandedScenarioEventIds: string[] = [];
   sortedScenarioEvents: ScenarioEvent[];
   private unsubscribe$ = new Subject();
   // context menu
-  @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
+  readonly contextMenu = viewChild(MatMenuTrigger);
   contextMenuPosition = { x: '0px', y: '0px' };
   isChanged = false;
+  // The card image is saved on its own, as soon as it is chosen, not with Save.
+  mselImageUrl: string | null = null;
+  isImageBusy = false;
+  readonly mselImageTypes = 'image/png,image/jpeg,image/gif,image/webp';
+  private mselImageKey: string | null = null;
+  private mselImageDataService = inject(MselImageDataService);
+  private errorService = inject(ErrorService);
+  private systemMessageService = inject(SystemMessageService);
   userList: User[] = [];
   teamList: Team[] = [];
   mselUnitList: MselUnit[] = [];
@@ -79,6 +145,9 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   private competencyTypeCache = new Map<string, string>();
   creatorName = 'unknown';
   scoringModelList: ScoringModel[] = [];
+  // A MSEL either links a CITE scoring model or authors its own in Blueprint, on the Scoring Model tab. The push
+  // needs one or the other, and the Config tab summarizes what it has.
+  authoredScoringModel: MselScoringModel | null = null;
   casterDirectoryList: CasterDirectory[] = [];
   casterDirectoryError = '';
   private casterDirectoriesRequested = false;
@@ -91,10 +160,11 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     MselItemStatus.Complete,
     MselItemStatus.Archived,
   ];
-  private pipelineStatuses: MselItemStatus[] = [
-    MselItemStatus.Pushing,
-    MselItemStatus.Pulling,
-    MselItemStatus.Deployed,
+  // Steamfitter runs no task until its scenario is started
+  readonly steamfitterStartModes: { value: SteamfitterScenarioStartMode; label: string }[] = [
+    { value: SteamfitterScenarioStartMode.Manual, label: 'Manually' },
+    { value: SteamfitterScenarioStartMode.OnPush, label: 'When the push finishes' },
+    { value: SteamfitterScenarioStartMode.AtStartTime, label: 'At the MSEL start time' },
   ];
   educationalLevels: string[] = ['Beginner', 'Intermediate', 'Advanced'];
   educationalUses: string[] = ['Assessment', 'Instruction', 'Professional Support'];
@@ -124,6 +194,7 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   citeEvaluationName = '';
   citeScoringModelName = '';
   steamfitterScenarioName = '';
+  steamfitterScenarioStatus = '';
   casterDirectoryName = '';
   casterWorkspaceName = '';
   integrationRequested = '';
@@ -134,34 +205,7 @@ export class MselInfoComponent implements OnDestroy, OnInit {
       ? ''
       : integrationStatus;
   }
-  constructor(
-    public dialogService: CrucibleDialogService,
-    private teamQuery: TeamQuery,
-    private userQuery: UserQuery,
-    private userDataService: UserDataService,
-    private dataFieldQuery: DataFieldQuery,
-    private mselDataService: MselDataService,
-    private mselService: MselService,
-    private mselQuery: MselQuery,
-    private citeService: CiteService,
-    private playerService: PlayerService,
-    private casterService: CasterService,
-    private playerApplicationDataService: PlayerApplicationDataService,
-    private playerApplicationQuery: PlayerApplicationQuery,
-    private mselPageDataService: MselPageDataService,
-    private mselPageQuery: MselPageQuery,
-    private mselUnitQuery: MselUnitQuery,
-    private mselCompetencyDataService: MselCompetencyDataService,
-    private mselCompetencyQuery: MselCompetencyQuery,
-    private competencyFrameworkQuery: CompetencyFrameworkQuery,
-    private competencyFrameworkDataService: CompetencyFrameworkDataService,
-    private dialog: MatDialog,
-    private permissionDataService: PermissionDataService,
-    private changeDetectorRef: ChangeDetectorRef,
-    private activatedRoute: ActivatedRoute,
-    private settingsService: ComnSettingsService,
-    private scenarioEventQuery: ScenarioEventQuery
-  ) {
+  constructor() {
     // subscribe to the active MSEL
     (this.mselQuery.selectActive() as Observable<MselPlus>)
       .pipe(takeUntil(this.unsubscribe$))
@@ -180,6 +224,7 @@ export class MselInfoComponent implements OnDestroy, OnInit {
             // the Caster warning needs to know whether any application opens the VM UI
             this.playerApplicationDataService.loadByMsel(msel.id);
             this.newMselPage.mselId = msel.id;
+            this.loadAuthoredScoringModel(msel.id);
           }
           if (!this.msel?.integrationStatus) {
             this.integrationRequested = '';
@@ -199,6 +244,7 @@ export class MselInfoComponent implements OnDestroy, OnInit {
           // Fetch integration names for deployed integrations
           this.fetchIntegrationNames();
           this.resolveCreatorName();
+          this.loadMselImage();
           if (this.msel.useCaster) {
             this.loadCasterDirectories();
           }
@@ -464,11 +510,15 @@ export class MselInfoComponent implements OnDestroy, OnInit {
 
   canEditMsel(): boolean {
     return this.permissionDataService.hasPermission(SystemPermission.EditMsels) ||
-      this.msel.hasRole(this.loggedInUserId, '').editor;
+      this.msel.hasRole(this.loggedInUserId(), '').editor;
   }
 
   isPipelineStatus(): boolean {
-    return this.pipelineStatuses.includes(this.msel?.status);
+    return isPipelineStatus(this.msel);
+  }
+
+  integrationsLocked(): boolean {
+    return integrationsLocked(this.msel);
   }
 
   // the current status is listed even when it is one the user cannot choose, so the field still shows it
@@ -476,9 +526,70 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     return this.isPipelineStatus() ? [...this.itemStatus, this.msel.status] : this.itemStatus;
   }
 
+  // Setting the image follows the API's MSEL update rule: the owner or EditMsels.
+  canSetMselImage(): boolean {
+    return this.canUpdateMsel();
+  }
+
+  // The API's MSEL update rule: the owner or EditMsels. Hiding names is held to it rather than to
+  // canEditMsel, since an Editor is one of the people it hides names from.
+  canUpdateMsel(): boolean {
+    return canUpdateMsel(this.msel, this.loggedInUserId(), this.permissionDataService.hasPermission(SystemPermission.EditMsels));
+  }
+
+  uploadMselImage(input: HTMLInputElement) {
+    const file = input.files?.[0];
+    // Clear the input so choosing the same file again still fires change.
+    input.value = '';
+    if (!file) {
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      this.systemMessageService.displayMessage('Image Too Large', 'Choose an image of 2 MB or less.');
+      return;
+    }
+    this.isImageBusy = true;
+    this.mselImageDataService.setImage(this.msel.id, file).subscribe({
+      next: () => (this.isImageBusy = false),
+      error: (err) => {
+        this.isImageBusy = false;
+        this.errorService.handleError(err);
+      },
+    });
+  }
+
+  removeMselImage() {
+    this.isImageBusy = true;
+    this.mselImageDataService.deleteImage(this.msel.id).subscribe({
+      next: () => (this.isImageBusy = false),
+      error: (err) => {
+        this.isImageBusy = false;
+        this.errorService.handleError(err);
+      },
+    });
+  }
+
+  private loadMselImage() {
+    const key = this.msel.id + '|' + (this.msel.imageDateModified ?? '');
+    if (key === this.mselImageKey) {
+      return;
+    }
+    this.mselImageKey = key;
+    this.mselImageUrl = null;
+    this.mselImageDataService
+      .imageUrl(this.msel)
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((url) => {
+        if (key === this.mselImageKey) {
+          this.mselImageUrl = url;
+          this.changeDetectorRef.markForCheck();
+        }
+      });
+  }
+
   canManageMsel(): boolean {
     return this.permissionDataService.hasPermission(SystemPermission.ManageMsels) ||
-      this.msel.hasRole(this.loggedInUserId, '').owner;
+      this.msel.hasRole(this.loggedInUserId(), '').owner;
   }
 
   getDeleteTooltip(): string {
@@ -585,21 +696,52 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   }
 
   pushIntegrations() {
-    let message = 'Are you sure that you want to push MSEL data to the selected applications?';
+    let galleryWarning = '';
     if (this.msel.useGallery && this.hasGalleryEventsWithMissingData()) {
-      message += '\n\n** WARNING: One or more Scenario Events marked as a Gallery integration is missing required fields. **';
+      galleryWarning = '\n\n** WARNING: One or more Scenario Events marked as a Gallery integration is missing required fields. **';
+    }
+    // a push starts the exercise now, so a start time that is missing or past is moved to now first
+    if (!this.hasStartTime() || this.msel.startTime.valueOf() < Date.now()) {
+      const reason = this.hasStartTime()
+        ? `The MSEL start time, ${formatDate(this.msel.startTime, 'dd MMM yyyy HH:mm', 'en-US')}, is in the past.`
+        : 'This MSEL has no start time.';
+      this.dialogService
+        .confirm({
+          title: 'Push Integrations',
+          message: `${reason} The start time will be set to the current date and time before pushing.${galleryWarning}`,
+          confirmText: 'Continue',
+          cancelText: 'Cancel',
+        }).afterClosed().subscribe((result) => {
+          if (result) {
+            this.setStartTimeToNowAndPush();
+          }
+        });
+      return;
     }
     this.dialogService
       .confirm({
-        title: 'Push Integrations', message: message
+        title: 'Push Integrations', message: 'Are you sure that you want to push MSEL data to the selected applications?' + galleryWarning
       }).afterClosed().subscribe((result) => {
         if (result) {
-          this.integrationDismissed = false;
-          this.clearDismissedIntegrationError();
-          this.integrationRequested = 'push';
-          this.mselDataService.pushIntegrations(this.msel.id);
+          this.startPush();
         }
       });
+  }
+
+  // Push Integrations is disabled while there are unsaved changes, so this saves the start time alone.
+  // The push waits for the save; a failed save is reported by MselDataService and nothing is pushed.
+  private setStartTimeToNowAndPush() {
+    this.mselDataService.updateMsel({ ...this.msel, startTime: new Date() }).subscribe({
+      next: () => this.startPush(),
+      error: () => {},
+    });
+  }
+
+  private startPush() {
+    this.integrationDismissed = false;
+    this.clearDismissedIntegrationError();
+    this.integrationRequested = 'push';
+    this.mselDataService.pushIntegrations(this.msel.id);
   }
 
   pullIntegrations() {
@@ -844,6 +986,40 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     this.startTimeCheck();
   }
 
+  loadAuthoredScoringModel(mselId: string) {
+    this.authoredScoringModel = null;
+    this.mselScoringModelService
+      .getMselScoringModel(mselId)
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe({
+        next: (model) => {
+          // the answer for a MSEL the user has since left is not this one's
+          if (this.msel.id !== mselId) {
+            return;
+          }
+          this.authoredScoringModel = model ? normalizeScoringModel(model) : null;
+        },
+        error: (error) => console.error('Failed to load the MSEL scoring model:', error),
+      });
+  }
+
+  // the push needs a scoring model to make the CITE evaluation from, linked or authored
+  hasCiteScoringModel(): boolean {
+    return !!this.msel.citeScoringModelId || !!this.authoredScoringModel;
+  }
+
+  // "Harbor Questions (2 categories, 5 options)", the linked CITE model's name, or "not set"
+  scoringModelSummary(): string {
+    const authored = this.authoredScoringModel;
+    if (authored) {
+      return `${authored.description} (${scoringModelCounts(authored)})`;
+    }
+    if (this.msel.citeScoringModelId) {
+      return this.citeScoringModelName || this.msel.citeScoringModelId;
+    }
+    return 'not set';
+  }
+
   updateCiteScoringModelName() {
     if (!this.msel.citeScoringModelId) {
       this.citeScoringModelName = '';
@@ -882,6 +1058,20 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     return `${baseUrl}?evaluation=${this.msel.citeEvaluationId}`;
   }
 
+  // whether the pushed scenario has been started, which tells a facilitator whether its tasks will run
+  steamfitterScenarioStatusLabel(): string {
+    switch (this.steamfitterScenarioStatus) {
+      case 'Ready':
+        return 'Not started';
+      case 'Active':
+        return 'Started';
+      case 'Ended':
+        return 'Ended';
+      default:
+        return '';
+    }
+  }
+
   getSteamfitterScenarioUrl(): string {
     if (!this.msel.steamfitterScenarioId) return '';
     let baseUrl = this.settingsService.settings.SteamfitterUrl || '';
@@ -899,15 +1089,24 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     return this.casterDirectoryList.find(d => d.id === this.msel.casterDirectoryId);
   }
 
-  // Caster has no route to a single workspace, so link to the project that holds it
-  getCasterProjectUrl(): string {
+  // On its project page, Caster opens a workspace's tab from ?workspace= and expands a directory from ?directory=;
+  // a Caster without them opens the project
+  getCasterWorkspaceUrl(): string {
+    return this.msel.casterWorkspaceId ? this.getCasterProjectUrl(`workspace=${this.msel.casterWorkspaceId}`) : '';
+  }
+
+  getCasterDirectoryUrl(): string {
+    return this.getCasterProjectUrl(`directory=${this.msel.casterDirectoryId}`);
+  }
+
+  private getCasterProjectUrl(query: string): string {
     const directory = this.selectedCasterDirectory;
     if (!directory) return '';
     let baseUrl = this.settingsService.settings.CasterUrl || '';
     if (baseUrl && baseUrl.slice(-1) !== '/') {
       baseUrl = baseUrl + '/';
     }
-    return `${baseUrl}projects/${directory.projectId}`;
+    return `${baseUrl}projects/${directory.projectId}?${query}`;
   }
 
   casterWarningMessage(): string {
@@ -944,6 +1143,7 @@ export class MselInfoComponent implements OnDestroy, OnInit {
           this.citeEvaluationName = names.citeEvaluationName || '';
           this.citeScoringModelName = names.citeScoringModelName || '';
           this.steamfitterScenarioName = names.steamfitterScenarioName || '';
+          this.steamfitterScenarioStatus = names.steamfitterScenarioStatus || '';
           this.casterDirectoryName = names.casterDirectoryName || '';
           this.casterWorkspaceName = names.casterWorkspaceName || '';
         },
@@ -983,6 +1183,7 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     this.citeEvaluationName = '';
     this.citeScoringModelName = '';
     this.steamfitterScenarioName = '';
+    this.steamfitterScenarioStatus = '';
     this.casterDirectoryName = '';
     this.casterWorkspaceName = '';
   }

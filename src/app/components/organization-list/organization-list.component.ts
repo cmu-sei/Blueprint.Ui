@@ -1,9 +1,9 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, ElementRef, Input, OnDestroy, OnInit, ViewChild, AfterViewInit } from '@angular/core';
-import { UntypedFormControl } from '@angular/forms';
-import { MatTableDataSource } from '@angular/material/table';
+import { Component, ElementRef, Input, OnDestroy, OnInit, AfterViewInit, inject, input, viewChild } from '@angular/core';
+import { UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MatTableDataSource, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, Observable } from 'rxjs';
@@ -17,8 +17,8 @@ import {
 } from 'src/app/generated/blueprint.api';
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
-import { Sort } from '@angular/material/sort';
-import { MatMenuTrigger } from '@angular/material/menu';
+import { Sort, MatSort, MatSortHeader } from '@angular/material/sort';
+import { MatMenuTrigger, MatMenu, MatMenuItem } from '@angular/material/menu';
 import { OrganizationDataService } from 'src/app/data/organization/organization-data.service';
 import { OrganizationQuery } from 'src/app/data/organization/organization.query';
 import { MatDialog } from '@angular/material/dialog';
@@ -26,21 +26,35 @@ import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { OrganizationEditDialogComponent } from '../organization-edit-dialog/organization-edit-dialog.component';
 import { ItemDownloadDialogComponent } from '../item-download-dialog/item-download-dialog.component';
 import { v4 as uuidv4 } from 'uuid';
+import { MatIcon } from '@angular/material/icon';
+
+import { MatFormField, MatInput, MatSuffix } from '@angular/material/input';
+import { MatIconButton } from '@angular/material/button';
 
 @Component({
-  selector: 'app-organization-list',
-  templateUrl: './organization-list.component.html',
-  styleUrls: ['./organization-list.component.scss'],
-  standalone: false
+    selector: 'app-organization-list',
+    templateUrl: './organization-list.component.html',
+    styleUrls: ['./organization-list.component.scss'],
+    imports: [MatIcon, MatFormField, MatInput, FormsModule, ReactiveFormsModule, MatIconButton, MatSuffix, MatPaginator, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatMenuTrigger, MatMenu, MatMenuItem, MatCellDef, MatCell, MatSortHeader, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow]
 })
 export class OrganizationListComponent implements OnDestroy, OnInit, AfterViewInit {
-  @Input() loggedInUserId: string;
-  @Input() canEdit: boolean;
+  private router = inject(Router);
+  private settingsService = inject(ComnSettingsService);
+  private authQuery = inject(ComnAuthQuery);
+  private mselDataService = inject(MselDataService);
+  private mselQuery = inject(MselQuery);
+  private organizationDataService = inject(OrganizationDataService);
+  private organizationQuery = inject(OrganizationQuery);
+  dialog = inject(MatDialog);
+  dialogService = inject(CrucibleDialogService);
+
+  readonly loggedInUserId = input<string>(undefined);
+  readonly canEdit = input<boolean>(undefined);
   @Input() showTemplates: boolean;
   // context menu
-  @ViewChild(MatMenuTrigger, { static: true }) contextMenu: MatMenuTrigger;
-  @ViewChild(MatPaginator) paginator: MatPaginator;
-  @ViewChild('jsonInput') jsonInput: ElementRef<HTMLInputElement>;
+  readonly contextMenu = viewChild(MatMenuTrigger);
+  readonly paginator = viewChild(MatPaginator);
+  readonly jsonInput = viewChild<ElementRef<HTMLInputElement>>('jsonInput');
   contextMenuPosition = { x: '0px', y: '0px' };
   msel = new MselPlus();
   organizationList: Organization[] = [];
@@ -57,18 +71,7 @@ export class OrganizationListComponent implements OnDestroy, OnInit, AfterViewIn
   displayedColumns: string[] = ['action', 'shortname', 'name', 'summary'];
   private unsubscribe$ = new Subject();
 
-  constructor(
-    activatedRoute: ActivatedRoute,
-    private router: Router,
-    private settingsService: ComnSettingsService,
-    private authQuery: ComnAuthQuery,
-    private mselDataService: MselDataService,
-    private mselQuery: MselQuery,
-    private organizationDataService: OrganizationDataService,
-    private organizationQuery: OrganizationQuery,
-    public dialog: MatDialog,
-    public dialogService: CrucibleDialogService
-  ) {
+  constructor() {
     // subscribe to organizations
     this.organizationQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(organizations => {
       this.organizationList = organizations;
@@ -97,9 +100,9 @@ export class OrganizationListComponent implements OnDestroy, OnInit, AfterViewIn
 
   ngAfterViewInit() {
     if (this.showTemplates) {
-      this.templateDataSource.paginator = this.paginator;
+      this.templateDataSource.paginator = this.paginator();
     } else {
-      this.organizationDataSource.paginator = this.paginator;
+      this.organizationDataSource.paginator = this.paginator();
     }
   }
 
@@ -171,7 +174,7 @@ export class OrganizationListComponent implements OnDestroy, OnInit, AfterViewIn
       return;
     }
     this.organizationDataService.uploadJson(file, 'events', true);
-    this.jsonInput.nativeElement.value = null;
+    this.jsonInput().nativeElement.value = null;
   }
 
   openDownloadDialog() {
@@ -228,8 +231,9 @@ export class OrganizationListComponent implements OnDestroy, OnInit, AfterViewIn
     const templateData = this.getFilteredAndSortedOrganizations(null, this.organizationList);
     this.organizationDataSource.data = mselData;
     this.templateDataSource.data = templateData;
-    if (this.paginator) {
-      this.paginator.length = this.showTemplates ? templateData.length : mselData.length;
+    const paginator = this.paginator();
+    if (paginator) {
+      paginator.length = this.showTemplates ? templateData.length : mselData.length;
     }
   }
 

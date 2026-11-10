@@ -1,19 +1,26 @@
 // Copyright 2023 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
-import { UntypedFormControl } from '@angular/forms';
+import { Component, Input, OnChanges, SimpleChanges, input, output } from '@angular/core';
+import { UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MatFormField, MatLabel, MatInput, MatSuffix } from '@angular/material/input';
+import { NgxMatDatepickerInput, NgxMatDatetimepicker, NgxMatDatepickerActions, NgxMatDatepickerApply, NgxMatDatepickerCancel } from '@ngxmc/datetime-picker';
+import { MatDatepickerToggle } from '@angular/material/datepicker';
+import { MatButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
+import { DatePipe } from '@angular/common';
+import { TimezoneAbbrPipe } from '../../../utilities/timezone-abbr';
 
 
 @Component({
-  selector: 'app-duration-edit',
-  templateUrl: './duration-edit.component.html',
-  styleUrls: ['./duration-edit.component.scss'],
-  standalone: false
+    selector: 'app-duration-edit',
+    templateUrl: './duration-edit.component.html',
+    styleUrls: ['./duration-edit.component.scss'],
+    imports: [MatFormField, MatLabel, MatInput, NgxMatDatepickerInput, FormsModule, ReactiveFormsModule, MatDatepickerToggle, MatSuffix, NgxMatDatetimepicker, NgxMatDatepickerActions, MatButton, NgxMatDatepickerApply, NgxMatDatepickerCancel, MatIcon, DatePipe, TimezoneAbbrPipe]
 })
 export class DurationEditComponent implements OnChanges {
-  @Input() startTime: Date;
-  @Input() canEdit: boolean = true;
+  readonly startTime = input<Date>(undefined);
+  readonly canEdit = input<boolean>(true);
   @Input()
   get durationSeconds() {
     return this.durationSecondsValue;
@@ -23,10 +30,10 @@ export class DurationEditComponent implements OnChanges {
     this.sign = value < 0 ? -1 : 1;
     this.durationSecondsChange.emit(this.durationSecondsValue);
   }
-  @Input() timeName: string;
-  @Input() postScript: string;
-  @Output() durationSecondsChange = new EventEmitter<number>();
-  @Output() change = new EventEmitter<number>();
+  readonly timeName = input<string>(undefined);
+  readonly postScript = input<string>(undefined);
+  readonly durationSecondsChange = output<number>();
+  readonly change = output<number>();
   durationSecondsValue: number;
   endTimeFormControl = new UntypedFormControl();
   days = 0;
@@ -36,7 +43,7 @@ export class DurationEditComponent implements OnChanges {
   sign = 0;
 
   ngOnChanges(changes: SimpleChanges) {
-    if (this.startTime && this.durationSeconds) {
+    if (this.startTime() && this.durationSeconds) {
       this.endTimeFormControl.setValue(
         this.getDateFromDurationSeconds(this.durationSeconds)
       );
@@ -45,7 +52,7 @@ export class DurationEditComponent implements OnChanges {
 
     // Enable/disable the FormControl based on canEdit
     // This handles both initial state and changes
-    if (this.canEdit) {
+    if (this.canEdit()) {
       this.endTimeFormControl.enable({ emitEvent: false });
     } else {
       this.endTimeFormControl.disable({ emitEvent: false });
@@ -53,14 +60,14 @@ export class DurationEditComponent implements OnChanges {
   }
 
   getDateFromDurationSeconds(durationSeconds: number): Date {
-    const startTime = new Date(this.startTime);
+    const startTime = new Date(this.startTime());
     return new Date(startTime.getTime() + durationSeconds * 1000);
   }
 
   getDurationSecondsFromDate() {
     const endTimeValue = this.endTimeFormControl.value;
     const endTimeSeconds = endTimeValue.getTime() / 1000;
-    const startValue = new Date(this.startTime);
+    const startValue = new Date(this.startTime());
     const startSeconds = startValue.getTime() / 1000;
     return endTimeSeconds - startSeconds;
   }
@@ -208,6 +215,7 @@ export class DurationEditComponent implements OnChanges {
   }
 
   hasStartTime(): boolean {
-    return this.startTime && this.startTime.valueOf() > 0;
+    const startTime = this.startTime();
+    return startTime && startTime.valueOf() > 0;
   }
 }

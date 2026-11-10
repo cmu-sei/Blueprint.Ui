@@ -23,8 +23,7 @@ project root for license information.
     <!-- move start time (deltaSeconds) -->
     <div class="add-margin flex-row">
       <app-duration-edit [startTime]="data.mselStartTime" [(durationSeconds)]="data.move.deltaSeconds"
-        [timeName]="'Start Date / Time'" [postScript]="'from start'">
-      </app-duration-edit>
+        [timeName]="'Start Date / Time'" [postScript]="'from start'" />
     </div>
     <div class="add-margin">
       <div>
@@ -44,8 +43,7 @@ project root for license information.
           <span (click)="picker.open()">
             {{ situationDateFormControl.value | date: 'dd MMM yyyy HH:mm' }} {{ situationDateFormControl.value | timezoneAbbr }}
           </span>
-          <mat-datepicker-toggle matSuffix title="Choose Date/Time" [for]="picker">
-          </mat-datepicker-toggle>
+          <mat-datepicker-toggle matSuffix title="Choose Date/Time" [for]="picker" />
           <ngx-mat-datetime-picker #picker [showSpinners]=true [showSeconds]=false [stepHour]=1 [stepMinute]=5
             [stepSecond]=1 [touchUi]=false [enableMeridian]=true [disableMinute]=false [hideTime]=false
             [color]="'warn'">
@@ -64,7 +62,7 @@ project root for license information.
         </p>
         <div>
           <angular-editor [placeholder]="'Description'" [(ngModel)]="data.move.situationDescription"
-            [config]="editorConfig"></angular-editor>
+            [config]="editorConfig" />
         </div>
       </div>
     </div>

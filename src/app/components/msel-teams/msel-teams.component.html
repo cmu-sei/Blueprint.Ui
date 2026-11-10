@@ -6,19 +6,19 @@ project root for license information or contact permission@sei.cmu.edu for full 
 
 <div class="cssLayoutRowStartCenter">
   <div class="sp-icon">
-    <mat-icon class="mdi-24px" fontIcon="mdi-account-group" [ngStyle]="{'color': 'var(--mat-sys-primary)'}"></mat-icon>
+    <mat-icon class="mdi-24px" fontIcon="mdi-account-group" [style.color]="'var(--mat-sys-primary)'" />
   </div>
   <mat-form-field style="width: 300px; margin-left: 10px;">
     <input matInput [(ngModel)]="filterString" (ngModelChange)="applyFilter($event)" placeholder="Search" />
     @if (filterString) {
     <button mat-icon-button matSuffix (click)="applyFilter('')" title="Clear Search">
-      <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline"></mat-icon>
+      <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline" />
     </button>
     }
   </mat-form-field>
   <div class="button-end">
     <mat-paginator #paginator [pageIndex]="0" [pageSize]="20"
-      [pageSizeOptions]="[5, 10, 15, 20, 25, 50, 100, 200]"></mat-paginator>
+      [pageSizeOptions]="[5, 10, 15, 20, 25, 50, 100, 200]" />
   </div>
 </div>
 
@@ -54,7 +54,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <th mat-header-cell *matHeaderCellDef class="column-action">
           @if (canEditMsel()) {
           <button mat-icon-button [matMenuTriggerFor]="addMenu" (menuOpened)="refreshUnits()" title="Add a team" style="outline: none;">
-            <mat-icon class="mdi-24px center-self" fontIcon="mdi-plus-circle"></mat-icon>
+            <mat-icon class="mdi-24px center-self" fontIcon="mdi-plus-circle" />
           </button>
           }
         </th>
@@ -62,12 +62,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
           @if (canEditMsel()) {
           <button mat-icon-button (click)="addOrEditTeam(element); $event.stopPropagation();"
             title="Edit {{ element.name }}">
-            <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline" title="Edit {{ element.name }}"></mat-icon>
+            <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline" title="Edit {{ element.name }}" />
           </button>
           }
           @if (canEditMsel()) {
           <button mat-icon-button (click)="deleteTeam(element); $event.stopPropagation();" title="Delete team">
-            <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline" title="Delete {{ element.name }}"></mat-icon>
+            <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline" title="Delete {{ element.name }}" />
           </button>
           }
         </td>
@@ -118,7 +118,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           matTooltip="Any member of this team can invite others to it">Open Invite</th>
         <td mat-cell *matCellDef="let element" class="column-invitation">
           <mat-checkbox [checked]="element.canTeamMemberInvite" disabled
-            (click)="$event.stopPropagation();" matTooltip="Any team member can invite"></mat-checkbox>
+            (click)="$event.stopPropagation();" matTooltip="Any team member can invite" />
         </td>
       </ng-container>
       <!-- Expanded Content Column -->
@@ -127,7 +127,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           <div [@detailExpand]="element.id == expandedElementId ? 'expanded' : 'collapsed'" style="overflow: hidden">
             @if (expandedElementId === element.id) {
             <div class="expanded-detail-div">
-              <app-team-users [team]="element"></app-team-users>
+              <app-team-users [team]="element" />
             </div>
             }
           </div>

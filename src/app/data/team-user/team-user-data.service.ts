@@ -4,7 +4,7 @@
 
 import { TeamUserStore } from './team-user.store';
 import { TeamUserQuery } from './team-user.query';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import {
   TeamUser,
   TeamUserService,
@@ -16,13 +16,11 @@ import { Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class TeamUserDataService {
-  readonly TeamUserList: Observable<TeamUser[]>;
+  private teamUserStore = inject(TeamUserStore);
+  private teamUserQuery = inject(TeamUserQuery);
+  private teamUserService = inject(TeamUserService);
 
-  constructor(
-    private teamUserStore: TeamUserStore,
-    private teamUserQuery: TeamUserQuery,
-    private teamUserService: TeamUserService
-  ) {}
+  readonly TeamUserList: Observable<TeamUser[]>;
 
   loadByMsel(mselId: string) {
     this.teamUserStore.setLoading(true);

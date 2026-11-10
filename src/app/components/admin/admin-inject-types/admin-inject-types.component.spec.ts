@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { describe, it, expect, vi } from 'vitest';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { MatButtonModule } from '@angular/material/button';
@@ -26,23 +26,25 @@ import { ApiStub } from 'src/app/test-utils/api-stub';
 import { dialogRefStub } from 'src/app/test-utils/dialog-refs';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { unstubbed } from 'src/app/test-utils/unstubbed';
+import { DataFieldListComponent } from '../../data-field-list/data-field-list.component';
+import { InjectListComponent } from '../../inject-list/inject-list.component';
 
-@Component({ selector: 'app-data-field-list', template: '', standalone: false })
+@Component({ selector: 'app-data-field-list', template: '' })
 class DataFieldListStub {
-  @Input() loggedInUserId: string;
-  @Input() showTemplates: boolean;
-  @Input() userTheme: unknown;
-  @Input() injectTypeId: string;
+  readonly loggedInUserId = input<string>(undefined);
+  readonly showTemplates = input<boolean>(undefined);
+  readonly userTheme = input<unknown>(undefined);
+  readonly injectTypeId = input<string>(undefined);
 }
-@Component({ selector: 'app-inject-list', template: '', standalone: false })
+@Component({ selector: 'app-inject-list', template: '' })
 class InjectListStub {
-  @Input() loggedInUserId: string;
-  @Input() canEdit: boolean;
-  @Input() isEditMode: boolean;
-  @Input() catalog: unknown;
-  @Input() injectType: InjectType;
-  @Input() injectList: unknown;
-  @Output() selectedInjectIdList = new EventEmitter<string[]>();
+  readonly loggedInUserId = input<string>(undefined);
+  readonly canEdit = input<boolean>(undefined);
+  readonly isEditMode = input<boolean>(undefined);
+  readonly catalog = input<unknown>(undefined);
+  readonly injectType = input<InjectType>(undefined);
+  readonly injectList = input<unknown>(undefined);
+  readonly selectedInjectIdList = output<string[]>();
 }
 
 const EMAIL: InjectType = { id: 'it-email', name: 'Email', description: 'An email inject' };
@@ -67,7 +69,10 @@ async function renderInjectTypes(overrides: { canEdit?: boolean } = {}) {
       MatSortModule,
       MatTableModule,
     ],
-    declarations: [AdminInjectTypesComponent, DataFieldListStub, InjectListStub],
+    childStubs: [
+      { replace: DataFieldListComponent, with: DataFieldListStub },
+      { replace: InjectListComponent, with: InjectListStub },
+    ],
     providers: [
       { provide: InjectTypeService, useValue: injectTypeApi },
       { provide: CrucibleDialogService, useValue: dialog },
@@ -141,9 +146,9 @@ describe('AdminInjectTypesComponent', () => {
     await user.click(within(table()).getByText('Email'));
 
     const list = injectList(fixture);
-    expect(list.canEdit).toBe(canEdit);
-    expect(list.injectType).toEqual(EMAIL);
-    expect(fixture.debugElement.query(By.directive(DataFieldListStub)).componentInstance.injectTypeId).toBe('it-email');
+    expect(list.canEdit()).toBe(canEdit);
+    expect(list.injectType()).toEqual(EMAIL);
+    expect(fixture.debugElement.query(By.directive(DataFieldListStub)).componentInstance.injectTypeId()).toBe('it-email');
   });
 
   /**

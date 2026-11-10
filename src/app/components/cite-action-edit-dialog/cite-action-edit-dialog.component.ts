@@ -2,25 +2,28 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, EventEmitter, Inject, Output } from '@angular/core';
+import { Component, inject, output } from '@angular/core';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MoveQuery } from 'src/app/data/move/move.query';
+import { CrucibleDialogComponent, CrucibleDialogContentDirective } from '@cmusei/crucible-common';
+import { MatFormField, MatLabel, MatInput } from '@angular/material/input';
+import { MatSelect } from '@angular/material/select';
+import { FormsModule } from '@angular/forms';
+import { MatOption } from '@angular/material/autocomplete';
 
 @Component({
     selector: 'app-cite-action-edit-dialog',
     templateUrl: './cite-action-edit-dialog.component.html',
     styleUrls: ['./cite-action-edit-dialog.component.scss'],
-    standalone: false
+    imports: [CrucibleDialogComponent, CrucibleDialogContentDirective, MatFormField, MatLabel, MatSelect, FormsModule, MatOption, MatInput]
 })
 
 export class CiteActionEditDialogComponent {
-  @Output() editComplete = new EventEmitter<any>();
-  moveList = this.moveQuery.getAll().sort((a, b) => +a.moveNumber < +b.moveNumber ? -1 : 1);
+  private moveQuery = inject(MoveQuery);
+  data = inject(MAT_DIALOG_DATA);
 
-  constructor(
-    private moveQuery: MoveQuery,
-    @Inject(MAT_DIALOG_DATA) public data: any
-  ) {}
+  readonly editComplete = output<any>();
+  moveList = this.moveQuery.getAll().sort((a, b) => +a.moveNumber < +b.moveNumber ? -1 : 1);
 
   errorFree() {
     return this.data.citeAction.description && this.data.citeAction.description.length > 0;

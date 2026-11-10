@@ -2,6 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { describe, it, expect, beforeEach } from 'vitest';
+import { Injector, runInInjectionContext } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
 import { Msel, MselItemStatus } from 'src/app/generated/blueprint.api';
@@ -33,7 +34,10 @@ describe('MselQuery', () => {
    */
   it('sorts MSELs by name', async () => {
     const store = new MselStore();
-    const query = new MselQuery(store);
+    const injector = Injector.create({
+      providers: [{ provide: MselStore, useValue: store }],
+    });
+    const query = runInInjectionContext(injector, () => new MselQuery());
     store.set([
       msel({ id: 'c', name: 'Charlie' }),
       msel({ id: 'a', name: 'Alpha' }),
@@ -52,7 +56,10 @@ describe('MselQuery', () => {
    */
   it('looks MSELs up by id', async () => {
     const store = new MselStore();
-    const query = new MselQuery(store);
+    const injector = Injector.create({
+      providers: [{ provide: MselStore, useValue: store }],
+    });
+    const query = runInInjectionContext(injector, () => new MselQuery());
     store.set([msel()]);
 
     expect(query.getById('msel-1').name).toBe('Exercise Alpha');
@@ -69,7 +76,10 @@ describe('MselQuery', () => {
    */
   it('finds the MSEL that owns a scenario event', () => {
     const store = new MselStore();
-    const query = new MselQuery(store);
+    const injector = Injector.create({
+      providers: [{ provide: MselStore, useValue: store }],
+    });
+    const query = runInInjectionContext(injector, () => new MselQuery());
     store.set([
       msel({ scenarioEvents: [{ id: 'se-1', mselId: 'msel-1' }] }),
       msel({ id: 'msel-2', scenarioEvents: [{ id: 'se-2', mselId: 'msel-2' }] }),

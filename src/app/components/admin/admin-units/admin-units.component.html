@@ -6,7 +6,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
 
 <div class="cssLayoutRowStartCenter">
   <div class="sp-icon">
-    <mat-icon class="mdi-24px" fontIcon="mdi-account-group" [ngStyle]="{'color': 'var(--mat-sys-primary)'}"></mat-icon>
+    <mat-icon class="mdi-24px" fontIcon="mdi-account-group" [style.color]="'var(--mat-sys-primary)'" />
   </div>
   <mat-form-field style="width: 300px; margin-left: 10px;">
     <!-- A placeholder alone leaves the field unlabelled for assistive technology, so the name is
@@ -15,13 +15,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
       (ngModelChange)="applyFilter($event)" placeholder="Search" />
     @if (filterString) {
     <button mat-icon-button matSuffix (click)="applyFilter('')" title="Clear Search">
-      <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline"></mat-icon>
+      <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline" />
     </button>
     }
   </mat-form-field>
   <div class="button-end">
     <mat-paginator #paginator [pageIndex]="0" [pageSize]="20"
-      [pageSizeOptions]="[5, 10, 15, 20, 25, 50, 100, 200]"></mat-paginator>
+      [pageSizeOptions]="[5, 10, 15, 20, 25, 50, 100, 200]" />
   </div>
 </div>
 
@@ -30,29 +30,29 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <!-- action column -->
     <ng-container matColumnDef="action">
       <th mat-header-cell *matHeaderCellDef class="column-action">
-        @if (canManage) {
+        @if (canManage()) {
         <button mat-icon-button (click)="addOrEditUnit(null); $event.stopPropagation();" style="outline: none;" title="Add Unit">
-          <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle"></mat-icon>
+          <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle" />
         </button>
         <button mat-icon-button title="Upload Units from JSON" style="outline: none;"
           (click)="jsonInput.click(); $event.stopPropagation();">
-          <mat-icon class="mdi-24px" fontIcon="mdi-upload"></mat-icon>
+          <mat-icon class="mdi-24px" fontIcon="mdi-upload" />
         </button>
         <button mat-icon-button title="Download Units as JSON" style="outline: none;"
           (click)="openDownloadDialog(); $event.stopPropagation();">
-          <mat-icon class="mdi-24px" fontIcon="mdi-download"></mat-icon>
+          <mat-icon class="mdi-24px" fontIcon="mdi-download" />
         </button>
         }
       </th>
       <td mat-cell *matCellDef="let element" class="column-action">
-        @if (canManage) {
+        @if (canManage()) {
         <button mat-icon-button (click)="addOrEditUnit(element); $event.stopPropagation()" style="outline: none;"
           title="Edit {{ element.name }}">
-          <mat-icon class="mdi-18px self-center" fontIcon="mdi-square-edit-outline"></mat-icon>
+          <mat-icon class="mdi-18px self-center" fontIcon="mdi-square-edit-outline" />
         </button>
         <button mat-icon-button (click)="deleteUnit(element); $event.stopPropagation()" style="outline: none;"
           title="Delete {{ element.name }}">
-          <mat-icon class="mdi-18px self-center" fontIcon="mdi-trash-can-outline"></mat-icon>
+          <mat-icon class="mdi-18px self-center" fontIcon="mdi-trash-can-outline" />
         </button>
         }
       </td>
@@ -73,7 +73,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <div [@detailExpand]="element.id == expandedElementId ? 'expanded' : 'collapsed'" style="overflow: hidden">
           @if (expandedElementId === element.id) {
           <div class="expanded-detail-div">
-            <app-admin-unit-users [unitId]="element.id" [canManage]="canManage"></app-admin-unit-users>
+            <app-admin-unit-users [unitId]="element.id" [canManage]="canManage()" />
           </div>
           }
         </div>
@@ -88,8 +88,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
 
 @if (isLoading) {
 <mat-card appearance="outlined" style="display: flex; justify-content: center; align-items: center;">
-  <mat-progress-spinner color="primary" mode="indeterminate">
-  </mat-progress-spinner>
+  <mat-progress-spinner color="primary" mode="indeterminate" />
 </mat-card>
 }
 

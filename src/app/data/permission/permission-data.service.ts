@@ -1,7 +1,7 @@
 // Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the collection root for license information.
 
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable, asapScheduler, defer } from 'rxjs';
 import { observeOn, shareReplay, tap, take } from 'rxjs/operators';
 import { SystemPermission, SystemPermissionsService } from 'src/app/generated/blueprint.api';
@@ -10,14 +10,12 @@ import { SystemPermission, SystemPermissionsService } from 'src/app/generated/bl
   providedIn: 'root',
 })
 export class PermissionDataService {
+  private permissionsService = inject(SystemPermissionsService);
+
   private _permissions: SystemPermission[] = [];
   get permissions(): SystemPermission[] {
     return this._permissions;
   }
-
-  constructor(
-    private permissionsService: SystemPermissionsService,
-  ) { }
 
   private permissions$: Observable<SystemPermission[]>;
   private isLoaded = false;

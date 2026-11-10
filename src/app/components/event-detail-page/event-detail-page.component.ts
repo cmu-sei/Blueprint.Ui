@@ -45,21 +45,46 @@ import { MselPlus } from 'src/app/data/msel/msel-data.service';
 import { DataValueQuery } from 'src/app/data/data-value/data-value.query';
 import { ScenarioEventQuery } from 'src/app/data/scenario-event/scenario-event.query';
 import { Sort } from '@angular/material/sort';
-import { Component, Input } from '@angular/core';
+import { Component, inject, input } from '@angular/core';
 import { VIEW_CONFIG } from 'src/app/utilities/editor-config';
 import { CardQuery } from 'src/app/data/card/card.query';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
+import { TopbarComponent } from '../shared/top-bar/topbar.component';
+import { MatIconButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
+import { DataValueComponent } from '../data-value/data-value.component';
+import { AngularEditorModule } from '@kolkov/angular-editor';
 
 @Component({
     selector: 'app-event-detail-page',
     templateUrl: './event-detail-page.component.html',
     styleUrls: ['./event-detail-page.component.scss'],
-    standalone: false
+    imports: [TopbarComponent, MatIconButton, MatIcon, DataValueComponent, AngularEditorModule]
 })
 export class EventDetailPageComponent {
-  @Input() userTheme: Theme;
-  @Input() isContentDeveloper: boolean;
-  @Input() loggedInUserId: string;
+  private settingsService = inject(ComnSettingsService);
+  private router = inject(Router);
+  private cardDataService = inject(CardDataService);
+  private moveDataService = inject(MoveDataService);
+  private organizationDataService = inject(OrganizationDataService);
+  private mselDataService = inject(MselDataService);
+  private titleService = inject(Title);
+  private teamDataService = inject(TeamDataService);
+  private dataFieldDataService = inject(DataFieldDataService);
+  private dataValueDataService = inject(DataValueDataService);
+  private scenarioEventDataService = inject(ScenarioEventDataService);
+  private mselQuery = inject(MselQuery);
+  private dataFieldQuery = inject(DataFieldQuery);
+  private moveQuery = inject(MoveQuery);
+  private dataValueQuery = inject(DataValueQuery);
+  private scenarioEventQuery = inject(ScenarioEventQuery);
+  private cardQuery = inject(CardQuery);
+  private activatedRoute = inject(ActivatedRoute);
+  private uiDataService = inject(UIDataService);
+
+  readonly userTheme = input<Theme>(undefined);
+  readonly isContentDeveloper = input<boolean>(undefined);
+  readonly loggedInUserId = input<string>(undefined);
   topbarText = 'Scenario Event Details';
   hideTopbar = false;
   imageFilePath = '';
@@ -111,27 +136,7 @@ export class EventDetailPageComponent {
   dataType: typeof DataFieldType = DataFieldType;
   dataValueId = '';
 
-  constructor(
-    private settingsService: ComnSettingsService,
-    private router: Router,
-    private cardDataService: CardDataService,
-    private moveDataService: MoveDataService,
-    private organizationDataService: OrganizationDataService,
-    private mselDataService: MselDataService,
-    private titleService: Title,
-    private teamDataService: TeamDataService,
-    private dataFieldDataService: DataFieldDataService,
-    private dataValueDataService: DataValueDataService,
-    private scenarioEventDataService: ScenarioEventDataService,
-    private mselQuery: MselQuery,
-    private dataFieldQuery: DataFieldQuery,
-    private moveQuery: MoveQuery,
-    private dataValueQuery: DataValueQuery,
-    private scenarioEventQuery: ScenarioEventQuery,
-    private cardQuery: CardQuery,
-    private activatedRoute: ActivatedRoute,
-    private uiDataService: UIDataService
-  ) {
+  constructor() {
     this.hideTopbar = this.uiDataService.inIframe();
     // set image
     this.imageFilePath = this.settingsService.settings.AppTopBarImage.replace(

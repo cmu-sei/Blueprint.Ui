@@ -6,19 +6,17 @@ project root for license information or contact permission@sei.cmu.edu for full 
 
 <div class="background text app-content-container">
   @if (!hideTopbar) {
-    <app-topbar
-      [title]="topbarText"
+    <app-topbar [title]="topbarText"
       [topbarView]="TopbarView.BLUEPRINT_HOME"
       [imageFilePath]="topbarImage"
       (urlNavigate)="goToUrl($event)"
-    ></app-topbar>
+     />
   }
 
   @if (selectedMselId) {
-    <app-scenario-event-list
-      [loggedInUserId]="loggedInUserId"
+    <app-scenario-event-list [loggedInUserId]="loggedInUserId"
       [userTheme]="userTheme$ | async"
       [isStarterMsel]="true"
-    ></app-scenario-event-list>
+     />
   }
 </div>

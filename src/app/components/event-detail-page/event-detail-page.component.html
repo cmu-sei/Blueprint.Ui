@@ -7,12 +7,11 @@ project root for license information.
 @if (!dataValueId) {
   <div class="container app-event-detail-page background text">
     @if (!hideTopbar) {
-      <app-topbar
-        [title]="topbarText"
+      <app-topbar [title]="topbarText"
         [topbarView]="TopbarView.BLUEPRINT_HOME"
         [imageFilePath]="topbarImage"
         (urlNavigate)="topBarNavigate($event)"
-      ></app-topbar>
+       />
     }
     <div id="printable-area">
       <div class="header-div">
@@ -25,7 +24,7 @@ project root for license information.
             title="Print Submission Review"
             (click)="printpage()"
             >
-            <mat-icon aria-hidden="false" class="mdi-24px" fontIcon="mdi-printer"></mat-icon>
+            <mat-icon aria-hidden="false" class="mdi-24px" fontIcon="mdi-printer" />
           </button>
         </div>
       </div>
@@ -44,13 +43,12 @@ project root for license information.
                           (click)="openInNewTab(scenarioEvent.id, df.id)"
                           title="View in new tab"
                           >
-                          <mat-icon class="mdi-18px self-center" fontIcon="mdi-open-in-new"></mat-icon>
+                          <mat-icon class="mdi-18px self-center" fontIcon="mdi-open-in-new" />
                         </button>
                       }
                     </td>
                     <td>
-                      <app-data-value
-                        [(value)]="getDataValue(df.id).value"
+                      <app-data-value [(value)]="getDataValue(df.id).value"
                         [dataField]="df"
                         [canEdit]="false"
                         [canApprove]="false"
@@ -64,7 +62,7 @@ project root for license information.
                         [gallerySourceTypeOptions]="msel.gallerySourceTypes"
                         [galleryItemStatusOptions]="msel.galleryItemStatuses"
                         [userOptions]="userList"
-                      ></app-data-value>
+                       />
                     </td>
                   </tr>
                 }
@@ -80,10 +78,9 @@ project root for license information.
 <!-- Single data value view -->
 @if (dataValueId) {
   <div class="page">
-    <angular-editor
-      [placeholder]="'Enter value ...'"
+    <angular-editor [placeholder]="'Enter value ...'"
       [innerHtml]="getDataValueById()"
       [config]="viewConfig"
-    ></angular-editor>
+     />
   </div>
 }

@@ -2,30 +2,37 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, EventEmitter, Inject, Output } from '@angular/core';
-import { UntypedFormControl } from '@angular/forms';
+import { Component, inject, output } from '@angular/core';
+import { UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { EDITOR_CONFIG } from 'src/app/utilities/editor-config';
+import { CrucibleDialogComponent, CrucibleDialogContentDirective } from '@cmusei/crucible-common';
+import { MatFormField, MatLabel, MatInput, MatSuffix } from '@angular/material/input';
+import { DurationEditComponent } from '../shared/duration-edit/duration-edit.component';
+import { NgxMatDatepickerInput, NgxMatDatetimepicker, NgxMatDatepickerActions, NgxMatDatepickerApply, NgxMatDatepickerCancel } from '@ngxmc/datetime-picker';
+import { MatDatepickerToggle } from '@angular/material/datepicker';
+import { MatButton } from '@angular/material/button';
+import { AngularEditorModule } from '@kolkov/angular-editor';
+import { DatePipe } from '@angular/common';
+import { TimezoneAbbrPipe } from '../../utilities/timezone-abbr';
 
 @Component({
     selector: 'app-move-edit-dialog',
     templateUrl: './move-edit-dialog.component.html',
     styleUrls: ['./move-edit-dialog.component.scss'],
-    standalone: false
+    imports: [CrucibleDialogComponent, CrucibleDialogContentDirective, MatFormField, MatLabel, MatInput, FormsModule, DurationEditComponent, NgxMatDatepickerInput, ReactiveFormsModule, MatDatepickerToggle, MatSuffix, NgxMatDatetimepicker, NgxMatDatepickerActions, MatButton, NgxMatDatepickerApply, NgxMatDatepickerCancel, AngularEditorModule, DatePipe, TimezoneAbbrPipe]
 })
 
 export class MoveEditDialogComponent {
-  @Output() editComplete = new EventEmitter<any>();
+  data = inject(MAT_DIALOG_DATA);
+
+  readonly editComplete = output<any>();
 
   public situationDateFormControl = new UntypedFormControl(
     this.data.move.situationTime,
     []
   );
   editorConfig = EDITOR_CONFIG;
-
-  constructor(
-    @Inject(MAT_DIALOG_DATA) public data: any
-  ) {}
 
   saveMove(which: string) {
     switch (which) {

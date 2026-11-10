@@ -3,7 +3,7 @@
 
 import { UserMselRoleStore } from './user-msel-role.store';
 import { UserMselRoleQuery } from './user-msel-role.query';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { PageEvent } from '@angular/material/paginator';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -18,6 +18,12 @@ import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
   providedIn: 'root',
 })
 export class UserMselRoleDataService {
+  private userMselRoleStore = inject(UserMselRoleStore);
+  private userMselRoleQuery = inject(UserMselRoleQuery);
+  private userMselRoleService = inject(UserMselRoleService);
+  private router = inject(Router);
+  private activatedRoute = inject(ActivatedRoute);
+
   private _requestedUserMselRoleId: string;
   private _requestedUserMselRoleId$ = this.activatedRoute.queryParamMap.pipe(
     map((params) => params.get('userMselRoleId') || '')
@@ -31,15 +37,6 @@ export class UserMselRoleDataService {
   readonly pageEvent = new BehaviorSubject<PageEvent>(this._pageEvent);
   private pageSize: Observable<number>;
   private pageIndex: Observable<number>;
-
-  constructor(
-    private userMselRoleStore: UserMselRoleStore,
-    private userMselRoleQuery: UserMselRoleQuery,
-    private userMselRoleService: UserMselRoleService,
-    private router: Router,
-    private activatedRoute: ActivatedRoute
-  ) {
-  }
 
   private sortUserMselRoles(
     a: UserMselRole,

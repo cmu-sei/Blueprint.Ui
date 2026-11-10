@@ -1,7 +1,7 @@
 // Copyright 2025 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
 import {
@@ -13,10 +13,10 @@ import {
   providedIn: 'root',
 })
 export class GroupMembershipDataService {
+  private groupService = inject(GroupService);
+
   private groupMembershipSubject = new BehaviorSubject<GroupMembership[]>([]);
   groupMemberships$ = this.groupMembershipSubject.asObservable();
-
-  constructor(private groupService: GroupService) {}
 
   selectMemberships(groupId: string): Observable<GroupMembership[]> {
     return this.groupMembershipSubject

@@ -45,6 +45,7 @@ import {
   MoveService,
   MselCompetencyService,
   MselPageService,
+  MselScoringModelService,
   MselService,
   MselUnitService,
   OrganizationService,
@@ -67,10 +68,10 @@ import {
   XApiService,
 } from '../generated/blueprint.api';
 
-// 3. RouterQuery: not needed. app.module imports AkitaNgRouterStoreModule, but
+// 3. RouterQuery: not needed. app.config.ts imports AkitaNgRouterStoreModule, but
 //    no code injects RouterQuery.
 
-// 4. BASE_PATH: not needed. Only app.module provides it; no data or hub
+// 4. BASE_PATH: not needed. Only app.config.ts provides it; no data or hub
 //    service injects it.
 
 // 5. Every other common-library service the app injects, as a placeholder
@@ -112,6 +113,7 @@ export function getDefaultProviders(
     unstubbed(MoveService),
     unstubbed(MselCompetencyService),
     unstubbed(MselPageService),
+    unstubbed(MselScoringModelService),
     unstubbed(MselService),
     unstubbed(MselUnitService),
     unstubbed(OrganizationService),
@@ -149,6 +151,7 @@ export function getDefaultProviders(
           AppTopBarHexColor: '#000000',
           AppTopBarHexTextColor: '#FFFFFF',
           AppTopBarImage: '',
+          AppLandingBackgroundImage: '',
           LightThemeTint: '',
           DarkThemeTint: '',
           DefaultDataFields: [],

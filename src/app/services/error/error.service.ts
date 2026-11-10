@@ -4,7 +4,7 @@
  project root for license information.
 */
 
-import { Injectable, Injector, ErrorHandler } from '@angular/core';
+import { Injectable, Injector, ErrorHandler, inject } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { SystemMessageService } from '../system-message/system-message.service';
 
@@ -12,7 +12,8 @@ import { SystemMessageService } from '../system-message/system-message.service';
   providedIn: 'root',
 })
 export class ErrorService implements ErrorHandler {
-  constructor(private injector: Injector) {}
+  private injector = inject(Injector);
+
 
   handleError(err: any) {
     const messageService = this.injector.get(SystemMessageService);

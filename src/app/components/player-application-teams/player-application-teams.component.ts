@@ -2,20 +2,10 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import {
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-  OnChanges,
-  SimpleChanges,
-  Input,
-  ElementRef,
-  ViewChild,
-} from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, OnChanges, SimpleChanges, ElementRef, inject, input, viewChild } from '@angular/core';
 import { PageEvent, MatPaginator } from '@angular/material/paginator';
 import { MatSort, MatSortable } from '@angular/material/sort';
-import { MatTableDataSource } from '@angular/material/table';
+import { MatTableDataSource, MatTable, MatColumnDef, MatCellDef, MatCell, MatRowDef, MatRow } from '@angular/material/table';
 import { PlayerApplicationTeam, SystemPermission, Team } from 'src/app/generated/blueprint.api';
 import { PlayerApplicationTeamDataService } from 'src/app/data/team/player-application-team-data.service';
 import { MselPlus } from 'src/app/data/msel/msel-data.service';
@@ -23,21 +13,32 @@ import { MselQuery } from 'src/app/data/msel/msel.query';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
 import { Observable, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { MatIcon } from '@angular/material/icon';
+import { MatFormField, MatInput } from '@angular/material/input';
+import { FormsModule } from '@angular/forms';
+import { MatIconButton } from '@angular/material/button';
+import { MatCard } from '@angular/material/card';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
 
 @Component({
     selector: 'app-player-application-teams',
     templateUrl: './player-application-teams.component.html',
     styleUrls: ['./player-application-teams.component.scss'],
-    standalone: false
+    imports: [MatIcon, MatFormField, MatInput, FormsModule, MatIconButton, MatTable, MatSort, MatColumnDef, MatCellDef, MatCell, MatRowDef, MatRow, MatCard, MatProgressSpinner]
 })
 
 export class PlayerApplicationTeamsComponent implements OnDestroy, OnInit, OnChanges {
-  @Input() loggedInUserId: string;
-  @Input() playerApplicationId: string;
-  @Input() mselTeamList: Team[] = [];
-  @ViewChild('teamsInput') teamsInput: ElementRef<HTMLInputElement>;
-  @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
-  @ViewChild(MatSort, { static: true }) sort: MatSort;
+  private playerApplicationTeamDataService = inject(PlayerApplicationTeamDataService);
+  private mselQuery = inject(MselQuery);
+  private permissionDataService = inject(PermissionDataService);
+  private changeDetectorRef = inject(ChangeDetectorRef);
+
+  readonly loggedInUserId = input<string>(undefined);
+  readonly playerApplicationId = input<string>(undefined);
+  readonly mselTeamList = input<Team[]>([]);
+  readonly teamsInput = viewChild<ElementRef<HTMLInputElement>>('teamsInput');
+  readonly paginator = viewChild(MatPaginator);
+  readonly sort = viewChild(MatSort);
   msel = new MselPlus();
   teams: Team[];
   playerApplicationTeams: PlayerApplicationTeam[];
@@ -51,12 +52,7 @@ export class PlayerApplicationTeamsComponent implements OnDestroy, OnInit, OnCha
   pageEvent: PageEvent;
   private unsubscribe$ = new Subject();
 
-  constructor(
-    private playerApplicationTeamDataService: PlayerApplicationTeamDataService,
-    private mselQuery: MselQuery,
-    private permissionDataService: PermissionDataService,
-    private changeDetectorRef: ChangeDetectorRef
-  ) {
+  constructor() {
     // Subscribe to the active MSEL
     (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
       if (msel) {
@@ -72,8 +68,8 @@ export class PlayerApplicationTeamsComponent implements OnDestroy, OnInit, OnCha
       .subscribe(() => {
         this.changeDetectorRef.markForCheck();
       });
-    this.sort.sort(<MatSortable>{ id: 'name', start: 'asc' });
-    this.teamDataSource.sort = this.sort;
+    this.sort().sort(<MatSortable>{ id: 'name', start: 'asc' });
+    this.teamDataSource.sort = this.sort();
     this.pageEvent = new PageEvent();
     this.pageEvent.pageIndex = 0;
     this.pageEvent.pageSize = this.defaultPageSize;
@@ -83,7 +79,7 @@ export class PlayerApplicationTeamsComponent implements OnDestroy, OnInit, OnCha
         this.playerApplicationTeams = playerApplicationTeams
           ? playerApplicationTeams
             .filter(
-              (et) => et.playerApplicationId === this.playerApplicationId
+              (et) => et.playerApplicationId === this.playerApplicationId()
             )
             .sort((a, b) => {
               if (
@@ -126,22 +122,23 @@ export class PlayerApplicationTeamsComponent implements OnDestroy, OnInit, OnCha
   setDataSources() {
     this.playerApplicationTeamDataSource.data = this.playerApplicationTeams;
     let mselTeams = new Array<Team>();
-    if (this.mselTeamList) {
-      mselTeams = this.mselTeamList.filter(mt => !this.playerApplicationTeams.some(ct => ct.teamId === mt.id));
+    const mselTeamList = this.mselTeamList();
+    if (mselTeamList) {
+      mselTeams = mselTeamList.filter(mt => !this.playerApplicationTeams.some(ct => ct.teamId === mt.id));
     }
     this.teamDataSource = new MatTableDataSource(mselTeams);
-    this.teamDataSource.sort = this.sort;
+    this.teamDataSource.sort = this.sort();
   }
 
   getTeamShortName(teamId: string) {
-    const team = this.mselTeamList.find(t => t.id === teamId);
+    const team = this.mselTeamList().find(t => t.id === teamId);
     return team ? team.shortName : teamId;
   }
 
 
   addTeamToPlayerApplication(team: Team): void {
     this.playerApplicationTeamDataService.addTeamToPlayerApplication(
-      this.playerApplicationId,
+      this.playerApplicationId(),
       team,
       this.playerApplicationTeamDataSource.data.length + 1
     );
@@ -165,7 +162,7 @@ export class PlayerApplicationTeamsComponent implements OnDestroy, OnInit, OnCha
 
   canEditMsel(): boolean {
     return this.permissionDataService.hasPermission(SystemPermission.EditMsels) ||
-      this.msel.hasRole(this.loggedInUserId, '').editor;
+      this.msel.hasRole(this.loggedInUserId(), '').editor;
   }
 
   ngOnDestroy() {

@@ -1,7 +1,7 @@
 // Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject, input } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 import { Subject, Observable } from 'rxjs';
@@ -34,15 +34,42 @@ import { UserDataService } from 'src/app/data/user/user-data.service';
 import { CurrentUserQuery } from 'src/app/data/user/user.query';
 import { UserMselRoleDataService } from 'src/app/data/user-msel-role/user-msel-role-data.service';
 import { UserTeamRoleDataService } from 'src/app/data/user-team-role/user-team-role-data.service';
+import { TopbarComponent } from '../shared/top-bar/topbar.component';
+import { ScenarioEventListComponent } from '../scenario-event-list/scenario-event-list.component';
+import { AsyncPipe } from '@angular/common';
 
 @Component({
     selector: 'app-starter',
     templateUrl: './starter.component.html',
     styleUrls: ['./starter.component.scss'],
-    standalone: false
+    imports: [TopbarComponent, ScenarioEventListComponent, AsyncPipe]
 })
 export class StarterComponent implements OnDestroy, OnInit {
-  @Input() canAccessAdminSection: boolean;
+  private activatedRoute = inject(ActivatedRoute);
+  private router = inject(Router);
+  private catalogDataService = inject(CatalogDataService);
+  private dataFieldDataService = inject(DataFieldDataService);
+  private dataOptionDataService = inject(DataOptionDataService);
+  private dataValueDataService = inject(DataValueDataService);
+  private moveDataService = inject(MoveDataService);
+  private mselDataService = inject(MselDataService);
+  private mselQuery = inject(MselQuery);
+  private organizationDataService = inject(OrganizationDataService);
+  private permissionDataService = inject(PermissionDataService);
+  private scenarioEventDataService = inject(ScenarioEventDataService);
+  private signalRService = inject(SignalRService);
+  private teamDataService = inject(TeamDataService);
+  private teamUserDataService = inject(TeamUserDataService);
+  private unitDataService = inject(UnitDataService);
+  private userDataService = inject(UserDataService);
+  private currentUserQuery = inject(CurrentUserQuery);
+  private userMselRoleDataService = inject(UserMselRoleDataService);
+  private userTeamRoleDataService = inject(UserTeamRoleDataService);
+  private authQuery = inject(ComnAuthQuery);
+  private settingsService = inject(ComnSettingsService);
+  private titleService = inject(Title);
+
+  readonly canAccessAdminSection = input<boolean>(undefined);
   private unsubscribe$ = new Subject();
   private msel: Msel = { name: '' };
   selectedIndex = 1;
@@ -60,31 +87,7 @@ export class StarterComponent implements OnDestroy, OnInit {
   topbarText = 'blank';
   appTitle = '';
 
-  constructor(
-    private activatedRoute: ActivatedRoute,
-    private router: Router,
-    private catalogDataService: CatalogDataService,
-    private dataFieldDataService: DataFieldDataService,
-    private dataOptionDataService: DataOptionDataService,
-    private dataValueDataService: DataValueDataService,
-    private moveDataService: MoveDataService,
-    private mselDataService: MselDataService,
-    private mselQuery: MselQuery,
-    private organizationDataService: OrganizationDataService,
-    private permissionDataService: PermissionDataService,
-    private scenarioEventDataService: ScenarioEventDataService,
-    private signalRService: SignalRService,
-    private teamDataService: TeamDataService,
-    private teamUserDataService: TeamUserDataService,
-    private unitDataService: UnitDataService,
-    private userDataService: UserDataService,
-    private currentUserQuery: CurrentUserQuery,
-    private userMselRoleDataService: UserMselRoleDataService,
-    private userTeamRoleDataService: UserTeamRoleDataService,
-    private authQuery: ComnAuthQuery,
-    private settingsService: ComnSettingsService,
-    private titleService: Title
-  ) {
+  constructor() {
     this.theme$ = this.authQuery.userTheme$;
     // subscribe to route changes
     this.activatedRoute.queryParamMap

@@ -328,11 +328,11 @@ describe('MselListComponent', () => {
 
   describe('view gate', () => {
     /**
-     * Verifies: without ViewMsels the MSEL name links to /build (and download is enabled) only for an MSEL Editor; a Viewer-role or no-role MSEL is plain text with download disabled.
+     * Verifies: without ViewMsels the MSEL name links to /build (and download is enabled) for any role on the MSEL, Viewer included; a no-role MSEL is plain text with download disabled.
      * Interacts with: real PermissionDataService (stubbed grants), MselPlus.hasRole, MselListComponent.canViewMsel.
-     * Data: every MSEL permission except ViewMsels (near miss); Editor-role, Viewer-role (near-miss role) and no-role MSELs, none of them templates.
+     * Data: every MSEL permission except ViewMsels (near miss); Editor-role, Viewer-role and no-role (near miss) MSELs, none of them templates.
      */
-    it('links the MSEL to the editor only for an editor role without ViewMsels', async () => {
+    it('links the MSEL to the build page for any role without ViewMsels', async () => {
       await renderMselList({
         permissions: allBut(SystemPermission.ViewMsels),
         msels: [
@@ -349,10 +349,37 @@ describe('MselListComponent', () => {
       expect(button(row('As Editor'), 'Download As Editor')).toBeEnabled();
       expect(queryRole(row('No Role'), 'link')).not.toBeInTheDocument();
       expect(button(row('No Role'), 'Download No Role')).toBeDisabled();
-      // The link opens /build, the MSEL editor, so canViewMsel requires an
-      // Editor role; viewers reach their MSELs through msel/:mselid/view.
-      expect(queryRole(row('As Viewer'), 'link')).not.toBeInTheDocument();
-      expect(button(row('As Viewer'), 'Download As Viewer')).toBeDisabled();
+      // A Viewer opens the build page too, read-only.
+      expect(getRole(row('As Viewer'), 'link', 'As Viewer')).toHaveAttribute(
+        'href',
+        '/build?msel=m-vw',
+      );
+      expect(button(row('As Viewer'), 'Download As Viewer')).toBeEnabled();
+    });
+
+    /**
+     * Verifies: every MSEL role opens the MSEL from the list, and only Owner, Editor and Approver make canEditMsel true; Viewer, MoveEditor and Evaluator open it without editing.
+     * Interacts with: MselListComponent.canViewMsel and canEditMsel, MselPlus.hasRole, real PermissionDataService (stubbed grants).
+     * Data: one MSEL per role, without ViewMsels or EditMsels.
+     */
+    it.each([
+      { role: MselRole.Viewer, edits: false },
+      { role: MselRole.Evaluator, edits: false },
+      { role: MselRole.MoveEditor, edits: false },
+      { role: MselRole.Approver, edits: true },
+      { role: MselRole.Editor, edits: true },
+      { role: MselRole.Owner, edits: true },
+    ])('opens the MSEL for a $role, editing $edits', async ({ role: mselRole, edits }) => {
+      const { fixture } = await renderMselList({
+        permissions: [SystemPermission.CreateMsels, SystemPermission.ManageMsels],
+        msels: [msel({ id: 'm-1', name: 'One', userMselRoles: role(mselRole) })],
+      });
+      const component = fixture.componentInstance;
+      const plus = component.mselList.find((m) => m.id === 'm-1');
+
+      expect(component.canViewMsel(plus)).toBe(true);
+      expect(component.canEditMsel(plus)).toBe(edits);
+      expect(getRole(row('One'), 'link', 'One')).toHaveAttribute('href', '/build?msel=m-1');
     });
 
     /**
@@ -457,6 +484,35 @@ describe('MselListComponent', () => {
       await user.type(getRole(toolbar(), 'textbox', 'Search'), 'finished');
       expect(visible()).toContain('Finished Exercise');
       expect(visible()).not.toContain('Approved Exercise');
+    });
+  });
+
+  describe('sorting', () => {
+    /**
+     * Verifies: the list opens newest created first, by time rather than text, and the Created header turns it around.
+     * Interacts with: MatSort's default sort, the Created sort header.
+     * Data: MSELs created 2025-12-31 23:00, 2026-01-02 and 2026-01-01, named so that name order differs.
+     */
+    it('lists the most recently created MSEL first', async () => {
+      const { fixture } = await renderMselList({
+        msels: [
+          msel({ id: 'm-old', name: 'Alpha Oldest', dateCreated: '2025-12-31T23:00:00Z' as unknown as Date }),
+          msel({ id: 'm-new', name: 'Bravo Newest', dateCreated: '2026-01-02T00:00:00Z' as unknown as Date }),
+          msel({ id: 'm-mid', name: 'Charlie Middle', dateCreated: '2026-01-01T00:00:00Z' as unknown as Date }),
+        ],
+      });
+      const names = () =>
+        within(table())
+          .queryAllByRole('row')
+          .map((r) => r.textContent)
+          .map((t) => ['Bravo Newest', 'Charlie Middle', 'Alpha Oldest'].find((n) => t.includes(n)))
+          .filter((n) => n);
+
+      expect(names()).toEqual(['Bravo Newest', 'Charlie Middle', 'Alpha Oldest']);
+
+      await userEvent.setup().click(within(table()).getByText('Created'));
+      fixture.detectChanges();
+      expect(names()).toEqual(['Alpha Oldest', 'Charlie Middle', 'Bravo Newest']);
     });
   });
 });

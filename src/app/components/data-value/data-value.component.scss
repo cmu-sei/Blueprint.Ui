@@ -48,3 +48,7 @@
   border: 1px solid var(--mat-sys-outline);
   vertical-align: middle;
 }
+
+.invalid-value {
+  color: var(--mat-sys-error);
+}

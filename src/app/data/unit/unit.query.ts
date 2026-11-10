@@ -9,7 +9,7 @@ import {
   UnitStore,
 } from './unit.store';
 import { Unit } from 'src/app/generated/blueprint.api';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { PageEvent } from '@angular/material/paginator';
 import { Observable } from 'rxjs';
 
@@ -21,8 +21,14 @@ import { Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class UnitQuery extends QueryEntity<UnitState> {
-  constructor(protected store: UnitStore) {
+  protected store: UnitStore;
+
+  constructor() {
+    const store = inject(UnitStore);
+
     super(store);
+  
+    this.store = store;
   }
 
   selectById(id: string): Observable<Unit> {

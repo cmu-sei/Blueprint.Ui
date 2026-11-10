@@ -8,7 +8,7 @@ project root for license information.
   <div class="team-list-container elevate">
     <div class="team-list-header">
       <div class="header-icon-div center-self">
-        <mat-icon class="mdi-24px header-icon" fontIcon="mdi-account-multiple"></mat-icon>
+        <mat-icon class="mdi-24px header-icon" fontIcon="mdi-account-multiple" />
         MSEL Teams
       </div>
       <div class="search-div">
@@ -17,7 +17,7 @@ project root for license information.
             placeholder="Search" />
           @if (filterString) {
           <button mat-icon-button matSuffix (click)="clearFilter()" title="Clear Search">
-            <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline"></mat-icon>
+            <mat-icon style="transform: scale(0.85)" fontIcon="mdi-close-circle-outline" />
           </button>
           }
         </mat-form-field>
@@ -45,12 +45,12 @@ project root for license information.
           <div>
             <button mat-icon-button (click)="addTeamToCard(element)" title="Add {{ element.name }}"
               [disabled]="!canEditMsel()">
-              <mat-icon class="mdi-18px" fontIcon="mdi-plus-circle-outline" title="Add {{ element.name }}"></mat-icon>
+              <mat-icon class="mdi-18px" fontIcon="mdi-plus-circle-outline" title="Add {{ element.name }}" />
             </button>
           </div>
         </mat-cell>
       </ng-container>
-      <mat-row *matRowDef="let row; columns: mselTeamColumns"></mat-row>
+      <mat-row *matRowDef="let row; columns: mselTeamColumns" />
     </mat-table>
     }
     @if (teamDataSource.filteredData.length === 0) {
@@ -61,15 +61,14 @@ project root for license information.
   <div class="card-list-container elevate">
     @if (false) {
     <mat-card appearance="outlined" style="display: flex; justify-content: center; align-items: center;">
-      <mat-progress-spinner color="primary" mode="indeterminate">
-      </mat-progress-spinner>
+      <mat-progress-spinner color="primary" mode="indeterminate" />
     </mat-card>
     }
 
     <mat-table class="mat-table-card-teams" #table [dataSource]="cardTeamDataSource" matSort>
       <ng-container matColumnDef="name">
         <mat-header-cell *matHeaderCellDef>
-          <mat-icon class="mdi-24px header-icon" fontIcon="mdi-account-group"></mat-icon>
+          <mat-icon class="mdi-24px header-icon" fontIcon="mdi-account-group" />
           Card Teams
         </mat-header-cell>
         <mat-cell *matCellDef="let element">
@@ -81,7 +80,7 @@ project root for license information.
         <mat-header-cell *matHeaderCellDef>Is Shown</mat-header-cell>
         <mat-cell *matCellDef="let element">
           <mat-checkbox [checked]="element.isShownOnWall" (change)="setIsShownOnWall(element, $event.checked)"
-            [disabled]="!canEditMsel()"></mat-checkbox>
+            [disabled]="!canEditMsel()" />
         </mat-cell>
       </ng-container>
 
@@ -89,25 +88,25 @@ project root for license information.
         <mat-header-cell *matHeaderCellDef>Can Post</mat-header-cell>
         <mat-cell *matCellDef="let element">
           <mat-checkbox [checked]="element.canPostArticles" (change)="setCanPostArticles(element, $event.checked)"
-            [disabled]="!canEditMsel()"></mat-checkbox>
+            [disabled]="!canEditMsel()" />
         </mat-cell>
       </ng-container>
 
       <ng-container matColumnDef="id">
-        <mat-header-cell *matHeaderCellDef aria-label="Actions"></mat-header-cell>
+        <mat-header-cell *matHeaderCellDef aria-label="Actions" />
         <mat-cell *matCellDef="let element">
           <div>
             <button mat-icon-button (click)="removeTeamFromCard(element.id)" title="Remove {{ element.name }}"
               [disabled]="!canEditMsel()">
               <mat-icon class="mdi-18px" fontIcon="mdi-minus-circle-outline"
-                title="Remove {{ element.name }}"></mat-icon>
+                title="Remove {{ element.name }}" />
             </button>
           </div>
         </mat-cell>
       </ng-container>
 
-      <mat-header-row *matHeaderRowDef="cardTeamColumns"></mat-header-row>
-      <mat-row *matRowDef="let row; columns: cardTeamColumns"></mat-row>
+      <mat-header-row *matHeaderRowDef="cardTeamColumns" />
+      <mat-row *matRowDef="let row; columns: cardTeamColumns" />
     </mat-table>
 
   </div>

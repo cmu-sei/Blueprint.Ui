@@ -7,11 +7,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
   <table mat-table #injectTable [dataSource]="injectDataSource" matSort multiTemplateDataRows>
     <!-- action column -->
     <ng-container matColumnDef="action">
-      <mat-header-cell *matHeaderCellDef [ngClass]="isEditMode ? 'mat-column-action' : 'mat-column-select'">
+      <mat-header-cell *matHeaderCellDef [ngClass]="isEditMode() ? 'mat-column-action' : 'mat-column-select'">
         <!-- In Catalog -->
-        @if (canEdit && catalog.id) {
+        @if (canEdit() && catalog().id) {
         <button mat-icon-button [matMenuTriggerFor]="addMenu" style="outline: none;" title="Add Inject">
-          <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle"></mat-icon>
+          <mat-icon class="mdi-24px self-center" fontIcon="mdi-plus-circle" />
         </button>
         }
         <mat-menu #addMenu="matMenu" [overlapTrigger]="false">
@@ -31,33 +31,33 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </button>
         </mat-menu>
       </mat-header-cell>
-      <mat-cell *matCellDef="let element" [ngClass]="isEditMode ? 'mat-column-action' : 'mat-column-select'">
-        @if (isEditMode) {
+      <mat-cell *matCellDef="let element" [ngClass]="isEditMode() ? 'mat-column-action' : 'mat-column-select'">
+        @if (isEditMode()) {
         <div>
-          @if (canEdit) {
+          @if (canEdit()) {
           <button mat-icon-button class="msel-action" (click)="editInject(element)"
             title="Edit {{ element.name }} inject">
             <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline"
-              title="Edit {{ element.name }} inject"></mat-icon>
+              title="Edit {{ element.name }} inject" />
           </button>
           }
-          @if (canEdit) {
+          @if (canEdit()) {
           <button mat-icon-button (click)="copyInject(element)" title="Copy {{ element.name }}">
-            <mat-icon class="mdi-18px" fontIcon="mdi-content-copy" alt="Copy"></mat-icon>
+            <mat-icon class="mdi-18px" fontIcon="mdi-content-copy" alt="Copy" />
           </button>
           }
-          @if (canEdit) {
+          @if (canEdit()) {
           <button mat-icon-button class="msel-action" (click)="deleteInject(element)"
             title="Delete {{ element.name }} inject">
             <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline"
-              title="Delete {{ element.name }} inject"></mat-icon>
+              title="Delete {{ element.name }} inject" />
           </button>
           }
         </div>
         }
-        @if (!isEditMode) {
+        @if (!isEditMode()) {
         <div>
-          <mat-checkbox [checked]="isSelected(element.id)" (change)="select(element, $event)"></mat-checkbox><br />
+          <mat-checkbox [checked]="isSelected(element.id)" (change)="select(element, $event)" /><br />
         </div>
         }
       </mat-cell>
@@ -90,13 +90,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <app-data-value [(value)]="getDataValue(element, df).value" [dataField]="df" [canEdit]="false"
           [canApprove]="false" [isOwner]="false" [showValueOnly]="true" [organizationOptions]="[]" [teamOptions]="[]"
           [unitOptions]="unitList" [cardOptions]="[]" [moveOptions]="[]" [gallerySourceTypeOptions]="[]"
-          [galleryItemStatusOptions]="[]" [userOptions]="userList"></app-data-value>
+          [galleryItemStatusOptions]="[]" [userOptions]="userList" />
       </mat-cell>
     </ng-container>
     }
     <!-- row definitions -->
-    <mat-header-row *matHeaderRowDef="getDisplayedColumns()"></mat-header-row>
-    <mat-row *matRowDef="let row; columns: getDisplayedColumns();"></mat-row>
+    <mat-header-row *matHeaderRowDef="getDisplayedColumns()" />
+    <mat-row *matRowDef="let row; columns: getDisplayedColumns();" />
   </table>
   <!-- No Results Message -->
   @if (injectDataSource?.filteredData.length === 0) {

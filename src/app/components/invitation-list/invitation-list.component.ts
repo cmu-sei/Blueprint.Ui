@@ -1,19 +1,20 @@
 // Copyright 2022 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, Input, OnDestroy, ViewChild } from '@angular/core';
-import { MatTableDataSource } from '@angular/material/table';
+import { Component, OnDestroy, ViewChild, inject, input } from '@angular/core';
+import { MatTableDataSource, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import {
+  CiteService,
   Invitation,
   MselItemStatus,
   Team
 } from 'src/app/generated/blueprint.api';
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
-import { Sort } from '@angular/material/sort';
+import { Sort, MatSort, MatSortHeader } from '@angular/material/sort';
 import { InvitationDataService } from 'src/app/data/invitation/invitation-data.service';
 import { InvitationQuery } from 'src/app/data/invitation/invitation.query';
 import { TeamQuery } from 'src/app/data/team/team.query';
@@ -21,17 +22,34 @@ import { MatDialog } from '@angular/material/dialog';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
 import { InvitationEditDialogComponent } from '../invitation-edit-dialog/invitation-edit-dialog.component';
 import { v4 as uuidv4 } from 'uuid';
+import { MatIcon } from '@angular/material/icon';
+import { DatePipe } from '@angular/common';
+import { MatFormField, MatInput, MatSuffix } from '@angular/material/input';
+import { FormsModule } from '@angular/forms';
+import { MatIconButton } from '@angular/material/button';
+import { ClipboardModule } from 'ngx-clipboard';
+
+// The CITE team role someone joining through an invitation gets when it names none, as CITE does.
+export const DEFAULT_CITE_TEAM_ROLE = 'Member';
 
 @Component({
     selector: 'app-invitation-list',
     templateUrl: './invitation-list.component.html',
     styleUrls: ['./invitation-list.component.scss'],
-    standalone: false
+    imports: [MatIcon, MatFormField, MatInput, FormsModule, MatIconButton, MatSuffix, MatPaginator, MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, ClipboardModule, MatSortHeader, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, DatePipe]
 })
 export class InvitationListComponent implements OnDestroy {
-  @Input() loggedInUserId: string;
-  @Input() canEditMsel: boolean;
-  @Input() hideSearch: boolean;
+  private mselQuery = inject(MselQuery);
+  private invitationDataService = inject(InvitationDataService);
+  private invitationQuery = inject(InvitationQuery);
+  private teamQuery = inject(TeamQuery);
+  private citeService = inject(CiteService);
+  dialog = inject(MatDialog);
+  dialogService = inject(CrucibleDialogService);
+
+  readonly loggedInUserId = input<string>(undefined);
+  readonly canEditMsel = input<boolean>(undefined);
+  readonly hideSearch = input<boolean>(undefined);
   @ViewChild(MatPaginator) set matPaginator(paginator: MatPaginator) {
     this.invitationDataSource.paginator = paginator;
   }
@@ -42,16 +60,11 @@ export class InvitationListComponent implements OnDestroy {
   invitationDataSource = new MatTableDataSource<Invitation>(new Array<Invitation>());
   displayedColumns: string[] = ['action', 'teamId', 'emailDomain', 'expirationDateTime', 'usesAllowed', 'usesRemaining'];
   teamList: Team[] = [];
+  // CITE's team roles, by name, for the role a joiner gets; loaded once the MSEL is known to use CITE
+  citeTeamRoles: string[] = [];
   private unsubscribe$ = new Subject();
 
-  constructor(
-    private mselQuery: MselQuery,
-    private invitationDataService: InvitationDataService,
-    private invitationQuery: InvitationQuery,
-    private teamQuery: TeamQuery,
-    public dialog: MatDialog,
-    public dialogService: CrucibleDialogService
-  ) {
+  constructor() {
     // subscribe to invitations
     this.invitationQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(invitations => {
       this.invitationList = invitations;
@@ -62,6 +75,11 @@ export class InvitationListComponent implements OnDestroy {
       if (msel && this.msel.id !== msel.id) {
         Object.assign(this.msel, msel);
         this.applyFilter(this.filterString);
+      }
+      if (msel?.useCite && this.citeTeamRoles.length === 0) {
+        this.citeService.getTeamRoles().pipe(takeUntil(this.unsubscribe$)).subscribe(roles => {
+          this.citeTeamRoles = roles.map(r => r.name).filter(n => !!n);
+        });
       }
     });
     // subscribe to the MSEL teams
@@ -80,11 +98,16 @@ export class InvitationListComponent implements OnDestroy {
         maxUsersAllowed: 1,
         userCount: 0,
         isTeamLeader: false,
+        citeTeamRole: this.msel.useCite ? DEFAULT_CITE_TEAM_ROLE : null,
         wasDeactivated: false
       };
     } else {
-      // edit a copy, because the stored invitation is read-only
-      invitation = { ...invitation };
+      // edit a copy, because the stored invitation is read-only. With CITE, an invitation with no
+      // role gives Member, so that is what it shows.
+      invitation = {
+        ...invitation,
+        citeTeamRole: invitation.citeTeamRole || (this.msel.useCite ? DEFAULT_CITE_TEAM_ROLE : null),
+      };
     }
     const dialogRef = this.dialog.open(InvitationEditDialogComponent, {
       minWidth: '400px',
@@ -92,7 +115,12 @@ export class InvitationListComponent implements OnDestroy {
       width: 'auto',
       data: {
         invitation: invitation,
-        teamList: this.teamList
+        teamList: this.teamList,
+        useCite: this.msel.useCite,
+        // the invitation's own role is offered even before CITE's list arrives, or if CITE lacks it
+        citeTeamRoles: !invitation.citeTeamRole || this.citeTeamRoles.includes(invitation.citeTeamRole)
+          ? this.citeTeamRoles
+          : [invitation.citeTeamRole, ...this.citeTeamRoles],
       },
     });
     dialogRef.componentInstance.editComplete.subscribe((result) => {
