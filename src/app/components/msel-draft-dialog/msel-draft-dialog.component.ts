@@ -309,11 +309,12 @@ export class MselDraftDialogComponent {
     this.result.draft.objectives = [...(this.result.draft.objectives ?? []), { id, task: '', condition: '', standard: '', competencies: [] }];
   }
 
-  // a new move starts half an hour after the last, a day later on the scenario clock, with as many injects as an average move
+  // a new move starts half an hour after the last, a day later on the scenario clock, with as many injects as an average move;
+  // the API writes numbers as strings, so they are read as numbers before adding
   addMove() {
     const moves = this.result.draft.moves ?? [];
     const last = moves[moves.length - 1];
-    const planned = moves.map((m) => m.plannedInjects ?? 0).filter((n) => n > 0);
+    const planned = moves.map((m) => Number(m.plannedInjects ?? 0)).filter((n) => n > 0);
     const situationTime = last?.situationTime ? new Date(new Date(last.situationTime).getTime() + 24 * 3600 * 1000).toISOString() : undefined;
     this.result.draft.moves = [
       ...moves,
@@ -321,7 +322,7 @@ export class MselDraftDialogComponent {
         moveNumber: Math.max(-1, ...moves.map((m) => m.moveNumber ?? 0)) + 1,
         description: '',
         purpose: '',
-        startMinutes: (last?.startMinutes ?? -30) + 30,
+        startMinutes: Number(last?.startMinutes ?? -30) + 30,
         situationTime,
         plannedInjects: planned.length ? Math.round(planned.reduce((a, b) => a + b, 0) / planned.length) : 8,
         expectedDecisions: [],

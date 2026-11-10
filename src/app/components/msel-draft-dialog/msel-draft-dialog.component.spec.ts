@@ -484,6 +484,31 @@ describe('MselDraftDialogComponent', () => {
   });
 
   /**
+   * Verifies: a move added after a design from the API starts half an hour after the last and plans an average move's injects,
+   * though the API writes those numbers as strings.
+   * Interacts with: the Add move button on the Moves tab, MselBuildService.createMselFromDesign.
+   * Data: moves starting at "0" and "60" with "12" and "10" planned injects, as the API sends them.
+   */
+  it('adds a move after the last when the API sends its numbers as strings', async () => {
+    const result = designResult();
+    const asApi = (n: number) => String(n) as unknown as number;
+    result.draft.moves = [
+      { ...result.draft.moves[0], startMinutes: asApi(0), plannedInjects: asApi(12) },
+      { ...result.draft.moves[1], startMinutes: asApi(60), plannedInjects: asApi(10) },
+    ];
+    const { createMselFromDesign } = await renderDraftDialog(() => of(result), [{ id: 'tpl-1', name: 'Template' }]);
+    const user = userEvent.setup();
+    await user.type(screen.getByRole('textbox', { name: 'Exercise description' }), 'A grid attack.');
+    await user.click(screen.getByRole('button', { name: 'Draft' }));
+    await user.click(screen.getByRole('tab', { name: /^Moves/ }));
+    await user.click(screen.getByRole('button', { name: 'Add move' }));
+    await user.click(screen.getByRole('button', { name: 'Create MSEL' }));
+
+    const draft = (createMselFromDesign.mock.calls[0] as unknown as [{ draft: MselDraftResult['draft'] }])[0].draft;
+    expect(draft.moves[2]).toMatchObject({ moveNumber: 2, startMinutes: 90, plannedInjects: 11 });
+  });
+
+  /**
    * Verifies: a team's competencies are labelled, and one of the chosen frameworks' competencies can be added as well as removed;
    * the MSEL's competencies follow.
    * Interacts with: CompetencyFrameworkService.getCompetencyFramework (stub), the Teams and organizations tab, MselBuildService.createMselFromDesign.
