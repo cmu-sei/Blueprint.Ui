@@ -521,6 +521,35 @@ describe('ScenarioEventDataService', () => {
     });
 
     /**
+     * Verifies: every event at a start time two moves share is in the higher-numbered move, and an event past a
+     * move with no events is in its own move. Advancing one move per event put the first such event a move early.
+     * Interacts with: ScenarioEventDataService.getMoveAndGroupNumbers.
+     * Data: Move 0 and Move 1 both at 0, an empty Move 2 at 100, Move 3 at 200; events at 0, 0, 60 and 250.
+     */
+    it('getMoveAndGroupNumbers puts events at a shared start time in the higher-numbered move', () => {
+      const { service } = setup();
+      const events = [
+        event({ id: 'a', deltaSeconds: 0 }),
+        event({ id: 'b', deltaSeconds: 0 }),
+        event({ id: 'c', deltaSeconds: 60 }),
+        event({ id: 'd', deltaSeconds: 250 }),
+      ];
+      const moves = [
+        { id: 'm0', moveNumber: 0, deltaSeconds: 0 },
+        { id: 'm1', moveNumber: 1, deltaSeconds: 0 },
+        { id: 'm2', moveNumber: 2, deltaSeconds: 100 },
+        { id: 'm3', moveNumber: 3, deltaSeconds: 200 },
+      ];
+
+      const numbers = service.getMoveAndGroupNumbers(events, moves);
+
+      expect(numbers['a']).toEqual([1, 0]);
+      expect(numbers['b']).toEqual([1, 0]);
+      expect(numbers['c']).toEqual([1, 1]);
+      expect(numbers['d']).toEqual([3, 0]);
+    });
+
+    /**
      * Verifies: without moves every event gets move -1, and an empty event list yields no numbers.
      * Interacts with: ScenarioEventDataService.getMoveAndGroupNumbers.
      * Data: two events and no moves; then no events.
