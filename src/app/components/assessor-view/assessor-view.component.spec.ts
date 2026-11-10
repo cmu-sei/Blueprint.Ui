@@ -722,6 +722,51 @@ describe('AssessorViewComponent', () => {
       ]);
       expect(section('No team').querySelector('.not-assessed')).toBeNull();
     });
+
+    /**
+     * Verifies: when the MSEL starts hiding names while the report's statements are being read, the read is dropped,
+     * every statement is read again, and the report still prints, from the masked statements, with no Assessors line.
+     * Interacts with: printReport, MselStore update (as a MselUpdated broadcast does), restartStatementsIfStale,
+     * HttpClient GET api/xapi/statements (HttpTestingController), printDocument (spy).
+     * Data: the report exercise; Print Assessment Report is clicked, the MSEL hides names, the first read answers with
+     * J. Doe's ratings, and the second with the same ratings without the actor's name.
+     */
+    it('still prints when names are hidden during its read', async () => {
+      vi.stubEnv('TZ', 'America/New_York');
+      const { fixture } = await renderAssessorView({
+        msel: REPORT_MSEL,
+        moves: REPORT_MOVES,
+        fields: REPORT_FIELDS,
+        events: REPORT_EVENTS,
+        values: REPORT_VALUES,
+        mselCompetencies: REPORT_COMPETENCIES,
+        proficiencyLevels: LEVELS,
+      });
+      const printDocument = vi
+        .spyOn(fixture.componentInstance as unknown as { printDocument(): void }, 'printDocument')
+        .mockImplementation(() => undefined);
+      const http = TestBed.inject(HttpTestingController);
+      const isRead = (req: { url: string; params: { get(name: string): string | null } }) =>
+        req.url === '/api/xapi/statements' && req.params.get('mselId') === 'msel-1';
+
+      await userEvent.click(screen.getByRole('button', { name: 'Print Assessment Report' }));
+      const first = http.expectOne(isRead);
+      TestBed.inject(MselStore).update('msel-1', { hideNamesOnAssessorView: true });
+      fixture.detectChanges();
+      first.flush({ statements: STATEMENTS });
+      http.expectOne(isRead).flush({ statements: STATEMENTS.map((stmt) => ({ ...stmt, actor: { objectType: 'Agent' } })) });
+      fixture.detectChanges();
+      await vi.waitFor(() => expect(printDocument).toHaveBeenCalledTimes(1));
+      fixture.detectChanges();
+
+      const facts = section('Cover').querySelector('.cover-facts');
+      expect(texts(facts, 'dt')).not.toContain('Assessors');
+      expect(tableRows(section('Blue Team').querySelector('table')).map((row) => row.slice(1))).toEqual([
+        ['Unusual logins', 'T-1 Expert Isolated both hosts'],
+        ['Move 2 (whole move)', 'K-2 Proficient'],
+        ['Ransom note', 'K-2 Novice'],
+      ]);
+    });
   });
 
   describe('statement grouping', () => {
