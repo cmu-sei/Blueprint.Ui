@@ -4,6 +4,7 @@
  project root for license information.
 */
 /**
+/**
  * Blueprint API
  *
  * 
@@ -20,7 +21,7 @@
 export interface CasterTeamVariable { 
     name?: string | null;
     /**
-     * The template gives the variable no default, so terraform fails the plan unless a team is mapped to it.
+     * The template gives the variable no default, so terraform fails the plan unless a team is mapped to it or Caster supplies it.
      */
     required?: boolean;
 }

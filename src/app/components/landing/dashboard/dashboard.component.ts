@@ -144,6 +144,11 @@ export class DashboardComponent implements OnDestroy, OnInit {
   loadFailed = false;
   canCreateMsels = false;
   hasAssessorRole = false;
+
+  // the user has events to build, or may create one
+  get canBuild(): boolean {
+    return this.buildMselList.length > 0 || this.canCreateMsels;
+  }
   isSystemAdmin = false;
   capabilityCards = CAPABILITY_CARDS;
   private unsubscribe$ = new Subject();

@@ -14,6 +14,7 @@ export class UIState {
   navCollapsed: boolean;
   useRealTime: boolean;
   visibleDataFieldColumns: string[] = [];
+  statementGrouping: string;
 }
 
 @Injectable({
@@ -124,6 +125,18 @@ export class UIDataService {
     return this.uiState.visibleDataFieldColumns ?? [];
   }
   // end data field display columns section
+
+  //
+  // Assessor View xAPI statement grouping section
+  getStatementGrouping(): string {
+    return this.uiState.statementGrouping;
+  }
+
+  setStatementGrouping(value: string) {
+    this.uiState.statementGrouping = value;
+    this.saveChanges();
+  }
+  // end statement grouping section
 
   saveChanges() {
     localStorage.setItem('uiState', JSON.stringify(this.uiState));
