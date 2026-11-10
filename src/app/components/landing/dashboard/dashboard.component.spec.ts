@@ -159,15 +159,41 @@ describe('DashboardComponent', () => {
   });
 
   /**
-   * Verifies: without CreateMsels and no MSELs there is no BUILD card, and the NO ACCESS card shows.
+   * Verifies: without CreateMsels and no MSELs the BUILD card still shows, greyed out with the reason, and opens nothing;
+   * the NO ACCESS card shows too, since the user can do nothing.
    * Interacts with: real PermissionDataService (stubbed grants), DashboardComponent template.
    * Data: no MSELs; every permission but CreateMsels (near miss).
    */
-  it('hides BUILD without CreateMsels or an MSEL', async () => {
+  it('greys out BUILD without CreateMsels or an MSEL', async () => {
+    await renderDashboard({ permissions: ALL_BUT_CREATE_MSELS });
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    const user = userEvent.setup();
+    const build = card('BUILD') as HTMLElement;
+
+    expect(build).toHaveClass('disabled-card');
+    expect(build).toHaveAttribute('aria-disabled', 'true');
+    expect(within(build).getByText('You have no events to build, and no permission to create one')).toBeInTheDocument();
+    expect(within(build).getByRole('button', { name: /Manage Events/ })).toBeDisabled();
+    await user.click(build);
+    expect(navigate).not.toHaveBeenCalled();
+    expect(screen.getByText('NO ACCESS')).toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: a participant who assesses nothing still sees JOIN, BUILD and ASSESS, the ASSESS card greyed out saying
+   * they are no assessor, so the page keeps its three cards.
+   * Interacts with: DashboardComponent template, canAssess.
+   * Data: no MSELs to build or assess; every permission but CreateMsels.
+   */
+  it('shows JOIN, BUILD and ASSESS to a participant, greying out what they cannot use', async () => {
     await renderDashboard({ permissions: ALL_BUT_CREATE_MSELS });
 
-    expect(card('BUILD')).not.toBeInTheDocument();
-    expect(screen.getByText('NO ACCESS')).toBeInTheDocument();
+    for (const title of ['JOIN', 'BUILD', 'ASSESS']) {
+      expect(card(title)).toBeInTheDocument();
+    }
+    const assess = card('ASSESS') as HTMLElement;
+    expect(assess).toHaveClass('disabled-card');
+    expect(within(assess).getByText('You are not an assessor on any event')).toBeInTheDocument();
   });
 
   // crucible-common remembers loaded images, so each test uses its own URL.

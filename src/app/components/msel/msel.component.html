@@ -97,7 +97,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
   <mat-drawer-content class="content-frame">
     <div class="main-content">
       @if (selectedTab === 'Info') {
-      <app-msel-info [loggedInUserId]="loggedInUserId()" (deleteThisMsel)="deleteMsel($event)" />
+      <app-msel-info [loggedInUserId]="loggedInUserId()" (deleteThisMsel)="deleteMsel($event)"
+        (openTab)="tabChange($event)" />
       }
       @if (selectedTab === 'Contributors') {
       <app-msel-contributors [loggedInUserId]="loggedInUserId()" />
@@ -122,10 +123,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
       @if (selectedTab === 'Gallery Cards') {
       <app-card-list [loggedInUserId]="loggedInUserId()" [canEdit]="canEditMsel()" [showTemplates]="false" />
       }
-      @if (selectedTab === 'CITE Actions') {
+      @if (selectedTab === 'Scoring Model') {
+      <app-msel-scoring-model-tab [loggedInUserId]="loggedInUserId()" />
+      }
+      @if (selectedTab === 'Actions') {
       <app-cite-action-list [loggedInUserId]="loggedInUserId()" [canEdit]="canEditMsel()" />
       }
-      @if (selectedTab === 'CITE Duties') {
+      @if (selectedTab === 'Duties') {
       <app-cite-duty-list [loggedInUserId]="loggedInUserId()" [canEdit]="canEditMsel()" />
       }
       @if (selectedTab === 'Competencies') {
