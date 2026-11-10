@@ -1274,7 +1274,7 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
     this.http.get<any>(`${baseUrl}api/xapi/statements`, { params: { mselId: this.msel.id } })
       .subscribe({
         next: (response) => {
-          if (this.restartStatementsIfStale()) return;
+          if (this.restartStatementsIfStale(onDone)) return;
           const statements = response?.statements || response || [];
           this.allMselStatements = Array.isArray(statements) ? statements : [];
           this.allMselStatements.sort((a, b) =>
@@ -1290,7 +1290,7 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
           onDone?.();
         },
         error: () => {
-          if (this.restartStatementsIfStale()) return;
+          if (this.restartStatementsIfStale(onDone)) return;
           this.allMselStatements = [];
           this.statementsLoaded = true;
           this.statementsFailed = true;
@@ -1315,13 +1315,16 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
     }
   }
 
-  /** When a read was under way as names were hidden or shown, drops its answer and reads again. */
-  private restartStatementsIfStale(): boolean {
+  /**
+   * When a read was under way as names were hidden or shown, drops its answer and reads again. onDone (a print
+   * waiting on the read) carries over to the new read.
+   */
+  private restartStatementsIfStale(onDone?: () => void): boolean {
     if (!this.statementsStale) return false;
     this.statementsStale = false;
     this.statementsLoading = false;
     this.statementsLoaded = false;
-    this.loadAllStatements();
+    this.loadAllStatements(onDone);
     return true;
   }
 
@@ -1568,7 +1571,7 @@ export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventV
       teamId: stmt.context?.team?.account?.name || '',
       scoreRaw: stmt.result?.score?.raw ?? null,
       comment: stmt.result?.response || '',
-      assessor: stmt.actor?.name || stmt.actor?.account?.name || '',
+      assessor: agentName(stmt.actor),
       timestamp: stmt.timestamp || '',
     };
   }
