@@ -45,7 +45,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <mat-form-field>
         <mat-label>Format</mat-label>
         <mat-select [(ngModel)]="design.format" [disabled]="isDrafting">
-          <mat-option [value]="null">Let the draft decide</mat-option>
+          <mat-option value="Auto">Let the draft decide</mat-option>
           <mat-option value="Discussion">Discussion (tabletop)</mat-option>
           <mat-option value="Functional">Functional (hands-on in the range)</mat-option>
           <mat-option value="Hybrid">Hybrid</mat-option>
@@ -71,7 +71,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <mat-form-field>
         <mat-label>Gallery cards</mat-label>
         <mat-select [(ngModel)]="design.cardGrouping" [disabled]="isDrafting">
-          <mat-option [value]="null">Let the draft decide</mat-option>
+          <mat-option value="Auto">Let the draft decide</mat-option>
           <mat-option value="Sources">By source or thread</mat-option>
           <mat-option value="Organizations">By organization</mat-option>
           <mat-option value="Sectors">By critical infrastructure sector</mat-option>

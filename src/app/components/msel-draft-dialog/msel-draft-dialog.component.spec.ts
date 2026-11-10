@@ -291,6 +291,22 @@ describe('MselDraftDialogComponent', () => {
   });
 
   /**
+   * Verifies: each choice left to the draft shows its default when the dialog opens, as CITE assessment does: Format and
+   * Gallery cards read "Let the draft decide", not blank.
+   * Interacts with: the Format, Gallery cards and CITE assessment selects.
+   * Data: a template with Gallery and CITE.
+   */
+  it('shows the default of every design choice', async () => {
+    await renderDraftDialog(undefined, [{ id: 'tpl-1', name: 'Template', useCite: true, useGallery: true }]);
+
+    await userEvent.setup().click(screen.getByText('Design choices (optional)'));
+
+    expect(screen.getByRole('combobox', { name: 'Format' })).toHaveTextContent('Let the draft decide');
+    expect(screen.getByRole('combobox', { name: 'Gallery cards' })).toHaveTextContent('Let the draft decide');
+    expect(screen.getByRole('combobox', { name: 'CITE assessment' })).toHaveTextContent('Let the model choose');
+  });
+
+  /**
    * Verifies: without CITE on the template there is no CITE assessment to choose.
    * Interacts with: the Design choices section.
    * Data: a template without CITE.

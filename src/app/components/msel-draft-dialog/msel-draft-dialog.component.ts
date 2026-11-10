@@ -46,6 +46,9 @@ export interface MselDraftDialogData {
 
 // The dialog drafts the design and saves nothing until Create MSEL, which creates the MSEL from the reviewed design
 // and starts writing its injects, articles and profiles into it. The dialog closes with the new MSEL's id.
+// the value of a design choice's "Let the draft decide" option
+export const LEFT_TO_DRAFT = 'Auto';
+
 @Component({
   selector: 'app-msel-draft-dialog',
   templateUrl: './msel-draft-dialog.component.html',
@@ -91,7 +94,9 @@ export class MselDraftDialogComponent {
   competencyFrameworkIds: string[] = [];
   competencyFrameworks: CompetencyFramework[] = [];
   // the design questions the author-ttx workflow asks; all optional
-  design: MselDraftDesign = { citeAssessment: 'Auto', profilePages: true };
+  // "Let the draft decide" is a value of its own: a select treats a null option as a reset and shows nothing chosen;
+  // it goes to the API as no choice
+  design: MselDraftDesign = { citeAssessment: 'Auto', format: LEFT_TO_DRAFT, cardGrouping: LEFT_TO_DRAFT, profilePages: true };
   // the chosen frameworks' competencies, offered to the teams on review
   frameworkCompetencies: MselDraftCompetency[] = [];
   isDrafting = false;
@@ -216,7 +221,11 @@ export class MselDraftDialogComponent {
         templateMselId: this.templateMselId,
         prompt: this.prompt,
         competencyFrameworkIds: this.competencyFrameworkIds,
-        design: this.design,
+        design: {
+          ...this.design,
+          format: this.design.format === LEFT_TO_DRAFT ? undefined : this.design.format,
+          cardGrouping: this.design.cardGrouping === LEFT_TO_DRAFT ? undefined : this.design.cardGrouping,
+        },
       })
       .pipe(take(1))
       .subscribe({
