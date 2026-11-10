@@ -14,7 +14,8 @@ import { screen, within } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { of, Subject } from 'rxjs';
 import { Theme } from '@cmusei/crucible-common';
-import { Msel, MselUnit } from 'src/app/generated/blueprint.api';
+import { Msel, MselPage, MselPageService, MselUnit } from 'src/app/generated/blueprint.api';
+import { MselPageQuery } from 'src/app/data/msel-page/msel-page.query';
 import { MselUnitStore } from 'src/app/data/msel-unit/msel-unit.store';
 import { XApiService } from 'src/app/services/xapi/xapi.service';
 import { MselComponent } from './msel.component';
@@ -165,6 +166,8 @@ async function renderMsel(
   const { route, setQueryParams } = activatedRouteStub({ msel: 'msel-1' });
   const finished$ = new Subject<string>();
   const created$ = new Subject<{ requestedId: string; mselId: string }>();
+  const mselPages: MselPage[] = [{ id: 'page-1', mselId: 'msel-1', name: 'Read-In' }];
+  const mselPageApi = { getMselPages: vi.fn(() => of(structuredClone(mselPages))) };
   const rendered = await renderComponent(MselComponent, {
     imports: [MatButtonModule, MatIconModule, MatListModule, MatSidenavModule],
     childStubs: [
@@ -193,10 +196,11 @@ async function renderMsel(
       { provide: XApiService, useValue: xApi },
       { provide: ActivatedRoute, useValue: route },
       { provide: MselAiBuildService, useValue: { finished$, created$, isCreating: () => creating } },
+      { provide: MselPageService, useValue: mselPageApi },
     ],
     inputs: { canEditMsel, canAccessAdminSection, canEditCheckboxes, loggedInUserId: 'user-me', userTheme$: of(Theme.LIGHT) },
   });
-  return { ...rendered, apis, xApi, setQueryParams, finished$, created$ };
+  return { ...rendered, apis, xApi, setQueryParams, finished$, created$, mselPageApi };
 }
 
 const nav = () => within(document.querySelector('mat-drawer mat-list') as HTMLElement);
@@ -242,12 +246,13 @@ describe('MselComponent', () => {
   });
 
   /**
-   * Verifies: the AI draft banner gets the MSEL and its build stage, and a build that finishes loads the MSEL again; another MSEL's does not.
+   * Verifies: the AI draft banner gets the MSEL and its build stage, and a build that finishes loads the MSEL and the pages it
+   * added again; another MSEL's does not.
    * Interacts with: MselAiBuildService.finished$ (stub), the MSEL endpoints (stubs).
    * Data: msel-1 at the Articles stage; builds of msel-2, then msel-1, finish.
    */
   it('shows the AI draft banner and reloads when the build finishes', async () => {
-    const { fixture, apis, finished$ } = await renderMsel({ canEditMsel: true, msel: { ...MSEL, aiDraftStage: 'Articles' } });
+    const { fixture, apis, finished$, mselPageApi } = await renderMsel({ canEditMsel: true, msel: { ...MSEL, aiDraftStage: 'Articles' } });
     const banner = child(fixture, MselAiBuildStub);
 
     expect(banner?.mselId()).toBe('msel-1');
@@ -256,9 +261,12 @@ describe('MselComponent', () => {
 
     finished$.next('msel-2');
     expect(apis.msel.getMsel).toHaveBeenCalledTimes(1);
+    expect(mselPageApi.getMselPages).not.toHaveBeenCalled();
     finished$.next('msel-1');
     expect(apis.msel.getMsel).toHaveBeenCalledTimes(2);
     expect(apis.scenarioEvent.getScenarioEventsByMsel).toHaveBeenCalledTimes(2);
+    expect(mselPageApi.getMselPages).toHaveBeenCalledWith('msel-1');
+    expect(TestBed.inject(MselPageQuery).getAll().map((p) => p.name)).toEqual(['Read-In']);
   });
 
   /**

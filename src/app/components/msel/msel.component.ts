@@ -11,7 +11,7 @@ import {
   Theme,
   ComnAuthQuery
 } from '@cmusei/crucible-common';
-import { CatalogUnit, Msel } from 'src/app/generated/blueprint.api';
+import { Msel } from 'src/app/generated/blueprint.api';
 import { CardDataService } from 'src/app/data/card/card-data.service';
 import { CardTeamDataService } from 'src/app/data/team/card-team-data.service';
 import { CatalogDataService } from 'src/app/data/catalog/catalog-data.service';
@@ -25,6 +25,7 @@ import { InvitationDataService } from 'src/app/data/invitation/invitation-data.s
 import { MoveDataService } from 'src/app/data/move/move-data.service';
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
+import { MselPageDataService } from 'src/app/data/msel-page/msel-page-data.service';
 import { MatTabGroup, MatTab } from '@angular/material/tabs';
 import { MselUnitDataService } from 'src/app/data/msel-unit/msel-unit-data.service';
 import { MselUnitQuery } from 'src/app/data/msel-unit/msel-unit.query';
@@ -84,6 +85,7 @@ export class MselComponent implements OnDestroy {
   private invitationDataService = inject(InvitationDataService);
   private moveDataService = inject(MoveDataService);
   private mselDataService = inject(MselDataService);
+  private mselPageDataService = inject(MselPageDataService);
   private mselUnitDataService = inject(MselUnitDataService);
   private mselQuery = inject(MselQuery);
   private mselUnitQuery = inject(MselUnitQuery);
@@ -201,6 +203,8 @@ export class MselComponent implements OnDestroy {
       .subscribe((mselId) => {
         if (mselId === this.selectedMselId) {
           this.loadMsel(mselId);
+          // the Info tab loads pages only when the MSEL changes, so the finish's pages are loaded here
+          this.mselPageDataService.loadByMsel(mselId);
         }
       });
     // subscribe to the active MSEL
