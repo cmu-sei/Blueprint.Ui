@@ -15,9 +15,10 @@
  */
 
 
-export const SerializationFormat = {
-    Xml: 'Xml',
-    Binary: 'Binary'
-} as const;
-export type SerializationFormat = typeof SerializationFormat[keyof typeof SerializationFormat];
+/**
+ * The CITE scoring model a MSEL links, or none.
+ */
+export interface MselScoringModelLink { 
+    citeScoringModelId?: string | null;
+}
 

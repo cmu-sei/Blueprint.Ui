@@ -15,6 +15,9 @@
  */
 
 
+/**
+ * The starting points a MSEL\'s own scoring model can be created from.
+ */
 export const ScoringModelPreset = {
     QuestionsByMove: 'QuestionsByMove',
     MissionImpact: 'MissionImpact',

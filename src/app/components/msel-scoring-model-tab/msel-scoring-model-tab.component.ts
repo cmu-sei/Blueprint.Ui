@@ -10,6 +10,7 @@ import { MatFormField, MatLabel } from '@angular/material/input';
 import { MatRadioButton, MatRadioGroup } from '@angular/material/radio';
 import { MatOption, MatSelect } from '@angular/material/select';
 import { MatTooltip } from '@angular/material/tooltip';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Observable, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
@@ -24,16 +25,17 @@ import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
 import { ErrorService } from 'src/app/services/error/error.service';
-import { integrationsLocked } from 'src/app/utilities/msel-permissions';
+import { showCiteAccessDenied } from 'src/app/utilities/cite-access';
+import { canEditScoringModel, integrationsLocked } from 'src/app/utilities/msel-permissions';
 import { normalizeScoringModel } from 'src/app/utilities/scoring-model';
 import { MselScoringModelComponent } from '../msel-scoring-model/msel-scoring-model.component';
 
 export type ScoringModelSource = 'link' | 'author';
 
 /**
- * The Scoring Model tab of a MSEL that uses CITE: link one of CITE's scoring models, saved on the MSEL, or author
- * one in Blueprint, saved through its own endpoint. The push builds the CITE evaluation from whichever it has, and
- * both are locked while the integrations are deployed.
+ * The Scoring Model tab of a MSEL that uses CITE: link one of CITE's scoring models or author one in Blueprint, each
+ * saved through its own endpoint. The push builds the CITE evaluation from whichever it has, and both are locked while
+ * the integrations are deployed.
  */
 @Component({
   selector: 'app-msel-scoring-model-tab',
@@ -56,7 +58,7 @@ export class MselScoringModelTabComponent implements OnInit, OnDestroy {
 
   msel = new MselPlus();
   private originalMsel = new MselPlus();
-  // the link is saved with the MSEL, like the Config tab's settings
+  // the link chosen and not yet saved
   isChanged = false;
   scoringModelList: ScoringModel[] = [];
   // the model authored in Blueprint is saved as soon as it changes
@@ -112,28 +114,14 @@ export class MselScoringModelTabComponent implements OnInit, OnDestroy {
       });
   }
 
-  // the link follows the API's rule for the MSEL's settings: EditMsels or the Editor role
-  canEditMsel(): boolean {
-    return this.permissionDataService.hasPermission(SystemPermission.EditMsels) ||
-      this.msel.hasRole(this.loggedInUserId(), '').editor;
-  }
-
-  // the authored model follows the API's rule for the MSEL's scoring model link: EditMsels or the owner
-  canAuthorScoringModel(): boolean {
-    return this.permissionDataService.hasPermission(SystemPermission.EditMsels) ||
-      this.msel.hasRole(this.loggedInUserId(), '').owner;
-  }
-
   integrationsLocked(): boolean {
     return integrationsLocked(this.msel);
   }
 
-  canAuthor(): boolean {
-    return !this.integrationsLocked() && this.canAuthorScoringModel();
-  }
-
-  canLink(): boolean {
-    return !this.integrationsLocked() && this.canEditMsel();
+  // linking and authoring follow the same API rule, and the same lock
+  canEdit(): boolean {
+    return !this.integrationsLocked() &&
+      canEditScoringModel(this.msel, this.loggedInUserId(), this.permissionDataService.hasPermission(SystemPermission.EditMsels));
   }
 
   linkedScoringModelName(): string {
@@ -141,6 +129,10 @@ export class MselScoringModelTabComponent implements OnInit, OnDestroy {
   }
 
   onSourceChange(source: ScoringModelSource) {
+    if (source === 'author') {
+      // authoring replaces the link, so a link chosen and not saved is dropped, not left pending where it cannot be saved
+      this.cancelChanges();
+    }
     if (source !== 'link' || !this.authoredScoringModel) {
       this.source = source;
       return;
@@ -182,11 +174,21 @@ export class MselScoringModelTabComponent implements OnInit, OnDestroy {
   }
 
   saveChanges() {
-    this.mselDataService.updateMsel(this.msel).subscribe({
-      next: () => (this.isChanged = false),
-      // MselDataService reports the failure; the edit stays up to be retried
-      error: () => {},
-    });
+    this.mselScoringModelService
+      .linkMselScoringModel(this.msel.id, { citeScoringModelId: this.msel.citeScoringModelId || null })
+      .subscribe({
+        next: (msel) => {
+          this.isChanged = false;
+          this.mselDataService.setAsDates(msel);
+          this.mselDataService.updateStore(msel);
+        },
+        // the edit stays up to be retried
+        error: (err: HttpErrorResponse) => {
+          if (!showCiteAccessDenied(this.dialogService, err)) {
+            this.errorService.handleError(err);
+          }
+        },
+      });
   }
 
   cancelChanges() {
@@ -195,7 +197,7 @@ export class MselScoringModelTabComponent implements OnInit, OnDestroy {
   }
 
   hasPendingChanges(): boolean {
-    return this.isChanged || !!this.authored()?.isDirty();
+    return (this.source === 'link' && this.isChanged) || !!this.authored()?.isDirty();
   }
 
   ngOnDestroy() {

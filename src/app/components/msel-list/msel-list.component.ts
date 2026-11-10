@@ -458,9 +458,11 @@ export class MselListComponent implements OnDestroy, OnInit {
     return this.permissionDataService.hasPermission(SystemPermission.CreateMsels);
   }
 
+  // whether the MSEL opens on the build page: any role on it (Viewer and up) opens it, read-only
+  // unless canEditMsel; editing stays gated there and in the MSEL's own components
   canViewMsel(msel: MselPlus): boolean {
     return this.permissionDataService.hasPermission(SystemPermission.ViewMsels) ||
-      msel?.hasRole(this.loggedInUserId(), '').editor ||
+      msel?.hasRole(this.loggedInUserId(), '').viewer ||
       (msel?.isTemplate && this.permissionDataService.hasPermission(SystemPermission.CreateMsels));
   }
 

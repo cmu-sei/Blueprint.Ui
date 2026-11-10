@@ -15,11 +15,13 @@
  */
 
 
-export const CalendarAlgorithmType = {
-    Unknown: 'Unknown',
-    SolarCalendar: 'SolarCalendar',
-    LunarCalendar: 'LunarCalendar',
-    LunisolarCalendar: 'LunisolarCalendar'
-} as const;
-export type CalendarAlgorithmType = typeof CalendarAlgorithmType[keyof typeof CalendarAlgorithmType];
+export interface CiteOptionResponse { 
+    description?: string | null;
+    value?: number;
+    isModifier?: boolean;
+    /**
+     * On an average submission, how many of the averaged submissions selected the option.
+     */
+    selectedCount?: number;
+}
 

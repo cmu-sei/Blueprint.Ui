@@ -4,6 +4,7 @@
  project root for license information.
 */
 /**
+/**
  * Blueprint API
  *
  * 
@@ -102,7 +103,7 @@ export class CasterService extends BaseService {
 
     /**
      * Gets the variables a MSEL team can be mapped to in a Caster directory
-     * Returns the string variables the directory\&#39;s template, including its parent directories, declares and does not already assign: the topology teams a MSEL team\&#39;s Player team ID can be written to. The user\&#39;s token must carry the caster scope.
+     * Returns the string variables the directory\&#39;s template, including its parent directories, declares and does not already assign: the topology teams a MSEL team\&#39;s Player team ID can be written to. A required one has no default, so the plan fails unless a team is mapped to it or Caster supplies it. The user\&#39;s token must carry the caster scope.
      * @param id The Caster directory ID
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
@@ -111,7 +112,6 @@ export class CasterService extends BaseService {
     public getCasterTeamVariables(id: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<CasterTeamVariable>>>;
     public getCasterTeamVariables(id: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<CasterTeamVariable>>>;
     public getCasterTeamVariables(id: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
-
         if (id === null || id === undefined) {
             throw new Error('Required parameter id was null or undefined when calling getCasterTeamVariables.');
         }

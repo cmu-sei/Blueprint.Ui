@@ -13,8 +13,8 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-import { CiteScoringOptionSelection } from './citeScoringOptionSelection';
 import { MselScoringOption } from './mselScoringOption';
+import { CiteScoringOptionSelection } from './citeScoringOptionSelection';
 
 
 export interface MselScoringCategory { 

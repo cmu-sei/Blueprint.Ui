@@ -6,6 +6,7 @@ import { CiteScoringOptionSelection, MselScoringCategory, MselScoringModel } fro
 import {
   categoriesForMove,
   categoriesWithoutOptions,
+  fillHiddenNumbers,
   isScoringModelValid,
   moveRangeLabel,
   normalizeScoringModel,
@@ -152,18 +153,52 @@ describe('isScoringModelValid', () => {
     category('Impact', 1, 2, { scoringOptionSelection: CiteScoringOptionSelection.Single, scoringWeight: 2, options: [{ description: 'Low', value: 1 }], ...extra });
 
   /**
-   * Verifies: a model needs a description, each category a move range in order, and a scored category a weight and option values; a question set needs no numbers.
+   * Verifies: a model needs a description, each category move numbers, in order when the model displays by move, and a weight, and each option a value, a question set's hidden ones too, since the API's weights and values cannot be left out.
    * Interacts with: isScoringModelValid.
-   * Data: a valid scored model; then one with no description, a range ending before it starts, no weight, an option with no value, and a question set with none of them.
+   * Data: a valid scored model; then one with no description, a range ending before it starts, no weight, an option with no value, and question sets with and without their numbers.
    */
   it.each([
     { label: 'a scored model', model: { description: 'Impact', categories: [scored()] }, valid: true },
     { label: 'no description', model: { description: ' ', categories: [scored()] }, valid: false },
-    { label: 'a range ending before it starts', model: { description: 'Impact', categories: [scored({ moveNumberLastDisplay: 0 })] }, valid: false },
+    { label: 'a range ending before it starts', model: { description: 'Impact', displayScoringModelByMoveNumber: true, categories: [scored({ moveNumberLastDisplay: 0 })] }, valid: false },
+    { label: 'a hidden range ending before it starts', model: { description: 'Impact', displayScoringModelByMoveNumber: false, categories: [scored({ moveNumberLastDisplay: 0 })] }, valid: true },
+    { label: 'a hidden range with no number', model: { description: 'Impact', displayScoringModelByMoveNumber: false, categories: [scored({ moveNumberLastDisplay: null })] }, valid: false },
     { label: 'a scored category with no weight', model: { description: 'Impact', categories: [scored({ scoringWeight: null })] }, valid: false },
     { label: 'an option with no value', model: { description: 'Impact', categories: [scored({ options: [{ description: 'Low', value: undefined }] })] }, valid: false },
-    { label: 'a question set without numbers', model: { description: 'Q', categories: [category('q', 1, 1, { scoringWeight: null, options: [{ description: 'Why?', value: undefined }] })] }, valid: true },
+    { label: 'a weight cleared to an empty string', model: { description: 'Impact', categories: [scored({ scoringWeight: '' as unknown as number })] }, valid: false },
+    { label: 'a question set with its numbers', model: { description: 'Q', categories: [category('q', 1, 1, { scoringWeight: 1 })] }, valid: true },
+    { label: 'a question set with no weight', model: { description: 'Q', categories: [category('q', 1, 1, { scoringWeight: null })] }, valid: false },
+    { label: 'a question with no value', model: { description: 'Q', categories: [category('q', 1, 1, { scoringWeight: 1, options: [{ description: 'Why?', value: undefined }] })] }, valid: false },
   ])('judges $label', ({ model, valid }) => {
     expect(isScoringModelValid(model)).toBe(valid);
+  });
+});
+
+describe('fillHiddenNumbers', () => {
+  /**
+   * Verifies: a question set, which hides its weight and values, gets a weight of 1 and values of 1 where they are missing, and keeps the ones it has.
+   * Interacts with: fillHiddenNumbers.
+   * Data: a question set with no weight and two questions, one with no value and one worth 3.
+   */
+  it('fills a question set\'s missing weight and values', () => {
+    const questions = category('Questions', 1, 1, { scoringWeight: null, options: [{ description: 'Why?', value: null }, { description: 'Who?', value: 3 }] });
+
+    fillHiddenNumbers(questions);
+
+    expect(questions.scoringWeight).toBe(1);
+    expect(questions.options.map((o) => o.value)).toEqual([1, 3]);
+  });
+
+  /**
+   * Verifies: a scored category, which shows its weight and values, is left for the planner to fill in.
+   * Interacts with: fillHiddenNumbers.
+   * Data: a Single category with no weight.
+   */
+  it('leaves a scored category as it is', () => {
+    const scored = category('Impact', 1, 1, { scoringOptionSelection: CiteScoringOptionSelection.Single, scoringWeight: null });
+
+    fillHiddenNumbers(scored);
+
+    expect(scored.scoringWeight).toBeNull();
   });
 });

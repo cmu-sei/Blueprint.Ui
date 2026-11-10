@@ -15,9 +15,11 @@
  */
 
 
-export const SchemaSerializationMode = {
-    IncludeSchema: 'IncludeSchema',
-    ExcludeSchema: 'ExcludeSchema'
-} as const;
-export type SchemaSerializationMode = typeof SchemaSerializationMode[keyof typeof SchemaSerializationMode];
+export interface CiteCommentResponse { 
+    /**
+     * The option the comment was written on.
+     */
+    optionDescription?: string | null;
+    text?: string | null;
+}
 

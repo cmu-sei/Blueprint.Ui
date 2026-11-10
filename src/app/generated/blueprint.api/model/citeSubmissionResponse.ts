@@ -13,17 +13,17 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
+import { CiteCategoryResponse } from './citeCategoryResponse';
 
 
-export interface TextInfo { 
-    readonly ansiCodePage?: number;
-    readonly oemCodePage?: number;
-    readonly macCodePage?: number;
-    readonly ebcdicCodePage?: number;
-    readonly lcid?: number;
-    readonly cultureName?: string | null;
-    readonly isReadOnly?: boolean;
-    listSeparator?: string | null;
-    readonly isRightToLeft?: boolean;
+export interface CiteSubmissionResponse { 
+    score?: number;
+    status?: string | null;
+    dateModified?: Date | null;
+    /**
+     * True for an average of several submissions, whose options carry how many chose them.
+     */
+    isAverage?: boolean;
+    categories?: Array<CiteCategoryResponse> | null;
 }
 

@@ -15,11 +15,14 @@
  */
 
 
-export const MappingType = {
-    Element: 'Element',
-    Attribute: 'Attribute',
-    SimpleContent: 'SimpleContent',
-    Hidden: 'Hidden'
+export const CiteTeamResponsesStatus = {
+    Answered: 'Answered',
+    NotAnswered: 'NotAnswered',
+    NotPushed: 'NotPushed',
+    TeamNotInCite: 'TeamNotInCite',
+    MoveNotInCite: 'MoveNotInCite',
+    MoveNotStarted: 'MoveNotStarted',
+    Unavailable: 'Unavailable'
 } as const;
-export type MappingType = typeof MappingType[keyof typeof MappingType];
+export type CiteTeamResponsesStatus = typeof CiteTeamResponsesStatus[keyof typeof CiteTeamResponsesStatus];
 

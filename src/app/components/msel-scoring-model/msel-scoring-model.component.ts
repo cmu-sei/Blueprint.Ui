@@ -2,8 +2,8 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { Component, DestroyRef, effect, inject, input, output } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Component, computed, effect, inject, input, output } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { MatButton } from '@angular/material/button';
@@ -20,6 +20,7 @@ import {
 } from 'src/app/generated/blueprint.api';
 import { MoveQuery } from 'src/app/data/move/move.query';
 import { ErrorService } from 'src/app/services/error/error.service';
+import { showCiteAccessDenied } from 'src/app/utilities/cite-access';
 import {
   SCORING_MODEL_PRESETS,
   categoriesWithoutOptions,
@@ -44,7 +45,6 @@ export class MselScoringModelComponent {
   private moveQuery = inject(MoveQuery);
   private dialogService = inject(CrucibleDialogService);
   private errorService = inject(ErrorService);
-  private destroyRef = inject(DestroyRef);
 
   readonly mselId = input<string>(undefined);
   readonly scoringModel = input<MselScoringModel | null>(null);
@@ -62,13 +62,15 @@ export class MselScoringModelComponent {
   saved: MselScoringModel | null = null;
   working: MselScoringModel | null = null;
   private savedSnapshot = '';
-  private moves: Move[] = [];
+  private readonly moves = toSignal(this.moveQuery.selectAll(), { initialValue: [] as Move[] });
+  // computed, so the editor's moves input changes only when the moves do, not on every change detection
+  readonly mselMoves = computed<ScoringModelMove[]>(() =>
+    this.moves()
+      .filter((m) => m.mselId === this.mselId())
+      .map((m) => ({ moveNumber: +m.moveNumber, description: m.description })),
+  );
 
   constructor() {
-    this.moveQuery
-      .selectAll()
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((moves) => (this.moves = moves));
     // each saved model starts a fresh copy to edit
     effect(() => this.startEditing(this.scoringModel()));
   }
@@ -78,12 +80,6 @@ export class MselScoringModelComponent {
     this.working = saved ? normalizeScoringModel(structuredClone(saved)) : null;
     this.savedSnapshot = JSON.stringify(this.working);
     this.errorMessage = '';
-  }
-
-  mselMoves(): ScoringModelMove[] {
-    return this.moves
-      .filter((m) => m.mselId === this.mselId())
-      .map((m) => ({ moveNumber: +m.moveNumber, description: m.description }));
   }
 
   startFromHint(): string {
@@ -160,9 +156,12 @@ export class MselScoringModelComponent {
         this.startFrom = '';
         this.took(model);
       },
-      error: (err) => {
+      error: (err: HttpErrorResponse) => {
         this.isBusy = false;
-        this.errorService.handleError(err);
+        // CITE may refuse the copy: the model is not the user's to read, or only as a participant
+        if (!showCiteAccessDenied(this.dialogService, err)) {
+          this.errorService.handleError(err);
+        }
       },
     });
   }

@@ -13,20 +13,16 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
+import { CiteOptionResponse } from './citeOptionResponse';
+import { CiteCommentResponse } from './citeCommentResponse';
 
 
-export interface CompetencyElement { 
-    dateCreated?: Date;
-    dateModified?: Date | null;
-    createdBy?: string;
-    modifiedBy?: string | null;
-    id?: string;
-    competencyFrameworkId?: string;
-    elementIdentifier?: string | null;
-    elementType?: string | null;
-    name?: string | null;
+export interface CiteCategoryResponse { 
+    scoringCategoryId?: string;
     description?: string | null;
-    parentId?: string | null;
-    children?: Array<CompetencyElement> | null;
+    displayOrder?: number;
+    score?: number;
+    selectedOptions?: Array<CiteOptionResponse> | null;
+    comments?: Array<CiteCommentResponse> | null;
 }
 
