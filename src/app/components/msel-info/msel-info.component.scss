@@ -531,3 +531,13 @@ a {
   flex: 1;
   min-width: 280px;
 }
+
+.integration-summary {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 0.875rem;
+  color: var(--mat-sys-on-surface);
+}
+
+.integration-tab-link {
+  margin-left: 8px;
+}
