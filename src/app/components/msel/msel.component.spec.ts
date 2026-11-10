@@ -38,12 +38,14 @@ import { AssessorViewComponent } from '../assessor-view/assessor-view.component'
 import { InvitationListComponent } from '../invitation-list/invitation-list.component';
 import { MselPlaybookComponent } from '../msel-playbook/msel-playbook.component';
 import { GalleryWallComponent } from '../gallery-wall/gallery-wall.component';
+import { MselScoringModelTabComponent } from '../msel-scoring-model-tab/msel-scoring-model-tab.component';
 
 // One stub per tab; each declares the inputs MselComponent binds.
 @Component({ selector: 'app-msel-info', template: '' })
 class MselInfoStub {
   readonly loggedInUserId = input<string>(undefined);
   readonly deleteThisMsel = output<string>();
+  readonly openTab = output<string>();
 }
 @Component({ selector: 'app-msel-contributors', template: '' })
 class MselContributorsStub {
@@ -89,6 +91,10 @@ class CiteActionListStub {
 class CiteDutyListStub {
   readonly loggedInUserId = input<string>(undefined);
   readonly canEdit = input<boolean>(undefined);
+}
+@Component({ selector: 'app-msel-scoring-model-tab', template: '' })
+class MselScoringModelTabStub {
+  readonly loggedInUserId = input<string>(undefined);
 }
 @Component({ selector: 'app-msel-competencies', template: '' })
 class MselCompetenciesStub {
@@ -155,6 +161,7 @@ async function renderMsel(
       { replace: CardListComponent, with: CardListStub },
       { replace: CiteActionListComponent, with: CiteActionListStub },
       { replace: CiteDutyListComponent, with: CiteDutyListStub },
+      { replace: MselScoringModelTabComponent, with: MselScoringModelTabStub },
       { replace: MselCompetenciesComponent, with: MselCompetenciesStub },
       { replace: ScenarioEventListComponent, with: ScenarioEventListStub },
       { replace: MselViewComponent, with: MselViewStub },
@@ -188,8 +195,8 @@ const EDIT_TABS = [
   { tab: 'Organizations', read: (f: ComponentFixture<unknown>) => child(f, OrganizationListStub)?.canEdit() },
   { tab: 'Moves', read: (f: ComponentFixture<unknown>) => child(f, MoveListStub)?.canEditMsel() },
   { tab: 'Gallery Cards', read: (f: ComponentFixture<unknown>) => child(f, CardListStub)?.canEdit() },
-  { tab: 'CITE Actions', read: (f: ComponentFixture<unknown>) => child(f, CiteActionListStub)?.canEdit() },
-  { tab: 'CITE Duties', read: (f: ComponentFixture<unknown>) => child(f, CiteDutyListStub)?.canEdit() },
+  { tab: 'Actions', read: (f: ComponentFixture<unknown>) => child(f, CiteActionListStub)?.canEdit() },
+  { tab: 'Duties', read: (f: ComponentFixture<unknown>) => child(f, CiteDutyListStub)?.canEdit() },
   { tab: 'Invitations', read: (f: ComponentFixture<unknown>) => child(f, InvitationListStub)?.canEditMsel() },
   { tab: 'MSEL Playbook', read: (f: ComponentFixture<unknown>) => child(f, MselPlaybookStub)?.canEditMsel() },
 ];
@@ -259,7 +266,7 @@ describe('MselComponent', () => {
     await renderMsel({ msel: { ...MSEL, usePlayer: false, useGallery: false, useCite: false } });
 
     expect(nav().getByText('Moves')).toBeInTheDocument();
-    for (const tab of ['Player Apps', 'Gallery Cards', 'Gallery Wall', 'CITE Actions', 'CITE Duties']) {
+    for (const tab of ['Player Apps', 'Gallery Cards', 'Gallery Wall', 'Scoring Model', 'Actions', 'Duties']) {
       expect(nav().queryByText(tab)).not.toBeInTheDocument();
     }
   });
@@ -279,6 +286,57 @@ describe('MselComponent', () => {
     await openTab('Gallery Wall');
 
     expect(child(fixture, GalleryWallStub)).toBeDefined();
+  });
+
+  /**
+   * Verifies: a MSEL using CITE gets the Scoring Model, Actions and Duties tabs, in that order, and the Scoring Model tab opens its page with the user.
+   * Interacts with: MselComponent.getTabListItems, the side navigation, MselScoringModelTabStub input.
+   * Data: MSEL with CITE on.
+   */
+  it('offers the CITE tabs and opens the Scoring Model tab', async () => {
+    const { fixture } = await renderMsel();
+
+    const tabs = Array.from(document.querySelectorAll('mat-drawer mat-list mat-list-item')).map((item) => item.textContent.trim());
+    expect(tabs.slice(tabs.indexOf('Scoring Model'), tabs.indexOf('Scoring Model') + 3)).toEqual(['Scoring Model', 'Actions', 'Duties']);
+    await openTab('Scoring Model');
+
+    expect(child(fixture, MselScoringModelTabStub)?.loggedInUserId()).toBe('user-me');
+  });
+
+  /**
+   * Verifies: the saved tab is reopened, unless it is no longer a tab (renamed from CITE Actions or CITE Duties) or this MSEL's settings hide it, when the Info tab opens and is saved instead of a blank page.
+   * Interacts with: real UIDataService over localStorage, MselComponent.keepSelectedTabShown, child stubs.
+   * Data: the saved tabs CITE Actions and CITE Duties; Gallery Cards on a MSEL without Gallery; Actions on a MSEL with CITE.
+   */
+  it.each([
+    { saved: 'CITE Actions', msel: MSEL, opens: 'Info' },
+    { saved: 'CITE Duties', msel: MSEL, opens: 'Info' },
+    { saved: 'Gallery Cards', msel: { ...MSEL, useGallery: false }, opens: 'Info' },
+    { saved: 'Actions', msel: MSEL, opens: 'Actions' },
+  ])('reopens a saved $saved tab as $opens', async ({ saved, msel, opens }) => {
+    localStorage.setItem('uiState', JSON.stringify({ selectedMselTab: saved }));
+
+    const { fixture } = await renderMsel({ msel });
+
+    expect(fixture.componentInstance.selectedTab).toBe(opens);
+    expect(opens === 'Info' ? child(fixture, MselInfoStub) : child(fixture, CiteActionListStub)).toBeDefined();
+    expect(JSON.parse(localStorage.getItem('uiState')).selectedMselTab).toBe(opens);
+  });
+
+  /**
+   * Verifies: the Info page's Open the Scoring Model tab request opens that tab, through the same change as a click on the rail.
+   * Interacts with: MselInfoStub openTab, MselComponent.tabChange, real UIDataService.
+   * Data: MSEL with CITE on; the Info tab open.
+   */
+  it('opens the tab the Info page asks for', async () => {
+    const { fixture } = await renderMsel();
+
+    child(fixture, MselInfoStub).openTab.emit('Scoring Model');
+    fixture.detectChanges();
+
+    expect(child(fixture, MselScoringModelTabStub)).toBeDefined();
+    expect(child(fixture, MselInfoStub)).toBeUndefined();
+    expect(JSON.parse(localStorage.getItem('uiState')).selectedMselTab).toBe('Scoring Model');
   });
 
   /**

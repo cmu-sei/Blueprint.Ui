@@ -23,5 +23,6 @@ export interface TeamEdit {
     email?: string | null;
     canTeamLeaderInvite?: boolean;
     canTeamMemberInvite?: boolean;
+    casterTeamVariable?: string | null;
 }
 
