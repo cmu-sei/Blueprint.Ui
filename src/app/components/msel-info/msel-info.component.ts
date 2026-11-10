@@ -499,7 +499,7 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     if (this.canManageMsel()) {
       this.dialogService
         .confirm({
-          title: 'Delete MSEL', message: 'Are you sure that you want to delete ' + this.msel.name + '?', confirmText: 'Delete'
+          title: 'Delete MSEL', message: 'Are you sure that you want to delete ' + this.msel.name + '?', confirmText: 'Delete', cancelText: 'Cancel'
         }).afterClosed().subscribe((result) => {
           if (result) {
             this.deleteThisMsel.emit(this.msel.id);
@@ -908,7 +908,7 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   deletePage(page: MselPage): void {
     this.dialogService
       .confirm({
-        title: 'Delete Page', message: 'Are you sure that you want to delete ' + page.name + '?', confirmText: 'Delete'
+        title: 'Delete Page', message: 'Are you sure that you want to delete ' + page.name + '?', confirmText: 'Delete', cancelText: 'Cancel'
       }).afterClosed().subscribe((result) => {
         if (result) {
           // Clear any unsaved changes for this page

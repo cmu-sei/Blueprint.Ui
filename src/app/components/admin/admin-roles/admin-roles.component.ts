@@ -203,7 +203,7 @@ export class AdminRolesComponent implements OnInit, OnDestroy {
 
   deleteRole(role: SystemRole): void {
     this.dialogService
-      .confirm({ title: 'Delete Role', message: `Are you sure that you want to delete ${role.name}?`, confirmText: 'Delete'
+      .confirm({ title: 'Delete Role', message: `Are you sure that you want to delete ${role.name}?`, confirmText: 'Delete', cancelText: 'Cancel'
        }).afterClosed().subscribe((result) => {
         if (result && result) {
           this.roleDataService.deleteRole(role.id).subscribe();

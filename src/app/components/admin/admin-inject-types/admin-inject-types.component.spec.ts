@@ -162,7 +162,7 @@ describe('AdminInjectTypesComponent', () => {
 
     await user.click(within(table()).getByRole('button', { name: 'Delete Email' }));
 
-    expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Delete Inject Type', message: 'Are you sure that you want to delete Email?', confirmText: 'Delete' }));
+    expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Delete Inject Type', message: 'Are you sure that you want to delete Email?', confirmText: 'Delete', cancelText: 'Cancel' }));
     expect(injectTypeApi.deleteInjectType).toHaveBeenCalledWith('it-email');
     expect(within(table()).queryByText('Email')).not.toBeInTheDocument();
   });

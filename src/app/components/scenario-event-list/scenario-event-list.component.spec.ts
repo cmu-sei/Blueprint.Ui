@@ -339,7 +339,7 @@ describe('ScenarioEventListComponent', () => {
     const user = await openEventMenu(1);
     await user.click(screen.getByRole('menuitem', { name: 'Delete' }));
 
-    expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Delete Event', confirmText: 'Delete' }));
+    expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Delete Event', confirmText: 'Delete', cancelText: 'Cancel' }));
     expect(eventApi.deleteScenarioEvent).toHaveBeenCalledWith('se-1');
   });
 
@@ -358,6 +358,7 @@ describe('ScenarioEventListComponent', () => {
       title: 'Delete Selected Events',
       message: 'Are you sure that you want to delete the selected events?',
       confirmText: 'Delete',
+      cancelText: 'Cancel',
     });
     expect(eventApi.batchDeleteScenarioEvents).toHaveBeenCalledWith(['se-1']);
   });

@@ -198,6 +198,7 @@ describe('CiteActionListComponent', () => {
         title: 'Delete CITE Action',
         message: 'Are you sure that you want to delete Isolate the host?',
         confirmText: 'Delete',
+        cancelText: 'Cancel',
       });
       expect(citeActionApi.deleteCiteAction).toHaveBeenCalledWith('ca-1');
       expect(within(table()).queryByText('Isolate the host')).not.toBeInTheDocument();

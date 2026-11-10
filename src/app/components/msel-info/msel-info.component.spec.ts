@@ -404,7 +404,7 @@ describe('MselInfoComponent', () => {
     const user = await openPage();
     await user.click(screen.getByTitle('Delete Read Ahead'));
 
-    expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Delete Page', confirmText: 'Delete' }));
+    expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Delete Page', confirmText: 'Delete', cancelText: 'Cancel' }));
     // Current behavior; see agent-docs/ui-test-bugs/blueprint.ui.md.
     expect(pageApi.deleteMselPage).toHaveBeenCalledWith('page-1');
   });

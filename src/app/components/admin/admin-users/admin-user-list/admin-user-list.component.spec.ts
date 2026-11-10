@@ -121,7 +121,7 @@ describe('AdminUserListComponent', () => {
 
     await user.click(within(table()).getByTitle('Delete User'));
 
-    expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Delete User', message: 'Are you sure that you want to delete Alice?', confirmText: 'Delete' }));
+    expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Delete User', message: 'Are you sure that you want to delete Alice?', confirmText: 'Delete', cancelText: 'Cancel' }));
     expect(events.deleted).toEqual(['user-a']);
   });
 
