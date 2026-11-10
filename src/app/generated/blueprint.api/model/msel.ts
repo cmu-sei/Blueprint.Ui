@@ -28,8 +28,8 @@ import { Move } from './move';
 import { MselItemStatus } from './mselItemStatus';
 import { Team } from './team';
 import { IntegrationType } from './integrationType';
-import { SteamfitterScenarioStartMode } from './steamfitterScenarioStartMode';
 import { PlayerApplication } from './playerApplication';
+import { SteamfitterScenarioStartMode } from './steamfitterScenarioStartMode';
 
 
 export interface Msel { 
@@ -81,6 +81,7 @@ export interface Msel {
     showMoveOnAssessorView?: boolean;
     showGroupOnAssessorView?: boolean;
     showIntegrationTargetOnAssessorView?: boolean;
+    hideNamesOnAssessorView?: boolean;
     moves?: Array<Move> | null;
     dataFields?: Array<DataField> | null;
     scenarioEvents?: Array<ScenarioEvent> | null;

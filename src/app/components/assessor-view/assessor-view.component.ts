@@ -1,20 +1,21 @@
 // Copyright 2024 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
-import { Component, OnDestroy, HostListener, inject, input } from '@angular/core';
-import { Subject, Subscription, Observable, of } from 'rxjs';
+import { Component, DoCheck, OnDestroy, HostListener, inject, input } from '@angular/core';
+import { Subject, Subscription, Observable, fromEvent, of } from 'rxjs';
 import { takeUntil, debounceTime, distinctUntilChanged, mergeMap, delay } from 'rxjs/operators';
 import { Sort, MatSort, MatSortHeader } from '@angular/material/sort';
 import { HttpClient } from '@angular/common/http';
 import { ComnSettingsService, Theme } from '@cmusei/crucible-common';
 import {
   Card,
+  CiteTeamResponses,
+  CiteTeamResponsesStatus,
   Competency,
   CompetencyFramework,
   DataField,
   DataValue,
   Move,
-  Msel,
   MselCompetency,
   Organization,
   ProficiencyLevel,
@@ -37,7 +38,7 @@ import { MselCompetencyQuery } from 'src/app/data/msel-competency/msel-competenc
 import { MselCompetencyDataService } from 'src/app/data/msel-competency/msel-competency-data.service';
 import { TeamCompetencyQuery } from 'src/app/data/team-competency/team-competency.query';
 import { TeamCompetencyDataService } from 'src/app/data/team-competency/team-competency-data.service';
-import { CompetencyFrameworkService, ProficiencyScaleService } from 'src/app/generated/blueprint.api/api/api';
+import { CiteService, CompetencyFrameworkService, ProficiencyScaleService } from 'src/app/generated/blueprint.api/api/api';
 import {
   DataValuePlus,
   ScenarioEventDataService,
@@ -55,18 +56,50 @@ import { MatIconButton, MatButton } from '@angular/material/button';
 import { MatSelect } from '@angular/material/select';
 import { MatOption } from '@angular/material/autocomplete';
 import { MatProgressBar } from '@angular/material/progress-bar';
-import { NgClass } from '@angular/common';
+import { DOCUMENT, NgClass, NgTemplateOutlet } from '@angular/common';
 import { MatTooltip } from '@angular/material/tooltip';
+import { CdkTextareaAutosize } from '@angular/cdk/text-field';
 import { DurationViewComponent } from '../shared/duration-view/duration-view.component';
 import { DataValueComponent } from '../data-value/data-value.component';
 import { CardEditDialogComponent } from '../card-edit-dialog/card-edit-dialog.component';
+import { TeamResponsesComponent } from '../team-responses/team-responses.component';
+import { agentIdentityKey, agentName, isAnonymousActor, isAnonymousAgentObject, XApiAgent } from 'src/app/utilities/xapi-agent';
+
+/** A team's CITE answers for one move, as the Team Responses panel shows them. */
+export interface TeamResponsesState {
+  teamId: string;
+  moveNumber: number;
+  loading: boolean;
+  error: string | null;
+  responses: CiteTeamResponses | null;
+  /** When the last read finished, in ms since the epoch; 0 before the first one. */
+  fetchedAt: number;
+}
+
+/**
+ * How long a team's answers or non-answer stay fresh. Teams keep submitting
+ * during a move, so a panel shown again after this re-reads them.
+ */
+export const TEAM_RESPONSES_STALE_MS = 60_000;
+
+/** Statuses that say what the team answered, as opposed to why there is nothing to read. */
+const SETTLED_TEAM_RESPONSE_STATUSES: ReadonlySet<CiteTeamResponsesStatus> = new Set([
+  CiteTeamResponsesStatus.Answered,
+  CiteTeamResponsesStatus.NotAnswered,
+]);
 
 export interface XApiStatement {
   id?: string;
-  actor?: { name?: string; account?: { name?: string } };
+  actor?: XApiAgent;
   verb?: { id?: string; display?: { 'en-US'?: string } };
-  object?: { id?: string; definition?: { name?: { 'en-US'?: string }; type?: string; extensions?: Record<string, any> } };
-  result?: { score?: { raw?: number }; completion?: boolean; success?: boolean; response?: string };
+  /** An activity, or an Agent or Group when the statement is about a person or a team. */
+  object?: XApiAgent & { id?: string; definition?: { name?: { 'en-US'?: string }; type?: string; extensions?: Record<string, any> } };
+  result?: {
+    score?: { raw?: number; scaled?: number; min?: number; max?: number };
+    completion?: boolean;
+    success?: boolean;
+    response?: string;
+  };
   timestamp?: string;
   context?: {
     team?: { name?: string; account?: { name?: string } };
@@ -79,13 +112,49 @@ export interface XApiStatement {
   };
 }
 
+/** How the xAPI Evidence lists collapse repeated statements. */
+export type StatementGrouping = 'user' | 'team' | 'off';
+
+/** Repeated statements shown as one row; a group of one is a plain statement row. */
+export interface StatementGroup {
+  key: string;
+  /** In time order, oldest first. */
+  statements: XApiStatement[];
+  /** Timestamp of the group's newest statement, which places the group in the list. */
+  newest: string;
+  /** First statement's time, and the last one's ('' when the same minute; only the time on the same day). */
+  timeStart: string;
+  timeEnd: string;
+  actorLabel: string;
+  objectLabel: string;
+}
+
+/** One row of a statement list: a group header, or a statement (alone, or inside an expanded group). */
+export interface StatementListItem {
+  key: string;
+  group?: StatementGroup;
+  stmt?: XApiStatement;
+  member?: boolean;
+  /** A statement row's actor and object columns, worked out once when the list is built. */
+  actorLabel?: string;
+  objectLabel?: string;
+}
+
+interface StatementListCacheEntry {
+  deps: unknown[];
+  filtered: XApiStatement[];
+  groups: StatementGroup[];
+  items: StatementListItem[];
+  itemsVersion: number;
+}
+
 @Component({
     selector: 'app-assessor-view',
     templateUrl: './assessor-view.component.html',
     styleUrls: ['./assessor-view.component.scss'],
-    imports: [MatIcon, MatSort, MatFormField, MatLabel, MatInput, FormsModule, MatIconButton, MatSuffix, MatSelect, MatOption, MatSortHeader, MatProgressBar, NgClass, MatTooltip, MatButton, DurationViewComponent, DataValueComponent, CardEditDialogComponent]
+    imports: [MatIcon, MatSort, MatFormField, MatLabel, MatInput, FormsModule, MatIconButton, MatSuffix, MatSelect, MatOption, MatSortHeader, MatProgressBar, NgClass, NgTemplateOutlet, MatTooltip, MatButton, CdkTextareaAutosize, DurationViewComponent, DataValueComponent, CardEditDialogComponent, TeamResponsesComponent]
 })
-export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
+export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventView {
   private mselQuery = inject(MselQuery);
   private dataFieldQuery = inject(DataFieldQuery);
   private dataValueQuery = inject(DataValueQuery);
@@ -106,6 +175,7 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
   private teamCompetencyDataService = inject(TeamCompetencyDataService);
   private competencyFrameworkService = inject(CompetencyFrameworkService);
   private proficiencyScaleService = inject(ProficiencyScaleService);
+  private citeService = inject(CiteService);
 
   readonly loggedInUserId = input<string>(undefined);
   readonly userTheme = input<Theme>(undefined);
@@ -170,6 +240,18 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
   groupStatements: Map<string, XApiStatement[]> = new Map();
   loadingStatements: Set<string> = new Set();
 
+  // Statement grouping. The saved choice is kept while User isn't offered, so it comes back
+  // on a MSEL whose statements carry names.
+  private savedStatementGrouping: StatementGrouping = 'team';
+  userGroupingAvailable = false;
+  private expandedStatementGroups = new Set<string>();
+  // Per section, bumped when one of its groups opens or closes, so only that section's rows are rebuilt.
+  private statementGroupExpansionVersions = new Map<string, number>();
+  // Filtered and grouped statement lists per section (move-N, group-N-M, event-<id>), rebuilt
+  // only when the section's statements, filters or the grouping change, not per change detection.
+  private statementListCache = new Map<string, StatementListCacheEntry>();
+  private static EMPTY_STATEMENTS: XApiStatement[] = [];
+
   // Competency assessment
   mselCompetencies: MselCompetency[] = [];
   teamCompetencies: TeamCompetency[] = [];
@@ -179,6 +261,25 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
   submittedAssertions = new Set<string>();
   submittingAssertions = new Set<string>();
   assertionTeam = new Map<string, string>();
+  /**
+   * Where each context's Assess Team came from:
+   * - picked: chosen by hand (None included), or a rating was started under it. Nothing else
+   *   changes it, so a draft rating is never hidden behind another team.
+   * - filter: the one team the evidence Team filter names. It follows the filter, and is
+   *   cleared when the filter no longer names exactly one team that Assess Team offers.
+   * - assertion: the team of an assertion already submitted for the context. An evidence
+   *   filter change replaces it; loading statements never replaces picked or filter.
+   */
+  private assertionTeamSource = new Map<string, 'picked' | 'filter' | 'assertion'>();
+  // Contexts whose filter preselect is up to date with the filter, the teams and the competencies.
+  private assertionTeamPreselected = new Set<string>();
+
+  // Team Responses: each team's CITE answers, keyed by team and move
+  private teamResponses = new Map<string, TeamResponsesState>();
+  private teamResponseLoads = new Map<string, Subscription>();
+  /** The team|move keys whose panel was on screen at the last check. */
+  private shownTeamResponses = new Set<string>();
+  private document = inject(DOCUMENT);
 
   // Precomputed competency caches — rebuilt on data change, not per change detection
   private baseEventCompetencies = new Map<string, Competency[]>();
@@ -195,13 +296,34 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
   constructor() {
     this.apiUrl = this.settingsService.settings.ApiUrl;
     this.showRealTime = this.uiDataService.useRealTime();
+    const savedGrouping = this.uiDataService.getStatementGrouping();
+    if (savedGrouping === 'user' || savedGrouping === 'team' || savedGrouping === 'off') {
+      this.savedStatementGrouping = savedGrouping;
+    }
+
+    // Coming back to the tab re-reads the stale answers on screen
+    fromEvent(this.document, 'visibilitychange')
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(() => {
+        if (this.document.visibilityState === 'visible') {
+          this.revalidateTeamResponses();
+        }
+      });
 
     (this.mselQuery.selectActive() as Observable<MselPlus>)
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(msel => {
         if (msel) {
           const mselChanged = this.msel.id !== msel.id;
+          const hidingChanged = !mselChanged && !!this.msel.hideNamesOnAssessorView !== !!msel.hideNamesOnAssessorView;
           this.msel = { ...msel } as MselPlus;
+          if (mselChanged) {
+            this.resetTeamResponses();
+            this.resetAssertionTeams();
+          }
+          if (hidingChanged) {
+            this.reloadStatements();
+          }
           if (mselChanged && msel.id) {
             this.mselCompetencyDataService.loadByMsel(msel.id);
             this.teamCompetencyDataService.loadByMsel(msel.id);
@@ -287,6 +409,7 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(teams => {
         this.teamList = teams;
+        this.assertionTeamPreselected.clear();
       });
 
     this.mselCompetencyQuery.selectAll()
@@ -416,6 +539,7 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
   filterByTeams(sectionKey: string, teamIds: string[]) {
     this.sectionTeamFilter.set(sectionKey, teamIds);
     this.sectionTeamInitialized.add(sectionKey);
+    this.preselectAssertionTeam(this.contextKeyForSection(sectionKey), true);
   }
 
   filterBySources(sectionKey: string, sources: string[]) {
@@ -465,11 +589,13 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
 
     if (matchedIds.length > 0) {
       this.sectionTeamFilter.set(sectionKey, matchedIds);
+      this.assertionTeamPreselected.delete(eventId);
     }
   }
 
 
   refreshStatements() {
+    this.refreshTeamResponses();
     if (this.statementsLoading || !this.msel.id) return;
     this.statementsLoading = true;
     this.loadingStatements.add('_all');
@@ -485,6 +611,7 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
     this.http.get<any>(`${baseUrl}api/xapi/statements`, { params })
       .subscribe({
         next: (response) => {
+          if (this.restartStatementsIfStale()) return;
           const statements = response?.statements || response || [];
           const newStmts: XApiStatement[] = Array.isArray(statements) ? statements : [];
           const existingIds = new Set(this.allMselStatements.map(s => s.id));
@@ -501,10 +628,44 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
           this.loadingStatements.delete('_all');
         },
         error: () => {
+          if (this.restartStatementsIfStale()) return;
           this.statementsLoading = false;
           this.loadingStatements.delete('_all');
         }
       });
+  }
+
+  /** Who a statement is about, for its actor column; Unknown when the statement does not say. */
+  getActorLabel(stmt: XApiStatement): string {
+    return this.actorName(stmt) || 'Unknown';
+  }
+
+  /** What a statement is about, for its object column; ? when the statement does not say. */
+  getObjectLabel(stmt: XApiStatement): string {
+    return this.objectName(stmt) || '?';
+  }
+
+  /**
+   * The actor's name, account name, email address or OpenID, whichever the API sent. On a MSEL that
+   * hides names, the API removes all of them for an assessor, so a person it sent no identity for is
+   * a member of the statement's team, or, with no team (a facilitator's launch, say), a hidden name.
+   * '' when the statement names no one for any other reason.
+   */
+  private actorName(stmt: XApiStatement): string {
+    const name = agentName(stmt.actor);
+    if (name) return name;
+    if (this.hidesNames && isAnonymousActor(stmt.actor)) {
+      return stmt.context?.team?.name ? 'Team member' : 'Name hidden';
+    }
+    return '';
+  }
+
+  /** The activity's name or id, or the person or team the statement is about; '' when it has none. */
+  private objectName(stmt: XApiStatement): string {
+    const object = stmt.object;
+    const name = object?.definition?.name?.['en-US'] || agentName(object) || object?.id;
+    if (name) return name;
+    return this.hidesNames && isAnonymousAgentObject(object) ? 'Name hidden' : '';
   }
 
   getPlatformClass(stmt: XApiStatement): string {
@@ -529,6 +690,8 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
   private allMselStatements: XApiStatement[] = [];
   private statementsLoaded = false;
   statementsLoading = false;
+  /** Set when names were hidden or shown while a read was under way, so its answer is out of date. */
+  private statementsStale = false;
 
   toggleEvent(eventId: string) {
     if (this.expandedEventIds.has(eventId)) {
@@ -685,19 +848,214 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
   }
 
   getMoveStatements(moveNumber: number): XApiStatement[] {
-    return this.moveStatements.get(moveNumber) || [];
+    return this.moveStatements.get(moveNumber) || AssessorViewComponent.EMPTY_STATEMENTS;
   }
 
   getGroupStatements(groupKey: string): XApiStatement[] {
-    return this.groupStatements.get(groupKey) || [];
+    return this.groupStatements.get(groupKey) || AssessorViewComponent.EMPTY_STATEMENTS;
   }
 
-  getFilteredMoveStatements(moveNumber: number): XApiStatement[] {
-    return this.applyStatementFilters(this.getMoveStatements(moveNumber), `move-${moveNumber}`);
+  /** All of a section's statements; sections are keyed move-N, group-N-M and event-<id>. */
+  getSectionStatements(sectionKey: string): XApiStatement[] {
+    if (sectionKey.startsWith('move-')) return this.getMoveStatements(+sectionKey.slice('move-'.length));
+    if (sectionKey.startsWith('group-')) return this.getGroupStatements(sectionKey.slice('group-'.length));
+    return this.getStatements(sectionKey.slice('event-'.length));
   }
 
-  getFilteredGroupStatements(groupKey: string): XApiStatement[] {
-    return this.applyStatementFilters(this.getGroupStatements(groupKey), `group-${groupKey}`);
+  /** A section's filtered statements and the rows shown for them. */
+  getSectionStatementList(sectionKey: string): StatementListCacheEntry {
+    return this.getStatementList(sectionKey, this.getSectionStatements(sectionKey), sectionKey.startsWith('event-'));
+  }
+
+  /** The grouping in effect: the saved choice, or Team when User was saved but isn't offered. */
+  get statementGrouping(): StatementGrouping {
+    if (this.savedStatementGrouping === 'user' && !this.userGroupingAvailable) return 'team';
+    return this.savedStatementGrouping;
+  }
+
+  setStatementGrouping(value: StatementGrouping) {
+    this.savedStatementGrouping = value;
+    this.uiDataService.setStatementGrouping(value);
+  }
+
+  isStatementGroupExpanded(sectionKey: string, groupKey: string): boolean {
+    return this.expandedStatementGroups.has(`${sectionKey}|${groupKey}`);
+  }
+
+  toggleStatementGroup(sectionKey: string, groupKey: string) {
+    const key = `${sectionKey}|${groupKey}`;
+    if (this.expandedStatementGroups.has(key)) {
+      this.expandedStatementGroups.delete(key);
+    } else {
+      this.expandedStatementGroups.add(key);
+    }
+    this.statementGroupExpansionVersions.set(sectionKey, (this.statementGroupExpansionVersions.get(sectionKey) ?? 0) + 1);
+  }
+
+  /**
+   * A section's filtered statements, their groups and the rows shown for them, cached per
+   * section. Rebuilt when one of its inputs is a different object than last time: the filter
+   * selects and distributeStatements always store new arrays, so a reference check is enough.
+   * Opening or closing a group rebuilds only its own section's rows.
+   */
+  private getStatementList(sectionKey: string, source: XApiStatement[], isEvent = false): StatementListCacheEntry {
+    const deps: unknown[] = [
+      source,
+      this.statementGrouping,
+      this.sectionSourceFilter.get(sectionKey),
+      this.sectionVerbFilter.get(sectionKey),
+      this.sectionTeamFilter.get(sectionKey),
+      this.teamList,
+      isEvent ? this.selectedMoveNumber : null,
+      // Move numbers (getMovePart, the selected-move filter) and the Team member label
+      this.moveList,
+      this.hidesNames,
+    ];
+    let entry = this.statementListCache.get(sectionKey);
+    if (!entry || deps.some((dep, i) => dep !== entry.deps[i])) {
+      let filtered = this.applyStatementFilters(source, sectionKey);
+      if (isEvent) filtered = this.filterToSelectedMove(filtered);
+      entry = {
+        deps,
+        filtered,
+        groups: this.buildStatementGroups(filtered, this.statementGrouping),
+        items: [],
+        itemsVersion: -1,
+      };
+      this.statementListCache.set(sectionKey, entry);
+    }
+    const expansionVersion = this.statementGroupExpansionVersions.get(sectionKey) ?? 0;
+    if (entry.itemsVersion !== expansionVersion) {
+      entry.items = this.buildStatementItems(sectionKey, entry.groups);
+      entry.itemsVersion = expansionVersion;
+    }
+    return entry;
+  }
+
+  /**
+   * Collapses repeated statements: same platform, verb, object and team (and, by User, the
+   * same actor) in the same move, group and inject, with the same result. Groups are placed
+   * by their newest statement, oldest first like the list itself.
+   */
+  private buildStatementGroups(stmts: XApiStatement[], mode: StatementGrouping): StatementGroup[] {
+    const groups: StatementGroup[] = [];
+    const byKey = new Map<string, StatementGroup>();
+    stmts.forEach((stmt, i) => {
+      const key = mode === 'off' ? null : this.statementGroupKey(stmt, mode);
+      if (key === null) {
+        groups.push({ key: `s:${i}:${stmt.id ?? ''}`, statements: [stmt], newest: '', timeStart: '', timeEnd: '', actorLabel: '', objectLabel: '' });
+        return;
+      }
+      let group = byKey.get(key);
+      if (!group) {
+        group = { key: `g:${key}`, statements: [], newest: '', timeStart: '', timeEnd: '', actorLabel: '', objectLabel: '' };
+        byKey.set(key, group);
+        groups.push(group);
+      }
+      group.statements.push(stmt);
+    });
+    for (const group of groups) {
+      const stmts = group.statements;
+      for (const stmt of stmts) {
+        if ((stmt.timestamp || '') > group.newest) group.newest = stmt.timestamp || '';
+      }
+      if (stmts.length > 1) {
+        group.timeStart = this.formatTimestamp(stmts[0].timestamp);
+        group.timeEnd = this.formatRangeEnd(stmts[0].timestamp, stmts[stmts.length - 1].timestamp);
+        group.actorLabel = this.statementGroupActorLabel(stmts, mode);
+        group.objectLabel = this.getObjectLabel(stmts[0]);
+      }
+    }
+    // Array.prototype.sort is stable, so groups with the same newest time keep their order.
+    return groups.sort((a, b) => a.newest.localeCompare(b.newest));
+  }
+
+  private buildStatementItems(sectionKey: string, groups: StatementGroup[]): StatementListItem[] {
+    const items: StatementListItem[] = [];
+    for (const group of groups) {
+      if (group.statements.length === 1) {
+        items.push(this.statementItem(group.key, group.statements[0]));
+        continue;
+      }
+      items.push({ key: group.key, group });
+      if (this.isStatementGroupExpanded(sectionKey, group.key)) {
+        group.statements.forEach((stmt, i) => items.push({ ...this.statementItem(`${group.key}#${i}`, stmt), member: true }));
+      }
+    }
+    return items;
+  }
+
+  private statementItem(key: string, stmt: XApiStatement): StatementListItem {
+    return { key, stmt, actorLabel: this.getActorLabel(stmt), objectLabel: this.getObjectLabel(stmt) };
+  }
+
+  /** The key repeated statements share, or null for a statement that is always its own row. */
+  private statementGroupKey(stmt: XApiStatement, mode: StatementGrouping): string | null {
+    if (this.isNeverGrouped(stmt)) return null;
+    const result = stmt.result;
+    return JSON.stringify([
+      (stmt.context?.platform || '').toLowerCase(),
+      stmt.verb?.id || '',
+      stmt.object?.id || '',
+      stmt.context?.team?.account?.name || '',
+      // A group row shows its first statement's move and group, so those must be the same for all of them.
+      this.getMovePart(stmt),
+      this.getGroupPart(stmt),
+      this.statementEventId(stmt),
+      mode === 'user' ? agentIdentityKey(stmt.actor) : '',
+      // A scored statement is never grouped, so the score is not part of the key.
+      result ? [result.success ?? null, result.completion ?? null, result.response ?? null] : null,
+    ]);
+  }
+
+  /** The scenario event (inject) a statement was recorded against, or ''. */
+  private statementEventId(stmt: XApiStatement): string {
+    const grouping = stmt.context?.contextActivities?.grouping || [];
+    const event = grouping.find(g => (g.id || '').includes('scenarioevents/'));
+    return event ? event.id.split('scenarioevents/').pop() : '';
+  }
+
+  /** Competency assertions, CITE submissions and scores, and scored results each keep their own row. */
+  private isNeverGrouped(stmt: XApiStatement): boolean {
+    const verbId = (stmt.verb?.id || '').toLowerCase();
+    if (verbId.endsWith('/asserted')) return true;
+    const platform = (stmt.context?.platform || '').toLowerCase();
+    if (platform === 'cite' && AssessorViewComponent.CITE_RESULT_VERB.test(verbId)) return true;
+    return stmt.result?.score != null;
+  }
+
+  // CITE sends dod-isd verbs/submitted when a submission is completed and verbs/evaluated when it is scored.
+  private static CITE_RESULT_VERB = /\/(submitted|scored|evaluated)$/;
+
+  private statementGroupActorLabel(stmts: XApiStatement[], mode: StatementGrouping): string {
+    if (mode === 'user') return this.getActorLabel(stmts[0]);
+    const people = new Map<string, XApiStatement>();
+    for (const stmt of stmts) {
+      const identity = agentIdentityKey(stmt.actor);
+      if (identity && !people.has(identity)) people.set(identity, stmt);
+    }
+    // With every name hidden there is no telling whether one person did these or several.
+    if (people.size === 0 && this.hidesNames && stmts.every((stmt) => isAnonymousActor(stmt.actor))) return 'Names hidden';
+    if (people.size === 0) return this.getActorLabel(stmts[0]);
+    const first = this.getActorLabel(people.values().next().value);
+    const others = people.size - 1;
+    if (others === 0) return first;
+    return `${first} + ${others} ${others === 1 ? 'other' : 'others'}`;
+  }
+
+  /** Whether the MSEL hides people's names on the Assessor View. */
+  private get hidesNames(): boolean {
+    return !!this.msel?.hideNamesOnAssessorView;
+  }
+
+  /**
+   * User grouping is offered only when the API sent at least one agent's identity, by the same rule
+   * the User grouping keys on, so it never offers to group people it cannot tell apart.
+   */
+  private hasAgentIdentity(stmt: XApiStatement): boolean {
+    const actor = stmt.actor;
+    if (!actor || (actor.objectType && actor.objectType !== 'Agent')) return false;
+    return agentIdentityKey(actor) !== '';
   }
 
   getMoveDescription(moveNumber: number): string {
@@ -840,6 +1198,7 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
     this.http.get<any>(`${baseUrl}api/xapi/statements`, { params: { mselId: this.msel.id } })
       .subscribe({
         next: (response) => {
+          if (this.restartStatementsIfStale()) return;
           const statements = response?.statements || response || [];
           this.allMselStatements = Array.isArray(statements) ? statements : [];
           this.allMselStatements.sort((a, b) =>
@@ -853,12 +1212,37 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
           this.buildVerbList();
         },
         error: () => {
+          if (this.restartStatementsIfStale()) return;
           this.allMselStatements = [];
           this.statementsLoaded = true;
           this.statementsLoading = false;
           this.loadingStatements.delete('_all');
         }
       });
+  }
+
+  /**
+   * Reads every statement again. The API decides whether to leave out names when it answers, so after
+   * the MSEL starts or stops hiding them the statements on screen came back the other way, and a
+   * refresh only adds newer ones. Nothing to do before the first read, which will be right.
+   */
+  private reloadStatements() {
+    if (this.statementsLoading) {
+      this.statementsStale = true;
+    } else if (this.statementsLoaded) {
+      this.statementsLoaded = false;
+      this.loadAllStatements();
+    }
+  }
+
+  /** When a read was under way as names were hidden or shown, drops its answer and reads again. */
+  private restartStatementsIfStale(): boolean {
+    if (!this.statementsStale) return false;
+    this.statementsStale = false;
+    this.statementsLoading = false;
+    this.statementsLoaded = false;
+    this.loadAllStatements();
+    return true;
   }
 
   private redistributeStatementsIfLoaded() {
@@ -884,6 +1268,10 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
   }
 
   private distributeStatements() {
+    this.statementListCache.clear();
+    // A reload can bring the same statements back with or without names, so the previews are rebuilt too.
+    this.statementSectionsCache.clear();
+    this.userGroupingAvailable = this.allMselStatements.some(s => this.hasAgentIdentity(s));
     this.eventStatements.clear();
     this.moveStatements.clear();
     this.groupStatements.clear();
@@ -1078,7 +1466,10 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
 
       if (teamId) {
         for (const ck of keysToPopulate) {
+          const source = this.assertionTeamSource.get(ck);
+          if (source === 'picked' || source === 'filter') continue;
           this.assertionTeam.set(ck, teamId);
+          this.assertionTeamSource.set(ck, 'assertion');
         }
       }
     }
@@ -1201,12 +1592,14 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
   }
 
   getStatements(eventId: string): XApiStatement[] {
-    return this.eventStatements.get(eventId) || [];
+    return this.eventStatements.get(eventId) || AssessorViewComponent.EMPTY_STATEMENTS;
   }
 
   getFilteredStatements(eventId: string): XApiStatement[] {
-    let stmts = this.getStatements(eventId);
-    stmts = this.applyStatementFilters(stmts, `event-${eventId}`);
+    return this.getStatementList(`event-${eventId}`, this.getStatements(eventId), true).filtered;
+  }
+
+  private filterToSelectedMove(stmts: XApiStatement[]): XApiStatement[] {
     if (this.selectedMoveNumber != null) {
       const move = this.moveList.find(m => +m.moveNumber === +this.selectedMoveNumber);
       const targetName = move?.description?.toLowerCase();
@@ -1294,11 +1687,11 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
       if (typeof val === 'string') {
         preview = val;
       } else if (key === 'actor') {
-        preview = val?.name || val?.account?.name || '';
+        preview = this.actorName(stmt);
       } else if (key === 'verb') {
         preview = val?.display?.['en-US'] || val?.id?.split('/').pop() || '';
       } else if (key === 'object') {
-        preview = val?.definition?.name?.['en-US'] || val?.id || '';
+        preview = this.objectName(stmt);
       } else if (key === 'result') {
         const parts: string[] = [];
         if (val?.score?.raw != null) parts.push(`score: ${val.score.raw}`);
@@ -1342,14 +1735,35 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
 
   formatTimestamp(timestamp: string): string {
     if (!timestamp) return '';
+    const { date, time } = this.timestampParts(timestamp);
+    return `${date} ${time}`;
+  }
+
+  /**
+   * The end of a time range that starts at `start`: just the time when it is on the same
+   * day, so a group's range is no wider than one timestamp; '' when it is the same minute.
+   */
+  private formatRangeEnd(start: string, end: string): string {
+    if (!end) return '';
+    const first = this.timestampParts(start);
+    const last = this.timestampParts(end);
+    if (first.date === last.date) {
+      return first.time === last.time ? '' : last.time;
+    }
+    return `${last.date} ${last.time}`;
+  }
+
+  /** '20 Oct 2026' and '12:00 EDT', in the browser's time zone. */
+  private timestampParts(timestamp: string): { date: string; time: string } {
     const d = new Date(timestamp);
     const day = String(d.getDate()).padStart(2, '0');
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const month = months[d.getMonth()];
-    const year = d.getFullYear();
     const hours = String(d.getHours()).padStart(2, '0');
     const minutes = String(d.getMinutes()).padStart(2, '0');
-    return `${day} ${month} ${year} ${hours}:${minutes} ${getTimezoneAbbr(d)}`;
+    return {
+      date: `${day} ${months[d.getMonth()]} ${d.getFullYear()}`,
+      time: `${hours}:${minutes} ${getTimezoneAbbr(d)}`,
+    };
   }
 
   // --- Competency assessment methods ---
@@ -1402,6 +1816,7 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
   private static EMPTY_COMPETENCIES: Competency[] = [];
 
   private rebuildCompetencyCaches() {
+    this.assertionTeamPreselected.clear();
     this.baseEventCompetencies.clear();
     this.baseMoveCompetencies.clear();
     this.baseGroupCompetencies.clear();
@@ -1467,6 +1882,7 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
   }
 
   private rebuildTeamCompIdSets() {
+    this.assertionTeamPreselected.clear();
     this.teamCompIdSets.clear();
     for (const tc of this.teamCompetencies) {
       if (!this.teamCompIdSets.has(tc.teamId)) this.teamCompIdSets.set(tc.teamId, new Set());
@@ -1550,6 +1966,7 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
   }
 
   setRatingLevel(contextKey: string, competencyId: string, levelId: string) {
+    this.keepAssertionTeam(contextKey);
     const key = this.ratingKey(contextKey);
     if (!this.eventRatings.has(key)) this.eventRatings.set(key, new Map());
     const existing = this.getRating(contextKey, competencyId);
@@ -1557,24 +1974,234 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
   }
 
   setRatingComment(contextKey: string, competencyId: string, comment: string) {
+    this.keepAssertionTeam(contextKey);
     const key = this.ratingKey(contextKey);
     if (!this.eventRatings.has(key)) this.eventRatings.set(key, new Map());
     const existing = this.getRating(contextKey, competencyId);
     this.eventRatings.get(key).set(competencyId, { ...existing, comment });
   }
 
-  getAssertionTeam(eventId: string): string {
-    if (!this.assertionTeam.has(eventId)) {
-      const teamIds = this.getSectionTeams('event-' + eventId);
-      if (teamIds.length === 1) {
-        this.assertionTeam.set(eventId, teamIds[0]);
-      }
+  /**
+   * The context's Assess Team. Called many times per change detection, so the filter
+   * preselect runs only after one of its inputs changed.
+   */
+  getAssertionTeam(contextKey: string): string {
+    if (!this.assertionTeamPreselected.has(contextKey)) {
+      this.preselectAssertionTeam(contextKey);
     }
-    return this.assertionTeam.get(eventId) ?? '';
+    return this.assertionTeam.get(contextKey) ?? '';
   }
 
-  setAssertionTeam(eventId: string, teamId: string) {
-    this.assertionTeam.set(eventId, teamId);
+  /** Called when the user picks a team in Assess Team. */
+  setAssertionTeam(contextKey: string, teamId: string) {
+    this.assertionTeam.set(contextKey, teamId);
+    this.assertionTeamSource.set(contextKey, 'picked');
+  }
+
+  /** Keeps the team a rating is being written for, whatever the filter does next. */
+  private keepAssertionTeam(contextKey: string) {
+    this.assertionTeam.set(contextKey, this.getAssertionTeam(contextKey));
+    this.assertionTeamSource.set(contextKey, 'picked');
+  }
+
+  /**
+   * Makes Assess Team follow the evidence Team filter when that names exactly one team
+   * Assess Team offers (see assertionTeamSource). An assertion's team gives way only to a
+   * filter the user changed, not to the filter an event starts with.
+   */
+  private preselectAssertionTeam(contextKey: string, filterChanged = false) {
+    this.assertionTeamPreselected.add(contextKey);
+    const source = this.assertionTeamSource.get(contextKey);
+    if (source === 'picked' || (source === 'assertion' && !filterChanged)) return;
+    const teamIds = this.getSectionTeams(this.sectionKeyForContext(contextKey));
+    const offered = teamIds.length === 1 && this.getTeamsForContext(contextKey).some(t => t.id === teamIds[0]);
+    if (offered) {
+      this.assertionTeam.set(contextKey, teamIds[0]);
+      this.assertionTeamSource.set(contextKey, 'filter');
+    } else if (source === 'filter') {
+      this.assertionTeam.delete(contextKey);
+      this.assertionTeamSource.delete(contextKey);
+    }
+  }
+
+  /** Forgets every context's Assess Team, for another MSEL: its moves and events reuse the keys. */
+  private resetAssertionTeams() {
+    this.assertionTeam.clear();
+    this.assertionTeamSource.clear();
+    this.assertionTeamPreselected.clear();
+  }
+
+  // Filter sections are keyed move-N, group-N-M and event-<id>; assessment contexts
+  // are move-N, group-N-M and the bare event id.
+  private sectionKeyForContext(contextKey: string): string {
+    return contextKey.startsWith('move-') || contextKey.startsWith('group-') ? contextKey : `event-${contextKey}`;
+  }
+
+  private contextKeyForSection(sectionKey: string): string {
+    return sectionKey.startsWith('event-') ? sectionKey.slice('event-'.length) : sectionKey;
+  }
+
+  /**
+   * The CITE answers of the team chosen in Assess Team for this context, for
+   * the move the context is in. Group and event rows show their move's answers.
+   * A lookup only: ngDoCheck starts the loads. Null when no team is chosen.
+   */
+  getTeamResponses(contextKey: string, moveNumber: number): TeamResponsesState | null {
+    const teamId = this.getAssertionTeam(contextKey);
+    if (!teamId || moveNumber === null || moveNumber === undefined) {
+      return null;
+    }
+    return this.teamResponses.get(this.teamResponsesKey(teamId, moveNumber)) ?? null;
+  }
+
+  getTeamShortName(teamId: string): string {
+    return this.teamList.find(t => t.id === teamId)?.shortName ?? '';
+  }
+
+  /**
+   * Loads the answers of every panel on screen that has none yet, and
+   * re-reads a stale one when its panel comes back into view: a row
+   * expanded, a team chosen, a filter cleared. Runs before the view is
+   * checked, so the template only looks the answers up.
+   */
+  ngDoCheck() {
+    const visible = this.visibleTeamResponses();
+    for (const [key, target] of visible) {
+      const state = this.teamResponses.get(key);
+      if (!state || (!this.shownTeamResponses.has(key) && this.isStale(state))) {
+        this.loadTeamResponses(key, target);
+      }
+    }
+    this.shownTeamResponses = new Set(visible.keys());
+  }
+
+  /**
+   * Reloads the answers on screen, alongside the xAPI statements, and drops
+   * the rest so they load fresh when shown again.
+   */
+  refreshTeamResponses() {
+    const visible = this.visibleTeamResponses();
+    for (const key of [...this.teamResponses.keys()]) {
+      if (!visible.has(key)) {
+        this.dropTeamResponses(key);
+      }
+    }
+    for (const [key, target] of visible) {
+      if (!this.teamResponses.get(key)?.loading) {
+        this.loadTeamResponses(key, target);
+      }
+    }
+  }
+
+  /** Re-reads the stale answers on screen. */
+  private revalidateTeamResponses() {
+    for (const [key, target] of this.visibleTeamResponses()) {
+      const state = this.teamResponses.get(key);
+      if (!state || this.isStale(state)) {
+        this.loadTeamResponses(key, target);
+      }
+    }
+  }
+
+  /**
+   * A non-answer (the move has not started, CITE could not be read, ...) or a
+   * failed load is stale at once: whatever caused it may be fixed by now.
+   * Answers are stale after TEAM_RESPONSES_STALE_MS.
+   */
+  private isStale(state: TeamResponsesState): boolean {
+    if (state.loading) return false;
+    if (state.error || !state.responses?.status || !SETTLED_TEAM_RESPONSE_STATUSES.has(state.responses.status)) {
+      return true;
+    }
+    return Date.now() - state.fetchedAt > TEAM_RESPONSES_STALE_MS;
+  }
+
+  /**
+   * The team and move of every Team Responses panel the template renders: an
+   * expanded row on a MSEL using CITE, with competencies and a team chosen.
+   * Panels for the same team and move share one entry.
+   */
+  private visibleTeamResponses(): Map<string, { teamId: string; moveNumber: number }> {
+    const visible = new Map<string, { teamId: string; moveNumber: number }>();
+    if (!this.msel.id || !this.msel.useCite || this.teamList.length === 0 || this.isFullyCollapsed) {
+      return visible;
+    }
+    const add = (contextKey: string, moveNumber: number) => {
+      const teamId = this.getAssertionTeam(contextKey);
+      if (teamId && moveNumber !== null && moveNumber !== undefined) {
+        visible.set(this.teamResponsesKey(teamId, moveNumber), { teamId, moveNumber });
+      }
+    };
+    for (const row of this.displayRows) {
+      if (row.type === 'move') {
+        if (this.expandedMoveNumbers.has(row.moveNumber) && this.getMoveCompetencies(row.moveNumber).length > 0) {
+          add('move-' + row.moveNumber, row.moveNumber);
+        }
+      } else if (row.type === 'group') {
+        if (this.expandedGroupKeys.has(row.groupKey) && this.getGroupCompetencies(row.groupKey).length > 0) {
+          add('group-' + row.groupKey, row.moveNumber);
+        }
+      } else if (row.event?.id) {
+        if (this.expandedEventIds.has(row.event.id) && this.getEventCompetencies(row.event.id).length > 0) {
+          add(row.event.id, row.moveNumber);
+        }
+      }
+    }
+    return visible;
+  }
+
+  private teamResponsesKey(teamId: string, moveNumber: number): string {
+    return `${teamId}|${moveNumber}`;
+  }
+
+  /** Reads one team's answers, keeping the previous ones on screen meanwhile. */
+  private loadTeamResponses(key: string, target: { teamId: string; moveNumber: number }) {
+    this.teamResponseLoads.get(key)?.unsubscribe();
+    const previous = this.teamResponses.get(key);
+    this.teamResponses.set(key, {
+      ...target,
+      loading: true,
+      error: null,
+      responses: previous?.responses ?? null,
+      fetchedAt: previous?.fetchedAt ?? 0,
+    });
+    const mselId = this.msel.id;
+    const load = this.citeService.getMselCiteTeamResponses(mselId, target.moveNumber, target.teamId)
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe({
+        next: (responses) => {
+          if (this.msel.id !== mselId) return;
+          this.teamResponses.set(key, { ...target, loading: false, error: null, responses, fetchedAt: Date.now() });
+        },
+        error: () => {
+          if (this.msel.id !== mselId) return;
+          this.teamResponses.set(key, {
+            ...target,
+            loading: false,
+            error: 'Team responses could not be loaded.',
+            responses: this.teamResponses.get(key)?.responses ?? null,
+            fetchedAt: Date.now(),
+          });
+        }
+      });
+    this.teamResponseLoads.set(key, load);
+  }
+
+  /** Forgets one team's answers, cancelling a read still in flight. */
+  private dropTeamResponses(key: string) {
+    this.teamResponseLoads.get(key)?.unsubscribe();
+    this.teamResponseLoads.delete(key);
+    this.teamResponses.delete(key);
+  }
+
+  /** Forgets every team's answers, for another MSEL. */
+  private resetTeamResponses() {
+    for (const load of this.teamResponseLoads.values()) {
+      load.unsubscribe();
+    }
+    this.teamResponseLoads.clear();
+    this.teamResponses.clear();
+    this.shownTeamResponses.clear();
   }
 
   getTeamsForContext(contextKey: string): Team[] {
@@ -1678,7 +2305,7 @@ export class AssessorViewComponent implements OnDestroy, ScenarioEventView {
     }
   }
 
-  private getContextCompetencies(contextKey: string): Competency[] {
+  getContextCompetencies(contextKey: string): Competency[] {
     if (contextKey.startsWith('move-')) {
       return this.getMoveCompetencies(parseInt(contextKey.replace('move-', ''), 10));
     } else if (contextKey.startsWith('group-')) {

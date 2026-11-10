@@ -15,6 +15,8 @@ import {
   MselCompetency,
   MselItemStatus,
   MselPage,
+  MselScoringModel,
+  MselScoringModelService,
   MselService,
   MselUnit,
   ScenarioEvent,
@@ -26,7 +28,7 @@ import {
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
 import { MselDataService, MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
-import { canUpdateMsel } from 'src/app/utilities/msel-permissions';
+import { canUpdateMsel, integrationsLocked, isPipelineStatus } from 'src/app/utilities/msel-permissions';
 import { MselImageDataService } from 'src/app/data/msel/msel-image-data.service';
 import { ErrorService } from 'src/app/services/error/error.service';
 import { SystemMessageService } from 'src/app/services/system-message/system-message.service';
@@ -75,6 +77,7 @@ import { AngularEditorModule } from '@kolkov/angular-editor';
 import { CardEditDialogComponent } from '../card-edit-dialog/card-edit-dialog.component';
 import { DatePipe, formatDate } from '@angular/common';
 import { TimezoneAbbrPipe } from '../../utilities/timezone-abbr';
+import { normalizeScoringModel, scoringModelCounts } from 'src/app/utilities/scoring-model';
 
 @Component({
     selector: 'app-msel-info',
@@ -109,9 +112,12 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   private activatedRoute = inject(ActivatedRoute);
   private settingsService = inject(ComnSettingsService);
   private scenarioEventQuery = inject(ScenarioEventQuery);
+  private mselScoringModelService = inject(MselScoringModelService);
 
   readonly loggedInUserId = input<string>(undefined);
   readonly deleteThisMsel = output<string>();
+  /** Asks the MSEL page to open another rail tab, by name. */
+  readonly openTab = output<string>();
   msel = new MselPlus();
   originalMsel = new MselPlus();
   expandedScenarioEventIds: string[] = [];
@@ -140,6 +146,9 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   private competencyTypeCache = new Map<string, string>();
   creatorName = 'unknown';
   scoringModelList: ScoringModel[] = [];
+  // A MSEL either links a CITE scoring model or authors its own in Blueprint, on the Scoring Model tab. The push
+  // needs one or the other, and the Config tab summarizes what it has.
+  authoredScoringModel: MselScoringModel | null = null;
   casterDirectoryList: CasterDirectory[] = [];
   casterDirectoryError = '';
   private casterDirectoriesRequested = false;
@@ -151,11 +160,6 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     MselItemStatus.Approved,
     MselItemStatus.Complete,
     MselItemStatus.Archived,
-  ];
-  private pipelineStatuses: MselItemStatus[] = [
-    MselItemStatus.Pushing,
-    MselItemStatus.Pulling,
-    MselItemStatus.Deployed,
   ];
   // Steamfitter runs no task until its scenario is started
   readonly steamfitterStartModes: { value: SteamfitterScenarioStartMode; label: string }[] = [
@@ -221,6 +225,7 @@ export class MselInfoComponent implements OnDestroy, OnInit {
             // the Caster warning needs to know whether any application opens the VM UI
             this.playerApplicationDataService.loadByMsel(msel.id);
             this.newMselPage.mselId = msel.id;
+            this.loadAuthoredScoringModel(msel.id);
           }
           if (!this.msel?.integrationStatus) {
             this.integrationRequested = '';
@@ -510,14 +515,11 @@ export class MselInfoComponent implements OnDestroy, OnInit {
   }
 
   isPipelineStatus(): boolean {
-    return this.pipelineStatuses.includes(this.msel?.status);
+    return isPipelineStatus(this.msel);
   }
 
-  // the integrations were built from these settings, so they stay as they are until Remove Integrations
   integrationsLocked(): boolean {
-    const msel = this.msel;
-    return this.isPipelineStatus() || !!(msel?.playerViewId || msel?.galleryCollectionId || msel?.galleryExhibitId ||
-      msel?.citeEvaluationId || msel?.steamfitterScenarioId || msel?.casterWorkspaceId);
+    return integrationsLocked(this.msel);
   }
 
   // the current status is listed even when it is one the user cannot choose, so the field still shows it
@@ -527,6 +529,12 @@ export class MselInfoComponent implements OnDestroy, OnInit {
 
   // Setting the image follows the API's MSEL update rule: the owner or EditMsels.
   canSetMselImage(): boolean {
+    return this.canUpdateMsel();
+  }
+
+  // The API's MSEL update rule: the owner or EditMsels. Hiding names is held to it rather than to
+  // canEditMsel, since an Editor is one of the people it hides names from.
+  canUpdateMsel(): boolean {
     return canUpdateMsel(this.msel, this.loggedInUserId(), this.permissionDataService.hasPermission(SystemPermission.EditMsels));
   }
 
@@ -977,6 +985,40 @@ export class MselInfoComponent implements OnDestroy, OnInit {
     this.msel.startTime.setHours(8, 0, 0, 0);
     this.msel.startTime.setDate(this.msel.startTime.getDate() + 1);
     this.startTimeCheck();
+  }
+
+  loadAuthoredScoringModel(mselId: string) {
+    this.authoredScoringModel = null;
+    this.mselScoringModelService
+      .getMselScoringModel(mselId)
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe({
+        next: (model) => {
+          // the answer for a MSEL the user has since left is not this one's
+          if (this.msel.id !== mselId) {
+            return;
+          }
+          this.authoredScoringModel = model ? normalizeScoringModel(model) : null;
+        },
+        error: (error) => console.error('Failed to load the MSEL scoring model:', error),
+      });
+  }
+
+  // the push needs a scoring model to make the CITE evaluation from, linked or authored
+  hasCiteScoringModel(): boolean {
+    return !!this.msel.citeScoringModelId || !!this.authoredScoringModel;
+  }
+
+  // "Harbor Questions (2 categories, 5 options)", the linked CITE model's name, or "not set"
+  scoringModelSummary(): string {
+    const authored = this.authoredScoringModel;
+    if (authored) {
+      return `${authored.description} (${scoringModelCounts(authored)})`;
+    }
+    if (this.msel.citeScoringModelId) {
+      return this.citeScoringModelName || this.msel.citeScoringModelId;
+    }
+    return 'not set';
   }
 
   updateCiteScoringModelName() {
