@@ -17,16 +17,20 @@ import { screen, within } from '@testing-library/angular';
 import { of } from 'rxjs';
 import { AngularEditorModule } from '@kolkov/angular-editor';
 import {
+  Card,
   CompetencyFramework,
   CompetencyFrameworkService,
   DataField,
   DataFieldType,
   DataValue,
   EventType,
+  Move,
   Msel,
   MselCompetency,
   MselCompetencyService,
   ScenarioEvent,
+  Team,
+  User,
 } from 'src/app/generated/blueprint.api';
 import { MselStore } from 'src/app/data/msel/msel.store';
 import { MselViewComponent } from './msel-view.component';
@@ -145,5 +149,99 @@ describe('MselViewComponent', () => {
     const table = within(screen.getByRole('table'));
 
     expect(table.getByText('Team 2')).toHaveAttribute('title', 'Not a date and time');
+  });
+
+  describe('on its own route', () => {
+    const PLANNER: User = { id: 'user-1', name: 'Pat Planner' };
+    const TEAM: Team = { id: 'team-1', mselId: 'msel-1', name: 'Blue Team', shortName: 'BLUE', users: [PLANNER] };
+    const STANDALONE_MSEL: Msel = {
+      ...MSEL,
+      showMoveOnExerciseView: true,
+      teams: [TEAM],
+    };
+    const STANDALONE_FIELDS: DataField[] = [
+      ...FIELDS,
+      { id: 'df-card', mselId: 'msel-1', name: 'Gallery Card', dataType: DataFieldType.Card, displayOrder: 4, onExerciseView: true },
+      { id: 'df-owner', mselId: 'msel-1', name: 'Owner', dataType: DataFieldType.User, displayOrder: 5, onExerciseView: true },
+    ];
+    const STANDALONE_VALUES: DataValue[] = [
+      ...VALUES,
+      { id: 'dv-4', scenarioEventId: 'se-1', dataFieldId: 'df-card', value: 'card-1' },
+      { id: 'dv-5', scenarioEventId: 'se-1', dataFieldId: 'df-owner', value: 'user-1' },
+    ];
+    const CARDS: Card[] = [{ id: 'card-1', mselId: 'msel-1', name: 'Breaking News' }];
+    const MOVES: Move[] = [{ id: 'move-1', mselId: 'msel-1', moveNumber: 1, deltaSeconds: 0 }];
+
+    async function renderStandalone() {
+      const apis = mselLoadApiStubs({
+        msel: STANDALONE_MSEL,
+        dataFields: STANDALONE_FIELDS,
+        dataValues: STANDALONE_VALUES,
+        scenarioEvents: EVENTS,
+        cards: CARDS,
+        moves: MOVES,
+        teams: [TEAM],
+      });
+      // msel/:mselid/view has the MSEL in the path and no ?msel
+      const { route } = activatedRouteStub({}, { mselid: 'msel-1' });
+      await renderComponent(MselViewComponent, {
+        imports: [
+          AngularEditorModule,
+          MatButtonModule,
+          MatCheckboxModule,
+          MatFormFieldModule,
+          MatIconModule,
+          MatInputModule,
+          MatSortModule,
+          MatTooltipModule,
+        ],
+        declarations: [MselViewComponent, DurationViewStub, IsDateTimeValuePipe],
+        providers: [
+          ...mselLoadApiProviders(apis),
+          {
+            provide: MselCompetencyService,
+            useValue: { getMselCompetencies: vi.fn(() => of<MselCompetency[]>([])) } satisfies ApiStub<MselCompetencyService>,
+          },
+          {
+            provide: CompetencyFrameworkService,
+            useValue: { getCompetencyFrameworks: vi.fn(() => of<CompetencyFramework[]>([])) } satisfies ApiStub<CompetencyFrameworkService>,
+          },
+          { provide: ActivatedRoute, useValue: route },
+          provideHttpClient(),
+          provideHttpClientTesting(),
+        ],
+        inputs: { tabHeight: 48 },
+      });
+      return apis;
+    }
+
+    /**
+     * Verifies: opened on msel/:mselid/view, the view loads the MSEL itself and keeps it active, so the columns set on the MSEL show.
+     * Interacts with: the MSEL, move, card and team endpoints (stubs), real MselDataService and MselStore.
+     * Data: route param mselid=msel-1, no ?msel; the MSEL shows Move on the exercise view.
+     */
+    it('loads and keeps the MSEL from the path', async () => {
+      const apis = await renderStandalone();
+
+      expect(apis.msel.getMsel).toHaveBeenCalledWith('msel-1');
+      expect(apis.move.getMovesByMsel).toHaveBeenCalledWith('msel-1');
+      expect(apis.card.getCardsByMsel).toHaveBeenCalledWith('msel-1');
+      expect(apis.team.getTeamsByMsel).toHaveBeenCalledWith('msel-1');
+      expect(screen.getByRole('columnheader', { name: /Move/ })).toBeInTheDocument();
+    });
+
+    /**
+     * Verifies: Card and User values show the card and user names, not empty cells, when the view is opened on its own.
+     * Interacts with: ScenarioEventDataService.updateScenarioEventViewCards / updateScenarioEventViewUsers and getDisplayValueFromView.
+     * Data: Gallery Card = card-1 (Breaking News), Owner = user-1 (Pat Planner, on Blue Team).
+     */
+    it('shows card and user names', async () => {
+      await renderStandalone();
+      const table = within(screen.getByRole('table'));
+
+      expect(table.getByText('Phishing wave')).toBeInTheDocument();
+      expect(table.getByText('Breaking News')).toBeInTheDocument();
+      expect(table.getByText('Pat Planner')).toBeInTheDocument();
+    });
   });
 });
