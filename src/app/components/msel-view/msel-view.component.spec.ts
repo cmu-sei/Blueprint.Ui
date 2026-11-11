@@ -180,7 +180,6 @@ describe('MselViewComponent', () => {
         scenarioEvents: EVENTS,
         cards: CARDS,
         moves: MOVES,
-        teams: [TEAM],
       });
       // msel/:mselid/view has the MSEL in the path and no ?msel
       const { route } = activatedRouteStub({}, { mselid: 'msel-1' });
@@ -217,7 +216,7 @@ describe('MselViewComponent', () => {
 
     /**
      * Verifies: opened on msel/:mselid/view, the view loads the MSEL itself and keeps it active, so the columns set on the MSEL show.
-     * Interacts with: the MSEL, move, card and team endpoints (stubs), real MselDataService and MselStore.
+     * Interacts with: the MSEL, move and card endpoints (stubs), real MselDataService and MselStore.
      * Data: route param mselid=msel-1, no ?msel; the MSEL shows Move on the exercise view.
      */
     it('loads and keeps the MSEL from the path', async () => {
@@ -226,7 +225,6 @@ describe('MselViewComponent', () => {
       expect(apis.msel.getMsel).toHaveBeenCalledWith('msel-1');
       expect(apis.move.getMovesByMsel).toHaveBeenCalledWith('msel-1');
       expect(apis.card.getCardsByMsel).toHaveBeenCalledWith('msel-1');
-      expect(apis.team.getTeamsByMsel).toHaveBeenCalledWith('msel-1');
       expect(screen.getByRole('columnheader', { name: /Move/ })).toBeInTheDocument();
     });
 

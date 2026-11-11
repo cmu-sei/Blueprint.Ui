@@ -32,8 +32,6 @@ import { MselDataService } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { CardDataService } from 'src/app/data/card/card-data.service';
 import { MoveDataService } from 'src/app/data/move/move-data.service';
-import { TeamDataService } from 'src/app/data/team/team-data.service';
-import { OrganizationDataService } from 'src/app/data/organization/organization-data.service';
 import { MatMenuTrigger } from '@angular/material/menu';
 import { CardQuery } from 'src/app/data/card/card.query';
 import { DataValueDataService } from 'src/app/data/data-value/data-value-data.service';
@@ -78,10 +76,8 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
   private mselDataService = inject(MselDataService);
   private mselQuery = inject(MselQuery);
   private organizationQuery = inject(OrganizationQuery);
-  private organizationDataService = inject(OrganizationDataService);
   private cardDataService = inject(CardDataService);
   private moveDataService = inject(MoveDataService);
-  private teamDataService = inject(TeamDataService);
   private dataValueDataService = inject(DataValueDataService);
   private dataValueQuery = inject(DataValueQuery);
   private teamQuery = inject(TeamQuery);
@@ -164,8 +160,6 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
           // on its own route there is no MSEL page to load the rest of what the view shows
           this.moveDataService.loadByMsel(mselId);
           this.cardDataService.loadByMsel(mselId);
-          this.teamDataService.loadByMsel(mselId);
-          this.organizationDataService.loadByMsel(mselId);
           this.mselDataService.setActive(mselId);
           // Call xAPI for viewed event (only on view page, not build page)
           const baseUrl = this.settingsService.settings.ApiUrl.endsWith('/')
