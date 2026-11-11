@@ -77,6 +77,7 @@ import { CardEditDialogComponent } from '../card-edit-dialog/card-edit-dialog.co
 import { DatePipe, formatDate } from '@angular/common';
 import { TimezoneAbbrPipe } from '../../utilities/timezone-abbr';
 import { normalizeScoringModel, scoringModelCounts } from 'src/app/utilities/scoring-model';
+import { reloadOnReconnect } from 'src/app/services/hub-reconnect.service';
 
 @Component({
     selector: 'app-msel-info',
@@ -206,6 +207,13 @@ export class MselInfoComponent implements OnDestroy, OnInit {
       : integrationStatus;
   }
   constructor() {
+    // a new hub connection missed what was broadcast while the old one was down; the MSEL page reloads
+    // the rest of what this tab shows
+    reloadOnReconnect(() => {
+      if (this.msel.id) {
+        this.playerApplicationDataService.loadByMsel(this.msel.id);
+      }
+    });
     // subscribe to the active MSEL
     (this.mselQuery.selectActive() as Observable<MselPlus>)
       .pipe(takeUntil(this.unsubscribe$))

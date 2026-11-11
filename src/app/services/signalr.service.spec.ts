@@ -10,6 +10,7 @@ import * as signalR from '@microsoft/signalr';
 import { ComnAuthService, ComnSettingsService } from '@cmusei/crucible-common';
 import { MselUnit, MselUnitService } from 'src/app/generated/blueprint.api';
 import { ApplicationArea, PresenceActor, SignalRService } from './signalr.service';
+import { HubReconnectService } from './hub-reconnect.service';
 import { CardQuery } from '../data/card/card.query';
 import { CatalogQuery } from '../data/catalog/catalog.query';
 import { CiteActionQuery } from '../data/cite-action/cite-action.query';
@@ -159,6 +160,59 @@ describe('SignalRService', () => {
       expect(hub.start).toHaveBeenCalledTimes(2);
       expect(hub.baseUrl).toBe('https://blueprint.test/hubs/main?bearer=tok-123');
       expect(hub.invoke).toHaveBeenCalledWith('Join');
+    });
+
+    /**
+     * Verifies: after an automatic reconnect the pages are told to reload, but only once the new connection has
+     * rejoined its groups, so nothing broadcast after their reload starts is missed.
+     * Interacts with: FakeHubConnection.reconnect() and invoke (Join held open), HubReconnectService.reconnected$.
+     * Data: the home area; Join resolves only when the test releases it.
+     */
+    it('announces a reconnect once the new connection has rejoined', async () => {
+      const { hub } = await connect();
+      const reconnected = recordEmissions(TestBed.inject(HubReconnectService).reconnected$);
+      let rejoin: () => void = () => {};
+      hub.invoke.mockImplementation((method) =>
+        method === 'Join' ? new Promise<unknown>((resolve) => (rejoin = () => resolve(undefined))) : Promise.resolve(),
+      );
+
+      hub.reconnect();
+      await flush();
+      expect(reconnected).toHaveLength(0);
+
+      rejoin();
+      await flush();
+      expect(reconnected).toHaveLength(1);
+    });
+
+    /**
+     * Verifies: the first connection is not announced as a reconnect, since the pages are loading anyway.
+     * Interacts with: SignalRService.startConnection, HubReconnectService.reconnected$.
+     * Data: the home area.
+     */
+    it('does not announce the first connection', async () => {
+      const { service } = setup();
+      const reconnected = recordEmissions(TestBed.inject(HubReconnectService).reconnected$);
+
+      await service.startConnection(ApplicationArea.home);
+      await flush();
+
+      expect(reconnected).toHaveLength(0);
+    });
+
+    /**
+     * Verifies: the restart for a new signed-in user is announced, since it replaced the connection too.
+     * Interacts with: ComnAuthService.user$ (stub subject), HubReconnectService.reconnected$.
+     * Data: a user$ emission after the connection is up.
+     */
+    it('announces the restart for a new signed-in user', async () => {
+      const { user$ } = await connect();
+      const reconnected = recordEmissions(TestBed.inject(HubReconnectService).reconnected$);
+
+      user$.next({ profile: { sub: 'user-2' } });
+      await flush();
+
+      expect(reconnected).toHaveLength(1);
     });
 
     /**

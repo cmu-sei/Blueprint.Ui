@@ -26,6 +26,7 @@ import { TopbarComponent } from '../../shared/top-bar/topbar.component';
 import { MatCard, MatCardHeader, MatCardTitle, MatCardSubtitle, MatCardContent, MatCardActions } from '@angular/material/card';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatButton } from '@angular/material/button';
+import { reloadOnReconnect } from 'src/app/services/hub-reconnect.service';
 
 @Component({
     selector: 'app-launch',
@@ -80,6 +81,14 @@ export class LaunchComponent implements OnDestroy, OnInit {
       });
     // load the users
     this.userDataService.load().pipe(take(1)).subscribe();
+    // a new hub connection missed what was broadcast while the old one was down, which can include
+    // the launched MSEL's integration status
+    reloadOnReconnect(() => {
+      this.userDataService.load().pipe(take(1)).subscribe();
+      if (this.launchedMsel?.id) {
+        this.mselDataService.loadById(this.launchedMsel.id);
+      }
+    });
     // load the join MSELs
     this.mselDataService
       .getMyLaunchMsels()

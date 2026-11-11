@@ -30,6 +30,7 @@ import { MatIcon } from '@angular/material/icon';
 
 import { MatFormField, MatInput, MatSuffix } from '@angular/material/input';
 import { MatIconButton } from '@angular/material/button';
+import { reloadOnReconnect } from 'src/app/services/hub-reconnect.service';
 
 @Component({
     selector: 'app-organization-list',
@@ -72,6 +73,13 @@ export class OrganizationListComponent implements OnDestroy, OnInit, AfterViewIn
   private unsubscribe$ = new Subject();
 
   constructor() {
+    // a new hub connection missed what was broadcast while the old one was down; an MSEL's own
+    // organizations are reloaded by the MSEL page
+    reloadOnReconnect(() => {
+      if (this.showTemplates) {
+        this.organizationDataService.loadTemplates();
+      }
+    });
     // subscribe to organizations
     this.organizationQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(organizations => {
       this.organizationList = organizations;

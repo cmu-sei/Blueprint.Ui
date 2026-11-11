@@ -33,6 +33,7 @@ import { MatExpansionPanel, MatExpansionPanelHeader } from '@angular/material/ex
 import { InjectListComponent } from '../../inject-list/inject-list.component';
 import { CatalogUnitsComponent } from '../../catalog-units/catalog-units.component';
 import { MatRipple } from '@angular/material/core';
+import { reloadOnReconnect } from 'src/app/services/hub-reconnect.service';
 
 @Component({
     selector: 'app-admin-catalog-list',
@@ -112,6 +113,8 @@ export class AdminCatalogListComponent implements OnDestroy, AfterViewInit {
       });
     // load catalogs
     this.catalogDataService.load();
+    // a new hub connection missed what was broadcast while the old one was down
+    reloadOnReconnect(() => this.catalogDataService.load());
   }
 
   getSortedCatalogs(catalogs: Catalog[]) {

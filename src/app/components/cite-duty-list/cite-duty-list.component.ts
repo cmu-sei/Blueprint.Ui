@@ -29,6 +29,7 @@ import { MatFormField, MatInput, MatSuffix, MatLabel } from '@angular/material/i
 import { MatIconButton } from '@angular/material/button';
 import { MatSelect } from '@angular/material/select';
 import { MatOption } from '@angular/material/autocomplete';
+import { reloadOnReconnect } from 'src/app/services/hub-reconnect.service';
 
 @Component({
     selector: 'app-cite-duty-list',
@@ -109,6 +110,8 @@ export class CiteDutyListComponent implements OnDestroy, AfterViewInit {
       });
     // load CiteDuty templates
     this.citeDutyDataService.loadTemplates();
+    // a new hub connection missed what was broadcast while the old one was down
+    reloadOnReconnect(() => this.citeDutyDataService.loadTemplates());
   }
 
   ngAfterViewInit() {

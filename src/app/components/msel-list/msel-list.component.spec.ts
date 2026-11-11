@@ -35,6 +35,7 @@ import {
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
 import { CurrentUserStore } from 'src/app/data/user/user.store';
 import { SignalRService } from 'src/app/services/signalr.service';
+import { HubReconnectService } from 'src/app/services/hub-reconnect.service';
 import { MselListComponent } from './msel-list.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { dialogRefStub } from 'src/app/test-utils/dialog-refs';
@@ -185,6 +186,24 @@ describe('MselListComponent', () => {
       expect(mselApi[loads]).toHaveBeenCalledTimes(1);
       expect(mselApi[skips]).not.toHaveBeenCalled();
       expect(within(toolbar()).getByText(title)).toBeInTheDocument();
+    });
+
+    /**
+     * Verifies: when the hub connection is replaced, the list loads again as the one it shows: every MSEL with
+     * ViewMsels, otherwise the caller's.
+     * Interacts with: HubReconnectService.announceReconnected, MselService.getMsels / getMyMsels (stubs).
+     * Data: ViewMsels, or every other MSEL permission (near miss).
+     */
+    it.each([
+      { label: 'with ViewMsels', permissions: [SystemPermission.ViewMsels], loads: 'getMsels', skips: 'getMyMsels' },
+      { label: 'without ViewMsels', permissions: allBut(SystemPermission.ViewMsels), loads: 'getMyMsels', skips: 'getMsels' },
+    ] as const)('reloads the list it shows $label when the hub connection is replaced', async ({ permissions, loads, skips }) => {
+      const { mselApi } = await renderMselList({ permissions: [...permissions] });
+
+      TestBed.inject(HubReconnectService).announceReconnected();
+
+      expect(mselApi[loads]).toHaveBeenCalledTimes(2);
+      expect(mselApi[skips]).not.toHaveBeenCalled();
     });
 
     /**

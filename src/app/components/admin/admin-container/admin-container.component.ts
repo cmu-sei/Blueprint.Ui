@@ -45,6 +45,7 @@ import { CardListComponent } from '../../card-list/card-list.component';
 import { CiteActionListComponent } from '../../cite-action-list/cite-action-list.component';
 import { CiteDutyListComponent } from '../../cite-duty-list/cite-duty-list.component';
 import { PlayerApplicationListComponent } from '../../player-application-list/player-application-list.component';
+import { reloadOnReconnect } from 'src/app/services/hub-reconnect.service';
 
 @Component({
     selector: 'app-admin-container',
@@ -148,6 +149,15 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
   private unsubscribe$ = new Subject();
 
   constructor() {
+    // a new hub connection missed what was broadcast while the old one was down; the sections reload
+    // their own lists
+    reloadOnReconnect(() => {
+      this.userDataService.load().pipe(take(1)).subscribe();
+      if (this.canAccessAdminSection) {
+        this.unitDataService.load();
+      }
+      this.injectTypeDataService.load();
+    });
     const titleService = inject(Title);
 
     this.theme$ = this.authQuery.userTheme$;
