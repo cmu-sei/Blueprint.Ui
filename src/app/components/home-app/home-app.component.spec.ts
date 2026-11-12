@@ -1,8 +1,8 @@
 // Copyright 2026 Carnegie Mellon University. All Rights Reserved.
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { Component, input, output } from '@angular/core';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { Component, input, output, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -12,7 +12,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { Observable, of } from 'rxjs';
-import { ComnAuthService, ComnSettingsService, Theme } from '@cmusei/crucible-common';
+import { ComnAuthService, ComnSettingsService, CrucibleThemeService, Theme } from '@cmusei/crucible-common';
 import {
   HealthCheckService,
   HealthReport,
@@ -31,6 +31,7 @@ import { TopbarComponent } from '../shared/top-bar/topbar.component';
 import { MselListComponent } from '../msel-list/msel-list.component';
 import { MselComponent } from '../msel/msel.component';
 import { captureUnhandledRejections, flush } from 'src/app/test-utils/unhandled-rx-errors';
+import { FakeImage } from 'src/app/test-utils/fake-image';
 
 @Component({ selector: 'app-topbar', template: '' })
 class TopbarStub {
@@ -57,7 +58,7 @@ class MselStub {
 const MSEL_PERMISSIONS = [SystemPermission.CreateMsels, SystemPermission.ViewMsels, SystemPermission.EditMsels, SystemPermission.ManageMsels];
 
 async function renderHome(
-  overrides: { permissions?: SystemPermission[]; mselId?: string; health?: HealthReport; logout?: ComnAuthService['logout']; background?: string } = {},
+  overrides: { permissions?: SystemPermission[]; mselId?: string; health?: HealthReport; logout?: ComnAuthService['logout']; background?: string; dark?: boolean } = {},
 ) {
   const { permissions = [], mselId, health = { status: HealthStatus.Healthy } } = overrides;
   const healthApi = {
@@ -82,6 +83,7 @@ async function renderHome(
       { replace: MselComponent, with: MselStub },
     ],
     providers: [
+      { provide: CrucibleThemeService, useValue: { isDarkMode: signal(overrides.dark ?? false) } },
       { provide: SystemPermissionsService, useValue: permissionApis.systemPermissions },
       PermissionDataService,
       { provide: HealthCheckService, useValue: healthApi },
@@ -209,22 +211,92 @@ describe('HomeAppComponent', () => {
     expect(screen.getByRole('heading', { name: 'Please refresh this page.' })).toBeInTheDocument();
   });
 
+  // crucible-common remembers loaded images, so each test uses its own URL.
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    FakeImage.last = undefined;
+  });
+
   /**
-   * Verifies: the MSEL list shows the background image named in settings; an open MSEL, or no setting, shows none.
-   * Interacts with: ComnSettingsService.settings (stub), ActivatedRoute (?msel), HomeAppComponent template.
-   * Data: AppLandingBackgroundImage set to a relative asset URL, or unset; no MSEL or msel-1 open.
+   * Verifies: the MSEL list shows the background image named in settings once it loads.
+   * Interacts with: ComnSettingsService.settings (stub), a stubbed Image, HomeAppComponent template.
+   * Data: AppLandingBackgroundImage set to a relative asset URL; the image load event fires.
    */
-  it.each([
-    { label: 'on the MSEL list', background: '/assets/local/landing-background.jpg', mselId: undefined as string, shown: true },
-    { label: 'not on an open MSEL', background: '/assets/local/landing-background.jpg', mselId: 'msel-1', shown: false },
-    { label: 'not without the setting', background: undefined as string, mselId: undefined as string, shown: false },
-  ])('shows the landing background $label', async ({ background, mselId, shown }) => {
-    const { container } = await renderHome({ background, mselId });
+  it('shows the landing background once the image loads', async () => {
+    vi.stubGlobal('Image', FakeImage);
+    const { fixture, container } = await renderHome({ background: '/assets/local/home-shows-the-landing-background-once-the-image-loads.jpg' });
+
+    expect(FakeImage.last?.src).toBe('/assets/local/home-shows-the-landing-background-once-the-image-loads.jpg');
+    FakeImage.last!.onload!();
+    fixture.detectChanges();
 
     const page = container.querySelector('.app-content-container') as HTMLElement;
-    expect(page.classList.contains('has-background')).toBe(shown);
-    if (shown) {
-      expect(page.style.getPropertyValue('--landing-background')).toBe('url("/assets/local/landing-background.jpg")');
-    }
+    expect(page.style.getPropertyValue('--crucible-landing-background')).toBe('url("/assets/local/home-shows-the-landing-background-once-the-image-loads.jpg")');
+    expect(page.classList.contains('crucible-landing-background')).toBe(true);
+  });
+
+  /**
+   * Verifies: in dark mode the image gets the near-black tint, so the page stays dark.
+   * Interacts with: CrucibleThemeService.isDarkMode (stub), a stubbed Image, crucibleLandingBackground.
+   * Data: AppLandingBackgroundImage set; dark mode on; the image load event fires.
+   */
+  it('tints the landing background in dark mode', async () => {
+    vi.stubGlobal('Image', FakeImage);
+    const { fixture, container } = await renderHome({ background: '/assets/local/home-dark.jpg', dark: true });
+
+    FakeImage.last!.onload!();
+    fixture.detectChanges();
+
+    const page = container.querySelector('.app-content-container') as HTMLElement;
+    expect(page.style.backgroundImage).toContain('linear-gradient');
+    expect(page.style.backgroundImage).toContain('home-dark.jpg');
+  });
+
+  /**
+   * Verifies: an image that fails to load leaves the normal page background, as if unset.
+   * Interacts with: ComnSettingsService.settings (stub), a stubbed Image, HomeAppComponent template.
+   * Data: AppLandingBackgroundImage set to a missing image; the image error event fires.
+   */
+  it('keeps the normal background when the image fails to load', async () => {
+    vi.stubGlobal('Image', FakeImage);
+    const { fixture, container } = await renderHome({ background: '/assets/local/home-keeps-the-normal-background-when-the-image-fails-to-load.jpg' });
+
+    FakeImage.last!.onerror?.();
+    fixture.detectChanges();
+
+    const page = container.querySelector('.app-content-container') as HTMLElement;
+    expect(page.style.getPropertyValue('--crucible-landing-background')).toBe('');
+    expect(page.classList.contains('crucible-landing-background')).toBe(false);
+  });
+
+  /**
+   * Verifies: without the setting, no image is requested and the normal page background is kept.
+   * Interacts with: ComnSettingsService.settings (stub), a stubbed Image, HomeAppComponent template.
+   * Data: AppLandingBackgroundImage unset.
+   */
+  it('keeps the normal background without the setting', async () => {
+    vi.stubGlobal('Image', FakeImage);
+    const { container } = await renderHome();
+
+    expect(FakeImage.last).toBeUndefined();
+    const page = container.querySelector('.app-content-container') as HTMLElement;
+    expect(page.style.getPropertyValue('--crucible-landing-background')).toBe('');
+    expect(page.classList.contains('crucible-landing-background')).toBe(false);
+  });
+
+  /**
+   * Verifies: an open MSEL shows no landing background, even once the image loads.
+   * Interacts with: ComnSettingsService.settings (stub), ActivatedRoute (?msel), a stubbed Image, HomeAppComponent template.
+   * Data: AppLandingBackgroundImage set to a relative asset URL; msel-1 open; the image load event fires.
+   */
+  it('hides the landing background on an open MSEL', async () => {
+    vi.stubGlobal('Image', FakeImage);
+    const { fixture, container } = await renderHome({ background: '/assets/local/home-hides-the-landing-background-on-an-open-msel.jpg', mselId: 'msel-1' });
+
+    FakeImage.last!.onload!();
+    fixture.detectChanges();
+
+    const page = container.querySelector('.app-content-container') as HTMLElement;
+    expect(page.classList.contains('crucible-landing-background')).toBe(false);
   });
 });

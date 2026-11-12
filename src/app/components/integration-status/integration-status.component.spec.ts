@@ -91,7 +91,10 @@ describe('IntegrationStatusComponent', () => {
     expect(screen.getByText('Gallery is unreachable')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Pull Integrations' }));
 
-    expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Remove Integrations' }));
+    expect(confirm).toHaveBeenCalledWith(expect.objectContaining({
+      title: 'Remove Integrations',
+      message: 'Are you sure that you want to remove partial integrations from the associated applications?',
+    }));
     expect(mselApi.pullIntegrations).toHaveBeenCalledWith('msel-1');
     expect(closedCount()).toBe(1);
   });

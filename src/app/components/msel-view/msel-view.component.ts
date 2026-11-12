@@ -30,6 +30,8 @@ import {
 } from 'src/app/generated/blueprint.api';
 import { MselDataService } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
+import { CardDataService } from 'src/app/data/card/card-data.service';
+import { MoveDataService } from 'src/app/data/move/move-data.service';
 import { MatMenuTrigger } from '@angular/material/menu';
 import { CardQuery } from 'src/app/data/card/card.query';
 import { DataValueDataService } from 'src/app/data/data-value/data-value-data.service';
@@ -74,6 +76,8 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
   private mselDataService = inject(MselDataService);
   private mselQuery = inject(MselQuery);
   private organizationQuery = inject(OrganizationQuery);
+  private cardDataService = inject(CardDataService);
+  private moveDataService = inject(MoveDataService);
   private dataValueDataService = inject(DataValueDataService);
   private dataValueQuery = inject(DataValueQuery);
   private teamQuery = inject(TeamQuery);
@@ -136,6 +140,7 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
   filterChange = new Subject<string>();
   private subscription: Subscription;
   private unsubscribe$ = new Subject();
+  private standaloneMselId = '';
   private competencyCache = new Map<string, Competency>();
   private competencyTypeCache = new Map<string, string>();
   viewConfig = VIEW_CONFIG;
@@ -149,8 +154,12 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
       .subscribe((params) => {
         const mselId = params['mselid'];
         if (mselId) {
+          this.standaloneMselId = mselId;
           this.mselDataService.loadById(mselId);
           this.loadInitialData(mselId);
+          // on its own route there is no MSEL page to load the rest of what the view shows
+          this.moveDataService.loadByMsel(mselId);
+          this.cardDataService.loadByMsel(mselId);
           this.mselDataService.setActive(mselId);
           // Call xAPI for viewed event (only on view page, not build page)
           const baseUrl = this.settingsService.settings.ApiUrl.endsWith('/')
@@ -163,6 +172,10 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
     activatedRoute.queryParamMap
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((params) => {
+        // on its own route the MSEL comes from the path, not ?msel
+        if (this.standaloneMselId) {
+          return;
+        }
         // set the selected tab based on the injectData
         const mselId = params.get('msel');
         if (!mselId) {
@@ -179,6 +192,8 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
         if (msel) {
           this.msel = { ...msel };
           this.mselUsers = this.getMselUsers();
+          this.scenarioEventDataService.updateScenarioEventViewUsers(this);
+          this.refreshDataValues();
         }
       });
     // subscribe to data fields
@@ -242,9 +257,9 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((cards) => {
         this.cardList = cards;
+        this.scenarioEventDataService.updateScenarioEventViewCards(this);
+        this.refreshDataValues();
       });
-    this.scenarioEventDataService.updateScenarioEventViewCards(this);
-    this.scenarioEventDataService.updateScenarioEventViewDisplayedEvents(this);
     // observe the Moves
     this.moveQuery
       .selectAll()
@@ -309,6 +324,15 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
   }
   set displayedScenarioEvents(evts: ScenarioEvent[]) {
     this.sortedScenarioEvents = evts;
+  }
+
+  // re-index the values after the cards or users they name have changed
+  private refreshDataValues() {
+    if (!this.sortedDataFields) {
+      return;
+    }
+    this.scenarioEventDataService.updateScenarioEventViewDataValues(this);
+    this.scenarioEventDataService.updateScenarioEventViewDisplayedEvents(this);
   }
 
   loadInitialData(mselId: string) {
@@ -388,13 +412,13 @@ export class MselViewComponent implements OnDestroy, ScenarioEventView {
 
   getMselUsers(): User[] {
     let users = [];
-    this.msel.teams.forEach((team) => {
-      team.users.forEach((user) => {
+    (this.msel.teams ?? []).forEach((team) => {
+      (team.users ?? []).forEach((user) => {
         users.push({ ...user });
       });
     });
-    this.msel.units.forEach((unit) => {
-      unit.users.forEach((user) => {
+    (this.msel.units ?? []).forEach((unit) => {
+      (unit.users ?? []).forEach((user) => {
         users.push({ ...user });
       });
     });

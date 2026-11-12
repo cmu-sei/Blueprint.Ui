@@ -296,10 +296,10 @@ export class MselComponent implements OnDestroy {
   // the open tab's unsaved work, for the pages that hold edits until they are saved
   private unsavedChangesMessage(): string {
     if (this.selectedTab === 'Info' && this.mselInfoComponent()?.hasPendingChanges()) {
-      return 'You have unsaved changes on the MSEL Info page. Are you sure you want to discard them?';
+      return 'You have unsaved changes on the MSEL Info page. Are you sure that you want to discard them?';
     }
     if (this.selectedTab === 'Scoring Model' && this.scoringModelTab()?.hasPendingChanges()) {
-      return 'You have unsaved changes on the Scoring Model page. Are you sure you want to discard them?';
+      return 'You have unsaved changes on the Scoring Model page. Are you sure that you want to discard them?';
     }
     return '';
   }
