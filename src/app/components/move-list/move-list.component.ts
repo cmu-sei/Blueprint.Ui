@@ -109,9 +109,11 @@ export class MoveListComponent implements OnDestroy, AfterViewInit {
     let editMove: Move = {};
     if (!move) {
       dialogTitle = 'Add a Move';
+      // each move starts after the one before it, so a new move starts an hour after the latest
       editMove = {
         moveNumber: this.maxMoveNumber + 1,
-        deltaSeconds: this.maxMoveStartSeconds,
+        deltaSeconds:
+          this.mselMoves().length > 0 ? this.maxMoveStartSeconds + 3600 : 0,
         description: '',
         situationDescription: '',
         situationTime: new Date(),
@@ -130,6 +132,7 @@ export class MoveListComponent implements OnDestroy, AfterViewInit {
       data: {
         move: editMove,
         mselStartTime: this.msel.startTime,
+        otherMoves: this.mselMoves().filter((m) => m.id !== editMove.id),
         title: dialogTitle,
       },
     });

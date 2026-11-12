@@ -50,8 +50,13 @@ const MOVE: Move = {
   situationDescription: '<p>Phishing</p>',
 };
 
-async function renderMoveEdit(move: Move = MOVE) {
-  const data = { move: structuredClone(move), mselStartTime: START, title: 'Edit Move' };
+async function renderMoveEdit(move: Move = MOVE, otherMoves: Move[] = []) {
+  const data = {
+    move: structuredClone(move),
+    mselStartTime: START,
+    otherMoves,
+    title: 'Edit Move',
+  };
   const rendered = await renderComponent(MoveEditDialogComponent, {
     imports: [
       ...CRUCIBLE_DIALOG_IMPORTS,
@@ -126,6 +131,63 @@ describe('MoveEditDialogComponent', () => {
       { saveChanges: true, move: data.move },
       { saveChanges: false, move: null },
     ]);
+  });
+
+  /**
+   * Verifies: a start that is not after the move numbered before it is named under the start time and Save is
+   * disabled; changing the start to one after it clears the error and saves. Mirrors the API's 400.
+   * Interacts with: moveOrderConflict, DurationEditStub durationSecondsChange, crucible-dialog submitDisabled.
+   * Data: Move 1 at +3600s against another Move 0 at +3600s, then moved to +7200s.
+   */
+  it('refuses a start the move before it already has, until the start changes', async () => {
+    const { fixture, data, results } = await renderMoveEdit(MOVE, [
+      { id: 'move-0', moveNumber: 0, deltaSeconds: 3600 },
+    ]);
+    const user = userEvent.setup();
+
+    expect(
+      screen.getByText(
+        "Move 1 can't start at the same time as Move 0. Each move must start after the move before it.",
+      ),
+    ).toBeInTheDocument();
+    const save = actions().getByRole('button', { name: 'Save' });
+    expect(save).toBeDisabled();
+
+    const duration = fixture.debugElement.query(By.directive(DurationEditStub))
+      .componentInstance as DurationEditStub;
+    duration.durationSecondsChange.emit(7200);
+    fixture.detectChanges();
+
+    expect(
+      screen.queryByText(/Each move must start after the move before it/),
+    ).not.toBeInTheDocument();
+    expect(save).toBeEnabled();
+    await user.click(save);
+    expect(results).toEqual([{ saveChanges: true, move: data.move }]);
+    expect(data.move.deltaSeconds).toBe(7200);
+  });
+
+  /**
+   * Verifies: a move number typed past a later-starting move is refused, as the API refuses the renumber.
+   * Interacts with: ngModel on Move Number, moveOrderConflict.
+   * Data: Move 1 at +3600s, another Move 2 at +7200s; the number changed to 3.
+   */
+  it('refuses a move number that puts the move out of start time order', async () => {
+    await renderMoveEdit(MOVE, [
+      { id: 'move-2', moveNumber: 2, deltaSeconds: 7200 },
+    ]);
+    const user = userEvent.setup();
+
+    const number = screen.getByPlaceholderText('Move Number');
+    await user.clear(number);
+    await user.type(number, '3');
+
+    expect(
+      screen.getByText(
+        'Move 3 must start after Move 2. Each move must start after the move before it.',
+      ),
+    ).toBeInTheDocument();
+    expect(actions().getByRole('button', { name: 'Save' })).toBeDisabled();
   });
 
   /**

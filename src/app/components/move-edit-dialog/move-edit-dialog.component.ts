@@ -7,7 +7,8 @@ import { UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/f
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { EDITOR_CONFIG } from 'src/app/utilities/editor-config';
 import { CrucibleDialogComponent, CrucibleDialogContentDirective } from '@cmusei/crucible-common';
-import { MatFormField, MatLabel, MatInput, MatSuffix } from '@angular/material/input';
+import { MatFormField, MatLabel, MatInput, MatSuffix, MatError } from '@angular/material/input';
+import { MatIcon } from '@angular/material/icon';
 import { DurationEditComponent } from '../shared/duration-edit/duration-edit.component';
 import { NgxMatDatepickerInput, NgxMatDatetimepicker, NgxMatDatepickerActions, NgxMatDatepickerApply, NgxMatDatepickerCancel } from '@ngxmc/datetime-picker';
 import { MatDatepickerToggle } from '@angular/material/datepicker';
@@ -15,12 +16,13 @@ import { MatButton } from '@angular/material/button';
 import { AngularEditorModule } from '@kolkov/angular-editor';
 import { DatePipe } from '@angular/common';
 import { TimezoneAbbrPipe } from '../../utilities/timezone-abbr';
+import { moveOrderConflict } from '../../utilities/move-order';
 
 @Component({
     selector: 'app-move-edit-dialog',
     templateUrl: './move-edit-dialog.component.html',
     styleUrls: ['./move-edit-dialog.component.scss'],
-    imports: [CrucibleDialogComponent, CrucibleDialogContentDirective, MatFormField, MatLabel, MatInput, FormsModule, DurationEditComponent, NgxMatDatepickerInput, ReactiveFormsModule, MatDatepickerToggle, MatSuffix, NgxMatDatetimepicker, NgxMatDatepickerActions, MatButton, NgxMatDatepickerApply, NgxMatDatepickerCancel, AngularEditorModule, DatePipe, TimezoneAbbrPipe]
+    imports: [CrucibleDialogComponent, CrucibleDialogContentDirective, MatFormField, MatLabel, MatInput, FormsModule, DurationEditComponent, NgxMatDatepickerInput, ReactiveFormsModule, MatDatepickerToggle, MatSuffix, NgxMatDatetimepicker, NgxMatDatepickerActions, MatButton, NgxMatDatepickerApply, NgxMatDatepickerCancel, AngularEditorModule, DatePipe, TimezoneAbbrPipe, MatError, MatIcon]
 })
 
 export class MoveEditDialogComponent {
@@ -33,6 +35,16 @@ export class MoveEditDialogComponent {
     []
   );
   editorConfig = EDITOR_CONFIG;
+
+  // the start must fall after the move numbered before it and before the one after it, as the API checks;
+  // data.otherMoves is the MSEL's other moves
+  orderError(): string {
+    return moveOrderConflict(
+      this.data.move.moveNumber,
+      this.data.move.deltaSeconds,
+      this.data.otherMoves,
+    );
+  }
 
   saveMove(which: string) {
     switch (which) {
@@ -52,7 +64,7 @@ export class MoveEditDialogComponent {
   handleEditComplete(saveChanges: boolean): void {
     if (!saveChanges) {
       this.editComplete.emit({ saveChanges: false, move: null });
-    } else {
+    } else if (!this.orderError()) {
       this.editComplete.emit({
         saveChanges: saveChanges,
         move: this.data.move,
