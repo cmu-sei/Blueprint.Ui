@@ -134,16 +134,45 @@ describe('MoveEditDialogComponent', () => {
   });
 
   /**
-   * Verifies: a start that is not after the move numbered before it is named under the start time and Save is
-   * disabled; changing the start to one after it clears the error and saves. Mirrors the API's 400.
-   * Interacts with: moveOrderConflict, DurationEditStub durationSecondsChange, crucible-dialog submitDisabled.
-   * Data: Move 1 at +3600s against another Move 0 at +3600s, then moved to +7200s.
+   * Verifies: a move that already shares its start with another (a MSEL saved before the rule) can have its text
+   * edited and saved with no error, as the API only checks a changed number or start.
+   * Interacts with: moveOrderConflict, crucible-dialog submit.
+   * Data: Move 1 at +3600s against another Move 0 at +3600s; only the description changes.
    */
-  it('refuses a start the move before it already has, until the start changes', async () => {
-    const { fixture, data, results } = await renderMoveEdit(MOVE, [
+  it('saves a text-only edit of a move that already shares its start', async () => {
+    const { data, results } = await renderMoveEdit(MOVE, [
       { id: 'move-0', moveNumber: 0, deltaSeconds: 3600 },
     ]);
     const user = userEvent.setup();
+
+    await user.clear(description());
+    await user.type(description(), 'Pivot');
+
+    expect(
+      screen.queryByText(/Each move must start after the move before it/),
+    ).not.toBeInTheDocument();
+    const save = actions().getByRole('button', { name: 'Save' });
+    expect(save).toBeEnabled();
+    await user.click(save);
+    expect(results).toEqual([{ saveChanges: true, move: data.move }]);
+  });
+
+  /**
+   * Verifies: a start changed to one that is not after the move numbered before it is named under the start time
+   * and Save is disabled; changing it to one after that move clears the error and saves. Mirrors the API's 400.
+   * Interacts with: moveOrderConflict, DurationEditStub durationSecondsChange, crucible-dialog submitDisabled.
+   * Data: Move 1 at +7200s, another Move 0 at +3600s; the start moved to +3600s, then to +5400s.
+   */
+  it('refuses a start the move before it already has, until the start changes', async () => {
+    const { fixture, data, results } = await renderMoveEdit(
+      { ...MOVE, deltaSeconds: 7200 },
+      [{ id: 'move-0', moveNumber: 0, deltaSeconds: 3600 }],
+    );
+    const user = userEvent.setup();
+    const duration = fixture.debugElement.query(By.directive(DurationEditStub))
+      .componentInstance as DurationEditStub;
+    duration.durationSecondsChange.emit(3600);
+    fixture.detectChanges();
 
     expect(
       screen.getByText(
@@ -153,9 +182,7 @@ describe('MoveEditDialogComponent', () => {
     const save = actions().getByRole('button', { name: 'Save' });
     expect(save).toBeDisabled();
 
-    const duration = fixture.debugElement.query(By.directive(DurationEditStub))
-      .componentInstance as DurationEditStub;
-    duration.durationSecondsChange.emit(7200);
+    duration.durationSecondsChange.emit(5400);
     fixture.detectChanges();
 
     expect(
@@ -164,7 +191,7 @@ describe('MoveEditDialogComponent', () => {
     expect(save).toBeEnabled();
     await user.click(save);
     expect(results).toEqual([{ saveChanges: true, move: data.move }]);
-    expect(data.move.deltaSeconds).toBe(7200);
+    expect(data.move.deltaSeconds).toBe(5400);
   });
 
   /**

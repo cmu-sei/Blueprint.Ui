@@ -36,9 +36,21 @@ export class MoveEditDialogComponent {
   );
   editorConfig = EDITOR_CONFIG;
 
+  // the number and start the move had when the dialog opened
+  private readonly openedMoveNumber = +this.data.move.moveNumber;
+  private readonly openedDeltaSeconds = +this.data.move.deltaSeconds;
+
   // the start must fall after the move numbered before it and before the one after it, as the API checks;
-  // data.otherMoves is the MSEL's other moves
+  // data.otherMoves is the MSEL's other moves. Like the API, an edit is only checked once its number or start
+  // changes, so the text of a move that already shares its start can still be saved.
   orderError(): string {
+    if (
+      this.data.move.id &&
+      +this.data.move.moveNumber === this.openedMoveNumber &&
+      +this.data.move.deltaSeconds === this.openedDeltaSeconds
+    ) {
+      return '';
+    }
     return moveOrderConflict(
       this.data.move.moveNumber,
       this.data.move.deltaSeconds,
