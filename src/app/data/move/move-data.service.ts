@@ -15,7 +15,7 @@ import {
   MoveService,
   MselItemStatus
 } from 'src/app/generated/blueprint.api';
-import { map, take, tap } from 'rxjs/operators';
+import { finalize, map, take, tap } from 'rxjs/operators';
 import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
 
 @Injectable({
@@ -130,9 +130,8 @@ export class MoveDataService {
     return this.moveService
       .getMove(id)
       .pipe(
-        tap(() => {
-          this.moveStore.setLoading(false);
-        }),
+        // on failure too, so a refused save does not leave the moves loading
+        finalize(() => this.moveStore.setLoading(false)),
         take(1)
       )
       .subscribe((s) => {
@@ -150,9 +149,8 @@ export class MoveDataService {
     this.moveService
       .createMove(move)
       .pipe(
-        tap(() => {
-          this.moveStore.setLoading(false);
-        }),
+        // on failure too, so a refused save does not leave the moves loading
+        finalize(() => this.moveStore.setLoading(false)),
         take(1)
       )
       .subscribe((s) => {
@@ -165,9 +163,8 @@ export class MoveDataService {
     this.moveService
       .updateMove(move.id, move)
       .pipe(
-        tap(() => {
-          this.moveStore.setLoading(false);
-        }),
+        // on failure too, so a refused save does not leave the moves loading
+        finalize(() => this.moveStore.setLoading(false)),
         take(1)
       )
       .subscribe((n) => {
