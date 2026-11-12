@@ -256,5 +256,34 @@ describe('MselViewComponent', () => {
       expect(screen.getByRole('columnheader', { name: /Execution Time/ })).toBeInTheDocument();
       expect(screen.getByRole('columnheader', { name: /Title/ })).toBeInTheDocument();
     });
+
+    /**
+     * Verifies: the Integration Target column set on the MSEL shows each event's integration target.
+     * Interacts with: the active MSEL from the path (MselStore), the Integration Target cells of the MSEL view.
+     * Data: the MSEL shows Integration Target on the exercise view; Phishing wave targets Gallery.
+     */
+    it('shows the Integration Target column', async () => {
+      await renderStandalone(
+        { ...STANDALONE_MSEL, showIntegrationTargetOnExerciseView: true },
+        [{ ...EVENTS[0], integrationTarget: 'Gallery' }]
+      );
+      const table = within(screen.getByRole('table'));
+
+      expect(table.getByRole('columnheader', { name: 'Integration Target' })).toBeInTheDocument();
+      expect(table.getByRole('cell', { name: 'Gallery' })).toBeInTheDocument();
+    });
+
+    /**
+     * Verifies: the Integration Target column stays hidden when the MSEL doesn't show it on the exercise view.
+     * Interacts with: the active MSEL from the path (MselStore), the MSEL view header row.
+     * Data: showIntegrationTargetOnExerciseView unset; Phishing wave targets Gallery.
+     */
+    it('hides the Integration Target column unless the MSEL shows it', async () => {
+      await renderStandalone(STANDALONE_MSEL, [{ ...EVENTS[0], integrationTarget: 'Gallery' }]);
+      const table = within(screen.getByRole('table'));
+
+      expect(table.queryByRole('columnheader', { name: 'Integration Target' })).not.toBeInTheDocument();
+      expect(table.queryByText('Gallery')).not.toBeInTheDocument();
+    });
   });
 });

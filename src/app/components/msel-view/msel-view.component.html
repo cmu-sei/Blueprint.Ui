@@ -72,6 +72,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
             </div>
           </th>
           }
+          <!-- Integration Target -->
+          @if (msel.showIntegrationTargetOnExerciseView) {
+          <th class="background">
+            <div>Integration Target</div>
+          </th>
+          }
           @for (df of sortedDataFields; track df.id) {
           @if (sortableDataTypes.includes(df.dataType)) {
           <th mat-sort-header="{{ df.name }}" class="background">
@@ -121,6 +127,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
             <div class="time-span center-self">
               <app-duration-view [startTime]="msel.startTime" [durationSeconds]="item.deltaSeconds"
                 [showRealTime]="showRealTime" />
+            </div>
+          </td>
+          }
+          <!-- Integration Target value -->
+          @if (msel.showIntegrationTargetOnExerciseView) {
+          <td>
+            <div class="constrainer">
+              {{ item.integrationTarget || '' }}
             </div>
           </td>
           }
