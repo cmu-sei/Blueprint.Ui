@@ -228,27 +228,56 @@ describe('MoveListComponent', () => {
   });
 
   /**
-   * Verifies: the out-of-order warning shows when this MSEL's moves do not start in move order, and another MSEL's moves do not raise it.
-   * Interacts with: MoveListComponent.badMoveTimeOrder in the template, real MoveQuery (seeded).
-   * Data: this MSEL's Move 1 at +0s and Move 2 at +3600s or +0s; another MSEL's Move 1 at +9999s.
+   * Verifies: the Moves tab names each pair of this MSEL's moves that share a start time or are out of order, so the
+   * planner fixes them; moves in order, or another MSEL's moves, raise nothing.
+   * Interacts with: MoveListComponent.moveOrderProblems in the template, real MoveQuery (seeded).
+   * Data: this MSEL's Move 1 at +0s and Move 2 at +3600s, +0s or Move 2 at +3600s and Move 3 at +1800s; another MSEL's Move 1 at +9999s.
    */
   it.each([
-    { label: 'stays hidden when only another MSEL is out of order', moveTwoSeconds: 3600, shown: false },
-    { label: "shows when this MSEL's moves are out of order", moveTwoSeconds: 0, shown: true },
-  ])('the start time order warning $label', async ({ moveTwoSeconds, shown }) => {
+    {
+      label: 'stays hidden when only another MSEL is out of order',
+      extra: [{ moveNumber: 2, deltaSeconds: 3600 }],
+      expected: [],
+    },
+    {
+      label: 'names two moves that share a start time',
+      extra: [{ moveNumber: 2, deltaSeconds: 0 }],
+      expected: ['** Move 1 and Move 2 start at the same time.'],
+    },
+    {
+      label: 'names a move that starts before the one numbered before it',
+      extra: [
+        { moveNumber: 2, deltaSeconds: 3600 },
+        { moveNumber: 3, deltaSeconds: 1800 },
+      ],
+      expected: ['** Move 3 starts before Move 2.'],
+    },
+  ])('the start time order warning $label', async ({ extra, expected }) => {
     const moves: Move[] = [
       MOVE,
-      { ...MOVE, id: 'move-2', moveNumber: 2, deltaSeconds: moveTwoSeconds, description: 'Lateral movement' },
+      ...extra.map((m) => ({
+        ...MOVE,
+        id: `move-${m.moveNumber}`,
+        description: `Move ${m.moveNumber}`,
+        ...m,
+      })),
       { ...OTHER_MSEL_MOVE, moveNumber: 1, deltaSeconds: 9999 },
     ];
 
     await renderMoves({ moves });
 
-    const warning = screen.queryByText(/The moves are not in ascending start time order!/);
-    if (shown) {
-      expect(warning).toBeInTheDocument();
-    } else {
+    const warning = screen.queryByRole('alert');
+    if (expected.length === 0) {
       expect(warning).not.toBeInTheDocument();
+    } else {
+      for (const text of expected) {
+        expect(within(warning).getByText(text)).toBeInTheDocument();
+      }
+      expect(
+        within(warning).getByText(
+          'Each move must start after the move before it. Change the start times so each event is in the right move.',
+        ),
+      ).toBeInTheDocument();
     }
   });
 

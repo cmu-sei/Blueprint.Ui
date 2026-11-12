@@ -35,3 +35,26 @@ export function moveOrderConflict(
   }
   return '';
 }
+
+// Each pair of consecutive moves (by number) that share a start time or are out of order,
+// for a MSEL saved before the rule.
+export function moveOrderProblems(moves: Move[]): string[] {
+  const byNumber = [...(moves ?? [])].sort(
+    (a, b) => +a.moveNumber - +b.moveNumber,
+  );
+  const problems: string[] = [];
+  for (let i = 1; i < byNumber.length; i++) {
+    const previous = byNumber[i - 1];
+    const move = byNumber[i];
+    if (+move.deltaSeconds === +previous.deltaSeconds) {
+      problems.push(
+        `Move ${previous.moveNumber} and Move ${move.moveNumber} start at the same time.`,
+      );
+    } else if (+move.deltaSeconds < +previous.deltaSeconds) {
+      problems.push(
+        `Move ${move.moveNumber} starts before Move ${previous.moveNumber}.`,
+      );
+    }
+  }
+  return problems;
+}

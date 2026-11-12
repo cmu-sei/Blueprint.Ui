@@ -3,7 +3,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { Move } from 'src/app/generated/blueprint.api';
-import { moveOrderConflict } from './move-order';
+import { moveOrderConflict, moveOrderProblems } from './move-order';
 
 const move = (moveNumber: number, deltaSeconds: number): Move => ({
   id: `m${moveNumber}`,
@@ -63,5 +63,23 @@ describe('moveOrderConflict', () => {
       `Move 10 must start after Move 9. ${RULE}`,
     );
     expect(moveOrderConflict(1, 0, [move(1, 0)])).toBe('');
+  });
+});
+
+describe('moveOrderProblems', () => {
+  /**
+   * Verifies: each consecutive pair by number that shares a start or is out of order is named, whatever order
+   * the moves arrive in, and moves in start time order give none.
+   * Data: Moves 3, 0, 2, 1 at 600, 0, 1200, 0; then Moves 0, 1 at 0, 60.
+   */
+  it('names each pair that shares a start or is out of order', () => {
+    expect(
+      moveOrderProblems([move(3, 600), move(0, 0), move(2, 1200), move(1, 0)]),
+    ).toEqual([
+      'Move 0 and Move 1 start at the same time.',
+      'Move 3 starts before Move 2.',
+    ]);
+    expect(moveOrderProblems([move(0, 0), move(1, 60)])).toEqual([]);
+    expect(moveOrderProblems([])).toEqual([]);
   });
 });
