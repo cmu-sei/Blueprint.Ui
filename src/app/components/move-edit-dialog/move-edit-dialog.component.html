@@ -6,8 +6,8 @@ project root for license information.
 
 <crucible-dialog
   [dialogTitle]="data.title"
-  [submitDisabled]="!!orderError()"
-  [errorMessage]="orderError()"
+  [submitDisabled]="!!validationError()"
+  [errorMessage]="validationError()"
   [guardUnsavedWork]="true"
   (cancel)="handleEditComplete(false)"
   (submit)="handleEditComplete(true)"
@@ -18,7 +18,7 @@ project root for license information.
       <div>
         <mat-form-field class="full-width">
           <mat-label>Move Number</mat-label>
-          <input type="text" matInput [(ngModel)]="data.move.moveNumber" placeholder="Move Number">
+          <input type="number" min="0" step="1" matInput [(ngModel)]="data.move.moveNumber" placeholder="Move Number">
         </mat-form-field>
       </div>
     </div>

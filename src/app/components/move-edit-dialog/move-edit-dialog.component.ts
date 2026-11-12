@@ -35,6 +35,21 @@ export class MoveEditDialogComponent {
   );
   editorConfig = EDITOR_CONFIG;
 
+  // a cleared number field is null, and only a whole number is a move number
+  numberError(): string {
+    const moveNumber = this.data.move.moveNumber;
+    return moveNumber === null ||
+      moveNumber === undefined ||
+      `${moveNumber}`.trim() === '' ||
+      !Number.isInteger(+moveNumber)
+      ? 'Move Number must be a whole number.'
+      : '';
+  }
+
+  validationError(): string {
+    return this.numberError() || this.orderError();
+  }
+
   // the number and start the move had when the dialog opened
   private readonly openedMoveNumber = +this.data.move.moveNumber;
   private readonly openedDeltaSeconds = +this.data.move.deltaSeconds;
@@ -75,7 +90,7 @@ export class MoveEditDialogComponent {
   handleEditComplete(saveChanges: boolean): void {
     if (!saveChanges) {
       this.editComplete.emit({ saveChanges: false, move: null });
-    } else if (!this.orderError()) {
+    } else if (!this.validationError()) {
       this.editComplete.emit({
         saveChanges: saveChanges,
         move: this.data.move,
