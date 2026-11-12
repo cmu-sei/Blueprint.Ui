@@ -172,12 +172,12 @@ describe('MselViewComponent', () => {
     const CARDS: Card[] = [{ id: 'card-1', mselId: 'msel-1', name: 'Breaking News' }];
     const MOVES: Move[] = [{ id: 'move-1', mselId: 'msel-1', moveNumber: 1, deltaSeconds: 0 }];
 
-    async function renderStandalone() {
+    async function renderStandalone(msel: Msel = STANDALONE_MSEL, scenarioEvents: ScenarioEvent[] = EVENTS) {
       const apis = mselLoadApiStubs({
-        msel: STANDALONE_MSEL,
+        msel,
         dataFields: STANDALONE_FIELDS,
         dataValues: STANDALONE_VALUES,
-        scenarioEvents: EVENTS,
+        scenarioEvents,
         cards: CARDS,
         moves: MOVES,
       });
@@ -240,6 +240,21 @@ describe('MselViewComponent', () => {
       expect(table.getByText('Phishing wave')).toBeInTheDocument();
       expect(table.getByText('Breaking News')).toBeInTheDocument();
       expect(table.getByText('Pat Planner')).toBeInTheDocument();
+    });
+
+    /**
+     * Verifies: the Execution Time column set on the MSEL shows when the view is opened on its own, alongside the data-field columns.
+     * Interacts with: the active MSEL from the path (MselStore), the Time cells of the MSEL view (app-duration-view stub).
+     * Data: the MSEL shows Time on the exercise view; Phishing wave is at 15 minutes.
+     */
+    it('shows the Execution Time column', async () => {
+      await renderStandalone(
+        { ...STANDALONE_MSEL, showTimeOnExerciseView: true },
+        [{ ...EVENTS[0], deltaSeconds: 900 }]
+      );
+
+      expect(screen.getByRole('columnheader', { name: /Execution Time/ })).toBeInTheDocument();
+      expect(screen.getByRole('columnheader', { name: /Title/ })).toBeInTheDocument();
     });
   });
 });
