@@ -105,7 +105,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     </table>
   </div>
   @if (moveOrderProblems().length) {
-  <div class="warning-message" role="alert">
+  <div class="warning-message" role="status" aria-label="Move start times">
     @for (problem of moveOrderProblems(); track problem) {
     <div>** {{ problem }}</div>
     }

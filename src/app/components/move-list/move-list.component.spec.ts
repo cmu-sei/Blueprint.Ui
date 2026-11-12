@@ -266,7 +266,7 @@ describe('MoveListComponent', () => {
 
     await renderMoves({ moves });
 
-    const warning = screen.queryByRole('alert');
+    const warning = screen.queryByRole('status', { name: 'Move start times' });
     if (expected.length === 0) {
       expect(warning).not.toBeInTheDocument();
     } else {
