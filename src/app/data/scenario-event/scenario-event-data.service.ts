@@ -531,6 +531,9 @@ export class ScenarioEventDataService {
       return +scenarioEvent.deltaSeconds;
     } else if ('groupOrder' === fieldName) {
       return +scenarioEvent.groupOrder;
+    } else if ('integrationTarget' === fieldName) {
+      // a property of the event, not a data value, so it isn't in the value map
+      return scenarioEvent.integrationTarget ?? '';
     } else {
       const eventMap = valueMap.get(scenarioEvent.id);
       const val = eventMap ? eventMap.get(fieldName) : '';

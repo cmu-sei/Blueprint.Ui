@@ -353,6 +353,36 @@ describe('ScenarioEventDataService', () => {
     });
 
     /**
+     * Verifies: a column sort on Integration Target orders on the event's own integrationTarget, which is not a data value, and can be reversed.
+     * Interacts with: ScenarioEventDataService.updateScenarioEventViewDisplayedEvents.
+     * Data: targets "Steamfitter", none, "Gallery" on events at 1, 2, 3 seconds; sort integrationTarget asc then desc.
+     */
+    it('sorts displayed events on the integration target', () => {
+      const { service } = setup();
+      const v = view({
+        mselScenarioEvents: [
+          event({ id: 's', deltaSeconds: 1, integrationTarget: 'Steamfitter' }),
+          event({ id: 'none', deltaSeconds: 2 }),
+          event({ id: 'g', deltaSeconds: 3, integrationTarget: 'Gallery' }),
+        ],
+        dataValues: [
+          value('s', 'f-title', 'one'),
+          value('none', 'f-title', 'two'),
+          value('g', 'f-title', 'three'),
+        ],
+        sort: { active: 'integrationTarget', direction: 'asc' },
+      });
+      index(service, v);
+
+      service.updateScenarioEventViewDisplayedEvents(v);
+      expect(ids(v.displayedScenarioEvents)).toEqual(['none', 'g', 's']);
+
+      v.sort = { active: 'integrationTarget', direction: 'desc' };
+      service.updateScenarioEventViewDisplayedEvents(v);
+      expect(ids(v.displayedScenarioEvents)).toEqual(['s', 'g', 'none']);
+    });
+
+    /**
      * Verifies: a column sort on a text field orders case-insensitively and can be reversed, with time as the tie-breaker.
      * Interacts with: ScenarioEventDataService.updateScenarioEventViewDisplayedEvents.
      * Data: titles "bravo", "Alpha", "charlie"; sort Title asc then desc.
