@@ -4,6 +4,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Component, input } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { By } from '@angular/platform-browser';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { MatButtonModule } from '@angular/material/button';
@@ -183,7 +184,7 @@ describe('MselViewComponent', () => {
       });
       // msel/:mselid/view has the MSEL in the path and no ?msel
       const { route } = activatedRouteStub({}, { mselid: 'msel-1' });
-      await renderComponent(MselViewComponent, {
+      const { fixture } = await renderComponent(MselViewComponent, {
         imports: [
           AngularEditorModule,
           MatButtonModule,
@@ -211,7 +212,7 @@ describe('MselViewComponent', () => {
         ],
         inputs: { tabHeight: 48 },
       });
-      return apis;
+      return { ...apis, fixture };
     }
 
     /**
@@ -248,13 +249,15 @@ describe('MselViewComponent', () => {
      * Data: the MSEL shows Time on the exercise view; Phishing wave is at 15 minutes.
      */
     it('shows the Execution Time column', async () => {
-      await renderStandalone(
+      const { fixture } = await renderStandalone(
         { ...STANDALONE_MSEL, showTimeOnExerciseView: true },
         [{ ...EVENTS[0], deltaSeconds: 900 }]
       );
 
       expect(screen.getByRole('columnheader', { name: /Execution Time/ })).toBeInTheDocument();
       expect(screen.getByRole('columnheader', { name: /Title/ })).toBeInTheDocument();
+      const times = fixture.debugElement.queryAll(By.css('app-duration-view'));
+      expect(times.map((t) => (t.componentInstance as DurationViewStub).durationSeconds())).toEqual([900]);
     });
 
     /**
