@@ -7,6 +7,7 @@ project root for license information.
 <crucible-dialog
   [dialogTitle]="data.title"
   [submitDisabled]="!!orderError()"
+  [errorMessage]="orderError()"
   [guardUnsavedWork]="true"
   (cancel)="handleEditComplete(false)"
   (submit)="handleEditComplete(true)"
@@ -26,12 +27,6 @@ project root for license information.
       <app-duration-edit [startTime]="data.mselStartTime" [(durationSeconds)]="data.move.deltaSeconds"
         [timeName]="'Start Date / Time'" [postScript]="'from start'" />
     </div>
-    @if (orderError()) {
-    <mat-error class="add-margin error-message">
-      <mat-icon fontIcon="mdi-alert-circle-outline" />
-      {{ orderError() }}
-    </mat-error>
-    }
     <div class="add-margin">
       <div>
         <mat-form-field class="full-width">

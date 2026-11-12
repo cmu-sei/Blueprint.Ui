@@ -158,8 +158,8 @@ describe('MoveEditDialogComponent', () => {
   });
 
   /**
-   * Verifies: a start changed to one that is not after the move numbered before it is named under the start time
-   * and Save is disabled; changing it to one after that move clears the error and saves. Mirrors the API's 400.
+   * Verifies: a start changed to one that is not after the move numbered before it is announced as the dialog's
+   * error and Save is disabled; changing it to one after that move clears the error and saves. Mirrors the API's 400.
    * Interacts with: moveOrderConflict, DurationEditStub durationSecondsChange, crucible-dialog submitDisabled.
    * Data: Move 1 at +7200s, another Move 0 at +3600s; the start moved to +3600s, then to +5400s.
    */
@@ -174,11 +174,9 @@ describe('MoveEditDialogComponent', () => {
     duration.durationSecondsChange.emit(3600);
     fixture.detectChanges();
 
-    expect(
-      screen.getByText(
-        "Move 1 can't start at the same time as Move 0. Each move must start after the move before it.",
-      ),
-    ).toBeInTheDocument();
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      "Move 1 can't start at the same time as Move 0. Each move must start after the move before it.",
+    );
     const save = actions().getByRole('button', { name: 'Save' });
     expect(save).toBeDisabled();
 

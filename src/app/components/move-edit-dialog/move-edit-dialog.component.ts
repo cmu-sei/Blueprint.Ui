@@ -7,8 +7,7 @@ import { UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/f
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { EDITOR_CONFIG } from 'src/app/utilities/editor-config';
 import { CrucibleDialogComponent, CrucibleDialogContentDirective } from '@cmusei/crucible-common';
-import { MatFormField, MatLabel, MatInput, MatSuffix, MatError } from '@angular/material/input';
-import { MatIcon } from '@angular/material/icon';
+import { MatFormField, MatLabel, MatInput, MatSuffix } from '@angular/material/input';
 import { DurationEditComponent } from '../shared/duration-edit/duration-edit.component';
 import { NgxMatDatepickerInput, NgxMatDatetimepicker, NgxMatDatepickerActions, NgxMatDatepickerApply, NgxMatDatepickerCancel } from '@ngxmc/datetime-picker';
 import { MatDatepickerToggle } from '@angular/material/datepicker';
@@ -22,7 +21,7 @@ import { moveOrderConflict } from '../../utilities/move-order';
     selector: 'app-move-edit-dialog',
     templateUrl: './move-edit-dialog.component.html',
     styleUrls: ['./move-edit-dialog.component.scss'],
-    imports: [CrucibleDialogComponent, CrucibleDialogContentDirective, MatFormField, MatLabel, MatInput, FormsModule, DurationEditComponent, NgxMatDatepickerInput, ReactiveFormsModule, MatDatepickerToggle, MatSuffix, NgxMatDatetimepicker, NgxMatDatepickerActions, MatButton, NgxMatDatepickerApply, NgxMatDatepickerCancel, AngularEditorModule, DatePipe, TimezoneAbbrPipe, MatError, MatIcon]
+    imports: [CrucibleDialogComponent, CrucibleDialogContentDirective, MatFormField, MatLabel, MatInput, FormsModule, DurationEditComponent, NgxMatDatepickerInput, ReactiveFormsModule, MatDatepickerToggle, MatSuffix, NgxMatDatetimepicker, NgxMatDatepickerActions, MatButton, NgxMatDatepickerApply, NgxMatDatepickerCancel, AngularEditorModule, DatePipe, TimezoneAbbrPipe]
 })
 
 export class MoveEditDialogComponent {
