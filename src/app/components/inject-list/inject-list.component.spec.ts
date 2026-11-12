@@ -31,6 +31,7 @@ import { ApiStub } from 'src/app/test-utils/api-stub';
 import { dialogRefStub } from 'src/app/test-utils/dialog-refs';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { unstubbed } from 'src/app/test-utils/unstubbed';
+import { HubReconnectService } from 'src/app/services/hub-reconnect.service';
 
 @Component({ selector: 'app-data-value', template: '', standalone: false })
 class DataValueStub {
@@ -186,5 +187,20 @@ describe('InjectListComponent', () => {
     expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Inject Requires Additional Injects' }));
     expect(selections).toEqual([['inj-1', 'inj-2']]);
     expect(within(table()).queryByRole('button', { name: 'Edit Ransom note inject' })).not.toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: when the hub connection is replaced, the catalog's injects load again.
+   * Interacts with: HubReconnectService.announceReconnected, CatalogInjectService.getCatalogInjects (stub).
+   * Data: the default catalog, cat-1.
+   */
+  it('reloads the injects when the hub connection is replaced', async () => {
+    const { catalogInjectApi } = await renderInjectList();
+    const before = catalogInjectApi.getCatalogInjects.mock.calls.length;
+
+    TestBed.inject(HubReconnectService).announceReconnected();
+
+    expect(catalogInjectApi.getCatalogInjects).toHaveBeenCalledTimes(before + 1);
+    expect(catalogInjectApi.getCatalogInjects).toHaveBeenLastCalledWith('cat-1');
   });
 });

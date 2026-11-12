@@ -24,6 +24,8 @@ import { ApiStub } from 'src/app/test-utils/api-stub';
 import { dialogRefStub } from 'src/app/test-utils/dialog-refs';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { unstubbed } from 'src/app/test-utils/unstubbed';
+import { HubReconnectService } from 'src/app/services/hub-reconnect.service';
+import { TestBed } from '@angular/core/testing';
 
 const ME = 'user-me';
 const TEMPLATE: CiteDuty = { id: 'cd-t', name: 'Template duty', isTemplate: true, mselId: null };
@@ -200,5 +202,18 @@ describe('CiteDutyListComponent', () => {
       expect(citeDutyApi.deleteCiteDuty).toHaveBeenCalledWith('cd-1');
       expect(within(table()).queryByText('Incident commander')).not.toBeInTheDocument();
     });
+  });
+
+  /**
+   * Verifies: when the hub connection is replaced, the CITE duty templates load again.
+   * Interacts with: HubReconnectService.announceReconnected, CiteDutyService.getCiteDutyTemplates (stub).
+   * Data: showTemplates true; no active MSEL.
+   */
+  it('reloads the templates when the hub connection is replaced', async () => {
+    const { citeDutyApi } = await renderCiteDuties({ showTemplates: true, activeMsel: null });
+
+    TestBed.inject(HubReconnectService).announceReconnected();
+
+    expect(citeDutyApi.getCiteDutyTemplates).toHaveBeenCalledTimes(2);
   });
 });

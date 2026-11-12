@@ -53,6 +53,7 @@ import { TeamDataService } from 'src/app/data/team/team-data.service';
 import { TeamUserDataService } from '../data/team-user/team-user-data.service';
 import { UserDataService } from 'src/app/data/user/user-data.service';
 import { UserMselRoleDataService } from '../data/user-msel-role/user-msel-role-data.service';
+import { HubReconnectService } from './hub-reconnect.service';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
@@ -95,6 +96,7 @@ export class SignalRService implements OnDestroy {
   private teamUserDataService = inject(TeamUserDataService);
   private userDataService = inject(UserDataService);
   private userMselRoleDataService = inject(UserMselRoleDataService);
+  private hubReconnectService = inject(HubReconnectService);
 
   private hubConnection: signalR.HubConnection;
   private applicationArea: ApplicationArea;
@@ -126,8 +128,10 @@ export class SignalRService implements OnDestroy {
       .configureLogging(signalR.LogLevel.Information)
       .build();
 
+    // A new connection: the server replays nothing sent while the old one was down, so once it has
+    // rejoined its groups the pages reload what they show.
     this.hubConnection.onreconnected(() => {
-      this.join();
+      this.join().then(() => this.hubReconnectService.announceReconnected());
     });
 
     this.addHandlers();
@@ -149,14 +153,17 @@ export class SignalRService implements OnDestroy {
     return hubUrl;
   }
 
-  public join() {
+  /** Joins the area's groups; resolves once the hub has added this connection to them. */
+  public join(): Promise<void> {
     if (this.hubConnection.state === signalR.HubConnectionState.Connected) {
-      this.hubConnection.invoke('Join' + this.applicationArea);
+      const joined = this.hubConnection.invoke<void>('Join' + this.applicationArea);
       this.isJoined = true;
       if (this.mselId) {
         setTimeout(() => this.selectMsel(this.mselId), 100);
       }
+      return joined;
     }
+    return Promise.resolve();
   }
 
   public leave() {
@@ -218,7 +225,8 @@ export class SignalRService implements OnDestroy {
           ) {
             setTimeout(() => this.reconnect(), 500);
           } else {
-            this.join();
+            // Restarting replaced the connection too, so anything sent in between was missed.
+            this.join().then(() => this.hubReconnectService.announceReconnected());
           }
         });
       });

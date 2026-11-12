@@ -38,6 +38,7 @@ import { AssessorViewComponent } from '../assessor-view/assessor-view.component'
 import { InvitationListComponent } from '../invitation-list/invitation-list.component';
 import { MselPlaybookComponent } from '../msel-playbook/msel-playbook.component';
 import { MselScoringModelTabComponent } from '../msel-scoring-model-tab/msel-scoring-model-tab.component';
+import { HubReconnectService } from 'src/app/services/hub-reconnect.service';
 
 // One stub per tab; each declares the inputs MselComponent binds.
 @Component({ selector: 'app-msel-info', template: '' })
@@ -251,6 +252,26 @@ describe('MselComponent', () => {
     mselUnitStore.upsert('mu-2', { id: 'mu-2', mselId: 'msel-1', unitId: 'unit-2' });
     expect(apis.user.getMselUsers).toHaveBeenCalledTimes(2);
     expect(apis.user.getMselUsers).toHaveBeenLastCalledWith('msel-1');
+  });
+
+  /**
+   * Verifies: when the hub connection is replaced, the open MSEL and everything its tabs show load again, its
+   * users once, and no second xAPI view is logged.
+   * Interacts with: HubReconnectService.announceReconnected, the MSEL endpoints (stubs), XApiService.viewedMsel (stub).
+   * Data: msel=msel-1 with one contributor unit.
+   */
+  it('reloads the MSEL when the hub connection is replaced', async () => {
+    const { fixture, apis, xApi } = await renderMsel({ mselUnits: [{ id: 'mu-1', mselId: 'msel-1', unitId: 'unit-1' }] });
+
+    fixture.debugElement.injector.get(HubReconnectService).announceReconnected();
+
+    expect(apis.msel.getMsel).toHaveBeenCalledTimes(2);
+    for (const endpoint of [apis.move.getMovesByMsel, apis.scenarioEvent.getScenarioEventsByMsel, apis.dataValue.getDataValuesByMsel, apis.mselUnit.getMselUnits, apis.user.getMselUsers]) {
+      expect(endpoint).toHaveBeenCalledTimes(2);
+      expect(endpoint).toHaveBeenLastCalledWith('msel-1');
+    }
+    expect(apis.unit.getUnits).toHaveBeenCalledTimes(2);
+    expect(xApi.viewedMsel).toHaveBeenCalledTimes(1);
   });
 
   /**

@@ -3,7 +3,7 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { Component, input, output } from '@angular/core';
-import { ComponentFixture } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { outputToObservable } from '@angular/core/rxjs-interop';
 import { CdkTextareaAutosize } from '@angular/cdk/text-field';
@@ -73,6 +73,7 @@ import { permissionApiStubs } from 'src/app/test-utils/mock-permission-data.serv
 import { unstubbed } from 'src/app/test-utils/unstubbed';
 import { IntegrationStatusComponent } from '../integration-status/integration-status.component';
 import { DurationEditComponent } from '../shared/duration-edit/duration-edit.component';
+import { HubReconnectService } from 'src/app/services/hub-reconnect.service';
 
 @Component({ selector: 'app-integration-status', template: '' })
 class IntegrationStatusStub {
@@ -1154,5 +1155,20 @@ describe('MselInfoComponent', () => {
       expect(screen.getByText('Harbor Evaluation')).toBeInTheDocument();
       expect(screen.getByTitle('Open in CITE')).toHaveAttribute('href', expect.stringContaining('evaluation=eval-1'));
     });
+  });
+
+  /**
+   * Verifies: when the hub connection is replaced, the MSEL's applications behind the Caster warning load again.
+   * Interacts with: HubReconnectService.announceReconnected, PlayerApplicationService.getApplicationsByMsel (stub).
+   * Data: msel-1.
+   */
+  it('reloads the applications when the hub connection is replaced', async () => {
+    const { appApi } = await renderInfo();
+    const before = appApi.getApplicationsByMsel.mock.calls.length;
+
+    TestBed.inject(HubReconnectService).announceReconnected();
+
+    expect(appApi.getApplicationsByMsel).toHaveBeenCalledTimes(before + 1);
+    expect(appApi.getApplicationsByMsel).toHaveBeenLastCalledWith('msel-1');
   });
 });

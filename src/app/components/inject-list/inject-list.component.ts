@@ -45,6 +45,7 @@ import { MatIconButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatCheckbox } from '@angular/material/checkbox';
 import { DataValueComponent } from '../data-value/data-value.component';
+import { reloadOnReconnect } from 'src/app/services/hub-reconnect.service';
 
 @Component({
     selector: 'app-inject-list',
@@ -105,6 +106,8 @@ export class InjectListComponent implements OnDestroy, OnInit {
   catalogList: Catalog[] = [];
 
   constructor() {
+    // a new hub connection missed what was broadcast while the old one was down
+    reloadOnReconnect(() => this.loadInjects());
     // subscribe to injects
     this.injectmQuery
       .selectAll()
@@ -189,6 +192,10 @@ export class InjectListComponent implements OnDestroy, OnInit {
   }
 
   ngOnInit() {
+    this.loadInjects();
+  }
+
+  private loadInjects() {
     // load injects
     const catalog = this.catalog();
     const injectType = this.injectType();

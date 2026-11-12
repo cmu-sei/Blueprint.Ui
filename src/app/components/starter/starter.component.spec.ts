@@ -19,6 +19,7 @@ import { permissionApiStubs } from 'src/app/test-utils/mock-permission-data.serv
 import { mselLoadApiProviders, mselLoadApiStubs } from 'src/app/test-utils/msel-load-api-stubs';
 import { TopbarComponent } from '../shared/top-bar/topbar.component';
 import { ScenarioEventListComponent } from '../scenario-event-list/scenario-event-list.component';
+import { HubReconnectService } from 'src/app/services/hub-reconnect.service';
 
 @Component({ selector: 'app-topbar', template: '' })
 class TopbarStub {
@@ -138,5 +139,35 @@ describe('StarterComponent', () => {
     const events = child(fixture, ScenarioEventListStub);
     expect(events?.isStarterMsel()).toBe(true);
     expect(events?.loggedInUserId()).toBe('user-me');
+  });
+
+  /**
+   * Verifies: when the hub connection is replaced, the open MSEL and its data load again.
+   * Interacts with: HubReconnectService.announceReconnected, the MSEL endpoints (stubs).
+   * Data: msel=msel-1.
+   */
+  it('reloads the MSEL when the hub connection is replaced', async () => {
+    const { apis } = await renderStarter({ mselId: 'msel-1' });
+
+    TestBed.inject(HubReconnectService).announceReconnected();
+
+    for (const endpoint of [apis.msel.getMsel, apis.scenarioEvent.getScenarioEventsByMsel, apis.dataValue.getDataValuesByMsel, apis.user.getMselUsers]) {
+      expect(endpoint).toHaveBeenCalledTimes(2);
+      expect(endpoint).toHaveBeenLastCalledWith('msel-1');
+    }
+  });
+
+  /**
+   * Verifies: without an MSEL a replaced connection loads no MSEL.
+   * Interacts with: HubReconnectService.announceReconnected, MselService.getMsel (stub).
+   * Data: no msel parameter.
+   */
+  it('loads no MSEL on reconnect without one', async () => {
+    const { apis } = await renderStarter();
+
+    TestBed.inject(HubReconnectService).announceReconnected();
+
+    expect(apis.msel.getMsel).not.toHaveBeenCalled();
+    expect(apis.unit.getUnits).toHaveBeenCalledTimes(2);
   });
 });
