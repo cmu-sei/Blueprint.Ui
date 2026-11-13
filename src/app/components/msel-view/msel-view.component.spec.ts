@@ -4,6 +4,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Component, input } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { By } from '@angular/platform-browser';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { MatButtonModule } from '@angular/material/button';
@@ -172,18 +173,18 @@ describe('MselViewComponent', () => {
     const CARDS: Card[] = [{ id: 'card-1', mselId: 'msel-1', name: 'Breaking News' }];
     const MOVES: Move[] = [{ id: 'move-1', mselId: 'msel-1', moveNumber: 1, deltaSeconds: 0 }];
 
-    async function renderStandalone() {
+    async function renderStandalone(msel: Msel = STANDALONE_MSEL, scenarioEvents: ScenarioEvent[] = EVENTS) {
       const apis = mselLoadApiStubs({
-        msel: STANDALONE_MSEL,
+        msel,
         dataFields: STANDALONE_FIELDS,
         dataValues: STANDALONE_VALUES,
-        scenarioEvents: EVENTS,
+        scenarioEvents,
         cards: CARDS,
         moves: MOVES,
       });
       // msel/:mselid/view has the MSEL in the path and no ?msel
       const { route } = activatedRouteStub({}, { mselid: 'msel-1' });
-      await renderComponent(MselViewComponent, {
+      const { fixture } = await renderComponent(MselViewComponent, {
         imports: [
           AngularEditorModule,
           MatButtonModule,
@@ -211,7 +212,7 @@ describe('MselViewComponent', () => {
         ],
         inputs: { tabHeight: 48 },
       });
-      return apis;
+      return { ...apis, fixture };
     }
 
     /**
@@ -240,6 +241,52 @@ describe('MselViewComponent', () => {
       expect(table.getByText('Phishing wave')).toBeInTheDocument();
       expect(table.getByText('Breaking News')).toBeInTheDocument();
       expect(table.getByText('Pat Planner')).toBeInTheDocument();
+    });
+
+    /**
+     * Verifies: the Execution Time column set on the MSEL shows when the view is opened on its own, alongside the data-field columns.
+     * Interacts with: the active MSEL from the path (MselStore), the Time cells of the MSEL view (app-duration-view stub).
+     * Data: the MSEL shows Time on the exercise view; Phishing wave is at 15 minutes.
+     */
+    it('shows the Execution Time column', async () => {
+      const { fixture } = await renderStandalone(
+        { ...STANDALONE_MSEL, showTimeOnExerciseView: true },
+        [{ ...EVENTS[0], deltaSeconds: 900 }]
+      );
+
+      expect(screen.getByRole('columnheader', { name: /Execution Time/ })).toBeInTheDocument();
+      expect(screen.getByRole('columnheader', { name: /Title/ })).toBeInTheDocument();
+      const times = fixture.debugElement.queryAll(By.css('app-duration-view'));
+      expect(times.map((t) => (t.componentInstance as DurationViewStub).durationSeconds())).toEqual([900]);
+    });
+
+    /**
+     * Verifies: the Integration Target column set on the MSEL shows each event's integration target.
+     * Interacts with: the active MSEL from the path (MselStore), the Integration Target cells of the MSEL view.
+     * Data: the MSEL shows Integration Target on the exercise view; Phishing wave targets Gallery.
+     */
+    it('shows the Integration Target column', async () => {
+      await renderStandalone(
+        { ...STANDALONE_MSEL, showIntegrationTargetOnExerciseView: true },
+        [{ ...EVENTS[0], integrationTarget: 'Gallery' }]
+      );
+      const table = within(screen.getByRole('table'));
+
+      expect(table.getByRole('columnheader', { name: 'Integration Target' })).toBeInTheDocument();
+      expect(table.getByRole('cell', { name: 'Gallery' })).toBeInTheDocument();
+    });
+
+    /**
+     * Verifies: the Integration Target column stays hidden when the MSEL doesn't show it on the exercise view.
+     * Interacts with: the active MSEL from the path (MselStore), the MSEL view header row.
+     * Data: showIntegrationTargetOnExerciseView unset; Phishing wave targets Gallery.
+     */
+    it('hides the Integration Target column unless the MSEL shows it', async () => {
+      await renderStandalone(STANDALONE_MSEL, [{ ...EVENTS[0], integrationTarget: 'Gallery' }]);
+      const table = within(screen.getByRole('table'));
+
+      expect(table.queryByRole('columnheader', { name: 'Integration Target' })).not.toBeInTheDocument();
+      expect(table.queryByText('Gallery')).not.toBeInTheDocument();
     });
   });
 });
