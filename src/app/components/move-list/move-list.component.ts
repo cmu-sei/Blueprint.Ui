@@ -24,6 +24,7 @@ import { MatFormField, MatInput, MatSuffix } from '@angular/material/input';
 import { MatIconButton } from '@angular/material/button';
 import { DurationViewComponent } from '../shared/duration-view/duration-view.component';
 import { TimezoneAbbrPipe } from '../../utilities/timezone-abbr';
+import { MOVE_ORDER_RULE, moveOrderProblems } from '../../utilities/move-order';
 
 @Component({
     selector: 'app-move-list',
@@ -55,6 +56,7 @@ export class MoveListComponent implements OnDestroy, AfterViewInit {
   showRealTime = false;
   maxMoveNumber = Number.MIN_SAFE_INTEGER;
   maxMoveStartSeconds = 0;
+  readonly moveOrderRule = MOVE_ORDER_RULE;
 
   private unsubscribe$ = new Subject();
   // context menu
@@ -109,9 +111,11 @@ export class MoveListComponent implements OnDestroy, AfterViewInit {
     let editMove: Move = {};
     if (!move) {
       dialogTitle = 'Add a Move';
+      // each move starts after the one before it, so a new move starts an hour after the latest
       editMove = {
         moveNumber: this.maxMoveNumber + 1,
-        deltaSeconds: this.maxMoveStartSeconds,
+        deltaSeconds:
+          this.mselMoves().length > 0 ? this.maxMoveStartSeconds + 3600 : 0,
         description: '',
         situationDescription: '',
         situationTime: new Date(),
@@ -130,6 +134,7 @@ export class MoveListComponent implements OnDestroy, AfterViewInit {
       data: {
         move: editMove,
         mselStartTime: this.msel.startTime,
+        otherMoves: this.mselMoves().filter((m) => m.id !== editMove.id),
         title: dialogTitle,
       },
     });
@@ -239,18 +244,9 @@ export class MoveListComponent implements OnDestroy, AfterViewInit {
     return filteredMoves;
   }
 
-  badMoveTimeOrder(): boolean {
-    const orderedMoves = this.mselMoves().sort((a, b) =>
-      +a.moveNumber < +b.moveNumber ? -1 : 1
-    );
-    let deltaSeconds = Number.MIN_SAFE_INTEGER;
-    for (let index = 0; index < orderedMoves.length; index++) {
-      if (+orderedMoves[index].deltaSeconds <= +deltaSeconds) {
-        return true;
-      }
-      deltaSeconds = orderedMoves[index].deltaSeconds;
-    }
-    return false;
+  // the moves of a MSEL saved before each move needed its own start time that share one or are out of order
+  moveOrderProblems(): string[] {
+    return moveOrderProblems(this.mselMoves());
   }
 
   ngOnDestroy() {

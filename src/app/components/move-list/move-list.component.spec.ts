@@ -158,7 +158,9 @@ describe('MoveListComponent', () => {
   });
 
   /**
-   * Verifies: a new move defaults to the next number and the latest start offset of this MSEL's moves, not of another MSEL's moves in the store.
+   * Verifies: a new move defaults to the next number and an hour after the latest start of this MSEL's moves, since each
+   * move must start after the one before it, and the dialog is given this MSEL's moves to check against; another
+   * MSEL's moves in the store count for neither.
    * Interacts with: the Add new move button, MoveListComponent.addOrEditMove, MatDialog.open (stub), real MoveQuery (seeded).
    * Data: this MSEL's Move 1 at +0s; another MSEL's Move 5 at +7200s.
    */
@@ -172,32 +174,110 @@ describe('MoveListComponent', () => {
     expect(open).toHaveBeenCalledTimes(1);
     expect(open.mock.calls[0][0]).toBe(MoveEditDialogComponent);
     expect(open.mock.calls[0][1].data.move).toEqual(
-      expect.objectContaining({ moveNumber: 2, deltaSeconds: 0, mselId: 'msel-1' })
+      expect.objectContaining({
+        moveNumber: 2,
+        deltaSeconds: 3600,
+        mselId: 'msel-1',
+      }),
     );
+    expect(
+      open.mock.calls[0][1].data.otherMoves.map((m: Move) => m.id),
+    ).toEqual(['move-1']);
   });
 
   /**
-   * Verifies: the out-of-order warning shows when this MSEL's moves do not start in move order, and another MSEL's moves do not raise it.
-   * Interacts with: MoveListComponent.badMoveTimeOrder in the template, real MoveQuery (seeded).
-   * Data: this MSEL's Move 1 at +0s and Move 2 at +3600s or +0s; another MSEL's Move 1 at +9999s.
+   * Verifies: the first move of a MSEL defaults to the MSEL start.
+   * Interacts with: the Add new move button, MoveListComponent.addOrEditMove, MatDialog.open (stub).
+   * Data: no moves on this MSEL; another MSEL's Move 5 at +7200s.
    */
-  it.each([
-    { label: 'stays hidden when only another MSEL is out of order', moveTwoSeconds: 3600, shown: false },
-    { label: "shows when this MSEL's moves are out of order", moveTwoSeconds: 0, shown: true },
-  ])('the start time order warning $label', async ({ moveTwoSeconds, shown }) => {
+  it('defaults the first move to the MSEL start', async () => {
+    const { open } = await renderMoves({ moves: [OTHER_MSEL_MOVE] });
+    const user = userEvent.setup();
+
+    await user.click(
+      within(table()).getByRole('button', { name: 'Add new move' }),
+    );
+
+    expect(open.mock.calls[0][1].data.move).toEqual(
+      expect.objectContaining({ moveNumber: 1, deltaSeconds: 0 }),
+    );
+    expect(open.mock.calls[0][1].data.otherMoves).toEqual([]);
+  });
+
+  /**
+   * Verifies: editing a move gives the dialog the MSEL's other moves to check its start against, not the move itself.
+   * Interacts with: the Edit Move button, MoveListComponent.addOrEditMove, MatDialog.open (stub).
+   * Data: this MSEL's Move 1 at +0s and Move 2 at +3600s; another MSEL's Move 5.
+   */
+  it('gives the edit dialog the other moves of this MSEL', async () => {
     const moves: Move[] = [
       MOVE,
-      { ...MOVE, id: 'move-2', moveNumber: 2, deltaSeconds: moveTwoSeconds, description: 'Lateral movement' },
+      { ...MOVE, id: 'move-2', moveNumber: 2, deltaSeconds: 3600 },
+      OTHER_MSEL_MOVE,
+    ];
+    const { open } = await renderMoves({ moves });
+    const user = userEvent.setup();
+
+    await user.click(
+      within(table()).getByRole('button', { name: 'Edit Move 2' }),
+    );
+
+    expect(
+      open.mock.calls[0][1].data.otherMoves.map((m: Move) => m.id),
+    ).toEqual(['move-1']);
+  });
+
+  /**
+   * Verifies: the Moves tab names each pair of this MSEL's moves that share a start time or are out of order, so the
+   * planner fixes them; moves in order, or another MSEL's moves, raise nothing.
+   * Interacts with: MoveListComponent.moveOrderProblems in the template, real MoveQuery (seeded).
+   * Data: this MSEL's Move 1 at +0s and Move 2 at +3600s, +0s or Move 2 at +3600s and Move 3 at +1800s; another MSEL's Move 1 at +9999s.
+   */
+  it.each([
+    {
+      label: 'stays hidden when only another MSEL is out of order',
+      extra: [{ moveNumber: 2, deltaSeconds: 3600 }],
+      expected: [],
+    },
+    {
+      label: 'names two moves that share a start time',
+      extra: [{ moveNumber: 2, deltaSeconds: 0 }],
+      expected: ['** Move 1 and Move 2 start at the same time.'],
+    },
+    {
+      label: 'names a move that starts before the one numbered before it',
+      extra: [
+        { moveNumber: 2, deltaSeconds: 3600 },
+        { moveNumber: 3, deltaSeconds: 1800 },
+      ],
+      expected: ['** Move 3 starts before Move 2.'],
+    },
+  ])('the start time order warning $label', async ({ extra, expected }) => {
+    const moves: Move[] = [
+      MOVE,
+      ...extra.map((m) => ({
+        ...MOVE,
+        id: `move-${m.moveNumber}`,
+        description: `Move ${m.moveNumber}`,
+        ...m,
+      })),
       { ...OTHER_MSEL_MOVE, moveNumber: 1, deltaSeconds: 9999 },
     ];
 
     await renderMoves({ moves });
 
-    const warning = screen.queryByText(/The moves are not in ascending start time order!/);
-    if (shown) {
-      expect(warning).toBeInTheDocument();
-    } else {
+    const warning = screen.queryByRole('status', { name: 'Move start times' });
+    if (expected.length === 0) {
       expect(warning).not.toBeInTheDocument();
+    } else {
+      for (const text of expected) {
+        expect(within(warning).getByText(text)).toBeInTheDocument();
+      }
+      expect(
+        within(warning).getByText(
+          'Each move must start after the move before it. Change the start times so each event is in the right move.',
+        ),
+      ).toBeInTheDocument();
     }
   });
 

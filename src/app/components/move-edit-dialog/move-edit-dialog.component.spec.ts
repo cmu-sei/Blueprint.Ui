@@ -50,8 +50,13 @@ const MOVE: Move = {
   situationDescription: '<p>Phishing</p>',
 };
 
-async function renderMoveEdit(move: Move = MOVE) {
-  const data = { move: structuredClone(move), mselStartTime: START, title: 'Edit Move' };
+async function renderMoveEdit(move: Move = MOVE, otherMoves: Move[] = []) {
+  const data = {
+    move: structuredClone(move),
+    mselStartTime: START,
+    otherMoves,
+    title: 'Edit Move',
+  };
   const rendered = await renderComponent(MoveEditDialogComponent, {
     imports: [
       ...CRUCIBLE_DIALOG_IMPORTS,
@@ -126,6 +131,120 @@ describe('MoveEditDialogComponent', () => {
       { saveChanges: true, move: data.move },
       { saveChanges: false, move: null },
     ]);
+  });
+
+  /**
+   * Verifies: a move that already shares its start with another (a MSEL saved before the rule) can have its text
+   * edited and saved with no error, as the API only checks a changed number or start.
+   * Interacts with: moveOrderConflict, crucible-dialog submit.
+   * Data: Move 1 at +3600s against another Move 0 at +3600s; only the description changes.
+   */
+  it('saves a text-only edit of a move that already shares its start', async () => {
+    const { data, results } = await renderMoveEdit(MOVE, [
+      { id: 'move-0', moveNumber: 0, deltaSeconds: 3600 },
+    ]);
+    const user = userEvent.setup();
+
+    await user.clear(description());
+    await user.type(description(), 'Pivot');
+
+    expect(
+      screen.queryByText(/Each move must start after the move before it/),
+    ).not.toBeInTheDocument();
+    const save = actions().getByRole('button', { name: 'Save' });
+    expect(save).toBeEnabled();
+    await user.click(save);
+    expect(results).toEqual([{ saveChanges: true, move: data.move }]);
+  });
+
+  /**
+   * Verifies: a start changed to one that is not after the move numbered before it is announced as the dialog's
+   * error and Save is disabled; changing it to one after that move clears the error and saves. Mirrors the API's 400.
+   * Interacts with: moveOrderConflict, DurationEditStub durationSecondsChange, crucible-dialog submitDisabled.
+   * Data: Move 1 at +7200s, another Move 0 at +3600s; the start moved to +3600s, then to +5400s.
+   */
+  it('refuses a start the move before it already has, until the start changes', async () => {
+    const { fixture, data, results } = await renderMoveEdit(
+      { ...MOVE, deltaSeconds: 7200 },
+      [{ id: 'move-0', moveNumber: 0, deltaSeconds: 3600 }],
+    );
+    const user = userEvent.setup();
+    const duration = fixture.debugElement.query(By.directive(DurationEditStub))
+      .componentInstance as DurationEditStub;
+    duration.durationSecondsChange.emit(3600);
+    fixture.detectChanges();
+
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      "Move 1 can't start at the same time as Move 0. Each move must start after the move before it.",
+    );
+    const save = actions().getByRole('button', { name: 'Save' });
+    expect(save).toBeDisabled();
+
+    duration.durationSecondsChange.emit(5400);
+    fixture.detectChanges();
+
+    expect(
+      screen.queryByText(/Each move must start after the move before it/),
+    ).not.toBeInTheDocument();
+    expect(save).toBeEnabled();
+    await user.click(save);
+    expect(results).toEqual([{ saveChanges: true, move: data.move }]);
+    expect(data.move.deltaSeconds).toBe(5400);
+  });
+
+  /**
+   * Verifies: a move number typed past a later-starting move is refused, as the API refuses the renumber.
+   * Interacts with: ngModel on Move Number, moveOrderConflict.
+   * Data: Move 1 at +3600s, another Move 2 at +7200s; the number changed to 3.
+   */
+  it('refuses a move number that puts the move out of start time order', async () => {
+    await renderMoveEdit(MOVE, [
+      { id: 'move-2', moveNumber: 2, deltaSeconds: 7200 },
+    ]);
+    const user = userEvent.setup();
+
+    const number = screen.getByPlaceholderText('Move Number');
+    await user.clear(number);
+    await user.type(number, '3');
+
+    expect(
+      screen.getByText(
+        'Move 3 must start after Move 2. Each move must start after the move before it.',
+      ),
+    ).toBeInTheDocument();
+    expect(actions().getByRole('button', { name: 'Save' })).toBeDisabled();
+  });
+
+  /**
+   * Verifies: the Move Number takes only a whole number: a cleared field or a fraction is refused before the API
+   * sees it, and Save stays disabled until it is fixed.
+   * Interacts with: the number input's ngModel, numberError, crucible-dialog submitDisabled and errorMessage.
+   * Data: Move 1; the number cleared, then 1.5, then 2.
+   */
+  it('refuses a move number that is not a whole number', async () => {
+    const { fixture } = await renderMoveEdit();
+    const user = userEvent.setup();
+    const number = screen.getByPlaceholderText('Move Number');
+    const save = actions().getByRole('button', { name: 'Save' });
+
+    await user.clear(number);
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'Move Number must be a whole number.',
+    );
+    expect(save).toBeDisabled();
+
+    await user.type(number, '1.5');
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'Move Number must be a whole number.',
+    );
+    expect(save).toBeDisabled();
+
+    await user.clear(number);
+    await user.type(number, '2');
+    fixture.detectChanges();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(save).toBeEnabled();
+    expect(fixture.componentInstance.data.move.moveNumber).toBe(2);
   });
 
   /**

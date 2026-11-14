@@ -15,6 +15,7 @@ import { MatButton } from '@angular/material/button';
 import { AngularEditorModule } from '@kolkov/angular-editor';
 import { DatePipe } from '@angular/common';
 import { TimezoneAbbrPipe } from '../../utilities/timezone-abbr';
+import { moveOrderConflict } from '../../utilities/move-order';
 
 @Component({
     selector: 'app-move-edit-dialog',
@@ -34,6 +35,43 @@ export class MoveEditDialogComponent {
   );
   editorConfig = EDITOR_CONFIG;
 
+  // a cleared number field is null, and only a whole number is a move number
+  numberError(): string {
+    const moveNumber = this.data.move.moveNumber;
+    return moveNumber === null ||
+      moveNumber === undefined ||
+      `${moveNumber}`.trim() === '' ||
+      !Number.isInteger(+moveNumber)
+      ? 'Move Number must be a whole number.'
+      : '';
+  }
+
+  validationError(): string {
+    return this.numberError() || this.orderError();
+  }
+
+  // the number and start the move had when the dialog opened
+  private readonly openedMoveNumber = +this.data.move.moveNumber;
+  private readonly openedDeltaSeconds = +this.data.move.deltaSeconds;
+
+  // the start must fall after the move numbered before it and before the one after it, as the API checks;
+  // data.otherMoves is the MSEL's other moves. Like the API, an edit is only checked once its number or start
+  // changes, so the text of a move that already shares its start can still be saved.
+  orderError(): string {
+    if (
+      this.data.move.id &&
+      +this.data.move.moveNumber === this.openedMoveNumber &&
+      +this.data.move.deltaSeconds === this.openedDeltaSeconds
+    ) {
+      return '';
+    }
+    return moveOrderConflict(
+      this.data.move.moveNumber,
+      this.data.move.deltaSeconds,
+      this.data.otherMoves,
+    );
+  }
+
   saveMove(which: string) {
     switch (which) {
       case 'situationDate':
@@ -52,7 +90,7 @@ export class MoveEditDialogComponent {
   handleEditComplete(saveChanges: boolean): void {
     if (!saveChanges) {
       this.editComplete.emit({ saveChanges: false, move: null });
-    } else {
+    } else if (!this.validationError()) {
       this.editComplete.emit({
         saveChanges: saveChanges,
         move: this.data.move,
