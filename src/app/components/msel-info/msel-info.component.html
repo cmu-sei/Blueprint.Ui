@@ -305,11 +305,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
               </div>
               @if (msel.useSteamfitter) {
               <div class="integration-details">
-                <!-- not locked with the other settings: when the scenario starts changes nothing the push built -->
+                <!-- locked with the other settings: once pushed, Blueprint may already have started the scenario, or is waiting to -->
                 <div class="integration-field">
                   <span class="integration-label">Start the scenario:</span>
                   <mat-form-field class="integration-select">
-                    <mat-select [(ngModel)]="msel.steamfitterScenarioStartMode" [disabled]="!canEditMsel()"
+                    <mat-select [(ngModel)]="msel.steamfitterScenarioStartMode" [disabled]="integrationsLocked() || !canEditMsel()"
                       aria-label="Start the scenario" (selectionChange)="isChanged = true">
                       @for (startMode of steamfitterStartModes; track startMode.value) {
                       <mat-option [value]="startMode.value">
