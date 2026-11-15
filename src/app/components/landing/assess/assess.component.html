@@ -18,7 +18,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     </div>
     @if (isLoading) {
       <div class="joining-state">
-        <mat-progress-spinner color="primary" mode="indeterminate" diameter="60"></mat-progress-spinner>
+        <mat-progress-spinner color="primary" mode="indeterminate" diameter="60" />
       </div>
     } @else {
       <div class="event-grid">
@@ -56,7 +56,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </div>
         } @empty {
           <div class="empty-state">
-            <mat-icon fontIcon="mdi-clipboard-check-outline"></mat-icon>
+            <mat-icon fontIcon="mdi-clipboard-check-outline" />
             @if (loadFailed) {
               <p>The events to assess could not be loaded. Reload the page to try again.</p>
             } @else {

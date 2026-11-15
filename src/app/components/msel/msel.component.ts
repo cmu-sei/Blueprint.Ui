@@ -42,7 +42,7 @@ import { MatDrawerContainer, MatDrawer, MatDrawerContent } from '@angular/materi
 import { MatIconButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatList, MatDivider, MatListItem } from '@angular/material/list';
-import { NgClass, AsyncPipe } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 import { MselContributorsComponent } from '../msel-contributors/msel-contributors.component';
 import { MselTeamsComponent } from '../msel-teams/msel-teams.component';
 import { DataFieldListComponent } from '../data-field-list/data-field-list.component';
@@ -65,7 +65,7 @@ import { reloadOnReconnect } from 'src/app/services/hub-reconnect.service';
     selector: 'app-msel',
     templateUrl: './msel.component.html',
     styleUrls: ['./msel.component.scss'],
-    imports: [MatDrawerContainer, MatDrawer, MatIconButton, MatIcon, MatList, MatDivider, MatListItem, NgClass, MatDrawerContent, MselInfoComponent, MselContributorsComponent, MselTeamsComponent, DataFieldListComponent, OrganizationListComponent, MoveListComponent, PlayerApplicationListComponent, CardListComponent, CiteActionListComponent, CiteDutyListComponent, MselCompetenciesComponent, ScenarioEventListComponent, MselViewComponent, AssessorViewComponent, InvitationListComponent, MselPlaybookComponent, MselScoringModelTabComponent, AsyncPipe]
+    imports: [MatDrawerContainer, MatDrawer, MatIconButton, MatIcon, MatList, MatDivider, MatListItem, MatDrawerContent, MselInfoComponent, MselContributorsComponent, MselTeamsComponent, DataFieldListComponent, OrganizationListComponent, MoveListComponent, PlayerApplicationListComponent, CardListComponent, CiteActionListComponent, CiteDutyListComponent, MselCompetenciesComponent, ScenarioEventListComponent, MselViewComponent, AssessorViewComponent, InvitationListComponent, MselPlaybookComponent, MselScoringModelTabComponent, AsyncPipe]
 })
 export class MselComponent implements OnDestroy {
   private activatedRoute = inject(ActivatedRoute);
