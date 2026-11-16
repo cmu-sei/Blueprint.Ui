@@ -56,7 +56,7 @@ import { MatIconButton, MatButton } from '@angular/material/button';
 import { MatSelect } from '@angular/material/select';
 import { MatOption } from '@angular/material/autocomplete';
 import { MatProgressBar } from '@angular/material/progress-bar';
-import { DOCUMENT, NgClass, NgTemplateOutlet } from '@angular/common';
+import { DOCUMENT, NgTemplateOutlet } from '@angular/common';
 import { MatTooltip } from '@angular/material/tooltip';
 import { CdkTextareaAutosize } from '@angular/cdk/text-field';
 import { DurationViewComponent } from '../shared/duration-view/duration-view.component';
@@ -152,7 +152,7 @@ interface StatementListCacheEntry {
     selector: 'app-assessor-view',
     templateUrl: './assessor-view.component.html',
     styleUrls: ['./assessor-view.component.scss'],
-    imports: [MatIcon, MatSort, MatFormField, MatLabel, MatInput, FormsModule, MatIconButton, MatSuffix, MatSelect, MatOption, MatSortHeader, MatProgressBar, NgClass, NgTemplateOutlet, MatTooltip, MatButton, CdkTextareaAutosize, DurationViewComponent, DataValueComponent, CardEditDialogComponent, TeamResponsesComponent]
+    imports: [MatIcon, MatSort, MatFormField, MatLabel, MatInput, FormsModule, MatIconButton, MatSuffix, MatSelect, MatOption, MatSortHeader, MatProgressBar, NgTemplateOutlet, MatTooltip, MatButton, CdkTextareaAutosize, DurationViewComponent, DataValueComponent, CardEditDialogComponent, TeamResponsesComponent]
 })
 export class AssessorViewComponent implements DoCheck, OnDestroy, ScenarioEventView {
   private mselQuery = inject(MselQuery);

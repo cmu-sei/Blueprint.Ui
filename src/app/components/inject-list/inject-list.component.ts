@@ -40,7 +40,6 @@ import { DataFieldQuery } from 'src/app/data/data-field/data-field.query';
 import { UnitQuery } from 'src/app/data/unit/unit.query';
 import { UserQuery } from 'src/app/data/user/user.query';
 import { InjectSelectDialogComponent } from '../inject-select-dialog/inject-select-dialog.component';
-import { NgClass } from '@angular/common';
 import { MatIconButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatCheckbox } from '@angular/material/checkbox';
@@ -58,7 +57,7 @@ import { reloadOnReconnect } from 'src/app/services/hub-reconnect.service';
             transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
         ]),
     ],
-    imports: [MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, NgClass, MatIconButton, MatMenuTrigger, MatIcon, MatMenu, MatMenuItem, MatCellDef, MatCell, MatCheckbox, DataValueComponent, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow]
+    imports: [MatTable, MatSort, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatIconButton, MatMenuTrigger, MatIcon, MatMenu, MatMenuItem, MatCellDef, MatCell, MatCheckbox, DataValueComponent, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow]
 })
 export class InjectListComponent implements OnDestroy, OnInit {
   private catalogQuery = inject_1(CatalogQuery);

@@ -44,14 +44,14 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </div>
         } @empty {
           <div class="empty-state">
-            <mat-icon fontIcon="mdi-calendar-blank"></mat-icon>
+            <mat-icon fontIcon="mdi-calendar-blank" />
             <p>No active events available to join</p>
           </div>
         }
       </div>
     } @else {
       <div class="joining-state">
-        <mat-progress-spinner color="primary" mode="indeterminate" diameter="60"></mat-progress-spinner>
+        <mat-progress-spinner color="primary" mode="indeterminate" diameter="60" />
         <p>{{ joinStatus[joiningMselId] || 'Joining the event ...' }}</p>
       </div>
     }
