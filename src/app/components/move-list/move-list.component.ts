@@ -24,7 +24,8 @@ import { MatFormField, MatInput, MatSuffix } from '@angular/material/input';
 import { MatIconButton } from '@angular/material/button';
 import { DurationViewComponent } from '../shared/duration-view/duration-view.component';
 import { TimezoneAbbrPipe } from '../../utilities/timezone-abbr';
-import { MOVE_ORDER_RULE, moveOrderProblems } from '../../utilities/move-order';
+import { ScenarioEventQuery } from 'src/app/data/scenario-event/scenario-event.query';
+import { MOVE_ORDER_RULE, moveOrderPushProblems } from '../../utilities/move-order';
 
 @Component({
     selector: 'app-move-list',
@@ -36,6 +37,8 @@ export class MoveListComponent implements OnDestroy, AfterViewInit {
   private mselQuery = inject(MselQuery);
   private moveDataService = inject(MoveDataService);
   private moveQuery = inject(MoveQuery);
+  private scenarioEventQuery = inject(ScenarioEventQuery);
+  private eventStarts: { mselId: string; deltaSeconds: number }[] = [];
   dialog = inject(MatDialog);
   dialogService = inject(CrucibleDialogService);
 
@@ -244,9 +247,12 @@ export class MoveListComponent implements OnDestroy, AfterViewInit {
     return filteredMoves;
   }
 
-  // the moves of a MSEL saved before each move needed its own start time that share one or are out of order
+  // what stops a push: moves that share a start time or are out of order, and events in no move
   moveOrderProblems(): string[] {
-    return moveOrderProblems(this.mselMoves());
+    return moveOrderPushProblems(
+      this.mselMoves(),
+      this.eventStarts.filter((e) => e.mselId === this.msel.id).map((e) => e.deltaSeconds),
+    );
   }
 
   ngOnDestroy() {

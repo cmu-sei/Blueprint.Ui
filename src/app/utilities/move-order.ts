@@ -3,41 +3,13 @@
 
 import { Move } from 'src/app/generated/blueprint.api';
 
-// Every move starts strictly after the move numbered before it, as the API requires.
-// A move number the MSEL already uses is left to the API.
+// Moves and scenario events can be saved in any order, because a MSEL changes a lot while it is edited.
+// Pushing integrations needs every move to start strictly after the move numbered before it and every
+// scenario event to start at or after the first move, as the API checks.
 export const MOVE_ORDER_RULE = 'Each move must start after the move before it.';
 
-// Why a move with this number and start can't sit among the MSEL's other moves, or '' if it can.
-// The conflict named is the closest one by move number. The API answers with the same message.
-export function moveOrderConflict(
-  moveNumber: number,
-  deltaSeconds: number,
-  otherMoves: Move[],
-): string {
-  const number = +moveNumber;
-  const seconds = +deltaSeconds;
-  const others = (otherMoves ?? []).filter((m) => +m.moveNumber !== number);
-  const before = others
-    .filter((m) => +m.moveNumber < number && +m.deltaSeconds >= seconds)
-    .sort((a, b) => +b.moveNumber - +a.moveNumber)[0];
-  if (before) {
-    return +before.deltaSeconds === seconds
-      ? `Move ${number} can't start at the same time as Move ${before.moveNumber}. ${MOVE_ORDER_RULE}`
-      : `Move ${number} must start after Move ${before.moveNumber}. ${MOVE_ORDER_RULE}`;
-  }
-  const after = others
-    .filter((m) => +m.moveNumber > number && +m.deltaSeconds <= seconds)
-    .sort((a, b) => +a.moveNumber - +b.moveNumber)[0];
-  if (after) {
-    return +after.deltaSeconds === seconds
-      ? `Move ${number} can't start at the same time as Move ${after.moveNumber}. ${MOVE_ORDER_RULE}`
-      : `Move ${number} must start before Move ${after.moveNumber}. ${MOVE_ORDER_RULE}`;
-  }
-  return '';
-}
-
 // Each pair of consecutive moves (by number) that share a start time or are out of order,
-// for a MSEL saved before the rule.
+// that the planner has to fix before pushing.
 export function moveOrderProblems(moves: Move[]): string[] {
   const byNumber = [...(moves ?? [])].sort(
     (a, b) => +a.moveNumber - +b.moveNumber,
@@ -53,6 +25,31 @@ export function moveOrderProblems(moves: Move[]): string[] {
     } else if (+move.deltaSeconds < +previous.deltaSeconds) {
       problems.push(
         `Move ${move.moveNumber} starts before Move ${previous.moveNumber}.`,
+      );
+    }
+  }
+  return problems;
+}
+
+// Everything that stops a push: the move order problems, plus the scenario events that start before the
+// first move, so they are in no move. Matches the API's list.
+export function moveOrderPushProblems(
+  moves: Move[],
+  eventDeltaSeconds: number[],
+): string[] {
+  const problems = moveOrderProblems(moves);
+  if (moves?.length) {
+    const first = [...moves].sort((a, b) => +a.moveNumber - +b.moveNumber)[0];
+    const early = (eventDeltaSeconds ?? []).filter(
+      (d) => +d < +first.deltaSeconds,
+    ).length;
+    if (early === 1) {
+      problems.push(
+        `1 scenario event starts before Move ${first.moveNumber}, so it is in no move.`,
+      );
+    } else if (early > 1) {
+      problems.push(
+        `${early} scenario events start before Move ${first.moveNumber}, so they are in no move.`,
       );
     }
   }
