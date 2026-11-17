@@ -28,6 +28,38 @@
   margin-left: 16px;
 }
 
+.pinned-releases {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 4px 0 8px;
+}
+
+.pinned-release {
+  display: flex;
+  align-items: center;
+}
+
+.pinned-name {
+  font-weight: 500;
+}
+
+.pinned-count {
+  margin-left: 12px;
+  opacity: 0.7;
+}
+
+.domain-tag {
+  margin-left: 8px;
+  padding: 0 6px;
+  border-radius: 8px;
+  font-size: 11px;
+  line-height: 18px;
+  white-space: nowrap;
+  background: var(--mat-sys-surface-container-high);
+  color: var(--mat-sys-on-surface-variant);
+}
+
 .panels {
   padding: 0 8px 8px 0;
 }

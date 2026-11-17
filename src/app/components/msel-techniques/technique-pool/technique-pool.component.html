@@ -14,7 +14,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <mat-select [value]="selectedReleaseId" (selectionChange)="onReleaseChange($event.value)" [aria-label]="title + ' release'">
       @for (release of releases; track release.id) {
       <mat-option [value]="release.id">
-        {{ release.name }} {{ release.version }}@if (release.id === pinnedReleaseId) { (this MSEL)}
+        {{ release.name }} {{ release.version }}@if (isPinned(release)) { (this MSEL)}
       </mat-option>
       }
     </mat-select>
@@ -22,13 +22,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
     <mat-hint>No releases have been imported. An administrator imports them under Administration.</mat-hint>
     }
   </mat-form-field>
-  @if (needsUpgrade && canEditMsel()) {
-  <button mat-stroked-button class="upgrade-button" (click)="upgradePool()"
-    title="Move this MSEL's {{ isDefensive ? 'defensive' : 'attack' }} techniques to {{ selectedRelease?.version }}">
-    <mat-icon fontIcon="mdi-arrow-up-bold-circle-outline"></mat-icon>
-    Upgrade to {{ selectedRelease?.version }}
-  </button>
-  }
 </div>
 <div class="panels">
   <!-- ==================== Panel 1: Add Techniques ==================== -->
@@ -41,7 +34,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     </mat-expansion-panel-header>
     @if (needsUpgrade) {
     <div class="pin-notice">
-      This MSEL's {{ isDefensive ? 'defensive' : 'attack' }} techniques are from {{ pinnedRelease?.name }} {{ pinnedRelease?.version }}.
+      This MSEL's {{ selectedRelease?.domain }} techniques are from {{ pinnedRelease?.name }} {{ pinnedRelease?.version }}.
       Upgrade them to {{ selectedRelease?.version }} to add techniques from it.
     </div>
     }
@@ -99,7 +92,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
             matTooltipClass="attack-description-tooltip">{{ t.name }}</mat-cell>
         </ng-container>
         <ng-container matColumnDef="tactics">
-          <mat-header-cell *matHeaderCellDef class="col-tactics">{{ browsesCapec ? 'Categories' : 'Tactics' }}</mat-header-cell>
+          <mat-header-cell *matHeaderCellDef class="col-tactics">{{ browserGroupsLabel }}</mat-header-cell>
           <mat-cell *matCellDef="let t" class="col-tactics">{{ getTacticNames(t) }}</mat-cell>
         </ng-container>
         <ng-container matColumnDef="platforms">
@@ -138,10 +131,28 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <mat-icon class="mdi-18px panel-icon" [fontIcon]="icon"></mat-icon>
         MSEL Techniques ({{ pool.length }})
       </mat-panel-title>
-      @if (pinnedRelease) {
-      <mat-panel-description>{{ pinnedRelease.name }} {{ pinnedRelease.version }}</mat-panel-description>
+      @if (pinnedDomains.length === 1) {
+      <mat-panel-description>{{ pinnedDomains[0].release.name }} {{ pinnedDomains[0].release.version }}</mat-panel-description>
       }
     </mat-expansion-panel-header>
+    @if (pinnedDomains.length > 0) {
+    <!-- one row per domain the pool holds: its pinned release, and its own upgrade when the browsed release is a newer one of it -->
+    <div class="pinned-releases" aria-label="Pinned releases">
+      @for (pinned of pinnedDomains; track pinned.domain) {
+      <div class="pinned-release" [attr.data-domain]="pinned.domain">
+        <span class="pinned-name">{{ pinned.release.name }} {{ pinned.release.version }}</span>
+        <span class="pinned-count">{{ pinned.count }} technique{{ pinned.count === 1 ? '' : 's' }}</span>
+        @if (pinned.upgradeTo && canEditMsel()) {
+        <button mat-stroked-button class="upgrade-button" (click)="upgradePool(pinned)"
+          title="Move this MSEL's {{ pinned.domain }} techniques to {{ pinned.upgradeTo.version }}">
+          <mat-icon fontIcon="mdi-arrow-up-bold-circle-outline"></mat-icon>
+          Upgrade {{ pinned.domain }} to {{ pinned.upgradeTo.version }}
+        </button>
+        }
+      </div>
+      }
+    </div>
+    }
     @if (pool.length === 0) {
     <div class="empty-text">
       No techniques yet. Add techniques above, then add a {{ fieldTypeName }} data field so scenario events can name them.
@@ -164,6 +175,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <mat-cell *matCellDef="let item" class="col-id">
           <a [href]="item.technique?.url" target="_blank" rel="noopener"
             title="Open {{ item.technique?.externalId }} on {{ linkHost(item.technique) }}">{{ item.technique?.externalId }}</a>
+          @if (showsDomainLabels) {
+          <span class="domain-tag">{{ item.technique?.domain }}</span>
+          }
         </mat-cell>
       </ng-container>
       <ng-container matColumnDef="name">

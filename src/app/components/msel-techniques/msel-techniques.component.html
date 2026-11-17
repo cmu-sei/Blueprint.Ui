@@ -5,29 +5,8 @@ project root for license information or contact permission@sei.cmu.edu for full 
 -->
 
 <div class="content-area">
-  <app-technique-pool family="attack" [loggedInUserId]="loggedInUserId()" (contentShown)="shown.attack = $event"></app-technique-pool>
-  <app-technique-pool family="defensive" [loggedInUserId]="loggedInUserId()" (contentShown)="shown.defensive = $event"></app-technique-pool>
+  <app-technique-pool family="attack" [loggedInUserId]="loggedInUserId()" (releasesShown)="setShown('attack', $event)"></app-technique-pool>
+  <app-technique-pool family="defensive" [loggedInUserId]="loggedInUserId()" (releasesShown)="setShown('defensive', $event)"></app-technique-pool>
 
-  @if (showsMitreContent) {
-  <div class="attribution">
-    &copy; 2026 The MITRE Corporation. This work is reproduced and distributed with the permission of The MITRE Corporation.
-    MITRE ATT&amp;CK and ATT&amp;CK are registered trademarks of The MITRE Corporation.
-    @if (showsAtlasContent) {
-    MITRE ATLAS&trade; is a trademark of The MITRE Corporation.
-    }
-    @if (showsCapecContent) {
-    MITRE CAPEC&trade; is a trademark of The MITRE Corporation.
-    }
-    @if (showsD3fendContent) {
-    MITRE D3FEND&trade; is a trademark of The MITRE Corporation.
-    }
-    <a href="https://attack.mitre.org/resources/legal-and-branding/terms-of-use/" target="_blank" rel="noopener">Terms of Use</a>
-    @if (showsCapecContent) {
-    <a href="https://capec.mitre.org/about/termsofuse.html" target="_blank" rel="noopener">CAPEC Terms of Use</a>
-    }
-    @if (showsD3fendContent) {
-    <a href="https://d3fend.mitre.org/tou/" target="_blank" rel="noopener">D3FEND Terms of Use</a>
-    }
-  </div>
-  }
+  <app-technique-notice [releases]="allShown"></app-technique-notice>
 </div>

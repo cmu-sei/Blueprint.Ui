@@ -7,17 +7,19 @@ import { takeUntil } from 'rxjs/operators';
 import { MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
 import { MselTechniqueDataService } from 'src/app/data/msel-technique/msel-technique-data.service';
-import { TechniqueContentShown, TechniquePoolComponent } from './technique-pool/technique-pool.component';
+import { TechniqueRelease } from 'src/app/generated/blueprint.api';
+import { TechniqueNoticeComponent } from '../technique-notice/technique-notice.component';
+import { TechniquePoolComponent } from './technique-pool/technique-pool.component';
 
 /**
- * A MSEL's Techniques tab: its attack techniques (ATT&CK, ATLAS) and its defensive techniques (D3FEND), each a
- * pool of its own pinned to its own release, with one MITRE notice under both.
+ * A MSEL's Techniques tab: its attack techniques (ATT&CK, ATLAS, CAPEC) and its defensive techniques (D3FEND), each a
+ * pool of its own with every domain pinned to its own release, and under both the notice the releases on screen carry.
  */
 @Component({
   selector: 'app-msel-techniques',
   templateUrl: './msel-techniques.component.html',
   styleUrls: ['./msel-techniques.component.scss'],
-  imports: [TechniquePoolComponent]
+  imports: [TechniquePoolComponent, TechniqueNoticeComponent]
 })
 export class MselTechniquesComponent implements OnDestroy {
   private mselQuery = inject(MselQuery);
@@ -25,10 +27,7 @@ export class MselTechniquesComponent implements OnDestroy {
 
   readonly loggedInUserId = input<string>(undefined);
   private mselId = '';
-  shown: Record<'attack' | 'defensive', TechniqueContentShown> = {
-    attack: { mitre: false, atlas: false, capec: false, d3fend: false },
-    defensive: { mitre: false, atlas: false, capec: false, d3fend: false },
-  };
+  shown: Record<'attack' | 'defensive', TechniqueRelease[]> = { attack: [], defensive: [] };
   private unsubscribe$ = new Subject();
 
   constructor() {
@@ -41,24 +40,12 @@ export class MselTechniquesComponent implements OnDestroy {
     });
   }
 
-  /** Either section shows MITRE's technique content, which its terms of use say must carry their notice. */
-  get showsMitreContent(): boolean {
-    return this.shown.attack.mitre || this.shown.defensive.mitre;
-  }
+  /** The releases whose techniques are on screen; the notice is built from what they carry. */
+  allShown: TechniqueRelease[] = [];
 
-  /** Techniques of an ATLAS release are on screen, which carry MITRE's separate ATLAS mark. */
-  get showsAtlasContent(): boolean {
-    return this.shown.attack.atlas || this.shown.defensive.atlas;
-  }
-
-  /** Techniques of a CAPEC release are on screen, which carry MITRE's separate CAPEC mark and its own terms of use. */
-  get showsCapecContent(): boolean {
-    return this.shown.attack.capec || this.shown.defensive.capec;
-  }
-
-  /** Techniques of a D3FEND release are on screen, which carry MITRE's D3FEND mark and its own terms of use. */
-  get showsD3fendContent(): boolean {
-    return this.shown.attack.d3fend || this.shown.defensive.d3fend;
+  setShown(family: 'attack' | 'defensive', releases: TechniqueRelease[]) {
+    this.shown[family] = releases;
+    this.allShown = this.shown.attack.concat(this.shown.defensive);
   }
 
   ngOnDestroy() {

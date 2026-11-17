@@ -581,20 +581,20 @@ project root for license information.
         @if (filteredSuggestedTechniqueOptions.length > 0) {
         <mat-optgroup label="Suggested">
           @for (option of filteredSuggestedTechniqueOptions; track option.externalId) {
-          <mat-option [value]="option.externalId">{{ option.externalId }} - {{ option.name }}</mat-option>
+          <mat-option [value]="option.externalId">{{ option.externalId }} - {{ option.name }}@if (showsTechniqueDomains) { <span class="technique-domain"> ({{ option.domain }})</span>}</mat-option>
           }
         </mat-optgroup>
         }
         @if (filteredOtherTechniqueOptions.length > 0) {
         <mat-optgroup label="Other techniques">
           @for (option of filteredOtherTechniqueOptions; track option.externalId) {
-          <mat-option [value]="option.externalId">{{ option.externalId }} - {{ option.name }}</mat-option>
+          <mat-option [value]="option.externalId">{{ option.externalId }} - {{ option.name }}@if (showsTechniqueDomains) { <span class="technique-domain"> ({{ option.domain }})</span>}</mat-option>
           }
         </mat-optgroup>
         }
         } @else {
         @for (option of filteredTechniqueOptions; track option.externalId) {
-        <mat-option [value]="option.externalId">{{ option.externalId }} - {{ option.name }}</mat-option>
+        <mat-option [value]="option.externalId">{{ option.externalId }} - {{ option.name }}@if (showsTechniqueDomains) { <span class="technique-domain"> ({{ option.domain }})</span>}</mat-option>
         }
         }
         @if (filteredTechniqueOptions.length === 0) {

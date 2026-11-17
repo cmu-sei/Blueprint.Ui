@@ -165,6 +165,8 @@ export class DataValueComponent implements OnChanges, OnDestroy {
   // the attack half (ATT&CK, ATLAS), a Defensive Technique field the defensive half (D3FEND) ---
   techniqueFilter = '';
   techniqueOptions: Technique[] = [];
+  /** The pool holds more than one domain of this field's techniques, so each option names the one it is from. */
+  showsTechniqueDomains = false;
   private techniquesById = new Map<string, Technique>();
   private wholePool: Technique[] = [];
   private mselCountermeasures: MselCountermeasures;
@@ -243,10 +245,17 @@ export class DataValueComponent implements OnChanges, OnDestroy {
     return this.dataField?.dataType === DataFieldType.DefensiveTechnique ? 'defensive' : 'attack';
   }
 
+  /**
+   * A cell stores a technique's id and nothing else, so an id the pool holds in two domains (T1404 in enterprise and
+   * mobile ATT&CK) is one choice: the first is offered, and the other cannot be told apart in a cell.
+   */
   private offerTechniques() {
     const techniques = this.wholePool.filter(t => techniqueFamily(t) === this.techniqueFamily);
-    this.techniqueOptions = techniques;
-    this.techniquesById = new Map(techniques.map(t => [t.externalId, t]));
+    const seen = new Set<string>();
+    const options = techniques.filter(t => !seen.has(t.externalId) && !!seen.add(t.externalId));
+    this.techniqueOptions = options;
+    this.techniquesById = new Map(options.map(t => [t.externalId, t]));
+    this.showsTechniqueDomains = new Set(techniques.map(t => t.domain)).size > 1;
   }
 
   ngOnDestroy() {

@@ -474,6 +474,29 @@ describe('DataValueComponent ATT&CK techniques', () => {
   });
 
   /**
+   * Verifies: with attack techniques of two domains in the pool the select names each option's domain, offers an id
+   * the two domains share once (a cell stores the id and nothing else), and a pool of one domain names none.
+   * Interacts with: offerTechniques, showsTechniqueDomains.
+   * Data: T1059 (enterprise-attack), CAPEC-66 (capec) and T1059 again from mobile-attack.
+   */
+  it('names the domain of each option when the pool holds more than one, once per shared id', async () => {
+    const pool: MselTechnique[] = [
+      TECHNIQUE_POOL[1],
+      { id: 'mat-m', mselId: 'msel-1', techniqueId: 'at-m', technique: { id: 'at-m', domain: 'mobile-attack', externalId: 'T1059', name: 'Mobile Same Id', url: 'https://attack.mitre.org/techniques/T1059' } },
+      { id: 'mat-c', mselId: 'msel-1', techniqueId: 'at-c', technique: { id: 'at-c', domain: 'capec', externalId: 'CAPEC-66', name: 'SQL Injection', url: 'https://capec.mitre.org/data/definitions/66.html' } },
+    ];
+    const { fixture } = await renderTechniqueField(TECHNIQUES, '', { canEdit: true }, { pool });
+    const select = await TestbedHarnessEnvironment.loader(fixture).getHarness(MatSelectHarness);
+    await select.open();
+
+    const options = await select.getOptions();
+    expect(await Promise.all(options.map((o) => o.getText()))).toEqual([
+      'CAPEC-66 - SQL Injection (capec)',
+      'T1059 - Command and Scripting Interpreter (enterprise-attack)',
+    ]);
+  });
+
+  /**
    * Verifies: removing a chip drops only that id.
    * Interacts with: removeTechnique.
    * Data: value "T1059, T9999"; canEdit; remove T1059's chip.
