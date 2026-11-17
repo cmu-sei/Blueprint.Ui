@@ -104,13 +104,13 @@ describe('AdminTechniqueReleasesComponent', () => {
     const { releaseApi } = await renderReleases([]);
 
     expect(releaseApi.getTechniqueReleases).toHaveBeenCalled();
-    expect(screen.getByText(/enterprise-attack\.json from MITRE's attack-stix-data repository/)).toBeInTheDocument();
-    expect(screen.getByText(/stix-atlas\.json from the mitre-atlas\/atlas-data GitHub releases/)).toBeInTheDocument();
-    expect(screen.getByText(/MITRE D3FEND™ ontology \(d3fend\.json from the D3FEND Ontology Resources page\)/)).toBeInTheDocument();
-    expect(screen.getByText(/MITRE CAPEC™ STIX bundle \(stix-capec\.json from the/)).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'mitre/cti repository' })).toHaveAttribute('href', 'https://github.com/mitre/cti/tree/master/capec/2.1');
+    expect(screen.getByText(/enterprise-attack\.json, mobile-attack\.json or ics-attack\.json from/)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'attack-stix-data' })).toHaveAttribute('href', 'https://github.com/mitre-attack/attack-stix-data');
+    expect(screen.getByRole('link', { name: 'atlas-data releases' })).toHaveAttribute('href', 'https://github.com/mitre-atlas/atlas-data/releases');
+    expect(screen.getByRole('link', { name: 'mitre/cti' })).toHaveAttribute('href', 'https://github.com/mitre/cti/tree/master/capec/2.1');
+    expect(screen.getByRole('link', { name: 'D3FEND resources page' })).toHaveAttribute('href', 'https://d3fend.mitre.org/resources/');
     expect(screen.getByTitle('Import a release file')).toBeInTheDocument();
-    expect(screen.getByText(/d3fend-full-mappings\.json from https:\/\/d3fend\.mitre\.org\/ontologies\/d3fend\/<version>\/d3fend-full-mappings\.json; the unversioned path is not served/)).toBeInTheDocument();
+    expect(screen.getByText(/d3fend-full-mappings\.json from https:\/\/d3fend\.mitre\.org\/ontologies\/d3fend\/<version>\/d3fend-full-mappings\.json \(the unversioned path is not served\)/)).toBeInTheDocument();
     expect(screen.queryByText(TRADEMARKS)).not.toBeInTheDocument();
     expect(screen.queryByText(/© 2026 The MITRE Corporation/)).not.toBeInTheDocument();
     expect(screen.queryByText(ATLAS_TRADEMARK)).not.toBeInTheDocument();
