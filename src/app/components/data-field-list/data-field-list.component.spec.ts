@@ -35,6 +35,8 @@ import { ApiStub } from 'src/app/test-utils/api-stub';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { permissionApiStubs } from 'src/app/test-utils/mock-permission-data.service';
 import { unstubbed } from 'src/app/test-utils/unstubbed';
+import { HubReconnectService } from 'src/app/services/hub-reconnect.service';
+import { TestBed } from '@angular/core/testing';
 
 const ME = 'user-me';
 const ALL = Object.values(SystemPermission);
@@ -342,5 +344,23 @@ describe('DataFieldListComponent', () => {
       expect(queryButton('Edit Subject') !== null).toBe(editable);
       expect(queryButton('Make Subject a template')).toBeNull();
     });
+  });
+
+  /**
+   * Verifies: when the hub connection is replaced, the templates and an inject type's fields load again.
+   * Interacts with: HubReconnectService.announceReconnected, DataFieldService.getDataFieldTemplates and
+   * getDataFieldsByInjectType (stubs).
+   * Data: the it-email inject type.
+   */
+  it('reloads its fields when the hub connection is replaced', async () => {
+    const { dataFieldApi } = await renderDataFields({ injectTypeId: 'it-email' });
+    const templates = dataFieldApi.getDataFieldTemplates.mock.calls.length;
+    const typeFields = dataFieldApi.getDataFieldsByInjectType.mock.calls.length;
+
+    TestBed.inject(HubReconnectService).announceReconnected();
+
+    expect(dataFieldApi.getDataFieldTemplates).toHaveBeenCalledTimes(templates + 1);
+    expect(dataFieldApi.getDataFieldsByInjectType).toHaveBeenCalledTimes(typeFields + 1);
+    expect(dataFieldApi.getDataFieldsByInjectType).toHaveBeenLastCalledWith('it-email');
   });
 });

@@ -31,6 +31,7 @@ import {
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
 import { UIDataService } from 'src/app/data/ui/ui-data.service';
 import { ApplicationArea, SignalRService } from 'src/app/services/signalr.service';
+import { HubReconnectService } from 'src/app/services/hub-reconnect.service';
 import { AdminContainerComponent } from './admin-container.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { activatedRouteStub } from 'src/app/test-utils/activated-route';
@@ -196,7 +197,7 @@ async function renderAdmin(
       { provide: ActivatedRoute, useValue: route },
     ],
   });
-  return { ...rendered, signalR, units, permissionApis };
+  return { ...rendered, signalR, users, units, injectTypes, permissionApis };
 }
 
 const nav = () => screen.getByRole('navigation', { name: 'Administration sections' });
@@ -396,6 +397,22 @@ describe('AdminContainerComponent', () => {
 
     expect(child(fixture, AdminUnitsStub).canManage()).toBe(true);
     expect(units.getUnits).toHaveBeenCalledTimes(1);
+  });
+
+  /**
+   * Verifies: when the hub connection is replaced, the users, units and inject types the sections share load again.
+   * Interacts with: HubReconnectService.announceReconnected, UserService.getUsers, UnitService.getUnits and
+   * InjectTypeService.getInjectTypes (stubs).
+   * Data: ViewUnits.
+   */
+  it('reloads the shared admin data when the hub connection is replaced', async () => {
+    const { users, units, injectTypes } = await renderAdmin({ permissions: [SystemPermission.ViewUnits] });
+
+    TestBed.inject(HubReconnectService).announceReconnected();
+
+    expect(users.getUsers).toHaveBeenCalledTimes(2);
+    expect(units.getUnits).toHaveBeenCalledTimes(2);
+    expect(injectTypes.getInjectTypes).toHaveBeenCalledTimes(2);
   });
 
   /**

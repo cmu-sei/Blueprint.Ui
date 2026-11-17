@@ -23,6 +23,8 @@ import { ApiStub } from 'src/app/test-utils/api-stub';
 import { dialogRefStub } from 'src/app/test-utils/dialog-refs';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { unstubbed } from 'src/app/test-utils/unstubbed';
+import { HubReconnectService } from 'src/app/services/hub-reconnect.service';
+import { TestBed } from '@angular/core/testing';
 
 const ME = 'user-me';
 const TEMPLATE: Organization = { id: 'org-t', name: 'Template Agency', shortName: 'TA', summary: 'A template', isTemplate: true, mselId: null };
@@ -195,5 +197,23 @@ describe('OrganizationListComponent', () => {
       expect(organizationApi.deleteOrganization).toHaveBeenCalledWith('org-1');
       expect(screen.getByText('No results found')).toBeInTheDocument();
     });
+  });
+
+  /**
+   * Verifies: when the hub connection is replaced, the template list loads its templates again; within an MSEL
+   * the MSEL page reloads the organizations instead.
+   * Interacts with: HubReconnectService.announceReconnected, OrganizationService.getOrganizationTemplates (stub).
+   * Data: showTemplates true, then false.
+   */
+  it.each([
+    { showTemplates: true, reloads: 1 },
+    { showTemplates: false, reloads: 0 },
+  ])('reloads $reloads time(s) with showTemplates $showTemplates when the hub connection is replaced', async ({ showTemplates, reloads }) => {
+    const { organizationApi } = await renderOrganizations({ showTemplates, activeMsel: showTemplates ? null : msel() });
+    const before = organizationApi.getOrganizationTemplates.mock.calls.length;
+
+    TestBed.inject(HubReconnectService).announceReconnected();
+
+    expect(organizationApi.getOrganizationTemplates).toHaveBeenCalledTimes(before + reloads);
   });
 });

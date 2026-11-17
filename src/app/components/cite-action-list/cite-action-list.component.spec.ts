@@ -24,6 +24,8 @@ import { ApiStub } from 'src/app/test-utils/api-stub';
 import { dialogRefStub } from 'src/app/test-utils/dialog-refs';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { unstubbed } from 'src/app/test-utils/unstubbed';
+import { HubReconnectService } from 'src/app/services/hub-reconnect.service';
+import { TestBed } from '@angular/core/testing';
 
 const ME = 'user-me';
 const TEMPLATE: CiteAction = { id: 'ca-t', description: 'Template action', isTemplate: true, mselId: null, moveNumber: 0, actionNumber: 0 };
@@ -203,5 +205,18 @@ describe('CiteActionListComponent', () => {
       expect(citeActionApi.deleteCiteAction).toHaveBeenCalledWith('ca-1');
       expect(within(table()).queryByText('Isolate the host')).not.toBeInTheDocument();
     });
+  });
+
+  /**
+   * Verifies: when the hub connection is replaced, the CITE action templates load again.
+   * Interacts with: HubReconnectService.announceReconnected, CiteActionService.getCiteActionTemplates (stub).
+   * Data: showTemplates true; no active MSEL.
+   */
+  it('reloads the templates when the hub connection is replaced', async () => {
+    const { citeActionApi } = await renderCiteActions({ showTemplates: true, activeMsel: null });
+
+    TestBed.inject(HubReconnectService).announceReconnected();
+
+    expect(citeActionApi.getCiteActionTemplates).toHaveBeenCalledTimes(2);
   });
 });

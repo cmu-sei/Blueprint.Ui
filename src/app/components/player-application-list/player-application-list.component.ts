@@ -35,6 +35,7 @@ import { MatDivider } from '@angular/material/divider';
 import { NgTemplateOutlet } from '@angular/common';
 import { PlayerApplicationTeamsComponent } from '../player-application-teams/player-application-teams.component';
 import { PlayerTeamAppOrderComponent } from '../player-team-app-order/player-team-app-order.component';
+import { reloadOnReconnect } from 'src/app/services/hub-reconnect.service';
 
 @Component({
     selector: 'app-player-application-list',
@@ -100,6 +101,14 @@ export class PlayerApplicationListComponent implements OnDestroy, OnInit {
     });
     // load Blueprint's playerApplication templates
     this.playerApplicationDataService.loadTemplates();
+    // a new hub connection missed what was broadcast while the old one was down
+    reloadOnReconnect(() => {
+      this.playerApplicationDataService.loadTemplates();
+      if (!this.showTemplates() && this.msel.id) {
+        this.playerApplicationDataService.loadByMsel(this.msel.id);
+        this.playerApplicationTeamDataService.getPlayerApplicationTeamsFromApi(this.msel.id);
+      }
+    });
   }
 
   ngOnInit() {

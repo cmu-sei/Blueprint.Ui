@@ -16,12 +16,12 @@ project root for license information or contact permission@sei.cmu.edu for full 
       @for (card of capabilityCards; track card.key) {
       <div class="value-card" role="button" tabindex="0" (click)="openCapabilityDialog(card.key)" (keydown.enter)="openCapabilityDialog(card.key)">
         <div class="value-icon">
-          <mat-icon [fontIcon]="card.data.icon"></mat-icon>
+          <mat-icon [fontIcon]="card.data.icon" />
         </div>
         <h3 class="value-title">{{ card.data.title }}</h3>
         <p class="value-text">{{ card.summary }}</p>
         <div class="learn-more">
-          <mat-icon class="info-icon" fontIcon="mdi-information"></mat-icon>
+          <mat-icon class="info-icon" fontIcon="mdi-information" />
           <span>Click to learn more</span>
         </div>
       </div>
@@ -34,13 +34,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <div class="mission-card join-card"
            [class.disabled-card]="joinMselList.length === 0"
            [attr.aria-disabled]="joinMselList.length === 0"
-           tabindex="1"
+           tabindex="0"
            role="button"
            (click)="joinMselList.length > 0 && gotoUrl('join')">
         <div class="card-corner-accent"></div>
         <div class="card-header">
           <div class="card-icon">
-            <mat-icon fontIcon="mdi-play-circle"></mat-icon>
+            <mat-icon fontIcon="mdi-play-circle" />
           </div>
           <div class="card-title-section">
             <h2 class="card-title">JOIN</h2>
@@ -63,20 +63,20 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <div class="card-footer">
           <button mat-button color="primary" [disabled]="joinMselList.length === 0">
             Join Event
-            <mat-icon class="inline-icon" fontIcon="mdi-arrow-right"></mat-icon>
+            <mat-icon class="inline-icon" fontIcon="mdi-arrow-right" />
           </button>
         </div>
       </div>
 
       @if (launchMselList.length > 0) {
       <div class="mission-card launch-card"
-           tabindex="2"
+           tabindex="0"
            role="button"
            (click)="gotoUrl('launch')">
         <div class="card-corner-accent"></div>
         <div class="card-header">
           <div class="card-icon">
-            <mat-icon fontIcon="mdi-rocket-launch"></mat-icon>
+            <mat-icon fontIcon="mdi-rocket-launch" />
           </div>
           <div class="card-title-section">
             <h2 class="card-title">LAUNCH</h2>
@@ -95,7 +95,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <div class="card-footer">
           <button mat-button color="primary">
             Start Event
-            <mat-icon class="inline-icon" fontIcon="mdi-arrow-right"></mat-icon>
+            <mat-icon class="inline-icon" fontIcon="mdi-arrow-right" />
           </button>
         </div>
       </div>
@@ -105,13 +105,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <div class="mission-card build-card"
            [class.disabled-card]="!canBuild"
            [attr.aria-disabled]="!canBuild"
-           tabindex="3"
+           tabindex="0"
            role="button"
            (click)="canBuild && gotoUrl('build')">
         <div class="card-corner-accent"></div>
         <div class="card-header">
           <div class="card-icon">
-            <mat-icon fontIcon="mdi-file-document-edit"></mat-icon>
+            <mat-icon fontIcon="mdi-file-document-edit" />
           </div>
           <div class="card-title-section">
             <h2 class="card-title">BUILD</h2>
@@ -134,7 +134,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <div class="card-footer">
           <button mat-button color="primary" [disabled]="!canBuild">
             Manage Events
-            <mat-icon class="inline-icon" fontIcon="mdi-arrow-right"></mat-icon>
+            <mat-icon class="inline-icon" fontIcon="mdi-arrow-right" />
           </button>
         </div>
       </div>
@@ -143,13 +143,13 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <div class="mission-card assess-card"
            [class.disabled-card]="assessMselList.length === 0"
            [attr.aria-disabled]="assessMselList.length === 0"
-           tabindex="4"
+           tabindex="0"
            role="button"
            (click)="assessMselList.length > 0 && gotoUrl('assess')">
         <div class="card-corner-accent"></div>
         <div class="card-header">
           <div class="card-icon">
-            <mat-icon fontIcon="mdi-clipboard-check"></mat-icon>
+            <mat-icon fontIcon="mdi-clipboard-check" />
           </div>
           <div class="card-title-section">
             <h2 class="card-title">ASSESS</h2>
@@ -174,7 +174,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <div class="card-footer">
           <button mat-button color="primary" [disabled]="assessMselList.length === 0">
             Assess Events
-            <mat-icon class="inline-icon" fontIcon="mdi-arrow-right"></mat-icon>
+            <mat-icon class="inline-icon" fontIcon="mdi-arrow-right" />
           </button>
         </div>
       </div>
@@ -183,7 +183,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <div class="mission-card empty-state">
         <div class="card-header">
           <div class="card-icon empty-icon">
-            <mat-icon fontIcon="mdi-alert-circle-outline"></mat-icon>
+            <mat-icon fontIcon="mdi-alert-circle-outline" />
           </div>
           <div class="card-title-section">
             <h2 class="card-title">NOT LOADED</h2>
@@ -200,7 +200,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <div class="mission-card empty-state">
         <div class="card-header">
           <div class="card-icon empty-icon">
-            <mat-icon fontIcon="mdi-cancel"></mat-icon>
+            <mat-icon fontIcon="mdi-cancel" />
           </div>
           <div class="card-title-section">
             <h2 class="card-title">NO ACCESS</h2>
@@ -222,8 +222,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
   <div class="loading-container">
     <div class="loading-card">
       <div class="loading-icon">
-        <mat-progress-spinner color="primary" mode="indeterminate" diameter="60">
-        </mat-progress-spinner>
+        <mat-progress-spinner color="primary" mode="indeterminate" diameter="60" />
       </div>
       <h2 class="loading-title">Initializing Data</h2>
       <p class="loading-subtitle">Please wait...</p>

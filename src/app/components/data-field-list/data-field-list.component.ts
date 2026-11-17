@@ -45,6 +45,7 @@ import { MatIconButton } from '@angular/material/button';
 import { MatSelect } from '@angular/material/select';
 import { MatOption } from '@angular/material/autocomplete';
 import { MatCheckbox } from '@angular/material/checkbox';
+import { reloadOnReconnect } from 'src/app/services/hub-reconnect.service';
 
 @Component({
     selector: 'app-data-field-list',
@@ -129,6 +130,15 @@ export class DataFieldListComponent implements OnChanges, OnDestroy, OnInit, Aft
       });
     // load the dataField templates
     this.dataFieldDataService.loadTemplates();
+    // a new hub connection missed what was broadcast while the old one was down; an MSEL's own fields
+    // are reloaded by the MSEL page
+    reloadOnReconnect(() => {
+      this.dataFieldDataService.loadTemplates();
+      const injectTypeId = this.injectTypeId();
+      if (!this.showTemplates() && injectTypeId) {
+        this.dataFieldDataService.loadByInjectType(injectTypeId);
+      }
+    });
     // subscribe to the templates
     this.dataFieldTemplateQuery
       .selectAll()

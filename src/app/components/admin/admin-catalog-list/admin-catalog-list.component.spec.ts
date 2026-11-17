@@ -3,7 +3,7 @@
 
 import { describe, it, expect, vi } from 'vitest';
 import { Component, Type, input, output } from '@angular/core';
-import { ComponentFixture } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -27,6 +27,7 @@ import { dialogRefStub } from 'src/app/test-utils/dialog-refs';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { InjectListComponent } from '../../inject-list/inject-list.component';
 import { CatalogUnitsComponent } from '../../catalog-units/catalog-units.component';
+import { HubReconnectService } from 'src/app/services/hub-reconnect.service';
 
 @Component({ selector: 'app-inject-list', template: '' })
 class InjectListStub {
@@ -190,5 +191,18 @@ describe('AdminCatalogListComponent', () => {
     expect(confirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Delete Catalog', confirmText: 'Delete', cancelText: 'Cancel' }));
     expect(catalogApi.deleteCatalog).toHaveBeenCalledWith('cat-1');
     expect(within(table()).queryByText('Ransomware Catalog')).not.toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: when the hub connection is replaced, the catalogs load again.
+   * Interacts with: HubReconnectService.announceReconnected, CatalogService.getCatalogs (stub).
+   * Data: the default catalogs.
+   */
+  it('reloads the catalogs when the hub connection is replaced', async () => {
+    const { catalogApi } = await renderCatalogList();
+
+    TestBed.inject(HubReconnectService).announceReconnected();
+
+    expect(catalogApi.getCatalogs).toHaveBeenCalledTimes(2);
   });
 });

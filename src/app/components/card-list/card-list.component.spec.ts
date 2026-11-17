@@ -26,6 +26,8 @@ import { dialogRefStub } from 'src/app/test-utils/dialog-refs';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { unstubbed } from 'src/app/test-utils/unstubbed';
 import { CardTeamsComponent } from '../card-teams/card-teams.component';
+import { HubReconnectService } from 'src/app/services/hub-reconnect.service';
+import { TestBed } from '@angular/core/testing';
 
 @Component({ selector: 'app-card-teams', template: '' })
 class CardTeamsStub {
@@ -215,5 +217,18 @@ describe('CardListComponent', () => {
       expect(cardApi.deleteCard).toHaveBeenCalledWith('card-1');
       expect(within(table()).queryByText('Situation Card')).not.toBeInTheDocument();
     });
+  });
+
+  /**
+   * Verifies: when the hub connection is replaced, the card templates load again.
+   * Interacts with: HubReconnectService.announceReconnected, CardService.getCardTemplates (stub).
+   * Data: showTemplates true; no active MSEL.
+   */
+  it('reloads the templates when the hub connection is replaced', async () => {
+    const { cardApi } = await renderCardList({ showTemplates: true, activeMsel: null });
+
+    TestBed.inject(HubReconnectService).announceReconnected();
+
+    expect(cardApi.getCardTemplates).toHaveBeenCalledTimes(2);
   });
 });
