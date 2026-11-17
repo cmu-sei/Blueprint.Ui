@@ -1,4 +1,5 @@
 .gitignore
+.openapi-generator-ignore
 README.md
 api.base.service.ts
 api.module.ts
@@ -28,6 +29,7 @@ api/mselCompetency.service.ts
 api/mselImage.service.ts
 api/mselPage.service.ts
 api/mselScoringModel.service.ts
+api/mselTechnique.service.ts
 api/mselUnit.service.ts
 api/organization.service.ts
 api/player.service.ts
@@ -41,6 +43,7 @@ api/systemRoles.service.ts
 api/team.service.ts
 api/teamCompetency.service.ts
 api/teamUser.service.ts
+api/techniqueRelease.service.ts
 api/unit.service.ts
 api/unitUser.service.ts
 api/user.service.ts
@@ -143,6 +146,7 @@ model/moveCreate.ts
 model/moveEdit.ts
 model/msel.ts
 model/mselCompetency.ts
+model/mselCountermeasures.ts
 model/mselCreate.ts
 model/mselEdit.ts
 model/mselImportCounts.ts
@@ -160,6 +164,9 @@ model/mselScoringCategory.ts
 model/mselScoringModel.ts
 model/mselScoringModelLink.ts
 model/mselScoringOption.ts
+model/mselTechnique.ts
+model/mselTechniqueCountermeasures.ts
+model/mselTechniqueUpgrade.ts
 model/mselUnit.ts
 model/mselUnitCreate.ts
 model/organization.ts
@@ -214,6 +221,11 @@ model/teamPermission.ts
 model/teamRole.ts
 model/teamType.ts
 model/teamUser.ts
+model/technique.ts
+model/techniqueCountermeasure.ts
+model/techniqueCountermeasureImport.ts
+model/techniqueRelease.ts
+model/techniqueTactic.ts
 model/type.ts
 model/typeAttributes.ts
 model/typeInfo.ts

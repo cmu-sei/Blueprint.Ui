@@ -260,7 +260,7 @@ describe('AdminContainerComponent', () => {
     expect(permissionApis.systemPermissions.getMySystemPermissions).toHaveBeenCalledTimes(1);
     for (const label of [
       'Units', 'Data Fields', 'Inject Types', 'Catalogs', 'Organizations', 'Gallery Cards',
-      'CITE Actions', 'CITE Duties', 'Player Apps', 'Competencies', 'Proficiency Scales', 'Users', 'Roles', 'Groups',
+      'CITE Actions', 'CITE Duties', 'Player Apps', 'Competencies', 'Proficiency Scales', 'Techniques', 'Users', 'Roles', 'Groups',
     ]) {
       expect(within(nav()).queryByText(label)).not.toBeInTheDocument();
     }
@@ -282,7 +282,7 @@ describe('AdminContainerComponent', () => {
     [SystemPermission.ViewCiteActions, ['CITE Actions']],
     [SystemPermission.ViewCiteDuties, ['CITE Duties']],
     [SystemPermission.ViewPlayerApplications, ['Player Apps']],
-    [SystemPermission.ViewCompetencyFrameworks, ['Competencies', 'Proficiency Scales']],
+    [SystemPermission.ViewCompetencyFrameworks, ['Competencies', 'Proficiency Scales', 'Techniques']],
     [SystemPermission.ViewUsers, ['Users']],
     [SystemPermission.ViewRoles, ['Roles']],
     [SystemPermission.ViewGroups, ['Groups']],
@@ -290,7 +290,7 @@ describe('AdminContainerComponent', () => {
     await renderAdmin({ permissions: [permission] });
     const all = [
       'Units', 'Data Fields', 'Inject Types', 'Catalogs', 'Organizations', 'Gallery Cards',
-      'CITE Actions', 'CITE Duties', 'Player Apps', 'Competencies', 'Proficiency Scales', 'Users', 'Roles', 'Groups',
+      'CITE Actions', 'CITE Duties', 'Player Apps', 'Competencies', 'Proficiency Scales', 'Techniques', 'Users', 'Roles', 'Groups',
     ];
 
     for (const label of all) {

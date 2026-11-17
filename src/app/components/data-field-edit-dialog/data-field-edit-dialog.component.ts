@@ -22,12 +22,13 @@ import { MatSelect } from '@angular/material/select';
 import { MatOption } from '@angular/material/autocomplete';
 import { MatCheckbox } from '@angular/material/checkbox';
 import { KeyValuePipe } from '@angular/common';
+import { DataFieldTypeNamePipe } from 'src/app/utilities/data-field-type-name';
 
 @Component({
     selector: 'app-data-field-edit-dialog',
     templateUrl: './data-field-edit-dialog.component.html',
     styleUrls: ['./data-field-edit-dialog.component.scss'],
-    imports: [CrucibleDialogComponent, CrucibleDialogContentDirective, MatFormField, MatLabel, MatInput, FormsModule, MatSelect, MatOption, MatCheckbox, KeyValuePipe]
+    imports: [CrucibleDialogComponent, CrucibleDialogContentDirective, MatFormField, MatLabel, MatInput, FormsModule, MatSelect, MatOption, MatCheckbox, KeyValuePipe, DataFieldTypeNamePipe]
 })
 
 export class DataFieldEditDialogComponent {
@@ -54,6 +55,12 @@ export class DataFieldEditDialogComponent {
       // Competency fields are always option-list + multi-select
       if (selectedDataType === DataFieldType.Competency) {
         this.data.dataField.isChosenFromList = true;
+        this.data.dataField.isMultiSelect = true;
+        this.data.dataField.isFacilitationField = true;
+      }
+      // technique fields offer the MSEL's technique pool (attack or defensive), not an option list
+      if (selectedDataType === DataFieldType.AttackTechnique || selectedDataType === DataFieldType.DefensiveTechnique) {
+        this.data.dataField.isChosenFromList = false;
         this.data.dataField.isMultiSelect = true;
         this.data.dataField.isFacilitationField = true;
       }
@@ -188,6 +195,12 @@ export class DataFieldEditDialogComponent {
 
   isCompetency(): boolean {
     return this.data.dataField.dataType === DataFieldType.Competency;
+  }
+
+  /** An Attack Technique or Defensive Technique field, whose values come from the MSEL's Techniques tab. */
+  isTechniqueField(): boolean {
+    return this.data.dataField.dataType === DataFieldType.AttackTechnique ||
+      this.data.dataField.dataType === DataFieldType.DefensiveTechnique;
   }
 
   optionListNotAllowed(): boolean {

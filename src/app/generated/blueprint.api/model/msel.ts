@@ -27,6 +27,7 @@ import { DataField } from './dataField';
 import { Move } from './move';
 import { MselItemStatus } from './mselItemStatus';
 import { Team } from './team';
+import { MselTechnique } from './mselTechnique';
 import { IntegrationType } from './integrationType';
 import { PlayerApplication } from './playerApplication';
 import { SteamfitterScenarioStartMode } from './steamfitterScenarioStartMode';
@@ -123,6 +124,7 @@ export interface Msel {
      * While the MSEL is being built with AI, the stage left: Injects, Articles or Finish
      */
     aiDraftStage?: string | null;
+    mselTechniques?: Array<MselTechnique> | null;
 }
 export namespace Msel {
 }

@@ -152,6 +152,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
       @if (selectedTab === 'Competencies') {
       <app-msel-competencies [loggedInUserId]="loggedInUserId()" />
       }
+      @if (selectedTab === 'Techniques') {
+      <app-msel-techniques [loggedInUserId]="loggedInUserId"></app-msel-techniques>
+      }
       @if (selectedTab === 'Scenario Events') {
       <app-scenario-event-list [loggedInUserId]="loggedInUserId()"
         [userTheme]="userTheme$() | async" />

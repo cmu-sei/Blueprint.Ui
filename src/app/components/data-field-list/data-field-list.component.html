@@ -232,7 +232,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <ng-container matColumnDef="datatype">
           <mat-header-cell mat-sort-header="dataType" *matHeaderCellDef class="six-cell column-min60"> Data Type </mat-header-cell>
           <mat-cell *matCellDef="let element" class="six-cell column-min60">
-            <div class="summary-text">{{ element.dataType }}</div>
+            <div class="summary-text">{{ element.dataType | dataFieldTypeName }}</div>
           </mat-cell>
         </ng-container>
         <!-- options Column -->

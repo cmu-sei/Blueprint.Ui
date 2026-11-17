@@ -54,6 +54,7 @@ import { CardListComponent } from '../card-list/card-list.component';
 import { CiteActionListComponent } from '../cite-action-list/cite-action-list.component';
 import { CiteDutyListComponent } from '../cite-duty-list/cite-duty-list.component';
 import { MselCompetenciesComponent } from '../msel-competencies/msel-competencies.component';
+import { MselTechniquesComponent } from '../msel-techniques/msel-techniques.component';
 import { ScenarioEventListComponent } from '../scenario-event-list/scenario-event-list.component';
 import { MselViewComponent } from '../msel-view/msel-view.component';
 import { AssessorViewComponent } from '../assessor-view/assessor-view.component';
@@ -68,7 +69,7 @@ import { MselScoringModelTabComponent } from '../msel-scoring-model-tab/msel-sco
     selector: 'app-msel',
     templateUrl: './msel.component.html',
     styleUrls: ['./msel.component.scss'],
-    imports: [MatDrawerContainer, MatDrawer, MatIconButton, MatIcon, MatList, MatDivider, MatListItem, NgClass, MatDrawerContent, MselInfoComponent, MselContributorsComponent, MselTeamsComponent, DataFieldListComponent, OrganizationListComponent, MoveListComponent, PlayerApplicationListComponent, CardListComponent, CiteActionListComponent, CiteDutyListComponent, MselCompetenciesComponent, ScenarioEventListComponent, MselViewComponent, AssessorViewComponent, InvitationListComponent, MselPlaybookComponent, MselScoringModelTabComponent, MselAssistantComponent, MselAiBuildComponent, AsyncPipe]
+    imports: [MatDrawerContainer, MatDrawer, MatIconButton, MatIcon, MatList, MatDivider, MatListItem, NgClass, MatDrawerContent, MselInfoComponent, MselContributorsComponent, MselTeamsComponent, DataFieldListComponent, OrganizationListComponent, MoveListComponent, PlayerApplicationListComponent, CardListComponent, CiteActionListComponent, CiteDutyListComponent, MselCompetenciesComponent, MselTechniquesComponent, ScenarioEventListComponent, MselViewComponent, AssessorViewComponent, InvitationListComponent, MselPlaybookComponent, MselScoringModelTabComponent, MselAssistantComponent, MselAiBuildComponent, AsyncPipe]
 })
 export class MselComponent implements OnDestroy {
   private activatedRoute = inject(ActivatedRoute);
@@ -117,6 +118,7 @@ export class MselComponent implements OnDestroy {
     'Info',
     'Contributors',
     'Competencies',
+    'Techniques',
     'Data Fields',
     'Teams',
     'Organizations',
@@ -145,6 +147,7 @@ export class MselComponent implements OnDestroy {
     ['Actions', 'mdi-clipboard-check-outline'],
     ['Duties', 'mdi-clipboard-account-outline'],
     ['Competencies', 'mdi-certificate-outline'],
+    ['Techniques', 'mdi-shield-bug-outline'],
     ['Scenario Events', 'mdi-chart-timeline'],
     ['Exercise View', 'mdi-eye-outline'],
     ['Assessor View', 'mdi-clipboard-check-multiple-outline'],

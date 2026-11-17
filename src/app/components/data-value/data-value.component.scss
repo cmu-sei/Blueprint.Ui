@@ -52,3 +52,14 @@
 .invalid-value {
   color: var(--mat-sys-error);
 }
+
+.attack-not-in-pool {
+  opacity: 0.6;
+  font-style: italic;
+}
+
+.technique-domain {
+  margin-left: 6px;
+  opacity: 0.7;
+  font-size: 12px;
+}
