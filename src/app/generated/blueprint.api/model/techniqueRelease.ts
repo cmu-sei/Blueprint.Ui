@@ -30,6 +30,20 @@ export interface TechniqueRelease {
     name?: string | null;
     description?: string | null;
     releaseDate?: Date | null;
+    /**
+     * Who publishes the release (MITRE ATT&CK, MITRE D3FEND); null when it is not known.
+     */
+    source?: string | null;
+    sourceUrl?: string | null;
+    /**
+     * The copyright and trademark notice to show with the release\'s content, one line per sentence group; null when it carries none.
+     */
+    notice?: string | null;
+    termsUrl?: string | null;
+    /**
+     * What the release calls its groups of techniques: \"Tactics\" or \"Categories\".
+     */
+    groupLabel?: string | null;
     tacticCount?: number;
     techniqueCount?: number;
     /**

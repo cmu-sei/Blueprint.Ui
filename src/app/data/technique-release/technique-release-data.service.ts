@@ -3,11 +3,14 @@
 
 import { TechniqueReleaseStore } from './technique-release.store';
 import { Injectable } from '@angular/core';
-import { TechniqueRelease, TechniqueReleaseService, TechniqueCountermeasureImport } from 'src/app/generated/blueprint.api';
+import { TechniqueRelease, TechniqueReleaseNotice, TechniqueReleaseService, TechniqueCountermeasureImport } from 'src/app/generated/blueprint.api';
 import { take, tap } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 
-/** The ATT&CK releases an administrator has imported. Releases are read-only: import a new one, never edit. */
+/**
+ * The technique framework releases an administrator has imported. A release's techniques are read-only: import a new
+ * release, never edit one. Only its publisher and notice fields can be changed.
+ */
 @Injectable({
   providedIn: 'root',
 })
@@ -67,6 +70,16 @@ export class TechniqueReleaseDataService {
           },
           error: () => this.techniqueReleaseStore.setLoading(false),
         })
+      );
+  }
+
+  /** Saves a release's source, source URL, notice and terms URL; nothing else about it changes. */
+  updateNotice(id: string, notice: TechniqueReleaseNotice): Observable<TechniqueRelease> {
+    return this.techniqueReleaseService
+      .updateTechniqueRelease(id, notice)
+      .pipe(
+        take(1),
+        tap((release) => this.techniqueReleaseStore.update(id, release))
       );
   }
 

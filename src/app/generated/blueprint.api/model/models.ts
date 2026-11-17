@@ -175,6 +175,7 @@ export * from './techniqueCountermeasure';
 export * from './techniqueCountermeasureImport';
 export * from './techniqueLink';
 export * from './techniqueRelease';
+export * from './techniqueReleaseNotice';
 export * from './techniqueTactic';
 export * from './type';
 export * from './typeAttributes';

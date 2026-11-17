@@ -33,6 +33,8 @@ import { TechniqueCountermeasureImport } from '../model/techniqueCountermeasureI
 // @ts-ignore
 import { TechniqueRelease } from '../model/techniqueRelease';
 // @ts-ignore
+import { TechniqueReleaseNotice } from '../model/techniqueReleaseNotice';
+// @ts-ignore
 import { TechniqueTactic } from '../model/techniqueTactic';
 
 // @ts-ignore
@@ -573,6 +575,79 @@ export class TechniqueReleaseService extends BaseService {
                 context: localVarHttpContext,
                 body: localVarConvertFormParamsToString ? localVarFormParams.toString() : localVarFormParams,
                 params: localVarQueryParameters,
+                responseType: <any>responseType_,
+                ...(withCredentials ? { withCredentials } : {}),
+                headers: localVarHeaders,
+                observe: observe,
+                transferCache: localVarTransferCache,
+                reportProgress: reportProgress
+            }
+        );
+    }
+
+    /**
+     * Edits a release\&#39;s publisher and notice fields
+     * Changes the source, source URL, notice and terms URL only; the release\&#39;s id, domain, version, tactics and techniques stay as imported, so no MSEL\&#39;s pool is affected. A blank field is cleared. The URLs must be http or https addresses. A release shows the notice it carries: a custom release has none until it is given one.
+     * @param id The id of the release
+     * @param techniqueReleaseNotice The notice fields
+     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+     * @param reportProgress flag to report request and response progress.
+     */
+    public updateTechniqueRelease(id: string, techniqueReleaseNotice?: TechniqueReleaseNotice, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<TechniqueRelease>;
+    public updateTechniqueRelease(id: string, techniqueReleaseNotice?: TechniqueReleaseNotice, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<TechniqueRelease>>;
+    public updateTechniqueRelease(id: string, techniqueReleaseNotice?: TechniqueReleaseNotice, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<TechniqueRelease>>;
+    public updateTechniqueRelease(id: string, techniqueReleaseNotice?: TechniqueReleaseNotice, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+        if (id === null || id === undefined) {
+            throw new Error('Required parameter id was null or undefined when calling updateTechniqueRelease.');
+        }
+
+        let localVarHeaders = this.defaultHeaders;
+
+        // authentication (oauth2) required
+        localVarHeaders = this.configuration.addCredentialToHeaders('oauth2', 'Authorization', localVarHeaders, 'Bearer ');
+
+        const localVarHttpHeaderAcceptSelected: string | undefined = options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept([
+            'text/plain',
+            'application/json',
+            'text/json'
+        ]);
+        if (localVarHttpHeaderAcceptSelected !== undefined) {
+            localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
+        }
+
+        const localVarHttpContext: HttpContext = options?.context ?? new HttpContext();
+
+        const localVarTransferCache: boolean = options?.transferCache ?? true;
+
+
+        // to determine the Content-Type header
+        const consumes: string[] = [
+            'application/json',
+            'text/json',
+            'application/*+json'
+        ];
+        const httpContentTypeSelected: string | undefined = this.configuration.selectHeaderContentType(consumes);
+        if (httpContentTypeSelected !== undefined) {
+            localVarHeaders = localVarHeaders.set('Content-Type', httpContentTypeSelected);
+        }
+
+        let responseType_: 'text' | 'json' | 'blob' = 'json';
+        if (localVarHttpHeaderAcceptSelected) {
+            if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
+                responseType_ = 'text';
+            } else if (this.configuration.isJsonMime(localVarHttpHeaderAcceptSelected)) {
+                responseType_ = 'json';
+            } else {
+                responseType_ = 'blob';
+            }
+        }
+
+        let localVarPath = `/api/techniquereleases/${this.configuration.encodeParam({name: "id", value: id, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: "uuid"})}`;
+        const { basePath, withCredentials } = this.configuration;
+        return this.httpClient.request<TechniqueRelease>('put', `${basePath}${localVarPath}`,
+            {
+                context: localVarHttpContext,
+                body: techniqueReleaseNotice,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
