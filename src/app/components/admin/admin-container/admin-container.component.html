@@ -68,7 +68,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <mat-list-item [ngClass]="getSelectedClass(proficiencyScalesText)" (click)="gotoSection(proficiencyScalesText)" [title]="proficiencyScalesText">
         <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-tune-variant" />
       </mat-list-item>
-      <mat-list-item [ngClass]="getSelectedClass(attackReleasesText)" (click)="gotoSection(attackReleasesText)" [title]="attackReleasesText">
+      <mat-list-item [ngClass]="getSelectedClass(techniqueReleasesText)" (click)="gotoSection(techniqueReleasesText)" [title]="techniqueReleasesText">
         <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-shield-bug-outline"></mat-icon>
       </mat-list-item>
       }
@@ -232,11 +232,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
           </button>
         </mat-list-item>
         <!-- Technique Frameworks -->
-        <mat-list-item [ngClass]="getSelectedClass(attackReleasesText)" id="wrapper showhand"
-          (click)="gotoSection(attackReleasesText)">
+        <mat-list-item [ngClass]="getSelectedClass(techniqueReleasesText)" id="wrapper showhand"
+          (click)="gotoSection(techniqueReleasesText)">
           <mat-icon matListItemIcon class="mat-list-item-icon" fontIcon="mdi-shield-bug-outline"></mat-icon>
-          {{ attackReleasesSidebarText }}
-          <button aria-labelledby="attackReleasesText" mat-icon-button class="pull-right">
+          {{ techniqueReleasesSidebarText }}
+          <button aria-labelledby="techniqueReleasesText" mat-icon-button class="pull-right">
             <mat-icon fontIcon="mdi-chevron-right"></mat-icon>
           </button>
         </mat-list-item>
@@ -330,9 +330,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
         [canEdit]="canManageCompetencyFrameworks" />
     </span>
     }
-    @if (canViewCompetencyFrameworks && (selectedTab === attackReleasesText)) {
-      <app-admin-attack-releases [loggedInUserId]="loggedInUserId"
-        [canEdit]="canManageCompetencyFrameworks"></app-admin-attack-releases>
+    @if (canViewCompetencyFrameworks && (selectedTab === techniqueReleasesText)) {
+      <app-admin-technique-releases [loggedInUserId]="loggedInUserId"
+        [canEdit]="canManageCompetencyFrameworks"></app-admin-technique-releases>
     }
     @if (canViewCatalogs && (selectedTab === catalogsText)) {
     <span>

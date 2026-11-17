@@ -2,10 +2,10 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the project root for license information.
 
 import { describe, it, expect } from 'vitest';
-import { AttackTechniqueCountermeasure } from 'src/app/generated/blueprint.api';
+import { TechniqueCountermeasure } from 'src/app/generated/blueprint.api';
 import { D3FEND_TACTIC_ORDER, groupByTactic } from './countermeasure-tactics';
 
-const cm = (externalId: string, tactic: string, weight: number): AttackTechniqueCountermeasure => ({
+const cm = (externalId: string, tactic: string, weight: number): TechniqueCountermeasure => ({
   id: `cm-${externalId}`,
   defensiveTactic: tactic,
   weight,

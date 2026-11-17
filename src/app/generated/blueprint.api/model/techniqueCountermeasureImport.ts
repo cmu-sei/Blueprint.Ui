@@ -15,13 +15,11 @@
  */
 
 
-
-
 /**
  * What importing a d3fend-full-mappings.json onto a D3FEND release read and kept.
  */
-export interface AttackTechniqueCountermeasureImport { 
-    attackReleaseId?: string;
+export interface TechniqueCountermeasureImport { 
+    techniqueReleaseId?: string;
     /**
      * The result rows in the file, one per artifact path per queried technique.
      */

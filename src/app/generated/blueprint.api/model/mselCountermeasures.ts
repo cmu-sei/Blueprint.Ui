@@ -26,7 +26,7 @@ export interface MselCountermeasures {
     /**
      * The D3FEND release the mappings come from: the one the MSEL\'s defensive techniques are pinned to, else the newest with mappings imported. Null when no D3FEND release has mappings.
      */
-    attackReleaseId?: string | null;
+    techniqueReleaseId?: string | null;
     /**
      * True when that release has mappings imported; false when the pinned release has none yet.
      */

@@ -13,26 +13,24 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-
-
-import { AttackTechnique } from './attackTechnique';
+import { Technique } from './technique';
 
 
 /**
  * A D3FEND \"countered by\" mapping: the offensive technique id and the D3FEND technique that counters it.
  */
-export interface AttackTechniqueCountermeasure { 
+export interface TechniqueCountermeasure { 
     id?: string;
     /**
      * The D3FEND release the mapping belongs to.
      */
-    attackReleaseId?: string;
+    techniqueReleaseId?: string;
     /**
      * The offensive technique\'s id (T1003.005), whichever release of its framework the MSEL uses.
      */
     offensiveExternalId?: string | null;
     defensiveTechniqueId?: string;
-    defensiveTechnique?: AttackTechnique;
+    defensiveTechnique?: Technique;
     /**
      * The D3FEND tactic label the mapping is filed under: Model, Harden, Detect, Isolate, Deceive, Evict or Restore.
      */

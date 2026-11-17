@@ -6,7 +6,7 @@ import { Observable, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { MselPlus } from 'src/app/data/msel/msel-data.service';
 import { MselQuery } from 'src/app/data/msel/msel.query';
-import { MselAttackTechniqueDataService } from 'src/app/data/msel-attack-technique/msel-attack-technique-data.service';
+import { MselTechniqueDataService } from 'src/app/data/msel-technique/msel-technique-data.service';
 import { TechniqueContentShown, TechniquePoolComponent } from './technique-pool/technique-pool.component';
 
 /**
@@ -14,14 +14,14 @@ import { TechniqueContentShown, TechniquePoolComponent } from './technique-pool/
  * pool of its own pinned to its own release, with one MITRE notice under both.
  */
 @Component({
-  selector: 'app-msel-attack-techniques',
-  templateUrl: './msel-attack-techniques.component.html',
-  styleUrls: ['./msel-attack-techniques.component.scss'],
+  selector: 'app-msel-techniques',
+  templateUrl: './msel-techniques.component.html',
+  styleUrls: ['./msel-techniques.component.scss'],
   imports: [TechniquePoolComponent]
 })
-export class MselAttackTechniquesComponent implements OnDestroy {
+export class MselTechniquesComponent implements OnDestroy {
   private mselQuery = inject(MselQuery);
-  private mselAttackTechniqueDataService = inject(MselAttackTechniqueDataService);
+  private mselTechniqueDataService = inject(MselTechniqueDataService);
 
   readonly loggedInUserId = input<string>(undefined);
   private mselId = '';
@@ -36,7 +36,7 @@ export class MselAttackTechniquesComponent implements OnDestroy {
     (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
       if (msel && msel.id !== this.mselId) {
         this.mselId = msel.id;
-        this.mselAttackTechniqueDataService.loadByMsel(msel.id);
+        this.mselTechniqueDataService.loadByMsel(msel.id);
       }
     });
   }

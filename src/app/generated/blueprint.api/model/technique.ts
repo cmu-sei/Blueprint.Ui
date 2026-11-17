@@ -15,26 +15,27 @@
  */
 
 
-export interface AttackRelease { 
-    dateCreated?: Date;
-    dateModified?: Date | null;
-    createdBy?: string;
-    modifiedBy?: string | null;
+export interface Technique { 
     id?: string;
+    techniqueReleaseId?: string;
+    /**
+     * The release\'s domain (enterprise-attack, ATLAS, d3fend).
+     */
     domain?: string | null;
     /**
-     * Whether the release\'s techniques are defences (MITRE D3FEND) rather than attacks (ATT&CK, ATLAS).
+     * Whether the technique is a defence (its release is defensive) rather than an attack.
      */
     isDefensive?: boolean;
-    version?: string | null;
+    externalId?: string | null;
     name?: string | null;
     description?: string | null;
-    releaseDate?: Date | null;
-    tacticCount?: number;
-    techniqueCount?: number;
+    url?: string | null;
+    parentId?: string | null;
+    isSubTechnique?: boolean;
     /**
-     * The D3FEND \"countered by\" mappings imported onto the release; 0 for every other domain.
+     * The short names of the tactics the technique serves, e.g. \"execution\".
      */
-    countermeasureCount?: number;
+    tactics?: Array<string> | null;
+    platforms?: Array<string> | null;
 }
 

@@ -6,32 +6,32 @@ import { TestBed } from '@angular/core/testing';
 import { fireEvent, screen, within } from '@testing-library/angular';
 import { of } from 'rxjs';
 import {
-  AttackRelease,
-  AttackTechniqueCountermeasure,
-  MselAttackTechnique,
-  MselAttackTechniqueService,
+  TechniqueRelease,
+  TechniqueCountermeasure,
+  MselTechnique,
+  MselTechniqueService,
   MselCountermeasures,
   MselTechniqueCountermeasures,
 } from 'src/app/generated/blueprint.api';
-import { AttackReleaseStore } from 'src/app/data/attack-release/attack-release.store';
-import { MselAttackTechniqueStore } from 'src/app/data/msel-attack-technique/msel-attack-technique.store';
+import { TechniqueReleaseStore } from 'src/app/data/technique-release/technique-release.store';
+import { MselTechniqueStore } from 'src/app/data/msel-technique/msel-technique.store';
 import { TechniqueCountermeasuresComponent } from './technique-countermeasures.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { renderComponent } from 'src/app/test-utils/render-component';
 
-const D3FEND_RELEASE: AttackRelease = { id: 'rel-d3', domain: 'd3fend', isDefensive: true, name: 'MITRE D3FEND', version: '1.6.0' };
-const cm = (externalId: string, name: string, tactic: string, weight: number, rationale = `${tactic.toLowerCase()}s something`): AttackTechniqueCountermeasure => ({
+const D3FEND_RELEASE: TechniqueRelease = { id: 'rel-d3', domain: 'd3fend', isDefensive: true, name: 'MITRE D3FEND', version: '1.6.0' };
+const cm = (externalId: string, name: string, tactic: string, weight: number, rationale = `${tactic.toLowerCase()}s something`): TechniqueCountermeasure => ({
   id: `cm-${externalId}`,
-  attackReleaseId: 'rel-d3',
+  techniqueReleaseId: 'rel-d3',
   offensiveExternalId: 'T1003.005',
   defensiveTechniqueId: `at-${externalId}`,
-  defensiveTechnique: { id: `at-${externalId}`, attackReleaseId: 'rel-d3', domain: 'd3fend', isDefensive: true, externalId, name, url: `https://d3fend.mitre.org/technique/d3f:${name.replace(/\W/g, '')}/` },
+  defensiveTechnique: { id: `at-${externalId}`, techniqueReleaseId: 'rel-d3', domain: 'd3fend', isDefensive: true, externalId, name, url: `https://d3fend.mitre.org/technique/d3f:${name.replace(/\W/g, '')}/` },
   defensiveTactic: tactic,
   rationale,
   weight,
 });
 // Harden before Detect in the matrix, though Detect arrives first; four Harden countermeasures, so one is folded away.
-const COUNTERMEASURES: AttackTechniqueCountermeasure[] = [
+const COUNTERMEASURES: TechniqueCountermeasure[] = [
   cm('D3-FA', 'File Analysis', 'Detect', 1),
   cm('D3-TB', 'Token Binding', 'Harden', 1),
   cm('D3-CH', 'Credential Hardening', 'Harden', 3, 'hardens Credential; T1003.005 accesses Encrypted Credential'),
@@ -39,11 +39,11 @@ const COUNTERMEASURES: AttackTechniqueCountermeasure[] = [
   cm('D3-MFA', 'Multi-factor Authentication', 'Harden', 2),
   cm('D3-PH', 'Process Termination', 'Evict', 1),
 ];
-const GROUP: MselTechniqueCountermeasures = { attackTechniqueId: 'at-1', offensiveExternalId: 'T1003.005', inheritedFrom: null, countermeasures: COUNTERMEASURES };
-const ANSWER: MselCountermeasures = { mselId: 'msel-1', attackReleaseId: 'rel-d3', hasMappings: true, techniques: [GROUP] };
-const D3_CH_IN_POOL: MselAttackTechnique = {
-  id: 'mat-d3', mselId: 'msel-1', attackTechniqueId: 'at-D3-CH',
-  attackTechnique: { id: 'at-D3-CH', attackReleaseId: 'rel-d3', domain: 'd3fend', isDefensive: true, externalId: 'D3-CH', name: 'Credential Hardening' },
+const GROUP: MselTechniqueCountermeasures = { techniqueId: 'at-1', offensiveExternalId: 'T1003.005', inheritedFrom: null, countermeasures: COUNTERMEASURES };
+const ANSWER: MselCountermeasures = { mselId: 'msel-1', techniqueReleaseId: 'rel-d3', hasMappings: true, techniques: [GROUP] };
+const D3_CH_IN_POOL: MselTechnique = {
+  id: 'mat-d3', mselId: 'msel-1', techniqueId: 'at-D3-CH',
+  technique: { id: 'at-D3-CH', techniqueReleaseId: 'rel-d3', domain: 'd3fend', isDefensive: true, externalId: 'D3-CH', name: 'Credential Hardening' },
 };
 
 interface Options {
@@ -51,8 +51,8 @@ interface Options {
   countermeasures?: MselCountermeasures;
   canEdit?: boolean;
   hasDefensiveRelease?: boolean;
-  pool?: MselAttackTechnique[];
-  releases?: AttackRelease[];
+  pool?: MselTechnique[];
+  releases?: TechniqueRelease[];
 }
 
 async function renderCounteredBy(options: Options = {}) {
@@ -61,14 +61,14 @@ async function renderCounteredBy(options: Options = {}) {
   const countermeasures = 'countermeasures' in options ? options.countermeasures : ANSWER;
   const { canEdit = true, hasDefensiveRelease = true, pool = [], releases = [D3FEND_RELEASE] } = options;
   const poolApi = {
-    createMselAttackTechnique: vi.fn((body) => of({ id: 'mat-new', ...body, attackTechnique: { id: body.attackTechniqueId, domain: 'd3fend', isDefensive: true } })),
-  } satisfies ApiStub<MselAttackTechniqueService>;
+    createMselTechnique: vi.fn((body) => of({ id: 'mat-new', ...body, technique: { id: body.techniqueId, domain: 'd3fend', isDefensive: true } })),
+  } satisfies ApiStub<MselTechniqueService>;
   const rendered = await renderComponent(TechniqueCountermeasuresComponent, {
-    providers: [{ provide: MselAttackTechniqueService, useValue: poolApi }],
+    providers: [{ provide: MselTechniqueService, useValue: poolApi }],
     inputs: { mselId: 'msel-1', externalId: 'T1003.005', group, countermeasures, canEdit, hasDefensiveRelease },
   });
-  TestBed.inject(AttackReleaseStore).set(releases);
-  TestBed.inject(MselAttackTechniqueStore).set(pool);
+  TestBed.inject(TechniqueReleaseStore).set(releases);
+  TestBed.inject(MselTechniqueStore).set(pool);
   rendered.fixture.detectChanges();
   return { ...rendered, poolApi };
 }
@@ -153,7 +153,7 @@ describe('TechniqueCountermeasuresComponent', () => {
   /**
    * Verifies: ticking a countermeasure adds its D3FEND technique to the MSEL's defensive pool, and one already
    * pooled is shown ticked and disabled.
-   * Interacts with: add, isPooled, MselAttackTechniqueDataService.add, MselAttackTechniqueService.createMselAttackTechnique (stub).
+   * Interacts with: add, isPooled, MselTechniqueDataService.add, MselTechniqueService.createMselTechnique (stub).
    * Data: D3-CH already in the defensive pool; D3-MFA not.
    */
   it('adds a countermeasure to the defensive pool and marks the ones already there', async () => {
@@ -168,7 +168,7 @@ describe('TechniqueCountermeasuresComponent', () => {
 
     fireEvent.click(mfa);
 
-    expect(poolApi.createMselAttackTechnique).toHaveBeenCalledWith({ mselId: 'msel-1', attackTechniqueId: 'at-D3-MFA' });
+    expect(poolApi.createMselTechnique).toHaveBeenCalledWith({ mselId: 'msel-1', techniqueId: 'at-D3-MFA' });
   });
 
   /**
@@ -188,7 +188,7 @@ describe('TechniqueCountermeasuresComponent', () => {
   /**
    * Verifies: each way of having nothing to list is explained: still loading, no D3FEND release imported, no
    * mappings imported on any, the pinned release without mappings, and a technique nothing is mapped to.
-   * Interacts with: emptyMessage, hasDefensiveRelease, AttackReleaseQuery.getEntity.
+   * Interacts with: emptyMessage, hasDefensiveRelease, TechniqueReleaseQuery.getEntity.
    * Data: the answers the API gives in each case.
    */
   it.each([
@@ -199,17 +199,17 @@ describe('TechniqueCountermeasuresComponent', () => {
     },
     {
       name: 'no D3FEND release imported',
-      options: { countermeasures: { mselId: 'msel-1', attackReleaseId: null, hasMappings: false, techniques: [] }, group: undefined as MselTechniqueCountermeasures, hasDefensiveRelease: false },
+      options: { countermeasures: { mselId: 'msel-1', techniqueReleaseId: null, hasMappings: false, techniques: [] }, group: undefined as MselTechniqueCountermeasures, hasDefensiveRelease: false },
       message: 'No MITRE D3FEND release has been imported. An administrator imports one on the Technique Frameworks page.',
     },
     {
       name: 'no mappings imported on any release',
-      options: { countermeasures: { mselId: 'msel-1', attackReleaseId: null, hasMappings: false, techniques: [] }, group: undefined as MselTechniqueCountermeasures },
+      options: { countermeasures: { mselId: 'msel-1', techniqueReleaseId: null, hasMappings: false, techniques: [] }, group: undefined as MselTechniqueCountermeasures },
       message: 'No ATT&CK mappings have been imported. Import ATT&CK mappings on the Technique Frameworks page.',
     },
     {
       name: 'the pinned release without mappings',
-      options: { countermeasures: { mselId: 'msel-1', attackReleaseId: 'rel-d3', hasMappings: false, techniques: [] }, group: { ...GROUP, countermeasures: [] } },
+      options: { countermeasures: { mselId: 'msel-1', techniqueReleaseId: 'rel-d3', hasMappings: false, techniques: [] }, group: { ...GROUP, countermeasures: [] } },
       message: 'MITRE D3FEND 1.6.0 has no ATT&CK mappings. Import ATT&CK mappings on the Technique Frameworks page.',
     },
     {

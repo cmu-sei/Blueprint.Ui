@@ -13,21 +13,19 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-
-
-import { AttackTechniqueCountermeasure } from './attackTechniqueCountermeasure';
+import { TechniqueCountermeasure } from './techniqueCountermeasure';
 
 
 /**
  * The countermeasures of one pooled attack technique, ranked by weight.
  */
 export interface MselTechniqueCountermeasures { 
-    attackTechniqueId?: string;
+    techniqueId?: string;
     offensiveExternalId?: string | null;
     /**
      * The parent technique\'s id when the technique has no mappings of its own and these are inherited; else null.
      */
     inheritedFrom?: string | null;
-    countermeasures?: Array<AttackTechniqueCountermeasure> | null;
+    countermeasures?: Array<TechniqueCountermeasure> | null;
 }
 

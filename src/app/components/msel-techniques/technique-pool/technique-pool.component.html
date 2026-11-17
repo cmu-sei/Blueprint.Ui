@@ -137,7 +137,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
         <mat-cell *matCellDef="let item" class="col-check">
           @if (canEditMsel()) {
           <button mat-icon-button class="msel-action" (click)="removeFromPool(item)"
-            title="Remove {{ item.attackTechnique?.externalId }}">
+            title="Remove {{ item.technique?.externalId }}">
             <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline"></mat-icon>
           </button>
           }
@@ -146,18 +146,18 @@ project root for license information or contact permission@sei.cmu.edu for full 
       <ng-container matColumnDef="externalId">
         <mat-header-cell *matHeaderCellDef class="col-id">ID</mat-header-cell>
         <mat-cell *matCellDef="let item" class="col-id">
-          <a [href]="item.attackTechnique?.url" target="_blank" rel="noopener"
-            title="Open {{ item.attackTechnique?.externalId }} on {{ linkHost(item.attackTechnique) }}">{{ item.attackTechnique?.externalId }}</a>
+          <a [href]="item.technique?.url" target="_blank" rel="noopener"
+            title="Open {{ item.technique?.externalId }} on {{ linkHost(item.technique) }}">{{ item.technique?.externalId }}</a>
         </mat-cell>
       </ng-container>
       <ng-container matColumnDef="name">
         <mat-header-cell *matHeaderCellDef class="col-name">Name</mat-header-cell>
-        <mat-cell *matCellDef="let item" class="col-name" [matTooltip]="item.attackTechnique?.description"
-          matTooltipShowDelay="800" matTooltipClass="attack-description-tooltip">{{ item.attackTechnique?.name }}</mat-cell>
+        <mat-cell *matCellDef="let item" class="col-name" [matTooltip]="item.technique?.description"
+          matTooltipShowDelay="800" matTooltipClass="attack-description-tooltip">{{ item.technique?.name }}</mat-cell>
       </ng-container>
       <ng-container matColumnDef="tactics">
         <mat-header-cell *matHeaderCellDef class="col-tactics">Tactics</mat-header-cell>
-        <mat-cell *matCellDef="let item" class="col-tactics">{{ getTacticNames(item.attackTechnique) }}</mat-cell>
+        <mat-cell *matCellDef="let item" class="col-tactics">{{ getTacticNames(item.technique) }}</mat-cell>
       </ng-container>
       <ng-container matColumnDef="events">
         <mat-header-cell *matHeaderCellDef class="col-events">Events</mat-header-cell>
@@ -165,7 +165,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </ng-container>
       <ng-container matColumnDef="countermeasures">
         <mat-cell *matCellDef="let item" class="col-countermeasures">
-          <app-technique-countermeasures [mselId]="msel.id" [externalId]="item.attackTechnique?.externalId"
+          <app-technique-countermeasures [mselId]="msel.id" [externalId]="item.technique?.externalId"
             [group]="countermeasuresFor(item)" [countermeasures]="countermeasures" [canEdit]="canEditMsel()"
             [hasDefensiveRelease]="hasDefensiveRelease"></app-technique-countermeasures>
         </mat-cell>

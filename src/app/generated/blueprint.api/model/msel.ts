@@ -23,11 +23,11 @@ import { Unit } from './unit';
 import { Card } from './card';
 import { CiteAction } from './citeAction';
 import { CiteDuty } from './citeDuty';
-import { MselAttackTechnique } from './mselAttackTechnique';
 import { DataField } from './dataField';
 import { Move } from './move';
 import { MselItemStatus } from './mselItemStatus';
 import { Team } from './team';
+import { MselTechnique } from './mselTechnique';
 import { IntegrationType } from './integrationType';
 import { PlayerApplication } from './playerApplication';
 import { SteamfitterScenarioStartMode } from './steamfitterScenarioStartMode';
@@ -108,7 +108,7 @@ export interface Msel {
     pages?: Array<MselPage> | null;
     invitations?: Array<Invitation> | null;
     mselCompetencies?: Array<MselCompetency> | null;
-    mselAttackTechniques?: Array<MselAttackTechnique> | null;
+    mselTechniques?: Array<MselTechnique> | null;
 }
 export namespace Msel {
 }

@@ -8,10 +8,10 @@ import { MatIcon } from '@angular/material/icon';
 import { MatTooltip } from '@angular/material/tooltip';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { AttackTechniqueCountermeasure, MselCountermeasures, MselTechniqueCountermeasures } from 'src/app/generated/blueprint.api';
-import { AttackReleaseQuery } from 'src/app/data/attack-release/attack-release.query';
-import { MselAttackTechniqueDataService } from 'src/app/data/msel-attack-technique/msel-attack-technique-data.service';
-import { MselAttackTechniqueQuery } from 'src/app/data/msel-attack-technique/msel-attack-technique.query';
+import { TechniqueCountermeasure, MselCountermeasures, MselTechniqueCountermeasures } from 'src/app/generated/blueprint.api';
+import { TechniqueReleaseQuery } from 'src/app/data/technique-release/technique-release.query';
+import { MselTechniqueDataService } from 'src/app/data/msel-technique/msel-technique-data.service';
+import { MselTechniqueQuery } from 'src/app/data/msel-technique/msel-technique.query';
 import { CountermeasureTacticGroup, groupByTactic } from 'src/app/utilities/countermeasure-tactics';
 
 /** How many countermeasures a tactic shows before "Show all". */
@@ -29,9 +29,9 @@ export const TOP_COUNTERMEASURES = 3;
   imports: [MatButton, MatCheckbox, MatIcon, MatTooltip]
 })
 export class TechniqueCountermeasuresComponent implements OnDestroy {
-  private mselAttackTechniqueDataService = inject(MselAttackTechniqueDataService);
-  private mselAttackTechniqueQuery = inject(MselAttackTechniqueQuery);
-  private attackReleaseQuery = inject(AttackReleaseQuery);
+  private mselTechniqueDataService = inject(MselTechniqueDataService);
+  private mselTechniqueQuery = inject(MselTechniqueQuery);
+  private techniqueReleaseQuery = inject(TechniqueReleaseQuery);
 
   readonly mselId = input<string>('');
   /** The attack technique's id (T1003.005), for the per-technique empty state. */
@@ -50,7 +50,7 @@ export class TechniqueCountermeasuresComponent implements OnDestroy {
   private unsubscribe$ = new Subject();
 
   constructor() {
-    this.mselAttackTechniqueQuery.selectTechniques('defensive').pipe(takeUntil(this.unsubscribe$)).subscribe(techniques => {
+    this.mselTechniqueQuery.selectTechniques('defensive').pipe(takeUntil(this.unsubscribe$)).subscribe(techniques => {
       this.defensivePoolIds = new Set(techniques.map(t => t.id));
     });
   }
@@ -74,13 +74,13 @@ export class TechniqueCountermeasuresComponent implements OnDestroy {
     if (!all) {
       return 'Loading countermeasures...';
     }
-    if (!all.attackReleaseId) {
+    if (!all.techniqueReleaseId) {
       return this.hasDefensiveRelease()
         ? 'No ATT&CK mappings have been imported. Import ATT&CK mappings on the Technique Frameworks page.'
         : 'No MITRE D3FEND release has been imported. An administrator imports one on the Technique Frameworks page.';
     }
     if (!all.hasMappings) {
-      return `${this.releaseName(all.attackReleaseId)} has no ATT&CK mappings. Import ATT&CK mappings on the Technique Frameworks page.`;
+      return `${this.releaseName(all.techniqueReleaseId)} has no ATT&CK mappings. Import ATT&CK mappings on the Technique Frameworks page.`;
     }
     if (this.count === 0) {
       return `No D3FEND technique is mapped to ${this.externalId()}.`;
@@ -89,7 +89,7 @@ export class TechniqueCountermeasuresComponent implements OnDestroy {
   }
 
   /** The countermeasures a tactic shows: its top few, or all of them once asked. */
-  visible(group: CountermeasureTacticGroup): AttackTechniqueCountermeasure[] {
+  visible(group: CountermeasureTacticGroup): TechniqueCountermeasure[] {
     return this.showAll.has(group.tactic) ? group.countermeasures : group.countermeasures.slice(0, TOP_COUNTERMEASURES);
   }
 
@@ -103,23 +103,23 @@ export class TechniqueCountermeasuresComponent implements OnDestroy {
     }
   }
 
-  isPooled(c: AttackTechniqueCountermeasure): boolean {
+  isPooled(c: TechniqueCountermeasure): boolean {
     return this.defensivePoolIds.has(c.defensiveTechniqueId);
   }
 
-  add(c: AttackTechniqueCountermeasure) {
+  add(c: TechniqueCountermeasure) {
     if (!this.isPooled(c)) {
-      this.mselAttackTechniqueDataService.add(this.mselId(), c.defensiveTechniqueId);
+      this.mselTechniqueDataService.add(this.mselId(), c.defensiveTechniqueId);
     }
   }
 
-  tooltip(c: AttackTechniqueCountermeasure): string {
+  tooltip(c: TechniqueCountermeasure): string {
     const paths = c.weight === 1 ? '1 artifact path' : `${c.weight} artifact paths`;
     return c.rationale ? `${c.rationale} (${paths})` : paths;
   }
 
   private releaseName(releaseId: string): string {
-    const release = this.attackReleaseQuery.getEntity(releaseId);
+    const release = this.techniqueReleaseQuery.getEntity(releaseId);
     return release ? `${release.name} ${release.version}` : 'The MSEL\'s D3FEND release';
   }
 

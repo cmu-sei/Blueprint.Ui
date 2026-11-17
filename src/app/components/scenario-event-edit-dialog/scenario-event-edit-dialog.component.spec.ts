@@ -38,7 +38,7 @@ class DataValueStub {
   readonly gallerySourceTypeOptions = input<unknown[]>(undefined);
   readonly galleryItemStatusOptions = input<string[]>(undefined);
   readonly userOptions = input<unknown[]>(undefined);
-  readonly attackTechniques = input<string>(undefined);
+  readonly techniques = input<string>(undefined);
 }
 @Component({ selector: 'app-duration-edit', template: '' })
 class DurationEditStub {
@@ -69,7 +69,7 @@ interface Roles {
   when?: string;
   titleOnDefaultTab?: boolean;
   // An Attack Technique field holding this value, beside a Defensive Technique field, so the latter can suggest countermeasures.
-  attackTechniques?: string;
+  techniques?: string;
 }
 
 const WHEN: DataField = { id: 'df-when', name: 'When', dataType: DataFieldType.DateTime, displayOrder: 2, onScenarioEventList: true };
@@ -77,7 +77,7 @@ const TECHNIQUES: DataField = { id: 'df-attack', name: 'Techniques', dataType: D
 const COUNTERMEASURES: DataField = { id: 'df-defend', name: 'Countermeasures', dataType: DataFieldType.DefensiveTechnique, displayOrder: 4, onScenarioEventList: true };
 
 function dialogData(roles: Roles = {}) {
-  const { isEditor = false, isApprover = false, isOwner = false, isEditingRestricted = false, steamfitter = false, when, titleOnDefaultTab = false, attackTechniques } = roles;
+  const { isEditor = false, isApprover = false, isOwner = false, isEditingRestricted = false, steamfitter = false, when, titleOnDefaultTab = false, techniques } = roles;
   return {
     scenarioEvent: {
       id: 'se-1',
@@ -88,8 +88,8 @@ function dialogData(roles: Roles = {}) {
       dataValues: [
         { id: 'dv-1', scenarioEventId: 'se-1', dataFieldId: 'df-title', value: 'Phishing wave' },
         ...(when === undefined ? [] : [{ id: 'dv-2', scenarioEventId: 'se-1', dataFieldId: 'df-when', value: when }]),
-        ...(attackTechniques === undefined ? [] : [
-          { id: 'dv-3', scenarioEventId: 'se-1', dataFieldId: 'df-attack', value: attackTechniques },
+        ...(techniques === undefined ? [] : [
+          { id: 'dv-3', scenarioEventId: 'se-1', dataFieldId: 'df-attack', value: techniques },
           { id: 'dv-4', scenarioEventId: 'se-1', dataFieldId: 'df-defend', value: '' },
         ]),
       ],
@@ -98,7 +98,7 @@ function dialogData(roles: Roles = {}) {
       steamfitterTaskId: 'task-1',
     } as ScenarioEvent,
     integrationTargetOptions: [],
-    dataFields: [{ ...TITLE, isShownOnDefaultTab: titleOnDefaultTab }, ...(when === undefined ? [] : [WHEN]), ...(attackTechniques === undefined ? [] : [TECHNIQUES, COUNTERMEASURES])],
+    dataFields: [{ ...TITLE, isShownOnDefaultTab: titleOnDefaultTab }, ...(when === undefined ? [] : [WHEN]), ...(techniques === undefined ? [] : [TECHNIQUES, COUNTERMEASURES])],
     organizationList: [],
     teamList: [],
     unitList: [],
@@ -194,26 +194,26 @@ describe('ScenarioEventEditDialogComponent', () => {
   /**
    * Verifies: every data value is told the event's Attack Technique values, so a Defensive Technique field can
    * suggest their countermeasures first.
-   * Interacts with: attackTechniqueValues, DataValueStub.attackTechniques.
+   * Interacts with: techniqueValues, DataValueStub.techniques.
    * Data: an Attack Technique field holding "T1059, T1566" beside a Defensive Technique field.
    */
   it('passes the event\'s attack techniques to the data values', async () => {
-    const { fixture } = await renderEventEdit({ isEditor: true, attackTechniques: 'T1059, T1566' });
+    const { fixture } = await renderEventEdit({ isEditor: true, techniques: 'T1059, T1566' });
 
     const stubs = fixture.debugElement.queryAll(By.directive(DataValueStub)).map((d) => d.componentInstance as DataValueStub);
     expect(stubs.map((s) => s.dataField().name)).toEqual(['Title', 'Techniques', 'Countermeasures']);
-    expect(stubs.map((s) => s.attackTechniques())).toEqual(['T1059, T1566', 'T1059, T1566', 'T1059, T1566']);
+    expect(stubs.map((s) => s.techniques())).toEqual(['T1059, T1566', 'T1059, T1566', 'T1059, T1566']);
   });
 
   /**
    * Verifies: with no Attack Technique field on the event there are no attack techniques to tell.
-   * Interacts with: attackTechniqueValues, DataValueStub.attackTechniques.
+   * Interacts with: techniqueValues, DataValueStub.techniques.
    * Data: a Title field only.
    */
   it('passes no attack techniques when the event has no Attack Technique field', async () => {
     const { fixture } = await renderEventEdit({ isEditor: true });
 
-    expect(child(fixture, DataValueStub).attackTechniques()).toBe('');
+    expect(child(fixture, DataValueStub).techniques()).toBe('');
   });
 
   /**

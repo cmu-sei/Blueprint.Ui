@@ -55,8 +55,8 @@ project root for license information.
   <!-- dataType.AttackTechnique and dataType.DefensiveTechnique -->
   @if (isTechniqueField) {
   <span>
-    @for (id of selectedAttackTechniques; track id; let isLast = $last) {
-      <span [matTooltip]="getAttackTechniqueTooltip(id)" matTooltipPosition="above" style="white-space: nowrap;">{{ id }}</span>@if (!isLast) {<span>, </span>}
+    @for (id of selectedTechniques; track id; let isLast = $last) {
+      <span [matTooltip]="getTechniqueTooltip(id)" matTooltipPosition="above" style="white-space: nowrap;">{{ id }}</span>@if (!isLast) {<span>, </span>}
     }
   </span>
   }
@@ -546,11 +546,11 @@ project root for license information.
   <div class="competency-field">
     <label class="competency-label">{{ dataField.name }}</label>
     <mat-chip-set>
-      @for (id of selectedAttackTechniques; track id) {
-      <mat-chip (removed)="removeAttackTechnique(id)" [matTooltip]="getAttackTechniqueTooltip(id)" matTooltipPosition="above"
-        [class.attack-not-in-pool]="!getAttackTechnique(id)">
-        @if (getAttackTechnique(id)?.url) {
-        <a [href]="getAttackTechnique(id).url" target="_blank" rel="noopener" (click)="$event.stopPropagation()">{{ id }}</a>
+      @for (id of selectedTechniques; track id) {
+      <mat-chip (removed)="removeTechnique(id)" [matTooltip]="getTechniqueTooltip(id)" matTooltipPosition="above"
+        [class.attack-not-in-pool]="!getTechnique(id)">
+        @if (getTechnique(id)?.url) {
+        <a [href]="getTechnique(id).url" target="_blank" rel="noopener" (click)="$event.stopPropagation()">{{ id }}</a>
         } @else {
         {{ id }}
         }
@@ -565,12 +565,12 @@ project root for license information.
     @if (canEdit()) {
     <mat-form-field class="full-width">
       <mat-label>Select techniques</mat-label>
-      <mat-select multiple [value]="selectedAttackTechniques" (selectionChange)="setAttackTechniques($event.value)" (openedChange)="$event || (attackTechniqueFilter = '')" panelClass="competency-select-panel">
+      <mat-select multiple [value]="selectedTechniques" (selectionChange)="setTechniques($event.value)" (openedChange)="$event || (techniqueFilter = '')" panelClass="competency-select-panel">
         <div class="competency-search-box">
           <mat-icon fontIcon="mdi-magnify"></mat-icon>
-          <input [(ngModel)]="attackTechniqueFilter" placeholder="Search techniques..." (keydown)="$event.stopPropagation()">
-          @if (attackTechniqueFilter) {
-          <button mat-icon-button (click)="attackTechniqueFilter = ''; $event.stopPropagation()" title="Clear">
+          <input [(ngModel)]="techniqueFilter" placeholder="Search techniques..." (keydown)="$event.stopPropagation()">
+          @if (techniqueFilter) {
+          <button mat-icon-button (click)="techniqueFilter = ''; $event.stopPropagation()" title="Clear">
             <mat-icon fontIcon="mdi-close"></mat-icon>
           </button>
           }
@@ -593,16 +593,16 @@ project root for license information.
         </mat-optgroup>
         }
         } @else {
-        @for (option of filteredAttackTechniqueOptions; track option.externalId) {
+        @for (option of filteredTechniqueOptions; track option.externalId) {
         <mat-option [value]="option.externalId">{{ option.externalId }} - {{ option.name }}</mat-option>
         }
         }
-        @if (filteredAttackTechniqueOptions.length === 0) {
+        @if (filteredTechniqueOptions.length === 0) {
         <div class="competency-no-results">No matching techniques</div>
         }
       </mat-select>
       <!-- a select with nothing to offer never opens, so an empty pool is explained under the field -->
-      @if (attackTechniqueOptions.length === 0) {
+      @if (techniqueOptions.length === 0) {
       <mat-hint>Add techniques on the MSEL's Techniques tab</mat-hint>
       }
     </mat-form-field>
@@ -611,8 +611,8 @@ project root for license information.
   }
   @if (showValueOnly()) {
   <span>
-    @for (id of selectedAttackTechniques; track id; let isLast = $last) {
-      <span [matTooltip]="getAttackTechniqueTooltip(id)" matTooltipPosition="above" style="white-space: nowrap;">{{ id }}</span>@if (!isLast) {<span>, </span>}
+    @for (id of selectedTechniques; track id; let isLast = $last) {
+      <span [matTooltip]="getTechniqueTooltip(id)" matTooltipPosition="above" style="white-space: nowrap;">{{ id }}</span>@if (!isLast) {<span>, </span>}
     }
   </span>
   }

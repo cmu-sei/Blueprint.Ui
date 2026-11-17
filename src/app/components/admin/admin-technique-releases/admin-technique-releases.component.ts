@@ -14,9 +14,9 @@ import { MatTooltip } from '@angular/material/tooltip';
 import { Observable, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
-import { AttackRelease } from 'src/app/generated/blueprint.api';
-import { AttackReleaseDataService } from 'src/app/data/attack-release/attack-release-data.service';
-import { AttackReleaseQuery } from 'src/app/data/attack-release/attack-release.query';
+import { TechniqueRelease } from 'src/app/generated/blueprint.api';
+import { TechniqueReleaseDataService } from 'src/app/data/technique-release/technique-release-data.service';
+import { TechniqueReleaseQuery } from 'src/app/data/technique-release/technique-release.query';
 import { SystemMessageService } from 'src/app/services/system-message/system-message.service';
 
 /** Where MITRE serves a release's d3fend-full-mappings.json; the unversioned "latest" path is not served. */
@@ -33,14 +33,14 @@ export function d3fendMappingsUrl(version: string): string {
  * its own.
  */
 @Component({
-  selector: 'app-admin-attack-releases',
-  templateUrl: './admin-attack-releases.component.html',
-  styleUrls: ['./admin-attack-releases.component.scss'],
+  selector: 'app-admin-technique-releases',
+  templateUrl: './admin-technique-releases.component.html',
+  styleUrls: ['./admin-technique-releases.component.scss'],
   imports: [MatIcon, MatFormField, MatLabel, MatHint, MatInput, ReactiveFormsModule, MatIconButton, MatSuffix, MatProgressSpinner, MatTable, MatSort, MatSortHeader, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatTooltip, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, NgStyle, AsyncPipe, DatePipe]
 })
-export class AdminAttackReleasesComponent implements OnInit, AfterViewInit, OnDestroy {
-  private attackReleaseDataService = inject(AttackReleaseDataService);
-  private attackReleaseQuery = inject(AttackReleaseQuery);
+export class AdminTechniqueReleasesComponent implements OnInit, AfterViewInit, OnDestroy {
+  private techniqueReleaseDataService = inject(TechniqueReleaseDataService);
+  private techniqueReleaseQuery = inject(TechniqueReleaseQuery);
   private messageService = inject(SystemMessageService);
   dialogService = inject(CrucibleDialogService);
 
@@ -50,8 +50,8 @@ export class AdminAttackReleasesComponent implements OnInit, AfterViewInit, OnDe
   readonly stixInput = viewChild<ElementRef<HTMLInputElement>>('stixInput');
   readonly mappingsInput = viewChild<ElementRef<HTMLInputElement>>('mappingsInput');
   /** The D3FEND release the mappings file picker was opened for. */
-  private mappingsRelease: AttackRelease;
-  dataSource = new MatTableDataSource<AttackRelease>([]);
+  private mappingsRelease: TechniqueRelease;
+  dataSource = new MatTableDataSource<TechniqueRelease>([]);
   displayedColumns: string[] = ['action', 'name', 'domain', 'version', 'releaseDate', 'tacticCount', 'techniqueCount'];
   versionControl = new UntypedFormControl('');
   filterControl = new UntypedFormControl('');
@@ -60,18 +60,18 @@ export class AdminAttackReleasesComponent implements OnInit, AfterViewInit, OnDe
   private unsubscribe$ = new Subject();
 
   constructor() {
-    this.isLoading$ = this.attackReleaseQuery.selectLoading();
+    this.isLoading$ = this.techniqueReleaseQuery.selectLoading();
   }
 
   ngOnInit() {
-    this.attackReleaseQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(releases => {
+    this.techniqueReleaseQuery.selectAll().pipe(takeUntil(this.unsubscribe$)).subscribe(releases => {
       this.dataSource.data = releases;
     });
     this.filterControl.valueChanges.pipe(takeUntil(this.unsubscribe$)).subscribe(term => {
       this.filterString = term;
       this.dataSource.filter = (term || '').trim().toLowerCase();
     });
-    this.attackReleaseDataService.load();
+    this.techniqueReleaseDataService.load();
   }
 
   ngAfterViewInit() {
@@ -89,16 +89,16 @@ export class AdminAttackReleasesComponent implements OnInit, AfterViewInit, OnDe
   }
 
   /** A defensive release takes the "countered by" mappings; the API flags it, whatever its domain. */
-  isDefensive(release: AttackRelease): boolean {
+  isDefensive(release: TechniqueRelease): boolean {
     return !!release.isDefensive;
   }
 
   /** The defensive releases still without their "countered by" mappings, for the hint that says where to get them. */
-  get defensiveReleasesWithoutMappings(): AttackRelease[] {
+  get defensiveReleasesWithoutMappings(): TechniqueRelease[] {
     return this.dataSource.data.filter(r => this.isDefensive(r) && !r.countermeasureCount);
   }
 
-  mappingsUrl(release: AttackRelease): string {
+  mappingsUrl(release: TechniqueRelease): string {
     return d3fendMappingsUrl(release?.version);
   }
 
@@ -108,12 +108,12 @@ export class AdminAttackReleasesComponent implements OnInit, AfterViewInit, OnDe
     if (!file) {
       return;
     }
-    this.attackReleaseDataService.import(file, (this.versionControl.value || '').trim())
+    this.techniqueReleaseDataService.import(file, (this.versionControl.value || '').trim())
       .subscribe(() => this.versionControl.setValue(''));
     this.stixInput().nativeElement.value = null;
   }
 
-  chooseMappingsFile(release: AttackRelease) {
+  chooseMappingsFile(release: TechniqueRelease) {
     this.mappingsRelease = release;
     this.mappingsInput().nativeElement.click();
   }
@@ -125,7 +125,7 @@ export class AdminAttackReleasesComponent implements OnInit, AfterViewInit, OnDe
     if (!file || !release) {
       return;
     }
-    this.attackReleaseDataService.importCountermeasures(release.id, file).subscribe(result => {
+    this.techniqueReleaseDataService.importCountermeasures(release.id, file).subscribe(result => {
       this.messageService.displayMessage(
         'Mappings Imported',
         `${result.rowsRead} rows read. ${result.pairsStored} countermeasure mappings for ${result.offensiveTechniqueCount} ` +
@@ -136,7 +136,7 @@ export class AdminAttackReleasesComponent implements OnInit, AfterViewInit, OnDe
     input.value = null;
   }
 
-  deleteRelease(release: AttackRelease) {
+  deleteRelease(release: TechniqueRelease) {
     this.dialogService
       .confirm({
         title: 'Delete Release',
@@ -146,7 +146,7 @@ export class AdminAttackReleasesComponent implements OnInit, AfterViewInit, OnDe
       .afterClosed()
       .subscribe(result => {
         if (result) {
-          this.attackReleaseDataService.delete(release.id);
+          this.techniqueReleaseDataService.delete(release.id);
         }
       });
   }

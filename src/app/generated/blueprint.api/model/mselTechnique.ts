@@ -13,13 +13,13 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-import { AttackTechnique } from './attackTechnique';
+import { Technique } from './technique';
 
 
-export interface MselAttackTechnique { 
+export interface MselTechnique { 
     id?: string;
     mselId?: string;
-    attackTechniqueId?: string;
-    attackTechnique?: AttackTechnique;
+    techniqueId?: string;
+    technique?: Technique;
 }
 

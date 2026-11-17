@@ -2,7 +2,7 @@
 // Released under a MIT (SEI)-style license. See LICENSE.md in the
 // project root for license information.
 
-import { AttackTechniqueCountermeasure } from 'src/app/generated/blueprint.api';
+import { TechniqueCountermeasure } from 'src/app/generated/blueprint.api';
 
 /** MITRE D3FEND's tactics in the order its matrix shows them, which the "Countered by" groups follow. */
 export const D3FEND_TACTIC_ORDER = ['Model', 'Harden', 'Detect', 'Isolate', 'Deceive', 'Evict', 'Restore'];
@@ -10,15 +10,15 @@ export const D3FEND_TACTIC_ORDER = ['Model', 'Harden', 'Detect', 'Isolate', 'Dec
 /** One D3FEND tactic's share of a technique's countermeasures, strongest first. */
 export interface CountermeasureTacticGroup {
   tactic: string;
-  countermeasures: AttackTechniqueCountermeasure[];
+  countermeasures: TechniqueCountermeasure[];
 }
 
 /**
  * Groups countermeasures by their D3FEND tactic in the matrix's order (a tactic the matrix does not name goes
  * last, alphabetically) and ranks each group by weight, then by id so equals keep a stable order.
  */
-export function groupByTactic(countermeasures: AttackTechniqueCountermeasure[] | null | undefined): CountermeasureTacticGroup[] {
-  const groups = new Map<string, AttackTechniqueCountermeasure[]>();
+export function groupByTactic(countermeasures: TechniqueCountermeasure[] | null | undefined): CountermeasureTacticGroup[] {
+  const groups = new Map<string, TechniqueCountermeasure[]>();
   for (const c of countermeasures || []) {
     const tactic = c.defensiveTactic || 'Other';
     if (!groups.has(tactic)) {

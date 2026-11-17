@@ -23,11 +23,11 @@ import { CustomHttpParameterCodec }                          from '../encoder';
 import { Observable }                                        from 'rxjs';
 
 // @ts-ignore
-import { MselAttackTechnique } from '../model/mselAttackTechnique';
-// @ts-ignore
-import { MselAttackTechniqueUpgrade } from '../model/mselAttackTechniqueUpgrade';
-// @ts-ignore
 import { MselCountermeasures } from '../model/mselCountermeasures';
+// @ts-ignore
+import { MselTechnique } from '../model/mselTechnique';
+// @ts-ignore
+import { MselTechniqueUpgrade } from '../model/mselTechniqueUpgrade';
 // @ts-ignore
 import { ProblemDetails } from '../model/problemDetails';
 
@@ -41,23 +41,23 @@ import { BaseService } from '../api.base.service';
 @Injectable({
   providedIn: 'root'
 })
-export class MselAttackTechniqueService extends BaseService {
+export class MselTechniqueService extends BaseService {
 
     constructor(protected httpClient: HttpClient, @Optional() @Inject(BASE_PATH) basePath: string|string[], @Optional() configuration?: Configuration) {
         super(basePath, configuration);
     }
 
     /**
-     * Adds an ATT&amp;CK technique to a MSEL\&#39;s pool
-     * Refused with a 409 when the MSEL\&#39;s pool already holds techniques from another ATT&amp;CK release.
-     * @param mselAttackTechnique The MSEL and the technique
+     * Adds a technique to a MSEL\&#39;s pool
+     * Refused with a 409 when the MSEL\&#39;s pool already holds techniques of the same family (attack: ATT&amp;CK and ATLAS; defensive: D3FEND) from another release.
+     * @param mselTechnique The MSEL and the technique
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public createMselAttackTechnique(mselAttackTechnique?: MselAttackTechnique, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<MselAttackTechnique>;
-    public createMselAttackTechnique(mselAttackTechnique?: MselAttackTechnique, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<MselAttackTechnique>>;
-    public createMselAttackTechnique(mselAttackTechnique?: MselAttackTechnique, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<MselAttackTechnique>>;
-    public createMselAttackTechnique(mselAttackTechnique?: MselAttackTechnique, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public createMselTechnique(mselTechnique?: MselTechnique, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<MselTechnique>;
+    public createMselTechnique(mselTechnique?: MselTechnique, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<MselTechnique>>;
+    public createMselTechnique(mselTechnique?: MselTechnique, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<MselTechnique>>;
+    public createMselTechnique(mselTechnique?: MselTechnique, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -100,12 +100,12 @@ export class MselAttackTechniqueService extends BaseService {
             }
         }
 
-        let localVarPath = `/api/mselattacktechniques`;
+        let localVarPath = `/api/mseltechniques`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<MselAttackTechnique>('post', `${basePath}${localVarPath}`,
+        return this.httpClient.request<MselTechnique>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: mselAttackTechnique,
+                body: mselTechnique,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
@@ -118,16 +118,16 @@ export class MselAttackTechniqueService extends BaseService {
 
     /**
      * Removes a technique from a MSEL\&#39;s pool
-     * @param id The id of the MselAttackTechnique to delete
+     * @param id The id of the MselTechnique to delete
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public deleteMselAttackTechnique(id: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any>;
-    public deleteMselAttackTechnique(id: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<any>>;
-    public deleteMselAttackTechnique(id: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<any>>;
-    public deleteMselAttackTechnique(id: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public deleteMselTechnique(id: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any>;
+    public deleteMselTechnique(id: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<any>>;
+    public deleteMselTechnique(id: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<any>>;
+    public deleteMselTechnique(id: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (id === null || id === undefined) {
-            throw new Error('Required parameter id was null or undefined when calling deleteMselAttackTechnique.');
+            throw new Error('Required parameter id was null or undefined when calling deleteMselTechnique.');
         }
 
         let localVarHeaders = this.defaultHeaders;
@@ -158,7 +158,7 @@ export class MselAttackTechniqueService extends BaseService {
             }
         }
 
-        let localVarPath = `/api/mselattacktechniques/${this.configuration.encodeParam({name: "id", value: id, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: "uuid"})}`;
+        let localVarPath = `/api/mseltechniques/${this.configuration.encodeParam({name: "id", value: id, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: "uuid"})}`;
         const { basePath, withCredentials } = this.configuration;
         return this.httpClient.request<any>('delete', `${basePath}${localVarPath}`,
             {
@@ -176,19 +176,19 @@ export class MselAttackTechniqueService extends BaseService {
     /**
      * Removes a technique from a MSEL\&#39;s pool by msel ID and technique ID
      * @param mselId ID of a msel.
-     * @param attackTechniqueId ID of an ATT&amp;CK technique.
+     * @param techniqueId ID of a technique.
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public deleteMselAttackTechniqueByIds(mselId: string, attackTechniqueId: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any>;
-    public deleteMselAttackTechniqueByIds(mselId: string, attackTechniqueId: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<any>>;
-    public deleteMselAttackTechniqueByIds(mselId: string, attackTechniqueId: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<any>>;
-    public deleteMselAttackTechniqueByIds(mselId: string, attackTechniqueId: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public deleteMselTechniqueByIds(mselId: string, techniqueId: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any>;
+    public deleteMselTechniqueByIds(mselId: string, techniqueId: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<any>>;
+    public deleteMselTechniqueByIds(mselId: string, techniqueId: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<any>>;
+    public deleteMselTechniqueByIds(mselId: string, techniqueId: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (mselId === null || mselId === undefined) {
-            throw new Error('Required parameter mselId was null or undefined when calling deleteMselAttackTechniqueByIds.');
+            throw new Error('Required parameter mselId was null or undefined when calling deleteMselTechniqueByIds.');
         }
-        if (attackTechniqueId === null || attackTechniqueId === undefined) {
-            throw new Error('Required parameter attackTechniqueId was null or undefined when calling deleteMselAttackTechniqueByIds.');
+        if (techniqueId === null || techniqueId === undefined) {
+            throw new Error('Required parameter techniqueId was null or undefined when calling deleteMselTechniqueByIds.');
         }
 
         let localVarHeaders = this.defaultHeaders;
@@ -219,7 +219,7 @@ export class MselAttackTechniqueService extends BaseService {
             }
         }
 
-        let localVarPath = `/api/msels/${this.configuration.encodeParam({name: "mselId", value: mselId, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: "uuid"})}/attacktechniques/${this.configuration.encodeParam({name: "attackTechniqueId", value: attackTechniqueId, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: "uuid"})}`;
+        let localVarPath = `/api/msels/${this.configuration.encodeParam({name: "mselId", value: mselId, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: "uuid"})}/techniques/${this.configuration.encodeParam({name: "techniqueId", value: techniqueId, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: "uuid"})}`;
         const { basePath, withCredentials } = this.configuration;
         return this.httpClient.request<any>('delete', `${basePath}${localVarPath}`,
             {
@@ -235,67 +235,8 @@ export class MselAttackTechniqueService extends BaseService {
     }
 
     /**
-     * Gets a specific MselAttackTechnique by id
-     * @param id The id of the MselAttackTechnique
-     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
-     * @param reportProgress flag to report request and response progress.
-     */
-    public getMselAttackTechnique(id: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<MselAttackTechnique>;
-    public getMselAttackTechnique(id: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<MselAttackTechnique>>;
-    public getMselAttackTechnique(id: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<MselAttackTechnique>>;
-    public getMselAttackTechnique(id: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
-        if (id === null || id === undefined) {
-            throw new Error('Required parameter id was null or undefined when calling getMselAttackTechnique.');
-        }
-
-        let localVarHeaders = this.defaultHeaders;
-
-        // authentication (oauth2) required
-        localVarHeaders = this.configuration.addCredentialToHeaders('oauth2', 'Authorization', localVarHeaders, 'Bearer ');
-
-        const localVarHttpHeaderAcceptSelected: string | undefined = options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept([
-            'text/plain',
-            'application/json',
-            'text/json'
-        ]);
-        if (localVarHttpHeaderAcceptSelected !== undefined) {
-            localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
-        }
-
-        const localVarHttpContext: HttpContext = options?.context ?? new HttpContext();
-
-        const localVarTransferCache: boolean = options?.transferCache ?? true;
-
-
-        let responseType_: 'text' | 'json' | 'blob' = 'json';
-        if (localVarHttpHeaderAcceptSelected) {
-            if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
-                responseType_ = 'text';
-            } else if (this.configuration.isJsonMime(localVarHttpHeaderAcceptSelected)) {
-                responseType_ = 'json';
-            } else {
-                responseType_ = 'blob';
-            }
-        }
-
-        let localVarPath = `/api/mselattacktechniques/${this.configuration.encodeParam({name: "id", value: id, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: "uuid"})}`;
-        const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<MselAttackTechnique>('get', `${basePath}${localVarPath}`,
-            {
-                context: localVarHttpContext,
-                responseType: <any>responseType_,
-                ...(withCredentials ? { withCredentials } : {}),
-                headers: localVarHeaders,
-                observe: observe,
-                transferCache: localVarTransferCache,
-                reportProgress: reportProgress
-            }
-        );
-    }
-
-    /**
      * Gets the D3FEND countermeasures of every attack technique in a MSEL\&#39;s pool
-     * From the D3FEND release the MSEL\&#39;s defensive techniques are pinned to, else the newest D3FEND release with mappings imported; &lt;code&gt;attackReleaseId&lt;/code&gt; names it and &lt;code&gt;hasMappings&lt;/code&gt; says whether it has any. Each pooled attack technique gets a group ranked by weight, empty when nothing counters it; a sub-technique with no mappings of its own gets its parent\&#39;s, with &lt;code&gt;inheritedFrom&lt;/code&gt; naming the parent.
+     * From the D3FEND release the MSEL\&#39;s defensive techniques are pinned to, else the newest D3FEND release with mappings imported; &#x60;techniqueReleaseId&#x60; names it and &#x60;hasMappings&#x60; says whether it has any. Each pooled attack technique gets a group ranked by weight, empty when nothing counters it; a sub-technique with no mappings of its own gets its parent\&#39;s, with &#x60;inheritedFrom&#x60; naming the parent.
      * @param mselId The id of the Msel
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
@@ -338,7 +279,7 @@ export class MselAttackTechniqueService extends BaseService {
             }
         }
 
-        let localVarPath = `/api/msels/${this.configuration.encodeParam({name: "mselId", value: mselId, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: "uuid"})}/attacktechniques/countermeasures`;
+        let localVarPath = `/api/msels/${this.configuration.encodeParam({name: "mselId", value: mselId, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: "uuid"})}/techniques/countermeasures`;
         const { basePath, withCredentials } = this.configuration;
         return this.httpClient.request<MselCountermeasures>('get', `${basePath}${localVarPath}`,
             {
@@ -354,17 +295,17 @@ export class MselAttackTechniqueService extends BaseService {
     }
 
     /**
-     * Gets the ATT&amp;CK techniques in a MSEL\&#39;s pool
-     * @param mselId The id of the Msel
+     * Gets a specific MselTechnique by id
+     * @param id The id of the MselTechnique
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public getMselAttackTechniques(mselId: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<MselAttackTechnique>>;
-    public getMselAttackTechniques(mselId: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<MselAttackTechnique>>>;
-    public getMselAttackTechniques(mselId: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<MselAttackTechnique>>>;
-    public getMselAttackTechniques(mselId: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
-        if (mselId === null || mselId === undefined) {
-            throw new Error('Required parameter mselId was null or undefined when calling getMselAttackTechniques.');
+    public getMselTechnique(id: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<MselTechnique>;
+    public getMselTechnique(id: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<MselTechnique>>;
+    public getMselTechnique(id: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<MselTechnique>>;
+    public getMselTechnique(id: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+        if (id === null || id === undefined) {
+            throw new Error('Required parameter id was null or undefined when calling getMselTechnique.');
         }
 
         let localVarHeaders = this.defaultHeaders;
@@ -397,9 +338,9 @@ export class MselAttackTechniqueService extends BaseService {
             }
         }
 
-        let localVarPath = `/api/msels/${this.configuration.encodeParam({name: "mselId", value: mselId, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: "uuid"})}/mselattacktechniques`;
+        let localVarPath = `/api/mseltechniques/${this.configuration.encodeParam({name: "id", value: id, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: "uuid"})}`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<Array<MselAttackTechnique>>('get', `${basePath}${localVarPath}`,
+        return this.httpClient.request<MselTechnique>('get', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 responseType: <any>responseType_,
@@ -413,22 +354,17 @@ export class MselAttackTechniqueService extends BaseService {
     }
 
     /**
-     * Moves a MSEL\&#39;s technique pool to another ATT&amp;CK release
-     * Techniques are matched by their ATT&amp;CK id. Ones the new release no longer has are dropped and listed in the response; inject cells that name them keep their text.
-     * @param mselId ID of a msel.
-     * @param attackReleaseId ID of the release to move to.
+     * Gets the techniques in a MSEL\&#39;s pool
+     * @param mselId The id of the Msel
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public upgradeMselAttackTechniques(mselId: string, attackReleaseId: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<MselAttackTechniqueUpgrade>;
-    public upgradeMselAttackTechniques(mselId: string, attackReleaseId: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<MselAttackTechniqueUpgrade>>;
-    public upgradeMselAttackTechniques(mselId: string, attackReleaseId: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<MselAttackTechniqueUpgrade>>;
-    public upgradeMselAttackTechniques(mselId: string, attackReleaseId: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public getMselTechniques(mselId: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<MselTechnique>>;
+    public getMselTechniques(mselId: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<MselTechnique>>>;
+    public getMselTechniques(mselId: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<MselTechnique>>>;
+    public getMselTechniques(mselId: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (mselId === null || mselId === undefined) {
-            throw new Error('Required parameter mselId was null or undefined when calling upgradeMselAttackTechniques.');
-        }
-        if (attackReleaseId === null || attackReleaseId === undefined) {
-            throw new Error('Required parameter attackReleaseId was null or undefined when calling upgradeMselAttackTechniques.');
+            throw new Error('Required parameter mselId was null or undefined when calling getMselTechniques.');
         }
 
         let localVarHeaders = this.defaultHeaders;
@@ -461,9 +397,73 @@ export class MselAttackTechniqueService extends BaseService {
             }
         }
 
-        let localVarPath = `/api/msels/${this.configuration.encodeParam({name: "mselId", value: mselId, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: "uuid"})}/attacktechniques/upgrade/${this.configuration.encodeParam({name: "attackReleaseId", value: attackReleaseId, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: "uuid"})}`;
+        let localVarPath = `/api/msels/${this.configuration.encodeParam({name: "mselId", value: mselId, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: "uuid"})}/mseltechniques`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<MselAttackTechniqueUpgrade>('post', `${basePath}${localVarPath}`,
+        return this.httpClient.request<Array<MselTechnique>>('get', `${basePath}${localVarPath}`,
+            {
+                context: localVarHttpContext,
+                responseType: <any>responseType_,
+                ...(withCredentials ? { withCredentials } : {}),
+                headers: localVarHeaders,
+                observe: observe,
+                transferCache: localVarTransferCache,
+                reportProgress: reportProgress
+            }
+        );
+    }
+
+    /**
+     * Moves one family of a MSEL\&#39;s technique pool to another release
+     * The release\&#39;s family (attack: ATT&amp;CK and ATLAS; defensive: D3FEND) says which techniques move; the other family stays. Techniques are matched by their external id (T1059, AML.T0051, D3-CH). Ones the new release no longer has are dropped and listed in the response; inject cells that name them keep their text.
+     * @param mselId ID of a msel.
+     * @param techniqueReleaseId ID of the release to move to.
+     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+     * @param reportProgress flag to report request and response progress.
+     */
+    public upgradeMselTechniques(mselId: string, techniqueReleaseId: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<MselTechniqueUpgrade>;
+    public upgradeMselTechniques(mselId: string, techniqueReleaseId: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<MselTechniqueUpgrade>>;
+    public upgradeMselTechniques(mselId: string, techniqueReleaseId: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<MselTechniqueUpgrade>>;
+    public upgradeMselTechniques(mselId: string, techniqueReleaseId: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+        if (mselId === null || mselId === undefined) {
+            throw new Error('Required parameter mselId was null or undefined when calling upgradeMselTechniques.');
+        }
+        if (techniqueReleaseId === null || techniqueReleaseId === undefined) {
+            throw new Error('Required parameter techniqueReleaseId was null or undefined when calling upgradeMselTechniques.');
+        }
+
+        let localVarHeaders = this.defaultHeaders;
+
+        // authentication (oauth2) required
+        localVarHeaders = this.configuration.addCredentialToHeaders('oauth2', 'Authorization', localVarHeaders, 'Bearer ');
+
+        const localVarHttpHeaderAcceptSelected: string | undefined = options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept([
+            'text/plain',
+            'application/json',
+            'text/json'
+        ]);
+        if (localVarHttpHeaderAcceptSelected !== undefined) {
+            localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
+        }
+
+        const localVarHttpContext: HttpContext = options?.context ?? new HttpContext();
+
+        const localVarTransferCache: boolean = options?.transferCache ?? true;
+
+
+        let responseType_: 'text' | 'json' | 'blob' = 'json';
+        if (localVarHttpHeaderAcceptSelected) {
+            if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
+                responseType_ = 'text';
+            } else if (this.configuration.isJsonMime(localVarHttpHeaderAcceptSelected)) {
+                responseType_ = 'json';
+            } else {
+                responseType_ = 'blob';
+            }
+        }
+
+        let localVarPath = `/api/msels/${this.configuration.encodeParam({name: "mselId", value: mselId, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: "uuid"})}/techniques/upgrade/${this.configuration.encodeParam({name: "techniqueReleaseId", value: techniqueReleaseId, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: "uuid"})}`;
+        const { basePath, withCredentials } = this.configuration;
+        return this.httpClient.request<MselTechniqueUpgrade>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 responseType: <any>responseType_,

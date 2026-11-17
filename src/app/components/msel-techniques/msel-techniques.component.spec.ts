@@ -8,19 +8,19 @@ import { fireEvent, screen, within } from '@testing-library/angular';
 import { of } from 'rxjs';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
 import {
-  AttackRelease,
-  AttackReleaseService,
-  AttackTactic,
-  AttackTechnique,
+  TechniqueRelease,
+  TechniqueReleaseService,
+  TechniqueTactic,
+  Technique,
   Msel,
-  MselAttackTechnique,
-  MselAttackTechniqueService,
+  MselTechnique,
+  MselTechniqueService,
   MselCountermeasures,
   SystemPermissionsService,
 } from 'src/app/generated/blueprint.api';
 import { MselStore } from 'src/app/data/msel/msel.store';
 import { PermissionDataService } from 'src/app/data/permission/permission-data.service';
-import { MselAttackTechniquesComponent } from './msel-attack-techniques.component';
+import { MselTechniquesComponent } from './msel-techniques.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { permissionApiStubs } from 'src/app/test-utils/mock-permission-data.service';
@@ -28,35 +28,35 @@ import { unstubbed } from 'src/app/test-utils/unstubbed';
 
 const ME = 'user-me';
 const MSEL: Msel = { id: 'msel-1', name: 'Exercise Alpha', createdBy: 'someone-else', userMselRoles: [] };
-const T1059: MselAttackTechnique = {
+const T1059: MselTechnique = {
   id: 'mat-1',
   mselId: 'msel-1',
-  attackTechniqueId: 'at-1',
-  attackTechnique: { id: 'at-1', attackReleaseId: 'rel-1', domain: 'enterprise-attack', externalId: 'T1059', name: 'Command and Scripting Interpreter', url: 'https://attack.mitre.org/techniques/T1059' },
+  techniqueId: 'at-1',
+  technique: { id: 'at-1', techniqueReleaseId: 'rel-1', domain: 'enterprise-attack', externalId: 'T1059', name: 'Command and Scripting Interpreter', url: 'https://attack.mitre.org/techniques/T1059' },
 };
 const TERMS_OF_USE = 'https://attack.mitre.org/resources/legal-and-branding/terms-of-use/';
 const D3FEND_TERMS_OF_USE = 'https://d3fend.mitre.org/tou/';
-const ENTERPRISE_RELEASE: AttackRelease = { id: 'rel-1', domain: 'enterprise-attack', name: 'Enterprise ATT&CK', version: '17.1' };
-const ATLAS_RELEASE: AttackRelease = { id: 'rel-1', domain: 'ATLAS', name: 'ATLAS', version: '2026.10' };
-const D3FEND_RELEASE: AttackRelease = { id: 'rel-d3', domain: 'd3fend', isDefensive: true, name: 'MITRE D3FEND', version: '1.6.0' };
-const AML_T0000: AttackTechnique = {
-  id: 'at-1', attackReleaseId: 'rel-1', domain: 'ATLAS', externalId: 'AML.T0000', name: 'Search Open Technical Databases',
+const ENTERPRISE_RELEASE: TechniqueRelease = { id: 'rel-1', domain: 'enterprise-attack', name: 'Enterprise ATT&CK', version: '17.1' };
+const ATLAS_RELEASE: TechniqueRelease = { id: 'rel-1', domain: 'ATLAS', name: 'ATLAS', version: '2026.10' };
+const D3FEND_RELEASE: TechniqueRelease = { id: 'rel-d3', domain: 'd3fend', isDefensive: true, name: 'MITRE D3FEND', version: '1.6.0' };
+const AML_T0000: Technique = {
+  id: 'at-1', techniqueReleaseId: 'rel-1', domain: 'ATLAS', externalId: 'AML.T0000', name: 'Search Open Technical Databases',
   tactics: ['reconnaissance'], url: 'https://atlas.mitre.org/techniques/AML.T0000',
 };
-const ATLAS_IN_POOL: MselAttackTechnique = { id: 'mat-1', mselId: 'msel-1', attackTechniqueId: 'at-1', attackTechnique: AML_T0000 };
-const D3_CH: AttackTechnique = {
-  id: 'at-d3', attackReleaseId: 'rel-d3', domain: 'd3fend', isDefensive: true, externalId: 'D3-CH', name: 'Credential Hardening',
+const ATLAS_IN_POOL: MselTechnique = { id: 'mat-1', mselId: 'msel-1', techniqueId: 'at-1', technique: AML_T0000 };
+const D3_CH: Technique = {
+  id: 'at-d3', techniqueReleaseId: 'rel-d3', domain: 'd3fend', isDefensive: true, externalId: 'D3-CH', name: 'Credential Hardening',
   tactics: ['harden'], url: 'https://d3fend.mitre.org/technique/d3f:CredentialHardening/',
 };
-const D3_CH_IN_POOL: MselAttackTechnique = { id: 'mat-d3', mselId: 'msel-1', attackTechniqueId: 'at-d3', attackTechnique: D3_CH };
-const NO_MAPPINGS: MselCountermeasures = { mselId: 'msel-1', attackReleaseId: null, hasMappings: false, techniques: [] };
+const D3_CH_IN_POOL: MselTechnique = { id: 'mat-d3', mselId: 'msel-1', techniqueId: 'at-d3', technique: D3_CH };
+const NO_MAPPINGS: MselCountermeasures = { mselId: 'msel-1', techniqueReleaseId: null, hasMappings: false, techniques: [] };
 // D3FEND 1.6.0 counters T1059 with D3-CH, inherited from nothing; D3-CH is in the defensive pool already.
 const T1059_COUNTERED: MselCountermeasures = {
-  mselId: 'msel-1', attackReleaseId: 'rel-d3', hasMappings: true,
+  mselId: 'msel-1', techniqueReleaseId: 'rel-d3', hasMappings: true,
   techniques: [{
-    attackTechniqueId: 'at-1', offensiveExternalId: 'T1059', inheritedFrom: null,
+    techniqueId: 'at-1', offensiveExternalId: 'T1059', inheritedFrom: null,
     countermeasures: [{
-      id: 'cm-1', attackReleaseId: 'rel-d3', offensiveExternalId: 'T1059', defensiveTechniqueId: 'at-d3', defensiveTechnique: D3_CH,
+      id: 'cm-1', techniqueReleaseId: 'rel-d3', offensiveExternalId: 'T1059', defensiveTechniqueId: 'at-d3', defensiveTechnique: D3_CH,
       defensiveTactic: 'Harden', rationale: 'hardens Credential; T1059 executes Script', weight: 2,
     }],
   }],
@@ -67,25 +67,25 @@ const defensiveSection = () => screen.getByText('Defensive Techniques').closest(
 
 // With no release imported the Add Techniques browsers stay empty and only the pool can put MITRE content on screen;
 // an imported release is browsed by its family's section as soon as the component loads it.
-async function renderTechniques(pool: MselAttackTechnique[], releases: AttackRelease[] = [], techniques: Record<string, AttackTechnique[]> = {}, countermeasures: MselCountermeasures = NO_MAPPINGS) {
+async function renderTechniques(pool: MselTechnique[], releases: TechniqueRelease[] = [], techniques: Record<string, Technique[]> = {}, countermeasures: MselCountermeasures = NO_MAPPINGS) {
   const poolApi = {
-    getMselAttackTechniques: vi.fn(() => of(structuredClone(pool))),
+    getMselTechniques: vi.fn(() => of(structuredClone(pool))),
     getMselCountermeasures: vi.fn(() => of(structuredClone(countermeasures))),
-  } satisfies ApiStub<MselAttackTechniqueService>;
+  } satisfies ApiStub<MselTechniqueService>;
   const releaseApi = {
-    getAttackReleases: vi.fn(() => of(structuredClone(releases))),
-    getAttackTactics: vi.fn(() => of<AttackTactic[]>([])),
-    getAttackTechniques: vi.fn((id: string) => of(structuredClone(techniques[id] ?? []))),
-  } satisfies ApiStub<AttackReleaseService>;
+    getTechniqueReleases: vi.fn(() => of(structuredClone(releases))),
+    getTechniqueTactics: vi.fn(() => of<TechniqueTactic[]>([])),
+    getTechniques: vi.fn((id: string) => of(structuredClone(techniques[id] ?? []))),
+  } satisfies ApiStub<TechniqueReleaseService>;
   // The sections load the permissions themselves in ngOnInit, so the real service is provided over the
   // stubbed endpoint, without priming it.
   const permissionApis = permissionApiStubs();
-  const rendered = await renderComponent(MselAttackTechniquesComponent, {
+  const rendered = await renderComponent(MselTechniquesComponent, {
     providers: [
       { provide: SystemPermissionsService, useValue: permissionApis.systemPermissions },
       PermissionDataService,
-      { provide: MselAttackTechniqueService, useValue: poolApi },
-      { provide: AttackReleaseService, useValue: releaseApi },
+      { provide: MselTechniqueService, useValue: poolApi },
+      { provide: TechniqueReleaseService, useValue: releaseApi },
       unstubbed(CrucibleDialogService),
       {
         provide: MselStore,
@@ -102,18 +102,18 @@ async function renderTechniques(pool: MselAttackTechnique[], releases: AttackRel
   return { ...rendered, poolApi, releaseApi };
 }
 
-describe('MselAttackTechniquesComponent', () => {
+describe('MselTechniquesComponent', () => {
   /**
    * Verifies: the tab has an Attack Techniques section and a Defensive Techniques section, each with a release
    * picker, and the pool is loaded once for both.
-   * Interacts with: MselAttackTechniqueService.getMselAttackTechniques (stub), TechniquePoolComponent.title.
+   * Interacts with: MselTechniqueService.getMselTechniques (stub), TechniquePoolComponent.title.
    * Data: an empty pool; no release imported.
    */
   it('shows an attack section and a defensive section', async () => {
     const { poolApi } = await renderTechniques([]);
 
-    expect(poolApi.getMselAttackTechniques).toHaveBeenCalledTimes(1);
-    expect(poolApi.getMselAttackTechniques).toHaveBeenCalledWith('msel-1');
+    expect(poolApi.getMselTechniques).toHaveBeenCalledTimes(1);
+    expect(poolApi.getMselTechniques).toHaveBeenCalledWith('msel-1');
     expect(screen.getByText('Attack Techniques')).toBeInTheDocument();
     expect(screen.getByText('Defensive Techniques')).toBeInTheDocument();
     expect(screen.getByLabelText('Attack Techniques release')).toBeInTheDocument();
@@ -124,7 +124,7 @@ describe('MselAttackTechniquesComponent', () => {
   /**
    * Verifies: with a technique in the pool, MITRE's copyright and trademark notice follows the tables once, with
    * its Terms of Use link and without the ATLAS or D3FEND marks.
-   * Interacts with: MselAttackTechniqueService.getMselAttackTechniques (stub), showsMitreContent, linkHost.
+   * Interacts with: MselTechniqueService.getMselTechniques (stub), showsMitreContent, linkHost.
    * Data: T1059 in the pool; no release imported.
    */
   it('attributes MITRE when the pool lists techniques', async () => {
@@ -158,13 +158,13 @@ describe('MselAttackTechniquesComponent', () => {
   /**
    * Verifies: techniques from an ATLAS release add MITRE's ATLAS trademark sentence to the ATT&CK notice, and
    * their links say they open on atlas.mitre.org.
-   * Interacts with: AttackReleaseService.getAttackReleases/getAttackTechniques (stubs), showsAtlasContent, linkHost.
+   * Interacts with: TechniqueReleaseService.getTechniqueReleases/getTechniques (stubs), showsAtlasContent, linkHost.
    * Data: the ATLAS 2026.10 release imported, AML.T0000 in its pool and in the (collapsed) browser.
    */
   it('also credits MITRE ATLAS when the techniques are from an ATLAS release', async () => {
     const { releaseApi } = await renderTechniques([ATLAS_IN_POOL], [ATLAS_RELEASE], { 'rel-1': [AML_T0000] });
 
-    expect(releaseApi.getAttackTechniques).toHaveBeenCalledWith('rel-1');
+    expect(releaseApi.getTechniques).toHaveBeenCalledWith('rel-1');
     expect(screen.getByRole('link', { name: 'AML.T0000' })).toHaveAttribute('href', 'https://atlas.mitre.org/techniques/AML.T0000');
     expect(screen.getByRole('link', { name: 'AML.T0000' })).toHaveAttribute('title', 'Open AML.T0000 on atlas.mitre.org');
     expect(screen.getByText(/MITRE ATT&CK and ATT&CK are registered trademarks of The MITRE Corporation/)).toBeInTheDocument();
@@ -201,17 +201,17 @@ describe('MselAttackTechniquesComponent', () => {
   /**
    * Verifies: each section's release picker offers only its family's releases, each browses its own, and the
    * defensive browser has no Platforms column.
-   * Interacts with: AttackReleaseService.getAttackReleases/getAttackTechniques (stubs), TechniquePoolComponent.releases.
+   * Interacts with: TechniqueReleaseService.getTechniqueReleases/getTechniques (stubs), TechniquePoolComponent.releases.
    * Data: Enterprise ATT&CK 17.1 and MITRE D3FEND 1.6.0 imported; an empty pool.
    */
   it('offers each section only its own releases', async () => {
-    const { fixture, releaseApi } = await renderTechniques([], [ENTERPRISE_RELEASE, D3FEND_RELEASE], { 'rel-1': [T1059.attackTechnique], 'rel-d3': [D3_CH] });
+    const { fixture, releaseApi } = await renderTechniques([], [ENTERPRISE_RELEASE, D3FEND_RELEASE], { 'rel-1': [T1059.technique], 'rel-d3': [D3_CH] });
     const loader = TestbedHarnessEnvironment.loader(fixture);
     const attackSelect = await loader.getHarness(MatSelectHarness.with({ selector: '[aria-label="Attack Techniques release"]' }));
     const defensiveSelect = await loader.getHarness(MatSelectHarness.with({ selector: '[aria-label="Defensive Techniques release"]' }));
 
-    expect(releaseApi.getAttackTechniques).toHaveBeenCalledWith('rel-1');
-    expect(releaseApi.getAttackTechniques).toHaveBeenCalledWith('rel-d3');
+    expect(releaseApi.getTechniques).toHaveBeenCalledWith('rel-1');
+    expect(releaseApi.getTechniques).toHaveBeenCalledWith('rel-d3');
     expect(await attackSelect.getValueText()).toBe('Enterprise ATT&CK 17.1');
     expect(await defensiveSelect.getValueText()).toBe('MITRE D3FEND 1.6.0');
     await attackSelect.open();
@@ -229,7 +229,7 @@ describe('MselAttackTechniquesComponent', () => {
    * Verifies: each pooled attack technique gets a Countered by row loaded for the MSEL once, the defensive pool
    * gets none, and opening the row lists the D3FEND technique grouped under its tactic, marked as already pooled;
    * a user who cannot edit the MSEL gets the mark, not a checkbox.
-   * Interacts with: MselAttackTechniqueService.getMselCountermeasures (stub), MselCountermeasureDataService,
+   * Interacts with: MselTechniqueService.getMselCountermeasures (stub), MselCountermeasureDataService,
    * TechniquePoolComponent.countermeasuresFor, TechniqueCountermeasuresComponent.
    * Data: T1059 and D3-CH in the pool; D3FEND 1.6.0 imported with D3-CH countering T1059.
    */
@@ -256,7 +256,7 @@ describe('MselAttackTechniquesComponent', () => {
    * Data: T1059 in the pool; Enterprise ATT&CK 17.1 the only release.
    */
   it('says when no D3FEND release is there to counter with', async () => {
-    await renderTechniques([T1059], [ENTERPRISE_RELEASE], { 'rel-1': [T1059.attackTechnique] });
+    await renderTechniques([T1059], [ENTERPRISE_RELEASE], { 'rel-1': [T1059.technique] });
 
     fireEvent.click(within(attackSection()).getByRole('button', { name: 'Countered by, T1059' }));
 

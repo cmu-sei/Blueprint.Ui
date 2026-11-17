@@ -57,7 +57,7 @@ const dataTypeSelect = () => screen.getByLabelText('Data Type');
 
 describe('DataFieldEditDialogComponent', () => {
   /**
-   * Verifies: the Data Type list reads AttackTechnique and DefensiveTechnique as two words and every other type by its
+   * Verifies: the Data Type list reads Technique and DefensiveTechnique as two words and every other type by its
    * key; picking Defensive Technique makes the field multi-select without an option list, as Attack Technique does,
    * and says where its techniques come from.
    * Interacts with: DataFieldTypeNamePipe, changeDataFieldDataType, isTechniqueField.

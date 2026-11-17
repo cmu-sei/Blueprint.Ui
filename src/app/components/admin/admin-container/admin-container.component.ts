@@ -39,7 +39,7 @@ import { DataFieldListComponent } from '../../data-field-list/data-field-list.co
 import { AdminInjectTypesComponent } from '../admin-inject-types/admin-inject-types.component';
 import { AdminCompetencyFrameworksComponent } from '../admin-competency-frameworks/admin-competency-frameworks.component';
 import { AdminProficiencyScalesComponent } from '../admin-proficiency-scales/admin-proficiency-scales.component';
-import { AdminAttackReleasesComponent } from '../admin-attack-releases/admin-attack-releases.component';
+import { AdminTechniqueReleasesComponent } from '../admin-technique-releases/admin-technique-releases.component';
 import { AdminCatalogListComponent } from '../admin-catalog-list/admin-catalog-list.component';
 import { OrganizationListComponent } from '../../organization-list/organization-list.component';
 import { CardListComponent } from '../../card-list/card-list.component';
@@ -51,7 +51,7 @@ import { PlayerApplicationListComponent } from '../../player-application-list/pl
     selector: 'app-admin-container',
     templateUrl: './admin-container.component.html',
     styleUrls: ['./admin-container.component.scss'],
-    imports: [MatSidenavContainer, MatSidenav, MatToolbar, MatIcon, MatList, MatListItem, NgClass, MatListItemIcon, MatIconButton, MatSidenavContent, TopbarComponent, AdminUnitsComponent, AdminUsersComponent, AdminRolesComponent, AdminGroupsComponent, DataFieldListComponent, AdminInjectTypesComponent, AdminCompetencyFrameworksComponent, AdminProficiencyScalesComponent, AdminAttackReleasesComponent, AdminCatalogListComponent, OrganizationListComponent, CardListComponent, CiteActionListComponent, CiteDutyListComponent, PlayerApplicationListComponent, AsyncPipe]
+    imports: [MatSidenavContainer, MatSidenav, MatToolbar, MatIcon, MatList, MatListItem, NgClass, MatListItemIcon, MatIconButton, MatSidenavContent, TopbarComponent, AdminUnitsComponent, AdminUsersComponent, AdminRolesComponent, AdminGroupsComponent, DataFieldListComponent, AdminInjectTypesComponent, AdminCompetencyFrameworksComponent, AdminProficiencyScalesComponent, AdminTechniqueReleasesComponent, AdminCatalogListComponent, OrganizationListComponent, CardListComponent, CiteActionListComponent, CiteDutyListComponent, PlayerApplicationListComponent, AsyncPipe]
 })
 export class AdminContainerComponent implements OnDestroy, OnInit {
   private router = inject(Router);
@@ -87,8 +87,8 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
   competencyFrameworksText = 'Competency Frameworks';
   competencyFrameworksSidebarText = 'Competencies';
   proficiencyScalesText = 'Proficiency Scales';
-  attackReleasesText = 'Technique Frameworks';
-  attackReleasesSidebarText = 'Techniques';
+  techniqueReleasesText = 'Technique Frameworks';
+  techniqueReleasesSidebarText = 'Techniques';
   selectedTab = 'Organizations';
   displayedSection = '';
   exitSection = '';
@@ -275,7 +275,7 @@ export class AdminContainerComponent implements OnDestroy, OnInit {
 
   getSidebarLabel(section: string): string {
     if (section === this.competencyFrameworksText) return this.competencyFrameworksSidebarText;
-    if (section === this.attackReleasesText) return this.attackReleasesSidebarText;
+    if (section === this.techniqueReleasesText) return this.techniqueReleasesSidebarText;
     return section;
   }
 

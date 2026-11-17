@@ -118,7 +118,7 @@ export class ScenarioEventEditDialogComponent implements OnDestroy, OnInit {
   }
 
   /** The event's Attack Technique values, for a Defensive Technique field to suggest their countermeasures first. */
-  attackTechniqueValues(): string {
+  techniqueValues(): string {
     return (this.data.dataFields as DataField[])
       .filter((df) => df.dataType === DataFieldType.AttackTechnique)
       .map((df) => this.getDataValue(df.name).value)

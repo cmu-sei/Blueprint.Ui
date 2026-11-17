@@ -4,8 +4,8 @@
 import { Injectable, inject } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { distinctUntilChanged, map, take } from 'rxjs/operators';
-import { MselAttackTechniqueService, MselCountermeasures } from 'src/app/generated/blueprint.api';
-import { MselAttackTechniqueQuery } from './msel-attack-technique.query';
+import { MselTechniqueService, MselCountermeasures } from 'src/app/generated/blueprint.api';
+import { MselTechniqueQuery } from './msel-technique.query';
 
 /**
  * The D3FEND countermeasures of a MSEL's attack techniques, as the API answers them for the whole pool: from the
@@ -17,8 +17,8 @@ import { MselAttackTechniqueQuery } from './msel-attack-technique.query';
   providedIn: 'root',
 })
 export class MselCountermeasureDataService {
-  private mselAttackTechniqueService = inject(MselAttackTechniqueService);
-  private mselAttackTechniqueQuery = inject(MselAttackTechniqueQuery);
+  private mselTechniqueService = inject(MselTechniqueService);
+  private mselTechniqueQuery = inject(MselTechniqueQuery);
 
   private readonly subject = new BehaviorSubject<MselCountermeasures | undefined>(undefined);
   readonly countermeasures$: Observable<MselCountermeasures | undefined> = this.subject.asObservable();
@@ -27,13 +27,13 @@ export class MselCountermeasureDataService {
   loading = false;
 
   constructor() {
-    this.mselAttackTechniqueQuery.selectAll()
+    this.mselTechniqueQuery.selectAll()
       .pipe(
-        map(items => items.map(m => m.attackTechniqueId).sort().join(',')),
+        map(items => items.map(m => m.techniqueId).sort().join(',')),
         distinctUntilChanged()
       )
       .subscribe(poolKey => {
-        if (this.loadedMselId && poolKey !== this.loadedPoolKey && !this.mselAttackTechniqueQuery.getValue().loading) {
+        if (this.loadedMselId && poolKey !== this.loadedPoolKey && !this.mselTechniqueQuery.getValue().loading) {
           this.load(this.loadedMselId);
         }
       });
@@ -43,7 +43,7 @@ export class MselCountermeasureDataService {
     this.loadedMselId = mselId;
     this.loadedPoolKey = this.poolKey();
     this.loading = true;
-    this.mselAttackTechniqueService
+    this.mselTechniqueService
       .getMselCountermeasures(mselId)
       .pipe(take(1))
       .subscribe({
@@ -53,7 +53,7 @@ export class MselCountermeasureDataService {
         },
         error: () => {
           this.loading = false;
-          this.subject.next({ mselId, attackReleaseId: null, hasMappings: false, techniques: [] });
+          this.subject.next({ mselId, techniqueReleaseId: null, hasMappings: false, techniques: [] });
         },
       });
   }
@@ -72,6 +72,6 @@ export class MselCountermeasureDataService {
   }
 
   private poolKey(): string {
-    return this.mselAttackTechniqueQuery.getAll().map(m => m.attackTechniqueId).sort().join(',');
+    return this.mselTechniqueQuery.getAll().map(m => m.techniqueId).sort().join(',');
   }
 }

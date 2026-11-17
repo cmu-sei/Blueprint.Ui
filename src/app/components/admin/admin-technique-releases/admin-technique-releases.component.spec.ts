@@ -13,40 +13,40 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { fireEvent, screen } from '@testing-library/angular';
 import { of } from 'rxjs';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
-import { AttackRelease, AttackReleaseService, AttackTechniqueCountermeasureImport } from 'src/app/generated/blueprint.api';
+import { TechniqueRelease, TechniqueReleaseService, TechniqueCountermeasureImport } from 'src/app/generated/blueprint.api';
 import { SystemMessageService } from 'src/app/services/system-message/system-message.service';
-import { AdminAttackReleasesComponent } from './admin-attack-releases.component';
+import { AdminTechniqueReleasesComponent } from './admin-technique-releases.component';
 import { ApiStub } from 'src/app/test-utils/api-stub';
 import { renderComponent } from 'src/app/test-utils/render-component';
 import { unstubbed } from 'src/app/test-utils/unstubbed';
 
-const ENTERPRISE: AttackRelease = {
+const ENTERPRISE: TechniqueRelease = {
   id: 'rel-1', domain: 'enterprise-attack', name: 'Enterprise ATT&CK', version: '17.1',
   releaseDate: new Date('2025-04-22T00:00:00Z'), tacticCount: 14, techniqueCount: 211,
 };
-const ATLAS: AttackRelease = {
+const ATLAS: TechniqueRelease = {
   id: 'rel-2', domain: 'ATLAS', name: 'ATLAS', version: '2026.10',
   releaseDate: new Date('2026-10-28T00:00:00Z'), tacticCount: 16, techniqueCount: 221,
 };
-const D3FEND: AttackRelease = {
+const D3FEND: TechniqueRelease = {
   id: 'rel-3', domain: 'd3fend', isDefensive: true, name: 'MITRE D3FEND', version: '1.6.0',
   releaseDate: new Date('2026-08-31T00:12:00Z'), tacticCount: 7, techniqueCount: 271,
 };
-const D3FEND_WITH_MAPPINGS: AttackRelease = { ...D3FEND, countermeasureCount: 4133 };
+const D3FEND_WITH_MAPPINGS: TechniqueRelease = { ...D3FEND, countermeasureCount: 4133 };
 const MAPPINGS_URL = 'https://d3fend.mitre.org/ontologies/d3fend/1.6.0/d3fend-full-mappings.json';
-const IMPORT_RESULT: AttackTechniqueCountermeasureImport = { attackReleaseId: 'rel-3', rowsRead: 9, pairsStored: 5, pairsSkipped: 1, offensiveTechniqueCount: 4 };
+const IMPORT_RESULT: TechniqueCountermeasureImport = { techniqueReleaseId: 'rel-3', rowsRead: 9, pairsStored: 5, pairsSkipped: 1, offensiveTechniqueCount: 4 };
 const TRADEMARKS = /MITRE ATT&CK and ATT&CK are registered trademarks of The MITRE Corporation/;
 const ATLAS_TRADEMARK = /MITRE ATLAS™ is a trademark of The MITRE Corporation\./;
 const D3FEND_TRADEMARK = /MITRE D3FEND™ is a trademark of The MITRE Corporation\./;
 
 // The component loads the releases itself in ngOnInit, so the stubbed endpoint is all the store needs.
-async function renderReleases(releases: AttackRelease[]) {
+async function renderReleases(releases: TechniqueRelease[]) {
   const releaseApi = {
-    getAttackReleases: vi.fn(() => of(structuredClone(releases))),
-    importAttackTechniqueCountermeasures: vi.fn(() => of(structuredClone(IMPORT_RESULT))),
-  } satisfies ApiStub<AttackReleaseService>;
+    getTechniqueReleases: vi.fn(() => of(structuredClone(releases))),
+    importTechniqueCountermeasures: vi.fn(() => of(structuredClone(IMPORT_RESULT))),
+  } satisfies ApiStub<TechniqueReleaseService>;
   const messages = { displayMessage: vi.fn() };
-  const rendered = await renderComponent(AdminAttackReleasesComponent, {
+  const rendered = await renderComponent(AdminTechniqueReleasesComponent, {
     imports: [
       MatButtonModule,
       MatFormFieldModule,
@@ -57,9 +57,9 @@ async function renderReleases(releases: AttackRelease[]) {
       MatTableModule,
       MatTooltipModule,
     ],
-    declarations: [AdminAttackReleasesComponent],
+    declarations: [AdminTechniqueReleasesComponent],
     providers: [
-      { provide: AttackReleaseService, useValue: releaseApi },
+      { provide: TechniqueReleaseService, useValue: releaseApi },
       { provide: SystemMessageService, useValue: messages },
       unstubbed(CrucibleDialogService),
     ],
@@ -68,17 +68,17 @@ async function renderReleases(releases: AttackRelease[]) {
   return { ...rendered, releaseApi, messages };
 }
 
-describe('AdminAttackReleasesComponent', () => {
+describe('AdminTechniqueReleasesComponent', () => {
   /**
    * Verifies: with nothing imported the empty state names the ATT&CK bundle, the ATLAS one and the D3FEND
    * ontology, the import button takes any of them, and only the ATT&CK trademark line is shown.
-   * Interacts with: AttackReleaseService.getAttackReleases (stub), hasAtlasRelease, hasD3fendRelease.
+   * Interacts with: TechniqueReleaseService.getTechniqueReleases (stub), hasAtlasRelease, hasD3fendRelease.
    * Data: no releases.
    */
   it('tells an administrator which files to import when there are none', async () => {
     const { releaseApi } = await renderReleases([]);
 
-    expect(releaseApi.getAttackReleases).toHaveBeenCalled();
+    expect(releaseApi.getTechniqueReleases).toHaveBeenCalled();
     expect(screen.getByText(/enterprise-attack\.json from MITRE's attack-stix-data repository/)).toBeInTheDocument();
     expect(screen.getByText(/stix-atlas\.json from the mitre-atlas\/atlas-data GitHub releases/)).toBeInTheDocument();
     expect(screen.getByText(/MITRE D3FEND™ ontology \(d3fend\.json from the D3FEND Ontology Resources page\)/)).toBeInTheDocument();
@@ -93,7 +93,7 @@ describe('AdminAttackReleasesComponent', () => {
 
   /**
    * Verifies: an imported ATT&CK release brings MITRE's copyright line but not the ATLAS mark.
-   * Interacts with: AttackReleaseService.getAttackReleases (stub), hasAtlasRelease.
+   * Interacts with: TechniqueReleaseService.getTechniqueReleases (stub), hasAtlasRelease.
    * Data: Enterprise ATT&CK 17.1 only.
    */
   it('credits MITRE for an ATT&CK release without the ATLAS mark', async () => {
@@ -109,7 +109,7 @@ describe('AdminAttackReleasesComponent', () => {
   /**
    * Verifies: a release of the d3fend domain adds MITRE's D3FEND trademark sentence and a link to D3FEND's own
    * terms of use, beside the ATT&CK sentence and link, which stay.
-   * Interacts with: AttackReleaseService.getAttackReleases (stub), hasD3fendRelease.
+   * Interacts with: TechniqueReleaseService.getTechniqueReleases (stub), hasD3fendRelease.
    * Data: Enterprise ATT&CK 17.1 and MITRE D3FEND 1.6.0.
    */
   it('also credits MITRE D3FEND and links its terms of use once a D3FEND release is listed', async () => {
@@ -129,7 +129,7 @@ describe('AdminAttackReleasesComponent', () => {
 
   /**
    * Verifies: a release of the ATLAS domain adds MITRE's ATLAS trademark sentence beside the ATT&CK one.
-   * Interacts with: AttackReleaseService.getAttackReleases (stub), hasAtlasRelease.
+   * Interacts with: TechniqueReleaseService.getTechniqueReleases (stub), hasAtlasRelease.
    * Data: Enterprise ATT&CK 17.1 and ATLAS 2026.10.
    */
   it('also credits MITRE ATLAS once an ATLAS release is listed', async () => {
@@ -143,7 +143,7 @@ describe('AdminAttackReleasesComponent', () => {
   /**
    * Verifies: only a D3FEND row offers Import ATT&CK mappings, a release with mappings says how many on its row, and
    * no hint is given for it.
-   * Interacts with: AttackReleaseService.getAttackReleases (stub), isDefensive, defensiveReleasesWithoutMappings.
+   * Interacts with: TechniqueReleaseService.getTechniqueReleases (stub), isDefensive, defensiveReleasesWithoutMappings.
    * Data: Enterprise ATT&CK 17.1 and MITRE D3FEND 1.6.0 with 4133 mappings.
    */
   it('offers the mappings import on a D3FEND row and counts its mappings', async () => {
@@ -175,8 +175,8 @@ describe('AdminAttackReleasesComponent', () => {
   /**
    * Verifies: picking a file after the row's Import ATT&CK mappings posts it to that release, reports what was
    * stored and skipped, and the row shows the stored count.
-   * Interacts with: chooseMappingsFile, selectMappingsFile, AttackReleaseService.importAttackTechniqueCountermeasures
-   * (stub), SystemMessageService.displayMessage (stub), AttackReleaseDataService.importCountermeasures.
+   * Interacts with: chooseMappingsFile, selectMappingsFile, TechniqueReleaseService.importTechniqueCountermeasures
+   * (stub), SystemMessageService.displayMessage (stub), TechniqueReleaseDataService.importCountermeasures.
    * Data: MITRE D3FEND 1.6.0 with no mappings; an import that stores 5 pairs and skips 1.
    */
   it('imports the mappings file onto the release it was chosen for', async () => {
@@ -187,7 +187,7 @@ describe('AdminAttackReleasesComponent', () => {
     fireEvent.change(screen.getByTestId('mappings-file'), { target: { files: [file] } });
     fixture.detectChanges();
 
-    expect(releaseApi.importAttackTechniqueCountermeasures).toHaveBeenCalledWith('rel-3', file);
+    expect(releaseApi.importTechniqueCountermeasures).toHaveBeenCalledWith('rel-3', file);
     expect(messages.displayMessage).toHaveBeenCalledWith(
       'Mappings Imported',
       '9 rows read. 5 countermeasure mappings for 4 techniques stored on MITRE D3FEND 1.6.0; 1 skipped because their D3FEND technique is not in this release.'
