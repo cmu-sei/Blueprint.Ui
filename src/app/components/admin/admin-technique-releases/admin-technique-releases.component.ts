@@ -14,10 +14,13 @@ import { MatTooltip } from '@angular/material/tooltip';
 import { Observable, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { CrucibleDialogService } from '@cmusei/crucible-common';
-import { TechniqueRelease } from 'src/app/generated/blueprint.api';
+import { MatDialog } from '@angular/material/dialog';
+import { TechniqueRelease, TechniqueReleaseNotice } from 'src/app/generated/blueprint.api';
 import { TechniqueReleaseDataService } from 'src/app/data/technique-release/technique-release-data.service';
 import { TechniqueReleaseQuery } from 'src/app/data/technique-release/technique-release.query';
 import { SystemMessageService } from 'src/app/services/system-message/system-message.service';
+import { AdminTechniqueReleaseNoticeDialogComponent } from '../admin-technique-release-notice-dialog/admin-technique-release-notice-dialog.component';
+import { TechniqueNoticeComponent } from '../../technique-notice/technique-notice.component';
 
 /** Where MITRE serves a release's d3fend-full-mappings.json; the unversioned "latest" path is not served. */
 export function d3fendMappingsUrl(version: string): string {
@@ -31,19 +34,21 @@ export function d3fendMappingsUrl(version: string): string {
  * from mitre/cti, which imports as a release of the capec domain, or the MITRE
  * D3FEND ontology (d3fend.json), which imports as a release of the d3fend domain whose techniques are defensive.
  * A D3FEND release also takes its d3fend-full-mappings.json, the "countered by" mappings from ATT&CK techniques to
- * its own.
+ * its own. A release shows the notice it carries (the parsers fill it for MITRE's frameworks); an administrator can
+ * edit a release's source, notice and terms, which is how a custom release is given one.
  */
 @Component({
   selector: 'app-admin-technique-releases',
   templateUrl: './admin-technique-releases.component.html',
   styleUrls: ['./admin-technique-releases.component.scss'],
-  imports: [MatIcon, MatFormField, MatLabel, MatHint, MatInput, ReactiveFormsModule, MatIconButton, MatSuffix, MatProgressSpinner, MatTable, MatSort, MatSortHeader, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatTooltip, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, NgStyle, AsyncPipe, DatePipe]
+  imports: [MatIcon, MatFormField, MatLabel, MatHint, MatInput, ReactiveFormsModule, MatIconButton, MatSuffix, MatProgressSpinner, MatTable, MatSort, MatSortHeader, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatTooltip, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, NgStyle, AsyncPipe, DatePipe, TechniqueNoticeComponent]
 })
 export class AdminTechniqueReleasesComponent implements OnInit, AfterViewInit, OnDestroy {
   private techniqueReleaseDataService = inject(TechniqueReleaseDataService);
   private techniqueReleaseQuery = inject(TechniqueReleaseQuery);
   private messageService = inject(SystemMessageService);
   dialogService = inject(CrucibleDialogService);
+  private dialog = inject(MatDialog);
 
   readonly loggedInUserId = input<string>(undefined);
   readonly canEdit = input<boolean>(undefined);
@@ -79,19 +84,26 @@ export class AdminTechniqueReleasesComponent implements OnInit, AfterViewInit, O
     this.dataSource.sort = this.sort();
   }
 
-  /** ATLAS is a separate MITRE mark, so its notice is only due once an ATLAS release is listed. */
-  get hasAtlasRelease(): boolean {
-    return this.dataSource.data.some(r => r.domain === 'ATLAS');
-  }
-
-  /** CAPEC is a separate MITRE mark with terms of use of its own, due once a CAPEC release is listed. */
-  get hasCapecRelease(): boolean {
-    return this.dataSource.data.some(r => r.domain === 'capec');
-  }
-
-  /** D3FEND is a separate MITRE mark with terms of use of its own, due once a D3FEND release is listed. */
-  get hasD3fendRelease(): boolean {
-    return this.dataSource.data.some(r => r.domain === 'd3fend');
+  /** Opens the notice fields of a release for editing: its publisher, notice and terms, and nothing else about it. */
+  editNotice(release: TechniqueRelease) {
+    const notice: TechniqueReleaseNotice = {
+      source: release.source ?? '',
+      sourceUrl: release.sourceUrl ?? '',
+      notice: release.notice ?? '',
+      termsUrl: release.termsUrl ?? '',
+    };
+    const dialogRef = this.dialog.open(AdminTechniqueReleaseNoticeDialogComponent, {
+      minWidth: '500px',
+      maxWidth: '90vw',
+      width: '700px',
+      data: { release, notice },
+    });
+    dialogRef.componentInstance.editComplete.subscribe((result) => {
+      if (result.saveChanges && result.notice) {
+        this.techniqueReleaseDataService.updateNotice(release.id, result.notice).subscribe();
+      }
+      dialogRef.close();
+    });
   }
 
   /** A defensive release takes the "countered by" mappings; the API flags it, whatever its domain. */

@@ -42,6 +42,11 @@ project root for license information or contact permission@sei.cmu.edu for full 
       </mat-header-cell>
       <mat-cell *matCellDef="let release" class="col-action">
         @if (canEdit()) {
+        <button mat-icon-button class="msel-action" (click)="editNotice(release)"
+          title="Edit notice of {{ release.name }} {{ release.version }}"
+          [attr.aria-label]="'Edit notice of ' + release.name + ' ' + release.version">
+          <mat-icon class="mdi-18px" fontIcon="mdi-square-edit-outline"></mat-icon>
+        </button>
         <button mat-icon-button class="msel-action" (click)="deleteRelease(release)"
           title="Delete {{ release.name }} {{ release.version }}">
           <mat-icon class="mdi-18px" fontIcon="mdi-trash-can-outline"></mat-icon>
@@ -111,28 +116,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     }
   </div>
   }
-  <div class="attribution">
-    @if (dataSource.data.length > 0) {
-    &copy; 2026 The MITRE Corporation. This work is reproduced and distributed with the permission of The MITRE Corporation.
-    }
-    MITRE ATT&amp;CK and ATT&amp;CK are registered trademarks of The MITRE Corporation.
-    @if (hasAtlasRelease) {
-    MITRE ATLAS&trade; is a trademark of The MITRE Corporation.
-    }
-    @if (hasCapecRelease) {
-    MITRE CAPEC&trade; is a trademark of The MITRE Corporation.
-    }
-    @if (hasD3fendRelease) {
-    MITRE D3FEND&trade; is a trademark of The MITRE Corporation.
-    }
-    <a href="https://attack.mitre.org/resources/legal-and-branding/terms-of-use/" target="_blank" rel="noopener">Terms of Use</a>
-    @if (hasCapecRelease) {
-    <a href="https://capec.mitre.org/about/termsofuse.html" target="_blank" rel="noopener">CAPEC Terms of Use</a>
-    }
-    @if (hasD3fendRelease) {
-    <a href="https://d3fend.mitre.org/tou/" target="_blank" rel="noopener">D3FEND Terms of Use</a>
-    }
-  </div>
+  <app-technique-notice [releases]="dataSource.data"></app-technique-notice>
 </section>
 
 <input hidden (change)="selectFile($event)" #stixInput type="file" accept=".json,application/json" />
