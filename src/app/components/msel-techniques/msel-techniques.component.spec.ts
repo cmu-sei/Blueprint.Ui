@@ -39,6 +39,20 @@ const D3FEND_TERMS_OF_USE = 'https://d3fend.mitre.org/tou/';
 const ENTERPRISE_RELEASE: TechniqueRelease = { id: 'rel-1', domain: 'enterprise-attack', name: 'Enterprise ATT&CK', version: '17.1' };
 const ATLAS_RELEASE: TechniqueRelease = { id: 'rel-1', domain: 'ATLAS', name: 'ATLAS', version: '2026.10' };
 const D3FEND_RELEASE: TechniqueRelease = { id: 'rel-d3', domain: 'd3fend', isDefensive: true, name: 'MITRE D3FEND', version: '1.6.0' };
+const CAPEC_RELEASE: TechniqueRelease = { id: 'rel-c', domain: 'capec', name: 'MITRE CAPEC', version: '3.9' };
+const CAPEC_66: Technique = {
+  id: 'at-c66', techniqueReleaseId: 'rel-c', domain: 'capec', externalId: 'CAPEC-66', name: 'SQL Injection',
+  tactics: ['capec-248'], platforms: ['Software'], weaknesses: ['CWE-89', 'CWE-1286'], url: 'https://capec.mitre.org/data/definitions/66.html',
+  referenceLinks: [
+    { source: 'WASC', label: 'WASC-19 SQL Injection', url: 'http://projects.webappsec.org/SQL-Injection' },
+    { source: 'OWASP', label: 'SQL Injection', url: 'https://owasp.org/www-community/attacks/SQL_Injection' },
+  ],
+};
+const CAPEC_8: Technique = {
+  id: 'at-c8', techniqueReleaseId: 'rel-c', domain: 'capec', externalId: 'CAPEC-8', name: 'Buffer Overflow in an API Call',
+  tactics: ['capec-123'], platforms: ['Software'], weaknesses: ['CWE-120'], url: 'https://capec.mitre.org/data/definitions/8.html',
+};
+const CAPEC_TERMS_OF_USE = 'https://capec.mitre.org/about/termsofuse.html';
 const AML_T0000: Technique = {
   id: 'at-1', techniqueReleaseId: 'rel-1', domain: 'ATLAS', externalId: 'AML.T0000', name: 'Search Open Technical Databases',
   tactics: ['reconnaissance'], url: 'https://atlas.mitre.org/techniques/AML.T0000',
@@ -170,6 +184,54 @@ describe('MselTechniquesComponent', () => {
     expect(screen.getByText(/MITRE ATT&CK and ATT&CK are registered trademarks of The MITRE Corporation/)).toBeInTheDocument();
     expect(screen.getByText(/MITRE ATLAS™ is a trademark of The MITRE Corporation\./)).toBeInTheDocument();
     expect(screen.queryByText(/MITRE D3FEND/)).not.toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: a CAPEC release is browsed with its patterns' own labels (Categories, Domains), its weaknesses link to
+   * cwe.mitre.org and its OWASP and WASC links open where they point, a search for a CWE id finds the patterns that
+   * cite it, and the notice adds the CAPEC trademark sentence and the CAPEC Terms of Use link.
+   * Interacts with: TechniquePoolComponent.browserColumns/weaknessUrl/matchesBrowserFilter, showsCapecContent.
+   * Data: MITRE CAPEC 3.9 imported with CAPEC-66 (CWE-89, CWE-1286, WASC and OWASP links) and CAPEC-8 (CWE-120).
+   */
+  it('browses a CAPEC release by its weaknesses and credits MITRE CAPEC', async () => {
+    await renderTechniques([], [CAPEC_RELEASE], { 'rel-c': [CAPEC_66, CAPEC_8] });
+    const attack = within(attackSection());
+
+    expect(attack.getByText('Categories')).toBeInTheDocument();
+    expect(attack.getByText('Domains')).toBeInTheDocument();
+    expect(attack.getByText('Weaknesses')).toBeInTheDocument();
+    expect(attack.getByText('See also')).toBeInTheDocument();
+    expect(attack.queryByText('Platforms')).not.toBeInTheDocument();
+    expect(attack.getByRole('link', { name: 'CAPEC-66' })).toHaveAttribute('title', 'Open CAPEC-66 on capec.mitre.org');
+    expect(attack.getByRole('link', { name: 'CWE-89' })).toHaveAttribute('href', 'https://cwe.mitre.org/data/definitions/89.html');
+    expect(attack.getByRole('link', { name: 'CWE-1286' })).toHaveAttribute('href', 'https://cwe.mitre.org/data/definitions/1286.html');
+    expect(attack.getByRole('link', { name: 'WASC' })).toHaveAttribute('href', 'http://projects.webappsec.org/SQL-Injection');
+    expect(attack.getByRole('link', { name: 'OWASP' })).toHaveAttribute('href', 'https://owasp.org/www-community/attacks/SQL_Injection');
+    expect(screen.getByText(/MITRE CAPEC™ is a trademark of The MITRE Corporation\./)).toBeInTheDocument();
+    expect(screen.queryByText(/MITRE ATLAS/)).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'CAPEC Terms of Use' })).toHaveAttribute('href', CAPEC_TERMS_OF_USE);
+
+    fireEvent.input(attack.getByPlaceholderText('Search techniques'), { target: { value: 'cwe-120' } });
+
+    expect(await attack.findByRole('link', { name: 'CAPEC-8' })).toBeInTheDocument();
+    expect(attack.queryByRole('link', { name: 'CAPEC-66' })).not.toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: the CAPEC columns and sentences are only for a CAPEC release; an ATT&CK release keeps its Tactics and
+   * Platforms and has no weaknesses column, and no CAPEC notice appears.
+   * Interacts with: TechniquePoolComponent.browsesCapec, showsCapecContent.
+   * Data: Enterprise ATT&CK 17.1 imported with T1059.
+   */
+  it('keeps the ATT&CK labels, and gives no CAPEC notice, for an ATT&CK release', async () => {
+    await renderTechniques([], [ENTERPRISE_RELEASE], { 'rel-1': [T1059.technique] });
+    const attack = within(attackSection());
+
+    expect(attack.getByText('Tactics')).toBeInTheDocument();
+    expect(attack.getByText('Platforms')).toBeInTheDocument();
+    expect(attack.queryByText('Weaknesses')).not.toBeInTheDocument();
+    expect(screen.queryByText(/MITRE CAPEC/)).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'CAPEC Terms of Use' })).not.toBeInTheDocument();
   });
 
   /**

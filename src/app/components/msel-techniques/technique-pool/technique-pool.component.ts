@@ -49,6 +49,7 @@ import { TechniqueCountermeasuresComponent } from '../technique-countermeasures/
 export interface TechniqueContentShown {
   mitre: boolean;
   atlas: boolean;
+  capec: boolean;
   d3fend: boolean;
 }
 
@@ -100,7 +101,18 @@ export class TechniquePoolComponent implements OnInit, AfterViewInit, OnDestroy 
   searchString = '';
   showSubTechniques = true;
   browserDataSource = new MatTableDataSource<Technique>([]);
-  browserColumns: string[] = [];
+  /**
+   * D3FEND techniques have no platforms, so the defensive table does without the column. A CAPEC release adds the
+   * weaknesses its patterns exploit and its links to OWASP and WASC.
+   */
+  get browserColumns(): string[] {
+    if (this.isDefensive) {
+      return ['check', 'externalId', 'name', 'tactics'];
+    }
+    return this.browsesCapec
+      ? ['check', 'externalId', 'name', 'tactics', 'platforms', 'weaknesses', 'seeAlso']
+      : ['check', 'externalId', 'name', 'tactics', 'platforms'];
+  }
 
   // --- Panel 2: MSEL Techniques (pool) ---
   pool: MselTechnique[] = [];
@@ -127,10 +139,6 @@ export class TechniquePoolComponent implements OnInit, AfterViewInit, OnDestroy 
 
   // the subscriptions wait for ngOnInit, which is when the family input is known
   ngOnInit() {
-    // D3FEND techniques have no platforms, so the defensive table does without the column
-    this.browserColumns = this.isDefensive
-      ? ['check', 'externalId', 'name', 'tactics']
-      : ['check', 'externalId', 'name', 'tactics', 'platforms'];
     // the Techniques tab loads the MSEL's pool once for both families; this section only reads its own half
     (this.mselQuery.selectActive() as Observable<MselPlus>).pipe(takeUntil(this.unsubscribe$)).subscribe(msel => {
       if (msel) {
@@ -234,6 +242,7 @@ export class TechniquePoolComponent implements OnInit, AfterViewInit, OnDestroy 
     this.contentShown.emit({
       mitre: this.showsMitreContent,
       atlas: this.showsDomain('ATLAS'),
+      capec: this.showsDomain('capec'),
       d3fend: this.showsDomain('d3fend'),
     });
   }
@@ -350,7 +359,8 @@ export class TechniquePoolComponent implements OnInit, AfterViewInit, OnDestroy 
     if (!s) return true;
     return t.externalId?.toLowerCase().includes(s) ||
       t.name?.toLowerCase().includes(s) ||
-      t.description?.toLowerCase().includes(s);
+      t.description?.toLowerCase().includes(s) ||
+      (t.weaknesses || []).some(w => w.toLowerCase().includes(s));
   }
 
   isInPool(technique: Technique): boolean {
@@ -399,6 +409,30 @@ export class TechniquePoolComponent implements OnInit, AfterViewInit, OnDestroy 
   /** D3FEND tactics have no id of their own (the class id stands in), so only ATT&CK's are worth showing. */
   tacticLabel(tactic: TechniqueTactic): string {
     return this.isDefensive ? tactic.name : `${tactic.externalId} ${tactic.name}`;
+  }
+
+  /** The browsed release is CAPEC, whose groups are its Meta patterns, not tactics, and whose techniques cite weaknesses. */
+  get browsesCapec(): boolean {
+    return this.selectedRelease?.domain === 'capec';
+  }
+
+  /** CAPEC groups its patterns under categories where ATT&CK has tactics; the pinned release names the pool's. */
+  get groupLabel(): string {
+    return this.browsesCapec ? 'Category' : 'Tactic';
+  }
+
+  get poolGroupsLabel(): string {
+    return (this.pinnedRelease ?? this.selectedRelease)?.domain === 'capec' ? 'Categories' : 'Tactics';
+  }
+
+  /** CAPEC names the domains of attack (Software, Hardware) where ATT&CK names platforms. */
+  get platformsLabel(): string {
+    return this.browsesCapec ? 'Domains' : 'Platforms';
+  }
+
+  /** The page MITRE's CWE list keeps for a weakness such as CWE-89. */
+  weaknessUrl(weakness: string): string {
+    return `https://cwe.mitre.org/data/definitions/${(weakness || '').replace(/^CWE-/i, '')}.html`;
   }
 
   getTacticNames(technique: Technique): string {

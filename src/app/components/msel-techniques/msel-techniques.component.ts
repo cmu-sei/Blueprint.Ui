@@ -26,8 +26,8 @@ export class MselTechniquesComponent implements OnDestroy {
   readonly loggedInUserId = input<string>(undefined);
   private mselId = '';
   shown: Record<'attack' | 'defensive', TechniqueContentShown> = {
-    attack: { mitre: false, atlas: false, d3fend: false },
-    defensive: { mitre: false, atlas: false, d3fend: false },
+    attack: { mitre: false, atlas: false, capec: false, d3fend: false },
+    defensive: { mitre: false, atlas: false, capec: false, d3fend: false },
   };
   private unsubscribe$ = new Subject();
 
@@ -49,6 +49,11 @@ export class MselTechniquesComponent implements OnDestroy {
   /** Techniques of an ATLAS release are on screen, which carry MITRE's separate ATLAS mark. */
   get showsAtlasContent(): boolean {
     return this.shown.attack.atlas || this.shown.defensive.atlas;
+  }
+
+  /** Techniques of a CAPEC release are on screen, which carry MITRE's separate CAPEC mark and its own terms of use. */
+  get showsCapecContent(): boolean {
+    return this.shown.attack.capec || this.shown.defensive.capec;
   }
 
   /** Techniques of a D3FEND release are on screen, which carry MITRE's D3FEND mark and its own terms of use. */

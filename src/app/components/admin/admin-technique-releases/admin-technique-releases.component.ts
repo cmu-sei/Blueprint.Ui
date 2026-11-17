@@ -27,7 +27,8 @@ export function d3fendMappingsUrl(version: string): string {
 /**
  * The technique framework releases planners pick techniques from. An administrator uploads a STIX bundle
  * (enterprise-attack.json, ics-attack.json, mobile-attack.json) from mitre-attack/attack-stix-data, or
- * stix-atlas.json from mitre-atlas/atlas-data, which imports as a release of the ATLAS domain, or the MITRE
+ * stix-atlas.json from mitre-atlas/atlas-data, which imports as a release of the ATLAS domain, or stix-capec.json
+ * from mitre/cti, which imports as a release of the capec domain, or the MITRE
  * D3FEND ontology (d3fend.json), which imports as a release of the d3fend domain whose techniques are defensive.
  * A D3FEND release also takes its d3fend-full-mappings.json, the "countered by" mappings from ATT&CK techniques to
  * its own.
@@ -81,6 +82,11 @@ export class AdminTechniqueReleasesComponent implements OnInit, AfterViewInit, O
   /** ATLAS is a separate MITRE mark, so its notice is only due once an ATLAS release is listed. */
   get hasAtlasRelease(): boolean {
     return this.dataSource.data.some(r => r.domain === 'ATLAS');
+  }
+
+  /** CAPEC is a separate MITRE mark with terms of use of its own, due once a CAPEC release is listed. */
+  get hasCapecRelease(): boolean {
+    return this.dataSource.data.some(r => r.domain === 'capec');
   }
 
   /** D3FEND is a separate MITRE mark with terms of use of its own, due once a D3FEND release is listed. */

@@ -13,6 +13,7 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
+import { TechniqueLink } from './techniqueLink';
 
 
 export interface Technique { 
@@ -37,5 +38,13 @@ export interface Technique {
      */
     tactics?: Array<string> | null;
     platforms?: Array<string> | null;
+    /**
+     * The CWE ids a CAPEC pattern exploits, e.g. \"CWE-89\"; empty for the other frameworks.
+     */
+    weaknesses?: Array<string> | null;
+    /**
+     * A CAPEC pattern\'s links to OWASP and WASC; empty for the other frameworks.
+     */
+    referenceLinks?: Array<TechniqueLink> | null;
 }
 

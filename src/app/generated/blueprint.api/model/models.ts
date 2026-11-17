@@ -173,6 +173,7 @@ export * from './teamUser';
 export * from './technique';
 export * from './techniqueCountermeasure';
 export * from './techniqueCountermeasureImport';
+export * from './techniqueLink';
 export * from './techniqueRelease';
 export * from './techniqueTactic';
 export * from './type';

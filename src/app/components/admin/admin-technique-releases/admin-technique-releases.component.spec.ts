@@ -32,6 +32,11 @@ const D3FEND: TechniqueRelease = {
   id: 'rel-3', domain: 'd3fend', isDefensive: true, name: 'MITRE D3FEND', version: '1.6.0',
   releaseDate: new Date('2026-08-31T00:12:00Z'), tacticCount: 7, techniqueCount: 271,
 };
+const CAPEC: TechniqueRelease = {
+  id: 'rel-4', domain: 'capec', name: 'MITRE CAPEC', version: '3.9',
+  releaseDate: new Date('2023-01-24T00:00:00Z'), tacticCount: 61, techniqueCount: 497,
+};
+const CAPEC_TRADEMARK = /MITRE CAPEC™ is a trademark of The MITRE Corporation\./;
 const D3FEND_WITH_MAPPINGS: TechniqueRelease = { ...D3FEND, countermeasureCount: 4133 };
 const MAPPINGS_URL = 'https://d3fend.mitre.org/ontologies/d3fend/1.6.0/d3fend-full-mappings.json';
 const IMPORT_RESULT: TechniqueCountermeasureImport = { techniqueReleaseId: 'rel-3', rowsRead: 9, pairsStored: 5, pairsSkipped: 1, offensiveTechniqueCount: 4 };
@@ -82,13 +87,37 @@ describe('AdminTechniqueReleasesComponent', () => {
     expect(screen.getByText(/enterprise-attack\.json from MITRE's attack-stix-data repository/)).toBeInTheDocument();
     expect(screen.getByText(/stix-atlas\.json from the mitre-atlas\/atlas-data GitHub releases/)).toBeInTheDocument();
     expect(screen.getByText(/MITRE D3FEND™ ontology \(d3fend\.json from the D3FEND Ontology Resources page\)/)).toBeInTheDocument();
+    expect(screen.getByText(/MITRE CAPEC™ STIX bundle \(stix-capec\.json from the/)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'mitre/cti repository' })).toHaveAttribute('href', 'https://github.com/mitre/cti/tree/master/capec/2.1');
     expect(screen.getByTitle('Import a release file')).toBeInTheDocument();
     expect(screen.getByText(/d3fend-full-mappings\.json from https:\/\/d3fend\.mitre\.org\/ontologies\/d3fend\/<version>\/d3fend-full-mappings\.json; the unversioned path is not served/)).toBeInTheDocument();
     expect(screen.getByText(TRADEMARKS)).toBeInTheDocument();
     expect(screen.queryByText(/© 2026 The MITRE Corporation/)).not.toBeInTheDocument();
     expect(screen.queryByText(ATLAS_TRADEMARK)).not.toBeInTheDocument();
     expect(screen.queryByText(D3FEND_TRADEMARK)).not.toBeInTheDocument();
+    expect(screen.queryByText(CAPEC_TRADEMARK)).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'D3FEND Terms of Use' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'CAPEC Terms of Use' })).not.toBeInTheDocument();
+  });
+
+  /**
+   * Verifies: a release of the capec domain adds MITRE's CAPEC trademark sentence and a link to CAPEC's own terms
+   * of use beside the ATT&CK ones, and neither the ATLAS nor the D3FEND mark appears.
+   * Interacts with: TechniqueReleaseService.getTechniqueReleases (stub), hasCapecRelease.
+   * Data: Enterprise ATT&CK 17.1 and MITRE CAPEC 3.9.
+   */
+  it('also credits MITRE CAPEC and links its terms of use once a CAPEC release is listed', async () => {
+    await renderReleases([ENTERPRISE, CAPEC]);
+
+    expect(screen.getByText('MITRE CAPEC')).toBeInTheDocument();
+    expect(screen.getByText(TRADEMARKS)).toBeInTheDocument();
+    expect(screen.getByText(CAPEC_TRADEMARK)).toBeInTheDocument();
+    expect(screen.queryByText(ATLAS_TRADEMARK)).not.toBeInTheDocument();
+    expect(screen.queryByText(D3FEND_TRADEMARK)).not.toBeInTheDocument();
+    const terms = screen.getByRole('link', { name: 'CAPEC Terms of Use' });
+    expect(terms).toHaveAttribute('href', 'https://capec.mitre.org/about/termsofuse.html');
+    expect(terms).toHaveAttribute('target', '_blank');
+    expect(terms).toHaveAttribute('rel', 'noopener');
   });
 
   /**

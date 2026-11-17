@@ -92,7 +92,9 @@ project root for license information or contact permission@sei.cmu.edu for full 
   <div class="empty-text">
     No technique framework releases have been imported. Download a MITRE ATT&amp;CK&reg; STIX bundle such as
     enterprise-attack.json from MITRE's attack-stix-data repository, or an ATLAS STIX bundle (stix-atlas.json from the
-    mitre-atlas/atlas-data GitHub releases), or the MITRE D3FEND&trade; ontology (d3fend.json from the D3FEND Ontology
+    mitre-atlas/atlas-data GitHub releases), or a MITRE CAPEC&trade; STIX bundle (stix-capec.json from the
+    <a href="https://github.com/mitre/cti/tree/master/capec/2.1" target="_blank" rel="noopener">mitre/cti repository</a>),
+    or the MITRE D3FEND&trade; ontology (d3fend.json from the D3FEND Ontology
     Resources page), and import it here. A D3FEND release then takes its ATT&amp;CK mappings
     (d3fend-full-mappings.json from {{ mappingsUrl(null) }}; the unversioned path is not served) with the row's
     Import ATT&amp;CK mappings button.
@@ -117,10 +119,16 @@ project root for license information or contact permission@sei.cmu.edu for full 
     @if (hasAtlasRelease) {
     MITRE ATLAS&trade; is a trademark of The MITRE Corporation.
     }
+    @if (hasCapecRelease) {
+    MITRE CAPEC&trade; is a trademark of The MITRE Corporation.
+    }
     @if (hasD3fendRelease) {
     MITRE D3FEND&trade; is a trademark of The MITRE Corporation.
     }
     <a href="https://attack.mitre.org/resources/legal-and-branding/terms-of-use/" target="_blank" rel="noopener">Terms of Use</a>
+    @if (hasCapecRelease) {
+    <a href="https://capec.mitre.org/about/termsofuse.html" target="_blank" rel="noopener">CAPEC Terms of Use</a>
+    }
     @if (hasD3fendRelease) {
     <a href="https://d3fend.mitre.org/tou/" target="_blank" rel="noopener">D3FEND Terms of Use</a>
     }

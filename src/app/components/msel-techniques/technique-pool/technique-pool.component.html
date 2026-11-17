@@ -47,7 +47,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
     }
     <div class="toolbar-row">
       <mat-form-field style="width: 220px;">
-        <mat-label>Tactic</mat-label>
+        <mat-label>{{ groupLabel }}</mat-label>
         <mat-select [value]="tacticFilter" (selectionChange)="onTacticChange($event.value)">
           <mat-option value="">All</mat-option>
           @for (tactic of tactics; track tactic.id) {
@@ -99,12 +99,28 @@ project root for license information or contact permission@sei.cmu.edu for full 
             matTooltipClass="attack-description-tooltip">{{ t.name }}</mat-cell>
         </ng-container>
         <ng-container matColumnDef="tactics">
-          <mat-header-cell *matHeaderCellDef class="col-tactics">Tactics</mat-header-cell>
+          <mat-header-cell *matHeaderCellDef class="col-tactics">{{ browsesCapec ? 'Categories' : 'Tactics' }}</mat-header-cell>
           <mat-cell *matCellDef="let t" class="col-tactics">{{ getTacticNames(t) }}</mat-cell>
         </ng-container>
         <ng-container matColumnDef="platforms">
-          <mat-header-cell *matHeaderCellDef class="col-platforms">Platforms</mat-header-cell>
+          <mat-header-cell *matHeaderCellDef class="col-platforms">{{ platformsLabel }}</mat-header-cell>
           <mat-cell *matCellDef="let t" class="col-platforms">{{ t.platforms?.join(', ') }}</mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="weaknesses">
+          <mat-header-cell *matHeaderCellDef class="col-weaknesses">Weaknesses</mat-header-cell>
+          <mat-cell *matCellDef="let t" class="col-weaknesses">
+            @for (w of t.weaknesses; track w; let isLast = $last) {
+            <a [href]="weaknessUrl(w)" target="_blank" rel="noopener" title="Open {{ w }} on cwe.mitre.org">{{ w }}</a>@if (!isLast) {<span>, </span>}
+            }
+          </mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="seeAlso">
+          <mat-header-cell *matHeaderCellDef class="col-see-also">See also</mat-header-cell>
+          <mat-cell *matCellDef="let t" class="col-see-also">
+            @for (link of t.referenceLinks; track link.url; let isLast = $last) {
+            <a [href]="link.url" target="_blank" rel="noopener" [title]="link.label">{{ link.source }}</a>@if (!isLast) {<span>, </span>}
+            }
+          </mat-cell>
         </ng-container>
         <mat-header-row *matHeaderRowDef="browserColumns; sticky: true"></mat-header-row>
         <mat-row *matRowDef="let row; columns: browserColumns"></mat-row>
@@ -156,7 +172,7 @@ project root for license information or contact permission@sei.cmu.edu for full 
           matTooltipShowDelay="800" matTooltipClass="attack-description-tooltip">{{ item.technique?.name }}</mat-cell>
       </ng-container>
       <ng-container matColumnDef="tactics">
-        <mat-header-cell *matHeaderCellDef class="col-tactics">Tactics</mat-header-cell>
+        <mat-header-cell *matHeaderCellDef class="col-tactics">{{ poolGroupsLabel }}</mat-header-cell>
         <mat-cell *matCellDef="let item" class="col-tactics">{{ getTacticNames(item.technique) }}</mat-cell>
       </ng-container>
       <ng-container matColumnDef="events">
