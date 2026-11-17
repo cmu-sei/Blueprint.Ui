@@ -442,8 +442,10 @@ a {
   white-space: nowrap;
 }
 
+// as wide as .integration-guid's box (320px + 12px padding each side + 1px border each side),
+// so the dropdowns line up with the IDs of the other integrations
 .integration-select {
-  width: 400px;
+  width: 346px;
 }
 
 .integration-warning {
