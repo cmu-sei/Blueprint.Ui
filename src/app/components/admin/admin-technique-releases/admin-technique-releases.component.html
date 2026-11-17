@@ -17,10 +17,10 @@ project root for license information or contact permission@sei.cmu.edu for full 
     }
   </mat-form-field>
   @if (canEdit()) {
-  <mat-form-field style="width: 160px; margin-left: 10px;">
+  <mat-form-field style="width: 260px; margin-left: 10px;">
     <mat-label>Version</mat-label>
     <input matInput [formControl]="versionControl" placeholder="From the file" />
-    <mat-hint>Only if the file has none</mat-hint>
+    <mat-hint>Leave blank to use the file's version</mat-hint>
   </mat-form-field>
   }
   @if (isLoading$ | async) {
@@ -95,14 +95,19 @@ project root for license information or contact permission@sei.cmu.edu for full 
   </mat-table>
   @if (dataSource.data.length === 0) {
   <div class="empty-text">
-    No technique framework releases have been imported. Download a MITRE ATT&amp;CK&reg; STIX bundle such as
-    enterprise-attack.json from MITRE's attack-stix-data repository, or an ATLAS STIX bundle (stix-atlas.json from the
-    mitre-atlas/atlas-data GitHub releases), or a MITRE CAPEC&trade; STIX bundle (stix-capec.json from the
-    <a href="https://github.com/mitre/cti/tree/master/capec/2.1" target="_blank" rel="noopener">mitre/cti repository</a>),
-    or the MITRE D3FEND&trade; ontology (d3fend.json from the D3FEND Ontology
-    Resources page), and import it here. A D3FEND release then takes its ATT&amp;CK mappings
-    (d3fend-full-mappings.json from {{ mappingsUrl(null) }}; the unversioned path is not served) with the row's
-    Import ATT&amp;CK mappings button.
+    <p>No technique framework releases have been imported. Download a file from MITRE and import it here.</p>
+    <ul>
+      <li><strong>MITRE ATT&amp;CK&reg;:</strong> enterprise-attack.json, mobile-attack.json or ics-attack.json from
+        <a href="https://github.com/mitre-attack/attack-stix-data" target="_blank" rel="noopener">attack-stix-data</a></li>
+      <li><strong>MITRE ATLAS&trade;:</strong> stix-atlas.json from the
+        <a href="https://github.com/mitre-atlas/atlas-data/releases" target="_blank" rel="noopener">atlas-data releases</a></li>
+      <li><strong>MITRE CAPEC&trade;:</strong> stix-capec.json from
+        <a href="https://github.com/mitre/cti/tree/master/capec/2.1" target="_blank" rel="noopener">mitre/cti</a></li>
+      <li><strong>MITRE D3FEND&trade;:</strong> d3fend.json from the
+        <a href="https://d3fend.mitre.org/resources/" target="_blank" rel="noopener">D3FEND resources page</a></li>
+    </ul>
+    <p>A D3FEND release then takes its ATT&amp;CK mappings: download d3fend-full-mappings.json from
+      {{ mappingsUrl(null) }} (the unversioned path is not served) and use the row's Import ATT&amp;CK mappings button.</p>
   </div>
   }
   @if (canEdit() && defensiveReleasesWithoutMappings.length > 0) {

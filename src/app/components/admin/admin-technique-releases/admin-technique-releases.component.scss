@@ -52,5 +52,19 @@
 .empty-text {
   padding: 24px;
   color: var(--mat-sys-on-surface-variant);
+  line-height: 1.5;
+
+  p {
+    margin: 0 0 12px;
+  }
+
+  ul {
+    margin: 0 0 12px;
+    padding-left: 20px;
+  }
+
+  li {
+    margin-bottom: 6px;
+  }
 }
 
