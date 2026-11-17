@@ -394,6 +394,24 @@ describe('MselInfoComponent', () => {
   });
 
   /**
+   * Verifies: a template, which has no Push Integrations button, still lists the moves to fix, because launching by
+   * invitation pushes and the API refuses an invalid template.
+   * Interacts with: MselInfoComponent.moveProblems, real MoveStore (seeded).
+   * Data: a template whose Move 0 and Move 1 both start at +0s.
+   */
+  it('lists the moves to fix on a template', async () => {
+    await renderInfo({
+      myRoles: [MselRole.Owner],
+      mselExtra: { isTemplate: true },
+      moves: [{ moveNumber: 0, deltaSeconds: 0 }, { moveNumber: 1, deltaSeconds: 0 }],
+    });
+
+    expect(screen.queryByTitle('Push Integrations')).not.toBeInTheDocument();
+    expect(screen.getByText('** Move 0 and Move 1 start at the same time.')).toBeInTheDocument();
+    expect(screen.getByText(/before anyone launches this template/)).toBeInTheDocument();
+  });
+
+  /**
    * Verifies: without ManageMsels and not the owner there is no Delete, Add Page, Edit Page or header metadata, and Push Integrations is disabled, even with EditMsels as an Editor.
    * Interacts with: real PermissionDataService (stubbed grants), MselInfoComponent.canManageMsel.
    * Data: every permission but ManageMsels (near miss: EditMsels); MSEL roles Editor and Approver.

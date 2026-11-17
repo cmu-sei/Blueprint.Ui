@@ -77,6 +77,15 @@ export class MoveListComponent implements OnDestroy, AfterViewInit {
         this.displayedMoves = this.getSortedMoves(this.getFilteredMoves());
         this.setNewMoveDefaults();
       });
+    this.scenarioEventQuery
+      .selectAll()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((events) => {
+        this.eventStarts = (events ?? []).map((e) => ({
+          mselId: e.mselId,
+          deltaSeconds: e.deltaSeconds,
+        }));
+      });
     // subscribe to the active MSEL
     (this.mselQuery.selectActive() as Observable<MselPlus>)
       .pipe(takeUntil(this.unsubscribe$))

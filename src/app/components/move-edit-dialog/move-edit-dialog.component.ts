@@ -4,6 +4,7 @@
 
 import { Component, inject, output } from '@angular/core';
 import { UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { Move } from 'src/app/generated/blueprint.api';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { EDITOR_CONFIG } from 'src/app/utilities/editor-config';
 import { CrucibleDialogComponent, CrucibleDialogContentDirective } from '@cmusei/crucible-common';
@@ -24,7 +25,7 @@ import { TimezoneAbbrPipe } from '../../utilities/timezone-abbr';
 })
 
 export class MoveEditDialogComponent {
-  data = inject(MAT_DIALOG_DATA);
+  data = inject<{ move: Move; mselStartTime?: Date; title?: string }>(MAT_DIALOG_DATA);
 
   readonly editComplete = output<any>();
 

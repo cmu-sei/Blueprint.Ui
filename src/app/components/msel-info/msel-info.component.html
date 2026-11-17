@@ -190,14 +190,6 @@ project root for license information or contact permission@sei.cmu.edu for full 
                   Integrations</button>
                 }
               </div>
-              @if (!pushStatus && moveProblems().length) {
-              <div class="warning-message" role="status" aria-label="Moves to fix before pushing">
-                @for (problem of moveProblems(); track problem) {
-                <div>** {{ problem }}</div>
-                }
-                <div>Fix these on the Moves and Events tabs before pushing integrations.</div>
-              </div>
-              }
               @if (pushStatus && pushStatus.startsWith('ERROR')) {
               <div class="integration-error"
                 style="color: red; margin-top: 8px; padding: 8px; background-color: #ffebee; border-radius: 4px;">
@@ -206,6 +198,15 @@ project root for license information or contact permission@sei.cmu.edu for full 
               }
               }
             </div>
+
+            @if (!pushStatus && !msel.playerViewId && moveProblems().length) {
+            <div class="warning-message" role="status" aria-label="Moves to fix before pushing">
+              @for (problem of moveProblems(); track problem) {
+              <div>** {{ problem }}</div>
+              }
+              <div>Fix these on the Moves and Events tabs before {{ msel.isTemplate ? 'anyone launches this template' : 'pushing integrations' }}.</div>
+            </div>
+            }
 
             <!-- Player Integration -->
             <div class="integration-row">

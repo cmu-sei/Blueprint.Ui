@@ -541,13 +541,13 @@ describe('ScenarioEventDataService', () => {
         { id: 'm1', moveNumber: 1, deltaSeconds: 0 },
       ];
 
-      const numbers = service.getMoveAndGroupNumbers(events, moves);
+      const numbers = service.getMoveAndGroupNumbers(events, moves) as unknown as Record<string, number[]>;
 
-      expect(numbers['e0a']).toEqual([1, 0]);
-      expect(numbers['e0b']).toEqual([1, 0]);
-      expect(numbers['e60']).toEqual([1, 1]);
-      expect(numbers['e300']).toEqual([2, 0]);
-      expect(numbers['e400']).toEqual([2, 1]);
+      expect(numbers.e0a).toEqual([1, 0]);
+      expect(numbers.e0b).toEqual([1, 0]);
+      expect(numbers.e60).toEqual([1, 1]);
+      expect(numbers.e300).toEqual([2, 0]);
+      expect(numbers.e400).toEqual([2, 1]);
     });
 
     /**
@@ -571,12 +571,12 @@ describe('ScenarioEventDataService', () => {
         { id: 'm3', moveNumber: 3, deltaSeconds: 200 },
       ];
 
-      const numbers = service.getMoveAndGroupNumbers(events, moves);
+      const numbers = service.getMoveAndGroupNumbers(events, moves) as unknown as Record<string, number[]>;
 
-      expect(numbers['a']).toEqual([1, 0]);
-      expect(numbers['b']).toEqual([1, 0]);
-      expect(numbers['c']).toEqual([1, 1]);
-      expect(numbers['d']).toEqual([3, 0]);
+      expect(numbers.a).toEqual([1, 0]);
+      expect(numbers.b).toEqual([1, 0]);
+      expect(numbers.c).toEqual([1, 1]);
+      expect(numbers.d).toEqual([3, 0]);
     });
 
     /**
@@ -589,10 +589,10 @@ describe('ScenarioEventDataService', () => {
       const numbers = service.getMoveAndGroupNumbers(
         [event({ id: 'a', deltaSeconds: 0 }), event({ id: 'b', deltaSeconds: 5 })],
         [],
-      );
+      ) as unknown as Record<string, number[]>;
 
-      expect(numbers['a']).toEqual([-1, 0]);
-      expect(numbers['b']).toEqual([-1, 1]);
+      expect(numbers.a).toEqual([-1, 0]);
+      expect(numbers.b).toEqual([-1, 1]);
       expect(service.getMoveAndGroupNumbers([], [])).toEqual([]);
     });
   });
